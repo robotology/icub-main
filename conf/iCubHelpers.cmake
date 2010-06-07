@@ -38,7 +38,37 @@ export(TARGETS ${name} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
 
 endmacro(icub_export_library)
 
-#icub_export_library2(target INTERNAL_INCLUDE_DIRS dir EXTERNAL_INCLUDE_DIRS dir DEPENDS targets DESTINATION dest FILES files)
+# Better export library function. Export a target to be used from external programs
+#
+# icub_export_library2(target 
+#                       [INTERNAL_INCLUDE_DIRS dir1 dir2 ...] 
+#                       [EXTERNAL_INCLUDE_DIRS dir1 dir2 ...]
+#                       [DEPENDS target1 target2 ...]
+#                       [DESTINATION dest]
+#                       [VERBOSE]
+#                       [FILES file1 file2 ...])
+# - target: target name
+# - INTERNAL_INCLUDE_DIRS a list of directories that contain header files when building in-source
+# - EXTERNAL_INCLUDE_DIRS a list of directories that contain header files external of the repository
+# - DEPENDS a list of dependencies; these are targets built within the repository. Important CMake should 
+#   parse these targets *before* the current target (check sub_directories(...)).
+# - VERBOSE: ask to print parameters (for debugging)
+# - DESTINATION: destination directory to which header files will be copied (relative w.r.t. install prefix)
+# - FILES: a list of files that will be copied to destination (header files)
+# 
+# The function does a bunch of things:
+#
+# -append ${target} to the list of targetes built within the project (global property ICUB_TARGETS)
+# -retrieve INTERNAL_INCLUDE_DIRS/EXTERNAL_INCLUDE_DIRS properties form each dependency
+# -build INTERNAL_INCLUDE_DIRS by merging INTERNAL_INCLUDE_DIRS and the property INTERNAL_INCLUDE_DIRS of each 
+#  dependency target -- store it as a property for the current target
+# -similarly as above for EXTERNAL_INCLUDE_DIRS
+# -merge EXTERNAL/INTERNAL_INCLUDE_DIRS into INCLUDE_DIRS for the current target, store it as property and cache 
+#  variable
+# -set up install rule for copying all FILES to DESTINATION
+# -append export rules for target to a ICUB_EXPORTBUILD_FILE in ${PROJECT_BINARY_DIR}
+#
+
 MACRO(icub_export_library2 target)
   PARSE_ARGUMENTS(${target}
     "INTERNAL_INCLUDE_DIRS;EXTERNAL_INCLUDE_DIRS;DEPENDS;DESTINATION;FILES"
@@ -65,22 +95,23 @@ MACRO(icub_export_library2 target)
   
   set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
 
+  ##### Append target to global list.
   icub_set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${target})
+  # Install/export rules
   install(TARGETS ${target} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib EXPORT icub-targets)
   export(TARGETS ${target} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
-           
-  ############ Parsing dependencies
+        
+  ##### Handle include directories        
+  # Parsing dependencies
   if (dependencies)
-    set_target_properties(${target} PROPERTIES 
-                        DEPENDS
-                        ${dependencies})                           
+    set_target_properties(${target} PROPERTIES DEPENDS ${dependencies})                           
     
     foreach (d ${dependencies})
         get_target_property(in_dirs ${d} INTERNAL_INCLUDE_DIRS)
         get_target_property(ext_dirs ${d} EXTERNAL_INCLUDE_DIRS)
         
         if (VERBOSE)
-            message(STATUS "FROM ${d}:")
+            message(STATUS "Getting from target ${d}:")
             message(STATUS "${in_dirs}")
             message(STATUS "${ext_dirs}")
         endif()
@@ -88,30 +119,38 @@ MACRO(icub_export_library2 target)
         set(internal_includes ${internal_includes} ${in_dirs})
         set(external_includes ${external_includes} ${ext_dirs})
     endforeach(d)
-    
-    endif()
+  endif(dependencies)
+  ############################
   
+  ################ Build unique variable with internal and external include directories
+  ## Set corresponding target's properties
   set(include_dirs "")
   
   if (internal_includes)
-    set(include_dirs ${include_dirs} ${internal_includes})
+    list(REMOVE_DUPLICATES internal_includes) 
     set_target_properties(${target} PROPERTIES 
                         INTERNAL_INCLUDE_DIRS
                         "${internal_includes}")
+    set(include_dirs ${include_dirs} ${internal_includes})
   endif()
+  
   if (external_includes)
-    set(include_dirs ${include_dirs} ${external_includes})
+    list(REMOVE_DUPLICATES external_includes)
     set_target_properties(${target} PROPERTIES 
                         EXTERNAL_INCLUDE_DIRS
-                        "${external_includes}")   
+                        "${external_includes}") 
+    set(external_includes ${include_dirs} ${external_includes})                        
   endif()
   
   if (include_dirs)
+    list(REMOVE_DUPLICATES include_dirs)
     set_property(TARGET ${target} PROPERTY INCLUDE_DIRS  "${include_dirs}")
     message(STATUS "Target ${target} exporting: ${include_dirs}")
     set(${target}_INCLUDE_DIRS "${include_dirs}" CACHE STRING "include directories")
   endif()
+  ##############################################
 
+  #### Export rules
   if (files AND destination)
     message(STATUS "Target ${target} installing ${files} to ${destination}")
     install(FILES ${files} DESTINATION ${destination})
@@ -127,6 +166,9 @@ MACRO(icub_export_library2 target)
  
 ENDMACRO(icub_export_library2)
 
+# 
+# Taken from kitware wiki, easy support for macro with variable parameters. 
+# See icub_export_library2 for usage.
 MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
   SET(DEFAULT_ARGS)
   FOREACH(arg_name ${arg_names})    
@@ -158,122 +200,10 @@ MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
   SET(${prefix}_${current_arg_name} ${current_arg_list})
 ENDMACRO(PARSE_ARGUMENTS)
 
-# macro(icub_export_library2 param)
-
-# message("Debugging icub_export_library2: ${expect} head: ${param} tail: ${ARGV}")
-
-# if (NOT expect)
-    # #Reset variables
-    # set(target ${param})
-    # set(expect EXPECT_INTERNAL_INCLUDE_DIRS)
-    # set_target_properties(${target} PROPERTIES 
-                        # INTERNAL_INCLUDE_DIRS "" EXTERNAL_INCLUDE_DIRS "" HEADERS_DESTINATION "" FILES "")
- 
-    # ## check if called with no other parameters
-    # if (${ARGC} EQUAL 1)
-         # set(expect "END")
-    # endif()
-    
-# elseif (expect STREQUAL "EXPECT_INTERNAL_INCLUDE_DIRS")
-    # if (${param} STREQUAL "INTERNAL_INCLUDE_DIRS")
-        # set(expect INTERNAL_INCLUDE_DIRS)
-    # else()
-        # #skip optional parameter INTERNAL_INCLUDE_DIRS
-        # message(STATUS "Skipping optional parameter INTERNAL_INCLUDE_DIRS")
-        # set(expect EXPECT_EXTERNAL_INCLUDE_DIRS)
-    # endif()
-# elseif (expect STREQUAL "INTERNAL_INCLUDE_DIRS")
-    # set(expect EXPECT_EXTERNAL_INCLUDE_DIRS)
-    # set_target_properties(${target} PROPERTIES 
-                        # INTERNAL_INCLUDE_DIRS
-                        # ${param})
-# elseif (expect STREQUAL "EXPECT_EXTERNAL_INCLUDE_DIRS")
-    # if (${param} STREQUAL "EXTERNAL_INCLUDE_DIRS")
-        # set(expect EXTERNAL_INCLUDE_DIRS)
-    # else()
-        # #skipping optional parameter EXTERNAL_INCLUDE_DIRS
-        # message(STATUS "Skipping optional parameter EXTERNAL_INCLUDE_DIRS")
-        # set(expect EXPECT_DESTINATION)
-    # endif()
-    
-# elseif (expect STREQUAL "EXTERNAL_INCLUDE_DIRS")
-    # set_target_properties(${target} PROPERTIES 
-                        # EXTERNAL_INCLUDE_DIRS
-                        # ${param})
-    # set(expect EXPECT_DESTINATION)
-# elseif (expect STREQUAL "EXPECT_DESTINATION")
-    # if (${param} STREQUAL "DESTINATION")
-        # set(expect DESTINATION)
-    # else()
-        # message(STATUS  "Skipping optional parameter DESTINATION")
-        # set(expect "END")
-    # endif()
-# elseif (expect STREQUAL "DESTINATION")     
-    # set(expect EXPECT_FILES)
-    # set_target_properties(${target} PROPERTIES 
-                        # HEADERS_DESTINATION
-                        # ${param})
-# elseif (expect STREQUAL "EXPECT_FILES")
-    # if (${param} STREQUAL "FILES")
-        # #message(STATUS "--> ${ARGC}")
-        # #if (${ARGC} EQUAL 2)
-        # #    set(expect FILES)
-        # #else()
-            # #set(expect FILES)
-            # message(STATUS ${ARGN})
-            # set_target_properties(${target} PROPERTIES 
-                        # FILES "${ARGN}")
-                        
-            # set(expect "END")
-        # #endif()
-    # else()
-       # message(FATAL "ERROR: mandatory field FILES")
-    # endif()
-# elseif (expect STREQUAL "FILES")
-    # set_target_properties(${target} PROPERTIES FILES ${param})
-    # set(expect "END")  
-# endif(NOT expect)
-
-# if (expect STREQUAL "END")
-
-    # set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
-
-    # icub_set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${target})
-    # install(TARGETS ${target} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib EXPORT icub-targets)
-    # export(TARGETS ${name} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
-    
-    # get_target_property(internal_includes ${target} INTERNAL_INCLUDE_DIRS)
-    # get_target_property(external_includes ${target} EXTERNAL_INCLUDE_DIRS)
-    # get_target_property(header_files ${target} FILES)
-    # get_target_property(destination ${target} HEADERS_DESTINATION)
-    
-    # if (internal_includes)
-       # set(include_dirs ${include_dirs} ${internal_includes})
-     # endif()
-    # if (external_includes)
-       # set(include_dirs ${include_dirs} ${external_includes})
-    # endif()
-
-    # if (include_dirs)
-        # set_property(TARGET ${target} PROPERTY INCLUDE_DIRS  "${include_dirs}")
-        # message(STATUS "Target ${target} exporting: ${include_dirs}")
-        # set(${target}_INCLUDE_DIRS "${include_dirs}" CACHE STRING "include directories")
-    # endif()
-
-    # if (header_files)
-        # message(STATUS "Target ${target} installing ${header_files} to ${destination}")
-        # install(FILES ${header_files} DESTINATION ${destination})
-    # endif()
-
-# else(expect STREQUAL "END")
-    # #pass call forward
-    # icub_export_library2(${ARGN})
-# endif(expect STREQUAL "END")
-                     
-# endmacro(icub_export_library2)
 
 ### From yarp.
 # Helper macro to work around a bug in set_property in cmake 2.6.0
+# We usa icub_ prefix to avoid name clashes with yarp.
 MACRO(icub_get_property localname _global _property varname)
   set(_icub_exists_chk)
   get_property(_icub_exists_chk GLOBAL PROPERTY ${varname})
