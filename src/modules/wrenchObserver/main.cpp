@@ -108,7 +108,6 @@ This file can be edited at \in src/wrenchObserver/main.cpp.
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
@@ -148,7 +147,6 @@ private:
     BufferedPort<Vector> *port_FT;
     BufferedPort<Vector> *port_Contact;
     bool first;
-    Stamp info;
 
     AWLinEstimator  *linEst;
     AWQuadEstimator *quadEst;
@@ -174,7 +172,6 @@ private:
 
     Vector w0,dw0,d2p0,Fend,Mend;
     Vector F_measured, F_iDyn, F_offset, FT;
-    double time;
 
     Vector evalVel(const Vector &x)
     {
@@ -306,8 +303,6 @@ public:
         FT.zero();
 
         limb->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
-
-        time = Time::now();
     }
 
     bool threadInit()
@@ -371,9 +366,7 @@ public:
         }
 
         port_Contact->prepare() = FT;
-        port_Contact->setEnvelope(info);
         port_Contact->write();
-        time = Time::now();
     }
 
     void threadRelease()
