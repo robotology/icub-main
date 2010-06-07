@@ -1,13 +1,15 @@
 //  BOOTLOADER via CAN 
-//  Author F.Larosa
-//  Rev. 1.0 del 08/21/2008
+//  Author M.Maggiali
+//  Rev. 1.0 del 10/09/2009
 //
 //  Maggia: I have modified it to work with MTB boards (30F4011)
 //
 //
-//  Tested on MAIS and STRAIN boards (DSPIC30F4013)
+//
+//
+//  Tested on MTB boards (DSPIC30F4011)
 //  pic30-gcc V4.03
-//  MPLAB IDE ver 8.02.00.00
+//  MPLAB IDE ver 8.46.00.00
 // 
 
 
@@ -22,26 +24,16 @@
 **-------------------------------------------------------------------------
 **Rev:   Date:        Details:                                    Who:
 **-------------------------------------------------------------------------
-**1.0   21 Aug 2008  First emission								F. Larosa
-**
-**1.1   25 Aug 2008  Modified BOOTLDR_ADDR                      F. Larosa
-**                   Renamed .gld file in Bootloader.gld
-**                   Updated build number
-**
-**1.2   15 Gen 2009  Added CAN1SetMask for FilterNo = 1         F. Larosa
-**                   Added ClrWdt() in the command CMD_END
-**                   Added LoadProgram flag (is set in CM_BOARD command, and is checked in 
-**                   CMD_ADDRESS, CMD_DATA and CMD_START command
-**                   Modified .gld file and BOOTLDR_ADDR costant (new start address is 0x6D80)
-**
-**1.3   21 Apr 2009  Changed the port F4 with the port F5       M.Maggiali 
-**					 in the board detection section. Now 
-**				     the led for the mais is F4                      
 **
 **1.4   10 Aug 2009  This version works for DsPic4011          M.Maggiali  
 **-------------------------------------------------------------------------
 **
+**-------------------------------------------------------------------------
+**Rev:   Date:        Details:                                    Who:
+**-------------------------------------------------------------------------
 **
+**1.5   7 Jun 2010  Added a check in CMD_BOARD if the destination of the message is the current board          M.Maggiali  
+**-------------------------------------------------------------------------**
 ***************************************/
 
 
@@ -58,7 +50,7 @@
 
 
 #define VERSION   1
-#define BUILD     4
+#define BUILD     5
 
 #define CONFIG_WORD_WRITE  0x4008
 
@@ -261,12 +253,12 @@ typedef struct s_eeprom
 //
 // EEPROM memorized IIR filter coefs 
 // has to be separated from s_eeprom var 'couse inits data in xmem
-typedef struct s_eeIIRTransposedCoefs
+/*typedef struct s_eeIIRTransposedCoefs
 {
   int IIR_N_BQ;
   fractional IirTransposedCoefs[5*IIR_LPF_N_MAX_BQ];   
 } s_eeIIRTransposedCoefs;
-
+*/
 // EEDATA *must* be declared GLOBAL
 // EEProm data structures init
 static struct s_eeprom _EEDATA(1) ee_data = 
@@ -320,7 +312,7 @@ static struct s_eeprom _EEDATA(1) ee_data =
 };
 
 // eeprom filter data init
-static struct s_eeIIRTransposedCoefs _EEDATA(1) eeIIRTransposedCoefs =
+/*static struct s_eeIIRTransposedCoefs _EEDATA(1) eeIIRTransposedCoefs =
 {
   0,      // n. BiQuads
   {
@@ -337,7 +329,7 @@ static struct s_eeIIRTransposedCoefs _EEDATA(1) eeIIRTransposedCoefs =
   0x0
   }
 };
-
+*/
 //
 // globals 
 //
@@ -759,7 +751,7 @@ unsigned int ParseCommand(canmsg_t *msg) //, unsigned int SID)
   switch (Cmd)
   {
     case CMD_BOARD:
-      if(msg->CAN_DLC >= FIELDLEN_BOARD)
+      if((msg->CAN_DLC >= FIELDLEN_BOARD) && (msg->CAN_Msg_Dest==BoardConfig.EE_CAN_BoardAddress))
       {
         UpdateEE = msg->CAN_Msg_PayLoad[1];
         comACK (msg->CAN_Msg_Source, Cmd);

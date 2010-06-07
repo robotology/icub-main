@@ -2,53 +2,53 @@
 MagicCookie={0b13fe8c-dfe0-40eb-8900-6712719559a7}
 Version=1.0
 [File000]
-Location=C:\Documents and Settings\hercules\Desktop\P2008_0004_RBCS_RC_BootloaderDSPIC30F4013_00\Software\Bootloader_1.0\BootloaderDSPIC30F4013_V1.1_20080825\memory.o
+Location=D:\icub\src\firmware\loaderDspic30f4011\main.o
 Folder=Intermediary
-DeviceName=dsPIC30F4013
-LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
-LanguageToolID={DE18EB1A-B46B-486B-B96F-A811A635DFAC}
-LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-as.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)|C:\Program Files\Microchip\MPLAB C30\lib||$(LKRDIR)||
-SOLK=<src>|memory.s|main.c||<obj>||<lib>|libp30F4013-coff.a||<lkr>|Bootloader.gld||
-SuiteArgsString=
-ToolArgsString=-g
-TraceCmdString=
-DebugOptions=
-[File001]
-Location=C:\Documents and Settings\hercules\Desktop\P2008_0004_RBCS_RC_BootloaderDSPIC30F4013_00\Software\Bootloader_1.0\BootloaderDSPIC30F4013_V1.1_20080825\main.o
-Folder=Intermediary
-DeviceName=dsPIC30F4013
+DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
 PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)|C:\Program Files\Microchip\MPLAB C30\lib||$(LKRDIR)||
-SOLK=<src>|memory.s|main.c||<obj>||<lib>|libp30F4013-coff.a||<lkr>|Bootloader.gld||
+SOLK=<src>|main.c|memory.s||<obj>||<lib>|C:\Program Files\Microchip\MPLAB C30\lib\dsPIC30F\libp30F4011-coff.a||<lkr>|p30f4011_bootloader.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
 DebugOptions=
+[File001]
+Location=D:\icub\src\firmware\loaderDspic30f4011\memory.o
+Folder=Intermediary
+DeviceName=dsPIC30F4011
+LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
+LanguageToolID={DE18EB1A-B46B-486B-B96F-A811A635DFAC}
+LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-as.exe
+PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)|C:\Program Files\Microchip\MPLAB C30\lib||$(LKRDIR)||
+SOLK=<src>|main.c|memory.s||<obj>||<lib>|C:\Program Files\Microchip\MPLAB C30\lib\dsPIC30F\libp30F4011-coff.a||<lkr>|p30f4011_bootloader.gld||
+SuiteArgsString=
+ToolArgsString=-g
+TraceCmdString=
+DebugOptions=
 [File002]
-Location=C:\Documents and Settings\hercules\Desktop\P2008_0004_RBCS_RC_BootloaderDSPIC30F4013_00\Software\Bootloader_1.0\BootloaderDSPIC30F4013_V1.1_20080825\Bootloader.cof
+Location=D:\icub\src\firmware\loaderDspic30f4011\Bootloader.cof
 Folder=Output
-DeviceName=dsPIC30F4013
+DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={433C3D55-811D-409D-A6BF-159CF9355B42}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-ld.exe
 PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)|C:\Program Files\Microchip\MPLAB C30\lib||$(LKRDIR)||
-SOLK=<src>|memory.s|main.c||<obj>||<lib>|libp30F4013-coff.a||<lkr>|Bootloader.gld||
+SOLK=<src>|main.c|memory.s||<obj>||<lib>|C:\Program Files\Microchip\MPLAB C30\lib\dsPIC30F\libp30F4011-coff.a||<lkr>|p30f4011_bootloader.gld||
 SuiteArgsString=
 ToolArgsString=-o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)" -Map="$(BINDIR_)$(TARGETBASE).map" --report-mem
 TraceCmdString=
 DebugOptions=
 [File003]
-Location=C:\Documents and Settings\hercules\Desktop\P2008_0004_RBCS_RC_BootloaderDSPIC30F4013_00\Software\Bootloader_1.0\BootloaderDSPIC30F4013_V1.1_20080825\Bootloader.hex
+Location=D:\icub\src\firmware\loaderDspic30f4011\Bootloader.hex
 Folder=Output
-DeviceName=dsPIC30F4013
+DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={433C3D55-811D-409D-A6BF-159CF9355B42}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-ld.exe
 PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)|C:\Program Files\Microchip\MPLAB C30\lib||$(LKRDIR)||
-SOLK=<src>|memory.s|main.c||<obj>||<lib>|libp30F4013-coff.a||<lkr>|Bootloader.gld||
+SOLK=<src>|main.c|memory.s||<obj>||<lib>|C:\Program Files\Microchip\MPLAB C30\lib\dsPIC30F\libp30F4011-coff.a||<lkr>|p30f4011_bootloader.gld||
 SuiteArgsString=
 ToolArgsString=-o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)" -Map="$(BINDIR_)$(TARGETBASE).map" --report-mem
 TraceCmdString=

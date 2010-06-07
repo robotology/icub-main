@@ -6,182 +6,179 @@
 !_TAG_PROGRAM_VERSION	5.5.4	//
 !_TAG_REVISION_NAME	MCHPTags	//
 !_TAG_REVISION_VERSION	6.0.1	//
-BOARD_TYPE_MAIS::0x07	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	64;"	d	line:64	file:
-BOARD_TYPE_STRAIN::0x06	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	63;"	d	line:63	file:
-BOOTLDR_ADDR::0x6D80	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	66;"	d	line:66	file:
-BOOTWAIT::5	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	67;"	d	line:67	file:
-BORV_27	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	216;"	v	line:216
-BUFFERISFULL_ERROR::6	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	409;"	d	line:409	file:
-BUILD::3	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	59;"	d	line:59	file:
-BoardConfig	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	376;"	v	line:376
-BoardId	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	431;"	l	line:431
-BoardType	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	371;"	v	line:371
-BufIndex	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	362;"	v	line:362
-Buffer	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	355;"	v	line:355
-BufferIsFull	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	577;"	f	line:577	signature:(void)
-ByteCntr	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	364;"	v	line:364
-CANLoadWaiting	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	342;"	v	line:342
-CAN_DATA_FRAME::0	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	76;"	d	line:76	file:
-CAN_DLC	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	193;"	m	line:193	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_EID	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	198;"	m	line:198	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_EXTENDED_FORMAT::1	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	73;"	d	line:73	file:
-CAN_MAX_MESSAGES_IN_BUFF::40	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	380;"	d	line:380	file:
-CAN_MSG_CLASS_LOADER::0x700	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	80;"	d	line:80	file:
-CAN_Messages	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	384;"	v	line:384
-CAN_Messages_buff_ptr	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	382;"	v	line:382
-CAN_Msg	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1053;"	l	line:1053
-CAN_Msg_AsBytes	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	202;"	m	line:202	union:canmsg_tag::<anonymous>	file:
-CAN_Msg_Class	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	190;"	m	line:190	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_Msg_Dest	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	188;"	m	line:188	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_Msg_PayLoad	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	200;"	m	line:200	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_Msg_Source	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	189;"	m	line:189	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_NU_CiRXnDLC	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	195;"	m	line:195	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_RB0	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	194;"	m	line:194	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_RB1	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	196;"	m	line:196	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_REMOTE_FRAME::1	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	77;"	d	line:77	file:
-CAN_RXRTR	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	197;"	m	line:197	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_RxIDE	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	186;"	m	line:186	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_SAMPLE1TIME	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1097;"	l	line:1097
-CAN_SRR	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	187;"	m	line:187	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-CAN_STANDARD_FORMAT::0	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	72;"	d	line:72	file:
-CAN_TX_SOFTWARE_BUFFER_SIZE::10	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	89;"	d	line:89	file:
-CM::3	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	145;"	d	line:145	file:
-CMBUFINDEX_ERROR::5	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	407;"	d	line:407	file:
-CMBufIndex	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	363;"	v	line:363
-CMBuffer	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	357;"	v	line:357
-CMD_ADDRESS::0x01	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	103;"	d	line:103	file:
-CMD_ADDRESS_ERROR::2	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	400;"	d	line:400	file:
-CMD_BOARD::0x00	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	97;"	d	line:97	file:
-CMD_BOARD_ERROR::1	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	398;"	d	line:398	file:
-CMD_BROADCAST::0xFF	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	118;"	d	line:118	file:
-CMD_DATA::0x03	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	109;"	d	line:109	file:
-CMD_ENABLELOG::0x06	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	120;"	d	line:120	file:
-CMD_END::0x04	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	112;"	d	line:112	file:
-CMD_ERROR::0x05	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	115;"	d	line:115	file:
-CMD_ERRORLOG::0x07	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	122;"	d	line:122	file:
-CMD_START::0x02	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	106;"	d	line:106	file:
-CMD_START_ERROR::3	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	402;"	d	line:402	file:
-CM_ROWSIZE::7	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	141;"	d	line:141	file:
-CODE_PROT_OFF	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	211;"	v	line:211
-COMMAND_UNAVAILABLE_WARNING::4	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	405;"	d	line:405	file:
-CONFIG_WORD_WRITE::0x4008	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	61;"	d	line:61	file:
-Cmd	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	740;"	l	line:740
-ConfAdr	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	369;"	v	line:369
-ConfVal	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1059;"	l	line:1059
-EC_PLL8	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	208;"	v	line:208
-EE::2	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	144;"	d	line:144	file:
-EE_AN_ActiveChannels	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	243;"	m	line:243	struct:s_eeprom	file:
-EE_AN_ChannelOffset	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	246;"	m	line:246	struct:s_eeprom	file:
-EE_AN_ChannelScanningTime	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	245;"	m	line:245	struct:s_eeprom	file:
-EE_AN_ChannelValue	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	247;"	m	line:247	struct:s_eeprom	file:
-EE_AN_SelectedChannel	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	244;"	m	line:244	struct:s_eeprom	file:
-EE_B_EEErased	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	233;"	m	line:233	struct:s_eeprom	file:
-EE_B_EnableBOR	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	235;"	m	line:235	struct:s_eeprom	file:
-EE_B_EnableWD	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	234;"	m	line:234	struct:s_eeprom	file:
-EE_CAN_BoardAddress	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	238;"	m	line:238	struct:s_eeprom	file:
-EE_CAN_MessageDataRate	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	239;"	m	line:239	struct:s_eeprom	file:
-EE_CAN_Speed	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	240;"	m	line:240	struct:s_eeprom	file:
-EE_ChkSum	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	254;"	m	line:254	struct:s_eeprom	file:
-EE_ROWSIZE::16	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	140;"	d	line:140	file:
-EE_TF_ForceValue	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	251;"	m	line:251	struct:s_eeprom	file:
-EE_TF_TMatrix	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	253;"	m	line:253	struct:s_eeprom	file:
-EE_TF_TorqueValue	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	250;"	m	line:250	struct:s_eeprom	file:
-EE_addr	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1057;"	l	line:1057
-EEnqueue	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	388;"	f	line:388	signature:(unsigned x)
-END_CM::0xF8000C	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	137;"	d	line:137	file:
-END_EE::0x7FFFFE	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	134;"	d	line:134	file:
-END_PM::0x007FFE	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	131;"	d	line:131	file:
-ERR_CAN_RXBUFF_OVERFLOW::8	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	414;"	d	line:414	file:
-EnableLOG	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	372;"	v	line:372
-EndAddr	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	361;"	v	line:361
-ErasePM_EE	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	697;"	f	line:697	signature:(void)
-FBORPOR::0xF80004	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	149;"	d	line:149	file:
-FBORPOR_MASK::0x87B3	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	157;"	d	line:157	file:
-FBORPOR_Val	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	368;"	v	line:368
-FBS::0xF00006	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	150;"	d	line:150	file:
-FGS::0xF8000A	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	152;"	d	line:152	file:
-FGS_MASK::0x0007	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	160;"	d	line:160	file:
-FICD::0xF8000C	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	153;"	d	line:153	file:
-FICD_MASK::0xC003	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	161;"	d	line:161	file:
-FIELDLEN_ADDRESS::0x07	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	165;"	d	line:165	file:
-FIELDLEN_BOARD::0x02	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	174;"	d	line:174	file:
-FIELDLEN_ENABLELOG::0x02	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	177;"	d	line:177	file:
-FIELDLEN_START::0x05	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	168;"	d	line:168	file:
-FLASH_addr	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	699;"	l	line:699
-FOSC::0xF80000	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	147;"	d	line:147	file:
-FOSC_MASK::0xC71F	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	155;"	d	line:155	file:
-FSS::0xF00008	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	151;"	d	line:151	file:
-FWDT::0xF80002	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	148;"	d	line:148	file:
-FWDT_MASK::0x803F	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	156;"	d	line:156	file:
-FWDT_Val	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	367;"	v	line:367
-FilterNo	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1055;"	l	line:1055
-FlashLED	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	483;"	f	line:483	signature:(void)
-HaltBootloader	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	533;"	f	line:533	signature:(unsigned char Dest, unsigned char ErrorCode)
-ID	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	741;"	l	line:741
-IIR_LPF_N_MAX_BQ::5	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	221;"	d	line:221	file:
-IIR_N_BQ	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	263;"	m	line:263	struct:s_eeIIRTransposedCoefs	file:
-IirTransposedCoefs	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	264;"	m	line:264	struct:s_eeIIRTransposedCoefs	file:
-InitAdrIndexBuf	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	560;"	f	line:560	signature:(void)
-InitBufParams	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	544;"	f	line:544	signature:(unsigned int RowSize, unsigned long OffsetAdr)
-InitPorts	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	429;"	f	line:429	signature:(void)
-Init_Buffer	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	419;"	f	line:419	signature:(void)
-LoadProgram	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	344;"	v	line:344
-MemType	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	346;"	v	line:346
-NotUsed	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	191;"	m	line:191	struct:canmsg_tag::<anonymous>::<anonymous>	file:
-PAYLOAD_ERROR::7	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	411;"	d	line:411	file:
-PM::1	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	143;"	d	line:143	file:
-PMBufferIsFull	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	348;"	v	line:348
-PRS_BUFFER_LEN::125	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	171;"	d	line:171	file:
-ParseCommand	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	718;"	f	line:718	signature:(canmsg_t *msg)
-RowNumber	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	549;"	l	line:549
-RunAppl	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1024;"	f	line:1024	signature:(void)
-START_CM::0xF80000	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	136;"	d	line:136	file:
-START_EE::0x7FFC00	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	133;"	d	line:133	file:
-START_PM::0x000000	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	130;"	d	line:130	file:
-SendCanErrorMsg	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	519;"	f	line:519	signature:(unsigned char Dest, unsigned char ErrorCode)
-SendCanMsg	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	495;"	f	line:495	signature:(unsigned int ID, unsigned char *Data, unsigned char DataLen)
-StartAddr	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	360;"	v	line:360
-SwOffLED	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	460;"	f	line:460	signature:(void)
-T1Value	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1051;"	l	line:1051
-T1sec	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	359;"	v	line:359
-ToggleLED	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	472;"	f	line:472	signature:(void)
-TxData	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	511;"	l	line:511
-TxData	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	522;"	l	line:522
-Txdata	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	738;"	l	line:738
-UpdateEE	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	350;"	v	line:350
-VERSION::1	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	58;"	d	line:58	file:
-WDT_OFF	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	213;"	v	line:213
-WriteBuffer	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	609;"	f	line:609	signature:(void)
-WriteCMBuffer	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	637;"	f	line:637	signature:(void)
-_LoadAddr	C:\icubSVN\src\firmware\loaderDspic30f4011\memory.s	36;"	l	line:36
-_ReadLatch	C:\icubSVN\src\firmware\loaderDspic30f4011\memory.s	82;"	l	line:82
-_ReadLatchCM	C:\icubSVN\src\firmware\loaderDspic30f4011\memory.s	73;"	l	line:73
-_ResetDevice	C:\icubSVN\src\firmware\loaderDspic30f4011\memory.s	91;"	l	line:91
-_WriteLatch	C:\icubSVN\src\firmware\loaderDspic30f4011\memory.s	65;"	l	line:65
-_WriteLatchCM	C:\icubSVN\src\firmware\loaderDspic30f4011\memory.s	58;"	l	line:58
-_WriteMem	C:\icubSVN\src\firmware\loaderDspic30f4011\memory.s	43;"	l	line:43
-__delay32	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	386;"	p	line:386	file:	signature:(unsigned long)
-canmsg_t	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	204;"	t	line:204	file:
-canmsg_tag	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	180;"	s	line:180	file:
-comACK	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	506;"	f	line:506	signature:(unsigned char Dest, unsigned char Cmd )
-comACK_ID	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	510;"	l	line:510
-comACK_ID	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	521;"	l	line:521
-comContinue	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	343;"	v	line:343
-datalen	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	739;"	l	line:739
-i	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	422;"	l	line:422
-i	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	486;"	l	line:486
-i	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	535;"	l	line:535
-i	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	641;"	l	line:641
-i	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	742;"	l	line:742
-main	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1047;"	f	line:1047	signature:(void)
-match_value	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1050;"	l	line:1050
-prsAddress	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	351;"	v	line:351
-prsErase	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	354;"	v	line:354
-prsLength	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	352;"	v	line:352
-prsMemoryType	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	353;"	v	line:353
-retval	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	743;"	l	line:743
-s_eeIIRTransposedCoefs	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	261;"	s	line:261	file:
-s_eeIIRTransposedCoefs	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	265;"	t	line:265	file:
-s_eeprom	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	230;"	s	line:230	file:
-s_eeprom	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	256;"	t	line:256	file:
-tx_rx_no	C:\icubSVN\src\firmware\loaderDspic30f4011\main.c	1055;"	l	line:1055
+BOARD_TYPE_MAIS::0x07	D:\icub\src\firmware\loaderDspic30f4011\main.c	59;"	d	line:59	file:
+BOARD_TYPE_SKIN::0x05	D:\icub\src\firmware\loaderDspic30f4011\main.c	57;"	d	line:57	file:
+BOARD_TYPE_STRAIN::0x06	D:\icub\src\firmware\loaderDspic30f4011\main.c	58;"	d	line:58	file:
+BOOTLDR_ADDR::0x6D80	D:\icub\src\firmware\loaderDspic30f4011\main.c	61;"	d	line:61	file:
+BOOTWAIT::5	D:\icub\src\firmware\loaderDspic30f4011\main.c	62;"	d	line:62	file:
+BORV_27	D:\icub\src\firmware\loaderDspic30f4011\main.c	211;"	v	line:211
+BUFFERISFULL_ERROR::6	D:\icub\src\firmware\loaderDspic30f4011\main.c	404;"	d	line:404	file:
+BUILD::5	D:\icub\src\firmware\loaderDspic30f4011\main.c	53;"	d	line:53	file:
+BoardConfig	D:\icub\src\firmware\loaderDspic30f4011\main.c	371;"	v	line:371
+BoardId	D:\icub\src\firmware\loaderDspic30f4011\main.c	426;"	l	line:426
+BoardType	D:\icub\src\firmware\loaderDspic30f4011\main.c	366;"	v	line:366
+BufIndex	D:\icub\src\firmware\loaderDspic30f4011\main.c	357;"	v	line:357
+Buffer	D:\icub\src\firmware\loaderDspic30f4011\main.c	350;"	v	line:350
+BufferIsFull	D:\icub\src\firmware\loaderDspic30f4011\main.c	572;"	f	line:572	signature:(void)
+ByteCntr	D:\icub\src\firmware\loaderDspic30f4011\main.c	359;"	v	line:359
+CANLoadWaiting	D:\icub\src\firmware\loaderDspic30f4011\main.c	337;"	v	line:337
+CAN_DATA_FRAME::0	D:\icub\src\firmware\loaderDspic30f4011\main.c	71;"	d	line:71	file:
+CAN_DLC	D:\icub\src\firmware\loaderDspic30f4011\main.c	188;"	m	line:188	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_EID	D:\icub\src\firmware\loaderDspic30f4011\main.c	193;"	m	line:193	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_EXTENDED_FORMAT::1	D:\icub\src\firmware\loaderDspic30f4011\main.c	68;"	d	line:68	file:
+CAN_MAX_MESSAGES_IN_BUFF::40	D:\icub\src\firmware\loaderDspic30f4011\main.c	375;"	d	line:375	file:
+CAN_MSG_CLASS_LOADER::0x700	D:\icub\src\firmware\loaderDspic30f4011\main.c	75;"	d	line:75	file:
+CAN_Messages	D:\icub\src\firmware\loaderDspic30f4011\main.c	379;"	v	line:379
+CAN_Messages_buff_ptr	D:\icub\src\firmware\loaderDspic30f4011\main.c	377;"	v	line:377
+CAN_Msg	D:\icub\src\firmware\loaderDspic30f4011\main.c	1048;"	l	line:1048
+CAN_Msg_AsBytes	D:\icub\src\firmware\loaderDspic30f4011\main.c	197;"	m	line:197	union:canmsg_tag::<anonymous>	file:
+CAN_Msg_Class	D:\icub\src\firmware\loaderDspic30f4011\main.c	185;"	m	line:185	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_Msg_Dest	D:\icub\src\firmware\loaderDspic30f4011\main.c	183;"	m	line:183	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_Msg_PayLoad	D:\icub\src\firmware\loaderDspic30f4011\main.c	195;"	m	line:195	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_Msg_Source	D:\icub\src\firmware\loaderDspic30f4011\main.c	184;"	m	line:184	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_NU_CiRXnDLC	D:\icub\src\firmware\loaderDspic30f4011\main.c	190;"	m	line:190	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_RB0	D:\icub\src\firmware\loaderDspic30f4011\main.c	189;"	m	line:189	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_RB1	D:\icub\src\firmware\loaderDspic30f4011\main.c	191;"	m	line:191	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_REMOTE_FRAME::1	D:\icub\src\firmware\loaderDspic30f4011\main.c	72;"	d	line:72	file:
+CAN_RXRTR	D:\icub\src\firmware\loaderDspic30f4011\main.c	192;"	m	line:192	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_RxIDE	D:\icub\src\firmware\loaderDspic30f4011\main.c	181;"	m	line:181	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_SAMPLE1TIME	D:\icub\src\firmware\loaderDspic30f4011\main.c	1092;"	l	line:1092
+CAN_SRR	D:\icub\src\firmware\loaderDspic30f4011\main.c	182;"	m	line:182	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+CAN_STANDARD_FORMAT::0	D:\icub\src\firmware\loaderDspic30f4011\main.c	67;"	d	line:67	file:
+CAN_TX_SOFTWARE_BUFFER_SIZE::10	D:\icub\src\firmware\loaderDspic30f4011\main.c	84;"	d	line:84	file:
+CM::3	D:\icub\src\firmware\loaderDspic30f4011\main.c	140;"	d	line:140	file:
+CMBUFINDEX_ERROR::5	D:\icub\src\firmware\loaderDspic30f4011\main.c	402;"	d	line:402	file:
+CMBufIndex	D:\icub\src\firmware\loaderDspic30f4011\main.c	358;"	v	line:358
+CMBuffer	D:\icub\src\firmware\loaderDspic30f4011\main.c	352;"	v	line:352
+CMD_ADDRESS::0x01	D:\icub\src\firmware\loaderDspic30f4011\main.c	98;"	d	line:98	file:
+CMD_ADDRESS_ERROR::2	D:\icub\src\firmware\loaderDspic30f4011\main.c	395;"	d	line:395	file:
+CMD_BOARD::0x00	D:\icub\src\firmware\loaderDspic30f4011\main.c	92;"	d	line:92	file:
+CMD_BOARD_ERROR::1	D:\icub\src\firmware\loaderDspic30f4011\main.c	393;"	d	line:393	file:
+CMD_BROADCAST::0xFF	D:\icub\src\firmware\loaderDspic30f4011\main.c	113;"	d	line:113	file:
+CMD_DATA::0x03	D:\icub\src\firmware\loaderDspic30f4011\main.c	104;"	d	line:104	file:
+CMD_ENABLELOG::0x06	D:\icub\src\firmware\loaderDspic30f4011\main.c	115;"	d	line:115	file:
+CMD_END::0x04	D:\icub\src\firmware\loaderDspic30f4011\main.c	107;"	d	line:107	file:
+CMD_ERROR::0x05	D:\icub\src\firmware\loaderDspic30f4011\main.c	110;"	d	line:110	file:
+CMD_ERRORLOG::0x07	D:\icub\src\firmware\loaderDspic30f4011\main.c	117;"	d	line:117	file:
+CMD_START::0x02	D:\icub\src\firmware\loaderDspic30f4011\main.c	101;"	d	line:101	file:
+CMD_START_ERROR::3	D:\icub\src\firmware\loaderDspic30f4011\main.c	397;"	d	line:397	file:
+CM_ROWSIZE::7	D:\icub\src\firmware\loaderDspic30f4011\main.c	136;"	d	line:136	file:
+CODE_PROT_OFF	D:\icub\src\firmware\loaderDspic30f4011\main.c	206;"	v	line:206
+COMMAND_UNAVAILABLE_WARNING::4	D:\icub\src\firmware\loaderDspic30f4011\main.c	400;"	d	line:400	file:
+CONFIG_WORD_WRITE::0x4008	D:\icub\src\firmware\loaderDspic30f4011\main.c	55;"	d	line:55	file:
+Cmd	D:\icub\src\firmware\loaderDspic30f4011\main.c	735;"	l	line:735
+ConfAdr	D:\icub\src\firmware\loaderDspic30f4011\main.c	364;"	v	line:364
+ConfVal	D:\icub\src\firmware\loaderDspic30f4011\main.c	1054;"	l	line:1054
+EC_PLL8	D:\icub\src\firmware\loaderDspic30f4011\main.c	203;"	v	line:203
+EE::2	D:\icub\src\firmware\loaderDspic30f4011\main.c	139;"	d	line:139	file:
+EE_AN_ActiveChannels	D:\icub\src\firmware\loaderDspic30f4011\main.c	238;"	m	line:238	struct:s_eeprom	file:
+EE_AN_ChannelOffset	D:\icub\src\firmware\loaderDspic30f4011\main.c	241;"	m	line:241	struct:s_eeprom	file:
+EE_AN_ChannelScanningTime	D:\icub\src\firmware\loaderDspic30f4011\main.c	240;"	m	line:240	struct:s_eeprom	file:
+EE_AN_ChannelValue	D:\icub\src\firmware\loaderDspic30f4011\main.c	242;"	m	line:242	struct:s_eeprom	file:
+EE_AN_SelectedChannel	D:\icub\src\firmware\loaderDspic30f4011\main.c	239;"	m	line:239	struct:s_eeprom	file:
+EE_B_EEErased	D:\icub\src\firmware\loaderDspic30f4011\main.c	228;"	m	line:228	struct:s_eeprom	file:
+EE_B_EnableBOR	D:\icub\src\firmware\loaderDspic30f4011\main.c	230;"	m	line:230	struct:s_eeprom	file:
+EE_B_EnableWD	D:\icub\src\firmware\loaderDspic30f4011\main.c	229;"	m	line:229	struct:s_eeprom	file:
+EE_CAN_BoardAddress	D:\icub\src\firmware\loaderDspic30f4011\main.c	233;"	m	line:233	struct:s_eeprom	file:
+EE_CAN_MessageDataRate	D:\icub\src\firmware\loaderDspic30f4011\main.c	234;"	m	line:234	struct:s_eeprom	file:
+EE_CAN_Speed	D:\icub\src\firmware\loaderDspic30f4011\main.c	235;"	m	line:235	struct:s_eeprom	file:
+EE_ChkSum	D:\icub\src\firmware\loaderDspic30f4011\main.c	249;"	m	line:249	struct:s_eeprom	file:
+EE_ROWSIZE::16	D:\icub\src\firmware\loaderDspic30f4011\main.c	135;"	d	line:135	file:
+EE_TF_ForceValue	D:\icub\src\firmware\loaderDspic30f4011\main.c	246;"	m	line:246	struct:s_eeprom	file:
+EE_TF_TMatrix	D:\icub\src\firmware\loaderDspic30f4011\main.c	248;"	m	line:248	struct:s_eeprom	file:
+EE_TF_TorqueValue	D:\icub\src\firmware\loaderDspic30f4011\main.c	245;"	m	line:245	struct:s_eeprom	file:
+EE_addr	D:\icub\src\firmware\loaderDspic30f4011\main.c	1052;"	l	line:1052
+EEnqueue	D:\icub\src\firmware\loaderDspic30f4011\main.c	383;"	f	line:383	signature:(unsigned x)
+END_CM::0xF8000C	D:\icub\src\firmware\loaderDspic30f4011\main.c	132;"	d	line:132	file:
+END_EE::0x7FFFFE	D:\icub\src\firmware\loaderDspic30f4011\main.c	129;"	d	line:129	file:
+END_PM::0x007FFE	D:\icub\src\firmware\loaderDspic30f4011\main.c	126;"	d	line:126	file:
+ERR_CAN_RXBUFF_OVERFLOW::8	D:\icub\src\firmware\loaderDspic30f4011\main.c	409;"	d	line:409	file:
+EnableLOG	D:\icub\src\firmware\loaderDspic30f4011\main.c	367;"	v	line:367
+EndAddr	D:\icub\src\firmware\loaderDspic30f4011\main.c	356;"	v	line:356
+ErasePM_EE	D:\icub\src\firmware\loaderDspic30f4011\main.c	692;"	f	line:692	signature:(void)
+FBORPOR::0xF80004	D:\icub\src\firmware\loaderDspic30f4011\main.c	144;"	d	line:144	file:
+FBORPOR_MASK::0x87B3	D:\icub\src\firmware\loaderDspic30f4011\main.c	152;"	d	line:152	file:
+FBORPOR_Val	D:\icub\src\firmware\loaderDspic30f4011\main.c	363;"	v	line:363
+FBS::0xF00006	D:\icub\src\firmware\loaderDspic30f4011\main.c	145;"	d	line:145	file:
+FGS::0xF8000A	D:\icub\src\firmware\loaderDspic30f4011\main.c	147;"	d	line:147	file:
+FGS_MASK::0x0007	D:\icub\src\firmware\loaderDspic30f4011\main.c	155;"	d	line:155	file:
+FICD::0xF8000C	D:\icub\src\firmware\loaderDspic30f4011\main.c	148;"	d	line:148	file:
+FICD_MASK::0xC003	D:\icub\src\firmware\loaderDspic30f4011\main.c	156;"	d	line:156	file:
+FIELDLEN_ADDRESS::0x07	D:\icub\src\firmware\loaderDspic30f4011\main.c	160;"	d	line:160	file:
+FIELDLEN_BOARD::0x02	D:\icub\src\firmware\loaderDspic30f4011\main.c	169;"	d	line:169	file:
+FIELDLEN_ENABLELOG::0x02	D:\icub\src\firmware\loaderDspic30f4011\main.c	172;"	d	line:172	file:
+FIELDLEN_START::0x05	D:\icub\src\firmware\loaderDspic30f4011\main.c	163;"	d	line:163	file:
+FLASH_addr	D:\icub\src\firmware\loaderDspic30f4011\main.c	694;"	l	line:694
+FOSC::0xF80000	D:\icub\src\firmware\loaderDspic30f4011\main.c	142;"	d	line:142	file:
+FOSC_MASK::0xC71F	D:\icub\src\firmware\loaderDspic30f4011\main.c	150;"	d	line:150	file:
+FSS::0xF00008	D:\icub\src\firmware\loaderDspic30f4011\main.c	146;"	d	line:146	file:
+FWDT::0xF80002	D:\icub\src\firmware\loaderDspic30f4011\main.c	143;"	d	line:143	file:
+FWDT_MASK::0x803F	D:\icub\src\firmware\loaderDspic30f4011\main.c	151;"	d	line:151	file:
+FWDT_Val	D:\icub\src\firmware\loaderDspic30f4011\main.c	362;"	v	line:362
+FilterNo	D:\icub\src\firmware\loaderDspic30f4011\main.c	1050;"	l	line:1050
+FlashLED	D:\icub\src\firmware\loaderDspic30f4011\main.c	478;"	f	line:478	signature:(void)
+HaltBootloader	D:\icub\src\firmware\loaderDspic30f4011\main.c	528;"	f	line:528	signature:(unsigned char Dest, unsigned char ErrorCode)
+ID	D:\icub\src\firmware\loaderDspic30f4011\main.c	736;"	l	line:736
+IIR_LPF_N_MAX_BQ::5	D:\icub\src\firmware\loaderDspic30f4011\main.c	216;"	d	line:216	file:
+InitAdrIndexBuf	D:\icub\src\firmware\loaderDspic30f4011\main.c	555;"	f	line:555	signature:(void)
+InitBufParams	D:\icub\src\firmware\loaderDspic30f4011\main.c	539;"	f	line:539	signature:(unsigned int RowSize, unsigned long OffsetAdr)
+InitPorts	D:\icub\src\firmware\loaderDspic30f4011\main.c	424;"	f	line:424	signature:(void)
+Init_Buffer	D:\icub\src\firmware\loaderDspic30f4011\main.c	414;"	f	line:414	signature:(void)
+LoadProgram	D:\icub\src\firmware\loaderDspic30f4011\main.c	339;"	v	line:339
+MemType	D:\icub\src\firmware\loaderDspic30f4011\main.c	341;"	v	line:341
+NotUsed	D:\icub\src\firmware\loaderDspic30f4011\main.c	186;"	m	line:186	struct:canmsg_tag::<anonymous>::<anonymous>	file:
+PAYLOAD_ERROR::7	D:\icub\src\firmware\loaderDspic30f4011\main.c	406;"	d	line:406	file:
+PM::1	D:\icub\src\firmware\loaderDspic30f4011\main.c	138;"	d	line:138	file:
+PMBufferIsFull	D:\icub\src\firmware\loaderDspic30f4011\main.c	343;"	v	line:343
+PRS_BUFFER_LEN::125	D:\icub\src\firmware\loaderDspic30f4011\main.c	166;"	d	line:166	file:
+ParseCommand	D:\icub\src\firmware\loaderDspic30f4011\main.c	713;"	f	line:713	signature:(canmsg_t *msg)
+RowNumber	D:\icub\src\firmware\loaderDspic30f4011\main.c	544;"	l	line:544
+RunAppl	D:\icub\src\firmware\loaderDspic30f4011\main.c	1019;"	f	line:1019	signature:(void)
+START_CM::0xF80000	D:\icub\src\firmware\loaderDspic30f4011\main.c	131;"	d	line:131	file:
+START_EE::0x7FFC00	D:\icub\src\firmware\loaderDspic30f4011\main.c	128;"	d	line:128	file:
+START_PM::0x000000	D:\icub\src\firmware\loaderDspic30f4011\main.c	125;"	d	line:125	file:
+SendCanErrorMsg	D:\icub\src\firmware\loaderDspic30f4011\main.c	514;"	f	line:514	signature:(unsigned char Dest, unsigned char ErrorCode)
+SendCanMsg	D:\icub\src\firmware\loaderDspic30f4011\main.c	490;"	f	line:490	signature:(unsigned int ID, unsigned char *Data, unsigned char DataLen)
+StartAddr	D:\icub\src\firmware\loaderDspic30f4011\main.c	355;"	v	line:355
+SwOffLED	D:\icub\src\firmware\loaderDspic30f4011\main.c	455;"	f	line:455	signature:(void)
+T1Value	D:\icub\src\firmware\loaderDspic30f4011\main.c	1046;"	l	line:1046
+T1sec	D:\icub\src\firmware\loaderDspic30f4011\main.c	354;"	v	line:354
+ToggleLED	D:\icub\src\firmware\loaderDspic30f4011\main.c	467;"	f	line:467	signature:(void)
+TxData	D:\icub\src\firmware\loaderDspic30f4011\main.c	506;"	l	line:506
+TxData	D:\icub\src\firmware\loaderDspic30f4011\main.c	517;"	l	line:517
+Txdata	D:\icub\src\firmware\loaderDspic30f4011\main.c	733;"	l	line:733
+UpdateEE	D:\icub\src\firmware\loaderDspic30f4011\main.c	345;"	v	line:345
+VERSION::1	D:\icub\src\firmware\loaderDspic30f4011\main.c	52;"	d	line:52	file:
+WDT_OFF	D:\icub\src\firmware\loaderDspic30f4011\main.c	208;"	v	line:208
+WriteBuffer	D:\icub\src\firmware\loaderDspic30f4011\main.c	604;"	f	line:604	signature:(void)
+WriteCMBuffer	D:\icub\src\firmware\loaderDspic30f4011\main.c	632;"	f	line:632	signature:(void)
+_LoadAddr	D:\icub\src\firmware\loaderDspic30f4011\memory.s	36;"	l	line:36
+_ReadLatch	D:\icub\src\firmware\loaderDspic30f4011\memory.s	82;"	l	line:82
+_ReadLatchCM	D:\icub\src\firmware\loaderDspic30f4011\memory.s	73;"	l	line:73
+_ResetDevice	D:\icub\src\firmware\loaderDspic30f4011\memory.s	91;"	l	line:91
+_WriteLatch	D:\icub\src\firmware\loaderDspic30f4011\memory.s	65;"	l	line:65
+_WriteLatchCM	D:\icub\src\firmware\loaderDspic30f4011\memory.s	58;"	l	line:58
+_WriteMem	D:\icub\src\firmware\loaderDspic30f4011\memory.s	43;"	l	line:43
+__delay32	D:\icub\src\firmware\loaderDspic30f4011\main.c	381;"	p	line:381	file:	signature:(unsigned long)
+canmsg_t	D:\icub\src\firmware\loaderDspic30f4011\main.c	199;"	t	line:199	file:
+canmsg_tag	D:\icub\src\firmware\loaderDspic30f4011\main.c	175;"	s	line:175	file:
+comACK	D:\icub\src\firmware\loaderDspic30f4011\main.c	501;"	f	line:501	signature:(unsigned char Dest, unsigned char Cmd )
+comACK_ID	D:\icub\src\firmware\loaderDspic30f4011\main.c	505;"	l	line:505
+comACK_ID	D:\icub\src\firmware\loaderDspic30f4011\main.c	516;"	l	line:516
+comContinue	D:\icub\src\firmware\loaderDspic30f4011\main.c	338;"	v	line:338
+datalen	D:\icub\src\firmware\loaderDspic30f4011\main.c	734;"	l	line:734
+i	D:\icub\src\firmware\loaderDspic30f4011\main.c	417;"	l	line:417
+i	D:\icub\src\firmware\loaderDspic30f4011\main.c	481;"	l	line:481
+i	D:\icub\src\firmware\loaderDspic30f4011\main.c	530;"	l	line:530
+i	D:\icub\src\firmware\loaderDspic30f4011\main.c	636;"	l	line:636
+i	D:\icub\src\firmware\loaderDspic30f4011\main.c	737;"	l	line:737
+main	D:\icub\src\firmware\loaderDspic30f4011\main.c	1042;"	f	line:1042	signature:(void)
+match_value	D:\icub\src\firmware\loaderDspic30f4011\main.c	1045;"	l	line:1045
+prsAddress	D:\icub\src\firmware\loaderDspic30f4011\main.c	346;"	v	line:346
+prsErase	D:\icub\src\firmware\loaderDspic30f4011\main.c	349;"	v	line:349
+prsLength	D:\icub\src\firmware\loaderDspic30f4011\main.c	347;"	v	line:347
+prsMemoryType	D:\icub\src\firmware\loaderDspic30f4011\main.c	348;"	v	line:348
+retval	D:\icub\src\firmware\loaderDspic30f4011\main.c	738;"	l	line:738
+s_eeprom	D:\icub\src\firmware\loaderDspic30f4011\main.c	225;"	s	line:225	file:
+s_eeprom	D:\icub\src\firmware\loaderDspic30f4011\main.c	251;"	t	line:251	file:
+tx_rx_no	D:\icub\src\firmware\loaderDspic30f4011\main.c	1050;"	l	line:1050

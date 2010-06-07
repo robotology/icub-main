@@ -1,7 +1,7 @@
 [HEADER]
 magic_cookie={66E99B07-E706-4689-9E80-9B2582898A13}
 file_version=1.0
-device=dsPIC30F4013
+device=dsPIC30F4011
 [PATH_INFO]
 BuildDirPolicy=BuildDirIsProjectDir
 dir_src=
@@ -39,8 +39,8 @@ file_001=no
 file_002=no
 file_003=no
 [FILE_INFO]
-file_000=memory.s
-file_001=main.c
+file_000=main.c
+file_001=memory.s
 file_002=C:\Program Files\Microchip\MPLAB C30\lib\dsPIC30F\libp30F4011-coff.a
 file_003=p30f4011_bootloader.gld
 [SUITE_INFO]
