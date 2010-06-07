@@ -88,7 +88,7 @@ private:
 	/**
 	* iterator for the evolution of the machine boltzmann
 	*/
-	map<std::string,Layer>::iterator iterEvolve;
+	map<std::string,Layer*>::iterator iterEvolve;
 	/**
 	* probability result of the freely evolution
 	*/
@@ -151,12 +151,12 @@ public:
 	/**
 	*list of Layer in the Boltzmann Machine
 	*/
-	map<std::string,Layer> elementList; //
+	map<std::string,Layer*> elementList; //
 	/**
 	* Add a Layer to the Boltzmann Machine
 	* @param layer reference to the layer to be added
 	*/
-	void addLayer(Layer layer); //
+	void addLayer(Layer* layer); //
 	/**
 	* return a Layer to the Boltzmann Machine
 	* @param name name of the layer to be returned
@@ -292,8 +292,9 @@ public:
 	* @param layer pointer to the layer where the data is clamped in
 	* @param numhid dimension of the linked layer( hidden layer)
     * @param output vector which represent the value of the state of higher layer
+    * @param output vector which represent the weights between this layer and the upper one
 	*/
-    void rbm(yarp::sig::Matrix* data,Layer *layer,int numhid,yarp::sig::Matrix* output);
+    void rbm(yarp::sig::Matrix* data,Layer *layer,int numhid,yarp::sig::Matrix* output, yarp::sig::Matrix* output2);
 
     //------- attributes
 	map<std::string,Unit> unitList;

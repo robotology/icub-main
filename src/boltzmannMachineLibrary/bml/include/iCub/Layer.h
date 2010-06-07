@@ -12,6 +12,7 @@
 #include <yarp/sig/all.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/math/Rand.h>
 
 
 #include <iostream>

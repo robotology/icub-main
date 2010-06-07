@@ -18,9 +18,9 @@ int main(int argc, char *argv[]) {
 #else
 	MachineBoltzmann *mb=new MachineBoltzmann(2);
 	Layer *layerA=new Layer("LA",2,6);
-	mb->addLayer(*layerA);
+	mb->addLayer(layerA);
 	Layer *layerB=new Layer("LB",2,6);
-	mb->addLayer(*layerB);
+	mb->addLayer(layerB);
 	mb->interconnectLayers(layerA,layerB);
 
 	int numhid=4*12;

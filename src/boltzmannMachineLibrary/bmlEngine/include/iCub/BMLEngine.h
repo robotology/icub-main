@@ -369,7 +369,7 @@ public:
     * function that clamp an image as input of a Layer
     * @param layer reference to the layer name
     */
-    void clampLayer(Layer layer);
+    void clampLayer(Layer* layer);
     /** 
     * input Image which is mapped onto the selected layer
     */

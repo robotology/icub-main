@@ -330,7 +330,7 @@ bool BMLEngine::updateModule() {
 
             map<std::string,Layer>::iterator iterK;
             map<std::string,Layer>::iterator iterL;
-            map<std::string,Layer>::iterator iterE1,iterE2;
+            map<std::string,Layer*>::iterator iterE1,iterE2;
             
             int j=0;
             for(iterE1=mb->elementList.begin(); iterE1!=mb->elementList.end()&&j<value1;iterE1++){
@@ -341,7 +341,7 @@ bool BMLEngine::updateModule() {
                 j++;
             }
             printf("Calling the interconnectLayers function \n");
-            mb->interconnectLayers(&iterE1->second,&iterE2->second);
+            mb->interconnectLayers(iterE1->second,iterE2->second);
 
             
 
@@ -435,7 +435,7 @@ bool BMLEngine::updateModule() {
             }
             map<std::string,Layer>::iterator iterK;
             map<std::string,Layer>::iterator iterL;
-            map<std::string,Layer>::iterator iterE1,iterE2;
+            map<std::string,Layer*>::iterator iterE1,iterE2;
             
             int j=0;
             for(iterE1=mb->elementList.begin(); iterE1!=mb->elementList.end()&&j<value1;iterE1++){
@@ -1005,7 +1005,7 @@ void BMLEngine::addLayer(int number,int colDimension, int rowDimension){
     layerName.append(n_string);
     printf("layerName:%s",layerName.c_str());
     Layer *layer=new Layer(layerName,colDimension,rowDimension);
-    mb->addLayer(*layer);
+    mb->addLayer(layer);
     mb->migrateLayer(*layer);
     //mb->interconnectLayer(number);
     enableDraw=true;
@@ -1174,7 +1174,7 @@ void BMLEngine::clampLayer(int layerNumber){
     //ippiFree(im_tmp_tmp);
 }
 
-void BMLEngine::clampLayer(Layer layer){
+void BMLEngine::clampLayer(Layer* layer){
     int width=ptr_inputImage->width();
     int height=ptr_inputImage->height();
     //IppiSize srcsize={width,height};
@@ -1227,9 +1227,9 @@ void BMLEngine::clampLayer(Layer layer){
     //im_tmp_tmp[2]=im_out;
 
     //2.Extract the necessary information
-    int dim=layer.stateVector->length();
-    int totRows=layer.getRow();
-    int totUnits=layer.getCol();
+    int dim=layer->stateVector->length();
+    int totRows=layer->getRow();
+    int totUnits=layer->getCol();
 
     printf("state vector dimension %d \n",dim);
     printf("layer number cols %d \n",totUnits);
@@ -1256,7 +1256,7 @@ void BMLEngine::clampLayer(Layer layer){
             double mean=sum/(rectDimX*rectDimY);
             //printf("mean of the unit %f ----> ",mean);
             //set the threashold to decide whether the unit has to be elicite
-            (*layer.stateVector)(boltzmannMachineCol+boltzmannMachineRow*totUnits)=mean/255;
+            (*layer->stateVector)(boltzmannMachineCol+boltzmannMachineRow*totUnits)=mean/255;
         }
     
 
@@ -1377,23 +1377,7 @@ bool BMLEngine::respond(const Bottle &command,Bottle &reply){
      case COMMAND_VOCAB_RUN:
         rec = true;
         {
-            switch(command.get(1).asVocab()) {
-            /*case COMMAND_VOCAB_RGB_PROCESSOR:{
-                
-                
-                ok=true;
-            }
-                break;
-            case COMMAND_VOCAB_YUV_PROCESSOR:{
-                
-                ok=true;
-            }
-                break;
-                */
-            default:
-                cout << "received an unknown request after a _VOCAB_RUN" << endl;
-                break;
-            }
+            
         }
         break;
     case COMMAND_VOCAB_GET:

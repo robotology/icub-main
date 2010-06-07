@@ -7,7 +7,7 @@ using namespace yarp::math;
 
 
 
-#define MEAN_WEIGHT 50 //-->check the variable in layer.cpp
+#define MEAN_WEIGHT 0.001 //-->check the variable in layer.cpp
 #define BIAS 1300
 #define T_PARAM 2000
 #define TH_HIGH 0.6
@@ -22,19 +22,19 @@ MachineBoltzmann::MachineBoltzmann(){
     countSample=0;
     meanWeight=MEAN_WEIGHT;
     T=T_PARAM;
-    epsilon=1;
+    
     maxepoch=10;
     
 
-    epsilonw      = 0.05;   // Learning rate for weights 
-    epsilonvb     = 0.05;   // Learning rate for biases of visible units 
-    epsilonhb     = 0.05;   // Learning rate for biases of hidden units 
+    epsilonw      = 0.5;   // Learning rate for weights  (default 0.05)
+    epsilonvb     = 0.5;   // Learning rate for biases of visible units (default 0.05) 
+    epsilonhb     = 0.5;   // Learning rate for biases of hidden units  (default 0.05)
 
 
-    weightcost  = 0.001;   
-    initialmomentum  = 0.5;
-    finalmomentum    = 0.9;
+    weightcost  = 0.01;    //(default 0.001)
 
+    initialmomentum  = 0.5; //(default 0.5)
+    finalmomentum    = 0.9;  //(default 0.9)
 
     
 }
@@ -58,6 +58,15 @@ MachineBoltzmann::MachineBoltzmann(int nLayers){
     epsilonhb=0.1;
     maxepoch=10;
 
+    epsilonw      = 0.005;   // Learning rate for weights  (default 0.05)
+    epsilonvb     = 0.005;   // Learning rate for biases of visible units (default 0.05) 
+    epsilonhb     = 0.005;   // Learning rate for biases of hidden units  (default 0.05)
+
+
+    weightcost  = 0.01;    //(default 0.001)
+    initialmomentum  = 0.5; //(default 0.5)
+    finalmomentum    = 0.9;  //(default 0.9)
+
     //creates the layers
     for(int i=0;i<nLayers;i++){
         //std::string i_str(1,(char)this->countElements+i);
@@ -73,7 +82,7 @@ MachineBoltzmann::MachineBoltzmann(int nLayers){
         //the layer is added in list inside the addLayer function!!!!
         //elementList.insert(pair<std::string,Layer>(layer->getName(),*layer));
         //elementList[(std::string)layer->getName()]=*layer;
-        this->addLayer(*layer);
+        this->addLayer(layer);
         this->migrateLayer(*layer);
         //cout<<"just inserted another layer "<<elementList[layer->getName()].toString()<<endl;
         countElements++;
@@ -87,12 +96,12 @@ MachineBoltzmann::MachineBoltzmann(int nLayers){
 /**
 *Add a layer to the Boltzmann Machine
 */
-void MachineBoltzmann::addLayer(Layer layer){
+void MachineBoltzmann::addLayer(Layer* layer){
     //finally add the layer to the list of layer
-    elementList.insert(pair<std::string,Layer>(layer.getName(),layer));
-    int n=layer.getNumUnits();
-    printf("the layer %s has just been added to the elementList",layer.getName());
-    if(countElements==0){   
+    elementList.insert(pair<std::string,Layer*>(layer->getName(),layer));
+    int n=layer->getNumUnits();
+    printf("the layer %s has just been added to the elementList",layer->getName());
+    if(countElements==0){    
        this->reinitData(n);
     }
     countElements++;
@@ -102,8 +111,8 @@ Layer* MachineBoltzmann::getLayer(int name){
     string namestr("");
     sprintf((char*)namestr.c_str(),"L%d",name);
     printf("name: %s ",namestr.c_str());
-    map<std::string,Layer>::iterator iter=elementList.find(namestr.c_str());
-    return &iter->second;
+    map<std::string,Layer*>::iterator iter=elementList.find(namestr.c_str());
+    return iter->second;
 }
 
 void MachineBoltzmann::migrateLayer(Layer layer){
@@ -138,13 +147,13 @@ void MachineBoltzmann::interconnectLayers(Layer* layerA, Layer* layerB){
     int numhid=layerB->getCol()*layerB->getRow();
     layerA->colWeights=numhid;
 
-    //1. just using matrix
+    //1. creating the matrix of connection with the upper level
     layerA->vishid=new Matrix(numdims,numhid);
     //layerA.vishid->resize(10,10);
     //Matrix ma(layerA.vishid);
     for (int i=0;i<numdims;i++)
         for (int j=0;j<numhid;j++)
-            (*layerA->vishid)(i,j)=0.001;
+            (*layerA->vishid)(i,j)=MEAN_WEIGHT;
     
     printf("layerA->vishid: (%s)\n",(* layerA->vishid).toString().c_str());
 
@@ -187,7 +196,7 @@ void MachineBoltzmann::interconnectLayers(){
     // visit all the layers in the elementList( this layer has not been added yet!)
     cout<<"number of layer in the elementList"<<elementList.size();
     //getch();
-    map<std::string,Layer>::iterator iterE1,iterE2;
+    map<std::string,Layer*>::iterator iterE1,iterE2;
     map<std::string,Unit>::iterator iterU1,iterU2;
     int k=0;
     //reset the _connectionList because it changes completely with every layer
@@ -195,11 +204,11 @@ void MachineBoltzmann::interconnectLayers(){
     _unitList.clear();
     printf("the _connectionList has got size: %d \n",_connectionList.size());
     for(iterE1=elementList.begin(); iterE1!=elementList.end();iterE1++){
-        for(iterU1=iterE1->second.unitList.begin(); iterU1!=iterE1->second.unitList.end();iterU1++){
+        for(iterU1=iterE1->second->unitList.begin(); iterU1!=iterE1->second->unitList.end();iterU1++){
             this->addUnit2Matrix(iterU1->second);
             for(iterE2=elementList.begin(); iterE2!=elementList.end();iterE2++){
                 int k=0;
-                for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){					
+                for(iterU2=iterE2->second->unitList.begin(); iterU2!=iterE2->second->unitList.end();iterU2++){					
                     //cout<<"k:"<<k;
                     //double value=double(rand())/RAND_MAX;
                     double value=1;
@@ -277,7 +286,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
     // visit all the layers in the elementList( this layer has not been added yet!)
     cout<<"number of layer in the elementList"<<elementList.size();
     //getch();
-    map<std::string,Layer>::iterator iterE1,iterE2;
+    map<std::string,Layer*>::iterator iterE1,iterE2;
     map<std::string,Unit>::iterator iterU1,iterU2;
     list<Connection>::iterator iterC1;
     list<double>::iterator iterFreely,iterClamped;
@@ -292,7 +301,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
     //2. finds the position for every row grouped as layer and adds the connection between this layer and the new one
     int countConnections=0;
     iterE1=elementList.begin();
-    iterU1=iterE1->second.unitList.begin(); //iterU1!=iterE1->second.unitList.end();){
+    iterU1=iterE1->second->unitList.begin(); //iterU1!=iterE1->second.unitList.end();){
     iterC1=_connectionList.begin();
     iterFreely=_probFreely.begin();
     iterClamped=_probClamped.begin();
@@ -301,7 +310,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
         //insertion point is where the new connections from the allocated layers to this have to be inserted
         if((countConnections%insertionPoint==0)&&(countConnections!=0)){
             //add the new connection from already present units to new units
-            for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){								
+            for(iterU2=iterE2->second->unitList.begin(); iterU2!=iterE2->second->unitList.end();iterU2++){								
                 //insertion of the connectio
                 //double value=double(rand())/RAND_MAX;
                 double value=1;
@@ -318,18 +327,18 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
             }
             iterU1++; //increments the pointer to the unit
             //if the pointer has reached the end, every unit of the next layer is referenced
-            if(iterU1==iterE1->second.unitList.end()){
+            if(iterU1==iterE1->second->unitList.end()){
                 
                 printf("End of the previous layer and start of the new one _unitList.size %d",_unitList.size());
                 iterE1++;
-                iterU1=iterE1->second.unitList.begin();
+                iterU1=iterE1->second->unitList.begin();
             }
         }
         iterC1++;
         iterFreely++;iterClamped++;
         countConnections++;
         if(iterC1==_connectionList.end()){
-            for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){								
+            for(iterU2=iterE2->second->unitList.begin(); iterU2!=iterE2->second->unitList.end();iterU2++){								
                 //insertion of the connectio
                 //double value=double(rand())/RAND_MAX;
                 double value=1;
@@ -350,12 +359,12 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 
 
     //3. adds the final rows of connections between this layer and the already allocated layers 
-    for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){
+    for(iterU2=iterE2->second->unitList.begin(); iterU2!=iterE2->second->unitList.end();iterU2++){
         //adding these units to the _unitList where there are the rest of units
         printf("Insertion of unit in _unitList %s",iterU2->first.c_str());
         _unitList.push_back(iterU2->second);
         for(iterE1=elementList.begin(); iterE1!=elementList.end();iterE1++){
-            for(iterU1=iterE1->second.unitList.begin(); iterU1!=iterE1->second.unitList.end();iterU1++){
+            for(iterU1=iterE1->second->unitList.begin(); iterU1!=iterE1->second->unitList.end();iterU1++){
                 //double value=double(rand())/RAND_MAX;
                 double value=1;
                 int weight_rnd=(int)((value)*MEAN_WEIGHT);
@@ -541,7 +550,7 @@ void MachineBoltzmann::loadConfiguration(){
                 columnStr=dimension_str.substr(found,dimension_str.size()-found);
                 int column=atoi(columnStr.c_str());
                 Layer *layer=new Layer(layerName,row,column);
-                this->addLayer(*layer);
+                this->addLayer(layer);
                 str.clear();
                 parameterNumber=0;
             }
@@ -556,7 +565,7 @@ void MachineBoltzmann::loadConfiguration(){
     int elementCount=0,rowCount=0;
     //cout<<"the number of layers"<<elementList.size()<<endl;
     //getch();
-    map<std::string,Layer>::iterator iterK;
+    map<std::string,Layer*>::iterator iterK;
     iterK=elementList.begin();
     while (inUnits.good())     // loop while extraction from file is possible
     {
@@ -579,9 +588,9 @@ void MachineBoltzmann::loadConfiguration(){
             n=sprintf(number,"%d",elementCount);
             std::string elementCount_str(number,n);
             //_____
-            cout<<"Name of the unit:"<<iterK->second.getName()+"U"+rowCount_str+"-"+elementCount_str<<"---->";
+            cout<<"Name of the unit:"<<iterK->second->getName()+"U"+rowCount_str+"-"+elementCount_str<<"---->";
             cout <<(int)c<<endl;
-            Unit *unit=new Unit(iterK->second.getName()+"U"+rowCount_str+elementCount_str,(int)c);
+            Unit *unit=new Unit(iterK->second->getName()+"U"+rowCount_str+elementCount_str,(int)c);
             this->addUnit(*unit);
             elementCount++;
     }
@@ -866,7 +875,7 @@ void MachineBoltzmann::saveConfiguration(){
         cout<<"Error:not able to open the file"<<endl;
         return;
     }
-    map<std::string,Layer>::iterator iterE1,iterE2;
+    map<std::string,Layer*>::iterator iterE1,iterE2;
     map<std::string,Unit>::iterator iterU1,iterU2;
 
     //MATRIX representation of the CONNECTIONS
@@ -875,13 +884,13 @@ void MachineBoltzmann::saveConfiguration(){
         return;
     }
     for(iterE1=elementList.begin(); iterE1!=elementList.end();iterE1++){
-        for(iterU1=iterE1->second.unitList.begin(); iterU1!=iterE1->second.unitList.end();iterU1++){
+        for(iterU1=iterE1->second->unitList.begin(); iterU1!=iterE1->second->unitList.end();iterU1++){
             //Iteration over the rows of the matrix
             cout<<"."<<k;
             int j=0; //initialise the counter of elements
             for(iterE2=elementList.begin(); iterE2!=elementList.end();iterE2++){
-                for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){
-                    cout<<"Row of Maxtrix N:"<<k<<" Element N:"<<j<<"of "<<iterE2->second.unitList.size()*elementList.size()<<endl;
+                for(iterU2=iterE2->second->unitList.begin(); iterU2!=iterE2->second->unitList.end();iterU2++){
+                    cout<<"Row of Maxtrix N:"<<k<<" Element N:"<<j<<"of "<<iterE2->second->unitList.size()*elementList.size()<<endl;
                     //getch();
                     //iteration over the element of one row
                     outConnections.put((char) iterU2->second.getConnectionWeight(j-1));
@@ -945,7 +954,7 @@ void MachineBoltzmann::saveConfiguration(){
 }*/
 
 
-void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matrix* output){
+void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matrix* output, Matrix* output2){
     
     //initialisation
     double err=0,errsum=0;
@@ -964,7 +973,7 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
     //Matrix tmp=vishid+0.001;  //vishid= 0.001*randn(numdims, numhid);
     //vishid=tmp;
     vishid=*layer->vishid;
-    printf("[%s] \n",vishid.toString().c_str());
+    printf("[%d, %d] \n",vishid.rows(),vishid.cols());
 
     yarp::sig::Vector hidbiases(numhid); hidbiases.zero();
     yarp::sig::Vector visbiases(numdims); visbiases.zero();
@@ -998,7 +1007,7 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
             //%%%%%%%%% START POSITIVE PHASE %%%%%%%%%%%%%
             //data = batchdata(:,:,batch);
             //data=*batchdataSingle;
-            printf("[%s] \n",data.toString().c_str());
+            //printf("[%s] \n",data.toString().c_str());
             //data = data > rand(numcases,numdims);  
             //poshidprobs = 1./(1 + exp(-data*(2*vishid) - hidbias));    
             Matrix tmp2= exp(data*(-1)*(-2)*vishid-hidbias);
@@ -1011,7 +1020,7 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
             //Matrix ss=exp(data*(-1)*vishid - hidbias);
             //Matrix tt=tmp2+1.0;
             poshidprobs = 1.0/(tmp2+1.0); //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
-            printf("[%s] \n",poshidprobs.toString().c_str());
+            //printf("[%s] \n",poshidprobs.toString().c_str());
             //batchposhidprobs(:,:,batch)=poshidprobs;
             posprods    = data.transposed() * poshidprobs;
             double poshidact   = sum(poshidprobs);
@@ -1022,8 +1031,10 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
 
             //%%%%% START NEGATIVE PHASE  %%%%%%%%%%%%%%%%%
             Matrix ss=(Matrix)randomMatrix(numcases,numhid);
+            //printf("[%s] \n",ss.toString().c_str());
             poshidstates = poshidprobs > ss;
-            //negdata = 1./(1 + exp(-poshidstates*vishid.transposed - visbias));
+            //printf("[%s] \n",poshidstates.toString().c_str());
+            //negdata = 1./(1 + exp(-poshidstates*vishid.transposed - visbias)); //matlab
             Matrix tt=exp(poshidstates*(-1)*vishid.transposed() - visbias)+1;
             negdata = 1.0/tt;
             negdataprobs=negdata;
@@ -1032,9 +1043,9 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
             randomMatrix randMat(numcases,numdims);
             ss=(Matrix)randMat;
             negdata = negdata >ss;
-            printf("\n");
-            printf("[%s] \n",negdata.toString().c_str());
-            printf("\n");
+            //printf("\n");
+            //printf("[%s] \n",negdata.toString().c_str());
+            //printf("\n");
             //neghidprobs = 1./(1 + exp(-negdata*(2*vishid) - hidbias));
             ss=exp(negdata*(-2)*vishid - hidbias);
             tt=ss+1;
@@ -1046,38 +1057,46 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
 
             //%%%%%%%%% END OF NEGATIVE PHASE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             Matrix dif=data-negdata;
-            printf("\n");
+           /* printf("\n");
             printf("[%s] \n",dif.toString().c_str());
             printf("\n");
             printf("\n");
             printf("[%s] \n",(dif^2).toString().c_str());
-            printf("\n");
+            printf("\n");*/
             err= sum(dif^2);
             errsum = err + errsum;
 
-            double momentum;
-            double finalmomentum=0.9;
-            double initialmomentum=0.5;
-            if(epoch>5)
+            double momentum=0.5;
+            //double finalmomentum=0.9;
+            //double initialmomentum=0.5;
+            /*if(epoch>5)
                 momentum=finalmomentum;
             else
-                momentum=initialmomentum;
+                momentum=initialmomentum;*/
             
             //%%%%%%%% UPDATE WEIGHTS AND BIASES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
             //ss=posprods-negprods;
             Matrix s=((posprods-negprods)/(double)numcases)-weightcost*vishid;
+            //printf("\n");
+            //printf("[%s] \n",s.toString().c_str());
+            //printf("\n");
             //Matrix t=weightcost*vishid;
             //Matrix z=s-t;
             //Matrix v=epsilon*z;
-            vishidinc = momentum*vishidinc + epsilon*s;      
-            printf("\n");
-            printf("[%s] \n",vishidinc.toString().c_str());
-            printf("\n");
+            vishidinc = momentum*vishidinc + epsilonw*s;      
+            //printf("\n");
+            //printf("[%s] \n",vishidinc.toString().c_str());
+            //printf("\n");
             visbiasinc = momentum*visbiasinc + (epsilonvb/numcases)*(posvisact-negvisact);
             //double tmp3=(epsilonhb/numcases)*(poshidact-neghidact);
             hidbiasinc = momentum*hidbiasinc + (epsilonhb/numcases)*(poshidact-neghidact);
 
             vishid = vishid + vishidinc;
+            /*for(int r=0;r<layer->vishid->rows();r++){
+                for(int c=0;c<layer->vishid->cols();c++){
+                    layer->vishid->operator()(r,c)=vishid.operator()(r,c);
+                }
+            }*/
             visbiases = visbiases + visbiasinc;
             hidbiases = hidbiases + hidbiasinc;
 
@@ -1099,7 +1118,11 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
         }//for batch
     } //for epoch
     printf("epoch %d error %f  \n", epoch, errsum);  
-    *output=poshidstates;
+    *output=poshidprobs;
+    *output2=vishid;
+    printf("\n");
+    printf("[%s] \n",poshidprobs.toString().c_str());
+    printf("\n");
 }
 
 void MachineBoltzmann::reinitData(int size){
@@ -1190,6 +1213,7 @@ void MachineBoltzmann::training(){
     rbm_l33_nolab;*/
     
     Matrix* poshidstates=new Matrix();
+    Matrix* vishid=new Matrix();
     Matrix* batchdataSingle=new Matrix(*dataMat);
     //batchdataSingle=batchdataSingleVisible;
     printf("number of elements %d \n",this->getCountElements());
@@ -1197,11 +1221,24 @@ void MachineBoltzmann::training(){
         printf("-----Layer %d --------------------------------- dimension %d \n",i,getLayer(i)->getNumUnits());
         Layer* pvis=getLayer(i);
         Layer* phid=getLayer(i+1);
-        rbm(batchdataSingle,pvis,phid->getNumUnits(),poshidstates);
-        batchdataSingle=poshidstates;
+        rbm(batchdataSingle,pvis,phid->getNumUnits(),poshidstates,vishid);
+        printf("%d %d",poshidstates->cols(), poshidstates->rows());
+        
+        //p=phid->stateVector->data();
+        double* phid_data=phid->stateVector->data();
+        for(int j=0;j<phid->getCol()*phid->getRow();j++){
+            *phid_data=poshidstates->operator ()(9,j);
+            phid_data++;
+        }
+        double* pvishid_weights=pvis->vishid->data();
+        for(int c=0;c<pvis->vishid->cols();c++){
+            for(int r=0; r<pvis->vishid->rows();r++){
+                *pvishid_weights=vishid->operator ()(r,c);
+                pvishid_weights++;
+            }
+        }
+        batchdataSingle=poshidstates; 
     }
-
-    
 }
 
 void MachineBoltzmann::evolveFreely(int rule,int random){

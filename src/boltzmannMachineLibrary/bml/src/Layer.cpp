@@ -15,10 +15,17 @@ Layer::~Layer(){}
 */
 Layer::Layer(std::string name,int nRows,int nUnits){
 	stateVector=new Vector(nRows*nUnits);
+    //(*stateVector)=yarp::math::Rand::vector(nRows*nUnits);
+    double* p=stateVector->data();
+    for(int j=0;j<nRows*nUnits;j++){
+        *p=0;
+        p++;
+    }
+
 	this->name=name;
 	this->row=nRows;
 	this->col=nUnits;
-	for(int i=0;i<nRows;i++){
+	/*for(int i=0;i<nRows;i++){
 		//_____
 		char number[3];
 		int n=sprintf(number,"%d",i);
@@ -28,9 +35,10 @@ Layer::Layer(std::string name,int nRows,int nUnits){
 		//create a new Row composed of nUnits
 		Row *row=new Row(this->name+"R"+i_str,nUnits); //L1R1U1 means Layer1-Row1-Unit1		
 		this->addRow(*row);
-	}
+	}*/
 	//this->interConnectUnits();
-	iterEvolve=unitList.begin();
+	//iterEvolve=unitList.begin();
+    vishid=0;
 }
 
 /**
