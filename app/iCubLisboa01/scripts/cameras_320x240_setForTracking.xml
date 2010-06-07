@@ -1,8 +1,10 @@
 <application>
 <name>Cameras (with settings for ball tracking)</name>
+
 <dependencies>
       <port>/icub</port>
 </dependencies>
+
 <module>
       <name>icubmoddev</name>
       <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.474 0.648 --gain 0.312 --shutter 0.592 --name /icub/cam/left  --brightness 0 --DR2 --stamp --d 0 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.826 --framerate 30 </parameters>
@@ -15,20 +17,22 @@
       <node>pc104</node>
       <tag>camera_right</tag>
 </module>
+
 <module>
       <name>camCalib</name>
-      <parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
+      <parameters>--fps 30 --context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left </parameters>
       <node>icubbrain1</node>
       <stdio>chico3</stdio>
       <tag>camCalibLeft</tag>
 </module>
 <module>
       <name>camCalib</name>
-      <parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
+      <parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right --fps 30</parameters>
       <node>icubbrain1</node>
       <stdio>chico3</stdio>
       <tag>camCalibRight</tag>
 </module>
+
 <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
@@ -41,6 +45,7 @@
       <node>chico3</node>
       <tag>viewright</tag>
 </module>
+
 <module>
       <name>frameGrabberGui2</name>
       <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
@@ -53,6 +58,7 @@
       <tag>fggui_right</tag>
       <node>chico3</node>
 </module>
+
 <connection>
       <from>/icub/cam/left</from>
       <to>/icub/camcalib/left/in</to>
