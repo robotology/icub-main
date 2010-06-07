@@ -33,7 +33,7 @@ END_PLUGIN_LIBRARY(icubmod)
 if (NOT ICUB_EXPERIMENTAL)
     icub_export_library(icubmod "" include/iCub "")
 else()
-    icub_export_library2(icubmod)
+    icub_export_library2(icubmod VERBOSE)
 endif()
 
 ADD_PLUGIN_LIBRARY_EXECUTABLE(icubmoddev icubmod)

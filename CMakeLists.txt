@@ -40,7 +40,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 endif(MSVC)
 
 #### set EXPERIMENTAL  VARIABLE
-set(ICUB_EXPERIMANTAL FALSE CACHE BOOL "experimental")
+set(ICUB_EXPERIMENTAL FALSE CACHE BOOL "experimental")
 
 #### Find YARP
 find_package(YARP)

@@ -54,6 +54,7 @@ MACRO(icub_export_library2 target)
     MESSAGE("Dependencies: ${${target}_DEPENDS}")
     MESSAGE("Destination: ${${target}_DESTINATION}")
     MESSAGE("Header files: ${${target}_FILES}")
+    MESSAGE("Option verbosity: ${${target}_VERBOSE}")
   endif()
   
   set(internal_includes ${${target}_INTERNAL_INCLUDE_DIRS})
@@ -89,6 +90,8 @@ MACRO(icub_export_library2 target)
     endforeach(d)
     
     endif()
+  
+  set(include_dirs "")
   
   if (internal_includes)
     set(include_dirs ${include_dirs} ${internal_includes})
