@@ -521,6 +521,13 @@ protected:
 	*/
 	iDynLink * refLink(const unsigned int i);
 
+	/**
+	* Calls the proper method to compute kinematics variables: either
+	* ForwardKinematicFromBase() or BackwardKinematicFromEnd(). This method 
+	* is protected and it is used by iDynSensor for the Kinematics computations.
+	*/
+	void computeKinematicNewtonEuler();
+
 public:
 
 	/**

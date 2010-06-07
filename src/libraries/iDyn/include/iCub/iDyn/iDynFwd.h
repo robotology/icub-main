@@ -108,12 +108,6 @@ namespace iDyn{
 */
 class iDynSensor: public iDynInvSensor
 {
-protected:
-
-	/**
-     * Base function for forward of Newton-Euler, attaching the sensor in the forward process.
-     */
-	void ForwardKinematicFromBase();
 
 public:
 

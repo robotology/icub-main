@@ -72,20 +72,6 @@ bool iDynSensor::setSensorMeasures(const Vector &FM)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynSensor::ForwardKinematicFromBase()
-{
-	if(chain->NE == NULL)		
-	{
-		chain->prepareNewtonEuler(mode);
-		chain->initNewtonEuler();
-	}
-	//the iDynChain independently solve the forward phase of the limb
-	//setting w,dw,ddp,ddpC
-	chain->NE->ForwardKinematicFromBase();
-	sens->ForwardAttachToLink(chain->refLink(lSens));
-	//the sensor does not need to retrieve w,dw,ddp,ddpC in this case 	
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//   main computation methods
@@ -95,7 +81,17 @@ void iDynSensor::ForwardKinematicFromBase()
 void iDynSensor::computeFromSensorNewtonEuler()
 {
 	//first forward all the quantities w,dw,.. in the chain
-	ForwardKinematicFromBase();
+	//just in case it was not initialized before
+	if(chain->NE == NULL)		
+	{
+		chain->prepareNewtonEuler(mode);
+		chain->initNewtonEuler();
+	}
+	//the iDynChain independently solve the forward phase of the limb
+	//setting w,dw,ddp,ddpC
+	chain->computeKinematicNewtonEuler();
+	sens->ForwardAttachToLink(chain->refLink(lSens));
+	//the sensor does not need to retrieve w,dw,ddp,ddpC in this case 
 	//then propagate forces and moments
 	//from sensor to lSens
 	sens->ForwardForcesMomentsToLink(chain->refLink(lSens));

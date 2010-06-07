@@ -890,22 +890,52 @@ public:
  	void setInfo(const std::string _info);
 	
 	/**
-	* Initialize the base with measured or known kinematics variables
+	* [classic] Initialize the base with measured or known kinematics variables
 	* @param w0 angular velocity
 	* @param dw0 angular acceleration
 	* @param ddp0 linear acceleration
+	* @return true if succeeds, false otherwise
 	*/
 	bool initKinematicBase(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
+	
+	/**
+	* [inverse] Initialize the end-effector finalLink with measured or known kinematics variables
+	* @param w0 angular velocity
+	* @param dw0 angular acceleration
+	* @param ddp0 linear acceleration
+	* @return true if succeeds, false otherwise
+	*/
 	bool initKinematicEnd(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
-	bool initWrenchEnd(const yarp::sig::Vector &Fend,const yarp::sig::Vector &Muend);
-	bool initWrenchBase(const yarp::sig::Vector &Fend,const yarp::sig::Vector &Muend);
+	
+	/**
+	* [classic] Initialize the end-effector finalLink with measured or known wrench
+	* @param F0 force
+	* @param Mu0 moment
+	* @return true if succeeds, false otherwise
+	*/
+	bool initWrenchEnd(const yarp::sig::Vector &F0,const yarp::sig::Vector &Mu0);
+
+	/**
+	* [inverse] Initialize the base with measured or known wrench
+	* @param F0 force
+	* @param Mu0 moment
+	* @return true if succeeds, false otherwise
+	*/
+	bool initWrenchBase(const yarp::sig::Vector &F0,const yarp::sig::Vector &Mu0);
 
 
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   get methods
 	//~~~~~~~~~~~~~~~~~~~~~~
 
+	/**
+	* @return information about the chain
+	*/
 	std::string			getInfo()		const;
+
+	/**
+	* @return the computational mode: static/dynamic/etc
+	*/
 	NewEulMode			getMode()		const;
 
 
@@ -924,12 +954,12 @@ public:
 	void ForwardKinematicFromBase(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
 
 	/**
-     * [classic/inverse] Base function for forward of classical Newton-Euler.
+     * [inverse] Base function for forward of classical Newton-Euler.
      */
 	void BackwardKinematicFromEnd();
 	
 	/**
-     * [classic/inverse] Forward of classical Newton-Euler, after initializing the base link
+     * [inverse] Forward of classical Newton-Euler, after initializing the base link
      */
 	void BackwardKinematicFromEnd(const yarp::sig::Vector &we, const yarp::sig::Vector &dwe, const yarp::sig::Vector &ddpe);
 
@@ -946,8 +976,6 @@ public:
 	/**
      * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
 	 * forward of forces and moments using the inverse formula
-	 * @param lSens the i-th link, where the sensor is attached to
-	 * @return true if the operation is successful, false otherwise (eg out of range index)
      */
 	void ForwardWrenchFromBase();
 
@@ -968,7 +996,7 @@ public:
 	bool ForwardWrenchToEnd(unsigned int lSens);
 
 	/**
-     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
+     * [classic/inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
 	 * backward of forces and moments using the classical formula
 	 * @param lSens the i-th link, where the sensor is attached to
 	 * @return true if the operation is successful, false otherwise (eg out of range index)
@@ -1013,10 +1041,20 @@ public:
  *
  * Note that by setting the arm as "left", the sensor is automatically set
  * as the left sensor of the arm.
- * Then retrieve the sensor force/moment: the chain must be updated with 
- * the current angle configuration before the compute method can be called.
+ * Then start retrieving the sensor force/moment. First the chain must be updated with 
+ * the current angle configuration:
  *
  * <tt> arm->setAng(q); </tt> \n
+ * <tt> arm->setDAng(dq); </tt> \n
+ * <tt> arm->setD2Ang(ddq); </tt> \n
+ *
+ * Then the arm dynamics must be solved, in order to find each links' force/moment, etc:
+ *
+ * <tt> arm->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend); </tt> \n
+ *
+ * Finally we can compute the sensor force and moment, attaching the sensor to its link
+ * (whose force/moment have been previously computed):
+ *
  * <tt> armWSensorSolver->computeSensorForceMoment(); </tt> \n
  *
  * The sensor force/moment can be retrieved separately (3x1 vectors) or 

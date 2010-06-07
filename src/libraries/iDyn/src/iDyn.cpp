@@ -804,6 +804,14 @@ void iDynChain::computeNewtonEuler()
 		NE->ForwardWrenchFromBase();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::computeKinematicNewtonEuler()
+{
+	if(iterateMode_kinematics == NE_FORWARD)	
+		NE->ForwardKinematicFromBase();
+	else 
+		NE->BackwardKinematicFromEnd();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler()
 {
 	Vector w0(3); w0.zero();
