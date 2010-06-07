@@ -20,7 +20,7 @@
 #include <iCub/localizer.hpp>
 #include <iCub/controller.hpp>
 
-#define EYEPINVREFGEN_GAIN              10.0
+#define EYEPINVREFGEN_GAIN              12.5
 #define NECKSOLVER_ACTIVATIONANGLE_TRA  15.0
 #define NECKSOLVER_ACTIVATIONANGLE_SAG  5.0
 #define NECKSOLVER_MOVEDTORSOQUEUSIZE   5
