@@ -15,8 +15,11 @@
 # Files: 
 # EXPORT_INCLUDE_FILE: this file contains a list of all the targets in the 
 # build, and a corresponding include directories. This is generated from 
-# information in property (mainly ICUB_TARGETS); this is populated
-# by each target by calling for example icub_export_library, see iCubHelpers.cmake).
+# information in each target that is listed in the property ICUB_TARGETS. For each 
+# target get property INCLUDE_DIRS. The list ICUB_TARGETS is populated
+# by each target by calling icub_export_library in iCubHelpers.cmake. The same 
+# function created a given target the property INCLUDE_DIRS that contains the list 
+# of include directories required by the target.
 # 
 # EXPORT_CONFIG_FILE: in build directory, store libraries and dependenecies
 # automatically generated with CMake export command.
@@ -28,19 +31,21 @@
 ###################################
 get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
 
-message(STATUS "Now exporting targets: ${ICUB_TARGETS}")
+message(STATUS "Now exporting targets for in-tree builds: ${ICUB_TARGETS}")
 set(EXPORT_INCLUDE_FILE icub-export-build-includes.cmake)
 set(EXPORT_CONFIG_FILE icub-export-build.cmake)
 set(BUILD_CONFIG_TEMPLATE "conf/template/icub-config-build-tree.cmake.in")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "###################\n")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "# List of include directories for exported targets\n\n")
 set(include_dirs "")
-foreach (t ${ICUB_TARGETS})
+foreach (t ${ICUB_TARGETS})  
   get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
-  file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS ${target_INCLUDE_DIRS} CACHE STRING \"include dir for target ${t}\")\n")
-
-  set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
-  
+  #some targets do not export include directory
+  if (target_INCLUDE_DIRS)
+    file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS ${target_INCLUDE_DIRS} CACHE STRING \"include dir for target ${t}\")\n")
+    set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
+  endif()    
+ 
 endforeach(t)
 
 message(STATUS "Header files global directory: ${include_dirs}")

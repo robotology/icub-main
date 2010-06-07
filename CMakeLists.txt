@@ -38,7 +38,10 @@ endif(NOT CMAKE_BUILD_TYPE)
  if (MSVC)
         mark_as_advanced(CMAKE_BUILD_TYPE)
 endif(MSVC)
-    
+
+#### set EXPERIMENTAL  VARIABLE
+set(ICUB_EXPERIMANTAL FALSE CACHE BOOL "experimental")
+
 #### Find YARP
 find_package(YARP)
 if (YARP_FOUND)

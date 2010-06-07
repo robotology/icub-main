@@ -30,7 +30,11 @@ BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(skinprototype)
 END_PLUGIN_LIBRARY(icubmod)
 
-icub_export_library(icubmod "" include/iCub "")
+if (NOT ICUB_EXPERIMENTAL)
+    icub_export_library(icubmod "" include/iCub "")
+else()
+    icub_export_library2(icubmod)
+endif()
 
 ADD_PLUGIN_LIBRARY_EXECUTABLE(icubmoddev icubmod)
 

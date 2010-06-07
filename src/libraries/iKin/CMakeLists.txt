@@ -42,13 +42,30 @@ IF(ICUB_USE_IPOPT)
 ENDIF(ICUB_USE_IPOPT)
 
 IF(ICUB_USE_IPOPT)
+if (NOT ICUB_EXPERIMENTAL)
    ICUB_EXPORT_LIBRARY(${PROJECTNAME}
                       "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS};${IPOPT_INCLUDE_DIRS}"
                       include/iCub/iKin ${folder_header})
+else()
+    icub_export_library2(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                    EXTERNAL_INCLUDE_DIRS ${IPOPT_INCLUDE_DIRS}
+                                    DESTINATION include/iCub/iKin
+                                    DEPENDS ctrlLib
+                                    FILES ${folder_header})
+endif()
+                                    
 ELSE(ICUB_USE_IPOPT)
-   ICUB_EXPORT_LIBRARY(${PROJECTNAME}
-                      "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS}"
+if (NOT ICUB_EXPERIMENTAL)
+    ICUB_EXPORT_LIBRARY(${PROJECTNAME}
+                   "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS}"
                       include/iCub/iKin ${folder_header})
+else()
+    icub_export_library2(${PROJECTNAME} INTERNAL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include"
+                                    DEPENDS ctrlLib
+                                    DESTINATION include/iCub/iKin
+                                    FILES ${folder_header})
+endif()
+                                    
 ENDIF(ICUB_USE_IPOPT)
 
 
