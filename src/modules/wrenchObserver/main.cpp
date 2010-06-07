@@ -418,18 +418,18 @@ class wrenchObserver: public RFModule
 private:
     Property OptionsLimb;
     Property OptionsTorso;
+
     inverseDynamics *inv_dyn;
-    string handlerPortName;
-    Port handlerPort;      //a port to handle messages 
 
     PolyDriver *dd;
     PolyDriver *tt;
-    BufferedPort<Vector>* port_FT;
+
+    BufferedPort<Vector> *port_FT;
 
 public:
     wrenchObserver()
     {
-        inv_dyn = 0;
+        inv_dyn=0;
         dd=0;
         tt=0;
     }
