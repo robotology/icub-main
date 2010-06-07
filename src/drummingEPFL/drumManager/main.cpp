@@ -110,14 +110,7 @@
 #include "drum.h"
 
 #include <stdlib.h>
-
-//which dof oscillate.. 
-double  mu_on[5][4] ={{1.0,-5.0,-5.0,1.0}, //left arm 
-		      {1.0, -5.0, -5.0, 1.0}, //right arm
-		      {1.0, -5.0, -5.0, 1.0}, //left leg
-		      {1.0, -5.0, -5.0, 1.0}, //right leg
-		      {1.0, -5.0, -5.0, -5.0}}; //head
-   
+ 
 drum *MyGMP;
 
 
@@ -126,87 +119,27 @@ drum *MyGMP;
 void getConfig(drum *MyGMP){
 
     for(int i=0; i<MyGMP->nbparts; i++)
-        { 
-            if(MyGMP->ok[i])
-                {
-                    bool confFile;
-                    char partName[255];
-                    sprintf(partName, "%s/%sConfig.ini", MyGMP->pathToConfig, MyGMP->parts[i].c_str());
-                    Property partConf;
-                    confFile=partConf.fromConfigFile(partName);
-                    if(!confFile)
-                        {
-                            printf("Config file \"%s\" not found for part %s\n", partName, MyGMP->parts[i].c_str());
-                            Network::fini();
-                            exit(-1);
-                        }
-                    MyGMP->controlled_dofs[i] = partConf.find("nbDOFs").asInt();
-                    printf("Controlling %d dofs for part %s\n", MyGMP->controlled_dofs[i], MyGMP->parts[i].c_str());
-                }
-        }
-}
-
-//********GETTING DRUM POSITION INFORMATION FOR EACH ACTIVE PART **************************
-
-void getDrumInfo(drum *MyGMP){
-
-    for(int i=0; i<MyGMP->nbparts; i++)
-        { 
-            if(MyGMP->ok[i])
-                {
-                    bool file;
-                    char drumName[255], temp[255];
-                    sprintf(temp, "%s/%sTargets.ini", MyGMP->pathToConfig, MyGMP->parts[i].c_str());
-                    Property drum;
-                    file=drum.fromConfigFile(temp);
-                    if(!file)
-                        {
-                            printf("Target positions file \"%s\" not found for part %s\n", temp, MyGMP->parts[i].c_str());
-                            Network::fini();
-                            exit(-1);
-                        }
-                    MyGMP->nbDrums[i] = drum.find("NbDrums").asInt();
-                    printf("nb drums %d\n",MyGMP->nbDrums[i]);
-                    for(int j=1; j<(MyGMP->nbDrums[i]+1); j++)
-                        {
-			  sprintf(drumName, "Drum_%d", j);			  
-			  Bottle& Target= drum.findGroup(drumName);
-                            
-			  for (int k=1; k<Target.size(); k++) 
-			    {
-			      MyGMP->G[i][j][k-1]=3.14/180.0*Target.get(k).asDouble();
-			      printf("%f ", MyGMP->G[i][j][k-1]);
-			    }
-			  printf("\n");
-			  Target.clear();
-                        }
-                    Bottle& Target2 = drum.findGroup("Idle");
-                    for (int k=1; k<Target2.size(); k++) {
-		      MyGMP->G[i][0][k-1]=3.14/180.0*Target2.get(k).asDouble();
-		      printf("%f ", MyGMP->G[i][0][k-1]);
-                    }
-                    printf("\n");
-                    Target2.clear();
-                    
-		    printf("Notes: ");
-                    Bottle& Target3 = drum.findGroup("Notes");
-                    for (int k=1; k<Target3.size(); k++) {
-                        printf("%f ", Target3.get(k).asDouble());
-                        MyGMP->notes[i][k-1]=Target3.get(k).asInt();
-                    }
-                    printf("\n");
-                    Target3.clear();
-                    
-                    //printf("\n");
-                    printf("Target angles G for part %s:\n",MyGMP->parts[i].c_str());
-                    for(int j=0; j<MyGMP->max_drums; j++){
-                        for(int k=0; k<MyGMP->max_dofs; k++){
-                            printf("%f ",MyGMP->G[i][j][k]);
-                        }
-                        printf("\n");
-                    }
-                }
-        }
+	{ 
+		if(MyGMP->ok[i])
+		{
+			bool confFile;
+			char partName[255];
+			sprintf(partName, "%s/%sConfig.ini", MyGMP->pathToConfig, MyGMP->parts[i].c_str());
+			Property partConf;
+			confFile=partConf.fromConfigFile(partName);
+			if(!confFile)
+			{
+				printf("Config file \"%s\" not found for part %s\n", partName, MyGMP->parts[i].c_str());
+				Network::fini();
+				exit(-1);
+			}
+			MyGMP->controlled_dofs[i] = partConf.find("nbDOFs").asInt();
+			
+			printf("Part %s: %d dofs \n",
+				MyGMP->parts[i].c_str(),
+				MyGMP->controlled_dofs[i]);
+		}
+	}
 }
 
 //***********OPENING PORTS AND CONNECTING********************
@@ -223,7 +156,6 @@ void doConnect(drum *MyGMP){
 	  
                     //opening ports and connecting with the DrumGenerator modules
                     MyGMP->openPort(i,MyGMP->check_port, "check_motion",0,1);  // IN receives beat 
-                    MyGMP->openPort(i,MyGMP->sound_port, "sound", 1,1); // OUT sends soundfeedback info to the generator 
 
                     //opening ports for the connection with the guiDemo
                     MyGMP->openPort(i,MyGMP->score_port, "score", 0,0); //IN receives score
@@ -247,18 +179,10 @@ void doConnect(drum *MyGMP){
 
     //opening port to get frequency and couplings from the DrumManager
     MyGMP->interactive_port.open("/interactive/in");
-  
-    //opening and connecting ports for the SOUND FEEDBACK
-    //MyGMP->midi_port.open("/midiDrum/in");
-    //MyGMP->midi_port.setStrict(true);
-    //MyGMP->soundFeedback=Network::connect("/midiDrum/server/out","/midiDrum/in", "tcp");
-    //if(!MyGMP->soundFeedback){ACE_OS::printf("No sound feedback\n");}
-    //else{ACE_OS::printf("Sound feedback enabled\n");}
  
 }
 
   
-
 //********* DRUMMING TASK *****************************************************************
  
 
@@ -268,22 +192,23 @@ void Drumming(drum *MyGMP){
   
     int Score[MyGMP->nbparts][MyGMP->sizeScore];
     for(int i=0;i<MyGMP->nbparts;i++)
-        {
-            for(int j=0;j<MyGMP->sizeScore;j++)
-                {
-                    Score[i][j]=0;
-                }
-        }
+	{
+		for(int j=0;j<MyGMP->sizeScore;j++)
+		{
+			Score[i][j]=0;
+		}
+	}
+	
     int init[MyGMP->nbparts];
     for(int i=0; i<MyGMP->nbparts;i++)
-        {
-            init[i]=0;
-        }
+	{
+		init[i]=0;
+	}
 
     for(int i=0;i<MyGMP->sizeScore; i++)
-        {
-            MyGMP->rhythmParam[i]=0.0;
-        }
+	{
+		MyGMP->rhythmParam[i]=0.0;
+	}
 
     for(int i=0; i<MyGMP->sizeScore; i++)
         {for(int k=0; k<MyGMP->nbparts; k++)
@@ -293,136 +218,114 @@ void Drumming(drum *MyGMP){
     int drum_beat_clock;
 
     while(true)
-        {
-            //******Getting rhythm*********
-            Bottle *Rhythm = MyGMP->interactive_port.read(false);
-            if(Rhythm!=NULL) 
-                {
-                    if(beat_clock==-1)
-                        {
-                            Bottle *time_init=MyGMP->beat_clock_port.read();
-                            beat_clock=0;
-                            if(time_init!=NULL) drum_beat_clock = time_init->get(0).asInt();
-                        }
-                    else
-                        {
-                            Bottle *beat_c= MyGMP->beat_clock_port.read(false);
-                            if(beat_c!=NULL) beat_clock = beat_c->get(0).asInt()-drum_beat_clock;	  
-                        }
-	    
-                    escape=MyGMP->getRhythm(Rhythm, beat_clock);
+	{
+		//******Getting rhythm*********
+		Bottle *Rhythm = MyGMP->interactive_port.read(false);
+		if(Rhythm!=NULL) 
+		{
+			if(beat_clock==-1)
+			{
+				Bottle *time_init=MyGMP->beat_clock_port.read();
+				beat_clock=0;
+				if(time_init!=NULL) drum_beat_clock = time_init->get(0).asInt();
+			}
+			else
+			{
+				Bottle *beat_c= MyGMP->beat_clock_port.read(false);
+				if(beat_c!=NULL) beat_clock = beat_c->get(0).asInt()-drum_beat_clock;	  
+			}
 
-                    if(escape==0)
-                        {
-                            printf("Closing command received from the gui...\n");
-                            break; //GETTING OUT OF THE WHILE LOOP: if negative frequency is sent by the gui, the manager closes.
-                        }
-                }
+			escape=MyGMP->getRhythm(Rhythm, beat_clock);
+			if(escape==0)
+			{
+				printf("Closing command received from the gui...\n");
+				break; //if negative frequency is sent by the gui, the manager closes.
+			}
+		}
       
 
-            //********Getting and sending sound feedback information (if enabled)***********
-            if(MyGMP->soundFeedback)
-                {
-                    Bottle *Hit= MyGMP->midi_port.read(false);
-                    if(Hit!=NULL) MyGMP->sendSoundFeedback(Hit,MyGMP->sound_port);
-              
-                    else
-		      {
-                        for(int i=0; i<MyGMP->nbparts; i++)
-                            {
-                                Bottle& soundfeed2= MyGMP->sound_port[i].prepare();
-                                soundfeed2.clear();  
-                                soundfeed2.addInt(-1);  
-                                MyGMP->sound_port[i].write();
-                            }
-                    }
-                }
-
-
-            //******Getting scores*****************
-            for(int i=0; i<MyGMP->nbparts; i++)
-                {
-                    if(MyGMP->ok[i])
-                        {
-                            Bottle *newScore = MyGMP->score_port[i].read(false); 
-                            if(newScore!=NULL) 
-			      {				
-				if(MyGMP->beat[i]==-1)//getting beat of the generator
-				  {
-				    Bottle *time_init=MyGMP->check_port[i].read();
-				    MyGMP->beat[i]=0;
-				    if(time_init!=NULL) MyGMP->drum_beat[i] = time_init->get(0).asInt();
-				  }
-				printf("Score for part %s: ",MyGMP->parts[i].c_str());
-				for (int j=0; j<MyGMP->sizeScore; j++) 
-				  {
-				    int indiceScore = (j+MyGMP->beat[i])%MyGMP->sizeScore;
-				    Score[i][indiceScore]= newScore->get(j).asInt();
-				    printf("%d ",Score[i][indiceScore], newScore->get(j).asInt());
-				  }
+        //******Getting scores*****************
+        for(int i=0; i<MyGMP->nbparts; i++)
+        {
+        	if(MyGMP->ok[i]) //if part is active
+           	{
+            	Bottle *newScore = MyGMP->score_port[i].read(false);                             
+                if(newScore!=NULL) 
+			    {				
+					if(MyGMP->beat[i]==-1) //first time: get beat from the generator
+				  	{
+				    	Bottle *time_init=MyGMP->check_port[i].read();
+				    	MyGMP->beat[i]=0;
+				    	if(time_init!=NULL) MyGMP->drum_beat[i] = time_init->get(0).asInt();
+				  	}
+					printf("Score for part %s: ",MyGMP->parts[i].c_str());
+					
+					for (int j=0; j<MyGMP->sizeScore; j++) //get score
+				  	{
+				    	int indiceScore = (j+MyGMP->beat[i])%MyGMP->sizeScore;
+				    	Score[i][indiceScore]= newScore->get(j).asInt();
+				    	printf("%d ",Score[i][indiceScore], newScore->get(j).asInt());
+				  	}
 			      	printf("\n");
-			      }
+			  	}
 	     
 
-			    if(MyGMP->beat[i]!=-1)
-			      {
-				Bottle *newPhase = MyGMP->phase_port[i].read(false); 
-				if(newPhase!=NULL) 
-				  {
-				    for(int j=0; j<MyGMP->sizeScore; j++) 
-				      {
-					int indiceScore = (j+MyGMP->beat[i])%MyGMP->sizeScore;
-					MyGMP->phase_shift[i][indiceScore]= newPhase->get(j).asDouble();
-				      }
+			    if(MyGMP->beat[i]!=-1) //only if we have already received a score
+			    {
+					Bottle *newPhase = MyGMP->phase_port[i].read(false); 
+					if(newPhase!=NULL) 
+				  	{
+				    	for(int j=0; j<MyGMP->sizeScore; j++) //get phase shifts
+				      	{
+							int indiceScore = (j+MyGMP->beat[i])%MyGMP->sizeScore;
+							MyGMP->phase_shift[i][indiceScore]= newPhase->get(j).asDouble();
+				      	}
 				    
-				    printf("Phase shifts for part %s: ",MyGMP->parts[i].c_str());
-				    for (int j=0; j<MyGMP->sizeScore; j++) 
-				      {
-					printf("%f ", MyGMP->phase_shift[i][j]);
-				      }					
-				    printf("\n");
-				  }
+				    	printf("Phase shifts for part %s: ",MyGMP->parts[i].c_str());
+				    	for (int j=0; j<MyGMP->sizeScore; j++) 
+				     	{
+							printf("%f ", MyGMP->phase_shift[i][j]);
+				    	}					
+				    	printf("\n");
+				  	}
 			      }
 			}}                  
    
-	    //SENDING SCORES
+	  
+	  //SENDING SCORES
    
-            for(int i=0; i<MyGMP->nbparts; i++)
-                {	   
-                    if(MyGMP->ok[i] && MyGMP->beat[i]!=-1)
-                        {
-                            Bottle *answer = MyGMP->check_port[i].read(false);
-                            if(answer!=NULL)
-                                {
-                                    MyGMP->current_beat[i] = answer->get(0).asInt();
-                                    MyGMP->beat[i]=(MyGMP->current_beat[i]-MyGMP->drum_beat[i])%MyGMP->sizeScore;
-		      
-                                    printf("beat %d for part %s\n",MyGMP->beat[i], MyGMP->parts[i].c_str());	                                       printf("Parameters sent to %s: ", MyGMP->parts[i].c_str());
-                                    for(int k=0; k<MyGMP->controlled_dofs[i]; k++)
-                                        {
-                                            MyGMP->g[i][k]= MyGMP->G[i][Score[i][MyGMP->beat[i]]][k];
-                                            printf("%f ", MyGMP->g[i][k]); 
-                                            if(Score[i][MyGMP->beat[i]]>0) //BEATING
-                                                {
-                                                    MyGMP->mu[i][k] = mu_on[i][k];
-                                                    init[i] = 1;
-                                                }
-                                            else //HOLD ON; PART NOT ACTIVE
-                                                {
-                                                    MyGMP->mu[i][k] = MyGMP->m_off;
-                                                    init[i]=0;
-                                                }
-                                        }
-                                    printf("\n");
-                                    MyGMP->sendNewParameterSet(MyGMP->mu[i],MyGMP->g[i],MyGMP->phase_shift[i][MyGMP->beat[i]],MyGMP->rhythmParam[MyGMP->beat[i]], i,MyGMP->param_port);}
-		  	  
-                            //sending frequency to the clock	      		  
-                            Bottle& HeadBot = MyGMP->clock_port.prepare();
-                            HeadBot.clear();  
-                            HeadBot.addDouble(MyGMP->rhythmParam[MyGMP->beat[i]]); //freq
-                            MyGMP->clock_port.write();	       
-                        }
-                }
+        
+        	for(int i=0; i<MyGMP->nbparts; i++)
+            {	   
+                if(MyGMP->ok[i] && MyGMP->beat[i]!=-1) //if part is active and at least one score received
+                {
+					Bottle *answer = MyGMP->check_port[i].read(false); 
+					if(answer!=NULL)//we wait for new beat to send a command
+					{
+							MyGMP->current_beat[i] = answer->get(0).asInt(); //beat of the generator
+							//beat of the generator in the manager time reference (modulo the Size Score):
+							MyGMP->beat[i]=(MyGMP->current_beat[i]-MyGMP->drum_beat[i])%MyGMP->sizeScore;								  
+							printf("beat %d for part %s\n",MyGMP->beat[i], MyGMP->parts[i].c_str());
+							
+							//we send the parameters
+							MyGMP->sendNewParameterSet(
+											Score[i][MyGMP->beat[i]],
+											MyGMP->phase_shift[i][MyGMP->beat[i]],
+											MyGMP->rhythmParam[MyGMP->beat[i]], i);
+											
+							printf("Parameters sent %d, %4.2f, %4.2f\n",
+											Score[i][MyGMP->beat[i]],
+											MyGMP->phase_shift[i][MyGMP->beat[i]],
+											MyGMP->rhythmParam[MyGMP->beat[i]]);							
+					}
+	  
+					//sending frequency to the clock	      		  
+					Bottle& HeadBot = MyGMP->clock_port.prepare();
+					HeadBot.clear();  
+					HeadBot.addDouble(MyGMP->rhythmParam[MyGMP->beat[i]]); //freq
+					MyGMP->clock_port.write();	       
+				}
+            }
 
             if(beat_clock!=-1)
                 {
@@ -450,27 +353,36 @@ int main(int argc,char **argv)
     Property prop;
     prop.fromCommand(argc, argv);
 
-    if (!prop.check("config-path"))
-        {
-            fprintf(stderr, "Please specify --config-path path to config files\n");
-            return -1;
-        }
+    if(prop.check("file"))
+	{
+		sprintf(MyGMP->pathToConfig, "%s", prop.find("config-path").asString().c_str());
+	}
+    else
+    {
+    	const char *cubPath;
+    	cubPath = getenv("ICUB_DIR");
+    	if(cubPath == NULL) {
+    		printf("generatorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
+    		return false;
+    	}
+    	string cubPathStr(cubPath);
+    	sprintf(MyGMP->pathToConfig, "%s/app/drummingEpfl/conf", cubPathStr.c_str());
+	}
     
-    sprintf(MyGMP->pathToConfig, "%s", prop.find("config-path").asString().c_str());
     fprintf(stderr, "Using config files from %s\n",MyGMP->pathToConfig);
-   
-    MyGMP->feedback_file=fopen("feedback_time.dat","w");
- 	
+
     //setting ports
+    cout << "\n starting configuration... \n";
     doConnect(MyGMP);
+    cout << "\n connected...\n";
     
     //get information from files
     getConfig(MyGMP);
-    getDrumInfo(MyGMP);
+    cout << "configured...\n";
 
     //run
     Drumming(MyGMP);
-
+	
     //close     
     printf("Closing...\n");
     delete MyGMP;
