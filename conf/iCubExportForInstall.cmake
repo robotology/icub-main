@@ -34,6 +34,7 @@ foreach (t ${ICUB_TARGETS})
   set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS}) 
 endforeach(t)
 
+LIST(REMOVE_DUPLICATES include_dirs)
 set(ICUB_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include ${include_dirs})
 message(STATUS "Header files global directory: ${ICUB_INCLUDE_DIRS}")
 
