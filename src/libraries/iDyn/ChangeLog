@@ -12,4 +12,8 @@
 	* added getForceMomentEndEffector to iDynChain and iDynSensor
 	* this version works perfectly with TorqueObserver and WrenchObserver
 
+2010-06-04 Serena Ivaldi <serena.ivaldi@iit.it>
+	* added kinematic/wrench mode to iDynChain. changes made in all derived iDynLimbs and OneChain to comply
+	* with the new computational modalities
+
 

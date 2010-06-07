@@ -489,6 +489,11 @@ class iDynChain : public iKin::iKinChain
 	friend class iDynSensor;
 
 protected:
+	
+	/// specifies the 'direction' of recursive computation of kinematics variables (w,dw,d2p): NE_FORWARD, NE_BACKWARD
+	ChainIterationMode iterateMode_kinematics;	
+	/// specifies the 'direction' of recursive computation of wrenches (F,Mu): NE_FORWARD, NE_BACKWARD
+	ChainIterationMode iterateMode_wrench;
 
 	//curr_q = q pos is already in iKinChain
 	///q vel
@@ -756,13 +761,49 @@ public:
     */
 	yarp::sig::Vector getTorquesNewtonEuler() const;
 
-
 	/**
 	* Returns the end effector force-moment as a single (6x1) vector
 	* @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
 	*/
 	yarp::sig::Vector getForceMomentEndEff() const;
 
+	/**
+    * Set the iteration direction during recursive computation of kinematics variables
+	* (w,dw,d2p,d2pC). Default is NE_FORWARD, which is also set in the constructor.
+    * @param _iterateMode_kinematics NE_FORWARD/BACKWARD
+    */
+	void setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics = NE_FORWARD );
+
+	/**
+    * Set the iteration direction during recursive computation of wrench variables
+	* (F,Mu,Tau). Default is NE_BACKWARD, which is also set in the constructor.
+    * @param _iterateMode_wrench NE_FORWARD/BACKWARD
+    */
+	void setIterModeWrench(const ChainIterationMode _iterateMode_wrench = NE_BACKWARD );
+
+	/**
+    * Set the computation mode during recursive computation of kinematics (w,dw,d2p,d2pC)
+	* and wrench variables(F,Mu,Tau). The mode is NE_KIN_WRE_kw, where the suffix 'kw' identifies 
+	* the modes for the kinematics ('k') and wrench ('w') computations: 
+	* {FF,FB,BF,BB} where the F stands for NE_FORWARD and B for NE_BACKWARD. 
+	* Default mode is NE_KIN_WRE_FB, which sets Kinematics=NE_FORWARD and Wrench=NE_BACKWARD. 
+	* @param mode NE_KIN_WRE_{FF,FB,BF,BB}
+    */
+	void setIterMode(const ChainComputationMode mode = NE_KIN_WRE_FB);
+
+	/**
+    * Get the iteration direction during recursive computation of kinematics variables
+	* (w,dw,d2p,d2pC). 
+    * @return iterateMode_kinematics
+    */
+	ChainIterationMode getIterModeKinematic() const;
+
+	/**
+    * Get the iteration direction during recursive computation of wrench variables
+	* (F,Mu,Tau).
+    * @return iterateMode_wrench
+    */
+	ChainIterationMode getIterModeWrench() const;
 
 };
 
@@ -1018,7 +1059,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" arm
     */
-    iCubArmDyn(const std::string &_type);
+    iCubArmDyn(const std::string &_type, const ChainComputationMode _mode=NE_KIN_WRE_FB);
 
     /**
     * Creates a new Arm from an already existing Arm object.
@@ -1049,7 +1090,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" leg
     */
-    iCubLegDyn(const std::string &_type);
+    iCubLegDyn(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
 
     /**
     * Creates a new Leg from an already existing Leg object.
@@ -1080,7 +1121,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye
     */
-    iCubEyeDyn(const std::string &_type);
+    iCubEyeDyn(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
 
     /**
     * Creates a new Eye from an already existing Eye object.
@@ -1112,7 +1153,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye
     */
-    iCubEyeNeckRefDyn(const std::string &_type);
+    iCubEyeNeckRefDyn(const std::string &_type, const ChainComputationMode _mode=NE_KIN_WRE_FB);
 
     /**
     * Creates a new Eye from an already existing Eye object.
@@ -1136,7 +1177,7 @@ public:
     /**
     * Default constructor. 
     */
-    iCubInertialSensorDyn();
+    iCubInertialSensorDyn(const ChainComputationMode _mode=NE_KIN_WRE_BB);
 
     /**
     * Creates a new Inertial Sensor from an already existing object.
@@ -1167,7 +1208,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" arm
     */
-    iFakeDyn(const std::string &_type);
+    iFakeDyn(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
 
     /**
     * Creates a new Arm from an already existing Arm object.
@@ -1180,7 +1221,7 @@ public:
 /**
 * \ingroup iDyn
 *
-* A class for defining the 1-DOF FakeRobot in the iDyn framework
+* A class for defining the 2-DOF FakeRobot in the iDyn framework
 */
 class iFakeDyn2GdL : public iDynLimb
 {
@@ -1198,7 +1239,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" arm
     */
-    iFakeDyn2GdL(const std::string &_type);
+    iFakeDyn2GdL(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
 
     /**
     * Creates a new Arm from an already existing Arm object.

@@ -113,7 +113,7 @@ protected:
 	/**
      * Base function for forward of Newton-Euler, attaching the sensor in the forward process.
      */
-	void ForwardFromBase();
+	void ForwardKinematicFromBase();
 
 public:
 

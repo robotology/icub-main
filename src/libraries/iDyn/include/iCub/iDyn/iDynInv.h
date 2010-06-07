@@ -49,9 +49,17 @@
 enum NewEulMode {NE_STATIC,NE_DYNAMIC,NE_DYNAMIC_W_ROTOR,NE_DYNAMIC_CORIOLIS_GRAVITY};
 const std::string NE_Mode[4] = {"static","dynamic","dynamic with motor/rotor","dynamic with only Coriolis and gravitational terms"};
 
+// Kinematic and Wrench modes
+enum ChainIterationMode { NE_FORWARD, NE_BACKWARD };
+enum ChainComputationMode { NE_KIN_WRE_FF, NE_KIN_WRE_FB, NE_KIN_WRE_BF, NE_KIN_WRE_BB };
+const std::string NE_IterMode[2] = {"Forward (Base To End)","Backward (End To Base)"};
+const std::string NE_CompMode[4] = {"Kinematic Forward - Wrench Forward","Kinematic Forward - Wrench Backward","Kinematic Backward - Wrench Forward","Kinematic Backward - Wrench Backward"};
+
+
 // verbosity levels
 // useful for all classes
 enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
+
 
 namespace iDyn{
 
@@ -167,17 +175,36 @@ protected:
      */
 	 void computeAngVel( OneLinkNewtonEuler *prev);
 
+	 /**
+     * [Forward Newton-Euler] compute angular velocity of the previous link
+	 * frame
+	  * @param prev the OneLinkNewtonEuler class of the previous link
+     */
+	 void computeAngVelBackward( OneLinkNewtonEuler *prev);
+
 	/**
      * [Forward Newton-Euler] compute angular acceleration of the link
 	  * @param prev the OneLinkNewtonEuler class of the previous link
      */
 	 void computeAngAcc( OneLinkNewtonEuler *prev);
 
+	 /**
+     * [Forward Newton-Euler] compute angular acceleration of the previous link frame
+	  * @param prev the OneLinkNewtonEuler class of the previous link
+     */
+	 void computeAngAccBackward( OneLinkNewtonEuler *prev);
+
 	/**
      * [Forward Newton-Euler] compute linear acceleration of the reference frame of the link
 	  * @param prev the OneLinkNewtonEuler class of the previous link
      */
 	 void computeLinAcc( OneLinkNewtonEuler *prev);
+	 
+	/**
+     * [Forward Newton-Euler] compute linear acceleration of the reference frame of the previous link
+	  * @param prev the OneLinkNewtonEuler class of the previous link
+     */
+	 void computeLinAccBackward( OneLinkNewtonEuler *prev);
 
 	/**
      * [Forward Newton-Euler] compute linear acceleration of the center of mass
@@ -239,6 +266,7 @@ public:
 	 * Newton-Euler's method. The BaseLink class is used to this scope.
      */
 	virtual bool setAsBase(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
+	virtual bool setAsBase(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
 	/**
      * Set the frame as the final one: this is useful to initialize the backward phase of
@@ -247,6 +275,15 @@ public:
 	  * @param _Mu the final moment
      */
 	virtual bool setAsFinal(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+
+	/**
+     * Set the frame as the final one: this is useful to initialize the backward phase of
+	  * Euler's method, by setting w, dw and ddp; R is an identity matrix
+	  * @param _w the final angular velocity
+	  * @param _dw the final angular acceleration
+	  * @param _ddp the final linear acceleration
+     */
+	virtual bool setAsFinal(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
 
 	/**
      * Set measured force and moment in a 'sensor' frame: this is useful to initialize the forward phase of the Inverse
@@ -401,19 +438,25 @@ public:
      * [Forward Newton-Euler] Compute w, dw, ddp, ddpC, dwM
 	  * @param prev the OneLinkNewtonEuler class of the previous link 
      */
-	 void ForwardNewtonEuler( OneLinkNewtonEuler *prev);
+	 void ForwardKinematics( OneLinkNewtonEuler *prev);
  
+	/**
+     * [Backward Kinematic computation] Compute w, dw, ddp, ddpC, dwM
+	  * @param prev the OneLinkNewtonEuler class of the previous link 
+     */
+	 void BackwardKinematics( OneLinkNewtonEuler *prev);
+
 	/**
      * [Backward Newton-Euler] Compute F, Mu, Tau
 	  * @param next the OneLinkNewtonEuler class of the following link 
      */
-	 void BackwardNewtonEuler( OneLinkNewtonEuler *next);
+	 void BackwardWrench( OneLinkNewtonEuler *next);
 
 	/**
      * [Inverse Newton-Euler] Compute F, Mu, Tau
 	  * @param prev the OneLinkNewtonEuler class of the previous link 
      */
-	 void InverseNewtonEuler( OneLinkNewtonEuler *prev);
+	 void ForwardWrench( OneLinkNewtonEuler *prev);
 	
  	/**
      * [all] Compute joint torque; moment must be pre-computed
@@ -477,6 +520,12 @@ public:
 	 * @param _ddp the initial linear acceleration
      */
 	bool setAsBase(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
+		/**
+     * Sets the base data
+	 * @param _F	the initial angular velocity
+	 * @param _Mu the initial angular acceleration
+     */
+	bool setAsBase(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   get methods
@@ -538,6 +587,12 @@ public:
 class FinalLinkNewtonEuler : public OneLinkNewtonEuler
 {
 protected:
+	///initial angular velocity
+	yarp::sig::Vector w;	
+	///initial angular acceleration
+	yarp::sig::Vector dw;
+	///initial linear acceleration
+	yarp::sig::Vector ddp;	
 	///final force
 	yarp::sig::Vector F;	
 	///final moment
@@ -568,6 +623,16 @@ public:
 	  * @return true if dimensions are correct, false otherwise
      */
 	bool setAsFinal(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+	
+	/**
+     * Set the final frame data
+	  * @param _w the final force
+	  * @param _dw the final force
+	  * @param _ddp the final moment
+	  * @return true if dimensions are correct, false otherwise
+     */
+	bool setAsFinal(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
+
 
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   get methods
@@ -787,17 +852,16 @@ protected:
 	unsigned int nEndEff;		
 
 	/// static/dynamic/dynamicWrotor
-	NewEulMode mode;	
+	NewEulMode mode;
 	/// info or useful notes
 	std::string	info;
 	/// verbosity flag
 	unsigned int verbose;
 
-
 public:
 
   /**
-    * Constructor without FT sensor
+    * Constructor (note: without FT sensor)
     */
 	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
@@ -824,7 +888,17 @@ public:
 	void setVerbose(unsigned int verb=VERBOSE);
 	void setMode(const NewEulMode _mode);
  	void setInfo(const std::string _info);
-	bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
+	
+	/**
+	* Initialize the base with measured or known kinematics variables
+	* @param w0 angular velocity
+	* @param dw0 angular acceleration
+	* @param ddp0 linear acceleration
+	*/
+	bool initKinematicBase(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
+	bool initKinematicEnd(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
+	bool initWrenchEnd(const yarp::sig::Vector &Fend,const yarp::sig::Vector &Muend);
+	bool initWrenchBase(const yarp::sig::Vector &Fend,const yarp::sig::Vector &Muend);
 
 
 	//~~~~~~~~~~~~~~~~~~~~~~
@@ -842,22 +916,32 @@ public:
 	/**
      * [classic/inverse] Base function for forward of classical Newton-Euler.
      */
-	void ForwardFromBase();
+	void ForwardKinematicFromBase();
 	
 	/**
      * [classic/inverse] Forward of classical Newton-Euler, after initializing the base link
      */
-	void ForwardFromBase(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+	void ForwardKinematicFromBase(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+
+	/**
+     * [classic/inverse] Base function for forward of classical Newton-Euler.
+     */
+	void BackwardKinematicFromEnd();
+	
+	/**
+     * [classic/inverse] Forward of classical Newton-Euler, after initializing the base link
+     */
+	void BackwardKinematicFromEnd(const yarp::sig::Vector &we, const yarp::sig::Vector &dwe, const yarp::sig::Vector &ddpe);
 
 	/**
      * [classic] Base function for backward of classical Newton-Euler.
      */
-	void BackwardFromEnd();
+	void BackwardWrenchFromEnd();
 
 	/**
      * [classic] Backward of classical Newton-Euler, after initializing the final link
      */
-	void BackwardFromEnd(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
+	void BackwardWrenchFromEnd(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
 	/**
      * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
@@ -865,7 +949,7 @@ public:
 	 * @param lSens the i-th link, where the sensor is attached to
 	 * @return true if the operation is successful, false otherwise (eg out of range index)
      */
-	bool InverseToEnd(unsigned int lSens);
+	void ForwardWrenchFromBase();
 
 	/**
      * [inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
@@ -873,7 +957,23 @@ public:
 	 * @param lSens the i-th link, where the sensor is attached to
 	 * @return true if the operation is successful, false otherwise (eg out of range index)
 	 */
-	bool InverseToBase(unsigned int lSens);
+	void ForwardWrenchFromBase(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
+
+	/**
+     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
+	 * forward of forces and moments using the inverse formula
+	 * @param lSens the i-th link, where the sensor is attached to
+	 * @return true if the operation is successful, false otherwise (eg out of range index)
+     */
+	bool ForwardWrenchToEnd(unsigned int lSens);
+
+	/**
+     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
+	 * backward of forces and moments using the classical formula
+	 * @param lSens the i-th link, where the sensor is attached to
+	 * @return true if the operation is successful, false otherwise (eg out of range index)
+	 */
+	bool BackwardWrenchToBase(unsigned int lSens);
 
 
 };

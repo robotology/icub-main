@@ -81,7 +81,21 @@ bool OneLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const Ve
 	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool OneLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
+{
+	zero();
+	info = "base";
+	return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
+{
+	zero();
+	info = "final";
+	return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool OneLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
 	zero();
 	info = "final";
@@ -378,6 +392,22 @@ void OneLinkNewtonEuler::computeAngVel( OneLinkNewtonEuler *prev)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneLinkNewtonEuler::computeAngVelBackward( OneLinkNewtonEuler *next)
+{
+	switch(mode)
+	{
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_W_ROTOR:
+		setAngVel( next->getR() * ( next->getAngVel()) - next->getDq() * z0 );
+		break;
+	case NE_STATIC:
+		Vector av(3); av.zero();
+		setAngVel(av);
+		break;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeAngAcc( OneLinkNewtonEuler *prev)
 {
 	switch(mode)
@@ -388,6 +418,24 @@ void OneLinkNewtonEuler::computeAngAcc( OneLinkNewtonEuler *prev)
 		break;
 	case NE_DYNAMIC_CORIOLIS_GRAVITY:
 		setAngAcc( (getR()).transposed() * ( prev->getAngAcc() + getDq() * cross(prev->getAngVel(),z0) ));
+		break;
+	case NE_STATIC:
+		Vector aa(3); aa.zero();
+		setAngAcc(aa);
+		break;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneLinkNewtonEuler::computeAngAccBackward( OneLinkNewtonEuler *next)
+{
+	switch(mode)
+	{
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_W_ROTOR:
+		setAngAcc( next->getR() * next->getAngAcc() - next->getD2q() * z0 - next->getDq() * cross(getAngVel(),z0) );
+		break;
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+		setAngAcc( next->getR() * next->getAngAcc() - next->getDq() * cross(getAngVel(),z0) );
 		break;
 	case NE_STATIC:
 		Vector aa(3); aa.zero();
@@ -409,6 +457,23 @@ void OneLinkNewtonEuler::computeLinAcc( OneLinkNewtonEuler *prev)
 		break;
 	case NE_STATIC:
 		setLinAcc( (getR()).transposed() * prev->getLinAcc() );
+		break;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneLinkNewtonEuler::computeLinAccBackward( OneLinkNewtonEuler *next)
+{
+	switch(mode)
+	{
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC_W_ROTOR:
+		setLinAcc(getR() * (next->getLinAcc() 
+			- cross(next->getAngAcc(),next->getr(true)) 
+			- cross(next->getAngVel(),cross(next->getAngVel(),next->getr(true))) ));
+		break;
+	case NE_STATIC:
+		setLinAcc( next->getR() * next->getLinAcc() );
 		break;
 	}
 }
@@ -537,7 +602,7 @@ void OneLinkNewtonEuler::computeTorque(OneLinkNewtonEuler *prev)
 	 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneLinkNewtonEuler::ForwardNewtonEuler( OneLinkNewtonEuler *prev)
+void OneLinkNewtonEuler::ForwardKinematics( OneLinkNewtonEuler *prev)
 {
 	this->computeAngVel(prev);
 	this->computeAngAcc(prev);
@@ -546,13 +611,21 @@ void OneLinkNewtonEuler::ForwardNewtonEuler( OneLinkNewtonEuler *prev)
 	this->computeAngAccM(prev);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneLinkNewtonEuler::BackwardNewtonEuler( OneLinkNewtonEuler *next)
+void OneLinkNewtonEuler::BackwardKinematics( OneLinkNewtonEuler *prev)
+{
+	this->computeAngVelBackward(prev);
+	this->computeAngAccBackward(prev);
+	this->computeLinAccBackward(prev);
+	this->computeLinAccC();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneLinkNewtonEuler::BackwardWrench( OneLinkNewtonEuler *next)
 {
 	this->computeForceBackward(next);
 	this->computeMomentBackward(next);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneLinkNewtonEuler::InverseNewtonEuler( OneLinkNewtonEuler *prev)
+void OneLinkNewtonEuler::ForwardWrench( OneLinkNewtonEuler *prev)
 {
 	this->computeForceForward(prev);
 	this->computeMomentForward(prev);
@@ -625,6 +698,27 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const V
 		if(verbose)
 			cerr<<"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: "
 				<<"("<<_w.length()<<","<<_dw.length()<<","<<_ddp.length()<<") instead of (3,3,3)"
+				<<"; default is set"<<endl;
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool BaseLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
+{
+	if((_F.length()==3)&&(_Mu.length()==3))
+	{
+		F = _F;
+		Mu = _Mu;
+		return true;
+	}
+	else
+	{
+		F.resize(3);	F.zero();
+		Mu.resize(3);	Mu.zero();
+	
+		if(verbose)
+			cerr<<"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: "
+				<<"("<<_F.length()<<","<<_Mu.length()<<") instead of (3,3)"
 				<<"; default is set"<<endl;
 		return false;
 	}
@@ -800,6 +894,30 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, 
 	setAsFinal(_F,_Mu);
 			
 }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
+{
+	if((_w.length()==3)&&(_dw.length()==3)&&(_ddp.length()==3))
+	{
+		w = _w;
+		dw = _dw;
+		ddp = _ddp;
+		return true;
+	}
+	else
+	{
+		w.resize(3);	w.zero();
+		dw.resize(3);	dw.zero();
+		ddp.resize(3);	ddp.zero();
+	
+		if(verbose)
+			cerr<<"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: "
+				<<"("<<_w.length()<<","<<_dw.length()<<","<<_ddp.length()<<") instead of (3,3,3)"
+				<<"; default is set"<<endl;
+		return false;
+	}
+}
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
 {
@@ -1458,11 +1576,29 @@ void OneChainNewtonEuler::setInfo(const string _info)
 	info=_info;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool OneChainNewtonEuler::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &Fend, const Vector &Muend)
+bool OneChainNewtonEuler::initKinematicBase(const Vector &w0,const Vector &dw0,const Vector &ddp0)
 {
-	return (neChain[0]->setAsBase(w0,dw0,ddp0) && neChain[nEndEff]->setAsFinal(Fend,Muend));
+	return neChain[0]->setAsBase(w0,dw0,ddp0);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool OneChainNewtonEuler::initKinematicEnd(const Vector &w0,const Vector &dw0,const Vector &ddp0)
+{
+	return neChain[nEndEff]->setAsBase(w0,dw0,ddp0);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool OneChainNewtonEuler::initWrenchEnd(const Vector &Fend,const Vector &Muend)
+{
+	return neChain[nEndEff]->setAsFinal(Fend,Muend);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool OneChainNewtonEuler::initWrenchBase(const Vector &Fend,const Vector &Muend)
+{
+	return neChain[0]->setAsFinal(Fend,Muend);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   get methods
@@ -1476,74 +1612,107 @@ NewEulMode	OneChainNewtonEuler::getMode()		const		{return mode;}
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneChainNewtonEuler::ForwardFromBase()
+void OneChainNewtonEuler::ForwardKinematicFromBase()
 {
 	for(unsigned int i=1;i<nEndEff;i++)
 	{
-		neChain[i]->ForwardNewtonEuler(neChain[i-1]);
+		neChain[i]->ForwardKinematics(neChain[i-1]);
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneChainNewtonEuler::ForwardFromBase(const Vector &w0, const Vector &dw0, const Vector &ddp0)
+void OneChainNewtonEuler::ForwardKinematicFromBase(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
 	//set initial values on the base frame
-	neChain[0]->setAsBase(w0,dw0,ddp0);
+	neChain[0]->setAsBase(_w,_dw,_ddp);
 	//finally forward
-	ForwardFromBase();	
+	ForwardKinematicFromBase();	
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneChainNewtonEuler::BackwardFromEnd()
+void OneChainNewtonEuler::BackwardKinematicFromEnd()
+{
+	for(unsigned int i=nEndEff;i>=1;i++)
+	{
+		neChain[i-1]->BackwardKinematics(neChain[i]);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::BackwardKinematicFromEnd(const Vector &_w, const Vector &_dw, const Vector &_ddp)
+{
+	//set initial values on the base frame
+	neChain[nEndEff]->setAsFinal(_w,_dw,_ddp);
+	//finally forward
+	BackwardKinematicFromEnd();	
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::BackwardWrenchFromEnd()
 {
 	
 	for(int i=nEndEff-1; i>=0; i--)
-		neChain[i]->BackwardNewtonEuler(neChain[i+1]);
+		neChain[i]->BackwardWrench(neChain[i+1]);
 	for(int i=nEndEff-1; i>0; i--)
 		neChain[i]->computeTorque(neChain[i-1]);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneChainNewtonEuler::BackwardFromEnd(const Vector &F, const Vector &Mu)
+void OneChainNewtonEuler::BackwardWrenchFromEnd(const Vector &F, const Vector &Mu)
 {
 	
 	//set initial values on the end-effector frame
 	neChain[nEndEff]->setAsFinal(F,Mu);
 	//then backward
-	BackwardFromEnd();
+	BackwardWrenchFromEnd();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool OneChainNewtonEuler::InverseToEnd(unsigned int lSens)
+void OneChainNewtonEuler::ForwardWrenchFromBase()
+{
+	
+	/*for(int i=nEndEff-1; i>=0; i--)
+		neChain[i]->BackwardWrench(neChain[i+1]);
+	for(int i=nEndEff-1; i>0; i--)
+		neChain[i]->computeTorque(neChain[i-1]);   TO BE IMPLEMENTED*/
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::ForwardWrenchFromBase(const Vector &F, const Vector &Mu)
+{
+	/*for(int i=nEndEff-1; i>=0; i--)
+		neChain[i]->BackwardWrench(neChain[i+1]);
+	for(int i=nEndEff-1; i>0; i--)
+		neChain[i]->computeTorque(neChain[i-1]);   TO BE IMPLEMENTED*/
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool OneChainNewtonEuler::ForwardWrenchToEnd(unsigned int lSens)
 {
 	if(lSens<nLinks)
 	{
 		// lSens is the sensor link index
 		// link lSens --> neChain[lSens+1]
-		// since InverseNewtonEuler takes the previous, we start with the OneLink
+		// since ForwardWrench takes the previous, we start with the OneLink
 		// indexed lSens+2 = lSens + baseLink + the next one
 		// that's because link lSens = neChain[lSens+1] is already set before
 		// with a specific sensor method
 		for(unsigned int i=lSens+2; i<nEndEff; i++)
-			neChain[i]->InverseNewtonEuler(neChain[i-1]);
+			neChain[i]->ForwardWrench(neChain[i-1]);
 		return true;
 	}
 	else
 	{
-		cerr<<"OneChainNewtonEuler error, could not perform InverseToEnd because of out of range index: "
+		cerr<<"OneChainNewtonEuler error, could not perform ForwardWrenchToEnd because of out of range index: "
 			<<lSens<<">="<<nLinks;
 		return false;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool OneChainNewtonEuler::InverseToBase(unsigned int lSens)
+bool OneChainNewtonEuler::BackwardWrenchToBase(unsigned int lSens)
 {
 	if(lSens<nLinks)
 	{
 		// lSens is the sensor link index
 		// link lSens --> neChain[lSens+1]
-		// since BackwardNewtonEuler takes the next, we start with the OneLink
+		// since BackwardWrench takes the next, we start with the OneLink
 		// indexed lSens = lSens + baseLink - the previous one
 		// that's because link lSens = neChain[lSens+1] is already set before
 		// with a specific sensor method
 		for(int i=lSens; i>=0; i--)
-			neChain[i]->BackwardNewtonEuler(neChain[i+1]);
+			neChain[i]->BackwardWrench(neChain[i+1]);
 		// now we can compute all torques
 		// we also compute the one of the sensor link, since we needed the 
 		// previous link done
@@ -1553,7 +1722,7 @@ bool OneChainNewtonEuler::InverseToBase(unsigned int lSens)
 	}
 	else
 	{
-		cerr<<"OneChainNewtonEuler error, could not perform InverseToBase because of out of range index: "
+		cerr<<"OneChainNewtonEuler error, could not perform ForwardWrenchToEnd because of out of range index: "
 			<<lSens<<">="<<nLinks;
 		return false;
 	}

@@ -347,12 +347,14 @@ iDynChain::iDynChain()
 : iKinChain()
 {
 	NE=NULL;
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynChain::iDynChain(const Matrix &_H0)
 :iKinChain(_H0)
 {
 	NE=NULL;
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::clone(const iDynChain &c)
@@ -360,6 +362,8 @@ void iDynChain::clone(const iDynChain &c)
 	iKinChain::clone(c);
 	curr_dq = c.curr_dq;
 	curr_ddq = c.curr_ddq;
+	iterateMode_kinematics = c.iterateMode_kinematics;
+	iterateMode_wrench = c.iterateMode_wrench;
 	NE = c.NE;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -740,7 +744,7 @@ void iDynChain::prepareNewtonEuler(const NewEulMode ne_mode)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &Fend, const Vector &Muend )
+bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &F0, const Vector &Mu0 )
 { 
 	if( NE == NULL)
 	{
@@ -750,10 +754,17 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 		prepareNewtonEuler();
 	}
 
-	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(Fend.length()==3)&&(Muend.length()==3))
+	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(F0.length()==3)&&(Mu0.length()==3))
 	{
-		NE->ForwardFromBase(w0,dw0,ddp0);
-		NE->BackwardFromEnd(Fend,Muend);
+		if(iterateMode_kinematics == NE_FORWARD)	
+			NE->ForwardKinematicFromBase(w0,dw0,ddp0);
+		else 
+			NE->BackwardKinematicFromEnd(w0,dw0,ddp0);
+
+		if(iterateMode_wrench == NE_BACKWARD)	
+			NE->BackwardWrenchFromEnd(F0,Mu0);
+		else 
+			NE->ForwardWrenchFromBase(F0,Mu0);
 		return true;
 	}
 	else
@@ -763,7 +774,7 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 			cerr<<"iDynChain error: could not compute with Newton Euler due to wrong sized initializing vectors: "
 				<<" w0,dw0,ddp0,Fend,Muend have size "
 				<< w0.length() <<","<< dw0.length() <<","
-				<< ddp0.length() <<","<< Fend.length() <<","<< Muend.length() <<","
+				<< ddp0.length() <<","<< F0.length() <<","<< Mu0.length() <<","
 				<<" instead of 3,3,3,3,3"<<endl;
 		}
 		return false;
@@ -782,25 +793,26 @@ void iDynChain::computeNewtonEuler()
 		initNewtonEuler();
 	}
 
-	NE->ForwardFromBase();
-	NE->BackwardFromEnd();
-}//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	if(iterateMode_kinematics == NE_FORWARD)	
+		NE->ForwardKinematicFromBase();
+	else 
+		NE->BackwardKinematicFromEnd();
+
+	if(iterateMode_wrench == NE_BACKWARD)	
+		NE->BackwardWrenchFromEnd();
+	else 
+		NE->ForwardWrenchFromBase();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler()
 {
-	if( NE == NULL)
-	{
-		if(verbose)
-			cerr<<"iDynChain error: trying to call initNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
-		prepareNewtonEuler();
-	}
-
 	Vector w0(3); w0.zero();
 	Vector dw0(3); dw0.zero();
 	Vector ddp0(3); ddp0.zero();
 	Vector Fend(3); Fend.zero();
 	Vector Muend(3); Muend.zero();
-	return NE->initNewtonEuler(w0,dw0,ddp0,Fend,Muend);
+
+	return initNewtonEuler(w0,dw0,ddp0,Fend,Muend);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
@@ -815,7 +827,19 @@ bool iDynChain::initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Ve
 
 	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(Fend.length()==3)&&(Muend.length()==3))
 	{
-		return NE->initNewtonEuler(w0,dw0,ddp0,Fend,Muend);
+		bool ret=true;
+
+		if(iterateMode_kinematics == NE_FORWARD)	
+			ret = ret && NE->initKinematicBase(w0,dw0,ddp0);
+		else 
+			ret = ret && NE->initKinematicEnd(w0,dw0,ddp0);
+
+		if(iterateMode_wrench == NE_BACKWARD)	
+			ret = ret && NE->initWrenchEnd(Fend,Muend);
+		else 
+			ret = ret && NE->initWrenchBase(Fend,Muend);
+
+		return ret;
 	}
 	else
 	{
@@ -909,6 +933,44 @@ Vector iDynChain::getForceMomentEndEff() const
 	ret[0]=f[0]; ret[1]=f[1]; ret[2]=f[2];
 	ret[3]=m[0]; ret[4]=m[1]; ret[5]=m[2];
 	return ret;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics) 
+{
+	iterateMode_kinematics = _iterateMode_kinematics;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::setIterModeWrench(const ChainIterationMode _iterateMode_wrench) 
+{
+	iterateMode_wrench = _iterateMode_wrench;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ChainIterationMode iDynChain::getIterModeKinematic() const
+{
+	return iterateMode_kinematics;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ChainIterationMode iDynChain::getIterModeWrench() const
+{
+	return iterateMode_wrench;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::setIterMode(const ChainComputationMode mode)
+{
+	switch(mode)
+	{
+	case NE_KIN_WRE_FB: setIterModeKinematic(NE_FORWARD); setIterModeWrench(NE_BACKWARD);
+		break;
+	case NE_KIN_WRE_FF: setIterModeKinematic(NE_FORWARD); setIterModeWrench(NE_FORWARD);
+		break;
+	case NE_KIN_WRE_BB: setIterModeKinematic(NE_BACKWARD); setIterModeWrench(NE_BACKWARD);
+		break;
+	case NE_KIN_WRE_BF: setIterModeKinematic(NE_BACKWARD); setIterModeWrench(NE_FORWARD);
+		break;
+	default:
+		if(verbose)
+			cerr<<"iDynChain error: in setIterMode() could not set iteration mode due to unexisting mode"<<endl; 
+	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1140,11 +1202,13 @@ void iDynLimb::dispose()
 iCubArmDyn::iCubArmDyn()
 {
     allocate("right");
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubArmDyn::iCubArmDyn(const string &_type)
+iCubArmDyn::iCubArmDyn(const string &_type, const ChainComputationMode _mode)
 {
     allocate(_type);
+	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubArmDyn::iCubArmDyn(const iCubArmDyn &arm)
@@ -1203,14 +1267,26 @@ void iCubArmDyn::allocate(const string &_type)
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//======================================
+//
+//			  ICUB LEG DYN
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 iCubLegDyn::iCubLegDyn()
 {
     allocate("right");
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubLegDyn::iCubLegDyn(const string &_type)
+iCubLegDyn::iCubLegDyn(const string &_type,const ChainComputationMode _mode)
 {
     allocate(_type);
+	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubLegDyn::iCubLegDyn(const iCubLegDyn &leg)
@@ -1252,12 +1328,12 @@ void iCubLegDyn::allocate(const string &_type)
 		//create iDynLink from parameters calling
 		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
 
-        linkList[0]=new iDynLink(m[0],	HC[0],	I[0],   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(m[1],	HC[1],	I[1],   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(m[2],	HC[2],	I[2],   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
-        linkList[3]=new iDynLink(m[3],	HC[3],	I[3],-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
-        linkList[4]=new iDynLink(m[4],	HC[4],	I[4],   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
-        linkList[5]=new iDynLink(m[5],	HC[5],	I[5], -0.041,     0.0,      M_PI,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
+        linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
+        linkList[3]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
+        linkList[4]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
+        linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0, -0.041,     0.0,      M_PI,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
     }
     else
     {
@@ -1268,26 +1344,36 @@ void iCubLegDyn::allocate(const string &_type)
 		//create iDynLink from parameters calling
 		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
 
-        linkList[0]=new iDynLink(m[0],	HC[0],	I[0],   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(m[1],	HC[1],	I[1],   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(m[2],	HC[2],	I[2],   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
-        linkList[3]=new iDynLink(m[3],	HC[3],	I[3],-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
-        linkList[4]=new iDynLink(m[4],	HC[4],	I[4],   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
-        linkList[5]=new iDynLink(m[5],	HC[5],	I[5],-0.041,     0.0,       0.0,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
+        linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
+        linkList[3]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
+        linkList[4]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
+        linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,-0.041,     0.0,       0.0,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
     }
 
     for(unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//======================================
+//
+//			  ICUB EYE DYN
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubEyeDyn::iCubEyeDyn()
 {
     allocate("right");
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeDyn::iCubEyeDyn(const string &_type)
+iCubEyeDyn::iCubEyeDyn(const string &_type,const ChainComputationMode _mode)
 {
     allocate(_type);
+	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubEyeDyn::iCubEyeDyn(const iCubEyeDyn &eye)
@@ -1362,14 +1448,25 @@ void iCubEyeDyn::allocate(const string &_type)
     blockLink(2,0.0);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//======================================
+//
+//		ICUB EYE NECK REF DYN   
+//         
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubEyeNeckRefDyn::iCubEyeNeckRefDyn()
 {
     allocate("right");
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeNeckRefDyn::iCubEyeNeckRefDyn(const string &_type)
+iCubEyeNeckRefDyn::iCubEyeNeckRefDyn(const string &_type,const ChainComputationMode _mode)
 {
     allocate(_type);
+	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubEyeNeckRefDyn::iCubEyeNeckRefDyn(const iCubEyeNeckRefDyn &eye)
@@ -1390,9 +1487,16 @@ void iCubEyeNeckRefDyn::allocate(const string &_type)
     linkList.erase(linkList.begin(),linkList.begin()+2);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubInertialSensorDyn::iCubInertialSensorDyn()
+
+////////////////////////////////////////
+//		ICUB INERTIAL SENSOR DYN            
+////////////////////////////////////////
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubInertialSensorDyn::iCubInertialSensorDyn(const ChainComputationMode _mode)
 {
     allocate("right");
+	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubInertialSensorDyn::iCubInertialSensorDyn(const iCubInertialSensorDyn &sensor)
@@ -1432,16 +1536,16 @@ void iCubInertialSensorDyn::allocate(const string &_type)
 	//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
 
     // links of torso and neck
-    linkList[0]=new iDynLink(m[0],	HC[0],	I[0],    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
-    linkList[1]=new iDynLink(m[1],	HC[1],	I[1],      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
-    linkList[2]=new iDynLink(m[2],	HC[2],	I[2],  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
-    linkList[3]=new iDynLink(m[3],	HC[3],	I[3],    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
-    linkList[4]=new iDynLink(m[4],	HC[4],	I[4],      0.0,       0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
-    linkList[5]=new iDynLink(m[5],	HC[5],	I[5],   -0.054,    0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
+    linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+    linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+    linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
+    linkList[3]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+    linkList[4]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,      0.0,       0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
+    linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   -0.054,    0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
 
     // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
-    linkList[6]=new iDynLink(m[6],	HC[6],	I[6], 0.013250,  0.008538,  0.785721,       0.0,              0.0,             0.0);
-    linkList[7]=new iDynLink(m[7],	HC[7],	I[7], 0.013250, -0.026861,  0.785075,       0.0,              0.0,             0.0);
+    linkList[6]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0, 0.013250,  0.008538,  0.785721,       0.0,              0.0,             0.0);
+    linkList[7]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0, 0.013250, -0.026861,  0.785075,       0.0,              0.0,             0.0);
 
     for(unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
@@ -1449,19 +1553,25 @@ void iCubInertialSensorDyn::allocate(const string &_type)
     // block virtual links
     blockLink(6,0.0);
     blockLink(7,0.0);
+
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+////////////////////////////////////////
+//		      iFAKE DYN            
+////////////////////////////////////////
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iFakeDyn::iFakeDyn()
 {
     allocate("right");
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn::iFakeDyn(const string &_type)
+iFakeDyn::iFakeDyn(const string &_type,const ChainComputationMode _mode)
 {
     allocate(_type);
+	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iFakeDyn::iFakeDyn(const iFakeDyn &arm)
@@ -1509,16 +1619,23 @@ void iFakeDyn::allocate(const string &_type)
         *this << *linkList[i];
 
 }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+////////////////////////////////////////
+//		      iFAKE DYN   2 GDL          
+////////////////////////////////////////
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iFakeDyn2GdL::iFakeDyn2GdL()
 {
     allocate("right");
+	setIterMode(NE_KIN_WRE_FB);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn2GdL::iFakeDyn2GdL(const string &_type)
+iFakeDyn2GdL::iFakeDyn2GdL(const string &_type,const ChainComputationMode _mode)
 {
     allocate(_type);
+	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iFakeDyn2GdL::iFakeDyn2GdL(const iFakeDyn2GdL &arm)
