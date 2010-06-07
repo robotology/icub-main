@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "cpgs.h"
+#include "TargetInfo.h"
 
 #include <string>
 
@@ -55,11 +56,14 @@ class generatorThread : public yarp::os::RateThread
     double theoretical_time;
     double lastBeat_time;
     bool previous_quadrant[2]; //used to calculate the new beat
+   	bool ik_ok;
     int beat;
+    int nbDrums;
     int notes[3];
     cpg_manager *myManager;
     PolyDriver *ddPart;
     IEncoders *PartEncoders;
+    TargetInfo *myTargets;
 
     BufferedPort<Bottle> vcControl_port, vcFastCommand_port;
     BufferedPort<Bottle> parameters_port, check_motion_port;

@@ -78,22 +78,31 @@ void generatorThread::getParameters()
 {
     Bottle *command = parameters_port.read(false);
     if(command!=NULL)
-        if(command->size() >=2*nbDOFs+2)
+        if(command->size() >= 3)
             {
-                for (int i=0; i<2*nbDOFs; i++)
-                    {
-                        myManager->next_parameters[i]= command->get(i).asDouble();
-                        fprintf(parameters_file,"%f \t", myManager->next_parameters[i]);
-                    }
-
-                double freq = command->get(2*nbDOFs).asDouble();
+            	int drumID = command->get(0).asInt();
+            	for(int i=0; i<nbDOFs; i++)
+            	{
+            		if(drumID>0)
+            		{
+            			myManager->next_parameters[2*i] = myTargets->muOn[i];
+            			myManager->next_parameters[2*i+1] = myTargets->drumsPos[drumID][i];
+					}
+					else
+            		{
+            			myManager->next_parameters[2*i] = myTargets->muOff[i];
+            			myManager->next_parameters[2*i+1] = myTargets->drumsPos[drumID][i];
+					}
+				}
+				
+                double freq = command->get(1).asDouble();
 
                 if(freq < MAX_FREQUENCY)
                     myManager->next_nu = freq;
                 else
                     printf("trying to set a too high freq %f\n",freq);
 
-                double phase = command->get(2*nbDOFs+1).asDouble();
+                double phase = command->get(2).asDouble();
 
                 if(phase != myManager->next_theta)
                     lastBeat_time = lastBeat_time+(myManager->next_theta-phase)/(2*3.14*myManager->next_nu);
@@ -126,18 +135,6 @@ void generatorThread::getHit()
                                         {
                                             myManager->drumHit=1;
                                             myManager->stuckCounter=0;
-                                            /*                                          static bool initialized=false;
-                                            static ppEventDebugger debugger;
-                                            if (!initialized)
-                                                {
-                                                    debugger.open(0x378);
-                                                    initialized=true;
-                                                }
-                                            
-                                            debugger.set();
-                                            debugger.set();
-                                            debugger.set();
-                                            debugger.reset();*/
                                             
                                             fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
                                             printf("FEEDBACK ENABLED FOR PART %s\n", partName.c_str()); 
@@ -210,10 +207,16 @@ void generatorThread::run()
 
 #endif
 
+    if(ik_ok)
+    {
+    	myTargets->UpdateInfo();
+	}
     //we get potential new parameters
 
     getParameters();
     getHit();
+    
+
 
     //we get the clock
 
@@ -423,6 +426,7 @@ void generatorThread::threadRelease()
     delete[] initPos;
 
     delete myManager;
+    delete myTargets;
 
     fclose(target_file);
     fclose(parameters_file);
@@ -646,6 +650,21 @@ bool generatorThread::init(Searchable &s)
 
     ///we create the manager
     myManager = new cpg_manager(nbDOFs);
+    
+    if(options.check("nbDrums"))
+    nbDrums = options.find("nbDrums").asInt();
+    
+    myTargets = new TargetInfo(nbDOFs, nbDrums);
+    myTargets->Initialize(options);
+    
+    sprintf(tmp2,"/%s/ik/in", partName.c_str());
+    sprintf(tmp1,"/DrumIKin/%s/generator", partName.c_str());
+    ik_ok= myTargets->ik_port.open(tmp2);
+   	ik_ok = Network::connect(tmp1, tmp2, "tcp");
+    if(!ik_ok){printf("Visual Feedback OFF\n");}
+    else{printf("Visual ON\n");}
+    
+
 
 
     if(!options.check("Notes"))

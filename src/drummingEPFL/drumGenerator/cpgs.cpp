@@ -104,13 +104,11 @@ cpg_manager::cpg_manager(int nbDOFs){
   stuckCounter=0;
   stuckPos = new double[nbDOFs];
 
-
 }
 
 
 
 cpg_manager::~cpg_manager()
-
 {
   delete[] parameters;
 
@@ -149,7 +147,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
    {
       m[i]= parameters[2*i];
       g[i]= parameters[2*i+1]/ampl[i];
-    }
+   }
 
   //***********CPGS - EQUATIONS***************************************
 
