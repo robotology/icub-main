@@ -24,7 +24,7 @@ macro(icub_export_library name private_inc_dirs dest_dir)
 set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
 
 
-icub_set_property(TARGET ${name} PROPERTY INCLUDE_DIRS  "${private_inc_dirs}")
+set_property(TARGET ${name} PROPERTY INCLUDE_DIRS  "${private_inc_dirs}")
 set(${name}_INCLUDE_DIRS "${private_inc_dirs}" CACHE STRING "include directories")
 #set(${name}_LIBRARIES ${name} CACHE STRING "library")
 icub_set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${name})
@@ -37,6 +37,109 @@ install(FILES ${ARGN} DESTINATION ${dest_dir})
 export(TARGETS ${name} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
 
 endmacro(icub_export_library)
+
+#icub_export_library2(target INTREE_INCLUDES dir EXTERNAL_INCLUDES dir DESTINATION dest FILES files)
+macro(icub_export_library2 param)
+
+#message("Running with ${param}")
+
+if (NOT expect)
+    #Reset variables
+    set(target ${param})
+    set(expect EXPECT_INTREE_INCLUDES)
+    set_target_properties(${target} PROPERTIES 
+                        INTERNAL_INCLUDE_DIRS "" EXTERNAL_INCLUDE_DIRS "" HEADERS_DESTINATION "" FILES "")
+elseif (expect STREQUAL "EXPECT_INTREE_INCLUDES")
+    if (${param} STREQUAL "INTREE_INCLUDES")
+        set(expect INTREE_INCLUDES)
+    else()
+        #skip optional parameter INTREE_INCLUDES
+        message(STATUS "Skipping optional parameter INTREE_INCLUDES")
+        set(expect EXPECT_EXTERNAL_INCLUDES)
+    endif()
+elseif (expect STREQUAL "INTREE_INCLUDES")
+    set(expect EXPECT_EXTERNAL_INCLUDES)
+    set_target_properties(${target} PROPERTIES 
+                        INTERNAL_INCLUDE_DIRS
+                        ${param})
+elseif (expect STREQUAL "EXPECT_EXTERNAL_INCLUDES")
+    if (${param} STREQUAL "EXTERNAL_INCLUDES")
+        set(expect EXTERNAL_INCLUDES)
+    else()
+        #skipping optional parameter EXTERNAL_INCLUDES
+        message(STATUS "Skipping optional parameter EXTERNAL_INCLUDES")
+        set(expect EXPECT_DESTINATION)
+    endif()
+    
+elseif (expect STREQUAL "EXTERNAL_INCLUDES")
+    set_target_properties(${target} PROPERTIES 
+                        EXTERNAL_INCLUDE_DIRS
+                        ${param})
+    set(expect EXPECT_DESTINATION)
+elseif (expect STREQUAL "EXPECT_DESTINATION")
+    if (${param} STREQUAL "DESTINATION")
+        set(expect DESTINATION)
+    else()
+        message(STATUS  "Skipping optional parameter DESTINATION")
+        set(expect "END")
+    endif()
+elseif (expect STREQUAL "DESTINATION")     
+    set(expect EXPECT_FILES)
+    set_target_properties(${target} PROPERTIES 
+                        HEADERS_DESTINATION
+                        ${param})
+elseif (expect STREQUAL "EXPECT_FILES")
+    if (${param} STREQUAL "FILES")
+        #set(expect FILES)
+        message(STATUS ${ARGN})
+        set_target_properties(${target} PROPERTIES 
+                        FILES "${ARGN}")
+                        
+        set(expect "END")
+
+    else()
+       message(FATAL "ERROR: mandatory field FILES")
+    endif()
+    
+endif(NOT expect)
+
+if (expect STREQUAL "END")
+
+    set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
+
+    icub_set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${target})
+    install(TARGETS ${target} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib EXPORT icub-targets)
+    export(TARGETS ${name} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
+    
+    get_target_property(internal_includes ${target} INTERNAL_INCLUDE_DIRS)
+    get_target_property(external_includes ${target} EXTERNAL_INCLUDE_DIRS)
+    get_target_property(header_files ${target} FILES)
+    get_target_property(destination ${target} HEADERS_DESTINATION)
+    
+    if (internal_includes)
+       set(include_dirs ${include_dirs} ${internal_includes})
+    endif()
+    if (external_includes)
+       set(include_dirs ${include_dirs} ${external_includes})
+    endif()
+
+    if (include_dirs)
+        icub_set_property(TARGET ${target} PROPERTY INCLUDE_DIRS  "${include_dirs}")
+        message(STATUS "Target ${target} exporting: ${include_dirs}")
+        set(${target}_INCLUDE_DIRS "${include_dirs}" CACHE STRING "include directories")
+    endif()
+
+    if (header_files)
+        message(STATUS "Target ${target} installing ${header_files} to ${destination}")
+        install(FILES ${header_files} DESTINATION ${destination})
+    endif()
+
+else(expect STREQUAL "END")
+    #pass call forward
+    icub_export_library2(${ARGN})
+endif(expect STREQUAL "END")
+                     
+endmacro(icub_export_library2)
 
 ### From yarp.
 # Helper macro to work around a bug in set_property in cmake 2.6.0
@@ -59,3 +162,4 @@ MACRO(icub_set_property _global _property _append varname)
     set_property(GLOBAL PROPERTY ${varname} ${ARGN})
   endif (_icub_append_chk)
 ENDMACRO(icub_set_property)
+

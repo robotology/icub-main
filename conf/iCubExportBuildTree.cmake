@@ -40,8 +40,10 @@ foreach (t ${ICUB_TARGETS})
   file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS ${target_INCLUDE_DIRS} CACHE STRING \"include dir for target ${t}\")\n")
 
   set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
+  
 endforeach(t)
 
+message(STATUS "Header files global directory: ${include_dirs}")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"${include_dirs}\" CACHE STRING \"list of include directories, all exported targets\")\n")
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/${BUILD_CONFIG_TEMPLATE}
