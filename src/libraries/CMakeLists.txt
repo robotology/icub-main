@@ -1,3 +1,4 @@
+#order matters, put libs in dependency order
 add_subdirectory(iCubDev)
 add_subdirectory(icubmod)
 add_subdirectory(ctrlLib)
