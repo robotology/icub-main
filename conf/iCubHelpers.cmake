@@ -36,7 +36,7 @@ install(FILES ${ARGN} DESTINATION ${dest_dir})
 
 export(TARGETS ${name} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
 
-endmacro(icub_export_library)
+endmacro(icub_export_library_old)
 
 # Better export library function. Export a target to be used from external programs
 #
@@ -174,7 +174,7 @@ MACRO(icub_export_library target)
                         ${destination})
   endif()
  
-ENDMACRO(icub_export_library2)
+ENDMACRO(icub_export_library)
 
 # 
 # Taken from kitware wiki, easy support for macro with variable parameters. 

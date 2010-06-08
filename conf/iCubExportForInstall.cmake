@@ -32,8 +32,12 @@ set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
   get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY EXTERNAL_INCLUDE_DIRS)
   get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
-  set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS}) 
-  message(STATUS "Header files for ${t}: ${target_INCLUDE_DIRS}")
+  
+   set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS}) 
+
+   if (ICUB_VERBOSE)
+   message(STATUS "Header files for ${t}: ${target_INCLUDE_DIRS}")
+   endif()
 endforeach(t)
 
 if(include_dirs)
