@@ -48,7 +48,7 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
         time (&end);
         dif = difftime (end,start);
     }
-    if(dif>=20)
+    if(dif>=200)
         return false;
 
     while(interThread->redGreen_yarp->width()==0){
