@@ -54,7 +54,7 @@
 	<module>
 		<name>selectiveAttentionInterface</name>
 		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
-		<tag>selectiveAttentionEngine</tag>
+		<tag>selectiveAttentionInterface</tag>
 		<node>/console1</node>
 	</module>
 	<module>
