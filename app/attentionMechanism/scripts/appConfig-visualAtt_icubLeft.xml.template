@@ -60,7 +60,7 @@
 	<module>
 		<name>blobTracker</name>
 		<parameters>--name blobTracker/icub/left_cam</parameters>
-		<tag>selectiveAttentionInterface</tag>
+		<tag>blobTrackerModule</tag>
 		<node>/console1</node>
 	</module>
 	<module>
