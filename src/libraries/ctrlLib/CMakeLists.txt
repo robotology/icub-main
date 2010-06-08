@@ -37,8 +37,3 @@ icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/i
                                     DESTINATION include/iCub/ctrl 
                                     FILES ${folder_header})
 
-
-
-                                    
-
-

@@ -29,8 +29,3 @@ icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/i
                                    DESTINATION include/iCub/iDyn
                                    DEPENDS iKin
                                    FILES ${folder_header})
-
-				   
-
-
-
