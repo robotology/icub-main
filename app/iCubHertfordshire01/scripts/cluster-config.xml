@@ -4,6 +4,7 @@
 
 <node display="true">icubsrv</node>
 <node>pc104</node>
+<node>myNode</node>
 
 </cluster>
 
