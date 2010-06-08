@@ -29,9 +29,8 @@ ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} lib0) #dependency on lib0
 SET_TARGET_PROPERTIES(${PROJECTNAME} PROPERTIES DEBUG_POSTFIX "d")
 
-icub_export_library(${PROJECTNAME} ${PROJECT_SOURCE_DIR}/include include/iCub/lib1 ${folder_header})
-
-
-
+icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                    DESTINATION include/iCub/lib1
+                                    FILES ${folder_header})
 
 

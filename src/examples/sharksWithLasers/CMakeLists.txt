@@ -26,7 +26,7 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 # Create everything needed to build our executable.
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
-icub_export_library(${PROJECTNAME} ${PROJECT_SOURCE_DIR}/include include/iCub ${folder_header})
-
-
+icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                    DESTINATION include/iCub
+                                    FILES ${folder_header})
 
