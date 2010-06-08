@@ -1665,7 +1665,7 @@ void iCubInertialSensor::allocate(const string &_type)
     linkList[5]=new iKinLink(   0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
 
     // virtual link that describes T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
-    linkList[6]=new iKinLink(      0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,                0.0);
+    linkList[6]=new iKinLink(      0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0);
 
     for (unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
