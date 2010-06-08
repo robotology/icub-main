@@ -27,6 +27,7 @@
 
 #include <string>
 #include <iostream>
+#include <string.h>
 
 /// specific to this device driver.
 #include "CanBusMotionControl.h"
@@ -944,8 +945,8 @@ CanBusResources::CanBusResources ()
     _destInv=0;
     _initialized=false;
 
-    ACE_OS::memset (_destinations, 0, sizeof(unsigned char) * CAN_MAX_CARDS);
-    ACE_OS::memset (_velShifts, 0, sizeof(int) * CAN_MAX_CARDS);
+    memset (_destinations, 0, sizeof(unsigned char) * CAN_MAX_CARDS);
+    memset (_velShifts, 0, sizeof(int) * CAN_MAX_CARDS);
 
     _my_address = 0;
     _njoints = 0;
@@ -1007,8 +1008,8 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     _writeMessages = 0;
     _error_status = true;
 
-    ACE_OS::memcpy (_destinations, parms._destinations, sizeof(unsigned char)*CAN_MAX_CARDS);
-    ACE_OS::memcpy (_velShifts, parms._velocityShifts, sizeof(int)*CAN_MAX_CARDS);
+    memcpy (_destinations, parms._destinations, sizeof(unsigned char)*CAN_MAX_CARDS);
+    memcpy (_velShifts, parms._velocityShifts, sizeof(int)*CAN_MAX_CARDS);
 
     for (int k = 0; k < CAN_MAX_CARDS; k++)
         _velShifts[k] = (1 << ((int) _velShifts[k]));
@@ -2967,7 +2968,7 @@ bool CanBusMotionControl::setRefSpeedRaw(int axis, double sp)
 bool CanBusMotionControl::setRefSpeedsRaw(const double *spds)
 {
     CanBusResources& r = RES(system_resources);
-    ACE_OS::memcpy(_ref_speeds, spds, sizeof(double) * r.getJoints());
+    memcpy(_ref_speeds, spds, sizeof(double) * r.getJoints());
     int i;
     for (i = 0; i < r.getJoints(); i++)
         _ref_speeds[i] /= 10.0;
@@ -3022,7 +3023,7 @@ bool CanBusMotionControl::getRefSpeedsRaw (double *spds)
 {
     CanBusResources& r = RES(system_resources);
 
-    ACE_OS::memcpy(spds, _ref_speeds, sizeof(double) * r.getJoints());
+    memcpy(spds, _ref_speeds, sizeof(double) * r.getJoints());
     int i;
     for (i = 0; i < r.getJoints(); i++)
         spds[i] *= 10.0;
@@ -3823,7 +3824,7 @@ bool CanBusMotionControl::_readDWordArray (int msg, double *out)
     if (!r.getErrorStatus() || t->timedOut())
     {
         DEBUG("readDWordArray: at least one message timed out\n");
-        ACE_OS::memset (out, 0, sizeof(double) * r.getJoints());
+        memset (out, 0, sizeof(double) * r.getJoints());
         return false;
     }
 
@@ -3945,7 +3946,7 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
     if (!r.getErrorStatus()||(t->timedOut()))
     {
         DEBUG("readWord16Array: at least one message timed out\n");
-        ACE_OS::memset (out, 0, sizeof(double) * r.getJoints());
+        memset (out, 0, sizeof(double) * r.getJoints());
         return false;
     }
 

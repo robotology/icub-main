@@ -17,6 +17,7 @@
  * Public License for more details
 */
 
+#include <ace/config.h>
 #include <ace/Thread.h>
 #include "canControlConstants.h"
 #include "ThreadTable2.h"

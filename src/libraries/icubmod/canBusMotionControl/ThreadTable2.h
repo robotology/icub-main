@@ -20,6 +20,7 @@
 #ifndef __THREADTABLE2__
 #define __THREADTABLE2__
 
+#include <ace/config.h>
 #include <ace/Thread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/CanBusInterface.h>
