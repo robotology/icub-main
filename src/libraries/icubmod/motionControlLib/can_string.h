@@ -99,7 +99,7 @@ int can_string2<T>::add_string(void* can_packet)
 
 	if (string_id>=MAX_STRINGS) 
 	{
-		ACE_OS::printf("msg from board %d contains an ERROR! (>MAX_STRINGS)\r\n",data[string_id ].board_id);
+		printf("msg from board %d contains an ERROR! (>MAX_STRINGS)\r\n",data[string_id ].board_id);
 		return -1;
 	}
 
@@ -151,7 +151,7 @@ char* can_string2<T>::print(int buffer_num)
 
 	//DEBUG ONLY
 	//ACE_OS::printf("msg from board %d, (buf:%d) : %s \r\n",data[buffer_num].board_id ,buffer_num, data[buffer_num].text_buffer);
-	ACE_OS::printf("msg from board %d: %s \r\n",data[buffer_num].board_id , data[buffer_num].text_buffer);
+	printf("msg from board %d: %s \r\n",data[buffer_num].board_id , data[buffer_num].text_buffer);
 	
 	return data[buffer_num].text_buffer;
 }

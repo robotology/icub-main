@@ -23,7 +23,6 @@
 
 #include <list>
 
-#include <ace/Log_Msg.h> //ace assert
 #include "yarp/dev/CanBusInterface.h"
 
 /**
