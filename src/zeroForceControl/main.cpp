@@ -1241,8 +1241,8 @@ public:
 		  Time::delay(3.1);
             return false;
 		}
-		port_FT=new BufferedPort<Vector>;
-		port_FT->open((PortName+"/FT:i").c_str());
+		//port_FT=new BufferedPort<Vector>;
+		//port_FT->open((PortName+"/FT:i").c_str());
 		Bottle tmp;
 		tmp=0;
 		Vector initPos;
