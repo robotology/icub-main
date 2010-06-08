@@ -8,7 +8,7 @@
       		<parameters>--from leftArmFT.ini</parameters>
 			<node>pc104</node>
 			<tag>left_arm_zfc</tag>
-			<stdio>console</stdio>
+			<stdio>icub14</stdio>
    	</module>
 
 	<module>
@@ -16,7 +16,7 @@
       		<parameters>--from rightArmFT.ini</parameters>
 			<node>pc104</node>
 			<tag>right_arm_zfc</tag>
-			<stdio>console</stdio>
+			<stdio>icub14</stdio>
    	</module>
 
 	<module>
@@ -24,7 +24,7 @@
       		<parameters>--from leftLegFT.ini</parameters>
 			<node>pc104</node>
 			<tag>left_leg_zfc</tag>
-			<stdio>console</stdio>
+			<stdio>icub14</stdio>
    	</module>
 
 	<module>
@@ -32,29 +32,29 @@
       		<parameters>--from rightLegFT.ini</parameters>
 			<node>pc104</node>
 			<tag>right_leg_zfc</tag>
-			<stdio>console</stdio>
+			<stdio>icub14</stdio>
    	</module>
 
 <!-- <module>     		<name>genericFTCalibrator</name>      		<parameters></parameters>	<node>icub14</node>		<stdio>icub14</stdio>		<tag>genFTcal</tag>
    	</module> -->
 
         <connection>
-                <from>/icub/leftarm/analog:o</from>
+                <from>/icub/left_arm/analog:o</from>
                 <to>/zfc/left_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/rightarm/analog:o</from>
+                <from>/icub/right_arm/analog:o</from>
                 <to>/zfc/right_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/leftleg/analog:o</from>
+                <from>/icub/left_leg/analog:o</from>
                 <to>/zfc/left_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/rightleg/analog:o</from>
+                <from>/icub/right_leg/analog:o</from>
                 <to>/zfc/right_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
