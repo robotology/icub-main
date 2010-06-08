@@ -32,7 +32,7 @@ public:
 	double *ampl; //output amplitude of the oscillations	
 
 	double *parameters; //2 parameters per dof: mu and g 
-	double *next_parameters;
+	int drumID;
 	
 	double **epsilon; //internal coupling strength
 	double **theta; //coupling phase in radians

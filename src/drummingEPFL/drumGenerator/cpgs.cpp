@@ -65,15 +65,13 @@ cpg_manager::cpg_manager(int nbDOFs){
   //*********open parameters**********
 
   parameters = new double[controlled_param];
-  next_parameters = new double[controlled_param];
+
   
   for(int i=0; i< nbDOFs; i++)
     {
       parameters[2*i]=-15.0; // amplitude of oscillations
       parameters[2*i+1]=0.0; //target of the discrete movement
 
-      next_parameters[2*i] =-15.0;
-      next_parameters[2*i+1] = 0.0;
     }
 
   //********fixed parameters********* 

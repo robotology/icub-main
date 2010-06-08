@@ -78,13 +78,16 @@ void generatorThread::getParameters()
 {
     Bottle *command = parameters_port.read(false);
     if(command!=NULL)
+    {
         if(command->size() >= 3)
             {
-            	int drumID = command->get(0).asInt();
-            	for(int i=0; i<nbDOFs; i++)
+            	myManager->drumID = command->get(0).asInt();
+            	/*for(int i=0; i<nbDOFs; i++)
             	{
+            		
             		if(drumID>0)
             		{
+            			
             			myManager->next_parameters[2*i] = myTargets->muOn[i];
             			myManager->next_parameters[2*i+1] = myTargets->drumsPos[drumID][i];
 					}
@@ -93,7 +96,7 @@ void generatorThread::getParameters()
             			myManager->next_parameters[2*i] = myTargets->muOff[i];
             			myManager->next_parameters[2*i+1] = myTargets->drumsPos[drumID][i];
 					}
-				}
+				}*/
 				
                 double freq = command->get(1).asDouble();
 
@@ -114,6 +117,7 @@ void generatorThread::getParameters()
             }
         else
             printf("warning, manager sending crappy values\n");
+	}
 }
 
 void generatorThread::getHit()
@@ -259,10 +263,21 @@ void generatorThread::run()
 
             ///update parameters
 
-            for (int i=0; i<2*nbDOFs; i++)
-                {
-                    myManager->parameters[i] = myManager->next_parameters[i];
-                }
+            for(int i=0; i<nbDOFs; i++)
+            {            		
+            	if(myManager->drumID>0)
+            	{
+            			
+            		myManager->parameters[2*i] = myTargets->muOn[i];
+            		myManager->parameters[2*i+1] = myTargets->drumsPos[myManager->drumID][i];
+				}
+				else
+            	{
+            		myManager->parameters[2*i] = myTargets->muOff[i];
+            		myManager->parameters[2*i+1] = myTargets->drumsPos[myManager->drumID][i];
+				}
+			}
+				
 
             myManager->nu = myManager->next_nu;
             //fprintf(stderr, "%lf\n", myManager->nu);
@@ -317,56 +332,34 @@ bool generatorThread::getNewBeat()
 {
 
     double tmp_clock[2];
-
     tmp_clock[0] = cos(myManager->theta[0][0])*y_cpgs[0] - 
-
-        sin(myManager->theta[0][0])*y_cpgs[1];
-
-  
-
+      	sin(myManager->theta[0][0])*y_cpgs[1];
     tmp_clock[1] = sin(myManager->theta[0][0])*y_cpgs[0] + 
-
         cos(myManager->theta[0][0])*y_cpgs[1];
 
 
-
     //check if init quadrant
-
     if((tmp_clock[0] >0.0) && (tmp_clock[1]>0.0))
-
         previous_quadrant[1] = true;
 
-
-
     //check if in previous quadrant y< && x>0
+    if((tmp_clock[0]<0.0) && (tmp_clock[1]>0.0))
+    {
+       	if(previous_quadrant[1])
+		{
+			previous_quadrant[0] = true;
+			previous_quadrant[1] = false;
+		}
+	}
 
-    if((tmp_clock[0] <0.0) && (tmp_clock[1]<0.0))
-
-        if(previous_quadrant[1])
-
-            {
-
-                previous_quadrant[0] = true;
-
-                previous_quadrant[1] = false;
-
-            }
-
-
-
-    if((tmp_clock[0] >0.0) && (tmp_clock[1]<0.0))
-
-        if(previous_quadrant[0])
-
-            {
-
-                previous_quadrant[0] = false;
-
-                return true;
-
-            }
-
-  
+    if((tmp_clock[0]>0.0) && (tmp_clock[1]<0.0))
+    {
+		if(previous_quadrant[0])
+		{
+			previous_quadrant[0] = false;
+			return true;
+		}
+	}
 
     return false;
 
@@ -714,7 +707,7 @@ bool generatorThread::init(Searchable &s)
                 {
                     initPos[i]=pos.get(i+1).asDouble();
                     myManager->parameters[2*i+1]=initPos[i]/180.0*3.1415;
-                    myManager->next_parameters[2*i+1]=initPos[i]/180.0*3.1415;
+                    //myManager->next_parameters[2*i+1]=initPos[i]/180.0*3.1415;
                     printf("setting init pos %f joint %d\n",initPos[i],i);
                 }
         }
