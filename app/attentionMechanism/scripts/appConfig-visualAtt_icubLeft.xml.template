@@ -228,7 +228,7 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      		<from>/selectiveAttentionEngine/combination:o</from>
+      		<from>/selectiveAttentionEngine/attention:o</from>
 		<to>/blobTracker/icub/left_cam/img:i</to>
 		<protocol>tcp</protocol>
 	</connection>
