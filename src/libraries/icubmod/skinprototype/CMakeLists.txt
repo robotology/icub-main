@@ -8,6 +8,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 add_library(skinprototype skinprototype.h skinprototype.cpp)
 target_link_libraries(skinprototype ${YARP_LIBRARIES})
 
-icub_export_library(skinprototype "" include/iCub "")
+icub_export_library(skinprototype)
 
 endif (NOT SKIP_skinprototype)

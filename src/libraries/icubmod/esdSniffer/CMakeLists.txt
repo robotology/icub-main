@@ -13,7 +13,7 @@ IF(NOT SKIP_esdsniffer)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${ESDCANAPI_INC_DIRS} ${YARP_INCLUDE_DIRS})
     ADD_LIBRARY(esdsniffer EsdMessageSniffer.cpp EsdMessageSniffer.h)
     TARGET_LINK_LIBRARIES(esdsniffer  ${ESDCANAPI_LIB} ${YARP_LIBRARIES})
-
+    icub_export_library(esdsniffer)
   ENDIF(NOT ESDCANAPI_FOUND)
 
 ENDIF(NOT SKIP_esdsniffer)

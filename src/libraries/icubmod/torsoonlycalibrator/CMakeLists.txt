@@ -8,6 +8,6 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}
 ADD_LIBRARY(torsoonlycalibrator iCubTorsoOnlyCalibrator.cpp iCubTorsoOnlyCalibrator.h)
 target_link_libraries(torsoonlycalibrator ${YARP_LIBRARIES})
 
-icub_export_library(torsoonlycalibrator "" include/iCub "")
+icub_export_library(torsoonlycalibrator)
 
 endif (NOT SKIP_icubtorsoonlycalibrator)

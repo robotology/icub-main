@@ -8,5 +8,5 @@ IF (NOT SKIP_fakecan)
     ADD_LIBRARY(fcan fakeCan.cpp fakeBoard.cpp fakeCan.h fakeBoard.h fbCanBusMessage.h msgList.h)
     target_link_libraries(fcan ${YARP_LIBRARIES})
     
-    icub_export_library(fcan "" include/iCub "")
+    icub_export_library(fcan)
 ENDIF (NOT SKIP_fakecan)

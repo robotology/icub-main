@@ -17,7 +17,7 @@ IF (NOT SKIP_cartesiancontrollerserver)
                                                    ${ACE_LIBRARIES}
                                                    ${YARP_LIBRARIES})
 
-   icub_export_library(cartesiancontrollerserver "" include/iCub "")
+   icub_export_library(cartesiancontrollerserver)
 ENDIF (NOT SKIP_cartesiancontrollerserver)
 
 PREPARE_DEVICE(cartesiancontrollerclient TYPE    ClientCartesianController 
@@ -35,7 +35,7 @@ IF (NOT SKIP_cartesiancontrollerclient)
 
    TARGET_LINK_LIBRARIES(cartesiancontrollerclient ${YARP_LIBRARIES})
 
-   icub_export_library(cartesiancontrollerclient "" include/iCub "")
+   icub_export_library(cartesiancontrollerclient)
 ENDIF (NOT SKIP_cartesiancontrollerclient)
 
 

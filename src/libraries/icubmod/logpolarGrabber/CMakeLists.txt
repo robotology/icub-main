@@ -12,4 +12,6 @@ IF(NOT SKIP_logpolargrabber)
                                         ${ICUBDEV_LIBRARIES} 
                                         ${YARP_LIBRARIES})
                                         
+  icub_export_library(logpolargrabber)
+                                        
 ENDIF(NOT SKIP_logpolargrabber)

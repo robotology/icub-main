@@ -8,7 +8,7 @@ if (NOT SKIP_static_grabber)
 
   target_link_libraries(static_grabber ${YARP_LIBRARIES})
   
-  icub_export_library(static_grabber "" include/iCub "")
+  icub_export_library(static_grabber)
 
 endif (NOT SKIP_static_grabber)
 

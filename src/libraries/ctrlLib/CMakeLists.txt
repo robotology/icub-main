@@ -31,17 +31,12 @@ ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${GSL_LIBRARIES}
                                      ${YARP_LIBRARIES})
-
-if (NOT ICUB_EXPERIMENTAL)
-    ICUB_EXPORT_LIBRARY(${PROJECTNAME} 
-					"${PROJECT_SOURCE_DIR}/include;${GSL_INCLUDE_DIRS}" 
-					include/iCub/ctrl ${folder_header})
-else()                    
-icub_export_library2(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                 
+icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                     EXTERNAL_INCLUDE_DIRS ${GSL_INCLUDE_DIRS}
                                     DESTINATION include/iCub/ctrl 
                                     FILES ${folder_header})
-endif()
+
 
 
                                     

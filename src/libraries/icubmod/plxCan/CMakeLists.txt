@@ -17,6 +17,8 @@ if (NOT SKIP_pcan)
         ADD_LIBRARY(pcan PlxCan.cpp PlxCan.h)
 
         TARGET_LINK_LIBRARIES(pcan ${PLXCANAPI_LIB} ${YARP_LIBRARIES})
+        
+        icub_export_library(pcan)
 	
   ENDIF (NOT PLXCANAPI_FOUND)
   

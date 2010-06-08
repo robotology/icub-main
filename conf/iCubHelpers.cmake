@@ -19,7 +19,7 @@
 # -install rule to copy all header files to include/iCub
 # -append export rules to a file in ${PROJECT_BINARY_DIR}
 
-macro(icub_export_library name private_inc_dirs dest_dir)
+macro(icub_export_library_old name private_inc_dirs dest_dir)
 
 set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
 
@@ -69,7 +69,7 @@ endmacro(icub_export_library)
 # -append export rules for target to a ICUB_EXPORTBUILD_FILE in ${PROJECT_BINARY_DIR}
 #
 
-MACRO(icub_export_library2 target)
+MACRO(icub_export_library target)
   PARSE_ARGUMENTS(${target}
     "INTERNAL_INCLUDE_DIRS;EXTERNAL_INCLUDE_DIRS;DEPENDS;DESTINATION;FILES"
     "VERBOSE"
@@ -131,6 +131,9 @@ MACRO(icub_export_library2 target)
     set_target_properties(${target} PROPERTIES 
                         INTERNAL_INCLUDE_DIRS
                         "${internal_includes}")
+    if(VERBOSE)
+        message(STATUS "Target ${target} exporting internal headers: ${internal_includes}")
+    endif()
     set(include_dirs ${include_dirs} ${internal_includes})
   endif()
   
@@ -138,21 +141,28 @@ MACRO(icub_export_library2 target)
     list(REMOVE_DUPLICATES external_includes)
     set_target_properties(${target} PROPERTIES 
                         EXTERNAL_INCLUDE_DIRS
-                        "${external_includes}") 
+                        "${external_includes}")
+    if(VERBOSE)
+        message(STATUS "Target ${target} exporting external headers: ${external_includes}")
+    endif()
     set(include_dirs ${include_dirs} ${external_includes})                        
   endif()
   
   if (include_dirs)
     list(REMOVE_DUPLICATES include_dirs)
     set_property(TARGET ${target} PROPERTY INCLUDE_DIRS  "${include_dirs}")
-    message(STATUS "Target ${target} exporting: ${include_dirs}")
+    if (VERBOSE)
+        message(STATUS "Target ${target} exporting: ${include_dirs}")
+    endif()
     set(${target}_INCLUDE_DIRS "${include_dirs}" CACHE STRING "include directories")
   endif()
   ##############################################
 
   #### Export rules
   if (files AND destination)
-    message(STATUS "Target ${target} installing ${files} to ${destination}")
+    if (VERBOSE)
+        message(STATUS "Target ${target} installing ${files} to ${destination}")
+    endif()
     install(FILES ${files} DESTINATION ${destination})
 
     set_target_properties(${target} PROPERTIES 

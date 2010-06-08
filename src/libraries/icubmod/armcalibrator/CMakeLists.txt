@@ -17,9 +17,9 @@ IF (NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibratorj4 OR NOT SKIP_icu
     target_link_libraries(armcalibratorj8 ${YARP_LIBRARIES})
     target_link_libraries(armcalibratorj4 ${YARP_LIBRARIES})
     target_link_libraries(armcalibrator ${YARP_LIBRARIES})
-    icub_export_library(armcalibratorj8 "" include/iCub "")
-    icub_export_library(armcalibratorj4 "" include/iCub "")
-    icub_export_library(armcalibrator "" include/iCub "")
+    icub_export_library(armcalibratorj8)
+    icub_export_library(armcalibratorj4)
+    icub_export_library(armcalibrator)
 
 endif (NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibratorj4 OR NOT SKIP_icubarmcalibrator)
 

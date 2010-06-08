@@ -13,4 +13,6 @@ IF(NOT SKIP_logpolarclient)
   TARGET_LINK_LIBRARIES(logpolarclient ${LOGPOLAR_LIBRARIES} 
                                         ${ICUBDEV_LIBRARIES} 
                                         ${YARP_LIBRARIES})
+                                        
+   icub_export_library(logpolarclient)
 ENDIF(NOT SKIP_logpolarclient)

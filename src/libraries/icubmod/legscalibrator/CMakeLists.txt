@@ -8,6 +8,6 @@ ADD_LIBRARY(legscalibrator iCubLegsCalibrator.cpp iCubLegsCalibrator.h)
 
 target_link_libraries(legscalibrator ${YARP_LIBRARIES})
 
-icub_export_library(legscalibrator "" include/iCub "")
+icub_export_library(legscalibrator)
 
 endif (NOT SKIP_icublegscalibrator)

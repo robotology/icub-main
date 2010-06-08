@@ -30,6 +30,7 @@ IF(NOT SKIP_dragonfly2)
      
   ENDIF (WIN32)
 
+  icub_export_library(dragonfly2)
   ENDIF(NOT DRAGONFLYAPI_FOUND)
 
 ENDIF(NOT SKIP_dragonfly2)

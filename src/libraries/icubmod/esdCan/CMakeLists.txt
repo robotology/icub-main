@@ -12,6 +12,8 @@ IF (NOT SKIP_ecan)
     ADD_LIBRARY(esdCan EsdCan.cpp EsdCan.h)
     
     TARGET_LINK_LIBRARIES(esdCan ${ESDCANAPI_LIB} ${YARP_LIBRARIES})
+    
+    icub_export_library(esdCan)
   ENDIF(NOT ESDCANAPI_FOUND)
 
 ENDIF (NOT SKIP_ecan)

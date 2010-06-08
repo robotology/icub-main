@@ -14,6 +14,6 @@ IF (NOT SKIP_gazecontrollerclient)
    TARGET_LINK_LIBRARIES(gazecontrollerclient ctrlLib
                                               ${YARP_LIBRARIES})
 
-   icub_export_library(gazecontrollerclient "" include/iCub "")
+   icub_export_library(gazecontrollerclient)
 ENDIF (NOT SKIP_gazecontrollerclient)
 

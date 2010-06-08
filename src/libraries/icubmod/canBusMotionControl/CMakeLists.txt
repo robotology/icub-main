@@ -16,7 +16,6 @@ IF (NOT SKIP_canmotioncontrol)
   ADD_LIBRARY(canmotioncontrol CanBusMotionControl.cpp CanBusMotionControl.h ThreadTable2.cpp ThreadPool2.cpp)
   TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
   
- # icub_export_library(canmotioncontrol "" include/iCub "")
-  icub_export_library2(canmotioncontrol)
+  icub_export_library(canmotioncontrol)
 
   ENDIF (NOT SKIP_canmotioncontrol)
