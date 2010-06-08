@@ -182,7 +182,7 @@ private:
     /**
     *  output port that represent the selected attention output
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > selectedAttentionPort; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > selectedAttentionPort; 
     /**
     *  output port where the centroid coordinate is sent
     */

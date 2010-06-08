@@ -173,8 +173,8 @@ bool selectiveAttentionModule::outPorts(){
         linearCombinationPort.write();
     }
     
-    if((0!=currentProcessor->outputColourImage)&&(selectedAttentionPort.getOutputCount())){
-        selectedAttentionPort.prepare() = *(currentProcessor->outputColourImage);
+    if((0!=currentProcessor->outputImage)&&(selectedAttentionPort.getOutputCount())){
+        selectedAttentionPort.prepare() = *(currentProcessor->outputImage);
         selectedAttentionPort.write();
     }	
 
