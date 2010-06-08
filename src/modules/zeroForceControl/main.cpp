@@ -110,14 +110,13 @@ This file can be edited at src/zeroForceControl/main.cpp.
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
-#include <iCub/iKin/iKinFwd.h>
-#include <iCub/iDyn/iFC.h>
-
 #include <iostream>
 #include <iomanip>
 #include <string.h>
 
 #include "filter.h"
+#include "iCub/iFC.h"
+#include "iCub/iKinFwd.h"
 
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
@@ -1242,8 +1241,8 @@ public:
 		  Time::delay(3.1);
             return false;
 		}
-		port_FT=new BufferedPort<Vector>;
-		port_FT->open((PortName+"/FT:i").c_str());
+		//port_FT=new BufferedPort<Vector>;
+		//port_FT->open((PortName+"/FT:i").c_str());
 		Bottle tmp;
 		tmp=0;
 		Vector initPos;
