@@ -139,7 +139,7 @@ MACRO(icub_export_library2 target)
     set_target_properties(${target} PROPERTIES 
                         EXTERNAL_INCLUDE_DIRS
                         "${external_includes}") 
-    set(external_includes ${include_dirs} ${external_includes})                        
+    set(include_dirs ${include_dirs} ${external_includes})                        
   endif()
   
   if (include_dirs)
