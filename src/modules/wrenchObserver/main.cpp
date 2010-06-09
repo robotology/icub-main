@@ -252,6 +252,7 @@ public:
                 sens = new iDynInvSensorLeg(chain,"right",NE_DYNAMIC);
         }
 
+		HS = sens->getH();
         sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
 
         FTB = new iFB(sensorLink);
