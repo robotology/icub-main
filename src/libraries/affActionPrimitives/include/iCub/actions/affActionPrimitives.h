@@ -119,6 +119,7 @@ protected:
 
     yarp::os::RateThread *armWaver;
     yarp::os::Semaphore  *mutex;
+    yarp::os::Event       motionStartEvent;
     yarp::os::Event       motionDoneEvent;
 
     bool armMoveDone;
@@ -580,17 +581,37 @@ public:
     virtual bool disableArmWaving();
 
     /**
-    * Check whether the action is accomplished or still ongoing.
+    * Check whether all the actions in queue are accomplished.
     * @param f the result of the check. 
-    * @param sync if true wait until the action is accomplished 
+    * @param sync if true wait until all actions are accomplished 
     *             (blocking call).
     * @return true/false on success/fail. 
     *  
-    * @note Actually the check is performed on the content of the 
-    *       actions queue so that the blocking call returns as soon
-    *       as the queue is empty.
+    * @note As specified the check is performed on the content of 
+    *       the actions queue so that the blocking call returns as
+    *       soon as the queue is empty.
     */
     virtual bool checkActionsDone(bool &f, const bool sync=false);
+
+    /**
+    * Check whether an action is still ongoing.
+    * @param f the result of the check. 
+    * @param sync if true wait that at least one action has just 
+    *             started (blocking call).
+    * @return true/false on success/fail. 
+    *  
+    * @note Sometimes it might be helpful to wait in the calling 
+    *       module until the beginning of the action inserted in the
+    *       queue. For example:
+    * @code 
+    * pushAction(A); 
+    * checkActionOnGoing(f,true); 
+    * // perform some computations that require the motion has been 
+    * // started off 
+    * checkActionsDone(f,true); 
+    * @endcode 
+    */
+    virtual bool checkActionOnGoing(bool &f, const bool sync=false);
 
     /**
     * Suddenly interrupt any blocking call that is pending on 

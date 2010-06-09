@@ -891,7 +891,7 @@ bool affActionPrimitives::execQueuedAction()
         if (action.execHand)
             cmdHand(action);
 
-        actionClb=action.clb;
+        actionClb=action.clb;        
     }
 
     return exec;
@@ -961,7 +961,8 @@ void affActionPrimitives::run()
             printMessage("hand WP reached\n");
 
             if (!handSeqTerminator)
-                execPendingHandSequences();    // here handMoveDone may switch false again
+                if (execPendingHandSequences())     // here handMoveDone may switch false again
+                    motionStartEvent.signal();
         }
     }
 
@@ -980,8 +981,11 @@ void affActionPrimitives::run()
             actionClb=NULL;
         }
 
-        if (!execQueuedAction())
+        if (execQueuedAction())
+            motionStartEvent.signal();
+        else
             motionDoneEvent.signal();
+            
     }
 }
 
@@ -1346,6 +1350,26 @@ bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
         }
 
         f=latchArmMoveDone && latchHandMoveDone;
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::checkActionOnGoing(bool &f, const bool sync)
+{
+    if (configured)
+    {
+        if (sync && checkEnabled)
+        {
+            motionStartEvent.reset();
+            motionStartEvent.wait();
+        }
+
+        f=!latchArmMoveDone || !latchHandMoveDone;
 
         return true;
     }
