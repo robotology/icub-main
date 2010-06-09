@@ -1464,6 +1464,34 @@ string SensorLinkNewtonEuler::getType() const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+//================================
+//
+//		ONE NODE NEWTON EULER
+//
+//================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OneNodeNewtonEuler::OneNodeNewtonEuler(const NewEulMode _mode, unsigned int verb)
+: OneLinkNewtonEuler(_mode,verb,NULL)
+{
+	info = "node";
+	F.resize(3);	F.zero();
+	Mu.resize(3);	Mu.zero();
+	w.resize(3);	w.zero();
+	dw.resize(3);	dw.zero();
+	ddp.resize(3);	ddp.zero();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 //================================
 //
@@ -1514,7 +1542,7 @@ OneChainNewtonEuler::OneChainNewtonEuler(iDynChain *_c, string _info, const NewE
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 OneChainNewtonEuler::~OneChainNewtonEuler()
 {
-	for(unsigned int i=0;i<nEndEff;i++)
+	for(unsigned int i=0;i<=nEndEff;i++)
 		delete neChain[i];
 	delete [] neChain;
 }
@@ -1523,7 +1551,7 @@ string OneChainNewtonEuler::toString() const
 {
 	string ret;
 	ret = "[Chain]: " + info;
-	for(unsigned int i=0;i<nEndEff;i++)
+	for(unsigned int i=0;i<=nEndEff;i++)
 	{
 		ret.append("\n");
 		ret.append(neChain[i]->toString());
@@ -1533,7 +1561,7 @@ string OneChainNewtonEuler::toString() const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneChainNewtonEuler::getVelAccAfterForward(unsigned int i, Vector &w, Vector &dw, Vector &dwM, Vector &ddp, Vector &ddpC) const
 {
-	if((i>=0)&&(i<=nLinks))
+	if((i>=0)&&(i<=nEndEff))
 	{
 		w = neChain[i]->getAngVel();
 		dw = neChain[i]->getAngAcc();
@@ -1546,9 +1574,35 @@ bool OneChainNewtonEuler::getVelAccAfterForward(unsigned int i, Vector &w, Vecto
 	{
 		if(verbose)
 			cerr << "OneChain error, impossible to retrieve vel/acc due to out of range index: "
-			<<i<<" where max is "<<nLinks<<endl;
+			<<i<<" where max is "<<nEndEff<<endl;
 		return false;
 	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::getVelAccBase(Vector &w, Vector &dw,Vector &ddp) const
+{
+	w = neChain[0]->getAngVel();
+	dw = neChain[0]->getAngAcc();
+	ddp = neChain[0]->getLinAcc();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::getVelAccEnd(Vector &w, Vector &dw,Vector &ddp) const
+{
+	w = neChain[nEndEff]->getAngVel();
+	dw = neChain[nEndEff]->getAngAcc();
+	ddp = neChain[nEndEff]->getLinAcc();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::getWrenchBase(Vector &F, Vector &Mu) const
+{
+	F = neChain[0]->getForce();
+	Mu = neChain[0]->getMoment();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::getWrenchEnd(Vector &F, Vector &Mu) const
+{
+	F = neChain[nEndEff]->getForce();
+	Mu = neChain[nEndEff]->getMoment();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
