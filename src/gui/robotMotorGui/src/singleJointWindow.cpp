@@ -340,6 +340,7 @@ bool partMover::entry_update(partMover *currentPart)
   
   int curr_amp_status=0;
   int amp_status[100]; //fix this!!!
+  for (int i=0; i<100; i++) amp_status[i]=0;
   iamp->getAmpStatus(amp_status); //fix this!!!
   curr_amp_status=amp_status[k]; //fix this!!!
  // fprintf(stderr, "FAULT : %x %x\n", amp_status[k], amp_status[k] & 0xFF);
