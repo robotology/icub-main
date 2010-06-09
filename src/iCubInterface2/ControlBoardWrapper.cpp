@@ -478,11 +478,11 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
 
 	if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_TORQUE))
 			{
-				handleTorqueMsg(cmd, response, &rec, &ok);
+                //		handleTorqueMsg(cmd, response, &rec, &ok);
 			}
     else if ((cmd.size()>1) && (cmd.get(0).asVocab()==VOCAB_ICONTROLMODE))
 		    {
-		        handleControlModeMsg(cmd, response, &rec, &ok);
+                //      handleControlModeMsg(cmd, response, &rec, &ok);
 			}
     else
     {
