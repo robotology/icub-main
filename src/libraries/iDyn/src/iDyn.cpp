@@ -1658,23 +1658,7 @@ void iCubInertialSensorDyn::allocate(const string &_type)
     H0(2,0)=1;
     H0(3,3)=1;
 
-    linkList.resize(8);
-
-	//dynamical parameters: inertia and COM are matrices, they must be initialized before
-	// mass
-	Vector m(8);
-	// inertia and COM
-	deque<Matrix> HC; 
-	deque<Matrix> I;
-	Matrix HCtmp(4,4); HCtmp.eye();
-	Matrix Itmp(3,3); Itmp.zero();
-	for(int i=0;i<8; i++)
-	{
-		HC.push_back(HCtmp);
-		I.push_back(Itmp);
-	}
-
-	m=0;
+    linkList.resize(7);
 
 	//create iDynLink from parameters calling
 	//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
@@ -1683,20 +1667,18 @@ void iCubInertialSensorDyn::allocate(const string &_type)
     linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
     linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
     linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
-    linkList[3]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
-    linkList[4]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,      0.0,       0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
-    linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   -0.054,    0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
+    linkList[3]=new iDynLink(0.27017604, -30.535917e-3,  2.5211768e-3, -0.23571261e-3, 	100.46346e-6, -0.17765781e-6,  0.44914333e-6, 45.425961e-6 -0.12682862e-6, 1.0145446e+02,    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+    linkList[4]=new iDynLink(0.27230552,  0.0,  4.3752947e-3,  5.4544215e-3, 	142.82339e-6, -0.0059261471e-6, -0.0022006663e-6, 82.884917e-6, -9.1321119e-6, 87.620338e-6,      0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
+    linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
 
     // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
-    linkList[6]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0, 0.013250,  0.008538,  0.785721,       0.0,              0.0,             0.0);
-    linkList[7]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0, 0.013250, -0.026861,  0.785075,       0.0,              0.0,             0.0);
+    linkList[6]=new iDynLink(1.3368659,	-11.811104e-3, -5.7800518e-3, -11.685197e-3,	3412.8918e-06,  66.297315e-6, -153.07583e-6, 4693.0882e-6,  8.0646052e-6, 4153.4285e-6, 0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0);
 
     for(unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
 
     // block virtual links
     blockLink(6,0.0);
-    blockLink(7,0.0);
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
