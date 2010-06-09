@@ -114,6 +114,8 @@ void generatorThread::getParameters()
 
                 fprintf(parameters_file,"%f %f ",myManager->next_nu,phase);
                 fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
+                
+                init_score =true;
             }
         else
             printf("warning, manager sending crappy values\n");
@@ -263,18 +265,21 @@ void generatorThread::run()
 
             ///update parameters
 
-            for(int i=0; i<nbDOFs; i++)
-            {            		
-            	if(myManager->drumID>0)
-            	{
-            			
-            		myManager->parameters[2*i] = myTargets->muOn[i];
-            		myManager->parameters[2*i+1] = myTargets->drumsPos[myManager->drumID][i];
-				}
-				else
-            	{
-            		myManager->parameters[2*i] = myTargets->muOff[i];
-            		myManager->parameters[2*i+1] = myTargets->drumsPos[myManager->drumID][i];
+			if(init_score)
+			{
+           		for(int i=0; i<nbDOFs; i++)
+				{	            		
+					if(myManager->drumID>0)
+					{
+							
+						myManager->parameters[2*i] = myTargets->muOn[i];
+						myManager->parameters[2*i+1] = myTargets->drumsPos[myManager->drumID][i];
+					}
+					else
+					{
+						myManager->parameters[2*i] = myTargets->muOff[i];
+						myManager->parameters[2*i+1] = myTargets->drumsPos[myManager->drumID][i];
+					}
 				}
 			}
 				
@@ -436,6 +441,8 @@ bool generatorThread::init(Searchable &s)
     Time::turboBoost();
 
     ///init period
+    
+    init_score = false;
 
     //period = 0.05; //in sec
 

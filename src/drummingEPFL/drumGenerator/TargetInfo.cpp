@@ -128,26 +128,32 @@ bool TargetInfo::Initialize(Property FromFile)
 void TargetInfo::UpdateInfo()
 {
 	Bottle *command = ik_port.read(false);
-    if(command!=NULL)
-    {   
-    	printf("\nCommand is %s", command->toString().c_str());
-    	fflush(stdout);
-		Bottle *list = command->get(0).asList();
-		int drumID = list->get(0).asInt();
-		for(int i=0; i<nbStates; i++)
-		{
-			if(drumIDs[i]==drumID) 
+	if(command!=NULL)
+	{   
+		for(int j=0; j<command->size(); j++)
+		{	
+			printf("\nCommand is %s", command->toString().c_str());
+			fflush(stdout);
+			Bottle *list = command->get(j).asList();
+			int drumID = list->get(0).asInt();
+			for(int i=0; i<nbStates; i++)
 			{
-				printf("\n NEW TARGET ANGLES received for drum %d, id %d: ",i, drumID); 
-				for(int j=0; j<nbDOFs; j++)
+				if(drumIDs[i]==drumID) 
 				{
-					drumsPos[i][j]=list->get(j+1).asDouble();
-					printf("%f ", drumsPos[i][j]);
-				}												
+					printf("\n NEW TARGET ANGLES received for drum %d, id %d: ",i, drumID); 
+					for(int j=0; j<nbDOFs; j++)
+					{
+						drumsPos[i][j]=list->get(j+1).asDouble();
+						printf("%f ", drumsPos[i][j]);
+					}												
+				}
 			}
+			printf("\n");
+				
 		}
-		printf("\n");
-		command->clear();				
+		command->clear();
+					
 	}
+	
 
 }

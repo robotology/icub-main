@@ -57,6 +57,7 @@ class generatorThread : public yarp::os::RateThread
     double lastBeat_time;
     bool previous_quadrant[2]; //used to calculate the new beat
    	bool ik_ok;
+   	bool init_score;
     int beat;
     int nbDrums;
     int notes[3];

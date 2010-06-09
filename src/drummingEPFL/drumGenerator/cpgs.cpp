@@ -77,12 +77,12 @@ cpg_manager::cpg_manager(int nbDOFs){
   //********fixed parameters********* 
 
   //equation
-  a = 10.0; //rate of convergence of the rhythmic system
-  b = 5.0;//rate of convergence of the discrete system
+  a = 5.0; //rate of convergence of the rhythmic system
+  b = 20.0;//rate of convergence of the discrete system
   m_off = -5.0; //value to turn of the oscillations 
   m_on = 1.0; // value to turn on the oscillations
-  b_go = 0.5; //rate of conv. of the go command (for the discrete system)
-  u_go = 4.0; //max value of the go command
+  b_go = 20; //rate of conv. of the go command (for the discrete system)
+  u_go = 1.0; //max value of the go command
   dt = 0.001; //integration step in seconds
   alpha_x = 100.0; //gain of the feedback on the position
   alpha_y = 100.0;//gain of the feedback on the speed
@@ -173,7 +173,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
     {
       ///discrete system
       dydt[i*4+2] = y[cpgs_size-1]*y[cpgs_size-1]*y[cpgs_size-1]*y[cpgs_size-1]*y[i*4+3];
-      dydt[i*4+3] = u_go*u_go*u_go*u_go*b * (b/4.0 * (g[i] - y[i*4+2]) - y[i*4+3]);
+      dydt[i*4+3] = u_go*b * (u_go*b/4.0 * (g[i] - y[i*4+2]) - y[i*4+3]);
 
 	   //rhythmic one
       dydt[i*4+4] = a * (m[i]-r[i]) * (y[i*4+4]-y[i*4+2]) - omega * y[i*4+5];
@@ -224,7 +224,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
     {
       ///discrete system
       dydt[i*4+2+cpgs_size] = y[2*cpgs_size-1]*y[2*cpgs_size-1]*y[2*cpgs_size-1]*y[2*cpgs_size-1]*y[i*4+3+cpgs_size];
-      dydt[i*4+3+cpgs_size] = u_go*u_go*u_go*u_go*b * (b/4.0 * (g[i] - y[i*4+2+cpgs_size]) - y[i*4+3+cpgs_size]);
+      dydt[i*4+3+cpgs_size] = u_go*b * (u_go*b/4.0 * (g[i] - y[i*4+2+cpgs_size]) - y[i*4+3+cpgs_size]);
 
 	   //rhythmic one
       dydt[i*4+4+cpgs_size] = a * (m[i]-r2[i]) * (y[i*4+4+cpgs_size]-y[i*4+2+cpgs_size]) - omega * y[i*4+5+cpgs_size];

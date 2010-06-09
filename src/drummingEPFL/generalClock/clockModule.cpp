@@ -20,7 +20,7 @@ void clockThread::getParameters()
       if(freq < MAX_FREQUENCY)
 	nu = freq;
     }
-  printf("frequency is %f\n", nu);
+  //printf("frequency is %f\n", nu);
 }
 
 void clockThread::run()
@@ -42,7 +42,7 @@ void clockThread::run()
   ///check the current beat
   if(time_now-lastBeat_time > 1.0/nu)
     {
-      printf("current beat: %d\n",beat);
+      //printf("current beat: %d\n",beat);
       beat++;
       lastBeat_time = time_now;
       
@@ -140,7 +140,7 @@ bool clockThread::init(Searchable &s)
 
 double clockModule::getPeriod()
 {
-  printf(" Clock Module is running\n");
+  //printf(" Clock Module is running\n");
   return 1.0;
 }
 

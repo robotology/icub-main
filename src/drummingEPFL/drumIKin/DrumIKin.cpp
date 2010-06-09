@@ -81,98 +81,100 @@ bool DrumIKin::updateModule(void)
 {
 	Bottle *visionBottle = inPort.read();
 
-	for(int i=0; i<visionBottle->size(); ++i)
+	if(visionBottle!=NULL)
 	{
-		Vector xp(3);
-		int markerID;
+		for(int i=0; i<visionBottle->size(); ++i)
+		{	
+			Vector xp(3);
+			int markerID;
 
-#ifdef TEST
-		xp[0] = visionBottle->get(0).asDouble();
-		xp[1] = visionBottle->get(1).asDouble();
-		xp[2] = visionBottle->get(2).asDouble();
-		markerID = 9;
-#else
-		Bottle *patchBottle=visionBottle->get(i).asList();
-		if(patchBottle->size() != 4 || patchBottle->get(0).asDouble() > 100)
-		{
-			cout << "--------ERROR GETTING THE 3D POSITION OF THE OBJECT ---------- " << endl;
-			return true;
-		}
-
-		//position of a patch;
-		xp[0] = patchBottle->get(0).asDouble();
-		xp[1] = patchBottle->get(1).asDouble();
-		xp[2] = patchBottle->get(2).asDouble();
-
-		markerID = patchBottle->get(3).asInt();
-		
-#endif
-		//get the target vector;
-		Vector xd = GetTargetVector(xp, armMarkerMapping[markerID]);
-
-		double distance = SHRT_MAX;
-		if(previousPosition.find(markerID) != previousPosition.end())
-		{
-			distance = norm(xd - previousPosition[markerID]);
-		}
-
-		
-		if(distance < MIN_DIFFERENCE)
-		{
-			continue;
-		}
-
-		previousPosition[markerID] = xd;
-		cout<< "Solving position : " << xd.toString() << endl;
-
-
-		double precision;
-		Vector resultQ = Solve(xd, armMarkerMapping[markerID], precision);
-
-		if(precision > parameters["max_error"]->asDouble())
-		{
-			cout<<"WARNING : precision is less than the maximum error set to "
-				<< parameters["max_error"]->asDouble() << endl;
-			continue;
-		}
-
-		if(parameters["pos_vel_cont"]->asInt())
-		{
-			//RobotPositionControl(armMarkerMapping[markerID], resultQ);
-		}
-		else
-		{
-			//setting crawling to init position and reach.
-			
-			//outBottle.addInt(parameters["reach_command_code"]->asInt());
-			Bottle jointsAnglesBottle;
-			jointsAnglesBottle.addInt(markerID);
-			for(int i=0; i<parameters["num_dof"]->asInt(); ++i)
+	#ifdef TEST
+			xp[0] = visionBottle->get(0).asDouble();
+			xp[1] = visionBottle->get(1).asDouble();
+			xp[2] = visionBottle->get(2).asDouble();
+			markerID = 9;
+	#else
+			Bottle *patchBottle=visionBottle->get(i).asList();
+			if(patchBottle->size() != 4 || patchBottle->get(0).asDouble() > 100)
 			{
-				jointsAnglesBottle.addDouble(resultQ[i]);
+				cout << "--------ERROR GETTING THE 3D POSITION OF THE OBJECT ---------- " << endl;
+				return true;
 			}
 
-			if(armMarkerMapping[markerID]=="left_arm") 
-			{ 
-				Bottle &outBottleLeft = outPortLeft.prepare();
-				outBottleLeft.clear();
-				outBottleLeft.addList() = jointsAnglesBottle;
-				cout << " ============== sending : " << outBottleLeft.toString() << " ===================" << endl;
-				outPortLeft.write();
-			}
-			if(armMarkerMapping[markerID]=="right_arm") 
-			{ 	
-				Bottle &outBottleRight = outPortRight.prepare();
-				outBottleRight.clear();
-				outBottleRight.addList() = jointsAnglesBottle;
-				cout << " ============== sending : " << outBottleRight.toString() << " ===================" << endl;
-				outPortRight.write();
-			}
+			//position of a patch;
+			xp[0] = patchBottle->get(0).asDouble();
+			xp[1] = patchBottle->get(1).asDouble();
+			xp[2] = patchBottle->get(2).asDouble();
+
+			markerID = patchBottle->get(3).asInt();
 			
+	#endif
+			//get the target vector;
+			Vector xd = GetTargetVector(xp, armMarkerMapping[markerID]);
+
+			double distance = SHRT_MAX;
+			if(previousPosition.find(markerID) != previousPosition.end())
+			{
+				distance = norm(xd - previousPosition[markerID]);
+			}
+
+			
+			if(distance < MIN_DIFFERENCE)
+			{
+				continue;
+			}
+
+			previousPosition[markerID] = xd;
+			cout<< "Solving position : " << xd.toString() << endl;
+
+
+			double precision;
+			Vector resultQ = Solve(xd, armMarkerMapping[markerID], precision);
+
+			if(precision > parameters["max_error"]->asDouble())
+			{
+				cout<<"WARNING : precision is less than the maximum error set to "
+					<< parameters["max_error"]->asDouble() << endl;
+				continue;
+			}
+
+			if(parameters["pos_vel_cont"]->asInt())
+			{
+				//RobotPositionControl(armMarkerMapping[markerID], resultQ);
+			}
+			else
+			{
+				//setting crawling to init position and reach.
+				
+				//outBottle.addInt(parameters["reach_command_code"]->asInt());
+				Bottle jointsAnglesBottle;
+				jointsAnglesBottle.addInt(markerID);
+				for(int i=0; i<parameters["num_dof"]->asInt(); ++i)
+				{
+					jointsAnglesBottle.addDouble(resultQ[i]);
+				}
+
+				if(armMarkerMapping[markerID]=="left_arm") 
+				{ 
+					Bottle &outBottleLeft = outPortLeft.prepare();
+					outBottleLeft.clear();
+					outBottleLeft.addList() = jointsAnglesBottle;
+					cout << " ============== sending : " << outBottleLeft.toString() << " ===================" << endl;
+					outPortLeft.write();
+				}
+				if(armMarkerMapping[markerID]=="right_arm") 
+				{ 	
+					Bottle &outBottleRight = outPortRight.prepare();
+					outBottleRight.clear();
+					outBottleRight.addList() = jointsAnglesBottle;
+					cout << " ============== sending : " << outBottleRight.toString() << " ===================" << endl;
+					outPortRight.write();
+				}
+				
+				
+				
+			}			
 		}
-		//Time::delay(0.5);
-		
-		
 		visionBottle->clear();
 	}
 
