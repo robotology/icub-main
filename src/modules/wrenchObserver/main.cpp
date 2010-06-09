@@ -64,7 +64,7 @@ The port the service is listening to.
 - \e <name>/<part>/FT:i (e.g. /ftObs/right_arm/FT:i) receives the input data 
   vector.
  
-- \e <name>/<part>/contact:o (e.g. /ftObs/right_arm/contact:o) provides the estimated 
+- \e <name>/<part>/wrench:o (e.g. /ftObs/right_arm/wrench:o) provides the estimated 
   end-effector wrench.
 
 \section in_files_sec Input Data Files
@@ -89,7 +89,7 @@ wrenchObserver --name ftObs --robot icub --part right_arm --rate 50
 the module will create the listening port /ftObs/right_arm/FT:i for 
 the acquisition of data vector coming for istance from the right arm analog port.
 At the same time it will provide the estimated 
-external wrench at the end-effector to /ftObs/right_arm/contact:o port. (use --help option to 
+external wrench at the end-effector to /ftObs/right_arm/wrench:o port. (use --help option to 
 see). 
  
 Try now the following: 
@@ -145,7 +145,7 @@ private:
 
     Vector *ft;
     BufferedPort<Vector> *port_FT;
-    BufferedPort<Vector> *port_Contact;
+    BufferedPort<Vector> *port_Wrench;
     bool first;
 
     AWLinEstimator  *linEst;
@@ -198,12 +198,12 @@ public:
         part = _part.c_str();
         first = true;
         port_FT = _port_FT;
-        port_Contact=new BufferedPort<Vector>;
+        port_Wrench=new BufferedPort<Vector>;
         string fwdSlash = "/";
         string port = fwdSlash+_name;
         port += (fwdSlash+part.c_str());
-        port += "/contact:o";
-        port_Contact->open(port.c_str());
+        port += "/wrench:o";
+        port_Wrench->open(port.c_str());
 
         dd->view(iencs);
         if (tt)
@@ -365,8 +365,8 @@ public:
             }
         }
 
-        port_Contact->prepare() = FT;
-        port_Contact->write();
+        port_Wrench->prepare() = FT;
+        port_Wrench->write();
     }
 
     void threadRelease()
@@ -401,13 +401,13 @@ public:
             ft = 0;
         }
 
-        if (port_Contact)
+        if (port_Wrench)
         {
-            port_Contact->interrupt();
-            port_Contact->close();
+            port_Wrench->interrupt();
+            port_Wrench->close();
 
-            delete port_Contact;
-            port_Contact = 0;
+            delete port_Wrench;
+            port_Wrench = 0;
         }
     }   
 };
