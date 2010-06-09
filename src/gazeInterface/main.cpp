@@ -1,100 +1,8 @@
-/** 
-\defgroup iKinArmCtrlIF iKinArmCtrlIF
- 
-@ingroup icub_module  
- 
-The YARP interface version of \ref iKinArmCtrl.
- 
-Copyright (C) 2009 RobotCub Consortium
- 
-Author: Ugo Pattacini 
-
-CopyPolicy: Released under the terms of the GNU GPL v2.0.
-
-\section intro_sec Description
- 
-This module relies on the YARP ICartesianControl interface to 
-implement the same functionalities of iKinArmCtrl module. 
-Please refer to \ref iKinArmCtrl for a detailed description.
- 
-The main differences with respect to \ref iKinArmCtrl are: 
--# \ref iKinArmCtrlIF controls joint by joint individually, 
-   hence one can use the non-controlled joints concurrently
-   without conflict.
--# \ref iKinArmCtrlIF does not have a <i>simulation</i> mode 
- since it is deeply connected to the robot. Nonethelesse, you
- can still use it together with the \ref icub_Simulation "iCub
- Simulator".
- 
-\section lib_sec Libraries 
-- YARP libraries. 
-
-\section parameters_sec Parameters
---ctrlName \e name 
-- The parameter \e name identifies the controller's name; all 
-  the open ports will be tagged with the prefix
-  /<ctrlName>/<part>/. If not specified \e iKinArmCtrlIF is
-  assumed.
- 
---robot \e name 
-- The parameter \e name selects the robot name to connect to; if
-  not specified \e icub is assumed.
- 
---part \e type 
-- The parameter \e type selects the robot's arm to work with. It
-  can be \e right_arm or \e left_arm; if not specified
-  \e right_arm is assumed.
- 
---T \e time
-- specify the task execution time in seconds; by default \e time
-  is 2.0 seconds. Note that this just an approximation of
-  execution time since there exists a controller running
-  underneath.
- 
---DOF8
-- enable the control of torso yaw joint. 
- 
---DOF9
-- enable the control of torso yaw/pitch joints. 
- 
---DOF10
-- enable the control of torso yaw/roll/pitch joints. 
- 
---onlyXYZ  
-- disable orientation control. 
- 
-\section portsa_sec Ports Accessed
- 
-Assumes that \ref icub_iCubInterface (with ICartesianControl 
-interface implemented) is running. 
- 
-\section portsc_sec Ports Created 
- 
-The module creates the ports required for the communication with
-the robot (through interfaces) and the following ports: 
- 
-- \e /<ctrlName>/<part>/xd:i receives the target end-effector 
-  pose. It accepts 7 double (also as a Bottle object): 3 for xyz
-  and 4 for orientation in axis/angle mode.
-
-- \e /<ctrlName>/<part>/rpc remote procedure call. 
-    Recognized remote commands:
-    -'quit' quit the module
-
-\section in_files_sec Input Data Files
-None.
-
-\section out_data_sec Output Data Files 
-None. 
- 
-\section conf_file_sec Configuration Files
-None. 
- 
-\section tested_os_sec Tested OS
-Windows, Linux
-
-\author Ugo Pattacini
-*/ 
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+//
+// A tutorial on how to use the Gaze Interface.
+//
+// Author: Ugo Pattacini - <ugo.pattacini@iit.it>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -105,9 +13,12 @@ Windows, Linux
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 
+
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/Drivers.h>
+#include <yarp/dev/GazeControl.h>
 
 #include <gsl/gsl_math.h>
 
@@ -118,10 +29,23 @@ Windows, Linux
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <stdio.h>
+#include <deque>
 
 #define MAX_TORSO_PITCH     30.0    // [deg]
 #define EXECTIME_THRESDIST  0.3     // [m]
 #define PRINT_STATUS_PER    1.0     // [s]
+#define CTRL_THREAD_PER     0.02        // [s]
+#define PRINT_STATUS_PER    1.0         // [s]
+#define STORE_POI_PER       3.0         // [s]
+#define SWITCH_STATE_PER    10.0        // [s]
+#define STILL_STATE_TIME    5.0         // [s]
+
+
+#define STATE_TRACK         0
+#define STATE_RECALL        1
+#define STATE_WAIT          2
+#define STATE_STILL         3
 
 using namespace std;
 using namespace yarp;
@@ -131,106 +55,84 @@ using namespace yarp::sig;
 using namespace yarp::math;
 
 
+
 class CtrlThread: public RateThread
 {
 protected:
-    ResourceFinder      &rf;
-    PolyDriver          *client;
-    ICartesianControl   *arm;
-    BufferedPort<Bottle> port_xd;
+    PolyDriver       *clientGaze;
+    PolyDriver       *clientTorso;
+    IGazeControl     *igaze;
+    IEncoders        *ienc;
+    IPositionControl *ipos;
 
-    bool ctrlCompletePose;
-    string remoteName;
-    string localName;
+    int state;
 
-    Vector xd;
-    Vector od;
+    Vector fp;
 
-    double defaultExecTime;
+    deque<Vector> poiList;
+
+    double t;
     double t0;
+    double t1;
+    double t2;
+    double t3;
+    double t4;
 
 public:
-    CtrlThread(unsigned int _period, ResourceFinder &_rf,
-               string _remoteName, string _localName) :
-               RateThread(_period),     rf(_rf),
-               remoteName(_remoteName), localName(_localName) { }
+    CtrlThread(const double period) : RateThread(int(period*1000.0)) { }
 
     virtual bool threadInit()
     {
-        // get params from the RF
-        if (rf.check("onlyXYZ"))
-            ctrlCompletePose=false;
-        else
-            ctrlCompletePose=true;
+        // open a client interface to connect to the gaze server
+        // we suppose that:
+        // 1 - the iCub simulator (icubSim) is running
+        // 2 - the gaze server iKinGazeCtrl is running and
+        //     launched with --robot icubSim option
+        Property optGaze("(device gazecontrollerclient)");
+        optGaze.put("remote","/iKinGazeCtrl");
+        optGaze.put("local","/gaze_client");
 
-        // open the client
-        Property option("(device cartesiancontrollerclient)");
-        option.put("remote",remoteName.c_str());
-        option.put("local",localName.c_str());
-
-        client=new PolyDriver;
-        if (!client->open(option))
+        clientGaze=new PolyDriver;
+        if (!clientGaze->open(optGaze))
         {
-            delete client;    
+            delete clientGaze;    
             return false;
         }
 
         // open the view
-        client->view(arm);
+        clientGaze->view(igaze);
 
-        // set trajectory time
-        defaultExecTime=rf.check("T",Value(2.0)).asDouble();
+        // set trajectory time:
+        // we'll go like hell since we're using the simulator :)
+        igaze->setNeckTrajTime(0.4);
+        igaze->setEyesTrajTime(0.1);
 
-        // set torso dofs
-        Vector newDof, curDof;
-        arm->getDOF(curDof);
-        newDof=curDof;
+        // put the gaze in tracking mode, so that
+        // when the torso moves, the gaze controller 
+        // will compensate for it
+        igaze->setTrackingMode(true);
 
-        if (rf.check("DOF10"))
-        {    
-            // torso joints completely enabled
-            newDof[0]=1;
-            newDof[1]=1;
-            newDof[2]=1;
+        Property optTorso("(device remote_controlboard)");
+        optTorso.put("remote","/icub/torso");
+        optTorso.put("local","/torso_client");
 
-            limitTorsoPitch();
-        }
-        else if (rf.check("DOF9"))
-        {    
-            // torso yaw and pitch enabled
-            newDof[0]=1;
-            newDof[1]=0;
-            newDof[2]=1;
-
-            limitTorsoPitch();
-        }
-        else if (rf.check("DOF8"))
-        {                
-            // only torso yaw enabled
-            newDof[0]=0;
-            newDof[1]=0;
-            newDof[2]=1;
-        }
-        else
-        {    
-            // torso joints completely disabled
-            newDof[0]=0;
-            newDof[1]=0;
-            newDof[2]=0;
+        clientTorso=new PolyDriver;
+        if (!clientTorso->open(optTorso))
+        {
+            delete clientTorso;    
+            return false;
         }
 
-        arm->setDOF(newDof,curDof);
+        // open the view
+        clientTorso->view(ienc);
+        clientTorso->view(ipos);
+        ipos->setRefSpeed(0,10.0);
 
-        // set tracking mode
-        arm->setTrackingMode(false);
+        fp.resize(3);
 
-        // init variables
-        while (true)
-            if (arm->getPose(xd,od))
-                break;
+        state=STATE_TRACK;
 
-        // open ports
-        port_xd.open((localName+"/xd:i").c_str());
+		t=t0=t1=t2=t3=t4=Time::now();
 
         return true;
     }
@@ -238,47 +140,141 @@ public:
     virtual void afterStart(bool s)
     {
         if (s)
-            cout<<"Thread started successfully"<<endl;
+            fprintf(stdout,"Thread started successfully\n");
         else
-            cout<<"Thread did not start"<<endl;
-
-        t0=Time::now();
+            fprintf(stdout,"Thread did not start\n");        
     }
 
     virtual void run()
     {
-        if (Bottle *b=port_xd.read(false))
-        {                
-            if (b->size()>=3)
-            {                                
-                for (int i=0; i<3; i++)
-                    xd[i]=b->get(i).asDouble();
+        t=Time::now();
 
-                if (ctrlCompletePose && b->size()>=7)
-                {    
-                    for (int i=0; i<4; i++)
-                        od[i]=b->get(3+i).asDouble();
-                }
+        generateTarget();        
 
-                const double execTime=calcExecTime(xd);
+        if (state==STATE_TRACK)
+        {
+            // look at the target (streaming)
+            igaze->lookAtFixationPoint(fp);
 
-                if (ctrlCompletePose)
-                    arm->goToPose(xd,od,execTime);
-                else
-                    arm->goToPosition(xd,execTime);
+            // some verbosity
+            printStatus();
+
+            // we collect from time to time
+            // some interesting points (POI)
+            // where to look at soon afterwards
+            storeInterestingPoint();
+
+            if (t-t2>=SWITCH_STATE_PER)
+            {
+                // switch state
+                state=STATE_RECALL;
             }
         }
 
-        printStatus();
+        if (state==STATE_RECALL)
+        {
+            // pick up the first POI
+            // and clear the list
+            Vector ang=poiList.front();
+            poiList.clear();
+
+            fprintf(stdout,"Retrieving POI #0 ... %s [deg]\n",
+                    ang.toString().c_str());
+
+            // look at the chosen POI
+            igaze->lookAtAbsAngles(ang);
+
+            // switch state
+            state=STATE_WAIT;
+        }
+
+        if (state==STATE_WAIT)
+        {
+            bool done=false;
+            igaze->checkMotionDone(&done);
+
+            if (done)
+            {
+                Vector ang;
+                igaze->getAngles(ang);            
+
+                fprintf(stdout,"Actual gaze configuration: %s [deg]\n",
+                        ang.toString().c_str());
+
+                fprintf(stdout,"Moving the torso; see if the gaze is compensated ... ");
+                
+                // move the torso yaw
+                double val;
+                ienc->getEncoder(0,&val);
+                ipos->positionMove(0,val>0.0?-30.0:30.0);
+
+                t4=t;
+
+                // switch state
+                state=STATE_STILL;
+            }
+        }
+
+        if (state==STATE_STILL)
+        {
+            if (t-t4>=STILL_STATE_TIME)
+            {
+                fprintf(stdout,"done\n");
+
+                t1=t2=t3=t;
+
+                // switch state
+                state=STATE_TRACK;
+            }
+        }
     }
 
     virtual void threadRelease()
     {    
-        arm->stopControl();
-        delete client;
+        // we require an immediate stop
+        // before closing the client for safety reason
+        // (anyway it's already done internally in the
+        // destructor)
+        igaze->stopControl();
 
-        port_xd.interrupt();
-        port_xd.close();
+        // it's a good rule to reinstate the tracking mode
+        // as it was
+        igaze->setTrackingMode(false);
+
+        delete clientGaze;
+        delete clientTorso;
+    }
+
+    void generateTarget()
+    {   
+        // translational target part: a circular trajectory
+        // in the yz plane centered in [-0.5,0.0,0.3] with radius=0.1 m
+        // and frequency 0.1 Hz
+        fp[0]=-0.5;
+        fp[1]=+0.0+0.1*cos(2.0*M_PI*0.1*(t-t0));
+        fp[2]=+0.3+0.1*sin(2.0*M_PI*0.1*(t-t0));            
+    }
+
+    void storeInterestingPoint()
+    {
+        if (t-t3>=STORE_POI_PER)
+        {
+            Vector ang;
+
+            // we store the current azimuth, elevation
+            // and vergence wrt the absolute reference frame
+            // The absolute reference frame for the azimuth/elevation couple
+            // is head-centered with the robot in rest configuration
+            // (i.e. torso and head angles zeroed). 
+            igaze->getAngles(ang);            
+
+            fprintf(stdout,"Storing POI #%d ... %s [deg]\n",
+                    poiList.size(),ang.toString().c_str());
+
+            poiList.push_back(ang);
+
+            t3=t;
+        }
     }
 
     double norm(const Vector &v)
@@ -286,56 +282,23 @@ public:
         return sqrt(dot(v,v));
     }
 
-    void limitTorsoPitch()
-    {
-        int axis=0; // pitch joint
-        double min, max;
-
-        arm->getLimits(axis,&min,&max);
-        arm->setLimits(axis,min,MAX_TORSO_PITCH);
-    }
-
-    double calcExecTime(const Vector &xd)
-    {
-        Vector x,o;
-        arm->getPose(x,o);
-
-        if (norm(xd-x)<EXECTIME_THRESDIST)
-            return defaultExecTime;
-        else
-            return 1.5*defaultExecTime;
-    }
-
     void printStatus()
-    {
-        double t=Time::now();
-
-        if (t-t0>=PRINT_STATUS_PER)
+    {        
+        if (t-t1>=PRINT_STATUS_PER)
         {
-            Vector x,o,xdhat,odhat,qdhat;
+            Vector x;
 
-            arm->getPose(x,o);
-            arm->getDesired(xdhat,odhat,qdhat);
-            double e_x=norm(xdhat-x);
+            // we get the current fixation point in the
+            // operational space
+            igaze->getFixationPoint(x);
 
-            cout<< "xd          [m] = "<<xd.toString()   <<endl;
-            cout<< "xdhat       [m] = "<<xdhat.toString()<<endl;
-            cout<< "x           [m] = "<<x.toString()    <<endl;
-            cout<< "norm(e_x)   [m] = "<<e_x             <<endl;
+            fprintf(stdout,"+++++++++\n");
+            fprintf(stdout,"fp         [m] = %s\n",fp.toString().c_str());
+            fprintf(stdout,"x          [m] = %s\n",x.toString().c_str());
+            fprintf(stdout,"norm(fp-x) [m] = %g\n",norm(fp-x));
+            fprintf(stdout,"---------\n\n");
 
-            if (ctrlCompletePose)
-            {
-                double e_o=norm(odhat-o);
-
-                cout<< "od        [rad] = "<<od.toString()   <<endl;
-                cout<< "odhat     [rad] = "<<odhat.toString()<<endl;
-                cout<< "o         [rad] = "<<o.toString()    <<endl;
-                cout<< "norm(e_o) [rad] = "<<e_o             <<endl;
-            }
-
-            cout<<endl;
-
-            t0=t;
+            t1=t;
         }
     }
 };
@@ -346,39 +309,18 @@ class CtrlModule: public RFModule
 {
 protected:
     CtrlThread *thr;
-    Port        rpcPort;
 
 public:
-    CtrlModule() { }
-
     virtual bool configure(ResourceFinder &rf)
     {
-        string slash="/";
-        string ctrlName;
-        string robotName;
-        string partName;
-        string remoteName;
-        string localName;
-
         Time::turboBoost();
 
-        // get params from the RF
-        ctrlName=rf.check("ctrlName",Value("iKinArmCtrlIF")).asString();
-        robotName=rf.check("robot",Value("icub")).asString();
-        partName=rf.check("part",Value("right_arm")).asString();
-
-        remoteName=slash+robotName+"/cartesianController/"+partName;
-        localName=slash+ctrlName+slash+partName;
-
-        thr=new CtrlThread(20,rf,remoteName,localName);
+        thr=new CtrlThread(CTRL_THREAD_PER);
         if (!thr->start())
         {
             delete thr;
             return false;
         }
-
-        rpcPort.open((localName+"/rpc").c_str());
-        attach(rpcPort);
 
         return true;
     }
@@ -388,15 +330,12 @@ public:
         thr->stop();
         delete thr;
 
-        rpcPort.interrupt();
-        rpcPort.close();
-
         return true;
     }
 
     virtual double getPeriod()    { return 1.0;  }
     virtual bool   updateModule() { return true; }
-};
+};  
 
 
 

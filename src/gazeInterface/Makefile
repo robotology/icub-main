@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /usr/local/src/robot/iCub/src/gazeInterface
+CMAKE_SOURCE_DIR = /usr/local/src/robot/iCub
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /usr/local/src/robot/iCub/src/gazeInterface
+CMAKE_BINARY_DIR = /usr/local/src/robot/iCub
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -50,7 +50,7 @@ CMAKE_BINARY_DIR = /usr/local/src/robot/iCub/src/gazeInterface
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	cd /usr/local/src/robot/iCub/src/gazeInterface && /usr/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -60,19 +60,19 @@ edit_cache/fast: edit_cache
 # Special rule for the target install
 install: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
+	cd /usr/local/src/robot/iCub/src/gazeInterface && /usr/bin/cmake -P cmake_install.cmake
 .PHONY : install
 
 # Special rule for the target install
 install/fast: preinstall/fast
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
+	cd /usr/local/src/robot/iCub/src/gazeInterface && /usr/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
 
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+	cd /usr/local/src/robot/iCub/src/gazeInterface && /usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
 .PHONY : install/local
 
 # Special rule for the target install/local
@@ -82,7 +82,7 @@ install/local/fast: install/local
 # Special rule for the target install/strip
 install/strip: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+	cd /usr/local/src/robot/iCub/src/gazeInterface && /usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
 .PHONY : install/strip
 
 # Special rule for the target install/strip
@@ -101,7 +101,7 @@ list_install_components/fast: list_install_components
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	cd /usr/local/src/robot/iCub/src/gazeInterface && /usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -110,14 +110,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /usr/local/src/robot/iCub/src/gazeInterface/CMakeFiles /usr/local/src/robot/iCub/src/gazeInterface/CMakeFiles/progress.make
-	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /usr/local/src/robot/iCub/src/gazeInterface/CMakeFiles 0
+	cd /usr/local/src/robot/iCub && $(CMAKE_COMMAND) -E cmake_progress_start /usr/local/src/robot/iCub/CMakeFiles /usr/local/src/robot/iCub/src/gazeInterface/CMakeFiles/progress.make
+	cd /usr/local/src/robot/iCub && $(MAKE) -f CMakeFiles/Makefile2 src/gazeInterface/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /usr/local/src/robot/iCub/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) -f CMakeFiles/Makefile2 clean
+	cd /usr/local/src/robot/iCub && $(MAKE) -f CMakeFiles/Makefile2 src/gazeInterface/clean
 .PHONY : clean
 
 # The main clean target
@@ -126,45 +126,46 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /usr/local/src/robot/iCub && $(MAKE) -f CMakeFiles/Makefile2 src/gazeInterface/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /usr/local/src/robot/iCub && $(MAKE) -f CMakeFiles/Makefile2 src/gazeInterface/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /usr/local/src/robot/iCub && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named gazeInterface
+# Convenience name for target.
+src/gazeInterface/CMakeFiles/gazeInterface.dir/rule:
+	cd /usr/local/src/robot/iCub && $(MAKE) -f CMakeFiles/Makefile2 src/gazeInterface/CMakeFiles/gazeInterface.dir/rule
+.PHONY : src/gazeInterface/CMakeFiles/gazeInterface.dir/rule
 
-# Build rule for target.
-gazeInterface: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gazeInterface
+# Convenience name for target.
+gazeInterface: src/gazeInterface/CMakeFiles/gazeInterface.dir/rule
 .PHONY : gazeInterface
 
 # fast build rule for target.
 gazeInterface/fast:
-	$(MAKE) -f CMakeFiles/gazeInterface.dir/build.make CMakeFiles/gazeInterface.dir/build
+	cd /usr/local/src/robot/iCub && $(MAKE) -f src/gazeInterface/CMakeFiles/gazeInterface.dir/build.make src/gazeInterface/CMakeFiles/gazeInterface.dir/build
 .PHONY : gazeInterface/fast
 
 # target to build an object file
 main.o:
-	$(MAKE) -f CMakeFiles/gazeInterface.dir/build.make CMakeFiles/gazeInterface.dir/main.o
+	cd /usr/local/src/robot/iCub && $(MAKE) -f src/gazeInterface/CMakeFiles/gazeInterface.dir/build.make src/gazeInterface/CMakeFiles/gazeInterface.dir/main.o
 .PHONY : main.o
 
 # target to preprocess a source file
 main.i:
-	$(MAKE) -f CMakeFiles/gazeInterface.dir/build.make CMakeFiles/gazeInterface.dir/main.i
+	cd /usr/local/src/robot/iCub && $(MAKE) -f src/gazeInterface/CMakeFiles/gazeInterface.dir/build.make src/gazeInterface/CMakeFiles/gazeInterface.dir/main.i
 .PHONY : main.i
 
 # target to generate assembly for a file
 main.s:
-	$(MAKE) -f CMakeFiles/gazeInterface.dir/build.make CMakeFiles/gazeInterface.dir/main.s
+	cd /usr/local/src/robot/iCub && $(MAKE) -f src/gazeInterface/CMakeFiles/gazeInterface.dir/build.make src/gazeInterface/CMakeFiles/gazeInterface.dir/main.s
 .PHONY : main.s
 
 # Help Target
@@ -194,6 +195,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /usr/local/src/robot/iCub && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
