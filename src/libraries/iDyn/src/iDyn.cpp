@@ -382,6 +382,21 @@ iDynChain::iDynChain(const iDynChain &c)
     clone(c);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::dispose()
+{
+	iKinChain::dispose();
+	if(NE)
+	{
+		delete NE;
+		NE=NULL;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynChain::~iDynChain()
+{
+	dispose();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynChain &iDynChain::operator=(const iDynChain &c)
 {
     clone(c);
@@ -812,6 +827,65 @@ void iDynChain::computeKinematicNewtonEuler()
 		NE->BackwardKinematicFromEnd();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::computeWrenchNewtonEuler()
+{
+	if(iterateMode_wrench == NE_BACKWARD)	
+		NE->BackwardWrenchFromEnd();
+	else 
+		NE->ForwardWrenchFromBase();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::getKinematicNewtonEuler(Vector &w, Vector &dw, Vector &ddp)
+{
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call getKinematicNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
+				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+		prepareNewtonEuler();
+		initNewtonEuler();
+	}
+	
+	w.resize(3); dw.resize(3); ddp.resize(3); w=dw=ddp=0.0;
+	if(iterateMode_kinematics == NE_FORWARD)	
+	{
+		//get kinematics from the end-effector
+		NE->getVelAccEnd(w,dw,ddp);
+	}
+	else 
+	{
+		//get kinematics from the base
+		NE->getVelAccBase(w,dw,ddp);
+	}
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu) 
+{
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call getWrenchNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
+				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+		prepareNewtonEuler();
+		initNewtonEuler();
+	}
+	F.resize(3); Mu.resize(3); F=Mu=0.0;
+	if(iterateMode_wrench == NE_BACKWARD)			
+	{
+		//get wrench from the base
+		NE->getWrenchBase(F,Mu);
+	}
+	else
+	{
+		//get wrench from the end-effector
+		NE->getWrenchEnd(F,Mu);
+	}
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler()
 {
 	Vector w0(3); w0.zero();
@@ -823,7 +897,7 @@ bool iDynChain::initNewtonEuler()
 	return initNewtonEuler(w0,dw0,ddp0,Fend,Muend);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynChain::initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
+bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &Fend, const Vector &Muend)
 {
 	if( NE == NULL)
 	{
@@ -858,6 +932,67 @@ bool iDynChain::initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Ve
 				<< w0.length() <<","<< dw0.length() <<","
 				<< ddp0.length() <<","<< Fend.length() <<","<< Muend.length() <<","
 				<<" instead of 3,3,3,3,3"<<endl;
+		}
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0)
+{
+	if(NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call initKinematicNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+		prepareNewtonEuler();
+	}
+
+	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
+	{
+		if(iterateMode_kinematics == NE_FORWARD)	
+			return NE->initKinematicBase(w0,dw0,ddp0);
+		else 
+			return NE->initKinematicEnd(w0,dw0,ddp0);
+	}
+	else
+	{
+		if(verbose)
+		{
+			cerr<<"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: "
+				<<" w0,dw0,ddp0 have size "
+				<< w0.length() <<","<< dw0.length() <<","
+				<< ddp0.length() <<","
+				<<" instead of 3,3,3"<<endl;
+		}
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
+{
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call initWrenchNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+		prepareNewtonEuler();
+	}
+
+	if((Fend.length()==3)&&(Muend.length()==3))
+	{
+		if(iterateMode_wrench == NE_BACKWARD)	
+			return NE->initWrenchEnd(Fend,Muend);
+		else 
+			return NE->initWrenchBase(Fend,Muend);
+	}
+	else
+	{
+		if(verbose)
+		{
+			cerr<<"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: "
+				<<" Fend,Muend have size "
+				<< Fend.length() <<","<< Muend.length() <<","
+				<<" instead of 3,3"<<endl;
 		}
 		return false;
 	}
@@ -1190,7 +1325,8 @@ void iDynLimb::dispose()
 
         linkList.clear();
     }
-	dispose();
+	
+	iDynChain::dispose();
 
     configured=false;
 }
