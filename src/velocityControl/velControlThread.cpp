@@ -154,6 +154,8 @@ void velControlThread::threadRelease()
 	{
 		command(k)=0;
 		ivel->velocityMove(k, command[k]);
+        setGain(k,0);
+        setVel(k,0);
 	}
 
 	command_port.close();

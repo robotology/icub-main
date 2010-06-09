@@ -46,6 +46,8 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     while(interThread.inputImg->width()==0){
         
     }
+
+	printf("input port activated! starting the processes ....\n");
     
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);

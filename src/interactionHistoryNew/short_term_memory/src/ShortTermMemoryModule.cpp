@@ -284,7 +284,9 @@ bool ShortTermMemoryModule::updateModule(){
 
     if(!memory_process["robot_hide"].front()) {
         if(memory_sum["human_drum"] > 0) {
-            drum_score = (0.5* (memory_sum["robot_drum"] + memory_sum["human_drum"]) - memory_sum["both_drum"])/(resolution*mem_length);
+            drum_score = (0.5* (memory_sum["robot_drum"] + memory_sum["human_drum"]) - 2.0 *memory_sum["both_drum"])/(resolution*mem_length);
+        } else {
+            drum_score =0.25*memory_sum["robot_drum"]/(resolution*mem_length);
         } 
     } else {
         //penalize for hiding when person drums
@@ -305,15 +307,16 @@ bool ShortTermMemoryModule::updateModule(){
     //similarly, if too short, might be a tracking err
     //if (memory_sum["human_only_hide"] < (2.5*resolution))
     //if person was hiding (not lost), give robot more reward
-    if((memory_sum["human_only_hide"] < (resolution*2.5)) && (memory_sum["human_only_hide"] > (resolution*0.5))){
-      hide_score += memory_sum["human_only_hide"];
-      hide_score += memory_sum["robot_hide"];
-    } else {
-        //no reward
-        //hide_score += 0.25*memory_sum["robot_hide"];
+    if(!memory_process["robot_drum"].front()) {
+        if((memory_sum["human_only_hide"] < (resolution*2.5)) && (memory_sum["human_only_hide"] > (resolution*0.5))){
+            hide_score += memory_sum["human_only_hide"];
+            hide_score += memory_sum["robot_hide"];
+        } else {
+            //no reward
+            //hide_score += 0.25*memory_sum["robot_hide"];
+        }
+        hide_score = hide_score/(resolution*mem_length);
     }
-    hide_score = hide_score/(resolution*mem_length);
-    
     //send the memory-based reward to motivation dynamics
     //not the cleanest way to implement, but avoids having to pass
     //whole memory to motivation dynamics
