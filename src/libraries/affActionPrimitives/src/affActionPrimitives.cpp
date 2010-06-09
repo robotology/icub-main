@@ -891,7 +891,7 @@ bool affActionPrimitives::execQueuedAction()
         if (action.execHand)
             cmdHand(action);
 
-        actionClb=action.clb;        
+        actionClb=action.clb;
     }
 
     return exec;
@@ -985,7 +985,6 @@ void affActionPrimitives::run()
             motionStartEvent.signal();
         else
             motionDoneEvent.signal();
-            
     }
 }
 
