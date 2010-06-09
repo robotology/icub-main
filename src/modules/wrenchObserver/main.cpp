@@ -573,13 +573,11 @@ public:
 
     bool close()
     {
-        fprintf(stderr,"closing... \n");
-
-        if (inv_dyn)
-            inv_dyn->stop();
+        fprintf(stderr,"closing... \n");      
 
         if (inv_dyn)
         {
+            inv_dyn->stop();
             delete inv_dyn;
             inv_dyn=0;
         }
