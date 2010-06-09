@@ -1657,15 +1657,15 @@ void iCubInertialSensor::allocate(const string &_type)
     linkList.resize(7);
 
     // links of torso and neck
-    linkList[0]=new iKinLink(    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
-    linkList[1]=new iKinLink(      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
-    linkList[2]=new iKinLink(  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
-    linkList[3]=new iKinLink(    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
-    linkList[4]=new iKinLink(      0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
-    linkList[5]=new iKinLink(   0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
+    linkList[0]=new iKinLink(   0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+    linkList[1]=new iKinLink(     0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+    linkList[2]=new iKinLink( 0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
+    linkList[3]=new iKinLink(   0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+    linkList[4]=new iKinLink(     0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
+    linkList[5]=new iKinLink(  0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
 
     // virtual link that describes T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
-    linkList[6]=new iKinLink(      0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0);
+    linkList[6]=new iKinLink(     0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0);
 
     for (unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
