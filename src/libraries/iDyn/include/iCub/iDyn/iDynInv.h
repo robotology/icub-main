@@ -787,6 +787,7 @@ public:
 	double				getKr()		const;
 	yarp::sig::Vector	getAngAccM()const;
 	double				getTorque()	const;
+	yarp::sig::Matrix	getH()		const;
 
 	double				getMass()	const;
   	yarp::sig::Matrix	getInertia()const;
@@ -1190,6 +1191,7 @@ protected:
 	unsigned int verbose;
 	/// a string with useful information if needed
 	std::string info;
+	yarp::sig::Matrix H;
 
 
 public:
@@ -1257,6 +1259,8 @@ public:
 	 * @return a (6x1) vector where 0:2=force 3:5=moment
      */
 	yarp::sig::Vector getSensorForceMoment() const;
+	
+	yarp::sig::Matrix getH() {return sens->getH();}
 
 	//~~~~~~~~~~~~~~
 	// set methods
