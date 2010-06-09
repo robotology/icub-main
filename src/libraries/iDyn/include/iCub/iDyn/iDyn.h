@@ -487,6 +487,7 @@ class iDynChain : public iKin::iKinChain
 	friend class OneChainNewtonEuler;
 	friend class iDynInvSensor;
 	friend class iDynSensor;
+	friend class RigidBodyTransformation;
 
 protected:
 	
@@ -515,18 +516,17 @@ protected:
 	void build();
 
 	/**
+	* Dispose
+	*/	
+	void dispose();
+
+	/**
 	* Returns a pointer to the ith iDynLink
 	* @param i is the Link position
 	* @return pointer to ith link
 	*/
 	iDynLink * refLink(const unsigned int i);
 
-	/**
-	* Calls the proper method to compute kinematics variables: either
-	* ForwardKinematicFromBase() or BackwardKinematicFromEnd(). This method 
-	* is protected and it is used by iDynSensor for the Kinematics computations.
-	*/
-	void computeKinematicNewtonEuler();
 
 public:
 
@@ -812,6 +812,55 @@ public:
     */
 	ChainIterationMode getIterModeWrench() const;
 
+	/**
+	* Calls the proper method to compute kinematics variables: either
+	* ForwardKinematicFromBase() or BackwardKinematicFromEnd(). This method 
+	* is protected and it is used by iDynSensor and iDynNode for the Kinematics computations.
+	*/
+	void computeKinematicNewtonEuler();
+
+	/**
+	* Calls the proper method to compute wrench variables: either
+	* BackwardWrenchFromEnd() or ForwardWrenchFromBase(). This method 
+	* is protected and it is used by iDynSensor and iDynNode for the Wrench computations.
+	*/
+	void computeWrenchNewtonEuler();
+
+	/**
+	* Calls the proper method to set kinematics variables in OneChainNewtonEuler: either
+	* initKinematicBase() or initKinematicEnd(). This method 
+	* is protected and it is used by RigidBodyTransformation for setting the Kinematics 
+	* variables.
+	*/
+	bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+
+	/**
+	* Calls the proper method to set wrench variables in OneChainNewtonEuler: either
+	* initKinematicBase() or initKinematicEnd(). This method 
+	* is protected and it is used by RigidBodyTransformation for setting the Kinematics 
+	* variables.
+	*/
+	bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
+
+	/**
+	* Calls the proper method to get kinematics variables in OneChainNewtonEuler either
+	* in the base or in the final link. This method is used by RigidBodyTransformation 
+	* for setting the kinematics variables.
+	*/
+	void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
+
+	/**
+	* Calls the proper method to get wrench variables in OneChainNewtonEuler either
+	* in the base or in the final link. This method is used by RigidBodyTransformation 
+	* for setting the wrench variables.
+	*/
+	void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu);
+
+	/**
+    * Destructor. 
+    */
+    virtual ~iDynChain();
+
 };
 
 
@@ -1037,6 +1086,22 @@ public:
 	 yarp::sig::Matrix getForcesNewtonEuler() const	{return iDynChain::getForcesNewtonEuler();}
 	 yarp::sig::Matrix getMomentsNewtonEuler() const{return iDynChain::getMomentsNewtonEuler();}
 	 yarp::sig::Vector getTorquesNewtonEuler() const{return iDynChain::getTorquesNewtonEuler();}
+
+	 bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0)
+	 {return iDynChain::initKinematicNewtonEuler(w0, dw0, ddp0);}
+	 
+	 bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
+	 {return iDynChain::initWrenchNewtonEuler(Fend,Muend);}
+
+	 void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp) 
+	 {iDynChain::getKinematicNewtonEuler(w,dw,ddp);}
+
+	 void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu) 
+	 {iDynChain::getWrenchNewtonEuler(F,Mu);}
+
+	 void computeKinematicNewtonEuler() { iDynChain::computeKinematicNewtonEuler();}
+	 void computeWrenchNewtonEuler()	{ iDynChain::computeWrenchNewtonEuler();}
+
 
     /**
     * Destructor. 
