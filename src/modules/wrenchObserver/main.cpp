@@ -192,18 +192,20 @@ private:
     }
 
 public:
-    inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt, BufferedPort<Vector> *_port_FT,
+    inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt,
                     const string &_part, const string &_name) : RateThread(_rate), dd(_dd), tt(_tt)
     {        
         part = _part.c_str();
         first = true;
-        port_FT = _port_FT;
+        //---------------------PORT--------------------------//
         port_Wrench=new BufferedPort<Vector>;
         string fwdSlash = "/";
         string port = fwdSlash+_name;
         port += (fwdSlash+part.c_str());
-        port += "/wrench:o";
-        port_Wrench->open(port.c_str());
+        port_Wrench->open((port+"/wrench:o").c_str());
+
+        port_FT=new BufferedPort<Vector>;
+		port_FT->open((port+"/FT:i").c_str());
 
         dd->view(iencs);
         if (tt)
@@ -236,18 +238,18 @@ public:
             sensorLink = 5;
 
             if (part=="left_arm")
-                sens = new iDynInvSensorArm(limb->asChain(),"left",NE_DYNAMIC);
+                sens = new iDynInvSensorArm(chain,"left",NE_DYNAMIC);
             else
-                sens = new iDynInvSensorArm(limb->asChain(),"right",NE_DYNAMIC);
+                sens = new iDynInvSensorArm(chain,"right",NE_DYNAMIC);
         }
         else
         {
             sensorLink = 2;
 
             if (part=="left_leg")
-                sens = new iDynInvSensorLeg(limb->asChain(),"left",NE_DYNAMIC);
+                sens = new iDynInvSensorLeg(chain,"left",NE_DYNAMIC);
             else
-                sens = new iDynInvSensorLeg(limb->asChain(),"right",NE_DYNAMIC);
+                sens = new iDynInvSensorLeg(chain,"right",NE_DYNAMIC);
         }
 
         sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
@@ -401,6 +403,15 @@ public:
             ft = 0;
         }
 
+		if (port_FT)
+        {
+            port_FT->interrupt();
+            port_FT->close();
+
+            delete port_FT;
+            port_FT = 0;
+        }
+
         if (port_Wrench)
         {
             port_Wrench->interrupt();
@@ -423,8 +434,6 @@ private:
 
     PolyDriver *dd;
     PolyDriver *tt;
-
-    BufferedPort<Vector> *port_FT;
 
 public:
     wrenchObserver()
@@ -458,7 +467,6 @@ public:
 
     bool configure(ResourceFinder &rf)
     {
-        string PortName;
         string local;
         string part;
         string robot;
@@ -471,19 +479,16 @@ public:
         if (rf.check("name"))
             name = rf.find("name").asString();
         else name = "ftObs";
-        PortName = (PortName+fwdSlash+name);
 
         //---------------------ROBOT-----------------------------//
         ConstString robotName=rf.find("robot").asString();
         if (rf.check("robot"))
         {
-            //PortName=fwdSlash+rf.find("robot").asString().c_str();
             robot = rf.find("robot").asString().c_str();
         }
         else
         {
             fprintf(stderr,"Device not found\n");
-            //PortName=fwdSlash+"icub";
             robot = "icub";
         }
 
@@ -491,7 +496,6 @@ public:
         ConstString partName=rf.find("part").asString();
         if (rf.check("part"))
         {
-            PortName=PortName+fwdSlash+rf.find("part").asString().c_str();
             part = rf.find("part").asString().c_str();
         }
         else
@@ -512,9 +516,6 @@ public:
             return false;
         }
 
-        //---------------------PORT--------------------------//
-        port_FT=new BufferedPort<Vector>;
-        port_FT->open((PortName+"/FT:i").c_str());
 
         //---------------------DEVICES--------------------------//
         if (part=="left_arm" || part=="right_arm")
@@ -550,14 +551,14 @@ public:
         //--------------------------THREAD--------------------------
         if (part=="left_arm" || part=="right_arm")
         {
-            inv_dyn = new inverseDynamics(rate,  dd, tt, port_FT, part.c_str(), name.c_str());
+            inv_dyn = new inverseDynamics(rate,  dd, tt, part.c_str(), name.c_str());
             fprintf(stderr,"ft thread istantiated...\n");
             inv_dyn->start();
             fprintf(stderr,"thread started\n");
         }
         else if (part=="left_leg" || part=="right_leg")
         {
-            inv_dyn = new inverseDynamics(rate,  dd, NULL, port_FT, part.c_str(), name.c_str());
+            inv_dyn = new inverseDynamics(rate,  dd, NULL, part.c_str(), name.c_str());
             fprintf(stderr,"ft thread istantiated...\n");
             inv_dyn->start();
             fprintf(stderr,"thread started\n");
@@ -575,20 +576,10 @@ public:
     {
         fprintf(stderr,"closing... \n");      
 
-        if (inv_dyn)
+		if (inv_dyn)
         {
-            inv_dyn->stop();
             delete inv_dyn;
             inv_dyn=0;
-        }
-
-        if (port_FT)
-        {
-            port_FT->interrupt();
-            port_FT->close();
-
-            delete port_FT;
-            port_FT=0;
         }
 
         if (dd)
