@@ -1227,6 +1227,7 @@ double	SensorLinkNewtonEuler::getDq()		const	{return 0.0;}
 double	SensorLinkNewtonEuler::getKr()		const	{return 0.0;}
 Vector	SensorLinkNewtonEuler::getAngAccM()	const	{return Vector(0);}
 double	SensorLinkNewtonEuler::getTorque()	const	{return 0.0;}
+Matrix	SensorLinkNewtonEuler::getH()	const	{return H;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool	SensorLinkNewtonEuler::setForce		(const Vector &_F)
 {
@@ -1811,6 +1812,7 @@ iDynInvSensor::iDynInvSensor(iDynChain *_c, unsigned int i, const Matrix &_H, co
 	verbose = verb;
 	// new sensor
 	lSens = i;
+	H=_H;
 	sens = new SensorLinkNewtonEuler(_H,_HC,_m,_I,_mode,verb);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
