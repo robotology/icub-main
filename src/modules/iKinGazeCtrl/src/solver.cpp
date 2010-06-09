@@ -1,5 +1,6 @@
 
 #include <yarp/math/SVD.h>
+#include <yarp/math/Rand.h>
 #include <iCub/solver.hpp>
 
 
@@ -416,7 +417,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     eyePos[1]=gazePos[1]-gazePos[2]/2.0;
     chainEyeR->setAng(eyePos);
 
+    Rand::init();
+
     alignNeckCnt=0;
+    alignNeckThres=(unsigned int)(Rand::scalar(1.0,2.0)/Ts);
 
     // latch torso joints
     fbTorsoOld.push_front(fbTorso);
@@ -630,7 +634,7 @@ void Solver::run()
         alignNeckCnt++;
 
     // re-align neck after a timeout
-    if (alignNeckCnt>2.0/Ts)
+    if (alignNeckCnt>alignNeckThres)
     {
         //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
         neckPos=invNeck->solve(neckPos,xd);
@@ -641,6 +645,7 @@ void Solver::run()
         commData->get_qd()[2]=neckPos[1];
 
         alignNeckCnt=0;
+        alignNeckThres=(unsigned int)(Rand::scalar(1.0,2.0)/Ts);
     }
 }
 

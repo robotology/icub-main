@@ -144,6 +144,7 @@ protected:
     deque<Vector> fbTorsoOld;
 
     unsigned int alignNeckCnt;
+    unsigned int alignNeckThres;
 
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
