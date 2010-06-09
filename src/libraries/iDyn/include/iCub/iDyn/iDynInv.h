@@ -55,7 +55,6 @@ enum ChainComputationMode { NE_KIN_WRE_FF, NE_KIN_WRE_FB, NE_KIN_WRE_BF, NE_KIN_
 const std::string NE_IterMode[2] = {"Forward (Base To End)","Backward (End To Base)"};
 const std::string NE_CompMode[4] = {"Kinematic Forward - Wrench Forward","Kinematic Forward - Wrench Backward","Kinematic Backward - Wrench Forward","Kinematic Backward - Wrench Backward"};
 
-
 // verbosity levels
 // useful for all classes
 enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
@@ -828,6 +827,78 @@ public:
 
 };
 
+/**
+* \ingroup RecursiveNewtonEuler
+*
+* A class for setting a virtual node: this class is used by iDynNode, to exchange kinematics and 
+* and wrench information between different chains using Newton-Euler's methods for computing the 
+* variables properly. The node only has kinematic (w,dw,ddp) and wrench (F,Mu) information: no
+* mass, lenght, inertia, COM, H, or else. There is no iDynLink attached. It is inherited as 
+* protected to expose only the computational methods which are used by iDynNode and 
+* RigidBodyTransformation. It is mainly used to avoid code duplication.
+*/
+class OneNodeNewtonEuler : protected OneLinkNewtonEuler
+{
+protected:
+	/// angular velocity
+	yarp::sig::Vector w;	
+	/// angular acceleration
+	yarp::sig::Vector dw;
+	/// linear acceleration
+	yarp::sig::Vector ddp;	
+	/// force
+	yarp::sig::Vector F;	
+	/// moment
+	yarp::sig::Vector Mu;	
+
+public:
+
+	/**
+    * Default constructor 
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	OneNodeNewtonEuler(const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
+
+	//~~~~~~~~~~~~~~~~~~~~~~
+	//   get methods
+	//~~~~~~~~~~~~~~~~~~~~~~
+	//yarp::sig::Vector	getForce()		const;
+	//yarp::sig::Vector	getMoment()		const;
+
+	//// redefine the other unuseful methods to avoid errors due to missing link
+	//yarp::sig::Vector	getAngVel()		const;
+	//yarp::sig::Vector	getAngAcc()		const;
+	//yarp::sig::Vector	getAngAccM()	const;
+	//yarp::sig::Vector	getLinAcc()		const;
+	//yarp::sig::Vector	getLinAccC()	const;
+	//double				getTorque()		const;
+	//yarp::sig::Matrix	getR();		
+	//yarp::sig::Matrix	getRC();	
+	//double				getIm()		const;
+ // 	double				getFs()		const;
+ //	double				getFv()		const;
+	//double				getD2q()	const;
+	//double				getDq()		const;
+	//double				getKr()		const;
+	//double				getMass()	const;
+ //  	yarp::sig::Matrix	getInertia()const;
+	//yarp::sig::Vector	getr(bool proj=false);
+	//yarp::sig::Vector	getrC(bool proj=false);
+	//bool setForce(const yarp::sig::Vector &_F);
+	//bool setMoment(const yarp::sig::Vector &_Mu);
+	//void setTorque(const double _Tau);
+	//bool setAngVel(const yarp::sig::Vector &_w);
+	//bool setAngAcc(const yarp::sig::Vector &_dw);
+	//bool setLinAcc(const yarp::sig::Vector &_ddp);
+	//bool setLinAccC(const yarp::sig::Vector &_ddpC);
+	//bool setAngAccM(const yarp::sig::Vector &_dwM);
+
+	////other
+	//std::string toString() const;
+};
+
+
 
 
 /**
@@ -880,6 +951,29 @@ public:
      */
 	bool getVelAccAfterForward(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &dwM, yarp::sig::Vector &ddp, yarp::sig::Vector &ddpC) const;
 
+	/**
+     * This method is used by iDynChain to retrieve kinematic information for connection with one or more
+	 * iDynLimb, through iDynNode.
+     */
+	void getVelAccBase(yarp::sig::Vector &w, yarp::sig::Vector &dw,yarp::sig::Vector &ddp) const;
+	
+	/**
+     * This method is used by iDynChain to retrieve kinematic information for connection with one or more
+	 * iDynLimb, through iDynNode.
+     */
+	void getVelAccEnd(yarp::sig::Vector &w, yarp::sig::Vector &dw,yarp::sig::Vector &ddp) const;
+
+	/**
+     * This method is used by iDynChain to retrieve wrench information for connection with one or more
+	 * iDynLimb, through iDynNode.
+     */
+	void getWrenchBase(yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
+	
+	/**
+     * This method is used by iDynChain to retrieve wrench information for connection with one or more
+	 * iDynLimb, through iDynNode.
+     */
+	void getWrenchEnd(yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
 
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   set methods
