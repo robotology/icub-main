@@ -116,7 +116,7 @@ This file can be edited at \in src/wrenchObserver/main.cpp.
 #include <iCub/ctrl/ctrlMath.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
-#include <iCub/iDyn/iFC.h>
+#include <iCub/iDyn/iDynTransform.h>
 
 #include <iostream>
 #include <iomanip>
