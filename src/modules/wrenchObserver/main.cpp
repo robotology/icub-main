@@ -235,8 +235,6 @@ public:
 
         if (tt)
         {
-            sensorLink = 5;
-
             if (part=="left_arm")
                 sens = new iDynInvSensorArm(chain,"left",DYNAMIC);
             else
@@ -244,15 +242,11 @@ public:
         }
         else
         {
-            sensorLink = 2;
-
             if (part=="left_leg")
                 sens = new iDynInvSensorLeg(chain,"left",DYNAMIC);
             else
                 sens = new iDynInvSensorLeg(chain,"right",DYNAMIC);
         }
-
-		HS = sens->getH();
         FTtoBase = new iFTransformation(sens);
 
         linEst =new AWLinEstimator(16,1.0);
@@ -284,7 +278,7 @@ public:
         F_iDyn.resize(6,0.0);
         F_offset.resize(6,0.0);
         FT.resize(6,0.0);
-        d2p0[0]=9.81;
+        d2p0[2]=9.81; // frame 0 acceleration
 
         limb->setAng(q);
         limb->setDAng(dq);
@@ -352,7 +346,6 @@ public:
                 F_offset=0.0;
             }
         }
-
         port_Wrench->prepare() = FT;
         port_Wrench->write();
     }
@@ -488,7 +481,7 @@ public:
         {
 			part = "left_arm";
             fprintf(stderr,"Could not find part in the config file\n");
-            //return false;
+            return false;
         }
         //---------------------RATE-----------------------------//
         if (rf.check("rate"))
@@ -500,7 +493,7 @@ public:
         {
             fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
             rate = 100;
-            //return false;
+            return false;
         }
 
 
