@@ -796,7 +796,7 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynChain::computeNewtonEuler()
+bool iDynChain::computeNewtonEuler()
 { 
 	if( NE == NULL)
 	{
@@ -817,6 +817,7 @@ void iDynChain::computeNewtonEuler()
 		NE->BackwardWrenchFromEnd();
 	else 
 		NE->ForwardWrenchFromBase();
+	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::computeKinematicNewtonEuler()
