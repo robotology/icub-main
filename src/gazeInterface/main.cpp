@@ -54,6 +54,8 @@
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
 #define COMMAND_VOCAB_GET VOCAB3('g','e','t')
+#define COMMAND_VOCAB_GET VOCAB3('s','a','c')
+#define COMMAND_VOCAB_GET VOCAB3('i','m','g')
 #define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
 #define COMMAND_VOCAB_IS VOCAB2('i','s')
 #define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
@@ -395,10 +397,8 @@ public:
             ok = true;
         }
         break;
-    
-    
-     
-    case COMMAND_VOCAB_GET:
+
+    case COMMAND_VOCAB_SAC:
         rec = true;
         {
             reply.addVocab(COMMAND_VOCAB_IS);
@@ -413,6 +413,13 @@ public:
             case COMMAND_VOCAB_NUM_BLUR_PASSES:{
                 int nb = 0;
                 reply.addInt(nb);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_IMG:{
+                int j = command.get(2).asInt();
+                string s("sac img");
+                reply.addString(s.c_str());
                 ok = true;
             }
                 break;
