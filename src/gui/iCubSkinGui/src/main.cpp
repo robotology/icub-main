@@ -2,7 +2,8 @@
 #include <memory.h>
 
 #include <yarp/os/all.h>
-#include <iCub/SkinMeshThread.h>
+#include <iCub/SkinMeshThreadCan.h>
+#include <iCub/SkinMeshThreadPort.h>
 
 #include <gtk/gtk.h>
 
@@ -13,7 +14,7 @@
 using namespace yarp::os;
 
 static GtkWidget *gpDrawingArea=NULL;
-static SkinMeshThread *gpSkinMeshThread=NULL;
+static SkinMeshThreadCan *gpSkinMeshThread=NULL;
 static yarp::os::Semaphore gMutex(1);
 static int gbRunning=TRUE;
 static int gWidth=0,gHeight=0,gRowStride=0,gImageSize=0,gMapSize=0,gImageArea=0;
@@ -151,7 +152,7 @@ int main(int argc, char *argv[])
 	gtk_widget_show_all(pMainWindow);
 	gtk_window_move(GTK_WINDOW(pMainWindow),32,32);
 
-    gpSkinMeshThread=new SkinMeshThread(rf);
+    gpSkinMeshThread=new SkinMeshThreadCan(rf);
     gpSkinMeshThread->start();
 
 	gtk_main();
