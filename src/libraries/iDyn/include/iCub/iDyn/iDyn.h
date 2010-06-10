@@ -518,7 +518,7 @@ protected:
 	/**
 	* Dispose
 	*/	
-	void dispose();
+	virtual void dispose();
 
 	/**
 	* Returns a pointer to the ith iDynLink
