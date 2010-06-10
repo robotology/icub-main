@@ -5,12 +5,12 @@ PROJECT(${PROJECTNAME})
 SET(folder_source src/iDyn.cpp
                   src/iDynInv.cpp
                   src/iDynFwd.cpp
-                  src/iFC.cpp)
+                  src/iDynTranform.cpp)
 
 SET(folder_header include/iCub/iDyn/iDyn.h
                   include/iCub/iDyn/iDynInv.h
                   include/iCub/iDyn/iDynFwd.h
-                  include/iCub/iDyn/iFC.h)
+                  include/iCub/iDyn/iDynTransform.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})

@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <iCub/iDyn/iFC.h>
+#include <iCub/iDyn/iDynTransform.h>
 
 using namespace std;
 using namespace yarp;

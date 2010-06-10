@@ -32,7 +32,7 @@
  * It is also possible to retrieve joint torques of iCub limbs with single FT
  * sensor measurements: to this scope, iDynSensor must be used.
  * Furthermore, projection of forces along the chain is supported: to this 
- * scope, iFC must be used.
+ * scope, iDynTransform must be used.
  * 
  * \section tested_os_sec Tested OS
  * 
