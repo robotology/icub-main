@@ -156,8 +156,8 @@ private:
     iDynChain     *chain;
     iDynInvSensor *sens;
 
-    iFB         *FTB;
-    iFTransform *sensor;
+    iFTransformation         *FTtoBase;
+    iGenericFrame *sensor;
     int sensorLink;
 
     Matrix HS, HSC, IS;
@@ -253,11 +253,11 @@ public:
         }
 
 		HS = sens->getH();
-        sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
+        sensor = new iGenericFrame(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
 
-        FTB = new iFB(sensorLink);
-        FTB->attach(chain);
-        FTB->attach(sensor);
+        FTtoBase = new iFTransformation(sensorLink);
+        FTtoBase->attach(chain);
+        FTtoBase->attach(sensor);
 
         linEst =new AWLinEstimator(16,1.0);
         quadEst=new AWQuadEstimator(25,1.0);
@@ -276,35 +276,24 @@ public:
 
         int jnt=jnt1+jnt2;
 
-        q.resize(jnt);
-        dq.resize(jnt);
-        d2q.resize(jnt);
-
-        q=dq=d2q=0.0;
+        q.resize(jnt,0.0);
+        dq.resize(jnt,0.0);
+        d2q.resize(jnt,0.0);
+		w0.resize(3,0.0);
+        dw0.resize(3,0.0);
+        d2p0.resize(3,0.0);
+        Fend.resize(3,0.0);
+        Mend.resize(3,0.0);
+        F_measured.resize(6,0.0);
+        F_iDyn.resize(6,0.0);
+        F_offset.resize(6,0.0);
+        FT.resize(6,0.0);
+        d2p0[0]=9.81;
 
         limb->setAng(q);
         limb->setDAng(dq);
         limb->setD2Ang(d2q);
         limb->prepareNewtonEuler(DYNAMIC);
-
-        w0.resize(3);
-        dw0.resize(3);
-        d2p0.resize(3);
-        Fend.resize(3);
-        Mend.resize(3);
-        w0=dw0=d2p0=Fend=Mend=0.0;
-        d2p0(0)=9.81;
-
-        F_measured.resize(6);
-        F_iDyn.resize(6);
-        F_offset.resize(6);
-        FT.resize(6);
-
-        F_measured.zero();
-        F_iDyn.zero();
-        F_offset.zero();
-        FT.zero();
-
         limb->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
     }
 
@@ -354,12 +343,12 @@ public:
                 first = false;
             }
 
-            FT = FTB->getFB(F_measured - F_offset - F_iDyn);
+            FT = FTtoBase->getFB(F_measured - F_offset - F_iDyn);
         }
         else
         {
             if (!first)
-                FT = FTB->getFB();
+                FT = FTtoBase->getFB();
             else
             {
                 FT=0.0;
