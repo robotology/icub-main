@@ -353,7 +353,7 @@ yarp::sig::Vector iFTransformation::getEndEffWrench(const Vector &_FT)
 }
 yarp::sig::Vector iFTransformation::getEndEffWrenchAsBase()
 {
-	setFe();
+	getEndEffWrench();
 	setTeb();
 	return Teb*Fe;
 }
