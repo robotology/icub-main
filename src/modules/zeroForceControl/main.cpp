@@ -799,15 +799,15 @@ public:
 				  setDesiredPositions();	
 				  control_mode=IMPEDANCE;
 			  }
-			  FT = FTtoBase->getFB(FTs-FTs_init);			  	
+			  FT = FTtoBase->getEndEffWrenchAsBase(FTs-FTs_init);			  	
 			  first = false;
 		  }
 		  else
 		  {
-			  if(!first)  FT = FTtoBase->getFB();
+			  if(!first)  FT = FTtoBase->getEndEffWrenchAsBase();
 			  else {FT=0.0; FTs=0.0; FTj=0.0; FTs_init=0.0;}
 		  }
-		  Fe=FTtoBase->getFe();
+		  Fe=FTtoBase->getEndEffWrench();
 		  //------------------------------------------
 
 
