@@ -145,7 +145,7 @@ Windows, Linux
 #define USE_LEFT    0
 #define USE_RIGHT   1
 
-#define AFFACTIONPRIMITIVESLAYER    affActionPrimitivesLayer1
+#define AFFACTIONPRIMITIVESLAYER    affActionPrimitivesLayer2
 
 YARP_DECLARE_DEVICES(icubmod)
 
