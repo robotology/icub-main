@@ -130,6 +130,11 @@ public:
         }
     }
 
+	void setActivationFromPortData(double val, int id)
+    {
+        activation[id]=val<=244?double(244-val):0.0;;
+    }
+
     void draw(unsigned char *image)
     {
         for (int i=0; i<nVerts; ++i)

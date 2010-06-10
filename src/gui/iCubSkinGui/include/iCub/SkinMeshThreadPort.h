@@ -11,6 +11,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
+#include <yarp/sig/Vector.h>
 
 #include <iCub/Triangle.h>
 #include <iCub/Fingertip.h>
@@ -21,16 +22,11 @@ using namespace yarp::dev;
 class SkinMeshThreadPort : public RateThread 
 {
 protected:
-	PolyDriver driver;
-    ICanBus *pCanBus;
-    ICanBufferFactory *pCanBufferFactory;
-    CanBuffer canBuffer;
-    
-    TouchSensor *sensor[16];
+	BufferedPort<Bottle> skin_port;							
+	TouchSensor *sensor[16];
 
     yarp::os::Semaphore mutex;
 
-    int cardId;
     int sensorsNum;
 
 public:
@@ -42,8 +38,11 @@ public:
         {
             sensor[t]=NULL;
         }
-
-        cardId=0x300 | (config.find("cardid").asInt() << 4);
+	
+		std::string part="/skinGui/";
+		part.append(config.find("robotPart").asString());
+		part.append(":i");
+		skin_port.open(part.c_str());
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
 

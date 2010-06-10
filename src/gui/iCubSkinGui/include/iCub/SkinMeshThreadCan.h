@@ -25,6 +25,8 @@ protected:
     ICanBus *pCanBus;
     ICanBufferFactory *pCanBufferFactory;
     CanBuffer canBuffer;
+	std::string deviceName;
+	int netId;
     
     TouchSensor *sensor[16];
 
@@ -42,8 +44,12 @@ public:
         {
             sensor[t]=NULL;
         }
-
+		netId=7;
+		deviceName="cfw2can";
         cardId=0x300 | (config.find("cardid").asInt() << 4);
+		netId=config.find("CanDeviceNum").asInt();
+		deviceName=config.find("CanDeviceName").asString();
+		std::string part=config.find("robotPart").asString();
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
 
