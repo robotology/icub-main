@@ -352,11 +352,12 @@ public:
 
 	void setTeb();
 	void setTse();
-	yarp::sig::Vector getFB();
-	yarp::sig::Vector setFe();
-	yarp::sig::Vector getFe();
+	void setFe();
 
-	yarp::sig::Vector getFB(const yarp::sig::Vector &_FT);
+	yarp::sig::Vector getEndEffWrench();
+	yarp::sig::Vector getEndEffWrenchAsBase();
+	yarp::sig::Vector getEndEffWrench(const yarp::sig::Vector &_FT);
+	yarp::sig::Vector getEndEffWrenchAsBase(const yarp::sig::Vector &_FT);
 	yarp::sig::Matrix getHs(){return Hs;}
 	yarp::sig::Matrix getHe(){return He;}
 

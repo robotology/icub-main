@@ -338,30 +338,30 @@ void iFTransformation::setTeb()
 		}
 	}
 }
-yarp::sig::Vector iFTransformation::getFB(const Vector &_FT)
+yarp::sig::Vector iFTransformation::getEndEffWrench()
+{
+	setTse();
+	setFe();
+	return Fe;
+}
+yarp::sig::Vector iFTransformation::getEndEffWrench(const Vector &_FT)
 {
 	setSensor(_FT);
-	setTeb();
-	setTse();
-	setFe();
-	return Teb*Fe;
+	return getEndEffWrench();
 }
-yarp::sig::Vector iFTransformation::getFB()
+yarp::sig::Vector iFTransformation::getEndEffWrenchAsBase()
 {
 	setTeb();
-	setTse();
-	setFe();
 	return Teb*Fe;
 }
-
-
-yarp::sig::Vector iFTransformation::setFe()
+yarp::sig::Vector iFTransformation::getEndEffWrenchAsBase(const Vector &_FT)
 {
-	return Fe=Tse*Fs;
+	setSensor(_FT);
+	return getEndEffWrenchAsBase();
 }
-yarp::sig::Vector iFTransformation::getFe()
+void iFTransformation::setFe()
 {
-	return Fe;
+	Fe=Tse*Fs;
 }
 void iFTransformation::setTse()
 {	
