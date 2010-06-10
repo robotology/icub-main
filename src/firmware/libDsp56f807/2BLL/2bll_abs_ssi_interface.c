@@ -174,6 +174,18 @@ UInt16 get_position_abs_ssi(byte jnt)
 
 /***************************************************************************/
 /**
+ * when an SSI absolute position sensor is used as a relative 
+ * multiturn encoder, this function reads the current turn number.
+ * @param jnt is the joint number 
+ * @return the current turn number
+ ***************************************************************************/
+Int16 get_relative_turn (byte jnt)
+{
+	return (Int16) turns[jnt];
+}
+
+/***************************************************************************/
+/**
  * this function uses an SSI absolute position sensor as a relative 
  * multiturn encoder. When it is called the first time, the measurment
  * is given in the 0-4095 range. Then this number can become <0 or >4095
