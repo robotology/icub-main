@@ -491,9 +491,9 @@ class iDynChain : public iKin::iKinChain
 
 protected:
 	
-	/// specifies the 'direction' of recursive computation of kinematics variables (w,dw,d2p): NE_FORWARD, NE_BACKWARD
+	/// specifies the 'direction' of recursive computation of kinematics variables (w,dw,d2p): FORWARD, BACKWARD
 	ChainIterationMode iterateMode_kinematics;	
-	/// specifies the 'direction' of recursive computation of wrenches (F,Mu): NE_FORWARD, NE_BACKWARD
+	/// specifies the 'direction' of recursive computation of wrenches (F,Mu): FORWARD, BACKWARD
 	ChainIterationMode iterateMode_wrench;
 
 	//curr_q = q pos is already in iKinChain
@@ -716,7 +716,7 @@ public:
 	 /**
 	 * Prepare for the Newton-Euler recursive computation of forces and torques
 	 */
-	 void prepareNewtonEuler(const NewEulMode ne_mode=NE_STATIC);
+	 void prepareNewtonEuler(const NewEulMode NewEulMode_s=STATIC);
 
 	 /**
 	 * Compute forces and torques with the Newton-Euler recursive algorithm: forward
@@ -748,7 +748,7 @@ public:
 	 /**
 	* Set the computation mode for Newton-Euler (static/dynamic/etc)
 	*/
-	 void setModeNewtonEuler(const NewEulMode ne_mode=NE_STATIC);
+	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=STATIC);
 
 	/**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
@@ -776,27 +776,27 @@ public:
 
 	/**
     * Set the iteration direction during recursive computation of kinematics variables
-	* (w,dw,d2p,d2pC). Default is NE_FORWARD, which is also set in the constructor.
-    * @param _iterateMode_kinematics NE_FORWARD/BACKWARD
+	* (w,dw,d2p,d2pC). Default is FORWARD, which is also set in the constructor.
+    * @param _iterateMode_kinematics FORWARD/BACKWARD
     */
-	void setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics = NE_FORWARD );
+	void setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics = FORWARD );
 
 	/**
     * Set the iteration direction during recursive computation of wrench variables
-	* (F,Mu,Tau). Default is NE_BACKWARD, which is also set in the constructor.
-    * @param _iterateMode_wrench NE_FORWARD/BACKWARD
+	* (F,Mu,Tau). Default is BACKWARD, which is also set in the constructor.
+    * @param _iterateMode_wrench FORWARD/BACKWARD
     */
-	void setIterModeWrench(const ChainIterationMode _iterateMode_wrench = NE_BACKWARD );
+	void setIterModeWrench(const ChainIterationMode _iterateMode_wrench = BACKWARD );
 
 	/**
     * Set the computation mode during recursive computation of kinematics (w,dw,d2p,d2pC)
 	* and wrench variables(F,Mu,Tau). The mode is NE_KIN_WRE_kw, where the suffix 'kw' identifies 
 	* the modes for the kinematics ('k') and wrench ('w') computations: 
-	* {FF,FB,BF,BB} where the F stands for NE_FORWARD and B for NE_BACKWARD. 
-	* Default mode is NE_KIN_WRE_FB, which sets Kinematics=NE_FORWARD and Wrench=NE_BACKWARD. 
+	* {FF,FB,BF,BB} where the F stands for FORWARD and B for BACKWARD. 
+	* Default mode is KINFWD_WREBWD, which sets Kinematics=FORWARD and Wrench=BACKWARD. 
 	* @param mode NE_KIN_WRE_{FF,FB,BF,BB}
     */
-	void setIterMode(const ChainComputationMode mode = NE_KIN_WRE_FB);
+	void setIterMode(const ChainComputationMode mode = KINFWD_WREBWD);
 
 	/**
     * Get the iteration direction during recursive computation of kinematics variables
@@ -1071,8 +1071,8 @@ public:
 
 	// methods for Newton-Euler computation
 
-	void prepareNewtonEuler(const NewEulMode ne_mode=NE_STATIC)
-	{ iDynChain::prepareNewtonEuler(ne_mode); }
+	void prepareNewtonEuler(const NewEulMode NewEulMode_s=STATIC)
+	{ iDynChain::prepareNewtonEuler(NewEulMode_s); }
 
 	 bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 	{ return iDynChain::computeNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
@@ -1080,8 +1080,8 @@ public:
 	 bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 	 { return iDynChain::initNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
 	
-	 void setModeNewtonEuler(const NewEulMode ne_mode=NE_STATIC)
-	 { iDynChain::setModeNewtonEuler(ne_mode); }
+	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=STATIC)
+	 { iDynChain::setModeNewtonEuler(NewEulMode_s); }
 
 	 yarp::sig::Matrix getForcesNewtonEuler() const	{return iDynChain::getForcesNewtonEuler();}
 	 yarp::sig::Matrix getMomentsNewtonEuler() const{return iDynChain::getMomentsNewtonEuler();}
@@ -1131,7 +1131,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" arm
     */
-    iCubArmDyn(const std::string &_type, const ChainComputationMode _mode=NE_KIN_WRE_FB);
+    iCubArmDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
 
     /**
     * Creates a new Arm from an already existing Arm object.
@@ -1162,7 +1162,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" leg
     */
-    iCubLegDyn(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
+    iCubLegDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
 
     /**
     * Creates a new Leg from an already existing Leg object.
@@ -1193,7 +1193,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye
     */
-    iCubEyeDyn(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
+    iCubEyeDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
 
     /**
     * Creates a new Eye from an already existing Eye object.
@@ -1225,7 +1225,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye
     */
-    iCubEyeNeckRefDyn(const std::string &_type, const ChainComputationMode _mode=NE_KIN_WRE_FB);
+    iCubEyeNeckRefDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
 
     /**
     * Creates a new Eye from an already existing Eye object.
@@ -1249,7 +1249,7 @@ public:
     /**
     * Default constructor. 
     */
-    iCubInertialSensorDyn(const ChainComputationMode _mode=NE_KIN_WRE_BB);
+    iCubInertialSensorDyn(const ChainComputationMode _mode=KINBWD_WREBWD);
 
     /**
     * Creates a new Inertial Sensor from an already existing object.
@@ -1280,7 +1280,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" arm
     */
-    iFakeDyn(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
+    iFakeDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
 
     /**
     * Creates a new Arm from an already existing Arm object.
@@ -1311,7 +1311,7 @@ public:
     * @param _type is a string to discriminate between "left" and 
     *              "right" arm
     */
-    iFakeDyn2GdL(const std::string &_type,const ChainComputationMode _mode=NE_KIN_WRE_FB);
+    iFakeDyn2GdL(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
 
     /**
     * Creates a new Arm from an already existing Arm object.

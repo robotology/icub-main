@@ -44,23 +44,24 @@
 #include <deque>
 #include <string>
 
+namespace iDyn
+{
+
 // Newton-Euler types
 // useful for iDyn, iDynInv, iDynFwd
-enum NewEulMode {NE_STATIC,NE_DYNAMIC,NE_DYNAMIC_W_ROTOR,NE_DYNAMIC_CORIOLIS_GRAVITY};
-const std::string NE_Mode[4] = {"static","dynamic","dynamic with motor/rotor","dynamic with only Coriolis and gravitational terms"};
+enum NewEulMode {STATIC,DYNAMIC,DYNAMIC_W_ROTOR,DYNAMIC_CORIOLIS_GRAVITY};
+const std::string NewEulMode_s[4] = {"static","dynamic","dynamic with motor/rotor","dynamic with only Coriolis and gravitational terms"};
 
 // Kinematic and Wrench modes
-enum ChainIterationMode { NE_FORWARD, NE_BACKWARD };
-enum ChainComputationMode { NE_KIN_WRE_FF, NE_KIN_WRE_FB, NE_KIN_WRE_BF, NE_KIN_WRE_BB };
-const std::string NE_IterMode[2] = {"Forward (Base To End)","Backward (End To Base)"};
-const std::string NE_CompMode[4] = {"Kinematic Forward - Wrench Forward","Kinematic Forward - Wrench Backward","Kinematic Backward - Wrench Forward","Kinematic Backward - Wrench Backward"};
+enum ChainIterationMode { FORWARD, BACKWARD };
+enum ChainComputationMode { KINFWD_WREFWD, KINFWD_WREBWD, KINBWD_WREFWD, KINBWD_WREBWD };
+const std::string ChainIterationMode_s[2] = {"Forward (Base To End)","Backward (End To Base)"};
+const std::string ChainComputationMode_s[4] = {"Kinematic Forward - Wrench Forward","Kinematic Forward - Wrench Backward","Kinematic Backward - Wrench Forward","Kinematic Backward - Wrench Backward"};
 
 // verbosity levels
 // useful for all classes
 enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 
-
-namespace iDyn{
 
 	class iDynLink;
 	class iDynChain;
@@ -90,7 +91,7 @@ class OneLinkNewtonEuler
 {
 protected:
 
-	/// NE_STATIC/NE_DYNAMIC/NE_DYNAMIC_W_ROTOR/NE_DYNAMIC_CORIOLIS_GRAVITY
+	/// STATIC/DYNAMIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
 	NewEulMode mode;	
 	///info or useful notes
 	std::string	info;
@@ -864,39 +865,73 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   get methods
 	//~~~~~~~~~~~~~~~~~~~~~~
-	//yarp::sig::Vector	getForce()		const;
-	//yarp::sig::Vector	getMoment()		const;
 
-	//// redefine the other unuseful methods to avoid errors due to missing link
-	//yarp::sig::Vector	getAngVel()		const;
-	//yarp::sig::Vector	getAngAcc()		const;
-	//yarp::sig::Vector	getAngAccM()	const;
-	//yarp::sig::Vector	getLinAcc()		const;
-	//yarp::sig::Vector	getLinAccC()	const;
-	//double				getTorque()		const;
-	//yarp::sig::Matrix	getR();		
-	//yarp::sig::Matrix	getRC();	
-	//double				getIm()		const;
- // 	double				getFs()		const;
- //	double				getFv()		const;
-	//double				getD2q()	const;
-	//double				getDq()		const;
-	//double				getKr()		const;
-	//double				getMass()	const;
- //  	yarp::sig::Matrix	getInertia()const;
-	//yarp::sig::Vector	getr(bool proj=false);
-	//yarp::sig::Vector	getrC(bool proj=false);
-	//bool setForce(const yarp::sig::Vector &_F);
-	//bool setMoment(const yarp::sig::Vector &_Mu);
-	//void setTorque(const double _Tau);
-	//bool setAngVel(const yarp::sig::Vector &_w);
-	//bool setAngAcc(const yarp::sig::Vector &_dw);
-	//bool setLinAcc(const yarp::sig::Vector &_ddp);
-	//bool setLinAccC(const yarp::sig::Vector &_ddpC);
-	//bool setAngAccM(const yarp::sig::Vector &_dwM);
+	yarp::sig::Vector	getForce()		const;
+	yarp::sig::Vector	getMoment()		const;
 
-	////other
-	//std::string toString() const;
+	// redefine the other unuseful methods to avoid errors due to missing link
+	yarp::sig::Vector	getAngVel()		const;
+	yarp::sig::Vector	getAngAcc()		const;
+	yarp::sig::Vector	getAngAccM()	const;
+	yarp::sig::Vector	getLinAcc()		const;
+	yarp::sig::Vector	getLinAccC()	const;
+	yarp::sig::Matrix	getR();		
+	yarp::sig::Matrix	getRC();	
+	double				getIm()		const;
+  	double				getFs()		const;
+ 	double				getFv()		const;
+	double				getD2q()	const;
+	double				getDq()		const;
+	double				getKr()		const;
+	double				getMass()	const;
+   	yarp::sig::Matrix	getInertia()const;
+	yarp::sig::Vector	getr(bool proj=false);
+	yarp::sig::Vector	getrC(bool proj=false);
+
+	//~~~~~~~~~~~~~~~~~~~~~~
+	//   set methods
+	//~~~~~~~~~~~~~~~~~~~~~~
+
+	// wrench
+	bool setForce(const yarp::sig::Vector &_F);
+	bool setMoment(const yarp::sig::Vector &_Mu);
+	// kinematic
+	bool setAngVel(const yarp::sig::Vector &_w);
+	bool setAngAcc(const yarp::sig::Vector &_dw);
+	bool setLinAcc(const yarp::sig::Vector &_ddp);
+
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~
+	//   computation methods
+	//~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	/**
+     * [Node To Limb] Compute w, dw, ddp, ddpC, dwM
+	  * @param prev the OneLinkNewtonEuler class of the previous link 
+     */
+	 void ForwardKinematics( OneLinkNewtonEuler *prev);
+ 
+	/**
+     * [Limb To Node] Compute w, dw, ddp, ddpC, dwM
+	  * @param prev the OneLinkNewtonEuler class of the previous link 
+     */
+	 void BackwardKinematics( OneLinkNewtonEuler *prev);
+
+	/**
+     * [Limb To Node] Compute F, Mu, Tau
+	  * @param next the OneLinkNewtonEuler class of the following link 
+     */
+	 void BackwardWrench( OneLinkNewtonEuler *next);
+
+	/**
+     * [Node To Limb] Compute F, Mu, Tau
+	  * @param prev the OneLinkNewtonEuler class of the previous link 
+     */
+	 void ForwardWrench( OneLinkNewtonEuler *prev);
+
+
+	//other
+	std::string toString() const;
 };
 
 
@@ -935,7 +970,7 @@ public:
   /**
     * Constructor (note: without FT sensor)
     */
-	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* Standard destructor
@@ -1128,11 +1163,11 @@ public:
  * \section example_sec Example
  *
  * Set a iDynInvSensor for iCub's left arm, with 
- * force/moment computation in the static case (NE_STATIC), and
+ * force/moment computation in the static case (STATIC), and
  * verbose (VERBOSE==1) output:
  *
  * <tt> iCubArmDyn *arm = new iCubArmDyn("left"); </tt> \n
- * <tt> iDynInvSensorArm armWSensorSolver = new iDynInvSensorArm(arm,NE_STATIC,VERBOSE); </tt> \n
+ * <tt> iDynInvSensorArm armWSensorSolver = new iDynInvSensorArm(arm,STATIC,VERBOSE); </tt> \n
  *
  * Note that by setting the arm as "left", the sensor is automatically set
  * as the left sensor of the arm.
@@ -1191,8 +1226,6 @@ protected:
 	unsigned int verbose;
 	/// a string with useful information if needed
 	std::string info;
-	yarp::sig::Matrix H;
-
 
 public:
 
@@ -1203,7 +1236,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor with FT sensor
@@ -1217,7 +1250,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = 0);
+	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = 0);
 
 	/**
      * Set a new sensor or new sensor properties
@@ -1266,7 +1299,7 @@ public:
 	// set methods
 	//~~~~~~~~~~~~~~
 
-	void setMode(const NewEulMode _mode = NE_STATIC);
+	void setMode(const NewEulMode _mode = STATIC);
 	void setVerbose(unsigned int verb=VERBOSE);
 	void setInfo(std::string _info);
 	void setSensorInfo(std::string _info);
@@ -1305,7 +1338,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iCubArmSensorLink(const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iCubArmSensorLink(const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/right
@@ -1337,7 +1370,7 @@ protected:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the leg type: left/right
@@ -1367,7 +1400,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
@@ -1377,7 +1410,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/arm
@@ -1407,7 +1440,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
@@ -1416,7 +1449,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the leg type: left/arm

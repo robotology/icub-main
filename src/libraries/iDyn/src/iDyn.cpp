@@ -347,14 +347,14 @@ iDynChain::iDynChain()
 : iKinChain()
 {
 	NE=NULL;
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynChain::iDynChain(const Matrix &_H0)
 :iKinChain(_H0)
 {
 	NE=NULL;
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::clone(const iDynChain &c)
@@ -742,7 +742,7 @@ bool iDynChain::setStaticParameters(const unsigned int i, const double _m, const
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynChain::prepareNewtonEuler(const NewEulMode ne_mode)
+void iDynChain::prepareNewtonEuler(const NewEulMode NewEulMode_s)
 {
 	string info;
 	info = "[Chain] ";
@@ -751,11 +751,11 @@ void iDynChain::prepareNewtonEuler(const NewEulMode ne_mode)
 	info.append(buffer);
 
 	if( NE == NULL)
-		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,ne_mode,verbose);
+		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,NewEulMode_s,verbose);
 	else
 	{
 		delete NE;
-		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,ne_mode,verbose);
+		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,NewEulMode_s,verbose);
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -771,12 +771,12 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 
 	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(F0.length()==3)&&(Mu0.length()==3))
 	{
-		if(iterateMode_kinematics == NE_FORWARD)	
+		if(iterateMode_kinematics == FORWARD)	
 			NE->ForwardKinematicFromBase(w0,dw0,ddp0);
 		else 
 			NE->BackwardKinematicFromEnd(w0,dw0,ddp0);
 
-		if(iterateMode_wrench == NE_BACKWARD)	
+		if(iterateMode_wrench == BACKWARD)	
 			NE->BackwardWrenchFromEnd(F0,Mu0);
 		else 
 			NE->ForwardWrenchFromBase(F0,Mu0);
@@ -808,12 +808,12 @@ void iDynChain::computeNewtonEuler()
 		initNewtonEuler();
 	}
 
-	if(iterateMode_kinematics == NE_FORWARD)	
+	if(iterateMode_kinematics == FORWARD)	
 		NE->ForwardKinematicFromBase();
 	else 
 		NE->BackwardKinematicFromEnd();
 
-	if(iterateMode_wrench == NE_BACKWARD)	
+	if(iterateMode_wrench == BACKWARD)	
 		NE->BackwardWrenchFromEnd();
 	else 
 		NE->ForwardWrenchFromBase();
@@ -821,7 +821,7 @@ void iDynChain::computeNewtonEuler()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::computeKinematicNewtonEuler()
 {
-	if(iterateMode_kinematics == NE_FORWARD)	
+	if(iterateMode_kinematics == FORWARD)	
 		NE->ForwardKinematicFromBase();
 	else 
 		NE->BackwardKinematicFromEnd();
@@ -829,7 +829,7 @@ void iDynChain::computeKinematicNewtonEuler()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::computeWrenchNewtonEuler()
 {
-	if(iterateMode_wrench == NE_BACKWARD)	
+	if(iterateMode_wrench == BACKWARD)	
 		NE->BackwardWrenchFromEnd();
 	else 
 		NE->ForwardWrenchFromBase();
@@ -848,7 +848,7 @@ void iDynChain::getKinematicNewtonEuler(Vector &w, Vector &dw, Vector &ddp)
 	}
 	
 	w.resize(3); dw.resize(3); ddp.resize(3); w=dw=ddp=0.0;
-	if(iterateMode_kinematics == NE_FORWARD)	
+	if(iterateMode_kinematics == FORWARD)	
 	{
 		//get kinematics from the end-effector
 		NE->getVelAccEnd(w,dw,ddp);
@@ -873,7 +873,7 @@ void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu)
 		initNewtonEuler();
 	}
 	F.resize(3); Mu.resize(3); F=Mu=0.0;
-	if(iterateMode_wrench == NE_BACKWARD)			
+	if(iterateMode_wrench == BACKWARD)			
 	{
 		//get wrench from the base
 		NE->getWrenchBase(F,Mu);
@@ -911,12 +911,12 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
 	{
 		bool ret=true;
 
-		if(iterateMode_kinematics == NE_FORWARD)	
+		if(iterateMode_kinematics == FORWARD)	
 			ret = ret && NE->initKinematicBase(w0,dw0,ddp0);
 		else 
 			ret = ret && NE->initKinematicEnd(w0,dw0,ddp0);
 
-		if(iterateMode_wrench == NE_BACKWARD)	
+		if(iterateMode_wrench == BACKWARD)	
 			ret = ret && NE->initWrenchEnd(Fend,Muend);
 		else 
 			ret = ret && NE->initWrenchBase(Fend,Muend);
@@ -949,7 +949,7 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
 
 	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
 	{
-		if(iterateMode_kinematics == NE_FORWARD)	
+		if(iterateMode_kinematics == FORWARD)	
 			return NE->initKinematicBase(w0,dw0,ddp0);
 		else 
 			return NE->initKinematicEnd(w0,dw0,ddp0);
@@ -980,7 +980,7 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
 
 	if((Fend.length()==3)&&(Muend.length()==3))
 	{
-		if(iterateMode_wrench == NE_BACKWARD)	
+		if(iterateMode_wrench == BACKWARD)	
 			return NE->initWrenchEnd(Fend,Muend);
 		else 
 			return NE->initWrenchBase(Fend,Muend);
@@ -998,7 +998,7 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynChain::setModeNewtonEuler(const NewEulMode ne_mode)
+void iDynChain::setModeNewtonEuler(const NewEulMode mode)
 {
 	if( NE == NULL)
 	{
@@ -1008,9 +1008,9 @@ void iDynChain::setModeNewtonEuler(const NewEulMode ne_mode)
 		prepareNewtonEuler();
 	}
 
-	NE->setMode(ne_mode);
+	NE->setMode(mode);
 	if(verbose)
-		cerr<<"iDynChain: Newton-Euler mode set to "<<NE_Mode[ne_mode]<<endl;
+		cerr<<"iDynChain: Newton-Euler mode set to "<<NewEulMode_s[mode]<<endl;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1102,13 +1102,13 @@ void iDynChain::setIterMode(const ChainComputationMode mode)
 {
 	switch(mode)
 	{
-	case NE_KIN_WRE_FB: setIterModeKinematic(NE_FORWARD); setIterModeWrench(NE_BACKWARD);
+	case KINFWD_WREBWD: setIterModeKinematic(FORWARD); setIterModeWrench(BACKWARD);
 		break;
-	case NE_KIN_WRE_FF: setIterModeKinematic(NE_FORWARD); setIterModeWrench(NE_FORWARD);
+	case KINFWD_WREFWD: setIterModeKinematic(FORWARD); setIterModeWrench(FORWARD);
 		break;
-	case NE_KIN_WRE_BB: setIterModeKinematic(NE_BACKWARD); setIterModeWrench(NE_BACKWARD);
+	case KINBWD_WREBWD: setIterModeKinematic(BACKWARD); setIterModeWrench(BACKWARD);
 		break;
-	case NE_KIN_WRE_BF: setIterModeKinematic(NE_BACKWARD); setIterModeWrench(NE_FORWARD);
+	case KINBWD_WREFWD: setIterModeKinematic(BACKWARD); setIterModeWrench(FORWARD);
 		break;
 	default:
 		if(verbose)
@@ -1346,7 +1346,7 @@ void iDynLimb::dispose()
 iCubArmDyn::iCubArmDyn()
 {
     allocate("right");
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubArmDyn::iCubArmDyn(const string &_type, const ChainComputationMode _mode)
@@ -1424,7 +1424,7 @@ void iCubArmDyn::allocate(const string &_type)
 iCubLegDyn::iCubLegDyn()
 {
     allocate("right");
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubLegDyn::iCubLegDyn(const string &_type,const ChainComputationMode _mode)
@@ -1511,7 +1511,7 @@ void iCubLegDyn::allocate(const string &_type)
 iCubEyeDyn::iCubEyeDyn()
 {
     allocate("right");
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubEyeDyn::iCubEyeDyn(const string &_type,const ChainComputationMode _mode)
@@ -1604,7 +1604,7 @@ void iCubEyeDyn::allocate(const string &_type)
 iCubEyeNeckRefDyn::iCubEyeNeckRefDyn()
 {
     allocate("right");
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubEyeNeckRefDyn::iCubEyeNeckRefDyn(const string &_type,const ChainComputationMode _mode)
@@ -1691,7 +1691,7 @@ void iCubInertialSensorDyn::allocate(const string &_type)
 iFakeDyn::iFakeDyn()
 {
     allocate("right");
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iFakeDyn::iFakeDyn(const string &_type,const ChainComputationMode _mode)
@@ -1755,7 +1755,7 @@ void iFakeDyn::allocate(const string &_type)
 iFakeDyn2GdL::iFakeDyn2GdL()
 {
     allocate("right");
-	setIterMode(NE_KIN_WRE_FB);
+	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iFakeDyn2GdL::iFakeDyn2GdL(const string &_type,const ChainComputationMode _mode)

@@ -25,11 +25,11 @@
  * \section example_sec Example
  *
  * Set a iDynSensor for iCub's left arm, with 
- * force/moment computation in the static case (NE_STATIC), and
+ * force/moment computation in the static case (STATIC), and
  * verbose (VERBOSE==1) output:
  *
  * <tt> iCubArmDyn *arm = new iCubArmDyn("left"); </tt> \n
- * <tt> iDynSensorArm armWSensorSolver = new iDynSensorArm(arm,NE_STATIC,VERBOSE); </tt> \n
+ * <tt> iDynSensorArm armWSensorSolver = new iDynSensorArm(arm,STATIC,VERBOSE); </tt> \n
  *
  * Note that by setting the arm as "left", the sensor is automatically set
  * as the left sensor of the arm.
@@ -118,7 +118,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 
 	/**
@@ -133,7 +133,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	 * Set the sensor measured force and moment
@@ -280,7 +280,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm sensor type: left/arm
@@ -311,7 +311,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the leg sensor type: left/arm
