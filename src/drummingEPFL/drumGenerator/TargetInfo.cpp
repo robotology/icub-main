@@ -125,7 +125,7 @@ bool TargetInfo::Initialize(Property FromFile)
 	return true;	
 }
 
-void TargetInfo::UpdateInfo()
+bool TargetInfo::UpdateInfo()
 {
 	Bottle *command = ik_port.read(false);
 	if(command!=NULL)
@@ -151,9 +151,9 @@ void TargetInfo::UpdateInfo()
 			printf("\n");
 				
 		}
+		
 		command->clear();
-					
+		return true;					
 	}
-	
-
+	return false;
 }

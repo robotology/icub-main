@@ -215,7 +215,14 @@ void generatorThread::run()
 
     if(ik_ok)
     {
-    	myTargets->UpdateInfo();
+    	if(myTargets->UpdateInfo())
+    	{
+			for(int i=0; i<nbDOFs; i++)
+			{				
+				myManager->parameters[2*i] = myTargets->drumsPos[myManager->drumID][i];
+			}
+		}
+						
 	}
     //we get potential new parameters
 

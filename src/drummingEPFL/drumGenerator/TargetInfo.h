@@ -26,7 +26,7 @@ class TargetInfo
 		~TargetInfo();
 			
 		bool Initialize(Property fromFile); //get the initial values from file
-		void UpdateInfo(); //get the new values from the IK module
+		bool UpdateInfo(); //get the new values from the IK module
 				
 		int nbStates; // number of drums + idle state
 		int nbDOFs;
