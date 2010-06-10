@@ -1662,7 +1662,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         ftPortIn->open(ftPortInName.c_str());
 
         // connect automatically to FT sensor
-        if (Network::connect(ftServerPortName.c_str(),ftPortInName.c_str()))
+        if (!Network::connect(ftServerPortName.c_str(),ftPortInName.c_str()))
         {
             printMessage("ERROR: unable to connect to port %s\n",ftServerPortName.c_str());
 
