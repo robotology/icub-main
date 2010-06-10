@@ -123,13 +123,13 @@ public:
 	* @param _x, _y, _z are the position vector of one reference frame with respect 
 	* to another 
 	*/
-	iFTransform(yarp::sig::Matrix _R, double _x, double _y, double _z);
+	iFTransform(const yarp::sig::Matrix &_R, double _x, double _y, double _z);
 	/* 
 	* Overload constructor
 	* @param _R as previously
 	* @param _p is a vector composed by {_x, _y, _z} of the previous definition 
 	*/
-	iFTransform(yarp::sig::Matrix _R, yarp::sig::Vector _p);
+	iFTransform(const yarp::sig::Matrix &_R, const yarp::sig::Vector &_p);
 
 	/*Initializes the variables. Used in all the constructors*/
 	void initFTransform();
@@ -138,7 +138,7 @@ public:
 	* Set the Rotation matrix among two reference Frame 
 	* @param _R is the rotation matrix with respect to another reference frame
 	*/
-	void setR(yarp::sig::Matrix _R);
+	void setR(const yarp::sig::Matrix &_R);
 
 	/* 
 	* Set the distance between the two reference Frame 
@@ -150,7 +150,7 @@ public:
 	* Set the distance between the two reference Frame 
 	* where _p is composed by {_x, _y, _z} of the previous definition 
 	*/
-	void setP(yarp::sig::Vector _p);
+	void setP(const yarp::sig::Vector &_p);
 
 	/* Set the homogeneous transformation among two frames */
 	/*
@@ -158,16 +158,16 @@ public:
 	* @param _x, _y, _z are the position vector of one reference frame with respect 
 	* to another 
 	*/
-	void setH(yarp::sig::Matrix _R, double _x, double _y, double _z);
+	void setH(const yarp::sig::Matrix &_R, double _x, double _y, double _z);
 	/*
 	* @param _R is the rotation matrix with respect to another reference frame
 	* @param _p is composed by {_x, _y, _z} of the previous definition 
 	*/
-	void setH(yarp::sig::Matrix _R, yarp::sig::Vector _p);
+	void setH(const yarp::sig::Matrix &_R, const yarp::sig::Vector &_p);
 	/*
 	* @param _H is the homogeneous transformation matrix among 2 FoR
 	*/
-	void setH(yarp::sig::Matrix _H);
+	void setH(const yarp::sig::Matrix &_H);
 
 	/*set every variable (H, R, p, S, T) given H(4,4)
 	* H is set as default or using previously a setH(...)
@@ -177,17 +177,17 @@ public:
 	* @param _R is the rotation matrix with respect to another reference frame
 	* @param _p is the distance vector among 2 FoR
 	*/
-	void setPRH(yarp::sig::Matrix _R, yarp::sig::Vector _p);
+	void setPRH(const yarp::sig::Matrix &_R, const yarp::sig::Vector &_p);
 	/*
 	* @param _H is the homogeneous transformation matrix among 2 FoR
 	*/
-	void setPRH(yarp::sig::Matrix _H);
+	void setPRH(const yarp::sig::Matrix &_H);
 
 	/* Set the FT datas */
 	/*
 	* @param _FT is the wrench to be transformed, in its native FoR
 	*/
-	yarp::sig::Vector setFT(yarp::sig::Vector _FT);
+	yarp::sig::Vector setFT(const yarp::sig::Vector &_FT);
 
 	/* get the members defined above */
 	yarp::sig::Vector getP(){return p;}
@@ -225,15 +225,11 @@ private:
 protected:
 
 	//set transformation variables of/ the sensor:
-//	void setH();
-//	void setH(yarp::sig::Matrix _H);
-//	void setH(int _l);
-
 	void setSensorKin(int _l);
-	void setSensorKin(yarp::sig::Matrix _H);
+	void setSensorKin(const yarp::sig::Matrix &_H);
 	void setSensorKin();
 
-	void setFT(yarp::sig::Vector _FT);
+	void setFT(const yarp::sig::Vector &_FT);
 public:
 	// Default constructor:
     iSFrame();
@@ -249,12 +245,12 @@ public:
 	void setLink(int _l);
 	//Set sensor variables:
 	/* @param _Rs is the rotation matrix of the sensor FoR with respect to the one of the link the sensor is attached to.*/
-	void setRs(yarp::sig::Matrix _Rs){	Sensore->setR(_Rs);}
+	void setRs(const yarp::sig::Matrix &_Rs){	Sensore->setR(_Rs);}
 	/* @param _ps is the position vector of the sensor FoR with respect to the one of the link the sensor is attached to.*/
-	void setPs(yarp::sig::Vector _ps){Sensore->setP(_ps);}
+	void setPs(const yarp::sig::Vector &_ps){Sensore->setP(_ps);}
 	/* @param _Hs is the homogeneous transformation matrix of the sensor FoR with respect to the one
 	* of the link the sensor is attached to. */
-	void setHs(yarp::sig::Matrix _Hs){Sensore->setH(_Hs);}
+	void setHs(const yarp::sig::Matrix &_Hs){Sensore->setH(_Hs);}
 
 	//get sensor members, previously defined
 	yarp::sig::Matrix getRs(){return Sensore->getR();}
@@ -274,9 +270,9 @@ public:
 	//set transformation variables of the sensor, with respect to a base frame:
 	yarp::sig::Matrix getH();
 	
-	void setSensor(int _l, yarp::sig::Vector _FT);
-	void setSensor(yarp::sig::Matrix _H, yarp::sig::Vector _FT);
-	void setSensor(yarp::sig::Vector _FT);
+	void setSensor(int _l, const yarp::sig::Vector &_FT);
+	void setSensor(const yarp::sig::Matrix &_H, const yarp::sig::Vector &_FT);
+	void setSensor(const yarp::sig::Vector &_FT);
 
 	// get FT variables with respect to a fixed reference frame
 	yarp::sig::Vector getFT();
@@ -337,13 +333,13 @@ public:
 
 	void setLink(int _l);
 
-	void setSensor(yarp::sig::Vector _FT);
-	void setSensor(int _l, yarp::sig::Vector _FT);
-	void setSensor(yarp::sig::Matrix _H, yarp::sig::Vector _FT);
+	void setSensor(const yarp::sig::Vector &_FT);
+	void setSensor(int _l, const yarp::sig::Vector &_FT);
+	void setSensor(const yarp::sig::Matrix &_H, const yarp::sig::Vector &_FT);
 
 	void setHe();
 	void setHe(int _l);
-	void setHe(yarp::sig::Matrix _H);
+	void setHe(const yarp::sig::Matrix &_H);
 
 	void setTeb();
 	void setTse();
@@ -351,11 +347,9 @@ public:
 	yarp::sig::Vector setFe();
 	yarp::sig::Vector getFe();
 
-	//void setFB(yarp::sig::Vector _q);
-	//void setFB(yarp::sig::Vector _q, yarp::sig::Vector _FT);
-	yarp::sig::Vector getFB(yarp::sig::Vector _FT);
-	yarp::sig::Matrix getHs(){	return Hs;}
-	yarp::sig::Matrix getHe(){	return He;}
+	yarp::sig::Vector getFB(const yarp::sig::Vector &_FT);
+	yarp::sig::Matrix getHs(){return Hs;}
+	yarp::sig::Matrix getHe(){return He;}
 
 	
 };

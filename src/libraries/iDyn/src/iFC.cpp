@@ -33,14 +33,14 @@ iFTransform::iFTransform()
 {
 	initFTransform();
 }
-iFTransform::iFTransform(Matrix _R, double _x, double _y, double _z) 
+iFTransform::iFTransform(const Matrix &_R, double _x, double _y, double _z) 
 {
 	initFTransform();
 	setP(_x,_y,_z);
 	setR(_R);
 	setH(R,p);
 }
-iFTransform::iFTransform(Matrix _R, Vector _p)
+iFTransform::iFTransform(const Matrix &_R, const Vector &_p)
 {
 	initFTransform();
 	setP(_p);
@@ -58,7 +58,7 @@ void iFTransform::initFTransform()
 	H=eye(4,4);
 	FT=0.0;
 }
-void iFTransform::setR(Matrix _R)
+void iFTransform::setR(const Matrix &_R)
 {
 	R=_R;
 }
@@ -68,12 +68,12 @@ void iFTransform::setP(double _x, double _y, double _z)
 	p(1)=_y;
 	p(2)=_z;
 }
-void iFTransform::setP(Vector _p)
+void iFTransform::setP(const Vector &_p)
 {
 	p=_p;
 }
 
-void iFTransform::setPRH(Matrix _H)
+void iFTransform::setPRH(const Matrix &_H)
 {
 	for(int i=0;i<3;i++)
 		p(i)=_H(i,3);
@@ -86,12 +86,12 @@ void iFTransform::setPRH()
 		p(i)=H(i,3);
 	R=H.submatrix(0,2,0,2);
 }
-void iFTransform::setPRH(Matrix _R,Vector _p)
+void iFTransform::setPRH(const Matrix &_R,const Vector &_p)
 {
 	setH(_R,_p);
 	setPRH(H);
 }
-void iFTransform::setH(Matrix _R, double _x, double _y, double _z)
+void iFTransform::setH(const Matrix &_R, double _x, double _y, double _z)
 {
 	H=eye(4,4);
 	for(int i=0; i<3; i++)
@@ -101,7 +101,7 @@ void iFTransform::setH(Matrix _R, double _x, double _y, double _z)
 	H(1,3)=_y;
 	H(2,3)=_z;
 }
-void iFTransform::setH(Matrix _R, Vector _p)
+void iFTransform::setH(const Matrix &_R, const Vector &_p)
 {
 	H=eye(4,4);
 	for(int i=0; i<3; i++)
@@ -113,14 +113,14 @@ void iFTransform::setH(Matrix _R, Vector _p)
 		H(i,3)=_p(i);
 	}
 }
-void iFTransform::setH(Matrix _H)
+void iFTransform::setH(const Matrix &_H)
 {
 	R=_H.submatrix(0,2,0,2);
 	for(int i=0;i<3;i++)
 		p(i)=_H(i,3);
 	H=_H;
 }
-yarp::sig::Vector iFTransform::setFT(Vector _FT)
+yarp::sig::Vector iFTransform::setFT(const Vector &_FT)
 {
 		return FT=_FT;
 }
@@ -156,7 +156,7 @@ void iSFrame::setLink(int _l)
 {
 	l=_l;
 }
-void iSFrame::setFT(yarp::sig::Vector _FT)
+void iSFrame::setFT(const yarp::sig::Vector &_FT)
 {
 	FT=Sensore->setFT(_FT);
 }
@@ -173,25 +173,25 @@ void iSFrame::setSensorKin()
 	H=Link->getH()*Sensore->getH();
 }
 
-void iSFrame::setSensorKin(Matrix _H)
+void iSFrame::setSensorKin(const Matrix &_H)
 {
 	Link->setPRH(_H);
 	H=_H*Sensore->getH();
 }
 
-void iSFrame::setSensor(int _l, yarp::sig::Vector _FT)
+void iSFrame::setSensor(int _l, const yarp::sig::Vector &_FT)
 {
 	setSensorKin(_l);
 	setFT(_FT);
 }
 
-void iSFrame::setSensor(yarp::sig::Matrix _H, yarp::sig::Vector _FT)
+void iSFrame::setSensor(const yarp::sig::Matrix &_H, const yarp::sig::Vector &_FT)
 {
 	setSensorKin(_H);
 	setFT(_FT);
 }
 
-void iSFrame::setSensor(yarp::sig::Vector _FT)
+void iSFrame::setSensor(const yarp::sig::Vector &_FT)
 {
 	setSensorKin();
 	setFT(_FT);
@@ -277,20 +277,20 @@ void iFB::setLink(int _l)
 	Sensore->setLink(_l);
 	l=_l;
 }
-void iFB::setSensor(Vector _FT)
+void iFB::setSensor(const Vector &_FT)
 {
 	Fs=_FT;
 	Sensore->setSensor(_FT);
 	Hs=Sensore->getH();
 }
-void iFB::setSensor(int _l, Vector _FT)
+void iFB::setSensor(int _l, const Vector &_FT)
 {
 	Fs=_FT;
 	l=_l;
 	Sensore->setSensor(_l, _FT);
 	Hs=Sensore->getH();
 }
-void iFB::setSensor(Matrix _H, Vector _FT)
+void iFB::setSensor(const Matrix &_H, const Vector &_FT)
 {
 	Fs=_FT;
 	Sensore->setSensor(_H, _FT);
@@ -306,7 +306,7 @@ void iFB::setHe(int _l)
 	EndEffector->setH(Limb->getH(_l));
 	He=EndEffector->getH();
 }
-void iFB::setHe(Matrix _H)
+void iFB::setHe(const Matrix &_H)
 {
 	EndEffector->setH(_H);
 	He=EndEffector->getH();
@@ -323,7 +323,7 @@ void iFB::setTeb()
 		}
 	}
 }
-yarp::sig::Vector iFB::getFB(Vector _FT)
+yarp::sig::Vector iFB::getFB(const Vector &_FT)
 {
 	setSensor(_FT);
 	setTeb();
