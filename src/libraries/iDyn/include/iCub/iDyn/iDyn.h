@@ -731,7 +731,7 @@ public:
 	 * resulting forces and torques, one can call getForces() and getMoments() methods; 
 	 * before calling this method, initNewtonEuler() must be called
 	 */
-	 void computeNewtonEuler();
+	 bool computeNewtonEuler();
 
 	/**
 	* Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
@@ -1076,6 +1076,9 @@ public:
 
 	 bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 	{ return iDynChain::computeNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
+
+	  bool computeNewtonEuler()
+	{ return iDynChain::computeNewtonEuler(); }
 
 	 bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 	 { return iDynChain::initNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
