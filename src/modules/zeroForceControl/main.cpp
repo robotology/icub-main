@@ -246,8 +246,8 @@ private:
 	int limbJnt;
 	string limb;
 
-	iFB *FTB;
-	iFTransform *sensor;
+	iFTransformation *FTtoBase;
+	iGenericFrame *sensor;
 	int sensorLink;
 
 	Matrix Rs;
@@ -611,11 +611,11 @@ public:
 		  //------------------------------------------
 		  //           FT SENSOR
 		  //------------------------------------------
-		  sensor = new iFTransform(Rs,ps);
+		  sensor = new iGenericFrame(Rs,ps);
 
-		  FTB = new iFB(sensorLink);
-		  FTB->attach(chain);
-		  FTB->attach(sensor);
+		  FTtoBase = new iFTransformation(sensorLink);
+		  FTtoBase->attach(chain);
+		  FTtoBase->attach(sensor);
 		  //------------------------------------------
 
 
@@ -799,15 +799,15 @@ public:
 				  setDesiredPositions();	
 				  control_mode=IMPEDANCE;
 			  }
-			  FT = FTB->getFB(FTs-FTs_init);			  	
+			  FT = FTtoBase->getFB(FTs-FTs_init);			  	
 			  first = false;
 		  }
 		  else
 		  {
-			  if(!first)  FT = FTB->getFB();
+			  if(!first)  FT = FTtoBase->getFB();
 			  else {FT=0.0; FTs=0.0; FTj=0.0; FTs_init=0.0;}
 		  }
-		  Fe=FTB->getFe();
+		  Fe=FTtoBase->getFe();
 		  //------------------------------------------
 
 
@@ -1049,7 +1049,7 @@ public:
 		  //       DESTROING VARIABLES
 		  //---------------------------------------------
           if(prntData) fclose(fid);
-		  if(FTB) delete FTB;
+		  if(FTtoBase) delete FTtoBase;
 		  if(iCubPid) delete[] iCubPid;
 		  if(FTPid) delete[] FTPid;
 		  //---------------------------------------------
