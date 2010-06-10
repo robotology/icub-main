@@ -32,7 +32,7 @@
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynFwd.h>
-#include <iCub/iDyn/iFC.h>
+#include <iCub/iDyn/iDynTransform.h>
 
 #include <iostream>
 #include <iomanip>
@@ -174,8 +174,10 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_arm, PolyDriver *_pd_tor
 	limbInv = new iCubArmDyn(type);
 	
 	// the sensor solver for the arm
+
 	sens = new iDynSensorArm(dynamic_cast<iCubArmDyn *>(limb),DYNAMIC,VERBOSE);
 	sensInv = new iDynInvSensorArm(dynamic_cast<iCubArmDyn *>(limbInv),DYNAMIC,VERBOSE);
+
 
 	cout<<"SensToTorques: arm and iDynSensor created"<<endl;
 
