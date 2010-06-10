@@ -76,9 +76,9 @@ enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 	class iDynSensor;
 	class iDynSensorLeg;
 	class iDynSensorArm;
-	class iFTransform;
-    class iSFrame;
-	class iFB;
+	class iGenericFrame;
+    class iFrameOnLink;
+	class iFTransformation;
 
 
 

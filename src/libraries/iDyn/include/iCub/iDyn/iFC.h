@@ -26,9 +26,9 @@
 /* How to use the iFC library:
 
 istantiate your limb (example: iCubArm *arm)
-istantiate a iSFrame Variable as pointer (iSFrame *Sens) and a pointer to a variable of type iFTransform
-(ex: iFtransform *sensore)
-Sens need a iFTransform and an iKinLimb variables with some properties defining the location of the sensor over a link of the 
+istantiate a iFrameOnLink Variable as pointer (iFrameOnLink *Sens) and a pointer to a variable of type iGenericFrame
+(ex: iGenericFrame *sensore)
+Sens need a iGenericFrame and an iKinLimb variables with some properties defining the location of the sensor over a link of the 
 iKinLimb chain.
 
 example code:
@@ -39,8 +39,8 @@ example code:
 	ps=...
 	iCubArm *arm = new iCubArm("left");
 	iKinChain *chain;
-	iFTransform *sensore = new iFTransform(Rs,ps);
-	iSFrame *Sens = new iSFrame(2);
+	iGenericFrame *sensore = new iGenericFrame(Rs,ps);
+	iFrameOnLink *Sens = new iFrameOnLink(2);
 	chain=arm->asChain();
 	
 	Sens->attach(sensore);
@@ -96,9 +96,9 @@ namespace iDyn{
 	class FinalLinkNewtonEuler;
 	class SensorLinkNewtonEuler;
 	class OneChainNewtonEuler;
-	class iFTransform;
-    class iSFrame;
-	class iFB;
+	class iGenericFrame;
+    class iFrameOnLink;
+	class iFTransformation;
 
 
 /**
@@ -106,7 +106,7 @@ namespace iDyn{
 *
 * A Base class for defining the Transformation of a Wrench from a frame to another.
 */
-class iFTransform
+class iGenericFrame
 {
 private:
 	    // Default constructor: not implemented.
@@ -116,20 +116,20 @@ private:
 	yarp::sig::Vector FT;
 public:
 	/* Default Constructor */
-	iFTransform();
+	iGenericFrame();
 	/* 
 	* Overload constructor
 	* @param _R is the rotation matrix with respect to another reference frame
 	* @param _x, _y, _z are the position vector of one reference frame with respect 
 	* to another 
 	*/
-	iFTransform(const yarp::sig::Matrix &_R, double _x, double _y, double _z);
+	iGenericFrame(const yarp::sig::Matrix &_R, double _x, double _y, double _z);
 	/* 
 	* Overload constructor
 	* @param _R as previously
 	* @param _p is a vector composed by {_x, _y, _z} of the previous definition 
 	*/
-	iFTransform(const yarp::sig::Matrix &_R, const yarp::sig::Vector &_p);
+	iGenericFrame(const yarp::sig::Matrix &_R, const yarp::sig::Vector &_p);
 
 	/*Initializes the variables. Used in all the constructors*/
 	void initFTransform();
@@ -198,7 +198,7 @@ public:
 	yarp::sig::Vector getFT(){return FT;}
 	
 	/* Destructor*/ 
-	~iFTransform(){};
+	~iGenericFrame(){};
 };
 
 /**
@@ -207,18 +207,18 @@ public:
 * A Base class for defining the FT sensor over a generic link of a kinematic chain inherited by iKinLimb.
 */
 
-class iSFrame
+class iFrameOnLink
 {
 private:
 	int l;
 	yarp::sig::Matrix H;
 	yarp::sig::Vector FT;
 
-	iFTransform *Sensore;
-	iFTransform *Link;
+	iGenericFrame *Sensore;
+	iGenericFrame *Link;
 	iKin::iKinChain *Limb;
 	/*
-	* initializes the iSFrame members to zero. Used in the constructors.
+	* initializes the iFrameOnLink members to zero. Used in the constructors.
 	*/
 	void initSFrame();
 
@@ -232,13 +232,13 @@ protected:
 	void setFT(const yarp::sig::Vector &_FT);
 public:
 	// Default constructor:
-    iSFrame();
+    iFrameOnLink();
 	/* Overloaded constructor:
 	* @param _l defines the link on which the FT sensor is attached
 	*/
-	iSFrame(int _l);
+	iFrameOnLink(int _l);
 	/*Destructor*/
-	~iSFrame()
+	~iFrameOnLink()
 	{
 	};
 
@@ -278,7 +278,7 @@ public:
 	yarp::sig::Vector getFT();
 
 	void attach(iKin::iKinChain *_Limb);
-	void attach(iFTransform *_Sensore);
+	void attach(iGenericFrame *_Sensore);
 };
 
 
@@ -286,7 +286,7 @@ public:
 * \ingroup iFC
 *
 */
-class iFB
+class iFTransformation
 {
 private:
 	int l;
@@ -297,20 +297,20 @@ private:
 	yarp::sig::Matrix Tse;
 	yarp::sig::Matrix Teb;
 
-	iSFrame* Sensore;
-	iFTransform* EndEffector;
+	iFrameOnLink* Sensore;
+	iGenericFrame* EndEffector;
 	iKin::iKinChain *Limb;
 
 	yarp::sig::Vector d;
 	yarp::sig::Matrix S;
 	yarp::sig::Matrix R;
 
-	void initiFB();
+	void initiFTransformation();
 public:
-	iFB();
-	iFB(int _l);
+	iFTransformation();
+	iFTransformation(int _l);
 
-	~iFB()
+	~iFTransformation()
 	{
 		if (Limb)
 		{
@@ -329,7 +329,7 @@ public:
 		}
 	}
 	void attach(iKin::iKinChain *_Limb);
-	void attach(iFTransform *_sensore);
+	void attach(iGenericFrame *_sensore);
 
 	void setLink(int _l);
 
