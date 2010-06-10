@@ -20,7 +20,7 @@
  * \image html affActionPrimitives.jpg 
  *  
  * Central to the library's implementation is the concept of 
- * \b action. An action is a "request" for an execution of three 
+ * @b action. An action is a "request" for an execution of three
  * different tasks according to its internal selector: 
  *  
  * -# It can ask to steer the arm to a specified pose, hence 
@@ -64,6 +64,9 @@
 #include <yarp/sig/Vector.h>
 
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
+#include <iCub/iDyn/iDyn.h>
+#include <iCub/iDyn/iDynInv.h>
+#include <iCub/iDyn/iDynTransform.h>
 
 #include <string>
 #include <deque>
@@ -106,6 +109,7 @@ public:
 class affActionPrimitives : public yarp::os::RateThread
 {
 protected:
+    std::string robot;
     std::string local;
     std::string part;
 
@@ -207,6 +211,7 @@ protected:
     virtual bool cmdArm(const Action &action);
     virtual bool cmdHand(const Action &action);
     virtual bool isHandSeqEnded();
+    virtual void postReachCallback();
 
     virtual void init();
     virtual bool execQueuedAction();
@@ -242,56 +247,56 @@ public:
     *  
     * @note Available options are: 
     *  
-    * \b local <string>: specify a stem name used to open local 
+    * @b local <string>: specify a stem name used to open local 
     *    ports and to highlight messages printed on the screen. 
     *  
-    * \b robot <string>: the robot name to connect to (e.g. icub). 
+    * @b robot <string>: the robot name to connect to (e.g. icub). 
     *  
-    * \b part <string>:  the arm to be controlled (e.g. left_arm). 
+    * @b part <string>:  the arm to be controlled (e.g. left_arm). 
     *  
-    * \b thread_period <int>: the thread period [ms] which selects 
+    * @b thread_period <int>: the thread period [ms] which selects 
     *    the time granularity as well.
     *  
-    * \b default_exec_time <double>: the arm movement execution time
+    * @b default_exec_time <double>: the arm movement execution time
     *    [s].
     *  
-    * \b reach_tol <double>: the reaching tolerance [m]. 
+    * @b reach_tol <double>: the reaching tolerance [m]. 
     *  
-    * \b jntmotiondone_tol <double>: the tolerance [deg] for 
+    * @b jntmotiondone_tol <double>: the tolerance [deg] for 
     *    detecting the end of fingers motion in joint space.
     *  
-    * \b tracking_mode <string>: enable/disable the tracking mode; 
+    * @b tracking_mode <string>: enable/disable the tracking mode; 
     *    possible values: "on"/"off".
     * @note In tracking mode the cartesian position is mantained on 
     *       the reached target.
     *  
-    * \b verbosity <string>: enable/disable the verbose mode; 
+    * @b verbosity <string>: enable/disable the verbose mode; 
     *    possible values: "on"/"off".
     *
-    * \b torso_pitch <string>: if "on" it enables the control of the 
+    * @b torso_pitch <string>: if "on" it enables the control of the
     *    pitch of the torso.
     *  
-    * \b torso_pitch_min <double>: set the pitch minimum value 
+    * @b torso_pitch_min <double>: set the pitch minimum value 
     *    [deg].
     *  
-    * \b torso_pitch_max <double>: set the pitch maximum value 
+    * @b torso_pitch_max <double>: set the pitch maximum value 
     *    [deg].
     *  
-    * \b torso_roll <string>: if "on" it enables the control of the 
+    * @b torso_roll <string>: if "on" it enables the control of the 
     *    roll of the torso.
     *  
-    * \b torso_roll_min <double>: set the roll minimum value [deg]. 
+    * @b torso_roll_min <double>: set the roll minimum value [deg]. 
     *  
-    * \b torso_roll_max <double>: set the roll maximum value [deg].
+    * @b torso_roll_max <double>: set the roll maximum value [deg].
     *  
-    * \b torso_yaw <string>: if "on" it enables the control of the 
+    * @b torso_yaw <string>: if "on" it enables the control of the 
     *    yaw of the torso.
     *  
-    * \b torso_yaw_min <double>: set the yaw minimum value [deg]. 
+    * @b torso_yaw_min <double>: set the yaw minimum value [deg]. 
     *  
-    * \b torso_yaw_max <double>: set the yaw maximum value [deg]. 
+    * @b torso_yaw_max <double>: set the yaw maximum value [deg]. 
     *  
-    * \b hand_sequences_file <string>: complete path to the file 
+    * @b hand_sequences_file <string>: complete path to the file 
     *    containing the hand motions sequences.<br />Here is the
     *    format of motion sequences:
     *  
@@ -347,7 +352,7 @@ public:
     *  
     * @note Some examples: 
     *  
-    * the call \b pushAction(x,o,"close_hand") pushes the combined 
+    * the call @b pushAction(x,o,"close_hand") pushes the combined 
     * action of reachPose(x,o) and hand "close_hand" sequence into 
     * the queue; the action will be executed as soon as all the 
     * previous items in the queue will have been served. 
@@ -370,7 +375,7 @@ public:
     *  
     * @note Some examples: 
     *  
-    * the call \b pushAction(x,"close_hand") pushes the combined 
+    * the call @b pushAction(x,"close_hand") pushes the combined 
     * action of reachPosition(x) and hand "close_hand" sequence into
     * the queue; the action will be executed as soon as all the 
     * previous items in the queue will have been served. 
@@ -510,14 +515,16 @@ public:
     std::deque<std::string> getHandSeqList();
 
     /**
-    * Query if fingers are moving.
-    * @return true/false on moving/non-moving fingers.
+    * Query if fingers are moving. 
+    * @param f the result of the check.
+    * @return true/false on success/fail. 
     */
-    virtual bool areFingersMoving();
+    virtual bool areFingersMoving(bool &f);
 
     /**
-    * Query if fingers are in position.
-    * @return true iff fingers are in position. 
+    * Query if fingers are in position. 
+    * @param f the result of the check. 
+    * @return true/false on success/fail. 
     *  
     * @note Fingers are intended to be in position if they have 
     *       attained the desired position or while moving they
@@ -525,7 +532,7 @@ public:
     *       among fingers or with objects causes the method to
     *       return false.
     */
-    virtual bool areFingersInPosition();
+    virtual bool areFingersInPosition(bool &f);
 
     /**
     * Return the cartesian interface used internally to control the 
@@ -636,7 +643,7 @@ public:
 * \ingroup affActionPrimitives
 *
 * A derived class defining a first abstraction layer on top of 
-* affActionPrimitives father class. 
+* @ref affActionPrimitives father class. 
 *  
 * It internally predeclares (without actually defining) a set of
 * hand sequence motions key ("open_hand", "close_hand" and 
@@ -748,27 +755,15 @@ public:
 class affActionPrimitivesLayer2;
 
 
-// callback for switching on/off the wrist joint
-class switchingWristDof : public affActionPrimitivesCallback
+// callback for executing final grasp after contact
+class liftAndGraspCallback : public affActionPrimitivesCallback
 {
 protected:
     affActionPrimitivesLayer2 *action;
-    yarp::sig::Vector sw;
 
 public:
-    switchingWristDof(affActionPrimitivesLayer2 *_action, yarp::sig::Vector &_sw) :
-                      action(_action), sw(_sw) { }
-
-    virtual void exec();
-};
-
-
-// callback for enabling the wrist joint and executing final grasp
-class enablingWristDofAndGrasp : public switchingWristDof
-{
-public:
-    enablingWristDofAndGrasp(affActionPrimitivesLayer2 *_action, yarp::sig::Vector &_sw) :
-                             switchingWristDof(_action,_sw) { }
+    liftAndGraspCallback(affActionPrimitivesLayer2 *_action) :
+                         action(_action) { }
 
     virtual void exec();
 };
@@ -777,53 +772,53 @@ public:
 /**
 * \ingroup affActionPrimitives
 *
-* A class that inherits from affActionPrimitivesLayer1 modifying 
-* the grasp() and touch() primitives in the following way: 
-*  
-* While reaching for the object, one wrist joint is kept fixed 
-* (however by exploting the torso dof the orientation of the 
-* hand can be still fully controlled) in order to detect 
-* contacts by checking the low-level output signal. As soon as 
-* the contact is detected the reaching is suddenly stopped. 
-*  
-* @note The benefit is that unlike the previous implementation 
-* of grasp() and touch(), the height of the objects to be 
-* attained can be known just approximately. Nonetheless, the old 
-* implementation of grasp() is still available. 
-*  
-* <b>Important note</b>: from within the robot configuration 
-* file remind to enable the option to read the voltage output 
-* signal of the wrist joint. 
+* A class that inherits from @ref affActionPrimitivesLayer1 and 
+* integrates the force-torque sensing in order to stop the limb 
+* while reaching as soon as a contact with external objects is 
+* detected. 
 */
 class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 {
 protected:
-    int    wrist_joint;
-    double wrist_thres;
-    int    wrist_Dout_estPoly_N;
-    double wrist_Dout_estPoly_D;
-    double t0;
-
     bool skipFatherPart;
     bool meConfigured;
-    bool enableWristCheck;
-    bool wristContact;
+    bool contact;
 
-    yarp::dev::IPidControl   *pidCtrl;
-    ctrl::AWLinEstimator     *outputDerivative;
+    double ext_force_thres;
 
-    switchingWristDof        *disableWristDof; 
-    switchingWristDof        *enableWristDof;
-    enablingWristDofAndGrasp *execGrasp;
+    yarp::dev::PolyDriver  *polyTorso;
+    yarp::dev::IEncoders   *encTorso;
+
+    ctrl::AWLinEstimator   *velEst;
+    ctrl::AWQuadEstimator  *accEst;
+    iDyn::iCubArmDyn       *dynArm;
+    iDyn::iDynInvSensor    *dynSensor;
+    iDyn::iFTransformation *dynTransformer;
+
+    liftAndGraspCallback   *execLiftAndGrasp;
+
+    yarp::os::BufferedPort<yarp::sig::Vector> *ftPortIn;
+
+    yarp::sig::Vector q;
+    yarp::sig::Vector dq;
+    yarp::sig::Vector d2q;
+
+    yarp::sig::Vector wrenchModel;
+    yarp::sig::Vector wrenchOffset;
+    yarp::sig::Vector wrenchMeasured;
+    yarp::sig::Vector wrenchExternal;
 
     yarp::sig::Vector grasp_d2;
     yarp::sig::Vector grasp_o;
 
-    virtual void init();
-    virtual void run();
+    yarp::sig::Vector encDataTorso;
+    yarp::sig::Vector encDataArm;
 
-    friend class switchingWristDof;
-    friend class enablingWristDofAndGrasp;
+    friend class liftAndGraspCallback;
+
+    virtual void init();
+    virtual void postReachCallback();
+    virtual void run();
 
 public:
     /**
@@ -854,22 +849,13 @@ public:
     *  
     * Further available options are: 
     *  
-    * \b wrist_joint <int>: specify the wrist joint to be blocked
-    *    while grasping/touching.
+    * @b ext_force_thres <double>: specify the maximum external 
+    *    force magnitude applied to the end-effector in order to
+    *    detect contact between end-effector and objects while
+    *    reaching.
     *  
-    * \b wrist_thres <double>: specify the threshold for the 
-    *    derivative of the output signal in order to detect contact
-    *    between wrist and objects while grasping/touching.
-    *  
-    * \b wrist_Dout_estPoly_N <int>: specify the parameter N of the 
-    *    least-squares polynomial estimator used to compute the
-    *    derivative of the output signal (see \ref
-    *    adaptWinPolyEstimator for further details).
-    * 
-    * \b wrist_Dout_estPoly_D <double>: specify the parameter D of 
-    *    the least-squares polynomial estimator used to compute the
-    *    derivative of the output signal (see \ref
-    *    adaptWinPolyEstimator for further details).
+    * @note A port called <i> /<local>/<part>/ft:i </i> is open to
+    *       acquire data provided by \ref force/torque sensor.
     */
     virtual bool open(yarp::os::Property &opt);
 
@@ -906,19 +892,36 @@ public:
                        const yarp::sig::Vector &d);
 
     /**
-    * More evolute version of touch. It exploits the contact 
-    * detection in order to stop the arm. 
-    * @param x the 3-d target position [m]. 
-    * @param o the 4-d hand orientation used while reaching/touching
-    *          (given in axis-angle representation: ax ay az angle
-    *          in rad).
-    * @param d the displacement [m] wrt the target position that 
-    *          identifies a location to be reached prior to
-    *          touching.
+    * Retrieve the current wrench on the end-effector.
+    * @param wrench a vector containing the external forces/moments 
+    *               acting on the end-effector.
     * @return true/false on success/fail. 
     */
-    virtual bool touch(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                       const yarp::sig::Vector &d);
+    virtual bool getExtWrench(yarp::sig::Vector &wrench);
+
+    /**
+    * Retrieve the current threshold on the external force used to 
+    * stop the limb while reaching. 
+    * @param thres where to return the threshold.
+    * @return true/false on success/fail. 
+    */
+    virtual bool getExtForceThres(double &thres);
+
+    /**
+    * Set the threshold on the external force used to stop the limb
+    * while reaching. 
+    * @param thres the new threshold.
+    * @return true/false on success/fail. 
+    */
+    virtual bool setExtForceThres(const double thres);
+
+    /**
+    * Check whether the reaching has been stopped due to a contact 
+    * with external objects. 
+    * @param f the result of the check. 
+    * @return true/false on success/fail. 
+    */
+    virtual bool checkContact(bool &f);
 };
 
 }

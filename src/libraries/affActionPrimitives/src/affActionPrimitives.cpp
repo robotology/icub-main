@@ -1,5 +1,7 @@
 
+#include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
+#include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
 
@@ -18,10 +20,7 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME                 3.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL                 0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD                      1.0     // [s]
-#define ACTIONPRIM_DEFAULT_WRIST_JOINT              5
-#define ACTIONPRIM_DEFAULT_WRIST_THRES              1e9
-#define ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_N     40
-#define ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_D     5.0
+#define ACTIONPRIM_DEFAULT_EXT_FORCE_THRES          1e9     // [N, Nm]
 #define ACTIONPRIM_DEFAULT_PART                     "right_arm"
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE             "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY                "off"
@@ -37,6 +36,7 @@ using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace ctrl;
+using namespace iDyn;
 using namespace actions;
 
 
@@ -385,24 +385,23 @@ bool affActionPrimitives::open(Property &opt)
         return false;
     }
 
+    robot=opt.check("robot",Value("icub")).asString().c_str();
     local=opt.find("local").asString().c_str();
     part=opt.check("part",Value(ACTIONPRIM_DEFAULT_PART)).asString().c_str();
     default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
     tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="on"?true:false;
-    verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;
+    verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;    
 
-    string robot=opt.check("robot",Value("icub")).asString().c_str();    
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
-    string fwslash="/";
 
     // get hand sequence motions (if any)
     configHandSeq(opt);
 
     // open the position client
     Property optPolyHand("(device remote_controlboard)");
-    optPolyHand.put("remote",(fwslash+robot+fwslash+part).c_str());
-    optPolyHand.put("local",(fwslash+local+fwslash+part+fwslash+"position").c_str());
+    optPolyHand.put("remote",("/"+robot+"/"+part).c_str());
+    optPolyHand.put("local",("/"+local+"/"+part+"/position").c_str());
 
     polyHand=new PolyDriver;
     if (!polyHand->open(optPolyHand))
@@ -413,8 +412,8 @@ bool affActionPrimitives::open(Property &opt)
 
     // open the cartesian client
     Property optPolyCart("(device cartesiancontrollerclient)");
-    optPolyCart.put("remote",(fwslash+robot+fwslash+"cartesianController"+fwslash+part).c_str());
-    optPolyCart.put("local",(fwslash+local+fwslash+part+fwslash+"cartesian").c_str());
+    optPolyCart.put("remote",("/"+robot+"/cartesianController/"+part).c_str());
+    optPolyCart.put("local",("/"+local+"/"+part+"/cartesian").c_str());
 
     polyCart=new PolyDriver;
     if (!polyCart->open(optPolyCart))
@@ -451,7 +450,7 @@ bool affActionPrimitives::open(Property &opt)
     disableTorsoDof();    
 
     // open port for grasp detection
-    graspDetectionPort.open((fwslash+local+fwslash+part+fwslash+"detectGrasp:i").c_str());
+    graspDetectionPort.open(("/"+local+"/"+part+"/detectGrasp:i").c_str());
 
     jHandMin=7;                     // hand first joint
     posCtrl->getAxes(&jHandMax);    // hand last joint
@@ -594,6 +593,13 @@ bool affActionPrimitives::isHandSeqEnded()
         return false;
     else
         return true;
+}
+
+
+/************************************************************************/
+void affActionPrimitives::postReachCallback()
+{
+    latchArmMoveDone=armMoveDone=false;
 }
 
 
@@ -821,13 +827,13 @@ bool affActionPrimitives::reachPose(const Vector &x, const Vector &o,
 
         enableTorsoDof();
 
-        cartCtrl->goToPose(x,o,t);
-
-        latchArmMoveDone=armMoveDone=false;
+        cartCtrl->goToPose(x,o,t);        
 
         printMessage("reach at %g [s] for [%s], [%s]\n",t,
                      toCompactString(x).c_str(),
                      toCompactString(o).c_str());
+
+        postReachCallback();
 
         t0=Time::now();
 
@@ -851,10 +857,11 @@ bool affActionPrimitives::reachPosition(const Vector &x, const double execTime)
 
         cartCtrl->goToPosition(x,t);
 
-        latchArmMoveDone=armMoveDone=false;
 
         printMessage("reach at %g [s] for [%s]\n",t,
                      toCompactString(x).c_str());
+
+        postReachCallback();
 
         t0=Time::now();
 
@@ -1109,7 +1116,8 @@ bool affActionPrimitives::cmdArm(const Action &action)
                          t,toCompactString(x).c_str());
         }
 
-        latchArmMoveDone=armMoveDone=false;
+        postReachCallback();
+
         t0=Time::now();
 
         return true;
@@ -1226,16 +1234,28 @@ deque<string> affActionPrimitives::getHandSeqList()
 
 
 /************************************************************************/
-bool affActionPrimitives::areFingersMoving()
+bool affActionPrimitives::areFingersMoving(bool &f)
 {
-    return latchHandMoveDone;
+    if (configured)
+    {
+        f=latchHandMoveDone;
+        return true;
+    }
+    else
+        return false;
 }
 
 
 /************************************************************************/
-bool affActionPrimitives::areFingersInPosition()
+bool affActionPrimitives::areFingersInPosition(bool &f)
 {
-    return fingersInPosition;
+    if (configured)
+    {
+        f=fingersInPosition;
+        return true;
+    }
+    else
+        return false;
 }
 
 
@@ -1297,7 +1317,7 @@ bool affActionPrimitives::setTrackingMode(const bool f)
 
 
 /************************************************************************/
-bool affActionPrimitives::enableArmWaving(const yarp::sig::Vector &restPos)
+bool affActionPrimitives::enableArmWaving(const Vector &restPos)
 {
     if (configured)
     {
@@ -1463,34 +1483,10 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 
 
 /************************************************************************/
-void switchingWristDof::exec()
+void liftAndGraspCallback::exec()
 {
-    action->printMessage("%s the wrist joint %d\n",
-                         sw[action->wrist_joint+3]?"enabling":"disabling",
-                         action->wrist_joint);
-
-    yarp::sig::Vector dummyRet;
-    action->cartCtrl->setDOF(sw,dummyRet);
-
-    action->enableWristCheck=!action->enableWristCheck;
-
-    action->t0=Time::now();
-    action->outputDerivative->reset();
-}
-
-
-/************************************************************************/
-void enablingWristDofAndGrasp::exec()
-{
-    action->printMessage("enabling the wrist joint %d\n",action->wrist_joint);
-
-    yarp::sig::Vector dummyRet;
-    action->cartCtrl->setDOF(sw,dummyRet);
-
-    action->enableWristCheck=false;
-
-    // lift up the hand if contact detected
-    if (action->wristContact)
+    // lift up the hand iff contact detected
+    if (action->contact)
     {
         Vector x,o;
         action->cartCtrl->getPose(x,o);
@@ -1500,7 +1496,7 @@ void enablingWristDofAndGrasp::exec()
         action->pushAction(x+action->grasp_d2,action->grasp_o);
     }
 
-    action->pushAction("close_hand"); 
+    action->pushAction("close_hand");
 }
 
 
@@ -1527,41 +1523,93 @@ void affActionPrimitivesLayer2::init()
 {    
     skipFatherPart=false;
     meConfigured=false;
-    enableWristCheck=false;
-    wristContact=false;
+    contact=false;
 
-    disableWristDof=NULL;
-    enableWristDof=NULL;
-    execGrasp=NULL;
-    outputDerivative=NULL;
+    polyTorso=NULL;
+    encTorso=NULL;
+    velEst=NULL;
+    accEst=NULL;
+    dynArm=NULL;
+    dynSensor=NULL;
+    dynTransformer=NULL;
+    execLiftAndGrasp=NULL;
+    ftPortIn=NULL;
+}
+
+
+/************************************************************************/
+void affActionPrimitivesLayer2::postReachCallback()
+{
+    affActionPrimitivesLayer1::postReachCallback();
+
+    // init the contact variable
+    contact=false;
+
+    // latch the offset
+    wrenchOffset=wrenchMeasured+wrenchModel;
 }
 
 
 /************************************************************************/
 void affActionPrimitivesLayer2::run()
 {
-    double out;
+    const double t=Time::now();
 
-    if (pidCtrl->getOutput(wrist_joint,&out))
+    // estimation of internal dynamic model
+    encTorso->getEncoders(encDataTorso.data());
+    encCtrl->getEncoders(encDataArm.data());
+
+    for (int i=0; i<3; i++)
+        q[i]=encDataTorso[2-i];
+
+    for (int i=3; i<q.length(); i++)
+        q[i]=encDataArm[i-3];
+
+    AWPolyElement el;
+    el.data=q;
+    el.time=t;
+
+    dq=velEst->estimate(el);
+    d2q=accEst->estimate(el);
+
+    dynArm->setAng(CTRL_DEG2RAD*q);
+    dynArm->setDAng(CTRL_DEG2RAD*dq);
+    dynArm->setD2Ang(CTRL_DEG2RAD*d2q);
+    dynArm->computeNewtonEuler();
+
+    dynSensor->computeSensorForceMoment();
+    wrenchModel=dynSensor->getSensorForceMoment();
+
+    // estimation of external forces/torques acting on the end-effector
+    if (Vector *ftMeasured=ftPortIn->read(false))
     {
-        AWPolyElement item;
-        item.time=Time::now();
-        item.data.resize(1,out);
+        wrenchMeasured=*ftMeasured;
+        wrenchExternal=dynTransformer->getEndEffWrenchAsBase((wrenchMeasured-wrenchOffset)+wrenchModel);
+    }
+    else
+        wrenchExternal=dynTransformer->getEndEffWrenchAsBase();
 
-        outputDerivative->feedData(item);
-        Vector outDer=outputDerivative->estimate();
-        outDer[0]=outDer[0]<0.0?-outDer[0]:outDer[0];
+    Vector forceExternal(3);
+    forceExternal[0]=wrenchExternal[0];
+    forceExternal[1]=wrenchExternal[1];
+    forceExternal[2]=wrenchExternal[2];
+    const double forceExternalAbs=norm(forceExternal);
 
-        if (enableWristCheck && (Time::now()-t0>default_exec_time/2.0) && (outDer[0]>wrist_thres))
-        {
-            printMessage("contact detected on the wrist joint %d: (%g>%g)\n",
-                         wrist_joint,outDer[0],wrist_thres);
+    // stop the arm iff contact detected while reaching
+    if (!armMoveDone && forceExternalAbs>ext_force_thres)
+    {
+        cartCtrl->stopControl();
 
-            cartCtrl->stopControl();
-            wristContact=true;
-        }
+        printMessage("contact detected on arm: external force [%s], (%g>%g) => stopping arm\n",
+                     toCompactString(forceExternal).c_str(),forceExternalAbs,ext_force_thres);
+
+        disableTorsoDof();
+
+        armMoveDone=true;
+        contact=true;
     }
 
+    // call the main run()
     affActionPrimitivesLayer1::run();
 }
 
@@ -1580,35 +1628,79 @@ bool affActionPrimitivesLayer2::open(Property &opt)
 
     if (configured)
     {
-        wrist_joint=opt.check("wrist_joint",Value(ACTIONPRIM_DEFAULT_WRIST_JOINT)).asInt();
-        wrist_thres=opt.check("wrist_thres",Value(ACTIONPRIM_DEFAULT_WRIST_THRES)).asDouble();
-        wrist_Dout_estPoly_N=opt.check("wrist_Dout_estPoly_N",Value(ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_N)).asInt();
-        wrist_Dout_estPoly_D=opt.check("wrist_Dout_estPoly_D",Value(ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_D)).asDouble();
+        ext_force_thres=opt.check("ext_force_thres",Value(ACTIONPRIM_DEFAULT_EXT_FORCE_THRES)).asDouble();
 
-        // check wrist params
-        Vector curDof;
-        cartCtrl->getDOF(curDof);
-        int max=curDof.length()-1;
-        wrist_joint=wrist_joint<0?0:(wrist_joint>max?max:wrist_joint);
-        
-        Vector disableWristSw;
-        disableWristSw.resize(wrist_joint+3+1,2);
-        disableWristSw[3+wrist_joint]=0;
+        // open motor interfaces
+        Property optPolyTorso("(device remote_controlboard)");
+        optPolyTorso.put("remote",("/"+robot+"/torso").c_str());
+        optPolyTorso.put("local",("/"+local+"/torso/position").c_str());
 
-        Vector enableWristSw;
-        enableWristSw.resize(wrist_joint+3+1,2);
-        enableWristSw[3+wrist_joint]=1;
+        polyTorso=new PolyDriver;
+        if (!polyTorso->open(optPolyTorso))
+        {
+            close();
+            return false;
+        }
 
-        // create callbacks
-        disableWristDof=new switchingWristDof(this,disableWristSw);
-        enableWristDof =new switchingWristDof(this,enableWristSw);
-        execGrasp      =new enablingWristDofAndGrasp(this,enableWristSw);
+        polyTorso->view(encTorso);
 
-        // create output derivative estimator
-        outputDerivative=new AWLinEstimator(wrist_Dout_estPoly_N,wrist_Dout_estPoly_D);
+        int nTorso;
+        int nArm;
 
-        // open pid view
-        polyHand->view(pidCtrl);
+        encTorso->getAxes(&nTorso);
+        encCtrl->getAxes(&nArm);
+
+        encDataTorso.resize(nTorso,0.0);
+        encDataTorso.resize(nArm,0.0);
+
+        // open port to get FT input
+        ftPortIn=new BufferedPort<Vector>;
+        string ftPortInName="/"+local+"/"+part+"/ft:i";
+        string ftServerPortName="/"+robot+"/"+part+"/analog:o";
+        ftPortIn->open(ftPortInName.c_str());
+
+        // connect automatically to FT sensor
+        if (Network::connect(ftServerPortName.c_str(),ftPortInName.c_str()))
+        {
+            printMessage("ERROR: unable to connect to port %s\n",ftServerPortName.c_str());
+
+            close();
+            return false;
+        }
+
+        // create callback
+        execLiftAndGrasp=new liftAndGraspCallback(this);
+
+        // create estimators
+        velEst=new AWLinEstimator(16,1.0);
+        accEst=new AWQuadEstimator(25,1.0);
+
+        // create dynamics
+        string type=(part=="right_arm"?"right":"left");
+        dynArm=new iCubArmDyn(type);
+
+        dynSensor=new iDynInvSensorArm(dynArm,DYNAMIC);
+        dynTransformer=new iFTransformation(dynSensor);
+
+        // configure dynamics
+        Vector zeros(3), gravity(3);
+        zeros=gravity=0.0;
+        gravity[0]=9.81;
+
+        wrenchModel.resize(6,0.0);
+        wrenchOffset.resize(6,0.0);
+        wrenchMeasured.resize(6,0.0);
+        wrenchExternal.resize(6,0.0);
+
+        q.resize(dynArm->getN(),0.0);
+        dq.resize(dynArm->getN(),0.0);
+        d2q.resize(dynArm->getN(),0.0);
+
+        dynArm->setAng(q);
+        dynArm->setDAng(dq);
+        dynArm->setD2Ang(d2q);
+        dynArm->prepareNewtonEuler(DYNAMIC);
+        dynArm->initNewtonEuler(zeros,zeros,gravity,zeros,zeros);
 
         return meConfigured=true;
     }
@@ -1625,9 +1717,10 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
     {
         printMessage("start grasping\n");
 
-        wristContact=false;
-        pushAction(x+d1,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
-        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execGrasp);
+        contact=false;
+
+        pushAction(x+d1,o,"open_hand");
+        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execLiftAndGrasp);
         // the remaining part is done in the callback
 
         // save data
@@ -1650,16 +1743,50 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vector &d)
+bool affActionPrimitivesLayer2::getExtWrench(Vector &wrench)
 {
     if (configured)
     {
-        printMessage("start touching\n");
+        wrench=wrenchExternal;
+        return true;
+    }
+    else
+        return false;
+}
 
-        wristContact=false;
-        pushAction(x+d,o,"karate_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
-        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
 
+/************************************************************************/
+bool affActionPrimitivesLayer2::getExtForceThres(double &thres)
+{
+    if (configured)
+    {
+        thres=ext_force_thres;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::setExtForceThres(const double thres)
+{
+    if (configured)
+    {
+        ext_force_thres=thres;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::checkContact(bool &f)
+{
+    if (configured)
+    {
+        f=contact;
         return true;
     }
     else
@@ -1670,17 +1797,34 @@ bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Ve
 /************************************************************************/
 affActionPrimitivesLayer2::~affActionPrimitivesLayer2()
 {
-    if (disableWristDof)
-        delete disableWristDof;
+    if (ftPortIn)
+    {
+        ftPortIn->interrupt();
+        ftPortIn->close();
+        delete ftPortIn;
+    }
 
-    if (enableWristDof)
-        delete enableWristDof;
+    if (dynTransformer)
+        delete dynTransformer;
 
-    if (execGrasp)
-        delete execGrasp;
+    if (dynSensor)
+        delete dynSensor;
 
-    if (outputDerivative)
-        delete outputDerivative;
+    if (dynArm)
+        delete dynArm;
+
+    if (velEst)
+        delete velEst;
+
+    if (accEst)
+        delete accEst;
+
+    if (execLiftAndGrasp)
+        delete execLiftAndGrasp;
+
+    if (polyTorso)
+        delete polyTorso;
 }
+
 
 

@@ -499,11 +499,12 @@ public:
             // grasp (wait until it's done)
 			action->grasp(xd,*graspOrien,*graspDisp);
             action->checkActionsDone(f,true);
+            action->areFingersInPosition(f);
 
             // if fingers are not in position,
             // it's likely that we've just grasped
             // something, so lift it up!
-            if (!action->areFingersInPosition())
+            if (!f)
             {
                 cout<<"Wow, got something!"<<endl;
 
@@ -559,7 +560,7 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("affActionPrimitives/conf");
+    rf.setDefaultContext("affActionPrimitivesExample/conf");
     rf.setDefaultConfigFile("config.ini");
     rf.setDefault("hand_sequences_file","hand_sequences.ini");
     rf.setDefault("name","affActionPrimitivesMod");
