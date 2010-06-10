@@ -253,11 +253,7 @@ public:
         }
 
 		HS = sens->getH();
-        sensor = new iGenericFrame(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
-
-        FTtoBase = new iFTransformation(sensorLink);
-        FTtoBase->attach(chain);
-        FTtoBase->attach(sensor);
+        FTtoBase = new iFTransformation(sens);
 
         linEst =new AWLinEstimator(16,1.0);
         quadEst=new AWQuadEstimator(25,1.0);
@@ -490,8 +486,9 @@ public:
         }
         else
         {
+			part = "left_arm";
             fprintf(stderr,"Could not find part in the config file\n");
-            return false;
+            //return false;
         }
         //---------------------RATE-----------------------------//
         if (rf.check("rate"))
@@ -503,7 +500,7 @@ public:
         {
             fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
             rate = 100;
-            return false;
+            //return false;
         }
 
 
