@@ -1685,9 +1685,9 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         dynTransformer=new iFTransformation(dynSensor);
 
         // configure dynamics
-        Vector zeros(3), gravity(3);
-        zeros=gravity=0.0;
-        gravity[0]=9.81;
+        Vector zeros(3), accFrame0(3);
+        zeros=accFrame0=0.0;
+        accFrame0[2]=9.81; // along z-component
 
         wrenchModel.resize(6,0.0);
         wrenchOffset.resize(6,0.0);
@@ -1702,7 +1702,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         dynArm->setDAng(dq);
         dynArm->setD2Ang(d2q);
         dynArm->prepareNewtonEuler(DYNAMIC);
-        dynArm->initNewtonEuler(zeros,zeros,gravity,zeros,zeros);
+        dynArm->initNewtonEuler(zeros,zeros,accFrame0,zeros,zeros);
 
         return meConfigured=true;
     }
