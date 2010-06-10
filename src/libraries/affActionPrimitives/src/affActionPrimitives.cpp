@@ -505,12 +505,14 @@ void affActionPrimitives::close()
         stop();
     }
 
-    if (polyHand!=NULL && polyCart!=NULL)
+    if ((polyHand!=NULL) && (polyCart!=NULL))
+    {
         if (polyHand->isValid() && polyCart->isValid())
         {    
             stopControl();
             setTrackingMode(false);
         }
+    }
 
     if (polyHand!=NULL)
     {
@@ -534,8 +536,6 @@ void affActionPrimitives::close()
         delete mutex;
 
     closed=true;
-
-    printMessage("closing complete!\n");
 }
 
 
@@ -1483,6 +1483,13 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 
 
 /************************************************************************/
+affActionPrimitivesLayer1::~affActionPrimitivesLayer1()
+{
+    close();
+}
+
+
+/************************************************************************/
 void liftAndGraspCallback::exec()
 {
     // lift up the hand iff contact detected
@@ -1522,7 +1529,7 @@ affActionPrimitivesLayer2::affActionPrimitivesLayer2(Property &opt) :
 void affActionPrimitivesLayer2::init()
 {    
     skipFatherPart=false;
-    meConfigured=false;
+    configuredLayer2=false;
     contact=false;
 
     polyTorso=NULL;
@@ -1554,7 +1561,11 @@ void affActionPrimitivesLayer2::postReachCallback()
 /************************************************************************/
 void affActionPrimitivesLayer2::run()
 {
-    const double t=Time::now();
+    // skip until this layer is configured
+    if (!configuredLayer2)
+        return;    
+
+    const double t=Time::now();    
 
     // estimation of internal dynamic model
     encTorso->getEncoders(encDataTorso.data());
@@ -1588,7 +1599,7 @@ void affActionPrimitivesLayer2::run()
         wrenchExternal=dynTransformer->getEndEffWrenchAsBase((wrenchMeasured-wrenchOffset)+wrenchModel);
     }
     else
-        wrenchExternal=dynTransformer->getEndEffWrenchAsBase();
+        wrenchExternal=dynTransformer->getEndEffWrenchAsBase();    
 
     Vector forceExternal(3);
     forceExternal[0]=wrenchExternal[0];
@@ -1622,7 +1633,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
     if (!skipFatherPart)
         affActionPrimitivesLayer1::open(opt);
 
-    if (meConfigured)
+    if (configuredLayer2)
     {
         printMessage("WARNING: already configured\n");
         return true;
@@ -1653,7 +1664,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         encCtrl->getAxes(&nArm);
 
         encDataTorso.resize(nTorso,0.0);
-        encDataTorso.resize(nArm,0.0);
+        encDataArm.resize(nArm,0.0);
 
         // open port to get FT input
         ftPortIn=new BufferedPort<Vector>;
@@ -1702,12 +1713,62 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         dynArm->setDAng(dq);
         dynArm->setD2Ang(d2q);
         dynArm->prepareNewtonEuler(DYNAMIC);
-        dynArm->initNewtonEuler(zeros,zeros,accFrame0,zeros,zeros);
+        dynArm->initNewtonEuler(zeros,zeros,accFrame0,zeros,zeros);        
 
-        return meConfigured=true;
+        return configuredLayer2=true;
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::isValid()
+{
+    return (affActionPrimitivesLayer1::isValid() && configuredLayer2);
+}
+
+
+/************************************************************************/
+void affActionPrimitivesLayer2::close()
+{
+    if (closed)
+        return;
+
+    // call the main close()
+    // the order does matter
+    affActionPrimitivesLayer1::close();
+
+    if (ftPortIn!=NULL)
+    {
+        ftPortIn->interrupt();
+        ftPortIn->close();
+        delete ftPortIn;
+    }
+
+    if (dynTransformer!=NULL)
+        delete dynTransformer;
+
+    if (dynSensor!=NULL)
+        delete dynSensor;
+
+    if (dynArm!=NULL)
+        delete dynArm;
+
+    if (velEst!=NULL)
+        delete velEst;
+
+    if (accEst!=NULL)
+        delete accEst;
+
+    if (execLiftAndGrasp!=NULL)
+        delete execLiftAndGrasp;
+
+    if (polyTorso!=NULL)
+    {
+        printMessage("closing torso driver ...\n");
+        delete polyTorso;
+    }
 }
 
 
@@ -1799,33 +1860,7 @@ bool affActionPrimitivesLayer2::checkContact(bool &f)
 /************************************************************************/
 affActionPrimitivesLayer2::~affActionPrimitivesLayer2()
 {
-    if (ftPortIn)
-    {
-        ftPortIn->interrupt();
-        ftPortIn->close();
-        delete ftPortIn;
-    }
-
-    if (dynTransformer)
-        delete dynTransformer;
-
-    if (dynSensor)
-        delete dynSensor;
-
-    if (dynArm)
-        delete dynArm;
-
-    if (velEst)
-        delete velEst;
-
-    if (accEst)
-        delete accEst;
-
-    if (execLiftAndGrasp)
-        delete execLiftAndGrasp;
-
-    if (polyTorso)
-        delete polyTorso;
+    close();
 }
 
 

@@ -215,10 +215,11 @@ private:
 	int l;
 	yarp::sig::Matrix H;
 	yarp::sig::Vector FT;
-
-	iGenericFrame *Sensore;
-	iGenericFrame *Link;
+ 
+	iGenericFrame   *Sensor;
+	iGenericFrame   *Link;
 	iKin::iKinChain *Limb;
+
 	/*
 	* initializes the iFrameOnLink members to zero. Used in the constructors.
 	*/
@@ -247,17 +248,17 @@ public:
 	void setLink(int _l);
 	//Set sensor variables:
 	/* @param _Rs is the rotation matrix of the sensor FoR with respect to the one of the link the sensor is attached to.*/
-	void setRs(const yarp::sig::Matrix &_Rs){	Sensore->setR(_Rs);}
+	void setRs(const yarp::sig::Matrix &_Rs){	Sensor->setR(_Rs);}
 	/* @param _ps is the position vector of the sensor FoR with respect to the one of the link the sensor is attached to.*/
-	void setPs(const yarp::sig::Vector &_ps){Sensore->setP(_ps);}
+	void setPs(const yarp::sig::Vector &_ps){Sensor->setP(_ps);}
 	/* @param _Hs is the homogeneous transformation matrix of the sensor FoR with respect to the one
 	* of the link the sensor is attached to. */
-	void setHs(const yarp::sig::Matrix &_Hs){Sensore->setH(_Hs);}
+	void setHs(const yarp::sig::Matrix &_Hs){Sensor->setH(_Hs);}
 
 	//get sensor members, previously defined
-	yarp::sig::Matrix getRs(){return Sensore->getR();}
-	yarp::sig::Vector getPs(){return Sensore->getP();}
-	yarp::sig::Matrix getHs(){return Sensore->getH();}
+	yarp::sig::Matrix getRs(){return Sensor->getR();}
+	yarp::sig::Vector getPs(){return Sensor->getP();}
+	yarp::sig::Matrix getHs(){return Sensor->getH();}
 
 	//get Limb variables
 	/* @param _Rl is the rotation matrix of the link FoR with respect to the base FoR*/
@@ -265,9 +266,7 @@ public:
 	/* @param _pl is the position vector of the sensor FoR with respect to the base FoR	*/
 	yarp::sig::Vector getPl(){return Link->getP();}
 	/* @param _Hl is the homogeneous transformation matrix of the sensor FoR with respect to the base FoR	*/
-	yarp::sig::Matrix getHl(){return Link->getH();}
-
-	
+	yarp::sig::Matrix getHl(){return Link->getH();}	
 
 	//set transformation variables of the sensor, with respect to a base frame:
 	yarp::sig::Matrix getH();
@@ -280,7 +279,7 @@ public:
 	yarp::sig::Vector getFT();
 
 	void attach(iKin::iKinChain *_Limb);
-	void attach(iGenericFrame *_Sensore);
+	void attach(iGenericFrame *_Sensor);
 };
 
 
@@ -299,16 +298,20 @@ private:
 	yarp::sig::Matrix Tse;
 	yarp::sig::Matrix Teb;
 
-	iFrameOnLink* Sensore;
-	iGenericFrame* EndEffector;
-	iGenericFrame* SensorFrame;
+	iFrameOnLink    *Sensor;
+	iGenericFrame   *EndEffector;
+	iGenericFrame   *SensorFrame;
 	iKin::iKinChain *Limb;
 
 	yarp::sig::Vector d;
 	yarp::sig::Matrix S;
 	yarp::sig::Matrix R;
 
+	bool ownLimb;
+	bool ownSensor;
+
 	void initiFTransformation();
+
 public:
 	iFTransformation();
 	iFTransformation(int _l);
@@ -316,15 +319,15 @@ public:
 
 	~iFTransformation()
 	{
-		if (Limb)
+		if (Limb && ownLimb)
 		{
 			delete Limb;
 			Limb = 0;
 		}
-		if (Sensore) 
+		if (Sensor && ownSensor) 
 		{
-			delete Sensore;
-			Sensore = 0;
+			delete Sensor;
+			Sensor = 0;
 		}
 		if (EndEffector) 
 		{
@@ -338,7 +341,7 @@ public:
 		}
 	}
 	void attach(iKin::iKinChain *_Limb);
-	void attach(iGenericFrame *_sensore);
+	void attach(iGenericFrame *_Sensor);
 
 	void setLink(int _l);
 

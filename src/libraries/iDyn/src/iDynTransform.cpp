@@ -148,7 +148,7 @@ void iFrameOnLink::initSFrame()
 	FT.resize(6);
 	H=0.0;
 	FT=0.0;
-	Sensore=0;
+	Sensor=0;
 	Limb=0;
 	Link=new iGenericFrame();
 }
@@ -159,28 +159,28 @@ void iFrameOnLink::setLink(int _l)
 }
 void iFrameOnLink::setFT(const yarp::sig::Vector &_FT)
 {
-	FT=Sensore->setFT(_FT);
+	FT=Sensor->setFT(_FT);
 	fprintf(stderr,"");
 }
 
 void iFrameOnLink::setSensorKin(int _l)
 {
 	Link->setPRH(Limb->getH(_l));
-	H=Link->getH()*Sensore->getH();
+	H=Link->getH()*Sensor->getH();
 }
 
 void iFrameOnLink::setSensorKin()
 {
 	Link->setPRH(Limb->getH(l));
 	Matrix H1 = Link->getH();
-	Matrix H2 = Sensore->getH();
-	H=Link->getH()*Sensore->getH();
+	Matrix H2 = Sensor->getH();
+	H=Link->getH()*Sensor->getH();
 }
 
 void iFrameOnLink::setSensorKin(const Matrix &_H)
 {
 	Link->setPRH(_H);
-	H=_H*Sensore->getH();
+	H=_H*Sensor->getH();
 }
 
 void iFrameOnLink::setSensor(int _l, const yarp::sig::Vector &_FT)
@@ -215,9 +215,9 @@ void iFrameOnLink::attach(iKinChain *_Limb)
 	Limb=_Limb;
 }
 
-void iFrameOnLink::attach(iGenericFrame *_Sensore)
+void iFrameOnLink::attach(iGenericFrame *_Sensor)
 {
-		Sensore = _Sensore;
+		Sensor = _Sensor;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -227,45 +227,59 @@ void iFrameOnLink::attach(iGenericFrame *_Sensore)
 
 iFTransformation::iFTransformation()
 {
-	Sensore=new iFrameOnLink();
+    ownLimb=true;
+    ownSensor=true;
+	Sensor=new iFrameOnLink();
 	EndEffector=new iGenericFrame();
-	Limb= new iDyn::iDynChain();
+	Limb= new iDynChain();
 	initiFTransformation();
 }
 iFTransformation::iFTransformation(int _l)
 {
 	l=_l;
-	Sensore = new iFrameOnLink(l);
+    ownLimb=true;
+    ownSensor=true;
+	Sensor = new iFrameOnLink(l);
 	Limb= new iKinChain();
 	EndEffector=new iGenericFrame();
 	initiFTransformation();
-	//Sensore->setLink(l);
+	//Sensor->setLink(l);
 }
 iFTransformation::iFTransformation(iDynInvSensor *_iDynChainWithSensor)
 {
+    ownLimb=false;
+    ownSensor=true;
 	initiFTransformation();
 	l=_iDynChainWithSensor->getSensorLink();
 	Limb = _iDynChainWithSensor->chain;
 	SensorFrame = new iGenericFrame(_iDynChainWithSensor->getH().submatrix(0,2,0,2),_iDynChainWithSensor->getH().submatrix(0,2,0,3).getCol(3));
-	Sensore = new iFrameOnLink(l);
+	Sensor = new iFrameOnLink(l);
 	EndEffector=new iGenericFrame();
 
-	Sensore->attach(Limb);
-	Sensore->attach(SensorFrame);
+	Sensor->attach(Limb);
+	Sensor->attach(SensorFrame);
 	fprintf(stderr,"set up sensor transformation\n");
 }
 void iFTransformation::attach(iKin::iKinChain *_Limb)
-{
+{    
+    if (Limb && ownLimb)
+        delete Limb;
+
 	Limb=_Limb;
-	Sensore->attach(_Limb);
+	Sensor->attach(_Limb);
+    ownLimb=false;
 }
-void iFTransformation::attach(iGenericFrame *_sensore)
-{
-	Sensore->attach(_sensore);
+void iFTransformation::attach(iGenericFrame *_Sensor)
+{    
+    if (Sensor && ownSensor)
+        delete Sensor;
+
+	Sensor->attach(_Sensor);
+    ownSensor=false;
 }
 void iFTransformation::initiFTransformation()
 {
-	//Sensore=0;
+	//Sensor=0;
 	//Limb=0;
 	//EndEffector=0;
 	l=0;
@@ -291,27 +305,27 @@ void iFTransformation::initiFTransformation()
 }
 void iFTransformation::setLink(int _l)
 {
-	Sensore->setLink(_l);
+	Sensor->setLink(_l);
 	l=_l;
 }
 void iFTransformation::setSensor(const Vector &_FT)
 {
 	Fs=_FT;
-	Sensore->setSensor(_FT);
-	Hs=Sensore->getH();
+	Sensor->setSensor(_FT);
+	Hs=Sensor->getH();
 }
 void iFTransformation::setSensor(int _l, const Vector &_FT)
 {
 	Fs=_FT;
 	l=_l;
-	Sensore->setSensor(_l, _FT);
-	Hs=Sensore->getH();
+	Sensor->setSensor(_l, _FT);
+	Hs=Sensor->getH();
 }
 void iFTransformation::setSensor(const Matrix &_H, const Vector &_FT)
 {
 	Fs=_FT;
-	Sensore->setSensor(_H, _FT);
-	Hs=Sensore->getH();
+	Sensor->setSensor(_H, _FT);
+	Hs=Sensor->getH();
 }
 void iFTransformation::setHe()
 {
@@ -398,3 +412,5 @@ void iFTransformation::setTse()
 	}
 
 }
+
+

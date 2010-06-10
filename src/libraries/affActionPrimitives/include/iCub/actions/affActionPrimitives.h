@@ -670,6 +670,13 @@ public:
     affActionPrimitivesLayer1(yarp::os::Property &opt) : affActionPrimitives(opt) { }
 
     /**
+    * Destructor. 
+    *  
+    * @note it calls the close() method. 
+    */
+    virtual ~affActionPrimitivesLayer1();
+
+    /**
     * Grasp the given target (combined action).
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching/grasping
@@ -781,7 +788,7 @@ class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 {
 protected:
     bool skipFatherPart;
-    bool meConfigured;
+    bool configuredLayer2;
     bool contact;
 
     double ext_force_thres;
@@ -858,6 +865,17 @@ public:
     *       acquire data provided by \ref force/torque sensor.
     */
     virtual bool open(yarp::os::Property &opt);
+
+    /**
+    * Check if the object is initialized correctly. 
+    * @return true/fail on success/fail. 
+    */
+    virtual bool isValid();
+
+    /**
+    * Deallocate the object.
+    */
+    virtual void close();
 
     /**
     * More evolute version of grasp. It exploits the contact 
