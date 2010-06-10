@@ -429,7 +429,7 @@ public:
         name.append("/fingerDetector/status:o");
         //  sprintf(&name[0], "%s/fingerDetector/status:o", analogInput.asString().c_str());
         statusPort.open(name.c_str());
-        gd = new graspDetector(nFingers, fd, &statusPort, 100);
+        gd = new graspDetector(nFingers, fd, &statusPort, rate);
 
         return true;
     }

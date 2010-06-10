@@ -29,6 +29,7 @@ void graspDetector::run()
         }
     sp->write(b);
 
+    /*
     bool print = false;
     for(int i=0; i < nFingers; i++)
         print = print || (s[i]!=0.0);
@@ -43,6 +44,7 @@ void graspDetector::run()
             
             fprintf(stderr, "\n");
         }
+    */
 }
 
 void graspDetector::stop()
