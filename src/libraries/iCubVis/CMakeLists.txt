@@ -1,6 +1,42 @@
 project(iCubVis)
 
-file(GLOB_RECURSE folder_source *.c *.cc *.cpp)
+file(GLOB folder_source 
+    blobDescriptor/src/*.c
+    camCalib/src/*.c
+    colorSegmentation/src/*.c
+    cvBlobsLib/src/*.c
+    faceEyeDetector/src/*.c
+    faceTracker/src/*.c
+    fastFilt/src/*.c
+    fourierVision/src/*.c
+    #optFlow/src/*.c
+    salience/src/*.c
+    spMap/src/*.c
+
+    blobDescriptor/src/*.cc
+    camCalib/src/*.cc
+    colorSegmentation/src/*.cc
+    cvBlobsLib/src/*.cc
+    faceEyeDetector/src/*.cc
+    faceTracker/src/*.cc
+    fastFilt/src/*.cc
+    fourierVision/src/*.cc
+    #optFlow/src/*.cc
+    salience/src/*.cc
+    spMap/src/*.cc
+    
+    blobDescriptor/src/*.cpp
+    camCalib/src/*.cpp
+    colorSegmentation/src/*.cpp
+    cvBlobsLib/src/*.cpp
+    faceEyeDetector/src/*.cpp
+    faceTracker/src/*.cpp
+    fastFilt/src/*.cpp
+    fourierVision/src/*.cpp
+    #optFlow/src/*.cpp
+    salience/src/*.cpp
+    spMap/src/*.cpp
+)
 
 file(GLOB folder_public_headers 
     blobDescriptor/include/iCub/vis/*.h
@@ -25,7 +61,7 @@ file(GLOB folder_private_headers
     faceTracker/include/private/*.h
     fastFilt/include/private/*.h
     fourierVision/include/private/*.h
-    optFlow/include/private/*.h
+    #optFlow/include/private/*.h
     salience/include/private/*.h
     spMap/include/private/*.h
 )
@@ -44,7 +80,7 @@ set(iCubVis_INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/faceTracker/include
     ${PROJECT_SOURCE_DIR}/fastFilt/include
     ${PROJECT_SOURCE_DIR}/fourierVision/include
-    ${PROJECT_SOURCE_DIR}/optFlow/include
+    #${PROJECT_SOURCE_DIR}/optFlow/include
     ${PROJECT_SOURCE_DIR}/salience/include
     ${PROJECT_SOURCE_DIR}/spMap/include
     CACHE STRING "iCubVis include directories"
