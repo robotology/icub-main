@@ -339,12 +339,12 @@ public:
                 first = false;
             }
 
-            FT = FTtoBase->getFB(F_measured - F_offset - F_iDyn);
+            FT = FTtoBase->getEndEffWrenchAsBase(F_measured - F_offset - F_iDyn);
         }
         else
         {
             if (!first)
-                FT = FTtoBase->getFB();
+                FT = FTtoBase->getEndEffWrenchAsBase();
             else
             {
                 FT=0.0;
