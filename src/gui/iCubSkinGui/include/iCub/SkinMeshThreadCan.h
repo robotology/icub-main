@@ -49,7 +49,9 @@ public:
         cardId=0x300 | (config.find("cardid").asInt() << 4);
 		netId=config.find("CanDeviceNum").asInt();
 		deviceName=config.find("CanDeviceName").asString();
-		std::string part=config.find("robotPart").asString();
+		std::string part="/skinGui/";
+		part.append(config.find("robotPart").asString());
+		part.append(":i");
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
 
