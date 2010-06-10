@@ -5,7 +5,7 @@ PROJECT(${PROJECTNAME})
 SET(folder_source src/iDyn.cpp
                   src/iDynInv.cpp
                   src/iDynFwd.cpp
-                  src/iDynTranform.cpp)
+                  src/iDynTransform.cpp)
 
 SET(folder_header include/iCub/iDyn/iDyn.h
                   include/iCub/iDyn/iDynInv.h
