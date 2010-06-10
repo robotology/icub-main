@@ -1540,13 +1540,14 @@ void affActionPrimitivesLayer2::init()
 /************************************************************************/
 void affActionPrimitivesLayer2::postReachCallback()
 {
-    affActionPrimitivesLayer1::postReachCallback();
-
     // init the contact variable
     contact=false;
 
     // latch the offset
     wrenchOffset=wrenchMeasured+wrenchModel;
+
+    // call the main postReachCallback()
+    affActionPrimitivesLayer1::postReachCallback();
 }
 
 
@@ -1610,6 +1611,7 @@ void affActionPrimitivesLayer2::run()
     }
 
     // call the main run()
+    // the order does matter
     affActionPrimitivesLayer1::run();
 }
 
