@@ -1212,6 +1212,7 @@ public:
 */
 class iDynInvSensor
 {
+	friend class iFTransformation;
 protected:
 
 	/// the link where the sensor is attached to
@@ -1310,6 +1311,7 @@ public:
 
 	std::string getInfo() const;
 	std::string getSensorInfo() const;
+	unsigned int getSensorLink()	const;
 
 	
 

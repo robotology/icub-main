@@ -1977,6 +1977,7 @@ Vector	iDynInvSensor::getSensorMoment()	const
 {
 	return sens->getMoment();
 }
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//~~~~~~~~~~~~~~
@@ -2017,6 +2018,8 @@ string iDynInvSensor::getInfo()			const	{return info;}
 string iDynInvSensor::getSensorInfo()	const	{return sens->getInfo();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynInvSensor::getSensorForceMoment()	const	{return sens->getForceMoment(); }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int iDynInvSensor::getSensorLink()	const	{return lSens; }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

@@ -24,6 +24,7 @@ using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace iKin;
 using namespace iDyn;
 
 //////////////////////////////////////////////////////////////////
@@ -170,6 +171,8 @@ void iFrameOnLink::setSensorKin(int _l)
 void iFrameOnLink::setSensorKin()
 {
 	Link->setPRH(Limb->getH(l));
+	Matrix H1 = Link->getH();
+	Matrix H2 = Sensore->getH();
 	H=Link->getH()*Sensore->getH();
 }
 
@@ -206,7 +209,7 @@ Matrix iFrameOnLink::getH()
 	return H;
 }
 
-void iFrameOnLink::attach(iKin::iKinChain *_Limb)
+void iFrameOnLink::attach(iKinChain *_Limb)
 {
 	Limb=_Limb;
 }
@@ -225,17 +228,29 @@ iFTransformation::iFTransformation()
 {
 	Sensore=new iFrameOnLink();
 	EndEffector=new iGenericFrame();
-	Limb= new iKin::iKinChain();
+	Limb= new iDyn::iDynChain();
 	initiFTransformation();
 }
 iFTransformation::iFTransformation(int _l)
 {
 	l=_l;
 	Sensore = new iFrameOnLink(l);
-	Limb= new iKin::iKinChain();
+	Limb= new iKinChain();
 	EndEffector=new iGenericFrame();
 	initiFTransformation();
 	//Sensore->setLink(l);
+}
+iFTransformation::iFTransformation(iDynInvSensor *_iDynChainWithSensor)
+{
+	initiFTransformation();
+	l=_iDynChainWithSensor->getSensorLink();
+	Limb = _iDynChainWithSensor->chain;
+	SensorFrame = new iGenericFrame(_iDynChainWithSensor->getH().submatrix(0,2,0,2),_iDynChainWithSensor->getH().submatrix(0,2,0,3).getCol(3));
+	Sensore = new iFrameOnLink(l);
+	EndEffector=new iGenericFrame();
+
+	Sensore->attach(Limb);
+	Sensore->attach(SensorFrame);
 }
 void iFTransformation::attach(iKin::iKinChain *_Limb)
 {

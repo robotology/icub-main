@@ -9,7 +9,7 @@
  *       Torques.
 
  * \section dep_sec Dependencies 
- * - iKin
+ * 
  *  
  * \author Matteo Fumagalli
  *  
@@ -69,7 +69,9 @@ example code:
 #include <yarp/math/SVD.h>
 
 #include <iCub/ctrl/ctrlMath.h>
-#include <iCub/iKin/iKinFwd.h>
+//#include <iCub/iKin/iKinFwd.h>
+#include <iCub/iDyn/iDyn.h>
+#include <iCub/iDyn/iDynInv.h>
 
 #include <string>
 //#include <deque>
@@ -299,6 +301,7 @@ private:
 
 	iFrameOnLink* Sensore;
 	iGenericFrame* EndEffector;
+	iGenericFrame* SensorFrame;
 	iKin::iKinChain *Limb;
 
 	yarp::sig::Vector d;
@@ -309,6 +312,7 @@ private:
 public:
 	iFTransformation();
 	iFTransformation(int _l);
+	iFTransformation(iDyn::iDynInvSensor *_iDynChainWithSensor);
 
 	~iFTransformation()
 	{
@@ -326,6 +330,11 @@ public:
 		{
 			delete EndEffector;
 			EndEffector = 0;
+		}
+		if (SensorFrame) 
+		{
+			delete SensorFrame;
+			SensorFrame = 0;
 		}
 	}
 	void attach(iKin::iKinChain *_Limb);
