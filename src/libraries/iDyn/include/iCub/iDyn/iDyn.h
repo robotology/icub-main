@@ -848,6 +848,7 @@ public:
 	* for setting the kinematics variables.
 	*/
 	void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
+	void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
 
 	/**
 	* Calls the proper method to get wrench variables in OneChainNewtonEuler either
@@ -1098,6 +1099,9 @@ public:
 
 	 void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp) 
 	 {iDynChain::getKinematicNewtonEuler(w,dw,ddp);}
+	 
+	 void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp)
+	 {iDynChain::getFrameKinematic(i,w,dw,ddp);}
 
 	 void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu) 
 	 {iDynChain::getWrenchNewtonEuler(F,Mu);}
