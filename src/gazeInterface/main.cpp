@@ -2,7 +2,9 @@
 //
 // A tutorial on how to use the Gaze Interface.
 //
-// Author: Ugo Pattacini - <ugo.pattacini@iit.it>
+// Author: Ugo Pattacini - Francesco Rea
+
+
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -46,6 +48,33 @@
 #define STATE_RECALL        1
 #define STATE_WAIT          2
 #define STATE_STILL         3
+
+
+// general command vocab's
+#define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
+#define COMMAND_VOCAB_SET VOCAB3('s','e','t')
+#define COMMAND_VOCAB_GET VOCAB3('g','e','t')
+#define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
+#define COMMAND_VOCAB_IS VOCAB2('i','s')
+#define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
+#define COMMAND_VOCAB_OK VOCAB2('o','k')
+#define COMMAND_VOCAB_CHILD_COUNT VOCAB2('c','c')
+#define COMMAND_VOCAB_WEIGHT VOCAB1('w')
+#define COMMAND_VOCAB_CHILD_WEIGHT VOCAB2('c','w')
+#define COMMAND_VOCAB_CHILD_WEIGHTS VOCAB3('c','w','s')
+#define COMMAND_VOCAB_NAME VOCAB2('s','1')
+#define COMMAND_VOCAB_CHILD_NAME VOCAB2('c','n')
+#define COMMAND_VOCAB_SALIENCE_THRESHOLD VOCAB2('t','h')
+#define COMMAND_VOCAB_NUM_BLUR_PASSES VOCAB2('s','2')
+#define COMMAND_VOCAB_RGB_PROCESSOR VOCAB3('r','g','b')
+#define COMMAND_VOCAB_YUV_PROCESSOR VOCAB3('y','u','v')
+// directional saliency filter vocab's
+#define COMMAND_VOCAB_DIRECTIONAL_NUM_DIRECTIONS VOCAB3('d','n','d')
+#define COMMAND_VOCAB_DIRECTIONAL_NUM_SCALES VOCAB3('d','n','s')
+#define COMMAND_VOCAB_DIRECTIONAL_DBG_SCALE_INDEX VOCAB3('d','s','i')
+#define COMMAND_VOCAB_DIRECTIONAL_DBG_DIRECTION_INDEX VOCAB3('d','d','i')
+#define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAMES VOCAB4('d','a','n','s')
+#define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAME VOCAB3('d','a','n')
 
 using namespace std;
 using namespace yarp;
@@ -335,6 +364,121 @@ public:
 
     virtual double getPeriod()    { return 1.0;  }
     virtual bool   updateModule() { return true; }
+
+    virtual bool respond(const Bottle &command,Bottle &reply){
+        
+    bool ok = false;
+    bool rec = false; // is the command recognized?
+
+    mutex.wait();
+    switch (command.get(0).asVocab()) {
+    case COMMAND_VOCAB_HELP:
+        rec = true;
+        {
+            reply.addString("help");
+
+            reply.addString("\n");
+            reply.addString("get fn \t: general get command \n");
+            
+
+            reply.addString("\n");
+            reply.addString("set s1 <s> \t: general set command \n");
+
+            reply.addString("\n");
+            reply.addString("run rgb : run the rgb processor \n");
+            reply.addString("run yuv : run the yuv processor");
+            
+
+            reply.addString("\n");
+
+
+            ok = true;
+        }
+        break;
+    
+    
+     
+    case COMMAND_VOCAB_GET:
+        rec = true;
+        {
+            reply.addVocab(COMMAND_VOCAB_IS);
+            reply.add(command.get(1));
+            switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_SALIENCE_THRESHOLD:{
+                double thr=0.0;
+                reply.addDouble(thr);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_NUM_BLUR_PASSES:{
+                int nb = 0;
+                reply.addInt(nb);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_NAME:{
+                string s(" ");
+                reply.addString(s.c_str());
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_NAME:{
+                int j = command.get(2).asInt();
+                string s(" ");
+                reply.addString(s.c_str());
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_COUNT:{
+                int count =0;
+                reply.addInt(count);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_WEIGHT:{
+                double w = 0.0;
+                reply.addDouble(w);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHT:{
+                int j = command.get(2).asInt();
+                double w = 0.0;
+                reply.addDouble(w);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHTS:{
+                Bottle weights;
+                //ok = filter->getChildWeights(&weights);
+                for (int k = 0; k < weights.size(); k++)
+                    reply.addDouble(0.0);
+            }
+                break;
+            default:
+                cout << "received an unknown request after a SALIENCE_VOCAB_GET" << endl;
+                break;
+            }
+        }
+        break;
+
+    }
+    mutex.post();
+
+    if (!rec)
+        ok = RFModule::respond(command,reply);
+    
+    if (!ok) {
+        reply.clear();
+        reply.addVocab(COMMAND_VOCAB_FAILED);
+    }
+    else
+        reply.addVocab(COMMAND_VOCAB_OK);
+
+    return ok;
+    
+
+    }
 };  
 
 
