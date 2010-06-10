@@ -238,18 +238,18 @@ public:
             sensorLink = 5;
 
             if (part=="left_arm")
-                sens = new iDynInvSensorArm(chain,"left",NE_DYNAMIC);
+                sens = new iDynInvSensorArm(chain,"left",DYNAMIC);
             else
-                sens = new iDynInvSensorArm(chain,"right",NE_DYNAMIC);
+                sens = new iDynInvSensorArm(chain,"right",DYNAMIC);
         }
         else
         {
             sensorLink = 2;
 
             if (part=="left_leg")
-                sens = new iDynInvSensorLeg(chain,"left",NE_DYNAMIC);
+                sens = new iDynInvSensorLeg(chain,"left",DYNAMIC);
             else
-                sens = new iDynInvSensorLeg(chain,"right",NE_DYNAMIC);
+                sens = new iDynInvSensorLeg(chain,"right",DYNAMIC);
         }
 
 		HS = sens->getH();
@@ -285,7 +285,7 @@ public:
         limb->setAng(q);
         limb->setDAng(dq);
         limb->setD2Ang(d2q);
-        limb->prepareNewtonEuler(NE_DYNAMIC);
+        limb->prepareNewtonEuler(DYNAMIC);
 
         w0.resize(3);
         dw0.resize(3);

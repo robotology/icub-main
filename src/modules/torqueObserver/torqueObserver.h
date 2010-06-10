@@ -200,25 +200,63 @@ private:
 	iDyn::iDynLimb *limb;
 	iDyn::iDynSensor *sens;
 
+	iDyn::iDynInvSensor *sensInv;
+	iDyn::iDynLimb *limbInv;
+
+	/// encoders values for the limb
 	yarp::sig::Vector encoders;
+	/// encoders values for the torso - only for arms
 	yarp::sig::Vector encodersTorso;
+	/// joint position
 	yarp::sig::Vector q;
+	/// joint velocity
 	yarp::sig::Vector dq;
+	/// joint acceleration
 	yarp::sig::Vector d2q;	
+	/// initial angular velocity - for Newton-Euler
 	yarp::sig::Vector w0;
+	/// initial angular acceleration - for Newton-Euler
 	yarp::sig::Vector dw0;
+	/// initial linear acceleration - for Newton-Euler
 	yarp::sig::Vector d2p0;
+	/// final force - for Newton-Euler
 	yarp::sig::Vector Fend;
+	/// final moment - for Newton-Euler
 	yarp::sig::Vector Mend;
-	yarp::sig::Vector FTsensor;
+	/// the last measure from the FT sensor
+	yarp::sig::Vector FTsensor;	
+	/// the joints torques
 	yarp::sig::Vector Tau;
+	/// the end-effector force/moment
 	yarp::sig::Vector FTendeff;
 
+	/**
+	* Update the velocity estimator with a new sample: the velocity estimator
+	* is necessary for estimating correctly joints velocities, since only position
+	* measurements, noisy, are available.  
+	* @param v the new sample, i.e. q
+	* @return the estimated velocity dq
+	*/
 	yarp::sig::Vector updateVelocity(const yarp::sig::Vector &v);
+
+	/**
+	* Update the acceleration estimator with a new sample: the acceleration estimator
+	* is necessary for estimating correctly joints accelerations, since only position
+	* measurements, noisy, are available.  
+	* @param a the new sample, i.e. q
+	* @return the estimated acceleration d2q
+	*/
 	yarp::sig::Vector updateAcceleration(const yarp::sig::Vector &a);
+		
+	/**
+	* Calibrate the sensor by finding the sensor offset.
+	* @param Ntrials the number of samples to use for the offset computation
+	*/
 	void calibrateOffset(const unsigned int Ntrials);
 
-	void readAndUpdate();
+	void readAndUpdate(bool waitMeasure = false);
+
+	double time0, time1;
 
 	    
 public:

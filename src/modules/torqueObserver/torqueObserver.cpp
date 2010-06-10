@@ -100,7 +100,7 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_leg, BufferedPort<Vector
 	limb = new iCubLegDyn(type);
 	
 	// the sensor solver for the leg
-	sens = new iDynSensorLeg(dynamic_cast<iCubLegDyn *>(limb),NE_DYNAMIC,VERBOSE);
+	sens = new iDynSensorLeg(dynamic_cast<iCubLegDyn *>(limb),DYNAMIC,VERBOSE);
 
 	// init all variables
 	// first the unused ones
@@ -123,7 +123,7 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_leg, BufferedPort<Vector
 	limb->setAng(q);
 	limb->setDAng(dq);
 	limb->setD2Ang(d2q);
-	limb->prepareNewtonEuler(NE_DYNAMIC);
+	limb->prepareNewtonEuler(DYNAMIC);
 	limb->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
 
 	//see encoders
@@ -171,9 +171,11 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_arm, PolyDriver *_pd_tor
 
 	// new icub arm
 	limb = new iCubArmDyn(type);
+	limbInv = new iCubArmDyn(type);
 	
 	// the sensor solver for the arm
-	sens = new iDynSensorArm(dynamic_cast<iCubArmDyn *>(limb),NE_DYNAMIC,VERBOSE);
+	sens = new iDynSensorArm(dynamic_cast<iCubArmDyn *>(limb),DYNAMIC,VERBOSE);
+	sensInv = new iDynInvSensorArm(dynamic_cast<iCubArmDyn *>(limbInv),DYNAMIC,VERBOSE);
 
 	cout<<"SensToTorques: arm and iDynSensor created"<<endl;
 
@@ -194,7 +196,7 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_arm, PolyDriver *_pd_tor
 	limb->setAng(q);
 	limb->setDAng(dq);
 	limb->setD2Ang(d2q);
-	limb->prepareNewtonEuler(NE_DYNAMIC);
+	limb->prepareNewtonEuler(DYNAMIC);
 	limb->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
 
 	//see encoders
@@ -219,31 +221,44 @@ bool SensToTorques::threadInit()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensToTorques::run()
 {	  
+	
 	// read encoders values, update limb model with pos/vel/acc
 	// read FT sensor measurements
-	readAndUpdate();
+	readAndUpdate(false);
   
-	// subtracts sensor offset
-	FTsensor = FTsensor - sensorOffset;
+	// subtracts sensor offset and model
+	//FTsensor = FTsensor - sensorOffset;
+	
+	// estimate sensor FT
+	limbInv->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+	sensInv->computeSensorForceMoment();
+	Vector sensEstim = -1.0*sensInv->getSensorForceMoment();
 
 	//compute torques
-	sens->computeFromSensorNewtonEuler(FTsensor);
+	Vector sensFTestim = FTsensor  - sensorOffset - sensEstim;
+	sens->computeFromSensorNewtonEuler(sensFTestim);
 	
 	//get torques and FTendeff
 	Tau = sens->getTorques();
 	FTendeff = sens->getForceMomentEndEff();
+	cout<<Time::now()-time0<<endl;
+	time0 = Time::now();
 
-	if(part=="arm")
-	{
-		Vector tau(7);
-		for(int i=0;i<7;i++)
-			tau[i]=Tau[i+3];
-		cout<<tau.toString()<<endl;
-	}
-	else
-	{
-		cout<<Tau.toString()<<endl;
-	}
+	//
+
+	//if(part=="arm")
+	//{
+	//	Vector tau(7);
+	//	for(int i=0;i<7;i++)
+	//		tau[i]=Tau[i+3];
+	//	cout<<tau.toString()<<endl;
+	//}
+	//else
+	//{
+	//	cout<<Tau.toString()<<endl;
+	//}
+
+	//cout<<sensFTestim.toString()<<endl;
 	
 	//prepare ports with datas
 	port_o_Torques->prepare() = Tau;
@@ -259,9 +274,12 @@ void SensToTorques::threadRelease()
 {
 	cerr<<"SensToTorques: deleting dynamic structures ..";
 	if(sens)		{delete sens;		sens = NULL; cout<<"sens ";}
+	if(sensInv)		{delete sensInv;	sensInv = NULL; cout<<"sensInv ";}
 	if(linEst)		{delete linEst;		linEst = NULL; cout<<"linEst ";}
 	if(quadEst)		{delete quadEst;	quadEst = NULL; cout<<"quadEst ";}
-	if(FTmeasure)	{delete FTmeasure;	FTmeasure = NULL; cout<<"FTmeasure "; }
+	//if(FTmeasure)	{delete FTmeasure;	FTmeasure = NULL; cout<<"FTmeasure "; }
+	if(limb)		{delete limb;		limb=NULL; cout<<"limb ";}
+	if(limbInv)		{delete limbInv;	limbInv=NULL; cout<<"limbInv ";}
 	cout<<" .. done "<<endl;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -270,16 +288,17 @@ void SensToTorques::calibrateOffset(const unsigned int Ntrials)
 	cout<<"SensToTorques: starting sensor offset calibration .."<<endl;
 
 	sensorOffset.zero();
-
 	// N trials to get a more accurate estimation
 	for(unsigned int i=0; i<Ntrials; i++)
 	{
 		//read joints and ft sensor
-		readAndUpdate();
+		readAndUpdate(true);
 		// compute forces/moments/torques along the chain
-		limb->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+		limbInv->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+		// compute on sensor
+		sensInv->computeSensorForceMoment();
 		// get an estimate of the force/moment in the sensor
-		sensorOffset = sensorOffset + FTsensor - (-1.0*sens->getSensorForceMoment());
+		sensorOffset =  sensorOffset + FTsensor - (-1.0*sensInv->getSensorForceMoment());
 	}
 
 	sensorOffset = sensorOffset * (1.0/(double)(Ntrials));
@@ -293,7 +312,7 @@ void SensToTorques::calibrateOffset(const unsigned int Ntrials)
 	Time::delay(5.0);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void SensToTorques::readAndUpdate()
+void SensToTorques::readAndUpdate(bool waitMeasure)
 {
 	int i;
 	//read encoders values
@@ -320,9 +339,13 @@ void SensToTorques::readAndUpdate()
 	limb->setDAng(M_PI/180.0 * dq);
 	limb->setD2Ang(M_PI/180.0 * d2q);
 
+	limbInv->setAng(M_PI/180.0 * q);
+	limbInv->setDAng(M_PI/180.0 * dq);
+	limbInv->setD2Ang(M_PI/180.0 * d2q);
+
 	//read FT sensor measurements
-	FTmeasure = port_i_FT->read(false);
-	if((FTmeasure!=0)||(FTmeasure!=NULL))
+	FTmeasure = port_i_FT->read(waitMeasure);
+	if((FTmeasure!=0))
 	{
 		FTsensor = *FTmeasure;
 	} 
@@ -484,18 +507,21 @@ bool TorqueObserver::close()
 	if (sens2torques) 
 	{
 		sens2torques->stop();
-		delete sens2torques; 
-		sens2torques=NULL;
+		//delete sens2torques; 
+		//sens2torques=NULL;
 	}
 
 	if (pd_limb) {delete pd_limb; pd_limb=NULL;}
 	if (pd_torso) {delete pd_torso; pd_torso=NULL;}
 
 	//finally closing ports
-	cout<<"TorqueObserver: closing ports"<<endl;
-	port_o_Torques.close();
-	port_o_FTendef.close();
-	port_i_FT.close();
+	cout<<"TorqueObserver: closing ports ..."<<endl;
+	port_o_Torques.close(); cout<<"                output torques closed"<<endl;
+	port_o_FTendef.close(); cout<<"                output end-eff closed"<<endl;
+	port_i_FT.close();      cout<<"                input measures closed"<<endl;
+	cout<<"TorqueObserver: all ports closed ..."<<endl;
+
+	Time::delay(5.0);
 
 	return true;
 }
