@@ -1,3 +1,7 @@
+2010-06-10 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* iCub/main/src/libraries/iCubVis added (vision library)
+	* iCub/main/src/modules/salience added (links iCubVis)
+
 2010-02-19 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	* iCub/src/modules/logpolarGrabber/ServerLogpolarFrameGrabber.cpp
 	
