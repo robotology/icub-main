@@ -862,6 +862,13 @@ void iDynChain::getKinematicNewtonEuler(Vector &w, Vector &dw, Vector &ddp)
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::getFrameKinematic(unsigned int i, Vector &w, Vector &dw, Vector &ddp)
+{
+	Vector dwM(3);dwM=0.0;
+	Vector ddpC(3);ddpC=0.0;
+	w = NE->getVelAccAfterForward(i,w,dw,dwM,ddp,ddpC);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu) 
 {
 	if( NE == NULL)
