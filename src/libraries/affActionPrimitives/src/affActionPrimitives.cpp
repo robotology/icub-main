@@ -1635,7 +1635,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         // open motor interfaces
         Property optPolyTorso("(device remote_controlboard)");
         optPolyTorso.put("remote",("/"+robot+"/torso").c_str());
-        optPolyTorso.put("local",("/"+local+"/torso/position").c_str());
+        optPolyTorso.put("local",("/"+local+"/"+part+"/torso/position").c_str());
 
         polyTorso=new PolyDriver;
         if (!polyTorso->open(optPolyTorso))
