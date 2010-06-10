@@ -684,9 +684,9 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const V
 {
 	if((_w.length()==3)&&(_dw.length()==3)&&(_ddp.length()==3))
 	{
-		w = _w;
-		dw = _dw;
-		ddp = _ddp;
+		this->setAngVel(_w);
+		this->setAngAcc(_dw);
+		this->setLinAcc(_ddp);
 		return true;
 	}
 	else
@@ -775,7 +775,7 @@ bool BaseLinkNewtonEuler::setForce(const Vector &_F)
 {
 	if(_F.length()==3)
 	{
-		F=_F;//H0.submatrix(0,2,0,2)*_F;
+		F=H0.submatrix(0,2,0,2)*_F;
 		return true;
 	}
 	else
@@ -791,7 +791,7 @@ bool BaseLinkNewtonEuler::setMoment(const Vector &_Mu)
 {
 	if(_Mu.length()==3)
 	{
-		Mu=_Mu;//H0.submatrix(0,2,0,2)*_Mu;
+		Mu=H0.submatrix(0,2,0,2)*_Mu;
 		return true;
 	}
 	else
@@ -809,7 +809,7 @@ bool BaseLinkNewtonEuler::setAngVel(const Vector &_w)
 {
 	if(_w.length()==3)
 	{
-		w = _w;//H0.submatrix(0,2,0,2).transposed()*_w; 
+		w = H0.submatrix(0,2,0,2).transposed()*_w; 
 		return true;
 	}
 	else
@@ -825,7 +825,7 @@ bool BaseLinkNewtonEuler::setAngAcc(const Vector &_dw)
 {
 	if(_dw.length()==3)
 	{
-		dw = _dw;//H0.submatrix(0,2,0,2).transposed()*_dw; 
+		dw = H0.submatrix(0,2,0,2).transposed()*_dw; 
 		return true;
 	}
 	else
@@ -841,7 +841,7 @@ bool BaseLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 {
 	if(_ddp.length()==3)
 	{
-		ddp = _ddp;//H0.submatrix(0,2,0,2).transposed()*_ddp; 
+		ddp = H0.submatrix(0,2,0,2).transposed()*_ddp; 
 		return true;
 	}
 	else
