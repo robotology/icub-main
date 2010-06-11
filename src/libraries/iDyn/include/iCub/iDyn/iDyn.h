@@ -151,7 +151,7 @@ protected:
 	/**
 	* Clone function
 	*/
-	void clone(const iDynLink &l);  
+	virtual void clone(const iDynLink &l);  
 
 public:
 
@@ -508,12 +508,12 @@ protected:
 	/**
 	* Clone function
 	*/
-	void clone(const iDynChain &c);
+	virtual void clone(const iDynChain &c);
 
 	/**
 	* Build chains and lists
 	*/	
-	void build();
+	virtual void build();
 
 	/**
 	* Dispose

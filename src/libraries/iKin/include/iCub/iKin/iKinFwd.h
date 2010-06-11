@@ -84,13 +84,13 @@ protected:
     // Default constructor: not implemented.
     iKinLink();
 
-    void clone(const iKinLink &l);    
-    bool isCumulative()     { return cumulative;          }
-    void block()            { blocked=true;               }
-    void block(double _Ang) { setAng(_Ang); blocked=true; }
-    void release()          { blocked=false;              }
-    void addCumH(const yarp::sig::Matrix &_cumH);
-    void rmCumH()           { cumulative=false;           }
+    virtual void clone(const iKinLink &l);    
+    bool         isCumulative()     { return cumulative;          }
+    void         block()            { blocked=true;               }
+    void         block(double _Ang) { setAng(_Ang); blocked=true; }
+    void         release()          { blocked=false;              }
+    void         rmCumH()           { cumulative=false;           }
+    void         addCumH(const yarp::sig::Matrix &_cumH);
 
 public:
     /**
@@ -342,9 +342,9 @@ protected:
     std::deque<yarp::sig::Matrix>  hess_H;
     std::deque<yarp::sig::Matrix> *hess_DH;
 
-    void clone(const iKinChain &c);
-    void build();
-	void dispose();
+    virtual void clone(const iKinChain &c);
+    virtual void build();
+	virtual void dispose();
 
     yarp::sig::Vector RotAng(const yarp::sig::Matrix &R);
     yarp::sig::Vector dRotAng(const yarp::sig::Matrix &R, const yarp::sig::Matrix &dR);
