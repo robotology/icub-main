@@ -1804,7 +1804,7 @@ void OneChainNewtonEuler::ForwardKinematicFromBase(const Vector &_w, const Vecto
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardKinematicFromEnd()
 {
-	for(unsigned int i=nEndEff;i>=1;i++)
+	for(unsigned int i=nEndEff;i>=1;i--)
 	{
 		neChain[i-1]->BackwardKinematics(neChain[i]);
 	}
