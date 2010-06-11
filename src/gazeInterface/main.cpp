@@ -12,6 +12,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 
@@ -48,14 +49,15 @@
 #define STATE_RECALL        1
 #define STATE_WAIT          2
 #define STATE_STILL         3
+#define STATE_SACCADE       4
 
 
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
 #define COMMAND_VOCAB_GET VOCAB3('g','e','t')
-#define COMMAND_VOCAB_GET VOCAB3('s','a','c')
-#define COMMAND_VOCAB_GET VOCAB3('i','m','g')
+#define COMMAND_VOCAB_SAC VOCAB3('s','a','c')
+#define COMMAND_VOCAB_IMG VOCAB3('i','m','g')
 #define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
 #define COMMAND_VOCAB_IS VOCAB2('i','s')
 #define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
@@ -97,8 +99,11 @@ protected:
     IPositionControl *ipos;
 
     int state;
+    int substate;
 
     Vector fp;
+    Vector vectorImage;
+
 
     deque<Vector> poiList;
 
@@ -109,11 +114,14 @@ protected:
     double t3;
     double t4;
 
+    double z;
+
 public:
     CtrlThread(const double period) : RateThread(int(period*1000.0)) { }
 
     virtual bool threadInit()
     {
+        
         // open a client interface to connect to the gaze server
         // we suppose that:
         // 1 - the iCub simulator (icubSim) is running
@@ -160,10 +168,14 @@ public:
         ipos->setRefSpeed(0,10.0);
 
         fp.resize(3);
+        vectorImage.resize(2); 
 
         state=STATE_TRACK;
+        substate=0;
 
 		t=t0=t1=t2=t3=t4=Time::now();
+
+        z=1.0;
 
         return true;
     }
@@ -180,12 +192,31 @@ public:
     {
         t=Time::now();
 
-        generateTarget();        
+        generateTarget();     
+
+        if(state==STATE_SACCADE){
+
+           printf("----------------- change tracking  -------%f ----%f----- \n",vectorImage[0],vectorImage[1]); 
+            
+           if (t-t1>=SWITCH_STATE_PER)
+            {
+                printf("switch state \n");
+                state=STATE_TRACK;
+            } 
+            
+        }   
 
         if (state==STATE_TRACK)
         {
-            // look at the target (streaming)
-            igaze->lookAtFixationPoint(fp);
+            /*if(substate==STATE_SACCADE){r
+
+               printf("Saccade \n");
+               igaze->lookAtMonoPixel(1,vectorImage,z); 
+            }
+            else{*/
+                // look at the target (streaming)
+                igaze->lookAtFixationPoint(fp);
+            //}
 
             // some verbosity
             printStatus();
@@ -210,7 +241,7 @@ public:
             poiList.clear();
 
             fprintf(stdout,"Retrieving POI #0 ... %s [deg]\n",
-                    ang.toString().c_str());
+            ang.toString().c_str());
 
             // look at the chosen POI
             igaze->lookAtAbsAngles(ang);
@@ -273,7 +304,7 @@ public:
         igaze->setTrackingMode(false);
 
         delete clientGaze;
-        delete clientTorso;
+        //delete clientTorso;
     }
 
     void generateTarget()
@@ -284,6 +315,17 @@ public:
         fp[0]=-0.5;
         fp[1]=+0.0+0.1*cos(2.0*M_PI*0.1*(t-t0));
         fp[2]=+0.3+0.1*sin(2.0*M_PI*0.1*(t-t0));            
+    }
+
+    void changeTracking(double u, double v){
+         
+        vectorImage[0]=u;
+        vectorImage[1]=v;      
+        printf("----------------- change tracking  -------%f ----%f----- ",vectorImage[0],vectorImage[1]);        
+        // look at the target (streaming)
+        igaze->lookAtMonoPixel(1,vectorImage);
+        state= STATE_SACCADE;     
+    
     }
 
     void storeInterestingPoint()
@@ -300,7 +342,7 @@ public:
             igaze->getAngles(ang);            
 
             fprintf(stdout,"Storing POI #%d ... %s [deg]\n",
-                    poiList.size(),ang.toString().c_str());
+            poiList.size(),ang.toString().c_str());
 
             poiList.push_back(ang);
 
@@ -340,19 +382,25 @@ class CtrlModule: public RFModule
 {
 protected:
     CtrlThread *thr;
+    Semaphore mutex;
+
+    Port resPort;
 
 public:
     virtual bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
-
+        printf("starting the control thread \n");
         thr=new CtrlThread(CTRL_THREAD_PER);
         if (!thr->start())
         {
             delete thr;
             return false;
         }
-
+        
+        resPort.open("/gazeInterface/respondPort:i");
+        attach(resPort);
+        attachTerminal();
         return true;
     }
 
@@ -360,6 +408,8 @@ public:
     {
         thr->stop();
         delete thr;
+
+        resPort.close();
 
         return true;
     }
@@ -417,8 +467,11 @@ public:
             }
             break;
             case COMMAND_VOCAB_IMG:{
-                int j = command.get(2).asInt();
+                double x = command.get(2).asDouble();
+                double y = command.get(3).asDouble();
                 string s("sac img");
+                sprintf((char *)s.c_str(),"sac img ",x,y);
+                thr->changeTracking(x,y);
                 reply.addString(s.c_str());
                 ok = true;
             }
@@ -492,9 +545,12 @@ public:
 
 int main(int argc, char *argv[])
 {
+    printf("hello");    
     ResourceFinder rf;
+    
     rf.setVerbose(true);
     rf.configure("ICUB_ROOT",argc,argv);
+
 
     if (rf.check("help"))
     {
@@ -519,6 +575,8 @@ int main(int argc, char *argv[])
 #ifdef USE_ICUB_MOD
     DriverCollection dev;
 #endif
+
+
 
     CtrlModule mod;
 
