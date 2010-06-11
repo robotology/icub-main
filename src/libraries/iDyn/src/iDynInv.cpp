@@ -245,7 +245,7 @@ bool OneLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneLinkNewtonEuler::setInfo(const string _info)
+void OneLinkNewtonEuler::setInfo(const string &_info)
 {
 	info = _info;
 }
@@ -468,7 +468,7 @@ void OneLinkNewtonEuler::computeLinAccBackward( OneLinkNewtonEuler *next)
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		setLinAcc(getR() * (next->getLinAcc() 
+		setLinAcc(next->getR() * (next->getLinAcc() 
 			- cross(next->getAngAcc(),next->getr(true)) 
 			- cross(next->getAngVel(),cross(next->getAngVel(),next->getr(true))) ));
 		break;
@@ -1465,152 +1465,6 @@ string SensorLinkNewtonEuler::getType() const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-//================================
-//
-//		ONE NODE NEWTON EULER
-//
-//================================
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-OneNodeNewtonEuler::OneNodeNewtonEuler(const NewEulMode _mode, unsigned int verb)
-: OneLinkNewtonEuler(_mode,verb,NULL)
-{
-	info = "node";
-	F.resize(3);	F.zero();
-	Mu.resize(3);	Mu.zero();
-	w.resize(3);	w.zero();
-	dw.resize(3);	dw.zero();
-	ddp.resize(3);	ddp.zero();
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string OneNodeNewtonEuler::toString() const
-{
-	string ret = "[Node]: " + info + " [Mode]: " + NewEulMode_s[mode];
-
-	char buffer[300]; int j=0;		  
-	if(verbose)
-	{
-		j=sprintf(   buffer," [F]  : %.3f,%.3f,%.3f",F(0),F(1),F(2));
-		j+=sprintf(buffer+j," [Mu] : %.3f,%.3f,%.3f",Mu(0),Mu(1),Mu(2));
-	}
-	ret.append(buffer);
-	return ret;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 
-	 //~~~~~~~~~~~~~~~~~~~~~~
-	 //   get methods
-	 //~~~~~~~~~~~~~~~~~~~~~~
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	OneNodeNewtonEuler::getForce()	const	{return F;}
-Vector	OneNodeNewtonEuler::getMoment()	const	{return Mu;}
-Vector	OneNodeNewtonEuler::getAngVel()	const	{return w;}
-Vector	OneNodeNewtonEuler::getAngAcc()	const	{return dw;}
-Vector	OneNodeNewtonEuler::getLinAcc()	const	{return ddp;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	OneNodeNewtonEuler::getAngAccM()const	{Vector v(3); v.zero(); return v;}
-Vector	OneNodeNewtonEuler::getLinAccC()const	{Vector v(3); v.zero(); return v;}
-Matrix	OneNodeNewtonEuler::getR()				{Matrix ret(3,3); ret.eye(); return ret;}	
-Matrix	OneNodeNewtonEuler::getRC()				{Matrix ret(3,3); ret.eye(); return ret;}
-double	OneNodeNewtonEuler::getIm()		const	{return 0.0;}
-double	OneNodeNewtonEuler::getFs()		const	{return 0.0;}
-double	OneNodeNewtonEuler::getFv()		const	{return 0.0;}
-double	OneNodeNewtonEuler::getD2q()	const	{return 0.0;}
-double	OneNodeNewtonEuler::getDq()		const	{return 0.0;}
-double	OneNodeNewtonEuler::getKr()		const	{return 0.0;}
-double	OneNodeNewtonEuler::getMass()	const	{return 0.0;}
-Matrix	OneNodeNewtonEuler::getInertia()const	{Matrix ret(3,3); ret.zero(); return ret;}
-Vector	OneNodeNewtonEuler::getr(bool proj)		{Vector v(3); v.zero(); return v;}
-Vector	OneNodeNewtonEuler::getrC(bool proj)	{Vector v(3); v.zero(); return v;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool	OneNodeNewtonEuler::setForce(const Vector &_F)
-{
-	if(_F.length()==3)
-	{
-		F=_F;
-		return true;
-	}
-	else
-	{
-		if(verbose)
-			cerr<<"OneNode error, could not set force due to wrong dimension: "
-			<<_F.length()<<" instead of 3."<<endl;
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool	OneNodeNewtonEuler::setMoment(const Vector &_Mu)
-{
-	if(_Mu.length()==3)
-	{
-		Mu=_Mu;
-		return true;
-	}
-	else
-	{
-		if(verbose)
-			cerr<<"OneNode error, could not set moment due to wrong dimension: "
-			<<_Mu.length()<<" instead of 3."<<endl;
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool	OneNodeNewtonEuler::setAngVel(const Vector &_w)
-{
-	if(_w.length()==3)
-	{
-		w=_w;
-		return true;
-	}
-	else
-	{
-		if(verbose)
-			cerr<<"OneNode error, could not set angular velocity due to wrong dimension: "
-			<<_w.length()<<" instead of 3."<<endl;
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool	OneNodeNewtonEuler::setAngAcc(const Vector &_dw)
-{
-	if(_dw.length()==3)
-	{
-		dw=_dw;
-		return true;
-	}
-	else
-	{
-		if(verbose)
-			cerr<<"OneNode error, could not set angular acceleration due to wrong dimension: "
-			<<_dw.length()<<" instead of 3."<<endl;
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool	OneNodeNewtonEuler::setLinAcc(const Vector &_ddp)
-{
-	if(_ddp.length()==3)
-	{
-		ddp=_ddp;
-		return true;
-	}
-	else
-	{
-		if(verbose)
-			cerr<<"OneNode error, could not set linear acceleration due to wrong dimension: "
-			<<_ddp.length()<<" instead of 3."<<endl;
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 
 //================================
@@ -1912,7 +1766,7 @@ bool OneChainNewtonEuler::BackwardWrenchToBase(unsigned int lSens)
 //======================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynInvSensor::iDynInvSensor(iDynChain *_c, string _info, const NewEulMode _mode, unsigned int verb)
+iDynInvSensor::iDynInvSensor(iDynChain *_c, const string &_info, const NewEulMode _mode, unsigned int verb)
 {
 	chain = _c;
 	info = _info + "chain with sensor: unknown";
@@ -1923,7 +1777,7 @@ iDynInvSensor::iDynInvSensor(iDynChain *_c, string _info, const NewEulMode _mode
 	sens = NULL;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynInvSensor::iDynInvSensor(iDynChain *_c, unsigned int i, const Matrix &_H, const Matrix &_HC, const double _m, const Matrix &_I, string _info, const NewEulMode _mode, unsigned int verb)
+iDynInvSensor::iDynInvSensor(iDynChain *_c, unsigned int i, const Matrix &_H, const Matrix &_HC, const double _m, const Matrix &_I, const string &_info, const NewEulMode _mode, unsigned int verb)
 {
 	chain = _c;
 	info = _info + "chain with sensor: attached";
@@ -1997,12 +1851,12 @@ void iDynInvSensor::setVerbose(unsigned int verb)
 	sens->setVerbose(verb);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynInvSensor::setInfo(std::string _info)
+void iDynInvSensor::setInfo(const string &_info)
 {
 	info = _info;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynInvSensor::setSensorInfo(std::string _info)
+void iDynInvSensor::setSensorInfo(const string &_info)
 {
 	sens->setInfo(_info);
 }
@@ -2013,9 +1867,11 @@ void iDynInvSensor::setSensorInfo(std::string _info)
 	//~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynInvSensor::getInfo()			const	{return info;}
+string iDynInvSensor::getInfo()					const	{return info;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynInvSensor::getSensorInfo()	const	{return sens->getInfo();}
+Matrix iDynInvSensor::getH()					const	{return sens->getH();}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iDynInvSensor::getSensorInfo()			const	{return sens->getInfo();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynInvSensor::getSensorForceMoment()	const	{return sens->getForceMoment(); }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2030,7 +1886,7 @@ unsigned int iDynInvSensor::getSensorLink()	const	{return lSens; }
 //======================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubArmSensorLink::iCubArmSensorLink(const string _type, const NewEulMode _mode, unsigned int verb)
+iCubArmSensorLink::iCubArmSensorLink(const string &_type, const NewEulMode _mode, unsigned int verb)
 :SensorLinkNewtonEuler(_mode,verb)
 {
 	// the arm type determines the sensor properties
