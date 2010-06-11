@@ -911,6 +911,13 @@ public:
                        const yarp::sig::Vector &d);
 
     /**
+    * Latch the wrench to compensate for offset in the sensor 
+    * measures. 
+    * @return true/false on success/fail. 
+    */
+    virtual bool latchWrenchOffset();
+
+    /**
     * Retrieve the current wrench on the end-effector.
     * @param wrench a vector containing the external forces/moments 
     *               acting on the end-effector.

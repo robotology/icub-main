@@ -1562,9 +1562,6 @@ void affActionPrimitivesLayer2::postReachCallback()
     // init the contact variable
     contactDetected=false;
 
-    // latch the offset
-    wrenchOffset=wrenchMeasured+wrenchModel;
-
     // call the main postReachCallback()
     affActionPrimitivesLayer1::postReachCallback();
 }
@@ -1790,6 +1787,9 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
     {
         printMessage("start grasping\n");
 
+        // latch the offset
+        latchWrenchOffset();
+
         enableContactDetection();
         contactDetected=false;
 
@@ -1813,6 +1813,19 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
                                       const Vector &d)
 {
     return affActionPrimitivesLayer1::grasp(x,o,d);
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::latchWrenchOffset()
+{
+    if (configured)
+    {
+        wrenchOffset=wrenchMeasured+wrenchModel;
+        return true;
+    }
+    else
+        return false;
 }
 
 
