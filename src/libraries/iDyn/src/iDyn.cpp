@@ -817,6 +817,7 @@ bool iDynChain::computeNewtonEuler()
 		NE->BackwardWrenchFromEnd();
 	else 
 		NE->ForwardWrenchFromBase();
+
 	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1675,7 +1676,7 @@ void iCubInertialSensorDyn::allocate(const string &_type)
     linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
     linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
     linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
-    linkList[3]=new iDynLink(0.27017604, -30.535917e-3,  2.5211768e-3, -0.23571261e-3, 	100.46346e-6, -0.17765781e-6,  0.44914333e-6, 45.425961e-6 -0.12682862e-6, 1.0145446e+02,    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+    linkList[3]=new iDynLink(0.27017604, -30.535917e-3,  2.5211768e-3, -0.23571261e-3, 	100.46346e-6, -0.17765781e-6,  0.44914333e-6, 45.425961e-6, -0.12682862e-6, 1.0145446e+02,    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
     linkList[4]=new iDynLink(0.27230552,  0.0,  4.3752947e-3,  5.4544215e-3, 	142.82339e-6, -0.0059261471e-6, -0.0022006663e-6, 82.884917e-6, -9.1321119e-6, 87.620338e-6,      0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
     linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
 
