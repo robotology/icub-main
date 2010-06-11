@@ -1601,11 +1601,12 @@ void affActionPrimitivesLayer2::run()
 
     dynSensor->computeSensorForceMoment();
     wrenchModel=dynSensor->getSensorForceMoment();
-
-    // estimation of external forces/torques acting on the end-effector
+    
+    // get the input from the sensor
     if (Vector *ftMeasured=ftPortIn->read(false))
         wrenchMeasured=*ftMeasured;
 
+    // estimation of external forces/torques acting on the end-effector
     wrenchExternal=dynTransformer->getEndEffWrenchAsBase((wrenchMeasured-wrenchOffset)+wrenchModel);
 
     Vector forceExternal(3);
