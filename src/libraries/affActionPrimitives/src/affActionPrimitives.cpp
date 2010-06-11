@@ -74,17 +74,27 @@ public:
     }
 
     /************************************************************************/
-    virtual void enable()
+    virtual bool enable()
     {
         if (isSuspended())
+        {
             resume();
+            return true;
+        }
+        else
+            return false;
     }
 
     /************************************************************************/
-    virtual void disable()
+    virtual bool disable()
     {
         if (isRunning())
+        {
             suspend();
+            return true;
+        }
+        else
+            return false;
     }
 
     /************************************************************************/
@@ -1325,8 +1335,8 @@ bool affActionPrimitives::enableArmWaving(const Vector &restPos)
         printMessage("setting waving position to %s\n",
                      toCompactString(restPos).c_str());
 
-        RES_WAVER(armWaver)->enable();
-        printMessage("arm waving enabled\n");
+        if (RES_WAVER(armWaver)->enable())
+            printMessage("arm waving enabled\n");
 
         return true;
     }
@@ -1340,8 +1350,8 @@ bool affActionPrimitives::disableArmWaving()
 {
     if (configured)
     {
-        RES_WAVER(armWaver)->disable();
-        printMessage("arm waving disabled\n");
+        if (RES_WAVER(armWaver)->disable())
+            printMessage("arm waving disabled\n");
 
         return true;
     }
