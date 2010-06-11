@@ -215,7 +215,9 @@ void selectiveAttentionProcessor::run(){
         }
 
         
-        extractContour(outputImage,outputColourImage,inImage,centroid_y,centroid_y);
+        extractContour(outputImage,outputColourImage,inImage,centroid_x,centroid_y);
+        printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
+
         //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
         //get the colour of the inputImage starting in the centroid_x and centroid_y position
         //unsigned char* pColour=inImage->getPixelAddress(centroid_x,centroid_y);
