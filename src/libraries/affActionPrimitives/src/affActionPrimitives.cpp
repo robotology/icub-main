@@ -1604,12 +1604,9 @@ void affActionPrimitivesLayer2::run()
 
     // estimation of external forces/torques acting on the end-effector
     if (Vector *ftMeasured=ftPortIn->read(false))
-    {
         wrenchMeasured=*ftMeasured;
-        wrenchExternal=dynTransformer->getEndEffWrenchAsBase((wrenchMeasured-wrenchOffset)+wrenchModel);
-    }
-    else
-        wrenchExternal=dynTransformer->getEndEffWrenchAsBase();    
+
+    wrenchExternal=dynTransformer->getEndEffWrenchAsBase((wrenchMeasured-wrenchOffset)+wrenchModel);
 
     Vector forceExternal(3);
     forceExternal[0]=wrenchExternal[0];
