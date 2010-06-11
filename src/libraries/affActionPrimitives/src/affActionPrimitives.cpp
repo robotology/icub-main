@@ -88,7 +88,7 @@ public:
     /************************************************************************/
     virtual bool disable()
     {
-        if (isRunning())
+        if (!isSuspended())
         {
             suspend();
             return true;
