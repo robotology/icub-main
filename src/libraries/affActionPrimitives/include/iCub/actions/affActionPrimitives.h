@@ -789,7 +789,8 @@ class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 protected:
     bool skipFatherPart;
     bool configuredLayer2;
-    bool contact;
+    bool contactDetectionOn;
+    bool contactDetected;
 
     double ext_force_thres;
 
@@ -932,6 +933,25 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool setExtForceThres(const double thres);
+
+    /**
+    * Self-explaining :)
+    * @return true/false on success/fail. 
+    */
+    virtual bool enableContactDetection();
+
+    /**
+    * Self-explaining :)
+    * @return true/false on success/fail. 
+    */
+    virtual bool disableContactDetection();
+
+    /**
+    * Self-explaining :) 
+    * @param f the result of the check.  
+    * @return true/false on success/fail. 
+    */
+    virtual bool isContactDetectionEnabled(bool &f);
 
     /**
     * Check whether the reaching has been stopped due to a contact 

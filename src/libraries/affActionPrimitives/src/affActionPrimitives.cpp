@@ -1503,7 +1503,7 @@ affActionPrimitivesLayer1::~affActionPrimitivesLayer1()
 void liftAndGraspCallback::exec()
 {
     // lift up the hand iff contact detected
-    if (action->contact)
+    if (action->contactDetected)
     {
         Vector x,o;
         action->cartCtrl->getPose(x,o);
@@ -1513,6 +1513,7 @@ void liftAndGraspCallback::exec()
         action->pushAction(x+action->grasp_d2,action->grasp_o);
     }
 
+    action->disableContactDetection();
     action->pushAction("close_hand");
 }
 
@@ -1540,7 +1541,8 @@ void affActionPrimitivesLayer2::init()
 {    
     skipFatherPart=false;
     configuredLayer2=false;
-    contact=false;
+    contactDetectionOn=false;
+    contactDetected=false;
 
     polyTorso=NULL;
     encTorso=NULL;
@@ -1558,7 +1560,7 @@ void affActionPrimitivesLayer2::init()
 void affActionPrimitivesLayer2::postReachCallback()
 {
     // init the contact variable
-    contact=false;
+    contactDetected=false;
 
     // latch the offset
     wrenchOffset=wrenchMeasured+wrenchModel;
@@ -1616,7 +1618,7 @@ void affActionPrimitivesLayer2::run()
     const double forceExternalAbs=norm(forceExternal);
 
     // stop the arm iff contact detected while reaching
-    if (!armMoveDone && forceExternalAbs>ext_force_thres)
+    if (!armMoveDone && contactDetectionOn && (forceExternalAbs>ext_force_thres))
     {
         cartCtrl->stopControl();
 
@@ -1626,7 +1628,7 @@ void affActionPrimitivesLayer2::run()
         disableTorsoDof();
 
         armMoveDone=true;
-        contact=true;
+        contactDetected=true;
     }
 
     // call the main run()
@@ -1788,7 +1790,8 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
     {
         printMessage("start grasping\n");
 
-        contact=false;
+        enableContactDetection();
+        contactDetected=false;
 
         pushAction(x+d1,o,"open_hand");
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execLiftAndGrasp);
@@ -1853,11 +1856,50 @@ bool affActionPrimitivesLayer2::setExtForceThres(const double thres)
 
 
 /************************************************************************/
+bool affActionPrimitivesLayer2::enableContactDetection()
+{
+    if (configured)
+    {
+        contactDetectionOn=true;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::disableContactDetection()
+{
+    if (configured)
+    {
+        contactDetectionOn=false;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::isContactDetectionEnabled(bool &f)
+{
+    if (configured)
+    {
+        f=contactDetectionOn;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitivesLayer2::checkContact(bool &f)
 {
     if (configured)
     {
-        f=contact;
+        f=contactDetected;
         return true;
     }
     else
