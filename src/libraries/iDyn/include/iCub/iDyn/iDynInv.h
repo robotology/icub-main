@@ -329,7 +329,7 @@ public:
 	* Set some information about this OneLink class
 	* @param _info a string
 	*/
-	 void setInfo(const std::string _info);
+	 void setInfo(const std::string &_info);
 
 
 	 //~~~~~~~~~~~~~~~~~~~~~~
@@ -829,113 +829,6 @@ public:
 
 };
 
-/**
-* \ingroup RecursiveNewtonEuler
-*
-* A class for setting a virtual node: this class is used by iDynNode, to exchange kinematics and 
-* and wrench information between different chains using Newton-Euler's methods for computing the 
-* variables properly. The node only has kinematic (w,dw,ddp) and wrench (F,Mu) information: no
-* mass, lenght, inertia, COM, H, or else. There is no iDynLink attached. It is inherited as 
-* protected to expose only the computational methods which are used by iDynNode and 
-* RigidBodyTransformation. It is mainly used to avoid code duplication.
-*/
-class OneNodeNewtonEuler : protected OneLinkNewtonEuler
-{
-protected:
-	/// angular velocity
-	yarp::sig::Vector w;	
-	/// angular acceleration
-	yarp::sig::Vector dw;
-	/// linear acceleration
-	yarp::sig::Vector ddp;	
-	/// force
-	yarp::sig::Vector F;	
-	/// moment
-	yarp::sig::Vector Mu;	
-
-public:
-
-	/**
-    * Default constructor 
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
-    */
-	OneNodeNewtonEuler(const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
-
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   get methods
-	//~~~~~~~~~~~~~~~~~~~~~~
-
-	yarp::sig::Vector	getForce()		const;
-	yarp::sig::Vector	getMoment()		const;
-
-	// redefine the other unuseful methods to avoid errors due to missing link
-	yarp::sig::Vector	getAngVel()		const;
-	yarp::sig::Vector	getAngAcc()		const;
-	yarp::sig::Vector	getAngAccM()	const;
-	yarp::sig::Vector	getLinAcc()		const;
-	yarp::sig::Vector	getLinAccC()	const;
-	yarp::sig::Matrix	getR();		
-	yarp::sig::Matrix	getRC();	
-	double				getIm()		const;
-  	double				getFs()		const;
- 	double				getFv()		const;
-	double				getD2q()	const;
-	double				getDq()		const;
-	double				getKr()		const;
-	double				getMass()	const;
-   	yarp::sig::Matrix	getInertia()const;
-	yarp::sig::Vector	getr(bool proj=false);
-	yarp::sig::Vector	getrC(bool proj=false);
-
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   set methods
-	//~~~~~~~~~~~~~~~~~~~~~~
-
-	// wrench
-	bool setForce(const yarp::sig::Vector &_F);
-	bool setMoment(const yarp::sig::Vector &_Mu);
-	// kinematic
-	bool setAngVel(const yarp::sig::Vector &_w);
-	bool setAngAcc(const yarp::sig::Vector &_dw);
-	bool setLinAcc(const yarp::sig::Vector &_ddp);
-
-
-	//~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   computation methods
-	//~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	/**
-     * [Node To Limb] Compute w, dw, ddp, ddpC, dwM
-	  * @param prev the OneLinkNewtonEuler class of the previous link 
-     */
-	 void ForwardKinematics( OneLinkNewtonEuler *prev);
- 
-	/**
-     * [Limb To Node] Compute w, dw, ddp, ddpC, dwM
-	  * @param prev the OneLinkNewtonEuler class of the previous link 
-     */
-	 void BackwardKinematics( OneLinkNewtonEuler *prev);
-
-	/**
-     * [Limb To Node] Compute F, Mu, Tau
-	  * @param next the OneLinkNewtonEuler class of the following link 
-     */
-	 void BackwardWrench( OneLinkNewtonEuler *next);
-
-	/**
-     * [Node To Limb] Compute F, Mu, Tau
-	  * @param prev the OneLinkNewtonEuler class of the previous link 
-     */
-	 void ForwardWrench( OneLinkNewtonEuler *prev);
-
-
-	//other
-	std::string toString() const;
-};
-
-
-
 
 /**
 * \ingroup RecursiveNewtonEuler
@@ -1237,7 +1130,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensor(iDyn::iDynChain *_c, const std::string &_info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor with FT sensor
@@ -1251,7 +1144,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = 0);
+	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, const std::string &_info, const NewEulMode _mode = STATIC, unsigned int verb = 0);
 
 	/**
      * Set a new sensor or new sensor properties
@@ -1294,7 +1187,11 @@ public:
      */
 	yarp::sig::Vector getSensorForceMoment() const;
 	
-	yarp::sig::Matrix getH() {return sens->getH();}
+ 	/**
+     * Get the sensor roto-translational matrix defining its position/orientation wrt the link
+	 * @return a (4x4) matrix
+     */
+	yarp::sig::Matrix getH() const;
 
 	//~~~~~~~~~~~~~~
 	// set methods
@@ -1302,8 +1199,8 @@ public:
 
 	void setMode(const NewEulMode _mode = STATIC);
 	void setVerbose(unsigned int verb=VERBOSE);
-	void setInfo(std::string _info);
-	void setSensorInfo(std::string _info);
+	void setInfo(const std::string &_info);
+	void setSensorInfo(const std::string &_info);
 
 	//~~~~~~~~~~~~~~
 	// get methods
@@ -1340,7 +1237,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iCubArmSensorLink(const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/right
