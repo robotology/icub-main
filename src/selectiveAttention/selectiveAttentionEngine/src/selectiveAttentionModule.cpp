@@ -181,8 +181,8 @@ bool selectiveAttentionModule::outPorts(){
     if(centroidPort.getOutputCount()){  
         Bottle& commandBottle=centroidPort.prepare();
         commandBottle.clear();
-        commandBottle.addVocab(Vocab::encode("sac"));
-        commandBottle.addVocab(Vocab::encode("img"));
+        commandBottle.addString("sac");
+        commandBottle.addString("img");
         commandBottle.addInt(currentProcessor->centroid_x);
         commandBottle.addInt(currentProcessor->centroid_y);
         centroidPort.write();
