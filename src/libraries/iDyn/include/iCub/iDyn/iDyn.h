@@ -1153,6 +1153,39 @@ public:
 };
 
 
+
+
+/**
+* \ingroup iDyn
+*
+* A class for defining the 7-DOF iCub Arm in the iDyn framework
+*/
+class iCubArm2Dyn : public iDynLimb
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubArm2Dyn();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" arm
+    */
+    iCubArm2Dyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
+
+    /**
+    * Creates a new Arm from an already existing Arm object.
+    * @param arm is the Arm to be copied.
+    */
+    iCubArm2Dyn(const iCubArmDyn &arm);
+};
+
+
 /**
 * \ingroup iDyn
 *
