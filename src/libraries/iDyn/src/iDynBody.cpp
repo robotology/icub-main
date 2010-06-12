@@ -355,6 +355,7 @@ bool iDynNode::solveWrench()
 	{
 		if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
 		{
+			fprintf(stderr,"i'm here!!!");
 			//compute the wrench pass in that limb
 			rbtList[i].limb->computeWrenchNewtonEuler();
 			//update the node force/moment with the wrench coming from the limb base/end
@@ -370,13 +371,15 @@ bool iDynNode::solveWrench()
 	// F = F + F[i], Mu = Mu + Mu[i]
 
 	//just check if the there is at least one output node (as it should be)
-	if(outputNode<rbtList.size())
+	//if(outputNode<rbtList.size())
 	{
 		//now forward the wrench output from the node to limbs whose wrench flow is output type
 		for(unsigned int i=0; i<rbtList.size(); i++)
 		{
+			fprintf(stderr,"i'm here2!!!");
 			if(rbtList[i].getWrenchFlow()==RBT_NODE_OUT)
 			{
+				fprintf(stderr,"i'm here3!!!");
 				//init the wrench with the node information
 				rbtList[i].setWrench(F,Mu);
 				//solve wrench in that limb/chain
@@ -385,14 +388,14 @@ bool iDynNode::solveWrench()
 		}
 		return true;
 	}
-	else
+	/*else
 	{
 		if(verbose)
 			cerr<<"iDynNode: error: there are no limbs with Wrench Flow = Output. "
 				<<" At least one limb must have Wrench Output for balancing forces in the node. "
 				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
 		return false;
-	}
+	}*/
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynNode::solveWrench(const Matrix &FM)
@@ -498,6 +501,15 @@ bool iDynNode::solveWrench(const Matrix &F, const Matrix &M)
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynNode::getForce() const {	return F;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynNode::getMoment() const {return Mu;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynNode::getAngVel() const {return w;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynNode::getAngAcc() const {return dw;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynNode::getLinAcc() const {return ddp;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

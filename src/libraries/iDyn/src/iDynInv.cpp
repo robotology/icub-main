@@ -77,6 +77,9 @@ void OneLinkNewtonEuler::zero()
 bool OneLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
 	zero();
+	setAngVel(_w);
+	setAngAcc(_dw);
+	setLinAcc(_ddp);
 	info = "base";
 	return true;
 }
@@ -84,6 +87,8 @@ bool OneLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const Ve
 bool OneLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
 {
 	zero();
+	setForce(_F);
+	setMoment(_Mu);
 	info = "base";
 	return true;
 }
@@ -91,6 +96,8 @@ bool OneLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
 bool OneLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
 {
 	zero();
+	setForce(_F);
+	setMoment(_Mu);
 	info = "final";
 	return true;
 }
@@ -98,7 +105,9 @@ bool OneLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
 bool OneLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
 	zero();
-	setAngVel(_w); setAngAcc(_dw); setLinAcc(_ddp);
+	setAngVel(_w); 
+	setAngAcc(_dw); 
+	setLinAcc(_ddp);
 	info = "final";
 	return true;
 }
