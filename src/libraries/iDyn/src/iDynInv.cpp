@@ -98,6 +98,7 @@ bool OneLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
 bool OneLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
 	zero();
+	setAngVel(_w); setAngAcc(_dw); setLinAcc(_ddp);
 	info = "final";
 	return true;
 }
@@ -463,6 +464,7 @@ void OneLinkNewtonEuler::computeLinAcc( OneLinkNewtonEuler *prev)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeLinAccBackward( OneLinkNewtonEuler *next)
 {
+	Matrix Rii(3,3);
 	switch(mode)
 	{
 	case DYNAMIC:
@@ -471,6 +473,16 @@ void OneLinkNewtonEuler::computeLinAccBackward( OneLinkNewtonEuler *next)
 		setLinAcc(next->getR() * (next->getLinAcc() 
 			- cross(next->getAngAcc(),next->getr(true)) 
 			- cross(next->getAngVel(),cross(next->getAngVel(),next->getr(true))) ));
+		fprintf(stderr,"R:\n");
+		Rii=next->getR();
+		for(int i=0;i<3;i++)
+		{
+			for(int j=0;j<3;j++)
+				fprintf(stderr,"%+.2lf\t",Rii(i,j));
+			fprintf(stderr,"\n");
+		}
+		fprintf(stderr,"\n\n\n");
+
 		break;
 	case STATIC:
 		setLinAcc( next->getR() * next->getLinAcc() );
@@ -883,6 +895,9 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int 
 	info = "final";
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
+	w.resize(3);	w.zero();
+	dw.resize(3);	dw.zero();
+	ddp.resize(3);	ddp.zero();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, const NewEulMode _mode, unsigned int verb)
@@ -891,6 +906,9 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, 
 	info = "final";
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
+	w.resize(3);	w.zero();
+	dw.resize(3);	dw.zero();
+	ddp.resize(3);	ddp.zero();
 	setAsFinal(_F,_Mu);
 			
 }
@@ -911,7 +929,7 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const
 		ddp.resize(3);	ddp.zero();
 	
 		if(verbose)
-			cerr<<"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: "
+			cerr<<"FinalLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: "
 				<<"("<<_w.length()<<","<<_dw.length()<<","<<_ddp.length()<<") instead of (3,3,3)"
 				<<"; default is set"<<endl;
 		return false;
@@ -964,10 +982,10 @@ Vector	FinalLinkNewtonEuler::getForce()		const	{return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	FinalLinkNewtonEuler::getMoment()		const	{return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	FinalLinkNewtonEuler::getAngVel()	const	{Vector v(3); v.zero(); return v;}
-Vector	FinalLinkNewtonEuler::getAngAcc()	const	{Vector v(3); v.zero(); return v;}
+Vector	FinalLinkNewtonEuler::getAngVel()	const	{return w;}
+Vector	FinalLinkNewtonEuler::getAngAcc()	const	{return dw;}
 Vector	FinalLinkNewtonEuler::getAngAccM()	const	{Vector v(3); v.zero(); return v;}
-Vector	FinalLinkNewtonEuler::getLinAcc()	const	{Vector v(3); v.zero(); return v;}
+Vector	FinalLinkNewtonEuler::getLinAcc()	const	{return ddp;}
 Vector	FinalLinkNewtonEuler::getLinAccC()	const	{Vector v(3); v.zero(); return v;}
 double	FinalLinkNewtonEuler::getTorque()	const	{return 0.0;}
 Matrix	FinalLinkNewtonEuler::getR()				{Matrix ret(3,3); ret.eye(); return ret;}	
@@ -1019,23 +1037,27 @@ void	FinalLinkNewtonEuler::setTorque(const double _Tau){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAngVel(const Vector &_w)
 {
-	if(verbose)
+	/*if(verbose)
 		cerr<<"FinalLink error: no w existing"<<endl;
-	return false;
+	return false;*/
+	w=_w;
+	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAngAcc(const Vector &_dw)
 {
-	if(verbose)
-		cerr<<"FinalLink error: no dw existing"<<endl;
-	return false;
+	//if(verbose)
+	//	cerr<<"FinalLink error: no dw existing"<<endl;
+	//return false;
+	dw=_dw;	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 {
-	if(verbose)
-		cerr<<"FinalLink error: no ddp existing"<<endl;
-	return false;
+	//if(verbose)
+	//	cerr<<"FinalLink error: no ddp existing"<<endl;
+	//return false;
+	ddp=_ddp;	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setLinAccC(const Vector &_ddpC)
@@ -1542,6 +1564,23 @@ bool OneChainNewtonEuler::getVelAccAfterForward(unsigned int i, Vector &w, Vecto
 		dwM = neChain[i]->getAngAccM();
 		ddp = neChain[i]->getLinAcc();
 		ddpC = neChain[i]->getLinAccC();
+		return true;
+	}
+	else
+	{
+		if(verbose)
+			cerr << "OneChain error, impossible to retrieve vel/acc due to out of range index: "
+			<<i<<" where max is "<<nEndEff<<endl;
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool OneChainNewtonEuler::getWrenchAfterForward(unsigned int i, Vector &F, Vector &Mu) const
+{
+	if((i>=0)&&(i<=nEndEff))
+	{
+		F = neChain[i]->getForce();
+		Mu = neChain[i]->getMoment();
 		return true;
 	}
 	else

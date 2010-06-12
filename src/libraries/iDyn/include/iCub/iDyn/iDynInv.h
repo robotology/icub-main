@@ -881,6 +881,11 @@ public:
 	bool getVelAccAfterForward(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &dwM, yarp::sig::Vector &ddp, yarp::sig::Vector &ddpC) const;
 
 	/**
+     * Useful to debug, getting the intermediate computations after the forward phase
+     */
+	bool getWrenchAfterForward(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
+
+	/**
      * This method is used by iDynChain to retrieve kinematic information for connection with one or more
 	 * iDynLimb, through iDynNode.
      */

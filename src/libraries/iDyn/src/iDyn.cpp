@@ -870,6 +870,11 @@ void iDynChain::getFrameKinematic(unsigned int i, Vector &w, Vector &dw, Vector 
 	NE->getVelAccAfterForward(i,w,dw,dwM,ddp,ddpC);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynChain::getFrameWrench(unsigned int i, Vector &F, Vector &Mu)
+{
+	NE->getWrenchAfterForward(i,F,Mu);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu) 
 {
 	if( NE == NULL)
@@ -1688,6 +1693,54 @@ void iCubInertialSensorDyn::allocate(const string &_type)
 
     // block virtual links
     blockLink(6,0.0);
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+////////////////////////////////////////
+//		ICUB INERTIAL SENSOR DYN            
+////////////////////////////////////////
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubNeckInertialDyn::iCubNeckInertialDyn(const ChainComputationMode _mode)
+{
+    allocate("right");
+	setIterMode(_mode);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubNeckInertialDyn::iCubNeckInertialDyn(const iCubInertialSensorDyn &sensor)
+{
+    clone(sensor);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iCubNeckInertialDyn::allocate(const string &_type)
+{
+    iDynLimb::allocate(_type);
+
+    H0.eye();
+    /*H0(0,1)=-1;
+    H0(1,2)=-1;
+    H0(2,0)=1;
+    H0(3,3)=1;*/
+
+    linkList.resize(4);
+
+	//create iDynLink from parameters calling
+	//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
+
+    // links of torso and neck
+    linkList[0]=new iDynLink(0.27017604,	  -30.535917e-3,  2.5211768e-3, -0.23571261e-3, 	     100.46346e-6,   -0.17765781e-6,       0.44914333e-6, 45.425961e-6, -0.12682862e-6, 1.0145446e+02,		  0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+    linkList[1]=new iDynLink(0.27230552,				0.0,  4.3752947e-3,   5.4544215e-3, 	     142.82339e-6, -0.0059261471e-6,    -0.0022006663e-6, 82.884917e-6,  -9.1321119e-6,  87.620338e-6,          0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
+    linkList[2]=new iDynLink(0,							  0,		     0,		         0,					    0,				  0,				   0,			 0,				 0,				0,		 0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
+
+    // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
+    linkList[3]=new iDynLink(1.3368659,		  -11.811104e-3, -5.7800518e-3,  -11.685197e-3,			3412.8918e-06,  66.297315e-6, -153.07583e-6, 4693.0882e-6,  8.0646052e-6, 4153.4285e-6, 0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0);
+
+    for(unsigned int i=0; i<linkList.size(); i++)
+        *this << *linkList[i];
+
+    // block virtual links
+    blockLink(3,0.0);
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

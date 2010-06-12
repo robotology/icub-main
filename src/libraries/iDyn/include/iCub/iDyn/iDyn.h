@@ -849,13 +849,15 @@ public:
 	*/
 	void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
 	void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
-
+	void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu);
 	/**
 	* Calls the proper method to get wrench variables in OneChainNewtonEuler either
 	* in the base or in the final link. This method is used by RigidBodyTransformation 
 	* for setting the wrench variables.
 	*/
 	void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu);
+	
+	unsigned int      getNTOT()             { return NE->nEndEff; }
 
 	/**
     * Destructor. 
@@ -993,7 +995,8 @@ public:
 
 
     unsigned int      getN()                                                          { return N;                                   }
-    unsigned int      getDOF()                                                        { return DOF;                                 }
+	unsigned int      getNTOT()														  { return iDynChain::getNTOT();                }
+	unsigned int      getDOF()                                                        { return DOF;                                 }
     bool              blockLink(const unsigned int i, double Ang)                     { return iDynChain::blockLink(i,Ang);         }
     bool              blockLink(const unsigned int i)                                 { return iDynChain::blockLink(i);             }
     bool              setBlockingValue(const unsigned int i, double Ang)              { return iDynChain::setBlockingValue(i,Ang);  }
@@ -1102,6 +1105,8 @@ public:
 	 
 	 void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp)
 	 {iDynChain::getFrameKinematic(i,w,dw,ddp);}
+	 void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu)
+		 {iDynChain::getFrameWrench(i,F,Mu);}
 
 	 void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu) 
 	 {iDynChain::getWrenchNewtonEuler(F,Mu);}
@@ -1263,6 +1268,29 @@ public:
     * @param sensor is the object to be copied.
     */
     iCubInertialSensorDyn(const iCubInertialSensorDyn &sensor);
+};
+
+/**
+* \ingroup iDyn
+*
+* A class for defining the 3-DOF Inertia Sensor Kinematics
+*/
+class iCubNeckInertialDyn : public iDynLimb
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubNeckInertialDyn(const ChainComputationMode _mode=KINBWD_WREBWD);
+
+    /**
+    * Creates a new Inertial Sensor from an already existing object.
+    * @param sensor is the object to be copied.
+    */
+    iCubNeckInertialDyn(const iCubInertialSensorDyn &sensor);
 };
 
 
