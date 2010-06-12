@@ -1804,7 +1804,6 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
         latchWrenchOffset();
 
         enableContactDetection();
-        contactDetected=false;
 
         pushAction(x+d1,o,"open_hand");
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execLiftAndGrasp);
