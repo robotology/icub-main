@@ -1283,6 +1283,19 @@ bool affActionPrimitives::getCartesianIF(ICartesianControl *&ctrl)
 
 
 /************************************************************************/
+bool affActionPrimitives::getPose(Vector &x, Vector &o)
+{
+    if (configured)
+    {
+        cartCtrl->getPose(x,o);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::stopControl()
 {
     if (configured)

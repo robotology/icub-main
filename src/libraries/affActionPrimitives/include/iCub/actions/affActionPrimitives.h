@@ -547,6 +547,17 @@ public:
     virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl);
 
     /**
+    * Get the current arm pose.
+    * @param x: a 3-d vector which is filled with the actual 
+    *         position x,y,z (meters).
+    * @param od: a 4-d vector which is filled with the actual orientation
+    * using axis-angle representation xa, ya, za, theta (meters and 
+    * radians). 
+    * @return true/false on success/failure.
+    */
+    virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+
+    /**
     * Stop any ongoing arm/hand movements.
     * @return true/false on success/fail. 
     *  
