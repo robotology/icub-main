@@ -409,6 +409,12 @@ public:
 	*/
 	virtual bool solveWrench(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
 
+	yarp::sig::Vector getForce() const;
+	yarp::sig::Vector getMoment() const;
+	yarp::sig::Vector getAngVel() const;
+	yarp::sig::Vector getAngAcc() const;
+	yarp::sig::Vector getLinAcc() const;
+
 
 };
 
