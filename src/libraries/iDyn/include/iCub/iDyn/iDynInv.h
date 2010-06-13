@@ -67,6 +67,7 @@ enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 	class iDynChain;
 	class iDynLimb;
 	class iCubArmDyn;
+	class iCubArm2Dyn;
 	class iCubLegDyn;
 	class iCubEyeDyn;
 	class iCubEyeNeckRefDyn;
@@ -1315,6 +1316,46 @@ public:
 	* @param verb flag for verbosity
     */
 	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+
+	/**
+	* @return type the arm type: left/arm
+	*/
+	std::string getType() const;
+
+
+};
+
+/**
+* \ingroup iDynInv
+*
+* A class for computing force/moment of the FT sensor placed
+* in the middle of the iCub's left or right arm. The sensor
+* parameters are automatically set by chosing left or right
+* during initialization of the iCubArmDyn.
+* 
+*/
+class iDynInvSensorArm2 : public iDynInvSensor
+{
+
+public:
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice
+	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iDynInvSensorArm2(iDyn::iCubArm2Dyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
+	* there is not a specification of the iCubArmDyn, but the part must be specified
+	* @param _c a pointer to the iDynChain where the sensor is placed on
+	* @param _type a string setting the arm type
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iDynInvSensorArm2(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/arm

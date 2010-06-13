@@ -2030,7 +2030,62 @@ string iDynInvSensorArm::getType() const
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+//======================================
+//
+//		 iDYN INV SENSOR ARM 2
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynInvSensorArm2::iDynInvSensorArm2(iCubArm2Dyn *_c, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c->asChain(),_c->getType(),_mode,verb)
+{
+	// FT sensor is in position 5 in the kinematic chain in both arms
+	lSens = 2;
+	// the arm type determines the sensor properties
+	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
+	{
+		if(verbose)
+		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+			<<"iDynInvSensorArm: assuming right arm."<<endl;
+		// set the sensor with the default value
+		sens = new iCubArmSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubArmSensorLink(_c->getType(),mode,verbose);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynInvSensorArm2::iDynInvSensorArm2(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c,_type,_mode,verb)
+{
+	// FT sensor is in position 5 in the kinematic chain in both arms
+	lSens = 2;
+	// the arm type determines the sensor properties
+	if( !((_type=="left")||(_type=="right"))  )
+	{
+		if(verbose)
+		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+			<<"iDynInvSensorArm: assuming right arm."<<endl;
+		// set the sensor with the default value
+		sens = new iCubArmSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubArmSensorLink(_type,mode,verbose);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iDynInvSensorArm2::getType() const
+{ 
+	return sens->getType();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 //======================================
 //
