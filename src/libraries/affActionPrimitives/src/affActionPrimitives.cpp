@@ -1532,6 +1532,14 @@ void liftAndGraspCallback::exec()
 
 
 /************************************************************************/
+void touchCallback::exec()
+{
+    // just disable the contact detection
+    action->disableContactDetection();
+}
+
+
+/************************************************************************/
 affActionPrimitivesLayer2::affActionPrimitivesLayer2() :
                            affActionPrimitivesLayer1()
 {
@@ -1565,6 +1573,7 @@ void affActionPrimitivesLayer2::init()
     dynSensor=NULL;
     dynTransformer=NULL;
     execLiftAndGrasp=NULL;
+    execTouch=NULL;
     ftPortIn=NULL;
 }
 
@@ -1701,8 +1710,9 @@ bool affActionPrimitivesLayer2::open(Property &opt)
             return false;
         }
 
-        // create callback
+        // create callbacks
         execLiftAndGrasp=new liftAndGraspCallback(this);
+        execTouch=new touchCallback(this);
 
         // create estimators
         velEst=new AWLinEstimator(16,1.0);
@@ -1784,6 +1794,9 @@ void affActionPrimitivesLayer2::close()
     if (execLiftAndGrasp!=NULL)
         delete execLiftAndGrasp;
 
+    if (execTouch!=NULL)
+        delete execTouch;
+
     if (polyTorso!=NULL)
     {
         printMessage("closing torso driver ...\n");
@@ -1825,6 +1838,28 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
                                       const Vector &d)
 {
     return affActionPrimitivesLayer1::grasp(x,o,d);
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vector &d)
+{
+    if (configured)
+    {
+        printMessage("start touching\n");
+
+        // latch the offset
+        latchWrenchOffset();
+
+        enableContactDetection();
+
+        pushAction(x+d,o,"karate_hand");
+        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execTouch);
+
+        return true;
+    }
+    else
+        return false;
 }
 
 

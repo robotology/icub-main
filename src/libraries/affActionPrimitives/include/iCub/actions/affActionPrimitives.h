@@ -787,6 +787,20 @@ public:
 };
 
 
+// callback for executing touch callback
+class touchCallback : public affActionPrimitivesCallback
+{
+protected:
+    affActionPrimitivesLayer2 *action;
+
+public:
+    touchCallback(affActionPrimitivesLayer2 *_action) :
+                  action(_action) { }
+
+    virtual void exec();
+};
+
+
 /**
 * \ingroup affActionPrimitives
 *
@@ -815,6 +829,7 @@ protected:
     iDyn::iFTransformation *dynTransformer;
 
     liftAndGraspCallback   *execLiftAndGrasp;
+    touchCallback          *execTouch;
 
     yarp::os::BufferedPort<yarp::sig::Vector> *ftPortIn;
 
@@ -834,6 +849,7 @@ protected:
     yarp::sig::Vector encDataArm;
 
     friend class liftAndGraspCallback;
+    friend class touchCallback;
 
     virtual void init();
     virtual void postReachCallback();
@@ -919,6 +935,20 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                       const yarp::sig::Vector &d);
+
+    /**
+    * More evolute version of touch, exploiting contact detection.
+    * @param x the 3-d target position [m]. 
+    * @param o the 4-d hand orientation used while reaching/touching
+    *          (given in axis-angle representation: ax ay az angle
+    *          in rad).
+    * @param d the displacement [m] wrt the target position that 
+    *          identifies a location to be reached prior to
+    *          touching.
+    * @return true/false on success/fail. 
+    */
+    virtual bool touch(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d);
 
     /**
