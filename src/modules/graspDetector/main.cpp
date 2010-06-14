@@ -372,33 +372,36 @@ public:
         Value& robot = options.find("robot");
         Value& part = options.find("part");
         Value& analogInput = options.find("name");
-        int rate = options.find("rate").asInt();
+        int rate;
+        if (options.find("rate").isNull())
+            rate = 100;                
+        else
+            rate = options.find("rate").asInt();
+        //fprintf(stderr, "RATE THREAD IS %d, %s", rate, rf.toString().c_str());
 
         // get command file options
         if (!getNumberFingers(options, nFingers))
             return false;
 
         //connect to analog input ports
-        analogInputPort = new BufferedPort<Bottle>[nFingers];
-        for (int i = 0; i < nFingers; i++)
+        analogInputPort = new BufferedPort<Bottle>;
+        std::ostringstream oss;
+        oss<<"/graspDetector/";
+        oss<<part.asString().c_str();
+        oss<<"/analog:i";
+        name=std::string(oss.str());
+        // sprintf(&name[0], "%s/fingerDetector/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
+        //fprintf(stderr, "Trying to open port %s\n", name.c_str());
+        analogInputPort->open(name.c_str());
+        //fprintf(stderr, "Port %s opened correctly\n", name.c_str());
+        if(Network::connect(analogInput.asString().c_str(), name.c_str()))
+            fprintf(stderr, "Input connection to analog was successfull\n");
+        else
             {
-                std::ostringstream oss;
-                oss<<analogInput.asString().c_str();
-                oss<<"/fingerDetector/finger/"<<i<<"/";
-                oss<<part.asString().c_str();
-                name=std::string(oss.str());
-                // sprintf(&name[0], "%s/fingerDetector/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
-                //fprintf(stderr, "Trying to open port %s\n", name.c_str());
-                analogInputPort[i].open(name.c_str());
-                //fprintf(stderr, "Port %s opened correctly\n", name.c_str());
-                if(Network::connect(analogInput.asString().c_str(), name.c_str()))
-                    fprintf(stderr, "Input connection to analog was successfull\n");
-                else
-                    {
-                        fprintf(stderr, "Connection to %s  was NOT successfull\n", analogInput.asString().c_str());
-                        return false;
-                    }
+                fprintf(stderr, "Connection to %s  was NOT successfull\n", analogInput.asString().c_str());
+                return false;
             }
+        
 
         min  = new double[nFingers];
         max  = new double[nFingers];
@@ -419,7 +422,7 @@ public:
         for(int i=0; i < nFingers; i++)
             {
                 //fprintf(stderr, "Creating the threads %d\n", i);
-                fd[i] = new fingerDetector(&analogInputPort[i], rate);
+                fd[i] = new fingerDetector(rate);
                 fd[i]->setIndex(analogs[i]);
                 fd[i]->setModel(q0[i], q1[i], min[i], max[i], minT[i], maxT[i]);
             }
@@ -429,7 +432,7 @@ public:
         name.append("/fingerDetector/status:o");
         //  sprintf(&name[0], "%s/fingerDetector/status:o", analogInput.asString().c_str());
         statusPort.open(name.c_str());
-        gd = new graspDetector(nFingers, fd, &statusPort, 100);
+        gd = new graspDetector(nFingers, fd, &statusPort, analogInputPort, rate);
 
         return true;
     }
@@ -450,13 +453,15 @@ public:
     virtual bool close()
     {
         fprintf(stderr, "Stopping the grasp detectors\n");
+        gd->stop();
+        delete gd;
+        Time::delay(1);
+
         for(int i=0; i < nFingers; i++)
             fd[i]->stop();
-        gd->stop();
-            
+        
         fprintf(stderr, "Deleting grapsDetect class\n");
         delete[] fd;
-        delete gd;
 
         delete[] min;
         delete[] max;

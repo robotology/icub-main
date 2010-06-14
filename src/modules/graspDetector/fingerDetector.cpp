@@ -1,14 +1,15 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include "fingerDetector.h"
 
-fingerDetector::fingerDetector(BufferedPort<Bottle> *p, int rate): RateThread(rate)
+fingerDetector::fingerDetector(int rate): RateThread(rate)
 {
-    analogPort = p;
     status = false;
 }
 
 fingerDetector::~fingerDetector()
-{    }
+{    
+
+}
 
 bool fingerDetector::threadInit()
 {
@@ -17,11 +18,7 @@ bool fingerDetector::threadInit()
 
 void fingerDetector::stop()
 {
-    fprintf(stderr, "Interrupting the input port \n");
-    analogPort->interrupt();
-    fprintf(stderr, "Closing the input port \n");
-    analogPort->close();
-    fprintf(stderr, "Grasp detector closed \n");
+
 }
 
 void fingerDetector::setIndex(Bottle b)
@@ -29,6 +26,7 @@ void fingerDetector::setIndex(Bottle b)
     index.resize(b.size());
     for(int i =0; i<b.size(); i++)
         index(i) = b.get(i).asDouble();
+    fingerAnalog.resize(index.size());
 }
 
 void fingerDetector::setModel(Bottle q_0, Bottle q_1, double m, double M, double t, double T)
@@ -45,18 +43,19 @@ void fingerDetector::setModel(Bottle q_0, Bottle q_1, double m, double M, double
     maxT = T;
 }
 
+void fingerDetector::copyAnalog(Bottle *b)
+{
+    for(int i = 0; i < index.size(); i++)
+        {
+            if (b->get((int) index(i)).isDouble())
+                fingerAnalog(i)=b->get((int) index(i)).asDouble();
+        }    
+}
+
 void fingerDetector::run()
 {
     //fprintf(stderr, "Entering the main thread\n");
-    Bottle *lastBottle;
-    while(!(lastBottle=analogPort->read()))
-        fprintf(stderr, "Empty read\n"); 
-    Vector analogs(index.size());
-    for(int i = 0; i < index.size(); i++)
-        {
-            if (lastBottle->get((int) index(i)).isDouble())
-                analogs(i)=lastBottle->get((int) index(i)).asDouble();
-        }
+
     //fprintf(stderr, "Reading: %s\n", analogs.toString().c_str());
    
     int n = q1.size(); 
@@ -69,7 +68,7 @@ void fingerDetector::run()
     for (int i = 0; i < n ; i++)
         {
             Q1(i,0) = q1(i);
-            q(i) = analogs(i);
+            q(i) = fingerAnalog(i);
         }
     tStar = pinv(Q1)*(q-q0);
     qStar = q0 + q1 * tStar(0);
