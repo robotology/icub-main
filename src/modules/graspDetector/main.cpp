@@ -134,7 +134,8 @@
  * <ul>
  * <li> analogPortName/graspDetector/status:o
  * </ul>
- * which reports for each finger the current grasp status.
+ * which reports for each finger the current grasp status 
+ * (it includes time stamp inherited from the analog data time stamp).
  * The port will contain a bottle which contains a double 
  * for each finger. Finger status will be 0.0 if the finger
  * is not contacting anything (model is satisfied). Finger
