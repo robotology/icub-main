@@ -40,9 +40,20 @@ YARP libraries and OpenCV
 None.
 
 \section portsc_sec Ports Created
-- <i> /<stemName>/img:i </i> accepts the incoming images (should be color). 
-- <i> /<stemName>/<type>/img:o </i> outputs the channel for the specified type
- 
+
+- \e /<stemName>/img:i </i> accepts the incoming images (should be color). 
+
+- \e /<stemName>/<type>/img:o </i> outputs the channel for the specified type
+
+- \e /<stemName>/rpc remote procedure call. 
+    Recognized remote commands:
+    -'quit' quit the module
+    -'susp' suspend the module
+    -'run' resume the module
+    -'add <scale>' adds a scale the list to process images with 
+    -'remove <scale>' removes the scale specified from the list 
+    -'list' lists the current scales being processed
+
 \section in_files_sec Input Data Files
 None.
 
@@ -62,6 +73,7 @@ Linux.
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Thread.h>
+#include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Image.h>
 
@@ -83,7 +95,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-class ProcessThread : public Thread
+class ProcessThread : public RateThread 
 {
 private:
     ResourceFinder &rf;
@@ -110,7 +122,6 @@ private:
     IplImage *Ltmp2;
     IplImage *Ltmp3;
 
-
     IplImage *Lblob;
     IplImage *Ledge;
     IplImage *Lridge;
@@ -124,7 +135,7 @@ private:
     Bottle scaleBottle;
 	
     ImageOf<PixelMono> imgFilteredIn;
-    
+
     BufferedPort<ImageOf<PixelBgr> >  inPort;
     BufferedPort<ImageOf<PixelMono> >  outPort;
     vector< BufferedPort<ImageOf<PixelMono> > * >  scalePorts;
@@ -144,15 +155,14 @@ private:
     bool threshold;
 
 public:
-    ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
+    ProcessThread(ResourceFinder &_rf) : 
+        RateThread(10), 
+        rf(_rf) { }
     
     virtual bool threadInit()
     {
         
-        //vector<int>::iterator p;
         string str;
-        //        stringstream ss;
-        //int v;
         
         scales.clear();
 
@@ -171,6 +181,7 @@ public:
             scales.push_back(4);
             scales.push_back(8);
         } else {
+            scales.clear();
             for(int k=1; k<scaleBottle.size(); k++) {
                scales.push_back(scaleBottle.get(k).asInt());
             }
@@ -194,13 +205,15 @@ public:
         cout << "scales: [ ";
         for(int n=0; n<scales.size(); n++) {
             cout << scales[n] << " ";
-            addFilters(scales[n]);            
+            createFilters(scales[n]);            
         }
         cout << "]" << endl;
 
         return true;
     }
     
+    string getName() { return name; }
+
     void afterStart(bool s)
     {
         if (s) {
@@ -209,6 +222,7 @@ public:
             fprintf(stdout,"Using ...\n");
             fprintf(stdout,"name   = %s\n",name.c_str());
             fprintf(stdout,"type   = %s\n",type.c_str());
+            fprintf(stdout,"thresh = %d\n",threshold);
             fprintf(stdout,"\n");
         } else {
             fprintf(stdout,"Process did not start\n");
@@ -231,8 +245,8 @@ public:
         int step;
         double d;
 
-        while (!isStopping()) {
-            
+        while (!isSuspended()) {
+
             // acquire new image
             if (ImageOf<PixelBgr> *pImgIn=inPort.read(false)) {
                 
@@ -328,7 +342,7 @@ public:
                         cvFilter2D(gImg32, Ly, Gy[n]);
                         
                         cvMul(Lx,Lx,Lx2);
-                        cvMul(Ly,Ly,Ly2);                                
+                        cvMul(Ly,Ly,Ly2);                    
                         cvAdd(Lx2, Ly2, Ledge);
                         
                         for(int j=0; j<y_max; j++) {
@@ -346,8 +360,8 @@ public:
                                     cvSet2D(LMax,my,mx,cvScalar(d));
                                 } 
                             }
-                        }                                                           
-                        
+                        }                                                                                  
+
                     } else if(type == "corner") {
                         
                         //Lcorner = Lx.*Lx.*Lyy + Ly.*Ly.*Lxx - 2*Lx.*Ly.*Lxy;
@@ -434,8 +448,184 @@ public:
             }
         
         }
+                
+    }
+
         
-        // clear the images
+    void createFilters(int scale, int pos=-1) 
+    {
+            
+        float sigma = sqrt((float)scale);
+        int s = ceil(5*sigma)+1;
+        int n;
+
+        float sigma2 = sigma*sigma;
+        float sigma4 = sigma2*sigma2;
+        float sigma6 = sigma2*sigma4;
+        float sigma8 = sigma4*sigma4;
+        
+        float x[s*s];
+        float y[s*s];
+        float x2[s*s];
+        float y2[s*s];
+
+        float alpha;
+        int c = 0;
+
+        // add filter to the end of the list
+        if(pos == -1) {
+
+            gx.push_back(new float[s*s]);
+            gy.push_back(new float[s*s]);
+            gxx.push_back(new float[s*s]);
+            gyy.push_back(new float[s*s]);
+            gxy.push_back(new float[s*s]);
+
+            Gx.push_back(new CvMat);
+            Gy.push_back(new CvMat);
+            Gxx.push_back(new CvMat);
+            Gyy.push_back(new CvMat);
+            Gxy.push_back(new CvMat);
+            n = gx.size() - 1;        
+
+        } else {
+            
+            cout << "Inserting scale " << scale << " at pos["<<pos<<"]"<<endl; 
+
+            gx.insert(gx.begin()+pos, new float[s*s]);
+            gy.insert(gy.begin()+pos, new float[s*s]);
+            gxx.insert(gxx.begin()+pos, new float[s*s]);
+            gyy.insert(gyy.begin()+pos, new float[s*s]);
+            gxy.insert(gxy.begin()+pos, new float[s*s]);
+
+            Gx.insert(Gx.begin()+pos, new CvMat);
+            Gy.insert(Gy.begin()+pos, new CvMat);
+            Gxx.insert(Gxx.begin()+pos, new CvMat);
+            Gyy.insert(Gyy.begin()+pos, new CvMat);
+            Gxy.insert(Gxy.begin()+pos, new CvMat);
+
+            n = pos;
+        }
+
+        for(int i=0; i<s; i++) {
+            for(int j=0; j<s; j++) {
+                
+                x[c] = (j)-((s-1)/2);
+                y[c] = (i)-((s-1)/2);
+                x2[c] = x[c]*x[c];
+                y2[c] = y[c]*y[c];
+
+                alpha = exp(-(x2[c] + y2[c])/(2.0*sigma2));
+                
+                gx[n][c]   = (-x[c]/(2.0*M_PI*sigma4))           * alpha;
+                gy[n][c]   = (-y[c]/(2.0*M_PI*sigma4))           * alpha;
+                gxx[n][c]  = (1.0/(2.0*M_PI*sigma6))             * alpha*(x2[c]-sigma2);
+                gyy[n][c]  = (1.0/(2.0*M_PI*sigma6))             * alpha*(y2[c]-sigma2);
+                gxy[n][c]  = ((x[c]*y[c])/(2.0*M_PI*sigma6))     * alpha;
+
+                c++;                
+            }
+        }
+
+        Gx[n]   = cvCreateMatHeader( s, s, CV_32FC1 );
+        Gy[n]   = cvCreateMatHeader( s, s, CV_32FC1 );
+        Gxx[n]  = cvCreateMatHeader( s, s, CV_32FC1 );
+        Gyy[n]  = cvCreateMatHeader( s, s, CV_32FC1 );
+        Gxy[n]  = cvCreateMatHeader( s, s, CV_32FC1 );
+
+        cvSetData(Gx[n],   gx[n],   Gx[n]->step);
+        cvSetData(Gy[n],   gy[n],   Gy[n]->step);
+        cvSetData(Gxx[n],  gxx[n],  Gxx[n]->step);
+        cvSetData(Gyy[n],  gyy[n],  Gyy[n]->step);
+        cvSetData(Gxy[n],  gxy[n],  Gxy[n]->step);
+
+    }
+
+    void removeFilter(int pos) {
+
+        cout << "removing filters at pos["<<pos<<"]"<<endl;
+        if(pos >= scales.size()) return;
+
+        scales.erase(scales.begin() + pos);
+
+        gx.erase(gx.begin() + pos);
+        gy.erase(gy.begin() + pos);
+        gxx.erase(gxx.begin() + pos);
+        gyy.erase(gyy.begin() + pos);
+        gxy.erase(gxy.begin() + pos);
+
+        Gx.erase(Gx.begin() + pos);
+        Gy.erase(Gy.begin() + pos);
+        Gxx.erase(Gxx.begin() + pos);
+        Gyy.erase(Gyy.begin() + pos);
+        Gxy.erase(Gxy.begin() + pos);
+
+    }
+
+    
+    bool addScale(int scale) {
+
+        int pos;
+        for(int i=0; i<scales.size(); i++) {
+            if(scales[i] == scale) {
+                cout << "scale " << scale << " already in list" << endl;
+                return true;
+            }
+        }
+        scales.push_back(scale);
+        sort(scales.begin(),scales.end());
+        for(int i=0; i<scales.size(); i++) {
+            if(scales[i] == scale) {
+                createFilters(scale, i);
+                break;
+            }
+
+        }
+
+        return true;
+            
+    }
+
+    bool removeScale(int scale) {
+        
+        int pos = -1;
+        for(int i=0; i<scales.size(); i++) {
+            if(scales[i] == scale) {
+                pos = i;
+                cout << "scale " << scale << " in list at position[" << i << "]" << endl;
+                break;
+            }
+        }
+
+        if(pos==-1) {
+            cout << "scale to remove not found" << endl;
+            return true;
+        }
+
+        removeFilter(pos);
+
+        return true;
+
+    }
+ 
+    void deleteFilters() {
+        cout << "deleting filters..." << endl;
+        for(int i=0; i < Gx.size(); i++) {
+            delete Gx[i];
+            delete Gy[i];
+            delete Gxx[i];
+            delete Gyy[i];
+            delete Gxy[i];
+        }
+        Gx.clear();
+        Gy.clear();
+        Gxx.clear();
+        Gyy.clear();
+        Gxy.clear();
+    }
+
+    void releaseImages() {       
+        cout << "releasing images store" << endl;
         cvReleaseImage(&gImg8);
         cvReleaseImage(&gImg32);
         cvReleaseImage(&Lx);
@@ -448,164 +638,28 @@ public:
         cvReleaseImage(&Lridge);
         cvReleaseImage(&Lcorner);
         cvReleaseImage(&LMax);
-        
     }
 
-        
-    void addFilters(int scale) 
-    {
-            
-        float sigma = sqrt((float)scale);
-        int s = ceil(5*sigma)+1;
-        
-        float sigma2 = sigma*sigma;
-        float sigma4 = sigma2*sigma2;
-        float sigma6 = sigma2*sigma4;
-        float sigma8 = sigma4*sigma4;
-        
-        float x[s*s];
-        float y[s*s];
-        float x2[s*s];
-        float y2[s*s];
-
-        //g.push_back(new float[s*s]);
-        gx.push_back(new float[s*s]);
-        gy.push_back(new float[s*s]);
-        gxx.push_back(new float[s*s]);
-        gyy.push_back(new float[s*s]);
-        gxy.push_back(new float[s*s]);
-        /*
-        gxxx.push_back(new float[s*s]);
-        gyyy.push_back(new float[s*s]);
-        gxyy.push_back(new float[s*s]);
-        gxxy.push_back(new float[s*s]);
-        */
-
-        //G.push_back(new CvMat);
-        Gx.push_back(new CvMat);
-        Gy.push_back(new CvMat);
-        Gxx.push_back(new CvMat);
-        Gyy.push_back(new CvMat);
-        Gxy.push_back(new CvMat);
-        /*
-        Gxxx.push_back(new CvMat);
-        Gyyy.push_back(new CvMat);
-        Gxxy.push_back(new CvMat);
-        Gxyy.push_back(new CvMat);
-        */
-        int n = gx.size() - 1;        
-        float alpha;
-        int c = 0;
-
-        for(int i=0; i<s; i++) {
-            for(int j=0; j<s; j++) {
-                
-                x[c] = (j)-((s-1)/2);
-                y[c] = (i)-((s-1)/2);
-                x2[c] = x[c]*x[c];
-                y2[c] = y[c]*y[c];
-
-                alpha = exp(-(x2[c] + y2[c])/(2.0*sigma2));
-                
-                //g[n][c]    = (1.0/(2.0*M_PI*sigma2))             * alpha;
-                gx[n][c]   = (-x[c]/(2.0*M_PI*sigma4))           * alpha;
-                gy[n][c]   = (-y[c]/(2.0*M_PI*sigma4))           * alpha;
-                gxx[n][c]  = (1.0/(2.0*M_PI*sigma6))             * alpha*(x2[c]-sigma2);
-                gyy[n][c]  = (1.0/(2.0*M_PI*sigma6))             * alpha*(y2[c]-sigma2);
-                gxy[n][c]  = ((x[c]*y[c])/(2.0*M_PI*sigma6))     * alpha;
-                //gxxx[n][c] = (-x[c]/(2.0*M_PI*sigma8))           * alpha*(x2[c]-3.0*sigma2);
-                //gyyy[n][c] = (-y[c]/(2.0*M_PI*sigma8))           * alpha*(y2[c]-3.0*sigma2);
-                //gxxy[n][c] = (-y[c]/(2.0*M_PI*sigma8))           * alpha*(x2[c]-sigma2);
-                //gxyy[n][c] = (-x[c]/(2.0*M_PI*sigma8))           * alpha*(y2[c]-sigma2);
-                
-                c++;
-                
-            }
-        }
-
-
-        //G[n]    = cvCreateMatHeader( s, s, CV_32FC1 );
-        Gx[n]   = cvCreateMatHeader( s, s, CV_32FC1 );
-        Gy[n]   = cvCreateMatHeader( s, s, CV_32FC1 );
-        Gxx[n]  = cvCreateMatHeader( s, s, CV_32FC1 );
-        Gyy[n]  = cvCreateMatHeader( s, s, CV_32FC1 );
-        Gxy[n]  = cvCreateMatHeader( s, s, CV_32FC1 );
-        //Gxxx[n] = cvCreateMatHeader( s, s, CV_32FC1 );
-        //Gyyy[n] = cvCreateMatHeader( s, s, CV_32FC1 );
-        //Gxxy[n] = cvCreateMatHeader( s, s, CV_32FC1 );
-        //Gxyy[n] = cvCreateMatHeader( s, s, CV_32FC1 );
-
-        //cvSetData(G[n],    g[n],    G[n]->step);
-        cvSetData(Gx[n],   gx[n],   Gx[n]->step);
-        cvSetData(Gy[n],   gy[n],   Gy[n]->step);
-        cvSetData(Gxx[n],  gxx[n],  Gxx[n]->step);
-        cvSetData(Gyy[n],  gyy[n],  Gyy[n]->step);
-        cvSetData(Gxy[n],  gxy[n],  Gxy[n]->step);
-        //cvSetData(Gxxx[n], gxxx[n], Gxxx[n]->step);
-        //cvSetData(Gyyy[n], gyyy[n], Gyyy[n]->step);
-        //cvSetData(Gxxy[n], gxxy[n], Gxxy[n]->step);
-        //cvSetData(Gxyy[n], gxyy[n], Gxyy[n]->step);
-
-    }
-    
-    
     virtual void threadRelease() {
-
         inPort.close();
         outPort.close();
         scales.clear();        
-
-        for(int i=0; i < Gx.size(); i++) {
-            //delete G[i];
-            delete Gx[i];
-            delete Gy[i];
-            delete Gxx[i];
-            delete Gyy[i];
-            delete Gxy[i];
-            //delete Gxxx[i];
-            //delete Gyyy[i];
-            //delete Gxxy[i];
-            // delete Gxyy[i];
-        }
-        //G.clear();
-        Gx.clear();
-        Gy.clear();
-        Gxx.clear();
-        Gyy.clear();
-        Gxy.clear();
-        //Gxxx.clear();
-        //Gyyy.clear();
-        //Gxxy.clear();
-        //Gxyy.clear();
+        deleteFilters();
+        releaseImages();
     }
 
     void interrupt()
     {
         inPort.interrupt();
         outPort.interrupt();
-        scales.clear();
-        for(int i=0; i < Gx.size(); i++) {
-            //delete G[i];
-            delete Gx[i];
-            delete Gy[i];
-            delete Gxx[i];
-            delete Gyy[i];
-            delete Gxy[i];
-            //delete Gxxx[i];
-            //delete Gyyy[i];
-            //delete Gxxy[i];
-            //delete Gxyy[i];
+    }
+
+    void listScales() {
+        cout << "( ";
+        for(int i=0; i<scales.size(); i++) {
+            cout << scales[i] << " ";
         }
-        //G.clear();
-        Gx.clear();
-        Gy.clear();
-        Gxx.clear();
-        Gyy.clear();
-        Gxy.clear();
-        //Gxxx.clear();
-        // Gyyy.clear();
-        //Gxxy.clear();
-        //Gxyy.clear();        
+        cout << ")";
     }
 
 };
@@ -615,19 +669,24 @@ class ProcessModule: public RFModule
 {
 private:
     ProcessThread *thr;
-    
+    Port rpcPort;
+
 public:
     ProcessModule() : thr(NULL) { }
     
     virtual bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
-        
+        string rpcPortName;
+
         thr=new ProcessThread(rf);
-        if (thr->start())
+
+        if (thr->start()) {
+            rpcPortName = "/" + thr->getName() + "/rpc";
+            rpcPort.open(rpcPortName.c_str());
+            attach(rpcPort);
             return true;
-        else
-        {
+        } else {
             delete thr;    
             return false;
         }
@@ -642,7 +701,67 @@ public:
             delete thr;
         }
 
+        rpcPort.interrupt();
+        rpcPort.close();
+
         return true;
+    }
+
+    virtual bool respond(const Bottle &command, Bottle &reply)
+    {
+        cout << "Receiving command from rpc port" << endl;
+        int new_scale, scale_to_delete;
+
+        if (command.size())
+        {
+            switch (command.get(0).asVocab())
+            {                
+                case VOCAB4('s','u','s','p'):
+                {                    
+                    thr->suspend();
+                    reply.addVocab(Vocab::encode("ack"));
+                    return true;
+                }
+                case VOCAB3('r','u','n'):
+                {                    
+                    thr->resume();
+                    reply.addVocab(Vocab::encode("ack"));
+                    return true;
+                }
+                case VOCAB3('a','d','d'):
+                {
+                    new_scale = command.get(1).asInt();
+                    thr->suspend();
+                    thr->addScale(new_scale);
+                    thr->resume();
+                    reply.addVocab(Vocab::encode("ack"));
+                    return true;
+                }
+            case VOCAB4('r','e','m','o'):
+                {
+                    scale_to_delete = command.get(1).asInt();
+                    thr->suspend();
+                    thr->removeScale(scale_to_delete);
+                    thr->resume();
+                    reply.addVocab(Vocab::encode("ack"));
+                    return true;
+                }
+            case VOCAB4('l','i','s','t'):
+                {
+                    thr->listScales();
+                    reply.addVocab(Vocab::encode("ack"));
+                    return true;
+                }
+
+                default:
+                    return RFModule::respond(command,reply);
+            }
+        }
+        else
+        {
+            reply.add("command size==0");
+            return false;
+        }
     }
 
     virtual double getPeriod()    { return 1.0;  }
