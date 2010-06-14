@@ -2,16 +2,17 @@
 
 //#include <yarp/os/RateThread.h>
 #include "fingerDetector.h"
+#include <yarp/dev/PreciselyTimed.h>
 
 using namespace yarp::os;
 
 class graspDetector: public RateThread
 {
  public:
-    graspDetector(int, fingerDetector **, Port *, int );
+    graspDetector(int, fingerDetector **, Port *, BufferedPort<Bottle>*, int );
     ~graspDetector();
     bool threadInit();
-    void stop();
+    void threadRelease();
     void run();
     double *s;
 
@@ -19,4 +20,5 @@ class graspDetector: public RateThread
     int nFingers;
     fingerDetector  **fd;
     Port *sp;
+    BufferedPort<Bottle> *analogPort;
 };

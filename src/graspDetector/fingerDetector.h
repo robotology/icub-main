@@ -23,17 +23,18 @@ using namespace yarp::os;
 class fingerDetector: public RateThread
 {
 public:
-    fingerDetector(BufferedPort<Bottle>*, int );
+    fingerDetector( int );
     ~fingerDetector();
     bool threadInit();
     void setIndex(Bottle);
     void setModel(Bottle, Bottle, double, double, double, double);
+    void copyAnalog(Bottle *);
     void stop();
     void run();
     
 private:
-    BufferedPort<Bottle> *analogPort;
     Vector index;
+    Vector fingerAnalog;
     Vector q0;
     Vector q1;
     double min;

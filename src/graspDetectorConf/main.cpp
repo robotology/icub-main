@@ -273,7 +273,7 @@ public:
 
     graspDetectModule() { }
 
-    void initFile(Value r, Value p, Value a)
+    void initFile(Value r, Value p, Value a, int rT)
     {
         char string[1024];
 
@@ -284,6 +284,9 @@ public:
         fputs (string,pFile);
 
         sprintf(string, "name\t%s\n", a.asString().c_str());
+        fputs (string,pFile);
+
+        sprintf(string, "rate\t%d\n", rT);
         fputs (string,pFile);
     }
     virtual bool configure(ResourceFinder &rf)
@@ -318,7 +321,7 @@ public:
 
         //write params to output file
         //fprintf(stderr, "Initializing the file...");
-        initFile(robot, part, analogInput);
+        initFile(robot, part, analogInput, rate);
         //fprintf(stderr, "ok\n", outputFileName);
 
         // get command file options
