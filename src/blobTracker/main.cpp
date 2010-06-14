@@ -87,6 +87,7 @@ private:
     
     string name;
     int size_threshold;
+    int filter_threshold;
     int width, height;
     int max_tracked_blobs;
     bool filterOn;
@@ -95,7 +96,6 @@ private:
     BufferedPort< ImageOf<PixelBgr> >  outPort;
     BufferedPort<Bottle> blobPort;
     
-    //    CvMemStorage *mem;
     CvSeq *contours, *ptr;
     CvMoments moments;    
     CvScalar color;
@@ -119,7 +119,8 @@ public:
         string str;
         
         name=rf.check("name",Value("blobTracker")).asString().c_str();
-        size_threshold=rf.check("min",Value(20)).asInt();
+        size_threshold=rf.check("size_threshold",Value(20)).asInt();
+        filter_threshold=rf.check("filter_threshold",Value(100)).asInt();
         max_tracked_blobs=rf.check("num_blobs",Value(10)).asInt();
         str=rf.check("filter",Value("on")).asString().c_str();
         
@@ -132,8 +133,6 @@ public:
         inPort.open(("/"+name+"/img:i").c_str());
         outPort.open(("/"+name+"/img:o").c_str());
         blobPort.open(("/"+name+"/blobs:o").c_str());
-        
-        //mem = NULL;
         
         for(int i=0; i<max_tracked_blobs; i++) {
             rawBlobs.push_back(new FeatureBlob());
@@ -150,8 +149,11 @@ public:
             fprintf(stdout,"Process started successfully\n");
             fprintf(stdout,"\n");
             fprintf(stdout,"Using ...\n");
-            fprintf(stdout,"name\t = %s\n",name.c_str());
-            fprintf(stdout,"filter\t = %d\n",filterOn);
+            fprintf(stdout,"name\t\t\t = %s\n",name.c_str());
+            fprintf(stdout,"num_blobs\t\t = %d\n",max_tracked_blobs);
+            fprintf(stdout,"filter\t\t\t = %d\n",filterOn);
+            fprintf(stdout,"size_threshold\t\t = %d\n",size_threshold);
+            fprintf(stdout,"filter_threshold\t = %d\n",filter_threshold);
             fprintf(stdout,"\n");
         }
         else
@@ -163,6 +165,7 @@ public:
 
         t0=Time::now();                
         while (!isStopping()) {
+
             // acquire new image
             if (ImageOf<PixelMono> *pImgIn=inPort.read(false)) {
 
@@ -176,9 +179,6 @@ public:
 
                     width = pImgIn->width();
                     height = pImgIn->height();
-
-                    //pImgOut = new ImageOf<PixelBgr>;
-                    //pImgOut->resize(width,height);
 
                     // log message
                     fprintf(stdout,"Detected image of size %dx%d\n", width,height);
@@ -196,18 +196,13 @@ public:
                         
                     // skip to the next cycle
                     continue;
-                }
-                                
-
+                }                               
                 
                 // blur and threshold the input image
                 cvSmooth((IplImage*)pImgIn->getIplImage(), (IplImage*)pImgIn->getIplImage(), CV_BLUR, 5, 5);
-                cvThreshold( (IplImage*)pImgIn->getIplImage(), (IplImage*)pImgIn->getIplImage(), 100, 255, CV_THRESH_BINARY );
+                cvThreshold( (IplImage*)pImgIn->getIplImage(), (IplImage*)pImgIn->getIplImage(), filter_threshold, 255, CV_THRESH_BINARY );
                 
-                // find the contours from the new (binary) image
-                //if(mem==NULL) {
                 CvMemStorage *mem = cvCreateMemStorage(0);
-                //}
 
                 cvFindContours( (IplImage*)pImgIn->getIplImage(), mem, &contours );
 
@@ -579,7 +574,7 @@ public:
     
     virtual bool close()
     {
-        if (thr)
+        if (thr) 
             {
                 thr->interrupt();
                 thr->stop();
@@ -602,8 +597,14 @@ int main(int argc, char *argv[])
     
     ResourceFinder rf;
     rf.setVerbose(true);
+    rf.setDefault("filter","on");
+    rf.setDefault("size_threshold","25");
+    rf.setDefault("filter_threshold","100");
+    rf.setDefault("num_blobs", "10");
+    rf.setDefaultContext("blobTracker/conf");
+    rf.setDefaultConfigFile("blobTracker.ini");
     rf.configure("ICUB_ROOT",argc,argv);
-    
+
     ProcessModule mod;
 
     return mod.runModule(rf);
