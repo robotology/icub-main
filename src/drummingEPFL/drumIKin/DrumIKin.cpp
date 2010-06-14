@@ -50,6 +50,7 @@ bool DrumIKin::open(Searchable& config)
 		InitPositionControl("right_arm");
 		InitPositionControl("left_arm");
 	}
+
 	return true;
 }
 
@@ -88,12 +89,6 @@ bool DrumIKin::updateModule(void)
 			Vector xp(3);
 			int markerID;
 
-	#ifdef TEST
-			xp[0] = visionBottle->get(0).asDouble();
-			xp[1] = visionBottle->get(1).asDouble();
-			xp[2] = visionBottle->get(2).asDouble();
-			markerID = 9;
-	#else
 			Bottle *patchBottle=visionBottle->get(i).asList();
 			if(patchBottle->size() != 4 || patchBottle->get(0).asDouble() > 100)
 			{
@@ -108,7 +103,6 @@ bool DrumIKin::updateModule(void)
 
 			markerID = patchBottle->get(3).asInt();
 			
-	#endif
 			//get the target vector;
 			Vector xd = GetTargetVector(xp, armMarkerMapping[markerID]);
 

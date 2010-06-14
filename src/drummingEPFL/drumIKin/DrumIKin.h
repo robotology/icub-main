@@ -14,6 +14,7 @@ using namespace iKin;
 #include "SuperPort.h"
 
 #include <map>
+#include <fstream>
 using namespace std;
 
 #define MODULE_PERIOD 0.2
@@ -23,6 +24,7 @@ using namespace std;
 //according to the Denavit-Hartenberg parameters on the wiki
 #define ARM_Z_OFFSET 110.24
 #define ARM_Y_OFFSET 107.74
+
 
 class DrumIKin :
     public Module
