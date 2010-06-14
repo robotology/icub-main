@@ -254,6 +254,7 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
         float v = box.size.width;
         float v1 = box.size.height;
 
+        /*
         //unsigned char targetRed=0, targetGreen=0, targetBlue=0;
         unsigned char tmpRed=0, tmpGreen=0, tmpBlue=0;
         getPixelColour(inImage, x,y,targetRed,targetGreen,targetBlue);
@@ -269,6 +270,7 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
         getPixelColour(inImage, x,y-1,tmpRed,tmpGreen, tmpBlue);
         targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
         //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
+        */
         
            
         cvDrawContours(dst,cont,CV_RGB(targetBlue,targetGreen,targetRed),CV_RGB(0,0,0),0,1,8);
@@ -284,6 +286,7 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
         //cvCircle(dst, pt1, 1, CV_RGB(targetRed,targetGreen,targetBlue));
         //cvCircle(dst, pt2, 1, CV_RGB(targetBlue,targetGreen,targetRed));
        
+        /*
         //cvLine(dst, pt1, pt2, CV_RGB(targetRed,targetGreen,targetBlue), 3, CV_AA, 0);
         double theta = 0;
         // double theta = 180 / M_PI * atan2( (pt2.y - pt1.y) , (pt2.x - pt1.x) );
@@ -297,6 +300,7 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
 
         sprintf(Angles, "%d,%d,%d",(int)targetRed,(int)targetGreen,(int)targetBlue);
         cvPutText ( dst , Angles, cvPoint( 10, 10), &font, cvScalar(255,0,0) );
+        */
 
     }
     cvCopy(dst,outputImage->getIplImage());
