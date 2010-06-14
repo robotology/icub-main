@@ -152,9 +152,13 @@ private:
     vector<float *> gyy;
     vector<float *> gxy;
 
-    bool threshold;
+    bool thresholdOn;
+    int threshold;
 
 public:
+
+    static const int THRESH_VAL = 100;
+
     ProcessThread(ResourceFinder &_rf) : 
         RateThread(10), 
         rf(_rf) { }
@@ -165,16 +169,19 @@ public:
         string str;
         
         scales.clear();
+        threshold = THRESH_VAL;
 
         name=rf.check("name",Value("scaleSpaceDetector")).asString().c_str();
         type=rf.check("type",Value("corner")).asString().c_str();
         str=rf.check("threshold",Value("on")).asString().c_str();
+        thresholdOn=rf.check("threshold",Value("on")).asString().c_str();
+        threshold=rf.check("value",Value("100")).asInt();
         scaleBottle=rf.findGroup("scales", "scales");
 
         if(str=="off") {
-            threshold=false;
+            thresholdOn=false;
         } else {
-            threshold=true;
+            thresholdOn=true;
         }
 
         if(scaleBottle.size() == 1) {
@@ -222,7 +229,7 @@ public:
             fprintf(stdout,"Using ...\n");
             fprintf(stdout,"name   = %s\n",name.c_str());
             fprintf(stdout,"type   = %s\n",type.c_str());
-            fprintf(stdout,"thresh = %d\n",threshold);
+            fprintf(stdout,"thresh = %d, on=%d\n",threshold, thresholdOn);
             fprintf(stdout,"\n");
         } else {
             fprintf(stdout,"Process did not start\n");
@@ -437,8 +444,8 @@ public:
 
                 cvNormalize(LMax, LNormalized.getIplImage(), 0, 255, CV_MINMAX);       
                 
-                if(threshold) {
-                    cvThreshold(LNormalized.getIplImage(), LNormalized.getIplImage(), 100, 255, CV_THRESH_BINARY );
+                if(thresholdOn) {
+                    cvThreshold(LNormalized.getIplImage(), LNormalized.getIplImage(), threshold, 255, CV_THRESH_BINARY );
                 }
 
                 // send image over YARP
@@ -490,8 +497,6 @@ public:
 
         } else {
             
-            cout << "Inserting scale " << scale << " at pos["<<pos<<"]"<<endl; 
-
             gx.insert(gx.begin()+pos, new float[s*s]);
             gy.insert(gy.begin()+pos, new float[s*s]);
             gxx.insert(gxx.begin()+pos, new float[s*s]);
@@ -543,7 +548,6 @@ public:
 
     void removeFilter(int pos) {
 
-        cout << "removing filters at pos["<<pos<<"]"<<endl;
         if(pos >= scales.size()) return;
 
         scales.erase(scales.begin() + pos);
@@ -659,7 +663,13 @@ public:
         for(int i=0; i<scales.size(); i++) {
             cout << scales[i] << " ";
         }
-        cout << ")";
+        cout << ")" << endl;;
+    }
+
+    void setThreshold(bool b, int v=100) {
+        thresholdOn = b;
+        threshold = v;        
+        cout << "setting threshold: " << b << ", val=" << v << endl;
     }
 
 };
@@ -711,6 +721,8 @@ public:
     {
         cout << "Receiving command from rpc port" << endl;
         int new_scale, scale_to_delete;
+        int v;
+        bool b;
 
         if (command.size())
         {
@@ -748,7 +760,25 @@ public:
                 }
             case VOCAB4('l','i','s','t'):
                 {
+                    thr->suspend();
                     thr->listScales();
+                    thr->resume();
+                    reply.addVocab(Vocab::encode("ack"));
+                    return true;
+                }
+            case VOCAB4('t','h','r','e'):
+                {
+                    if(command.get(1).asString()=="on") {
+                        b = true;
+                    } else {
+                        b = false;
+                    }
+                    if(command.size() == 3) {
+                        v = command.get(2).asInt();
+                    } else {
+                        v = thr->THRESH_VAL;
+                    }
+                    thr->setThreshold(b,v);
                     reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
