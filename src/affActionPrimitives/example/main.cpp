@@ -562,7 +562,7 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("affActionPrimitives/conf");
+    rf.setDefaultContext("affActionPrimitivesExample/conf");
     rf.setDefaultConfigFile("config.ini");
     rf.setDefault("hand_sequences_file","hand_sequences.ini");
     rf.setDefault("name","affActionPrimitivesMod");
