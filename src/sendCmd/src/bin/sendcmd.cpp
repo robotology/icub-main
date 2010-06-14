@@ -1,10 +1,12 @@
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <stdlib.h>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Port.h>
+#include <yarp/os/Time.h>
 
 #include <iCub/FileReaderT.h>
 
@@ -23,6 +25,8 @@ void exitErrorHelp(std::string error = "", bool help = false) {
         std::cerr << "--portout port         Port from which commands will be sent (/sendcmd:o)" << std::endl;
         std::cerr << "--port port            Port to which commands will be sent" << std::endl;
         std::cerr << "--file filename        File containing commands, otherwise read from stdin" << std::endl;
+        std::cerr << "--delay s              Delay in seconds between commands (0.0)" << std::endl;
+        std::cerr << "--noreply             Do not wait for reply of port" << std::endl;
     }
     exit(errorCode);
 }
@@ -32,13 +36,23 @@ int main(int argc, char *argv[]) {
     Property property;
     Port port;
     Value* val;
+    double delay;
+    bool expectreply = true;
 
     // load property from command line parameters    
     property.fromCommand(argc, argv);
     
     // check for help parameter
-    if(property.check("help", val)) {
+    if(property.check("help")) {
         exitErrorHelp("", true);
+    }
+    
+    // check for delay parameter
+    delay = property.check("delay", Value(0.0)).asDouble();
+    
+    // check for reply parameter
+    if(property.check("noreply")) {
+        expectreply = false;
     }
 
     // open local port
@@ -74,12 +88,22 @@ int main(int argc, char *argv[]) {
     try {
         Bottle* command = (Bottle*) 0;
         Bottle reply;
+        double start = Time::now();
+        double cmdstart, cmdpassed;
         while(str.hasNext()) {
+            cmdstart = Time::now();
             command = str.getNext();
-            std::cout << /*">>> " <<*/ command->toString() << std::endl;
-            port.write(*command, reply);
-            for(int i = 0; i < reply.size(); i++) {
-                std::cout << /*"<<< " <<*/ reply.get(i).toString() << std::endl;
+            std::cout << ">" << std::setw(6) << std::fixed << std::setprecision(3) << (Time::now() - start) << "s: ";
+            std::cout << command->toString() << std::endl;
+
+            if(expectreply) {
+                port.write(*command, reply);
+                for(int i = 0; i < reply.size(); i++) {
+                    std::cout << "<" << std::setw(6) << std::fixed << std::setprecision(3) << (Time::now() - start) << "s: ";
+                    std::cout << reply.get(i).toString() << std::endl;
+                }
+            } else {
+                port.write(*command);            
             }
             // clean up
             delete command;
@@ -88,6 +112,12 @@ int main(int argc, char *argv[]) {
             if(port.getOutputCount() < 1) {
                 port.close();
                 exitErrorHelp("Remote port disconnected");
+            }
+            
+            // wait given delay before sending next one
+            cmdpassed = Time::now() - cmdstart;
+            if(cmdpassed < delay) {
+                Time::delay(delay - cmdpassed);
             }
         }
     } catch(const std::exception& e) {
