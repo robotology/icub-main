@@ -92,7 +92,9 @@ SET(IPP_POSSIBLE_INCDIRS
 SET(IPP_POSSIBLE_LIBRARY_PATHS
   "$ENV{IPP_DIR}"
   "$ENV{IPP_DIR}/sharedlib"
-  "$ENV{IPP_DIR}/lib")
+  "$ENV{IPP_DIR}/lib"
+  "$ENV{IPP_DIR}/sharedLib" 
+)
 
 ENDIF(EXISTS "$ENV{IPP_DIR}")
 #----------------------------------------------------------
