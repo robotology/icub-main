@@ -455,7 +455,7 @@ public:
         fprintf(stderr, "Stopping the grasp detectors\n");
         gd->stop();
         delete gd;
-        Time::delay(1);
+        //Time::delay(1);
 
         for(int i=0; i < nFingers; i++)
             fd[i]->stop();
