@@ -15,16 +15,12 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
 
-This module provides a controller for the iCub arm which 
-implements the multi-referential approach based on the paper 
-from Micha Hersch available <a 
-href="http://infoscience.epfl.ch/record/114045">here</a>. Unlike
-the Micha Hersch baseline, the VITE models are substituted with
-minimum-jerk controllers. Essentially, the generated 
-trajectories of end-effector are quasi-straight similar to the 
-ones measured in human reaching movements. The controller is 
-capable of handling the complete pose (xyz cartesian position + 
-orientation in axis/angle mode). 
+This module provides a minimum-jerk controller for the iCub arm 
+which implements the multi-referential approach based on [1]: 
+essentially, the generated trajectories of end-effector are 
+quasi-straight similar to the ones measured in human reaching 
+movements. The controller is capable of handling the complete 
+pose (xyz cartesian position + orientation in axis/angle mode). 
  
 The module can be selected to control a usual 7-DOF arm or the 
 extended 10-DOF arm which includes the torso structure. When 
@@ -162,6 +158,12 @@ Windows, Linux, Mac
 Note that \ref iKinArmView "iKinArmView" module can show
 interactively the iCub arm configuration launching MATLAB in 
 background. Just connect the ports with the viewer and play. 
+ 
+\section references_sec References 
+[1] U. Pattacini, F. Nori, L. Natale, G. Metta, G. Sandini, "An 
+Experimental Evaluation of a Novel Minimum-Jerk Cartesian 
+Controller for Humanoid Robots", <i>IEEE International 
+Conference on Intelligent Robots and Systems</i>, 2010. 
 
 \author Ugo Pattacini
 */ 
