@@ -32,3 +32,9 @@ else(ICUB_USE_IPOPT)
     message(STATUS "IPOPT not found/selected, skipping iKinCartesianSolver")
 endif(ICUB_USE_IPOPT)
 
+if(ICUB_USE_IPP)
+    # insert herein modules depending on IPP
+else(ICUB_USE_IPP)
+    message(STATUS "IPP not found/selected, skipping IPP-based modules")
+endif(ICUB_USE_IPP)
+

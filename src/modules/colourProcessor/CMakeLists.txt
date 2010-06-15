@@ -2,6 +2,9 @@ SET(PROJECTNAME colourProcessor)
 
 PROJECT(${PROJECTNAME})
 
+FIND_PACKAGE(YARP)
+FIND_PACKAGE(ICUB)
+
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 FILE(GLOB folder_header include/iCub/*.h)
 
@@ -10,6 +13,7 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${IPP_INCLUDE_DIRS}
+                    ${ICUB_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
