@@ -11,19 +11,31 @@
  * \section dep_sec Dependencies 
  * - ctrlLib 
  * - iKin
- * - IPOPT: see the <a
- *   href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>.
  * 
  * \section intro_sec Description
  * 
- * 
+ * iDynNode represents a virtual node where multiple limbs are connected, and exchange
+ * kinematic and wrench information. The mutual exchange bewteen node and limb (full duplex)
+ * is managed used a RigidBodyTransformation class, containing the roto-translational matrix
+ * which describes the connection. Multiple limbs can be attached to the Node. A connection
+ * is defined also by the flows of kinematic and wrench variables: from limb to node 
+ * (RBT_NODE_IN) or from limb to node (RBT_NODE_OUT). 
+ *
  * \section tested_os_sec Tested OS
  * 
  * Windows
  *
  * \section example_sec Example
  *
- * TO DO
+ * head->setAng(q); 
+ * head->setDAng(dq);
+ * head->setD2Ang(ddq);
+ * node->solveKinematics(w0,dw0,ddp0);
+ * Matrix FM(6,1); FM.zero();
+ * node->solveWrench(FM);
+ * 
+ * Now that the node is solved, one can get kinematic/dynamic information from 
+ * the head (or any attached limb) 
  *
  * \note <b>Release status</b>:  this library is currently under development!
  * Date: first draft 06/2010
@@ -44,6 +56,7 @@
 #include <iCub/ctrl/ctrlMath.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iDyn/iDynInv.h>
+#include <iCub/iDyn/iDynFwd.h>
 #include <deque>
 #include <string>
 
@@ -89,9 +102,6 @@ enum FlowType{ RBT_NODE_IN, RBT_NODE_OUT };
 */
 class RigidBodyTransformation
 {
-	friend class iDynNode;
-	friend class iDynLimb;
-
 protected:
 
 	/// the limb attached to the RigidBodyTransformation
@@ -114,6 +124,9 @@ protected:
 	
 	///verbosity flag
 	unsigned int verbose;
+
+	///flag for sensor or not - only used for setWrenchMeasures()
+	bool hasSensor;
 
 	// these variables are not redundant: because multiple RBT can be attached 
 	// to a node, and different policies of information sharing can exist
@@ -143,8 +156,20 @@ protected:
 	*/
 	yarp::sig::Vector	getr(bool proj=false);
 
-
+	/**
+	* Basic computations for applying RBT on kinematic variables.
+	* The computations are similar to the Forward/Backward ones in 
+	* OneLinkNewtonEuler: compute AngVel/AngAcc/LinAcc.
+	* Here they are fastened and adapted to the RBT.	
+	*/
 	void computeKinematic();
+
+	/**
+	* Basic computations for applying RBT on wrench variables.
+	* The computations are similar to the Forward/Backward ones in 
+	* OneLinkNewtonEuler: compute Force/Moment.
+	* Here they are fastened and adapted to the RBT.
+	*/
 
 	void computeWrench();
 
@@ -154,11 +179,13 @@ public:
 	* Constructor, defining the limb attached to the node.
 	* @param _limb pointer to a iDynLimb
 	* @param _H a (4x4) roto-translational matrix defining the rigid body transformation
+	* @param _info a string with information
 	* @param kin the kinematic flow
 	* @param wre the wrench flow
+	* @param _mode the NewEulMode for computations
 	* @param verb verbosity flag
 	*/
-	RigidBodyTransformation(iDyn::iDynLimb *_limb, const yarp::sig::Matrix &_H, const std::string &_info, const FlowType kin=RBT_NODE_OUT, const FlowType wre=RBT_NODE_IN, const NewEulMode _mode=STATIC, unsigned int verb=VERBOSE);
+	RigidBodyTransformation(iDyn::iDynLimb *_limb, const yarp::sig::Matrix &_H, const std::string &_info, bool _hasSensor = false, const FlowType kin=RBT_NODE_OUT, const FlowType wre=RBT_NODE_IN, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
 
 	/**
 	* Destructor
@@ -219,7 +246,16 @@ public:
 	* @return true if succeeds, false otherwise
 	*/
 	bool setWrenchMeasure(const yarp::sig::Vector &F0, const yarp::sig::Vector &Mu0); 
-	
+
+	/**
+	* Set the wrench variables in the sensor. 
+	* @param sensor the sensor attached to the limb
+	* @param Fsens	the force
+	* @param Musens the moment
+	* @return true if succeeds, false otherwise
+	*/
+	bool setWrenchMeasure(iDyn::iDynSensor *sensor, const yarp::sig::Vector &Fsens, const yarp::sig::Vector &Musens); 
+
 	/**
 	* @return H, the (4x4) roto-translational matrix defining the rigid body transformation
 	*/
@@ -232,9 +268,9 @@ public:
 	* in the limb, and the limb itself knows whether to get this information in the base or in the end-
 	* effector, depending on its iteration mode for kinematics. This method is used by iDynNode to connect
 	* two or multiple limbs.
-	* @param wNode	the angular velocity of the Node
-	* @param dwNode the angular acceleration of the Node
-	* @param ddpNode the linear acceleration of the Node
+	* @param wNode	the angular velocity of the Node - it is modified!
+	* @param dwNode the angular acceleration of the Node - it is modified!
+	* @param ddpNode the linear acceleration of the Node - it is modified!
 	*/
 	void getKinematic( yarp::sig::Vector &wNode, yarp::sig::Vector &dwNode, yarp::sig::Vector &ddpNode); 
 	
@@ -245,8 +281,8 @@ public:
 	* and the limb itself knows whether to get this information in the base ot in the end-effector, 
 	* depending on its iteration mode for wrenches. This method is used by iDynNode to connect two or 
 	* multiple limbs. 
-	* @param FNode	the iDynNode force
-	* @param MuNode the iDynNode moment
+	* @param FNode	the iDynNode force - it is modified!
+	* @param MuNode the iDynNode moment - it is modified!
 	*/
 	void getWrench( yarp::sig::Vector &FNode,  yarp::sig::Vector &MuNode); 
 
@@ -267,11 +303,25 @@ public:
 	*/
 	FlowType getWrenchFlow() const;
 
-
-	
-	//other
+	/**
+	* @return a string with information
+	*/
 	std::string toString() const;
 
+	/**
+	* @return false
+	*/
+	bool isSensorized() const;
+
+	/**
+	* Calls the compute kinematic of the limb
+	*/
+	void computeLimbKinematic();
+
+	/**
+	* Calls the compute wrench of the limb
+	*/
+	void computeLimbWrench();
 
 
 };
@@ -293,7 +343,6 @@ public:
 * kinematic flow = RBT_NODE_IN, while the wrench variables are found as the sum of the wrench 
 * contribution of all the links (inbound and outbound wrenches must balance in the node).
 */
-
 class iDynNode
 {
 protected:
@@ -331,12 +380,12 @@ public:
 	/**
 	*	Default constructor
 	*/
-	iDynNode(const NewEulMode _mode=STATIC);
+	iDynNode(const NewEulMode _mode=DYNAMIC);
 
 	/**
 	*	Constructor
 	*/
-	iDynNode(const std::string &_info, const NewEulMode _mode=STATIC, unsigned int verb=VERBOSE);
+	iDynNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
 
 	/**
 	* Add one limb to the node, defining its RigidBodyTransformation. A new RigidBodyTransformation
@@ -345,8 +394,9 @@ public:
 	* @param H a (4x4) roto-translational matrix defining the transformation between node and limb base/end
 	* @param kinFlow the type of information flow of kinematics variables
 	* @param wreFlow the type of information flow of wrench variables
+	* @param hasSensor flag for having or not a FT sensor
 	*/
-	void addLimb(iDyn::iDynLimb *limb, const yarp::sig::Matrix &H, const FlowType kinFlow=RBT_NODE_OUT, const FlowType wreFlow=RBT_NODE_IN);
+	virtual void addLimb(iDyn::iDynLimb *limb, const yarp::sig::Matrix &H, const FlowType kinFlow=RBT_NODE_OUT, const FlowType wreFlow=RBT_NODE_IN, bool hasSensor=false);
 
 	/**
 	* Main function to manage the exchange of kinematic information among the limbs attached to the node.
@@ -356,11 +406,23 @@ public:
 	* The kinematic variables are retrieved from the RBT, which applies its roto-translation. Then the kinematic
 	* variables are sent to the other limbs, having kinematic flow of output type: the RBT transformation is applied from node
 	* to limb.
-	* @param w0 the initial angular velocity
-	* @param dw0 the initial angular acceleration
-	* @param ddp0 the initial linear acceleration
+	* @param w0 the initial/measured angular velocity
+	* @param dw0 the initial/measured angular acceleration
+	* @param ddp0 the initial/measured linear acceleration
+	* @return true if succeeds, false otherwise
 	*/
-	virtual bool solveKinematics( const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+	bool solveKinematics( const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+
+	/**
+	* Main function to manage the exchange of kinematic information among the limbs attached to the node.
+	* @return true if succeeds, false otherwise
+	*/
+	bool solveKinematics();
+
+	/**
+	* Set the kinematic measurement (w,dw,ddp) on the limb where the kinematic flow is of type RBT_NODE_IN.
+	*/
+	bool setKinematicMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
 
 	/**
 	* Main function to manage the exchange of wrench information among the limbs attached to the node.
@@ -372,29 +434,44 @@ public:
 	* performs a "basic" wrench computation without any sensor, just
 	* setting wrenches at the end-effector or at the base, and calling
 	* recursive wrench computation.
+	* @return true if succeeds, false otherwise
 	*/
 	virtual bool solveWrench();
 
 	/**
-	*
+	* This is to manage the exchange of wrench information among the limbs attached to the node.
+	* Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to 
+	* compute the wrench balance on the node.
+	* The measured/input wrenches to the limbs are here passed as a big matrix. In this function the input wrench
+	* is set in the limb calling initWrenchNewtonEuler(), which simply set the measured forces in the base/final
+	* link of the limb.
+	* elsewhere: eg another class or the main is setting the measured wrenches.
 	* Input (eg measured) wrenches are stored in a 6xN matrix: each column is a 6x1 vector
 	* with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
 	* the order is assumed coherent with the one built when adding limbs
 	* eg: 
 	* adding limbs: addLimb(limb1), addLimb(limb2), addLimb(limb3)
 	* where limb1, limb3 have wrench flow input
-	* passing wrenches: Matrix FM(6,2), FM.setcol(0,fm1), FM.setcol(1,fm3)
+	* setting wrenches: Matrix FM(6,2), FM.setcol(0,fm1), FM.setcol(1,fm3)
 	*
 	* Note: RBT calls computeWrenchNewtonEuler in the limb, meaning that
 	* perform a "basic" wrench computation without any sensor, just
 	* setting wrenches at the end-effector or at the base, and calling
 	* recursive wrench computation.
+	*
+	* @param FM a (6xN) matrix with forces and moments 
+	* @return true if succeeds, false otherwise
 	*/
-	virtual bool solveWrench(const yarp::sig::Matrix &FM);
+	bool solveWrench(const yarp::sig::Matrix &FM);
 
 	/**
-	*
-	* input (eg measured) wrenches are stored in two 3xN matrix: each column is a 3x1 vector
+	* This is to manage the exchange of wrench information among the limbs attached to the node.
+	* Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to 
+	* compute the wrench balance on the node.
+	* The measured/input wrenches to the limbs are here passed as a big matrix. In this function the input wrench
+	* is set in the limb calling initWrenchNewtonEuler(), which simply set the measured forces in the base/final
+	* link of the limb.
+	* Input (eg measured) wrenches are stored in two 3xN matrix: each column is a 3x1 vector
 	* with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
 	* the order is assumed coherent with the one built when adding limbs
 	* eg: 
@@ -406,17 +483,215 @@ public:
 	* perform a "basic" wrench computation without any sensor, just
 	* setting wrenches at the end-effector or at the base, and calling
 	* recursive wrench computation.
+	*
+	* @param F a (3xN) matrix with forces
+	* @param M a (3xN) matrix with moments 
+	* @return true if succeeds, false otherwise
 	*/
-	virtual bool solveWrench(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
+	bool solveWrench(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
 
+	/**
+	* @param F a (3xN) matrix with forces
+	* @param M a (3xN) matrix with moments 
+	* @return true if succeeds, false otherwise
+	*/
+	virtual bool setWrenchMeasure(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
+
+	/**
+	* @param FM a (6xN) matrix with forces and moments 
+	* @return true if succeeds, false otherwise
+	*/
+	virtual bool setWrenchMeasure(const yarp::sig::Matrix &FM);
+
+	/**
+	* @return the node force
+	*/
 	yarp::sig::Vector getForce() const;
+	
+	/**
+	* @return the node moment
+	*/
 	yarp::sig::Vector getMoment() const;
+	
+	/**
+	* @return the node angular velocity
+	*/
 	yarp::sig::Vector getAngVel() const;
+
+	/**
+	* @return the node angular acceleration
+	*/
 	yarp::sig::Vector getAngAcc() const;
+
+	/**
+	* @return the node linear acceleration
+	*/
 	yarp::sig::Vector getLinAcc() const;
 
 
 };
+
+
+/**
+* \ingroup iDynBody
+*
+* A class for connecting two or mutiple limbs and exchanging kinematic and 
+* wrench information between limbs, when one or multiple limbs have FT sensors.
+*/
+class iDynSensorNode : public iDynNode
+{
+
+protected:
+
+	/// the list of iDynSensors used to solve each limb after FT sensor measurements
+	std::deque<iDyn::iDynSensor *> sensorList;
+
+public:
+
+	/**
+	*	Default constructor
+	*/
+	iDynSensorNode(const NewEulMode _mode=DYNAMIC);
+
+	/**
+	*	Constructor
+	*/
+	iDynSensorNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+
+	/**
+	* Add one limb to the node, defining its RigidBodyTransformation. A new RigidBodyTransformation
+	* is added to the RBT list. Since there's not an iDynSensor for this limb, it is set to NULL in the
+	* sensorList.
+	* @param limb pointer to generic limb
+	* @param H a (4x4) roto-translational matrix defining the transformation between node and limb base/end
+	* @param kinFlow the type of information flow of kinematics variables
+	* @param wreFlow the type of information flow of wrench variables
+	*/
+	virtual void addLimb(iDyn::iDynLimb *limb, const yarp::sig::Matrix &H, const FlowType kinFlow=RBT_NODE_OUT, const FlowType wreFlow=RBT_NODE_IN);
+
+	/**
+	* Add one limb to the node, defining its RigidBodyTransformation and the iDynSensor used to 
+	* solve it after FT sensor measurements. A new RigidBodyTransformation
+	* is added to the RBT list. The iDynSensor is added to the sensorList.
+	* @param limb pointer to generic limb
+	* @param H a (4x4) roto-translational matrix defining the transformation between node and limb base/end
+	* @param sensor pointer to iDynSensor of the limb
+	* @param kinFlow the type of information flow of kinematics variables
+	* @param wreFlow the type of information flow of wrench variables
+	*/
+	void addLimb(iDyn::iDynLimb *limb, const yarp::sig::Matrix &H, iDyn::iDynSensor *sensor, const FlowType kinFlow=RBT_NODE_OUT, const FlowType wreFlow=RBT_NODE_IN);
+
+	/**
+	* Main function to manage the exchange of wrench information among the limbs attached to the node.
+	* Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to 
+	* compute the wrench balance on the node.
+	* The measured/input wrenches to the limbs are here assumed to be set 
+	* elsewhere: eg another class or the main is setting the measured wrenches.
+	* Note: RBT calls computeWrenchNewtonEuler in the limb, meaning that
+	* performs a "basic" wrench computation without any sensor, just
+	* setting wrenches at the end-effector or at the base, and calling
+	* recursive wrench computation.
+	* @return true if succeeds, false otherwise
+	*/
+	virtual bool solveWrench();
+
+	/**
+	* @param F a (3xN) matrix with forces
+	* @param M a (3xN) matrix with moments 
+	* @return true if succeeds, false otherwise
+	*/
+	virtual bool setWrenchMeasure(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
+
+	/**
+	* @param FM a (6xN) matrix with forces and moments 
+	* @return true if succeeds, false otherwise
+	*/
+	virtual bool setWrenchMeasure(const yarp::sig::Matrix &FM);
+
+
+};
+
+
+
+class UpperTorso : protected iDynSensorNode
+{
+protected:
+
+	//iDyn::iCubArmNoTorsoDyn * leftArm;
+	//iDyn::iCubArmNoTorsoDyn * rightArm;
+	//iDyn::iCubNeckInertialDyn * head;
+
+	iDyn::iDynLimb * leftArm;
+	iDyn::iDynLimb * rightArm;
+	iDyn::iDynLimb * head;
+
+	//iDyn::iDynSensorArmNoTorso * leftSensor;
+	//iDyn::iDynSensorArmNoTorso * rightSensor;
+
+	iDyn::iDynSensor * leftSensor;
+	iDyn::iDynSensor * rightSensor;
+
+	yarp::sig::Matrix HHead;
+	yarp::sig::Matrix HLeftArm;
+	yarp::sig::Matrix HRightArm;
+
+public:
+
+	/**
+	*	Default constructor
+	*/
+	UpperTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+
+	/**
+	*	Destructor
+	*/
+	~UpperTorso();
+
+	bool setInertialMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+	
+	bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left);
+
+	bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
+
+	bool update();
+
+	bool update(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
+
+	yarp::sig::Vector getTorques(const std::string &limbType);
+
+	/**
+	* @return the upper-torso force
+	*/
+	yarp::sig::Vector getForce() const;
+	
+	/**
+	* @return the upper-torso moment
+	*/
+	yarp::sig::Vector getMoment() const;
+	
+	/**
+	* @return the upper-torso angular velocity
+	*/
+	yarp::sig::Vector getAngVel() const;
+
+	/**
+	* @return the upper-torso angular acceleration
+	*/
+	yarp::sig::Vector getAngAcc() const;
+
+	/**
+	* @return the upper-torso linear acceleration
+	*/
+	yarp::sig::Vector getLinAcc() const;
+
+
+
+	
+};
+
+
+
+
 
 
 

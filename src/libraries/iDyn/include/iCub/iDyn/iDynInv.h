@@ -67,13 +67,11 @@ enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 	class iDynChain;
 	class iDynLimb;
 	class iCubArmDyn;
-	class iCubArm2Dyn;
+	class iCubArmNoTorsoDyn;
 	class iCubLegDyn;
 	class iCubEyeDyn;
 	class iCubEyeNeckRefDyn;
 	class iCubInertialSensorDyn;
-	class iFakeDyn;
-	class iFakeDyn2GdL;
 	class iDynSensor;
 	class iDynSensorLeg;
 	class iDynSensorArm;
@@ -864,7 +862,7 @@ public:
   /**
     * Constructor (note: without FT sensor)
     */
-	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* Standard destructor
@@ -1133,10 +1131,10 @@ public:
     * Constructor without FT sensor: the sensor must be set with setSensor()
 	* @param _c a pointer to the iDynChain where the sensor is placed on
 	* @param _info a string with information
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, const std::string &_info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensor(iDyn::iDynChain *_c, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor with FT sensor
@@ -1147,10 +1145,10 @@ public:
 	* @param _m the mass of the semi-link
 	* @param _I the inertia of the semi-link
 	* @param _info a string with information
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, const std::string &_info, const NewEulMode _mode = STATIC, unsigned int verb = 0);
+	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = 0);
 
 	/**
      * Set a new sensor or new sensor properties
@@ -1203,7 +1201,7 @@ public:
 	// set methods
 	//~~~~~~~~~~~~~~
 
-	void setMode(const NewEulMode _mode = STATIC);
+	void setMode(const NewEulMode _mode = DYNAMIC);
 	void setVerbose(unsigned int verb=VERBOSE);
 	void setInfo(const std::string &_info);
 	void setSensorInfo(const std::string &_info);
@@ -1216,7 +1214,8 @@ public:
 	std::string getSensorInfo() const;
 	unsigned int getSensorLink()	const;
 
-	
+	//destructor
+	virtual ~iDynInvSensor();
 
 };
 
@@ -1240,10 +1239,10 @@ public:
 	/**
     * Constructor: the sensor parameters are automatically set with "right" or "left" choice
 	* @param _type a string "left"/"right" 
-	* @param _mode the analysis mode (static/dynamic/etc)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/right
@@ -1272,10 +1271,10 @@ protected:
 	/**
     * Constructor: the sensor parameters are automatically set with "right" or "left" choice
 	* @param _type a string "left"/"right" 
-	* @param _mode the analysis mode (static/dynamic/etc)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the leg type: left/right
@@ -1302,20 +1301,20 @@ public:
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
 	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
 	* there is not a specification of the iCubArmDyn, but the part must be specified
 	* @param _c a pointer to the iDynChain where the sensor is placed on
 	* @param _type a string setting the arm type
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/arm
@@ -1331,31 +1330,31 @@ public:
 * A class for computing force/moment of the FT sensor placed
 * in the middle of the iCub's left or right arm. The sensor
 * parameters are automatically set by chosing left or right
-* during initialization of the iCubArmDyn.
+* during initialization of the iCubArmNoTorsoDyn.
 * 
 */
-class iDynInvSensorArm2 : public iDynInvSensor
+class iDynInvSensorArmNoTorso : public iDynInvSensor
 {
 
 public:
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _c a pointer to the iCubArmNoTorsoDyn where the sensor is placed on
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm2(iDyn::iCubArm2Dyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
-	* there is not a specification of the iCubArmDyn, but the part must be specified
+	* there is not a specification of the iCubArmNoTorsoDyn, but the part must be specified
 	* @param _c a pointer to the iDynChain where the sensor is placed on
 	* @param _type a string setting the arm type
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm2(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArmNoTorso(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/arm
@@ -1382,19 +1381,19 @@ public:
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
 	* @param _c a pointer to the iCubLegDyn where the sensor is placed on
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
 	* @param _c a pointer to the iDynChain where the sensor is placed on
 	* @param _type a string setting the leg type
-	* @param _mode the analysis mode (static/dynamic)
+	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the leg type: left/arm

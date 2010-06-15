@@ -50,6 +50,11 @@ iDynSensor::iDynSensor(iDynChain *_c, unsigned int i, const Matrix &_H, const Ma
 :iDynInvSensor(_c, i, _H, _HC, _m, _I, _info, _mode, verb)
 {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynSensor::~iDynSensor()
+{
+	iDynInvSensor::~iDynInvSensor();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynSensor::setSensorMeasures(const Vector &F, const Vector &Mu)
 {
 	return sens->setMeasuredFMu(F,Mu);
@@ -93,6 +98,17 @@ void iDynSensor::computeFromSensorNewtonEuler()
 	sens->ForwardAttachToLink(chain->refLink(lSens));
 	//the sensor does not need to retrieve w,dw,ddp,ddpC in this case 
 	//then propagate forces and moments
+	//from sensor to lSens
+	sens->ForwardForcesMomentsToLink(chain->refLink(lSens));
+	//from lSens to End
+	chain->NE->ForwardWrenchToEnd(lSens);
+	//from lSens to Base
+	chain->NE->BackwardWrenchToBase(lSens);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynSensor::computeWrenchFromSensorNewtonEuler()
+{
+	//propagate forces and moments
 	//from sensor to lSens
 	sens->ForwardForcesMomentsToLink(chain->refLink(lSens));
 	//from lSens to End
@@ -186,6 +202,46 @@ string iDynSensorArm::getType() const
 	return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+//======================================
+//
+//		 iDYN SENSOR ARM NO TORSO
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynSensorArmNoTorso::iDynSensorArmNoTorso(iCubArmNoTorsoDyn *_c, const NewEulMode _mode, unsigned int verb)
+:iDynSensor(_c->asChain(),_c->getType(),_mode,verb)
+{
+	// FT sensor is in position 2 in the kinematic chain in both arms
+	// note position 5 if with torso, 2 without torso
+	lSens = 2;
+	// the arm type determines the sensor properties
+	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
+	{
+		if(verbose)
+		cerr<<"iDynSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+			<<"iDynSensorArm: assuming right arm."<<endl;
+		// set the sensor with the default value
+		sens = new iCubArmSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubArmSensorLink(_c->getType(),mode,verbose);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iDynSensorArmNoTorso::getType() const
+{ 
+	return sens->getType();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 
 

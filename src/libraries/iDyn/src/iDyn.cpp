@@ -1433,29 +1433,29 @@ void iCubArmDyn::allocate(const string &_type)
 
 //======================================
 //
-//			  ICUB ARM DYN
+//	      ICUB ARM NO TORSO DYN
 //
 //======================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubArm2Dyn::iCubArm2Dyn()
+iCubArmNoTorsoDyn::iCubArmNoTorsoDyn()
 {
     allocate("right");
 	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubArm2Dyn::iCubArm2Dyn(const string &_type, const ChainComputationMode _mode)
+iCubArmNoTorsoDyn::iCubArmNoTorsoDyn(const string &_type, const ChainComputationMode _mode)
 {
     allocate(_type);
 	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubArm2Dyn::iCubArm2Dyn(const iCubArmDyn &arm)
+iCubArmNoTorsoDyn::iCubArmNoTorsoDyn(const iCubArmNoTorsoDyn &arm)
 {
     clone(arm);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iCubArm2Dyn::allocate(const string &_type)
+void iCubArmNoTorsoDyn::allocate(const string &_type)
 {
     iDynLimb::allocate(_type);
 
@@ -1467,13 +1467,8 @@ void iCubArm2Dyn::allocate(const string &_type)
 	//now set the parameters properly according to the part
     if (type=="right")
     {
-		//set mass, inertia and COM
-
 		//create iDynLink from parameters calling
 		//          iDynLink(mass, rC (3x1), I(6x1),            A,         D,       alfa,            offset,         min,               max);
-        //linkList[0]=new iDynLink(0,					0,		  0,		 0,				0,			0,			0,			0,			0,			0,	      0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
-        //linkList[1]=new iDynLink(0,					0,		  0,		 0,				0,			0,			0,			0,			0,			0,	        0.0,      0.0,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
-        //linkList[2]=new iDynLink(0,					0,		  0,		 0,				0,			0,			0,			0,			0,			0,   -0.0233647,  -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
         linkList[0]=new iDynLink(0.189,		 0.005e-3,  18.7e-3,   1.19e-3,		 123.0e-6,   0.021e-6,  -0.001e-6,    24.4e-6,    4.22e-6,   113.0e-6,			0.0, 0.0,  M_PI/2.0,           -M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);//-0.10774
         linkList[1]=new iDynLink(0.179,		-0.094e-3, -6.27e-3,  -16.6e-3,		 137.0e-6, -0.453e-06,  0.203e-06,    83.0e-6,    20.7e-6,    99.3e-6,			0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,                0.0, 160.8*CTRL_DEG2RAD);
         linkList[2]=new iDynLink(0.884,		  1.79e-3, -62.9e-3, 0.064e-03,		 743.0e-6,    63.9e-6,  0.851e-06,   336.0e-6,   -3.61e-6,   735.0e-6, 			0.0, -0.15228, -M_PI/2.0, -105.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
@@ -1484,9 +1479,6 @@ void iCubArm2Dyn::allocate(const string &_type)
     }
     else
     {
-        //linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,		  0.032,     0.0,		M_PI/2.0,                 0.0,	-22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
-        //linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,		    0.0,	 0.0,		M_PI/2.0,           -M_PI/2.0,	-39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
-        //linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,	  0.0233647, -0.1433,	   -M_PI/2.0,  105.0*CTRL_DEG2RAD,  -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
         linkList[0]=new iDynLink(0.13,	-0.004e-3, 14.915e-3, -0.019e-3,		54.421e-6,   0.009e-6,     0.0e-6,   9.331e-6,  -0.017e-6,  54.862e-6,			0.0, 0.0,	   -M_PI/2.0,            M_PI/2.0,  -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);//0.10774
         linkList[1]=new iDynLink(0.178,  0.097e-3,  -6.271e-3, 16.622e-3,		 137.2e-6,   0.466e-6,   0.365e-6,  82.927e-6, -20.524e-6,  99.274e-6,			0.0,	 0.0,		M_PI/2.0,           -M_PI/2.0,				   0.0,	160.8*CTRL_DEG2RAD);
         linkList[2]=new iDynLink(0.894, -1.769e-3, 63.302e-3, -0.084e-3,	   748.531e-6,  63.340e-6,  -0.903e-6, 338.109e-6,  -4.031e-6, 741.022e-6,			0.0, 0.15228,	   -M_PI/2.0,   75.0*CTRL_DEG2RAD,  -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
@@ -1498,11 +1490,6 @@ void iCubArm2Dyn::allocate(const string &_type)
 	//insert in the allList
     for(unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
-
-    //blockLink(0,0.0);
-    //blockLink(1,0.0);
-    //blockLink(2,0.0);
-
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1825,135 +1812,6 @@ void iCubNeckInertialDyn::allocate(const string &_type)
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-////////////////////////////////////////
-//		      iFAKE DYN            
-////////////////////////////////////////
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn::iFakeDyn()
-{
-    allocate("right");
-	setIterMode(KINFWD_WREBWD);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn::iFakeDyn(const string &_type,const ChainComputationMode _mode)
-{
-    allocate(_type);
-	setIterMode(_mode);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn::iFakeDyn(const iFakeDyn &arm)
-{
-    clone(arm);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iFakeDyn::allocate(const string &_type)
-{
-    iDynLimb::allocate(_type);
 
-    H0.eye();
-    linkList.resize(1);
 
-	//dynamical parameters: inertia and COM are matrices, they must be initialized before
-	// mass
-	Vector m(1);
-	// inertia and COM
-	deque<Matrix> HC;
-	deque<Matrix> I;
-	Matrix HCtmp(4,4); HCtmp.eye();
-	Matrix Itmp(3,3); Itmp.zero();
-		HC.push_back(HCtmp);
-		I.push_back(Itmp);
-
-	//now set the parameters properly according to the part
-    if(type=="right")
-    {
-		//set mass, inertia and COM
-		 m=1.0; 
-
-		//create iDynLink from parameters calling
-		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
-		
-        linkList[0]=new iDynLink(m[0],	HC[0],	I[0],		1.0,      1.0,  0.0,   0.0, -180.0*CTRL_DEG2RAD,  180.0*CTRL_DEG2RAD);
-        }
-    else
-    {
-		m=0;
-        linkList[0]=new iDynLink(m[0],	HC[0],	I[0],     1.0,      1.0,  0.0,   0.0, -180.0*CTRL_DEG2RAD,  180.0*CTRL_DEG2RAD);
-    }
-
-	//insert in the allList
-    for(unsigned int i=0; i<linkList.size(); i++)
-        *this << *linkList[i];
-
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-////////////////////////////////////////
-//		      iFAKE DYN   2 GDL          
-////////////////////////////////////////
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn2GdL::iFakeDyn2GdL()
-{
-    allocate("right");
-	setIterMode(KINFWD_WREBWD);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn2GdL::iFakeDyn2GdL(const string &_type,const ChainComputationMode _mode)
-{
-    allocate(_type);
-	setIterMode(_mode);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iFakeDyn2GdL::iFakeDyn2GdL(const iFakeDyn2GdL &arm)
-{
-    clone(arm);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iFakeDyn2GdL::allocate(const string &_type)
-{
-    iDynLimb::allocate(_type);
-
-    H0.eye();
-    linkList.resize(2);
-
-	//dynamical parameters: inertia and COM are matrices, they must be initialized before
-	// mass
-	Vector m(2);
-	// inertia and COM
-	deque<Matrix> HC;
-	deque<Matrix> I;
-	Matrix HCtmp(4,4); Matrix Itmp(3,3);
-	// Parameter link 1
-	m(0) = 1;
-	HCtmp.eye(); HC.push_back(HCtmp);
-	Itmp.zero(); I.push_back(Itmp);
-	// Parameter link 2
-	m(1) = 1;
-	HCtmp.eye(); HC.push_back(HCtmp);
-	Itmp.zero(); I.push_back(Itmp);
-		
-		
-
-	//now set the parameters properly according to the part
-    if(type=="right")
-    {
-		//create iDynLink from parameters calling
-		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
-		
-        linkList[0]=new iDynLink(m[0],	HC[0],	I[0],		1.0,      0.0,  0.0,   0.0, -180.0*CTRL_DEG2RAD,  180.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(m[0],	HC[1],	I[1],		1.0,      0.0,  0.0,   0.0, -180.0*CTRL_DEG2RAD,  180.0*CTRL_DEG2RAD);
-        }
-    else
-    {
-
-        linkList[0]=new iDynLink(m[0],	HC[0],	I[0],     1.0,      0.0,  0.0,   0.0, -180.0*CTRL_DEG2RAD,  180.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(m[1],	HC[1],	I[1],     1.0,      0.0,  0.0,   0.0, -180.0*CTRL_DEG2RAD,  180.0*CTRL_DEG2RAD);
-    }
-
-	//insert in the allList
-    for(unsigned int i=0; i<linkList.size(); i++)
-        *this << *linkList[i];
-
-}

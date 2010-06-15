@@ -43,7 +43,7 @@ using namespace iDyn;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 OneLinkNewtonEuler::OneLinkNewtonEuler(iDynLink *dlink)
 {
-	mode = STATIC;
+	mode = DYNAMIC;
 	verbose = NO_VERBOSE;
 	info = "link";
 	link = dlink;
@@ -506,7 +506,7 @@ void OneLinkNewtonEuler::computeLinAccC()
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		setLinAccC( getLinAcc() + cross(getAngVel(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC())));
+		setLinAccC( getLinAcc() + cross(getAngAcc(),getrC(true)) + cross(getAngVel(),cross(getAngVel(),getrC(true))));
 		break;
 	case STATIC:
 		setLinAccC( getLinAcc());
@@ -1836,6 +1836,16 @@ iDynInvSensor::iDynInvSensor(iDynChain *_c, unsigned int i, const Matrix &_H, co
 	sens = new SensorLinkNewtonEuler(_H,_HC,_m,_I,_mode,verb);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynInvSensor::~iDynInvSensor()
+{
+	if(sens!=NULL)
+		delete sens;
+	sens=NULL;
+
+	//do not delete the chain! only stop pointing at it!
+	chain=NULL;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynInvSensor::toString() const
 {
 	string ret;
@@ -2032,17 +2042,18 @@ string iDynInvSensorArm::getType() const
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-//======================================
+//=========================================
 //
-//		 iDYN INV SENSOR ARM 2
+//		 iDYN INV SENSOR ARM NO TORSO
 //
-//======================================
+//=========================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynInvSensorArm2::iDynInvSensorArm2(iCubArm2Dyn *_c, const NewEulMode _mode, unsigned int verb)
+iDynInvSensorArmNoTorso::iDynInvSensorArmNoTorso(iCubArmNoTorsoDyn *_c, const NewEulMode _mode, unsigned int verb)
 :iDynInvSensor(_c->asChain(),_c->getType(),_mode,verb)
 {
-	// FT sensor is in position 5 in the kinematic chain in both arms
+	// FT sensor is in position 2 in the kinematic chain in both arms
+	// note: it's 5 if arm with torso, 2 if arm without torso
 	lSens = 2;
 	// the arm type determines the sensor properties
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
@@ -2060,10 +2071,11 @@ iDynInvSensorArm2::iDynInvSensorArm2(iCubArm2Dyn *_c, const NewEulMode _mode, un
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynInvSensorArm2::iDynInvSensorArm2(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
+iDynInvSensorArmNoTorso::iDynInvSensorArmNoTorso(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
 :iDynInvSensor(_c,_type,_mode,verb)
 {
-	// FT sensor is in position 5 in the kinematic chain in both arms
+	// FT sensor is in position 2 in the kinematic chain in both arms
+	// note: it's 5 if arm with torso, 2 if arm without torso
 	lSens = 2;
 	// the arm type determines the sensor properties
 	if( !((_type=="left")||(_type=="right"))  )
@@ -2081,7 +2093,7 @@ iDynInvSensorArm2::iDynInvSensorArm2(iDynChain *_c, const string _type, const Ne
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynInvSensorArm2::getType() const
+string iDynInvSensorArmNoTorso::getType() const
 { 
 	return sens->getType();
 }

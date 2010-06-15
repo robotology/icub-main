@@ -118,7 +118,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 
 	/**
@@ -133,7 +133,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	 * Set the sensor measured force and moment
@@ -188,6 +188,18 @@ public:
 	 * must be set before calling this method using setSensorMeasures()
 	 */
 	void computeFromSensorNewtonEuler();
+
+	/**
+	 * The main computation method: given the FT sensor measurements, compute forces moments 
+	 * and torques in the iDynChain. The kinematic pass is already performed. Only the wrench 
+	 * computation are performed here: from sensor to end-effector
+	 * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
+	 * from sensor to base the classical backward pass is run.
+	 * This method only perform the computations: the force and moment measured on the sensor
+	 * must be set before calling this method using setSensorMeasures()
+	 * This method is called by iDynSensorNode.
+	 */
+	void computeWrenchFromSensorNewtonEuler();
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//  get methods, overloaded from iDyn
@@ -254,6 +266,10 @@ public:
 	yarp::sig::Vector getForceMomentEndEff() const;
 
 
+	/**
+	* Destructor
+	*/
+	~iDynSensor();
 };
 
 
@@ -280,7 +296,39 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+
+	/**
+	* @return type the arm sensor type: left/arm
+	*/
+	std::string getType() const;
+
+
+};
+
+
+/**
+* \ingroup iDynFwd
+*
+* A class for computing joint force/moment/torque of an iCub
+* arm (left/right) given the FT measurements of the sensor placed
+* in the middle of the arm. The sensor
+* parameters are automatically set by chosing left or right
+* during initialization of the iCubArmDyn.
+* 
+*/
+class iDynSensorArmNoTorso : public iDynSensor
+{
+
+public:
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice
+	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
+	* @param _mode the analysis mode (static/dynamic/etc)
+	* @param verb flag for verbosity
+    */
+	iDynSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm sensor type: left/arm
@@ -311,7 +359,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = STATIC, unsigned int verb = NO_VERBOSE);
+	iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the leg sensor type: left/arm

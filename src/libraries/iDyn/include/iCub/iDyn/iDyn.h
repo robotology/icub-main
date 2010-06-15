@@ -15,8 +15,6 @@
  * \section dep_sec Dependencies 
  * - ctrlLib 
  * - iKin
- * - IPOPT: see the <a
- *   href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>.
  * 
  * \section intro_sec Description
  * 
@@ -716,7 +714,7 @@ public:
 	 /**
 	 * Prepare for the Newton-Euler recursive computation of forces and torques
 	 */
-	 void prepareNewtonEuler(const NewEulMode NewEulMode_s=STATIC);
+	 void prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
 
 	 /**
 	 * Compute forces and torques with the Newton-Euler recursive algorithm: forward
@@ -748,7 +746,7 @@ public:
 	 /**
 	* Set the computation mode for Newton-Euler (static/dynamic/etc)
 	*/
-	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=STATIC);
+	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
 
 	/**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
@@ -1075,7 +1073,7 @@ public:
 
 	// methods for Newton-Euler computation
 
-	void prepareNewtonEuler(const NewEulMode NewEulMode_s=STATIC)
+	void prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)
 	{ iDynChain::prepareNewtonEuler(NewEulMode_s); }
 
 	 bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
@@ -1087,7 +1085,7 @@ public:
 	 bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 	 { return iDynChain::initNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
 	
-	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=STATIC)
+	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)
 	 { iDynChain::setModeNewtonEuler(NewEulMode_s); }
 
 	 yarp::sig::Matrix getForcesNewtonEuler() const	{return iDynChain::getForcesNewtonEuler();}
@@ -1160,7 +1158,7 @@ public:
 *
 * A class for defining the 7-DOF iCub Arm in the iDyn framework
 */
-class iCubArm2Dyn : public iDynLimb
+class iCubArmNoTorsoDyn : public iDynLimb
 {
 protected:
     virtual void allocate(const std::string &_type);
@@ -1169,20 +1167,20 @@ public:
     /**
     * Default constructor. 
     */
-    iCubArm2Dyn();
+    iCubArmNoTorsoDyn();
 
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
     *              "right" arm
     */
-    iCubArm2Dyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
+    iCubArmNoTorsoDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
 
     /**
     * Creates a new Arm from an already existing Arm object.
     * @param arm is the Arm to be copied.
     */
-    iCubArm2Dyn(const iCubArmDyn &arm);
+    iCubArmNoTorsoDyn(const iCubArmNoTorsoDyn &arm);
 };
 
 
@@ -1327,73 +1325,5 @@ public:
 };
 
 
-/**
-* \ingroup iDyn
-*
-* A class for defining the 1-DOF FakeRobot in the iDyn framework
-*/
-class iFakeDyn : public iDynLimb
-{
-protected:
-    virtual void allocate(const std::string &_type);
-
-public:
-    /**
-    * Default constructor. 
-    */
-    iFakeDyn();
-
-    /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
-    *              "right" arm
-    */
-    iFakeDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
-
-    /**
-    * Creates a new Arm from an already existing Arm object.
-    * @param arm is the Arm to be copied.
-    */
-    iFakeDyn(const iFakeDyn &arm);
-};
-
-
-/**
-* \ingroup iDyn
-*
-* A class for defining the 2-DOF FakeRobot in the iDyn framework
-*/
-class iFakeDyn2GdL : public iDynLimb
-{
-protected:
-    virtual void allocate(const std::string &_type);
-
-public:
-    /**
-    * Default constructor. 
-    */
-    iFakeDyn2GdL();
-
-    /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
-    *              "right" arm
-    */
-    iFakeDyn2GdL(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
-
-    /**
-    * Creates a new Arm from an already existing Arm object.
-    * @param arm is the Arm to be copied.
-    */
-    iFakeDyn2GdL(const iFakeDyn2GdL &arm);
-};
-
-
-
-
-
-
-
-
-} //end of namespace iDyn
+}//end namespace
 #endif
