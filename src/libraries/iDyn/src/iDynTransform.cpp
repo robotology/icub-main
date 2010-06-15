@@ -160,7 +160,7 @@ void iFrameOnLink::setLink(int _l)
 void iFrameOnLink::setFT(const yarp::sig::Vector &_FT)
 {
 	FT=Sensor->setFT(_FT);
-	fprintf(stderr,"");
+	//fprintf(stderr,"");
 }
 
 void iFrameOnLink::setSensorKin(int _l)
@@ -258,7 +258,7 @@ iFTransformation::iFTransformation(iDynInvSensor *_iDynChainWithSensor)
 
 	Sensor->attach(Limb);
 	Sensor->attach(SensorFrame);
-	fprintf(stderr,"set up sensor transformation\n");
+	//fprintf(stderr,"set up sensor transformation\n");
 }
 void iFTransformation::attach(iKin::iKinChain *_Limb)
 {    
