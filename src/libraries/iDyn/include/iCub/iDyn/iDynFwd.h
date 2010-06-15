@@ -269,7 +269,7 @@ public:
 	/**
 	* Destructor
 	*/
-	~iDynSensor();
+	virtual ~iDynSensor();
 };
 
 

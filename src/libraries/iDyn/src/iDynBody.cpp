@@ -991,45 +991,99 @@ bool UpperTorso::update(const Vector &w0, const Vector &dw0, const Vector &ddp0,
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getTorques(const string &limbType)
+
+	//----------------
+	//      GET
+	//----------------
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix UpperTorso::getForces(const string &limbType)
 {
-	Vector tau;
 	if(limbType=="head")
-	{}
+	{
+		return head->getForces();
+	}
 	else if(limbType=="left_arm")
-	{}
+	{
+		return leftArm->getForces();
+	}
 	else if(limbType=="right_arm")
-	{}
+	{
+		return rightArm->getForces();
+	}
 	else
 	{		
 		if(verbose)
 			cerr<<"UpperTorso: there's not a limb named "<<limbType<<". Only head/left_arm/right_arm are available. "<<endl;
-		tau.resize(1); tau.zero();
+		return Matrix(0,0);
 	}
-	return tau;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getForce() const
+Matrix UpperTorso::getMoments(const string &limbType)
+{
+	if(limbType=="head")
+	{
+		return head->getMoments();
+	}
+	else if(limbType=="left_arm")
+	{
+		return leftArm->getMoments();
+	}
+	else if(limbType=="right_arm")
+	{
+		return rightArm->getMoments();
+	}
+	else
+	{		
+		if(verbose)
+			cerr<<"UpperTorso: there's not a limb named "<<limbType<<". Only head/left_arm/right_arm are available. "<<endl;
+		return Matrix(0,0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector UpperTorso::getTorques(const string &limbType)
+{
+	if(limbType=="head")
+	{
+		return head->getTorques();
+	}
+	else if(limbType=="left_arm")
+	{
+		return leftArm->getTorques();
+	}
+	else if(limbType=="right_arm")
+	{
+		return rightArm->getTorques();
+	}
+	else
+	{		
+		if(verbose)
+			cerr<<"UpperTorso: there's not a limb named "<<limbType<<". Only head/left_arm/right_arm are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector UpperTorso::getTorsoForce() const
 {
 	return F;
 }	
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getMoment() const
+Vector UpperTorso::getTorsoMoment() const
 {
 	return Mu;
 }	
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getAngVel() const
+Vector UpperTorso::getTorsoAngVel() const
 {
 	return w;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getAngAcc() const
+Vector UpperTorso::getTorsoAngAcc() const
 {
 	return dw;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getLinAcc() const
+Vector UpperTorso::getTorsoLinAcc() const
 {
 	return ddp;
 }

@@ -549,12 +549,16 @@ protected:
 public:
 
 	/**
-	*	Default constructor
+	* Default constructor
+	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	*/
 	iDynSensorNode(const NewEulMode _mode=DYNAMIC);
 
 	/**
-	*	Constructor
+	* Constructor
+	* @param _info some information, ie the node name
+	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
+	* @param verb verbosity flag
 	*/
 	iDynSensorNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
 
@@ -612,38 +616,48 @@ public:
 };
 
 
-
+/**
+* \ingroup iDynBody
+*
+* A class for connecting head, left and right arm of the iCub, and exchanging kinematic and 
+* wrench information between limbs, when both arms have FT sensors and the head use the 
+* inertial sensor.
+*/
 class UpperTorso : protected iDynSensorNode
 {
 protected:
 
-	//iDyn::iCubArmNoTorsoDyn * leftArm;
-	//iDyn::iCubArmNoTorsoDyn * rightArm;
-	//iDyn::iCubNeckInertialDyn * head;
-
+	/// left arm - limb
 	iDyn::iDynLimb * leftArm;
+	/// right arm - limb
 	iDyn::iDynLimb * rightArm;
+	/// head - limb
 	iDyn::iDynLimb * head;
 
-	//iDyn::iDynSensorArmNoTorso * leftSensor;
-	//iDyn::iDynSensorArmNoTorso * rightSensor;
-
+	/// left arm - FT sensor and solver
 	iDyn::iDynSensor * leftSensor;
+	/// right arm - FT sensor and solver
 	iDyn::iDynSensor * rightSensor;
 
+	/// roto-translational matrix defining the head base frame with respect to the upper-torso
 	yarp::sig::Matrix HHead;
+	/// roto-translational matrix defining the left arm base frame with respect to the upper-torso
 	yarp::sig::Matrix HLeftArm;
+	/// roto-translational matrix defining the right arm base frame with respect to the upper-torso
 	yarp::sig::Matrix HRightArm;
 
 public:
 
 	/**
-	*	Default constructor
+	* Constructor
+	* @param _info some information, ie the node name
+	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
+	* @param verb verbosity flag
 	*/
 	UpperTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
 
 	/**
-	*	Destructor
+	* Destructor
 	*/
 	~UpperTorso();
 
@@ -653,36 +667,56 @@ public:
 
 	bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
 
+	/**
+	* Main method for soliving kinematics and wrench among limbs, where information are shared.
+	*/
 	bool update();
-
+	
+	/**
+	* Main method for soliving kinematics and wrench among limbs, where information are shared.
+	*/
 	bool update(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
 
-	yarp::sig::Vector getTorques(const std::string &limbType);
 
+	//----------------
+	//      GET
+	//----------------
+
+	/**
+	* @param limbType a string with the limb name: head/left_arm/right_arm
+	* @return the chosen limb forces
+	*/
+	yarp::sig::Matrix getForces(const std::string &limbType);	
+	/**
+	* @param limbType a string with the limb name: head/left_arm/right_arm
+	* @return the chosen limb moments
+	*/
+	yarp::sig::Matrix getMoments(const std::string &limbType);	
+	/**
+	* @param limbType a string with the limb name: head/left_arm/right_arm
+	* @return the chosen limb torques
+	*/
+	yarp::sig::Vector getTorques(const std::string &limbType);
 	/**
 	* @return the upper-torso force
 	*/
-	yarp::sig::Vector getForce() const;
-	
+	yarp::sig::Vector getTorsoForce() const;
 	/**
 	* @return the upper-torso moment
 	*/
-	yarp::sig::Vector getMoment() const;
-	
+	yarp::sig::Vector getTorsoMoment() const;	
 	/**
 	* @return the upper-torso angular velocity
 	*/
-	yarp::sig::Vector getAngVel() const;
-
+	yarp::sig::Vector getTorsoAngVel() const;
 	/**
 	* @return the upper-torso angular acceleration
 	*/
-	yarp::sig::Vector getAngAcc() const;
-
+	yarp::sig::Vector getTorsoAngAcc() const;
 	/**
 	* @return the upper-torso linear acceleration
 	*/
-	yarp::sig::Vector getLinAcc() const;
+	yarp::sig::Vector getTorsoLinAcc() const;
 
 
 
