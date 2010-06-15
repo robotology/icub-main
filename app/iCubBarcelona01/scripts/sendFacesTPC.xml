@@ -1,0 +1,31 @@
+<application>
+<name>Send Faces TPC</name>
+        <module>
+                <name>tpcFaces</name>
+		<node>icubdebian2</node>
+                <tag>tpcfaces</tag>
+        </module>
+          
+        <module>
+                <name>iKinGazeCtrl</name>
+                <node>icubdebian2</node>
+                <tag>gazeCtrl</tag>
+        </module>
+        <connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/tpcfaces/image/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/icub/camcalib/right/out</from>
+                <to>/tpcfaces/image/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+       
+	<connection>
+                <from>/tpcfaces/two_d_points/out</from>
+                <to>/iKinGazeCtrl/head/pixel:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        
+</application>
