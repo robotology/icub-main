@@ -29,8 +29,9 @@ find_package(ODE)
 find_package(SDL)
 
 find_package(GtkPlus)
-find_package(IPOPT)
 find_package(ACE)
+find_package(IPOPT)
+find_package(IPP)
 message(STATUS "I have found the following libraries:")
 
 checkandset_dependency(GSL)
@@ -43,6 +44,7 @@ checkandset_dependency(SDL)
 checkandset_dependency(GtkPlus)
 checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
+checkandset_dependency(IPP)
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
