@@ -311,6 +311,7 @@ public:
                 
                 for(int n=0; n<scales.size(); n++) {
                     
+/*
                     scale_offset = ceil(sqrt(scales[n]))*5;
 
                     y_min = floor(scale_offset/2);
@@ -318,7 +319,16 @@ public:
                     
                     y_max = height-scale_offset;
                     x_max = width-scale_offset;
+*/   
+                    scale_offset = 0;
                     
+                    y_min = floor(scale_offset/2);
+                    x_min = floor(scale_offset/2);                            
+                    
+                    y_max = height-scale_offset;
+                    x_max = width-scale_offset;
+                    
+                 
                     if(type == "blob") {
                         
                         //Ledge = (Lxx + Lyy);
