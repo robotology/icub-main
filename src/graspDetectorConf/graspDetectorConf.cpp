@@ -107,11 +107,22 @@ void graspDetectorConf::buildPattern()
                             counterValid++;
                         }
                 }
-            fprintf(stderr, "DEBUG: %d vs %d", validData, counterValid);
+            fprintf(stderr, "DEBUG: %d vs %d\n", validData, counterValid);
+            
+            Matrix QTpinv;
+            if (validData > index.length())
+                {
+                    QTpinv = pinv(Qvalid.transposed(), 1e-5);
+                    lambda = QTpinv*bvalid;
+                }
+            else
+                {
+                    fprintf(stderr, "WARNING: results might be imprecise \n");
+                    QTpinv = pinv(Q.transposed(), 1e-5);
+                    lambda = QTpinv*b;
+                }
 
-            Matrix QTpinv = pinv(Qvalid.transposed(), 1e-5);
-
-            lambda = QTpinv*b;
+            
             //tmp = Q.transposed()*lambda - b;
             //for (j = 0; j < N_DATA; j++)
             //    fprintf(stderr, "pinv(QT): %s\n", QTpinv.getCol(j).toString().c_str());       

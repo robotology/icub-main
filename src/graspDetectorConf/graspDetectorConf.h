@@ -104,7 +104,7 @@ using namespace yarp::dev;
 using namespace yarp::os;
 
 #define PI 3.14
-#define N_DATA 3000
+#define N_DATA 10000
 
 /**
 * \ingroup icub_graspDetectorConfThread
