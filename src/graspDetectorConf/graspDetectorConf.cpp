@@ -62,7 +62,8 @@ void graspDetectorConf::buildPattern()
 {    
     int i,j;
     int n=index.size();
-
+    int validData=1;
+    
     Vector tmp;
     Matrix  Q(2, N_DATA);
     Vector b(N_DATA);
@@ -81,9 +82,34 @@ void graspDetectorConf::buildPattern()
                     Q(0,j) = D((int) index(0),j);
                     Q(1,j) = D((int) index(i),j);
                     b(j) = 1;
+                    if (j != 0)
+                        if (fabs(Q(0,j) - Q(0,j-1))>=2 ||  fabs(Q(1,j) - Q(1,j-1))>=2)
+                            validData++;
                 }
 
-            Matrix QTpinv = pinv(Q.transposed(), 1e-5);
+            Matrix  Qvalid(2, validData);
+            Vector  bvalid(validData);
+            int counterValid = 0;
+            for (j = 0; j < N_DATA; j++)
+                {
+                    if (j==0)
+                        {
+                            Qvalid(0,counterValid) = Q(0,j);
+                            Qvalid(1,counterValid) = Q(1,j);
+                            bvalid(counterValid) = 1;
+                            counterValid++;
+                        }
+                    else if (fabs(Q(0,j) - Q(0,j-1))>=2 ||  fabs(Q(1,j) - Q(1,j-1))>=2)
+                        {
+                            Qvalid(0,counterValid) = Q(0,j);
+                            Qvalid(1,counterValid) = Q(1,j);
+                            bvalid(counterValid) = 1;
+                            counterValid++;
+                        }
+                }
+            fprintf(stderr, "DEBUG: %d vs %d", validData, counterValid);
+
+            Matrix QTpinv = pinv(Qvalid.transposed(), 1e-5);
 
             lambda = QTpinv*b;
             //tmp = Q.transposed()*lambda - b;
