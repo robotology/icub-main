@@ -50,10 +50,10 @@ iDynSensor::iDynSensor(iDynChain *_c, unsigned int i, const Matrix &_H, const Ma
 :iDynInvSensor(_c, i, _H, _HC, _m, _I, _info, _mode, verb)
 {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynSensor::~iDynSensor()
-{
-	iDynInvSensor::~iDynInvSensor();
-}
+//iDynSensor::~iDynSensor()
+//{
+//	//iDynInvSensor::~iDynInvSensor();
+//}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynSensor::setSensorMeasures(const Vector &F, const Vector &Mu)
 {
