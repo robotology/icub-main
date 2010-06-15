@@ -1,5 +1,5 @@
 # ask Francesco Rea if you have troubles.
-SET(VERBOSE TRUE)
+SET(VERBOSE FALSE)
 
 IF(VERBOSE)
 MESSAGE(STATUS "Looking for IPP using FindIPP.cmake")
