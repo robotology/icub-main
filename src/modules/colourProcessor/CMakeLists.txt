@@ -1,9 +1,14 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 SET(PROJECTNAME colourProcessor)
 
 PROJECT(${PROJECTNAME})
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
+
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf)
+FIND_PACKAGE(IPP)
 
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 FILE(GLOB folder_header include/iCub/*.h)
