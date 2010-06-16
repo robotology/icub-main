@@ -1,0 +1,5 @@
+ccmake .
+
+set YARP_AUTO_LINK option to on
+set CMAKE_BUILD to Release
+
