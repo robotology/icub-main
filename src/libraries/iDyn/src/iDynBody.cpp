@@ -1387,8 +1387,18 @@ void iCubUpperTorso::build()
 	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
 
 	HUp.resize(4,4);	HUp.eye();
-	HLeft.resize(4,4);	HLeft.eye();
-	HRight.resize(4,4);	HRight.eye();
+	HLeft.resize(4,4);	HLeft.zero();
+	HRight.resize(4,4);	HRight.zero();
+	double theta = CTRL_DEG2RAD * (180.0-15.0);
+	HLeft(0,0) = cos(theta);	HLeft(0,1) = 0.0;		HLeft(0,2) = sin(theta);	HLeft(0,3) = 0.003066;
+	HLeft(1,0) = 0.0;			HLeft(1,1) = 1.0;		HLeft(1,2) = 0.0;			HLeft(1,3) = -0.049999;
+	HLeft(2,0) = -sin(theta);	HLeft(2,1) = 0.0;		HLeft(2,2) = cos(theta);	HLeft(2,3) = -0.110261;
+	HLeft(3,3) = 1.0;
+	
+	HRight(0,0) = -cos(theta);	HRight(0,1) = 0.0;  HRight(0,2) = -sin(theta);	HRight(0,3) = 0.00294;
+	HRight(1,0) = 0.0;			HRight(1,1) = -1.0; HRight(1,2) = 0.0;			HRight(1,3) = -0.050;
+	HRight(2,0) = -sin(theta);	HRight(2,1) = 0.0;	HRight(2,2) = cos(theta);	HRight(2,3) = 0.10997;
+	HRight(3,3) = 1.0;
 
 	// order: head - right arm - left arm
 	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
