@@ -32,15 +32,22 @@ using namespace iKin;
 // and type the target pose manually.
 class xdPort : public BufferedPort<Bottle>
 {
-public:
-    xdPort(const Vector &xd0)         { xd=xd0;    }
-    Vector &get_xd()                  { return xd; }
-    void    set_xd(const Vector &_xd) { xd=_xd;    }
-
 protected:
     Vector xd;
+    bool   isNew;
 
     virtual void onRead(Bottle &b);
+
+public:
+    xdPort(const Vector &xd0)
+    { 
+        xd=xd0;
+        isNew=false;
+    }
+
+    bool   &get_new()                 { return isNew; }
+    Vector &get_xd()                  { return xd;    }
+    void    set_xd(const Vector &_xd) { xd=_xd;       }
 };
 
 
@@ -56,7 +63,10 @@ protected:
     bool   neckAlign;
 
 public:
-    exchangeData();
+    exchangeData()
+    {
+        neckAlign=false;
+    }
 
     Vector &get_xd()        { return xd;        }
     Vector &get_qd()        { return qd;        }

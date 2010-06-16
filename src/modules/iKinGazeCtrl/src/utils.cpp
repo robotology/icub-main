@@ -11,13 +11,8 @@ void xdPort::onRead(Bottle &b)
 
     for (unsigned int i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
-}
 
-
-/************************************************************************/
-exchangeData::exchangeData()
-{
-    neckAlign=false;
+    isNew=true;
 }
 
 

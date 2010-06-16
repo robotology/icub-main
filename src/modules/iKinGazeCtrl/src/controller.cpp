@@ -140,10 +140,6 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 /************************************************************************/
 bool Controller::threadInit()
 {
-    // here the commData structure must be
-    // initialized correctly
-    xd=commData->get_xd();
-
     port_x=new BufferedPort<Vector>;
     string n1=localName+"/x:o";
     port_x->open(n1.c_str());
@@ -195,10 +191,11 @@ void Controller::run()
     {
         // switch-on condition
         isCtrlActive=commData->get_neckAlign() ||
-			         (canCtrlBeDisabled ? !(commData->get_xd()==xd) :
+			         (canCtrlBeDisabled ? port_xd->get_new() :
                                           norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES);
 
         commData->get_neckAlign()=false;
+        port_xd->get_new()=false;
     }
 
     // get data
