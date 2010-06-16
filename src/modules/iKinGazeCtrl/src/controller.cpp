@@ -177,7 +177,7 @@ void Controller::run()
 {
     bool swOffCond=(norm(commData->get_qd()-fbHead)<CTRL_DEG2RAD*GAZECTRL_MOTIONDONE_QTHRES);
 
-    // verify control's switching conditions
+    // verify control switching conditions
     if (isCtrlActive)
     {
         // switch-off condition
