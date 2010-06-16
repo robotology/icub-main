@@ -266,10 +266,6 @@ public:
 	yarp::sig::Vector getForceMomentEndEff() const;
 
 
-	///**
-	//* Destructor
-	//*/
-	//virtual ~iDynSensor();
 };
 
 

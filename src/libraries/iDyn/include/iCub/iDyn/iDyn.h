@@ -78,6 +78,7 @@ namespace iDyn
 	class iFTransformation;
 	class iDynSensorLeg;
 	class iDynSensorArm;
+	class iCubWholeBody;
 
 
 
@@ -991,10 +992,17 @@ public:
     */
     std::string getType() { return type; }
 
+	/**
+    * Destructor. 
+    */
+    virtual ~iDynLimb();
 
-    unsigned int      getN()                                                          { return N;                                   }
+
+	// base methods - see iKin
+
+    unsigned int      getN() const                                                    { return N;                                   }
 	unsigned int      getNTOT()														  { return iDynChain::getNTOT();                }
-	unsigned int      getDOF()                                                        { return DOF;                                 }
+	unsigned int      getDOF() const                                                  { return DOF;                                 }
     bool              blockLink(const unsigned int i, double Ang)                     { return iDynChain::blockLink(i,Ang);         }
     bool              blockLink(const unsigned int i)                                 { return iDynChain::blockLink(i);             }
     bool              setBlockingValue(const unsigned int i, double Ang)              { return iDynChain::setBlockingValue(i,Ang);  }
@@ -1011,9 +1019,7 @@ public:
 	yarp::sig::Matrix getH(const unsigned int i, const bool allLink=false)            { return iDynChain::getH(i,allLink);          }
     yarp::sig::Matrix getH()                                                          { return iDynChain::getH();                   }
     yarp::sig::Matrix getH(const yarp::sig::Vector &q)                                { return iDynChain::getH(q);                  }
-
     yarp::sig::Vector Pose(const unsigned int i, const bool axisRep=true)             { return iDynChain::Pose(i,axisRep);          }
-	
     yarp::sig::Vector EndEffPose(const bool axisRep=true)                             { return iDynChain::EndEffPose(axisRep);      }
     yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true) { return iDynChain::EndEffPose(q,axisRep);    }
     yarp::sig::Matrix AnaJacobian(unsigned int col=3)                                 { return iDynChain::AnaJacobian(col);         }
@@ -1053,14 +1059,16 @@ public:
 	yarp::sig::Vector getTorques() const											  { return iDynChain::getTorques();				}
 	yarp::sig::Vector getForce(const unsigned int iLink) const						  { return iDynChain::getForce(iLink);			}
 	yarp::sig::Vector getMoment(const unsigned int iLink) const						  { return iDynChain::getMoment(iLink);			}
-	double getTorque(const unsigned int iLink) const								  { return iDynChain::getTorque(iLink);			}
+	double			  getTorque(const unsigned int iLink) const						  { return iDynChain::getTorque(iLink);			}
 
-	// dynamic parameters
+	// mass
 
 	yarp::sig::Vector getMasses() const												  { return iDynChain::getMasses();				}
-	bool setMasses(yarp::sig::Vector _m)											  { return iDynChain::setMasses(_m);			}
-	double getMass(const unsigned int i) const										  { return iDynChain::getMass(i);				}
-	bool setMass(const unsigned int i, const double _m)								  { return iDynChain::setMass(i,_m);			}
+	bool			  setMasses(yarp::sig::Vector _m)								  { return iDynChain::setMasses(_m);			}
+	double			  getMass(const unsigned int i) const							  { return iDynChain::getMass(i);				}
+	bool			  setMass(const unsigned int i, const double _m)				  { return iDynChain::setMass(i,_m);			}
+
+	// dynamic parameters
 
 	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im) 
 	{ return iDynChain::setDynamicParameters(i,_m,_HC,_I,_kr,_Fv,_Fs,_Im); }
@@ -1073,50 +1081,43 @@ public:
 
 	// methods for Newton-Euler computation
 
-	void prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)
-	{ iDynChain::prepareNewtonEuler(NewEulMode_s); }
+	bool				computeNewtonEuler()										{ return iDynChain::computeNewtonEuler(); }
+	void				setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)	{ iDynChain::setModeNewtonEuler(NewEulMode_s); }
+	void				prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)	{ iDynChain::prepareNewtonEuler(NewEulMode_s); }
+	yarp::sig::Matrix	getForcesNewtonEuler() const								{ return iDynChain::getForcesNewtonEuler();}
+	yarp::sig::Matrix	getMomentsNewtonEuler() const								{ return iDynChain::getMomentsNewtonEuler();}
+	yarp::sig::Vector	getTorquesNewtonEuler() const								{ return iDynChain::getTorquesNewtonEuler();}
+	void				computeKinematicNewtonEuler() 								{ iDynChain::computeKinematicNewtonEuler();}
+	void				computeWrenchNewtonEuler()									{ iDynChain::computeWrenchNewtonEuler();}
 
-	 bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
+	bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 	{ return iDynChain::computeNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
 
-	  bool computeNewtonEuler()
-	{ return iDynChain::computeNewtonEuler(); }
+	bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
+	{ return iDynChain::initNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
 
-	 bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
-	 { return iDynChain::initNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
-	
-	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)
-	 { iDynChain::setModeNewtonEuler(NewEulMode_s); }
-
-	 yarp::sig::Matrix getForcesNewtonEuler() const	{return iDynChain::getForcesNewtonEuler();}
-	 yarp::sig::Matrix getMomentsNewtonEuler() const{return iDynChain::getMomentsNewtonEuler();}
-	 yarp::sig::Vector getTorquesNewtonEuler() const{return iDynChain::getTorquesNewtonEuler();}
-
-	 bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0)
-	 {return iDynChain::initKinematicNewtonEuler(w0, dw0, ddp0);}
+	bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0)
+	{return iDynChain::initKinematicNewtonEuler(w0, dw0, ddp0);}
 	 
-	 bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
-	 {return iDynChain::initWrenchNewtonEuler(Fend,Muend);}
+	bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
+	{return iDynChain::initWrenchNewtonEuler(Fend,Muend);}
 
-	 void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp) 
-	 {iDynChain::getKinematicNewtonEuler(w,dw,ddp);}
+	void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp) 
+	{iDynChain::getKinematicNewtonEuler(w,dw,ddp);}
 	 
-	 void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp)
-	 {iDynChain::getFrameKinematic(i,w,dw,ddp);}
-	 void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu)
-		 {iDynChain::getFrameWrench(i,F,Mu);}
+	void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp)
+	{iDynChain::getFrameKinematic(i,w,dw,ddp);}
+	 
+	void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu)
+	{iDynChain::getFrameWrench(i,F,Mu);}
 
-	 void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu) 
-	 {iDynChain::getWrenchNewtonEuler(F,Mu);}
-
-	 void computeKinematicNewtonEuler() { iDynChain::computeKinematicNewtonEuler();}
-	 void computeWrenchNewtonEuler()	{ iDynChain::computeWrenchNewtonEuler();}
+	void getWrenchNewtonEuler( yarp::sig::Vector &F, yarp::sig::Vector &Mu) 
+	{iDynChain::getWrenchNewtonEuler(F,Mu);}
 
 
-    /**
-    * Destructor. 
-    */
-    virtual ~iDynLimb();
+
+
+
 };
 
 
@@ -1152,7 +1153,6 @@ public:
 
 
 
-
 /**
 * \ingroup iDyn
 *
@@ -1181,6 +1181,37 @@ public:
     * @param arm is the Arm to be copied.
     */
     iCubArmNoTorsoDyn(const iCubArmNoTorsoDyn &arm);
+};
+
+
+/**
+* \ingroup iDyn
+*
+* A class for defining the 3-DOF iCub Torso in the iDyn framework
+*/
+class iCubTorsoDyn : public iDynLimb
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubTorsoDyn();
+
+    /**
+    * Constructor. Note that the type is not influential at the moment, 
+	* but the distinction could be useful for future developments.
+    * @param _type is a string to discriminate between "upper" and "lower" torso
+    */
+    iCubTorsoDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
+
+    /**
+    * Creates a new Torso from an already existing Torso object.
+    * @param torso is the Torso to be copied.
+    */
+    iCubTorsoDyn(const iCubTorsoDyn &torso);
 };
 
 

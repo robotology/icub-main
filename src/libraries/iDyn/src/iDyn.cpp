@@ -1425,7 +1425,6 @@ void iCubArmDyn::allocate(const string &_type)
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -1492,6 +1491,66 @@ void iCubArmNoTorsoDyn::allocate(const string &_type)
         *this << *linkList[i];
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+//======================================
+//
+//			  ICUB TORSO DYN
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubTorsoDyn::iCubTorsoDyn()
+{
+    allocate("lower");
+	setIterMode(KINBWD_WREBWD);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubTorsoDyn::iCubTorsoDyn(const string &_type, const ChainComputationMode _mode)
+{
+	allocate(_type); 
+	setIterMode(_mode);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubTorsoDyn::iCubTorsoDyn(const iCubTorsoDyn &torso)
+{
+    clone(torso);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iCubTorsoDyn::allocate(const string &_type)
+{
+	type = _type;
+	if(type!="lower" && type!="upper")
+		type = "lower";
+
+    H0.zero();
+    H0(0,1)=-1;	H0(1,2)=-1;
+    H0(2,0)=1;	H0(3,3)=1;
+
+    linkList.resize(3);
+
+    if (type=="lower")
+    {
+		//      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
+        linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.0,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,  -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+    }
+    else
+    {
+        linkList[0]=new iDynLink(0,	0,	0,  0,		0,0,0,	0,0,0,		  0.032,     0.0,		M_PI/2.0,                 0.0,	-22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,		    0.0,	 0.0,		M_PI/2.0,           -M_PI/2.0,	-39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	  0.0233647, -0.1433,	   -M_PI/2.0,  105.0*CTRL_DEG2RAD,  -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+    }
+	//insert in the allList
+    for(unsigned int i=0; i<linkList.size(); i++)
+        *this << *linkList[i];
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 
 //======================================

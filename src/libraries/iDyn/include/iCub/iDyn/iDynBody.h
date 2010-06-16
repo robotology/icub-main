@@ -35,7 +35,7 @@
  * node->solveWrench(FM);
  * 
  * Now that the node is solved, one can get kinematic/dynamic information from 
- * the head (or any attached limb) 
+ * the up (or any attached limb) 
  *
  * \note <b>Release status</b>:  this library is currently under development!
  * Date: first draft 06/2010
@@ -82,7 +82,7 @@ namespace iDyn
 // Interaction type
 // used to define what side of the chain (limb) is attached to the node
 // the base or the end-effector
-// note: head, arm and legs are attached with the base
+// note: up, arm and legs are attached with the base
 // torso is attached with the end-effector to the upper arm, and with the 
 enum InteractionType { RBT_BASE, RBT_ENDEFF };
 
@@ -401,7 +401,7 @@ public:
 	/**
 	* Main function to manage the exchange of kinematic information among the limbs attached to the node.
 	* One single limb with kinematic flow of input type must exist: this limb is initilized with the kinematic variables
-	* w0,dw0,ddp0 (eg the head receives this information from the inertia sensor). The limb itself knows where to init the 
+	* w0,dw0,ddp0 (eg the up receives this information from the inertia sensor). The limb itself knows where to init the 
 	* chain (base/end) depending on how it is attached to the node. Then the first limb kinematics is solved.
 	* The kinematic variables are retrieved from the RBT, which applies its roto-translation. Then the kinematic
 	* variables are sent to the other limbs, having kinematic flow of output type: the RBT transformation is applied from node
@@ -619,32 +619,49 @@ public:
 /**
 * \ingroup iDynBody
 *
-* A class for connecting head, left and right arm of the iCub, and exchanging kinematic and 
-* wrench information between limbs, when both arms have FT sensors and the head use the 
-* inertial sensor.
+* A class for connecting a central-up limb, a left and right limb of the iCub, and exchanging kinematic and 
+* wrench information between limbs, when both left/right limb have FT sensors and the central-up one use the 
+* kinematic and wrench information coming from a inertial measurements or another iDynSensorNode. 
+* This is the base class of UpperTorso and LowerTorso. The connection between UpperTorso
+* and LowerTorso is not handled here: it is simply supposed that a Torso Node receives correct 
+* kinematic and wrench input from outside.
 */
-class UpperTorso : protected iDynSensorNode
+class iDynSensorTorsoNode : protected iDynSensorNode
 {
 protected:
 
-	/// left arm - limb
-	iDyn::iDynLimb * leftArm;
-	/// right arm - limb
-	iDyn::iDynLimb * rightArm;
-	/// head - limb
-	iDyn::iDynLimb * head;
+	/// left limb
+	iDyn::iDynLimb * left;
+	/// right limb
+	iDyn::iDynLimb * right;
+	/// central-up limb
+	iDyn::iDynLimb * up;
 
-	/// left arm - FT sensor and solver
+	/// left leg - FT sensor and solver
 	iDyn::iDynSensor * leftSensor;
-	/// right arm - FT sensor and solver
+	/// right leg - FT sensor and solver
 	iDyn::iDynSensor * rightSensor;
 
-	/// roto-translational matrix defining the head base frame with respect to the upper-torso
-	yarp::sig::Matrix HHead;
-	/// roto-translational matrix defining the left arm base frame with respect to the upper-torso
-	yarp::sig::Matrix HLeftArm;
-	/// roto-translational matrix defining the right arm base frame with respect to the upper-torso
-	yarp::sig::Matrix HRightArm;
+	/// roto-translational matrix defining the central-up base frame with respect to the torso node
+	yarp::sig::Matrix HUp;
+	/// roto-translational matrix defining the left limb base frame with respect to the torso node
+	yarp::sig::Matrix HLeft;
+	/// roto-translational matrix defining the right limb base frame with respect to the torso node
+	yarp::sig::Matrix HRight;
+
+	/// name of left limb
+	std::string left_name;
+	/// name of right limb
+	std::string right_name;
+	/// name of central-up limb
+	std::string up_name;
+	/// the torso node name
+	std::string name;
+
+	/**
+	* Build the node.
+	*/
+	virtual void build();
 
 public:
 
@@ -654,28 +671,29 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	UpperTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+	iDynSensorTorsoNode(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
 
 	/**
 	* Destructor
 	*/
-	~UpperTorso();
-
-	bool setInertialMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
-	
-	bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left);
-
-	bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
+	~iDynSensorTorsoNode();
 
 	/**
-	* Main method for soliving kinematics and wrench among limbs, where information are shared.
+	* Main method for solving kinematics and wrench among limbs, where information are shared.
 	*/
 	bool update();
 	
 	/**
-	* Main method for soliving kinematics and wrench among limbs, where information are shared.
+	* Main method for solving kinematics and wrench among limbs, where information are shared.
+	* @param w0 a 3x1 vector with the initial/measured angular velocity
+	* @param dw0 a 3x1 vector with the initial/measured angular acceleration
+	* @param ddp0 a 3x1 vector with the initial/measured linear acceleration
+	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
+	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
+	* @param FM_up a 6x1 vector with forces and moments initializing the central limb
+	* @return true if succeeds, false otherwise
 	*/
-	bool update(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
+	bool update(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_up);
 
 
 	//----------------
@@ -683,50 +701,227 @@ public:
 	//----------------
 
 	/**
-	* @param limbType a string with the limb name: head/left_arm/right_arm
+	* @param limbType a string with the limb name
 	* @return the chosen limb forces
 	*/
 	yarp::sig::Matrix getForces(const std::string &limbType);	
+
 	/**
-	* @param limbType a string with the limb name: head/left_arm/right_arm
+	* @param limbType a string with the limb name
+	* @param iLink the link index in the limb
+	* @return the chosen limb-link force
+	*/
+	yarp::sig::Vector getForce(const std::string &limbType, const unsigned int iLink) const	;
+
+	/**
+	* @param limbType a string with the limb name
 	* @return the chosen limb moments
 	*/
-	yarp::sig::Matrix getMoments(const std::string &limbType);	
+	yarp::sig::Matrix getMoments(const std::string &limbType);
+
 	/**
-	* @param limbType a string with the limb name: head/left_arm/right_arm
+	* @param limbType a string with the limb name
+	* @param iLink the link index in the limb
+	* @return the chosen limb-link moment
+	*/
+	yarp::sig::Vector getMoment(const std::string &limbType, const unsigned int iLink) const;
+
+	/**
+	* @param limbType a string with the limb name
 	* @return the chosen limb torques
 	*/
 	yarp::sig::Vector getTorques(const std::string &limbType);
+
 	/**
-	* @return the upper-torso force
+	* @param limbType a string with the limb name
+	* @param iLink the link index in the limb
+	* @return the chosen limb-link torque
+	*/
+	double getTorque(const std::string &limbType, const unsigned int iLink) const;
+
+	/**
+	* @return the torso force
 	*/
 	yarp::sig::Vector getTorsoForce() const;
 	/**
-	* @return the upper-torso moment
+	* @return the torso moment
 	*/
 	yarp::sig::Vector getTorsoMoment() const;	
 	/**
-	* @return the upper-torso angular velocity
+	* @return the torso angular velocity
 	*/
 	yarp::sig::Vector getTorsoAngVel() const;
 	/**
-	* @return the upper-torso angular acceleration
+	* @return the torso angular acceleration
 	*/
 	yarp::sig::Vector getTorsoAngAcc() const;
 	/**
-	* @return the upper-torso linear acceleration
+	* @return the torso linear acceleration
 	*/
 	yarp::sig::Vector getTorsoLinAcc() const;
 
 
+	//----------------
+	//      SET
+	//----------------
+
+	/**
+	* Set the inertial sensor measurements on the central-up limb
+	* @param w0 a 3x1 vector with the initial/measured angular velocity
+	* @param dw0 a 3x1 vector with the initial/measured angular acceleration
+	* @param ddp0 a 3x1 vector with the initial/measured linear acceleration
+	* @return true if succeeds (correct vectors size), false otherwise
+	*/
+	bool setInertialMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+	
+	/**
+	* Set the FT sensor measurements on the sensor in right and left limb. This operation is necessary to 
+	* initialize the wrench phase correctly. The central-up limb wrench is initialized with a null vector (=0).
+	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
+	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
+	* @return true if succeeds, false otherwise
+	*/
+	bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left);
+
+	/**
+	* Set the FT sensor measurements on the sensor in right and left limb. This operation is necessary to 
+	* initialize the wrench phase correctly. The central-up limb wrench initializing wrench is also specified.
+	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
+	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
+	* @param FM_up a 6x1 vector with forces and moments initializing the central-up limb
+	* @return true if succeeds, false otherwise
+	*/
+	bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_up);
+
+
+	//------------------
+	//    LIMB CALLS
+	//------------------
+
+	yarp::sig::Vector setAng(const std::string &limbType, const yarp::sig::Vector &_q);
+    yarp::sig::Vector getAng(const std::string &limbType);
+    double            setAng(const std::string &limbType, const unsigned int i, double _q);
+    double            getAng(const std::string &limbType, const unsigned int i);
+
+	yarp::sig::Vector setDAng(const std::string &limbType, const yarp::sig::Vector &_dq);
+    yarp::sig::Vector getDAng(const std::string &limbType);
+    double            setDAng(const std::string &limbType, const unsigned int i, double _dq);
+    double            getDAng(const std::string &limbType, const unsigned int i);                                  
+
+	yarp::sig::Vector setD2Ang(const std::string &limbType, const yarp::sig::Vector &_ddq);
+    yarp::sig::Vector getD2Ang(const std::string &limbType);
+    double            setD2Ang(const std::string &limbType, const unsigned int i, double _ddq);
+    double            getD2Ang(const std::string &limbType, const unsigned int i);
+
+	/**
+	* @param limbType a string with the limb name
+	* @return the number of links of the chosen limb
+	*/
+	unsigned int	  getNLinks(const std::string &limbType) const;
 
 	
 };
 
 
 
+/**
+* \ingroup iDynBody
+*
+* A class for connecting head, left and right arm of the iCub, and exchanging kinematic and 
+* wrench information between limbs, when both arms have FT sensors and the head use the 
+* inertial sensor.
+*/
+class iCubUpperTorso : public iDynSensorTorsoNode
+{
+	friend class iDyn::iCubWholeBody;
+
+protected:
+	/**
+	* Build the node.
+	*/
+	virtual void build();
+
+public:
+
+	/**
+	* Constructor
+	* @param _info some information, ie the node name
+	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
+	* @param verb verbosity flag
+	*/
+	iCubUpperTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+
+};
 
 
+/**
+* \ingroup iDynBody
+*
+* A class for connecting torso, left and right leg of the iCub, and exchanging kinematic and 
+* wrench information between limbs, when both legs have FT sensors and the torso use the 
+* kinematic and wrench information coming from UpperTorso. The correct connection bewteen UpperTorso
+* and LowerTorso is not handled here; it is supposed that LowerTorso receives correct kinematic
+* and wrench variables for the initialization of the kinematic and wrench phases.
+*/
+class iCubLowerTorso : public iDynSensorTorsoNode
+{
+	friend class iDyn::iCubWholeBody;
+
+protected:
+	/**
+	* Build the node.
+	*/
+	virtual void build();
+
+public:
+
+	/**
+	* Constructor
+	* @param _info some information, ie the node name
+	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
+	* @param verb verbosity flag
+	*/
+	iCubLowerTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+
+};
+
+
+
+
+/**
+* \ingroup iDynBody
+*
+* A class for connecting UpperTorso and LowerTorso of the iCub, then getting the 
+* WholeBody in the dynamic framework. It is merely a container: pointers to upper and
+* lower torso objects are accessible, so all public methods of the two objects can be used. 
+*/
+class iCubWholeBody
+{
+protected:
+	/// the rigid body transformation linking the UpperTorso node with the final link of the iCubTorsoDyn chain,
+	/// defining the connection between Upper and Lower Torso
+	RigidBodyTransformation * rbt;
+
+public:
+
+	/// pointer to UpperTorso = head + right arm + left arm
+	iCubUpperTorso * upperTorso;
+	/// pointer to LowerTorso = torso + right leg + left leg
+	iCubLowerTorso * lowerTorso;
+
+	/**
+	* Constructor: build the nodes and creates the whole body
+	* @param mode the computation mode: DYNAMIC/STATIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
+	* @param verbose the verbosity level: NO_VERBOSE/VERBOSE/MORE_VERBOSE
+	*/
+	iCubWholeBody(const NewEulMode mode=DYNAMIC, unsigned int verbose=VERBOSE);
+
+	/**
+	* Destructor
+	*/
+	~iCubWholeBody();
+
+};
 
 
 } //end of namespace iDyn

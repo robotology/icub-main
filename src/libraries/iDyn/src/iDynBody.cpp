@@ -890,62 +890,72 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 
 //====================================
 //
-//		     UPPER TORSO
+//	     iDYN SENSOR TORSO NODE   
 //
 //====================================
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-UpperTorso::UpperTorso(const NewEulMode _mode, unsigned int verb)
-:iDynSensorNode("upper_torso",_mode,verb)
+iDynSensorTorsoNode::iDynSensorTorsoNode(const NewEulMode _mode, unsigned int verb)
+:iDynSensorNode("torso_node",_mode,verb)
 {
-	leftArm		= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
-	rightArm	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
-	head		= new iCubNeckInertialDyn(KINBWD_WREBWD);
-
-	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(leftArm),_mode,verb);
-	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(rightArm),_mode,verb);
-
-	HHead.resize(4,4);		HHead.eye();
-	HLeftArm.resize(4,4);	HLeftArm.eye();
-	HRightArm.resize(4,4);	HRightArm.eye();
-
-	// order: head - right - left
-	addLimb(head,HHead,RBT_NODE_IN,RBT_NODE_IN);
-	addLimb(rightArm,HRightArm,rightSensor,RBT_NODE_OUT,RBT_NODE_IN);
-	addLimb(leftArm,HLeftArm,leftSensor,RBT_NODE_OUT,RBT_NODE_IN);
+	build();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-UpperTorso::~UpperTorso()
+void iDynSensorTorsoNode::build()
+{
+	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
+	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
+	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
+
+	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(left),mode,verbose);
+	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
+
+	HUp.resize(4,4);	HUp.eye();
+	HLeft.resize(4,4);	HLeft.eye();
+	HRight.resize(4,4);	HRight.eye();
+
+	// order: head - right - left
+	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
+	addLimb(right,HRight,rightSensor,RBT_NODE_OUT,RBT_NODE_IN);
+	addLimb(left,HLeft,leftSensor,RBT_NODE_OUT,RBT_NODE_IN);
+
+	left_name = "left_arm";
+	right_name= "right_arm";
+	up_name	  = "head";
+	name	  = "upper-torso";
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynSensorTorsoNode::~iDynSensorTorsoNode()
 {
 	delete rightSensor; rightSensor = NULL;
 	delete leftSensor;	leftSensor = NULL;
-	delete head;		head = NULL;
-	delete rightArm;	rightArm = NULL;
-	delete leftArm;		leftArm = NULL;
+	delete up;			up = NULL;
+	delete right;		right = NULL;
+	delete left;		left = NULL;
 
 	rbtList.clear();
 	sensorList.clear();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool UpperTorso::setInertialMeasure(const Vector &w0, const Vector &dw0, const Vector &ddp0)
+bool iDynSensorTorsoNode::setInertialMeasure(const Vector &w0, const Vector &dw0, const Vector &ddp0)
 {
 	return setKinematicMeasure(w0,dw0,ddp0);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool UpperTorso::setSensorMeasurement(const Vector &FM_right, const Vector &FM_left)
+bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vector &FM_left)
 {
-	Vector FM_head(6); FM_head.zero();
-	return setSensorMeasurement(FM_right,FM_left,FM_head);
+	Vector FM_up(6); FM_up.zero();
+	return setSensorMeasurement(FM_right,FM_left,FM_up);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool UpperTorso::setSensorMeasurement(const Vector &FM_right, const Vector &FM_left, const Vector &FM_head)
+bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vector &FM_left, const Vector &FM_up)
 {
 	Matrix FM(6,3); FM.zero();
-	if((FM_right.length()==6)&&(FM_left.length()==6)&&(FM_head.length()==6))
+	if((FM_right.length()==6)&&(FM_left.length()==6)&&(FM_up.length()==6))
 	{
-		// order: head 0 - right 1 - left 2
-		FM.setCol(0,FM_head);
+		// order: up 0 - right 1 - left 2
+		FM.setCol(0,FM_up);
 		FM.setCol(1,FM_right);
 		FM.setCol(2,FM_left);
 		return setWrenchMeasure(FM);
@@ -953,15 +963,15 @@ bool UpperTorso::setSensorMeasurement(const Vector &FM_right, const Vector &FM_l
 	else
 	{
 		if(verbose)
-			cerr<<"UpperTorso: could not set sensor measurements properly due to wrong sized vectors. "
-				<<" FM head/right/left have lenght "<<FM_head.length()<<","<<FM_right.length()<<","<<FM_left.length()
+			cerr<<"Node <"<<name<<"> could not set sensor measurements properly due to wrong sized vectors. "
+				<<" FM up/right/left have lenght "<<FM_up.length()<<","<<FM_right.length()<<","<<FM_left.length()
 				<<" instead of 6,6. Setting everything to zero. "<<endl;
 		setWrenchMeasure(FM);
 		return false;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool UpperTorso::update()
+bool iDynSensorTorsoNode::update()
 {
 	bool isOk = true;
 	isOk = solveKinematics();
@@ -969,22 +979,22 @@ bool UpperTorso::update()
 	return isOk;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool UpperTorso::update(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_right, const Vector &FM_left, const Vector &FM_head)
+bool iDynSensorTorsoNode::update(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_right, const Vector &FM_left, const Vector &FM_up)
 {
 	bool inputOk = true;
 
-	if((FM_right.length()==6)&&(FM_left.length()==6)&&(FM_head.length()==6)&&(w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
+	if((FM_right.length()==6)&&(FM_left.length()==6)&&(FM_up.length()==6)&&(w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
 	{
 		setInertialMeasure(w0,dw0,ddp0);
-		setSensorMeasurement(FM_right,FM_left,FM_head);
+		setSensorMeasurement(FM_right,FM_left,FM_up);
 		return update();
 	}
 	else
 	{
 		if(verbose)
-			cerr<<"UpperTorso: error, could not update() due to wrong sized vectors. "
+			cerr<<"Node <"<<name<<"> error, could not update() due to wrong sized vectors. "
 				<<" w0,dw0,ddp0 have size "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()<<" instead of 3,3,3. "
-				<<" FM head/right_arm/left_arm have size "<<FM_head.length()<<","<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6,6. "
+				<<" FM up/right/left have size "<<FM_up.length()<<","<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6,6. "
 				<<"            Updating without new values."<< endl;
 		update();
 		return false;
@@ -997,94 +1007,333 @@ bool UpperTorso::update(const Vector &w0, const Vector &dw0, const Vector &ddp0,
 	//----------------
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix UpperTorso::getForces(const string &limbType)
+Matrix iDynSensorTorsoNode::getForces(const string &limbType)
 {
-	if(limbType=="head")
-	{
-		return head->getForces();
-	}
-	else if(limbType=="left_arm")
-	{
-		return leftArm->getForces();
-	}
-	else if(limbType=="right_arm")
-	{
-		return rightArm->getForces();
-	}
+	if(limbType==up_name)				return up->getForces();
+	else if(limbType==left_name)		return left->getForces();
+	else if(limbType==right_name)		return right->getForces();
 	else
 	{		
-		if(verbose)
-			cerr<<"UpperTorso: there's not a limb named "<<limbType<<". Only head/left_arm/right_arm are available. "<<endl;
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
 		return Matrix(0,0);
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix UpperTorso::getMoments(const string &limbType)
+Matrix iDynSensorTorsoNode::getMoments(const string &limbType)
 {
-	if(limbType=="head")
-	{
-		return head->getMoments();
-	}
-	else if(limbType=="left_arm")
-	{
-		return leftArm->getMoments();
-	}
-	else if(limbType=="right_arm")
-	{
-		return rightArm->getMoments();
-	}
+	if(limbType==up_name)			return up->getMoments();
+	else if(limbType==left_name)	return left->getMoments();
+	else if(limbType==right_name)	return right->getMoments();
 	else
 	{		
-		if(verbose)
-			cerr<<"UpperTorso: there's not a limb named "<<limbType<<". Only head/left_arm/right_arm are available. "<<endl;
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
 		return Matrix(0,0);
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getTorques(const string &limbType)
+Vector iDynSensorTorsoNode::getTorques(const string &limbType)
 {
-	if(limbType=="head")
-	{
-		return head->getTorques();
-	}
-	else if(limbType=="left_arm")
-	{
-		return leftArm->getTorques();
-	}
-	else if(limbType=="right_arm")
-	{
-		return rightArm->getTorques();
-	}
+	if(limbType==up_name)			return up->getTorques();
+	else if(limbType==left_name)	return left->getTorques();
+	else if(limbType==right_name)	return right->getTorques();
 	else
 	{		
-		if(verbose)
-			cerr<<"UpperTorso: there's not a limb named "<<limbType<<". Only head/left_arm/right_arm are available. "<<endl;
+		if(verbose) cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
 		return Vector(0);
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getTorsoForce() const
+Vector iDynSensorTorsoNode::getTorsoForce() const
 {
 	return F;
 }	
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getTorsoMoment() const
+Vector iDynSensorTorsoNode::getTorsoMoment() const
 {
 	return Mu;
 }	
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getTorsoAngVel() const
+Vector iDynSensorTorsoNode::getTorsoAngVel() const
 {
 	return w;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getTorsoAngAcc() const
+Vector iDynSensorTorsoNode::getTorsoAngAcc() const
 {
 	return dw;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector UpperTorso::getTorsoLinAcc() const
+Vector iDynSensorTorsoNode::getTorsoLinAcc() const
 {
 	return ddp;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	//------------------
+	//    LIMB CALLS
+	//------------------
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynSensorTorsoNode::setAng(const string &limbType, const Vector &_q)
+{
+	if(limbType==up_name)			return up->setAng(_q);
+	else if(limbType==left_name)	return left->setAng(_q);
+	else if(limbType==right_name)	return right->setAng(_q);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynSensorTorsoNode::getAng(const string &limbType)
+{
+	if(limbType==up_name)			return up->getAng();
+	else if(limbType==left_name)	return left->getAng();
+	else if(limbType==right_name)	return right->getAng();
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynSensorTorsoNode::setAng(const string &limbType, const unsigned int i, double _q)
+{
+	if(limbType==up_name)			return up->setAng(i,_q);
+	else if(limbType==left_name)	return left->setAng(i,_q);
+	else if(limbType==right_name)	return right->setAng(i,_q);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynSensorTorsoNode::getAng(const string &limbType, const unsigned int i)
+{
+	if(limbType==up_name)			return up->getAng(i);
+	else if(limbType==left_name)	return left->getAng(i);
+	else if(limbType==right_name)	return right->getAng(i);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynSensorTorsoNode::setDAng(const string &limbType, const Vector &_dq)
+{
+	if(limbType==up_name)			return up->setDAng(_dq);
+	else if(limbType==left_name)	return left->setDAng(_dq);
+	else if(limbType==right_name)	return right->setDAng(_dq);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynSensorTorsoNode::getDAng(const string &limbType)
+{
+	if(limbType==up_name)			return up->getDAng();
+	else if(limbType==left_name)	return left->getDAng();
+	else if(limbType==right_name)	return right->getDAng();
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynSensorTorsoNode::setDAng(const string &limbType, const unsigned int i, double _dq)
+{
+	if(limbType==up_name)			return up->setDAng(i,_dq);
+	else if(limbType==left_name)	return left->setDAng(i,_dq);
+	else if(limbType==right_name)	return right->setDAng(i,_dq);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynSensorTorsoNode::getDAng(const string &limbType, const unsigned int i)    
+{
+	if(limbType==up_name)			return up->getDAng(i);
+	else if(limbType==left_name)	return left->getDAng(i);
+	else if(limbType==right_name)	return right->getDAng(i);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynSensorTorsoNode::setD2Ang(const string &limbType, const Vector &_ddq)
+{
+	if(limbType==up_name)			return up->setD2Ang(_ddq);
+	else if(limbType==left_name)	return left->setD2Ang(_ddq);
+	else if(limbType==right_name)	return right->setD2Ang(_ddq);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynSensorTorsoNode::getD2Ang(const string &limbType)
+{
+	if(limbType==up_name)			return up->getD2Ang();
+	else if(limbType==left_name)	return left->getD2Ang();
+	else if(limbType==right_name)	return right->getD2Ang();
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynSensorTorsoNode::setD2Ang(const string &limbType, const unsigned int i, double _ddq)
+{
+	if(limbType==up_name)			return up->setD2Ang(i,_ddq);
+	else if(limbType==left_name)	return left->setD2Ang(i,_ddq);
+	else if(limbType==right_name)	return right->setD2Ang(i,_ddq);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynSensorTorsoNode::getD2Ang(const string &limbType, const unsigned int i)
+{
+	if(limbType==up_name)			return up->getD2Ang(i);
+	else if(limbType==left_name)	return left->getD2Ang(i);
+	else if(limbType==right_name)	return right->getD2Ang(i);
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int iDynSensorTorsoNode::getNLinks(const string &limbType) const
+{
+	if(limbType==up_name)			return up->getN();
+	else if(limbType==left_name)	return left->getN();
+	else if(limbType==right_name)	return right->getN();
+	else
+	{		
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		return 0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+//====================================
+//
+//	        UPPER TORSO   
+//
+//====================================
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubUpperTorso::iCubUpperTorso(const NewEulMode _mode, unsigned int verb)
+:iDynSensorTorsoNode(_mode,verb)
+{}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iCubUpperTorso::build()
+{
+	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
+	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
+	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
+
+	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(left),mode,verbose);
+	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
+
+	HUp.resize(4,4);	HUp.eye();
+	HLeft.resize(4,4);	HLeft.eye();
+	HRight.resize(4,4);	HRight.eye();
+
+	// order: head - right arm - left arm
+	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
+	addLimb(right,HRight,rightSensor,RBT_NODE_OUT,RBT_NODE_IN);
+	addLimb(left,HLeft,leftSensor,RBT_NODE_OUT,RBT_NODE_IN);
+
+	left_name = "left_arm";
+	right_name= "right_arm";
+	up_name	  = "head";
+	name	  = "upper_torso";
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+//====================================
+//
+//	        LOWER TORSO   
+//
+//====================================
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb)
+:iDynSensorTorsoNode(_mode,verb)
+{}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iCubLowerTorso::build()
+{
+	left	= new iCubLegDyn("left",KINFWD_WREBWD);
+	right	= new iCubLegDyn("right",KINFWD_WREBWD);
+	up		= new iCubTorsoDyn("lower",KINBWD_WREBWD);
+
+	leftSensor = new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(left),mode,verbose);
+	rightSensor= new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(right),mode,verbose);
+
+	HUp.resize(4,4);	HUp.eye();
+	HLeft.resize(4,4);	HLeft.eye();
+	HRight.resize(4,4);	HRight.eye();
+
+	// order: torso - right leg - left leg
+	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
+	addLimb(right,HRight,rightSensor,RBT_NODE_OUT,RBT_NODE_IN);
+	addLimb(left,HLeft,leftSensor,RBT_NODE_OUT,RBT_NODE_IN);
+
+	left_name = "left_leg";
+	right_name= "right_leg";
+	up_name	  = "torso";
+	name	  = "lower_torso";
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//====================================
+//
+//	        iCUB WHOLE BODY  
+//
+//====================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubWholeBody::iCubWholeBody(const NewEulMode mode, unsigned int verbose)
+{
+	//create all limbs
+	upperTorso = new iCubUpperTorso(mode,verbose);
+	lowerTorso = new iCubLowerTorso(mode,verbose);
+	
+	//now create a connection between upperTorso node and Torso (limb)
+	Matrix H(4,4); H.eye();
+	rbt = new RigidBodyTransformation(lowerTorso->up,H,"connection between lower and upper torso",false,RBT_NODE_OUT,RBT_NODE_OUT,mode,verbose);
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubWholeBody::~iCubWholeBody()
+{
+	delete upperTorso; upperTorso = NULL;
+	delete lowerTorso; lowerTorso = NULL;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
