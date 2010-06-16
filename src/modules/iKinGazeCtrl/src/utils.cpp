@@ -15,6 +15,13 @@ void xdPort::onRead(Bottle &b)
 
 
 /************************************************************************/
+exchangeData::exchangeData()
+{
+    neckAlign=false;
+}
+
+
+/************************************************************************/
 void neckCallback::exec(Vector xd, Vector q)
 {
     // update neck pitch,yaw

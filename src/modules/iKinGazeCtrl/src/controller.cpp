@@ -194,10 +194,11 @@ void Controller::run()
     else if (!swOffCond)
     {
         // switch-on condition
-        isCtrlActive=(fabs(qd[0]-commData->get_qd()[0])>CTRL_DEG2RAD*GAZECTRL_MOTIONDONE_QTHRES) || 
-                     (fabs(qd[2]-commData->get_qd()[2])>CTRL_DEG2RAD*GAZECTRL_MOTIONDONE_QTHRES) ||
+        isCtrlActive=commData->get_neckAlign() ||
 			         (canCtrlBeDisabled ? !(commData->get_xd()==xd) :
                                           norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES);
+
+        commData->get_neckAlign()=false;
     }
 
     // get data

@@ -53,18 +53,20 @@ protected:
     Vector x,q,torso;
     Vector v,compv;
     Matrix S;
+    bool   neckAlign;
 
 public:
-    exchangeData() { }
+    exchangeData();
 
-    Vector &get_xd()      { return xd;    }
-    Vector &get_qd()      { return qd;    }
-    Vector &get_x()       { return x;     }
-    Vector &get_q()       { return q;     }
-    Vector &get_torso()   { return torso; }
-    Vector &get_v()       { return v;     }
-    Vector &get_compv()   { return compv; }
-    Matrix &get_fpFrame() { return S;     }
+    Vector &get_xd()        { return xd;        }
+    Vector &get_qd()        { return qd;        }
+    Vector &get_x()         { return x;         }
+    Vector &get_q()         { return q;         }
+    Vector &get_torso()     { return torso;     }
+    Vector &get_v()         { return v;         }
+    Vector &get_compv()     { return compv;     }
+    Matrix &get_fpFrame()   { return S;         }
+    bool   &get_neckAlign() { return neckAlign; }
 };
 
 

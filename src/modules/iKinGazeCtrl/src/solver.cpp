@@ -643,6 +643,7 @@ void Solver::run()
         commData->get_xd()=xd;
         commData->get_qd()[0]=neckPos[0];
         commData->get_qd()[2]=neckPos[1];
+        commData->get_neckAlign()=true;
 
         alignNeckCnt=0;
         alignNeckThres=(unsigned int)(Rand::scalar(1.0,2.0)/Ts);
