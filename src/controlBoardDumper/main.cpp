@@ -272,6 +272,7 @@ private:
     GetEncs myGetEncs;
     //pid
     IPidControl *pid;
+    IOpenLoopControl *iol;
     GetErrs myGetErrs;
     GetOuts myGetOuts;
     //amp
@@ -437,12 +438,12 @@ public:
                             myDumper[i].setGetter(&myGetErrs);
                         }
                 if (dataToDump[i] == "getOutputs")
-                    if (dd.view(pid))
+                    if (dd.view(iol))
                         {
                             fprintf(stderr, "Initializing a getOuts thread\n");
                             myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetOuts.setInterface(pid);
+                            myGetOuts.setInterface(iol);
                             if (dd.view(stmp))
                                 {
                                     fprintf(stderr, "getOutputs::The time stamp initalization interfaces was successfull! \n");

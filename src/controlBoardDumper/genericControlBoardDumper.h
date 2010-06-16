@@ -57,10 +57,10 @@ public:
 class GetOuts : public GetData
 {
 public:
-  void setInterface (IPidControl *);
+  void setInterface (IOpenLoopControl *);
   virtual bool getData(double *);
 
-  IPidControl *ipid;
+  IOpenLoopControl *iolc;
 };
 
 class GetCurrs : public GetData

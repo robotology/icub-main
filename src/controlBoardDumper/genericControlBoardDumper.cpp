@@ -95,17 +95,17 @@ bool GetErrs::getData(double *e)
     return 0;
 }
 
-void GetOuts::setInterface(IPidControl *i)
+void GetOuts::setInterface(IOpenLoopControl *i)
 {
-    ipid = i;
+    iolc = i;
 }
 
 bool GetOuts::getData(double *e)
 {
   //fprintf(stderr, "Entering getOuts\n");
-  if (ipid)
+  if (iolc)
     {
-      ipid->getOutputs(e);
+      iolc->getOutputs(e);
       return 1;
     }
   else
