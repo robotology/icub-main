@@ -612,6 +612,13 @@ public:
 	*/
 	virtual bool setWrenchMeasure(const yarp::sig::Matrix &FM);
 
+	/**
+	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
+	* solving wrenches in the limbs.
+	*/
+	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM);
+
+
 
 };
 
@@ -818,6 +825,14 @@ public:
 	* @return the number of links of the chosen limb
 	*/
 	unsigned int	  getNLinks(const std::string &limbType) const;
+
+	/**
+	* Redefinition from iDynSensorNode.
+	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
+	* solving wrenches in the limbs.
+	*/
+	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM)
+	{ return iDynSensorNode::estimateSensorsWrench(FM); }
 
 	
 };

@@ -473,7 +473,6 @@ void OneLinkNewtonEuler::computeLinAcc( OneLinkNewtonEuler *prev)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeLinAccBackward( OneLinkNewtonEuler *next)
 {
-	Matrix Rii(3,3);
 	switch(mode)
 	{
 	case DYNAMIC:
@@ -482,16 +481,6 @@ void OneLinkNewtonEuler::computeLinAccBackward( OneLinkNewtonEuler *next)
 		setLinAcc(next->getR() * (next->getLinAcc() 
 			- cross(next->getAngAcc(),next->getr(true)) 
 			- cross(next->getAngVel(),cross(next->getAngVel(),next->getr(true))) ));
-		fprintf(stderr,"R:\n");
-		Rii=next->getR();
-		for(int i=0;i<3;i++)
-		{
-			for(int j=0;j<3;j++)
-				fprintf(stderr,"%+.2lf\t",Rii(i,j));
-			fprintf(stderr,"\n");
-		}
-		fprintf(stderr,"\n\n\n");
-
 		break;
 	case STATIC:
 		setLinAcc( next->getR() * next->getLinAcc() );

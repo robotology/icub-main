@@ -883,8 +883,135 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 	return inputWasOk ;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM)
+{
+	unsigned int inputNode = 0;
+	unsigned int outputNode = 0;	
+	unsigned int numSensor = 0;
+	bool inputWasOk = true;
+	Vector fi(3); fi.zero();
+	Vector mi(3); mi.zero();
+	Vector FMi(6);FMi.zero();
+	Matrix ret;
+	
+	//reset node wrench
+	F.zero(); Mu.zero();
 
+	// solve kinematics
+	solveKinematics();
 
+	//first set external wrench in the limbs
+	if(FM.rows()!=6)
+	{
+		if(verbose)
+			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
+				<<FM.rows()<<" instead of 6 (3+3)"<<endl
+				<<"          Using default values, all zero."<<endl;
+		inputWasOk = false;
+	}
+
+	//set the input forces/moments from each limb at base/end
+	if(inputWasOk)
+	{
+		inputNode = 0;
+		for(unsigned int i=0; i<rbtList.size(); i++)
+		{
+			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
+			{
+				// from the input matrix - read the input wrench
+				FMi = FM.getCol(inputNode);
+				fi[0]=FMi[0];fi[1]=FMi[1];fi[2]=FMi[2];
+				mi[0]=FMi[3];mi[1]=FMi[4];mi[2]=FMi[5];
+				inputNode++;
+				//set the input wrench in the RBT->limb
+				// set on base/end as usual
+				rbtList[i].setWrenchMeasure(fi,mi);
+			}
+		}
+	}
+	else
+	{
+		// default zero values if inputs are wrong sized
+		for(unsigned int i=0; i<rbtList.size(); i++)
+			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
+				rbtList[i].setWrenchMeasure(fi,mi);		
+	}
+
+	//first get the forces/moments from each limb
+	//assuming that each limb has been properly set with the outcoming measured
+	//forces/moments which are necessary for the wrench computation
+	for(unsigned int i=0; i<rbtList.size(); i++)
+	{
+		if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
+		{
+			//compute the wrench pass in that limb
+			// if there's a sensor, it's the same because here we estimate its value
+			rbtList[i].computeLimbWrench();
+
+			//update the node force/moment with the wrench coming from the limb base/end
+			// note that getWrench sum the result to F,Mu - because they are passed by reference
+			// F = F + F[i], Mu = Mu + Mu[i]
+			rbtList[i].getWrench(F,Mu);
+			//check
+			outputNode++;
+		}
+	}
+
+	// node summation: already performed by each RBT
+	// F = F + F[i], Mu = Mu + Mu[i]
+
+	// at least one output node should exist 
+	// however if for testing purposes only one limb is attached to the node, 
+	// we can't avoid the computeWrench phase, but still we must remember that 
+	// it is not correct, because the node must be in balanc
+	if(outputNode==rbtList.size())
+	{
+		if(verbose)
+			cerr<<"iDynSensorNode: warning: there are no limbs with Wrench Flow = Output. "
+				<<" At least one limb must have Wrench Output for balancing forces in the node. "
+				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
+	}
+
+	//now forward the wrench output from the node to limbs whose wrench flow is output type
+	// assuming they don't have a FT sensor
+	for(unsigned int i=0; i<rbtList.size(); i++)
+	{
+		if(rbtList[i].getWrenchFlow()==RBT_NODE_OUT)
+		{
+			//init the wrench with the node information
+			rbtList[i].setWrench(F,Mu);
+			//solve wrench in that limb/chain
+			rbtList[i].computeLimbWrench();
+		}
+	}
+
+	// now look for sensors
+	for(unsigned int i=0; i<rbtList.size(); i++)
+	{
+		//now we can estimate the sensor wrench if there's a sensor
+		// if has sensor, compute its wrench
+		if(rbtList[i].isSensorized()==true)				
+		{
+			sensorList[i]->computeSensorForceMoment();
+			numSensor++;
+		}
+	}
+
+	//now build the matrix with wrenches
+	if(numSensor>0)
+	{
+		ret.resize(6,numSensor);
+		numSensor=0;
+		for(unsigned int i=0; i<rbtList.size(); i++)
+			if(rbtList[i].isSensorized()==true)		
+			{
+				ret.setCol(numSensor,sensorList[i]->getSensorForceMoment());
+				numSensor++;
+			}
+	}
+	return ret;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
