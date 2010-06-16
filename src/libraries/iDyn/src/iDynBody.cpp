@@ -898,12 +898,13 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynSensorTorsoNode::iDynSensorTorsoNode(const NewEulMode _mode, unsigned int verb)
 :iDynSensorNode("torso_node",_mode,verb)
-{
-	build();
-}
+{}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynSensorTorsoNode::build()
 {
+
+	cout<< "i dyn sensor torso node build \n";
+
 	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
 	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
 	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
@@ -923,7 +924,7 @@ void iDynSensorTorsoNode::build()
 	left_name = "left_arm";
 	right_name= "right_arm";
 	up_name	  = "head";
-	name	  = "upper-torso";
+	name	  = "default_upper_torso";
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynSensorTorsoNode::~iDynSensorTorsoNode()
@@ -1243,10 +1244,14 @@ unsigned int iDynSensorTorsoNode::getNLinks(const string &limbType) const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubUpperTorso::iCubUpperTorso(const NewEulMode _mode, unsigned int verb)
 :iDynSensorTorsoNode(_mode,verb)
-{}
+{
+	build();
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubUpperTorso::build()
 {
+	cout<< "upper torso build \n";
+
 	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
 	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
 	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
@@ -1282,7 +1287,9 @@ void iCubUpperTorso::build()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb)
 :iDynSensorTorsoNode(_mode,verb)
-{}
+{
+	build();
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubLowerTorso::build()
 {

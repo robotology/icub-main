@@ -839,7 +839,7 @@ protected:
 	/**
 	* Build the node.
 	*/
-	virtual void build();
+	void build();
 
 public:
 
@@ -871,7 +871,7 @@ protected:
 	/**
 	* Build the node.
 	*/
-	virtual void build();
+	void build();
 
 public:
 
