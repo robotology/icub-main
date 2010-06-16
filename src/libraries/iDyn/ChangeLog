@@ -16,4 +16,7 @@
 	* added kinematic/wrench mode to iDynChain. changes made in all derived iDynLimbs and OneChain to comply
 	* with the new computational modalities
 
+2010-06-16 Serena Ivaldi <serena.ivaldi@iit.it>
+	* added iCubWholeBody, UpperTorso and LowerTorso to iDynBody
+
 
