@@ -674,11 +674,18 @@ public:
 
 	/**
 	* Constructor
-	* @param _info some information, ie the node name
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
 	iDynSensorTorsoNode(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+
+	/**
+	* Constructor
+	* @param _info some information, ie the node name
+	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
+	* @param verb verbosity flag
+	*/
+	iDynSensorTorsoNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
 
 	/**
 	* Destructor
@@ -830,9 +837,9 @@ public:
 	* Redefinition from iDynSensorNode.
 	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
 	* solving wrenches in the limbs.
+	* @param FM a (6xN) matrix of forces/moments where N is the number 
 	*/
-	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM)
-	{ return iDynSensorNode::estimateSensorsWrench(FM); }
+	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM) { return iDynSensorNode::estimateSensorsWrench(FM); }
 
 	
 };
@@ -935,6 +942,12 @@ public:
 	* Destructor
 	*/
 	~iCubWholeBody();
+
+	/**
+	* Connect upper and lower torso: this procedure handle the exchange of kinematic and
+	* wrench variables between the two parts.
+	*/
+	void attachTorso();
 
 };
 

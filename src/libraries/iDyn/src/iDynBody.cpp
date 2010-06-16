@@ -1027,11 +1027,12 @@ iDynSensorTorsoNode::iDynSensorTorsoNode(const NewEulMode _mode, unsigned int ve
 :iDynSensorNode("torso_node",_mode,verb)
 {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynSensorTorsoNode::iDynSensorTorsoNode(const string &_info,const NewEulMode _mode, unsigned int verb)
+:iDynSensorNode(_info,_mode,verb)
+{}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynSensorTorsoNode::build()
 {
-
-	cout<< "i dyn sensor torso node build \n";
-
 	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
 	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
 	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
@@ -1370,15 +1371,13 @@ unsigned int iDynSensorTorsoNode::getNLinks(const string &limbType) const
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubUpperTorso::iCubUpperTorso(const NewEulMode _mode, unsigned int verb)
-:iDynSensorTorsoNode(_mode,verb)
+:iDynSensorTorsoNode("upper-torso",_mode,verb)
 {
 	build();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubUpperTorso::build()
 {
-	cout<< "upper torso build \n";
-
 	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
 	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
 	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
@@ -1389,12 +1388,12 @@ void iCubUpperTorso::build()
 	HUp.resize(4,4);	HUp.eye();
 	HLeft.resize(4,4);	HLeft.zero();
 	HRight.resize(4,4);	HRight.zero();
+
 	double theta = CTRL_DEG2RAD * (180.0-15.0);
 	HLeft(0,0) = cos(theta);	HLeft(0,1) = 0.0;		HLeft(0,2) = sin(theta);	HLeft(0,3) = 0.003066;
 	HLeft(1,0) = 0.0;			HLeft(1,1) = 1.0;		HLeft(1,2) = 0.0;			HLeft(1,3) = -0.049999;
 	HLeft(2,0) = -sin(theta);	HLeft(2,1) = 0.0;		HLeft(2,2) = cos(theta);	HLeft(2,3) = -0.110261;
-	HLeft(3,3) = 1.0;
-	
+	HLeft(3,3) = 1.0;	
 	HRight(0,0) = -cos(theta);	HRight(0,1) = 0.0;  HRight(0,2) = -sin(theta);	HRight(0,3) = 0.00294;
 	HRight(1,0) = 0.0;			HRight(1,1) = -1.0; HRight(1,2) = 0.0;			HRight(1,3) = -0.050;
 	HRight(2,0) = -sin(theta);	HRight(2,1) = 0.0;	HRight(2,2) = cos(theta);	HRight(2,3) = 0.10997;
@@ -1423,7 +1422,7 @@ void iCubUpperTorso::build()
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb)
-:iDynSensorTorsoNode(_mode,verb)
+:iDynSensorTorsoNode("lower-torso",_mode,verb)
 {
 	build();
 }
@@ -1467,7 +1466,7 @@ iCubWholeBody::iCubWholeBody(const NewEulMode mode, unsigned int verbose)
 	upperTorso = new iCubUpperTorso(mode,verbose);
 	lowerTorso = new iCubLowerTorso(mode,verbose);
 	
-	//now create a connection between upperTorso node and Torso (limb)
+	//now create a connection between upperTorso node and Torso ( lowerTorso->up == Torso )
 	Matrix H(4,4); H.eye();
 	rbt = new RigidBodyTransformation(lowerTorso->up,H,"connection between lower and upper torso",false,RBT_NODE_OUT,RBT_NODE_OUT,mode,verbose);
 
@@ -1477,7 +1476,17 @@ iCubWholeBody::~iCubWholeBody()
 {
 	delete upperTorso; upperTorso = NULL;
 	delete lowerTorso; lowerTorso = NULL;
+	delete rbt;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iCubWholeBody::attachTorso()
+{
+	// take the w,dw,ddp,F,Mu from upperTorso, apply the RBT, and set the 
+	// kinematic and wrench variables into the lowerTorso
+	rbt->setKinematic(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+	rbt->setWrench(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());	
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
