@@ -45,9 +45,14 @@ public:
         isNew=false;
     }
 
-    bool   &get_new()                 { return isNew; }
-    Vector &get_xd()                  { return xd;    }
-    void    set_xd(const Vector &_xd) { xd=_xd;       }
+    bool   &get_new() { return isNew; }
+    Vector &get_xd()  { return xd;    }
+
+    void set_xd(const Vector &_xd)
+    {
+        xd=_xd;
+        isNew=true;
+    }
 };
 
 

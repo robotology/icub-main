@@ -185,6 +185,7 @@ void Controller::run()
         {
             stopLimbsVel();
             isCtrlActive=false;
+            port_xd->get_new()=false;
         }
     }       
     else if (!swOffCond)
@@ -195,7 +196,6 @@ void Controller::run()
                                           norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES);
 
         commData->get_neckAlign()=false;
-        port_xd->get_new()=false;
     }
 
     // get data
