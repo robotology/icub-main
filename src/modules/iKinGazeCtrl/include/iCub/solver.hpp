@@ -13,17 +13,14 @@
 
 #include <iCub/ctrl/pids.h>
 
-#include <deque>
-
 #include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>
 #include <iCub/localizer.hpp>
 #include <iCub/controller.hpp>
 
-#define EYEPINVREFGEN_GAIN              12.5
-#define NECKSOLVER_ACTIVATIONANGLE_TRA  15.0
-#define NECKSOLVER_ACTIVATIONANGLE_SAG  5.0
-#define NECKSOLVER_MOVEDTORSOQUEUSIZE   5
+#define EYEPINVREFGEN_GAIN                  12.5
+#define NECKSOLVER_ACTIVATIONANGLE_TRA      2.5
+#define NECKSOLVER_ACTIVATIONANGLE_SAG      2.5
 
 using namespace std;
 using namespace yarp;
@@ -130,7 +127,6 @@ protected:
     double eyeTiltMax;
     double Ts;
 
-    Vector xdOld;
     Vector fbTorso;
     Vector fbHead;
     Vector neckPos;
@@ -140,11 +136,6 @@ protected:
     double neckPitchMax;
     double neckYawMin;
     double neckYawMax;
-
-    deque<Vector> fbTorsoOld;
-
-    unsigned int alignNeckCnt;
-    unsigned int alignNeckThres;
 
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,

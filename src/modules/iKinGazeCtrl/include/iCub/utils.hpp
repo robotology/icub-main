@@ -65,23 +65,26 @@ protected:
     Vector x,q,torso;
     Vector v,compv;
     Matrix S;
-    bool   neckAlign;
+    bool   isCtrlActive;
+    bool   canCtrlBeDisabled;
 
 public:
     exchangeData()
     {
-        neckAlign=false;
+        isCtrlActive=false;
+        canCtrlBeDisabled=true;
     }
 
-    Vector &get_xd()        { return xd;        }
-    Vector &get_qd()        { return qd;        }
-    Vector &get_x()         { return x;         }
-    Vector &get_q()         { return q;         }
-    Vector &get_torso()     { return torso;     }
-    Vector &get_v()         { return v;         }
-    Vector &get_compv()     { return compv;     }
-    Matrix &get_fpFrame()   { return S;         }
-    bool   &get_neckAlign() { return neckAlign; }
+    Vector &get_xd()                { return xd;                }
+    Vector &get_qd()                { return qd;                }
+    Vector &get_x()                 { return x;                 }
+    Vector &get_q()                 { return q;                 }
+    Vector &get_torso()             { return torso;             }
+    Vector &get_v()                 { return v;                 }
+    Vector &get_compv()             { return compv;             }
+    Matrix &get_fpFrame()           { return S;                 }
+    bool   &get_isCtrlActive()      { return isCtrlActive;      }
+    bool   &get_canCtrlBeDisabled() { return canCtrlBeDisabled; }
 };
 
 

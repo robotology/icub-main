@@ -95,8 +95,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
     qd=fbHead;
 
-    isCtrlActive=false;
-    canCtrlBeDisabled=true;
+    commData->get_isCtrlActive()=isCtrlActive=false;
+    commData->get_canCtrlBeDisabled()=canCtrlBeDisabled=true;
 
     port_xd=NULL;
 }
@@ -184,18 +184,18 @@ void Controller::run()
         if (swOffCond)
         {
             stopLimbsVel();
-            isCtrlActive=false;
+
+            commData->get_isCtrlActive()=isCtrlActive=false;
             port_xd->get_new()=false;
         }
     }       
     else if (!swOffCond)
     {
         // switch-on condition
-        isCtrlActive=commData->get_neckAlign() ||
-			         (canCtrlBeDisabled ? port_xd->get_new() :
+        isCtrlActive=(canCtrlBeDisabled ? port_xd->get_new() :
                                           norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES);
 
-        commData->get_neckAlign()=false;
+        commData->get_isCtrlActive()=isCtrlActive;
     }
 
     // get data
@@ -413,7 +413,7 @@ bool Controller::isMotionDone() const
 /************************************************************************/
 void Controller::setTrackingMode(const bool f)
 {
-    canCtrlBeDisabled=!f;
+    commData->get_canCtrlBeDisabled()=canCtrlBeDisabled=!f;
 
     if (port_xd && f)
         port_xd->set_xd(fp);

@@ -1,6 +1,5 @@
 
 #include <yarp/math/SVD.h>
-#include <yarp/math/Rand.h>
 #include <iCub/solver.hpp>
 
 
@@ -112,8 +111,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     }
 
     // impose starting vergence != 0.0
-    if (fbHead[5]<1.0*CTRL_DEG2RAD)
-        fbHead[5]=1.0*CTRL_DEG2RAD;
+    if (fbHead[5]<0.5*CTRL_DEG2RAD)
+        fbHead[5]=0.5*CTRL_DEG2RAD;
 
     // Instantiate integrator
     qd.resize(3);
@@ -401,8 +400,8 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     fbHead[1]=0.0;
 
     // impose starting vergence != 0.0
-    if (fbHead[5]<1.0*CTRL_DEG2RAD)
-        fbHead[5]=1.0*CTRL_DEG2RAD;
+    if (fbHead[5]<0.5*CTRL_DEG2RAD)
+        fbHead[5]=0.5*CTRL_DEG2RAD;
 
     neckPos.resize(2);
     gazePos.resize(3);
@@ -424,14 +423,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     chainEyeL->setAng(eyePos);
     eyePos[1]=gazePos[1]-gazePos[2]/2.0;
     chainEyeR->setAng(eyePos);
-
-    Rand::init();
-
-    alignNeckCnt=0;
-    alignNeckThres=(unsigned int)(Rand::scalar(1.0,2.0)/Ts);
-
-    // latch torso joints
-    fbTorsoOld.push_front(fbTorso);
 }
 
 
@@ -552,8 +543,6 @@ bool Solver::threadInit()
     commData->get_compv().resize(3,0.0);
     commData->get_fpFrame()=chainNeck->getH();
 
-    xdOld=fp;
-
     port_xd=new xdPort(fp);
     port_xd->useCallback();
     string n=localName+"/xd:i";
@@ -588,8 +577,6 @@ void Solver::run()
     // get the current target
     Vector &xd=port_xd->get_xd();
 
-    bool movedTorso=false;
-
     if (Robotable)
     {
         // read encoders
@@ -597,15 +584,6 @@ void Solver::run()
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
-
-        if (fbTorsoOld.size()>NECKSOLVER_MOVEDTORSOQUEUSIZE)
-        {
-            movedTorso=norm(fbTorso-fbTorsoOld.back())>1.0*CTRL_DEG2RAD;
-            fbTorsoOld.pop_back();
-        }
-
-        // latch torso joints
-        fbTorsoOld.push_front(fbTorso);
     }
     else
         fbHead=commData->get_q();
@@ -618,31 +596,9 @@ void Solver::run()
 
     Vector theta=neckTargetRotAngles(xd);
 
-    if (!(xd==xdOld) || movedTorso)
-    {
-        // call the solver for neck (only if necessary)
-        if (movedTorso ||
-            theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD ||
-            theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD)
-        {
-            //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
-            neckPos=invNeck->solve(neckPos,xd);
-
-            // update neck pitch,yaw
-            commData->get_xd()=xd;
-            commData->get_qd()[0]=neckPos[0];
-            commData->get_qd()[2]=neckPos[1];
-        }
-
-        xdOld=xd;
-    }
-
-    if (theta[0]>1.0*CTRL_DEG2RAD && theta[0]<NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD ||
-        theta[1]>1.0*CTRL_DEG2RAD && theta[1]<NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD)
-        alignNeckCnt++;
-
-    // re-align neck after a timeout
-    if (alignNeckCnt>alignNeckThres)
+    // call the solver for neck
+    if (theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD ||
+        theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD)
     {
         //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
         neckPos=invNeck->solve(neckPos,xd);
@@ -651,10 +607,6 @@ void Solver::run()
         commData->get_xd()=xd;
         commData->get_qd()[0]=neckPos[0];
         commData->get_qd()[2]=neckPos[1];
-        commData->get_neckAlign()=true;
-
-        alignNeckCnt=0;
-        alignNeckThres=(unsigned int)(Rand::scalar(1.0,2.0)/Ts);
     }
 }
 
@@ -734,11 +686,6 @@ void Solver::resume()
 
     // update input port
     port_xd->set_xd(fp);
-
-    // clear the buffer
-    fbTorsoOld.clear();
-    // latch torso joints
-    fbTorsoOld.push_front(fbTorso);
 
     cout << endl;
     cout << "Solver has been resumed!" << endl;
