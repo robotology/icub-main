@@ -2,22 +2,24 @@
 <name>Face Pointing</name>
         <module>
                 <name>findFaces</name>
-                <node>icubdebian1</node>
+		<parameters> /usr/local/src/robot/iCub/src/findFaces/haarcascade_frontalface_default.xml </parameters>
+                <node>icubclient1</node>
                 <tag>fhumanfaces</tag>
         </module>
 	 <module>
                 <name>findMovements</name>
-                <node>icubdebian1</node>
+                <node>icubclient2</node>
                 <tag>findMoves</tag>
         </module>
 	<module>
                 <name>findTorsos</name>
-                <node>icubdebian2</node>
+		<parameters> /usr/local/src/robot/iCub/src/findTorsos/haarcascade_UpperBodyNew.xml</parameters>
+                <node>icubclient1</node>
                 <tag>fhumantorsos</tag>
         </module>
 	 <module>
                 <name>iKinGazeCtrl</name>
-		<node>icubdebian2</node>
+		<node>icubsrv</node>
                 <tag>gazeCtrl</tag>
         </module>
 
@@ -89,7 +91,7 @@
 	
 	<connection>
                 <from>/iqr/attention/commands/out</from>
-                <to>/iKinGazeCtrl/head/pixel:i</to>
+                <to>/iKinGazeCtrl/head/stereo:i</to>
                 <protocol>udp</protocol>
         </connection>
 	
