@@ -1,0 +1,6 @@
+    face_left_in.open("/iqr/attention/faces/left/in");
+    face_right_in.open("/iqr/attention/faces/right/in");
+    torso_left_in.open("/iqr/attention/torsos/left/in");
+    torso_right_in.open("/iqr/attention/torsos/right/in");
+    move_left_in.open("/iqr/attention/movements/left/in");
+    move_right_in.open("/iqr/attention/movements/right/in");
