@@ -82,8 +82,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         lim=lim.submatrix(3,5,0,1);
 
         // read starting position
-        fbTorso.resize(nJointsTorso);
-        fbHead.resize(nJointsHead);
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
         getFeedback(fbTorso,fbHead,encTorso,encHead);
     }
     else
@@ -110,6 +110,10 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         lim(2,0)=0.0;
         lim(2,1)=lim(1,1);
     }
+
+    // impose starting vergence != 0.0
+    if (fbHead[5]<1.0*CTRL_DEG2RAD)
+        fbHead[5]=1.0*CTRL_DEG2RAD;
 
     // Instantiate integrator
     qd.resize(3);
@@ -374,9 +378,9 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         copyJointsBounds(chainEyeL,chainEyeR);
 
         // read starting position
-        fbTorso.resize(nJointsTorso);
-        fbHead.resize(nJointsHead);        
-        getFeedback(fbTorso,fbHead,encTorso,encHead);        
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
+        getFeedback(fbTorso,fbHead,encTorso,encHead);
     }
     else
     {
@@ -395,6 +399,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
     // neck roll disabled
     fbHead[1]=0.0;
+
+    // impose starting vergence != 0.0
+    if (fbHead[5]<1.0*CTRL_DEG2RAD)
+        fbHead[5]=1.0*CTRL_DEG2RAD;
 
     neckPos.resize(2);
     gazePos.resize(3);
