@@ -614,9 +614,18 @@ public:
 
 	/**
 	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
-	* solving wrenches in the limbs.
+	* solving wrenches in the limbs. The parameter FM is a (6xN), where each column
+	* is an external wrench to be used for initializing the wrench phase; N is the number of 
+	* limbs Nlimbs attached to the node. The boolean flag is used in case the external wrench on
+	* the first limb has already been set; this is useful whenever two different nodes are
+	* connected and share information: the first node sends kinematic and wrench information
+	* to the 'first' limb of the second node (eg the torso). In that case the FM matrix
+	* should only contain external wrench for the other limbs, so it should be a (6x(Nlimbs-1)).
+	* @param FM a (6xN) matrix with the external wrenches,where N is the number of limbs 
+	* if afterAttach=false, number of limbs -1 if afterAttach=true
+	* @param afterAttach a flag for specifying if the external wrench of the first limb has been already set or not
 	*/
-	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM);
+	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false);
 
 
 
@@ -837,9 +846,10 @@ public:
 	* Redefinition from iDynSensorNode.
 	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
 	* solving wrenches in the limbs.
-	* @param FM a (6xN) matrix of forces/moments where N is the number 
+	* @param FM a (6xN) matrix of forces/moments where N is the number of external wrenches for the N limbs of the node
+	* @return a 
 	*/
-	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM) { return iDynSensorNode::estimateSensorsWrench(FM); }
+	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false) { return iDynSensorNode::estimateSensorsWrench(FM,afterAttach); }
 
 	
 };

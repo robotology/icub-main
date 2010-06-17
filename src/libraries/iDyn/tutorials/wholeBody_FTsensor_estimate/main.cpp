@@ -19,7 +19,9 @@ using namespace iDyn;
 
 int main()
 {
-	// declare an icub
+	// declare an icub = head + left arm + right arm + torso + left leg + right leg
+	// the kinematic and dynamic parameters of each link are automatically set using the 
+	// CAD model data.
 	// icub default parameters are:
 	// mode    = DYNAMIC : the mode for computing wrenches, considering q,dq,d2q,mass,inertia of each link;
 	//                     the other main mode is STATIC, which only considers q and mass.
@@ -36,7 +38,8 @@ int main()
 	// in fact two public pointers to the iCubUpperTorso and iCubLowerTorso objects, each
 	// having all the useful methods for each limb. To access to a specific limb, you must 
 	// 'address' it as a string. The string name is quite familiar, it recalls yarp ports..
-	cout<<"iCub has many DOF: "<<endl
+	cout<<endl
+		<<"iCub has many DOF: "<<endl
 		<<" - head      : "<<icub.upperTorso->getNLinks("head")<<endl
 		<<" - left arm  : "<<icub.upperTorso->getNLinks("left_arm")<<endl
 		<<" - right arm : "<<icub.upperTorso->getNLinks("right_arm")<<endl
@@ -58,7 +61,8 @@ int main()
 	w0=dw0=ddp0=0.0; ddp0[2]=9.81;
 
 	// here we set the external forces at the end of each limb
-	Matrix FM(6,3); FM.zero();
+	Matrix FM_up(6,3); FM_up.zero();
+	Matrix FM_lo(6,2); FM_lo.zero();
 
 	// here we set the joints position, velocity and acceleration 
 	// for all the limbs!
@@ -96,26 +100,47 @@ int main()
 	// then solve the wrench phase, where the external wrenches are set
 	// to be acting only on the end-effector of each limb
 	// then the limbs with a FT sensor (arms) estimate the sensor wrench
-	Matrix fm_sens_up = icub.upperTorso->estimateSensorsWrench(FM);
+	// note: FM_up = 6x3, because we have 3 limbs with external wrench input
+	// note: afterAttach=false is default
+	Matrix fm_sens_up = icub.upperTorso->estimateSensorsWrench(FM_up);
 	
 	// connect upper and lower torso: they exchange kinematic and wrench information
 	icub.attachTorso();
-
+	
 	// now solve lower torso the same way of the upper
-	Matrix fm_sens_lo = icub.lowerTorso->estimateSensorsWrench(FM);
+	// note: FM_lo = 6x2, because we have 2 limbs with external wrench input to be set
+	// since the torso receives the external wrench output from the upperTorso node
+	// during the attachTorso()
+	// note: afterAttach=false is set to true, because we specify that the torso
+	// already received the wrench for initialization by the upperTorso during
+	// the attachTorso()
+	Matrix fm_sens_lo = icub.lowerTorso->estimateSensorsWrench(FM_lo,true);
 
 	cout<<endl
 		<<"Estimate FT sensor measurements on upper body: "<<endl
 		<<" left  : "<<fm_sens_up.getCol(0).toString()<<endl
 		<<" right : "<<fm_sens_up.getCol(1).toString()<<endl
 		<<endl
+		<<"Upper Torso: "<<endl
+		<<" kin :   w= "<<icub.upperTorso->getTorsoAngVel().toString()<<endl
+		<<"        dw= "<<icub.upperTorso->getTorsoAngAcc().toString()<<endl
+		<<"       ddp= "<<icub.upperTorso->getTorsoLinAcc().toString()<<endl
+		<<" wre :   F= "<<icub.upperTorso->getTorsoForce().toString()<<endl
+		<<"        Mu= "<<icub.upperTorso->getTorsoMoment().toString()<<endl
+		<<endl
 		<<"Estimate FT sensor measurements on lower body: "<<endl
 		<<" left  : "<<fm_sens_lo.getCol(0).toString()<<endl
 		<<" right : "<<fm_sens_lo.getCol(1).toString()<<endl
+		<<endl
+		<<"Lower Torso: "<<endl
+		<<" kin :   w= "<<icub.lowerTorso->getTorsoAngVel().toString()<<endl
+		<<"        dw= "<<icub.lowerTorso->getTorsoAngAcc().toString()<<endl
+		<<"       ddp= "<<icub.lowerTorso->getTorsoLinAcc().toString()<<endl
+		<<" wre :   F= "<<icub.lowerTorso->getTorsoForce().toString()<<endl
+		<<"        Mu= "<<icub.lowerTorso->getTorsoMoment().toString()<<endl
 		<<endl;
 
 	cin.get();
-
     return 0;
 }
       

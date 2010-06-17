@@ -883,7 +883,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 	return inputWasOk ;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM)
+Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 {
 	unsigned int inputNode = 0;
 	unsigned int outputNode = 0;	
@@ -900,21 +900,43 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM)
 	// solve kinematics
 	solveKinematics();
 
-	//first set external wrench in the limbs
+	//first check if the input is correct
 	if(FM.rows()!=6)
 	{
 		if(verbose)
+			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches matrix: "
+				<<FM.rows()<<" rows instead of 6 (3+3)"<<endl
+				<<"                Using default values, all zero."<<endl;
+		inputWasOk = false;
+	}
+	if((afterAttach==true)&&(FM.cols()!=(rbtList.size()-1)))
+	{
+		if(verbose)
 			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
-				<<FM.rows()<<" instead of 6 (3+3)"<<endl
-				<<"          Using default values, all zero."<<endl;
+				<<FM.cols()<<" cols instead of "<<(rbtList.size()-1)
+				<<". Remember that the first limb receives wrench input during an attach from another node."<<endl
+				<<"                Using default values, all zero."<<endl;
+		inputWasOk = false;
+	}
+	if((afterAttach==false)&&(FM.cols()!=rbtList.size()))
+	{
+		if(verbose)
+			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
+				<<FM.cols()<<" cols instead of "<<rbtList.size()
+				<<"                Using default values, all zero."<<endl;
 		inputWasOk = false;
 	}
 
 	//set the input forces/moments from each limb at base/end
+	// note: if afterAttach=true we set the wrench only in limbs 1,2,..
+	// if afterAttach=false, we set the wrench in all limbs 0,1,2,..
+	unsigned int startLimb=0;
+	if(afterAttach) startLimb=1;
+
 	if(inputWasOk)
 	{
 		inputNode = 0;
-		for(unsigned int i=0; i<rbtList.size(); i++)
+		for(unsigned int i=startLimb; i<rbtList.size(); i++)
 		{
 			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
 			{
@@ -932,7 +954,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM)
 	else
 	{
 		// default zero values if inputs are wrong sized
-		for(unsigned int i=0; i<rbtList.size(); i++)
+		for(unsigned int i=startLimb; i<rbtList.size(); i++)
 			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
 				rbtList[i].setWrenchMeasure(fi,mi);		
 	}
