@@ -26,5 +26,6 @@ ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IPP_LIBRARIES}
                                      ${YARP_LIBRARIES})
 
+
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
