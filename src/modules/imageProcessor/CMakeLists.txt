@@ -32,9 +32,10 @@ MESSAGE("OpenCV_INCLUDE_DIRS: ${OpenCV_INCLUDE_DIRS}")
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${OpenCV_INCLUDE_DIRS}    	
-    ${IPP_INCLUDE_DIRS}	 
-    #$ENV{QT_INCLUDE_DIR}
+    ${OpenCV_INCLUDE_DIRS}
+    ${ICUB_INCLUDE_DIRS}
+    ${IPP_INCLUDE_DIRS}	
+    ${YARP_INCLUDE_DIRS}
 )
 
 IF(NOT IPP_INCLUDE_DIRS)
@@ -63,13 +64,6 @@ LINK_DIRECTORIES(
     #/opt/intel/ipp/sharedlib	
 )
 
-#LINK_LIBRARIES(debug "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib" 
-#	optimized "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib")
-
-
-
-
-
 # Set up our main executable.
 IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
@@ -80,7 +74,6 @@ IF (folder_source)
      TARGET_LINK_LIBRARIES( ${KEYWORD}
       ${OpenCV_LIBRARIES}
       ${YARP_LIBRARIES}
-      #${ODE_LIBRARIES}
       ${IDL_LIBRARIES}
       ${IPP_LIBRARIES} 	
      )	
@@ -88,10 +81,8 @@ IF (folder_source)
      TARGET_LINK_LIBRARIES( ${KEYWORD}
        ${OpenCV_LIBRARIES}
        ${YARP_LIBRARIES}
-       #${ODE_LIBRARIES}
        ${IDL_LIBRARIES}
        ${IPP_LIBRARIES} 
-       #ippi	
        pthread
      )
     ENDIF (WIN32)	
@@ -100,11 +91,5 @@ ELSE (folder_source)
 ENDIF (folder_source)
 
 
-#ADD_LIBRARY(ImageProcessModule
-#    ${ImageProcessModuleSRC}
-#    ${folder_header}
-#)
-
-#INSTALL_TARGETS(/lib ${KEYWORD})
 INSTALL_TARGETS(/bin ${KEYWORD})
 
