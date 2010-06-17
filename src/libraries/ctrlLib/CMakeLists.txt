@@ -33,7 +33,7 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME} ${GSL_LIBRARIES}
                                      ${YARP_LIBRARIES})
                  
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                    EXTERNAL_INCLUDE_DIRS ${GSL_INCLUDE_DIRS}
-                                    DESTINATION include/iCub/ctrl 
-                                    FILES ${folder_header})
+                                   EXTERNAL_INCLUDE_DIRS ${GSL_INCLUDE_DIRS}
+                                   DESTINATION include/iCub/ctrl 
+                                   FILES ${folder_header})
 
