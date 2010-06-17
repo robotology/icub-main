@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
 	    }
     }
 
-    ResourceFinder* _the_finder = new ResourceFinder;
-	ResourceFinder& finder = *_the_finder;
+    yarp::os::ResourceFinder* _the_finder = new yarp::os::ResourceFinder;
+    yarp::os::ResourceFinder& finder = *_the_finder;
     finder.setVerbose();
     //---
     finder.setDefaultConfigFile("protoObjectVisualAttention.ini");
