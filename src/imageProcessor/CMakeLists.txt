@@ -6,6 +6,10 @@ PROJECT(${KEYWORD})
 
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(YARP REQUIRED)
+
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${YARP_DIR}/conf ${ICUB_DIR}/conf)
+MESSAGE("CMAKE_MODULE_PATH:  ${CMAKE_MODULE_PATH}")
+
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(IPP REQUIRED)
 
@@ -22,19 +26,15 @@ FIND_PACKAGE(IPP REQUIRED)
 #INCLUDE_DIRECTORIES(${LOGPOLAR_INCLUDE_DIRS})
 #--------------------------
 
+MESSAGE("OPENCV_INCLUDE_DIRS: ${OPENCV_INCLUDE_DIRS}") 
+
 
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${OPENCV_INCLUDE_DIR}    	
+    ${OPENCV_INCLUDE_DIRS}    	
     ${IPP_INCLUDE_DIRS}	 
-    #/opt/intel/ipp/6.1.1.042/em64t/include
-    #---linux    
-    #$ENV{QT_INCLUDE_DIR}/include
-    #$ENV{QT_INCLUDE_DIR}/include/Qt
-    #$ENV{QT_INCLUDE_DIR}/include/Qt3Support 
-    #--windows
-    $ENV{QT_INCLUDE_DIR}
+    #$ENV{QT_INCLUDE_DIR}
 )
 
 IF(NOT IPP_INCLUDE_DIRS)
@@ -73,6 +73,7 @@ IF (folder_source)
     IF (WIN32) #required in win
      TARGET_LINK_LIBRARIES( ${KEYWORD}
       ${OPENCV_LIBRARIES}
+      ${YARP_LIBRARIES}
       #${ODE_LIBRARIES}
       ${IDL_LIBRARIES}
       ${IPP_LIBRARIES} 	
@@ -80,6 +81,7 @@ IF (folder_source)
     ELSE(WIN32) #required in linux
      TARGET_LINK_LIBRARIES( ${KEYWORD}
        ${OPENCV_LIBRARIES}
+       ${YARP_LIBRARIES}
        #${ODE_LIBRARIES}
        ${IDL_LIBRARIES}
        ${IPP_LIBRARIES} 
