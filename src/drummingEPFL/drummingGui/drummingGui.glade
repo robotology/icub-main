@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <interface>
   <requires lib="gtk+" version="2.16"/>
-<!-- interface-naming-policy project-wide -->
+  <!-- interface-naming-policy project-wide -->
   <object class="GtkListStore" id="lstScores">
     <columns>
-<!-- column-name fileName -->
+      <!-- column-name fileName -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -233,7 +233,7 @@
                                     <property name="orientation">vertical</property>
                                     <property name="spacing">10</property>
                                     <child>
-                                      <object class="GtkButton" id="btnLeftLeg1">
+                                      <object class="GtkButton" id="btnLeftLeg">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -422,9 +422,9 @@
                               </object>
                             </child>
                             <child type="label">
-                              <object class="GtkLabel" id="lblRighLeg1">
+                              <object class="GtkLabel" id="lblHead">
                                 <property name="visible">True</property>
-                                <property name="label" translatable="yes">&lt;b&gt;Right Leg&lt;/b&gt;</property>
+                                <property name="label" translatable="yes">&lt;b&gt;Head&lt;/b&gt;</property>
                                 <property name="use_markup">True</property>
                               </object>
                             </child>
@@ -557,6 +557,8 @@
                   <object class="GtkHScale" id="hscTempo">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="update_policy">discontinuous</property>
+                    <property name="adjustment">adjTempo</property>
                   </object>
                 </child>
               </object>
@@ -603,6 +605,9 @@
                           <object class="GtkHScale" id="hscCoordArms">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="update_policy">discontinuous</property>
+                            <property name="adjustment">adjCoordArms</property>
+                            <property name="lower_stepper_sensitivity">on</property>
                             <property name="upper_stepper_sensitivity">off</property>
                             <property name="value_pos">left</property>
                           </object>
@@ -631,6 +636,8 @@
                           <object class="GtkHScale" id="hscCoordLegs">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="update_policy">discontinuous</property>
+                            <property name="adjustment">adjCoordLegs</property>
                             <property name="upper_stepper_sensitivity">off</property>
                             <property name="value_pos">left</property>
                           </object>
@@ -656,9 +663,11 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkHScale" id="hscCoordArmLeg">
+                          <object class="GtkHScale" id="hscCoordArmsLegs">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="update_policy">discontinuous</property>
+                            <property name="adjustment">adjCoordArmsLegs</property>
                             <property name="upper_stepper_sensitivity">off</property>
                             <property name="value_pos">left</property>
                           </object>
@@ -705,5 +714,25 @@
         <property name="position">1</property>
       </packing>
     </child>
+  </object>
+  <object class="GtkAdjustment" id="adjTempo">
+    <property name="value">0.5</property>
+    <property name="upper">2</property>
+    <property name="step_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="adjCoordArms">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="adjCoordLegs">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="adjCoordArmsLegs">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">0.10000000000000001</property>
   </object>
 </interface>

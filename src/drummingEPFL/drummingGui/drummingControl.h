@@ -30,12 +30,13 @@
 
 #include <string>
 #include <vector>
-#include <map>
 #include <yarp/os/all.h>
 
 //static const int NB_PARTS = 5;
 //static const std::string PARTS[NB_PARTS] = {"left_arm", "right_arm", "left_leg", "right_leg", "head"};
 //static const int SCORE_SIZE = 16;
+
+static const std::string PARTITION_FOLDER = "part";
 
 /**
  * The class to control the drumming
@@ -50,7 +51,7 @@ private:
 	yarp::os::BufferedPort<yarp::os::Bottle> partitionsPort[5];
     double currentTempo;
     double currentPhase[4];
-	std::vector<double> currentPartition[11];
+	std::vector< std::vector<double> > currentPartition;
 	yarp::os::BufferedPort<yarp::os::Bottle> phasePort[5];
     int ScoreSize;
     yarp::os::BufferedPort<yarp::os::Bottle> interactivePort;
@@ -67,6 +68,7 @@ public:
 
     std::vector<std::string> Init(void);
 	void Close(void);
+    void PlayPartition(std::string partFile);
 	void SendPartitions(void);
 	void SendParameters(void);
 	void PlayCustom(int i);
@@ -74,10 +76,8 @@ public:
 	void StopPartition(void);
 	void StopCustomPlay(void);
 	void PlayPartCustom(int partID, int beat);
-
-
-
-
+    void SetTempo(double tempo);
+    void SetPhase(int phaseGroup, double phase);
 
 };
 

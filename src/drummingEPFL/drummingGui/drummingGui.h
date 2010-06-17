@@ -43,7 +43,8 @@ static const std::string WINDOW_TITLE = "Drumming GUI";
 static const int DEFAULT_WINDOW_WIDTH = 480;
 static const int DEFAULT_WINDOW_HEIGHT = 360;
 static const std::string GUI_FILE = "drummingGui.glade";
-static const std::string PARTITION_FOLDER = "part";
+
+static const double M_PI = 3.14159265;
 
 /**
  * A Gtkmm Gui.
@@ -51,6 +52,24 @@ static const std::string PARTITION_FOLDER = "part";
  */
 class DrummingGui : public Gtk::Window
 {
+
+private:
+    enum Parts {LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, HEAD};
+
+    //the main class to control the drumming;
+    DrummingControl drummingControl;
+
+	//Gtk builder
+	Glib::RefPtr<Gtk::Builder> builder;
+
+	//widgets
+	Gtk::VBox *mainBox;
+	Gtk::TreeView *tvwScores;
+    Gtk::HScale *hscTempo;
+    Gtk::HScale *hscCoordArms;
+    Gtk::HScale *hscCoordLegs;
+    Gtk::HScale *hscCoordArmsLegs;
+
 public:
 /**
  * Constructor of the DrummingGui class
@@ -59,26 +78,12 @@ public:
     DrummingGui();
     virtual ~DrummingGui(void);
 
-protected:
-
-
-private:
-	//Gtk builder
-	Glib::RefPtr<Gtk::Builder> builder;
-
-	//widgets
-	Gtk::VBox *mainBox;
-	Gtk::TreeView *tvwScores;
-
 
 private:
 	Glib::RefPtr<Gtk::Builder> LoadFromFile();
 	void UpdatePartitionFolder(void);
-
 	
-
-    //the main code to control the drumming;
-    DrummingControl drummingControl;
+    void GetAndConnectWidgets(void);
 
 	//signal handlers
 	void OnBtnQuitClicked(void);
@@ -90,6 +95,22 @@ private:
 	void OnBtnRightArm1Clicked(void);
 	void OnBtnRightArm2Clicked(void);
 	void OnBtnRightArmHoldClicked(void);
+    void OnBtnLeftLegClicked(void);
+	void OnBtnLeftLegHoldClicked(void);
+    void OnBtnRightLegClicked(void);
+	void OnBtnRightLegHoldClicked(void);
+    void OnBtnHead1Clicked(void);
+    void OnBtnHead2Clicked(void);
+    void OnBtnHead3Clicked(void);
+    void OnBtnHead4Clicked(void);
+	void OnBtnHeadHoldClicked(void);
+    void OnBtnHeadScanClicked(void);
+    void OnHscTempoValueChanged(void);
+    void OnHscCoordArmsValueChanged(void);
+    void OnHscCoordLegsValueChanged(void);
+    void OnHscCoordArmsLegsValueChanged(void);
+    void OnBtnPlayScoreClicked(void);
+    void OnBtnStopScoreClicked(void);
 };
 
 #endif //DRUMMING_GUI__H

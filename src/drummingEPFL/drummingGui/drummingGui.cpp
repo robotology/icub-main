@@ -10,6 +10,8 @@ DrummingGui::DrummingGui()
     set_title(WINDOW_TITLE);
     set_default_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
+    drummingControl.Init();
+
 	builder = LoadFromFile();
 	if(!builder)
 	{
@@ -23,8 +25,20 @@ DrummingGui::DrummingGui()
 
 	show_all_children();
 
-	
-	Gtk::Button* btnQuit = 0;
+    GetAndConnectWidgets();
+    
+	UpdatePartitionFolder();
+}
+
+DrummingGui::~DrummingGui(void)
+{
+    
+}
+
+
+void DrummingGui::GetAndConnectWidgets(void)
+{
+    Gtk::Button* btnQuit = 0;
     builder->get_widget("btnQuit", btnQuit);
     if(btnQuit)
     {
@@ -60,7 +74,7 @@ DrummingGui::DrummingGui()
     }
 
 	Gtk::Button* btnLeftArmHold = 0;
-    builder->get_widget("btnLeftArm2", btnLeftArmHold);
+    builder->get_widget("btnLeftArmHold", btnLeftArmHold);
     if(btnLeftArmHold)
     {
 		btnLeftArmHold->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnLeftArmHoldClicked));
@@ -82,23 +96,130 @@ DrummingGui::DrummingGui()
     }
 
 	Gtk::Button* btnRightArmHold = 0;
-    builder->get_widget("btnRightArm2", btnRightArmHold);
+    builder->get_widget("btnRightArmHold", btnRightArmHold);
     if(btnRightArmHold)
     {
 		btnRightArmHold->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnRightArmHoldClicked));
     }
 
+    Gtk::Button* btnLeftLeg = 0;
+    builder->get_widget("btnLeftLeg", btnLeftLeg);
+    if(btnLeftLeg)
+    {
+		btnLeftLeg->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnLeftLegClicked));
+    }
+
+    Gtk::Button* btnLeftLegHold = 0;
+    builder->get_widget("btnLeftLegHold", btnLeftLegHold);
+    if(btnLeftLegHold)
+    {
+		btnLeftLegHold->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnLeftLegHoldClicked));
+    }
+
+    Gtk::Button* btnRightLeg = 0;
+    builder->get_widget("btnRightLeg", btnRightLeg);
+    if(btnRightLeg)
+    {
+		btnRightLeg->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnRightLegClicked));
+    }
+
+    Gtk::Button* btnRightLegHold = 0;
+    builder->get_widget("btnRightLegHold", btnRightLegHold);
+    if(btnRightLegHold)
+    {
+		btnRightLegHold->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnRightLegHoldClicked));
+    }
+
+    Gtk::Button* btnHead1 = 0;
+    builder->get_widget("btnHead1", btnHead1);
+    if(btnHead1)
+    {
+		btnHead1->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnHead1Clicked));
+    }
+
+	Gtk::Button* btnHead2 = 0;
+    builder->get_widget("btnHead2", btnHead2);
+    if(btnHead2)
+    {
+		btnHead2->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnHead2Clicked));
+    }
+
+    Gtk::Button* btnHead3 = 0;
+    builder->get_widget("btnHead3", btnHead3);
+    if(btnHead3)
+    {
+		btnHead3->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnHead3Clicked));
+    }
+
+    Gtk::Button* btnHead4 = 0;
+    builder->get_widget("btnHead4", btnHead4);
+    if(btnHead4)
+    {
+		btnHead4->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnHead4Clicked));
+    }
+
+	Gtk::Button* btnHeadHold = 0;
+    builder->get_widget("btnHeadHold", btnHeadHold);
+    if(btnHeadHold)
+    {
+		btnHeadHold->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnHeadHoldClicked));
+    }
+
+    Gtk::Button* btnHeadScan = 0;
+    builder->get_widget("btnHeadScan", btnHeadScan);
+    if(btnHeadScan)
+    {
+		btnHeadScan->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnHeadScanClicked));
+    }
+
+    hscTempo = 0;
+    builder->get_widget("hscTempo", hscTempo);
+    if(hscTempo)
+    {
+        hscTempo->signal_value_changed().connect(sigc::mem_fun(*this, &DrummingGui::OnHscTempoValueChanged));
+        hscTempo->set_value(0.5);
+    }
+
+    hscCoordArms = 0;
+    builder->get_widget("hscCoordArms", hscCoordArms);
+    if(hscCoordArms)
+    {
+        hscCoordArms->signal_value_changed().connect(sigc::mem_fun(*this, &DrummingGui::OnHscCoordArmsValueChanged));
+    }
+
+    hscCoordLegs = 0;
+    builder->get_widget("hscCoordLegs", hscCoordLegs);
+    if(hscCoordLegs)
+    {
+        hscCoordLegs->signal_value_changed().connect(sigc::mem_fun(*this, &DrummingGui::OnHscCoordLegsValueChanged));
+    }
+
+    hscCoordArmsLegs = 0;
+    builder->get_widget("hscCoordArmsLegs", hscCoordArmsLegs);
+    if(hscCoordArmsLegs)
+    {
+        hscCoordArmsLegs->signal_value_changed().connect(sigc::mem_fun(*this, &DrummingGui::OnHscCoordArmsLegsValueChanged));
+    }
+
+    Gtk::Button* btnPlayScore = 0;
+    builder->get_widget("btnPlayScore", btnPlayScore);
+    if(btnPlayScore)
+    {
+		btnPlayScore->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnPlayScoreClicked));
+    }
+
+    Gtk::Button* btnStopScore = 0;
+    builder->get_widget("btnStopScore", btnStopScore);
+    if(btnStopScore)
+    {
+		btnStopScore->signal_clicked().connect(sigc::mem_fun(*this, &DrummingGui::OnBtnStopScoreClicked));
+    }
+
+
 	
     builder->get_widget("tvwScores", tvwScores);
-    
-	UpdatePartitionFolder();
-
-	drummingControl.Init();
 }
 
-DrummingGui::~DrummingGui(void)
-{
-}
 
 
 
@@ -165,46 +286,208 @@ void DrummingGui::UpdatePartitionFolder(void)
 
 void DrummingGui::OnBtnQuitClicked()
 {
+#ifdef _DEBUG
+    cout << "Clicked btnQuit" << endl;
+#endif
 	drummingControl.Close();
 	hide();
 }
 
 void DrummingGui::OnBtnStopCustomClicked(void)
 {
+#ifdef _DEBUG
+    cout << "Clicked btnStopCustom" << endl;
+#endif
 	drummingControl.StopCustomPlay();
 }
 
 void DrummingGui::OnBtnPlayCustomClicked(void)
 {
+#ifdef _DEBUG
+    cout << "Clicked btnPlayCustom" << endl;
+#endif
 	drummingControl.PlayAllPartsCustom();
 }
 
 void DrummingGui::OnBtnLeftArm1Clicked(void)
 {
-	drummingControl.PlayPartCustom(0, 1);
+#ifdef _DEBUG
+    cout << "Clicked btnLeftArm1" << endl;
+#endif
+	drummingControl.PlayPartCustom(LEFT_ARM, 1);
 }
 
 void DrummingGui::OnBtnLeftArm2Clicked(void)
 {
-	drummingControl.PlayPartCustom(0, 2);
+#ifdef _DEBUG
+    cout << "Clicked btnLeftArm2" << endl;
+#endif
+	drummingControl.PlayPartCustom(LEFT_ARM, 2);
 }
 
 void DrummingGui::OnBtnLeftArmHoldClicked(void)
 {
-	drummingControl.PlayPartCustom(0, 0);
+#ifdef _DEBUG
+    cout << "Clicked btnLeftArmHold" << endl;
+#endif
+	drummingControl.PlayPartCustom(LEFT_ARM, 0);
 }
 
 void DrummingGui::OnBtnRightArm1Clicked(void)
 {
-	drummingControl.PlayPartCustom(1, 1);
+#ifdef _DEBUG
+    cout << "Clicked btnRightArm1" << endl;
+#endif
+	drummingControl.PlayPartCustom(RIGHT_ARM, 1);
 }
 
 void DrummingGui::OnBtnRightArm2Clicked(void)
 {
-	drummingControl.PlayPartCustom(1, 2);
+#ifdef _DEBUG
+    cout << "Clicked btnRightArm2" << endl;
+#endif
+	drummingControl.PlayPartCustom(RIGHT_ARM, 2);
 }
 
 void DrummingGui::OnBtnRightArmHoldClicked(void)
 {
-	drummingControl.PlayPartCustom(1, 0);
+#ifdef _DEBUG
+    cout << "Clicked btnRightHold" << endl;
+#endif
+	drummingControl.PlayPartCustom(RIGHT_ARM, 0);
+}
+
+void DrummingGui::OnBtnLeftLegClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnLeftLeg" << endl;
+#endif
+    drummingControl.PlayPartCustom(LEFT_LEG, 1);
+}
+
+void DrummingGui::OnBtnLeftLegHoldClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnLeftHold" << endl;
+#endif
+    drummingControl.PlayPartCustom(LEFT_LEG, 0);
+}
+
+void DrummingGui::OnBtnRightLegClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnRightLeg" << endl;
+#endif
+    drummingControl.PlayPartCustom(RIGHT_LEG, 1);
+}
+
+void DrummingGui::OnBtnRightLegHoldClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnRightLegHold" << endl;
+#endif
+    drummingControl.PlayPartCustom(RIGHT_LEG, 0);
+}
+
+void DrummingGui::OnBtnHead1Clicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnHead1" << endl;
+#endif
+    drummingControl.PlayPartCustom(HEAD, 1);
+}
+
+void DrummingGui::OnBtnHead2Clicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnHead2" << endl;
+#endif
+    drummingControl.PlayPartCustom(HEAD, 2);
+}
+
+void DrummingGui::OnBtnHead3Clicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnHead3" << endl;
+#endif
+    drummingControl.PlayPartCustom(HEAD, 3);
+}
+
+void DrummingGui::OnBtnHead4Clicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnHead4" << endl;
+#endif
+    drummingControl.PlayPartCustom(HEAD, 4);
+}
+
+void DrummingGui::OnBtnHeadHoldClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnHeadHold" << endl;
+#endif
+    drummingControl.PlayPartCustom(HEAD, 0);
+}
+
+void DrummingGui::OnBtnHeadScanClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnHeadScan" << endl;
+#endif
+    drummingControl.PlayPartCustom(HEAD, 5);
+}
+
+void DrummingGui::OnHscTempoValueChanged(void)
+{
+#ifdef _DEBUG
+    cout << "Changed hscTempo" << endl;
+#endif
+    drummingControl.SetTempo(hscTempo->get_value());
+    drummingControl.SendParameters();
+}
+
+void DrummingGui::OnHscCoordArmsValueChanged(void)
+{
+#ifdef _DEBUG
+    cout << "Changed hscCoordsArms" << endl;
+#endif
+    drummingControl.SetPhase(0, hscCoordArms->get_value() * M_PI);
+    drummingControl.SendParameters();
+}
+
+void DrummingGui::OnHscCoordLegsValueChanged(void)
+{
+#ifdef _DEBUG
+    cout << "Changed hscCoordLegs" << endl;
+#endif
+    drummingControl.SetPhase(1, hscCoordLegs->get_value() * M_PI);
+    drummingControl.SendParameters();
+}
+
+void DrummingGui::OnHscCoordArmsLegsValueChanged(void)
+{
+#ifdef _DEBUG
+    cout << "Changed hscCoordsArmsLegs" << endl;
+#endif
+    drummingControl.SetPhase(2, hscCoordArmsLegs->get_value() * M_PI);
+    drummingControl.SendParameters();
+}
+
+
+void DrummingGui::OnBtnPlayScoreClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnPlayScore" << endl;
+#endif
+
+    //TODO : handle the treeview thingy
+    drummingControl.PlayPartition("part1.csv");
+}
+
+void DrummingGui::OnBtnStopScoreClicked(void)
+{
+#ifdef _DEBUG
+    cout << "Clicked btnStopScore" << endl;
+#endif
+    drummingControl.StopPartition();
 }

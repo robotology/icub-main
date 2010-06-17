@@ -23,6 +23,13 @@ void DrummingControl::Close()
 
 vector<string> DrummingControl::Init()
 {
+    for(size_t i=0; i<11; ++i)
+    {
+        vector<double> empty;
+        empty.clear();
+        currentPartition.push_back(empty);
+    }
+
 	vector<string> enabledParts;
     nbparts =5;
     string parts[5] = {"left_arm","right_arm","left_leg","right_leg","head"};
@@ -82,7 +89,6 @@ vector<string> DrummingControl::Init()
     for(int i=0;i<2*nbparts+1;i++)
     {
         double pini[11]={0.0,0.0,0.0,0.0,0.0,0.5,0.0,0.0,0.0,0.0,0.0};
-        currentPartition[i].clear();
         for(int j=0;j<ScoreSize;j++)
             currentPartition[i].push_back(pini[i]);	
     }
@@ -153,7 +159,8 @@ void DrummingControl::StopPartition()
 		{
 			currentPartition[i].push_back(pfin[i]);
 		}
-    }        
+    } 
+    SendPartitions();
 }
 
 
@@ -174,8 +181,8 @@ void DrummingControl::SendParameters()
     bot.clear();
     for(int i=0; i<ScoreSize;i++)
     {
-	bot.addDouble(currentTempo);
-	currentPartition[5][i]=currentTempo;
+	    bot.addDouble(currentTempo);
+	    currentPartition[5][i]=currentTempo;
     }
     interactivePort.write();
     
@@ -227,4 +234,54 @@ void DrummingControl::PlayPartCustom(int partID, int beat)
 {
 	customBeat[partID] = beat;
     PlayCustom(partID);
+}
+
+void DrummingControl::SetTempo(double tempo)
+{
+    currentTempo = tempo;
+}
+
+void DrummingControl::SetPhase(int phaseGroup, double phase)
+{
+    currentPhase[phaseGroup] = phase;
+}
+
+
+void DrummingControl::PlayPartition(string partFile)
+{
+    ifstream myFile;
+    string path = PARTITION_FOLDER + "/" + partFile;
+    myFile.open(path.c_str());
+    if(!myFile.is_open())
+    {
+        cout << "cannot read score " << path << endl;
+        return;
+    }
+    cout << "playing score: " << path.c_str() << endl;
+
+    for(int i=0;i<2*nbparts+1;i++)
+    {
+        char line[255];
+        myFile.getline(line,255);
+        string myString(line);
+        stringstream linestream(myString);
+        currentPartition[i].clear();
+        string temp;
+        linestream >> temp;
+        while(!linestream.eof())
+        {
+            double p;
+            linestream >> p;
+            currentPartition[i].push_back(p);
+        }
+    }
+
+    for(int i=0;i<2*nbparts+1;i++)
+    {
+        cout << "score for " << i << " is ";
+        for(size_t j=0; j<currentPartition[i].size(); j++)
+            cout << currentPartition[i][j] << " ";
+        cout << endl;
+    }
+    SendPartitions();
 }
