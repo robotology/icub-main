@@ -1,4 +1,4 @@
-
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 SET(KEYWORD "imageProcessor")
 
 PROJECT(${KEYWORD})
@@ -32,7 +32,7 @@ MESSAGE("OPENCV_INCLUDE_DIRS: ${OPENCV_INCLUDE_DIRS}")
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${OPENCV_INCLUDE_DIRS}    	
+    ${OpenCV_INCLUDE_DIRS}    	
     ${IPP_INCLUDE_DIRS}	 
     #$ENV{QT_INCLUDE_DIR}
 )
@@ -40,6 +40,12 @@ INCLUDE_DIRECTORIES(
 IF(NOT IPP_INCLUDE_DIRS)
 	MESSAGE(ERROR ": No IPP_INCLUDE_DIR found. Please check it out")	
 ENDIF(NOT IPP_INCLUDE_DIRS)
+
+IF(NOT OpenCV_INCLUDE_DIRS)
+	MESSAGE(ERROR ": No OpenCV_INCLUDE_DIRS found. Please check it out")	
+ENDIF(NOT OpenCV_INCLUDE_DIRS)
+
+
 
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
@@ -72,7 +78,7 @@ IF (folder_source)
     )
     IF (WIN32) #required in win
      TARGET_LINK_LIBRARIES( ${KEYWORD}
-      ${OPENCV_LIBRARIES}
+      ${OpenCV_LIBRARIES}
       ${YARP_LIBRARIES}
       #${ODE_LIBRARIES}
       ${IDL_LIBRARIES}
@@ -80,7 +86,7 @@ IF (folder_source)
      )	
     ELSE(WIN32) #required in linux
      TARGET_LINK_LIBRARIES( ${KEYWORD}
-       ${OPENCV_LIBRARIES}
+       ${OpenCV_LIBRARIES}
        ${YARP_LIBRARIES}
        #${ODE_LIBRARIES}
        ${IDL_LIBRARIES}
