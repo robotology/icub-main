@@ -1,9 +1,12 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 SET(KEYWORD "saliencyBlobFinder")
 
 PROJECT(${KEYWORD})
 
 FIND_PACKAGE(ICUB)
-FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(YARP)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(IPP REQUIRED)
 
@@ -17,11 +20,10 @@ FIND_PACKAGE(IPP REQUIRED)
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${OPENCV_INCLUDE_DIR}    
+    ${ICUB_INCLUDE_DIRS}
+    ${YARP_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}    
     ${IPP_INCLUDE_DIRS}	 
-    #${ODE_INCLUDE_DIRS}	
-    #${IPL_INCLUDE_DIRS}	
-    #${CVBLOBS_INCLUDE_DIRS}
 )
 
 
@@ -39,15 +41,7 @@ LINK_DIRECTORIES(
 )
 
 
-#LINK_LIBRARIES(
-#    ${OPENCV_LIBRARIES}
-#    ${IPP_LIBRARIES} 
-#    #${CVBLOBS_LIBRARIES}
-#    #${ODE_LIBRARIES}
-#    #${IDL_LIBRARIES}	 
-#)
-
-# Set up our main executable.
+# Set up our main executable
 IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
         ${folder_source} 
@@ -55,12 +49,14 @@ IF (folder_source)
     )
     IF(WIN32)	
     TARGET_LINK_LIBRARIES( ${KEYWORD} 
-      ${OPENCV_LIBRARIES}
+      ${OpenCV_LIBRARIES}
+      ${YARP_LIBRARIES}
       ${IPP_LIBRARIES}
     )
     ELSE(WIN32) #required in linux
      TARGET_LINK_LIBRARIES( ${KEYWORD}
-       ${OPENCV_LIBRARIES}
+       ${OpenCV_LIBRARIES}
+       ${YARP_LIBRARIES}
        ${IPP_LIBRARIES} 	
        pthread
      )
