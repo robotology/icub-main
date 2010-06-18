@@ -98,7 +98,9 @@ void main(void)
 	Int32 t1val=0;
 	Int32 PID_R= 2;
 	Int32 kpp=1;
-	Int16 test =0;
+	Int16 current_turn=0;
+	Int16 print_number=0;
+	Int16 real_pos=0;
 	byte first_step=0;
 	
 	//velocity and acceleration estimation
@@ -720,17 +722,34 @@ void check_range_torque(byte i, Int16 band, Int32 *PWM)
  	if (_control_mode[i] == MODE_TORQUE ||
 	  	_control_mode[i] == MODE_IMPEDANCE)
  		{
-	 		if  (_position[i] > _max_position[i] ||
-	 		     _position[i] < _min_position[i])   
-	 		{			
-					PWM[i] = 0;
+	 		if  (_position[i] > _max_position[i])
+	 		{
+	 			if ((_position[i]-_position_old[i])>=0)
+				{
+					PWM[i] = 0;	
+				}
+				TrqLimitCount++;	 
+				if (TrqLimitCount>=500)
+				{
+					#ifdef DEBUG_CONTROL_MODE
+						can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
+						TrqLimitCount=0;
+				    #endif 
+				}			
+	 		}
+	 		if  (_position[i] < _min_position[i])   
+	 		{
+	 			if ((_position[i]-_position_old[i])<=0)
+				{
+					PWM[i] = 0;			
+				}				
 				TrqLimitCount++;
 				if (TrqLimitCount>=500)
 				{
-				#ifdef DEBUG_CONTROL_MODE
-					can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
-					TrqLimitCount=0;
-			    #endif 
+					#ifdef DEBUG_CONTROL_MODE
+						can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
+						TrqLimitCount=0;
+				    #endif 
 				}
 	 		} 				
  		}
