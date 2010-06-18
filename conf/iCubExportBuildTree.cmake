@@ -50,7 +50,7 @@ endforeach(t)
 
 #message(STATUS "Pruning duplicaed entries from include directories ${include_dirs}")
 list(REMOVE_DUPLICATES include_dirs)
-message(STATUS "Header files global directory: ${include_dirs}")
+#message(STATUS "Header files global directory: ${include_dirs}")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"${include_dirs}\" CACHE STRING \"list of include directories, all exported targets\")\n")
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/${BUILD_CONFIG_TEMPLATE}

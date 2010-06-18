@@ -45,7 +45,7 @@ if(include_dirs)
 endif(include_dirs)
 
 set(ICUB_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include ${include_dirs})
-message(STATUS "Header files global directory: ${ICUB_INCLUDE_DIRS}")
+#message(STATUS "Header files global directory: ${ICUB_INCLUDE_DIRS}")
 
 install(EXPORT icub-targets DESTINATION ./ FILE ${EXPORT_CONFIG_FILE})
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/${INSTALL_CONFIG_TEMPLATE}
