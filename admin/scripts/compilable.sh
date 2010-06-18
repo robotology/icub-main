@@ -91,12 +91,6 @@ for m in $targets; do
 			echo "----- DATE AND TIME ----------------------"
 			date
 			echo ""
-			echo "----- ENVIRONMENT VARIABLES ON SERVER ----"
-			echo YARP_ROOT $YARP_ROOT
-			echo YARP_DIR $YARP_DIR
-			echo ICUB_ROOT $ICUB_ROOT
-			echo ICUB_DIR $ICUB_DIR
-			echo ""
 		    ) || echo "FAILURE to build" ) 2>&1 ) | tee $doc/$d/compile.txt
 	    ( (
 		    keys=`( find src/$m -iname "*.cpp" -exec grep -A 5 -i "@ingroup.*icub_module" {} \; | grep defgroup | sed "s/.*defgroup[ \t]*//" | sed "s/[ \t].*//" | sed "s/_/__/g" | sed "s/^/group__/" ) 2> /dev/null`

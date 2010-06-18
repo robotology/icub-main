@@ -39,7 +39,7 @@ targets=`cat graph.dot | egrep "shape=.((house)|(diamond))" | sed "s/shape=.*//"
 echo $targets
 
 base=$ICUB_DIR
-doc=$ICUB_DIR/doc/report
+doc=$REPORT_DIR
 rm -rf $doc
 mkdir -p $doc
 
