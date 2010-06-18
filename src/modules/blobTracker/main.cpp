@@ -163,9 +163,13 @@ public:
     virtual void run()
     {
 
+        bool valid;
+
         t0=Time::now();                
         while (!isStopping()) {
 
+            valid = false;
+ 
             // acquire new image
             if (ImageOf<PixelMono> *pImgIn=inPort.read(false)) {
 
@@ -304,13 +308,16 @@ public:
                     //cout << "x: " << singleBlobCenter[0] << endl; 
                     //cout << "y: " << singleBlobCenter[1] << endl; 
 
-
                 } 
                 
                 if(filterOn) {
                     filterSingleBlob->update(dt);
                     
                     if(filterSingleBlob->filtered.isValid) {
+ 
+                        valid = true;
+                        b.addInt(1);
+
                         filtered_area = util.getBox2DFromCov(filterSingleBlob->filtered.firstMoment, filterSingleBlob->filtered.roi, &box);
                         
                         //cout << "avg blob center: (" << filterSingleBlob->filtered.firstMoment.x << "," << filterSingleBlob->filtered.firstMoment.y 
@@ -334,7 +341,10 @@ public:
                 } else {
                     
                     if(filterSingleBlob->measured.isValid) {
-                        
+     
+                        valid = true;
+                        b.addInt(1);
+                   
                         area = util.getBox2DFromCov(filterSingleBlob->measured.firstMoment, filterSingleBlob->measured.roi, &box);
                         
                         //cout << "avg blob center: (" << filterSingleBlob->filtered.measured.x << "," << filterSingleBlob->measured.firstMoment.y 
@@ -372,15 +382,17 @@ public:
                             if (box.size.width > 0 && box.size.height > 0 && box.size.width < width && box.size.height < height)
                                 cvEllipseBox(imgOut.getIplImage(), box, color, 3, 16, 0);
 		                	cvCircle(imgOut.getIplImage(), filters[i]->filtered.firstMoment, 3, color, -1, 8, 0);
-                            
-                            Bottle &blob = b.addList();
-                            //blob.addInt(blobID);
-                            blob.addDouble(filters[i]->filtered.firstMoment.x);
-                            blob.addDouble(filters[i]->filtered.firstMoment.y);
-                            blob.addDouble(filters[i]->filtered.roi[0][0]);
-                            blob.addDouble(filters[i]->filtered.roi[0][1]);
-                            blob.addDouble(filters[i]->filtered.roi[1][0]);
-                            blob.addDouble(filters[i]->filtered.roi[1][1]);
+
+                            if(valid) {                            
+                                Bottle &blob = b.addList();
+                                //blob.addInt(blobID);
+                                blob.addDouble(filters[i]->filtered.firstMoment.x);
+                                blob.addDouble(filters[i]->filtered.firstMoment.y);
+                                blob.addDouble(filters[i]->filtered.roi[0][0]);
+                                blob.addDouble(filters[i]->filtered.roi[0][1]);
+                                blob.addDouble(filters[i]->filtered.roi[1][0]);
+                                blob.addDouble(filters[i]->filtered.roi[1][1]);
+                            }
                         }
                 
                     } else {		
@@ -392,20 +404,25 @@ public:
                             cvEllipseBox(imgOut.getIplImage(), box, color, 3, 16, 0);
 	                	cvCircle(imgOut.getIplImage(), rawBlobs[i]->firstMoment, 3, color, -1, 8, 0);
                         
-                        Bottle &blob = b.addList();
-                        //blob.addInt(blobID);
-                        blob.addDouble(rawBlobs[i]->firstMoment.x);
-                        blob.addDouble(rawBlobs[i]->firstMoment.y);
-                        blob.addDouble(rawBlobs[i]->roi[0][0]);
-                        blob.addDouble(rawBlobs[i]->roi[0][1]);
-                        blob.addDouble(rawBlobs[i]->roi[1][0]);
-                        blob.addDouble(rawBlobs[i]->roi[1][1]);
+                        if(valid) {
+                            Bottle &blob = b.addList();
+                            //blob.addInt(blobID);
+                            blob.addDouble(rawBlobs[i]->firstMoment.x);
+                            blob.addDouble(rawBlobs[i]->firstMoment.y);
+                            blob.addDouble(rawBlobs[i]->roi[0][0]);
+                            blob.addDouble(rawBlobs[i]->roi[0][1]);
+                            blob.addDouble(rawBlobs[i]->roi[1][0]);
+                            blob.addDouble(rawBlobs[i]->roi[1][1]);
+                        }
                     }
                 }		
                                 
                 // send outputs over YARP
                 outPort.write();
-                
+
+                if(!valid) {
+                    b.addInt(0);                
+                }
                 if(b.size() > 0) {	
                     blobPort.write();	
                 }
