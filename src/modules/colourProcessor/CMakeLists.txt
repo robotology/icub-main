@@ -7,7 +7,7 @@ PROJECT(${PROJECTNAME})
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
 FIND_PACKAGE(IPP)
 
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
@@ -17,9 +17,10 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
-                    ${IPP_INCLUDE_DIRS}
                     ${ICUB_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${YARP_INCLUDE_DIRS}
+		    ${IPP_INCLUDE_DIRS}
+		    )
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
