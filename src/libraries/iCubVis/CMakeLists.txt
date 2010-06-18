@@ -124,7 +124,6 @@ icub_export_library(iCubVis
                     INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include 
                     EXTERNAL_INCLUDE_DIRS ${iCubVis_INCLUDE_DIRS}
                     DESTINATION include/iCub/iCubVis
-                    VERBOSE 
                     FILES ${folder_public_headers}
 )
 
