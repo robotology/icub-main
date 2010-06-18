@@ -22,7 +22,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
     ${ICUB_INCLUDE_DIRS}
     ${YARP_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIRS}    
+    ${OPENCV_INCLUDE_DIR}    
     ${IPP_INCLUDE_DIRS}	 
 )
 
@@ -49,13 +49,13 @@ IF (folder_source)
     )
     IF(WIN32)	
     TARGET_LINK_LIBRARIES( ${KEYWORD} 
-      ${OpenCV_LIBRARIES}
+      ${OPENCV_LIBRARIES}
       ${YARP_LIBRARIES}
       ${IPP_LIBRARIES}
     )
     ELSE(WIN32) #required in linux
      TARGET_LINK_LIBRARIES( ${KEYWORD}
-       ${OpenCV_LIBRARIES}
+       ${OPENCV_LIBRARIES}
        ${YARP_LIBRARIES}
        ${IPP_LIBRARIES} 	
        pthread
