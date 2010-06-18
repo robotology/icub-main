@@ -1,0 +1,10 @@
+
+type=$1
+
+. ./admin/scripts/compile-config/$type/config.sh
+. ./admin/scripts/compile-config/common.sh
+. ./admin/scripts/compile-config/helpers.sh
+
+
+
+

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+doxygen main/conf/Doxyfile.txt

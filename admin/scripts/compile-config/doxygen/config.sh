@@ -1,0 +1,1 @@
+WEB_DOC_SUFFIX=main
