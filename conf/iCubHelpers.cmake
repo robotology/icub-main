@@ -121,7 +121,7 @@ MACRO(icub_export_library target)
     if (VERBOSE)
         message(STATUS "Target ${target} exporting: ${include_dirs}")
     endif()
-    set(${target}_INCLUDE_DIRS "${include_dirs}" CACHE STRING "include directories")
+    set(${target}_INCLUDE_DIRS "${include_dirs}" CACHE STRING "include directories target" FORCE)
   endif()
   ##############################################
 
