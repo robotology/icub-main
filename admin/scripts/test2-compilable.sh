@@ -47,7 +47,7 @@ main=$doc/index.html
 echo > $main
 echo "<html><head><title>iCub module status</title></head><body>" >> $main
 date >> $main
-cat lastRevision.txt >> $main
+cat $ICUB_ROOT/lastRevision.txt >> $main
 echo "" >> $main
 echo "<TABLE>" >> $main
 col_0="eeffff"
