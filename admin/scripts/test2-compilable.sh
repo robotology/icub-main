@@ -21,12 +21,11 @@ export LC_ALL=C
 # main build
 cd $ICUB_DIR
 echo "Main build: in $ICUB_DIR"
-if [ "k$1" = "k" ]; then
-  rm -f $ICUB_ROOT/$module/CMakeCache.txt
-  rm -f CMakeCache.txt
+rm -f $ICUB_ROOT/$module/CMakeCache.txt
+rm -f CMakeCache.txt
   
-  make_config $ICUB_ROOT/$module --graphviz=graph.dot 
-fi
+make_config $ICUB_ROOT/$module --graphviz=graph.dot 
+
 
 # This is a sneaky way to get the list of CMake build targets.
 # For makefiles, "make help" works too, but we may not be using makefiles.
@@ -39,8 +38,8 @@ targets=`cat graph.dot | egrep "shape=.((house)|(diamond))" | sed "s/shape=.*//"
 
 echo $targets
 
-base=$PWD
-doc=$PWD/doc/report
+base=$ICUB_DIR
+doc=$ICUB_DIR/doc/report
 rm -rf $doc
 mkdir -p $doc
 
@@ -56,14 +55,6 @@ col_1="ffffcc"
 col=true
 for m in $targets; do
     ok=true
-    if [ ! "k$1" = "k" ]; then
-	ok=false
-	echo "checking \"$m\" against \"$1\""
-	result=`echo $m | grep "$1"`
-	if [ ! "k$result" = "k" ]; then
-	    ok=true
-	fi
-    fi
     if $ok; then
 	d=$m
 	mkdir -p $doc/$d
@@ -134,9 +125,9 @@ echo "</TABLE>" >> $main
     echo -n "Date: "
     date
     echo
-    if [ -e "./admin/scripts/$SYSTEM_DESCRIPTION_FILE" ]
+    if [ -e "./admin/scripts/compile-config/$type/$SYSTEM_DESCRIPTION_FILE" ]
     then
-	bash ./admin/scripts/$SYSTEM_DESCRIPTION_FILE
+	bash ./admin/scripts/compile-config/$type/$SYSTEM_DESCRIPTION_FILE
     else
 	echo "No system description file found on server"
     fi
