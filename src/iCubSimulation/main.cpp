@@ -1052,9 +1052,19 @@ public:
 										dJointAttach (odeinit._iCub->grab,odeinit._iCub->l_hand,odeinit._wrld->obj[N-1].boxbody );
 										dJointSetFixed(odeinit._iCub->grab);
 									}
+                                    else if (hand == "left" && odeinit._iCub->actLHand=="on"){
+										odeinit._iCub->grab = dJointCreateFixed(odeinit.world,0);
+										dJointAttach (odeinit._iCub->grab, odeinit._iCub->body[10], odeinit._wrld->obj[N-1].boxbody );
+										dJointSetFixed(odeinit._iCub->grab);
+									}
 									else if (hand == "right" && odeinit._iCub->actRHand=="off"){
 										odeinit._iCub->grab1 = dJointCreateFixed(odeinit.world,0);
 										dJointAttach (odeinit._iCub->grab1,odeinit._iCub->r_hand,odeinit._wrld->obj[N-1].boxbody );
+										dJointSetFixed(odeinit._iCub->grab1);
+									}
+                                    else if (hand == "right" && odeinit._iCub->actRHand=="on"){
+										odeinit._iCub->grab1 = dJointCreateFixed(odeinit.world,0);
+										dJointAttach (odeinit._iCub->grab1, odeinit._iCub->body[11], odeinit._wrld->obj[N-1].boxbody );
 										dJointSetFixed(odeinit._iCub->grab1);
 									}
 									else {
