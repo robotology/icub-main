@@ -17,7 +17,7 @@
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = iCub
+PROJECT_NAME           = iCub-main
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
@@ -459,7 +459,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = src app tutorials
+INPUT                  = src
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -497,7 +497,8 @@ EXCLUDE_SYMLINKS       = NO
 # armSimple... contains too much stuff
 # firmware contains a lot of stuff too
 # .svn useless directory. Not sure they are parsed by doxygen, but ... just in case
-EXCLUDE_PATTERNS       =  /*.svn/* */firmware/* /*armSimpleAnticollisionFilter/* /*primateVision/*
+EXCLUDE_PATTERNS       =  /*.svn/* 
+# */firmware/* /*armSimpleAnticollisionFilter/* /*primateVision/*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
@@ -523,7 +524,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see 
 # the \image command).
 
-IMAGE_PATH             = src/doc tutorials/doc/images
+IMAGE_PATH             = src/doc
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should 
 # invoke to filter for each input file. Doxygen will invoke the filter program 
