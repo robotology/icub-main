@@ -9,6 +9,7 @@
 #include "can1.h"
 #include "ti1.h"
 #include "pid.h"
+#include "filters.h"
 
 #include "calibration.h"
 #include "trajectory.h"
@@ -25,7 +26,8 @@
 #include "eeprom_interface.h"
 #include "abs_analog_interface.h"
 #include "abs_ssi_interface.h"
-
+#include "strain_board.h"
+	
 byte	_board_ID = 15;	
 
 char    _additional_info [32];
@@ -61,7 +63,7 @@ Int16 hall_temp=0;
 //********************
 
 void decouple_positions(void);
-
+void check_range_torque (byte, Int16, Int32 *);
 void check_encoder_hall_drift(byte jnt);
 /*
  * version specific global variables.
@@ -104,9 +106,6 @@ Int16 _version = 0x0131;
 #	error "No valid version specified"
 #endif
 
-#if VERSION == 0x0125
-	#include "strain_board.h"
-#endif 
 
 /***********************************************************************
 	This is the main controller loop.
@@ -127,6 +126,7 @@ void main(void)
 	byte j=0;
 	word test=0;
 	Int32 t1val=0; 
+	Int16 _safeband[JN]=INIT_ARRAY (-5); //it is a value for reducing the JOINT limit of 2*_safeband [tick encoder]
 	
 
 	/* gets the address of flash memory from the linker */
@@ -212,6 +212,7 @@ void main(void)
 	// this is needed because the AS5045 gives the first value wrong !!!
     for (i=0; i<JN; i++)	_position[i]=(Int32) get_position_abs_ssi(i);
     for (i=0; i<JN; i++)    _max_real_position[i]=4095;
+    for (i=0; i<JN; i++) 	_safeband[i] =-5; //5 ticks => 1 grado di AEA.
 	
 
 	#endif
@@ -552,6 +553,18 @@ void main(void)
 //-------------------------------------------------------------------------------------------
 
 
+		/* PWM filtering */
+		for (i=0; i<JN; i++) 
+		{
+			if (_control_mode[i] == MODE_TORQUE ||
+			 	_control_mode[i] == MODE_IMPEDANCE)
+				PWMoutput[i] = lpf_ord1_3hz (PWMoutput[i], i);	
+		}
+//******************************************* LIMIT CHECK FOR FORCE CONTORL******************/
+		// Protection for joints out of the admissible range during force control
+		for (i=0; i<JN; i++)  check_range_torque(i, _safeband[i], PWMoutput);
+
+
 //******************************************************************************************/		
 // 							  		CONTROL SATURATIONS                                  
 // 							/* saturates controls if necessary */
@@ -743,6 +756,48 @@ void decouple_positions(void)
 #endif
 }
 
+/***************************************************************************/
+/**
+ * This function checks if the joint is in range during torque control mode
+ ***************************************************************************/
+void check_range_torque(byte i, Int16 band, Int32 *PWM)
+{
+	static UInt32 TrqLimitCount =0;
+ 	if (_control_mode[i] == MODE_TORQUE ||
+	  	_control_mode[i] == MODE_IMPEDANCE)
+ 		{
+	 		if  (_position[i] > _max_position[i])
+	 		{
+	 			if ((_position[i]-_position_old[i])>=0)
+				{
+					PWM[i] = 0;	
+				}
+				TrqLimitCount++;	 
+				if (TrqLimitCount>=500)
+				{
+					#ifdef DEBUG_CONTROL_MODE
+						can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
+						TrqLimitCount=0;
+				    #endif 
+				}			
+	 		}
+	 		if  (_position[i] < _min_position[i])   
+	 		{
+	 			if ((_position[i]-_position_old[i])<=0)
+				{
+					PWM[i] = 0;			
+				}				
+				TrqLimitCount++;
+				if (TrqLimitCount>=500)
+				{
+					#ifdef DEBUG_CONTROL_MODE
+						can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
+						TrqLimitCount=0;
+				    #endif 
+				}
+	 		} 				
+ 		}
+}
 
 /***************************************************************************/
 /**
