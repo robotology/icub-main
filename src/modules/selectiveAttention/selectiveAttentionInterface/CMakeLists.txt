@@ -30,10 +30,10 @@ INCLUDE_DIRECTORIES(${GTKPLUS_INCLUDE_DIR})
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${OPENCV_INCLUDE_DIR}    
-    #${ODE_INCLUDE_DIRS}	
+    ${ICUB_INCLUDE_DIRS}
+    ${YARP_INCLUDE_DIRS}
+    ${OPENCV_INCLUDE_DIR}    	
     ${IPP_INCLUDE_DIRS}	 
-    #/opt/intel/ipp/6.1.1.042/em64t/include
     #---linux    
     #$ENV{QT_INCLUDE_DIR}/include
     #$ENV{QT_INCLUDE_DIR}/include/Qt
@@ -68,7 +68,7 @@ LINK_DIRECTORIES(
 IF (WIN32) #required in win
   LINK_LIBRARIES(
     ${OPENCV_LIBRARIES}
-    #${ODE_LIBRARIES}
+    ${YARP_LIBRARIES}
     ${IDL_LIBRARIES}
     ${IPP_LIBRARIES} 
     #ippi	
@@ -76,7 +76,7 @@ IF (WIN32) #required in win
 ELSE(WIN32) #required in linux
   LINK_LIBRARIES(
     ${OPENCV_LIBRARIES}
-    #${ODE_LIBRARIES}
+    ${YARP_LIBRARIES}
     ${IDL_LIBRARIES}
     ${IPP_LIBRARIES} 
     #ippi	
