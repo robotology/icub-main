@@ -22,6 +22,8 @@
 //#define CAN_DEBUG
 //#define CANBUSMC_DEBUG
 
+//#define USE_CANBACKDOOR //enable/disable access to canbus from a port
+
 #include "ThreadTable2.h"
 #include "ThreadPool2.h"
 
@@ -342,6 +344,45 @@ public:
     RequestsQueue *requestsQueue;
 };
 inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
+
+class CanBackDoor: public BufferedPort<yarp::sig::Vector>
+{
+    CanBusResources *bus;
+    Semaphore *semaphore;
+public:
+    CanBackDoor()
+    {
+        bus=0;
+    }
+
+    void setUp(CanBusResources *p, Semaphore *sema)
+    {
+        semaphore=sema;
+        bus=p;
+    }
+
+    void onRead(Bottle &b)
+    {
+        if (!semaphore)
+            return;
+
+        semaphore->wait();
+        //RANDAZ_TODO: parse vector b
+
+        if (!bus)
+        {
+           bus->startPacket();
+           //RANDAZ_TODO: prepare message
+           bus->_writeBuffer[0].setId(0x00);
+           bus->_writeBuffer[0].getData()[0]=0x00;
+           bus->_writeBuffer[0].getData()[1]=0x00;
+           bus->_writeBuffer[0].setLen(2);
+           bus->_writeMessages++;
+           bus->writePacket();
+        }
+        semaphore->post();
+    }
+} backDoor;
 
 AnalogSensor::AnalogSensor():
 data(0)
@@ -1412,6 +1453,11 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         fprintf(stderr, "--> Initializing analog device %s\n", deviceid.c_str());
         
         analogSensor=new AnalogSensor;
+#ifdef USE_CANBACKDOOR
+        backDoor.setUp(&res, &_mutex);
+        backDoor.open("/portname"); //RANDAZ_TODO set portname based on analogConfig parameters
+        //RANDAZ_TODO if needed set other parameters to backDoor
+#endif
         analogSensor->setDeviceId(deviceid);
 
         char analogId=analogConfig.find("CanAddress").asInt();
@@ -1564,6 +1610,11 @@ void CanBusMotionControl::finiAnalog(AnalogSensor *analogSensor)
                     res._writeBuffer[0].getData()[1]);
 #endif
                 res.writePacket();
+
+                //shut down backdoor
+#ifdef USE_CANBACKDOOR
+                backDoor.close();
+#endif
             }
 }
 
