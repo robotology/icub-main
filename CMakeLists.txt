@@ -46,7 +46,7 @@ if (YARP_FOUND)
   message(STATUS "found YARP")
 else (YARP_FOUND)
   set(ICUB_HAS_YARP FALSE CACHE BOOL "" FORCE)
-  message(FATAL "Cannot find YARP")
+  message(FATAL_ERROR "Cannot find YARP")
 endif (YARP_FOUND)
 
 ### pick up yarp's cmake scripts
@@ -67,7 +67,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
 # check for libraries that are strictly required
 if (NOT ICUB_HAS_GSL)
-  message(FATAL "Cannot find GSL")
+  message(FATAL_ERROR "Cannot find GSL")
 else (NOT ICUB_HAS_GSL)
   if (NOT ICUB_USE_GSL)
     message(STATUS "GSL is strictly required: GSL enabled")
@@ -150,12 +150,12 @@ endforeach(conf)
 
 ## add the "uninstall" target
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/conf/template/cmake_uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  "${CMAKE_CURRENT_SOURCE_DIR}/conf/template/icub-config-uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake"
   IMMEDIATE @ONLY)
 
 add_custom_target(uninstall
-  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
 
 
 
