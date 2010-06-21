@@ -8,14 +8,12 @@
 		<parameters>--file colourProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>colourLeft</tag>
 		<node>/console1</node>
-		<stdio></stdio>
 	</module>
 	<module>
 		<name>YUVProcessor</name>
 		<parameters>--name YUVProcessor/icub/right_cam</parameters>
 		<tag>yuvProcessor</tag>
 		<node>/console1</node>
-		<stdio></stdio>
 	</module>
 	<module>
 		<name>imageProcessor</name>

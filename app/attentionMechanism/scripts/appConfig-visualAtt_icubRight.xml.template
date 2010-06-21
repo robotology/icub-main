@@ -1,25 +1,19 @@
-
-
 <application>
 	<name>AttentionMechanism Right </name>
  	<dependencies>
-		
 		<port>/icub/cam/right/logpolar</port> 
-		
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
 		<parameters>--file colourProcessorRight.ini --context attentionMechanism/conf</parameters>
 		<tag>colourLeft</tag>
 		<node>/consoleA</node>
-		<stdio></stdio>
 	</module>
 	<module>
 		<name>YUVProcessor</name>
 		<parameters></parameters>
 		<tag>yuvProcessor</tag>
 		<node>/consoleA</node>
-		<stdio></stdio>
 	</module>
 	<module>
 		<name>imageProcessor</name>
