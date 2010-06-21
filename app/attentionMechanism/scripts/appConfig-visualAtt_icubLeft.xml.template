@@ -41,7 +41,7 @@
 	</module>
 	<module>
 		<name>selectiveAttentionEngine</name>
-		<parameters>--file selectiveAttentionEngine.ini --context attentionMechanism/conf</parameters>
+		<parameters>--file selectiveAttentionEngineLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>selectiveAttentionEngine</tag>
 		<node>/powerNode3</node>
 	</module>
