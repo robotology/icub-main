@@ -185,8 +185,8 @@ void ICubSim::draw(){
    // DrawBox(1.0,1.0,0.001,false,textured,15);glPopMatrix();
 
 
-    glColor3d(1.0,0.0,1.0);
-    glPushMatrix();LDEsetM(dGeomGetPosition(geom_cube[0]),dGeomGetRotation(geom_cube[0]));DrawBox(0.1,2.005,0.1,false,false,0);glPopMatrix();
+    //glColor3d(1.0,0.0,1.0);
+    //glPushMatrix();LDEsetM(dGeomGetPosition(geom_cube[0]),dGeomGetRotation(geom_cube[0]));DrawBox(0.1,2.005,0.1,false,false,0);glPopMatrix();
 
 	
 	if (actLegs == "off"){
@@ -670,7 +670,7 @@ void ICubSim::draw(){
 }
 void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
 	//Coordinates X Y Z using the 3D Cartesian coordinate system
-	dGeomSetPosition(geom_cube[0],0.0,0.05,3); //reference on the z 
+	dGeomSetPosition(geom_cube[0],0.0,0.05, 2); //reference on the z 
 	
     //dGeomSetPosition(screenGeom,0.0,1.0,0.7);
 

@@ -1662,15 +1662,31 @@ public:
             SubDevice *p=device.getSubdevice(subIndex);
             if (p->amp)
                 {
+                    
                     st[l]=0;
-                    // getAmpStatus for single joint does not exist!!
-                    // ret=ret&&p->amp->getAmpStatus(off+base, st+l);
+                    //getAmpStatus for single joint does not exist!!
+                    // AMP_STATUS TODO
+                    //ret=ret&&p->amp->getAmpStatus(off+base, st+l);
                 }
             else
                 ret=false;
         }
 
         return ret;
+    }
+
+    virtual bool getAmpStatus(int j, int *v)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (p->amp)
+            {
+                return p->amp->getAmpStatus(off+base,v);
+            }        
+        *v=0;
+        return false; 
     }
 
     /* IControlLimits */

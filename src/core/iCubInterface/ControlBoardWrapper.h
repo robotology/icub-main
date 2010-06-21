@@ -1092,11 +1092,20 @@ public:
     * @return true in good luck, false otherwise.
     */
     virtual bool getAmpStatus(int *st) {
+        // AMP_STATUS TODO
         return true; //bypass
-         // if (amp)
-         //     return amp->getAmpStatus(st);
-         // *st = 0;
-         // return false;
+        if (amp)
+            return amp->getAmpStatus(st);
+        *st = 0;
+        return false;
+    }
+
+    virtual bool getAmpStatus(int k, int *st)
+    {   
+        // AMP_STATUS TODO
+        if (amp)
+            return amp->getAmpStatus(k, st);
+        return false;
     }
 
     /* IControlLimits */

@@ -416,6 +416,15 @@ public:
 						else {bid = odeinit._iCub->l_hand;}
 						setBody = 10;
 						break;
+                    case VOCAB3('s','p','h'):
+                        if (odeinit._iCub->actHead=="on"){bid = odeinit._iCub->neck[0];}
+						else {bid = odeinit._iCub->head;}
+						setBody = 11;
+						break;
+                    case VOCAB4('s','s','p','h'):
+						bid2 = odeinit._iCub->geom_cube[0];
+						setBody = 12;
+						break;
 				}
 				reply.clear();
 				if (bid!=NULL || bid2!=NULL) {
@@ -428,7 +437,7 @@ public:
 						}
 						if (setBody == 2){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->OBJNUM == 0){reply.addString("object not known");}
 							else{
 								const dReal *coords = dBodyGetPosition(odeinit._wrld->obj[N-1].boxbody);
 								reply.addDouble(coords[0]);
@@ -438,7 +447,7 @@ public:
 						}
 						if (setBody == 5){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_OBJNUM == 0 ){reply.addString("object not known");}
 							else{	const dReal *coords = dGeomGetPosition(odeinit._wrld->s_obj[N-1].geom[0]);
 								reply.addDouble(coords[0]);
 								reply.addDouble(coords[1]);
@@ -447,7 +456,7 @@ public:
 						}
 						if (setBody==6){
 							unsigned int N = command.get(3).asInt();
-							if ( (N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ( (N >(i+1)) || (N < 1) || odeinit._wrld->cylOBJNUM == 0 ){reply.addString("object not known");}
 							else{
 								const dReal *coords = dBodyGetPosition(odeinit._wrld->cyl_obj[N-1].cylbody);
 								reply.addDouble(coords[0]);
@@ -457,7 +466,7 @@ public:
 						}
 						if (setBody==7){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_cylOBJNUM == 0 ){reply.addString("object not known");}
 							else{
 								const dReal *coords = dGeomGetPosition(odeinit._wrld->s_cyl_obj[N-1].cylgeom[0]);
 								reply.addDouble(coords[0]);
@@ -467,7 +476,7 @@ public:
 						}
 						if (setBody==8){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) ||  odeinit._wrld->MODEL_NUM == 0 ){reply.addString("object not known");}
 							else{
 								const dReal *coords = dGeomGetPosition(odeinit._wrld->ThreeD_obj[N-1].geom);
 								reply.addDouble(coords[0]);
@@ -477,7 +486,7 @@ public:
 						}
 						if (setBody==9){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) ||  odeinit._wrld->s_MODEL_NUM == 0 ){reply.addString("object not known");}
 							else{
 								const dReal *coords = dGeomGetPosition(odeinit._wrld->s_ThreeD_obj[N-1].geom);
 								reply.addDouble(coords[0]);
@@ -489,6 +498,26 @@ public:
 							// SET MODEL DIRECTORY................................................
 							reply.addString ( (char*) odeinit._wrld->model_DIR.c_str() );
 							
+						}
+                        if (setBody==11){
+							unsigned int N = command.get(3).asInt();
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->SPHNUM == 0 ){reply.addString("object not known");}
+							else{
+								const dReal *coords = dBodyGetPosition(odeinit._wrld->sph[N-1].sphbody);
+								reply.addDouble(coords[0]);
+								reply.addDouble(coords[1]);
+								reply.addDouble(coords[2]);
+							}
+						}
+                        if (setBody==12){
+							unsigned int N = command.get(3).asInt();
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_SPHNUM == 0 ){reply.addString("object not known");}
+							else{
+								const dReal *coords = dGeomGetPosition(odeinit._wrld->s_sph[N-1].sphgeom[0]);
+								reply.addDouble(coords[0]);
+								reply.addDouble(coords[1]);
+								reply.addDouble(coords[2]);
+							}
 						}
 						//reply.fromString("ok");
 					} 
@@ -505,7 +534,7 @@ public:
 						}
 						if (setBody==2){
 							unsigned int N = command.get(3).asInt();
-							if ( (N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ( (N >(i+1)) || (N < 1) || odeinit._wrld->OBJNUM == 0 ){reply.addString("object not known");}
 							else{
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
@@ -519,7 +548,7 @@ public:
 						}
 						if (setBody==5){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_OBJNUM == 0 ){reply.addString("object not known");}
 							else{
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
@@ -531,7 +560,7 @@ public:
 						}
 						if (setBody==6){
 							unsigned int N = command.get(3).asInt();
-							if ( (N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ( (N >(i+1)) || (N < 1) || odeinit._wrld->cylOBJNUM == 0 ){reply.addString("object not known");}
 							else{
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
@@ -545,7 +574,7 @@ public:
 						}
 						if (setBody==7){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_cylOBJNUM == 0 ){reply.addString("object not known");}
 							else{
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
@@ -557,7 +586,7 @@ public:
 						}
 						if (setBody==8){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->MODEL_NUM == 0 ){reply.addString("object not known");}
 							else{
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
@@ -569,7 +598,7 @@ public:
 						}
 						if (setBody==9){
 							unsigned int N = command.get(3).asInt();
-							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->s_MODEL_NUM == 0 ){reply.addString("object not known");}
 							else{
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
@@ -582,7 +611,34 @@ public:
 							odeinit._wrld->model_DIR = command.get(3).asString();
 							cout << odeinit._wrld->model_DIR.c_str() << endl;
 						}
-						reply.fromString("ok");
+                        if (setBody==11){
+							unsigned int N = command.get(3).asInt();
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->SPHNUM == 0 ){reply.addString("object not known");}
+							else{
+								double x = command.get(4).asDouble();
+								double y = command.get(5).asDouble();
+								double z = command.get(6).asDouble();
+                                odeinit.mutex.wait();
+								dBodySetPosition(odeinit._wrld->sph[N-1].sphbody,x,y,z);
+                                odeinit.mutex.post();
+                                reply.fromString("ok");
+							}
+						}
+                        if (setBody==12){
+							unsigned int N = command.get(3).asInt();
+                            
+							if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_SPHNUM == 0 ){reply.addString("object not known");}
+							else{
+								double x = command.get(4).asDouble();
+								double y = command.get(5).asDouble();
+								double z = command.get(6).asDouble();
+                                odeinit.mutex.wait();
+								dGeomSetPosition(odeinit._wrld->s_sph[N-1].sphgeom[0],x,y,z);
+                                odeinit.mutex.post();
+                                reply.fromString("ok");
+							}
+						}
+						//reply.fromString("ok");
 					}
 					if (subcmd=="mk"){ //this allows the user to create some boxes around the world		
 
@@ -750,9 +806,7 @@ public:
 							double z = command.get(7).asDouble(); // z position
 
 							cout << "\nAsking to create static 3D Model.......\n" << endl;
-												
-							
-							
+
 							odeinit.mutex.wait();
 							ConstString tmp = (char *) odeinit._wrld->model_DIR.c_str();
 							model = tmp + "/" + model;
@@ -780,6 +834,61 @@ public:
 							odeinit.mutexTexture.post();
 
 						}
+                        if (setBody==11){
+                            //sph
+                            if (num < MAXNUM){
+							    i = odeinit._wrld->SPHNUM;
+							    odeinit._wrld->SPHNUM++;
+						    }
+						    odeinit._wrld->sph[i].radius = command.get(3).asDouble();
+							double x = command.get(4).asDouble(); // x position 
+							double y = command.get(5).asDouble(); // y position 
+							double z = command.get(6).asDouble(); // z position
+							double R = command.get(7).asDouble(); // colour R
+							double G = command.get(8).asDouble();// colour G
+							double B = command.get(9).asDouble();// colour B
+							
+							odeinit.mutex.wait();
+							
+							dMass m;
+							dMassSetZero(&m);
+		                    odeinit._wrld->sph[i].sphbody = dBodyCreate(odeinit.world);
+		                    dMassSetSphereTotal(&m,DENSITY, odeinit._wrld->sph[i].radius);
+                            dBodySetMass(odeinit._wrld->sph[i].sphbody, &m);
+		                    odeinit._wrld->sph[i].sphgeom[0] = dCreateSphere (odeinit.space, odeinit._wrld->sph[i].radius);
+		                    dGeomSetBody(odeinit._wrld->sph[i].sphgeom[0], odeinit._wrld->sph[i].sphbody);
+                            dBodySetPosition(odeinit._wrld->sph[i].sphbody,x,y,z);
+							odeinit._wrld->color2[i][0] = R;
+							odeinit._wrld->color2[i][1] = G;
+							odeinit._wrld->color2[i][2] = B;
+							
+							odeinit.mutex.post();
+                        }
+                        if (setBody==12){
+                            //s_sph
+                            if (num < MAXNUM){
+							    i = odeinit._wrld->S_SPHNUM;
+							    odeinit._wrld->S_SPHNUM++;
+						    }
+						    odeinit._wrld->s_sph[i].radius = command.get(3).asDouble();
+							double x = command.get(4).asDouble(); // x position 
+							double y = command.get(5).asDouble(); // y position 
+							double z = command.get(6).asDouble(); // z position
+							double R = command.get(7).asDouble(); // colour R
+							double G = command.get(8).asDouble();// colour G
+							double B = command.get(9).asDouble();// colour B
+							
+							odeinit.mutex.wait();
+							
+		                    odeinit._wrld->s_sph[i].sphgeom[0] = dCreateSphere (odeinit.space, odeinit._wrld->s_sph[i].radius);
+                            dGeomSetPosition(odeinit._wrld->s_sph[i].sphgeom[0],x,y,z);
+							odeinit._wrld->s_color2[i][0] = R;
+							odeinit._wrld->s_color2[i][1] = G;
+							odeinit._wrld->s_color2[i][2] = B;
+							
+							odeinit.mutex.post();
+                        }
+
 							reply.fromString("ok");
 					}
 					if (subcmd=="rot"){
@@ -943,9 +1052,19 @@ public:
 										dJointAttach (odeinit._iCub->grab,odeinit._iCub->l_hand,odeinit._wrld->obj[N-1].boxbody );
 										dJointSetFixed(odeinit._iCub->grab);
 									}
+                                    else if (hand == "left" && odeinit._iCub->actLHand=="on"){
+										odeinit._iCub->grab = dJointCreateFixed(odeinit.world,0);
+										dJointAttach (odeinit._iCub->grab, odeinit._iCub->body[10], odeinit._wrld->obj[N-1].boxbody );
+										dJointSetFixed(odeinit._iCub->grab);
+									}
 									else if (hand == "right" && odeinit._iCub->actRHand=="off"){
 										odeinit._iCub->grab1 = dJointCreateFixed(odeinit.world,0);
 										dJointAttach (odeinit._iCub->grab1,odeinit._iCub->r_hand,odeinit._wrld->obj[N-1].boxbody );
+										dJointSetFixed(odeinit._iCub->grab1);
+									}
+                                    else if (hand == "right" && odeinit._iCub->actRHand=="on"){
+										odeinit._iCub->grab1 = dJointCreateFixed(odeinit.world,0);
+										dJointAttach (odeinit._iCub->grab1, odeinit._iCub->body[11], odeinit._wrld->obj[N-1].boxbody );
 										dJointSetFixed(odeinit._iCub->grab1);
 									}
 									else {
@@ -1358,6 +1477,10 @@ int main( int argc, char** argv)
 	odeinit._wrld->OBJNUM = 0;
 	odeinit._wrld->waitOBJ = 0;
 	odeinit._wrld->S_OBJNUM = 0;
+
+  	odeinit._wrld->SPHNUM = 0;
+	odeinit._wrld->waitSPH = 0;
+	odeinit._wrld->S_SPHNUM = 0;
 		
 	odeinit._wrld->cylOBJNUM = 0;
 	odeinit._wrld->waitOBJ1 = 0;

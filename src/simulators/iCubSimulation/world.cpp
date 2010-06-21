@@ -156,6 +156,20 @@ void worldSim::draw(){
 			glPopMatrix();
 		}
 	}
+    if (SPHNUM != waitSPH){
+		Time::delay(0.1); waitSPH++;}
+	else{
+		for (int i=0; i<SPHNUM; i++) {
+			glColor3d(color2[i][0],color2[i][1],color2[i][2]);
+			glPushMatrix();LDEsetM(dBodyGetPosition(sph[i].sphbody),dBodyGetRotation(sph[i].sphbody));
+			DrawSphere(sph[i].radius,false,textured,2);glPopMatrix();
+		}
+	}
+	    for (int i=0; i<S_SPHNUM; i++) {
+			glColor3d(s_color2[i][0],s_color2[i][1],s_color2[i][2]);
+			glPushMatrix();LDEsetM(dGeomGetPosition(s_sph[i].sphgeom[0]),dGeomGetRotation(s_sph[i].sphgeom[0]));
+			DrawSphere(s_sph[i].radius,false,textured,2);glPopMatrix();
+		}
 }
 
 void worldSim::loadTexture(ConstString texture, int numTexture){

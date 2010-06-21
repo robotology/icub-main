@@ -36,6 +36,10 @@ public:
 	int OBJNUM;
 	int waitOBJ;
 	int S_OBJNUM;
+
+    int SPHNUM;
+	int waitSPH;
+	int S_SPHNUM;
 	
 	int cylOBJNUM;
 	int waitOBJ1;
@@ -50,6 +54,8 @@ public:
 	dReal s_color[100][3];
 	dReal color1[100][3];
 	dReal s_color1[100][3];
+    dReal color2[100][3];
+	dReal s_color2[100][3];
 	worldSimData();
 };
 
@@ -117,6 +123,16 @@ struct MyObject2 {
 };
  MyObject2 ThreeD_obj[100];
  MyObject2 s_ThreeD_obj[100]; 
+
+
+struct MyObject3 {
+  dBodyID sphbody;			// the body
+  dGeomID sphgeom[GPB];		// geometries representing this body
+  dReal radius;
+};
+
+ MyObject3 sph[MAXNUM];
+ MyObject3 s_sph[MAXNUM];
 
 
 ConstString texture;

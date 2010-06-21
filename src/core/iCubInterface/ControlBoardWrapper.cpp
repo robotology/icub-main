@@ -1127,6 +1127,14 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                 }
                 break;
 
+            case VOCAB_AMP_STATUS_SINGLE:
+                {
+                    int j=cmd.get(2).asInt();
+                    int itmp;
+                    ok=amp->getAmpStatus(j, &itmp);
+                    response.addInt(itmp);
+                }
+
             case VOCAB_LIMITS: 
                 {
                     double min = 0.0, max = 0.0;
