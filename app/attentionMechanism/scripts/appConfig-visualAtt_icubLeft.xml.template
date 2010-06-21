@@ -1,11 +1,7 @@
-
-
 <application>
-	<name>AttentionMechanism </name>
+	<name>AttentionMechanism Left </name>
  	<dependencies>
-		
 		<port>/icub/cam/left/logpolar</port> 
-		
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
@@ -16,7 +12,7 @@
 	</module>
 	<module>
 		<name>YUVProcessor</name>
-		<parameters></parameters>
+		<parameters>--name YUVProcessor/icub/right_cam</parameters>
 		<tag>yuvProcessor</tag>
 		<node>/console1</node>
 		<stdio></stdio>
