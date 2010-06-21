@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include <yarp/os/Network.h>
-#include <yarp/os/Property.h>
+#include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Time.h>
 
@@ -33,30 +33,36 @@ void exitErrorHelp(std::string error = "", bool help = false) {
 
 int main(int argc, char *argv[]) {
     Network yarp;
-    Property property;
+    //Property property;
+    ResourceFinder rf;
     Port port;
     Value* val;
     double delay;
     bool expectreply = true;
 
+
+    
+
+    // load resource finder from command line parameters
+    rf.configure("ICUB_ROOT", argc, argv);
     // load property from command line parameters    
-    property.fromCommand(argc, argv);
+    //property.fromCommand(argc, argv);
     
     // check for help parameter
-    if(property.check("help")) {
+    if(rf.check("help")) {
         exitErrorHelp("", true);
     }
     
     // check for delay parameter
-    delay = property.check("delay", Value(0.0)).asDouble();
+    delay = rf.check("delay", Value(0.0)).asDouble();
     
     // check for reply parameter
-    if(property.check("noreply")) {
+    if(rf.check("noreply")) {
         expectreply = false;
     }
 
     // open local port
-    std::string portOutName = property.check("portout", yarp::os::Value("/sendcmd:o"), "port from which commands will be sent").asString().c_str();
+    std::string portOutName = rf.check("portout", yarp::os::Value("/sendcmd:o"), "port from which commands will be sent").asString().c_str();
     if (port.open(portOutName.c_str()) != true) {
         exitErrorHelp(std::string("Failed to open outgoing port: ") + portOutName);
     }
@@ -64,7 +70,7 @@ int main(int argc, char *argv[]) {
     // open file or stdin using file reader template
     FileReaderT<Bottle> str;
     try {
-        if(property.check("file", val, "file with commands, if any")) {
+        if(rf.check("file", val, "file with commands, if any")) {
             str.open(val->asString().c_str());
         } else {
             str.open(std::cin);
@@ -74,7 +80,7 @@ int main(int argc, char *argv[]) {
     }
 
     // connect to remote port
-    if(property.check("port", val, "port to which the commands will be sent")) {
+    if(rf.check("port", val, "port to which the commands will be sent")) {
         if(!port.addOutput(val->asString().c_str())) {
             port.close();
             exitErrorHelp("Failed to connect ports");
