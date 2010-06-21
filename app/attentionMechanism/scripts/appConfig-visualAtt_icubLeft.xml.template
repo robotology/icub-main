@@ -129,7 +129,7 @@
 	</connection>
 	<connection>
       	<from>/blobFinder/icub/left_cam/image:o</from>
-		<to>/blobFinder/icub/left_cam/outputView</to>
+		<to>icub/left_cam/outputView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -179,22 +179,22 @@
 	</connection>
 	<connection>
       <from>/icub/cam/left/logpolar</from>
-		<to>/icub/left_cam/selectiveAttentionEngine/image:i</to>
+		<to>/selectiveAttentionEngine/icub/left_cam/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/blobFinder/icub/left_cam/image:o</from>
-		<to>/icub/left_cam/selectiveAttentionEngine/map1:i</to>
+		<to>/selectiveAttentionEngine/icub/left_cam/map1:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/yuvProc/icub/left_cam/Y/image:o</from>
-		<to>/icub/left_cam/selectiveAttentionEngine/map2:i</to>
+		<to>/selectiveAttentionEngine/icub/left_cam/map2:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/yuvProc/icub/left_cam/UV/image:o</from>
-		<to>/icub/left_cam/selectiveAttentionEngine/map3:i</to>
+		<to>/selectiveAttentionEngine/icub/left_cam/map3:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
