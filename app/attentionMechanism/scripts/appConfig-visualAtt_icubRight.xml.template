@@ -11,7 +11,7 @@
 	</module>
 	<module>
 		<name>YUVProcessor</name>
-		<parameters></parameters>
+		<parameters>--name yuvProc/icub/right_cam</parameters>
 		<tag>yuvProcessor</tag>
 		<node>/consoleA</node>
 	</module>
@@ -90,7 +90,7 @@
 	
 	<connection>
       <from>/icub/cam/right/logpolar</from>
-		<to>/logpolarView</to>
+		<to>/icub/right_cam/logpolarView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -100,17 +100,17 @@
 	</connection>
 	<connection>
       <from>/colourPU/icub/right_cam/ychannel:o</from>
-		<to>/icub/cam/right/yuvProc/Y/image:i</to>
+		<to>/yuvProc/icub/right_cam/Y/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/right_cam/uchannel:o</from>
-		<to>/icub/right_cam/yuvProc/U/image:i</to>
+		<to>/yuvProc/icub/right_cam/U/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/right_cam/vchannel:o</from>
-		<to>/icub/right_cam/yuvProc/V/image:i</to>
+		<to>/yuvProc/icub/right_cam/V/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -180,7 +180,7 @@
 	</connection>
 	<connection>
       <from>/icub/cam/right/logpolar</from>
-		<to>selectiveAttentionEngine/icub/right_cam/image:i</to>
+		<to>/selectiveAttentionEngine/icub/right_cam/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
