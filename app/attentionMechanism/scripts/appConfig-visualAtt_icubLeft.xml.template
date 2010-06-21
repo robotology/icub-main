@@ -67,29 +67,28 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /combinationView --x 500 --y 600 --synch</parameters>
+		<parameters>--name /icub/left_cam/combinationView --x 500 --y 600 --synch</parameters>
 		<tag>combinationView</tag>
 		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /selectionView --x 500 --y 200 --synch</parameters>
+		<parameters>--name /icub/left_cam/selectionView --x 500 --y 200 --synch</parameters>
 		<tag>selectionView</tag>
 		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /logpolarView --x 200 --y 200 --synch</parameters>
+		<parameters>--name /icub/left_cam/logpolarView --x 200 --y 200 --synch</parameters>
 		<tag>logView</tag>
 		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /blobTrackerOutput --x 500 --y 600 --synch</parameters>
+		<parameters>--name /icub/left_cam/blobTrackerOutput --x 500 --y 600 --synch</parameters>
 		<tag>blobTrackerOut</tag>
 		<node>/console1</node>
 	</module>
-	
 	<connection>
       <from>/icub/cam/left/logpolar</from>
 		<to>/logpolarView</to>
@@ -182,37 +181,37 @@
 	</connection>
 	<connection>
       <from>/icub/cam/left/logpolar</from>
-		<to>/selectiveAttentionEngine/image:i</to>
+		<to>/icub/left_cam/selectiveAttentionEngine/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/blobFinder/icub/left_cam/image:o</from>
-		<to>/selectiveAttentionEngine/map1:i</to>
+		<to>/icub/left_cam/selectiveAttentionEngine/map1:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/yuvProc/Y/image:o</from>
-		<to>/selectiveAttentionEngine/map2:i</to>
+		<to>/icub/left_cam/selectiveAttentionEngine/map2:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/yuvProc/UV/image:o</from>
-		<to>/selectiveAttentionEngine/map3:i</to>
+		<to>/icub/left_cam/selectiveAttentionEngine/map3:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/selectiveAttentionEngine/combination:o</from>
-		<to>/combinationView</to>
+		<to>/icub/left_cam/combinationView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/selectiveAttentionEngine/attention:o</from>
-		<to>/selectionView</to>
+		<to>/icub/left_cam/selectionView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
-		<to>/selectiveAttentionEngine/cmd</to>
+		<to>/icub/left_cam/selectiveAttentionEngine/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -221,12 +220,12 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      		<from>/selectiveAttentionEngine/attention:o</from>
+      	<from>/selectiveAttentionEngine/attention:o</from>
 		<to>/blobTracker/icub/left_cam/img:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      		<from>/blobTracker/icub/left_cam/img:o</from>
+      	<from>/blobTracker/icub/left_cam/img:o</from>
 		<to>/blobTrackerOutput</to>
 		<protocol>tcp</protocol>
 	</connection>
