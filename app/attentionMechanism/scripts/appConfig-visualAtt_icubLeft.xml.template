@@ -43,7 +43,7 @@
 		<name>selectiveAttentionEngine</name>
 		<parameters>--file selectiveAttentionEngine.ini --context attentionMechanism/conf</parameters>
 		<tag>selectiveAttentionEngine</tag>
-		<node>/console1</node>
+		<node>/powerNode3</node>
 	</module>
 	<module>
 		<name>selectiveAttentionInterface</name>
@@ -61,7 +61,7 @@
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/outputView --x 200 --y 600 --synch</parameters>
 		<tag>blobFinderOutLeft</tag>
-		<node>/powerNode1</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
