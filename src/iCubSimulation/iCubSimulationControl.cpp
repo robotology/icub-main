@@ -1205,6 +1205,21 @@ bool iCubSimulationControl::getAmpStatusRaw(int *st)
     return true;
 }
 
+bool iCubSimulationControl::getAmpStatusRaw(int i, int *st)
+{
+    bool ret=false;
+	_mutex.wait();
+ 
+    if (i<njoints) 
+    {
+        st[i] = (int)motor_on[i];
+        ret=true;
+    }
+   
+    _mutex.post();
+    return ret;
+}
+
 bool iCubSimulationControl::setLimitsRaw(int axis, double min, double max)
 {
     if(axis > -1 && axis < njoints){

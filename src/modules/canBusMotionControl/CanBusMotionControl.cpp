@@ -3512,6 +3512,17 @@ bool CanBusMotionControl::getAmpStatusRaw(int *st)
     return true;
 }
 
+bool CanBusMotionControl::getAmpStatusRaw(int j, int *st)
+{
+    CanBusResources& r = RES(system_resources);
+
+    _mutex.wait();
+    st[j] = short(r._bcastRecvBuffer[j]._axisStatus);  
+    _mutex.post();
+
+    return true;
+}
+
 bool CanBusMotionControl::setLimitsRaw(int axis, double min, double max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))

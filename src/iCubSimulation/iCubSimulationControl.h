@@ -148,6 +148,7 @@ class yarp::dev::iCubSimulationControl :
   virtual bool getCurrentRaw(int j, double *val);
   virtual bool setMaxCurrentRaw(int j, double val);
   virtual bool getAmpStatusRaw(int *st);
+  virtual bool getAmpStatusRaw(int k, int *st);
   //
   /////////////// END AMPLIFIER INTERFACE
 
