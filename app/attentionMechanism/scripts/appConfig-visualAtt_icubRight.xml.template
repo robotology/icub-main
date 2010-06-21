@@ -9,6 +9,7 @@
 		<tag>colourLeft</tag>
 		<node>/consoleA</node>
 	</module>
+
 	<module>
 		<name>YUVProcessor</name>
 		<parameters>--name yuvProc/icub/right_cam</parameters>
@@ -87,6 +88,7 @@
 		<tag>blobTrackerOut</tag>
 		<node>/consoleA</node>
 	</module>
+
 	
 	<connection>
       <from>/icub/cam/right/logpolar</from>
@@ -130,7 +132,7 @@
 	</connection>
 	<connection>
       	<from>/blobFinder/icub/right_cam/image:o</from>
-		<to>/blobFinder/icub/right_cam/outputView</to>
+		<to>/icub/right_cam/outputView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -189,7 +191,7 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      <from>/icub/right_cam/yuvProc/Y/image:o</from>
+      <from>/yuvProc/icub/right_cam/Y/image:o</from>
 		<to>/selectiveAttentionEngine/icub/right_cam/map2:i</to>
 		<protocol>tcp</protocol>
 	</connection>
@@ -225,7 +227,9 @@
 	</connection>
 	<connection>
       		<from>/blobTracker/icub/right_cam/img:o</from>
-		<to>/blobTrackerOutput</to>
+		<to>/icub/right_cam/blobTrackerOutput</to>
 		<protocol>tcp</protocol>
 	</connection>
+
+
 </application>
