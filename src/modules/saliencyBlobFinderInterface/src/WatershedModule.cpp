@@ -3,7 +3,6 @@
 #include <iCub/WatershedModule.h>
 #include <iCub/blobFinderModule.h>
 
-#include <ace/config.h>
 
 //YARP include
 #include <yarp/os/all.h>
@@ -274,7 +273,6 @@ void WatershedModule::run(){
     bfModule->close();
     this->close();
     yarp::os::Network::fini();
-    ACE_OS::exit(0);
 }
 
 void WatershedModule::threadRelease(){
@@ -1521,11 +1519,8 @@ void WatershedModule::setUp()
         _imgRecv.SetFovea(true);
     
     if (openPorts() == false)
-        ACE_OS::exit(1);
+        return;
     
-    
-
-
 }
 
 static void scale_set_default_values( GtkScale *scale )

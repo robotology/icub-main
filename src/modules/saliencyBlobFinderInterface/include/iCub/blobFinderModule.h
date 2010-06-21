@@ -2,7 +2,6 @@
 #ifndef _BLOBFINDERMODULE_H_
 #define _BLOBFINDERMODULE_H_
 
-#include <ace/config.h>
 
 //within project includes
 #include <iCub/WatershedModule.h>

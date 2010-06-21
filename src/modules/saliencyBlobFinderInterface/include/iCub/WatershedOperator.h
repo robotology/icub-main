@@ -5,7 +5,6 @@
 #include <yarp/sig/Image.h>//#include <yarp/YARPImage.h>
 #include <yarp/math/Math.h>//#include <yarp/YARPMath.h>
 
-#include <ace/config.h>
 
 //YARP include
 #include <yarp/os/all.h>

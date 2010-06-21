@@ -2,8 +2,6 @@
 #ifndef _IMAGEPROCESSMODULE_H_
 #define _IMAGEPROCESSMODULE_H_
 
-#include <ace/config.h>
-
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>

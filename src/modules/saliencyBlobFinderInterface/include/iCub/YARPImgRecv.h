@@ -17,11 +17,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-//=============================================================================
-// YARP Includes - General
-//=============================================================================
-#include <ace/config.h>
-#include <ace/OS.h>
+
 //=============================================================================
 // YARP Includes - Class Specific
 //=============================================================================
@@ -30,8 +26,6 @@
 #include <yarp/os/BufferedPort.h>
 //#include <yarp/YARPLogpolar.h>
 #include <yarp/os/Time.h>
-
-// TO DO: convert to thread??
 
 
 typedef yarp::os::BufferedPort<yarp::sig::FlexImage> PortType;

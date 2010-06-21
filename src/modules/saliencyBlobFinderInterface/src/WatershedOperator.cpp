@@ -2,8 +2,6 @@
 
 #include <iCub/WatershedOperator.h>
 
-#include <ace/config.h>
-
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>

@@ -1,6 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 //#include <yarp/YARPConfig.h>
-#include <ace/config.h>
 //#include <ipl/ipl.h>
 
 #include <iCub/ColorVQ.h>
