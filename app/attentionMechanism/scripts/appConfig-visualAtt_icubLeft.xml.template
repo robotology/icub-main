@@ -12,14 +12,14 @@
 		<parameters>--file colourProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>colourLeft</tag>
 		<node>/console1</node>
-		<stdio>powerNode1</stdio>
+		<stdio></stdio>
 	</module>
 	<module>
 		<name>YUVProcessor</name>
 		<parameters></parameters>
 		<tag>yuvProcessor</tag>
 		<node>/console1</node>
-		<stdio>powerNode1</stdio>
+		<stdio></stdio>
 	</module>
 	<module>
 		<name>imageProcessor</name>
@@ -37,7 +37,7 @@
 		<name>saliencyBlobFinder</name>
 		<parameters>--file saliencyBlobFinderLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>saliencyBlobFinderLeft</tag>
-		<node>/console1</node>
+		<node>/powerNode2</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinderInterface</name>
@@ -73,36 +73,36 @@
 		<name>yarpview</name>
 		<parameters>--name /combinationView --x 500 --y 600 --synch</parameters>
 		<tag>combinationView</tag>
-		<node>/powerNode1</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /selectionView --x 500 --y 200 --synch</parameters>
 		<tag>selectionView</tag>
-		<node>/powerNode1</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /logpolarView --x 200 --y 200 --synch</parameters>
 		<tag>logView</tag>
-		<node>/powerNode1</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /blobTrackerOutput --x 500 --y 600 --synch</parameters>
 		<tag>blobTrackerOut</tag>
-		<node>/powerNode1</node>
+		<node>/console1</node>
 	</module>
 	
 	<connection>
       <from>/icub/cam/left/logpolar</from>
 		<to>/logpolarView</to>
-		<protocol>mcast</protocol>
+		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
 		<to>/colourPU/icub/left_cam/image:i</to>
-		<protocol>mcast</protocol>
+		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       <from>/colourPU/icub/left_cam/ychannel:o</from>
@@ -179,13 +179,11 @@
 		<to>/blobFinder/icub/left_cam/blue:i</to>
 		<protocol>tcp</protocol>
 	</connection>
-	
 	<connection>
       <from>/blobFinderInterface/icub/left_cam/command:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
-	
 	<connection>
       <from>/icub/cam/left/logpolar</from>
 		<to>/selectiveAttentionEngine/image:i</to>
@@ -206,7 +204,6 @@
 		<to>/selectiveAttentionEngine/map3:i</to>
 		<protocol>tcp</protocol>
 	</connection>
-	
 	<connection>
       <from>/selectiveAttentionEngine/combination:o</from>
 		<to>/combinationView</to>
@@ -237,5 +234,4 @@
 		<to>/blobTrackerOutput</to>
 		<protocol>tcp</protocol>
 	</connection>
-
 </application>
