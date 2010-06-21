@@ -59,7 +59,7 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /blobFinder/icub/left_cam/outputView --x 200 --y 600 --synch</parameters>
+		<parameters>--name /icub/left_cam/outputView --x 200 --y 600 --synch</parameters>
 		<tag>blobFinderOutLeft</tag>
 		<node>/powerNode1</node>
 	</module>
@@ -89,7 +89,7 @@
 	</module>
 	<connection>
       <from>/icub/cam/left/logpolar</from>
-		<to>/logpolarView</to>
+		<to>icub/left_cam/logpolarView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -99,17 +99,17 @@
 	</connection>
 	<connection>
       <from>/colourPU/icub/left_cam/ychannel:o</from>
-		<to>/yuvProc/Y/image:i</to>
+		<to>/yuvProc/icub/left_cam/Y/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/uchannel:o</from>
-		<to>/yuvProc/U/image:i</to>
+		<to>/yuvProc/icub/left_cam/U/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/vchannel:o</from>
-		<to>/yuvProc/V/image:i</to>
+		<to>/yuvProc/icub/left_cam/V/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -188,22 +188,22 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      <from>/yuvProc/Y/image:o</from>
+      <from>/yuvProc/icub/left_cam/Y/image:o</from>
 		<to>/icub/left_cam/selectiveAttentionEngine/map2:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      <from>/yuvProc/UV/image:o</from>
+      <from>/yuvProc/icub/left_cam/UV/image:o</from>
 		<to>/icub/left_cam/selectiveAttentionEngine/map3:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      <from>/selectiveAttentionEngine/combination:o</from>
+      <from>/selectiveAttentionEngine/icub/left_cam/combination:o</from>
 		<to>/icub/left_cam/combinationView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      <from>/selectiveAttentionEngine/attention:o</from>
+      <from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
 		<to>/icub/left_cam/selectionView</to>
 		<protocol>tcp</protocol>
 	</connection>
@@ -213,12 +213,12 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      <from>/selectiveAttentionEngine/feedback:o</from>
+      <from>/selectiveAttentionEngine/icub/left_cam/feedback:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/selectiveAttentionEngine/attention:o</from>
+      	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
 		<to>/blobTracker/icub/left_cam/img:i</to>
 		<protocol>tcp</protocol>
 	</connection>
