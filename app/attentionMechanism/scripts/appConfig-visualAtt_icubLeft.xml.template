@@ -11,7 +11,7 @@
 	</module>
 	<module>
 		<name>YUVProcessor</name>
-		<parameters>--name YUVProcessor/icub/right_cam</parameters>
+		<parameters>--name yuvProc/icub/left_cam</parameters>
 		<tag>yuvProcessor</tag>
 		<node>/console1</node>
 	</module>
@@ -89,7 +89,7 @@
 	</module>
 	<connection>
       <from>/icub/cam/left/logpolar</from>
-		<to>icub/left_cam/logpolarView</to>
+		<to>/icub/left_cam/logpolarView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
