@@ -53,7 +53,7 @@ using namespace iDyn;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //			SENS TO  TORQUES         [RateThread]
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+FILE *datas = fopen("ftMethodDiff.txt","w+");
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector SensToTorques::updateVelocity(const Vector &v)
 {
@@ -113,7 +113,7 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_leg, BufferedPort<Vector
 	// init Newt-Eul
 	w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
 	w0.zero(); dw0.zero(); d2p0.zero();Fend.zero();Mend.zero();
-	d2p0(0)=9.81;
+	d2p0(2)=9.81;
 	// forces moments torques
 	FTsensor.resize(6); FTsensor.zero();
 	FTendeff.resize(6); FTendeff.zero();
@@ -125,6 +125,12 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_leg, BufferedPort<Vector
 	limb->setD2Ang(d2q);
 	limb->prepareNewtonEuler(DYNAMIC);
 	limb->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+	
+	limbInv->setAng(q);
+	limbInv->setDAng(dq);
+	limbInv->setD2Ang(d2q);
+	limbInv->prepareNewtonEuler(DYNAMIC);
+	limbInv->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
 
 	//see encoders
 	int Njoints;
@@ -177,18 +183,19 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_arm, PolyDriver *_pd_tor
 
 	sens = new iDynSensorArm(dynamic_cast<iCubArmDyn *>(limb),DYNAMIC,VERBOSE);
 	sensInv = new iDynInvSensorArm(dynamic_cast<iCubArmDyn *>(limbInv),DYNAMIC,VERBOSE);
+    FTtoBase = new iFTransformation(sens);
 
 
 	cout<<"SensToTorques: arm and iDynSensor created"<<endl;
 
 	// init all variables
 	// joints var
-	q.resize(10); dq.resize(10); d2q.resize(10);
+	q.resize(limb->getN()); dq.resize(limb->getN()); d2q.resize(limb->getN());
 	q.zero(); dq.zero(); d2q.zero();
 	// init Newt-Eul
 	w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
 	w0.zero(); dw0.zero(); d2p0.zero();Fend.zero();Mend.zero();
-	d2p0(0)=9.81;
+	d2p0(2)=9.81;
 	// forces moments torques
 	FTsensor.resize(6); FTsensor.zero();
 	FTendeff.resize(6); FTendeff.zero();
@@ -227,41 +234,21 @@ void SensToTorques::run()
 	// read encoders values, update limb model with pos/vel/acc
 	// read FT sensor measurements
 	readAndUpdate(false);
-  
-	// subtracts sensor offset and model
-	//FTsensor = FTsensor - sensorOffset;
-	
+  	
 	// estimate sensor FT
 	limbInv->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
 	sensInv->computeSensorForceMoment();
 	Vector sensEstim = -1.0*sensInv->getSensorForceMoment();
 
 	//compute torques
-	Vector sensFTestim = FTsensor  - sensorOffset - sensEstim;
-	sens->computeFromSensorNewtonEuler(sensFTestim);
+	sens->computeFromSensorNewtonEuler(-1.0*(FTsensor  - sensorOffset));
+	fprintf(stderr,".");
 	
 	//get torques and FTendeff
 	Tau = sens->getTorques();
-	FTendeff = sens->getForceMomentEndEff();
-	cout<<Time::now()-time0<<endl;
-	time0 = Time::now();
-
-	//
-
-	//if(part=="arm")
-	//{
-	//	Vector tau(7);
-	//	for(int i=0;i<7;i++)
-	//		tau[i]=Tau[i+3];
-	//	cout<<tau.toString()<<endl;
-	//}
-	//else
-	//{
-	//	cout<<Tau.toString()<<endl;
-	//}
-
-	//cout<<sensFTestim.toString()<<endl;
-	
+	Vector Tinv = limbInv->getTorques();
+	FTendeff = -1.0*sens->getForceMomentEndEff();
+		
 	//prepare ports with datas
 	port_o_Torques->prepare() = Tau;
 	port_o_FTendef->prepare() = FTendeff;
@@ -274,6 +261,7 @@ void SensToTorques::run()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensToTorques::threadRelease()
 {
+	fclose(datas);
 	cerr<<"SensToTorques: deleting dynamic structures ..";
 	if(sens)		{delete sens;		sens = NULL; cout<<"sens ";}
 	if(sensInv)		{delete sensInv;	sensInv = NULL; cout<<"sensInv ";}

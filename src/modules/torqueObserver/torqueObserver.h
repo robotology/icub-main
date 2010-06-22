@@ -188,6 +188,7 @@ private:
 
 	yarp::sig::Vector *FTmeasure;
 	yarp::sig::Vector sensorOffset;
+	iDyn::iFTransformation         *FTtoBase;
 
 	yarp::os::BufferedPort<yarp::sig::Vector> *port_i_FT;
 	yarp::os::BufferedPort<yarp::sig::Vector> *port_o_Torques;
