@@ -1,1 +1,0 @@
-The existence of this file helps automated regression tests.
