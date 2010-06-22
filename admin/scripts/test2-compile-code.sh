@@ -4,7 +4,7 @@ type=$1
 
 EXPECTED_ARGS=1
  
-if [ $# -ne $EXPECTED_ARGS ];
+if [ $# -e $EXPECTED_ARGS ];
 then
     SOURCE=$PWD
     echo Working in directory $SOURCE | tee should_report.txt
