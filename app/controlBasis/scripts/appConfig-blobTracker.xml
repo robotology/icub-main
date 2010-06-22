@@ -1,0 +1,74 @@
+<application>
+  <name>blobTracker</name>
+	<dependencies>
+		<port>/icubSim/cam/left</port> 
+		<port>/icubSim/cam/right</port> 		
+	</dependencies>
+	<module>
+		<name>hsiDetector</name>
+		<parameters>--name hsiDetector/icubSim/left</parameters>
+		<tag>hsiDetector/icubSim/left</tag>
+		<node>Plutonia</node>
+	</module>
+	<module>
+		<name>hsiDetector</name>
+		<parameters>--name hsiDetector/icubSim/right</parameters>
+		<tag>hsiDetector/icubSim/right</tag>
+		<node>Plutonia</node>
+	</module>
+	<module>
+		<name>blobTracker</name>
+		<parameters>--name blobTracker/icubSim/left/sat</parameters>
+		<tag>blobTracker/icubSim/left</tag>
+		<node>Plutonia</node>
+	</module>
+	<module>
+		<name>blobTracker</name>
+		<parameters>--name blobTracker/icubSim/right/sat</parameters>
+		<tag>blobTracker/icubSim/right</tag>
+		<node>Plutonia</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /blobView/icubSim/left</parameters>
+		<tag>blobView/icubSim/left</tag>
+		<node>Plutonia</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /blobView/icubSim/right</parameters>
+		<tag>blobView/icubSim/right</tag>
+		<node>Plutonia</node>
+	</module>
+
+	<connection>
+		<from>/icubSim/cam/left</from>
+		<to>/hsiDetector/icubSim/left/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/icubSim/cam/right</from>
+		<to>/hsiDetector/icubSim/right/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/hsiDetector/icubSim/left/sat/img:o</from>
+		<to>/blobTracker/icubSim/left/sat/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/hsiDetector/icubSim/right/sat/img:o</from>
+		<to>/blobTracker/icubSim/right/sat/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/blobTracker/icubSim/left/sat/img:o</from>
+		<to>/blobView/icubSim/left</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/blobTracker/icubSim/right/sat/img:o</from>
+		<to>/blobView/icubSim/right</to>
+		<protocol>tcp</protocol>
+	</connection>
+</application>
