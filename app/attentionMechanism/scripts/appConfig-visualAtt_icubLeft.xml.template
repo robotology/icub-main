@@ -129,7 +129,7 @@
 	</connection>
 	<connection>
       	<from>/blobFinder/icub/left_cam/image:o</from>
-		<to>icub/left_cam/outputView</to>
+		<to>/icub/left_cam/outputView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -224,7 +224,7 @@
 	</connection>
 	<connection>
       	<from>/blobTracker/icub/left_cam/img:o</from>
-		<to>/blobTrackerOutput</to>
+		<to>/icub/left_cam/blobTrackerOutput</to>
 		<protocol>tcp</protocol>
 	</connection>
 </application>
