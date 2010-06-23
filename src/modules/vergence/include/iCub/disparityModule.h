@@ -1,5 +1,5 @@
 
-#include "DisparityTool.h"
+#include <iCub/DisparityTool.h>
 //#include <yarp/sig/Image.h>
 //#include <yarp/sig/Vector.h>
 //#include <yarp/sig/ImageFile.h>
@@ -24,7 +24,7 @@
 #include <iCub/iKin/iKinFwd.h>
 #include <yarp/math/Math.h>
 //#include <YARPRobotMath.h>
-//#include <math.h>
+#include <math.h>
 
 using namespace std;
 using namespace yarp;

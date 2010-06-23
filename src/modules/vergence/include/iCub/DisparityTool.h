@@ -8,7 +8,7 @@
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-#include "RC_Logpolar_AuxFunct.h"
+#include <iCub/RC_Logpolar_AuxFunct.h>
 
 #ifdef YARP_HAS_PRAGMA_ONCE
 #	pragma once
