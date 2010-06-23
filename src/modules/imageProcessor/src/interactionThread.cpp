@@ -112,7 +112,9 @@ void interactionThread::run(){
 
     tmp=rgPort.read(false);
     if(tmp==0){
+        printf("input image still null .... \n");
         return;
+
     }
     //outPorts();
     
