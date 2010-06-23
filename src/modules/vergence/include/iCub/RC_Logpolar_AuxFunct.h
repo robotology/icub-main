@@ -23,7 +23,7 @@ namespace _logpolarParams
 	const int _ysizeR = 240;
 	const int _srho = 152;
 	const int _stheta = 252;
-	const double _overlap = 0.00;
+	const double _overlap = 1.00;
 	const int _fmode = 2;
 };
 
