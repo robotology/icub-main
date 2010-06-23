@@ -303,7 +303,7 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
         */
 
     }
-    cvCopy(dst,outputImage->getIplImage());
+    //cvCopy(dst,outputImage->getIplImage());
     //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
     cvReleaseMemStorage(&stor);
     cvReleaseImage(&dst);
