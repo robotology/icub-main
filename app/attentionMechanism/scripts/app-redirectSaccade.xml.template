@@ -1,0 +1,7 @@
+<application>
+	<name>Redirect saccadic event </name>
+ 	<dependencies>
+		<port> /selectiveAttentionEngine/icub/left_cam/combination:o</port>
+		<port> /selectiveAttentionEngine/icub/right_cam/combination:o</port>
+	</dependencies>
+</application>
