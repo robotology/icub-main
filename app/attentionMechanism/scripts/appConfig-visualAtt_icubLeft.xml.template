@@ -1,19 +1,19 @@
 <application>
 	<name>AttentionMechanism Left </name>
  	<dependencies>
-		<port>/icub/cam/left/logpolar</port> 
+		<port>/icub/camcalib/left/out</port> 
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
 		<parameters>--file colourProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>colourLeft</tag>
-		<node>/console1</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>YUVProcessor</name>
 		<parameters>--name yuvProc/icub/left_cam</parameters>
 		<tag>yuvProcessor</tag>
-		<node>/console1</node>
+		<node>/powerNode2</node>
 	</module>
 	<module>
 		<name>imageProcessor</name>
@@ -55,7 +55,7 @@
 		<name>blobTracker</name>
 		<parameters>--name blobTracker/icub/left_cam</parameters>
 		<tag>blobTrackerModule</tag>
-		<node>/console1</node>
+		<node>/powerNode3</node>
 	</module>
 	<module>
 		<name>yarpview</name>
@@ -88,7 +88,7 @@
 		<node>/console1</node>
 	</module>
 	<connection>
-      <from>/icub/cam/left/logpolar</from>
+      <from>/icub/camcalib/left/out</from>
 		<to>/icub/left_cam/logpolarView</to>
 		<protocol>tcp</protocol>
 	</connection>
