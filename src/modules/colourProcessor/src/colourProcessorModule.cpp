@@ -34,11 +34,10 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 
     printf("\n waiting for connection of the input port, 200 sec to proceed \n");
 
-    
-    
     while((interThread.inputImg==0)&&(dif<200)){
         time (&end);
         dif = difftime (end,start);
+        printf("waiting .. \n");
     }
     if(dif>=200)
         return false;
