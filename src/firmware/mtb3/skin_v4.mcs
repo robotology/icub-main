@@ -2,161 +2,148 @@
 MagicCookie={0b13fe8c-dfe0-40eb-8900-6712719559a7}
 Version=1.0
 [File000]
-Location=D:\icub\src\firmware\skin\can_interface.o
+Location=D:\icub\src\firmware\mtb3\can_interface.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File001]
-Location=D:\icub\src\firmware\skin\can_protocol.o
+Location=D:\icub\src\firmware\mtb3\can_protocol.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File002]
-Location=D:\icub\src\firmware\skin\I2C.o
+Location=D:\icub\src\firmware\mtb3\I2C.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File003]
-Location=D:\icub\src\firmware\skin\LED.o
+Location=D:\icub\src\firmware\mtb3\LED.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File004]
-Location=D:\icub\src\firmware\skin\main_V3.o
+Location=D:\icub\src\firmware\mtb3\main_V3.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File005]
-Location=D:\icub\src\firmware\skin\putsUART1.o
+Location=D:\icub\src\firmware\mtb3\T1.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File006]
-Location=D:\icub\src\firmware\skin\T1.o
+Location=D:\icub\src\firmware\mtb3\traps.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File007]
-Location=D:\icub\src\firmware\skin\traps.o
+Location=D:\icub\src\firmware\mtb3\AD7147 - Configuration.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File008]
-Location=D:\icub\src\firmware\skin\AD7147 - Configuration.o
+Location=D:\icub\src\firmware\mtb3\eeprom.o
 Folder=Intermediary
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-g -Wall
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File009]
-Location=D:\icub\src\firmware\skin\eeprom.o
-Folder=Intermediary
+Location=D:\icub\src\firmware\build\skin_v4.cof
+Folder=Output
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
-LanguageToolID={069BD372-6CA0-40D4-BF2F-5DC806D05083}
-LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+LanguageToolID={433C3D55-811D-409D-A6BF-159CF9355B42}
+LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-ld.exe
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
-ToolArgsString=-g -Wall
+ToolArgsString=-o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)" -Map="$(BINDIR_)$(TARGETBASE).map" --report-mem
 TraceCmdString=
-DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1
+DebugOptions=
 [File010]
-Location=D:\icub\src\firmware\skin\skin_v4.cof
+Location=D:\icub\src\firmware\build\skin_v4.hex
 Folder=Output
 DeviceName=dsPIC30F4011
 LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 LanguageToolID={433C3D55-811D-409D-A6BF-159CF9355B42}
 LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-ld.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
+PPAD=$(BINDIR)|../build/||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
+SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
 SuiteArgsString=
 ToolArgsString=-o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)" -Map="$(BINDIR_)$(TARGETBASE).map" --report-mem
 TraceCmdString=
-DebugOptions=--defsym=__MPLAB_DEBUG=1 --defsym=__MPLAB_DEBUGGER_ICD3=1 --defsym=__ICD2RAM=1
-[File011]
-Location=D:\icub\src\firmware\skin\skin_v4.hex
-Folder=Output
-DeviceName=dsPIC30F4011
-LanguageToolSuiteID={479DDE59-4D56-455E-855E-FFF59A3DB57E}
-LanguageToolID={433C3D55-811D-409D-A6BF-159CF9355B42}
-LanguageToolLocation=C:\Program Files\Microchip\MPLAB C30\bin\pic30-ld.exe
-PPAD=$(BINDIR)||$(TMPDIR)||$(AINDIR)||$(INCDIR)||$(LIBDIR)||$(LKRDIR)||
-SOLK=<src>|can_interface.c|can_protocol.c|I2C.c|LED.c|main_V3.c|putsUART1.c|T1.c|traps.c|AD7147 - Configuration.c|eeprom.c||<obj>||<lib>||<lkr>|p30f4011.gld||
-SuiteArgsString=
-ToolArgsString=-o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)" -Map="$(BINDIR_)$(TARGETBASE).map" --report-mem
-TraceCmdString=
-DebugOptions=--defsym=__MPLAB_DEBUG=1 --defsym=__MPLAB_DEBUGGER_ICD3=1 --defsym=__ICD2RAM=1
+DebugOptions=
 [TOOL_LOC_STAMPS]
 tool_loc{069BD372-6CA0-40D4-BF2F-5DC806D05083}=C:\Program Files\Microchip\MPLAB C30\bin\pic30-gcc.exe
 tool_loc{433C3D55-811D-409D-A6BF-159CF9355B42}=C:\Program Files\Microchip\MPLAB C30\bin\pic30-ld.exe

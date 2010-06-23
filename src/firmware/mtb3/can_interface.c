@@ -352,17 +352,17 @@ int CAN1_handleRx (unsigned int board_id)
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x1)
 							{	
 								PW_CONTROL= 0xC0B0; // for 256 decim
-								TIMER_VALUE=0x3A00; // for 256 decim
+								TIMER_VALUE=TIMER_SINGLE_256dec ; // for 256 decim
 							}
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x2)
 							{
 								PW_CONTROL= 0xC1B0; // for 128 decim
-								TIMER_VALUE=0x2D00; // for 128 decim
+								TIMER_VALUE=TIMER_SINGLE_128dec ; // for 128 decim
 							}
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x3)
 							{
 								PW_CONTROL= 0xC2B0; // for 64 decim
-								TIMER_VALUE=0x1A00; // for 64 decim
+								TIMER_VALUE=TIMER_SINGLE_64dec ; // for 64 decim
 							}
 						}	
 						break;
@@ -371,17 +371,17 @@ int CAN1_handleRx (unsigned int board_id)
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x1)
 							{	
 								PW_CONTROL= 0x20; // for 256 decim
-					  			TIMER_VALUE=0x1A00; // for 256 decim
+					  			TIMER_VALUE=TIMER_THREE; // for 256 decim
 							}
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x2)
 							{
 								PW_CONTROL= 0x120; // for 128 decim
-								TIMER_VALUE=0x1A00; // for 128 decim
+								TIMER_VALUE=TIMER_THREE; // for 128 decim
 							}
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x3)
 							{
 								PW_CONTROL= 0x220; // for 64 decim
-								TIMER_VALUE=0x1A00; // for 64 decim
+								TIMER_VALUE=TIMER_THREE; // for 64 decim
 							}
 						}	
 						break;
@@ -390,17 +390,17 @@ int CAN1_handleRx (unsigned int board_id)
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x1)
 							{	
 								PW_CONTROL= 0x00; // for 256 decim
-								TIMER_VALUE=0x1A00; // for 256 decim
+								TIMER_VALUE=TIMER_ALL; // for 256 decim
 							}
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x2)
 							{
 								PW_CONTROL= 0x100; // for 128 decim
-								TIMER_VALUE=0x1A00; // for 128 decim
+								TIMER_VALUE=TIMER_ALL; // for 128 decim
 							}
 							if ((CANRxBuffer[canRxBufferIndex-1].CAN_data[2]&0xf)==0x3)
 							{
 								PW_CONTROL= 0x200; // for 64 decim
-								TIMER_VALUE=0x1A00; // for 64 decim
+								TIMER_VALUE=TIMER_ALL; // for 64 decim
 							}
 						}	
 						break;
