@@ -46,10 +46,12 @@ YARP libraries and OpenCV
   algorithm.
  
 --recogThres \e thres
-- The parameter \e thres specifies the error threshold that
-  allows to discriminate between background and independent
-  moving nodes. Smaller values enables to detect slower
-  movements but are more sensitive to noise.
+- The parameter \e thres, given in percentage, specifies the 
+  error threshold that allows to discriminate between background
+  and independent moving nodes as result of a matching carried
+  out on the windows whose size is determined by \e winSize
+  parameter. Usually very small values, such as 0.002%, have to
+  be used.
  
 --adjNodesThres \e min 
 - This parameter allows to filter out the salt-and-pepper noise
@@ -170,7 +172,8 @@ protected:
     double coverYratio;
     int nodesStep;
     int winSize;
-    int recogThres;
+    double recogThres;
+    double recogThresAbs;
     int adjNodesThres;
     int blobMinSizeThres;
     int framesPersistence;
@@ -228,12 +231,14 @@ public:
         coverYratio=rf.check("coverYratio",Value(0.75)).asDouble();
         nodesStep=rf.check("nodesStep",Value(6)).asInt();
         winSize=rf.check("winSize",Value(15)).asInt();
-        recogThres=rf.check("recogThres",Value(300)).asInt();
+        recogThres=rf.check("recogThres",Value(0.002)).asDouble();
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
         verbosity=rf.check("verbosity");
         inhibition=false;
+
+        recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
 
         nodesPrev=NULL;
         nodesCurr=NULL;
@@ -262,7 +267,7 @@ public:
             fprintf(stdout,"coverYratio       = %g\n",coverYratio);
             fprintf(stdout,"nodesStep         = %d\n",nodesStep);
             fprintf(stdout,"winSize           = %d\n",winSize);
-            fprintf(stdout,"recogThres        = %d\n",recogThres);
+            fprintf(stdout,"recogThres        = %g\n",recogThres);
             fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
@@ -397,7 +402,7 @@ public:
                 int row=i%nodesX;
                 bool skip=inhibition || (i<nodesX) || (i>=nodesNum-nodesX) || (row==0) || (row==nodesX-1);
 
-                if (!skip && featuresFound[i] && featureErrors[i]>recogThres)
+                if (!skip && featuresFound[i] && (featureErrors[i]>recogThresAbs))
                 {
                     // count the neighbour nodes that are ON
                     // start from -1 to avoid counting the current node
@@ -406,7 +411,7 @@ public:
                     // scroll per lines
                     for (int j=i-nodesX; j<=i+nodesX; j+=nodesX)
                         for (int k=j-1; k<=j+1; k++)
-                            cntAdjNodesOn+=(int)(featuresFound[k]&&(featureErrors[k]>recogThres));
+                            cntAdjNodesOn+=(int)(featuresFound[k]&&(featureErrors[k]>recogThresAbs));
 
                     // highlight independent moving node if over threhold
                     if (cntAdjNodesOn>=adjNodesThres)
@@ -579,7 +584,8 @@ public:
                 }
                 else if (subcmd=="recogThres")
                 {
-                    recogThres=req.get(2).asInt();
+                    recogThres=req.get(2).asDouble();
+                    recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
                     reply.addString("ack");
                 }
                 else if (subcmd=="adjNodesThres")
@@ -620,7 +626,7 @@ public:
                 if (subcmd=="winSize")
                     reply.addInt(winSize);
                 else if (subcmd=="recogThres")
-                    reply.addInt(recogThres);
+                    reply.addDouble(recogThres);
                 else if (subcmd=="adjNodesThres")
                     reply.addInt(adjNodesThres);
                 else if (subcmd=="blobMinSizeThres")
@@ -712,11 +718,11 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--coverYratio       <double>\n");
         fprintf(stdout,"\t--nodesStep         <int>\n");
         fprintf(stdout,"\t--winSize           <int>\n");
-        fprintf(stdout,"\t--recogThres        <int>\n");
+        fprintf(stdout,"\t--recogThres        <double>\n");
         fprintf(stdout,"\t--adjNodesThres     <int>\n");
         fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
         fprintf(stdout,"\t--framesPersistence <int>\n");
-        fprintf(stdout,"\t--verbosity          - \n");
+        fprintf(stdout,"\t--verbosity           -\n");
         
         return 0;
     }
