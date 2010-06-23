@@ -10,8 +10,8 @@ using namespace std;
 
 interactionThread::interactionThread():RateThread(THREAD_RATE_IMAGE)
 {
-   this->tmp=0;
-   this->inputImg=0;
+   tmp=0;
+   inputImg=0;
 
    reinit_flag=false;
    redGreen_flag=new int;
@@ -109,13 +109,15 @@ void interactionThread::run(){
     /*this->inputImg = this->inImagePort.read(false);
     if(0==inputImg)
         return true;*/
-
+    printf("checking input image still null .... \n");
     tmp=rgPort.read(false);
     if(tmp==0){
         printf("input image still null .... \n");
         return;
-
     }
+    else
+        printf("input image still NOT null .... \n");
+
     //outPorts();
     
     if(!reinit_flag){
