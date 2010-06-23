@@ -44,7 +44,8 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
 
 
     //inputImg=0;
-    while((interThread->tmp==0)&&(dif<20)){
+    while((interThread->tmp==0)&&(dif<200)){
+        printf("waiting connections ...");
         time (&end);
         dif = difftime (end,start);
     }
