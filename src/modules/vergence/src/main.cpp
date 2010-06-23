@@ -1,7 +1,7 @@
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Module.h>
-#include "disparityModule.h"
+#include <iCub/disparityModule.h>
 
 using namespace yarp::os;
 
