@@ -178,8 +178,8 @@ class SensToTorques: public yarp::os::RateThread
 {
 private:
 
-	yarp::dev::PolyDriver	*pd_limb;
-	yarp::dev::PolyDriver	*pd_torso;
+	yarp::dev::PolyDriver	*dd;
+	yarp::dev::PolyDriver	*tt;
 	yarp::dev::IEncoders	*iencs;
 	yarp::dev::IEncoders	*iencs_torso;
 
@@ -188,11 +188,10 @@ private:
 
 	yarp::sig::Vector *FTmeasure;
 	yarp::sig::Vector sensorOffset;
-	iDyn::iFTransformation         *FTtoBase;
 
-	yarp::os::BufferedPort<yarp::sig::Vector> *port_i_FT;
-	yarp::os::BufferedPort<yarp::sig::Vector> *port_o_Torques;
-	yarp::os::BufferedPort<yarp::sig::Vector> *port_o_FTendef;
+	yarp::os::BufferedPort<yarp::sig::Vector> *port_FT;
+	yarp::os::BufferedPort<yarp::sig::Vector> *port_Torques;
+	yarp::os::BufferedPort<yarp::sig::Vector> *port_Wrench;
 
 	ctrl::AWLinEstimator   *linEst;
     ctrl::AWQuadEstimator  *quadEst;
@@ -262,9 +261,9 @@ private:
 	    
 public:
 
-	SensToTorques(int _rate, yarp::dev::PolyDriver *_pd_leg, yarp::os::BufferedPort<yarp::sig::Vector> *port_FT, yarp::os::BufferedPort<yarp::sig::Vector> *port_Torques, yarp::os::BufferedPort<yarp::sig::Vector> *port_FTendef, std::string _type);
+	SensToTorques(int _rate, yarp::dev::PolyDriver *_dd, yarp::os::BufferedPort<yarp::sig::Vector> *port_FT, yarp::os::BufferedPort<yarp::sig::Vector> *port_Torques, yarp::os::BufferedPort<yarp::sig::Vector> *port_FTendef, std::string _type);
 	
-	SensToTorques(int _rate, yarp::dev::PolyDriver *_pd_arm, yarp::dev::PolyDriver *_pd_torso, yarp::os::BufferedPort<yarp::sig::Vector> *port_FT, yarp::os::BufferedPort<yarp::sig::Vector> *port_Torques, yarp::os::BufferedPort<yarp::sig::Vector> *port_FTendef, std::string _type);
+	SensToTorques(int _rate, yarp::dev::PolyDriver *_dd, yarp::dev::PolyDriver *_tt, std::string _type, std::string _name);
 	  
 	bool threadInit();
 	  
@@ -283,14 +282,10 @@ private:
 
 	yarp::os::Property OptionsLimb;
 	yarp::os::Property OptionsTorso;
-	yarp::dev::PolyDriver *pd_limb;
-	yarp::dev::PolyDriver *pd_torso;
+	yarp::dev::PolyDriver *dd;
+	yarp::dev::PolyDriver *tt;
 
 	SensToTorques *sens2torques;
-
-	yarp::os::BufferedPort<yarp::sig::Vector> port_i_FT;
-	yarp::os::BufferedPort<yarp::sig::Vector> port_o_Torques;
-	yarp::os::BufferedPort<yarp::sig::Vector> port_o_FTendef;
 
 	std::string handlerPortName;
 	yarp::os::Port handlerPort;      //a port to handle messages 

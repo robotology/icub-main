@@ -69,15 +69,24 @@ Vector SensToTorques::updateAcceleration(const Vector &a)
 	return quadEst->estimate(estElement);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_leg, BufferedPort<Vector> *port_FT, BufferedPort<Vector> *port_Torques, BufferedPort<Vector> *port_FTendef, string _type)
-:RateThread(_rate), pd_limb(_pd_leg)
+SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string _type, string _name)
+:RateThread(_rate), dd(_dd), tt(_tt)
 {
 	// attach ports
+    string fwdSlash = "/";
+    string port = fwdSlash+_name;
+    port += (fwdSlash+_type).c_str();
 	// input port:  /moduleName/robotPart/FT:i
-	port_i_FT = port_FT;	  
+	port_FT = new BufferedPort<Vector>;	  
+	port_Wrench = new BufferedPort<Vector>;	  
+	port_Torques = new BufferedPort<Vector>;	  
 	// output ports: /moduleName/robotPart/torques:o  /moduleName/robotPart/FTendeff:o
-	port_o_Torques = port_Torques;
-	port_o_FTendef = port_FTendef;
+	port_FT->open((port+"/FT:i").c_str());
+	cout<<"TorqueObserver: created port: "<<(port+"/FT:i").c_str()<<endl;
+	port_Wrench->open((port+"/wrench:o").c_str());
+	cout<<"TorqueObserver: created port: "<<(port+"/wrench:o").c_str()<<endl;
+	port_Torques->open((port+"/torques:o").c_str());
+	cout<<"TorqueObserver: created port: "<<(port+"/torques:o").c_str()<<endl;
 
 	// initialize estimators of velocity and acceleration
 	// they are necessary to avoid noise in this components
@@ -85,30 +94,64 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_leg, BufferedPort<Vector
 	quadEst=new AWQuadEstimator(25,1.0);
 
 	// Checking device
-	pd_limb->view(iencs);
-
+	dd->view(iencs);
+	if (tt)
+		tt->view(iencs_torso);
 	// check leg type
-	part = "leg";
-	type = _type;
-	if((type!="left")&&(type!="right"))
+	if(tt)
 	{
-		type="left";
-		cerr<<"SensToTorques: error: leg type was "<<_type<<", now is "<<type<<" by default."<<endl;
+		if(_type == "left_arm")
+		{
+			limb = new iCubArmDyn("left");
+			limbInv = new iCubArmDyn("left");
+		}
+		else 
+		{
+			limb = new iCubArmDyn("right");
+			limbInv = new iCubArmDyn("left");
+		}
+		sens = new iDynSensorArm(dynamic_cast<iCubArmDyn *>(limb),DYNAMIC,VERBOSE);
+		sensInv = new iDynInvSensorArm(dynamic_cast<iCubArmDyn *>(limbInv),DYNAMIC,VERBOSE);
 	}
-
-	// new icub leg
-	limb = new iCubLegDyn(type);
+	else
+	{
+		if(_type == "left_leg")
+		{
+			limb = new iCubLegDyn("left");
+			limbInv = new iCubLegDyn("left");
+		}
+		else
+		{
+			limb = new iCubLegDyn("right");
+			limbInv = new iCubLegDyn("right");
+		}
+		sens = new iDynSensorLeg(dynamic_cast<iCubLegDyn *>(limb),DYNAMIC,VERBOSE);
+		sensInv = new iDynInvSensorLeg(dynamic_cast<iCubLegDyn *>(limbInv),DYNAMIC,VERBOSE);
+	}
 	
 	// the sensor solver for the leg
-	sens = new iDynSensorLeg(dynamic_cast<iCubLegDyn *>(limb),DYNAMIC,VERBOSE);
+	int jnt1=0;
+    int jnt2=0;
+
+    iencs->getAxes(&jnt1);
+    encoders.resize(jnt1);
+	encoders.zero();
+
+    if (tt)
+    {
+        iencs_torso->getAxes(&jnt2);
+        encodersTorso.resize(jnt2);
+		encodersTorso.zero();
+    }
 
 	// init all variables
 	// first the unused ones
-	iencs_torso = NULL;
-	pd_torso = NULL;
-	encodersTorso.resize(1); encodersTorso.zero();
 	// joints var
-	q.resize(6); dq.resize(6); d2q.resize(6);
+	int jnt=jnt1+jnt2;
+    q.resize(jnt,0.0);
+    dq.resize(jnt,0.0);
+    d2q.resize(jnt,0.0);
+
 	q.zero(); dq.zero(); d2q.zero();
 	// init Newt-Eul
 	w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
@@ -144,83 +187,6 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_leg, BufferedPort<Vector
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SensToTorques::SensToTorques(int _rate, PolyDriver *_pd_arm, PolyDriver *_pd_torso, BufferedPort<Vector> *port_FT, BufferedPort<Vector> *port_Torques, BufferedPort<Vector> *port_FTendef, string _type)
-:RateThread(_rate), pd_limb(_pd_arm), pd_torso(_pd_torso)
-{
-
-	// attach ports
-	cout<<"SensToTorques: attaching ports"<<endl;
-	// input port:  /moduleName/robotPart/FT:i
-	port_i_FT = port_FT;	  
-	// output ports: /moduleName/robotPart/torques:o  /moduleName/robotPart/FTendeff:o
-	port_o_Torques = port_Torques;
-	port_o_FTendef = port_FTendef;
-
-	// initialize estimators of velocity and acceleration
-	// they are necessary to avoid noise in this components
-	linEst =new AWLinEstimator(16,1.0);
-	quadEst=new AWQuadEstimator(25,1.0);
-
-	// Checking device
-	cout<<"SensToTorques: view device"<<endl;
-	pd_limb->view(iencs);
-	pd_torso->view(iencs_torso);
-
-	// check arm type
-	part = "arm";
-	type = _type;
-	if((type!="left")&&(type!="right"))
-	{
-		type="left";
-		cerr<<"SensToTorques: error: arm type was "<<_type<<", now is "<<type<<" by default."<<endl;
-	}
-
-	// new icub arm
-	limb = new iCubArmDyn(type);
-	limbInv = new iCubArmDyn(type);
-	
-	// the sensor solver for the arm
-
-	sens = new iDynSensorArm(dynamic_cast<iCubArmDyn *>(limb),DYNAMIC,VERBOSE);
-	sensInv = new iDynInvSensorArm(dynamic_cast<iCubArmDyn *>(limbInv),DYNAMIC,VERBOSE);
-    FTtoBase = new iFTransformation(sens);
-
-
-	cout<<"SensToTorques: arm and iDynSensor created"<<endl;
-
-	// init all variables
-	// joints var
-	q.resize(limb->getN()); dq.resize(limb->getN()); d2q.resize(limb->getN());
-	q.zero(); dq.zero(); d2q.zero();
-	// init Newt-Eul
-	w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
-	w0.zero(); dw0.zero(); d2p0.zero();Fend.zero();Mend.zero();
-	d2p0(2)=9.81;
-	// forces moments torques
-	FTsensor.resize(6); FTsensor.zero();
-	FTendeff.resize(6); FTendeff.zero();
-	sensorOffset.resize(6); sensorOffset.zero();
-
-	//set joints pos/vel/acc
-	limb->setAng(q);
-	limb->setDAng(dq);
-	limb->setD2Ang(d2q);
-	limb->prepareNewtonEuler(DYNAMIC);
-	limb->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
-
-	//see encoders
-	int Njoints, Ntorso;
-	iencs->getAxes(&Njoints);
-	iencs_torso->getAxes(&Ntorso);
-	encoders.resize(Njoints);
-	encodersTorso.resize(Ntorso); 
-
-	cout<<"SensToTorques: arm="<<Njoints<<" torso="<<Ntorso<<endl;
-
-	//other
-	FTmeasure = NULL;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool SensToTorques::threadInit()
 {		 
 	Time::delay(2.0);
@@ -236,26 +202,26 @@ void SensToTorques::run()
 	readAndUpdate(false);
   	
 	// estimate sensor FT
-	limbInv->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
-	sensInv->computeSensorForceMoment();
-	Vector sensEstim = -1.0*sensInv->getSensorForceMoment();
+	//limbInv->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+	//sensInv->computeSensorForceMoment();
+	//Vector sensEstim = -1.0*sensInv->getSensorForceMoment();
 
 	//compute torques
 	sens->computeFromSensorNewtonEuler(-1.0*(FTsensor  - sensorOffset));
-	fprintf(stderr,".");
+	//fprintf(stderr,".");
 	
 	//get torques and FTendeff
 	Tau = sens->getTorques();
-	Vector Tinv = limbInv->getTorques();
+	//Vector Tinv = limbInv->getTorques();
 	FTendeff = -1.0*sens->getForceMomentEndEff();
 		
 	//prepare ports with datas
-	port_o_Torques->prepare() = Tau;
-	port_o_FTendef->prepare() = FTendeff;
+	port_Torques->prepare() = Tau;
+	port_Wrench->prepare() = FTendeff;
 
 	//send data
-	port_o_Torques->write();
-	port_o_FTendef->write();
+	port_Torques->write();
+	port_Wrench->write();
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -270,6 +236,9 @@ void SensToTorques::threadRelease()
 	//if(FTmeasure)	{delete FTmeasure;	FTmeasure = NULL; cout<<"FTmeasure "; }
 	if(limb)		{delete limb;		limb=NULL; cout<<"limb ";}
 	if(limbInv)		{delete limbInv;	limbInv=NULL; cout<<"limbInv ";}
+	if(port_FT)		{delete port_FT; port_FT = NULL; cout<<"port_FT ";}	  
+	if(port_Wrench)	{delete port_Wrench; port_Wrench = NULL; cout<<"port_Wrench ";}	  
+	if(port_Torques){delete port_Torques; port_Torques = NULL; cout<<"port_Torques ";}	  
 	cout<<" .. done "<<endl;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -334,7 +303,7 @@ void SensToTorques::readAndUpdate(bool waitMeasure)
 	limbInv->setD2Ang(M_PI/180.0 * d2q);
 
 	//read FT sensor measurements
-	FTmeasure = port_i_FT->read(waitMeasure);
+	FTmeasure = port_FT->read(waitMeasure);
 	if((FTmeasure!=0))
 	{
 		FTsensor = *FTmeasure;
@@ -352,21 +321,21 @@ void SensToTorques::readAndUpdate(bool waitMeasure)
 TorqueObserver::TorqueObserver()
 {
 	sens2torques= NULL;
-	pd_limb		= NULL;
-	pd_torso	= NULL;
+	dd		= NULL;
+	tt	= NULL;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool TorqueObserver::checkDriver(PolyDriver *_pd_limb)
+bool TorqueObserver::checkDriver(PolyDriver *_dd)
 {
 	// check driver
-    if(!_pd_limb || !(_pd_limb->isValid()))
+    if(!_dd || !(_dd->isValid()))
 	{
 		cerr<<"TorqueObserver: error: could not instantiate the device driver. Closing."<<endl;
 		return false;
 	}
 	//check encoders
 	IEncoders *encs;
-	if(!_pd_limb->view(encs))
+	if(!_dd->view(encs))
 	{
 		cerr<<"TorqueObserver: error: could not view encoders properly. Closing."<<endl;
 		return false;
@@ -400,40 +369,10 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 
 	//summary of config param 
 	cout<<"TorqueObserver: module = "<<moduleName<<endl
-		<<"                robot  = "<<robotName<<endl
+		<<"                robot   = "<<robotName<<endl
 		<<"                part   = "<<robotPart<<endl
 		<<"                rate   = "<<rate<<" ms"<<endl;
-	  
-	//creating ports
-	// input port:  /moduleName/robotPart/FT:i
-	string port_ft = "/"+moduleName+"/"+robotPart+"/FT:i";
-	port_i_FT.open(port_ft.c_str());
-	cout<<"TorqueObserver: created port: "<<port_ft<<endl;
-
-	// output ports: /moduleName/robotPart/torques:o  /moduleName/robotPart/FTendeff:o
-	string port_tau = "/"+moduleName+"/"+robotPart+"/torques:o";
-	string port_eef = "/"+moduleName+"/"+robotPart+"/FTendeff:o";
-	port_o_Torques.open(port_tau.c_str());
-	cout<<"TorqueObserver: created port: "<<port_tau<<endl;
-	port_o_FTendef.open(port_eef.c_str());
-	cout<<"TorqueObserver: created port: "<<port_eef<<endl;
-
-	// now creating device drivers
-	if(robotPart=="left_arm")
-	{limb="arm"; type="left";}
-	else if(robotPart=="right_arm")
-	{limb="arm"; type="right";}
-	else if(robotPart=="left_leg")
-	{limb="leg"; type="left";}
-	else if(robotPart=="right_leg")
-	{limb="leg"; type="right";}
-	else
-	{
-		cerr<<"TorqueObserver: error: robotPart is unknown: please use leg/arm and right/left"<<endl;
-		return false;
-	}
 	
-
 	// now create the devices
 	//device driver of the limb
 	cout<<"TorqueObserver: creating "<<robotPart<<" polyDriver"<<endl;
@@ -442,8 +381,8 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 	OptionsLimb.put("device","remote_controlboard");
 	OptionsLimb.put("local",("/"+robotName+"/"+robotPart+"/client").c_str());
 	OptionsLimb.put("remote",("/"+robotName+"/"+robotPart).c_str());
-	pd_limb = new PolyDriver(OptionsLimb);
-	if(!checkDriver(pd_limb)) 
+	dd = new PolyDriver(OptionsLimb);
+	if(!checkDriver(dd)) 
 	{
 		cerr<<"TorqueObserver: error: unable to create /"<<robotName<<"/"<<robotPart<<" device driver...quitting"<<endl;
 		return false;
@@ -451,7 +390,7 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 
 
 	// note: the arm needs the torso
-	if(limb=="arm")
+	if(robotPart=="left_arm" || robotPart=="right_arm")
 	{
 		//torso
 		cout<<"TorqueObserver: creating torso polyDriver"<<endl;
@@ -460,21 +399,19 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 		OptionsTorso.put("device","remote_controlboard");
 		OptionsTorso.put("local",("/"+robotName+"/torso/client").c_str());
 		OptionsTorso.put("remote",("/"+robotName+"/torso").c_str());
-		pd_torso = new PolyDriver(OptionsTorso);
-		if(!checkDriver(pd_torso)) 
+		tt = new PolyDriver(OptionsTorso);
+		if(!checkDriver(tt)) 
 		{
 			cerr<<"TorqueObserver: error: unable to create /"<<robotName<<"/torso device driver...quitting"<<endl;
 			return false;
 		}
-		//arm with torso
-		sens2torques = new SensToTorques(rate, pd_limb, pd_torso, &port_i_FT, &port_o_Torques, &port_o_FTendef, type);
-	
+		//arm with torso	
 	}
 	else 
 	{
-		//leg
-		sens2torques = new SensToTorques(rate, pd_limb, &port_i_FT, &port_o_Torques, &port_o_FTendef,type);
+		tt = NULL;
 	}
+	sens2torques = new SensToTorques(rate, dd, tt, robotPart, moduleName);
 	
 	//now the thread can start
 	sens2torques->start();
@@ -501,26 +438,16 @@ bool TorqueObserver::close()
 		//sens2torques=NULL;
 	}
 
-	if (pd_limb) {delete pd_limb; pd_limb=NULL;}
-	if (pd_torso) {delete pd_torso; pd_torso=NULL;}
+	if (dd) {delete dd; dd=NULL;}
+	if (tt) {delete tt; tt=NULL;}
 
-	//finally closing ports
-	cout<<"TorqueObserver: closing ports ..."<<endl;
-	port_o_Torques.close(); cout<<"                output torques closed"<<endl;
-	port_o_FTendef.close(); cout<<"                output end-eff closed"<<endl;
-	port_i_FT.close();      cout<<"                input measures closed"<<endl;
-	cout<<"TorqueObserver: all ports closed ..."<<endl;
-
-	Time::delay(5.0);
+	Time::delay(1.0);
 
 	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool TorqueObserver::interruptModule()
 {
-	port_o_Torques.interrupt(); 
-	port_o_FTendef.interrupt();
-	port_i_FT.interrupt();
 	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
