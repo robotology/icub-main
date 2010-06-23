@@ -1,4 +1,4 @@
-#include "RC_Logpolar_AuxFunct.h"
+#include <iCub/RC_Logpolar_AuxFunct.h>
 
 
 Image_Data SetParam(int rho, int theta, int mode, double overlap, int xo, int yo, int xr, int yr)

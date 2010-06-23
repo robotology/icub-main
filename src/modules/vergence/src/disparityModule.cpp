@@ -1,5 +1,5 @@
 
-#include "disparityModule.h"
+#include <iCub/disparityModule.h>
 
 using namespace yarp::math;
 

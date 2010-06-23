@@ -1,5 +1,5 @@
 
-#include "DisparityTool.h"
+#include <iCub/DisparityTool.h>
 
 
 DisparityTool::DisparityTool()
