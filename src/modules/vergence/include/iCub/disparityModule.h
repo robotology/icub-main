@@ -23,9 +23,9 @@
 #include <stdio.h>
 #include <iostream>
 
-#include <iCub/iKinFwd.h>
+#include <iCub/iKin/iKinFwd.h>
 #include <yarp/math/Math.h>
-//#include <YARPRobotMath.h>
+#include <YARPRobotMath.h>
 //#include <math.h>
 
 using namespace std;
