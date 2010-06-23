@@ -268,6 +268,7 @@ public:
             fprintf(stdout,"nodesStep         = %d\n",nodesStep);
             fprintf(stdout,"winSize           = %d\n",winSize);
             fprintf(stdout,"recogThres        = %g\n",recogThres);
+            fprintf(stdout,"recogThresAbs     = %g\n",recogThresAbs);
             fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
