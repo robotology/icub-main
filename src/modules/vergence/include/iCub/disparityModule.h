@@ -1,6 +1,4 @@
 
-
-
 #include "DisparityTool.h"
 //#include <yarp/sig/Image.h>
 //#include <yarp/sig/Vector.h>
@@ -25,7 +23,7 @@
 
 #include <iCub/iKin/iKinFwd.h>
 #include <yarp/math/Math.h>
-#include <YARPRobotMath.h>
+//#include <YARPRobotMath.h>
 //#include <math.h>
 
 using namespace std;
@@ -33,7 +31,7 @@ using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::os;
-//using namespace iKin;
+using namespace iKin;
 
 const double F = 4;						/// camera F length.
 const double PixScaleX = 120;			/// camera mm to pixel conversion factor.
@@ -72,6 +70,7 @@ private:
 	IEncoders *encHead, *encTorso;
 	
 	PolyDriver *robotHead, *robotTorso;
+
 
 	iCubEye *leftEye;
 	iCubEye *rightEye;
