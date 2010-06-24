@@ -25,7 +25,7 @@ static ImageProcessModule *imageProcessModule;
 #define _inputImg (*(ptr_inputImg))
 #define _semaphore (*(ptr_semaphore))
 
-static void sleep(unsigned int mseconds)
+void sleep(int mseconds)
 {
     clock_t goal = mseconds + clock();
     while (goal > clock());
