@@ -27,7 +27,8 @@ static ImageProcessModule *imageProcessModule;
 
 void sleep(int mseconds)
 {
-    clock_t goal = mseconds + clock();
+    int CLOCKS_PER_MSEC=(int)(CLOCKS_PER_SEC/1000);
+    clock_t goal = mseconds*CLOCKS_PER_MSEC + clock();
     while (goal > clock());
 }
 
