@@ -3,6 +3,13 @@
 #include <iostream>
 #include <time.h>
 
+ 
+void sleep(unsigned int mseconds)
+{
+    clock_t goal = mseconds + clock();
+    while (goal > clock());
+}
+
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -48,7 +55,7 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
     //inputImg=0;
     while((interThread->tmp==0)&&(linkct<20)){
         printf("time to automatic shut down:  %d (sec) ...   \n", 20-linkct);
-        Sleep(1000);
+        sleep(1000);
         time (&end);
         dif = difftime (end,start);
         linkct++;
