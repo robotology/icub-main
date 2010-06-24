@@ -10,7 +10,7 @@
 		<node>/powerNode1</node>
 	</module>
 	<module>
-		<name>YUVProcessor</name>
+		<name>YUVProcessorLeft</name>
 		<parameters>--name yuvProc/icub/left_cam</parameters>
 		<tag>yuvProcessor</tag>
 		<node>/powerNode2</node>
@@ -42,19 +42,19 @@
 	<module>
 		<name>selectiveAttentionEngine</name>
 		<parameters>--file selectiveAttentionEngineLeft.ini --context attentionMechanism/conf</parameters>
-		<tag>selectiveAttentionEngine</tag>
+		<tag>selectiveAttentionEngineLeft</tag>
 		<node>/powerNode3</node>
 	</module>
 	<module>
 		<name>selectiveAttentionInterface</name>
 		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
-		<tag>selectiveAttentionInterface</tag>
+		<tag>selectiveAttentionInterfaceLeft</tag>
 		<node>/console1</node>
 	</module>
 	<module>
 		<name>blobTracker</name>
 		<parameters>--name blobTracker/icub/left_cam</parameters>
-		<tag>blobTrackerModule</tag>
+		<tag>blobTrackerModuleLeft</tag>
 		<node>/powerNode3</node>
 	</module>
 	<module>
@@ -66,25 +66,25 @@
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/combinationView --x 500 --y 600 --synch</parameters>
-		<tag>combinationView</tag>
+		<tag>combinationViewLeft</tag>
 		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/selectionView --x 500 --y 200 --synch</parameters>
-		<tag>selectionView</tag>
+		<tag>selectionViewLeft</tag>
 		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/logpolarView --x 200 --y 200 --synch</parameters>
-		<tag>logView</tag>
+		<tag>logViewLeft</tag>
 		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/blobTrackerOutput --x 500 --y 600 --synch</parameters>
-		<tag>blobTrackerOut</tag>
+		<tag>blobTrackerOutLeft</tag>
 		<node>/console1</node>
 	</module>
 	<connection>
