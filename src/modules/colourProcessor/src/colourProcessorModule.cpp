@@ -52,6 +52,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
         dif = difftime (end,start);
         linkct++;
     }
+
     if(linkct>=40)
         return false;
 
