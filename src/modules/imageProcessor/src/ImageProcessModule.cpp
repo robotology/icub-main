@@ -4,12 +4,6 @@
 #include <time.h>
 
  
-void sleep(unsigned int mseconds)
-{
-    clock_t goal = mseconds + clock();
-    while (goal > clock());
-}
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -30,6 +24,13 @@ static ImageProcessModule *imageProcessModule;
 #define _imgRecv (*(ptr_imgRecv))
 #define _inputImg (*(ptr_inputImg))
 #define _semaphore (*(ptr_semaphore))
+
+static void sleep(unsigned int mseconds)
+{
+    clock_t goal = mseconds + clock();
+    while (goal > clock());
+}
+
 
 bool ImageProcessModule::configure(ResourceFinder &rf)
 {
