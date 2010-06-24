@@ -10,9 +10,9 @@
 		<node>/powerNode1</node>
 	</module>
 	<module>
-		<name>YUVProcessorLeft</name>
+		<name>YUVProcessor</name>
 		<parameters>--name yuvProc/icub/left_cam</parameters>
-		<tag>yuvProcessor</tag>
+		<tag>yuvProcessorLeft</tag>
 		<node>/powerNode2</node>
 	</module>
 	<module>
