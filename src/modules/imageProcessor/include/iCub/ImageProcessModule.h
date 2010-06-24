@@ -159,6 +159,10 @@ private:
     */
     int ct;
     /**
+    * counter of the linking phase
+    */
+    int linkct;
+    /**
     * options of the connection
     */
     yarp::os::Property options;	//

@@ -27,6 +27,7 @@ static ImageProcessModule *imageProcessModule;
 bool ImageProcessModule::configure(ResourceFinder &rf)
 {
     ct = 0;
+    linkct=0;
     inputImage_flag=false;
     reinit_flag=false;
     currentProcessor=0;
@@ -36,6 +37,7 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
     interThread=new interactionThread();
     
     Time::turboBoost();
+    this->openPorts();  
     printf("resource finder configuration after time turbo boosting \n");
     
     
@@ -44,12 +46,14 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
 
 
     //inputImg=0;
-    while((interThread->tmp==0)&&(dif<200)){
-        printf("waiting connections ...   \n");
+    while((interThread->tmp==0)&&(linkct<20)){
+        printf("time to automatic shut down:  %d (sec) ...   \n", 20-linkct);
+        Sleep(1000);
         time (&end);
         dif = difftime (end,start);
+        linkct++;
     }
-    if(dif>=200)
+    if(linkct>=20)
         return false;
 
     while(interThread->redGreen_yarp->width()==0){
@@ -58,7 +62,7 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
     interThread->width=interThread->redGreen_yarp->width();
     interThread->height=interThread->redGreen_yarp->height();
 
-    this->openPorts();   
+    
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
 
     currentProcessor=new ImageProcessor();
@@ -132,9 +136,10 @@ bool ImageProcessModule::open(Searchable& config) {
 
 // try to interrupt any communications or resource usage
 bool ImageProcessModule::interruptModule() {
+    linkct=199;
     printf("interrupting the module.. \n");
-	
     cmdPort.interrupt();
+    close();
 	return true;
 }
 
@@ -145,7 +150,11 @@ bool ImageProcessModule::close() {
         printf("Thread running! Closing the thread ... \n");
         this->currentProcessor->stop();
     }
-	
+    if(0!=interThread){
+        printf(" Interaction thread running! Closing the thread ... \n");
+        interThread->stop();
+    }
+	//closePorts();
     printf("The module has been successfully closed ... \n");
 	return true;
 }
@@ -251,9 +260,7 @@ bool ImageProcessModule::openPorts(){
 
 bool ImageProcessModule::closePorts(){
     printf("Closing all the ports ... \n");
-	
     cmdPort.close();
-    
     printf("All the ports successfully closed ... \n");
 
     /*if(inputImg!=0)

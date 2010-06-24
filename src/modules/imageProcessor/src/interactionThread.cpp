@@ -108,18 +108,13 @@ void interactionThread::run(){
     
     /*this->inputImg = this->inImagePort.read(false);
     if(0==inputImg)
-        return true;*/
-    printf("checking input image still null .... \n");
+        return true;*/    
     tmp=rgPort.read(false);
     if(tmp==0){
-        printf("input image still null .... \n");
         return;
     }
-    else
-        printf("input image still NOT null .... \n");
 
     //outPorts();
-    
     if(!reinit_flag){
         //srcsize.height=img->height();
         //srcsize.width=img->width();
@@ -141,8 +136,7 @@ void interactionThread::run(){
         ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);   
         *blueYellow_flag=1;
     }
-    
-    
+        
     this->greenPlane=greenPlanePort.read(false);
     tmp=grPort.read(false);
     if(0!=tmp){
@@ -150,8 +144,6 @@ void interactionThread::run(){
         *greenRed_flag=1;
     }
     
-    
-
     //check for any possible command
     
     /*Bottle* command=(Bottle)cmdPort.read(reader,false);
@@ -195,7 +187,6 @@ bool interactionThread::openPorts(){
 
     edgesPort.open(getName("/edges:o").c_str());
     
-
 	return true;
 }
 
