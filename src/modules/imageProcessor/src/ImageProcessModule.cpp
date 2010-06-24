@@ -145,7 +145,7 @@ bool ImageProcessModule::open(Searchable& config) {
 
 // try to interrupt any communications or resource usage
 bool ImageProcessModule::interruptModule() {
-    linkct=199;
+    linkct=20;
     printf("interrupting the module.. \n");
     cmdPort.interrupt();
     close();
