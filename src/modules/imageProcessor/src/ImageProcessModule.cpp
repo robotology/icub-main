@@ -55,14 +55,14 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
 
 
     //inputImg=0;
-    while((interThread->tmp==0)&&(linkct<20)){
-        printf("time to automatic shut down:  %d (sec) ...   \n", 20-linkct);
+    while((interThread->tmp==0)&&(linkct<40)){
+        printf("time to automatic shut down:  %d (sec) ...   \n", 40-linkct);
         sleep(1000);
         time (&end);
         dif = difftime (end,start);
         linkct++;
     }
-    if(linkct>=20)
+    if(linkct>=40)
         return false;
 
     while(interThread->redGreen_yarp->width()==0){
@@ -145,7 +145,7 @@ bool ImageProcessModule::open(Searchable& config) {
 
 // try to interrupt any communications or resource usage
 bool ImageProcessModule::interruptModule() {
-    linkct=20;
+    linkct=40;
     printf("interrupting the module.. \n");
     cmdPort.interrupt();
     close();
