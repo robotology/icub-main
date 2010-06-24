@@ -1,19 +1,19 @@
 <application>
 	<name>AttentionMechanism Right </name>
  	<dependencies>
-		<port>/icub/camcalib/right/out</port> 
+		<port>/icub/cam/right/logpolar</port> 
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
 		<parameters>--file colourProcessorRight.ini --context attentionMechanism/conf</parameters>
-		<tag>colourLeft</tag>
+		<tag>colourRight</tag>
 		<node>/powerNodeA</node>
 	</module>
 
 	<module>
 		<name>YUVProcessor</name>
 		<parameters>--name yuvProc/icub/right_cam</parameters>
-		<tag>yuvProcessor</tag>
+		<tag>yuvProcessorRight</tag>
 		<node>/powerNodeB</node>
 	</module>
 	<module>
@@ -43,19 +43,19 @@
 	<module>
 		<name>selectiveAttentionEngine</name>
 		<parameters>--file selectiveAttentionEngineRight.ini --context attentionMechanism/conf</parameters>
-		<tag>selectiveAttentionEngine</tag>
+		<tag>selectiveAttentionEngineRight</tag>
 		<node>/powerNodeC</node>
 	</module>
 	<module>
 		<name>selectiveAttentionInterface</name>
 		<parameters>--name /selectiveAttentionInterface/icub/right_cam</parameters>
-		<tag>selectiveAttentionInterface</tag>
+		<tag>selectiveAttentionInterfaceRight</tag>
 		<node>/consoleA</node>
 	</module>
 	<module>
 		<name>blobTracker</name>
 		<parameters>--name blobTracker/icub/right_cam</parameters>
-		<tag>blobTrackerModule</tag>
+		<tag>blobTrackerModuleRight</tag>
 		<node>/powerNodeC</node>
 	</module>
 	<module>
@@ -73,25 +73,25 @@
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/right_cam/selectionView --x 500 --y 200 --synch</parameters>
-		<tag>selectionView</tag>
+		<tag>selectionViewRight</tag>
 		<node>/consoleA</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/right_cam/logpolarView --x 200 --y 200 --synch</parameters>
-		<tag>logView</tag>
+		<tag>logViewRight</tag>
 		<node>/consoleA</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/right_cam/blobTrackerOutput --x 500 --y 600 --synch</parameters>
-		<tag>blobTrackerOut</tag>
+		<tag>blobTrackerOutRight</tag>
 		<node>/consoleA</node>
 	</module>
 
 	
 	<connection>
-      <from>/icub/camcalib/right/out</from>
+      <from>/icub/cam/right/logpolar</from>
 		<to>/icub/right_cam/logpolarView</to>
 		<protocol>tcp</protocol>
 	</connection>

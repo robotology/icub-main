@@ -1,7 +1,7 @@
 <application>
 	<name>AttentionMechanism Left </name>
  	<dependencies>
-		<port>/icub/camcalib/left/out</port> 
+		<port>/icub/cam/left/logpolar</port> 
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
@@ -88,7 +88,7 @@
 		<node>/console1</node>
 	</module>
 	<connection>
-      <from>/icub/camcalib/left/out</from>
+      <from>/icub/cam/left/logpolar</from>
 		<to>/icub/left_cam/logpolarView</to>
 		<protocol>tcp</protocol>
 	</connection>
