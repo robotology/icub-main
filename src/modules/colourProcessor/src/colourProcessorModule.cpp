@@ -124,8 +124,11 @@ bool colourProcessorModule::interruptModule() {
 bool colourProcessorModule::close(){
     cmdPort.close();
     
-    rgbProcessor.threadRelease();
-    yuvProcessor.threadRelease();
+    if(this->rgbProcessor.isRunning())
+        rgbProcessor.threadRelease();
+    if(this->yuvProcessor.isRunning())
+        yuvProcessor.threadRelease();
+
     interThread.threadRelease();
    
     return true;

@@ -210,9 +210,13 @@ void imageReaderThread::threadRelease(){
     printf("intensity channel port closing .... \n");
     yPort.close();
     printf("chrominance channel port closing .... \n");
-    uPort.close();
-    vPort.close();
-    uvPort.close();
+    if(!uPort.isClosed())
+        uPort.close();
+    if(!vPort.isClosed())
+        vPort.close();
+    if(!uvPort.isClosed())
+        uvPort.close();
+    printf("closed uv channel .... \n");
 }
 
 
