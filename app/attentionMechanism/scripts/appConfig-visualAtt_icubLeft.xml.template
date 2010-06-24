@@ -209,7 +209,7 @@
 	</connection>
 	<connection>
       <from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
-		<to>/icub/left_cam/selectiveAttentionEngine/cmd</to>
+		<to>selectiveAttentionEngine/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
