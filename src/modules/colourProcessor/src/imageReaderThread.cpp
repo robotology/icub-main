@@ -208,7 +208,9 @@ void imageReaderThread::threadRelease(){
     byPort.close();
 
     printf("intensity channel port closing .... \n");
-    yPort.close();
+    if(!yPort.isClosed())
+        yPort.close();
+    printf("intensity channel port closed .... \n");
     printf("chrominance channel port closing .... \n");
     if(!uPort.isClosed())
         uPort.close();
