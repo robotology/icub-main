@@ -43,16 +43,16 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     printf("name:%s \n",this->getName().c_str());
     interThread.start();
 
-    printf("\n waiting for connection of the input port, 200 sec to proceed \n");
+    printf("\n waiting for connection of the input port, 40 sec to proceed \n");
 
-    while((interThread.inputImg==0)&&(linkct<20)){
-        printf("time to automatic shut down:  %d (sec) ...   \n", 20-linkct);
+    while((interThread.inputImg==0)&&(linkct<40)){
+        printf("time to automatic shut down:  %d (sec) ...   \n", 40-linkct);
         sleep(1000);
         time (&end);
         dif = difftime (end,start);
         linkct++;
     }
-    if(linkct>=20)
+    if(linkct>=40)
         return false;
 
     while(interThread.inputImg->width()==0){
@@ -112,7 +112,7 @@ bool colourProcessorModule::open(Searchable& config) {
 */
 bool colourProcessorModule::interruptModule() {
     interThread.interrupt();
-    linkct=20;
+    linkct=40;
     cmdPort.interrupt();
     printf("module interrupting ....");
     close();
