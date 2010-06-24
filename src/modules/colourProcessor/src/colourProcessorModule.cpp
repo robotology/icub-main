@@ -10,6 +10,13 @@ using namespace yarp::sig;
 using namespace yarp::os;
 using namespace yarp;
 
+void sleep(int mseconds)
+{
+    int CLOCKS_PER_MSEC=(int)(CLOCKS_PER_SEC/1000);
+    clock_t goal = mseconds*CLOCKS_PER_MSEC + clock();
+    while (goal > clock());
+}
+
 colourProcessorModule::colourProcessorModule(){
     reinit_flag=false;
     startrgb_flag=true;
@@ -21,11 +28,15 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 {
     //initialization
     ct=0;
+    linkct=0;
     dif=0;
     time_t start,end;
     time (&start);
 
     Time::turboBoost();
+    cmdPort.open(getName("/cmd:i"));
+    attach(cmdPort);
+    attachTerminal();
     printf("resource finder configuration after time turbo boosting \n");
     
     interThread.setName(this->getName().c_str());
@@ -34,12 +45,14 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 
     printf("\n waiting for connection of the input port, 200 sec to proceed \n");
 
-    while((interThread.inputImg==0)&&(dif<200)){
+    while((interThread.inputImg==0)&&(linkct<20)){
+        printf("time to automatic shut down:  %d (sec) ...   \n", 20-linkct);
+        sleep(1000);
         time (&end);
         dif = difftime (end,start);
-        printf("waiting .. \n");
+        linkct++;
     }
-    if(dif>=200)
+    if(linkct>=20)
         return false;
 
     while(interThread.inputImg->width()==0){
@@ -48,9 +61,6 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 
 	printf("input port activated! starting the processes ....\n");
     
-    cmdPort.open(getName("/cmd:i"));
-    attach(cmdPort);
-    attachTerminal();
 
 
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
@@ -102,15 +112,17 @@ bool colourProcessorModule::open(Searchable& config) {
 */
 bool colourProcessorModule::interruptModule() {
     interThread.interrupt();
+    linkct=20;
     cmdPort.interrupt();
-    
+    printf("module interrupting ....");
+    close();
     return true;
 }
 
 
 bool colourProcessorModule::close(){
     cmdPort.close();
-
+    
     rgbProcessor.threadRelease();
     yuvProcessor.threadRelease();
     interThread.threadRelease();

@@ -147,6 +147,10 @@ private:
     */
     bool startyuv_flag;
     /**
+    * counter for the linking phase
+    */
+    int linkct;
+    /**
     * flag that indicates the yuv processor should be start
     */
     bool startrgb_flag;
