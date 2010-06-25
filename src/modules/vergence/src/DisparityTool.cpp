@@ -4,7 +4,7 @@
 
 DisparityTool::DisparityTool()
 {
-	//ACE_OS::sprintf(_path,"%s","data/Tables/");
+	sprintf(_path,"%s","data/Tables/");
 
 	_shiftFunction	  = NULL;
 	_shiftFunctionInv = NULL;
@@ -44,7 +44,7 @@ DisparityTool::~DisparityTool()
 void DisparityTool::init(int rho, int theta, int mode, double overlap, int xo, int yo, int xr, int yr, int actR)
 {
 	printf("Disparity tool initialisation process started ... \n");
-    printf("setting parameters... \n");
+    printf("setting parameters... rho: %d theta:%d mode:%d overlap:%d \n",rho, theta, mode, overlap);
     _img = SetParam(rho, theta, mode, overlap, xo, yo, xr, yr);
 	_actRings = actR;
     printf("allocating vectors... \n ");
@@ -77,7 +77,7 @@ void DisparityTool::AllocateVectors()
 
 	if ((fin = fopen(File_Name,"rb")) == NULL)
 	{
-		printf("file name: %s not found. Rebuilding shift table... \n", File_Name.c_str());
+		printf("file name: %s not found. Rebuilding shift table... \n", File_Name);
         Build_Shift_Table(_img, _path);
 		fin = fopen(File_Name,"rb");
 	}
