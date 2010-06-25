@@ -4,7 +4,7 @@
 using namespace yarp::math;
 
 disparityModule::disparityModule(){
-    printf("initialization of the module");
+    	printf("initialization of the module");
 
 	//create the imageIn ports
 	imageInLeft.open( "/vergence/left" );
@@ -93,13 +93,15 @@ bool disparityModule::open( Searchable& config ){
 	imageOutputPort.open("/vergence/image:o");
 	histoOutPort.open("/vergence/histo:o");
 
-	printf("opening .....");
+	printf("\n opening .....");
 	fout = fopen("data/disp_data.txt", "wa");
 	//fflush( stdout );
 
+	
+
 	optionsTorso.put("device", "remote_controlboard");
    	optionsTorso.put("local", "/local1");
-   	optionsTorso.put("remote", "/icub/torso"); // CHANGE FOR THE ROBOT
+   	optionsTorso.put("remote", "/icubSim/torso"); // CHANGE FOR THE ROBOT
 
    	robotTorso = new PolyDriver(optionsTorso);
 
@@ -116,7 +118,7 @@ bool disparityModule::open( Searchable& config ){
 
 	optionsHead.put("device", "remote_controlboard");
 	optionsHead.put("local", "/local");
-	optionsHead.put("remote", "/icub/head");
+	optionsHead.put("remote", "/icubSim/head");
 
 	robotHead = new PolyDriver (optionsHead);
 

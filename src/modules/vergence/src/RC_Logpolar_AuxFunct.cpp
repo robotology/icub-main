@@ -166,10 +166,12 @@ void Build_Shift_Table(Image_Data par, char *path)
 			}
 		}		
 	}
-
 	//Writing on file
 	sprintf(File_Name,"%s%dx%d_%dx%d_ShiftMap.gio",path, cSize, cSize, par.Size_Theta, par.Size_Rho);
+	printf("trying to write into the file %s .... \n",File_Name);
 	fout = fopen(File_Name,"wb");
+	if(!fout)
+		printf("not correctly open; fout %p\n", fout);
 	fwrite(&n_shifts,sizeof(int),1,fout);
 	fwrite(shifts,sizeof(double),n_shifts,fout);
 	fwrite(ShiftMap,sizeof(int),n_shifts*par.Size_LP,fout);

@@ -4,7 +4,7 @@
 
 DisparityTool::DisparityTool()
 {
-	sprintf(_path,"%s","data/Tables/");
+	sprintf(_path,"%s","");
 
 	_shiftFunction	  = NULL;
 	_shiftFunctionInv = NULL;
@@ -78,7 +78,8 @@ void DisparityTool::AllocateVectors()
 	if ((fin = fopen(File_Name,"rb")) == NULL)
 	{
 		printf("file name: %s not found. Rebuilding shift table... \n", File_Name);
-        Build_Shift_Table(_img, _path);
+        	Build_Shift_Table(_img, _path);
+		printf("Opening file .... \n");
 		fin = fopen(File_Name,"rb");
 	}
 
