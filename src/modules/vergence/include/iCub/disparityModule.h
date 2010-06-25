@@ -109,7 +109,7 @@ private:
 	BufferedPort < ImageOf<PixelMono > >   histoOutPort; //output histogram
 
    	bool needLeft, needRight;
-    int imgNumb;
+    	int imgNumb;
 	float ratio;
 	FILE *fout;
 

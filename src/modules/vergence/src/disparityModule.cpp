@@ -4,7 +4,7 @@
 using namespace yarp::math;
 
 disparityModule::disparityModule(){
-    	printf("initialization of the module");
+    	printf("initialization of the module \n");
 
 	//create the imageIn ports
 	imageInLeft.open( "/vergence/left" );
@@ -137,7 +137,7 @@ bool disparityModule::open( Searchable& config ){
 }
 
 bool disparityModule::close(){
-    printf("closing all the ports");
+    	printf("closing all the ports");
 	imageOutputPort.close();
 	histoOutPort.close();
 	printf("saving left \n");
@@ -145,8 +145,8 @@ bool disparityModule::close(){
 	printf("saving right \n");
 	imageInRight.close();
 	printf("fclosing.... \n");
-    if(fout)
-        fclose (fout);
+    	if(fout)
+        	fclose (fout);
 	printf("stouting .... \n");
 	//fflush( stdout );    
 	return true;
@@ -163,27 +163,31 @@ bool disparityModule::interruptModule(){
 
 bool disparityModule::updateModule(){	
 	
+	
+	
 	needLeft =  ( imageInLeft.getInputCount() > 0 );
 	needRight = ( imageInRight.getInputCount() > 0 );
+
+	
 
 	int disparityVal = 0;
 	double corrVal = 0.0;
     	
-	//create vector thast contains head encoders
+	//create vector that contains head encoders
 	Vector _head(6), _torso(3);
 	if (encTorso->getEncoders(_torso.data()))
-    for (int i=0; i<3; i++)
-        fb[i]=_torso[2-i];    // reversed order
+	    for (int i=0; i<3; i++)
+        	fb[i]=_torso[2-i];    // reversed order
 	
- 	if (encHead->getEncoders(_head.data()))
-    for (int i=0; i<6; i++)
-        fb[3+i]=_head[i];
+ 	if (encHead->getEncoders(_head.data()))    		
+		for (int i=0; i<6; i++)
+        		fb[3+i]=_head[i];
 	
 	Vector q = (M_PI/180.0)*fb; // to radians
 
-    q[7]=(M_PI/180.0)*(fb[7]+fb[8]/2);
+	q[7]=(M_PI/180.0)*(fb[7]+fb[8]/2);
 	HL = leftEye->getH(q);
-    q[7]=(M_PI/180.0)*(fb[7]-fb[8]/2);
+    	q[7]=(M_PI/180.0)*(fb[7]-fb[8]/2);
 	HR = rightEye->getH(q);
 
 	_nFrame = chainRightEye->getN(); //HL.rows();
@@ -192,6 +196,7 @@ bool disparityModule::updateModule(){
 	Vector tempV;
 	tempV.resize(3);
 	// computes ray that intesects with image plane
+	
 	computeRay( KIN_RIGHT_PERI , tempV, _centerX, _centerY);
 
 	// ------------------------------------------------------------------compute min 
