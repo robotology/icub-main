@@ -476,14 +476,14 @@ class App:
         node=mod.entryNode.get()
         tag=mod.entryTag.get()
 
-        cmd=['yarprun', '--on', node, '--sigterm', tag]
+        cmd=['yarprun', '--on', '/'+node, '--sigterm', tag]
         ret=self.spawnProcess(cmd)
 
     def killModule(self, mod):
         node=mod.entryNode.get()
         tag=mod.entryTag.get()
 
-        cmd=['yarprun', '--on', node, '--kill', tag, '9']
+        cmd=['yarprun', '--on', '/'+node, '--kill', tag, '9']
         ret=self.spawnProcess(cmd)
 
     def runModule(self, mod):
@@ -526,7 +526,7 @@ class App:
         node=mod.entryNode.get()
         tag=mod.entryTag.get()
         
-        cmd=['yarprun', '--on', node, '--isrunning', tag]
+        cmd=['yarprun', '--on','/'+node,'--isrunning', tag]
         ret=self.spawnProcess(cmd)
 
         if ret==0:
@@ -559,7 +559,7 @@ class App:
             return
 
         for mod in self.application.modules:
-            cmd=['yarp', 'run', '--on', mod.node, '--sigterm', mod.tag]
+            cmd=['yarp', 'run', '--on', '/'+mod.node, '--sigterm', mod.tag]
             ret=self.spawnProcess(cmd)
 
     def killModules(self):
@@ -572,7 +572,7 @@ class App:
             return
 
         for mod in self.application.modules:
-            cmd=['yarp', 'run', '--on', mod.node, '--kill', mod.tag, '9']
+            cmd=['yarp', 'run', '--on', '/'+mod.node, '--kill', mod.tag, '9']
             ret=self.spawnProcess(cmd)
 
     def checkDeps(self):
