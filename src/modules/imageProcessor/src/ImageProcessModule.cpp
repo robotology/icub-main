@@ -148,6 +148,7 @@ bool ImageProcessModule::interruptModule() {
     linkct=40;
     printf("interrupting the module.. \n");
     cmdPort.interrupt();
+    cmdPort.close();
     close();
 	return true;
 }
