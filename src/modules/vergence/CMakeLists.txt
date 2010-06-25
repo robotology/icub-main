@@ -21,12 +21,15 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
 					${logPolar_INCLUDE_DIRS}
 		    )
 
-MESSAGE("iKin_INCLUDE_DIRS  ${iKin_INCLUDE_DIRS}")
+MESSAGE("logPolar_INCLUDE_DIRS  ${logPolar_INCLUDE_DIRS} logPolar_LIBRARIES ${ICUB_LIBRARIES}  ")
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${iKin_LIBRARIES}
-                                     ${YARP_LIBRARIES})
+                                     ${YARP_LIBRARIES}
+									 ${logPolar_LIBRARIES}
+									 ${ICUB_LIBRARIES}
+									 )
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
