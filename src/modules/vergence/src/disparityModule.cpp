@@ -1,5 +1,7 @@
 
 #include <iCub/disparityModule.h>
+#include <ippi.h>
+#include <ippcc.h>
 
 using namespace yarp::math;
 
@@ -77,6 +79,9 @@ disparityModule::disparityModule(){
 
 	_leftJoints.resize(9);
 	_rightJoints.resize(9);
+
+	imgOut=new ImageOf<PixelMono>;
+	imgOut->resize(252,152);
 }
 
 disparityModule::~disparityModule(){
@@ -260,15 +265,17 @@ bool disparityModule::updateModule(){
 		cout << "disparity Val " << disparityVal  << endl;
 
 		Disp.makeHistogram(histo);
-		if ( histoOutPort.getOutputCount() > 0 ){ 
+		if(histoOutPort.getOutputCount()>0){
 			cout<< "histo out"<<endl;
 			histoOutPort.prepare() = histo;	
 			histoOutPort.write();
 		}
 		
-
+		
+		//calculating the fusion map of the input images (@shift, @preShift, @afterShift )	
+		merge(imgInL, imgInR, imgOut);
 		if ( imageOutputPort.getOutputCount() > 0 ){ 
-			imageOutputPort.prepare() = *imgInL;	
+			imageOutputPort.prepare() = *imgOut;	
 			imageOutputPort.write();
 		}
 
@@ -309,8 +316,8 @@ bool disparityModule::updateModule(){
 		cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
 		
 		Bottle in,bot;
-        //Bottle &bot = triangulationPort.prepare(); 
-        bot.clear();
+        	//Bottle &bot = triangulationPort.prepare(); 
+        	bot.clear();
 
 		//Bottle& b = cmdOutput.prepare(); 
  		char verg[100];
@@ -325,14 +332,26 @@ bool disparityModule::updateModule(){
 		cmdOutput.write(bot,in);
 		bot.clear();
 	}
-
-	
     
 	fflush( stdout );
 	return true;
 } 	
 
 
+void disparityModule::merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,ImageOf<PixelMono> *imgOut){
+	//initialisation
+	IppiSize sizesrc={252,152};
+	Ipp32f coeffs[3]={0.33,0.33,0.33};
+	ImageOf<PixelMono>* imgInLGray=new ImageOf<PixelMono>;
+	imgInLGray->resize(252,152);
+
+	// copying the input image into grayscale image
+	ippiColorToGray_8u_C3C1R(imgInL->getRawImage(),imgInL->getRowSize(),imgInLGray->getRawImage(),imgInLGray->getRowSize(), sizesrc, coeffs);
+	ippiCopy_8u_C1R(imgInLGray->getRawImage(),imgInLGray->getRowSize(), imgInLGray->getRawImage(),imgInLGray->getRowSize(),sizesrc);
+
+	delete imgInLGray;
+
+}
 
 
 void disparityModule::computeRay(__kinType k, Vector& v, int x, int y){
