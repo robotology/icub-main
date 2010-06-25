@@ -142,7 +142,8 @@ protected:
 
     double default_exec_time;
     double waitTmo;
-    double latchTimer;
+    double latchTimerWait;
+    double latchTimerHand;
     double t0;
 
     int jHandMin;
@@ -154,6 +155,8 @@ protected:
     yarp::sig::Vector      curHandFinalPoss;
     yarp::sig::Vector      curHandTols;
     yarp::sig::Vector      curGraspDetectionThres;
+    double                 curHandTmo;
+
     std::set<int>          fingersJntsSet;
     std::set<int>          fingersMovingJntsSet;
     std::multimap<int,int> fingers2JntsMap;
@@ -165,6 +168,7 @@ protected:
         yarp::sig::Vector vels;
         yarp::sig::Vector tols;
         yarp::sig::Vector thres;
+        double            tmo;
     };
 
     struct Action
@@ -308,7 +312,8 @@ public:
     *  key ***
     *  numWayPoints ***
     *  wp_0  (poss (10 ...)) (vels (20 ...)) (tols (30 ...)) (thres
-    *  (1 2 3 4 5)) wp_1  *** ...
+    *  (1 2 3 4 5)) (tmo 10.0)
+    *  wp_1  *** ...
     *  
     *  [SEQ_1]
     *  ...
@@ -317,7 +322,8 @@ public:
     *  // positions, velocities and tolerances whereas the "thres"
 	*  // key specifies 5 fingers thresholds used for model-based
 	*  // contact detection. The "tols" key serves to detect the end
-	*  // motion condition
+    *  // motion condition. The "tmo" key specifies the timeout
+    *  // beyond which the motion is considered to be finished.
     *  @endcode
     *  
     * @note A port called <i> /<local>/<part>/detectGrasp:i </i> is 
@@ -483,16 +489,17 @@ public:
     *             finished if |des(i)-fb(i)|<tols(i)).
     * @param thres the 5 fingers thresholds used for grasp 
     *              detection.
+    * @param tmo the wayPoint timeout. 
     * @return true/false on success/fail. 
     *  
-    * @note this method creates a new empty sequence referred by the
+    * @note this method creates a new empty wayPoint referred by the
     *       passed key if the key does not point to any valid
-    *       sequence; hence the triplet (poss,vels,thres) will be
+    *       sequence; hence the set (poss,vels,thres,tmo) will be
     *       the first WP of the new sequence.
     */
     virtual bool addHandSeqWP(const std::string &handSeqKey, const yarp::sig::Vector &poss,
                               const yarp::sig::Vector &vels, const yarp::sig::Vector &tols,
-                              const yarp::sig::Vector &thres);
+                              const yarp::sig::Vector &thres, const double tmo);
 
     /**
     * Check whether a sequence key is defined.

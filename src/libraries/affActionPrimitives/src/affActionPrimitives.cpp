@@ -155,7 +155,8 @@ void affActionPrimitives::init()
     handSeqTerminator=false;
     fingersInPosition=true;
 
-    latchTimer=waitTmo=0.0;
+    latchTimerWait=waitTmo=0.0;
+    latchTimerHand=curHandTmo=0.0;
 }
 
 
@@ -343,6 +344,12 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                     return false;
                 }
 
+                if (!bWP.check("tmo"))
+                {
+                    printMessage("WARNING: \"tmo\" option is missing\n");
+                    return false;
+                }
+
                 Bottle *bPoss=bWP.find("poss").asList();
                 Vector poss(bPoss->size());
 
@@ -367,7 +374,9 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                 for (int k=0; k<thres.length(); k++)
                     thres[k]=bThres->get(k).asDouble();
 
-                if (!addHandSeqWP(key,poss,vels,tols,thres))
+                double tmo=bWP.find("tmo").asDouble();
+
+                if (!addHandSeqWP(key,poss,vels,tols,thres,tmo))
                     printMessage("WARNING: \"%s\" entry is invalid, not added to \"%s\"\n",
                                  wp,key.c_str());
             }
@@ -593,6 +602,18 @@ bool affActionPrimitives::isHandSeqEnded()
                     }
                 }                
             }
+        }
+    }
+
+    // handle hand timeout
+    if ((Time::now()-latchTimerHand)>curHandTmo)
+    {
+        printMessage("timeout occured on hand WP\n");
+
+        for (set<int>::iterator i=fingersMovingJntsSet.begin(); i!=fingersMovingJntsSet.end(); ++i)
+        {
+            stopJntTraj(*i);
+            tmpSet.erase(*i);
         }
     }
 
@@ -986,7 +1007,7 @@ void affActionPrimitives::run()
     latchArmMoveDone=armMoveDone;
     latchHandMoveDone=handMoveDone;
 
-    if (latchArmMoveDone && latchHandMoveDone && (t-latchTimer>waitTmo))
+    if (latchArmMoveDone && latchHandMoveDone && (t-latchTimerWait>waitTmo))
     {    
         // execute action-end callback
         if (actionClb)
@@ -1079,7 +1100,7 @@ bool affActionPrimitives::wait(const Action &action)
     {        
         printMessage("wait for %g seconds\n",action.tmo);
         waitTmo=action.tmo;
-        latchTimer=Time::now();
+        latchTimerWait=Time::now();
 
         return true;
     }
@@ -1149,11 +1170,13 @@ bool affActionPrimitives::cmdHand(const Action &action)
         const Vector &vels=action.handWP.vels;
         const Vector &tols=action.handWP.tols;
         const Vector &thres=action.handWP.thres;
+        const double &tmo=action.handWP.tmo;
         
         fingersMovingJntsSet=fingersJntsSet;
         curHandFinalPoss=poss;
         curHandTols=tols;
         curGraspDetectionThres=thres;
+        curHandTmo=tmo;
 
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
         {
@@ -1173,6 +1196,8 @@ bool affActionPrimitives::cmdHand(const Action &action)
                      tag.c_str(),toCompactString(poss).c_str(),
                      toCompactString(thres).c_str());
 
+        latchTimerHand=Time::now();
+
         return true;
     }
     else
@@ -1182,7 +1207,8 @@ bool affActionPrimitives::cmdHand(const Action &action)
 
 /************************************************************************/
 bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss,
-                                       const Vector &vels, const Vector &tols, const Vector &thres)
+                                       const Vector &vels, const Vector &tols, const Vector &thres,
+                                       const double tmo)
 {
     if ((poss.length()==9) && (vels.length()==9) && (tols.length()==9) && (thres.length()==5))
     {
@@ -1193,6 +1219,7 @@ bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &p
         handWP.vels=vels;
         handWP.tols=tols;
         handWP.thres=thres;
+        handWP.tmo=tmo;
     
         handSeqMap[handSeqKey].push_back(handWP);
 
