@@ -267,10 +267,12 @@ bool disparityModule::updateModule(){
 		}
 		
 
-		/*if ( imageOutputPort.getOutputCount() > 0 ){ 
+		if ( imageOutputPort.getOutputCount() > 0 ){ 
 			imageOutputPort.prepare() = *imgInL;	
 			imageOutputPort.write();
-		}*/
+		}
+
+
 		/*
 		//vergence control from disparity calculations\
 					theta = -K * di 
@@ -299,6 +301,8 @@ bool disparityModule::updateModule(){
 		cout << "theta " << theta << " angle " << angle <<" current " << fb[8] << endl;
 
 		*/
+
+		// calculating the angolar displacement for the controller
 		double angle=fb[8]-(180/M_PI)*atan(disparityVal/(2*206.026));
 		if(angle<0)
 			angle=0;		
