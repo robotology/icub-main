@@ -4,7 +4,7 @@
 using namespace yarp::math;
 
 disparityModule::disparityModule(){
-
+    printf("initialization of the module");
 
 	//create the imageIn ports
 	imageInLeft.open( "/vergence/left" );
@@ -88,7 +88,7 @@ disparityModule::~disparityModule(){
 }
 
 bool disparityModule::open( Searchable& config ){
-	
+	printf("opening all the ports");
 
 	imageOutputPort.open("/vergence/image:o");
 	histoOutPort.open("/vergence/histo:o");
@@ -135,6 +135,7 @@ bool disparityModule::open( Searchable& config ){
 }
 
 bool disparityModule::close(){
+    printf("closing all the ports");
 	imageOutputPort.close();
 	histoOutPort.close();
 	printf("saving left \n");
@@ -142,7 +143,8 @@ bool disparityModule::close(){
 	printf("saving right \n");
 	imageInRight.close();
 	printf("fclosing.... \n");
-	fclose (fout);
+    if(fout)
+        fclose (fout);
 	printf("stouting .... \n");
 	//fflush( stdout );    
 	return true;

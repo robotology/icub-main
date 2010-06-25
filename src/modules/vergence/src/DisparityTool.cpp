@@ -43,10 +43,15 @@ DisparityTool::~DisparityTool()
 
 void DisparityTool::init(int rho, int theta, int mode, double overlap, int xo, int yo, int xr, int yr, int actR)
 {
-	_img = SetParam(rho, theta, mode, overlap, xo, yo, xr, yr);
+	printf("Disparity tool initialisation process started ... \n");
+    printf("setting parameters... \n");
+    _img = SetParam(rho, theta, mode, overlap, xo, yo, xr, yr);
 	_actRings = actR;
+    printf("allocating vectors... \n ");
 	AllocateVectors();	
+    printf("loading shift maps...\n");
 	LoadShiftMap();
+    printf("computing count vector .... \n");
 	computeCountVector(_count);
 }
 
@@ -72,7 +77,8 @@ void DisparityTool::AllocateVectors()
 
 	if ((fin = fopen(File_Name,"rb")) == NULL)
 	{
-		Build_Shift_Table(_img, _path);
+		printf("file name: %s not found. Rebuilding shift table... \n", File_Name.c_str());
+        Build_Shift_Table(_img, _path);
 		fin = fopen(File_Name,"rb");
 	}
 
