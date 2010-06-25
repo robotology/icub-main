@@ -42,7 +42,6 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     interThread.setName(this->getName().c_str());
     printf("name:%s \n",this->getName().c_str());
     interThread.start();
-
     printf("\n waiting for connection of the input port, 40 sec to proceed \n");
 
     while((interThread.inputImg==0)&&(linkct<40)){
