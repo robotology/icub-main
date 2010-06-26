@@ -69,24 +69,33 @@ Vector SensToTorques::updateAcceleration(const Vector &a)
 	return quadEst->estimate(estElement);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string _type, string _name)
+SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string _type, string _name, string _enableTorso)
 :RateThread(_rate), dd(_dd), tt(_tt)
 {
 	// attach ports
+	
+	enableTorso = _enableTorso;
+	type = _type;
     string fwdSlash = "/";
     string port = fwdSlash+_name;
     port += (fwdSlash+_type).c_str();
 	// input port:  /moduleName/robotPart/FT:i
 	port_FT = new BufferedPort<Vector>;	  
 	port_Wrench = new BufferedPort<Vector>;	  
-	port_Torques = new BufferedPort<Vector>;	  
+	port_Torques_limb = new BufferedPort<Bottle>;	
+	port_Torques_torso = new BufferedPort<Vector>;	  
 	// output ports: /moduleName/robotPart/torques:o  /moduleName/robotPart/FTendeff:o
 	port_FT->open((port+"/FT:i").c_str());
 	cout<<"TorqueObserver: created port: "<<(port+"/FT:i").c_str()<<endl;
 	port_Wrench->open((port+"/wrench:o").c_str());
 	cout<<"TorqueObserver: created port: "<<(port+"/wrench:o").c_str()<<endl;
-	port_Torques->open((port+"/torques:o").c_str());
-	cout<<"TorqueObserver: created port: "<<(port+"/torques:o").c_str()<<endl;
+	port_Torques_limb->open((port+"/limbTorques:o").c_str());
+	cout<<"TorqueObserver: created port: "<<(port+"/limbTorques:o").c_str()<<endl;
+	if(tt || enableTorso == "Y")
+	{
+		port_Torques_torso->open((port+"/torsoTorques:o").c_str());
+		cout<<"TorqueObserver: created port: "<<(port+"/torsoTorques:o").c_str()<<endl;
+	}
 
 	// initialize estimators of velocity and acceleration
 	// they are necessary to avoid noise in this components
@@ -98,14 +107,14 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
 	if (tt)
 		tt->view(iencs_torso);
 	// check leg type
-	if(tt)
+	if((_type == "left_arm") || (_type == "right_arm"))
 	{
 		if(_type == "left_arm")
 		{
 			limb = new iCubArmDyn("left");
 			limbInv = new iCubArmDyn("left");
 		}
-		else 
+		else
 		{
 			limb = new iCubArmDyn("right");
 			limbInv = new iCubArmDyn("left");
@@ -142,15 +151,30 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
         iencs_torso->getAxes(&jnt2);
         encodersTorso.resize(jnt2);
 		encodersTorso.zero();
-    }
+    } else if( ((type == "left_arm") || (type == "right_arm")) && (enableTorso == "Y"))
+	{
+		jnt2 = 3;
+	}
 
 	// init all variables
 	// first the unused ones
 	// joints var
+
 	int jnt=jnt1+jnt2;
+	fprintf(stderr,"\nTotal JNT number: %d\n",jnt);
+	fprintf(stderr,"\nJNT 1 : %d\n",jnt1);
+	fprintf(stderr,"\nJNT 2 : %d\n",jnt2);
     q.resize(jnt,0.0);
     dq.resize(jnt,0.0);
+
     d2q.resize(jnt,0.0);
+
+	/// the joints torques
+	Tau.resize(jnt);
+	/// the joints torques on limb
+	limbTau.resize(7,0.0);
+	/// the joints torques on torso (eventually)
+	torsoTau.resize(jnt2);
 
 	q.zero(); dq.zero(); d2q.zero();
 	// init Newt-Eul
@@ -179,8 +203,6 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
 	int Njoints;
 	iencs->getAxes(&Njoints);
 	encoders.resize(Njoints);
-
-	cout<<"SensToTorques: leg="<<endl;
 
 	//other
 	FTmeasure = NULL;
@@ -215,12 +237,33 @@ void SensToTorques::run()
 	//Vector Tinv = limbInv->getTorques();
 	FTendeff = -1.0*sens->getForceMomentEndEff();
 		
+	if(((type == "left_arm") || (type == "right_arm")) && (tt || (enableTorso == "Y")))
+	{
+		for(int i=0;i<3;i++)
+			torsoTau(i) = Tau(i);
+		for(int i=3;i<limbInv->getN();i++)
+			limbTau(i-3) = Tau(i);
+		port_Torques_torso->prepare() = torsoTau;
+		port_Torques_torso->write();
+	} else
+	{
+		limbTau = Tau;
+	}/*
+	for(int i = 0; i<Tau.length(); i++)
+		fprintf(stderr,"%.2lf\t", Tau(i));
+	fprintf(stderr,"\n");*/
+	Bottle a;
+	a.addInt(1);
+	for(int i=0;i<limbTau.length();i++)
+		a.addDouble(limbTau(i));
+	
 	//prepare ports with datas
-	port_Torques->prepare() = Tau;
+	port_Torques_limb->prepare() = a;
 	port_Wrench->prepare() = FTendeff;
 
 	//send data
-	port_Torques->write();
+	port_Torques_limb->write();
+	
 	port_Wrench->write();
 
 }
@@ -238,7 +281,8 @@ void SensToTorques::threadRelease()
 	if(limbInv)		{delete limbInv;	limbInv=NULL; cout<<"limbInv ";}
 	if(port_FT)		{delete port_FT; port_FT = NULL; cout<<"port_FT ";}	  
 	if(port_Wrench)	{delete port_Wrench; port_Wrench = NULL; cout<<"port_Wrench ";}	  
-	if(port_Torques){delete port_Torques; port_Torques = NULL; cout<<"port_Torques ";}	  
+	if(port_Torques_limb){delete port_Torques_limb; port_Torques_limb = NULL; cout<<"port_Torques_limb ";}	
+	if(port_Torques_torso){delete port_Torques_torso; port_Torques_torso = NULL; cout<<"port_Torques_torso ";}	  
 	cout<<" .. done "<<endl;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -275,18 +319,23 @@ void SensToTorques::readAndUpdate(bool waitMeasure)
 {
 	int i;
 	//read encoders values
-	iencs->getEncoders(encoders.data());
-	if(part=="arm")
+	if(((type == "left_arm") || (type == "right_arm")) && (tt || (enableTorso == "Y")))
 	{
-		iencs_torso->getEncoders(encodersTorso.data());
-		for( i=0;i<3;i++ )
-			q(i) = encodersTorso(2-i);
-		for( i=3;i<q.length();i++ )
+		if(tt)
+		{
+			iencs_torso->getEncoders(encodersTorso.data());
+			for( i=0;i<3;i++ )
+				q(i) = encodersTorso(2-i);
+		}
+		else q = 0.0;
+
+		iencs->getEncoders(encoders.data());
+		for( i=3;i<limbInv->getN();i++ )
 			q(i) = encoders(i-3);
 	} 
 	else
 	{
-		for(i=0;i<q.length();i++)
+		for(i=0;i<limbInv->getN();i++)
 			q(i) = encoders(i);
 	}
 	//estimate velocity and accelerations
@@ -349,12 +398,15 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 	string robotName;	// icub
 	string robotPart;	// left_arm, right_leg
 	string limb;		// leg, arm
+	string enableTorso;
 	string type;		// right, left
 	int rate;			// rate
 
 	// getting parameters from RF: name, robot, part, rate
 	if(rf.check("name")) 		moduleName = rf.find("name").asString();
 	else 		moduleName = "ftObs";
+	if(rf.check("enableTorso")) 		enableTorso = rf.find("enableTorso").asString();
+	else 		enableTorso = "Y";
 	if (rf.check("robot"))		robotName = rf.find("robot").asString().c_str();
     else		robotName = "icub";
 	if (rf.check("rate"))		rate = rf.find("rate").asInt();
@@ -390,7 +442,7 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 
 
 	// note: the arm needs the torso
-	if(robotPart=="left_arm" || robotPart=="right_arm")
+	if((robotPart=="left_arm" || robotPart=="right_arm") && enableTorso == "Y")
 	{
 		//torso
 		cout<<"TorqueObserver: creating torso polyDriver"<<endl;
@@ -402,8 +454,10 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 		tt = new PolyDriver(OptionsTorso);
 		if(!checkDriver(tt)) 
 		{
-			cerr<<"TorqueObserver: error: unable to create /"<<robotName<<"/torso device driver...quitting"<<endl;
-			return false;
+			delete tt;
+			tt = NULL;
+			cerr<<"TorqueObserver: error: unable to create /"<<robotName<<"/torso device driver..."<<endl;
+			//return false;
 		}
 		//arm with torso	
 	}
@@ -411,7 +465,7 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 	{
 		tt = NULL;
 	}
-	sens2torques = new SensToTorques(rate, dd, tt, robotPart, moduleName);
+	sens2torques = new SensToTorques(rate, dd, tt, robotPart, moduleName, enableTorso);
 	
 	//now the thread can start
 	sens2torques->start();
