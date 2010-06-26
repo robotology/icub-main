@@ -1192,9 +1192,9 @@ bool affActionPrimitives::cmdHand(const Action &action)
         latchHandMoveDone=handMoveDone=false;
         handSeqTerminator=action.handSeqTerminator;
         fingersInPosition=true;
-        printMessage("\"%s\" WP: [%s] (thres = [%s])\n",
+        printMessage("\"%s\" WP: [%s] (thres = [%s]) (tmo = %g)\n",
                      tag.c_str(),toCompactString(poss).c_str(),
-                     toCompactString(thres).c_str());
+                     toCompactString(thres).c_str(),tmo);
 
         latchTimerHand=Time::now();
 
