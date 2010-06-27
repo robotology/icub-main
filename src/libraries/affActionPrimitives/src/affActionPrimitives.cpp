@@ -26,7 +26,7 @@
 #define ACTIONPRIM_DEFAULT_VERBOSITY                "off"
 
 // defines for balancing the arm when in home position
-#define ACTIONPRIM_BALANCEARM_PERIOD                1.0     // [s]
+#define ACTIONPRIM_BALANCEARM_PERIOD                0.25    // [s]
 #define ACTIONPRIM_BALANCEARM_LENGTH                0.03    // [m]
 
 using namespace std;
