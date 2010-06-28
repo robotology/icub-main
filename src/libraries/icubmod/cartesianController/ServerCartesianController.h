@@ -33,6 +33,8 @@
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iKin/iKinInv.h>
 
+#include <deque>
+
 
 class ServerCartesianController;
 
@@ -90,14 +92,14 @@ protected:
 
     iKin::iKinLimb            *limb;
     iKin::iKinChain           *chain;
-    iKin::MultiRefMinJerkCtrl *ctrl;    
-
-    void *lDsc;
-    void *lLim;
-    void *lEnc;
-    void *lVel;
-    void *lJnt;
-    void *lRmp;
+    iKin::MultiRefMinJerkCtrl *ctrl;
+    
+    std::deque<DriverDescriptor>             lDsc;
+    std::deque<yarp::dev::IControlLimits*>   lLim;
+    std::deque<yarp::dev::IEncoders*>        lEnc;
+    std::deque<yarp::dev::IVelocityControl*> lVel;
+    std::deque<int>                          lJnt;
+    std::deque<int*>                         lRmp;
 
     unsigned int connectCnt;
     unsigned int ctrlPose;

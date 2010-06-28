@@ -1,8 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Developed by Ugo Pattacini
 
-#include <ace/config.h>
-#include <ace/Vector_T.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 
@@ -13,13 +11,6 @@
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
-
-#define RES_DSC(p)                  ((ACE_Vector<DriverDescriptor>*)p)
-#define RES_LIM(p)                  ((ACE_Vector<IControlLimits*>*)p)
-#define RES_ENC(p)                  ((ACE_Vector<IEncoders*>*)p)
-#define RES_VEL(p)                  ((ACE_Vector<IVelocityControl*>*)p)
-#define RES_JNT(p)                  ((ACE_Vector<int>*)p)
-#define RES_RMP(p)                  ((ACE_Vector<int*>*)p)
 
 #define CARTCTRL_DEFAULT_PER        10
 #define CARTCTRL_DEFAULT_TOL        5e-3
@@ -112,13 +103,6 @@ void ServerCartesianController::init()
     limb =NULL;
     chain=NULL;
     ctrl =NULL;
-
-    lDsc=NULL;
-    lLim=NULL;
-    lEnc=NULL;
-    lVel=NULL;
-    lJnt=NULL;
-    lRmp=NULL;
 
     portSlvIn   =NULL;
     portSlvOut  =NULL;
@@ -652,9 +636,9 @@ void ServerCartesianController::stopLimbVel()
     for (unsigned int i=0; i<chain->getN(); i++)
     {
         if (!(*chain)[i].isBlocked())
-            (*RES_VEL(lVel))[j]->stop((*RES_RMP(lRmp))[j][k]);
+            lVel[j]->stop(lRmp[j][k]);
 
-        if (++k>=(*RES_JNT(lJnt))[j])
+        if (++k>=lJnt[j])
         {
             j++;
             k=0;
@@ -715,10 +699,10 @@ void ServerCartesianController::getFeedback(Vector &_fb)
     int _fbCnt=0;
 
     for (int i=0; i<numDrv; i++)
-        if ((*RES_ENC(lEnc))[i]->getEncoders(fbTmp.data()))
-            for (int j=0; j<(*RES_JNT(lJnt))[i]; j++)
+        if (lEnc[i]->getEncoders(fbTmp.data()))
+            for (int j=0; j<lJnt[i]; j++)
             {
-                double tmp=CTRL_DEG2RAD*fbTmp[(*RES_RMP(lRmp))[i][j]];
+                double tmp=CTRL_DEG2RAD*fbTmp[lRmp[i][j]];
 
                 if ((*chain)[chainCnt].isBlocked())
                     chain->setBlockingValue(chainCnt,tmp);
@@ -727,7 +711,7 @@ void ServerCartesianController::getFeedback(Vector &_fb)
 
                 chainCnt++;
             }
-        else for (int j=0; j<(*RES_JNT(lJnt))[i]; j++)
+        else for (int j=0; j<lJnt[i]; j++)
             if (!(*chain)[chainCnt++].isBlocked())
                 _fbCnt++;
 }
@@ -860,12 +844,12 @@ void ServerCartesianController::sendVelocity(const Vector &v)
         {    
             // send only if changed
             if (v[cnt]!=velOld[cnt])
-                (*RES_VEL(lVel))[j]->velocityMove((*RES_RMP(lRmp))[j][k],velOld[cnt]=v[cnt]);
+                lVel[j]->velocityMove(lRmp[j][k],velOld[cnt]=v[cnt]);
 
             cnt++;
         }
 
-        if (++k>=(*RES_JNT(lJnt))[j])
+        if (++k>=lJnt[j])
         {
             j++;
             k=0;
@@ -1066,8 +1050,6 @@ bool ServerCartesianController::open(Searchable &config)
     if (optGeneral.check("ControllerPeriod"))
         setRate(optGeneral.find("ControllerPeriod").asInt());
 
-    lDsc=new ACE_Vector<DriverDescriptor>;
-
     // scan DRIVER groups
     for (int i=0; i<numDrv; i++)
     {
@@ -1122,7 +1104,7 @@ bool ServerCartesianController::open(Searchable &config)
             return false;
         }
 
-        RES_DSC(lDsc)->push_back(desc);
+        lDsc.push_back(desc);
     }
 
     // instantiate kinematic object
@@ -1147,28 +1129,9 @@ bool ServerCartesianController::close()
 
     detachAll();
 
-    if (lDsc)
-        delete RES_DSC(lDsc);
+    for (unsigned int i=0; i<lRmp.size(); i++)
+        delete[] lRmp[i];
 
-    if (lLim)
-        delete RES_LIM(lLim);
-
-    if (lEnc)
-        delete RES_ENC(lEnc);
-
-    if (lVel)
-        delete RES_VEL(lVel);
-
-    if (lJnt)
-        delete RES_JNT(lJnt);
-
-    if (lRmp)
-    {
-        for (unsigned int i=0; i<RES_RMP(lRmp)->size(); i++)
-            delete[] (*RES_RMP(lRmp))[i];
-
-        delete RES_RMP(lRmp);
-    }
 
     if (limb)
         delete limb;
@@ -1197,27 +1160,21 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         return false;
     }
 
-    lLim=new ACE_Vector<IControlLimits*>;
-    lEnc=new ACE_Vector<IEncoders*>;
-    lVel=new ACE_Vector<IVelocityControl*>;
-    lJnt=new ACE_Vector<int>;
-    lRmp=new ACE_Vector<int*>;
-
     int remainingJoints=chain->getN();
 
     for (int i=0; i<numDrv; i++)
     {
-        fprintf(stdout,"Acquiring info on driver %s... ",(*RES_DSC(lDsc))[i].key.c_str());
+        fprintf(stdout,"Acquiring info on driver %s... ",lDsc[i].key.c_str());
 
         // check if what we require is present within the given list
         int j;
         for (j=0; j<drivers.size(); j++)
-            if ((*RES_DSC(lDsc))[i].key==drivers[j]->key)
+            if (lDsc[i].key==drivers[j]->key)
                 break;
 
         if (j>=drivers.size())
         {
-            fprintf(stdout,"None of provided drivers is of type %s\n",(*RES_DSC(lDsc))[i].key.c_str());
+            fprintf(stdout,"None of provided drivers is of type %s\n",lDsc[i].key.c_str());
             return false;
         }
 
@@ -1250,13 +1207,13 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             int *rmpTmp=new int[joints];
             for (int k=0; k<joints; k++)
-                rmpTmp[k]=(*RES_DSC(lDsc))[i].jointsDirectOrder ? k : joints-k-1;
+                rmpTmp[k]=lDsc[i].jointsDirectOrder ? k : joints-k-1;
 
-            RES_LIM(lLim)->push_back(lim);
-            RES_ENC(lEnc)->push_back(enc);
-            RES_VEL(lVel)->push_back(vel);
-            RES_JNT(lJnt)->push_back(joints);
-            RES_RMP(lRmp)->push_back(rmpTmp);
+            lLim.push_back(lim);
+            lEnc.push_back(enc);
+            lVel.push_back(vel);
+            lJnt.push_back(joints);
+            lRmp.push_back(rmpTmp);
         }
         else
         {
@@ -1269,10 +1226,10 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     // thresholds at high values
     for (int i=0; i<numDrv; i++)
     {
-        Vector maxAcc((*RES_JNT(lJnt))[i]);
+        Vector maxAcc(lJnt[i]);
         maxAcc=CARTCTRL_MAX_ACCEL;
 
-        (*RES_VEL(lVel))[i]->setRefAccelerations(maxAcc.data());
+        lVel[i]->setRefAccelerations(maxAcc.data());
     }
 
     // create controller
