@@ -422,6 +422,7 @@ public:
     virtual bool setPositionModeRaw(int j);
     virtual bool setVelocityModeRaw(int j);
     virtual bool setTorqueModeRaw(int j);
+	virtual bool setImpedanceModeRaw(int j);
 	virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
 

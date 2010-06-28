@@ -2242,7 +2242,16 @@ bool CanBusMotionControl::setTorqueModeRaw(int j)
         return false;
 
 	DEBUG("Calling SET_CONTROL_MODE (torque)\n");
-	return _writeByte8(CAN_SET_CONTROL_MODE,j,3);
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_TORQUE);
+}
+
+bool CanBusMotionControl::setImpedanceModeRaw(int j)
+{
+	if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+	DEBUG("Calling SET_CONTROL_MODE (impedance)\n");
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_IMPEDANCE);
 }
 
 bool CanBusMotionControl::getControlModeRaw(int j, int *v)
