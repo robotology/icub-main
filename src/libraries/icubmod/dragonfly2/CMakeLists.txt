@@ -8,25 +8,28 @@ IF(NOT SKIP_dragonfly2)
 	MESSAGE(SEND_ERROR "dragonfly2: dragonfly api not found, turn off device")
   ELSE(NOT DRAGONFLYAPI_FOUND)
 
+  ADD_DEFINITIONS(-D_REENTRANT)
   IF (WIN32)
 	INCLUDE_DIRECTORIES(${DRAGONFLYAPI_INC_DIRS})
+	INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/common)
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/winnt)
 
     SET(EXTRA_SOURCES winnt/FirewireCameraDC1394-DR2_2.h winnt/FirewireCameraDC1394-DR2_2.cpp)
 	ADD_LIBRARY(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
-    target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLY_LIB})
+    target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
   ELSE (WIN32)
 
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/common)
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/linux)
+	INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
 
 	SET(EXTRA_SOURCES linux/FirewireCameraDC1394-DR2_2.h linux/FirewireCameraDC1394-DR2_2.cpp)
 	ADD_LIBRARY(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})  
   
-    target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLY_LIB})
+    target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
      
   ENDIF (WIN32)
 

@@ -6,14 +6,14 @@
 *
 */
 
+#include <ace/config.h>
+#include <ace/OS.h>
+#include <ace/Log_Msg.h>
 
 #include <yarp/os/Time.h>
 
 #include "iCubArmCalibratorJ8.h"
 
-#include <ace/config.h>
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;

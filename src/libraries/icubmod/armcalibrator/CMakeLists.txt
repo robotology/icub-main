@@ -8,7 +8,8 @@ ENDIF (COMPILE_DEVICE_LIBRARY)
 
 IF (NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibratorj4 OR NOT SKIP_icubarmcalibrator)
 
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${ACE_INCLUDE_DIRS})
+    ADD_DEFINITIONS(-D_REENTRANT)
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${ACE_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 
     add_library(armcalibrator iCubArmCalibrator.cpp iCubArmCalibrator.h)
     add_library(armcalibratorj8 iCubArmCalibratorJ8.cpp iCubArmCalibratorJ8.h)

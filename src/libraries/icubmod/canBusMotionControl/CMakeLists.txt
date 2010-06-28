@@ -3,6 +3,8 @@ PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
     WRAPPER controlboard)
 
 IF (NOT SKIP_canmotioncontrol)
+
+  ADD_DEFINITIONS(-D_REENTRANT)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 

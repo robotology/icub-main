@@ -17,6 +17,8 @@
 #include <stdio.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/String.h>
+#include <ace/config.h>
+#include <ace/Log_Msg.h>
 
 //the following activates the DEBUG macro in canControlUtil.h
 //#define CAN_DEBUG
