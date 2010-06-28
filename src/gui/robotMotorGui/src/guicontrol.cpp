@@ -114,7 +114,7 @@ static void guiControl::radio_click_imp(GtkWidget* radio , gtkClassData* current
 {
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
-		fprintf(stderr, "(DEBUG: impedance conttol not yet implemented\n", *joint);
+		fprintf(stderr, "joint: %d in IMPEDANCE mode!\n", *joint);
 		icntrl->setImpedanceMode(*joint);
 	}
 	else
@@ -138,7 +138,7 @@ void guiControl::update_menu(int control_mode)
 	  case VOCAB_CM_TORQUE:
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(radiobutton_mode_trq),true);
 	  break;
-	  case MODE_IMPEDANCE:
+	  case VOCAB_CM_IMPEDANCE:
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(radiobutton_mode_imp),true);
 	  break;
 

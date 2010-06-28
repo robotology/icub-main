@@ -312,7 +312,7 @@ bool partMover::entry_update(partMover *currentPart)
           gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Torque2:");
 		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 		  break;
-	  case MODE_IMPEDANCE:
+	  case VOCAB_CM_IMPEDANCE:
 		  pColor=&color_indaco;
 		  strcat(frame_title," (IMPEDANCE)");
   		  gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
