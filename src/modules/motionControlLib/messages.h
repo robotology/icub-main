@@ -19,6 +19,7 @@
 #define MODE_POSITION 				1
 #define MODE_VELOCITY				2
 #define MODE_TORQUE					3
+#define MODE_IMPEDANCE				4
 #define MODE_CALIB_ABS_POS_SENS		0x10
 #define MODE_CALIB_HARD_STOPS		0x20
 #define MODE_HANDLE_HARD_STOPS		0x30
