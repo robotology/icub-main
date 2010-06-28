@@ -1407,6 +1407,13 @@ public:
         return false;
     }
 
+	virtual bool setImpedanceMode(int j)
+    {
+        if (iControlMode)
+            return iControlMode->setImpedanceMode(j+base);
+        return false;
+    }
+
 	virtual bool setOpenLoopMode(int j)
     {
         if (iControlMode)
