@@ -551,12 +551,12 @@ public:
 
 int main(int argc, char *argv[])
 {
-    YARP_REGISTER_DEVICES(icubmod)
-
     Network yarp;	
 
     if (!yarp.checkNetwork())
         return -1;
+
+    YARP_REGISTER_DEVICES(icubmod)
 
     ResourceFinder rf;
     rf.setVerbose(true);

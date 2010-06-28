@@ -166,8 +166,6 @@ public:
 
 int main(int argc, char *argv[])
 {
-    YARP_REGISTER_DEVICES(icubmod)
-
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("simCartesianControl/conf");
@@ -181,6 +179,8 @@ int main(int argc, char *argv[])
 
     if (!yarp.checkNetwork())
         return -1;
+
+    YARP_REGISTER_DEVICES(icubmod)
 
     SimCartCtrlModule mod;
 
