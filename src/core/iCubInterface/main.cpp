@@ -249,16 +249,15 @@ This file can be edited at src/iCubInterface2/main.cpp.
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Os.h>
 
-#ifdef USE_ICUB_MOD
-#include "drivers.h"
-#endif
-
 #include "RobotInterface.h" 
 
 #include "RobotInterfaceRemap.h"
 
 #include "ControlBoardWrapper2.h"
 #include "ControlBoardWrapper.h"
+#include <yarp/dev/Drivers.h>
+
+YARP_DECLARE_DEVICES(icubmod)
 
 using namespace yarp::os;
 using namespace yarp::dev;  
@@ -301,9 +300,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-#ifdef USE_ICUB_MOD
-	yarp::dev::DriverCollection dev;
-#endif
+    YARP_REGISTER_DEVICES(icubmod)
 
 	//add local driver to factory
 	yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper2>
