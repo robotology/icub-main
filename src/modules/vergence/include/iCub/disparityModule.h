@@ -62,6 +62,7 @@ class disparityModule : public Module {
 private:
 
 	BufferedPort<ImageOf<PixelMono> >  imageOutputPort;
+	BufferedPort<Bottle> targetPort;
 	Port  cmdOutput;
 
 	string outputPortName; 
@@ -130,7 +131,7 @@ public:
 
 	disparityModule();
 	~disparityModule();
-	void merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,	ImageOf<PixelMono> *imgOut); 
+	void merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,	ImageOf<PixelMono> *imgOut, int disparityValue); 
 	void computeRay (__kinType k, Vector& v, int x, int y); // computes ray that intesects with image plane
 	void peripheryToFovea (int x, int y, int& rx, int& ry) { rx = int(x * Periphery2Fovea); ry = int(y * Periphery2Fovea); }
 	void foveaToPeriphery (int x, int y, int& rx, int& ry) { rx = int(x / Periphery2Fovea); ry = int(y / Periphery2Fovea); } 

@@ -9,9 +9,10 @@ disparityModule::disparityModule(){
     	printf("initialization of the module \n");
 
 	//create the imageIn ports
-	imageInLeft.open( "/vergence/left" );
-	imageInRight.open( "/vergence/right" );	
-	cmdOutput.open("/vergence/output");
+	imageInLeft.open( "/vergence/left:i" );
+	imageInRight.open( "/vergence/right:i" );	
+	cmdOutput.open("/vergence/command:o");
+	targetPort.open("/vergence/target:o");
 
 	ratio = 4.00;
 	//Disp.init(84,ratio);
@@ -68,7 +69,7 @@ disparityModule::disparityModule(){
 	fb.resize(9);
 	fb = 0;
 	_q.resize(3);
-	_it.resize(3);
+_it.resize(3);
 	_o.resize(3);
 	_epx.resize(3);
 	_tmp.resize(3);
@@ -144,6 +145,8 @@ bool disparityModule::open( Searchable& config ){
 bool disparityModule::close(){
     	printf("closing all the ports");
 	imageOutputPort.close();
+	targetPort.close();
+	cmdOutput.close();
 	histoOutPort.close();
 	printf("saving left \n");
 	imageInLeft.close();
@@ -273,8 +276,8 @@ bool disparityModule::updateModule(){
 		
 		
 		//calculating the fusion map of the input images (@shift, @preShift, @afterShift )	
-		merge(imgInL, imgInR, imgOut);
-		if ( imageOutputPort.getOutputCount() > 0 ){ 
+		merge(imgInL, imgInR, imgOut,disparityVal);
+		if ( imageOutputPort.getOutputCount() > 0 ){ 		  
 			imageOutputPort.prepare() = *imgOut;	
 			imageOutputPort.write();
 		}
@@ -315,6 +318,8 @@ bool disparityModule::updateModule(){
 			angle=0;		
 		cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
 		
+
+		//sending position to the controller of the vergence
 		Bottle in,bot;
         	//Bottle &bot = triangulationPort.prepare(); 
         	bot.clear();
@@ -323,7 +328,6 @@ bool disparityModule::updateModule(){
  		char verg[100];
 		sprintf(verg, "set pos 5 %f", angle);
 		
-		
 //		bot.addString(verg);
 		bot.addString("set");
 		bot.addString("pos");		
@@ -331,6 +335,18 @@ bool disparityModule::updateModule(){
 		bot.addDouble(angle);
 		cmdOutput.write(bot,in);
 		bot.clear();
+
+
+		//sending the salient position
+		if ( targetPort.getOutputCount() > 0 ){ 		  
+		  Bottle targetBottle;
+		  targetBottle.addDouble(10*tan(6.28-angle)+0.1);
+		  targetBottle.addDouble(10);
+		  targetBottle.addDouble(10);
+		  targetPort.prepare() = targetBottle;	
+		  targetPort.write();
+		}
+		
 	}
     
 	fflush( stdout );
@@ -338,18 +354,105 @@ bool disparityModule::updateModule(){
 } 	
 
 
-void disparityModule::merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,ImageOf<PixelMono> *imgOut){
+void disparityModule::merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,ImageOf<PixelMono> *imgOut, int disparityVal){
 	//initialisation
 	IppiSize sizesrc={252,152};
 	Ipp32f coeffs[3]={0.33,0.33,0.33};
 	ImageOf<PixelMono>* imgInLGray=new ImageOf<PixelMono>;
+	ImageOf<PixelMono>* imgInRGray=new ImageOf<PixelMono>;
+	ImageOf<PixelMono>* imgInRGrayShift=new ImageOf<PixelMono>;
 	imgInLGray->resize(252,152);
+	imgInRGray->resize(252,152);
+	imgInRGrayShift->resize(252,152);
 
 	// copying the input image into grayscale image
 	ippiColorToGray_8u_C3C1R(imgInL->getRawImage(),imgInL->getRowSize(),imgInLGray->getRawImage(),imgInLGray->getRowSize(), sizesrc, coeffs);
-	ippiCopy_8u_C1R(imgInLGray->getRawImage(),imgInLGray->getRowSize(), imgInLGray->getRawImage(),imgInLGray->getRowSize(),sizesrc);
+	ippiColorToGray_8u_C3C1R(imgInR->getRawImage(),imgInR->getRowSize(),imgInRGray->getRawImage(),imgInRGray->getRowSize(), sizesrc, coeffs);
+	ippiCopy_8u_C1R(imgInRGray->getRawImage(),imgInRGray->getRowSize(), imgOut->getRawImage(),imgOut->getRowSize(),sizesrc);
+	// shift the image
+	unsigned char *p_right=(unsigned char *)imgInRGray->getRawImage();
+	unsigned char *p_rightShift=(unsigned char *)imgInRGrayShift->getRawImage();
+	
+	for (int r=0;r<152;r++){
+	  int disparity=0;
+	  for(int c=0; c<252; c++){	    
+	    if(disparityVal>0){
+	      //cout<<"disparityVal>0"<<endl;
+	      if(disparity>=disparityVal){
+		*p_rightShift=*p_right;
+		p_right++;
+	      }
+	      else{
+		*p_rightShift=0;
+	      }
+	      p_rightShift++;
+	      disparity++; 
+	    }
+	    else{
+	      if(disparity>=-disparityVal){
+		//cout<<" *"<<endl;
+		*p_rightShift=*p_right;
+		p_rightShift++;
+	      } 
+	      
+	      disparity++;
+	      p_right++;
+	    }	    
+	  }
 
+	  
+	  //alignment
+	  for(int i=252-abs(disparityVal);i<252;i++){
+	    if(disparityVal>0){
+	      
+	      p_right++;
+	    }
+	    else{
+	      *p_rightShift=0;
+	      p_rightShift++;	         
+	    }
+	  }
+       
+	  
+	  
+      	  //padding
+	  for(int i=252;i< imgInLGray->getRowSize();i++){
+	    //printf(".");	    
+	    p_rightShift++;	    
+	    p_right++;	         
+	  }
+	  
+	}
+
+	
+	// fuse the two images
+	unsigned char *p_left=(unsigned char *)imgInLGray->getRawImage();
+	p_right=(unsigned char *)imgInRGrayShift->getRawImage();
+	unsigned char *p_out=(unsigned char *)imgOut->getRawImage();
+	for (int r=0;r<152;r++){
+	  for(int c=0; c<252; c++){
+	    //p_out[c+r*152]=((p_left[c+r*152]+p_right[c+r*152])/512)*255;
+	    unsigned char value;
+	    double subvalue=(double)(*p_left+*p_right)/512;
+	    value=(unsigned char)(subvalue*255);
+	    //value=(unsigned char)((*p_right+*p_left)/512)*255;
+	    *p_out=value;
+	    p_right++;
+	    p_left++;
+	    p_out++;	   
+	  }
+	  //padding
+	  for(int i=252;i< imgInLGray->getRowSize();i++){
+	    p_right++;
+	    p_left++;
+	    p_out++;	   
+	  }
+	}
+	
+	
 	delete imgInLGray;
+	delete imgInRGray;
+	delete imgInRGrayShift;
 
 }
 
