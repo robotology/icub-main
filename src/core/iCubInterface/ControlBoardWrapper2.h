@@ -2295,6 +2295,23 @@ public:
         return false;
     }
 
+	virtual bool setImpedanceMode(int j)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iMode)
+        {
+            return p->iMode->setImpedanceMode(off+base);
+        }        
+
+        return false;
+    }
+
     virtual bool setVelocityMode(int j)
     {
         int off=device.lut[j].offset;
