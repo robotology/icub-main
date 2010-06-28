@@ -153,7 +153,6 @@ IF   (IS_GNUCXX4)
     /opt/net/gcc41/IPP/include
     /opt/net/gcc41/IPP/include/IPP )
 ENDIF(IS_GNUCXX4)
-MESSAGE("DBG (IPP_POSSIBLE_INCDIRS=${IPP_POSSIBLE_INCDIRS}")
 
 # candidates for IPP library directories:
 IF   (IS_GNUCXX3)
