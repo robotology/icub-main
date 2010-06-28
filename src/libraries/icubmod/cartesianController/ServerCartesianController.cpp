@@ -1132,6 +1132,12 @@ bool ServerCartesianController::close()
     for (unsigned int i=0; i<lRmp.size(); i++)
         delete[] lRmp[i];
 
+    lDsc.clear();
+    lLim.clear();
+    lEnc.clear();
+    lVel.clear();
+    lJnt.clear();
+    lRmp.clear();
 
     if (limb)
         delete limb;
