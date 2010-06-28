@@ -115,6 +115,7 @@ static void guiControl::radio_click_imp(GtkWidget* radio , gtkClassData* current
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
 		fprintf(stderr, "(DEBUG: impedance conttol not yet implemented\n", *joint);
+		icntrl->setImpedanceMode(*joint);
 	}
 	else
 	{
