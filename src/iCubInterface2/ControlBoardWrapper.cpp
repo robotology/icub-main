@@ -100,8 +100,8 @@ void CommandsHelper::handleControlModeMsg(const yarp::os::Bottle& cmd,
 						case 3:
 							response.addVocab(VOCAB_CM_TORQUE);
 						break;
-						case 4: // IMPEDANCE
-							response.addVocab(VOCAB_CM_UNKNOWN);
+						case 4: 
+							response.addVocab(VOCAB_CM_IMPEDANCE);
 						break;
 						default:
 							response.addVocab(VOCAB_CM_UNKNOWN);
