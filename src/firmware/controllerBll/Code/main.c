@@ -37,7 +37,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 39;
+word    _build_number = 40;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -970,9 +970,9 @@ void decouple_dutycycle(Int32 *pwm)
 	 * u_m = 	[        0,  R2/K2,      0] tau_m
 	 * 			[        0,      0,  R3/K3]
 	 *
-	 *			[    R1/K1*Jm1,            0,            0]                    			[1         0         0]
-	 * u_m =	[ -R2/K2*Jm2/a,  R2/K2*Jm2/a,            0] tau_j =  1.0e-03 * 0.1519 * [-1.73    1.73       0]
-	 *			[ -R3/K3*Jm3/a,  R3/K3*Jm3/a,  R3/K3*Jm3/a]                    			[-1.73    1.73    1.73]
+	 *			[    R1/K1*Jm1,            0,            0]                    			[1          0              0]
+	 * u_m =	[ -R2/K2*Jm2/a,  R2/K2*Jm2/a,            0] tau_j =  1.0e-03 * 0.1519 * [-1.6455    1.6455         0] tau_j
+	 *			[ -R3/K3*Jm3/a,  R3/K3*Jm3/a,  R3/K3*Jm3/a]                    			[-1.6455    1.6455    1.6455]
 	 *
 	 * where:
 	 * tau_m 	: torques applied by the motors (tau_m_c[0], tau_m_c[1], tau_m[0])
@@ -1010,12 +1010,12 @@ void decouple_dutycycle(Int32 *pwm)
 	   		tempf = (float)(_pd[0]);
 			tempf = tempf * 1.6455F;
 		    temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
-		    _pd[0] += temp32;
+		    _pd[0] = temp32;
 		    
 			tempf = (float)(pwm[0]);
 			tempf = tempf * 1.6455F;
 			temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
-		    pwm[0] += temp32;	    
+		    pwm[0] = temp32;	    
 			#ifdef DEBUG_CPL_BOARD
 				if(count==255)
 				{

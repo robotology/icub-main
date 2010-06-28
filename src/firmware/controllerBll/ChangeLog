@@ -120,3 +120,7 @@
 	* four force watchdogs are now used to check if force data from board 11/12/13/14 are recevied.
 	  boards 11/12 can be virtual (forces calculated by iDyn and transmitted on CAN bus by PC104)  
 	* Current build 39.	
+
+2010-28-June  Francesco Nori <iron@liralab.it>
+	* Bug fixed on the shoulder coupling
+	* Current build 40.		
