@@ -820,7 +820,34 @@
 		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }
-
+//-------------------------------------------------------------------
+#define CAN_SET_IMPEDANCE_PARAMS_HANDLER(x) \
+{ \
+	if (CAN_LEN == 8) \
+	{ \
+		_ks_imp[axis] = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
+		_kd_imp[axis] = BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
+		_ko_imp[axis] = BYTE_W(CAN_DATA[5], CAN_DATA[6]); \
+		_general_board_error = ERROR_NONE; \
+	} \
+	else \
+		_general_board_error = ERROR_FMT; \
+}
+//-------------------------------------------------------------------
+#define CAN_GET_IMPEDANCE_PARAMS_HANDLER(x) \
+{ \
+	PREPARE_HEADER; \
+		CAN_LEN = 8; \
+		CAN_DATA[1] = BYTE_H(_ks_imp[axis]); \
+		CAN_DATA[2] = BYTE_L(_ks_imp[axis]); \
+		CAN_DATA[3] = BYTE_H(_kd_imp[axis]); \
+		CAN_DATA[4] = BYTE_L(_kd_imp[axis]); \
+		CAN_DATA[5] = BYTE_H(_ko_imp[axis]); \
+		CAN_DATA[6] = BYTE_L(_ko_imp[axis]); \
+		CAN_DATA[7] = 0; \
+		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
+		_general_board_error = ERROR_NONE; \
+}
 //-------------------------------------------------------------------
 #define CAN_SET_TORQUE_PIDLIMITS_HANDLER(x) \
 { \
