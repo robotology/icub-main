@@ -502,6 +502,16 @@ public:
                               const yarp::sig::Vector &thres, const double tmo);
 
     /**
+    * Define an hand motion sequence from a configuration bottle.
+    * @param handSeqKey the hand sequence key. 
+    * @param sequence the configuration bottle. 
+    * @see open() method for the format. 
+    * @return true/false on success/fail. 
+    */
+    virtual bool addHandSequence(const std::string &handSeqKey,
+                                 const yarp::os::Bottle &sequence);
+
+    /**
     * Check whether a sequence key is defined.
     * @param handSeqKey the hand sequence key.
     * @return true iff valid key. 

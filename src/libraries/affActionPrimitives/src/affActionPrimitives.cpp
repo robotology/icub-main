@@ -300,86 +300,7 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                 continue;
             }
 
-            if (!bSeq.check("numWayPoints"))
-            {
-                printMessage("WARNING: \"numWayPoints\" option is missing\n");
-                return false;
-            }
-
-            int numWayPoints=bSeq.find("numWayPoints").asInt();
-
-            for (int j=0; j<numWayPoints; j++)
-            {
-                char wp[255];
-                sprintf(wp,"wp_%d",j);
-
-                Bottle &bWP=bSeq.findGroup(wp);
-                if (bWP.isNull())
-                {
-                    printMessage("WARNING: \"%s\" entry is missing\n",wp);    
-                    return false;
-                }
-
-                if (!bWP.check("poss"))
-                {
-                    printMessage("WARNING: \"poss\" option is missing\n");
-                    return false;
-                }
-
-                if (!bWP.check("vels"))
-                {
-                    printMessage("WARNING: \"vels\" option is missing\n");
-                    return false;
-                }
-
-                if (!bWP.check("tols"))
-                {
-                    printMessage("WARNING: \"tols\" option is missing\n");
-                    return false;
-                }
-
-                if (!bWP.check("thres"))
-                {
-                    printMessage("WARNING: \"thres\" option is missing\n");
-                    return false;
-                }
-
-                if (!bWP.check("tmo"))
-                {
-                    printMessage("WARNING: \"tmo\" option is missing\n");
-                    return false;
-                }
-
-                Bottle *bPoss=bWP.find("poss").asList();
-                Vector poss(bPoss->size());
-
-                for (int k=0; k<poss.length(); k++)
-                    poss[k]=bPoss->get(k).asDouble();
-
-                Bottle *bVels=bWP.find("vels").asList();
-                Vector vels(bVels->size());
-
-                for (int k=0; k<vels.length(); k++)
-                    vels[k]=bVels->get(k).asDouble();
-
-                Bottle *bTols=bWP.find("tols").asList();
-                Vector tols(bTols->size());
-
-                for (int k=0; k<tols.length(); k++)
-                    tols[k]=bTols->get(k).asDouble();
-
-                Bottle *bThres=bWP.find("thres").asList();
-                Vector thres(bThres->size());
-
-                for (int k=0; k<thres.length(); k++)
-                    thres[k]=bThres->get(k).asDouble();
-
-                double tmo=bWP.find("tmo").asDouble();
-
-                if (!addHandSeqWP(key,poss,vels,tols,thres,tmo))
-                    printMessage("WARNING: \"%s\" entry is invalid, not added to \"%s\"\n",
-                                 wp,key.c_str());
-            }
+            addHandSequence(key,bSeq);
         }
     
         return true;
@@ -1227,6 +1148,99 @@ bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &p
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &sequence)
+{
+    Bottle &bSeq=const_cast<Bottle&>(sequence);
+
+    if (!bSeq.check("numWayPoints"))
+    {
+        printMessage("WARNING: \"numWayPoints\" option is missing\n");
+        return false;
+    }
+
+    int numWayPoints=bSeq.find("numWayPoints").asInt();
+    bool ret=false;
+
+    for (int j=0; j<numWayPoints; j++)
+    {
+        char wp[255];
+        sprintf(wp,"wp_%d",j);
+
+        Bottle &bWP=bSeq.findGroup(wp);
+        if (bWP.isNull())
+        {
+            printMessage("WARNING: \"%s\" entry is missing\n",wp);
+            return false;
+        }
+
+        if (!bWP.check("poss"))
+        {
+            printMessage("WARNING: \"poss\" option is missing\n");
+            return false;
+        }
+
+        if (!bWP.check("vels"))
+        {
+            printMessage("WARNING: \"vels\" option is missing\n");
+            return false;
+        }
+
+        if (!bWP.check("tols"))
+        {
+            printMessage("WARNING: \"tols\" option is missing\n");
+            return false;
+        }
+
+        if (!bWP.check("thres"))
+        {
+            printMessage("WARNING: \"thres\" option is missing\n");
+            return false;
+        }
+
+        if (!bWP.check("tmo"))
+        {
+            printMessage("WARNING: \"tmo\" option is missing\n");
+            return false;
+        }
+
+        Bottle *bPoss=bWP.find("poss").asList();
+        Vector poss(bPoss->size());
+
+        for (int k=0; k<poss.length(); k++)
+            poss[k]=bPoss->get(k).asDouble();
+
+        Bottle *bVels=bWP.find("vels").asList();
+        Vector vels(bVels->size());
+
+        for (int k=0; k<vels.length(); k++)
+            vels[k]=bVels->get(k).asDouble();
+
+        Bottle *bTols=bWP.find("tols").asList();
+        Vector tols(bTols->size());
+
+        for (int k=0; k<tols.length(); k++)
+            tols[k]=bTols->get(k).asDouble();
+
+        Bottle *bThres=bWP.find("thres").asList();
+        Vector thres(bThres->size());
+
+        for (int k=0; k<thres.length(); k++)
+            thres[k]=bThres->get(k).asDouble();
+
+        double tmo=bWP.find("tmo").asDouble();
+
+        if (addHandSeqWP(handSeqKey,poss,vels,tols,thres,tmo))
+            ret=true;   // at least one WP has been added
+        else
+            printMessage("WARNING: \"%s\" entry is invalid, not added to \"%s\"\n",
+                         wp,handSeqKey.c_str());
+    }
+
+    return ret;
 }
 
 
