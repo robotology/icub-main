@@ -156,6 +156,10 @@ extern Int16  _ki_torque[JN] ;				// ... integral
 extern Int16  _ko_torque[JN] ;				// offset 
 extern Int16  _kr_torque[JN] ;				// scale factor (negative power of two) 
 
+// JOINT IMPEDANCE
+extern Int16  _ks_imp[JN] ;				// stiffness coeffficient
+extern Int16  _kd_imp[JN] ;				// damping coeffficient
+extern Int16  _ko_imp[JN] ;				// offset
 			
 								
 #if VERSION == 0x0156
@@ -173,7 +177,7 @@ extern Int32  _pd_current[JN] ;         // pd portion of the current pid
 #endif
 
 
-#if VERSION == 0x0153 || VERSION==0x0157 
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION==0x0150 
 extern Int32  _cpl_pos_received[JN] ;		// the position of the synchronized card 
 extern Int32  _cpl_pos_prediction[JN] ;			// the actual adjustment (compensation) 
 extern Int32  _cpl_pos_delta[JN] ;			// velocity over the adjustment 
