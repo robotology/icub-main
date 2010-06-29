@@ -157,6 +157,10 @@ extern Int16  _ki_torque[JN] ;				// ... integral
 extern Int16  _ko_torque[JN] ;				// offset 
 extern Int16  _kr_torque[JN] ;				// scale factor (negative power of two) 
 
+// JOINT IMPEDANCE
+extern Int16  _ks_imp[JN] ;				// stiffness coeffficient
+extern Int16  _kd_imp[JN] ;				// damping coeffficient
+extern Int16  _ko_imp[JN] ;				// offset
 											
 #if VERSION == 0x0116
 // CURRENT PID
