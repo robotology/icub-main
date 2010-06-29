@@ -245,7 +245,14 @@ bool partMover::entry_update(partMover *currentPart)
   bool done = false;
   static int control_mode=0;
   ipos->getAxes(&NUMBER_OF_JOINTS);
-	
+
+  if (NUMBER_OF_JOINTS == 0)
+  {
+	  fprintf(stderr,"Lost connection with iCubInterface. You should save and restart.\n" );
+	  Time::delay(0.1);
+	  return true;
+  }
+
   while(!iiencs->getEncoders(positions))
     Time::delay(0.001);
   
