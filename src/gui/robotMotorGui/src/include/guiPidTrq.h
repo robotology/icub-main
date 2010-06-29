@@ -13,12 +13,16 @@ namespace guiPidTrq
 	static GtkWidget *trq_kiDes = NULL;
 	static GtkWidget *trq_scaleDes = NULL;
 	static GtkWidget *trq_offsetDes = NULL;
+	static GtkWidget *imp_stiffDes = NULL;
+	static GtkWidget *imp_dampDes = NULL;
 
 	static GtkWidget *trq_kpEntry = NULL;
 	static GtkWidget *trq_kdEntry = NULL;
 	static GtkWidget *trq_kiEntry = NULL;
 	static GtkWidget *trq_scaleEntry = NULL;
 	static GtkWidget *trq_offsetEntry = NULL;
+	static GtkWidget *imp_stiffEntry = NULL;
+	static GtkWidget *imp_dampEntry = NULL;
 
 	static int * joint = NULL;
 	static ITorqueControl *iTrq = NULL;
