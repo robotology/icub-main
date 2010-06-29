@@ -104,6 +104,8 @@ void guiPidTrq::guiPidTrq(void *button, void* data)
   GtkWidget *buttonSend;
   GtkWidget *buttonClose;
   Pid myPid(0, 0, 0, 0, 0, 0);
+  int stiff_val=0;
+  int damp_val=0;
 
   iTrq->getTorquePid(*joint, &myPid);
 
@@ -147,6 +149,19 @@ void guiPidTrq::guiPidTrq(void *button, void* data)
   trq_offsetDes   =  gtk_entry_new();
   changePidValue((int) myPid.offset, inv, trq_offsetDes, 100, 280, "Desired Torque offset");
 
+  //stiffness
+  imp_stiffEntry = gtk_entry_new();
+  displayPidValue((int) stiff_val, inv, imp_stiffEntry, 0, 380, "Current Joint stiffness");
+  //stiffness desired
+  imp_stiffDes   =  gtk_entry_new();
+  changePidValue((int) stiff_val, inv, imp_stiffDes, 100, 380, "Desired Torque offset");
+
+  //damping
+  imp_dampEntry = gtk_entry_new();
+  displayPidValue((int) damp_val, inv, imp_dampEntry, 0, 450, "Current Joint damping");
+  //damping desired
+  imp_dampDes   =  gtk_entry_new();
+  changePidValue((int) damp_val, inv, imp_dampDes, 100, 450, "Desired Torque offset");
 
   //Send
   buttonSend = gtk_button_new_with_mnemonic ("Send");
