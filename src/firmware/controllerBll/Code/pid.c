@@ -125,6 +125,10 @@ Int16  _ki_torque[JN] = INIT_ARRAY (0);			// ... integral
 Int16  _ko_torque[JN] = INIT_ARRAY (0);			// offset 
 Int16  _kr_torque[JN] = INIT_ARRAY (10);		// scale factor (negative power of two) 
 
+// JOINT IMPEDANCE
+Int16  _ks_imp[JN] = INIT_ARRAY (20);			// stiffness coefficient
+Int16  _kd_imp[JN] = INIT_ARRAY (0);			// damping coefficient
+Int16  _ko_imp[JN] = INIT_ARRAY (0);			// offset
 
 		
 #if VERSION == 0x0156
@@ -142,7 +146,7 @@ Int32  _pd_current[JN] = INIT_ARRAY (0);        // pd portion of the current pid
 #endif
 
 
-#if VERSION == 0x0153 || VERSION==0x0157
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION==0x0150
 Int32  _cpl_pos_received[JN] = INIT_ARRAY (0);	// the position of the synchronized card 
 Int32  _cpl_pos_prediction[JN] = INIT_ARRAY (0);// the actual adjustment (compensation) 
 Int32  _cpl_pos_delta[JN] = INIT_ARRAY (0);		// velocity over the adjustment 
@@ -358,11 +362,10 @@ Int32 compute_pwm(byte j)
 	break;
 	case MODE_IMPEDANCE: 
 		compute_desired(j);
-	//	_desired_torque[j] = -_kp[j] * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
 	#if VERSION == 0x0157
-		_desired_torque[j] = -20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
+		_desired_torque[j] = -_ks_imp[j] * (_position[j] - _desired[j]) + _ko_imp[j];// -_kd_imp[j] * _speed[j];
 	#elif VERSION == 0x0150
-		_desired_torque[j] = 20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
+		_desired_torque[j] = _ks_imp[j] * (_position[j] - _desired[j]) + _ko_imp[j];// -_kd_imp[j] * _speed[j];
 	#endif
 		PWMOUT = compute_pid_torque(j, _strain_val[j]);
 		PWMOUT = PWMOUT + _ko_torque[j];
