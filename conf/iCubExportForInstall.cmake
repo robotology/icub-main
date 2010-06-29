@@ -28,6 +28,8 @@ set(EXPORT_CONFIG_FILE icub-export-install.cmake)
 set(INSTALL_CONFIG_FILE icub-config-for-install.cmake)
 set(INSTALL_CONFIG_TEMPLATE "conf/template/icub-config-install.cmake.in")
 
+set(ICUB_MODULE_PATH ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake)
+
 set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
   get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY EXTERNAL_INCLUDE_DIRS)
@@ -47,11 +49,11 @@ endif(include_dirs)
 set(ICUB_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include ${include_dirs})
 #message(STATUS "Header files global directory: ${ICUB_INCLUDE_DIRS}")
 
-install(EXPORT icub-targets DESTINATION ./ FILE ${EXPORT_CONFIG_FILE})
+install(EXPORT icub-targets DESTINATION lib/ICUB FILE ${EXPORT_CONFIG_FILE})
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/${INSTALL_CONFIG_TEMPLATE}
   ${CMAKE_BINARY_DIR}/${INSTALL_CONFIG_FILE} @ONLY IMMEDIATE)
 
-install(FILES ${CMAKE_BINARY_DIR}/${INSTALL_CONFIG_FILE} DESTINATION ./ RENAME icub-config.cmake)
+install(FILES ${CMAKE_BINARY_DIR}/${INSTALL_CONFIG_FILE} DESTINATION lib/ICUB RENAME icub-config.cmake)
 
 
 

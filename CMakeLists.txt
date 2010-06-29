@@ -55,7 +55,7 @@ endif (YARP_FOUND)
 add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
 
 ### pick up yarp's cmake scripts
-set(CMAKE_MODULE_PATH ${YARP_DIR}/conf ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${YARP_MODULE_PATH} ${CMAKE_MODULE_PATH})
 
 # Pick up our scripts - they are all in the conf subdirectory
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
@@ -149,7 +149,7 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
-  install(FILES ${CMAKE_BINARY_DIR}/conf/${conf} COMPONENT scripts 
+  install(FILES ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/${conf} COMPONENT scripts 
 	  DESTINATION conf)
 endforeach(conf)
 
