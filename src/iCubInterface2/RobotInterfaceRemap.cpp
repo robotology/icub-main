@@ -846,6 +846,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     Value &subdevice=robotOptions.find("subdevice");
     Value &candevice=robotOptions.find("canbusdevice");
 
+	deviceParameters.put("robotName", robotName.c_str());
     deviceParameters.put("device", device);
     deviceParameters.put("subdevice", subdevice);
     deviceParameters.put("canbusdevice",candevice);
