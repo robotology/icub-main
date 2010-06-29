@@ -14,6 +14,7 @@ endif(COMMAND cmake_policy)
 
 project(iCub)
 
+##### options
 if(MSVC)
     MESSAGE(STATUS "Running on windows")
     
@@ -28,7 +29,11 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
     # Traditionally, we add "d" postfix to debug libraries
     set(CMAKE_DEBUG_POSTFIX "d")
+else (MSVC)
+    add_definitions(-D_REENTRANT)
 endif(MSVC)
+
+
 
 if(NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
@@ -38,6 +43,7 @@ endif(NOT CMAKE_BUILD_TYPE)
  if (MSVC)
         mark_as_advanced(CMAKE_BUILD_TYPE)
 endif(MSVC)
+######################
 
 #### Find YARP
 find_package(YARP)
