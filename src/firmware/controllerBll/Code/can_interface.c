@@ -189,7 +189,7 @@ byte can_interface (void)
 			// special message, not too neat
 			// ID 0x0100 (001 0000 0000b) message class = periodic message  
 			
-#if VERSION == 0x0153 || VERSION==0x0157  
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION==0x0150
 
 			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_DSP)
 			{
@@ -206,10 +206,7 @@ byte can_interface (void)
 					case CAN_BCAST_PID_VAL:
 						CAN_SET_ACTIVE_PID_HANDLER(0)
 						break;
-
-					case CAN_BCAST_TRQ_PID:
-						break;
-										
+							
 										
 					case CAN_BCAST_CURRENT:	
 						CAN_SET_ACTIVE_ERROR_HANDLER(0)
@@ -425,6 +422,8 @@ byte can_interface (void)
 			HANDLE_MSG (CAN_GET_POS_PID, CAN_GET_POS_PID_HANDLER)
 			HANDLE_MSG (CAN_SET_POS_PIDLIMITS, CAN_SET_POS_PIDLIMITS_HANDLER)
 			HANDLE_MSG (CAN_GET_POS_PIDLIMITS, CAN_GET_POS_PIDLIMITS_HANDLER)
+			HANDLE_MSG (CAN_SET_IMPEDANCE_PARAMS, CAN_SET_IMPEDANCE_PARAMS_HANDLER)
+			HANDLE_MSG (CAN_GET_IMPEDANCE_PARAMS, CAN_GET_IMPEDANCE_PARAMS_HANDLER)
 							
 //			HANDLE_MSG (CAN_GET_ACTIVE_ENCODER_POSITION, CAN_GET_ACTIVE_ENCODER_POSITION_HANDLER)
 			
@@ -817,16 +816,17 @@ void set_can_masks()
 	UInt32 mask1=0;
 	UInt32 mask2=0;
 	
-	if (VERSION == 0x0153 || VERSION==0x0157)
+	#if (VERSION == 0x0153 || VERSION==0x0157 || VERSION==0x0150)
 	{	
 		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
 		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF, 	   CLASS_PERIODIC_DSP, 	CAN_ID_COUPLED_BOARD, 0xFF);  		
 	}
-	else
+	#else
 	{
 		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
 		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF, 	   CLASS_CANLOADER,  	0x00, 0xFF);  
-	}	
+	}
+	#endif	
 		
 	setmask(filter1,filter2, mask1, mask2);
 }
