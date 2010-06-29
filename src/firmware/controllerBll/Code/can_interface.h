@@ -119,7 +119,10 @@ void can_receive_additional_info();
 
 #define CAN_SET_VEL_TIMEOUT			86
 
-#define NUM_OF_MESSAGES				87
+#define CAN_SET_IMPEDANCE_PARAMS    87
+#define CAN_GET_IMPEDANCE_PARAMS    88
+
+#define NUM_OF_MESSAGES				89
 
 // class 1 messages, broadcast 
 // when in bcast mode, messages are sent periodically by the controller
@@ -132,13 +135,15 @@ void can_receive_additional_info();
 #define CAN_BCAST_OVERFLOW			5
 #define CAN_BCAST_PRINT				6
 #define CAN_BCAST_VELOCITY			7
-#define CAN_BCAST_TRQ_PID			8
 
-#define CAN_BCAST_MAX_MSGS			9
-
+#define CAN_BCAST_MAX_MSGS			8
 
 
-#define CAN_ID_COUPLED_BOARD        1
+#if (VERSION == 0x0153 || VERSION==0x0157)
+	#define CAN_ID_COUPLED_BOARD        1
+#elif VERSION == 0x0150 
+	#define CAN_ID_COUPLED_BOARD        2
+#endif
 
 
 
