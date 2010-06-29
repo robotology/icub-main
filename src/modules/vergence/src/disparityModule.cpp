@@ -3,6 +3,10 @@
 #include <ippi.h>
 #include <ippcc.h>
 
+#include <cv.h>
+#include <cvaux.h>
+#include <highgui.h>
+
 using namespace yarp::math;
 
 disparityModule::disparityModule(){
@@ -97,6 +101,7 @@ bool disparityModule::open( Searchable& config ){
 	printf("opening all the ports");
 
 	imageOutputPort.open("/vergence/image:o");
+	imageCentroidPort.open("/vergence/centroid:o");
 	histoOutPort.open("/vergence/histo:o");
 
 	printf("\n opening .....");
@@ -145,6 +150,7 @@ bool disparityModule::open( Searchable& config ){
 bool disparityModule::close(){
     	printf("closing all the ports");
 	imageOutputPort.close();
+	imageCentroidPort.close();
 	targetPort.close();
 	cmdOutput.close();
 	histoOutPort.close();
@@ -170,12 +176,9 @@ bool disparityModule::interruptModule(){
 }
 
 bool disparityModule::updateModule(){	
-	
-	
-	
+		
 	needLeft =  ( imageInLeft.getInputCount() > 0 );
 	needRight = ( imageInRight.getInputCount() > 0 );
-
 	
 
 	int disparityVal = 0;
@@ -276,15 +279,28 @@ bool disparityModule::updateModule(){
 		
 		
 		//calculating the fusion map of the input images (@shift, @preShift, @afterShift )	
-		merge(imgInL, imgInR, imgOut,disparityVal);
+		int maxValue=0;
+		merge(imgInL, imgInR, imgOut,disparityVal,maxValue);
 		if ( imageOutputPort.getOutputCount() > 0 ){ 		  
 			imageOutputPort.prepare() = *imgOut;	
 			imageOutputPort.write();
 		}
+		int x,y;
+		ImageOf<PixelMono>* imgCentroid=new ImageOf<PixelMono>; 
+		imgCentroid->resize(252,152);
+		extractCentroid(imgOut,imgCentroid,x,y,maxValue);
+		if ( imageCentroidPort.getOutputCount() > 0 ){ 		  
+			imageCentroidPort.prepare() = *imgCentroid;	
+			imageCentroidPort.write();
+		}
+		printf("x:%d ; y:%d \n ",x,y);
+		
+	
+		//delete imgCentroid;
 
 
 		/*
-		//vergence control from disparity calculations\
+		//vergence control from disparity calculations\XS
 					theta = -K * di 
 		//theta -> first derivative of the vergence angle\
 		K     ->constant gain\
@@ -316,7 +332,7 @@ bool disparityModule::updateModule(){
 		double angle=fb[8]-(180/M_PI)*atan(disparityVal/(2*206.026));
 		if(angle<0)
 			angle=0;		
-		cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
+		cout << " 2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
 		
 
 		//sending position to the controller of the vergence
@@ -336,13 +352,13 @@ bool disparityModule::updateModule(){
 		cmdOutput.write(bot,in);
 		bot.clear();
 
-
+		
 		//sending the salient position
 		if ( targetPort.getOutputCount() > 0 ){ 		  
 		  Bottle targetBottle;
 		  targetBottle.addDouble(10*tan(6.28-angle)+0.1);
-		  targetBottle.addDouble(10);
-		  targetBottle.addDouble(10);
+		  targetBottle.addDouble((x-160)*0.1);
+		  targetBottle.addDouble((y-120)*0.1+0.5);
 		  targetPort.prepare() = targetBottle;	
 		  targetPort.write();
 		}
@@ -354,7 +370,7 @@ bool disparityModule::updateModule(){
 } 	
 
 
-void disparityModule::merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,ImageOf<PixelMono> *imgOut, int disparityVal){
+void disparityModule::merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,ImageOf<PixelMono> *imgOut, int disparityVal, int &maxValue){
 	//initialisation
 	IppiSize sizesrc={252,152};
 	Ipp32f coeffs[3]={0.33,0.33,0.33};
@@ -429,12 +445,17 @@ void disparityModule::merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,
 	unsigned char *p_left=(unsigned char *)imgInLGray->getRawImage();
 	p_right=(unsigned char *)imgInRGrayShift->getRawImage();
 	unsigned char *p_out=(unsigned char *)imgOut->getRawImage();
+	int maxvalue=0;
 	for (int r=0;r<152;r++){
 	  for(int c=0; c<252; c++){
 	    //p_out[c+r*152]=((p_left[c+r*152]+p_right[c+r*152])/512)*255;
 	    unsigned char value;
 	    double subvalue=(double)(*p_left+*p_right)/512;
 	    value=(unsigned char)(subvalue*255);
+	    if (value>maxValue){
+	      maxValue=value;
+	      // printf("%d ",maxValue);
+	    }
 	    //value=(unsigned char)((*p_right+*p_left)/512)*255;
 	    *p_out=value;
 	    p_right++;
@@ -454,6 +475,62 @@ void disparityModule::merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,
 	delete imgInRGray;
 	delete imgInRGrayShift;
 
+}
+
+void disparityModule::extractCentroid(ImageOf<PixelMono> *imgIn,ImageOf<PixelMono> *imgOut, int &x, int &y, int maxValue){
+ 
+  int height=152;
+  int width=252;
+  int rowSize=256;
+  for(int y=0;y<height;y++){
+     for(int x=0;x<width;x++){
+                if(maxValue==0)
+                    imgOut->getRawImage()[x+y*rowSize]=0;
+                else if((imgIn->getRawImage()[x+y*rowSize]>=maxValue-1)&&((imgIn->getRawImage()[x+y*rowSize]<=maxValue+1))){
+                    imgOut->getRawImage()[x+y*rowSize]=255;
+                }
+                else{    
+                    imgOut->getRawImage()[x+y*rowSize]=0;
+                } //if
+     } //for  
+  }//for
+
+  // extracting the pixel position of the centroid
+
+    IppiSize srcsize;
+    srcsize.height=imgIn->height();
+    srcsize.width=imgIn->width();
+    CvMemStorage* stor=cvCreateMemStorage(0);
+    CvBox2D box;
+    CvSeq* cont = cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvSeq), sizeof(CvPoint) , stor);
+    cvFindContours( imgIn->getIplImage(), stor, &cont, sizeof(CvContour),
+                CV_RETR_LIST, CV_CHAIN_APPROX_NONE, cvPoint(0,0));
+    IplImage* dst = cvCreateImage( cvGetSize(imgOut->getIplImage()), 8, 3 );
+    cvZero(dst);   
+    double numObj = 0;
+    float line[4];
+    CvPoint center;
+    CvPoint pt1;
+    CvPoint pt2;
+
+    for(;cont;cont = cont->h_next){
+        numObj ++;
+        //  int count = cont->total; // This is number point in contour
+        box = cvMinAreaRect2(cont, stor);
+        center.x = cvRound(box.center.x);
+        center.y = cvRound(box.center.y);
+        x=(int)center.x;
+        y=(int)center.y;
+        float v = box.size.width;
+        float v1 = box.size.height;
+
+    }
+
+    cvReleaseMemStorage(&stor);
+    cvReleaseImage(&dst);
+    //cvReleaseMemStorage(&storage);
+
+        
 }
 
 
