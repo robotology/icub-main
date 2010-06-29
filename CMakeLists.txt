@@ -29,11 +29,7 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
     # Traditionally, we add "d" postfix to debug libraries
     set(CMAKE_DEBUG_POSTFIX "d")
-else (MSVC)
-    add_definitions(-D_REENTRANT)
 endif(MSVC)
-
-
 
 if(NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
@@ -54,6 +50,9 @@ else (YARP_FOUND)
   set(ICUB_HAS_YARP FALSE CACHE BOOL "" FORCE)
   message(FATAL_ERROR "Cannot find YARP")
 endif (YARP_FOUND)
+
+########## add yarp definitions
+add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
 
 ### pick up yarp's cmake scripts
 set(CMAKE_MODULE_PATH ${YARP_DIR}/conf ${CMAKE_MODULE_PATH})
