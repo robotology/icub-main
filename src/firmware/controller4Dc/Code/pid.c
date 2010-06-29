@@ -118,6 +118,10 @@ Int16  _ki_torque[JN] = INIT_ARRAY (0);			// ... integral
 Int16  _ko_torque[JN] = INIT_ARRAY (0);			// offset 
 Int16  _kr_torque[JN] = INIT_ARRAY (3);			// scale factor (negative power of two) 
 
+// JOINT IMPEDANCE
+Int16  _ks_imp[JN] = INIT_ARRAY (20);			// stiffness coefficient
+Int16  _kd_imp[JN] = INIT_ARRAY (0);			// damping coefficient
+Int16  _ko_imp[JN] = INIT_ARRAY (0);			// offset
 											
 #if VERSION == 0x0116
 // CURRENT PID
