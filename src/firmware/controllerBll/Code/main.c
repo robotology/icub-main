@@ -426,10 +426,7 @@ void main(void)
 		//head= (head+1)%winSize;
 		headPos=headPos+1; if(headPos==winSizePos) headPos=0;
 		headVel=headVel+1; if(headVel==winSizeVel) headVel=0;
-		
-		/* memorize old position - kept for calibration check */
-		for (i=0; i<JN; i++) _position_old[i] = _position[i];
-		
+				
 	
 		//}
 		
@@ -724,7 +721,7 @@ void check_range_torque(byte i, Int16 band, Int32 *PWM)
  		{
 	 		if  (_position[i] > _max_position[i])
 	 		{
-	 			if ((_position[i]-_position_old[i])>=0)
+	 			if (_speed[i]>=0)
 				{
 					PWM[i] = 0;	
 				}
@@ -739,7 +736,7 @@ void check_range_torque(byte i, Int16 band, Int32 *PWM)
 	 		}
 	 		if  (_position[i] < _min_position[i])   
 	 		{
-	 			if ((_position[i]-_position_old[i])<=0)
+	 			if (_speed[i]<=0)
 				{
 					PWM[i] = 0;			
 				}				
