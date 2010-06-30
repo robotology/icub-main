@@ -1,0 +1,74 @@
+<application>
+<name>Torque Observer</name>
+	<dependencies>
+	        <port>/icub/left_arm/state:o</port>
+        </dependencies>
+	<module>
+      		<name>torqueObserver</name>
+      		<parameters>--from leftArmTorqueObserver.ini</parameters>
+			<node>matt</node>
+			<tag>left_arm_tobs</tag>
+   	</module>
+	<module>
+      		<name>torqueObserver</name>
+      		<parameters>--from rightArmTorqueObserver.ini</parameters>
+			<node>matt</node>
+			<tag>right_arm_tobs</tag>
+   	</module>
+	<module>
+      		<name>torqueObserver</name>
+      		<parameters>--from leftLegTorqueObserver.ini</parameters>
+			<node>matt</node>
+			<tag>left_leg_tobs</tag>
+   	</module>
+	<module>
+      		<name>torqueObserver</name>
+      		<parameters>--from rightLegTorqueObserver.ini</parameters>
+			<node>matt</node>
+			<tag>right_leg_tobs</tag>
+   	</module>
+        <connection>
+                <from>/icub/left_arm/analog:o</from>
+                <to>/ftObs/left_arm/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/right_arm/analog:o</from>
+                <to>/ftObs/right_arm/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/left_leg/analog:o</from>
+                <to>/ftObs/left_leg/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/right_leg/analog:o</from>
+                <to>/ftObs/right_leg/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		
+        <connection>
+                <from>/ftObs/left_arm/torques:o</from>
+                <to>/icub/left_arm/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/ftObs/right_arm/torques:o</from>
+                <to>/icub/right_arm/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/ftObs/left_leg/torques:o</from>
+                <to>/icub/left_leg/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/ftObs/right_leg/torques:o</from>
+                <to>/icub/right_leg/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+<!-- <connection>             <from>/icub/left_arm/FT:o</from>                <to>/icub/left_arm/FT:i</to>                 <protocol>udp</protocol>        </connection> -->
+</application>
