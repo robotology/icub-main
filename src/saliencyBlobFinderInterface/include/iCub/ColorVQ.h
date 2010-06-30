@@ -2,7 +2,7 @@
 #ifndef _COLORVQ_H_
 #define _COLORVQ_H_
 
-#include <ace/config.h>
+//#include <ace/config.h>
 
 //YARP include
 #include <yarp/os/all.h>
