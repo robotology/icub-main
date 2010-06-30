@@ -1312,25 +1312,29 @@ bool affActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequ
             Bottle &bPoss=bOpt.addList();
             bPoss.addString("poss");
             Bottle &bPossVects=bPoss.addList();
-            bPossVects.addString(handWP[i].poss.toString().c_str());
+            for (int j=0; j<handWP[i].poss.length(); j++)
+                bPossVects.addDouble(handWP[i].poss[j]);
 
             // vels part
             Bottle &bVels=bOpt.addList();
             bVels.addString("vels");
             Bottle &bVelsVects=bVels.addList();
-            bVelsVects.addString(handWP[i].vels.toString().c_str());
+            for (int j=0; j<handWP[i].vels.length(); j++)
+                bVelsVects.addDouble(handWP[i].vels[j]);
 
             // tols part
             Bottle &bTols=bOpt.addList();
             bTols.addString("tols");
             Bottle &bTolsVects=bTols.addList();
-            bTolsVects.addString(handWP[i].tols.toString().c_str());
+            for (int j=0; j<handWP[i].tols.length(); j++)
+                bTolsVects.addDouble(handWP[i].tols[j]);
 
             // thres part
             Bottle &bThres=bOpt.addList();
             bThres.addString("thres");
             Bottle &bThresVects=bThres.addList();
-            bThresVects.addString(handWP[i].thres.toString().c_str());
+            for (int j=0; j<handWP[i].thres.length(); j++)
+                bThresVects.addDouble(handWP[i].thres[j]);
 
             // tmo part
             Bottle &bTmo=bOpt.addList();
