@@ -69,9 +69,6 @@
 #define MODE_MARGIN_REACHED    		0x40
 #define MODE_OPENLOOP               0x50
 
-#define MODE_CONTROLLED				1
-#define MODE_CALIB					2
-
 //   Calibration Type Messages 
 #define CALIB_HARD_STOPS            0 
 #define CALIB_ABS_POS_SENS          1
