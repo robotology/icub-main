@@ -198,6 +198,8 @@ Int32 compute_pwm(byte j)
 	Int32 PWMOUT=0;
 	Int32 IOUT=0;		
 	byte  i=0;
+	Int32 ImpInputError=0;
+	Int16 ImpError=0;
 
 // input selection depending on firmware version
 /*#if VERSION == 0x0173
@@ -362,10 +364,24 @@ Int32 compute_pwm(byte j)
 	break;
 	case MODE_IMPEDANCE: 
 		compute_desired(j);
+		ImpInputError = L_sub(_position[j], _desired[j]);				
+		if (ImpInputError > MAX_16)
+			ImpError = MAX_16;
+		else
+		if (ImpInputError < MIN_16) 
+			ImpError = MIN_16;
+		else
+		{
+			ImpError = extract_l(ImpInputError);
+		}		
 	#if VERSION == 0x0157
-		_desired_torque[j] = -_ks_imp[j] * (_position[j] - _desired[j]) + _ko_imp[j];// -_kd_imp[j] * _speed[j];
+		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(ImpError);
+		_desired_torque[j] += (Int32)_ko_imp[j];
+		_desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
 	#elif VERSION == 0x0150
-		_desired_torque[j] = _ks_imp[j] * (_position[j] - _desired[j]) + _ko_imp[j];// -_kd_imp[j] * _speed[j];
+		_desired_torque[j] = (Int32)_ks_imp[j] * (Int32)(ImpError);
+		_desired_torque[j] += (Int32)_ko_imp[j];
+		// _desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
 	#endif
 		PWMOUT = compute_pid_torque(j, _strain_val[j]);
 		PWMOUT = PWMOUT + _ko_torque[j];
@@ -424,7 +440,7 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 	
 	_error_old_torque[j] = _error_torque[j];
 
-	InputError = L_sub(	_desired_torque[j], strain_val);
+	InputError = L_sub(	_desired_torque[j], (Int32)strain_val);
 			
 	if (InputError > MAX_16)
 		_error_torque[j] = MAX_16;
