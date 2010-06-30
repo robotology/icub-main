@@ -15,6 +15,7 @@
 #include "phase_hall_sens.h"
 #include "brushless_comm.h"
 #include "strain_board.h"
+#include "filters.h"
 
 #ifndef VERSION
 #	error "No valid version specified"

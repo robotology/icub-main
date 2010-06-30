@@ -217,6 +217,7 @@ extern char    _additional_info [32];
 		_integral[axis] = 0; \
 		_set_point[axis] = _position[axis]; \
 		init_trajectory (axis, _position[axis], _position[axis], 1); \
+		clear_lpf_ord1_3hz  (axis); \
 	} \
 	else \
 		_general_board_error = ERROR_FMT; \

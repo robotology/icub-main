@@ -3,9 +3,10 @@
 #include "pid.h"
 
 
+float x_filt[6][JN],  y_filt[6][JN];	
+		
 Int32 lpf_ord1_3hz(Int32 input, int j)
 {
-		static float x_filt[6][JN],  y_filt[6][JN];	
        	//order1 3Hz
 		x_filt[0][j] = x_filt[1][j]; 
         x_filt[1][j] = input / 1.071001538e+02;
@@ -15,9 +16,22 @@ Int32 lpf_ord1_3hz(Int32 input, int j)
         return (Int32)(y_filt[1][j]);
 }
 
+void clear_lpf_ord1_3hz(int j)
+{
+	int i=0;
+	for (i=0; i<6; i++)
+	{
+		x_filt[i][j]=0;
+		y_filt[i][j]=0;
+	}
+}
+// ***********************
+// READY AVAILABLE FILTERS
+// ***********************
+
+/*
 Int32 lpf_ord1_30hz(Int32 input, int j)
 {
-		static float x_filt[6][JN],  y_filt[6][JN];	
 		//order1 30Hz
 		x_filt[0][j] = x_filt[1][j]; 
         x_filt[1][j] = input / 1.157889499e+01;
@@ -30,7 +44,6 @@ Int32 lpf_ord1_30hz(Int32 input, int j)
          
 Int32 lpf_ord2_30hz(Int32 input, int j)
 {		
-		static float x_filt[6][JN],  y_filt[6][JN];	
         //order2 30Hz         
         x_filt[0][j] = x_filt[1][j]; x_filt[1][j] = x_filt[2][j]; 
         x_filt[2][j] = input / 1.278738361e+02;
@@ -44,7 +57,6 @@ Int32 lpf_ord2_30hz(Int32 input, int j)
 
 Int32 lpf_ord4_30hz(Int32 input, int j)
 {
-		static float x_filt[6][JN],  y_filt[6][JN];	
 		//order4 30Hz
         x_filt[0][j] = x_filt[1][j]; x_filt[1][j] = x_filt[2][j]; x_filt[2][j] = x_filt[3][j]; x_filt[3][j] = x_filt[4][j]; 
         x_filt[4][j] = input / 1.602898462e+04;
@@ -54,7 +66,7 @@ Int32 lpf_ord4_30hz(Int32 input, int j)
                      + ( -4.6409024127 * y_filt[2][j]) + (  3.5077862074 * y_filt[3][j]);
         return (Int32)(y_filt[4][j]);	
 }
-
+*/
 
 
 
