@@ -1285,6 +1285,67 @@ deque<string> affActionPrimitives::getHandSeqList()
 
 
 /************************************************************************/
+bool affActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequence)
+{
+    if (isValidHandSeq(handSeqKey))
+    {
+        deque<HandWayPoint> &handWP=handSeqMap[handSeqKey];
+        sequence.clear();
+
+        // numWayPoints part
+        Bottle &bNum=sequence.addList();
+        bNum.addString("numWayPoints");
+        bNum.addInt(handWP.size());
+        
+        // wayPoints parts
+        for (unsigned int i=0; i<handWP.size(); i++)
+        {
+            char wp[255];
+            sprintf(wp,"wp_%d",i);
+
+            Bottle &bWP=sequence.addList();
+            bWP.addString(wp);
+
+            Bottle &bOpt=bWP.addList();
+
+            // poss part
+            Bottle &bPoss=bOpt.addList();
+            bPoss.addString("poss");
+            Bottle &bPossVects=bPoss.addList();
+            bPossVects.addString(handWP[i].poss.toString().c_str());
+
+            // vels part
+            Bottle &bVels=bOpt.addList();
+            bVels.addString("vels");
+            Bottle &bVelsVects=bVels.addList();
+            bVelsVects.addString(handWP[i].vels.toString().c_str());
+
+            // tols part
+            Bottle &bTols=bOpt.addList();
+            bTols.addString("tols");
+            Bottle &bTolsVects=bTols.addList();
+            bTolsVects.addString(handWP[i].tols.toString().c_str());
+
+            // thres part
+            Bottle &bThres=bOpt.addList();
+            bThres.addString("thres");
+            Bottle &bThresVects=bThres.addList();
+            bThresVects.addString(handWP[i].thres.toString().c_str());
+
+            // tmo part
+            Bottle &bTmo=bOpt.addList();
+            bTmo.addString("tmo");
+            bTmo.addDouble(handWP[i].tmo);
+        }       
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::areFingersMoving(bool &f)
 {
     if (configured)

@@ -526,10 +526,18 @@ public:
     virtual bool removeHandSeq(const std::string &handSeqKey);
 
     /**
-    * Return the whole list of available hand sequence keys.
+    * Return the list of available hand sequence keys.
     * @return the list of available hand sequence keys.
     */
     std::deque<std::string> getHandSeqList();
+
+    /**
+    * Return a hand sequence. 
+    * @param handSeqKey the hand sequence key. 
+    * @param sequence the bottle containing the sequence
+    * @return true iff valid key.
+    */
+    virtual bool getHandSequence(const std::string &handSeqKey, yarp::os::Bottle &sequence);
 
     /**
     * Query if fingers are moving. 
