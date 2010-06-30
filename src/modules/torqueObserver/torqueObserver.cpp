@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) <2010> RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author Serena Ivaldi
- * email:   serena.ivaldi@iit.it
+ * Author Serena Ivaldi and Matteo Fumagalli
+ * email:   serena.ivaldi@iit.it and matteo.fumagalli@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -18,21 +18,13 @@
 
 
 
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/dev/all.h>
 #include <yarp/math/Math.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynFwd.h>
-#include <iCub/iDyn/iDynTransform.h>
 
 #include <iostream>
 #include <iomanip>
