@@ -1,0 +1,25 @@
+<application>
+<name>Face</name>
+<module>
+      <name>iCubSkinGui</name>
+      <parameters>--from lefthand.ini</parameters>
+	  <node>console</node>
+	<tag>skinGuiLeftHand</tag>
+   </module>
+<module>
+      <name>iCubSkinGui</name>
+      <parameters>--from righthand.ini</parameters>
+	  <node>console</node>
+	<tag>skinGuiRightHand</tag>
+   </module>
+<connection>
+  <from>/icub/skin/lefthand</from>
+  <to>/skinGui/left_hand:i</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/icub/skin/righthand</from>
+  <to>/skinGui/right_hand:i</to>
+  <protocol>tcp</protocol>
+</connection>
+</application>
