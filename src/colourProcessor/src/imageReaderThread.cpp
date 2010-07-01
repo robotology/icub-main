@@ -8,7 +8,7 @@ using namespace yarp::sig;
 using namespace yarp::os;
 using namespace std;
 
-imageReaderThread::imageReaderThread():RateThread(THREAD_RATE_IMAGE)
+imageReaderThread::imageReaderThread()//:RateThread(THREAD_RATE_IMAGE)
 {
     reinit_flag=false;
         

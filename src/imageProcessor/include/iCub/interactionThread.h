@@ -25,7 +25,8 @@
 //const double STOP_TIME=3;
 const int THREAD_RATE_IMAGE=30;
 
-class interactionThread: public yarp::os::RateThread
+//class interactionThread: public yarp::os::RateThread
+class interactionThread: public yarp::os::Thread
 {
 private:
     

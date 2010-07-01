@@ -8,7 +8,7 @@ using namespace yarp::sig;
 using namespace yarp::os;
 using namespace std;
 
-interactionThread::interactionThread():RateThread(THREAD_RATE_IMAGE)
+interactionThread::interactionThread()//:RateThread(THREAD_RATE_IMAGE)
 {
    this->tmp=0;
    this->inputImg=0;
@@ -42,6 +42,10 @@ interactionThread::~interactionThread()
    delete redGreen_yarp;
    delete greenRed_yarp;
    delete blueYellow_yarp;
+
+   delete redGreen_flag;
+   delete greenRed_flag;
+   delete blueYellow_flag;
 }
 
 /*processorThread::processorThread(Property &op):processorThread(){
@@ -58,9 +62,7 @@ void interactionThread::reinitialise(int width, int height){
 
     redGreen_yarp->resize(width,height);
     greenRed_yarp->resize(width,height);
-    blueYellow_yarp->resize(width,height);
-
-    
+    blueYellow_yarp->resize(width,height);    
     
 }
 
@@ -110,7 +112,8 @@ void interactionThread::run(){
     if(0==inputImg)
         return true;*/
 
-    tmp=rgPort.read(false);
+    //synchronisation with the input image occuring
+    tmp=rgPort.read(true);
     if(tmp==0){
         return;
     }
@@ -126,12 +129,12 @@ void interactionThread::run(){
     }
     ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
     //this->redGreen_yarp=tmp;
-    this->redPlane=redPlanePort.read(false);
+    this->redPlane=redPlanePort.read(true);
     if(0!=redGreen_yarp)
         *redGreen_flag=1;
     
     
-    this->bluePlane=bluePlanePort.read(false);
+    this->bluePlane=bluePlanePort.read(true);
     tmp=byPort.read(false);
     if(0!=tmp){
         ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);   
@@ -139,14 +142,12 @@ void interactionThread::run(){
     }
     
     
-    this->greenPlane=greenPlanePort.read(false);
+    this->greenPlane=greenPlanePort.read(true);
     tmp=grPort.read(false);
     if(0!=tmp){
         ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
         *greenRed_flag=1;
     }
-    
-    
 
     //check for any possible command
     
@@ -165,7 +166,6 @@ void interactionThread::run(){
    
 
 void interactionThread::threadRelease(){
-   
     printf("Thread releasing.. \n");
     printf("input port closing .... \n");
     closePorts();
