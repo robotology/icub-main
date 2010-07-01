@@ -272,7 +272,7 @@ void YUVThread::run(){
 
         //output Y centre-surround results to ports
         if (imageOutPortY->getOutputCount()>0){
-            imageOutPortY->prepare() = *imgY;	
+            imageOutPortY->prepare() = *img_out_Y;	
             imageOutPortY->write();
         }
         //output UV centre-surround results to ports
