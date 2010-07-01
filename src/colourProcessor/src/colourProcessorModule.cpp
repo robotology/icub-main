@@ -23,7 +23,8 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     ct=0;
     dif=0;
     initflag=false;
-    time_t start,end;
+    time_t start;
+    //time_t end;
     time (&start);
 
     Time::turboBoost();
@@ -36,7 +37,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     printf("name:%s \n",this->getName().c_str());
     interThread.start();
 
-    printf("\n waiting for connection of the input port, 200 sec to proceed \n");
+    printf("\n waiting for connection of the input port \n");
 
     return true;
 }
@@ -66,19 +67,25 @@ bool colourProcessorModule::open(Searchable& config) {
 * tries to interrupt any communications or resource usage
 */
 bool colourProcessorModule::interruptModule() {
-    interThread.interrupt();
+    //interThread.interrupt();
     cmdPort.interrupt();
-    
+    interThread.interrupt();
     return true;
 }
 
 
 bool colourProcessorModule::close(){
-    cmdPort.close();
+    
 
-    rgbProcessor.threadRelease();
-    yuvProcessor.threadRelease();
-    interThread.threadRelease();
+    //rgbProcessor.threadRelease();
+    //yuvProcessor.threadRelease();
+    //interThread.threadRelease();
+
+    rgbProcessor.stop();
+    yuvProcessor.stop();
+    interThread.stop();
+
+    cmdPort.close();
    
     return true;
 }

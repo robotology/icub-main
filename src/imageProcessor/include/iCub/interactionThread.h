@@ -87,10 +87,11 @@ private:
     * flag that is set after the dimension of the images is defined
     */
     bool reinit_flag;
-    
+    /**
+    * flag set when the interrputed function has already be called
+    */
+    bool interrupted;
     //_______________ private method  __________________________
-    
-    
     
 public:
     /**
