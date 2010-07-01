@@ -1,7 +1,7 @@
 <application>
 <name>Torque Observer</name>
 	<dependencies>
-	        <port>/icub/left_arm/state:o</port>
+	        <port>/icub/right_arm/state:o</port>
         </dependencies>
 	<module>
       		<name>torqueObserver</name>
@@ -29,44 +29,44 @@
    	</module>
         <connection>
                 <from>/icub/left_arm/analog:o</from>
-                <to>/ftObs/left_arm/FT:i</to>
+                <to>/tqObs/left_arm/FT:i</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_arm/analog:o</from>
-                <to>/ftObs/right_arm/FT:i</to>
+                <to>/tqObs/right_arm/FT:i</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
                 <from>/icub/left_leg/analog:o</from>
-                <to>/ftObs/left_leg/FT:i</to>
+                <to>/tqObs/left_leg/FT:i</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_leg/analog:o</from>
-                <to>/ftObs/right_leg/FT:i</to>
+                <to>/tqObs/right_leg/FT:i</to>
                 <protocol>tcp</protocol>
         </connection>
 		
 		
         <connection>
-                <from>/ftObs/left_arm/torques:o</from>
-                <to>/icub/left_arm/FT:i</to>
+                <from>/tqObs/left_arm/limbTorques:o</from>
+                <to>/icub/joint_vsens/left_arm:i</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/ftObs/right_arm/torques:o</from>
-                <to>/icub/right_arm/FT:i</to>
+                <from>/tqObs/right_arm/limbTorques:o</from>
+                <to>/icub/joint_vsens/right_arm:i</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/ftObs/left_leg/torques:o</from>
-                <to>/icub/left_leg/FT:i</to>
+                <from>/tqObs/left_leg/limbTorques:o</from>
+                <to>/icub/joint_vsens/left_leg:i</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/ftObs/right_leg/torques:o</from>
-                <to>/icub/right_leg/FT:i</to>
+                <from>/tqObs/right_leg/limbTorques:o</from>
+                <to>/icub/joint_vsens/right_leg:i</to>
                 <protocol>tcp</protocol>
         </connection>
 		
