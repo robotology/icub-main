@@ -337,7 +337,7 @@ public:
                 }
 
                 // skip to the next cycle
-                return;
+                continue;
             }
 
             // convert the input image to gray-scale
