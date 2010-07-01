@@ -123,7 +123,7 @@ Linux and Windows.
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/Thread.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Image.h>
 
@@ -162,7 +162,7 @@ public:
 };
 
 
-class ProcessThread : public RateThread
+class ProcessThread : public Thread
 {
 protected:
     ResourceFinder &rf;
@@ -222,7 +222,7 @@ protected:
     }
 
 public:
-    ProcessThread(ResourceFinder &_rf) : rf(_rf), RateThread(5) { }
+    ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
 
     virtual bool threadInit()
     {
@@ -281,10 +281,12 @@ public:
 
     virtual void run()
     {
-        // acquire new image
-        if (ImageOf<PixelBgr> *pImgBgrIn=inPort.read(false))
-        {     
-            double latch_t, dt0, dt1, dt2;
+        double latch_t, dt0, dt1, dt2;
+
+        while (!isStopping())
+        {
+            // acquire new image
+            ImageOf<PixelBgr> *pImgBgrIn=inPort.read(true);            
             double t0=Time::now();
              
             // consistency check

@@ -138,13 +138,15 @@ protected:
     bool checkEnabled;
     bool tracking_mode;
     bool torsoActive;
+    bool reachTmoEnabled;
     bool verbose;
 
     double default_exec_time;
     double waitTmo;
+    double reachTmo;
     double latchTimerWait;
-    double latchTimerHand;
-    double t0;
+    double latchTimerReach;
+    double latchTimerReachLog;
 
     int jHandMin;
     int jHandMax;
@@ -156,6 +158,7 @@ protected:
     yarp::sig::Vector      curHandTols;
     yarp::sig::Vector      curGraspDetectionThres;
     double                 curHandTmo;
+    double                 latchTimerHand;
 
     std::set<int>          fingersJntsSet;
     std::set<int>          fingersMovingJntsSet;
@@ -573,11 +576,11 @@ public:
 
     /**
     * Get the current arm pose.
-    * @param x: a 3-d vector which is filled with the actual 
+    * @param x a 3-d vector which is filled with the actual 
     *         position x,y,z (meters).
-    * @param od: a 4-d vector which is filled with the actual orientation
-    * using axis-angle representation xa, ya, za, theta (meters and 
-    * radians). 
+    * @param od a 4-d vector which is filled with the actual 
+    *           orientation using axis-angle representation xa, ya,
+    *           za, theta (meters and radians).
     * @return true/false on success/failure.
     */
     virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
@@ -593,7 +596,7 @@ public:
     /**
     * Set the task space controller in tracking or non-tracking 
     * mode. 
-    * @param f: true for tracking mode, false otherwise. 
+    * @param f true for tracking mode, false otherwise. 
     * @note In tracking mode the cartesian position is mantained on 
     *       the reached target.
     * @return true/false on success/failure.
@@ -622,6 +625,21 @@ public:
     * @return true/false on success/failure.
     */
     virtual bool disableArmWaving();
+
+    /**
+    * Enable timeout while reaching.
+    * @param tmo the timeout given in seconds.
+    * @note if a reaching task is not accomplished within the 
+    *       timeout, then the action is considered done.
+    * @return true/false on success/failure.
+    */
+    virtual bool enableReachingTimeout(const double tmo);
+
+    /**
+    * Disable timeout while reaching.
+    * @return true/false on success/failure.
+    */
+    virtual bool disableReachingTimeout();
 
     /**
     * Check whether all the actions in queue are accomplished.

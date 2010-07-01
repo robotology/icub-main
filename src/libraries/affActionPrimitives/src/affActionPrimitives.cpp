@@ -154,9 +154,12 @@ void affActionPrimitives::init()
     torsoActive=true;
     handSeqTerminator=false;
     fingersInPosition=true;
+    reachTmoEnabled=false;
 
     latchTimerWait=waitTmo=0.0;
+    latchTimerReach=reachTmo=0.0;
     latchTimerHand=curHandTmo=0.0;
+    latchTimerReachLog=0.0;
 }
 
 
@@ -529,7 +532,7 @@ bool affActionPrimitives::isHandSeqEnded()
     // handle hand timeout
     if ((Time::now()-latchTimerHand)>curHandTmo)
     {
-        printMessage("timeout occured on hand WP\n");
+        printMessage("timeout (%g) expired on hand WP\n",curHandTmo);
 
         for (set<int>::iterator i=fingersMovingJntsSet.begin(); i!=fingersMovingJntsSet.end(); ++i)
         {
@@ -787,7 +790,7 @@ bool affActionPrimitives::reachPose(const Vector &x, const Vector &o,
 
         postReachCallback();
 
-        t0=Time::now();
+        latchTimerReachLog=latchTimerReach=Time::now();
 
         return true;
     }
@@ -815,7 +818,7 @@ bool affActionPrimitives::reachPosition(const Vector &x, const double execTime)
 
         postReachCallback();
 
-        t0=Time::now();
+        latchTimerReachLog=latchTimerReach=Time::now();
 
         return true;
     }
@@ -894,15 +897,25 @@ void affActionPrimitives::run()
         cartCtrl->getPose(x,o);
         cartCtrl->getDesired(xdhat,odhat,qdhat);
 
-        if (t-t0>ACTIONPRIM_DUMP_PERIOD)
+        if ((t-latchTimerReachLog)>ACTIONPRIM_DUMP_PERIOD)
         {
             printMessage("reaching... xdhat=[%s] |e|=%.3f [m]\n",
                          toCompactString(xdhat).c_str(),norm(xdhat-x));
 
-            t0=t;
+            latchTimerReachLog=t;
         }
 
         cartCtrl->checkMotionDone(&armMoveDone);
+
+        // check if timeout has expired
+        if (reachTmoEnabled && !armMoveDone)
+        {
+            if ((t-latchTimerReach)>reachTmo)
+            {
+                printMessage("timeout (%g) expired while reaching\n",reachTmo);
+                armMoveDone=true;
+            }
+        }
 
         if (armMoveDone)
         {    
@@ -1070,7 +1083,7 @@ bool affActionPrimitives::cmdArm(const Action &action)
 
         postReachCallback();
 
-        t0=Time::now();
+        latchTimerReachLog=latchTimerReach=Time::now();
 
         return true;
     }
@@ -1470,6 +1483,34 @@ bool affActionPrimitives::disableArmWaving()
         if (RES_WAVER(armWaver)->disable())
             printMessage("arm waving disabled\n");
 
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::enableReachingTimeout(const double tmo)
+{
+    if (configured)
+    {
+        reachTmo=tmo;
+        reachTmoEnabled=true;
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::disableReachingTimeout()
+{
+    if (configured)
+    {
+        reachTmoEnabled=false;
         return true;
     }
     else
