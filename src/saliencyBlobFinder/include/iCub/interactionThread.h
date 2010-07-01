@@ -16,10 +16,14 @@
 //sig section
 #include <yarp/sig/Image.h>
 
+#include <time.h>
 #include <string>
 
 //IPP include
 #include <ipp.h>
+
+//within project include
+#include <iCub/blobFinderThread.h>
 
 //const double TIMEOUT=0.1;
 //const double STOP_TIME=3;
@@ -28,56 +32,74 @@ const int INT_THREAD_RATE=30;
 class interactionThread: public yarp::os::RateThread
 {
 private:
-    
+    /**
+    * execution step counter
+    */
+    int ct;
     /**
     * IppiSize reference to the dimension of the input image
     */
     IppiSize srcsize;
     /**
-    * a port for the inputImage
+    * port used for centroid position to controlGaze2
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; // 
+    BufferedPort<Bottle> centroidPort;
     /**
-    * a port for the redPlane
+    * port used for centroid position to iKinHead
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > redPlanePort; //
+    Port triangulationPort;
     /**
-    * a port for the greenPlane
+    * port used for sending responses from triangulationPort back into i
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > greenPlanePort; //
+    BufferedPort<Bottle> gazeControlPort;
     /**
-    * a port for the bluePlane
+    * port where the input image is read from
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > bluePlanePort; //	 
+    BufferedPort<ImageOf<PixelRgb> > inputPort;
     /**
-    * input port for the R+G- colour Opponency Map
+    * port where the red plane of the image is streamed
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort; 
+    BufferedPort<ImageOf<PixelMono> > redPort;
     /**
-    * input port for the G+R- colour Opponency Map
+    * port where the green plane of the image is streamed
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort; 
+    BufferedPort<ImageOf<PixelMono> > greenPort;
     /**
-    * input port for the B+Y- colour Opponency Map
+    * port where the blue plane of the image is streamed
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort; 	
+    BufferedPort<ImageOf<PixelMono> > bluePort;
     /**
-    *  output port for edges in R+G- colour Opponency Map
+    * port where the difference of gaussian R+G- is streamed
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgEdgesPort; 
+    BufferedPort<ImageOf<PixelMono> > rgPort;
     /**
-    * output port for edges in G+R- colour Opponency Map
+    * port where the difference of gaussian G+R- is streamed
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grEdgesPort; 
+    BufferedPort<ImageOf<PixelMono> > grPort;
     /**
-    * output port for edges in B+Y- colour Opponency Map
+    * port where the difference of gaussian B+Y- of the image is streamed
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byEdgesPort;
+    BufferedPort<ImageOf<PixelMono> > byPort;
     /**
-    * overall edges port combination of maximum values of all the colorOpponency edges
+    * port where the yellow plane of the image is streamed
     */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > edgesPort;
-    
+    BufferedPort<ImageOf<PixelMono> > yellowPort;
+    /**
+    * port that returns the image output
+    */
+    BufferedPort<ImageOf<PixelRgb> > outputPort;
+    /**
+    * reference to the input image
+    */
+    ImageOf<PixelRgb> *img;
+    /**
+    * buffer image for received image
+    */
+    ImageOf<PixelMono> *tmpImage;
+    /**
+    * main thread responsable to process the input images and produce an output
+    */
+    blobFinderThread* blobFinder;
     /**
     * name of the module and rootname of the connection
     */
@@ -86,6 +108,34 @@ private:
     * flag that is set after the dimension of the images is defined
     */
     bool reinit_flag;
+    /**
+    * time variable
+    */
+    time_t startTimer;
+    /**
+    * time variable
+    */
+    time_t endTimer;
+    /**
+    * position of the centroid X in the previous time instant
+    */
+    int previous_target_x;
+    /**
+    * position of the centroid Y in the previous time instant
+    */
+    int previous_target_y;
+    /**
+    * position of the target in the body-centered frame (x coordinate)
+    */
+    double target_x;
+    /**
+    * position of the target in the body-centered frame (y coordinate)
+    */
+    double target_y;
+    /**
+    * position of the target in the body-centered frame (z coordinate)
+    */
+    double target_z;
     
     //_______________ private method  __________________________
     
@@ -151,6 +201,14 @@ public:
     * @return return whether the operation was successful
     */
     bool outPorts();
+    /**
+    * function that reads the ports for colour RGB opponency maps
+    */
+    bool getOpponencies();
+    /**
+    * function that reads the ports for the RGB planes
+    */
+    bool getPlanes();
     
 
     //______ public attributes________
@@ -214,6 +272,22 @@ public:
     * flag on when the image is successfully acquired
     */
     int* blueYellow_flag;
+    /**
+    * it indicates if the control of the time is on
+    */
+    bool timeControl_flag;
+    /**
+    *   number spikes that have to be counted before the maxSaliency blob can be choosen
+    */
+    int countSpikes;
+    /**
+    * dispacement on the x axis for the target
+    */
+    int xdisp;
+    /**
+    * dispacement on the y axis for the target
+    */
+    int ydisp;
 };
 
 #endif //_INTERACTIONTHREAD_H_
