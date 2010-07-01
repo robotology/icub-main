@@ -182,7 +182,10 @@ private:
     * time delay for second port connection
     */
     double dif;
-    
+    /**
+    * flag that indicates if the initialisation has been ended
+    */
+    bool initflag;
     /**
     * input image
     */
@@ -255,6 +258,7 @@ public:
     * thread in charge of managing all the interaction with other modules through ports
     */
     imageReaderThread interThread;
+    
 };
 
 #endif //_RGBPROCESSORMODULE_H_

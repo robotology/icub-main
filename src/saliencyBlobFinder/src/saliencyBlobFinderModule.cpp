@@ -7,7 +7,7 @@ using namespace std;
 #define centroidDispacementY 10;
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
-    interThread=0;
+    interThread=new interactionThread();
     blobFinder=0;
 
     reinit_flag=false;
@@ -87,23 +87,9 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     printf("name:%s \n",this->getName().c_str());
     interThread->start();
 
-    printf("\n waiting for connection of the input port, 200 sec to proceed \n");
+    printf("\n waiting for connection of the input port \n");
 
     
-    
-    /*
-    //initialization of the main thread
-    blobFinder=new blobFinderThread();
-    blobFinder->reinitialise(img->width(), img->height());
-    blobFinder->start();
-    blobFinder->ptr_inputImg=img;
-    blobFinder->countSpikes=this->countSpikes;
-    */
-
-
-    //passes the value of flags
-    copyFlags();
-
     
     
     return true;
@@ -202,6 +188,22 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 }
 
 bool saliencyBlobFinderModule::updateModule() {
+
+    if((0!=interThread->img) && (!this->reinit_flag)){
+
+        
+        //initialization of the main thread
+        blobFinder=new blobFinderThread();
+        blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
+        blobFinder->start();
+        blobFinder->ptr_inputImg=interThread->img;
+        blobFinder->countSpikes=this->countSpikes;
+        
+
+        //passes the value of flags
+        copyFlags();
+        this->reinit_flag=true;
+    }
 
     /*command=cmdPort.read(PortReader,false);
     if(command!=0){

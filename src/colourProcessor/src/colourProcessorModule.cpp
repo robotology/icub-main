@@ -22,10 +22,14 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     //initialization
     ct=0;
     dif=0;
+    initflag=false;
     time_t start,end;
     time (&start);
 
     Time::turboBoost();
+    cmdPort.open(getName("/cmd:i"));
+    attach(cmdPort);
+    attachTerminal();
     printf("resource finder configuration after time turbo boosting \n");
     
     interThread.setName(this->getName().c_str());
@@ -34,46 +38,6 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 
     printf("\n waiting for connection of the input port, 200 sec to proceed \n");
 
-    
-    
-    while((interThread.inputImg==0)&&(dif<200)){
-        time (&end);
-        dif = difftime (end,start);
-    }
-    if(dif>=200)
-        return false;
-
-    while(interThread.inputImg->width()==0){
-        
-    }
-
-	printf("input port activated! starting the processes ....\n");
-    
-    cmdPort.open(getName("/cmd:i"));
-    attach(cmdPort);
-    attachTerminal();
-
-
-    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-    //starting rgb thread and linking all the images
-    startRgbProcessor();
-    interThread.redPlane=rgbProcessor.redPlane;
-    interThread.greenPlane=rgbProcessor.greenPlane;
-    interThread.bluePlane=rgbProcessor.bluePlane;
-    interThread.redGreen_yarp=rgbProcessor.redGreen_yarp;
-    interThread.greenRed_yarp=rgbProcessor.greenRed_yarp;
-    interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
-
-    //starting yuv thread and linking all the images
-    if(startyuv_flag){
-            startYuvProcessor();
-    }
-    interThread.uvPlane=yuvProcessor.uvPlane;
-    interThread.uPlane=yuvProcessor.uPlane;
-    interThread.vPlane=yuvProcessor.vPlane;
-    interThread.yPlane=yuvProcessor.yPlane;
-   
-    
     return true;
 }
 
@@ -162,8 +126,37 @@ bool colourProcessorModule::updateModule() {
         std::string *commandTOT=new string(bot->toString().c_str());
         printf("%s \n", commandTOT->c_str());
     }*/
+
+    if((0!=interThread.inputImg)&&(this->initflag)){
     
-    
+        /*
+        while(interThread.inputImg->width()==0){
+            
+        }
+        */
+	    printf("input port activated! starting the processes ....\n");    
+
+        //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+        //starting rgb thread and linking all the images
+        startRgbProcessor();
+        interThread.redPlane=rgbProcessor.redPlane;
+        interThread.greenPlane=rgbProcessor.greenPlane;
+        interThread.bluePlane=rgbProcessor.bluePlane;
+        interThread.redGreen_yarp=rgbProcessor.redGreen_yarp;
+        interThread.greenRed_yarp=rgbProcessor.greenRed_yarp;
+        interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
+
+        //starting yuv thread and linking all the images
+        if(startyuv_flag){
+                startYuvProcessor();
+        }
+        interThread.uvPlane=yuvProcessor.uvPlane;
+        interThread.uPlane=yuvProcessor.uPlane;
+        interThread.vPlane=yuvProcessor.vPlane;
+        interThread.yPlane=yuvProcessor.yPlane;
+
+        initflag=true;
+    }
     
     return true;
 }

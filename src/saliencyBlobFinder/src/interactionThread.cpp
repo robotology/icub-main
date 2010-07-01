@@ -372,20 +372,20 @@ bool interactionThread::openPorts(){
     bool ok=true;
     
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-    inputPort.open(getName("image:i").c_str());
+    inputPort.open(getName("/image:i").c_str());
     
-    redPort.open(getName("red:i").c_str());
-    greenPort.open(getName("green:i").c_str());
-    bluePort.open(getName("blue:i").c_str());
+    redPort.open(getName("/red:i").c_str());
+    greenPort.open(getName("/green:i").c_str());
+    bluePort.open(getName("/blue:i").c_str());
 
-    rgPort.open(getName("rg:i").c_str());
-    grPort.open(getName("gr:i").c_str());
-    byPort.open(getName("by:i").c_str());
+    rgPort.open(getName("/rg:i").c_str());
+    grPort.open(getName("/gr:i").c_str());
+    byPort.open(getName("/by:i").c_str());
 
-    outputPort.open(getName("image:o").c_str());
-    centroidPort.open(getName("centroid:o").c_str());
-    triangulationPort.open(getName("triangulation:o").c_str());
-    gazeControlPort.open(getName("gazeControl:o").c_str());
+    outputPort.open(getName("/image:o").c_str());
+    centroidPort.open(getName("/centroid:o").c_str());
+    triangulationPort.open(getName("/triangulation:o").c_str());
+    gazeControlPort.open(getName("/gazeControl:o").c_str());
 
 	return true;
 }

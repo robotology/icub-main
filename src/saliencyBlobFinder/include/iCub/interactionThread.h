@@ -89,10 +89,6 @@ private:
     */
     BufferedPort<ImageOf<PixelRgb> > outputPort;
     /**
-    * reference to the input image
-    */
-    ImageOf<PixelRgb> *img;
-    /**
     * buffer image for received image
     */
     ImageOf<PixelMono> *tmpImage;
@@ -260,6 +256,10 @@ public:
     * yarp image of the composition of all the edges
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp;
+    /**
+    * reference to the input image
+    */
+    ImageOf<PixelRgb> *img;
     /**
     * flag on when the image is successfully acquired
     */
