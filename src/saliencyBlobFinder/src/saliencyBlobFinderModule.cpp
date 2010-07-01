@@ -45,8 +45,9 @@ void saliencyBlobFinderModule::copyFlags(){
 }
 
 /**
-*function that opens the module
+*function that opens the module DEPRECATED
 */
+/*
 bool saliencyBlobFinderModule::open(Searchable& config) {
     ct = 0;
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
@@ -66,6 +67,33 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
     gazeControlPort.open(getName("gazeControl:o"));
     cmdPort.open(getName("cmd"));
     attach(cmdPort);
+
+    time (&start);
+    
+    return true;
+}*/
+
+bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
+    ct = 0;
+    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+    inputPort.open(getName("image:i"));
+    
+    redPort.open(getName("red:i"));
+    greenPort.open(getName("green:i"));
+    bluePort.open(getName("blue:i"));
+
+    rgPort.open(getName("rg:i"));
+    grPort.open(getName("gr:i"));
+    byPort.open(getName("by:i"));
+
+    outputPort.open(getName("image:o"));
+    centroidPort.open(getName("centroid:o"));
+    triangulationPort.open(getName("triangulation:o"));
+    gazeControlPort.open(getName("gazeControl:o"));
+
+    cmdPort.open(getName("cmd"));
+    attach(cmdPort);
+    attachTerminal();
 
     time (&start);
     
@@ -202,14 +230,14 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 
 bool saliencyBlobFinderModule::updateModule() {
   
-    command=cmdPort.read(false);
+    /*command=cmdPort.read(false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
         ConstString str= command->toString();
         printf("command received: %s \n", str.c_str());
         this->respond(*command,*reply);
         printf("module reply: %s \n",reply->toString().c_str());
-    }
+    }*/
     
     /*Bottle *bot=portTarget.read(false);
     if(bot!=NULL){
@@ -227,6 +255,7 @@ bool saliencyBlobFinderModule::updateModule() {
         printf("%s \n", commandTOT->c_str());
     }*/
     
+    /*
     ct++;
     img = this->inputPort.read(false);
     if(0==img)
@@ -257,7 +286,7 @@ bool saliencyBlobFinderModule::updateModule() {
     ret2=getPlanes();
     if(ret1&&ret2)
         blobFinder->freetorun=true;
-    outPorts();
+    outPorts();*/
     return true;
 }
 
@@ -851,7 +880,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
     mutex.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();

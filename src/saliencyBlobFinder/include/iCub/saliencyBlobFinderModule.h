@@ -5,7 +5,6 @@
 #include <time.h>
 #include <iostream>
 #include <map>
-using namespace std;
 
 
 //within project includes
@@ -19,8 +18,6 @@ using namespace std;
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
 
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
@@ -197,7 +194,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 **/
 
 
-class saliencyBlobFinderModule : public Module{
+class saliencyBlobFinderModule : public yarp::os::RFModule{
 private:
     /**
     * port where the input image is read from
@@ -238,7 +235,7 @@ private:
     /**
     * port necessary for rpc commands
     */
-    BufferedPort<Bottle> cmdPort;
+    Port cmdPort;
     /**
     * port used for centroid position to controlGaze2
     */
@@ -380,6 +377,11 @@ public:
     * @param opt options passed to the module
     */
     void setOptions(yarp::os::Property opt);
+    /**
+    * function for initialization and configuration of the RFModule
+    * @param rf resourceFinder reference
+    */
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     /**
     * catches all the commands that have to be executed when the module is closed
     */

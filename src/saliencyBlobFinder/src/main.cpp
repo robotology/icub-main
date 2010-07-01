@@ -71,6 +71,6 @@ int main(int argc, char *argv[]) {
     module.setOptions(prop);
 
 
-    return module.runModule(argc,argv);
+    return module.runModule(finder);
 
 }
