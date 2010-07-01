@@ -30,7 +30,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
-    attachTerminal();
+    //attachTerminal();
     printf("resource finder configuration after time turbo boosting \n");
     
     interThread.setName(this->getName().c_str());
@@ -134,7 +134,7 @@ bool colourProcessorModule::updateModule() {
         printf("%s \n", commandTOT->c_str());
     }*/
 
-    if((0!=interThread.inputImg)&&(this->initflag)){
+    if((0!=interThread.inputImg)&&(!initflag)){
     
         /*
         while(interThread.inputImg->width()==0){
@@ -152,15 +152,17 @@ bool colourProcessorModule::updateModule() {
         interThread.redGreen_yarp=rgbProcessor.redGreen_yarp;
         interThread.greenRed_yarp=rgbProcessor.greenRed_yarp;
         interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
-
+        
         //starting yuv thread and linking all the images
+        startyuv_flag=false;
         if(startyuv_flag){
                 startYuvProcessor();
+                interThread.uvPlane=yuvProcessor.uvPlane;
+                interThread.uPlane=yuvProcessor.uPlane;
+                interThread.vPlane=yuvProcessor.vPlane;
+                interThread.yPlane=yuvProcessor.yPlane;
         }
-        interThread.uvPlane=yuvProcessor.uvPlane;
-        interThread.uPlane=yuvProcessor.uPlane;
-        interThread.vPlane=yuvProcessor.vPlane;
-        interThread.yPlane=yuvProcessor.yPlane;
+        
 
         initflag=true;
     }

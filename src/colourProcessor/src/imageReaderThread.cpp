@@ -123,7 +123,7 @@ void imageReaderThread::run(){
     while (!isStopping()) {
         if(!interrupted_flag){
             img = this->inputPort.read(true);
-            printf("out of the waiting.... \n");
+            //printf("out of the waiting.... \n");
 
             if(0!=img){
                 if(!reinit_flag){
@@ -139,8 +139,6 @@ void imageReaderThread::run(){
                 outPorts();   
             }
         }
-        
-        Time::delay(1);
     }
 }
    
