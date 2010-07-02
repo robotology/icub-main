@@ -30,8 +30,8 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
-    //attachTerminal();
-    printf("resource finder configuration after time turbo boosting \n");
+    attachTerminal();
+    //printf("resource finder configuration after time turbo boosting \n");
     
     interThread.setName(this->getName().c_str());
     printf("name:%s \n",this->getName().c_str());
@@ -154,7 +154,6 @@ bool colourProcessorModule::updateModule() {
         interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
         
         //starting yuv thread and linking all the images
-        startyuv_flag=false;
         if(startyuv_flag){
                 startYuvProcessor();
                 interThread.uvPlane=yuvProcessor.uvPlane;

@@ -66,13 +66,6 @@ void yuvProcessorThread::run(){
 
 void yuvProcessorThread::threadRelease(){
     printf("Thread releasing.. \n");
-    /*delete redPlane;
-    delete greenPlane;
-    delete bluePlane;    
-    delete yPlane;
-    delete uPlane;
-    delete vPlane;
-    delete uvPlane;*/
 }
 
 
