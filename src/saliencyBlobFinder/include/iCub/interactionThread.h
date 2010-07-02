@@ -29,7 +29,7 @@
 //const double STOP_TIME=3;
 const int INT_THREAD_RATE=30;
 
-class interactionThread: public yarp::os::RateThread
+class interactionThread: public yarp::os::Thread
 {
 private:
     /**
@@ -104,6 +104,10 @@ private:
     * flag that is set after the dimension of the images is defined
     */
     bool reinit_flag;
+    /*
+    * flag that indicates when the thread has been interrupted
+    */
+    bool interrupted_flag;
     /**
     * time variable
     */

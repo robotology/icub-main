@@ -8,7 +8,8 @@ using namespace yarp::sig;
 using namespace yarp::os;
 using namespace std;
 
-interactionThread::interactionThread():RateThread(INT_THREAD_RATE)
+//interactionThread::interactionThread():RateThread(INT_THREAD_RATE)
+interactionThread::interactionThread()
 {
    blobFinder=0;
 
@@ -17,6 +18,8 @@ interactionThread::interactionThread():RateThread(INT_THREAD_RATE)
 
    previous_target_x=0;
    previous_target_y=0;
+
+   interrupted_flag=false;
 
    time (&startTimer);
 }
@@ -72,36 +75,42 @@ void interactionThread::interrupt(){
     centroidPort.interrupt();//open(getName("centroid:o"));
     triangulationPort.interrupt();//open(getName("triangulation:o"));
     gazeControlPort.interrupt();//open(getName("gazeControl:o"));
+
+    interrupted_flag=true;
 }
 
 
 void interactionThread::run(){
+    Time::delay(1);
+    while(!isStopping()&&(!interrupted_flag)){
     
-    ct++;
-    img = inputPort.read(false);
-    if(0==img)
-        return;
+        ct++;
+        img = inputPort.read(true);
+        if(0==img)
+            return;
 
-    if(!reinit_flag){    
-	    srcsize.height=img->height();
-	    srcsize.width=img->width();
-        this->height=img->height();
-        this->width=img->width();
-        reinitialise(img->width(), img->height());
-        reinit_flag=true;
-        tmpImage->resize(this->width,this->height);
-        
+        if(!reinit_flag){    
+	        srcsize.height=img->height();
+	        srcsize.width=img->width();
+            this->height=img->height();
+            this->width=img->width();
+            reinitialise(img->width(), img->height());
+            reinit_flag=true;
+            tmpImage->resize(this->width,this->height);
+            
+        }
+
+        //copy the inputImg into a buffer
+        ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),blobFinder->ptr_inputImg->getRawImage(), blobFinder->ptr_inputImg->getRowSize(),srcsize);
+        bool ret1=true,ret2=true;
+        ret1=getOpponencies();
+        ret2=getPlanes();
+        if(ret1&&ret2)
+            blobFinder->freetorun=true;
+        outPorts();
+
+        Time::delay(1);
     }
-
-    //copy the inputImg into a buffer
-    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),blobFinder->ptr_inputImg->getRawImage(), blobFinder->ptr_inputImg->getRowSize(),srcsize);
-    bool ret1=true,ret2=true;
-    ret1=getOpponencies();
-    ret2=getPlanes();
-    if(ret1&&ret2)
-        blobFinder->freetorun=true;
-    outPorts();
-    
    
 }
 

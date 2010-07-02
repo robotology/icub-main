@@ -81,7 +81,7 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 
     cmdPort.open(getName("cmd"));
     attach(cmdPort);
-    attachTerminal();
+    //attachTerminal();
 
     interThread->setName(this->getName().c_str());
     printf("name:%s \n",this->getName().c_str());
