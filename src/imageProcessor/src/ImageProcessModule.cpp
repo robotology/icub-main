@@ -254,9 +254,9 @@ void ImageProcessModule::resetFlags(){
 
 bool ImageProcessModule::openPorts(){
 	
-    cmdPort.open(getName("/cmd").c_str()); // optional command port
-    attach(cmdPort); // cmdPort will work just like terminal
-    attachTerminal();
+    //cmdPort.open(getName("/cmd").c_str()); // optional command port
+    //attach(cmdPort); // cmdPort will work just like terminal
+    //attachTerminal();
 
 	return true;
 }

@@ -118,8 +118,8 @@ void interactionThread::run(){
             printf("Out of the reading \n");
             if(tmp!=0){
                 //outPorts();
-            
-                /*if(!reinit_flag){
+              
+                if(!reinit_flag){
                     //srcsize.height=img->height();
                     //srcsize.width=img->width();
                     reinitialise(tmp->width(), tmp->height());
@@ -149,8 +149,8 @@ void interactionThread::run(){
                     *greenRed_flag=1;
                 }
 
-                */
-                //outPorts();
+                
+                outPorts();
             }
         }
         Time::delay(1);
