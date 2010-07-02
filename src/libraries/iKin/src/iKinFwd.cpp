@@ -990,19 +990,19 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
         return Matrix(0,0);
     }
 
-    Matrix J(6,i);
+    Matrix J(6,i+1);
     Matrix Pn,Z;
     Vector w;
 
     deque<Matrix> intH;
     intH.push_back(H0);
 
-    for (unsigned int j=0; j<i; j++)
+    for (unsigned int j=0; j<=i; j++)
         intH.push_back(intH[j]*allList[j]->getH(true));
 
     Pn=intH[i];
 
-    for (unsigned int j=0; j<i; j++)
+    for (unsigned int j=0; j<=i; j++)
     {
         Z=intH[j];
         w=cross(Z,2,Pn-Z,3,verbose);

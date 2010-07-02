@@ -879,6 +879,7 @@ public:
     yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true) { return iKinChain::EndEffPose(q,axisRep);    }
     yarp::sig::Matrix AnaJacobian(unsigned int col=3)                                 { return iKinChain::AnaJacobian(col);         }
     yarp::sig::Matrix AnaJacobian(const yarp::sig::Vector &q, unsigned int col=3)     { return iKinChain::AnaJacobian(q,col);       }
+    yarp::sig::Matrix GeoJacobian(const unsigned int i)                               { return iKinChain::GeoJacobian(i);           }
     yarp::sig::Matrix GeoJacobian()                                                   { return iKinChain::GeoJacobian();            }
     yarp::sig::Matrix GeoJacobian(const yarp::sig::Vector &q)                         { return iKinChain::GeoJacobian(q);           }
     yarp::sig::Vector Hessian_ij(const unsigned int i, const unsigned int j)          { return iKinChain::Hessian_ij(i,j);          }
