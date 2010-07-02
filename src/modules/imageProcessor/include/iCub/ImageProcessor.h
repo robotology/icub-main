@@ -19,13 +19,14 @@
 
 
 
-const int THREAD_RATE=30;
+const int THREAD_RATE=10;
 
 /**
  *This code groups together a series of useful functions that can be used for ImageProcessing
  */
 
-
+//class ImageProcessor:public yarp::os::RateThread
+//class ImageProcessor:public yarp::os::Thread
 class ImageProcessor:public yarp::os::RateThread
 {
     private:

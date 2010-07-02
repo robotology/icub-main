@@ -8,9 +8,10 @@ using namespace yarp::sig;
 using namespace yarp::os;
 using namespace std;
 
-imageReaderThread::imageReaderThread():RateThread(THREAD_RATE_IMAGE)
+imageReaderThread::imageReaderThread()//:RateThread(THREAD_RATE_IMAGE)
 {
     reinit_flag=false;
+    interrupted_flag=false;
         
     inputImg=0;
     img=0;
@@ -69,7 +70,7 @@ void imageReaderThread::setName(const char* str){
 std::string imageReaderThread::getName(const char* p){
     string str(name);
     str.append(p);
-    printf("name: %s", name.c_str());
+    //printf("name: %s", name.c_str());
     return str;
 }
 
@@ -90,8 +91,6 @@ bool imageReaderThread::threadInit(){
     uPort.open(getName("/uchannel:o").c_str());
     vPort.open(getName("/vchannel:o").c_str());
     uvPort.open(getName("/uvchannel:o").c_str());
-
-   
 
     return true;
 }
@@ -114,28 +113,33 @@ void imageReaderThread::interrupt(){
     uPort.interrupt();
     vPort.interrupt();
     uvPort.interrupt();
+
+    interrupted_flag=true;
 }
 
 
 void imageReaderThread::run(){
-    img = this->inputPort.read(false);
-    if(0==img)
-        return;
+    Time::delay(0.5);
+    while (!isStopping()) {
+        if(!interrupted_flag){
+            img = this->inputPort.read(true);
+            //printf("out of the waiting.... \n");
 
-    if(!reinit_flag){
-        
-	    srcsize.height=img->height();
-	    srcsize.width=img->width();
-        reinitialise(img->width(), img->height());
-        reinit_flag=true;
-        
+            if(0!=img){
+                if(!reinit_flag){
+                    srcsize.height=img->height();
+	                srcsize.width=img->width();
+                    reinitialise(img->width(), img->height());
+                    reinit_flag=true;
+                }
 
+                //copy the inputImg into a buffer
+                ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
+               
+                outPorts();   
+            }
+        }
     }
-
-    //copy the inputImg into a buffer
-    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
-   
-    outPorts();   
 }
    
 void imageReaderThread::outPorts(){
@@ -153,7 +157,6 @@ void imageReaderThread::outPorts(){
         greenPort.prepare() = *(greenPlane);		
         greenPort.write();
     }
-    
     if((yPlane!=0)&&(yPort.getOutputCount())){
         yPort.prepare() = *(yPlane);		
         yPort.write();
@@ -188,8 +191,12 @@ void imageReaderThread::outPorts(){
 }
 
 void imageReaderThread::threadRelease(){
-   
     printf("Thread releasing.. \n");
+    closePorts();
+}
+
+void imageReaderThread::closePorts(){
+    
     printf("input port closing .... \n");
     inputPort.close();
     
@@ -208,18 +215,14 @@ void imageReaderThread::threadRelease(){
     byPort.close();
 
     printf("intensity channel port closing .... \n");
-    if(!yPort.isClosed())
-        yPort.close();
-    printf("intensity channel port closed .... \n");
+    yPort.close();
     printf("chrominance channel port closing .... \n");
-    if(!uPort.isClosed())
-        uPort.close();
-    if(!vPort.isClosed())
-        vPort.close();
-    if(!uvPort.isClosed())
-        uvPort.close();
-    printf("closed uv channel .... \n");
+    uPort.close();
+    vPort.close();
+    uvPort.close();
 }
+
+
 
 
 

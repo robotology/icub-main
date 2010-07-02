@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/colourProcessorModule.h>
 #include <yarp/os/Network.h>
 
@@ -10,13 +11,6 @@ using namespace yarp::sig;
 using namespace yarp::os;
 using namespace yarp;
 
-void sleep(int mseconds)
-{
-    int CLOCKS_PER_MSEC=(int)(CLOCKS_PER_SEC/1000);
-    clock_t goal = mseconds*CLOCKS_PER_MSEC + clock();
-    while (goal > clock());
-}
-
 colourProcessorModule::colourProcessorModule(){
     reinit_flag=false;
     startrgb_flag=true;
@@ -28,61 +22,24 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 {
     //initialization
     ct=0;
-    linkct=0;
     dif=0;
-    time_t start,end;
+    initflag=false;
+    time_t start;
+    //time_t end;
     time (&start);
 
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
     attachTerminal();
-    printf("resource finder configuration after time turbo boosting \n");
+    //printf("resource finder configuration after time turbo boosting \n");
     
     interThread.setName(this->getName().c_str());
     printf("name:%s \n",this->getName().c_str());
     interThread.start();
-    printf("\n waiting for connection of the input port, 40 sec to proceed \n");
 
-    while((interThread.inputImg==0)&&(linkct<40)){
-        printf("time to automatic shut down:  %d (sec) ...   \n", 40-linkct);
-        sleep(1000);
-        time (&end);
-        dif = difftime (end,start);
-        linkct++;
-    }
+    printf("\n waiting for connection of the input port \n");
 
-    if(linkct>=40)
-        return false;
-
-    while(interThread.inputImg->width()==0){
-        
-    }
-
-	printf("input port activated! starting the processes ....\n");
-    
-
-
-    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-    //starting rgb thread and linking all the images
-    startRgbProcessor();
-    interThread.redPlane=rgbProcessor.redPlane;
-    interThread.greenPlane=rgbProcessor.greenPlane;
-    interThread.bluePlane=rgbProcessor.bluePlane;
-    interThread.redGreen_yarp=rgbProcessor.redGreen_yarp;
-    interThread.greenRed_yarp=rgbProcessor.greenRed_yarp;
-    interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
-
-    //starting yuv thread and linking all the images
-    if(startyuv_flag){
-            startYuvProcessor();
-    }
-    interThread.uvPlane=yuvProcessor.uvPlane;
-    interThread.uPlane=yuvProcessor.uPlane;
-    interThread.vPlane=yuvProcessor.vPlane;
-    interThread.yPlane=yuvProcessor.yPlane;
-   
-    
     return true;
 }
 
@@ -111,24 +68,25 @@ bool colourProcessorModule::open(Searchable& config) {
 * tries to interrupt any communications or resource usage
 */
 bool colourProcessorModule::interruptModule() {
-    interThread.interrupt();
-    linkct=40;
+    //interThread.interrupt();
     cmdPort.interrupt();
-    printf("module interrupting ....");
-    close();
+    interThread.interrupt();
     return true;
 }
 
 
 bool colourProcessorModule::close(){
-    cmdPort.close();
     
-    if(this->rgbProcessor.isRunning())
-        rgbProcessor.threadRelease();
-    if(this->yuvProcessor.isRunning())
-        yuvProcessor.threadRelease();
 
-    interThread.threadRelease();
+    //rgbProcessor.threadRelease();
+    //yuvProcessor.threadRelease();
+    //interThread.threadRelease();
+
+    rgbProcessor.stop();
+    yuvProcessor.stop();
+    interThread.stop();
+
+    cmdPort.close();
    
     return true;
 }
@@ -176,8 +134,38 @@ bool colourProcessorModule::updateModule() {
         std::string *commandTOT=new string(bot->toString().c_str());
         printf("%s \n", commandTOT->c_str());
     }*/
+
+    if((0!=interThread.inputImg)&&(!initflag)){
     
-    
+        /*
+        while(interThread.inputImg->width()==0){
+            
+        }
+        */
+	    printf("input port activated! starting the processes ....\n");    
+
+        //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+        //starting rgb thread and linking all the images
+        startRgbProcessor();
+        interThread.redPlane=rgbProcessor.redPlane;
+        interThread.greenPlane=rgbProcessor.greenPlane;
+        interThread.bluePlane=rgbProcessor.bluePlane;
+        interThread.redGreen_yarp=rgbProcessor.redGreen_yarp;
+        interThread.greenRed_yarp=rgbProcessor.greenRed_yarp;
+        interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
+        
+        //starting yuv thread and linking all the images
+        if(startyuv_flag){
+                startYuvProcessor();
+                interThread.uvPlane=yuvProcessor.uvPlane;
+                interThread.uPlane=yuvProcessor.uPlane;
+                interThread.vPlane=yuvProcessor.vPlane;
+                interThread.yPlane=yuvProcessor.yPlane;
+        }
+        
+
+        initflag=true;
+    }
     
     return true;
 }

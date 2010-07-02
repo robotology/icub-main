@@ -7,13 +7,12 @@ using namespace std;
 #define centroidDispacementY 10;
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
-    reinit_flag=false;
-    tmpImage=new ImageOf<PixelMono>;
-    reply=new Bottle();
+    interThread=new interactionThread();
     blobFinder=0;
 
-    previous_target_x=0;
-    previous_target_y=0;
+    reinit_flag=false;
+    reply=new Bottle();
+    
 
     //---------- flags --------------------------
 	contrastLP_flag=false;
@@ -42,11 +41,16 @@ void saliencyBlobFinderModule::copyFlags(){
     blobFinder->tagged_flag=tagged_flag;
     blobFinder->watershed_flag=watershed_flag;
     blobFinder->filterSpikes_flag=filterSpikes_flag;
+
+    interThread->xdisp=xdisp;
+    interThread->ydisp=ydisp;
+    interThread->countSpikes=this->countSpikes;
 }
 
 /**
-*function that opens the module
+*function that opens the module DEPRECATED
 */
+/*
 bool saliencyBlobFinderModule::open(Searchable& config) {
     ct = 0;
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
@@ -70,6 +74,25 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
     time (&start);
     
     return true;
+}*/
+
+bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
+//    ct = 0;
+
+    cmdPort.open(getName("cmd"));
+    attach(cmdPort);
+    //attachTerminal();
+
+    interThread->setName(this->getName().c_str());
+    printf("name:%s \n",this->getName().c_str());
+    interThread->start();
+
+    printf("\n waiting for connection of the input port \n");
+
+    
+    
+    
+    return true;
 }
 
 /** 
@@ -77,20 +100,7 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
 */
 bool saliencyBlobFinderModule::interruptModule() {
     printf("module interrupted .... \n");
-    inputPort.interrupt();
-    
-    redPort.interrupt();
-    greenPort.interrupt();
-    bluePort.interrupt();
-
-    rgPort.interrupt();
-    grPort.interrupt();
-    byPort.interrupt();
-
-    outputPort.interrupt();
-    centroidPort.interrupt();
-    triangulationPort.interrupt();
-    gazeControlPort.interrupt();
+  
     cmdPort.interrupt();
     
     return true;
@@ -98,34 +108,11 @@ bool saliencyBlobFinderModule::interruptModule() {
 
 
 bool saliencyBlobFinderModule::close(){
-    printf("input port closing .... \n");
-    inputPort.close();
     
-    printf("red channel port closing .... \n");
-    redPort.close();
-    printf("green channel port closing .... \n");
-    greenPort.close();
-    printf("blue channel port closing .... \n");
-    bluePort.close();
-
-    printf("R+G- colourOpponency port closing .... \n");
-    rgPort.close();
-    printf("G+R- colourOpponency port closing .... \n");
-    grPort.close();
-    printf("B+Y- colourOpponency port closing .... \n");
-    byPort.close();
-
-    printf("closing outputport .... \n");
-    outputPort.close();
-
+   
     printf("closing command port .... \n");
     cmdPort.close();
-    
-    printf("closing communication ports .... \n");
-    centroidPort.close();
-    gazeControlPort.close();
-    triangulationPort.close();
-   
+
     return true;
 }
 
@@ -201,15 +188,31 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 }
 
 bool saliencyBlobFinderModule::updateModule() {
-  
-    command=cmdPort.read(false);
+
+    if((0!=interThread->img) && (!this->reinit_flag)){
+
+        
+        //initialization of the main thread
+        blobFinder=new blobFinderThread();
+        blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
+        blobFinder->start();
+        blobFinder->ptr_inputImg=interThread->img;
+        blobFinder->countSpikes=this->countSpikes;
+        
+
+        //passes the value of flags
+        copyFlags();
+        this->reinit_flag=true;
+    }
+
+    /*command=cmdPort.read(PortReader,false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
         ConstString str= command->toString();
         printf("command received: %s \n", str.c_str());
         this->respond(*command,*reply);
         printf("module reply: %s \n",reply->toString().c_str());
-    }
+    }*/
     
     /*Bottle *bot=portTarget.read(false);
     if(bot!=NULL){
@@ -227,6 +230,7 @@ bool saliencyBlobFinderModule::updateModule() {
         printf("%s \n", commandTOT->c_str());
     }*/
     
+    /*
     ct++;
     img = this->inputPort.read(false);
     if(0==img)
@@ -257,251 +261,13 @@ bool saliencyBlobFinderModule::updateModule() {
     ret2=getPlanes();
     if(ret1&&ret2)
         blobFinder->freetorun=true;
-    outPorts();
+    outPorts();*/
     return true;
 }
 
-/**
-* function that reads the ports for colour RGB opponency maps
-*/
-bool saliencyBlobFinderModule::getOpponencies(){
-
-    tmpImage=rgPort.read(false);
-    if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRG->getRawImage(), blobFinder->ptr_inputImgRG->getRowSize(),srcsize);
-   
-    tmpImage=grPort.read(false);
-    if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGR->getRawImage(), blobFinder->ptr_inputImgGR->getRowSize(),srcsize);
-    
-    tmpImage=byPort.read(false);
-    if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBY->getRawImage(), blobFinder->ptr_inputImgBY->getRowSize(),srcsize);
-    
-    return true;
-}
-
-/**
-* function that reads the ports for the RGB planes
-*/
-bool saliencyBlobFinderModule::getPlanes(){
-    
-    tmpImage=redPort.read(false);
-    if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRed->getRawImage(), blobFinder->ptr_inputImgRed->getRowSize(),srcsize);
-   
-    tmpImage=greenPort.read(false);
-    if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGreen->getRawImage(), blobFinder->ptr_inputImgGreen->getRowSize(),srcsize);
-    
-    tmpImage=bluePort.read(false);
-    if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBlue->getRawImage(), blobFinder->ptr_inputImgBlue->getRowSize(),srcsize);
-    
-    return true;
-}
-
-
-void saliencyBlobFinderModule::outPorts(){ 
-    
-    //printf("centroid:%f,%f \n",blobFinder->salience->centroid_x,blobFinder->salience->centroid_y);
-    //printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
-    
-    
-    if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){ 
-        outputPort.prepare() = *(blobFinder->image_out);		
-        outputPort.write();
-    }
-
-    if(triangulationPort.getOutputCount()){
-        Bottle in,bot;
-        //Bottle &bot = triangulationPort.prepare(); 
-        bot.clear();
-        /*bot.addVocab( Vocab::encode("get") );x 
-        bot.addVocab( Vocab::encode("3dpoint") );
-        bot.addVocab( Vocab::encode("right") );*/
-        bot.addString("get");
-        bot.addString("3dpoint");
-        bot.addString("right");
-        bot.addDouble(blobFinder->salience->target_x);
-        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);
-        /*bot.addDouble(blobFinder->salience->centroid_x);
-        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);*/
-       
-        bot.addDouble(1.5); //fixed distance in which the saccade takes place
-        triangulationPort.write(bot,in); //stop here till it receives a response
-        if (in.size()>0) {
-            target_z=in.pop().asDouble();
-            target_y=in.pop().asDouble()+0.097;
-            target_x=in.pop().asDouble();
-            
-        } else { 
-            printf("No response\n");
-        }
-        bot.clear();
-    }
-
-    if(gazeControlPort.getOutputCount()){
-        if(!this->timeControl_flag){
-            Bottle &bot = gazeControlPort.prepare(); 
-            bot.clear();
-            int target_xmap,target_ymap, target_zmap;
-            
-            bot.addDouble(target_x);  
-            bot.addDouble(target_y); 
-            bot.addDouble(target_z);
-            gazeControlPort.writeStrict();
-        }
-        else{
-            time (&end);
-            double dif = difftime (end,start);
-            if(dif>blobFinder->constantTimeGazeControl+0.5){
-                //restart the time intervall
-                 time(&start);
-            }
-            else if((dif>blobFinder->constantTimeGazeControl)&&(dif<blobFinder->constantTimeGazeControl+0.5)){
-                //output the command
-                //finds the entries with a greater number of occurencies 
-                std::map<const char*,int>::iterator iterMap;
-                /*int previousValue=occurencesMap.begin()->second;
-                std::string finalKey("");
-                iterMap=occurencesMap.begin();
-                for(;iterMap==occurencesMap.end();iterMap++){
-                    if(iterMap->second>previousValue){
-                        sprintf((char*)finalKey.c_str(),"%s",iterMap->first);
-                    }
-                }
-                //estracts the strings of the target
-                size_t found;
-                string target_xmap_string("");
-                string target_ymap_string("");
-                string target_zmap_string("");
-                string rest("");
-
-                found=finalKey.find(",");
-                target_xmap_string=finalKey.substr(0,found);
-                rest=finalKey.substr(found,finalKey.length()-found);
-                found=finalKey.find(",");
-                target_ymap_string=rest.substr(0,found);
-                rest=finalKey.substr(found,finalKey.length()-found);
-                found=finalKey.find(",");
-                target_zmap_string=rest.substr(0,finalKey.length());*/
-                
-                //subdived the string into x,y,z
-                //send the command.
-                Bottle &bot = gazeControlPort.prepare(); 
-                bot.clear();
-                int target_xmap,target_ymap, target_zmap;
-                bot.addDouble(target_x);  
-                bot.addDouble(target_y); 
-                bot.addDouble(target_z);
-                gazeControlPort.writeStrict();
-                time(&start);
-                //clear the map
-            }
-            else{
-                //idle period
-                //check if it is present and update the map
-                //std::string positionName(" ");
-                /*sprintf((char*)positionName.c_str(),"%f,%f,%f",target_x,target_y,target_z);
-                printf((char*)positionName.c_str());*/
-                /*std::map<const char*,int>::iterator iterMap;
-                
-                iterMap=occurencesMap.find(positionName.c_str());
-
-                if(iterMap==0){
-                    printf("new occurence!");
-                }
-                else{
-                    iterMap->second++;
-                }*/
-
-            }
-        }
-    }
-
-    if(centroidPort.getOutputCount()){
-        Bottle &bot = centroidPort.prepare(); 
-        bot.clear();
-        
-        
-        /*bot.addDouble(blobFinder->salience->maxc); 
-        bot.addDouble(blobFinder->salience->maxr); */
-        
-        time (&end);
-        double dif = difftime (end,start);
-        if((dif>blobFinder->constantTimeCentroid)&&(dif<=blobFinder->constantTimeCentroid+0.5)){
-            if((blobFinder->salience->target_x<previous_target_x+5)&&(blobFinder->salience->target_x>previous_target_x-5)){
-                if((blobFinder->salience->target_y<previous_target_y+5)&&(blobFinder->salience->target_y>previous_target_y-5)){
-                    //printf("same position \n");
-                }
-                else{
-                    //printf("."); 
-                    bot.addVocab( Vocab::encode("sac") ); 
-                    bot.addVocab( Vocab::encode("img") ); 
-                    double centroidDisplacementY=1.0;
-                    double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2+xdisp)/(_logpolarParams::_xsize/2);
-                    double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2+ydisp)/(-_logpolarParams::_ysize/2);
-                    //printf("%f>%f,%f \n",dif,xrel,yrel);
-                    bot.addDouble(xrel);  
-                    bot.addDouble(yrel); 
-                    centroidPort.write();
-
-                    previous_target_x=blobFinder->salience->target_x;
-                    previous_target_y=blobFinder->salience->target_y;
-                }
-            }
-            else{
-                //printf(".");
-                bot.addVocab( Vocab::encode("sac") ); 
-                bot.addVocab( Vocab::encode("img") ); 
-                double centroidDisplacementY=1.0;
-                double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
-                double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
-                //printf("%f>%f,%f \n",dif,xrel,yrel);
-                bot.addDouble(xrel);  
-                bot.addDouble(yrel); 
-                centroidPort.write();
-
-                previous_target_x=blobFinder->salience->target_x;
-                previous_target_y=blobFinder->salience->target_y;
-            }
-            
-
-
-            /*bot.addVocab( Vocab::encode("sac") ); 
-            bot.addVocab( Vocab::encode("img") ); 
-            double centroidDisplacementY=1.0;
-            double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
-            double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
-            //printf("%f>%f,%f \n",dif,xrel,yrel);
-            bot.addDouble(xrel);  
-            bot.addDouble(yrel); 
-            centroidPort.write();*/
-            
-        }
-        else if(dif>blobFinder->constantTimeCentroid+0.5){
-            time (&start);
-        }
-        else{
-           
-        }
-        
-    }
-     /*Bottle& _outBottle=_centroidPort->prepare();
-     _outBottle.clear();
-    //_outBottle.addString("centroid:");
-    _outBottle.addInt(this->sasalience->centroid_x);
-    _outBottle.addInt(this->salience->centroid_y);
-    _outBottle.addInt(this->salience->centroid_x);
-    _outBottle.addInt(this->salience->centroid_y);
-    _centroidPort->writeStrict();*/
-}
 
 
 void saliencyBlobFinderModule::reinitialise(int weight, int height){
-    img=new ImageOf<PixelRgb>;
-    img->resize(weight,height);
 }
 
 
@@ -851,7 +617,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
     mutex.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();

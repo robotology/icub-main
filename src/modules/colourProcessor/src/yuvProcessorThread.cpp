@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/yuvProcessorThread.h>
 #include <cassert>
 
@@ -66,13 +67,6 @@ void yuvProcessorThread::run(){
 
 void yuvProcessorThread::threadRelease(){
     printf("Thread releasing.. \n");
-    /*delete redPlane;
-    delete greenPlane;
-    delete bluePlane;    
-    delete yPlane;
-    delete uPlane;
-    delete vPlane;
-    delete uvPlane;*/
 }
 
 

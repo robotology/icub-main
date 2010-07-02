@@ -8,26 +8,28 @@ using namespace yarp::sig;
 using namespace yarp::os;
 using namespace std;
 
-interactionThread::interactionThread():RateThread(THREAD_RATE_IMAGE)
+interactionThread::interactionThread()//:RateThread(THREAD_RATE_IMAGE)
 {
-   tmp=0;
-   inputImg=0;
+    this->tmp=0;
+    this->inputImg=0;
 
-   reinit_flag=false;
-   redGreen_flag=new int;
-   *redGreen_flag=0;
-   greenRed_flag=new int;
-   *greenRed_flag=0;
-   blueYellow_flag=new int;
-   *blueYellow_flag=0;
+    reinit_flag=false;
+    redGreen_flag=new int;
+    *redGreen_flag=0;
+    greenRed_flag=new int;
+    *greenRed_flag=0;
+    blueYellow_flag=new int;
+    *blueYellow_flag=0;
 
-   redPlane=0;
-   greenPlane=0;
-   bluePlane=0;
+    redPlane=0;
+    greenPlane=0;
+    bluePlane=0;
 
     redGreen_yarp=new ImageOf<PixelMono>;
     greenRed_yarp=new ImageOf<PixelMono>;
     blueYellow_yarp=new ImageOf<PixelMono>;
+
+    interrupted=false;
 
 }
 
@@ -42,12 +44,11 @@ interactionThread::~interactionThread()
    delete redGreen_yarp;
    delete greenRed_yarp;
    delete blueYellow_yarp;
-}
 
-/*processorThread::processorThread(Property &op):processorThread(){
-        
-        
-}*/
+   delete redGreen_flag;
+   delete greenRed_flag;
+   delete blueYellow_flag;
+}
 
 void interactionThread::reinitialise(int width, int height){
     srcsize.width=width;
@@ -58,9 +59,7 @@ void interactionThread::reinitialise(int width, int height){
 
     redGreen_yarp->resize(width,height);
     greenRed_yarp->resize(width,height);
-    blueYellow_yarp->resize(width,height);
-
-    
+    blueYellow_yarp->resize(width,height);    
     
 }
 
@@ -101,67 +100,65 @@ void interactionThread::interrupt(){
     edgesPort.interrupt();
 
     inImagePort.interrupt();
+
+    interrupted=true;
 }
 
 
 void interactionThread::run(){
-    
-    /*this->inputImg = this->inImagePort.read(false);
-    if(0==inputImg)
-        return true;*/    
-    tmp=rgPort.read(false);
-    if(tmp==0){
-        return;
-    }
+    Time::delay(1);
+    while(!isStopping()){
+        /*this->inputImg = this->inImagePort.read(false);
+        if(0==inputImg)
+            return true;*/
 
-    //outPorts();
-    if(!reinit_flag){
-        //srcsize.height=img->height();
-        //srcsize.width=img->width();
-        reinitialise(tmp->width(), tmp->height());
-        reinit_flag=true;
-        
-        //startImageProcessor();
-    }
-    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
-    //this->redGreen_yarp=tmp;
-    this->redPlane=redPlanePort.read(false);
-    if(0!=redGreen_yarp)
-        *redGreen_flag=1;
-    
-    
-    this->bluePlane=bluePlanePort.read(false);
-    tmp=byPort.read(false);
-    if(0!=tmp){
-        ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);   
-        *blueYellow_flag=1;
-    }
-        
-    this->greenPlane=greenPlanePort.read(false);
-    tmp=grPort.read(false);
-    if(0!=tmp){
-        ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
-        *greenRed_flag=1;
-    }
-    
-    //check for any possible command
-    
-    /*Bottle* command=(Bottle)cmdPort.read(reader,false);
-    if(command!=0){
-        //Bottle* tmpBottle=cmdPort.read(false);
-        ConstString str= command->toString();
-        printf("command received: %s \n", str.c_str());
-        Bottle* reply=new Bottle();
-        this->respond(*command,*reply);
-        command->clear();
-    }*/
-    outPorts();
+        //synchronisation with the input image occuring
+        if(!interrupted){
+            tmp=rgPort.read(true);
+            printf("Out of the reading \n");
+            if(tmp!=0){
+                //outPorts();
+              
+                if(!reinit_flag){
+                    //srcsize.height=img->height();
+                    //srcsize.width=img->width();
+                    reinitialise(tmp->width(), tmp->height());
+                    reinit_flag=true;
+                    
+                    //startImageProcessor();
+                }
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
+                //this->redGreen_yarp=tmp;
+                this->redPlane=redPlanePort.read(true);
+                if(0!=redGreen_yarp)
+                    *redGreen_flag=1;
+                
+                
+                this->bluePlane=bluePlanePort.read(true);
+                tmp=byPort.read(false);
+                if(0!=tmp){
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);   
+                    *blueYellow_flag=1;
+                }
+                
+                
+                this->greenPlane=greenPlanePort.read(true);
+                tmp=grPort.read(false);
+                if(0!=tmp){
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
+                    *greenRed_flag=1;
+                }
 
+                
+                outPorts();
+            }
+        }
+        Time::delay(1);
+    }
 }
    
 
 void interactionThread::threadRelease(){
-   
     printf("Thread releasing.. \n");
     printf("input port closing .... \n");
     closePorts();
@@ -187,6 +184,7 @@ bool interactionThread::openPorts(){
 
     edgesPort.open(getName("/edges:o").c_str());
     
+
 	return true;
 }
 

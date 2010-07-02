@@ -2,14 +2,14 @@
 #ifndef _SALIENCYBLOBFINDERMODULE_H_
 #define _SALIENCYBLOBFINDERMODULE_H_
 
-#include <time.h>
+
 #include <iostream>
 #include <map>
-using namespace std;
 
 
 //within project includes
 #include <iCub/blobFinderThread.h>
+#include <iCub/interactionThread.h>
 
 //IPP include
 #include <ippi.h>
@@ -19,8 +19,6 @@ using namespace std;
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
 
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
@@ -197,60 +195,14 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 **/
 
 
-class saliencyBlobFinderModule : public Module{
+class saliencyBlobFinderModule : public yarp::os::RFModule{
 private:
-    /**
-    * port where the input image is read from
-    */
-    BufferedPort<ImageOf<PixelRgb> > inputPort;
-    /**
-    * port where the red plane of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > redPort;
-    /**
-    * port where the green plane of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > greenPort;
-    /**
-    * port where the blue plane of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > bluePort;
-    /**
-    * port where the difference of gaussian R+G- is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > rgPort;
-    /**
-    * port where the difference of gaussian G+R- is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > grPort;
-    /**
-    * port where the difference of gaussian B+Y- of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > byPort;
-    /**
-    * port where the yellow plane of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > yellowPort;
-    /**
-    * port that returns the image output
-    */
-    BufferedPort<ImageOf<PixelRgb> > outputPort;
+    
     /**
     * port necessary for rpc commands
     */
-    BufferedPort<Bottle> cmdPort;
-    /**
-    * port used for centroid position to controlGaze2
-    */
-    BufferedPort<Bottle> centroidPort;
-    /**
-    * port used for centroid position to iKinHead
-    */
-    Port triangulationPort;
-    /**
-    * port used for sending responses from triangulationPort back into i
-    */
-    BufferedPort<Bottle> gazeControlPort;
+    Port cmdPort;
+    
     /**
     * ipp reference to the size of the input image
     */
@@ -263,6 +215,10 @@ private:
     * height of the input image
     */
     int height;
+    /**
+    *   number spikes that have to be counted before the maxSaliency blob can be choosen
+    */
+    int countSpikes;
     /**
     * dispacement on the x axis for the target
     */
@@ -279,22 +235,16 @@ private:
      * semaphore for the respond function
      */
      Semaphore mutex;
-     /**
-    * execution step counter
-    */
-    int ct;
-    /**
-    * input image
-    */
-    ImageOf<PixelRgb> *img;
-    /**
-    * buffer image for received image
-    */
-    ImageOf<PixelMono> *tmpImage;
+    
+    
     /**
     * main thread responsable to process the input images and produce an output
     */
     blobFinderThread* blobFinder;
+    /**
+    * main thread responsable to communication between ports
+    */
+    interactionThread* interThread;
     /**
     * bottle where the command received is saved ready for the respond
     */
@@ -303,35 +253,10 @@ private:
     * bottle where the reply will be stored for further purpose
     */
     Bottle* reply;
-    /**
-    * time variable
-    */
-    time_t start;
-    /**
-    * time variable
-    */
-    time_t end;
-    /**
-    * position of the target in the body-centered frame (x coordinate)
-    */
-    double target_x;
-    /**
-    * position of the target in the body-centered frame (y coordinate)
-    */
-    double target_y;
-    /**
-    * position of the target in the body-centered frame (z coordinate)
-    */
-    double target_z;
+    
+    
     //_________ private methods ____________
-    /**
-    * function that reads the ports for colour RGB opponency maps
-    */
-    bool getOpponencies();
-    /**
-    * function that reads the ports for the RGB planes
-    */
-    bool getPlanes();
+    
     /**
     * function that copies flags to the blobFinder thread
     */
@@ -344,18 +269,7 @@ private:
     * max dimension of the area in order to consider the blob interesting
     */ 
     int thresholdArea;
-    /**
-    *   number spikes that have to be counted before the maxSaliency blob can be choosen
-    */
-    int countSpikes;
-    /**
-    * position of the centroid X in the previous time instant
-    */
-    int previous_target_x;
-    /**
-    * position of the centroid Y in the previous time instant
-    */
-    int previous_target_y;
+    
     
 public:
     /**
@@ -380,6 +294,11 @@ public:
     * @param opt options passed to the module
     */
     void setOptions(yarp::os::Property opt);
+    /**
+    * function for initialization and configuration of the RFModule
+    * @param rf resourceFinder reference
+    */
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     /**
     * catches all the commands that have to be executed when the module is closed
     */

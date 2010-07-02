@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/rgbProcessorThread.h>
 #include <iCub/convert_bitdepth.h>
 #include <ipps.h>

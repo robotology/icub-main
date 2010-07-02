@@ -2,9 +2,6 @@
 #ifndef _WATERSHEDOPERATOR_H_
 #define _WATERSHEDOPERATOR_H_
 
-
-
-
 //openCV include
 #include <cv.h>
 #include <cvaux.h>

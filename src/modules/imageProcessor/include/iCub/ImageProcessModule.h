@@ -159,10 +159,6 @@ private:
     */
     int ct;
     /**
-    * counter of the linking phase
-    */
-    int linkct;
-    /**
     * options of the connection
     */
     yarp::os::Property options;	//
@@ -179,6 +175,10 @@ private:
     */
     bool reinit_flag;
     /**
+    * function that resets all the mode flags
+    */
+    void resetFlags();
+    /**
      * semaphore for the respond function
      */
     yarp::os::Semaphore mutex;
@@ -186,10 +186,6 @@ private:
     * name of the module and rootname of the connection
     */
     std::string name;
-    /**
-    * function that resets all the mode flags
-    */
-    void resetFlags();
     
 public:
     /**

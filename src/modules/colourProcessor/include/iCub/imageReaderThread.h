@@ -25,7 +25,8 @@
 //const double STOP_TIME=3;
 const int THREAD_RATE_IMAGE=30;
 
-class imageReaderThread: public yarp::os::RateThread
+//class imageReaderThread: public yarp::os::RateThread
+class imageReaderThread: public yarp::os::Thread
 {
 private:
     /**
@@ -104,7 +105,10 @@ private:
     * input image
     */
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *img; 
-    
+    /**
+    * flag set when the thread has been interrupted
+    */
+    bool interrupted_flag;
     
     //_______________ private method  __________________________
     /**
@@ -141,7 +145,10 @@ public:
     *	releases the thread
     */
     void threadRelease();
-
+    /**
+    * function that closes all the ports
+    */
+    void closePorts();
     /**
     * function called when the module is poked with an interrupt command
     */

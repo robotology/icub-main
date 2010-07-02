@@ -23,7 +23,8 @@ using namespace yarp::sig::draw;
 //#define OPENCVSOBEL
 //#define CONVSEQ
 
-ImageProcessor::ImageProcessor():RateThread(THREAD_RATE){
+ImageProcessor::ImageProcessor():RateThread(THREAD_RATE)
+{
     this->inImage=NULL;
     portImage=NULL;
 
@@ -221,7 +222,8 @@ ImageProcessor::~ImageProcessor(){
     //---->cvImage8
 }
 
-ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE){
+ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE)
+{
     this->inImage=inputImage;
     this->portImage=portImage;
     redPlane_flag=1;
