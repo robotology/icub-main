@@ -5,8 +5,10 @@ add_subdirectory(testStereoMatch)
 
 if(ICUB_USE_GtkPlus)
 	add_subdirectory(canLoader)
+	add_subdirectory(robotMotorGui)
 else(ICUB_USE_GtkPlus)
 	message(STATUS "GtkPlus not selected, skipping canLoader")
+	message(STATUS "GtkPlus not selected, skipping robotMotorGui")
 endif(ICUB_USE_GtkPlus)
 
 if(BUILD_MATLAB_BASED_TOOLS)
