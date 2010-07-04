@@ -90,10 +90,24 @@ public:
         int Y0,Y1;
         double k0,k1;
         int dya,dyb,dxa,dxb;
+		double remapped_activation[12];
+		switch (ilayoutNum)
+		{
+			case 0:
+				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				break;
+			case 1:
+				for (int i=0; i<12; ++i)  remapped_activation[11-i]=activation[i];
+				break;
+			default:
+				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				printf("WARN: unkwnown layout number.\n");
+				break;
+		}
 
-        for (int i=0; i<12; ++i) if (activation[i]>0.0)
+        for (int i=0; i<12; ++i) if (remapped_activation[i]>0.0)
         {
-            k0=dGain*activation[i];
+            k0=dGain*remapped_activation[i];
             Y0=(m_Height-y[i]-1)*m_Width+x[i];
 
             dya=(y[i]>=m_maxRange)?-m_maxRange:-y[i];
