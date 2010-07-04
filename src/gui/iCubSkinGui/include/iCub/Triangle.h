@@ -8,7 +8,7 @@
 class Triangle : public TouchSensor
 {
 public:
-    Triangle(double cx,double cy,double th,double gain=1.0)
+    Triangle(double cx,double cy,double th,double gain=1.0,int layoutNum=0,int lrMirror=0)
     {
         const double DEG2RAD=M_PI/180.0;
 
@@ -19,6 +19,8 @@ public:
         const double L=2.0*H/9.0;
      
         dGain=gain;
+		ilrMirror=lrMirror;
+		ilayoutNum=layoutNum;
         nVerts=3;
         m_RadiusOrig=2.0;
 
@@ -39,6 +41,7 @@ public:
             double x=30.0*dX[i]-15.0;
             double y=30.0*dY[i]-10.0*H;
 
+			if (lrMirror==1) x=-x;
             dX[i]=cx+CST*x-SNT*y;
             dY[i]=cy+SNT*x+CST*y;
         }
@@ -51,6 +54,13 @@ public:
 
         dXv[2]=cx-17.32*SNT;
         dYv[2]=cy+17.32*CST;
+
+		if (lrMirror==1)
+		{
+			dXv[0]=-dXv[0];
+			dXv[1]=-dXv[1];
+			dXv[2]=-dXv[2];
+		}
 
         // in static definition
         //dXmin=dYmin= HUGE; 

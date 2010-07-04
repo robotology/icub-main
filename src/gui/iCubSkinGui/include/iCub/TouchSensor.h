@@ -247,6 +247,8 @@ protected:
     double dXv[8],dYv[8];
     double dXc,dYc;
     double dGain;
+	int    ilayoutNum;
+	int    ilrMirror;
 
     double m_Radius,m_RadiusOrig;
     double activation[12];

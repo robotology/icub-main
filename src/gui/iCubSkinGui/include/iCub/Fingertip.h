@@ -8,9 +8,11 @@
 class Fingertip : public TouchSensor
 {
 public:
-    Fingertip(double cx,double cy,double th,double gain=1.0)
+    Fingertip(double cx,double cy,double th,double gain=1.0,int layoutNum=0,int lrMirror=0)
     {
         dGain=gain;
+		ilrMirror=lrMirror;
+		ilayoutNum=layoutNum;
         nVerts=7;
         /*
         dX[11]= 41.0; dY[11]=10.0;
@@ -70,6 +72,7 @@ public:
         {
             double x=dX[i];
             double y=dY[i];
+			if (lrMirror==1) x=-x;
 
             dX[i]=cx+CST*x-SNT*y;
             dY[i]=cy+SNT*x+CST*y;
@@ -79,6 +82,7 @@ public:
         {
             double x=dXv[i];
             double y=dYv[i];
+			if (lrMirror==1) x=-x;
 
             dXv[i]=cx+CST*x-SNT*y;
             dYv[i]=cy+SNT*x+CST*y;

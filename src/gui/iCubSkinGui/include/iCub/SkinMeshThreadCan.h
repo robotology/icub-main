@@ -52,6 +52,7 @@ public:
 		std::string part="/skinGui/";
 		part.append(config.find("robotPart").asString());
 		part.append(":i");
+		int layoutNum=config.find("LayoutNum").asInt();
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
 
@@ -69,6 +70,7 @@ public:
                 double yc=sensorConfig.get(3).asDouble();
                 double th=sensorConfig.get(4).asDouble();
                 double gain=sensorConfig.get(5).asDouble();
+				int    lrMirror=sensorConfig.get(6).asInt();
 
                 printf("%d %f\n",id,gain);
 
@@ -82,11 +84,11 @@ public:
                     {
                         if (type=="triangle")
                         {
-                            sensor[id]=new Triangle(xc,yc,th,gain);
+                            sensor[id]=new Triangle(xc,yc,th,gain,layoutNum,lrMirror);
                         }
                         else
                         {
-                            sensor[id]=new Fingertip(xc,yc,th,gain);
+                            sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
                         }
                         ++sensorsNum;
                     }
