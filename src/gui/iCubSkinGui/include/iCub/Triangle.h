@@ -46,21 +46,24 @@ public:
             dY[i]=cy+SNT*x+CST*y;
         }
 
-        dXv[0]=cx-15.0*CST+8.66*SNT;
-        dYv[0]=cy-15.0*SNT-8.66*CST;
+		dXv[0]=-15.0;
+        dYv[0]=-8.66;
 
-        dXv[1]=cx+15.0*CST+8.66*SNT;
-        dYv[1]=cy+15.0*SNT-8.66*CST;
+        dXv[1]=+15.0;
+        dYv[1]=-8.66;
 
-        dXv[2]=cx-17.32*SNT;
-        dYv[2]=cy+17.32*CST;
+        dXv[2]=0;
+        dYv[2]=+17.32;
 
-		if (lrMirror==1)
-		{
-			dXv[0]=-dXv[0];
-			dXv[1]=-dXv[1];
-			dXv[2]=-dXv[2];
-		}
+		for (int i=0; i<nVerts; ++i)
+        {
+            double x=dXv[i];
+            double y=dYv[i];
+			if (lrMirror==1) x=-x;
+
+            dXv[i]=cx+CST*x-SNT*y;
+            dYv[i]=cy+SNT*x+CST*y;
+        }
 
         // in static definition
         //dXmin=dYmin= HUGE; 
