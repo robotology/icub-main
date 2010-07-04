@@ -43,7 +43,6 @@ public:
 		part.append(config.find("robotPart").asString());
 		part.append(":i");
 		skin_port.open(part.c_str());
-		int layoutNum=config.find("LayoutNum").asInt();
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
 
@@ -62,6 +61,7 @@ public:
                 double th=sensorConfig.get(4).asDouble();
                 double gain=sensorConfig.get(5).asDouble();
 				int    lrMirror=sensorConfig.get(6).asInt();
+				int    layoutNum=sensorConfig.get(7).asInt();
 
                 printf("%d %f\n",id,gain);
 
