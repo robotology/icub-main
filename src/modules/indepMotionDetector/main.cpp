@@ -286,7 +286,11 @@ public:
         while (!isStopping())
         {
             // acquire new image
-            ImageOf<PixelBgr> *pImgBgrIn=inPort.read(true);            
+            ImageOf<PixelBgr> *pImgBgrIn=inPort.read(true);
+
+            if (isStopping())
+                break;
+
             double t0=Time::now();
              
             // consistency check
