@@ -486,15 +486,18 @@ public:
         }
     }
 
-    virtual void threadRelease()
+    virtual void onStop()
     {
-        disposeMem();
-
         inPort.interrupt();
         outPort.interrupt();
         optPort.interrupt();
         nodesPort.interrupt();
         blobsPort.interrupt();
+    }
+
+    virtual void threadRelease()
+    {
+        disposeMem();
 
         inPort.close();
         outPort.close();
