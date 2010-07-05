@@ -288,7 +288,7 @@ public:
             // acquire new image
             ImageOf<PixelBgr> *pImgBgrIn=inPort.read(true);
 
-            if (isStopping())
+            if (isStopping() || pImgBgrIn==NULL)
                 break;
 
             double t0=Time::now();
