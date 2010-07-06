@@ -106,9 +106,11 @@ private:
 
     //Kalman filter for each of the blob
     vector<BlobKalmanFilter*> filters;
-    BlobKalmanFilter *filterSingleBlob;
-    
+    BlobKalmanFilter *filterSingleBlob;   
     vector<FeatureBlob*> rawBlobs;
+
+    CvPoint dx, x_last, p, tip;
+    int time_lag,frame_count;
     
 public:
     ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
@@ -122,7 +124,7 @@ public:
         size_threshold=rf.check("size_threshold",Value(20)).asInt();
         filter_threshold=rf.check("filter_threshold",Value(100)).asInt();
         max_tracked_blobs=rf.check("num_blobs",Value(10)).asInt();
-        str=rf.check("filter",Value("on")).asString().c_str();
+        str=rf.check("filter",Value("off")).asString().c_str();
         
         if(str=="off") {
             filterOn=false;
@@ -139,6 +141,9 @@ public:
         }
 
         width=0; height=0;
+        dx.x=dx.y=x_last.x=x_last.y=0;
+        frame_count = 0;
+        time_lag = 5;
 
         return true;
     }
@@ -176,7 +181,8 @@ public:
                 t1=Time::now();                
                 dt = t1-t0;
                 t0 = t1;
-
+                frame_count++;
+                                
                 // consistency check
                 if (pImgIn->width()!=width ||
                     pImgIn->height()!=height) {
@@ -241,6 +247,8 @@ public:
                 double filtered_area = 0;
                 int num_blobs = 0;
                 double x,y,x2,y2,xy;
+                double angle, hypot;
+                double alpha = 0.2;
 
                 for (ptr = contours; ptr != NULL; ptr = ptr->h_next) {
                     
@@ -314,7 +322,21 @@ public:
                     filterSingleBlob->update(dt);
                     
                     if(filterSingleBlob->filtered.isValid) {
- 
+
+                        // compute stuff for arrow/vel comp
+                        dx.x=filterSingleBlob->filtered.firstMoment.x - x_last.x;
+                        dx.y=filterSingleBlob->filtered.firstMoment.y - x_last.y;
+                        x_last.x = x_last.x + alpha*(filterSingleBlob->filtered.firstMoment.x - x_last.x);
+                        x_last.y = x_last.y + alpha*(filterSingleBlob->filtered.firstMoment.y - x_last.y);
+                        p.x = filterSingleBlob->filtered.firstMoment.x;
+                        p.y = filterSingleBlob->filtered.firstMoment.y;
+                        tip.x = filterSingleBlob->filtered.firstMoment.x + dx.x;
+                        tip.y = filterSingleBlob->filtered.firstMoment.y + dx.y;                                              
+                        angle = atan2( (double) p.y - tip.y, (double) p.x - tip.x );
+                        hypot = sqrt( (p.y-tip.y)*(p.y-tip.y) + (p.x-tip.x)*(p.x-tip.x) );
+                        tip.x = (int) (p.x - 3 * hypot * cos(angle));
+                        tip.y = (int) (p.y - 3 * hypot * sin(angle));
+
                         valid = true;
                         b.addInt(1);
 
@@ -327,6 +349,15 @@ public:
                         if (box.size.width > 0 && box.size.height > 0 && box.size.width < width && box.size.height < height)
         		       		cvEllipseBox((IplImage*)imgOut.getIplImage(), box, color, 3, 16, 0);
         		       	cvCircle((IplImage*)imgOut.getIplImage(), filterSingleBlob->filtered.firstMoment, 3, color, -1, 8, 0);
+
+                        // draw arrow
+                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
+                        p.x = (int) (tip.x + 9 * cos(angle + M_PI / 4));
+                        p.y = (int) (tip.y + 9 * sin(angle + M_PI / 4));
+                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
+                        p.x = (int) (tip.x + 9 * cos(angle - M_PI / 4));
+                        p.y = (int) (tip.y + 9 * sin(angle - M_PI / 4));
+                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
                         
                         Bottle &blob = b.addList();
                         //blob.addInt(blobID);
@@ -346,7 +377,21 @@ public:
                         b.addInt(1);
                    
                         area = util.getBox2DFromCov(filterSingleBlob->measured.firstMoment, filterSingleBlob->measured.roi, &box);
-                        
+
+                        // compute stuff for arror/velocity comp
+                        dx.x=filterSingleBlob->measured.firstMoment.x - x_last.x;
+                        dx.y=filterSingleBlob->measured.firstMoment.y - x_last.y;
+                        x_last.x = x_last.x + alpha*(filterSingleBlob->measured.firstMoment.x - x_last.x);
+                        x_last.y = x_last.y + alpha*(filterSingleBlob->measured.firstMoment.y - x_last.y);
+                        p.x = filterSingleBlob->measured.firstMoment.x;
+                        p.y = filterSingleBlob->measured.firstMoment.y;
+                        tip.x = filterSingleBlob->measured.firstMoment.x + dx.x;
+                        tip.y = filterSingleBlob->measured.firstMoment.y + dx.y;                                              
+                        angle = atan2( (double) p.y - tip.y, (double) p.x - tip.x );
+                        hypot = sqrt( (p.y-tip.y)*(p.y-tip.y) + (p.x-tip.x)*(p.x-tip.x) );
+                        tip.x = (int) (p.x - 3 * hypot * cos(angle));
+                        tip.y = (int) (p.y - 3 * hypot * sin(angle));
+       
                         //cout << "avg blob center: (" << filterSingleBlob->filtered.measured.x << "," << filterSingleBlob->measured.firstMoment.y 
                         //	<< "), area = "  << area << endl;
                         
@@ -354,6 +399,15 @@ public:
                         if (box.size.width > 0 && box.size.height > 0 && box.size.width < width && box.size.height < height)
         		       		cvEllipseBox((IplImage*)imgOut.getIplImage(), box, color, 3, 16, 0);
         		       	cvCircle((IplImage*)imgOut.getIplImage(), filterSingleBlob->measured.firstMoment, 3, color, -1, 8, 0);
+
+                        // draw arrow
+                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(255,0,0), 3, CV_AA, 0);
+                        p.x = (int) (tip.x + 9 * cos(angle + M_PI / 4));
+                        p.y = (int) (tip.y + 9 * sin(angle + M_PI / 4));
+                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(255,0,0), 3, CV_AA, 0);
+                        p.x = (int) (tip.x + 9 * cos(angle - M_PI / 4));
+                        p.y = (int) (tip.y + 9 * sin(angle - M_PI / 4));
+                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(255,0,0), 3, CV_AA, 0);
                         
                         Bottle &blob = b.addList();
                         //blob.addInt(blobID);
@@ -614,7 +668,7 @@ int main(int argc, char *argv[])
     
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefault("filter","on");
+    rf.setDefault("filter","off");
     rf.setDefault("size_threshold","25");
     rf.setDefault("filter_threshold","100");
     rf.setDefault("num_blobs", "10");
