@@ -1591,49 +1591,34 @@ void iCubLegDyn::allocate(const string &_type)
 
 	//dynamical parameters: inertia and COM are matrices, they must be initialized before
 	// mass
-	Vector m(6);
-	// inertia and COM
-	deque<Matrix> HC;  
-	deque<Matrix> I; 
-	Matrix HCtmp(4,4); HCtmp.eye();
-	Matrix Itmp(3,3); Itmp.zero();
-	for(int i=0;i<6; i++)
-	{
-		HC.push_back(HCtmp);
-		I.push_back(Itmp);
-	}
 
     if(type=="right")
     {
         H0(1,3)=0.0681;
 
-		m=0;
-
 		//create iDynLink from parameters calling
 		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
 
-        linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
-        linkList[3]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
-        linkList[4]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
-        linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0, -0.041,     0.0,      M_PI,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
+        linkList[0]=new iDynLink(0.754,         -0.0782,  -0.00637,  -0.00093,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0.526,         0.00296,  -0.00072,	  0.03045,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(2.175,         0.00144,   0.06417,	  0.00039,				0,			0,			0,			0,			0,			0,   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
+        linkList[3]=new iDynLink(1.264,          0.1059,   0.00182,	 -0.00211,				0,			0,			0,			0,			0,			0,   0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
+        linkList[4]=new iDynLink(0.746,         -0.0054,   0.00163,   -0.0172,				0,			0,			0,			0,			0,			0,   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
+        linkList[5]=new iDynLink(0,					  0,		 0,			0,				0,			0,			0,			0,			0,			0, -0.041,     0.0,      M_PI,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
     }
     else
     {
         H0(1,3)=-0.0681;
 
-		m=0;
-
 		//create iDynLink from parameters calling
 		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
 
-        linkList[0]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
-        linkList[3]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
-        linkList[4]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
-        linkList[5]=new iDynLink(0,				0,		   0,		  0,				0,			0,			0,			0,			0,			0,-0.041,     0.0,       0.0,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
+        linkList[0]=new iDynLink(0.754,         -0.0782, -0.00637,   0.00093,			 471.076e-6,         2.059e-6,          1.451e-6,      346.478e-6,        1.545e-6,       510.315e-6,				   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0.526,         0.00296, -0.00072, -0.03045,			738.0487e-6, 		-0.074e-6,         -0.062e-6,      561.583e-6,       10.835e-6,       294.119e-6,				   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(2.175,         0.00144,  0.06417,	-0.00039,			7591.073e-6,       -67.260e-6,          2.267e-6,    1423.0245e-6,    36.372582e-6,		7553.8490e-6,				   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
+        linkList[3]=new iDynLink(1.264,          0.1059,  0.00182,	 0.00211,			 998.950e-6,      -185.699e-6,        -63.147e-6,     4450.537e-6,        0.786e-6,		 4207.657e-6,				-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
+        linkList[4]=new iDynLink(0.746,         -0.0054,  0.00163,    0.0172,            633.230e-6,		-7.081e-6,		   41.421e-6,	   687.760e-6,		 20.817e-6,		  313.897e-6,				   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
+        linkList[5]=new iDynLink(0,					  0,		0,		   0,					  0,				0,				   0,				0,				 0,				   0,				-0.041,     0.0,       0.0,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
     }
 
     for(unsigned int i=0; i<linkList.size(); i++)
