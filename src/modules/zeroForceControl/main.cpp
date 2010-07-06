@@ -114,9 +114,9 @@ This file can be edited at src/zeroForceControl/main.cpp.
 #include <iomanip>
 #include <string.h>
 
+#include <iCub/iDyn/iDynTransform.h>
+#include <iCub/iKin/iKinFwd.h>
 #include "filter.h"
-#include "iCub/iDyn/iDynTransform.h"
-#include "iCub/iKin/iKinFwd.h"
 
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
@@ -798,7 +798,7 @@ public:
 				  setDesiredPositions();	
 				  control_mode=IMPEDANCE;
 			  }
-			  FT = FTtoBase->getEndEffWrenchAsBase(FTs-FTs_init);			  	
+			  FT = FTtoBase->getEndEffWrenchAsBase(FTs-FTs_init);
 			  first = false;
 		  }
 		  else
@@ -1043,7 +1043,6 @@ public:
 		  //---------------------------------------------
 
 
-		  
 		  //---------------------------------------------
 		  //       DESTROING VARIABLES
 		  //---------------------------------------------

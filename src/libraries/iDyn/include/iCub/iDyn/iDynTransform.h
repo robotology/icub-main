@@ -306,7 +306,6 @@ private:
 	yarp::sig::Matrix R;
 
 	bool ownLimb;
-	bool ownSensor;
 
 	void initiFTransformation();
 
@@ -314,30 +313,8 @@ public:
 	iFTransformation();
 	iFTransformation(int _l);
 	iFTransformation(iDyn::iDynInvSensor *_iDynChainWithSensor);
+	~iFTransformation();
 
-	~iFTransformation()
-	{
-		if (Limb && ownLimb)
-		{
-			delete Limb;
-			Limb = 0;
-		}
-		if (Sensor && ownSensor) 
-		{
-			delete Sensor;
-			Sensor = 0;
-		}
-		if (EndEffector) 
-		{
-			delete EndEffector;
-			EndEffector = 0;
-		}
-		if (SensorFrame) 
-		{
-			delete SensorFrame;
-			SensorFrame = 0;
-		}
-	}
 	void attach(iKin::iKinChain *_Limb);
 	void attach(iGenericFrame *_Sensor);
 

@@ -170,7 +170,7 @@ void iFrameOnLink::setSensorKin(int _l)
 }
 
 void iFrameOnLink::setSensorKin()
-{
+{	
 	Link->setPRH(Limb->getH(l));
 	Matrix H1 = Link->getH();
 	Matrix H2 = Sensor->getH();
@@ -196,7 +196,7 @@ void iFrameOnLink::setSensor(const yarp::sig::Matrix &_H, const yarp::sig::Vecto
 }
 
 void iFrameOnLink::setSensor(const yarp::sig::Vector &_FT)
-{
+{	
 	setSensorKin();
 	setFT(_FT);
 }
@@ -211,7 +211,7 @@ Matrix iFrameOnLink::getH()
 }
 
 void iFrameOnLink::attach(iKinChain *_Limb)
-{
+{	
 	Limb=_Limb;
 }
 
@@ -234,7 +234,6 @@ iFrameOnLink::~iFrameOnLink()
 iFTransformation::iFTransformation()
 {
     ownLimb=true;
-    ownSensor=true;
 	Sensor=new iFrameOnLink();
 	EndEffector=new iGenericFrame();
 	Limb= new iDynChain();
@@ -244,17 +243,15 @@ iFTransformation::iFTransformation(int _l)
 {
 	l=_l;
     ownLimb=true;
-    ownSensor=true;
 	Sensor = new iFrameOnLink(l);
 	Limb= new iKinChain();
-	EndEffector=new iGenericFrame();
+	EndEffector=new iGenericFrame();	
 	initiFTransformation();
 	//Sensor->setLink(l);
 }
 iFTransformation::iFTransformation(iDynInvSensor *_iDynChainWithSensor)
 {
     ownLimb=false;
-    ownSensor=true;
 	initiFTransformation();
 	l=_iDynChainWithSensor->getSensorLink();
 	Limb = _iDynChainWithSensor->chain;
@@ -277,11 +274,7 @@ void iFTransformation::attach(iKin::iKinChain *_Limb)
 }
 void iFTransformation::attach(iGenericFrame *_Sensor)
 {    
-    if (Sensor && ownSensor)
-        delete Sensor;
-
 	Sensor->attach(_Sensor);
-    ownSensor=false;
 }
 void iFTransformation::initiFTransformation()
 {
@@ -308,6 +301,8 @@ void iFTransformation::initiFTransformation()
 	S=0.0;
 	R.resize(3,3);
 	R=0.0;
+
+	SensorFrame=0;
 }
 void iFTransformation::setLink(int _l)
 {
@@ -316,7 +311,7 @@ void iFTransformation::setLink(int _l)
 }
 void iFTransformation::setSensor(const Vector &_FT)
 {
-	Fs=_FT;
+	Fs=_FT;	
 	Sensor->setSensor(_FT);
 	Hs=Sensor->getH();
 }
@@ -379,7 +374,7 @@ yarp::sig::Vector iFTransformation::getEndEffWrenchAsBase()
 }
 yarp::sig::Vector iFTransformation::getEndEffWrenchAsBase(const Vector &_FT)
 {
-	setSensor(_FT);
+	setSensor(_FT);	
 	return getEndEffWrenchAsBase();
 }
 void iFTransformation::setFe()
@@ -418,5 +413,27 @@ void iFTransformation::setTse()
 	}
 
 }
-
+iFTransformation::~iFTransformation()
+{
+	if (Limb && ownLimb)
+	{
+		delete Limb;
+		Limb = 0;
+	}
+	if (Sensor) 
+	{
+		delete Sensor;
+		Sensor = 0;
+	}
+	if (EndEffector) 
+	{
+		delete EndEffector;
+		EndEffector = 0;
+	}
+	if (SensorFrame) 
+	{
+		delete SensorFrame;
+		SensorFrame = 0;
+	}
+}
 
