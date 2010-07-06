@@ -1613,7 +1613,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 			analogSensor->backDoor = new CanBackDoor();
 			analogSensor->backDoor->setUp(&res, &_mutex, canEchoEnabled, analogSensor);
 			String rn("/");
-			rn += config.find("robotName").asString();
+			rn += config.find("robotName").asString().c_str();
 			//rn+=String("/");
 			rn+=virtualPortName;
 			analogSensor->backDoor->open(rn.c_str()); //RANDAZ_TODO set portname based on analogConfig parameters
