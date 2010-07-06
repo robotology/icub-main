@@ -58,9 +58,13 @@ void CommandsHelper::handleControlModeMsg(const yarp::os::Bottle& cmd,
 							p=3;
 							*ok = iControlMode->setTorqueMode(axis);
 						break;
-						case VOCAB_CM_IMPEDANCE:
+						case VOCAB_CM_IMPEDANCE_POS:
 							p=4;
-							*ok = iControlMode->setTorqueMode(axis);
+							*ok = iControlMode->setImpedancePositionMode(axis);
+						break;
+						case VOCAB_CM_IMPEDANCE_VEL:
+							p=5;
+							*ok = iControlMode->setImpedanceVelocityMode(axis);
 						break;
 						case VOCAB_CM_OPENLOOP:
 							p=50;
@@ -101,7 +105,10 @@ void CommandsHelper::handleControlModeMsg(const yarp::os::Bottle& cmd,
 							response.addVocab(VOCAB_CM_TORQUE);
 						break;
 						case 4: 
-							response.addVocab(VOCAB_CM_IMPEDANCE);
+							response.addVocab(VOCAB_CM_IMPEDANCE_POS);
+						break;
+						case 5: 
+							response.addVocab(VOCAB_CM_IMPEDANCE_VEL);
 						break;
 						default:
 							response.addVocab(VOCAB_CM_UNKNOWN);
