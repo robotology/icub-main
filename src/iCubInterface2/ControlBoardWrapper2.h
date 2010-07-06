@@ -88,6 +88,7 @@ protected:
     yarp::dev::IAxisInfo            *info;
     yarp::dev::IControlCalibration2   *ical2;
 	yarp::dev::IOpenLoopControl     *iOpenLoop;
+	yarp::dev::IImpedanceControl    *iImpedance;
     int controlledJoints;
     Vector vect;
 
@@ -111,6 +112,8 @@ public:
     void handleControlModeMsg(const yarp::os::Bottle& cmd, 
         yarp::os::Bottle& response, bool *rec, bool *ok);
 
+    void handleImpedanceMsg(const yarp::os::Bottle& cmd, 
+        yarp::os::Bottle& response, bool *rec, bool *ok);
 
     /**
     * Initialize the internal data.
@@ -165,6 +168,7 @@ public:
     IControlCalibration2 *calib2;
     IPreciselyTimed      *iTimed;
     ITorqueControl       *iTorque;
+	IImpedanceControl    *iImpedance;
 	IOpenLoopControl     *iOpenLoop;
     IControlMode         *iMode;
     IAxisInfo          *info;
@@ -232,6 +236,7 @@ class ControlBoardWrapper2 : public DeviceDriver,
                              public IControlCalibration2,
                              public IOpenLoopControl,
                              public ITorqueControl,
+							 public IImpedanceControl,
                              public IControlMode,
                              public IMultipleWrapper,
                              public IAxisInfo
@@ -1930,6 +1935,40 @@ public:
         return false;
     }
 
+	virtual bool setImpedance(int j, double stiff, double damp, double offset)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iImpedance)
+        {
+            return p->iImpedance->setImpedance(off+base, stiff, damp, offset);
+        }        
+        
+        return false;
+    }
+
+	virtual bool setImpedanceOffset(int j, double offset)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iImpedance)
+        {
+            return p->iImpedance->setImpedanceOffset(off+base, offset);
+        }        
+        
+        return false;
+    }
+
     virtual bool getTorque(int j, double *t)
     {
         int off=device.lut[j].offset;
@@ -2130,6 +2169,40 @@ public:
         return false;
     }
 
+	virtual bool getImpedance(int j, double* stiff, double* damp, double* offset)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iImpedance)
+        {
+            return p->iImpedance->getImpedance(off+base, stiff, damp, offset);
+        }        
+
+        return false;
+    }
+
+	virtual bool getImpedanceOffset(int j, double* offset)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iImpedance)
+        {
+            return p->iImpedance->getImpedanceOffset(off+base, offset);
+        }        
+
+        return false;
+    }
+
     virtual bool getTorquePids(Pid *pids)
     {
          bool ret=true;
@@ -2295,7 +2368,7 @@ public:
         return false;
     }
 
-	virtual bool setImpedanceMode(int j)
+	virtual bool setImpedancePositionMode(int j)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2306,7 +2379,24 @@ public:
 
         if (p->iMode)
         {
-            return p->iMode->setImpedanceMode(off+base);
+            return p->iMode->setImpedancePositionMode(off+base);
+        }        
+
+        return false;
+    }
+
+	virtual bool setImpedanceVelocityMode(int j)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iMode)
+        {
+            return p->iMode->setImpedanceVelocityMode(off+base);
         }        
 
         return false;

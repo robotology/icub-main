@@ -37,6 +37,7 @@ SubDevice::SubDevice()
     iOpenLoop=0;
 
     iTorque=0;
+	iImpedance=0;
     iMode=0;
 
     base=-1;
@@ -95,6 +96,7 @@ void SubDevice::detach()
     calib2=0;
     info=0;
     iTorque=0;
+	iImpedance=0;
     iMode=0;
     iTimed=0;
     iOpenLoop=0;
@@ -139,6 +141,7 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
             subdevice->view(info);
             subdevice->view(iTimed);
             subdevice->view(iTorque);
+			subdevice->view(iImpedance);
             subdevice->view(iMode);
             subdevice->view(iOpenLoop);
         }
@@ -156,6 +159,9 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
         DEBUG_CW2("--> Warning iMode not valid interface\n");
 
     if (iTorque==0)
+        DEBUG_CW2("--> Warning iTorque not valid interface\n");
+
+    if (iImpedance==0)
         DEBUG_CW2("--> Warning iTorque not valid interface\n");
 
     if (iOpenLoop==0)
@@ -213,6 +219,73 @@ ImplementCallbackHelper2::ImplementCallbackHelper2(ControlBoardWrapper2 *x) {
     iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (x);
 }
 
+void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd, 
+                                           yarp::os::Bottle& response, bool *rec, bool *ok)
+{
+    if (caller->verbose())
+        fprintf(stderr, "Handling IImpedance message\n");
+     if (!iImpedance)
+        {
+            fprintf(stderr, "Error I do not have a valid interface\n");
+            *ok=false;
+            return;
+        }
+	
+    int code = cmd.get(0).asVocab();
+    *ok=false;
+	switch(code)
+    {
+    case VOCAB_SET:
+        {
+            if (caller->verbose())
+                fprintf(stderr, "handleImpedanceMsg::VOCAB_SET command\n");
+			switch (cmd.get(2).asVocab())
+				{
+                case VOCAB_IMP_PARAM:
+					Bottle& b = *(cmd.get(4).asList());
+					double stiff = b.get(0).asDouble();
+					double damp = b.get(1).asDouble();
+					double offs = b.get(2).asDouble();
+					*ok = iImpedance->setImpedance(cmd.get(3).asInt(),stiff,damp,offs);
+					break;
+				}
+            *rec=true; //or false
+        }
+        break;
+    case VOCAB_GET:
+        {
+			double stiff = 0;
+			double damp = 0;
+			double offs = 0;
+			if (caller->verbose())
+                fprintf(stderr, "handleImpedanceMsg::VOCAB_GET command\n");
+
+			response.addVocab(VOCAB_IS);
+			response.add(cmd.get(1));
+			switch (cmd.get(2).asVocab())
+				{
+                case VOCAB_IMP_PARAM:
+                    *ok = iImpedance->getImpedance(cmd.get(3).asInt(),&stiff, &damp, &offs);
+
+					Bottle& b = response.addList();
+					b.addDouble(stiff);       
+                    b.addDouble(damp);
+					b.addDouble(offs);
+
+                    *rec=true;
+
+					break;
+				}
+        }
+        break;
+    default:
+        {
+            *rec=false;
+        }
+        break;
+    }
+}
+
 void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd, 
                                            yarp::os::Bottle& response, bool *rec, bool *ok)
 {
@@ -249,8 +322,11 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
                     case VOCAB_CM_TORQUE:
                         *ok = iMode->setTorqueMode(axis);
 						break;
-					case VOCAB_CM_IMPEDANCE:
-                        *ok = iMode->setImpedanceMode(axis);
+					case VOCAB_CM_IMPEDANCE_POS:
+                        *ok = iMode->setImpedancePositionMode(axis);
+						break;
+					case VOCAB_CM_IMPEDANCE_VEL:
+                        *ok = iMode->setImpedanceVelocityMode(axis);
 						break;
                     case VOCAB_CM_OPENLOOP:
                         *ok = iMode->setOpenLoopMode(axis);
@@ -675,6 +751,10 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
     else if ((cmd.size()>1) && (cmd.get(0).asVocab()==VOCAB_ICONTROLMODE))
         {
                           handleControlModeMsg(cmd, response, &rec, &ok);
+        }
+	else if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_IMPEDANCE))
+        {
+                          handleImpedanceMsg(cmd, response, &rec, &ok);
         }
     else
         {
@@ -1457,6 +1537,7 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) {
     info = dynamic_cast<yarp::dev::IAxisInfo *> (caller);
     ical2= dynamic_cast<yarp::dev::IControlCalibration2 *> (caller);
     iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (caller);
+	iImpedance=dynamic_cast<yarp::dev::IImpedanceControl *> (caller);
     torque=dynamic_cast<yarp::dev::ITorqueControl *> (caller);
     iMode=dynamic_cast<yarp::dev::IControlMode *> (caller);
     controlledJoints = 0;
