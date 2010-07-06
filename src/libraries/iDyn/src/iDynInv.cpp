@@ -2104,11 +2104,11 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 	H.resize(4,4); COM.resize(4,4); I.resize(3,3);
 	if(type=="left")
 	{
-		H.zero(); H(0,0) = 1.0; H(2,1) = 1.0; H(1,2) = -1.0; H(1,3) = 0.08428; H(3,3) = 1.0;
-		COM.eye(); COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
-		I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
-		I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
-		m = 7.2784301e-01;
+		H.zero(); H(0,1) = 1.0; H(1,0) = -1.0; H(2,2) = 1.0; H(2,3) = -0.0665; H(3,3) = 1.0;
+		COM.zero(); //COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
+		I.zero(); //I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
+		//I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
+		m = 0.0;//7.2784301e-01;
 	}
 	else
 	{ 
@@ -2119,11 +2119,11 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 			type = "right";
 		}
 
-		H.zero(); H(0,0) = 1.0; H(2,1) = 1.0; H(1,2) = -1.0; H(1,3) = 0.08428; H(3,3) = 1.0;
-		COM.eye(); COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
-		I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
-		I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
-		m = 7.2784301e-01;
+		H.zero(); H(0,1) = -1.0; H(1,0) = -1.0; H(2,2) = -1.0; H(2,3) = 0.0665; H(3,3) = 1.0;
+		COM.zero(); //COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
+		I.zero(); //I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
+		//I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
+		m = 0.0;//7.2784301e-01;
 	
 	}
 	//then the sensor information
@@ -2148,7 +2148,7 @@ iDynInvSensorLeg::iDynInvSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsig
 :iDynInvSensor(_c->asChain(),_c->getType(),_mode,verb)
 {
 	// FT sensor is in position 2 in the kinematic chain in both legs
-	lSens = 2;
+	lSens = 1;
 	// the leg type determines the sensor properties
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
@@ -2169,7 +2169,7 @@ iDynInvSensorLeg::iDynInvSensorLeg(iDynChain *_c, const string _type, const NewE
 :iDynInvSensor(_c,_type,_mode,verb)
 {
 	// FT sensor is in position 2 in the kinematic chain in both legs
-	lSens = 2;
+	lSens = 1;
 	// the leg type determines the sensor properties
 	if( !((_type=="left")||(_type=="right"))  )
 	{
