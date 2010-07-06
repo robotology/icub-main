@@ -274,9 +274,6 @@ void iFTransformation::attach(iKin::iKinChain *_Limb)
 }
 void iFTransformation::attach(iGenericFrame *_Sensor)
 {    
-    if (Sensor && ownSensor)
-        //delete Sensor;
-
 	Sensor->attach(_Sensor);
 }
 void iFTransformation::initiFTransformation()
