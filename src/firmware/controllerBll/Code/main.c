@@ -37,7 +37,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 40;
+word    _build_number = 41;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -456,7 +456,8 @@ void main(void)
 		for (i=0; i<JN; i++) 
 		{
 			if (_control_mode[i] == MODE_TORQUE ||
-			 	_control_mode[i] == MODE_IMPEDANCE)
+			 	_control_mode[i] == MODE_IMPEDANCE_POS ||
+			 	_control_mode[i] == MODE_IMPEDANCE_VEL)
 				PWMoutput[i] = lpf_ord1_3hz (PWMoutput[i], i);	
 		}
 
@@ -717,7 +718,8 @@ void check_range_torque(byte i, Int16 band, Int32 *PWM)
 {
 	static UInt32 TrqLimitCount =0;
  	if (_control_mode[i] == MODE_TORQUE ||
-	  	_control_mode[i] == MODE_IMPEDANCE)
+	  	_control_mode[i] == MODE_IMPEDANCE_POS ||
+	  	_control_mode[i] == MODE_IMPEDANCE_VEL)
  		{
 	 		if  (_position[i] > _max_position[i])
 	 		{
