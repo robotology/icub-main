@@ -19,7 +19,8 @@
 #define MODE_POSITION 				1
 #define MODE_VELOCITY				2
 #define MODE_TORQUE					3
-#define MODE_IMPEDANCE				4
+#define MODE_IMPEDANCE_POS			4
+#define MODE_IMPEDANCE_VEL			5
 #define MODE_CALIB_ABS_POS_SENS		0x10
 #define MODE_CALIB_HARD_STOPS		0x20
 #define MODE_HANDLE_HARD_STOPS		0x30
@@ -123,7 +124,12 @@
 
 #define CAN_SET_VEL_TIMEOUT			86
 
-#define NUM_OF_MESSAGES				87
+#define CAN_SET_IMPEDANCE_PARAMS    87
+#define CAN_GET_IMPEDANCE_PARAMS    88
+#define CAN_SET_IMPEDANCE_OFFSET    89
+#define CAN_GET_IMPEDANCE_OFFSET    90
+
+#define NUM_OF_MESSAGES				91
 
 /* error status values */
 #define ERROR_NONE					0			/* no error, all ok */
