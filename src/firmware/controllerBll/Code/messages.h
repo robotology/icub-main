@@ -530,7 +530,11 @@ extern char    _additional_info [32];
 		}	\
 		else */ if (_control_mode[axis] != MODE_IDLE) \
 		{ \
-			if (_control_mode[axis] != MODE_IMPEDANCE) _control_mode[axis] = MODE_POSITION; \
+			if (_control_mode[axis] != MODE_IMPEDANCE_POS && \
+				_control_mode[axis] != MODE_IMPEDANCE_VEL ) \
+			    _control_mode[axis] = MODE_POSITION; \
+			else \
+			    _control_mode[axis] = MODE_IMPEDANCE_POS; \
 			_set_point[axis] = BYTE_C(CAN_DATA[1], CAN_DATA[2], CAN_DATA[3], CAN_DATA[4]); \
 			if (_set_point[axis] < _min_position[axis]) \
 				_set_point[axis] = _min_position[axis]; \
@@ -560,9 +564,14 @@ extern char    _additional_info [32];
 		if (_control_mode[axis] != MODE_IDLE && IS_DONE(axis)) \
 		{ \
 			_vel_counter[axis] = 0; \
-			if (_control_mode[axis] == MODE_POSITION) \
+			if (_control_mode[axis] == MODE_POSITION || \
+				_control_mode[axis] == MODE_IMPEDANCE_POS ) \
 				_desired_vel[axis] = 0; \
-			_control_mode[axis] = MODE_VELOCITY; \
+			if (_control_mode[axis] != MODE_IMPEDANCE_POS && \
+				_control_mode[axis] != MODE_IMPEDANCE_VEL ) \
+			    _control_mode[axis] = MODE_VELOCITY; \
+			else \
+			    _control_mode[axis] = MODE_IMPEDANCE_VEL; \
 			_set_point[axis] = 0; \
 			_set_vel[axis] = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 			_set_acc[axis] = BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
