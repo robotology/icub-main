@@ -1,5 +1,5 @@
 /**
- * \defgroup iFC iFC
+ * \defgroup iDynTransform iDynTransform
  *  
  * @ingroup iDyn
  *  
@@ -23,7 +23,7 @@
  *
  */
 
-/* How to use the iFC library:
+/* How to use the FT sensor transformation:
 
 istantiate your limb (example: iCubArm *arm)
 istantiate a iFrameOnLink Variable as pointer (iFrameOnLink *Sens) and a pointer to a variable of type iGenericFrame
@@ -104,7 +104,7 @@ namespace iDyn{
 
 
 /**
-* \ingroup iFC
+* \ingroup iDynTransform
 *
 * A Base class for defining the Transformation of a Wrench from a frame to another.
 */
@@ -204,7 +204,7 @@ public:
 };
 
 /**
-* \ingroup iFC
+* \ingroup iDynTransform
 *
 * A Base class for defining the FT sensor over a generic link of a kinematic chain inherited by iKinLimb.
 */
@@ -241,9 +241,7 @@ public:
 	*/
 	iFrameOnLink(int _l);
 	/*Destructor*/
-	~iFrameOnLink()
-	{
-	};
+	~iFrameOnLink();
 
 	void setLink(int _l);
 	//Set sensor variables:
@@ -284,7 +282,7 @@ public:
 
 
 /**
-* \ingroup iFC
+* \ingroup iDynTransform
 *
 */
 class iFTransformation

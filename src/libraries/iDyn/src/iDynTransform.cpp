@@ -217,7 +217,13 @@ void iFrameOnLink::attach(iKinChain *_Limb)
 
 void iFrameOnLink::attach(iGenericFrame *_Sensor)
 {
-		Sensor = _Sensor;
+	Sensor=_Sensor;
+}
+
+iFrameOnLink::~iFrameOnLink()
+{
+    if (Link)
+        delete Link;
 }
 
 //////////////////////////////////////////////////////////////////
