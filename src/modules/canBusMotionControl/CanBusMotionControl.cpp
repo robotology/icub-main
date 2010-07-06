@@ -489,6 +489,7 @@ data(0)
     counterSat=0;
     counterError=0;
     counterTimeout=0;
+    backDoor=0;
 }
 
 AnalogSensor::~AnalogSensor()
