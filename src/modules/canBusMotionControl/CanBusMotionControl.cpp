@@ -22,8 +22,6 @@
 //#define CAN_DEBUG
 //#define CANBUSMC_DEBUG
 
-//#define USE_CANBACKDOOR //enable/disable access to canbus from a port
-
 #include "ThreadTable2.h"
 #include "ThreadPool2.h"
 
@@ -344,48 +342,145 @@ public:
 };
 inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
 
-class CanBackDoor: public BufferedPort<yarp::sig::Vector>
+class CanBackDoor: public BufferedPort<Bottle>
 {
     CanBusResources *bus;
     Semaphore *semaphore;
+	AnalogSensor *ownerSensor;
+	bool canEchoEnabled;
+
 public:
     CanBackDoor()
     {
         bus=0;
+		ownerSensor=0;
+		canEchoEnabled=false;
     }
 
-    void setUp(CanBusResources *p, Semaphore *sema)
+    void setUp(CanBusResources *p, Semaphore *sema, bool echo, AnalogSensor *owner)
     {
         semaphore=sema;
         bus=p;
+		ownerSensor= owner;
+		useCallback();
+		canEchoEnabled = echo;
     }
 
-    void onRead(Bottle &b)
+    virtual void onRead(Bottle &b);
+};
+
+
+void CanBackDoor::onRead(Bottle &b)
+{
+    if (!semaphore)
+        return;
+
+	double dval[6] = {40, 1, 0, -1, -40, -39};
+
+    semaphore->wait();
+    //RANDAZ_TODO: parse vector b
+	int len = b.size();
+	int commandId = b.get(0).asInt();
+	int i=0;
+
+	static double timePrev=Time::now();
+	static int    count_timeout=0;
+	double timeNow=Time::now();
+	double diff = timeNow - timePrev;
+
+	if (diff > 0.012)
+	{
+		count_timeout++;
+		fprintf(stderr, "********************** TIMEOUT : %f COUNT: %d \n", diff, count_timeout);
+	}
+	timePrev=Time::now();
+
+	switch (commandId)
+	{
+		case 1:
+			dval[0] = b.get(1).asDouble();
+			dval[1] = b.get(2).asDouble();
+			dval[2] = b.get(3).asDouble();
+			dval[3] = b.get(4).asDouble();
+			dval[4] = 0; 
+			dval[5] = 0;
+		break;
+		default:
+			fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName());
+			return;
+		break;
+	}
+    
+    if (bus && ownerSensor)
     {
-        if (!semaphore)
-            return;
+	   int fakeId = 0;
+	   int boardId = ownerSensor->getId();
+	   short int val[6] = {0,0,0,0,0,0};
+	   for (i=0; i<6; i++)
+	   {
+		   double fullScale = ownerSensor->getScaleFactor()[i];
+		   if (dval[i] >  fullScale) dval[i] =  fullScale;
+		   if (dval[i] < -fullScale) dval[i] = -fullScale;
+		   val[i] = short int(dval[i] / fullScale * 0x7fff)+0x8000; //check this!
+		  
+	   }
 
-        semaphore->wait();
-        //RANDAZ_TODO: parse vector b
+       bus->startPacket();
+	   fakeId = 0x300 + (boardId<<4)+ 0x0A;
+       bus->_writeBuffer[0].setId(fakeId);
+       bus->_writeBuffer[0].getData()[1]=(val[0] >> 8) & 0xFF;
+       bus->_writeBuffer[0].getData()[0]= val[0] & 0xFF;
+	   bus->_writeBuffer[0].getData()[3]=(val[1] >> 8) & 0xFF;
+       bus->_writeBuffer[0].getData()[2]= val[1] & 0xFF;
+       bus->_writeBuffer[0].getData()[5]=(val[2] >> 8) & 0xFF;
+       bus->_writeBuffer[0].getData()[4]= val[2] & 0xFF;
+       bus->_writeBuffer[0].setLen(6);
+       bus->_writeMessages++;
+       bus->writePacket();
 
-        if (!bus)
-        {
-           bus->startPacket();
-           //RANDAZ_TODO: prepare message
-           bus->_writeBuffer[0].setId(0x00);
-           bus->_writeBuffer[0].getData()[0]=0x00;
-           bus->_writeBuffer[0].getData()[1]=0x00;
-           bus->_writeBuffer[0].setLen(2);
-           bus->_writeMessages++;
-           bus->writePacket();
-        }
-        semaphore->post();
-    }
-} backDoor;
+	   if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
+	   {
+		   bus->_readBuffer[bus->_readMessages].setId(fakeId);
+		   bus->_readBuffer[bus->_readMessages].setLen(6);
+		   for (i=0; i<6; i++)
+				bus->_readBuffer[bus->_readMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
+		   bus->_readMessages++;
+	   }
+
+       bus->startPacket();
+	   fakeId = 0x300 + (boardId<<4)+ 0x0B;
+       bus->_writeBuffer[0].setId(fakeId);
+       bus->_writeBuffer[0].getData()[1]=(val[3] >> 8) & 0xFF;
+       bus->_writeBuffer[0].getData()[0]= val[3] & 0xFF;
+	   bus->_writeBuffer[0].getData()[3]=(val[4] >> 8) & 0xFF;
+       bus->_writeBuffer[0].getData()[2]= val[4] & 0xFF;
+       bus->_writeBuffer[0].getData()[5]=(val[5] >> 8) & 0xFF;
+       bus->_writeBuffer[0].getData()[4]= val[5] & 0xFF;
+       bus->_writeBuffer[0].setLen(6);
+       bus->_writeMessages++;
+	    bus->writePacket();
+	   
+	   if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
+	   {
+		   bus->_readBuffer[bus->_readMessages].setId(fakeId);
+		   bus->_readBuffer[bus->_readMessages].setLen(6);
+		   for (i=0; i<6; i++)
+				bus->_readBuffer[bus->_readMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
+		   bus->_readMessages++;
+	   }
+
+	   if (canEchoEnabled)
+	   {
+		   ownerSensor->handleAnalog(bus);
+	   }
+	}
+    semaphore->post();
+}
 
 AnalogSensor::AnalogSensor():
 data(0)
 {
+	isVirtualSensor=false;
 	timeStamp=0;
 	status=IAnalogSensor::AS_OK;
 	useCalibration=0;
@@ -409,7 +504,7 @@ int AnalogSensor::getState(int ch)
     return status;
 }
 
-bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCalib)
+bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualS)
 {
     if (data)
         return false;
@@ -423,6 +518,7 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
     dataFormat=f;
     boardId=bId;
 	useCalibration=useCalib;
+	isVirtualSensor=isVirtualS;
 	if (useCalibration==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
 	{
 		scaleFactor[0]=1;
@@ -431,6 +527,16 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
 		scaleFactor[3]=1;
 		scaleFactor[4]=1;
 		scaleFactor[5]=1;
+	}
+
+	if (isVirtualSensor==true)
+	{
+		scaleFactor[0]=40;
+		scaleFactor[1]=40;
+		scaleFactor[2]=40;
+		scaleFactor[3]=40;
+		scaleFactor[4]=40;
+		scaleFactor[5]=40;
 	}
 
     return true;
@@ -781,6 +887,33 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         _pids[j].offset = xtmp.get(7).asDouble();
     }
 
+	////// TORQUE PIDS
+	if (p.check("TORQUE_PIDS","TORQUE_PID parameters")==true)
+	{
+		printf("Torque Pids section found\n");
+		_tpidsEnabled=true;
+		for(j=0;j<nj;j++)
+		{
+			char tmp[80];
+			sprintf(tmp, "TPid%d", j); 
+			xtmp = p.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(tmp);	
+
+			_tpids[j].kp = xtmp.get(1).asDouble();
+			_tpids[j].kd = xtmp.get(2).asDouble();
+			_tpids[j].ki = xtmp.get(3).asDouble();
+
+			_tpids[j].max_int = xtmp.get(4).asDouble();
+			_tpids[j].max_output = xtmp.get(5).asDouble();
+
+			_tpids[j].scale = xtmp.get(6).asDouble();
+			_tpids[j].offset = xtmp.get(7).asDouble();
+		}
+	}
+	else
+	{
+		printf("Torque Pids section NOT enabled\n");
+	}
+
     /////// LIMITS
     xtmp = p.findGroup("LIMITS").findGroup("Currents",
         "a list of current limits");
@@ -891,6 +1024,8 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _angleToEncoder=0;
     _zeros=0;
     _pids=0;
+	_tpids=0;
+	_tpidsEnabled=false;
     _limitsMax=0;
     _limitsMin=0;
     _currentLimits=0;
@@ -918,6 +1053,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _zeros = allocAndCheck<double>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
+	_tpids=allocAndCheck<Pid>(nj);
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
     _currentLimits=allocAndCheck<double>(nj);
@@ -959,6 +1095,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
 
 
     checkAndDestroy<Pid>(_pids);
+	checkAndDestroy<Pid>(_tpids);
     checkAndDestroy<double>(_limitsMax);
     checkAndDestroy<double>(_limitsMin);
     checkAndDestroy<double>(_currentLimits);
@@ -1291,6 +1428,7 @@ ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
 ImplementControlLimits<CanBusMotionControl, IControlLimits>(this),
 ImplementTorqueControl(this),
+ImplementImpedanceControl(this),
 ImplementOpenLoopControl(this),
 ImplementControlMode(this),
 _mutex(1),
@@ -1377,6 +1515,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
 	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+	ImplementImpedanceControl::initialize(p._njoints, p._axisMap);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
 	
     // temporary variables used by the ddriver.
@@ -1389,6 +1528,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     // default initialization for this device driver.
     setPids(p._pids);
+	if (p._tpidsEnabled==true) setTorquePids(p._tpids);
 
     int i;
     for(i = 0; i < p._njoints; i++)
@@ -1452,25 +1592,36 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         fprintf(stderr, "--> Initializing analog device %s\n", deviceid.c_str());
         
         analogSensor=new AnalogSensor;
-#ifdef USE_CANBACKDOOR
-        backDoor.setUp(&res, &_mutex);
-        backDoor.open("/portname"); //RANDAZ_TODO set portname based on analogConfig parameters
-        //RANDAZ_TODO if needed set other parameters to backDoor
-#endif
         analogSensor->setDeviceId(deviceid);
 
+		bool isVirtualSensor=false;
         char analogId=analogConfig.find("CanAddress").asInt();
         char analogFormat=analogConfig.find("Format").asInt();
         int analogChannels=analogConfig.find("Channels").asInt();
 		int analogCalibration=analogConfig.find("UseCalibration").asInt();
 
+		if (analogConfig.check("PortName"))
+		{
+			isVirtualSensor = true;
+			String virtualPortName = analogConfig.find("PortName").asString();
+			bool   canEchoEnabled = analogConfig.find("CanEcho").asInt();
+			analogSensor->backDoor = new CanBackDoor();
+			analogSensor->backDoor->setUp(&res, &_mutex, canEchoEnabled, analogSensor);
+			String rn("/");
+			rn += config.find("robotName").asString();
+			//rn+=String("/");
+			rn+=virtualPortName;
+			analogSensor->backDoor->open(rn.c_str()); //RANDAZ_TODO set portname based on analogConfig parameters
+			//RANDAZ_TODO if needed set other parameters to backDoor
+		}
+
         switch (analogFormat)
         {
             case 8:
-                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId, analogCalibration);
+                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId, analogCalibration, isVirtualSensor);
                 break;
             case 16:
-                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId, analogCalibration);
+                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId, analogCalibration, isVirtualSensor);
                 break;
         }
 
@@ -1503,7 +1654,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                 res.writePacket();
         }
         //init message for strain board
-        else if (analogChannels==6 && analogFormat==16)
+        else if (analogChannels==6 && analogFormat==16 && isVirtualSensor==false)
         {
                 //calibrated astrain board
                 if (analogCalibration==1)
@@ -1528,8 +1679,8 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 					        for (i=0; i<res._readMessages; i++)
 					        {
 						        CanMessage& m = res._readBuffer[i];
-						        if (m.getId()==0x2D0 ||
-							        m.getId()==0x2E0)
+								unsigned int currId=m.getId();
+						        if (currId==(0x0200|(analogSensor->getId()<<4)))
 							        if (m.getLen()==4 &&
 								        m.getData()[0]==0x18 &&
 								        m.getData()[1]==ch)
@@ -1611,9 +1762,8 @@ void CanBusMotionControl::finiAnalog(AnalogSensor *analogSensor)
                 res.writePacket();
 
                 //shut down backdoor
-#ifdef USE_CANBACKDOOR
-                backDoor.close();
-#endif
+				if (analogSensor->backDoor)
+					analogSensor->backDoor->close();
             }
 }
 
@@ -1652,6 +1802,7 @@ bool CanBusMotionControl::close (void)
 
         ImplementControlMode::uninitialize();
         ImplementTorqueControl::uninitialize();
+		ImplementImpedanceControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
 
         
@@ -2245,13 +2396,22 @@ bool CanBusMotionControl::setTorqueModeRaw(int j)
 	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_TORQUE);
 }
 
-bool CanBusMotionControl::setImpedanceModeRaw(int j)
+bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
 {
 	if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-	DEBUG("Calling SET_CONTROL_MODE (impedance)\n");
-	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_IMPEDANCE);
+	DEBUG("Calling SET_CONTROL_MODE (impedance pos)\n");
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_IMPEDANCE_POS);
+}
+
+bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
+{
+	if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+	DEBUG("Calling SET_CONTROL_MODE (impedance vel)\n");
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_IMPEDANCE_VEL);
 }
 
 bool CanBusMotionControl::getControlModeRaw(int j, int *v)
@@ -2277,6 +2437,12 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
         break;
     case MODE_TORQUE:
         *v=VOCAB_CM_TORQUE;
+        break;
+    case MODE_IMPEDANCE_POS:
+        *v=VOCAB_CM_IMPEDANCE_POS;
+        break;
+	case MODE_IMPEDANCE_VEL:
+        *v=VOCAB_CM_IMPEDANCE_VEL;
         break;
     case MODE_OPENLOOP:
         *v=VOCAB_CM_OPENLOOP;
@@ -2313,6 +2479,160 @@ bool CanBusMotionControl::setPidRaw (int axis, const Pid &pid)
     _writeWord16 (CAN_SET_TLIM, axis, S_16(pid.max_output));
 
     return true;
+}
+
+bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp, double *off)
+{
+	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+  	if (!ENABLED(axis))
+    {
+		//@@@ TODO: check here
+		// value = 0;
+        return true;
+    }
+ 
+	CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        fprintf(stderr, "More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        return false;
+    }
+
+    r.startPacket();
+    r.addMessage (id, axis, CAN_GET_IMPEDANCE_PARAMS);
+    r.writePacket();
+
+	ThreadTable2 *t=threadPool->getThreadTable(id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+
+	CanMessage *m=t->get(0);
+    if (m==0)
+    {
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
+
+	unsigned char *data;
+	data=m->getData()+1;
+	*stiff= *((short *)(data));
+	data+=2;
+	*damp= *((short *)(data));
+    data+=2;
+	*off= *((short *)(data));
+
+	t->clear();
+
+	return true;
+}
+
+bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
+{
+	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+  	if (!ENABLED(axis))
+    {
+		//@@@ TODO: check here
+		// value = 0;
+        return true;
+    }
+ 
+	CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        fprintf(stderr, "More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        return false;
+    }
+
+    r.startPacket();
+    r.addMessage (id, axis, CAN_GET_IMPEDANCE_OFFSET);
+    r.writePacket();
+
+	ThreadTable2 *t=threadPool->getThreadTable(id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+
+	CanMessage *m=t->get(0);
+    if (m==0)
+    {
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
+
+	unsigned char *data;
+	data=m->getData()+1;
+	*off= *((short *)(data));
+
+	t->clear();
+
+	return true;
+}
+
+bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp, double off)
+{
+	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    DEBUG("setImpedanceRaw\n");
+
+    if (!ENABLED(axis))
+        return true;
+
+	CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+		r.startPacket();
+		r.addMessage (CAN_SET_IMPEDANCE_PARAMS, axis);
+		*((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
+		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp);
+		*((short *)(r._writeBuffer[0].getData()+5)) = S_16(off);
+		*((short *)(r._writeBuffer[0].getData()+7)) = 0;
+		r._writeBuffer[0].setLen(8);
+		r.writePacket();
+    _mutex.post();
+
+	return true;
+}
+
+bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
+{
+	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    DEBUG("setImpedanceOffsetRaw\n");
+
+    if (!ENABLED(axis))
+        return true;
+
+	CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+		r.startPacket();
+		r.addMessage (CAN_SET_IMPEDANCE_OFFSET, axis);
+		*((short *)(r._writeBuffer[0].getData()+1)) = S_16(off);
+		*((short *)(r._writeBuffer[0].getData()+3)) = 0;
+		*((short *)(r._writeBuffer[0].getData()+5)) = 0;
+		*((short *)(r._writeBuffer[0].getData()+7)) = 0;
+		r._writeBuffer[0].setLen(8);
+		r.writePacket();
+    _mutex.post();
+
+	return true;
 }
 
 bool CanBusMotionControl::getPidRaw (int axis, Pid *out)

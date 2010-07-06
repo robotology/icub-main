@@ -113,12 +113,14 @@ public:
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to encoder conversion factors */
     double *_zeros;                             /** encoder zeros */
-    Pid *_pids;                                  /** initial gains */
-    double *_limitsMin;                          /** joint limits, max*/
+    Pid *_pids;                                 /** initial gains */
+	Pid *_tpids;								/** initial torque gains */
+	bool _tpidsEnabled;							/** abilitation for torque gains */
+    double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
 	int *_velocityShifts;                       /** velocity shifts */
-	int *_velocityTimeout;                       /** velocity shifts */
+	int *_velocityTimeout;                      /** velocity shifts */
 };
 
 class AnalogData
@@ -152,6 +154,8 @@ public:
 
 #include <yarp/os/Semaphore.h>
 typedef int AnalogDataFormat;
+
+class CanBackDoor;
 
 class AnalogSensor: public yarp::dev::IAnalogSensor,
                     public yarp::dev::DeviceDriver
@@ -192,12 +196,15 @@ private:
     std::string deviceIdentifier;
     short boardId;
 	short useCalibration;
+	bool  isVirtualSensor; //RANDAZ
 
     bool decode8(const unsigned char *msg, int id, double *data);
     bool decode16(const unsigned char *msg, int id, double *data);
 
 public:
-    AnalogSensor();
+	CanBackDoor* backDoor; //RANDAZ
+
+	AnalogSensor();
     ~AnalogSensor();
     bool handleAnalog(void *);
 
@@ -244,7 +251,7 @@ public:
 	double* getScaleFactor()
 		{return scaleFactor;}
 
-    bool open(int channels, AnalogDataFormat f, short bId, short useCalib);
+    bool open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualSensor);
 
     //IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
@@ -266,6 +273,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IControlDebug,
             public IControlLimitsRaw,
 			public ITorqueControlRaw,
+			public IImpedanceControlRaw,
 			public IOpenLoopControlRaw,
             public IControlModeRaw,
             public ImplementPositionControl<CanBusMotionControl, IPositionControl>,
@@ -277,6 +285,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
             public ImplementControlLimits<CanBusMotionControl, IControlLimits>,
 			public ImplementTorqueControl,
+			public ImplementImpedanceControl,
 			public ImplementOpenLoopControl,
             public ImplementControlMode,
             public IFactoryInterface
@@ -418,11 +427,22 @@ public:
     //
     /////////////////////////////// END Torque Control INTERFACE
 
+	//
+    /// IMPEDANCE CONTROL INTERFACE RAW
+    virtual bool getImpedanceRaw(int j, double *stiff, double *damp, double *offs);  
+    virtual bool setImpedanceRaw(int j, double  stiff, double  damp, double  offs);   
+    virtual bool getImpedanceOffsetRaw(int j, double *offs);  
+    virtual bool setImpedanceOffsetRaw(int j, double  offs);   
+
+	//
+    /////////////////////////////// END Impedance Control INTERFACE
+
     // ControlMode
     virtual bool setPositionModeRaw(int j);
     virtual bool setVelocityModeRaw(int j);
     virtual bool setTorqueModeRaw(int j);
-	virtual bool setImpedanceModeRaw(int j);
+	virtual bool setImpedancePositionModeRaw(int j);
+	virtual bool setImpedanceVelocityModeRaw(int j);
 	virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
 
