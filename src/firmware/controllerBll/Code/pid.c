@@ -109,17 +109,7 @@ Int16  _pid_limit_torque[JN] ;					// pid limit
 Int32  _pd_torque[JN] ;           			  	// pd portion of the pid
 Int32  _integral_torque[JN] ;					// store the sum of the integral component 
 Int16  _integral_limit_torque[JN] ;
-
-#if  (VERSION == 0x0157)
-Int16  _kp_torque[JN] = {32,200};				// PID gains: proportional... 
-#elif VERSION == 0x0150
-Int16  _kp_torque[JN] = {16,8};					// PID gains: proportional... 
-#elif VERSION == 0x0170
-Int16  _kp_torque[JN] = INIT_ARRAY (200);		// PID gains: proportional... 
-#else
-Int16  _kp_torque[JN] = INIT_ARRAY (32);		// PID gains: proportional... 
-#endif
-
+Int16  _kp_torque[JN] = INIT_ARRAY (100);		// PID gains: proportional... 
 Int16  _kd_torque[JN] = INIT_ARRAY (0);			// ... derivative  ...
 Int16  _ki_torque[JN] = INIT_ARRAY (0);			// ... integral
 Int16  _ko_torque[JN] = INIT_ARRAY (0);			// offset 
@@ -378,15 +368,9 @@ Int32 compute_pwm(byte j)
 		{
 			ImpError = extract_l(ImpInputError);
 		}		
-	#if VERSION == 0x0157
 		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(ImpError);
 		_desired_torque[j] += (Int32)_ko_imp[j];
 		_desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
-	#elif VERSION == 0x0150
-		_desired_torque[j] = (Int32)_ks_imp[j] * (Int32)(ImpError);
-		_desired_torque[j] += (Int32)_ko_imp[j];
-		// _desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
-	#endif
 		PWMOUT = compute_pid_torque(j, _strain_val[j]);
 		PWMOUT = PWMOUT + _ko_torque[j];
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
