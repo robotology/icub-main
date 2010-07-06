@@ -255,7 +255,8 @@ Int32 compute_pwm(byte j)
 	  	{
 		//you should never execute this code
 		if (_control_mode[j] == MODE_TORQUE ||
-			_control_mode[j] == MODE_IMPEDANCE)
+			_control_mode[j] == MODE_IMPEDANCE_POS ||
+			_control_mode[j] == MODE_IMPEDANCE_VEL)
 			{	
 				_control_mode[j] = MODE_IDLE;	
 				_pad_enabled[j] = false;
@@ -271,13 +272,15 @@ Int32 compute_pwm(byte j)
 	  	  
 #elif VERSION == 0x157 
       	//coupled joint of the arm
-	 	read_force_data (0, WDT_6AX_STRAIN_13,5); 
-	  	read_force_data (1, WDT_JNT_STRAIN_12,2); 
+     // read_force_data (0, WDT_6AX_STRAIN_13,5);
+	 	read_force_data (0, WDT_JNT_STRAIN_12,2);
+	  	read_force_data (1, WDT_JNT_STRAIN_12,3); 
 #else
 	  	//other firmwares
 		//you should never execute this code
 		if (_control_mode[j] == MODE_TORQUE ||
-			_control_mode[j] == MODE_IMPEDANCE)
+			_control_mode[j] == MODE_IMPEDANCE_POS ||
+			_control_mode[j] == MODE_IMPEDANCE_VEL)
 			{	
 				_control_mode[j] = MODE_IDLE;	
 				_pad_enabled[j] = false;
@@ -362,7 +365,8 @@ Int32 compute_pwm(byte j)
 		PWMOUT = PWMOUT + _ko_torque[j];
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
 	break;
-	case MODE_IMPEDANCE: 
+	case MODE_IMPEDANCE_POS:
+	case MODE_IMPEDANCE_VEL: 
 		compute_desired(j);
 		ImpInputError = L_sub(_position[j], _desired[j]);				
 		if (ImpInputError > MAX_16)
@@ -884,7 +888,7 @@ void compute_desired(byte i)
 		switch (_control_mode[i])
 		{
 		case MODE_POSITION:
-		case MODE_IMPEDANCE:
+		case MODE_IMPEDANCE_POS:
 			_desired[i] = step_trajectory (i);
 			break;
 			
@@ -906,6 +910,7 @@ void compute_desired(byte i)
 			break;
 							
 		case MODE_VELOCITY:
+		case MODE_IMPEDANCE_VEL:
 			_desired[i] += step_trajectory_delta (i);
 			_desired[i] += step_velocity (i);
 			// checks if the velocity messages streaming
@@ -991,7 +996,8 @@ bool check_in_position(byte jnt)
 bool read_force_data (byte jnt, byte strain_num, byte strain_chan)
 {
 	if (_control_mode[jnt] == MODE_TORQUE ||
-		_control_mode[jnt] == MODE_IMPEDANCE)
+		_control_mode[jnt] == MODE_IMPEDANCE_POS ||
+		_control_mode[jnt] == MODE_IMPEDANCE_VEL )
 		{
 			if (_strain_wtd[strain_num]==0)
 			{
