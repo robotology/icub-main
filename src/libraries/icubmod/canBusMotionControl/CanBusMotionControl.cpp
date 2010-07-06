@@ -534,16 +534,6 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
 		scaleFactor[5]=1;
 	}
 
-	if (isVirtualSensor==true)
-	{
-		scaleFactor[0]=40;
-		scaleFactor[1]=40;
-		scaleFactor[2]=40;
-		scaleFactor[3]=40;
-		scaleFactor[4]=40;
-		scaleFactor[5]=40;
-	}
-
     return true;
 }
 
@@ -1604,6 +1594,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         char analogFormat=analogConfig.find("Format").asInt();
         int analogChannels=analogConfig.find("Channels").asInt();
 		int analogCalibration=analogConfig.find("UseCalibration").asInt();
+		int SensorFullScale=analogConfig.find("FullScale").asInt();
 
 		if (analogConfig.check("PortName"))
 		{
@@ -1736,6 +1727,26 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                     res.writePacket();
                 }
         }
+		else if (analogChannels==6 && analogFormat==16 && isVirtualSensor==true)
+		{	
+			//set the full scale values for a VIRTUAL sensor
+			for (int ch=0; ch<6; ch++)
+			{
+				analogSensor->getScaleFactor()[ch]=SensorFullScale;
+			}
+
+	        // debug messages
+            #if 1
+	             fprintf(stderr, "Sensor Fullscale: ");
+	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[0]);
+	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[1]);
+	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[2]);
+	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[3]);
+	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[4]);
+	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[5]);
+	             fprintf(stderr, " \n ");
+            #endif
+		}
     }
     return analogSensor;
 }
