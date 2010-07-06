@@ -113,7 +113,7 @@
 	* _vel_timeout is now passed via CAN on a separate message
 	* Current build 38.	
 	
-2010-3-June  Marci Randazzo <marco.randazzo@iit.it>
+2010-3-June  Marco Randazzo <marco.randazzo@iit.it>
 	* Merging firmware version 1.73/1.74 in standard firmware in order to provide MODE_TORQUE control mode to all firmware versions.
 	* CAN masks changed. Now all firmware versions can read force data.
 	* compute_pwm function changed. All firmware versions can now enter MODE_TORQUE control mode.
@@ -123,4 +123,10 @@
 
 2010-28-June  Francesco Nori <iron@liralab.it>
 	* Bug fixed on the shoulder coupling
-	* Current build 40.		
+	* Current build 40.	
+
+2010-06-July  Marco Randazzo <marco.randazzo@iit.it>
+	* Added various CAN mesages to set the impedance of a joint
+	* Impedance velocity mode separated by Impedance Position Mode
+	* Current build 41.	
+	
