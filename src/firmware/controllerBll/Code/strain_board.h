@@ -20,7 +20,7 @@ extern Int16 _strain[STRAIN_MAX][6];
 extern Int16 _strain_init[STRAIN_MAX][6];
 extern Int16 _strain_old[STRAIN_MAX][6];
 extern byte  _strain_wtd[STRAIN_MAX];  		//watchdog timer: disables pwm if strain doesn't communicate
-#define STRAIN_SAFE 80    					//number of ms for the watchdog timer
+#define STRAIN_SAFE 200    					//number of ms for the watchdog timer
 
 void init_strain ();
 word read_strain(byte jnt, bool sign);
