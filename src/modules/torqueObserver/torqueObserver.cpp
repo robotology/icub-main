@@ -83,7 +83,7 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
 	cout<<"TorqueObserver: created port: "<<(port+"/wrench:o").c_str()<<endl;
 	port_Torques_limb->open((port+"/limbTorques:o").c_str());
 	cout<<"TorqueObserver: created port: "<<(port+"/limbTorques:o").c_str()<<endl;
-	if(tt || enableTorso == "Y")
+	if(tt && enableTorso == "Y")
 	{
 		port_Torques_torso->open((port+"/torsoTorques:o").c_str());
 		cout<<"TorqueObserver: created port: "<<(port+"/torsoTorques:o").c_str()<<endl;
@@ -143,10 +143,11 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
         iencs_torso->getAxes(&jnt2);
         encodersTorso.resize(jnt2);
 		encodersTorso.zero();
-    } else if( ((type == "left_arm") || (type == "right_arm")) && (enableTorso == "Y"))
+    } else if( ((type == "left_arm") || (type == "right_arm")))
 	{
 		jnt2 = 3;
 	}
+	else jnt2 = 0;
 
 	// init all variables
 	// first the unused ones
@@ -229,7 +230,7 @@ void SensToTorques::run()
 	//Vector Tinv = limbInv->getTorques();
 	FTendeff = -1.0*sens->getForceMomentEndEff();
 		
-	if(((type == "left_arm") || (type == "right_arm")) && (tt || (enableTorso == "Y")))
+	if(((type == "left_arm") || (type == "right_arm")) && (tt && (enableTorso == "Y")))
 	{
 		for(int i=0;i<3;i++)
 			torsoTau(i) = Tau(i);
@@ -311,9 +312,9 @@ void SensToTorques::readAndUpdate(bool waitMeasure)
 {
 	int i;
 	//read encoders values
-	if(((type == "left_arm") || (type == "right_arm")) && (tt || (enableTorso == "Y")))
+	if(((type == "left_arm") || (type == "right_arm")) && (tt))
 	{
-		if(tt)
+		if(enableTorso == "Y")
 		{
 			iencs_torso->getEncoders(encodersTorso.data());
 			for( i=0;i<3;i++ )
@@ -386,7 +387,7 @@ bool TorqueObserver::checkDriver(PolyDriver *_dd)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool TorqueObserver::configure(ResourceFinder &rf)
 {
-	string moduleName;	// ftObs
+	string moduleName;	// tqObs
 	string robotName;	// icub
 	string robotPart;	// left_arm, right_leg
 	string limb;		// leg, arm
@@ -396,7 +397,7 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 
 	// getting parameters from RF: name, robot, part, rate
 	if(rf.check("name")) 		moduleName = rf.find("name").asString();
-	else 		moduleName = "ftObs";
+	else 		moduleName = "tqObs";
 	if(rf.check("enableTorso")) 		enableTorso = rf.find("enableTorso").asString();
 	else 		enableTorso = "Y";
 	if (rf.check("robot"))		robotName = rf.find("robot").asString().c_str();
@@ -415,6 +416,7 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 	cout<<"TorqueObserver: module = "<<moduleName<<endl
 		<<"                robot   = "<<robotName<<endl
 		<<"                part   = "<<robotPart<<endl
+		<<"           enableTorso  = "<<enableTorso<<endl
 		<<"                rate   = "<<rate<<" ms"<<endl;
 	
 	// now create the devices
@@ -434,7 +436,7 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 
 
 	// note: the arm needs the torso
-	if((robotPart=="left_arm" || robotPart=="right_arm") && enableTorso == "Y")
+	if((robotPart=="left_arm" || robotPart=="right_arm"))
 	{
 		//torso
 		cout<<"TorqueObserver: creating torso polyDriver"<<endl;
