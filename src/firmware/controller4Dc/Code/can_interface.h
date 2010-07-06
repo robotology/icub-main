@@ -123,8 +123,10 @@ void can_receive_additional_info();
 
 #define CAN_SET_IMPEDANCE_PARAMS    87
 #define CAN_GET_IMPEDANCE_PARAMS    88
+#define CAN_SET_IMPEDANCE_OFFSET    89
+#define CAN_GET_IMPEDANCE_OFFSET    90
 
-#define NUM_OF_MESSAGES				89
+#define NUM_OF_MESSAGES				91
 
 
 // class 1 messages, broadcast 
