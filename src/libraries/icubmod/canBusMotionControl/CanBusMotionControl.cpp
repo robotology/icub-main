@@ -410,7 +410,7 @@ void CanBackDoor::onRead(Bottle &b)
 			dval[5] = 0;
 		break;
 		default:
-			fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName());
+			fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName().c_str());
 			return;
 		break;
 	}
@@ -425,7 +425,7 @@ void CanBackDoor::onRead(Bottle &b)
 		   double fullScale = ownerSensor->getScaleFactor()[i];
 		   if (dval[i] >  fullScale) dval[i] =  fullScale;
 		   if (dval[i] < -fullScale) dval[i] = -fullScale;
-		   val[i] = short int(dval[i] / fullScale * 0x7fff)+0x8000; //check this!
+		   val[i] = (short int)(dval[i] / fullScale * 0x7fff)+0x8000; //check this!
 		  
 	   }
 
@@ -1607,7 +1607,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 		if (analogConfig.check("PortName"))
 		{
 			isVirtualSensor = true;
-			String virtualPortName = analogConfig.find("PortName").asString();
+			ConstString virtualPortName = analogConfig.find("PortName").asString();
 			bool   canEchoEnabled = analogConfig.find("CanEcho").asInt();
 			analogSensor->backDoor = new CanBackDoor();
 			analogSensor->backDoor->setUp(&res, &_mutex, canEchoEnabled, analogSensor);
