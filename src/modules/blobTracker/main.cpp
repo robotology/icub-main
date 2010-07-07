@@ -440,8 +440,8 @@ public:
                             if(valid) {                            
                                 Bottle &blob = b.addList();
                                 //blob.addInt(blobID);
-                                blob.addDouble(filters[i]->filtered.firstMoment.x);
-                                blob.addDouble(filters[i]->filtered.firstMoment.y);
+                                blob.addDouble(filters[i]->filtered.firstMoment.x - width/2.0);
+                                blob.addDouble(filters[i]->filtered.firstMoment.y - height/2.0);
                                 blob.addDouble(filters[i]->filtered.roi[0][0]);
                                 blob.addDouble(filters[i]->filtered.roi[0][1]);
                                 blob.addDouble(filters[i]->filtered.roi[1][0]);
@@ -461,8 +461,8 @@ public:
                         if(valid) {
                             Bottle &blob = b.addList();
                             //blob.addInt(blobID);
-                            blob.addDouble(rawBlobs[i]->firstMoment.x);
-                            blob.addDouble(rawBlobs[i]->firstMoment.y);
+                            blob.addDouble(rawBlobs[i]->firstMoment.x - width/2.0);
+                            blob.addDouble(rawBlobs[i]->firstMoment.y - height/2.0);
                             blob.addDouble(rawBlobs[i]->roi[0][0]);
                             blob.addDouble(rawBlobs[i]->roi[0][1]);
                             blob.addDouble(rawBlobs[i]->roi[1][0]);
