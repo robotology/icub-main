@@ -379,7 +379,7 @@ void CanBackDoor::onRead(Bottle &b)
     if (!semaphore)
         return;
 
-	double dval[6] = {40, 1, 0, -1, -40, -39};
+	double dval[6] = {0,0,0,0,0,0};
 
     semaphore->wait();
     //RANDAZ_TODO: parse vector b
@@ -401,13 +401,21 @@ void CanBackDoor::onRead(Bottle &b)
 
 	switch (commandId)
 	{
-		case 1:
+		case 1: //shoulder torque message
 			dval[0] = b.get(1).asDouble();
 			dval[1] = b.get(2).asDouble();
 			dval[2] = b.get(3).asDouble();
 			dval[3] = b.get(4).asDouble();
-			dval[4] = 0; 
-			dval[5] = 0;
+			dval[4] = 0; //RANDAZ_TODO
+			dval[5] = 0; //RANDAZ_TODO
+		break;
+		case 2: //legs torque message
+			dval[0] = b.get(1).asDouble();
+			dval[1] = b.get(2).asDouble();
+			dval[2] = b.get(3).asDouble();
+			dval[3] = b.get(4).asDouble();
+			dval[4] = b.get(5).asDouble();
+			dval[5] = b.get(6).asDouble();
 		break;
 		default:
 			fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName().c_str());
@@ -1607,7 +1615,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 			rn += config.find("robotName").asString().c_str();
 			//rn+=String("/");
 			rn+=virtualPortName;
-			analogSensor->backDoor->open(rn.c_str()); //RANDAZ_TODO set portname based on analogConfig parameters
+			analogSensor->backDoor->open(rn.c_str()); 
 			//RANDAZ_TODO if needed set other parameters to backDoor
 		}
 
