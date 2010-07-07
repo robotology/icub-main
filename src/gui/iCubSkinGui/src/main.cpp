@@ -11,20 +11,26 @@ A gui to display the output of fingertip/skin tactile sensors.
 The application is used to graphically display the output of the iCub fingertip/skin tactile sensors.
 This application can be used in two different modalities, CAN mode and YARP mode.
 If used in CAN mode, the application reads sensor data directly from the CAN bus.
-If used in YARP mode,the application requires a yarp port connection to the iCubInterface output. 
+
+If used in "YARP" mode,the application requires a yarp port connection to the iCubInterface output. 
 
 \section lib_sec Libraries
 YARP libraries.
 GTK libraries.
 
 \section parameters_sec Parameters
-usage:
+
+Usage:
+
 iCubSkinGui <--from filename.ini> <--useCan>
-you can use the --from parameter (optional) to specify a .ini configuration file. If no configuration file is specified, then 
-$ICUB_ROOT/app/iCubSkinDemo/lefthand.ini is used.
-You can use the --useCan parameter (optional) to ask the application to read sensor data directly from the CAN bus (the CAN 
-parameters must be specified in the configuration file). Otherwise the application opens an input yarp ports and waits for
-a yarp connection with a stream of sensory data.
+
+You can use the --from parameter (optional) to specify a .ini configuration file. 
+
+If no configuration file is specified, then $ICUB_ROOT/app/iCubSkinDemo/lefthand.ini is used.
+
+You can use the --useCan parameter (optional) to ask the application to read sensor data directly from the CAN bus 
+(the CAN parameters must be specified in the configuration file). Otherwise the application opens an input 
+yarp ports and waits for a yarp connection with a stream of sensory data.
  
 \section portsa_sec Ports Accessed
 None
