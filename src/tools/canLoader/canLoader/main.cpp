@@ -124,6 +124,7 @@ This file can be edited at src/myModule/main.cpp.
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
 #include <yarp/os/Time.h>
+#include <yarp/dev/Drivers.h>
 
 #include <string>   //stl string
 #include <string.h> //memcpy ...
@@ -132,9 +133,7 @@ This file can be edited at src/myModule/main.cpp.
 #include <stdio.h>
 #include <fcntl.h>
 
-#ifdef USE_ICUB_MOD
-#include "drivers.h"
-#endif
+YARP_DECLARE_DEVICES(icubmod)
 
 GtkWidget *window     = NULL;
 
@@ -1163,7 +1162,7 @@ static void fixed_toggled (GtkCellRendererToggle *cell, gchar *path_str, gpointe
 
     if (index!=NULL && index[0]<downloader.board_list_size)
     {
-        downloader.board_list[index[0]].selected=fixed;
+        downloader.board_list[index[0]].selected=(fixed?true:false);
     }
     else
     {
@@ -1221,7 +1220,7 @@ static void eeprom_toggled (GtkCellRendererToggle *cell, gchar *path_str, gpoint
 */
     if (index!=NULL && index[0]<downloader.board_list_size)
     {
-        downloader.board_list[index[0]].eeprom=fixed;
+        downloader.board_list[index[0]].eeprom=(fixed?true:false);
     }
     else
     {
@@ -1744,6 +1743,8 @@ int myMain( int   argc, char *argv[] )
 
 int main(int argc, char* argv[])
 {
+    YARP_REGISTER_DEVICES(icubmod)
+
     return myMain(argc, argv);
 }
 
