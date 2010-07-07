@@ -2147,7 +2147,7 @@ string iCubLegSensorLink::getType() const
 iDynInvSensorLeg::iDynInvSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsigned int verb)
 :iDynInvSensor(_c->asChain(),_c->getType(),_mode,verb)
 {
-	// FT sensor is in position 2 in the kinematic chain in both legs
+	// FT sensor is in position 1 in the kinematic chain in both legs
 	lSens = 1;
 	// the leg type determines the sensor properties
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )

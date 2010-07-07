@@ -467,7 +467,7 @@ bool iDynNode::solveWrench()
 	// it is not correct, because the node must be in balanc
 	if(outputNode==rbtList.size())
 	{
-		if(verbose)
+		if(verbose>1)
 			cerr<<"iDynNode: warning: there are no limbs with Wrench Flow = Output. "
 				<<" At least one limb must have Wrench Output for balancing forces in the node. "
 				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
@@ -718,7 +718,7 @@ bool iDynSensorNode::solveWrench()
 	// it is not correct, because the node must be in balanc
 	if(outputNode==rbtList.size())
 	{
-		if(verbose)
+		if(verbose>1)
 			cerr<<"iDynNode: warning: there are no limbs with Wrench Flow = Output. "
 				<<" At least one limb must have Wrench Output for balancing forces in the node. "
 				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
@@ -920,7 +920,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	}
 	if((afterAttach==false)&&(FM.cols()!=rbtList.size()))
 	{
-		if(verbose)
+		if(verbose>1)
 			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
 				<<FM.cols()<<" cols instead of "<<rbtList.size()
 				<<"                Using default values, all zero."<<endl;
@@ -988,7 +988,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	// it is not correct, because the node must be in balanc
 	if(outputNode==rbtList.size())
 	{
-		if(verbose)
+		if(verbose>1)
 			cerr<<"iDynSensorNode: warning: there are no limbs with Wrench Flow = Output. "
 				<<" At least one limb must have Wrench Output for balancing forces in the node. "
 				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
@@ -1232,7 +1232,8 @@ Vector iDynSensorTorsoNode::setAng(const string &limbType, const Vector &_q)
 	else if(limbType==right_name)	return right->setAng(_q);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		//if(verbose)	
+			cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
 		return Vector(0);
 	}
 }
