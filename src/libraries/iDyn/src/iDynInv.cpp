@@ -2105,10 +2105,10 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 	if(type=="left")
 	{
 		H.zero(); H(0,1) = 1.0; H(1,0) = -1.0; H(2,2) = 1.0; H(2,3) = -0.0665; H(3,3) = 1.0;
-		COM.zero(); //COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
-		I.zero(); //I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
-		//I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
-		m = 0.0;//7.2784301e-01;
+		COM.zero();
+		I.zero(); 
+		
+		m = 0.0;
 	}
 	else
 	{ 
@@ -2120,10 +2120,10 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 		}
 
 		H.zero(); H(0,1) = -1.0; H(1,0) = -1.0; H(2,2) = -1.0; H(2,3) = 0.0665; H(3,3) = 1.0;
-		COM.zero(); //COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
-		I.zero(); //I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
-		//I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
-		m = 0.0;//7.2784301e-01;
+		COM.zero(); 
+		I.zero(); 
+		
+		m = 0.0;
 	
 	}
 	//then the sensor information

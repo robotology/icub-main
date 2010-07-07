@@ -251,7 +251,7 @@ iDynSensorLeg::iDynSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsigned in
 :iDynSensor(_c->asChain(),_c->getType(),_mode,verb)
 {
 	// FT sensor is in position 2 in the kinematic chain in both legs
-	lSens = 2;
+	lSens = 1;
 	// the leg type determines the sensor properties
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
