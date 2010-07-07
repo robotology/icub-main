@@ -64,12 +64,12 @@ bool AdvancedDirectionalSalience::open(yarp::os::Searchable& config){
     _sig2wav = config.check("sig2wav",
                           Value(4.0),
                           " gabor_wavelength = sig2wav * gabor_sigma (double).").asDouble();
-    _debug = (bool)config.check("debug",
+    _debug = config.check("debug",
                           Value(0),
-                          "Activate debugging capabilities (int [0|1]).").asInt();
-    _verbose = (bool)config.check("verbose",
-                          Value(0),
-                          "Activate debugging output (int [0|1]).").asInt();
+                          "Activate debugging capabilities (int [0|1]).").asInt()!=0;
+    _verbose = config.check("verbose",
+                            Value(0),
+                            "Activate debugging output (int [0|1]).").asInt()!=0;
     _dbgImgArray = config.check("dbgImgArray",
                           Value("gab"),
                           "Write from this image array to the debugging port (string).").asString(); 

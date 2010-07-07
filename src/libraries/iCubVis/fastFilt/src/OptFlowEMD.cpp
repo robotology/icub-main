@@ -63,8 +63,8 @@ bool OptFlowEMD::configure (yarp::os::Searchable &config){
                                     yarp::os::Value(80.0),
                                     "EMD motion threshold (double)").asDouble();
     _thresholdSquared = pow(_threshold,2.0f);
-    _constrain = (bool)config.check("constrain", yarp::os::Value(0),
-                       "Constrain salience values to <=constrainValue? (1/0)").asInt();
+    _constrain = config.check("constrain", yarp::os::Value(0),
+                              "Constrain salience values to <=constrainValue? (1/0)").asInt()!=0;
     _constrainValue = (float)config.check("constrainValue", yarp::os::Value(255.0),
                         "Constrain salience values to this value if constrain = 1 (double)").asDouble();
     _constrainValueSquared = pow(_constrainValue,2.0f);

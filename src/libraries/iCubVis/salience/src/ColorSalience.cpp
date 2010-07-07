@@ -26,13 +26,13 @@ void ColorSalience::applyImpl(ImageOf<PixelRgb>& src,
     sal.resize(src);
     IMGFOR(src,x,y) {
         PixelRgb pix = src(x,y);
-        float lum3 = (pix.r+pix.g+pix.b);
+        float lum3 = (float)(pix.r+pix.g+pix.b);
         if (lum3/3.0<60) {
             pix.r = pix.g = pix.b = 0;
         }
-        float rn = 255.0 * pix.r / lum3;
-        float gn = 255.0 * pix.g / lum3;
-        float bn = 255.0 * pix.g / lum3;
+        float rn = 255.0F * pix.r / lum3;
+        float gn = 255.0F * pix.g / lum3;
+        float bn = 255.0F * pix.g / lum3;
         // in theory, apparently, yellow should be (rn+gn)/2 ...
         float yw = (rn+gn)-fabs(rn-gn)-bn;
         yw *= (pix.r>1.5*pix.b);

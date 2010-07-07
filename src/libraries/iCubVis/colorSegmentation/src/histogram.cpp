@@ -84,7 +84,7 @@ Histo3D::~Histo3D()
 
 void Histo3D::clean()
 {
-	int i;
+	unsigned int i;
 	_maximum = 1.0;
 	
 	if (_lut != NULL)
@@ -180,7 +180,7 @@ void Histo1D::clean()
 		
 	if (_lut != NULL)
 	{
-		int i;
+		unsigned int i;
 		for(i = 0; i < _nElem; i ++)
 			_lut[i].reset();
 	}

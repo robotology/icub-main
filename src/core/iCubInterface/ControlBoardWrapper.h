@@ -35,6 +35,10 @@
 
 #include <string>
 
+#ifdef WIN32
+	#pragma warning(once:4355)
+#endif
+
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

@@ -43,15 +43,15 @@ bool SalienceModule::configure(yarp::os::ResourceFinder &rf){
     numBlurPasses = rf.check("numBlurPasses",
                                     Value(0),
                                     "Blur the output map numBlurPasses times with a gaussian 3x3 kernel (int).").asInt();
-    drawSaliencePeak = (bool)rf.check("drawSaliencePeak",
-                                    Value(1),
-                                    "Draw a crosshair at salience peak onto the output visualization image (int [0|1]).").asInt();
+    drawSaliencePeak = rf.check("drawSaliencePeak",
+                                Value(1),
+                                "Draw a crosshair at salience peak onto the output visualization image (int [0|1]).").asInt()!=0;
 	thresholdSalience = rf.check("thresholdSalience",
                                     Value(0.0),
                                     "Set salience map values < threshold to zero (double).").asDouble();
-    activateIOR = (bool)rf.check("activateInhibitionOfReturn",
-                                    Value(0),
-                                    "Use IOR (int [0|1]).").asInt();
+    activateIOR = rf.check("activateInhibitionOfReturn",
+                           Value(0),
+                           "Use IOR (int [0|1]).").asInt()!=0;
     if (activateIOR){
         ior.open(rf);
     }  

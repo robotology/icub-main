@@ -75,7 +75,7 @@ int cDriver::receive_message(CanBuffer &messages, int howMany, double TIMEOUT)
                     how_many_messages=(MAX_READ_MSG-read);
                 }
 
-            for(int k=0;k<how_many_messages;k++)
+            for(unsigned int k=0;k<how_many_messages;k++)
                 {
                     messages[read]=tmpBuff[k];
                     read++;

@@ -44,6 +44,10 @@
 #include "canControlConstants.h"
 #include "canControlUtils.h"
 
+#ifdef WIN32
+	#pragma warning(once:4355)
+#endif
+
 const int REPORT_PERIOD=6; //seconds
 const double BCAST_STATUS_TIMEOUT=6; //seconds
 

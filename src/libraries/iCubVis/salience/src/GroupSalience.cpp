@@ -130,7 +130,7 @@ void GroupSalience::apply(ImageOf<PixelRgb>& src,
         group[i]->apply(src, dest_i, sal_i);
         weight_i = group[i]->getWeight() / weightSum;
         IMGFOR(sal_i,x,y) {
-            sal(x,y) += weight_i * sal_i(x,y);
+            sal(x,y) += (float)(weight_i * sal_i(x,y));
             PixelRgb& pix_i = dest_i(x,y);
             PixelRgb& pix = dest(x,y);
             pix.r += (unsigned char)(weight_i * (int)pix_i.r);

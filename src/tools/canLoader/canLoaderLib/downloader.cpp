@@ -502,7 +502,7 @@ int cDownloader::strain_get_eeprom_saved (int target_id, bool* status)
 		if (rxBuffer[i].getData()[0]==0x1B &&   
 			rxBuffer[i].getId()==(2 << 8) + (target_id<<4)) 
 			{
-				*status = rxBuffer[i].getData()[1];
+				*status = rxBuffer[i].getData()[1]!=0;
 				return 0;
 			}
 	 }

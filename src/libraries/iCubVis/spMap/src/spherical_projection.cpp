@@ -189,8 +189,8 @@ bool compute_egosp_map( int input_lines, int input_cols,
          {
             x = Xcamera/Zcamera;
             y = Ycamera/Zcamera;
-            *mapx++ = (float)x*fx+cx;
-            *mapy++ = (float)y*fy+cy;
+            *mapx++ = (float)(x*fx+cx);
+            *mapy++ = (float)(y*fy+cy);
          }
          else
          {

@@ -172,9 +172,9 @@ bool IOR::open(Searchable &config){
     threshold = (float)botConfig.check("attentionInhibitionThreshold",
                                     Value(0.85),
                                     "If this threshold is reached in the internal attention map the IOR map is updated at that location (inhibition)(float [0.0...1.0])").asDouble();
-    debug = (bool)botConfig.check("debug",
-                                Value(0),
-                                "Switch on/off writing internal maps to output ports (converted/scaled to 255 grayscale) (int [0|1]).").asInt();
+    debug = botConfig.check("debug",
+                            Value(0),
+                            "Switch on/off writing internal maps to output ports (converted/scaled to 255 grayscale) (int [0|1]).").asInt()!=0;
 
     if (debug){
         prtIorMap.open("/debug/ior/iorMap");

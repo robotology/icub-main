@@ -265,9 +265,9 @@ void whiteBalance(IplImage *maskImage, IplImage *originalImage, IplImage *whiteB
         {
             for (int j = 0; j < width; j++)
                 {
-                    orgDataR[i * stride + j] *= normR;
-                    orgDataG[i * stride + j] *= normG;
-                    orgDataB[i * stride + j] *= normB;
+                    orgDataR[i * stride + j] *= (unsigned char)normR;
+                    orgDataG[i * stride + j] *= (unsigned char)normG;
+                    orgDataB[i * stride + j] *= (unsigned char)normB;
                 }
         }
     //merge the R, G and B planes

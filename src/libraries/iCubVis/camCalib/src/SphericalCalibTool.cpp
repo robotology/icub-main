@@ -45,9 +45,9 @@ bool SphericalCalibTool::configure (Searchable &config){
     _calibImgSize.height = config.check("h",
                                       Value(240),
                                       "Image height for which calibration parameters were calculated (int)").asInt();
-    _drawCenterCross = (bool)config.check("drawCenterCross",
-                                          Value(0),
-                                          "Draw a cross at calibration center (int [0|1]).").asInt();
+    _drawCenterCross = config.check("drawCenterCross",
+                                    Value(0),
+                                    "Draw a cross at calibration center (int [0|1]).").asInt()!=0;
 
     _fx = config.check("fx", Value(320.0), "Focal distance (on horizontal pixel size units) (double)").asDouble();
     _fy = config.check("fy", Value(240.0), "Focal distance (on vertical pixel size units) (double)").asDouble();
