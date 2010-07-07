@@ -443,7 +443,7 @@ bool TorqueObserver::configure(ResourceFinder &rf)
 		OptionsTorso.put("robot",robotName.c_str());
 		OptionsTorso.put("part","torso");
 		OptionsTorso.put("device","remote_controlboard");
-		OptionsTorso.put("local",("/"+robotName+"/torso/client").c_str());
+		OptionsTorso.put("local",("/"+robotName+"/"+robotPart+"_torso/client").c_str());
 		OptionsTorso.put("remote",("/"+robotName+"/torso").c_str());
 		tt = new PolyDriver(OptionsTorso);
 		if(!checkDriver(tt)) 
