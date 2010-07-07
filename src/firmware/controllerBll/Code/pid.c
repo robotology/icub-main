@@ -109,7 +109,7 @@ Int16  _pid_limit_torque[JN] ;					// pid limit
 Int32  _pd_torque[JN] ;           			  	// pd portion of the pid
 Int32  _integral_torque[JN] ;					// store the sum of the integral component 
 Int16  _integral_limit_torque[JN] ;
-Int16  _kp_torque[JN] = INIT_ARRAY (100);		// PID gains: proportional... 
+Int16  _kp_torque[JN] = INIT_ARRAY (10);		// PID gains: proportional... 
 Int16  _kd_torque[JN] = INIT_ARRAY (0);			// ... derivative  ...
 Int16  _ki_torque[JN] = INIT_ARRAY (0);			// ... integral
 Int16  _ko_torque[JN] = INIT_ARRAY (0);			// offset 
@@ -117,7 +117,7 @@ Int16  _kr_torque[JN] = INIT_ARRAY (10);		// scale factor (negative power of two
 
 // JOINT IMPEDANCE
 Int16  _ks_imp[JN] = INIT_ARRAY (20);			// stiffness coefficient
-Int16  _kd_imp[JN] = INIT_ARRAY (0);			// damping coefficient
+Int16  _kd_imp[JN] = INIT_ARRAY (1);			// damping coefficient
 Int16  _ko_imp[JN] = INIT_ARRAY (0);			// offset
 
 		
@@ -211,35 +211,37 @@ Int32 compute_pwm(byte j)
 	  	read_force_data (1, WDT_JNT_STRAIN_12,1);
 #elif VERSION == 0x151 
 	  	//legs
-	  	if (_board_ID==5)
+	  	if (_board_ID==5)     //left leg
 	  	{
-			read_force_data (0, WDT_6AX_STRAIN_13, 5);
-	  		read_force_data (1, WDT_JNT_STRAIN_12, 0); //@@@fixme  		
+		//	read_force_data (0, WDT_6AX_STRAIN_13, 5);
+			read_force_data (0, WDT_JNT_STRAIN_12, 2);
+	  		read_force_data (1, WDT_JNT_STRAIN_12, 3);   		
 	  	}
-	  	else if (_board_ID==6) 
+	  	else if (_board_ID==6) //left leg
 	  	{
-			read_force_data (0, WDT_JNT_STRAIN_12, 0); //@@@fixme
-	  		read_force_data (1, WDT_JNT_STRAIN_12, 1); //@@@fixme	  		
+			read_force_data (0, WDT_JNT_STRAIN_12, 0); 
+	  		read_force_data (1, WDT_JNT_STRAIN_12, 1); 	  		
 	  	}
-	  	else if (_board_ID==7)
+	  	else if (_board_ID==7) //left leg
 	  	{
-			read_force_data (0, WDT_JNT_STRAIN_12, 0); //@@@fixme
-	  		read_force_data (1, WDT_JNT_STRAIN_12, 0); //@@@fixme	  		
+			read_force_data (0, WDT_JNT_STRAIN_12, 4); 
+	  		read_force_data (1, WDT_JNT_STRAIN_12, 5); 	  		
 	  	}
-	  	else if (_board_ID==8)
+	  	else if (_board_ID==8) //right leg
 	  	{
-			read_force_data (0, WDT_6AX_STRAIN_14, 5);
-		  	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme  		
+		//	read_force_data (0, WDT_6AX_STRAIN_14, 5);
+			read_force_data (0, WDT_JNT_STRAIN_11, 2);
+		  	read_force_data (1, WDT_JNT_STRAIN_11, 3);   		
 	  	}  
-	  	else if (_board_ID==9)
+	  	else if (_board_ID==9) //right leg
 	  	{
-			read_force_data (0, WDT_JNT_STRAIN_11, 0); //@@@fixme
-	 	 	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme	  		
+			read_force_data (0, WDT_JNT_STRAIN_11, 0); 
+	 	 	read_force_data (1, WDT_JNT_STRAIN_11, 1); 	  		
 	  	}
-	  	else if (_board_ID==10)
+	  	else if (_board_ID==10) //right leg
 	  	{
-			read_force_data (0, WDT_JNT_STRAIN_11, 0); //@@@fixme
-		  	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme	  		
+			read_force_data (0, WDT_JNT_STRAIN_11, 4); 
+		  	read_force_data (1, WDT_JNT_STRAIN_11, 5); 	  		
 	  	}  	  	
 	  	else
 	  	{
