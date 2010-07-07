@@ -109,8 +109,11 @@ private:
     BlobKalmanFilter *filterSingleBlob;   
     vector<FeatureBlob*> rawBlobs;
 
-    CvPoint dx, x_last, p, tip;
-    int time_lag,frame_count;
+    CvPoint p, p_last;
+    CvPoint tip, tip_left, tip_right;
+
+    double alpha;
+    int scale_factor;
     
 public:
     ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
@@ -141,9 +144,10 @@ public:
         }
 
         width=0; height=0;
-        dx.x=dx.y=x_last.x=x_last.y=0;
-        frame_count = 0;
-        time_lag = 5;
+        p_last.x=p_last.y=0;
+
+        alpha = 0.2;
+        scale_factor = 3;
 
         return true;
     }
@@ -181,7 +185,6 @@ public:
                 t1=Time::now();                
                 dt = t1-t0;
                 t0 = t1;
-                frame_count++;
                                 
                 // consistency check
                 if (pImgIn->width()!=width ||
@@ -239,16 +242,13 @@ public:
                 }
                 for(int i=0;i<filters.size(); i++) {
                     filters[i]->measured.reset();
-                }
-                
+                }                
                 
                 double area = 0;
                 double total_area = 0;
                 double filtered_area = 0;
                 int num_blobs = 0;
                 double x,y,x2,y2,xy;
-                double angle, hypot;
-                double alpha = 0.2;
 
                 for (ptr = contours; ptr != NULL; ptr = ptr->h_next) {
                     
@@ -323,44 +323,34 @@ public:
                     
                     if(filterSingleBlob->filtered.isValid) {
 
-                        // compute stuff for arrow/vel comp
-                        dx.x=filterSingleBlob->filtered.firstMoment.x - x_last.x;
-                        dx.y=filterSingleBlob->filtered.firstMoment.y - x_last.y;
-                        x_last.x = x_last.x + alpha*(filterSingleBlob->filtered.firstMoment.x - x_last.x);
-                        x_last.y = x_last.y + alpha*(filterSingleBlob->filtered.firstMoment.y - x_last.y);
-                        p.x = filterSingleBlob->filtered.firstMoment.x;
-                        p.y = filterSingleBlob->filtered.firstMoment.y;
-                        tip.x = filterSingleBlob->filtered.firstMoment.x + dx.x;
-                        tip.y = filterSingleBlob->filtered.firstMoment.y + dx.y;                                              
-                        angle = atan2( (double) p.y - tip.y, (double) p.x - tip.x );
-                        hypot = sqrt( (p.y-tip.y)*(p.y-tip.y) + (p.x-tip.x)*(p.x-tip.x) );
-                        tip.x = (int) (p.x - 3 * hypot * cos(angle));
-                        tip.y = (int) (p.y - 3 * hypot * sin(angle));
-
+                        // set the valid flag
                         valid = true;
                         b.addInt(1);
 
-                        filtered_area = util.getBox2DFromCov(filterSingleBlob->filtered.firstMoment, filterSingleBlob->filtered.roi, &box);
-                        
-                        //cout << "avg blob center: (" << filterSingleBlob->filtered.firstMoment.x << "," << filterSingleBlob->filtered.firstMoment.y 
-                        //	<< "), area = "  << filtered_area << endl;
-                        
+                        // get centroid
+                        p = filterSingleBlob->filtered.firstMoment;
+
+                        // filter the centroid
+                        p_last.x = p_last.x + alpha*(p.x - p_last.x);
+                        p_last.y = p_last.y + alpha*(p.y - p_last.y);        
+
+                        // get covar
+                        filtered_area = util.getBox2DFromCov(p, filterSingleBlob->filtered.roi, &box);                                                
+
+                        // draw ellipse
                         color = CV_RGB( 255, 0, 0 );
                         if (box.size.width > 0 && box.size.height > 0 && box.size.width < width && box.size.height < height)
         		       		cvEllipseBox((IplImage*)imgOut.getIplImage(), box, color, 3, 16, 0);
-        		       	cvCircle((IplImage*)imgOut.getIplImage(), filterSingleBlob->filtered.firstMoment, 3, color, -1, 8, 0);
+        		       	cvCircle((IplImage*)imgOut.getIplImage(), p, 3, color, -1, 8, 0);
 
-                        // draw arrow
+                        // get and draw arrow points
+                        getArrowPoints(p, p_last, scale_factor, tip, tip_left, tip_right);
                         cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
-                        p.x = (int) (tip.x + 9 * cos(angle + M_PI / 4));
-                        p.y = (int) (tip.y + 9 * sin(angle + M_PI / 4));
-                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
-                        p.x = (int) (tip.x + 9 * cos(angle - M_PI / 4));
-                        p.y = (int) (tip.y + 9 * sin(angle - M_PI / 4));
-                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
-                        
+                        cvLine((IplImage*)imgOut.getIplImage(), tip_left, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
+                        cvLine((IplImage*)imgOut.getIplImage(), tip_right, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
+
+                        // add blob to output bottle
                         Bottle &blob = b.addList();
-                        //blob.addInt(blobID);
                         blob.addDouble(filterSingleBlob->filtered.firstMoment.x - width/2.0);
                         blob.addDouble(filterSingleBlob->filtered.firstMoment.y - height/2.0);
                         blob.addDouble(filterSingleBlob->filtered.roi[0][0]);
@@ -373,50 +363,41 @@ public:
                     
                     if(filterSingleBlob->measured.isValid) {
      
+                        // set the valid flag
                         valid = true;
                         b.addInt(1);
-                   
+
+                        // get centroid
+                        p = filterSingleBlob->measured.firstMoment;                  
+
+                        // filter the centroid
+                        p_last.x = p_last.x + alpha*(p.x - p_last.x);
+                        p_last.y = p_last.y + alpha*(p.y - p_last.y);        
+
+                        // get blob covar
                         area = util.getBox2DFromCov(filterSingleBlob->measured.firstMoment, filterSingleBlob->measured.roi, &box);
 
-                        // compute stuff for arror/velocity comp
-                        dx.x=filterSingleBlob->measured.firstMoment.x - x_last.x;
-                        dx.y=filterSingleBlob->measured.firstMoment.y - x_last.y;
-                        x_last.x = x_last.x + alpha*(filterSingleBlob->measured.firstMoment.x - x_last.x);
-                        x_last.y = x_last.y + alpha*(filterSingleBlob->measured.firstMoment.y - x_last.y);
-                        p.x = filterSingleBlob->measured.firstMoment.x;
-                        p.y = filterSingleBlob->measured.firstMoment.y;
-                        tip.x = filterSingleBlob->measured.firstMoment.x + dx.x;
-                        tip.y = filterSingleBlob->measured.firstMoment.y + dx.y;                                              
-                        angle = atan2( (double) p.y - tip.y, (double) p.x - tip.x );
-                        hypot = sqrt( (p.y-tip.y)*(p.y-tip.y) + (p.x-tip.x)*(p.x-tip.x) );
-                        tip.x = (int) (p.x - 3 * hypot * cos(angle));
-                        tip.y = (int) (p.y - 3 * hypot * sin(angle));
-       
-                        //cout << "avg blob center: (" << filterSingleBlob->filtered.measured.x << "," << filterSingleBlob->measured.firstMoment.y 
-                        //	<< "), area = "  << area << endl;
-                        
+                        // draw the ellipse
                         color = CV_RGB( 0, 0, 255 );
                         if (box.size.width > 0 && box.size.height > 0 && box.size.width < width && box.size.height < height)
         		       		cvEllipseBox((IplImage*)imgOut.getIplImage(), box, color, 3, 16, 0);
         		       	cvCircle((IplImage*)imgOut.getIplImage(), filterSingleBlob->measured.firstMoment, 3, color, -1, 8, 0);
 
-                        // draw arrow
-                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(255,0,0), 3, CV_AA, 0);
-                        p.x = (int) (tip.x + 9 * cos(angle + M_PI / 4));
-                        p.y = (int) (tip.y + 9 * sin(angle + M_PI / 4));
-                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(255,0,0), 3, CV_AA, 0);
-                        p.x = (int) (tip.x + 9 * cos(angle - M_PI / 4));
-                        p.y = (int) (tip.y + 9 * sin(angle - M_PI / 4));
-                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(255,0,0), 3, CV_AA, 0);
-                        
+                        // get and draw arrow points
+                        getArrowPoints(p, p_last, scale_factor, tip, tip_left, tip_right);
+                        cvLine((IplImage*)imgOut.getIplImage(), p, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
+                        cvLine((IplImage*)imgOut.getIplImage(), tip_left, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
+                        cvLine((IplImage*)imgOut.getIplImage(), tip_right, tip, CV_RGB(0,255,0), 3, CV_AA, 0);
+
+                        // send blob to output bottle
                         Bottle &blob = b.addList();
-                        //blob.addInt(blobID);
                         blob.addDouble(filterSingleBlob->measured.firstMoment.x - width/2.0);
                         blob.addDouble(filterSingleBlob->measured.firstMoment.y - height/2.0);
                         blob.addDouble(filterSingleBlob->measured.roi[0][0]);
                         blob.addDouble(filterSingleBlob->measured.roi[0][1]);
                         blob.addDouble(filterSingleBlob->measured.roi[1][0]);
                         blob.addDouble(filterSingleBlob->measured.roi[1][1]);
+
                     }
                 }
 
@@ -616,6 +597,34 @@ public:
                 // if no measurement slot is available, then we cannot filter this raw blob
             }
         }
+    }
+
+
+    void getArrowPoints(CvPoint p_current, CvPoint p_last, int scale_factor, CvPoint &tip, CvPoint &tip_left, CvPoint &tip_right) { 
+
+        CvPoint dp;
+
+        // compute 1-step length
+        dp.x = p_current.x - p_last.x;
+        dp.y = p_current.y - p_last.y;
+
+        // compute initial tip location
+        tip.x = p_current.x + dp.x;
+        tip.y = p_current.y + dp.y;
+
+        // modify tip to reflect scale factor 
+        double angle = atan2( (double) p_current.y-tip.y, (double) p_current.x-tip.x );
+        double hypot = sqrt( (p_current.y-tip.y)*(p_current.y-tip.y) + (p_current.x-tip.x)*(p_current.x-tip.x) );
+
+        tip.x = (int) (p_current.x - scale_factor * hypot * cos(angle));
+        tip.y = (int) (p_current.y - scale_factor * hypot * sin(angle));
+
+        tip_left.x = (int) (tip.x + 9 * cos(angle + M_PI / 4));
+        tip_left.y = (int) (tip.y + 9 * sin(angle + M_PI / 4));
+
+        tip_right.x = (int) (tip.x + 9 * cos(angle - M_PI / 4));
+        tip_right.y = (int) (tip.y + 9 * sin(angle - M_PI / 4));
+
     }
  
 };
