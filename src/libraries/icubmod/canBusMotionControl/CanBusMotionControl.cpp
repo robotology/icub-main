@@ -2352,7 +2352,7 @@ void CanBusMotionControl:: run()
                             int id=r.requestsQueue->pop(j, msgData[0]);
                             if(id==-1)
                                 {
-                                    fprintf(stderr, "Received message but no threads waiting for it\n");
+									fprintf(stderr, "Received message but no threads waiting for it. (Class:%d MsgData[0]:%d)\n ", getClass(m), msgData[0]);
                                     continue;
                                 }
                             ThreadTable2 *t=threadPool->getThreadTable(id);
