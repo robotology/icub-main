@@ -246,7 +246,10 @@ void SensToTorques::run()
 		fprintf(stderr,"%.2lf\t", Tau(i));
 	fprintf(stderr,"\n");*/
 	Bottle a;
-	a.addInt(1);
+	if((type == "left_arm") || (type == "right_arm"))
+		a.addInt(1);
+	else
+		a.addInt(2);
 	for(int i=0;i<limbTau.length();i++)
 		a.addDouble(limbTau(i));
 	
