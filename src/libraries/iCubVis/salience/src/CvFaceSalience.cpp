@@ -90,7 +90,6 @@ void CvFaceSalience::applyImpl(ImageOf<PixelRgb>& src,
                                             cvSize(5,5));
                                             //cvSize(30, 30) );
 
-	CvPoint pt1, pt2;
 	//cout << "faces: " << faces->total << endl;
 	for( int i = 0; i < faces->total; i++ )
     {
@@ -150,7 +149,7 @@ void CvFaceSalience::createGaussianFilter2D(float **filter, int sizex, int sizey
 			}
 			for(y=-exty;y<=exty;y++){
 				for(int x=-extx;x<=extx;x++){
-					filter[x+extx][y+exty]=(exp(-0.5*(((double)x/ex)*((double)x/ex)+((double)y/ey)*((double)y/ey))))/sum;
+					filter[x+extx][y+exty]=(float)((exp(-0.5*(((double)x/ex)*((double)x/ex)+((double)y/ey)*((double)y/ey))))/sum);
 					}
 			}
 		}
@@ -158,7 +157,7 @@ void CvFaceSalience::createGaussianFilter2D(float **filter, int sizex, int sizey
 			for(int y=-exty;y<=exty;y++){
 
 				for(int x=-extx;x<=extx;x++){
-					filter[x+extx][y+exty]=(exp(-0.5*(((double)x/ex)*((double)x/ex)+((double)y/ey)*((double)y/ey))));
+					filter[x+extx][y+exty]=(float)(exp(-0.5*(((double)x/ex)*((double)x/ex)+((double)y/ey)*((double)y/ey))));
 					}
 			}
 		}

@@ -14,13 +14,13 @@ using namespace yarp::os;
 using namespace iCub::vis;
 
 RuddySalience::RuddySalience() {
-    transformWeights[0] = 0.21742;
-    transformWeights[1] = -0.36386;
-    transformWeights[2] = 0.90572;
-    transformWeights[3] = 0.00096756;
-    transformWeights[4] = -0.00050073;
-    transformWeights[5] = -0.00287;
-    transformDelta = -50.1255;
+    transformWeights[0] = 0.21742F;
+    transformWeights[1] = -0.36386F;
+    transformWeights[2] = 0.90572F;
+    transformWeights[3] = 0.00096756F;
+    transformWeights[4] = -0.00050073F;
+    transformWeights[5] = -0.00287F;
+    transformDelta = -50.1255F;
 }
 
 bool RuddySalience::open(yarp::os::Searchable& config){

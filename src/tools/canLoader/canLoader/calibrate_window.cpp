@@ -398,7 +398,6 @@ void slider_changed (GtkButton *button,	gpointer ch_p)
 	int chan = *(int*)ch_p;
 	//printf("debug: moved slider chan:%d\n",chan);
 	offset[chan] = (unsigned int) (gtk_range_get_value (GTK_RANGE(slider_gain[chan])));
-	unsigned int curr_offset;
 //	downloader.strain_get_offset (downloader.board_list[selected].pid, chan, curr_offset);
 
 //	if (offset[chan]!=curr_offset)

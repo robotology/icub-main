@@ -90,7 +90,7 @@ bool GroupSalience::respond(const Bottle &command,Bottle &reply){
             string subName;
             int pos;
             Bottle subCommand;
-            for (int i = 0; i < group.size(); i++){
+            for (unsigned int i = 0; i < group.size(); i++){
                 subCommand.clear();
                 fName = command.get(1).asString();
                 pos = fName.find_first_of(group[i]->getFilterName());
@@ -151,7 +151,7 @@ void GroupSalience::add(Salience *filter){
 }
 
 bool GroupSalience::setChildFilterName(int j, string s){
-    if (j < group.size() && j >=0){
+    if (j < (int)group.size() && j >=0){
         group[j]->setFilterName(s);
         return true;
     }
@@ -159,13 +159,13 @@ bool GroupSalience::setChildFilterName(int j, string s){
 }
 
 string GroupSalience::getChildFilterName(int j){
-    if (j < group.size() && j >=0)
+    if (j < (int)group.size() && j >=0)
         return group[j]->getFilterName();
     return string("outofbounds");
 }
 
 bool GroupSalience::setWeight(double w){
-    for (int i = 0; i < group.size(); i++)
+    for (unsigned int i = 0; i < group.size(); i++)
         setChildWeight(i,w);
     return true;
 }
@@ -175,9 +175,9 @@ int GroupSalience::getChildCount(){
 }
 
 bool GroupSalience::setChildWeights(yarp::os::Bottle& subWeights){
-    if (subWeights.size() >= group.size()){
+    if (subWeights.size() >= (int)group.size()){
         weightSum = 0.0;
-        for (int i = 0; i < group.size(); i++){
+        for (unsigned int i = 0; i < group.size(); i++){
             group[i]->setWeight(subWeights.get(i).asDouble());
             weightSum += subWeights.get(i).asDouble();
         }
@@ -188,13 +188,13 @@ bool GroupSalience::setChildWeights(yarp::os::Bottle& subWeights){
 
 bool GroupSalience::getChildWeights(yarp::os::Bottle *subWeights){
     subWeights->clear();
-    for (int i = 0; i < group.size(); i++)
+    for (unsigned int i = 0; i < group.size(); i++)
         subWeights->addDouble(group[i]->getWeight());
     return true;
 }
 
 bool GroupSalience::setChildWeight(int j, double w){
-    if (j < group.size() && j >=0){
+    if (j < (int)group.size() && j >=0){
         weightSum -= group[j]->getWeight();
         group[j]->setWeight(w);
         weightSum += w;
@@ -204,7 +204,7 @@ bool GroupSalience::setChildWeight(int j, double w){
 }
 
 double GroupSalience::getChildWeight(int j){
-    if (j < group.size() && j >=0)
+    if (j < (int)group.size() && j >=0)
         return group[j]->getWeight();
     return 0.0;
 }

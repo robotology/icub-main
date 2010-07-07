@@ -48,12 +48,12 @@ bool EMDSalience::configure(yarp::os::Searchable& config){
     if (!ok)
         return false;
 
-    _blurInput = (bool)config.check("blurInput",
-                                    yarp::os::Value(1),
-                                    "Gaussian blur (3x3) of input image (int [0|1]).").asInt();
-    _blurOutput = (bool)config.check("blurOutput",
-                                    yarp::os::Value(1),
-                                    "Gaussian blur (3x3) of motion output (int [0|1]).").asInt();
+    _blurInput = config.check("blurInput",
+                              yarp::os::Value(1),
+                              "Gaussian blur (3x3) of input image (int [0|1]).").asInt()!=0;
+    _blurOutput = config.check("blurOutput",
+                               yarp::os::Value(1),
+                               "Gaussian blur (3x3) of motion output (int [0|1]).").asInt()!=0;
 
     return _emd.configure(config);
 }

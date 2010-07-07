@@ -27,9 +27,9 @@ bool Salience::open(yarp::os::Searchable& config){
     weight = config.check( "weight",
                             yarp::os::Value(1.0),
                             "Specifies a weighting value if filter is used within a group of filters (double).").asDouble();
-    activateConspicuity = (bool)config.check("activateConspicuity",
-                            Value(0),
-                            "Calculate conspicuity (int [0|1]).").asInt();
+    activateConspicuity = config.check("activateConspicuity",
+                          Value(0),
+                          "Calculate conspicuity (int [0|1]).").asInt()!=0;
     if(activateConspicuity)
         ok = ok && conspicuity.open(config);
     return ok;

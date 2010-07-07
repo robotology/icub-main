@@ -234,7 +234,7 @@ void SensToTorques::run()
 	{
 		for(int i=0;i<3;i++)
 			torsoTau(i) = Tau(i);
-		for(int i=3;i<limbInv->getN();i++)
+		for(unsigned int i=3;i<limbInv->getN();i++)
 			limbTau(i-3) = Tau(i);
 		port_Torques_torso->prepare() = torsoTau;
 		port_Torques_torso->write();
@@ -310,7 +310,7 @@ void SensToTorques::calibrateOffset(const unsigned int Ntrials)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensToTorques::readAndUpdate(bool waitMeasure)
 {
-	int i;
+	unsigned int i;
 	//read encoders values
 	if(((type == "left_arm") || (type == "right_arm")) && (tt))
 	{
@@ -328,7 +328,7 @@ void SensToTorques::readAndUpdate(bool waitMeasure)
 	} 
 	else
 	{
-		for(i=0;i<limbInv->getN();i++)
+		for( i=0;i<limbInv->getN();i++ )
 			q(i) = encoders(i);
 	}
 	//estimate velocity and accelerations

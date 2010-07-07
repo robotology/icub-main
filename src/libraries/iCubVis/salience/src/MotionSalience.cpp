@@ -45,9 +45,9 @@ void MotionSalience::applyImpl(ImageOf<PixelRgb>& src,
         PixelRgb& pix1 = src(x,y);
 
         PixelRgb& pix0 = past(x,y);
-        float dr = pix0.r-pix1.r;
-        float dg = pix0.g-pix1.g;
-        float db = pix0.b-pix1.b;
+        float dr = (float)(pix0.r-pix1.r);
+        float dg = (float)(pix0.g-pix1.g);
+        float db = (float)(pix0.b-pix1.b);
         float v = dr*dr + dg*dg + db*db;
 
         v = v/10;
@@ -63,7 +63,7 @@ void MotionSalience::applyImpl(ImageOf<PixelRgb>& src,
         pixd.b = (unsigned char)0;
     }
 
-    if (history.size()>targetLen) {
+    if ((int)history.size()>targetLen) {
         history.pop_front();
     }
 }
