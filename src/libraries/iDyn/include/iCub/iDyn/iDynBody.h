@@ -646,13 +646,6 @@ class iDynSensorTorsoNode : protected iDynSensorNode
 {
 protected:
 
-	/// left limb
-	iDyn::iDynLimb * left;
-	/// right limb
-	iDyn::iDynLimb * right;
-	/// central-up limb
-	iDyn::iDynLimb * up;
-
 	/// left leg - FT sensor and solver
 	iDyn::iDynSensor * leftSensor;
 	/// right leg - FT sensor and solver
@@ -680,6 +673,13 @@ protected:
 	virtual void build();
 
 public:
+	
+	/// left limb
+	iDyn::iDynLimb * left;
+	/// right limb
+	iDyn::iDynLimb * right;
+	/// central-up limb
+	iDyn::iDynLimb * up;
 
 	/**
 	* Constructor
