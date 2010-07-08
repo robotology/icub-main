@@ -349,7 +349,7 @@ Vector OneLinkNewtonEuler::getLinAccC() const		{ return link->ddpC;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector OneLinkNewtonEuler::getForce() const			{ return link->F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getMoment() const		{ return link->Mu;}
+Vector OneLinkNewtonEuler::getMoment(bool isBase) const		{ return link->Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double OneLinkNewtonEuler::getTorque() const		{ return link->Tau;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -540,7 +540,7 @@ void OneLinkNewtonEuler::computeMomentBackward( OneLinkNewtonEuler *next)
 	case DYNAMIC:		
 	setMoment( cross(next->getr() , next->getR() * next->getForce()) 
 			+ cross(next->getr() + next->getR() * next->getrC() , next->getR() * (next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment()
+			+ next->getR() * next->getMoment(false)
 			+ next->getR() * next->getInertia() * next->getAngAcc() 
 			+ next->getR() * cross( next->getAngVel() , next->getInertia() * next->getAngVel())
 			);
@@ -557,7 +557,7 @@ void OneLinkNewtonEuler::computeMomentBackward( OneLinkNewtonEuler *next)
 	case STATIC:
 	setMoment( cross(next->getr(),next->getR()*next->getForce()) 
 			+ cross(next->getr()+next->getR()*next->getrC(),next->getR()*(next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment());
+			+ next->getR() * next->getMoment(false));
 		break;
 	}
 }
@@ -568,13 +568,13 @@ void OneLinkNewtonEuler::computeMomentForward( OneLinkNewtonEuler *prev)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:
-		setMoment( getR().transposed() * ( prev->getMoment() - cross(getr(),getR()*getForce())
+		setMoment( getR().transposed() * ( prev->getMoment(false) - cross(getr(),getR()*getForce())
 			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
 			- getR() * getInertia() * getAngAcc()
 			- getR() * cross( getAngVel() , getInertia() * getAngVel())	) );
 		break;
 	case DYNAMIC_W_ROTOR:
-		setMoment( getR().transposed() * ( prev->getMoment() - cross(getr(),getR()*getForce())
+		setMoment( getR().transposed() * ( prev->getMoment(false) - cross(getr(),getR()*getForce())
 			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
 			- getR() * getInertia() * getAngAcc()
 			- getR() * cross( getAngVel() , getInertia() * getAngVel())	
@@ -583,7 +583,7 @@ void OneLinkNewtonEuler::computeMomentForward( OneLinkNewtonEuler *prev)
 			));
 		break;
 	case STATIC:
-		setMoment( getR().transposed() * ( prev->getMoment() - cross(getr(),getR()*getForce())
+		setMoment( getR().transposed() * ( prev->getMoment(false) - cross(getr(),getR()*getForce())
 			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
 			) );
 		break;
@@ -597,10 +597,10 @@ void OneLinkNewtonEuler::computeTorque(OneLinkNewtonEuler *prev)
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:
 	case STATIC:
-		setTorque( dot(prev->getMoment(),z0) );
+		setTorque( dot(prev->getMoment(true),z0) );
 		break;
 	case DYNAMIC_W_ROTOR:
-		setTorque( dot(prev->getMoment(),z0) + getKr() * getIm() * dot(getAngAccM(),zm) 
+		setTorque( dot(prev->getMoment(true),z0) + getKr() * getIm() * dot(getAngAccM(),zm) 
 			+ getFv() * getDq() + getFs() * sign(getDq()) );
 		break;		
 	}
@@ -766,7 +766,7 @@ Vector	BaseLinkNewtonEuler::getLinAcc()		const	{return ddp; }
 Vector	BaseLinkNewtonEuler::getLinAccC()		const	{return getLinAcc();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	BaseLinkNewtonEuler::getForce()	const	{return F;}
-Vector	BaseLinkNewtonEuler::getMoment()const	{return Mu;}
+Vector	BaseLinkNewtonEuler::getMoment(bool isBase)const	{ if(isBase==false) return Mu; else return H0.submatrix(0,2,0,2).transposed() * Mu;}
 double	BaseLinkNewtonEuler::getTorque()const	{return Tau;}
 Matrix	BaseLinkNewtonEuler::getR()				{Matrix ret(3,3); ret.eye(); return ret;}
 Matrix	BaseLinkNewtonEuler::getRC()			{Matrix ret(3,3); ret.eye(); return ret;}
@@ -978,7 +978,7 @@ string FinalLinkNewtonEuler::toString() const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	FinalLinkNewtonEuler::getForce()		const	{return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	FinalLinkNewtonEuler::getMoment()		const	{return Mu;}
+Vector	FinalLinkNewtonEuler::getMoment(bool isBase)		const	{return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	FinalLinkNewtonEuler::getAngVel()	const	{return w;}
 Vector	FinalLinkNewtonEuler::getAngAcc()	const	{return dw;}
@@ -1205,7 +1205,7 @@ void SensorLinkNewtonEuler::ForwardForcesMomentsToLink(iDynLink *link)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	SensorLinkNewtonEuler::getForce()	const	{ return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getMoment()	const	{ return Mu;}
+Vector	SensorLinkNewtonEuler::getMoment(bool isBase)	const	{ return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	SensorLinkNewtonEuler::getAngVel()	const	{ return w;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1578,7 +1578,7 @@ bool OneChainNewtonEuler::getWrenchAfterForward(unsigned int i, Vector &F, Vecto
 	if((i>=0)&&(i<=nEndEff))
 	{
 		F = neChain[i]->getForce();
-		Mu = neChain[i]->getMoment();
+		Mu = neChain[i]->getMoment(false);
 		return true;
 	}
 	else
@@ -1607,13 +1607,13 @@ void OneChainNewtonEuler::getVelAccEnd(Vector &w, Vector &dw,Vector &ddp) const
 void OneChainNewtonEuler::getWrenchBase(Vector &F, Vector &Mu) const
 {
 	F = neChain[0]->getForce();
-	Mu = neChain[0]->getMoment();
+	Mu = neChain[0]->getMoment(false);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::getWrenchEnd(Vector &F, Vector &Mu) const
 {
 	F = neChain[nEndEff]->getForce();
-	Mu = neChain[nEndEff]->getMoment();
+	Mu = neChain[nEndEff]->getMoment(false);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1876,9 +1876,11 @@ Vector	iDynInvSensor::getSensorForce()	const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	iDynInvSensor::getSensorMoment()	const
 {
-	return sens->getMoment();
+	return sens->getMoment(false);
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynInvSensor::getTorques() const							{return chain->getTorques();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//~~~~~~~~~~~~~~
@@ -2191,5 +2193,6 @@ string iDynInvSensorLeg::getType() const
 	return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 

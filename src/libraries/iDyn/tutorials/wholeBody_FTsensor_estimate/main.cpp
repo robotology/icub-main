@@ -90,7 +90,6 @@ int main()
 	icub.lowerTorso->setD2Ang("right_leg",q_rleg);
 	icub.lowerTorso->setD2Ang("left_leg",q_lleg);
 	
-
 	// initialize the head with the kinematic measures retrieved 
 	// by the inertial sensor on the head
 	icub.upperTorso->setInertialMeasure(w0,dw0,ddp0);
@@ -118,8 +117,8 @@ int main()
 
 	cout<<endl
 		<<"Estimate FT sensor measurements on upper body: "<<endl
-		<<" left  : "<<fm_sens_up.getCol(0).toString()<<endl
-		<<" right : "<<fm_sens_up.getCol(1).toString()<<endl
+		<<" left  : "<<fm_sens_up.getCol(1).toString()<<endl
+		<<" right : "<<fm_sens_up.getCol(0).toString()<<endl
 		<<endl
 		<<"Upper Torso: "<<endl
 		<<" kin :   w= "<<icub.upperTorso->getTorsoAngVel().toString()<<endl
@@ -129,8 +128,8 @@ int main()
 		<<"        Mu= "<<icub.upperTorso->getTorsoMoment().toString()<<endl
 		<<endl
 		<<"Estimate FT sensor measurements on lower body: "<<endl
-		<<" left  : "<<fm_sens_lo.getCol(0).toString()<<endl
-		<<" right : "<<fm_sens_lo.getCol(1).toString()<<endl
+		<<" left  : "<<fm_sens_lo.getCol(1).toString()<<endl
+		<<" right : "<<fm_sens_lo.getCol(0).toString()<<endl
 		<<endl
 		<<"Lower Torso: "<<endl
 		<<" kin :   w= "<<icub.lowerTorso->getTorsoAngVel().toString()<<endl
@@ -145,3 +144,4 @@ int main()
 }
       
       
+

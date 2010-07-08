@@ -127,6 +127,20 @@ Matrix RigidBodyTransformation::getR()
 	return H.submatrix(0,2,0,2);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::getR6() const					
+{
+	Matrix R(6,6); R.zero();		
+	for(int i=0;i<3;i++)
+	{
+		for(int j=0;j<3;j++)
+		{
+			R(i,j) = H(i,j);
+			R(i+3,j+3) = R(i,j);
+		}
+	}
+	return R;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector RigidBodyTransformation::getr(bool proj)	
 {
 	if(proj==false)
@@ -271,6 +285,77 @@ void RigidBodyTransformation::computeLimbWrench()
 	limb->computeWrenchNewtonEuler();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int RigidBodyTransformation::getNLinks() const
+{
+	return limb->getN();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int RigidBodyTransformation::getDOF() const
+{
+	return limb->getDOF();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::getH(const unsigned int iLink, const bool allLink)            
+{ 
+	return limb->getH(iLink,allLink);          
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::getH()                                                          
+{ 
+	return limb->getH();                   
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector RigidBodyTransformation::getEndEffPose(const bool axisRep)
+{
+	return limb->EndEffPose(axisRep);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeGeoJacobian(const unsigned int iLink, const Matrix &Pn, bool rbtRoto)
+{
+	if(rbtRoto==false)
+		return limb->computeGeoJacobian(iLink,Pn);
+	else
+		return getR6() * limb->computeGeoJacobian(iLink,Pn);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeGeoJacobian(const Matrix &Pn, bool rbtRoto)
+{
+	if(rbtRoto==false)
+		return limb->computeGeoJacobian(Pn);
+	else
+		return getR6() * limb->computeGeoJacobian(Pn);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeGeoJacobian(const Matrix &Pn, const Matrix &H0, bool rbtRoto)
+{
+	if(rbtRoto==false)
+		return limb->computeGeoJacobian(Pn,H0);
+	else
+		return getR6() * limb->computeGeoJacobian(Pn,H0);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeGeoJacobian(bool rbtRoto)
+{
+	if(rbtRoto==false)
+		return limb->GeoJacobian();
+	else
+		return getR6() * limb->GeoJacobian();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::getH0() const
+{
+	return limb->getH0();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool RigidBodyTransformation::setH0(const Matrix &_H0)
+{
+	return limb->setH0(_H0);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
 
 
 
@@ -464,7 +549,7 @@ bool iDynNode::solveWrench()
 	// at least one output node should exist 
 	// however if for testing purposes only one limb is attached to the node, 
 	// we can't avoid the computeWrench phase, but still we must remember that 
-	// it is not correct, because the node must be in balanc
+	// it is not correct, because the node must be in balance
 	if(outputNode==rbtList.size())
 	{
 		if(verbose>1)
@@ -642,7 +727,170 @@ Vector iDynNode::getAngAcc() const {return dw;}
 Vector iDynNode::getLinAcc() const {return ddp;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+		//-----------------
+		//    jacobians
+		//-----------------
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB)
+{
+	//first check param coherence:
+	// - wrong limb index
+	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
+	{ 
+		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index "
+						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		return Matrix(0,0);
+	}
+	// - jacobian .. in the same limb @_@
+	if( iChainA==iChainB )
+	{
+		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to weird index for chains "<<iChainA
+						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		return Matrix(0,0);		
+	}
+
+	// params are ok, go on..
+
+	// total number of joints = Ndof_A + Ndof_B
+	// the total jacobian matrix
+	Matrix J(6,rbtList[iChainA].getDOF() + rbtList[iChainB].getDOF()); J.zero();
+	//the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
+	Matrix Pn; 
+	// the two jacobians
+	Matrix J_A; Matrix J_B;
+	// from base-link (for the jac.) of limb A to base (for the jac.) of limb B
+	Matrix H_A_Node;
+
+	// compute the roto-transf matrix between the base of limb A and the base of limb B
+	// this is used to set the correct reference of vector Pn
+	// H_A_Node is used to initialize J_B properly
+	compute_Pn_HAN(iChainA, dirA, iChainB, dirB, Pn, H_A_Node);
+
+	// now compute jacobian of first and second limb, setting the correct Pn 
+	// JA
+	J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);			
+	// JB
+	// note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0 
+	J_B = rbtList[iChainB].computeGeoJacobian(Pn,H_A_Node,false);
+
+	// finally start building the Jacobian J=[J_A|J_B]
+	unsigned int c=0;
+	unsigned int JAcols = J_A.cols();
+	unsigned int JBcols = J_B.cols();
+
+	if(JAcols+JBcols!=J.cols())
+	{
+		cout<<"iDynNode error: Jacobian should be 6x"<<J.cols()<<" instead is 6x"<<(JAcols+JBcols)<<endl
+			<<"Note: limb A: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
+			<<"      limb B: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl;
+		J.resize(6,JAcols+JBcols);
+	}
+	
+	for(unsigned int r=0; r<6; r++)
+	{
+		for(c=0;c<JAcols;c++)
+			J(r,c)=J_A(r,c);
+		for(c=0;c<JBcols;c++)
+			J(r,JAcols+c)=J_B(r,c);
+	}
+	
+	// now return the jacobian
+	return J;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, Matrix &Pn, Matrix &H_A_Node)
+{
+	// compute the roto-transf matrix between the base of limb A and the base of limb B
+	// this is used to set the correct reference of vector Pn
+	if(dirA==JAC_KIN)
+	{
+		// H_A_Node = H_A * RBT_A^T * RBT_B 
+		// note: RBT_A is transposed because we're going in the opposite direction wrt to one of the RBT
+		H_A_Node = rbtList[iChainA].getH() * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
+	}
+	else //dirA==JAC_IKIN
+	{
+		// H_A_Node = H_A^-1 * RBT_A^T * RBT_B 
+		H_A_Node = SE3inv(rbtList[iChainA].getH()) * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
+	}
+
+	if(dirB==JAC_KIN)
+	{
+		// Pn = H_A_Node * H_B 
+		// Pn is the roto-transf matrix between base (of jac. in limb A) and end (of jac. in limb B)
+		// it is needed because the two jacobians must refer to a common Pn
+		Pn = H_A_Node * rbtList[iChainB].getH();
+	}
+	else //dirB==JAC_IKIN
+	{
+		// Pn = H_A_Node * H_B^-1
+		Pn = H_A_Node * SE3inv(rbtList[iChainB].getH());
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep)
+{
+	//first check param coherence:
+	// - wrong limb index
+	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
+	{ 
+		if(verbose) cerr<<"iDynNode: error, could not computePose() due to out of range index: limbs have index "
+						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		return Vector(0);
+	}
+	// - jacobian .. in the same limb @_@
+	if( iChainA==iChainB )
+	{
+		if(verbose) cerr<<"iDynNode: error, could not computePose() due to weird index for chains "<<iChainA
+						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		return Vector(0);		
+	}
+
+	// params are ok, go on..
+
+	//the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
+	Matrix Pn, H_A_Node; 
+	// the pose vector
+	Vector v;
+
+	// compute the roto-transf matrix between the base of limb A and the base of limb B
+	// this is used to set the correct reference of vector Pn
+	// just ignore H_A_Node
+	compute_Pn_HAN(iChainA, dirA, iChainB, dirB, Pn, H_A_Node);
+
+	// now compute the pose vector v (see iKin for more details)
+	if (axisRep)
+    {
+        v.resize(7);
+        Vector r=dcm2axis(Pn,verbose);
+        v[0]=Pn(0,3);
+        v[1]=Pn(1,3);
+        v[2]=Pn(2,3);
+        v[3]=r[0];
+        v[4]=r[1];
+        v[5]=r[2];
+        v[6]=r[3];
+    }
+    else
+    {
+        v.resize(6);
+		Vector r(3); r.zero();    
+		// Euler Angles as XYZ (see dcm2angle.m)
+		r[0]=atan2(-Pn(2,1),Pn(2,2));
+		r[1]=asin(Pn(2,0));
+		r[2]=atan2(-Pn(1,0),Pn(0,0));
+        v[0]=Pn(0,3);
+        v[1]=Pn(1,3);
+        v[2]=Pn(2,3);
+        v[3]=r[0];
+        v[4]=r[1];
+        v[5]=r[2];
+    }
+	
+	return v;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -920,7 +1168,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	}
 	if((afterAttach==false)&&(FM.cols()!=rbtList.size()))
 	{
-		if(verbose>1)
+		if(verbose)
 			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
 				<<FM.cols()<<" cols instead of "<<rbtList.size()
 				<<"                Using default values, all zero."<<endl;
@@ -1232,8 +1480,7 @@ Vector iDynSensorTorsoNode::setAng(const string &limbType, const Vector &_q)
 	else if(limbType==right_name)	return right->setAng(_q);
 	else
 	{		
-		//if(verbose)	
-			cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
 		return Vector(0);
 	}
 }
@@ -1452,8 +1699,8 @@ iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubLowerTorso::build()
 {
-	left	= new iCubLegDyn("left",KINFWD_WREBWD);
-	right	= new iCubLegDyn("right",KINFWD_WREBWD);
+	left	= new iCubLegNoTorsoDyn("left",KINFWD_WREBWD);
+	right	= new iCubLegNoTorsoDyn("right",KINFWD_WREBWD);
 	up		= new iCubTorsoDyn("lower",KINBWD_WREBWD);
 
 	leftSensor = new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(left),mode,verbose);

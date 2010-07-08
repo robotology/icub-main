@@ -863,6 +863,45 @@ public:
     */
     virtual ~iDynChain();
 
+
+	//------------
+	// jacobians
+	//------------
+
+	/**
+	* Compute the Jacobian from link 0 to iLinkN. 
+	* This method is used to compute the Jacobian between two links in two different chains.
+	* @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+	*/
+	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN , const yarp::sig::Matrix &Pn );
+
+	/**
+	* Compute the Jacobian of the chain, from link 0 to N. 
+	* This method is used to compute the Jacobian between two links in two different chains.
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+	*/
+	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn );
+
+	/**
+	* Compute the Jacobian of the chain, from link 0 to N. 
+	* This method is used to compute the Jacobian between two links in two different chains.
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
+	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+	*/
+	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
+
+	yarp::sig::Matrix getH0() const;
+
+	bool setH0(const yarp::sig::Matrix &_H0);
+
+
+
+
+
 };
 
 
@@ -1000,7 +1039,7 @@ public:
 
 	// base methods - see iKin
 
-    unsigned int      getN() const                                                    { return N;                                   }
+	unsigned int      getN() const                                                    { return N;                                   }
 	unsigned int      getNTOT()														  { return iDynChain::getNTOT();                }
 	unsigned int      getDOF() const                                                  { return DOF;                                 }
     bool              blockLink(const unsigned int i, double Ang)                     { return iDynChain::blockLink(i,Ang);         }
@@ -1114,9 +1153,20 @@ public:
 	void getWrenchNewtonEuler( yarp::sig::Vector &F, yarp::sig::Vector &Mu) 
 	{iDynChain::getWrenchNewtonEuler(F,Mu);}
 
+	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn )
+	{return iDynChain::computeGeoJacobian(iLinkN,Pn);}
 
+	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn )
+	{return iDynChain::computeGeoJacobian(Pn);}
 
+	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
+	{return iDynChain::computeGeoJacobian(Pn,_H0);}
 
+	yarp::sig::Matrix GeoJacobian(const unsigned int i)
+	{ return iDynChain::GeoJacobian(i);			}
+
+	yarp::sig::Matrix getH0() const				{ return iDynChain::getH0();}
+	bool setH0(const yarp::sig::Matrix &_H0)	{ return iDynChain::setH0(_H0);}
 
 };
 
@@ -1245,6 +1295,33 @@ public:
     iCubLegDyn(const iCubLegDyn &leg);
 };
 
+/**
+* \ingroup iDyn
+*
+* A class for defining the 6-DOF iCub Leg in the iDyn framework, to attach the legs
+* to the torso in iCub Lower Torso
+*/
+class iCubLegNoTorsoDyn : public iCubLegDyn
+{
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubLegNoTorsoDyn();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" leg
+    */
+    iCubLegNoTorsoDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
+
+    /**
+    * Creates a new Leg from an already existing Leg object.
+    * @param leg is the Leg to be copied.
+    */
+    iCubLegNoTorsoDyn(const iCubLegNoTorsoDyn &leg);
+};
 
 /**
 * \ingroup iDyn
@@ -1358,5 +1435,7 @@ public:
 
 }//end namespace
 #endif
+
+
 
 

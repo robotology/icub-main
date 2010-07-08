@@ -374,7 +374,7 @@ public:
    	/**
 	* @return Mu = moment (3x1)
 	*/
-	 virtual yarp::sig::Vector	getMoment()		const;
+	 virtual yarp::sig::Vector	getMoment(bool isBase = false)		const;
    	/**
 	* @return Tau = torque (1x1)
 	*/
@@ -461,7 +461,7 @@ public:
      * [all] Compute joint torque; moment must be pre-computed
 	  * @param next the OneLinkNewtonEuler class of the following link
      */
-	 void computeTorque(OneLinkNewtonEuler *prev);
+	 virtual void computeTorque(OneLinkNewtonEuler *prev);
 
 };
 
@@ -540,7 +540,7 @@ public:
 	 // to avoid errors due to missing link
 
 	 yarp::sig::Vector	getForce()		const;
-	 yarp::sig::Vector	getMoment()		const;
+	 yarp::sig::Vector	getMoment(bool isBase = false)		const;
 	 double				getTorque()		const;
 	 yarp::sig::Matrix	getR();		
 	 yarp::sig::Matrix	getRC();	
@@ -571,6 +571,7 @@ public:
 	 // other methods
 
 	 std::string toString() const;
+
 
 };
 
@@ -637,7 +638,7 @@ public:
 	//   get methods
 	//~~~~~~~~~~~~~~~~~~~~~~
 	yarp::sig::Vector	getForce()		const;
-	yarp::sig::Vector	getMoment()		const;
+	yarp::sig::Vector	getMoment(bool isBase = false)		const;
 
 	// redefine the other unuseful methods to avoid errors due to missing link
 	yarp::sig::Vector	getAngVel()		const;
@@ -777,7 +778,7 @@ public:
 	yarp::sig::Vector	getLinAccC()	const;
 
 	yarp::sig::Vector	getForce()		const;
-	yarp::sig::Vector	getMoment()		const;
+	yarp::sig::Vector	getMoment(bool isBase = false)		const;
 	
 	double				getIm()		const;
  	double				getFs()		const;
@@ -1213,6 +1214,7 @@ public:
 	std::string getInfo() const;
 	std::string getSensorInfo() const;
 	unsigned int getSensorLink()	const;
+	yarp::sig::Vector getTorques() const;	
 
 	//destructor
 	virtual ~iDynInvSensor();
@@ -1220,7 +1222,7 @@ public:
 };
 
 /**
-* \ingroup iDynInv
+* \ingroup RecursiveNewtonEuler
 *
 * A class for setting a virtual sensor link on the iCub 
 * arm, for the arm FT sensor. The parameters are
@@ -1252,7 +1254,7 @@ public:
 };
 
 /**
-* \ingroup iDynInv
+* \ingroup RecursiveNewtonEuler
 *
 * A class for setting a virtual sensor link on the iCub
 * leg, for the leg FT sensor. The parameters are
@@ -1407,4 +1409,5 @@ public:
 }//end namespace
 
 #endif
+
 

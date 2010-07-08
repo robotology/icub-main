@@ -1,12 +1,12 @@
 
-2010-06-01 Ugo Pattacini <ugo.pattacini@iit.it>
-	   * Ported to iCub/main
-
 2010-05-26 Serena Ivaldi <serena.ivaldi@iit.it> and Matteo Fumagalli <matteo.fumagalli@iit.it>
 	   * First release published on the repository
 
 2010-05-27 Serena Ivaldi <serena.ivaldi@iit.it>
 	   * added iDynInvSensor-Arm/Leg to iDynInv
+
+2010-06-01 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Ported to iCub/main
 
 2010-06-04 Serena Ivaldi <serena.ivaldi@iit.it>
 	* added getForceMomentEndEffector to iDynChain and iDynSensor
@@ -18,5 +18,9 @@
 
 2010-06-16 Serena Ivaldi <serena.ivaldi@iit.it>
 	* added iCubWholeBody, UpperTorso and LowerTorso to iDynBody
+
+2010-07-08 Serena Ivaldi <serena.ivaldi@iit.it>
+	* added tutorials: multiLimbJacobian, wholeBody_FTsensor_estimate
+	* added support for multi-link Jacobian to iDynNodes
 
 
