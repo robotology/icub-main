@@ -8,3 +8,5 @@
 #define IDYN_NEWTEUL_VOCAB_MODE_DYNR	VOCAB4('d','y','n','r')
 
 #endif
+
+
