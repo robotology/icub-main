@@ -114,8 +114,8 @@ This file can be edited at src/zeroForceControl/main.cpp.
 #include <iomanip>
 #include <string.h>
 
-#include <iCub/iDyn/iDynTransform.h>
-#include <iCub/iKin/iKinFwd.h>
+#include <iCub/iDynTransform.h>
+#include <iCub/iKinFwd.h>
 #include "filter.h"
 
 const int SAMPLER_RATE = 10;
