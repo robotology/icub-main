@@ -16,6 +16,7 @@ ADD_SUBDIRECTORY(crawlGenerator)
 ADD_SUBDIRECTORY(crawlManager)
 ADD_SUBDIRECTORY(crawlHeadControl)
 ADD_SUBDIRECTORY(reachManager)
+ADD_SUBDIRECTORY(velImpControl)
 
 IF(MSVC)
 	add_definitions( /wd4250 )
