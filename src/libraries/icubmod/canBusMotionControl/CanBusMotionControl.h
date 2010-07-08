@@ -588,9 +588,9 @@ protected:
                 return MAX_INT;
         else
             if  (x>0)
-				return short(x + .5);
+				return int(x + .5);
 			else
-				return short(x - .5);
+				return int(x - .5);
     }
 };
 
