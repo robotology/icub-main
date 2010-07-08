@@ -90,9 +90,9 @@ namespace iDyn{
 	class SensorLinkNewtonEuler;
 	class OneChainNewtonEuler;
 	class iDynInvSensor;
-	class iFTransform;
-    class iSFrame;
-	class iFB;
+	class iGenericFrame;
+    class iFrameOnLink;
+	class iFTransformation;
 
 
 /**

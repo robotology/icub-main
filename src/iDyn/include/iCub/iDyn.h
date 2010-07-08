@@ -76,9 +76,9 @@ namespace iDyn
 	class OneChainNewtonEuler;
 	class OneChainSensorNewtonEuler;
 	class iDynSensor;
-	class iFTransform;
-    class iSFrame;
-	class iFB;
+	class iGenericFrame;
+    class iFrameOnLink;
+	class iFTransformation;
 
 
 

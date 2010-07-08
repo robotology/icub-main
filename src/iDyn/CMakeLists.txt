@@ -11,12 +11,12 @@ INCLUDE_DIRECTORIES(${IKIN_INCLUDE_DIRS})
 SET(folder_source src/iDyn.cpp
                   src/iDynInv.cpp
                   src/iDynFwd.cpp
-                  src/iFC.cpp)
+                  src/iDynTransform.cpp)
 
 SET(folder_header include/iCub/iDyn.h
                   include/iCub/iDynInv.h
                   include/iCub/iDynFwd.h
-                  include/iCub/iFC.h)
+                  include/iCub/iDynTransform.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})

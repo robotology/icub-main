@@ -66,9 +66,9 @@ namespace iDyn{
 	class iFakeDyn;
 	class iFakeDyn2GdL;
 	class iDynSensor;
-	class iFTransform;
-    class iSFrame;
-	class iFB;
+	class iGenericFrame;
+    class iFrameOnLink;
+	class iFTransformation;
 
 
 /**
