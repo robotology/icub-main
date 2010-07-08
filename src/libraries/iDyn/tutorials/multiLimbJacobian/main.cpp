@@ -125,7 +125,7 @@ int main()
 	// if connected to the real robot, we can take this values from the encoders
 	Vector q_rarm(node.arm->getN());		q_rarm.zero();
 	Vector q_torso(node.torso->getN());		q_torso.zero();
-	Vector q_all(q_torso.size()+q_rarm.size());
+	Vector q_all;
 	
 	for(i=0;i<q_torso.size();i++)	q_all.push_back(q_torso[i]);
 	for(i=0;i<q_rarm.size();i++)	q_all.push_back(q_rarm[i]);
