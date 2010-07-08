@@ -39,7 +39,7 @@ public:
 
 	// construct the node
 	UpTorso()
-	:iDynNode("node with arm, torso and head")
+	:iDynNode("node with arms, torso and head")
 	{
 		//first create the limbs
 		arm_right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
@@ -67,6 +67,14 @@ public:
 		addLimb(torso,Htorso);
 		addLimb(head,Hhead);
 		addLimb(arm_left,Harm_left);
+	}
+
+	~UpTorso()
+	{
+		delete arm_right;
+		delete head;
+		delete torso;
+		delete arm_left;	
 	}
 
 	// ridefinitions of the jacobian functions 
