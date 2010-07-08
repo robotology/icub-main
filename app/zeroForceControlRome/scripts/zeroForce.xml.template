@@ -5,7 +5,7 @@
         </dependencies>
 	<module>
       		<name>zeroForceControl</name>
-      		<parameters>--context zeroForceControl/conf --from leftArmFT.ini</parameters>
+      		<parameters>--context zeroForceControlRome/conf --from leftArmFT.ini</parameters>
 			<node>pc104</node>
 			<tag>left_arm_imp</tag>
 			<stdio>console</stdio>
@@ -13,7 +13,7 @@
 
 	<module>
       		<name>zeroForceControl</name>
-      		<parameters>--context zeroForceControl/conf --from rightArmFT.ini</parameters>
+      		<parameters>--context zeroForceControlRome/conf --from rightArmFT.ini</parameters>
 			<node>pc104</node>
 			<tag>right_arm_imp</tag>
 			<stdio>console</stdio>
