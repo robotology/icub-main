@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <iCub/iDyn/iDynTransform.h>
+#include <iCub/iDynTransform.h>
 
 using namespace std;
 using namespace yarp;
@@ -248,20 +248,6 @@ iFTransformation::iFTransformation(int _l)
 	EndEffector=new iGenericFrame();	
 	initiFTransformation();
 	//Sensor->setLink(l);
-}
-iFTransformation::iFTransformation(iDynInvSensor *_iDynChainWithSensor)
-{
-    ownLimb=false;
-	initiFTransformation();
-	l=_iDynChainWithSensor->getSensorLink();
-	Limb = _iDynChainWithSensor->chain;
-	SensorFrame = new iGenericFrame(_iDynChainWithSensor->getH().submatrix(0,2,0,2),_iDynChainWithSensor->getH().submatrix(0,2,0,3).getCol(3));
-	Sensor = new iFrameOnLink(l);
-	EndEffector=new iGenericFrame();
-
-	Sensor->attach(Limb);
-	Sensor->attach(SensorFrame);
-	//fprintf(stderr,"set up sensor transformation\n");
 }
 void iFTransformation::attach(iKin::iKinChain *_Limb)
 {    

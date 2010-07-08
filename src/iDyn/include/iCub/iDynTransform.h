@@ -68,10 +68,10 @@ example code:
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrlMath.h>
 //#include <iCub/iKin/iKinFwd.h>
-#include <iCub/iDyn/iDyn.h>
-#include <iCub/iDyn/iDynInv.h>
+#include <iCub/iDyn.h>
+#include <iCub/iDynInv.h>
 
 #include <string>
 //#include <deque>
@@ -312,7 +312,6 @@ private:
 public:
 	iFTransformation();
 	iFTransformation(int _l);
-	iFTransformation(iDyn::iDynInvSensor *_iDynChainWithSensor);
 	~iFTransformation();
 
 	void attach(iKin::iKinChain *_Limb);
