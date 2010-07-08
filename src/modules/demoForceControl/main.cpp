@@ -1,7 +1,7 @@
 /**
 @ingroup icub_module
 
-\defgroup zeroForceControl zeroForceControl
+\defgroup demoForceControl demoForceControl
  
 Perform zero force control on the iCub limbs. 
 Copyright (C) 2008 RobotCub Consortium
@@ -35,7 +35,7 @@ compensation of the force/torque measurements.
 --name \e name 
 - The parameter \e name identifies the module's name; all the 
   open ports will be tagged with the prefix <name>/. If not
-  specified \e /zeroForceControl is assumed.
+  specified \e /imp is assumed.
  
 --context
 - The parameter \e context identifies the location of the configuration files,
@@ -80,7 +80,7 @@ Linux and Windows.
 By launching the following command: 
  
 \code 
-zeroForceControl --name zfc --context zeroForceControl/conf --from rightArmFT.ini  
+demoForceControl --name zfc --context demoForceControl/conf --from rightArmFT.ini  
 \endcode 
  
 the module will create the listening port /zfc/right_arm/FT:i for 
@@ -94,7 +94,7 @@ yarp connect /icub/right_arm/analog:o /zfc/right_arm/FT:i
  
 \author Matteo Fumagalli
 
-This file can be edited at src/zeroForceControl/main.cpp.
+This file can be edited at src/demoForceControl/main.cpp.
 */ 
 
 
@@ -1212,7 +1212,7 @@ public:
 		string part;
 		string robot;
 		string fwdSlash = "/";
-		PortName = "/imp/";
+		PortName = fwdSlash;
 		port_FT= 0;
 
 		ConstString robotName=rf.find("robot").asString();
@@ -1226,6 +1226,18 @@ public:
 			fprintf(stderr,"Device not found\n");
             //PortName=PortName+"icub";
 			robot = "icub";
+		}
+		
+		if (rf.check("name"))
+		{
+			//PortName=PortName+rf.find("robot").asString().c_str();
+			PortName += (rf.find("name").asString().c_str();
+		}
+        else
+		{
+			fprintf(stderr,"Device not found\n");
+            //PortName=PortName+"icub";
+			PortName += "imp";
 		}
 		
 		ConstString partName=rf.find("part").asString();
@@ -1373,7 +1385,7 @@ int main(int argc, char * argv[])
     // prepare and configure the resource finder
     ResourceFinder rf;
     rf.setVerbose();
-	rf.setDefaultContext("zeroForceControl/conf");
+	rf.setDefaultContext("demoForceControl/conf");
 	rf.setDefaultConfigFile("leftArmFT.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
@@ -1381,7 +1393,7 @@ int main(int argc, char * argv[])
 	if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\\app: default zeroForceControl\\conf)"                << endl;
+		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\\app: default demoForceControl\\conf)"                << endl;
         cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
         return 0;
     }
