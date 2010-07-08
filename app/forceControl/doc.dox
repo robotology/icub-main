@@ -1,0 +1,51 @@
+/**
+@ingroup  icub_applications
+
+\defgroup icub_zeroForceControl zeroForceControl
+
+A module for interacting with the robot. 
+
+\section intro_sec Description
+
+The zeroForce application opens one module for each limb, achieving active compliance (impedance or zero force) using a 6-axis F/T sensor.
+
+Each module control one limb. When connected, the offset of the sensor is cancelled. If the module is in modality "zfc", if moved from the starting position, 
+the limb drifts. If the module is in modality "imp", the limb behave like a spring around that position.
+
+The modality can be changed by writing on the shell:
+- set imp (for impedance control)
+- set zfc (for zero force control)
+
+\section dep_sec Dependencies
+The modules depends on iDyn and iKin.
+
+\section parameters_sec Parameters
+
+The parameters which are required to the module are:
+- context: no default context is set
+- from: no default config file is set.
+
+\section config_sec Configuration Files
+
+Configuration files are located in the ICUB_DIR/app/zeroForceControl/conf folder. 
+
+The files of type partLimbFT.ini (i.e. leftArmFT.ini) contain the information about the different limbs: robot, part, initPosition, joint limits, and others. 
+
+
+
+\section example_sec How to run the application
+
+
+
+To run the application, please do the following :
+
+- manager.py $ICUB_DIR/app/zeroForceControl/scripts/zeroForce.xml  
+
+\author Matteo Fumagalli
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/zeroForceControl/doc.dox
+**/
