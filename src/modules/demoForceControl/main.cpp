@@ -1231,7 +1231,7 @@ public:
 		if (rf.check("name"))
 		{
 			//PortName=PortName+rf.find("robot").asString().c_str();
-			PortName += (rf.find("name").asString().c_str();
+			PortName += rf.find("name").asString().c_str();
 		}
         else
 		{
