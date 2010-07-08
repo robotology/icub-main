@@ -572,8 +572,11 @@ protected:
         else
             if (x >= double(MAX_SHORT))
                 return MAX_SHORT;
-            else
-                return short(x + .5);
+        else
+            if  (x>0)
+				return short(x + .5);
+			else
+				return short(x - .5);
     }
 
     inline int S_32(double x) const
@@ -583,8 +586,11 @@ protected:
         else
             if (x >= double(MAX_INT))
                 return MAX_INT;
-            else
-                return int(x + .5);
+        else
+            if  (x>0)
+				return short(x + .5);
+			else
+				return short(x - .5);
     }
 };
 
