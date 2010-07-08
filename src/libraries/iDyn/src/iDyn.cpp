@@ -1131,6 +1131,27 @@ void iDynChain::setIterMode(const ChainComputationMode mode)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::getH0() const
+{
+ return H0;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynChain::setH0(const Matrix &_H0)
+{
+ if((_H0.cols()==4)&&(_H0.rows()==4))
+ {
+  H0 = _H0;
+  return true;
+ }
+ else
+ {
+  if(verbose) cerr<<"iDynChain: could not set H0 due to wrong sized matrix: "
+      <<_H0.rows()<<"x"<<_H0.cols()<<" instead of 4x4."<<endl;
+  return false;
+ }
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//-----------
 	//  jacobian
@@ -1241,28 +1262,6 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn, const Matrix &_H0)
     }
     return J;
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::getH0() const
-{
-	return H0;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynChain::setH0(const Matrix &_H0)
-{
-	if((_H0.cols()==4)&&(_H0.rows()==4))
-	{
-		H0 = _H0;
-		return true;
-	}
-	else
-	{
-		if(verbose) cerr<<"iDynChain: could not set H0 due to wrong sized matrix: "
-						<<_H0.rows()<<"x"<<_H0.cols()<<" instead of 4x4."<<endl;
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 
 //================================
@@ -1670,15 +1669,16 @@ void iCubTorsoDyn::allocate(const string &_type)
     {
 		//      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
         linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.0,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,  -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.001,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,  -0.1933,  -M_PI/2.0, -M_PI/2.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
     }
     else
     {
-        linkList[0]=new iDynLink(0,	0,	0,  0,		0,0,0,	0,0,0,		  0.032,     0.0,		M_PI/2.0,                 0.0,	-22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,		    0.0,	 0.0,		M_PI/2.0,           -M_PI/2.0,	-39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(0,	0,	0,	 0,		 0,	 0,	0	,0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
-	}
+        linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.001,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,  -0.1933,  -M_PI/2.0, -M_PI/2.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+    }
+
 	//insert in the allList
     for(unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
