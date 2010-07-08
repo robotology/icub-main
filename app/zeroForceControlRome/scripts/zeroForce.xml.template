@@ -1,0 +1,34 @@
+<application>
+<name>Zero Force Control</name>
+	<dependencies>
+	        <port>/icub/left_arm/state:o</port>
+        </dependencies>
+	<module>
+      		<name>zeroForceControl</name>
+      		<parameters>--context zeroForceControl/conf --from leftArmFT.ini</parameters>
+			<node>pc104</node>
+			<tag>left_arm_imp</tag>
+			<stdio>console</stdio>
+   	</module>
+
+	<module>
+      		<name>zeroForceControl</name>
+      		<parameters>--context zeroForceControl/conf --from rightArmFT.ini</parameters>
+			<node>pc104</node>
+			<tag>right_arm_imp</tag>
+			<stdio>console</stdio>
+   	</module>
+
+
+  
+        <connection>
+                <from>/icub/left_arm/analog:o</from>
+                <to>/imp/left_arm/FT:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/right_arm/analog:o</from>
+                <to>/imp/right_arm/FT:i</to>
+                <protocol>udp</protocol>
+        </connection>
+</application>
