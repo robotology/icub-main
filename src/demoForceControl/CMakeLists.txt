@@ -1,6 +1,6 @@
-SET(PROJECTNAME zeroForceControl)
+SET(PROJECTNAME demoForceControl)
 
-#MESSAGE(STATUS "--> adding zeroForceControl")
+#MESSAGE(STATUS "--> adding demoForceControl")
 
 PROJECT(${PROJECTNAME})
 
@@ -11,7 +11,7 @@ SET(folder_source main.cpp filter.cpp)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
 INCLUDE_DIRECTORIES(${IDYN_INCLUDE_DIRS})
-ADD_EXECUTABLE(zeroForceControl ${folder_source})
+ADD_EXECUTABLE(demoForceControl ${folder_source})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IDYN_LIBRARIES})
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
