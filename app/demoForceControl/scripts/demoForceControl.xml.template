@@ -1,38 +1,38 @@
 <application>
-<name>Zero Force Control</name>
+<name>Demo Force Control</name>
 	<dependencies>
 	        <port>/icub/left_arm/state:o</port>
         </dependencies>
 	<module>
-      		<name>zeroForceControl</name>
-      		<parameters>--context zeroForceControl/conf --from leftArmFT.ini</parameters>
+      		<name>demoForceControl</name>
+      		<parameters>--context demoForceControl/conf --from leftArmFT.ini</parameters>
 			<node>pc104</node>
-			<tag>left_arm_imp</tag>
-			<stdio>icub14</stdio>
+			<tag>left_arm_dfc</tag>
+			<stdio>console</stdio>
    	</module>
 
 	<module>
-      		<name>zeroForceControl</name>
-      		<parameters>--context zeroForceControl/conf --from rightArmFT.ini</parameters>
+      		<name>demoForceControl</name>
+      		<parameters>--context demoForceControl/conf --from rightArmFT.ini</parameters>
 			<node>pc104</node>
-			<tag>right_arm_imp</tag>
-			<stdio>icub14</stdio>
+			<tag>right_arm_dfc</tag>
+			<stdio>console</stdio>
    	</module>
 
 	<module>
-      		<name>zeroForceControl</name>
-      		<parameters>--context zeroForceControl/conf --from leftLegFT.ini</parameters>
+      		<name>demoForceControl</name>
+      		<parameters>--context demoForceControl/conf --from leftLegFT.ini</parameters>
 			<node>pc104</node>
-			<tag>left_leg_imp</tag>
-			<stdio>icub14</stdio>
+			<tag>left_leg_dfc</tag>
+			<stdio>console</stdio>
    	</module>
 
 	<module>
-      		<name>zeroForceControl</name>
-      		<parameters>--context zeroForceControl/conf --from rightLegFT.ini</parameters>
+      		<name>demoForceControl</name>
+      		<parameters>--context demoForceControl/conf --from rightLegFT.ini</parameters>
 			<node>pc104</node>
-			<tag>right_leg_imp</tag>
-			<stdio>icub14</stdio>
+			<tag>right_leg_dfc</tag>
+			<stdio>console</stdio>
    	</module>
 
         <connection>
