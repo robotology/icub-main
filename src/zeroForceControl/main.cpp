@@ -114,9 +114,9 @@ This file can be edited at src/zeroForceControl/main.cpp.
 #include <iomanip>
 #include <string.h>
 
+#include <iCub/iDyn/iDynTransform.h>
+#include <iCub/iKin/iKinFwd.h>
 #include "filter.h"
-#include "iCub/iFC.h"
-#include "iCub/iKinFwd.h"
 
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
@@ -246,8 +246,8 @@ private:
 	int limbJnt;
 	string limb;
 
-	iFB *FTB;
-	iFTransform *sensor;
+	iFTransformation *FTtoBase;
+	iGenericFrame *sensor;
 	int sensorLink;
 
 	Matrix Rs;
@@ -298,7 +298,7 @@ private:
 		  T(1,1) = R1/K1*a;
 		  T(1,2) = -R1/K1*a; 
 		  T(2,2) = R2/K2*a;
-		  T = 0.056*T;
+		  T = 0.056*T;;
 
 		  for(int i=0;i<3;i++)
 			  for(int j=0;j<3;j++)
@@ -610,11 +610,11 @@ public:
 		  //------------------------------------------
 		  //           FT SENSOR
 		  //------------------------------------------
-		  sensor = new iFTransform(Rs,ps);
+		  sensor = new iGenericFrame(Rs,ps);
 
-		  FTB = new iFB(sensorLink);
-		  FTB->attach(chain);
-		  FTB->attach(sensor);
+		  FTtoBase = new iFTransformation(sensorLink);
+		  FTtoBase->attach(chain);
+		  FTtoBase->attach(sensor);
 		  //------------------------------------------
 
 
@@ -704,15 +704,7 @@ public:
 
 
 		  
-		  //------------------------------------------
-		  //         SETTING PID FOR CONTROL
-		  //------------------------------------------
-#ifdef CONTROL_ON
-		  // Set the Pids to zero in order to control using setOffset		  
-		  for(int i=0;i<limbJnt;i++)
-			  	  ipids->setPid(i,FTPid[i]);  
-#endif		  
-		  //------------------------------------------
+
 		  count =0;
 		  return true;
 	  }
@@ -797,16 +789,25 @@ public:
 				  FTs_init = FTs;
 				  setDesiredPositions();	
 				  control_mode=IMPEDANCE;
+		  //------------------------------------------
+		  //         SETTING PID FOR CONTROL
+		  //------------------------------------------
+#ifdef CONTROL_ON
+		  // Set the Pids to zero in order to control using setOffset		  
+		      for(int i=0;i<limbJnt;i++)
+			  	  ipids->setPid(i,FTPid[i]);  
+#endif		  
+		  //------------------------------------------
 			  }
-			  FT = FTB->getFB(FTs-FTs_init);			  	
+			  FT = FTtoBase->getEndEffWrenchAsBase(FTs-FTs_init);
 			  first = false;
 		  }
 		  else
 		  {
-			  if(!first)  FT = FTB->getFB();
+			  if(!first)  FT = FTtoBase->getEndEffWrenchAsBase();
 			  else {FT=0.0; FTs=0.0; FTj=0.0; FTs_init=0.0;}
 		  }
-		  Fe=FTB->getFe();
+		  Fe=FTtoBase->getEndEffWrench();
 		  //------------------------------------------
 
 
@@ -1043,12 +1044,11 @@ public:
 		  //---------------------------------------------
 
 
-		  
 		  //---------------------------------------------
 		  //       DESTROING VARIABLES
 		  //---------------------------------------------
           if(prntData) fclose(fid);
-		  if(FTB) delete FTB;
+		  if(FTtoBase) delete FTtoBase;
 		  if(iCubPid) delete[] iCubPid;
 		  if(FTPid) delete[] FTPid;
 		  //---------------------------------------------
@@ -1212,7 +1212,7 @@ public:
 		string part;
 		string robot;
 		string fwdSlash = "/";
-		PortName = "/zfc/";
+		PortName = "/imp/";
 		port_FT= 0;
 
 		ConstString robotName=rf.find("robot").asString();
