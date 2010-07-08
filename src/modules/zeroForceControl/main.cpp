@@ -704,15 +704,7 @@ public:
 
 
 		  
-		  //------------------------------------------
-		  //         SETTING PID FOR CONTROL
-		  //------------------------------------------
-#ifdef CONTROL_ON
-		  // Set the Pids to zero in order to control using setOffset		  
-		  for(int i=0;i<limbJnt;i++)
-			  	  ipids->setPid(i,FTPid[i]);  
-#endif		  
-		  //------------------------------------------
+
 		  count =0;
 		  return true;
 	  }
@@ -797,6 +789,15 @@ public:
 				  FTs_init = FTs;
 				  setDesiredPositions();	
 				  control_mode=IMPEDANCE;
+		  //------------------------------------------
+		  //         SETTING PID FOR CONTROL
+		  //------------------------------------------
+#ifdef CONTROL_ON
+		  // Set the Pids to zero in order to control using setOffset		  
+		      for(int i=0;i<limbJnt;i++)
+			  	  ipids->setPid(i,FTPid[i]);  
+#endif		  
+		  //------------------------------------------
 			  }
 			  FT = FTtoBase->getEndEffWrenchAsBase(FTs-FTs_init);
 			  first = false;
