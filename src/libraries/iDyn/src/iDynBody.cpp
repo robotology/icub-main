@@ -1707,12 +1707,15 @@ void iCubLowerTorso::build()
 	rightSensor= new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(right),mode,verbose);
 
 	HUp.resize(4,4);	HUp=SE3inv(up->getH0());
-	HLeft.resize(4,4);	HLeft.eye();//=left->getH0();
-	HRight.resize(4,4);	HRight.eye();//=right->getH0();
+	HLeft.resize(4,4);	HLeft.zero();//=left->getH0();
+	HLeft(2,0)=-1.0;	HLeft(0,1)=-1.0;	HLeft(2,2)=-1.0; HLeft(3,3)=1.0;
+	HRight.resize(4,4);	HRight = HLeft;
+	HLeft(0,3)=-0.1199;	HLeft(2,3)=0.0681;
+	HRight(0,3)=-0.1199;HRight(2,3)=-0.0681;
 	
-	//up->setH0(eye(4,4));
-	//left->setH0(eye(4,4));
-	//right->setH0(eye(4,4));
+	up->setH0(eye(4,4));
+	left->setH0(eye(4,4));
+	right->setH0(eye(4,4));
 
 	// order: torso - right leg - left leg
 	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);

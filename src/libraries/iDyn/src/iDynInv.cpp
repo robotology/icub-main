@@ -2106,7 +2106,7 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 	H.resize(4,4); COM.resize(4,4); I.resize(3,3);
 	if(type=="left")
 	{
-		H.zero(); H(0,1) = 1.0; H(1,0) = -1.0; H(2,2) = 1.0; H(2,3) = -0.0665; H(3,3) = 1.0;
+		H.zero(); H(0,1) = -1.0; H(1,0) = -1.0; H(2,2) = -1.0; H(2,3) = -0.0665; H(3,3) = 1.0;
 		COM.zero();
 		I.zero(); 
 		
@@ -2121,7 +2121,8 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 			type = "right";
 		}
 
-		H.zero(); H(0,1) = -1.0; H(1,0) = -1.0; H(2,2) = -1.0; H(2,3) = 0.0665; H(3,3) = 1.0;
+		
+		H.zero(); H(0,1) = 1.0; H(1,0) = -1.0; H(2,2) = 1.0; H(2,3) = -0.0665; H(3,3) = 1.0;
 		COM.zero(); 
 		I.zero(); 
 		
