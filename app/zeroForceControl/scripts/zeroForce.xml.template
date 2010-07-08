@@ -5,58 +5,54 @@
         </dependencies>
 	<module>
       		<name>zeroForceControl</name>
-      		<parameters>--from leftArmFT.ini</parameters>
+      		<parameters>--context zeroForceControl/conf --from leftArmFT.ini</parameters>
 			<node>pc104</node>
-			<tag>left_arm_zfc</tag>
+			<tag>left_arm_imp</tag>
 			<stdio>icub14</stdio>
    	</module>
 
 	<module>
       		<name>zeroForceControl</name>
-      		<parameters>--from rightArmFT.ini</parameters>
+      		<parameters>--context zeroForceControl/conf --from rightArmFT.ini</parameters>
 			<node>pc104</node>
-			<tag>right_arm_zfc</tag>
+			<tag>right_arm_imp</tag>
 			<stdio>icub14</stdio>
    	</module>
 
 	<module>
       		<name>zeroForceControl</name>
-      		<parameters>--from leftLegFT.ini</parameters>
+      		<parameters>--context zeroForceControl/conf --from leftLegFT.ini</parameters>
 			<node>pc104</node>
-			<tag>left_leg_zfc</tag>
+			<tag>left_leg_imp</tag>
 			<stdio>icub14</stdio>
    	</module>
 
 	<module>
       		<name>zeroForceControl</name>
-      		<parameters>--from rightLegFT.ini</parameters>
+      		<parameters>--context zeroForceControl/conf --from rightLegFT.ini</parameters>
 			<node>pc104</node>
-			<tag>right_leg_zfc</tag>
+			<tag>right_leg_imp</tag>
 			<stdio>icub14</stdio>
    	</module>
-
-<!-- <module>     		<name>genericFTCalibrator</name>      		<parameters></parameters>	<node>icub14</node>		<stdio>icub14</stdio>		<tag>genFTcal</tag>
-   	</module> -->
 
         <connection>
                 <from>/icub/left_arm/analog:o</from>
-                <to>/zfc/left_arm/FT:i</to>
+                <to>/imp/left_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_arm/analog:o</from>
-                <to>/zfc/right_arm/FT:i</to>
+                <to>/imp/right_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/left_leg/analog:o</from>
-                <to>/zfc/left_leg/FT:i</to>
+                <to>/imp/left_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_leg/analog:o</from>
-                <to>/zfc/right_leg/FT:i</to>
+                <to>/imp/right_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
-<!-- <connection>             <from>/icub/left_arm/FT:o</from>                <to>/icub/left_arm/FT:i</to>                 <protocol>udp</protocol>        </connection> -->
 </application>
