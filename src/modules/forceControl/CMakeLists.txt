@@ -1,4 +1,4 @@
-SET(PROJECTNAME zeroForceControl)
+SET(PROJECTNAME forceControl)
 
 PROJECT(${PROJECTNAME})
 
