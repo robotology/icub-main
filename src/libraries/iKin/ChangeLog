@@ -1,4 +1,7 @@
 
+2010-07-09 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h,.cpp: added alignJointsBounds methods
+
 2010-06-01 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * Ported to iCub/main
 

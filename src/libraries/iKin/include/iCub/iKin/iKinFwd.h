@@ -36,6 +36,7 @@
 #define __IKINFWD_H__
 
 #include <yarp/os/Property.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
@@ -921,6 +922,17 @@ public:
     * @param arm is the Arm to be copied.
     */
     iCubArm(const iCubArm &arm);
+
+    /**
+    * Alignes the Arm joints bounds with current values set aboard
+    * the iCub. 
+    * @param limTorso is the control interface that allows access to
+    *                 the Torso limits.
+    * @param limArm is the control interface that allows access to 
+    *               the Arm limits.
+    * @return true/false on success/failure. 
+    */
+    bool alignJointsBounds(yarp::dev::IControlLimits *limTorso, yarp::dev::IControlLimits *limArm);
 };
 
 
@@ -952,6 +964,15 @@ public:
     * @param leg is the Leg to be copied.
     */
     iCubLeg(const iCubLeg &leg);
+
+    /**
+    * Alignes the Leg joints bounds with current values set aboard
+    * the iCub. 
+    * @param limLeg is the control interface that allows access to 
+    *               the Leg limits.
+    * @return true/false on success/failure. 
+    */
+    bool alignJointsBounds(yarp::dev::IControlLimits *limLeg);
 };
 
 
@@ -983,6 +1004,17 @@ public:
     * @param eye is the Eye to be copied.
     */
     iCubEye(const iCubEye &eye);
+
+    /**
+    * Alignes the Eye joints bounds with current values set aboard
+    * the iCub. 
+    * @param limTorso is the control interface that allows access to
+    *                 the Torso limits.
+    * @param limHead is the control interface that allows access to 
+    *               the Head limits.
+    * @return true/false on success/failure. 
+    */
+    bool alignJointsBounds(yarp::dev::IControlLimits *limTorso, yarp::dev::IControlLimits *limHead);
 };
 
 
@@ -1039,6 +1071,17 @@ public:
     * @param sensor is the object to be copied.
     */
     iCubInertialSensor(const iCubInertialSensor &sensor);
+
+    /**
+    * Alignes the Inertial Sensor joints bounds with current values 
+    * set aboard the iCub. 
+    * @param limTorso is the control interface that allows access to
+    *                 the Torso limits.
+    * @param limHead is the control interface that allows access to 
+    *               the Head limits.
+    * @return true/false on success/failure. 
+    */
+    bool alignJointsBounds(yarp::dev::IControlLimits *limTorso, yarp::dev::IControlLimits *limHead);
 };
 
 }
