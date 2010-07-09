@@ -835,6 +835,11 @@ public:
         return false;
     }
 
+    virtual bool setOpenLoopMode() {
+        fprintf(stderr, "setOpenLoopMode::Not implemented\n");
+        return false;
+    }
+
     /** 
     * Set new reference point for a single axis.
     * @param j joint number
