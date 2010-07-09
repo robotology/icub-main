@@ -3177,21 +3177,25 @@ bool CanBusMotionControl::disablePidRaw(int axis)
 
 bool CanBusMotionControl::setPositionModeRaw()
 {
+	//Not implemented. Use iControlMode instead.
     return NOT_YET_IMPLEMENTED("setPositionModeRaw");
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw()
 {
+	//Not implemented. Use iControlMode instead.
     return NOT_YET_IMPLEMENTED("setOpenLoopModeRaw");
 }
 
 bool CanBusMotionControl::setTorqueModeRaw()
 {
+	//Not implemented. Use iControlMode instead.
     return NOT_YET_IMPLEMENTED("setTorqueModeRaw");
 }
 
 bool CanBusMotionControl::setVelocityModeRaw()
 {
+	//Not implemented. Use iControlMode instead.
     return NOT_YET_IMPLEMENTED("setVelocityModeRaw");
 }
 
