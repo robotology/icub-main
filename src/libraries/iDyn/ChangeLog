@@ -23,4 +23,7 @@
 	* added tutorials: multiLimbJacobian, wholeBody_FTsensor_estimate
 	* added support for multi-link Jacobian to iDynNodes
 
+2010-07-09 Serena Ivaldi <serena.ivaldi@iit.it>
+	* removed dependency from iDynFwd, whose classes are now incorporated in iDynInv
+
 

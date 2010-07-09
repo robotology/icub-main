@@ -1761,9 +1761,12 @@ void iCubWholeBody::attachTorso()
 	// take the w,dw,ddp,F,Mu from upperTorso, apply the RBT, and set the 
 	// kinematic and wrench variables into the lowerTorso
 	//rbt->setKinematic(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
-	rbt->setKinematicMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+	//lowerTorso->setKinematicMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+	lowerTorso->setInertialMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+
 	//rbt->setWrench(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());	
-	rbt->setWrenchMeasure(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+	//lowerTorso->setWrenchMeasure(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+	lowerTorso->up->initWrenchNewtonEuler(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -898,6 +898,8 @@ public:
 
 	bool setH0(const yarp::sig::Matrix &_H0);
 
+	yarp::sig::Matrix getDenHart(unsigned int i) { return allList[i]->getH();}
+
 
 
 
@@ -1167,6 +1169,8 @@ public:
 
 	yarp::sig::Matrix getH0() const				{ return iDynChain::getH0();}
 	bool setH0(const yarp::sig::Matrix &_H0)	{ return iDynChain::setH0(_H0);}
+
+	yarp::sig::Matrix getDenHart(unsigned int i) { return iDynChain::getDenHart(i);}
 
 };
 

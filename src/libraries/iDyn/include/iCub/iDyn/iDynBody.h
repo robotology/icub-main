@@ -56,7 +56,6 @@
 #include <iCub/ctrl/ctrlMath.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iDyn/iDynInv.h>
-#include <iCub/iDyn/iDynFwd.h>
 #include <deque>
 #include <string>
 
