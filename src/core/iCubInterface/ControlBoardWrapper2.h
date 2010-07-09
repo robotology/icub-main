@@ -835,12 +835,49 @@ public:
     * return true/false on success/failure
     */
     virtual bool setPositionMode() {
-        fprintf(stderr, "setPositionMode::Not implemented\n");
-        return false;
+        bool ret=true;
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+
+            if (!p)
+                return false;
+
+            if (p->pos)
+            {
+				//calling iControlMode interface
+                ret=ret&&p->iMode->setPositionMode(off+base);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool setOpenLoopMode() {
-        fprintf(stderr, "setOpenLoopMode::Not implemented\n");
+        bool ret=true;
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+
+            if (!p)
+                return false;
+
+            if (p->pos)
+            {
+				//calling iControlMode interface
+                ret=ret&&p->iMode->setOpenLoopMode(off+base);
+            }
+            else
+                ret=false;
+        }
+        return ret;
         return false;
     }
 
@@ -1297,7 +1334,26 @@ public:
     * @return true/false on success/failure.
     */
     virtual bool setVelocityMode() {
-        return false; //impossible to implement, need per joint function
+        bool ret=true;
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+
+            if (!p)
+                return false;
+
+            if (p->pos)
+            {
+				//calling iControlMode interface
+                ret=ret&&p->iMode->setVelocityMode(off+base);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     /* IEncoders */
@@ -1844,8 +1900,26 @@ public:
 
     virtual bool setTorqueMode()
     {
-        fprintf(stderr, "setTorqueMode::Not implemented\n");
-        return false;
+        bool ret=true;
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+
+            if (!p)
+                return false;
+
+            if (p->pos)
+            {
+				//calling iControlMode interface
+                ret=ret&&p->iMode->setTorqueMode(off+base);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool getRefTorques(double *refs)
