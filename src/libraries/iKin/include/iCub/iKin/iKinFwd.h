@@ -1016,7 +1016,7 @@ public:
     * Alignes the Eye joints bounds with current values set aboard 
     * the iCub. 
     * @param lim is the ordered list of control interfaces that 
-    *            allows to access the Torso and Head limits.
+    *            allows to access the Torso and the Head limits.
     * @return true/false on success/failure. 
     */
     virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
@@ -1081,7 +1081,7 @@ public:
     * Alignes the Inertial Sensor joints bounds with current values 
     * set aboard the iCub. 
     * @param lim is the ordered list of control interfaces that 
-    *            allows to access the Torso and Head limits.
+    *            allows to access the Torso and the Head limits.
     * @return true/false on success/failure. 
     */
     virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
