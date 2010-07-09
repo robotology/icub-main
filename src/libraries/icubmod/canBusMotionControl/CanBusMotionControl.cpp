@@ -3175,19 +3175,14 @@ bool CanBusMotionControl::disablePidRaw(int axis)
     return _writeNone (CAN_CONTROLLER_IDLE, axis);
 }
 
-bool CanBusMotionControl::setPositionMode()
+bool CanBusMotionControl::setPositionModeRaw()
 {
-    return NOT_YET_IMPLEMENTED("setPositionMode");
+    return NOT_YET_IMPLEMENTED("setPositionModeRaw");
 }
 
-/*bool CanBusMotionControl::setOpenLoopModeRaw()
+bool CanBusMotionControl::setOpenLoopModeRaw()
 {
     return NOT_YET_IMPLEMENTED("setOpenLoopModeRaw");
-}*/
-
-bool CanBusMotionControl::setOpenLoopMode(int axis)
-{
-    return NOT_YET_IMPLEMENTED("setOpenLoopMode");
 }
 
 bool CanBusMotionControl::setTorqueModeRaw()
@@ -3195,7 +3190,7 @@ bool CanBusMotionControl::setTorqueModeRaw()
     return NOT_YET_IMPLEMENTED("setTorqueModeRaw");
 }
 
-bool CanBusMotionControl::setVelocityMode()
+bool CanBusMotionControl::setVelocityModeRaw()
 {
     return NOT_YET_IMPLEMENTED("setVelocityModeRaw");
 }

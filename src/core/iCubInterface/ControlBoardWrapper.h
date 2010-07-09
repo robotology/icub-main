@@ -630,6 +630,12 @@ public:
         return false;
     }
 
+    virtual bool setOpenLoopMode() {
+        if (iOpenLoop)
+            return iOpenLoop->setOpenLoopMode();
+        return false;
+    }
+
     /** 
     * Set new reference point for a single axis.
     * @param j joint number
