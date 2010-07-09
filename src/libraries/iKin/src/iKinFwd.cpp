@@ -1504,7 +1504,7 @@ void iCubLeg::allocate(const string &_type)
         H0(1,3)=0.0681;
 
         linkList[0]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
-        linkList[1]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -17.0*CTRL_DEG2RAD, 119.0*CTRL_DEG2RAD);
         linkList[2]=new iKinLink(   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
         linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
         linkList[4]=new iKinLink(   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
@@ -1515,7 +1515,7 @@ void iCubLeg::allocate(const string &_type)
         H0(1,3)=-0.0681;
 
         linkList[0]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
-        linkList[1]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -17.0*CTRL_DEG2RAD, 119.0*CTRL_DEG2RAD);
         linkList[2]=new iKinLink(   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
         linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
         linkList[4]=new iKinLink(   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
