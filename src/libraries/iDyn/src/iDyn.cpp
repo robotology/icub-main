@@ -25,6 +25,7 @@
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
+using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace ctrl;
@@ -1550,13 +1551,45 @@ void iCubArmDyn::allocate(const string &_type)
     for(unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
 
-    //blockLink(0,0.0);
-    //blockLink(1,0.0);
-    //blockLink(2,0.0);
+    blockLink(0,0.0);
+    blockLink(1,0.0);
+    blockLink(2,0.0);
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubArmDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<2)
+        return false;
 
+    IControlLimits &limTorso=*lim[0];
+    IControlLimits &limArm  =*lim[1];
+
+    unsigned int iTorso;
+    unsigned int iArm;
+    double min, max;
+
+    for (iTorso=0; iTorso<3; iTorso++)
+    {   
+        if (!limTorso.getLimits(iTorso,&min,&max))
+            return false;
+
+        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+    }
+
+    for (iArm=0; iArm<getN()-iTorso; iArm++)
+    {   
+        if (!limArm.getLimits(iArm,&min,&max))
+            return false;
+
+        (*this)[iTorso+iArm].setMin(CTRL_DEG2RAD*min);
+        (*this)[iTorso+iArm].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -1625,6 +1658,28 @@ void iCubArmNoTorsoDyn::allocate(const string &_type)
         *this << *linkList[i];
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubArmNoTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<1)
+        return false;
+
+     IControlLimits &limArm  =*lim[0];
+
+    unsigned int iArm;
+    double min, max;
+
+    for (iArm=0; iArm<getN(); iArm++)
+    {   
+        if (!limArm.getLimits(iArm,&min,&max))
+            return false;
+
+        (*this)[iArm].setMin(CTRL_DEG2RAD*min);
+        (*this)[iArm].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -1684,6 +1739,29 @@ void iCubTorsoDyn::allocate(const string &_type)
         *this << *linkList[i];
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<1)
+        return false;
+
+    IControlLimits &limTorso=*lim[0];
+
+    unsigned int iTorso;
+    double min, max;
+
+    for (iTorso=0; iTorso<3; iTorso++)
+    {   
+        if (!limTorso.getLimits(iTorso,&min,&max))
+            return false;
+
+        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 
@@ -1771,6 +1849,31 @@ void iCubLegDyn::allocate(const string &_type)
         *this << *linkList[i];
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubLegDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<1)
+        return false;
+
+    IControlLimits &limLeg=*lim[0];
+
+    unsigned int iLeg;
+    double min, max;
+
+    for (iLeg=0; iLeg<getN(); iLeg++)
+    {   
+        if (!limLeg.getLimits(iLeg,&min,&max))
+            return false;
+
+        (*this)[iLeg].setMin(CTRL_DEG2RAD*min);
+        (*this)[iLeg].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 //======================================
 //
@@ -1902,6 +2005,40 @@ void iCubEyeDyn::allocate(const string &_type)
     blockLink(2,0.0);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubEyeDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<2)
+        return false;
+
+    IControlLimits &limTorso=*lim[0];
+    IControlLimits &limHead =*lim[1];
+
+    unsigned int iTorso;
+    unsigned int iHead;
+    double min, max;
+
+    for (iTorso=0; iTorso<3; iTorso++)
+    {   
+        if (!limTorso.getLimits(iTorso,&min,&max))
+            return false;
+
+        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+    }
+
+    for (iHead=0; iHead<getN()-iTorso; iHead++)
+    {   
+        if (!limHead.getLimits(iHead,&min,&max))
+            return false;
+
+        (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);
+        (*this)[iTorso+iHead].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 //======================================
@@ -1941,6 +2078,9 @@ void iCubEyeNeckRefDyn::allocate(const string &_type)
     linkList.erase(linkList.begin(),linkList.begin()+2);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 ////////////////////////////////////////
 //		ICUB INERTIAL SENSOR DYN            
@@ -1992,6 +2132,43 @@ void iCubInertialSensorDyn::allocate(const string &_type)
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubInertialSensorDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<2)
+        return false;
+
+    IControlLimits &limTorso=*lim[0];
+    IControlLimits &limHead =*lim[1];
+
+    unsigned int iTorso;
+    unsigned int iHead;
+    double min, max;
+
+    for (iTorso=0; iTorso<3; iTorso++)
+    {   
+        if (!limTorso.getLimits(iTorso,&min,&max))
+            return false;
+
+        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+    }
+
+    // only the neck
+    for (iHead=0; iHead<3; iHead++)
+    {   
+        if (!limHead.getLimits(iHead,&min,&max))
+            return false;
+
+        (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);
+        (*this)[iTorso+iHead].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 ////////////////////////////////////////
 //		ICUB INERTIAL SENSOR DYN            
@@ -2038,6 +2215,30 @@ void iCubNeckInertialDyn::allocate(const string &_type)
     // block virtual links
     blockLink(3,0.0);
 
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<1)
+        return false;
+
+    IControlLimits &limHead =*lim[1];
+
+    unsigned int iTorso;
+    unsigned int iHead;
+    double min, max;
+
+    // only the neck
+    for (iHead=0; iHead<3; iHead++)
+    {   
+        if (!limHead.getLimits(iHead,&min,&max))
+            return false;
+
+        (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);
+        (*this)[iTorso+iHead].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -54,11 +54,16 @@
 #ifndef __IDYN_H__
 #define __IDYN_H__
 
+#include <yarp/os/Property.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
+
 #include <iCub/ctrl/ctrlMath.h>
+
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iDyn/iDynInv.h>
+
 #include <deque>
 #include <string>
 
@@ -1038,8 +1043,23 @@ public:
     */
     virtual ~iDynLimb();
 
+	/**
+    * Alignes the Limb joints bounds with current values set aboard 
+    * the robot - see also iKin.
+	* This method is empty in iDynLimb because it's limb-specific: see
+	* the implementations for iCubLimbs.
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Limb limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim)
+	{ return true; }
 
-	// base methods - see iKin
+
+	// base methods - see also iKin.
+    // Since iDynLimb is derived with protected modifier from iDynChain in order to make some methods hidden
+    // to the user such as addLink, rmLink and so on, all the remaining public methods have to be
+    // redeclared hereafter and simply inherited
 
 	unsigned int      getN() const                                                    { return N;                                   }
 	unsigned int      getNTOT()														  { return iDynChain::getNTOT();                }
@@ -1203,6 +1223,16 @@ public:
     * @param arm is the Arm to be copied.
     */
     iCubArmDyn(const iCubArmDyn &arm);
+
+	/**
+    * Alignes the Arm joints bounds with current values set aboard 
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso and the Arm limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
 };
 
 
@@ -1235,6 +1265,16 @@ public:
     * @param arm is the Arm to be copied.
     */
     iCubArmNoTorsoDyn(const iCubArmNoTorsoDyn &arm);
+
+	/**
+    * Alignes the Arm joints bounds with current values set aboard 
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Arm limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
 };
 
 
@@ -1266,6 +1306,17 @@ public:
     * @param torso is the Torso to be copied.
     */
     iCubTorsoDyn(const iCubTorsoDyn &torso);
+
+	/**
+    * Alignes the Torso joints bounds with current values set aboard 
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
+
 };
 
 
@@ -1297,6 +1348,16 @@ public:
     * @param leg is the Leg to be copied.
     */
     iCubLegDyn(const iCubLegDyn &leg);
+
+    /**
+    * Alignes the Leg joints bounds with current values set aboard 
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Leg limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
 };
 
 /**
@@ -1325,6 +1386,7 @@ public:
     * @param leg is the Leg to be copied.
     */
     iCubLegNoTorsoDyn(const iCubLegNoTorsoDyn &leg);
+
 };
 
 /**
@@ -1355,6 +1417,16 @@ public:
     * @param eye is the Eye to be copied.
     */
     iCubEyeDyn(const iCubEyeDyn &eye);
+
+    /**
+    * Alignes the Eye joints bounds with current values set aboard 
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso and the Head limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
 };
 
 
@@ -1411,6 +1483,16 @@ public:
     * @param sensor is the object to be copied.
     */
     iCubInertialSensorDyn(const iCubInertialSensorDyn &sensor);
+
+    /**
+    * Alignes the Inertial Sensor joints bounds with current values 
+    * set aboard the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso and the Head limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
 };
 
 /**
@@ -1434,6 +1516,16 @@ public:
     * @param sensor is the object to be copied.
     */
     iCubNeckInertialDyn(const iCubInertialSensorDyn &sensor);
+
+    /**
+    * Alignes the Inertial Sensor joints bounds with current values 
+    * set aboard the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the limb limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
 };
 
 
