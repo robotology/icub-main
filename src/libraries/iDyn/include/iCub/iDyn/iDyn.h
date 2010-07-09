@@ -1213,8 +1213,7 @@ public:
 
     /**
     * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
-    *              "right" arm
+    * @param _type is a string to discriminate between "left" and "right" arm
     */
     iCubArmDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
 
@@ -1449,8 +1448,7 @@ public:
 
     /**
     * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
-    *              "right" eye
+    * @param _type is a string to discriminate between "left" and "right" eye
     */
     iCubEyeNeckRefDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
 
@@ -1459,6 +1457,15 @@ public:
     * @param eye is the Eye to be copied.
     */
     iCubEyeNeckRefDyn(const iCubEyeNeckRefDyn &eye);
+
+	/**
+    * Alignes the Eye joints bounds with current values set aboard 
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso and the Head limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
 
 

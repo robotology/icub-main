@@ -1310,18 +1310,18 @@ void iDynSensorTorsoNode::build()
 	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(left),mode,verbose);
 	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
 
-	HUp.resize(4,4);	HUp.zero();//eye();
-	HLeft.resize(4,4);	HLeft.zero();//eye();
-	HRight.resize(4,4);	HRight.zero();//eye();
+	HUp.resize(4,4);	HUp.zero();
+	HLeft.resize(4,4);	HLeft.zero();
+	HRight.resize(4,4);	HRight.zero();
 
 	// order: head - right - left
 	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
 	addLimb(right,HRight,rightSensor,RBT_NODE_OUT,RBT_NODE_IN);
 	addLimb(left,HLeft,leftSensor,RBT_NODE_OUT,RBT_NODE_IN);
 
-	left_name = "defUP";//left_arm";
-	right_name= "defRight";//right_arm";
-	up_name	  = "defLeft";//"head";
+	left_name = "default_up";
+	right_name= "default_right";
+	up_name	  = "default_left";
 	name	  = "default_upper_torso";
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1706,16 +1706,18 @@ void iCubLowerTorso::build()
 	leftSensor = new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(left),mode,verbose);
 	rightSensor= new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(right),mode,verbose);
 
-	HUp.resize(4,4);	HUp.zero();HUp=eye(4,4);//SE3inv(up->getH0());
-	HLeft.resize(4,4);	HLeft.zero();//=left->getH0();
-	HLeft(2,0)=-1.0;	HLeft(0,1)=-1.0;	HLeft(2,2)=-1.0; HLeft(3,3)=1.0;
-	HRight.resize(4,4);	HRight = HLeft;
+	HUp.resize(4,4);	HUp.zero(); HUp=eye(4,4);
+	HLeft.resize(4,4);	HRight.resize(4,4);
+	
+	// left and right RBT have a common part
+	HLeft.zero();
+	HLeft(2,0)=-1.0;	HLeft(0,1)=-1.0;	
+	HLeft(2,2)=-1.0;	HLeft(3,3)=1.0;		
+	HRight = HLeft;
+	// left part
 	HLeft(0,3)=-0.1199;	HLeft(2,3)=0.0681;
+	// right part
 	HRight(0,3)=-0.1199;HRight(2,3)=-0.0681;
-	Matrix H(4,4);H.zero();H.eye();
-	//up->setH0(H);
-	//left->setH0(H);
-	//right->setH0(H);
 
 	// order: torso - right leg - left leg
 	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
