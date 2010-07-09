@@ -375,7 +375,7 @@ public:
     //
     /// POSITION CONTROL INTERFACE RAW
     virtual bool getAxes(int *ax);
-    virtual bool setPositionMode();
+    virtual bool setPositionModeRaw();
     virtual bool positionMoveRaw(int j, double ref);
     virtual bool positionMoveRaw(const double *refs);
     virtual bool relativeMoveRaw(int j, double delta);
@@ -448,7 +448,7 @@ public:
 
 	///////////// OpenLoop control interface raw
     ///
-	virtual bool setOpenLoopMode(int axis);
+	virtual bool setOpenLoopModeRaw();
     virtual bool setOutputRaw(int axis, double v);
     virtual bool setOutputsRaw(const double *v);
     //virtual bool getOutputRaw(int j, double *out); //already in PID interface
@@ -458,7 +458,7 @@ public:
 
     ///////////// Velocity control interface raw
     ///
-    virtual bool setVelocityMode();
+    virtual bool setVelocityModeRaw();
     virtual bool velocityMoveRaw(int j, double sp);
     virtual bool velocityMoveRaw(const double *sp);
     //
@@ -572,8 +572,11 @@ protected:
         else
             if (x >= double(MAX_SHORT))
                 return MAX_SHORT;
-            else
-                return short(x + .5);
+        else
+            if  (x>0)
+				return short(x + .5);
+			else
+				return short(x - .5);
     }
 
     inline int S_32(double x) const
@@ -583,8 +586,11 @@ protected:
         else
             if (x >= double(MAX_INT))
                 return MAX_INT;
-            else
-                return int(x + .5);
+        else
+            if  (x>0)
+				return int(x + .5);
+			else
+				return int(x - .5);
     }
 };
 
