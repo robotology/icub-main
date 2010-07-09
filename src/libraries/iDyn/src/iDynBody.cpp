@@ -1310,18 +1310,18 @@ void iDynSensorTorsoNode::build()
 	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(left),mode,verbose);
 	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
 
-	HUp.resize(4,4);	HUp.eye();
-	HLeft.resize(4,4);	HLeft.eye();
-	HRight.resize(4,4);	HRight.eye();
+	HUp.resize(4,4);	HUp.zero();//eye();
+	HLeft.resize(4,4);	HLeft.zero();//eye();
+	HRight.resize(4,4);	HRight.zero();//eye();
 
 	// order: head - right - left
 	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
 	addLimb(right,HRight,rightSensor,RBT_NODE_OUT,RBT_NODE_IN);
 	addLimb(left,HLeft,leftSensor,RBT_NODE_OUT,RBT_NODE_IN);
 
-	left_name = "left_arm";
-	right_name= "right_arm";
-	up_name	  = "head";
+	left_name = "defUP";//left_arm";
+	right_name= "defRight";//right_arm";
+	up_name	  = "defLeft";//"head";
 	name	  = "default_upper_torso";
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1706,16 +1706,16 @@ void iCubLowerTorso::build()
 	leftSensor = new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(left),mode,verbose);
 	rightSensor= new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(right),mode,verbose);
 
-	HUp.resize(4,4);	HUp=SE3inv(up->getH0());
+	HUp.resize(4,4);	HUp.zero();HUp=eye(4,4);//SE3inv(up->getH0());
 	HLeft.resize(4,4);	HLeft.zero();//=left->getH0();
 	HLeft(2,0)=-1.0;	HLeft(0,1)=-1.0;	HLeft(2,2)=-1.0; HLeft(3,3)=1.0;
 	HRight.resize(4,4);	HRight = HLeft;
 	HLeft(0,3)=-0.1199;	HLeft(2,3)=0.0681;
 	HRight(0,3)=-0.1199;HRight(2,3)=-0.0681;
-	
-	up->setH0(eye(4,4));
-	left->setH0(eye(4,4));
-	right->setH0(eye(4,4));
+	Matrix H(4,4);H.zero();H.eye();
+	//up->setH0(H);
+	//left->setH0(H);
+	//right->setH0(H);
 
 	// order: torso - right leg - left leg
 	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
@@ -1761,12 +1761,19 @@ void iCubWholeBody::attachTorso()
 	// take the w,dw,ddp,F,Mu from upperTorso, apply the RBT, and set the 
 	// kinematic and wrench variables into the lowerTorso
 	//rbt->setKinematic(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+
+	lowerTorso->setKinematicMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+
 	//lowerTorso->setKinematicMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
-	lowerTorso->setInertialMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+	// revision6047 lowerTorso->setInertialMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
 
 	//rbt->setWrench(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());	
-	//lowerTorso->setWrenchMeasure(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+
 	lowerTorso->up->initWrenchNewtonEuler(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+
+	//lowerTorso->setWrenchMeasure(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+	// revision 6047 lowerTorso->up->initWrenchNewtonEuler(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
