@@ -73,7 +73,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData *_commDa
         nJoints=ctrlTorso ? nJointsTorso+nJointsArm : nJointsArm;
 
         // joints bounds alignment
-        alignJointsBounds(chain,limTorso,limArm);
+        arm->alignJointsBounds(limTorso,limArm);
 
         // arm's starting position
         fb.resize(nJoints,0.0);

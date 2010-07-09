@@ -68,11 +68,6 @@ public:
 iCubArm *createArm(const string &partName, bool ctrlTorso);
 
 
-// Aligns chain's joints bounds with current onboard constraints.
-void alignJointsBounds(iKinChain *chain, IControlLimits *limTorso,
-                       IControlLimits *limArm);
-
-
 // Reads encoders values, handling all control's conditions.
 // If torso joints are not controlled, update corresponding chain's angles.
 // Returns true if communication with robot is stable, false otherwise.

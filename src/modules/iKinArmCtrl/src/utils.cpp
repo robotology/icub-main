@@ -77,30 +77,6 @@ iCubArm *createArm(const string &partName, bool ctrlTorso)
 
 
 /************************************************************************/
-void alignJointsBounds(iKinChain *chain, IControlLimits *limTorso,
-                       IControlLimits *limArm)
-{
-    double min, max;
-
-    for (unsigned int i=0; i<3; i++)
-    {   
-        limTorso->getLimits(i,&min,&max);
-
-        (*chain)[2-i].setMin(CTRL_DEG2RAD*min);
-        (*chain)[2-i].setMax(CTRL_DEG2RAD*max);
-    }
-
-    for (unsigned int i=0; i<7; i++)
-    {   
-        limArm->getLimits(i,&min,&max);
-
-        (*chain)[3+i].setMin(CTRL_DEG2RAD*min);
-        (*chain)[3+i].setMax(CTRL_DEG2RAD*max);
-    }
-}
-
-
-/************************************************************************/
 bool getFeedback(Vector &fb, iKinChain *chain, IEncoders *encTorso,
                  IEncoders *encArm, int nJointsTorso, int nJointsArm,
                  bool ctrlTorso)
