@@ -24,7 +24,7 @@
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
-#include <iCub/iDyn/iDynFwd.h>
+#include <iCub/iDyn/iDynInv.h>
 
 #include <iostream>
 #include <iomanip>
