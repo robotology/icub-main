@@ -895,6 +895,7 @@ protected:
     friend class touchCallback;
 
     virtual void init();
+    virtual void alignJointsBounds();
     virtual void postReachCallback();
     virtual void run();
 

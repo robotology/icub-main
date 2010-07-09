@@ -1866,6 +1866,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         // create dynamics
         string type=(part=="right_arm"?"right":"left");
         dynArm=new iCubArmDyn(type);
+        alignJointsBounds();
 
         dynSensor=new iDynInvSensorArm(dynArm,DYNAMIC);
         dynTransformer=new iFTransformation(dynSensor);
@@ -1894,6 +1895,23 @@ bool affActionPrimitivesLayer2::open(Property &opt)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+void affActionPrimitivesLayer2::alignJointsBounds()
+{
+    IControlLimits *limTorso;
+    IControlLimits *limHand;
+
+    polyTorso->view(limTorso);
+    polyHand->view(limHand);
+    
+    deque<IControlLimits*> lim;
+    lim.push_back(limTorso);
+    lim.push_back(limHand);
+
+    dynArm->alignJointsBounds(lim);
 }
 
 
