@@ -1466,15 +1466,21 @@ void iCubArm::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubArm::alignJointsBounds(IControlLimits *limTorso, IControlLimits *limArm)
+bool iCubArm::alignJointsBounds(deque<IControlLimits*> lim)
 {
+    if (lim.size()<2)
+        return false;
+
+    IControlLimits &limTorso=*lim[0];
+    IControlLimits &limArm  =*lim[1];
+
     unsigned int iTorso;
     unsigned int iArm;
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
     {   
-        if (!limTorso->getLimits(iTorso,&min,&max))
+        if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
         (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
@@ -1483,7 +1489,7 @@ bool iCubArm::alignJointsBounds(IControlLimits *limTorso, IControlLimits *limArm
 
     for (iArm=0; iArm<getN()-iTorso; iArm++)
     {   
-        if (!limArm->getLimits(iArm,&min,&max))
+        if (!limArm.getLimits(iArm,&min,&max))
             return false;
 
         (*this)[iTorso+iArm].setMin(CTRL_DEG2RAD*min);
@@ -1558,14 +1564,19 @@ void iCubLeg::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubLeg::alignJointsBounds(IControlLimits *limLeg)
+bool iCubLeg::alignJointsBounds(deque<IControlLimits*> lim)
 {
+    if (lim.size()<1)
+        return false;
+
+    IControlLimits &limLeg=*lim[0];
+
     unsigned int iLeg;
     double min, max;
 
     for (iLeg=0; iLeg<getN(); iLeg++)
     {   
-        if (!limLeg->getLimits(iLeg,&min,&max))
+        if (!limLeg.getLimits(iLeg,&min,&max))
             return false;
 
         (*this)[iLeg].setMin(CTRL_DEG2RAD*min);
@@ -1643,15 +1654,21 @@ void iCubEye::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubEye::alignJointsBounds(IControlLimits *limTorso, IControlLimits *limHead)
+bool iCubEye::alignJointsBounds(deque<IControlLimits*> lim)
 {
+    if (lim.size()<2)
+        return false;
+
+    IControlLimits &limTorso=*lim[0];
+    IControlLimits &limHead =*lim[1];
+
     unsigned int iTorso;
     unsigned int iHead;
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
     {   
-        if (!limTorso->getLimits(iTorso,&min,&max))
+        if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
         (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
@@ -1660,7 +1677,7 @@ bool iCubEye::alignJointsBounds(IControlLimits *limTorso, IControlLimits *limHea
 
     for (iHead=0; iHead<getN()-iTorso; iHead++)
     {   
-        if (!limHead->getLimits(iHead,&min,&max))
+        if (!limHead.getLimits(iHead,&min,&max))
             return false;
 
         (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);
@@ -1754,15 +1771,21 @@ void iCubInertialSensor::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubInertialSensor::alignJointsBounds(IControlLimits *limTorso, IControlLimits *limHead)
+bool iCubInertialSensor::alignJointsBounds(deque<IControlLimits*> lim)
 {
+    if (lim.size()<2)
+        return false;
+
+    IControlLimits &limTorso=*lim[0];
+    IControlLimits &limHead =*lim[1];
+
     unsigned int iTorso;
     unsigned int iHead;
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
     {   
-        if (!limTorso->getLimits(iTorso,&min,&max))
+        if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
         (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
@@ -1772,7 +1795,7 @@ bool iCubInertialSensor::alignJointsBounds(IControlLimits *limTorso, IControlLim
     // only the neck
     for (iHead=0; iHead<3; iHead++)
     {   
-        if (!limHead->getLimits(iHead,&min,&max))
+        if (!limHead.getLimits(iHead,&min,&max))
             return false;
 
         (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);

@@ -39,7 +39,10 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData 
         nJoints=ctrlTorso ? nJointsTorso+nJointsArm : nJointsArm;
             
         // joints bounds alignment
-        arm->alignJointsBounds(limTorso,limArm);
+        deque<IControlLimits*> lim;
+        lim.push_back(limTorso);
+        lim.push_back(limArm);
+        arm->alignJointsBounds(lim);
 
         // exclude acceleration constraints by fixing
         // thresholds at high values

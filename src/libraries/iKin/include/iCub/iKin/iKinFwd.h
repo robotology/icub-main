@@ -852,6 +852,15 @@ public:
     */
     std::string getType() { return type; }
 
+    /**
+    * Alignes the Limb joints bounds with current values set aboard 
+    * the robot. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Limb limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim) { return true; }
+
     // Since iKinLimb is derived with protected modifier from iKinChain in order to make some methods hidden
     // to the user such as addLink, rmLink and so on, all the remaining public methods have to be
     // redeclared hereafter and simply inherited
@@ -924,15 +933,13 @@ public:
     iCubArm(const iCubArm &arm);
 
     /**
-    * Alignes the Arm joints bounds with current values set aboard
+    * Alignes the Arm joints bounds with current values set aboard 
     * the iCub. 
-    * @param limTorso is the control interface that allows access to
-    *                 the Torso limits.
-    * @param limArm is the control interface that allows access to 
-    *               the Arm limits.
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso and the Arm limits.
     * @return true/false on success/failure. 
     */
-    bool alignJointsBounds(yarp::dev::IControlLimits *limTorso, yarp::dev::IControlLimits *limArm);
+    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
 };
 
 
@@ -966,13 +973,13 @@ public:
     iCubLeg(const iCubLeg &leg);
 
     /**
-    * Alignes the Leg joints bounds with current values set aboard
+    * Alignes the Leg joints bounds with current values set aboard 
     * the iCub. 
-    * @param limLeg is the control interface that allows access to 
-    *               the Leg limits.
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Leg limits.
     * @return true/false on success/failure. 
     */
-    bool alignJointsBounds(yarp::dev::IControlLimits *limLeg);
+    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
 };
 
 
@@ -1006,15 +1013,13 @@ public:
     iCubEye(const iCubEye &eye);
 
     /**
-    * Alignes the Eye joints bounds with current values set aboard
+    * Alignes the Eye joints bounds with current values set aboard 
     * the iCub. 
-    * @param limTorso is the control interface that allows access to
-    *                 the Torso limits.
-    * @param limHead is the control interface that allows access to 
-    *               the Head limits.
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso and Head limits.
     * @return true/false on success/failure. 
     */
-    bool alignJointsBounds(yarp::dev::IControlLimits *limTorso, yarp::dev::IControlLimits *limHead);
+    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
 };
 
 
@@ -1075,13 +1080,11 @@ public:
     /**
     * Alignes the Inertial Sensor joints bounds with current values 
     * set aboard the iCub. 
-    * @param limTorso is the control interface that allows access to
-    *                 the Torso limits.
-    * @param limHead is the control interface that allows access to 
-    *               the Head limits.
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso and Head limits.
     * @return true/false on success/failure. 
     */
-    bool alignJointsBounds(yarp::dev::IControlLimits *limTorso, yarp::dev::IControlLimits *limHead);
+    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
 };
 
 }
