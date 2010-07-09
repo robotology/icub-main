@@ -93,6 +93,7 @@ private:
     IPidControl *iPids;
     IEncoders *iEncoders;
     IPositionControl *iPosition;
+	IControlMode *iControlMode;
 
     unsigned char *type;
 	double *param1;

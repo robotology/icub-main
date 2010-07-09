@@ -143,8 +143,9 @@ bool iCubArmCalibratorJ4::calibrate(DeviceDriver *dd)
     iEncoders = dynamic_cast<IEncoders *>(dd);
     iPosition = dynamic_cast<IPositionControl *>(dd);
     iPids = dynamic_cast<IPidControl *>(dd);
+	iControlMode = dynamic_cast<IControlMode *>(dd);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids))
+    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
         return false;
 
     // ok we have all interfaces
