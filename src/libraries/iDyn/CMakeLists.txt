@@ -24,7 +24,6 @@ ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} iKin
                                      ${YARP_LIBRARIES})
 				   
-
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                    DESTINATION include/iCub/iDyn
                                    DEPENDS iKin
