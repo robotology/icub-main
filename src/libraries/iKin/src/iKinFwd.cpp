@@ -1466,7 +1466,7 @@ void iCubArm::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubArm::alignJointsBounds(deque<IControlLimits*> lim)
+bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
 {
     if (lim.size()<2)
         return false;
@@ -1564,7 +1564,7 @@ void iCubLeg::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubLeg::alignJointsBounds(deque<IControlLimits*> lim)
+bool iCubLeg::alignJointsBounds(const deque<IControlLimits*> &lim)
 {
     if (lim.size()<1)
         return false;
@@ -1654,7 +1654,7 @@ void iCubEye::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubEye::alignJointsBounds(deque<IControlLimits*> lim)
+bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
 {
     if (lim.size()<2)
         return false;
@@ -1771,7 +1771,7 @@ void iCubInertialSensor::allocate(const string &_type)
 
 
 /************************************************************************/
-bool iCubInertialSensor::alignJointsBounds(deque<IControlLimits*> lim)
+bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
 {
     if (lim.size()<2)
         return false;

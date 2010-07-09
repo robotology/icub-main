@@ -859,7 +859,7 @@ public:
     *            allows to access the Limb limits.
     * @return true/false on success/failure. 
     */
-    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim) { return true; }
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim) { return true; }
 
     // Since iKinLimb is derived with protected modifier from iKinChain in order to make some methods hidden
     // to the user such as addLink, rmLink and so on, all the remaining public methods have to be
@@ -939,7 +939,7 @@ public:
     *            allows to access the Torso and the Arm limits.
     * @return true/false on success/failure. 
     */
-    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
 
 
@@ -979,7 +979,7 @@ public:
     *            allows to access the Leg limits.
     * @return true/false on success/failure. 
     */
-    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
 
 
@@ -1019,7 +1019,7 @@ public:
     *            allows to access the Torso and the Head limits.
     * @return true/false on success/failure. 
     */
-    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
 
 
@@ -1084,7 +1084,7 @@ public:
     *            allows to access the Torso and the Head limits.
     * @return true/false on success/failure. 
     */
-    virtual bool alignJointsBounds(std::deque<yarp::dev::IControlLimits*> lim);
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
 
 }
