@@ -4,10 +4,8 @@ PROJECT(${PROJECTNAME})
 
 SET(folder_source main.cpp)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
-FIND_PACKAGE(YARP)
-FIND_PACKAGE(ICUB)
+
 INCLUDE_DIRECTORIES(${iDyn_INCLUDE_DIRS}
-					${ctrlLib_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
