@@ -1866,12 +1866,12 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         // create dynamics
         string type=(part=="right_arm"?"right":"left");
         dynArm=new iCubArmDyn(type);
-        alignJointsBounds();
-
         dynSensor=new iDynInvSensorArm(dynArm,DYNAMIC);
         dynTransformer=new iFTransformation(dynSensor);
 
         // configure dynamics
+        alignJointsBounds();
+
         Vector zeros(3), accFrame0(3);
         zeros=accFrame0=0.0;
         accFrame0[2]=9.81; // along z-component
