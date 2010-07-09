@@ -858,6 +858,9 @@ public:
     * @param lim is the ordered list of control interfaces that 
     *            allows to access the Limb limits.
     * @return true/false on success/failure. 
+    *  
+    * @note This method is empty in iKinLimb because it's 
+    * limb-specific: see the implementations for iCubLimbs. 
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim) { return true; }
 
