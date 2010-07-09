@@ -2396,7 +2396,7 @@ bool CanBusMotionControl::setPositionModeRaw(int j)
         return false;
 
 	DEBUG("Calling SET_CONTROL_MODE (position)\n");
-	return _writeByte8(CAN_SET_CONTROL_MODE,j,1);
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_POSITION);
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw(int j)
@@ -2404,15 +2404,17 @@ bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 	if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-	DEBUG("Calling SET_CONTROL_MODE (position)\n");
-	//@@@ I'M SETTING HERE THE 0x50 CAN MESSAGE
+	DEBUG("Calling SET_CONTROL_MODE (open loop)\n");
 	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_OPENLOOP);
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
-    fprintf(stderr, "setVelocityModeRaw(): not yet implemented\n");
-    return false;
+	if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+	DEBUG("Calling SET_CONTROL_MODE (velocity)\n");
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_VELOCITY);
 }
 
 bool CanBusMotionControl::setTorqueModeRaw(int j)
