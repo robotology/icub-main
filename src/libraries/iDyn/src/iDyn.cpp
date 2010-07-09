@@ -1714,8 +1714,8 @@ void iCubTorsoDyn::allocate(const string &_type)
 		type = "lower";
 
     H0.zero();
-    H0(0,1)=-1;	H0(1,2)=-1;
-    H0(2,0)=1;	H0(3,3)=1;
+    /*H0(0,1)=-1;	H0(1,2)=-1;
+    H0(2,0)=1;	H0(3,3)=1;*/
 	H0.eye();
 
     linkList.resize(3);
@@ -1723,15 +1723,23 @@ void iCubTorsoDyn::allocate(const string &_type)
     if (type=="lower")
     {
 		//      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
-        linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,  M_PI/2.0,                   0.0,  -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.001,  M_PI/2.0,            -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,  -0.1933,  -M_PI/2.0,             -M_PI/2.0, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+
+        linkList[0]=new iDynLink(0,	0,	0,  0,		0,0,0,  0,0,0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+		linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+		linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
+   
+
     }
     else
     {
+		linkList[0]=new iDynLink(0,	0,	0,  0,		0,0,0,  0,0,0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+		linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+		linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
+   
         linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,  M_PI/2.0,                 0.0,   -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
         linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.001,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
         linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,  -0.1933,  -M_PI/2.0,            -M_PI/2.0, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+
     }
 
 	//insert in the allList
