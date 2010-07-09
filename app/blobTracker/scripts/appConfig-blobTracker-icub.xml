@@ -1,0 +1,74 @@
+<application>
+  <name>blobTracker</name>
+	<dependencies>
+		<port>/icub/cam/left</port> 
+		<port>/icub/cam/right</port> 		
+	</dependencies>
+	<module>
+		<name>hsiDetector</name>
+		<parameters>--name hsiDetector/icub/left</parameters>
+		<tag>hsiDetector/icub/left</tag>
+		<node>icub-b4</node>
+	</module>
+	<module>
+		<name>hsiDetector</name>
+		<parameters>--name hsiDetector/icub/right</parameters>
+		<tag>hsiDetector/icub/right</tag>
+		<node>icub-b4</node>
+	</module>
+	<module>
+		<name>blobTracker</name>
+		<parameters>--name blobTracker/icub/left/sat --filter off</parameters>
+		<tag>blobTracker/icub/left</tag>
+		<node>icub-b5</node>
+	</module>
+	<module>
+		<name>blobTracker</name>
+		<parameters>--name blobTracker/icub/right/sat --filter off</parameters>
+		<tag>blobTracker/icub/right</tag>
+		<node>icub-b5</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /blobView/icub/left</parameters>
+		<tag>blobView/icub/left</tag>
+		<node>icub15</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /blobView/icub/right</parameters>
+		<tag>blobView/icub/right</tag>
+		<node>icub15</node>
+	</module>
+
+	<connection>
+		<from>/icub/cam/left</from>
+		<to>/hsiDetector/icub/left/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/icub/cam/right</from>
+		<to>/hsiDetector/icub/right/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/hsiDetector/icub/left/sat/img:o</from>
+		<to>/blobTracker/icub/left/sat/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/hsiDetector/icub/right/sat/img:o</from>
+		<to>/blobTracker/icub/right/sat/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/blobTracker/icub/left/sat/img:o</from>
+		<to>/blobView/icub/left</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+		<from>/blobTracker/icub/right/sat/img:o</from>
+		<to>/blobView/icub/right</to>
+		<protocol>tcp</protocol>
+	</connection>
+</application>
