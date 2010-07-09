@@ -404,7 +404,7 @@ template <class DERIVED, class IMPLEMENT>
 bool ImplementPositionControl<DERIVED, IMPLEMENT>::setPositionMode()
 {
     if (helper==0) return false;
-    iPosition->setPositionMode();
+    iPosition->setPositionModeRaw();
     return true;
 }
 
@@ -638,7 +638,7 @@ bool ImplementVelocityControl<DERIVED, IMPLEMENT>::getAxes(int *axes)
 template <class DERIVED, class IMPLEMENT>
 bool ImplementVelocityControl<DERIVED, IMPLEMENT>::setVelocityMode()
 {
-    return iVelocity->setVelocityMode();
+    return iVelocity->setVelocityModeRaw();
 }
 
 template <class DERIVED, class IMPLEMENT>
