@@ -241,15 +241,15 @@ byte can_interface (void)
 				{
 				
 					case 0xa:
-					_strain[strain_num][0] = (BYTE_W(_canmsg.CAN_data[0],_canmsg.CAN_data[1])-0x7FFF);
-					_strain[strain_num][1] = (BYTE_W(_canmsg.CAN_data[2],_canmsg.CAN_data[3])-0x7FFF);
-					_strain[strain_num][2] = (BYTE_W(_canmsg.CAN_data[4],_canmsg.CAN_data[5])-0x7FFF);
+					_strain[strain_num][0] = (BYTE_W(_canmsg.CAN_data[0],_canmsg.CAN_data[1])-0x8000);
+					_strain[strain_num][1] = (BYTE_W(_canmsg.CAN_data[2],_canmsg.CAN_data[3])-0x8000);
+					_strain[strain_num][2] = (BYTE_W(_canmsg.CAN_data[4],_canmsg.CAN_data[5])-0x8000);
 					break;
 					
 					case 0xb:
-					_strain[strain_num][3] = (BYTE_W(_canmsg.CAN_data[0],_canmsg.CAN_data[1])-0x7FFF);
-					_strain[strain_num][4] = (BYTE_W(_canmsg.CAN_data[2],_canmsg.CAN_data[3])-0x7FFF);
-					_strain[strain_num][5] = (BYTE_W(_canmsg.CAN_data[4],_canmsg.CAN_data[5])-0x7FFF);
+					_strain[strain_num][3] = (BYTE_W(_canmsg.CAN_data[0],_canmsg.CAN_data[1])-0x8000);
+					_strain[strain_num][4] = (BYTE_W(_canmsg.CAN_data[2],_canmsg.CAN_data[3])-0x8000);
+					_strain[strain_num][5] = (BYTE_W(_canmsg.CAN_data[4],_canmsg.CAN_data[5])-0x8000);
 					break;
 				}
 				

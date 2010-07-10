@@ -109,15 +109,15 @@ Int16  _pid_limit_torque[JN] ;					// pid limit
 Int32  _pd_torque[JN] ;           			  	// pd portion of the pid
 Int32  _integral_torque[JN] ;					// store the sum of the integral component 
 Int16  _integral_limit_torque[JN] ;
-Int16  _kp_torque[JN] = INIT_ARRAY (10);		// PID gains: proportional... 
+Int16  _kp_torque[JN] = INIT_ARRAY (0);			// PID gains: proportional... 
 Int16  _kd_torque[JN] = INIT_ARRAY (0);			// ... derivative  ...
 Int16  _ki_torque[JN] = INIT_ARRAY (0);			// ... integral
 Int16  _ko_torque[JN] = INIT_ARRAY (0);			// offset 
 Int16  _kr_torque[JN] = INIT_ARRAY (10);		// scale factor (negative power of two) 
 
 // JOINT IMPEDANCE
-Int16  _ks_imp[JN] = INIT_ARRAY (20);			// stiffness coefficient
-Int16  _kd_imp[JN] = INIT_ARRAY (1);			// damping coefficient
+Int16  _ks_imp[JN] = INIT_ARRAY (0);			// stiffness coefficient
+Int16  _kd_imp[JN] = INIT_ARRAY (0);			// damping coefficient
 Int16  _ko_imp[JN] = INIT_ARRAY (0);			// offset
 
 		
