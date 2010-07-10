@@ -448,11 +448,7 @@ void CanBackDoor::onRead(Bottle &b)
 			   dval[i] = -fullScale;
 			   count_saturation++;
 		   }
-		   else
-		   {
-			   val[i] = (short int)(dval[i] / fullScale * 0x7fff)+0x8000; //check this!
-		   }
-		  
+		   val[i] = (short int)(dval[i] / fullScale * 0x7fff)+0x8000; //check this!
 	   }
 
        bus->startPacket();
