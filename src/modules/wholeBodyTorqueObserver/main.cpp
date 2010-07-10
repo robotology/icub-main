@@ -451,7 +451,6 @@ public:
 			fprintf(stderr,"%+.3lf\t", LLTorques(i));
 		}
 		
-		Time::delay(0.1);
 		
 		writeTorque(RLTorques, 2, port_RLTorques);
 		writeTorque(LLTorques, 2, port_LLTorques);
