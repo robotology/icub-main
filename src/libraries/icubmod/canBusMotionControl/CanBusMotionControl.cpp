@@ -438,15 +438,15 @@ void CanBackDoor::onRead(Bottle &b)
 		   double fullScale = ownerSensor->getScaleFactor()[i];
 		   if (dval[i] >  fullScale) 
 		   {
+			   fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
 			   dval[i] =  fullScale;
 			   count_saturation++;
-			   fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
 		   }
 		   else if (dval[i] < -fullScale)
 		   {
+			   fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
 			   dval[i] = -fullScale;
 			   count_saturation++;
-			   fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
 		   }
 		   else
 		   {
