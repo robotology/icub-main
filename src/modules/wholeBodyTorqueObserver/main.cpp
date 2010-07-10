@@ -10,7 +10,7 @@ Copyright (C) 2008 RobotCub Consortium
  
 Author: Matteo Fumagalli
  
-Date: first release 27/05/2010 
+Date: first release 8/07/2010 
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -398,6 +398,7 @@ public:
     bool threadInit()
     {       
 		calibrateOffset(10);
+        Time::delay(3.0);
         return true;
     }
 
@@ -409,10 +410,10 @@ public:
 		setLowerMeasure();
 		if (ft_arm_left!=0 && ft_arm_right!=0 && ft_leg_left!=0 && ft_leg_right!=0)
 		{
-			F_RArm = *ft_arm_right-Offset_RArm;
-			F_LArm = *ft_arm_left-Offset_LArm;
-			F_RLeg = *ft_leg_right-Offset_RLeg;
-			F_LLeg = *ft_leg_left-Offset_LLeg;
+			F_RArm = -1.0 * (*ft_arm_right-Offset_RArm);
+			F_LArm = -1.0 * (*ft_arm_left-Offset_LArm);
+			F_RLeg = -1.0 * (*ft_leg_right-Offset_RLeg);
+			F_LLeg = -1.0 * (*ft_leg_left-Offset_LLeg);
 		}
 
 		Vector F_up(6);
@@ -433,9 +434,14 @@ public:
 				
 		for(int i = 0;i<6;i++)
 		{
-			fprintf(stderr,"%+.3lf\t", Offset_LLeg(i));
+			fprintf(stderr,"%+.3lf\t", RATorques(i));
 		}
 		fprintf(stderr,"\n");
+		for(int i = 0;i<6;i++)
+		{
+			fprintf(stderr,"%+.3lf\t", LATorques(i));
+		}
+		fprintf(stderr,"\n"); 
 		for(int i = 0;i<6;i++)
 		{
 			fprintf(stderr,"%+.3lf\t", RLTorques(i));
@@ -443,7 +449,7 @@ public:
 		fprintf(stderr,"\n"); 
 		for(int i = 0;i<6;i++)
 		{
-			fprintf(stderr,"%+.3lf\t", F_RLeg(i));
+			fprintf(stderr,"%+.3lf\t", LLTorques(i));
 		}
 		fprintf(stderr,"\n\n\n");
 		
@@ -514,7 +520,7 @@ public:
 	void writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port)
 	{
 		Bottle a;
-		a.addInt(1);
+		a.addInt(_address);
 		for(int i=0;i<_values.length();i++)
 			a.addDouble(_values(i));
 		_port->prepare() = a;
