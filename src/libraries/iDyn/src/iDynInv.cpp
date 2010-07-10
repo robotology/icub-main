@@ -2122,7 +2122,7 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 		}
 
 		
-		H.zero(); H(0,1) = 1.0; H(1,0) = -1.0; H(2,2) = 1.0; H(2,3) = -0.0665; H(3,3) = 1.0;
+		H.zero(); H(0,1) = 1.0; H(1,0) = -1.0; H(2,2) = 1.0; H(2,3) = 0.0665; H(3,3) = 1.0;
 		COM.zero(); 
 		I.zero(); 
 		

@@ -110,8 +110,6 @@ This file can be edited at \in src/wrenchObserver/main.cpp.
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
-#include <yarp/math/Math.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <iCub/ctrl/ctrlMath.h>
@@ -432,9 +430,10 @@ public:
 		Vector RLTorques = icub.lowerTorso->getTorques("right_leg");
 		Vector TSTorques = icub.lowerTorso->getTorques("torso");
 				
+		fprintf(stderr,"\n\n\n\n\n\n");
 		for(int i = 0;i<6;i++)
 		{
-			fprintf(stderr,"%+.3lf\t", RATorques(i));
+			fprintf(stderr,"%+.3lf\t", RLTorques(i));
 		}
 		fprintf(stderr,"\n");
 		for(int i = 0;i<6;i++)
@@ -451,7 +450,8 @@ public:
 		{
 			fprintf(stderr,"%+.3lf\t", LLTorques(i));
 		}
-		fprintf(stderr,"\n\n\n");
+		
+		Time::delay(0.1);
 		
 		writeTorque(RLTorques, 2, port_RLTorques);
 		writeTorque(LLTorques, 2, port_LLTorques);
