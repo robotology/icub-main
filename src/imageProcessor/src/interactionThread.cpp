@@ -86,6 +86,8 @@ bool interactionThread::threadInit(){
 * function called when the module is poked with an interrupt command
 */
 void interactionThread::interrupt(){
+    interrupted=true; //moved before the interrupt of the blocked port
+
     redPlanePort.interrupt();
     bluePlanePort.interrupt();
     greenPlanePort.interrupt();
@@ -101,7 +103,7 @@ void interactionThread::interrupt(){
 
     inImagePort.interrupt();
 
-    interrupted=true;
+    
 }
 
 
