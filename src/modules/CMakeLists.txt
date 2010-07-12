@@ -13,6 +13,8 @@ add_subdirectory(velocityObserver)
 add_subdirectory(wrenchObserver)
 add_subdirectory(torqueObserver)
 add_subdirectory(wholeBodyTorqueObserver)
+add_subdirectory(learningMachine)
+
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(indepMotionDetector)
