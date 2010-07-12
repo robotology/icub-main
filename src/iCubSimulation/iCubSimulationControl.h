@@ -97,7 +97,7 @@ class yarp::dev::iCubSimulationControl :
 
   /// POSITION CONTROL INTERFACE RAW
   virtual bool getAxes(int *ax);
-  virtual bool setPositionMode();
+  virtual bool setPositionModeRaw();
   virtual bool positionMoveRaw(int j, double ref);
   virtual bool positionMoveRaw(const double *refs);
   virtual bool relativeMoveRaw(int j, double delta);
@@ -119,7 +119,7 @@ class yarp::dev::iCubSimulationControl :
 
     ///////////// Velocity control interface raw
   ///
-  virtual bool setVelocityMode();
+  virtual bool setVelocityModeRaw();
   virtual bool velocityMoveRaw(int j, double sp);
   virtual bool velocityMoveRaw(const double *sp);
   //

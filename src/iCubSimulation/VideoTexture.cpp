@@ -19,7 +19,7 @@ using namespace yarp::sig;
 
 
 VideoTexture::~VideoTexture() {
-    for (int i=0; i< inputs.size(); i++) {
+    for (unsigned int i=0; i< inputs.size(); i++) {
         delete inputs[i];
         inputs[i] = NULL;
     }
@@ -28,7 +28,7 @@ VideoTexture::~VideoTexture() {
 
 
 void VideoTexture::apply(unsigned int *textures) {
-    for (int i=0; i<inputs.size(); i++) {
+    for (unsigned int i=0; i<inputs.size(); i++) {
         inputs[i]->apply(textures);
     }
 }

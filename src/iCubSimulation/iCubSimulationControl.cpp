@@ -874,13 +874,13 @@ bool iCubSimulationControl::disablePidRaw(int axis)
 	return NOT_YET_IMPLEMENTED("disablePidRaw");
 }
 
-bool iCubSimulationControl::setPositionMode()
+bool iCubSimulationControl::setPositionModeRaw()
 {
     velocityMode = false;
     return true;
 }
 
-bool iCubSimulationControl::setVelocityMode()
+bool iCubSimulationControl::setVelocityModeRaw()
 {
     velocityMode = true;
     return true;

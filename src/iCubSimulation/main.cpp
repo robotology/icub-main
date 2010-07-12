@@ -1046,7 +1046,9 @@ public:
 								if (N >(i+1)){reply.addString("object not known");}
 								ConstString hand = command.get(4).asString();
 								int T = command.get(5).asInt();
+                                 odeinit.mutex.wait();
 								if (T == 1){
+                               
 									if (hand == "left" && odeinit._iCub->actLHand=="off"){
 										odeinit._iCub->grab = dJointCreateFixed(odeinit.world,0);
 										dJointAttach (odeinit._iCub->grab,odeinit._iCub->l_hand,odeinit._wrld->obj[N-1].boxbody );
@@ -1077,7 +1079,9 @@ public:
 								if (T == 0 && hand == "right" && odeinit._iCub->actRHand=="off"){
 									dJointDestroy(odeinit._iCub->grab1);
 								}	
+                                odeinit.mutex.post();
 							}
+                            
 						}
 						else{
 							reply.addString("Feature not available with finger functionality");
