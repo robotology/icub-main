@@ -105,10 +105,7 @@ private:
     * input image
     */
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *img; 
-    /**
-    * flag set when the thread has been interrupted
-    */
-    bool interrupted_flag;
+    
     
     //_______________ private method  __________________________
     /**
@@ -214,6 +211,10 @@ public:
     *yarp mono image of the uv channel (chrominance information)
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono>* uvPlane;
+    /**
+    * flag set when the thread has been interrupted
+    */
+    bool interrupted_flag;
 };
 
 #endif //_IMAGEREADERTHREAD_H_

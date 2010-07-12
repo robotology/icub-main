@@ -249,15 +249,15 @@ public:
     /**
     * thread in charge of processing the yuv channels
     */
-    yuvProcessorThread yuvProcessor;
+    yuvProcessorThread* yuvProcessor;
     /**
     * thread in charge of processing the rgb channels
     */
-    rgbProcessorThread rgbProcessor;
+    rgbProcessorThread* rgbProcessor;
     /**
     * thread in charge of managing all the interaction with other modules through ports
     */
-    imageReaderThread interThread;
+    imageReaderThread* interThread;
     
 };
 

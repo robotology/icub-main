@@ -30,12 +30,17 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
-    //attachTerminal();
+    attachTerminal();
     //printf("resource finder configuration after time turbo boosting \n");
     
-    interThread.setName(this->getName().c_str());
+    rgbProcessor=0;
+    yuvProcessor=0;
+
+
+    interThread=new imageReaderThread();
+    interThread->setName(this->getName().c_str());
     printf("name:%s \n",this->getName().c_str());
-    interThread.start();
+    interThread->start();
 
     printf("\n waiting for connection of the input port \n");
 
@@ -47,7 +52,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 *function that opens the module
 */
 bool colourProcessorModule::open(Searchable& config) {
-    interThread.start();
+    interThread->start();
     ct = 0;
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     startRgbProcessor();
@@ -69,7 +74,7 @@ bool colourProcessorModule::open(Searchable& config) {
 bool colourProcessorModule::interruptModule() {
     //interThread.interrupt();
     cmdPort.interrupt();
-    interThread.interrupt();
+    interThread->interrupt();
     return true;
 }
 
@@ -80,12 +85,17 @@ bool colourProcessorModule::close(){
     //rgbProcessor.threadRelease();
     //yuvProcessor.threadRelease();
     //interThread.threadRelease();
-
-    rgbProcessor.stop();
-    yuvProcessor.stop();
-    interThread.stop();
-
+    
     cmdPort.close();
+
+    if(rgbProcessor!=0)
+        rgbProcessor->stop();
+    if(yuvProcessor!=0)
+        yuvProcessor->stop();
+    if(interThread!=0){
+        interThread->stop();
+    }
+
    
     return true;
 }
@@ -134,7 +144,7 @@ bool colourProcessorModule::updateModule() {
         printf("%s \n", commandTOT->c_str());
     }*/
 
-    if((0!=interThread.inputImg)&&(!initflag)){
+    if((0!=interThread->inputImg)&&(!initflag)){
     
         /*
         while(interThread.inputImg->width()==0){
@@ -146,20 +156,20 @@ bool colourProcessorModule::updateModule() {
         //ConstString portName2 = options.check("name",Value("/worker2")).asString();
         //starting rgb thread and linking all the images
         startRgbProcessor();
-        interThread.redPlane=rgbProcessor.redPlane;
-        interThread.greenPlane=rgbProcessor.greenPlane;
-        interThread.bluePlane=rgbProcessor.bluePlane;
-        interThread.redGreen_yarp=rgbProcessor.redGreen_yarp;
-        interThread.greenRed_yarp=rgbProcessor.greenRed_yarp;
-        interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
+        interThread->redPlane=rgbProcessor->redPlane;
+        interThread->greenPlane=rgbProcessor->greenPlane;
+        interThread->bluePlane=rgbProcessor->bluePlane;
+        interThread->redGreen_yarp=rgbProcessor->redGreen_yarp;
+        interThread->greenRed_yarp=rgbProcessor->greenRed_yarp;
+        interThread->blueYellow_yarp=rgbProcessor->blueYellow_yarp;
         
         //starting yuv thread and linking all the images
         if(startyuv_flag){
                 startYuvProcessor();
-                interThread.uvPlane=yuvProcessor.uvPlane;
-                interThread.uPlane=yuvProcessor.uPlane;
-                interThread.vPlane=yuvProcessor.vPlane;
-                interThread.yPlane=yuvProcessor.yPlane;
+                interThread->uvPlane=yuvProcessor->uvPlane;
+                interThread->uPlane=yuvProcessor->uPlane;
+                interThread->vPlane=yuvProcessor->vPlane;
+                interThread->yPlane=yuvProcessor->yPlane;
         }
         
 
@@ -173,17 +183,17 @@ bool colourProcessorModule::updateModule() {
 
 void colourProcessorModule::startRgbProcessor(){
     //rgbProcessorThread rgbProcessor();
-    rgbProcessor.setInputImage(interThread.inputImg);
+    rgbProcessor->setInputImage(interThread->inputImg);
     //rgbProcessor.resize(width,height);
-    rgbProcessor.start();
+    rgbProcessor->start();
 }
 
 
 void colourProcessorModule::startYuvProcessor(){
     //rgbProcessorThread rgbProcessor();
-    yuvProcessor.setInputImage(rgbProcessor.redPlane,rgbProcessor.greenPlane,rgbProcessor.bluePlane);
+    yuvProcessor->setInputImage(rgbProcessor->redPlane,rgbProcessor->greenPlane,rgbProcessor->bluePlane);
     //rgbProcessor.resize(width,height);
-    yuvProcessor.start();
+    yuvProcessor->start();
 }
 void colourProcessorModule::reinitialise(int weight, int height){
     
