@@ -3,7 +3,7 @@
 #define _selectiveAttentionModule_H_
 
 
-#include <time.h>
+
 
 //YARP include
 #include <yarp/os/all.h>
@@ -17,6 +17,7 @@
 
 //within Project Include
 #include <iCub/selectiveAttentionProcessor.h>
+#include <iCub/interactionThread.h>
 //#include <iCub/YARPImgRecv.h>
 //#include <iCub/YarpImage2Pixbuf.h>
 
@@ -145,56 +146,13 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 **/
 
-class selectiveAttentionModule : public yarp::os::Module{
+class selectiveAttentionModule : public yarp::os::RFModule{
 private:
-    /**
-    * a port for the inputImage (colour)
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //
-    /**
-    * input port for the 1st saliency map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; //
-    /**
-    * input port for the 2nd saliency map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; //
-    /**
-    * input port for the 3rd saliency map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; //	 
-    /**
-    * input port for the 4th saliency map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port; 
-    /**
-    * input port for the 5th saliency map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; 
-    /**
-    * input port for the 6th saliency map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; 	
-    /**
-    *  output port that represent the linear combination of different maps
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; 
-    /**
-    *  output port that represent the selected attention output
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > selectedAttentionPort; 
-    /**
-    *  output port where the centroid coordinate is sent
-    */
-    yarp::os::BufferedPort<yarp::os::Bottle > centroidPort; 
-    /**
-    *  port necessary to send back command to the preattentive processors
-    */
-    yarp::os::Port feedbackPort; 
-    /**
+     
+    /*
     * command port of the module
     */
-    yarp::os::BufferedPort<yarp::os::Bottle > cmdPort;
+    yarp::os::Port cmdPort;
     /**
     * counter of the module
     */
@@ -255,40 +213,14 @@ private:
     * input image of the 6th map
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono> *map6Img;
-    /**
-    * value read from the blobFinder component (red intensity of the target)
-    */
-    int targetRED;
-    /**
-    * value read from the blobFinder component (green intensity of the target)
-    */
-    int targetGREEN;
-    /**
-    * value read from the blobFinder component (blue intensity of the target)
-    */
-    int targetBLUE;
-    /**
-    * value of the weight of top-down approach in the blobFinder
-    */
-    double salienceTD;
-    /**
-    * value of the weight of bottom-up approach in the blobFinder
-    */
-    double salienceBU;
+    
 
     /**
     * function that resets all the mode flags
     */
     void resetFlags();
 
-     /**
-    * time variable
-    */
-    time_t start;
-    /**
-    * time variable
-    */
-    time_t end;
+     
 public:
     /**
     *open the ports of the module
@@ -307,8 +239,10 @@ public:
     */
     bool updateModule(); //
     /**
-    * set the attribute options of class Property
+    * function for initialization and configuration of the RFModule
+    * @param rf resourceFinder reference
     */
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     /**
     * set the attribute options of class Property
     */
@@ -357,9 +291,17 @@ public:
     */
     selectiveAttentionProcessor *currentProcessor;
     /**
+    * thread in charge of managing all the interaction with other modules through ports
+    */
+    interactionThread* interThread;
+    /**
     * flag that controls if the inputImage has been ever read
     */
     bool inputImage_flag;
+    /**
+    * check of the already happened initialisation
+    */
+    bool init_flag;
     
 };
 

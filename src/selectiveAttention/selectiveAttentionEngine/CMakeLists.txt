@@ -6,6 +6,7 @@ PROJECT(${KEYWORD})
 
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(YARP REQUIRED)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(IPP REQUIRED)
 
@@ -25,6 +26,8 @@ FIND_PACKAGE(IPP REQUIRED)
 
 #search for includes
 INCLUDE_DIRECTORIES(
+    ${YARP_INCLUDE_DIRS}
+    ${ICUB_INCLUDE_DIRS}		
     ${PROJECT_SOURCE_DIR}/include
     ${OPENCV_INCLUDE_DIR}    	
     ${IPP_INCLUDE_DIRS}	 
@@ -75,7 +78,8 @@ IF (folder_source)
       ${OPENCV_LIBRARIES}
       #${ODE_LIBRARIES}
       ${IDL_LIBRARIES}
-      ${IPP_LIBRARIES} 	
+      ${IPP_LIBRARIES}
+      ${YARP_LIBRARIES} 	 	
      )	
     ELSE(WIN32) #required in linux
      TARGET_LINK_LIBRARIES( ${KEYWORD}
@@ -83,6 +87,7 @@ IF (folder_source)
        #${ODE_LIBRARIES}
        ${IDL_LIBRARIES}
        ${IPP_LIBRARIES} 
+       ${YARP_LIBRARIES} 	
        #ippi	
        pthread
      )
