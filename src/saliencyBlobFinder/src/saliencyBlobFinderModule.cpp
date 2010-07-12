@@ -100,18 +100,19 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 */
 bool saliencyBlobFinderModule::interruptModule() {
     printf("module interrupted .... \n");
-  
     cmdPort.interrupt();
+
+    interThread->interrupt();
     
     return true;
 }
 
 
 bool saliencyBlobFinderModule::close(){
-    
-   
     printf("closing command port .... \n");
     cmdPort.close();
+
+    interThread->stop();
 
     return true;
 }

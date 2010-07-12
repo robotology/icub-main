@@ -61,6 +61,8 @@ bool interactionThread::threadInit(){
 * function called when the module is poked with an interrupt command
 */
 void interactionThread::interrupt(){
+    interrupted_flag=true; //this flag must be switched before the unlock of every input port
+
     inputPort.interrupt();//(getName("image:i"));
     
     redPort.interrupt();//open(getName("red:i"));
@@ -76,7 +78,7 @@ void interactionThread::interrupt(){
     triangulationPort.interrupt();//open(getName("triangulation:o"));
     gazeControlPort.interrupt();//open(getName("gazeControl:o"));
 
-    interrupted_flag=true;
+    
 }
 
 
