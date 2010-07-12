@@ -43,6 +43,9 @@ struct DriverDescriptor
 {
     yarp::os::ConstString key;
     bool jointsDirectOrder;
+
+    yarp::sig::Vector minAbsVels;
+    bool useDefaultMinAbsVel;
 };
 
 

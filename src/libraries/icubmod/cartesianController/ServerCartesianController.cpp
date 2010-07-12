@@ -842,9 +842,29 @@ void ServerCartesianController::sendVelocity(const Vector &v)
     {
         if (!(*chain)[i].isBlocked())
         {    
+            double v_cnt=v[cnt];
+
             // send only if changed
-            if (v[cnt]!=velOld[cnt])
-                lVel[j]->velocityMove(lRmp[j][k],velOld[cnt]=v[cnt]);
+            if (v_cnt!=velOld[cnt])
+            {
+                double thres=lDsc[j].minAbsVels[k];
+
+                // apply bang-bang control to compensate for unachievable low velocities
+                if ((v_cnt>-thres) && (v_cnt<thres) && !v_cnt)
+                {
+                    // current error in the joint space
+                    double e=qdes[cnt]-fb[cnt];
+
+                    if (e>0.0)
+                        v_cnt=thres;
+                    else if (e<0.0)
+                        v_cnt=-thres;
+                    else
+                        v_cnt=0.0;
+                }
+
+                lVel[j]->velocityMove(lRmp[j][k],velOld[cnt]=v_cnt);
+            }
 
             cnt++;
         }
@@ -1104,6 +1124,20 @@ bool ServerCartesianController::open(Searchable &config)
             return false;
         }
 
+        if (Bottle *pMinAbsVelsBottle=optDrv.find("MinAbsVels").asList())
+        {
+            desc.useDefaultMinAbsVel=false;
+            desc.minAbsVels.resize(pMinAbsVelsBottle->size());
+
+            for (int j=0; j<pMinAbsVelsBottle->size(); j++)
+                desc.minAbsVels[j]=pMinAbsVelsBottle->get(j).asDouble();
+        }
+        else
+        {
+            fprintf(stdout,"MinAbsVels option is missing ... using default values\n");
+            desc.useDefaultMinAbsVel=true;
+        }
+
         lDsc.push_back(desc);
     }
 
@@ -1214,6 +1248,18 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             int *rmpTmp=new int[joints];
             for (int k=0; k<joints; k++)
                 rmpTmp[k]=lDsc[i].jointsDirectOrder ? k : joints-k-1;
+
+            // prepare references for minimum achievable absolute velocities
+            if (lDsc[i].useDefaultMinAbsVel)
+                lDsc[i].minAbsVels.resize(joints,0.0);
+            else if (lDsc[i].minAbsVels.length()<joints)
+            {
+                Vector tmp=lDsc[i].minAbsVels;
+                lDsc[i].minAbsVels.resize(joints,0.0);
+
+                for (int k=0; k<tmp.length(); k++)
+                    lDsc[i].minAbsVels[k]=tmp[k];
+            }
 
             lLim.push_back(lim);
             lEnc.push_back(enc);
