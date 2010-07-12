@@ -79,7 +79,7 @@
 namespace iCub
 {
 
-namespace actions
+namespace action
 {
 
 /**
