@@ -18,10 +18,9 @@
 
 #include <stdio.h>
 #include <memory.h>
-
 #include <string>
 
-#include <yarp/os/impl/Logger.h>
+//#include <yarp/os/impl/Logger.h>
 
 #include <yarp/dev/ServerLogpolarFrameGrabber.h>
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
