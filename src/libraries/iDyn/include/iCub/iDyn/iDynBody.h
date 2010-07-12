@@ -60,6 +60,9 @@
 #include <string>
 
 
+namespace iCub
+{
+
 namespace iDyn
 {
 
@@ -1049,8 +1052,10 @@ public:
 
 };
 
+}
 
-} //end of namespace iDyn
+}//end of namespace
+
 #endif
 
 

@@ -16,6 +16,9 @@
 #include <yarp/sig/Vector.h>
 
 
+namespace iCub
+{
+
 namespace ctrl
 {
 
@@ -82,6 +85,8 @@ public:
     */
     ~waveletEncoder();
 };
+
+}
 
 }
 

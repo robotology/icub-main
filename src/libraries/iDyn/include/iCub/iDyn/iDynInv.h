@@ -44,6 +44,10 @@
 #include <deque>
 #include <string>
 
+
+namespace iCub
+{
+
 namespace iDyn
 {
 
@@ -1723,6 +1727,7 @@ public:
 
 };
 
+}
 
 }//end namespace
 

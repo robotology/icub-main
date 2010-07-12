@@ -17,6 +17,9 @@
 #include <iCub/ctrl/ctrlMath.h>
 
 
+namespace iCub
+{
+
 namespace ctrl
 {
 
@@ -93,6 +96,8 @@ public:
      */
     yarp::sig::Matrix get_K() { return K; }
 };
+
+}
 
 }
 

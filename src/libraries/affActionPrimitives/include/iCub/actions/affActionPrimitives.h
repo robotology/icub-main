@@ -76,6 +76,9 @@
 #define ACTIONPRIM_DISABLE_EXECTIME    -1
 
 
+namespace iCub
+{
+
 namespace actions
 {
 
@@ -1053,6 +1056,8 @@ public:
     */
     virtual bool checkContact(bool &f);
 };
+
+}
 
 }
 

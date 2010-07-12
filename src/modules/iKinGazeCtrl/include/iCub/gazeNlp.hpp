@@ -11,8 +11,8 @@ using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace ctrl;
-using namespace iKin;
+using namespace iCub::ctrl;
+using namespace iCub::iKin;
 
 
 // Describe the kinematic of the straight line

@@ -191,6 +191,9 @@
 #include <deque>
 
 
+namespace iCub
+{
+
 namespace iKin
 {
 
@@ -534,6 +537,8 @@ public:
     */
     iCubLegCartesianSolver(const std::string &_slvName="legCartSolver") : CartesianSolver(_slvName) { }
 };
+
+}
 
 }
 

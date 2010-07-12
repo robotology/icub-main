@@ -155,7 +155,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
-using namespace actions;
+using namespace iCub::actions;
 
 
 class exampleModule: public RFModule

@@ -16,8 +16,8 @@
 using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
-using namespace iKin;
-using namespace iDyn;
+using namespace iCub::iKin;
+using namespace iCub::iDyn;
 
 
 // the class we'll use for this example is inherited from iDynNode.

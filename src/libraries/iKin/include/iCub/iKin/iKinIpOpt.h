@@ -21,6 +21,9 @@
 #include <IpIpoptApplication.hpp>
 
 
+namespace iCub
+{
+
 namespace iKin
 {
 
@@ -561,6 +564,8 @@ public:
     */
     virtual ~iKinIpOptMin();
 };
+
+}
 
 }
 

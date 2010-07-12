@@ -21,8 +21,8 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iKin;
-using namespace ctrl;
+using namespace iCub::ctrl;
+using namespace iCub::iKin;
 
 
 class eyeTriangulation:public RateThread

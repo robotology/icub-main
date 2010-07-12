@@ -93,9 +93,9 @@ protected:
     yarp::os::ConstString kinType;
     int numDrv;
 
-    iKin::iKinLimb            *limb;
-    iKin::iKinChain           *chain;
-    iKin::MultiRefMinJerkCtrl *ctrl;
+    iCub::iKin::iKinLimb            *limb;
+    iCub::iKin::iKinChain           *chain;
+    iCub::iKin::MultiRefMinJerkCtrl *ctrl;
     
     std::deque<DriverDescriptor>             lDsc;
     std::deque<yarp::dev::IControlLimits*>   lLim;

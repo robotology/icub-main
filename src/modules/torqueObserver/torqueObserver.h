@@ -188,15 +188,15 @@ private:
 	yarp::os::BufferedPort<yarp::sig::Vector> *port_Torques_torso;
 	yarp::os::BufferedPort<yarp::sig::Vector> *port_Wrench;
 
-	ctrl::AWLinEstimator   *linEst;
-    ctrl::AWQuadEstimator  *quadEst;
-	ctrl::AWPolyElement		estElement;
+	iCub::ctrl::AWLinEstimator   *linEst;
+    iCub::ctrl::AWQuadEstimator  *quadEst;
+	iCub::ctrl::AWPolyElement	  estElement;
 
-	iDyn::iDynLimb *limb;
-	iDyn::iDynSensor *sens;
+	iCub::iDyn::iDynLimb         *limb;
+	iCub::iDyn::iDynSensor       *sens;
 
-	iDyn::iDynInvSensor *sensInv;
-	iDyn::iDynLimb *limbInv;
+	iCub::iDyn::iDynInvSensor    *sensInv;
+	iCub::iDyn::iDynLimb         *limbInv;
 
 	/// encoders values for the limb
 	yarp::sig::Vector encoders;

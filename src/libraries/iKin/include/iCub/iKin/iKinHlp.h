@@ -18,6 +18,9 @@
 #include <yarp/sig/Vector.h>
 
 
+namespace iCub
+{
+
 namespace iKin
 {
 
@@ -123,6 +126,8 @@ public:
     */
     static bool getTokenOption(yarp::os::Bottle &b, double *token);
 };
+
+}
 
 }
 

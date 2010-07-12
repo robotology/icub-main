@@ -35,9 +35,9 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace ctrl;
-using namespace iDyn;
-using namespace actions;
+using namespace iCub::ctrl;
+using namespace iCub::iDyn;
+using namespace iCub::actions;
 
 
 // This class handles the automatic arm-waving

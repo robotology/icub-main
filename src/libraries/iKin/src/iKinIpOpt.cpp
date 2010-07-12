@@ -9,8 +9,8 @@
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace ctrl;
-using namespace iKin;
+using namespace iCub::ctrl;
+using namespace iCub::iKin;
 using namespace Ipopt;
 
 

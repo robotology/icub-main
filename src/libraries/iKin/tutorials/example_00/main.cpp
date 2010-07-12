@@ -14,8 +14,8 @@ using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace ctrl;
-using namespace iKin;
+using namespace iCub::ctrl;
+using namespace iCub::iKin;
 
 
 // this inherited class (re-)implements the iCub right arm

@@ -75,6 +75,9 @@
 #include <iCub/ctrl/ctrlMath.h>
 
 
+namespace iCub
+{
+
 namespace ctrl
 {
 
@@ -177,6 +180,8 @@ public:
      */
 	 void setVerbose(bool verb=true);
 };
+
+}
 
 }
 

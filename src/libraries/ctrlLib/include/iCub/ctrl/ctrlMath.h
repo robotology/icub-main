@@ -33,6 +33,9 @@
 #define CTRL_DEG2RAD    (M_PI/180.0)
 
 
+namespace iCub
+{
+
 namespace ctrl
 {
 
@@ -259,6 +262,8 @@ yarp::sig::Matrix euler2dcm(const yarp::sig::Vector &euler, unsigned int verbose
 */
 yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 
+}
+ 
 }
  
 #endif

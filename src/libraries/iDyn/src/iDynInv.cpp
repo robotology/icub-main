@@ -30,9 +30,9 @@ using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace ctrl;
-using namespace iKin;
-using namespace iDyn;
+using namespace iCub::ctrl;
+using namespace iCub::iKin;
+using namespace iCub::iDyn;
 
 //================================
 //

@@ -126,8 +126,8 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace yarp::dev;
-using namespace ctrl;
-using namespace iDyn;
+using namespace iCub::ctrl;
+using namespace iCub::iDyn;
 using namespace std;
 
 FILE* datas = fopen("datas_all.txt","w+");

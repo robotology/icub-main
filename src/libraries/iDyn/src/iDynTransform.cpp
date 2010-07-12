@@ -24,8 +24,8 @@ using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iKin;
-using namespace iDyn;
+using namespace iCub::iKin;
+using namespace iCub::iDyn;
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -263,7 +263,7 @@ iFTransformation::iFTransformation(iDynInvSensor *_iDynChainWithSensor)
 	Sensor->attach(SensorFrame);
 	//fprintf(stderr,"set up sensor transformation\n");
 }
-void iFTransformation::attach(iKin::iKinChain *_Limb)
+void iFTransformation::attach(iKinChain *_Limb)
 {    
     if (Limb && ownLimb)
         delete Limb;

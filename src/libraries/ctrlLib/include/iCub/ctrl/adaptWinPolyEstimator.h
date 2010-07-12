@@ -20,6 +20,9 @@
 #include <deque>
 
 
+namespace iCub
+{
+
 namespace ctrl
 {
 
@@ -170,6 +173,8 @@ protected:
 public:
     AWQuadEstimator(unsigned int _N, const double _D) : AWPolyEstimator(2,_N,_D) { }
 };
+
+}
 
 }
 

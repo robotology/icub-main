@@ -11,8 +11,8 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iKin;
-using namespace ctrl;
+using namespace iCub::ctrl;
+using namespace iCub::iKin;
 
 
 /************************************************************************/
@@ -727,6 +727,9 @@ Vector LMCtrl_GPM::computeGPM()
 }
 
 
+namespace iCub
+{
+
 namespace iKin
 {
     /************************************************************************/
@@ -789,6 +792,8 @@ namespace iKin
         *f=_f(v,params);
         _df(v,params,g);
     }
+}
+
 }
 
 

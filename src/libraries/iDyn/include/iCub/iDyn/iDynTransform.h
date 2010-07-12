@@ -77,8 +77,11 @@ example code:
 //#include <deque>
 
 
-namespace iDyn{
+namespace iCub
+{
 
+namespace iDyn
+{
 	class iDynLink;
 	class iDynChain;
 	class iDynLimb;
@@ -341,6 +344,8 @@ public:
 
 	
 };
+
+}
 
 }//end namespace
 

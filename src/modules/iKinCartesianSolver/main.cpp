@@ -145,7 +145,7 @@ Windows, Linux
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
-using namespace iKin;
+using namespace iCub::iKin;
 
 
 class SolverModule: public RFModule

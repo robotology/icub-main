@@ -21,6 +21,9 @@
 #include <iCub/ctrl/filters.h>
 
 
+namespace iCub
+{
+
 namespace ctrl
 {
 
@@ -293,6 +296,8 @@ public:
     */
     ~seriesPID();
 };
+
+}
 
 }
 

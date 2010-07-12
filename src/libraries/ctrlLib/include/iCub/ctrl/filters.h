@@ -17,6 +17,9 @@
 #include <deque>
 
 
+namespace iCub
+{
+
 namespace ctrl
 {
 
@@ -160,6 +163,8 @@ public:
     */
     yarp::sig::Vector filt(const yarp::sig::Vector &u);
 };
+
+}
 
 }
 

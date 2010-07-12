@@ -21,7 +21,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iKin;
+using namespace iCub::iKin;
 
 
 int main()

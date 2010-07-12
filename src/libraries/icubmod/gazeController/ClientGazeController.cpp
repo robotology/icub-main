@@ -18,7 +18,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace ctrl;
+using namespace iCub::ctrl;
 
 
 /************************************************************************/

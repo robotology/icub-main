@@ -7,7 +7,10 @@
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace ctrl;
+using namespace iCub::ctrl;
+
+namespace iCub
+{
 
 namespace ctrl
 {
@@ -80,6 +83,8 @@ namespace ctrl
 
         return (pWavEnc->interpFunction(*Val,x)-(*Val)[0]) * (R*pWavEnc->interpWavelet(R*x-n));
     }
+}
+
 }
 
 

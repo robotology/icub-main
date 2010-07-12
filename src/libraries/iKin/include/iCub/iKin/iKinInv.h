@@ -47,6 +47,9 @@
 #define IKINCTRL_DISABLED           -1
 
 
+namespace iCub
+{
+
 namespace iKin
 {
 
@@ -1042,6 +1045,8 @@ public:
     */                                                         
     virtual ~MultiRefMinJerkCtrl();
 };
+
+}
 
 }
 

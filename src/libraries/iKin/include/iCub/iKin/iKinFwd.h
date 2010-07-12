@@ -47,6 +47,9 @@
 #include <deque>
 
 
+namespace iCub
+{
+
 namespace iKin
 {
 
@@ -1089,6 +1092,8 @@ public:
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
+
+}
 
 }
 

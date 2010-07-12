@@ -141,11 +141,11 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace yarp::dev;
-//using namespace ctrl;
+//using namespace iCub::ctrl;
 using namespace std;
 
-using namespace iKin;
-using namespace iDyn;
+using namespace iCub::iKin;
+using namespace iCub::iDyn;
 
 /**
 *
