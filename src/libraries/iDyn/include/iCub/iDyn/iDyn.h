@@ -628,7 +628,7 @@ public:
     * Set the link masses at once
     * @return true if operation is successful, false otherwise
     */
-	 bool setMasses(yarp::sig::Vector _m);
+	bool setMasses(yarp::sig::Vector _m);
 
      /**
     * Returns the i-th link mass
@@ -710,7 +710,7 @@ public:
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
     * @param _I is the Inertia matrix
 	*/
-	 bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
+	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
 
 	/**
 	* Set the dynamic parameters of the i-th Link if the chain is in a static situation (inertia is null).
@@ -718,44 +718,44 @@ public:
 	* @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
 	*/
-	 bool setStaticParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC);
+	bool setStaticParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC);
 
-	 /**
-	 * Prepare for the Newton-Euler recursive computation of forces and torques
-	 */
-	 void prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
+	/**
+	* Prepare for the Newton-Euler recursive computation of forces and torques
+	*/
+	void prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
 
-	 /**
-	 * Compute forces and torques with the Newton-Euler recursive algorithm: forward
-	 * and backward phase are performed, and results are stored in the links; to get
-	 * resulting forces and torques, one can call getForces() and getMoments() methods
-	 */
-	 bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
+	/**
+	* Compute forces and torques with the Newton-Euler recursive algorithm: forward
+	* and backward phase are performed, and results are stored in the links; to get
+	* resulting forces and torques, one can call getForces() and getMoments() methods
+	*/
+	bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
 
-	 /**
-	 * Compute forces and torques with the Newton-Euler recursive algorithm: forward
-	 * and backward phase are performed, and results are stored in the links; to get
-	 * resulting forces and torques, one can call getForces() and getMoments() methods; 
-	 * before calling this method, initNewtonEuler() must be called
-	 */
-	 bool computeNewtonEuler();
+	/**
+	* Compute forces and torques with the Newton-Euler recursive algorithm: forward
+	* and backward phase are performed, and results are stored in the links; to get
+	* resulting forces and torques, one can call getForces() and getMoments() methods; 
+	* before calling this method, initNewtonEuler() must be called
+	*/
+	bool computeNewtonEuler();
 
 	/**
 	* Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
 	* and the final (virtual link) forces and moments Fend and Muend
 	*/
-	 bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
+	bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
 	
 	/**
 	* Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
 	* and the final (virtual link) forces and moments Fend and Muend all to zero
 	*/
-	 bool initNewtonEuler();
+	bool initNewtonEuler();
 
-	 /**
+	/**
 	* Set the computation mode for Newton-Euler (static/dynamic/etc)
 	*/
-	 void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
+	void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
 
 	/**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
@@ -1064,13 +1064,14 @@ public:
     // to the user such as addLink, rmLink and so on, all the remaining public methods have to be
     // redeclared hereafter and simply inherited
 
-	unsigned int      getN() const                                                    { return N;                                   }
+	unsigned int      getN() const                                                    { return iDynChain::getN();                   }
 	unsigned int      getNTOT()														  { return iDynChain::getNTOT();                }
-	unsigned int      getDOF() const                                                  { return DOF;                                 }
+	unsigned int      getDOF() const                                                  { return iDynChain::getDOF();                 }
     bool              blockLink(const unsigned int i, double Ang)                     { return iDynChain::blockLink(i,Ang);         }
     bool              blockLink(const unsigned int i)                                 { return iDynChain::blockLink(i);             }
     bool              setBlockingValue(const unsigned int i, double Ang)              { return iDynChain::setBlockingValue(i,Ang);  }
     bool              releaseLink(const unsigned int i)                               { return iDynChain::releaseLink(i);           }
+    bool              isLinkBlocked(const unsigned int i)                             { return iDynChain::isLinkBlocked(i);         }
     void              setAllConstraints(bool _constrained)                            { iDynChain::setAllConstraints(_constrained); }
     void              setConstraint(unsigned int i, bool _constrained)                { iDynChain::setConstraint(i,_constrained);   }
     bool              getConstraint(unsigned int i)                                   { return iDynChain::getConstraint(i);         }

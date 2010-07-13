@@ -135,7 +135,7 @@ public:
     * Returns the constraint status.
     * @return current constraint status.
     */
-    bool getConstraint() { return constrained; }
+    bool getConstraint() const { return constrained; }
 
     /**
     * Sets Link verbosity level.
@@ -150,19 +150,19 @@ public:
     * Returns the current Link verbosity level.
     * @return Link verbosity level.
     */
-    unsigned int getVerbosity() { return verbose; }
+    unsigned int getVerbosity() const { return verbose; }
 
     /**
     * Returns the Link blocking status.
     * @return true if link is blocked.
     */
-    bool isBlocked() { return blocked; }
+    bool isBlocked() const { return blocked; }
 
     /**
     * Returns the Link length A.
     * @return Link length A.
     */
-    double getA() { return A; }
+    double getA() const { return A; }
 
     /**
     * Sets the Link length A. 
@@ -174,7 +174,7 @@ public:
     * Returns the Link offset D.
     * @return Link offset D.
     */
-    double getD() { return D; }
+    double getD() const { return D; }
 
     /**
     * Sets the Link offset D. 
@@ -186,7 +186,7 @@ public:
     * Returns the Link twist Alpha.
     * @return Link twist Alpha.
     */
-    double getAlpha() { return Alpha; }
+    double getAlpha() const { return Alpha; }
 
     /**
     * Sets the Link twist Alpha. 
@@ -198,7 +198,7 @@ public:
     * Returns the joint angle offset.
     * @return joint angle offset.
     */
-    double getOffset() { return Offset; }
+    double getOffset() const { return Offset; }
 
     /**
     * Sets the joint angle offset. 
@@ -210,7 +210,7 @@ public:
     * Returns the joint angle lower bound.
     * @return joint angle lower bound.
     */
-    double getMin() { return Min; }
+    double getMin() const { return Min; }
 
     /**
     * Sets the joint angle lower bound.
@@ -222,7 +222,7 @@ public:
     * Returns the joint angle upper bound.
     * @return joint angle upper bound.
     */
-    double getMax() { return Max; }
+    double getMax() const { return Max; }
 
     /**
     * Sets the joint angle higher bound.
@@ -234,7 +234,7 @@ public:
     * Returns the current joint angle value.
     * @return current joint angle value.
     */
-    double getAng() { return Ang; }
+    double getAng() const { return Ang; }
 
     /**
     * Sets the joint angle value. 
@@ -482,6 +482,13 @@ public:
     bool releaseLink(const unsigned int i);
 
     /**
+    * Queries whether the ith Link is blocked.
+    * @param i is the Link position. 
+    * @return true if blocked && (param i is in range).
+    */
+    bool isLinkBlocked(const unsigned int i);
+
+    /**
     * Sets the constraint status of all chain links.
     * @param _constrained is the new constraint status. 
     */
@@ -518,27 +525,27 @@ public:
     * Returns the current Chain verbosity level.
     * @return Link verbosity level.
     */
-    unsigned int getVerbosity() { return verbose; }
+    unsigned int getVerbosity() const { return verbose; }
 
     /**
     * Returns the number of Links belonging to the Chain.
     * @return number of Links.
     */
-    unsigned int getN() { return N; }
+    unsigned int getN() const { return N; }
 
     /**
     * Returns the current number of Chain's DOF. 
     * DOF=N-M, where N=# of Links, M=# of blocked Links. 
     * @return number of DOF.
     */
-    unsigned int getDOF() { return DOF; }
+    unsigned int getDOF() const { return DOF; }
 
     /**
     * Returns H0, the rigid roto-translation matrix from the root 
     * reference frame to the 0th frame. 
     * @return H0
     */
-    yarp::sig::Matrix getH0() { return H0; }
+    yarp::sig::Matrix getH0() const { return H0; }
 
     /**
     * Sets H0, the rigid roto-translation matrix from the root 
@@ -832,7 +839,7 @@ public:
     * Checks if the limb has been properly configured.
     * @return true iff correctly coinfigured.
     */
-    bool isValid() { return configured; }
+    bool isValid() const { return configured; }
 
     /**
     * Copies a Limb object into the current one.
@@ -853,7 +860,7 @@ public:
     * Returns the Limb type as a string. 
     * @return the type as a string {"left", "right"}.
     */
-    std::string getType() { return type; }
+    std::string getType() const { return type; }
 
     /**
     * Alignes the Limb joints bounds with current values set aboard 
@@ -871,18 +878,19 @@ public:
     // to the user such as addLink, rmLink and so on, all the remaining public methods have to be
     // redeclared hereafter and simply inherited
                                                                      
-    unsigned int      getN()                                                          { return N;                                   }
-    unsigned int      getDOF()                                                        { return DOF;                                 }
+    unsigned int      getN() const                                                    { return iKinChain::getN();                   }
+    unsigned int      getDOF() const                                                  { return iKinChain::getDOF();                 }
     bool              blockLink(const unsigned int i, double Ang)                     { return iKinChain::blockLink(i,Ang);         }
     bool              blockLink(const unsigned int i)                                 { return iKinChain::blockLink(i);             }
     bool              setBlockingValue(const unsigned int i, double Ang)              { return iKinChain::setBlockingValue(i,Ang);  }
     bool              releaseLink(const unsigned int i)                               { return iKinChain::releaseLink(i);           }
+    bool              isLinkBlocked(const unsigned int i)                             { return iKinChain::isLinkBlocked(i);         }
     void              setAllConstraints(bool _constrained)                            { iKinChain::setAllConstraints(_constrained); }
     void              setConstraint(unsigned int i, bool _constrained)                { iKinChain::setConstraint(i,_constrained);   }
     bool              getConstraint(unsigned int i)                                   { return iKinChain::getConstraint(i);         }
     void              setAllLinkVerbosity(unsigned int _verbose)                      { iKinChain::setAllLinkVerbosity(_verbose);   }
     void              setVerbosity(unsigned int _verbose)                             { iKinChain::setVerbosity(_verbose);          }
-    unsigned int      getVerbosity()                                                  { return iKinChain::getVerbosity();           }
+    unsigned int      getVerbosity() const                                            { return iKinChain::getVerbosity();           }
     yarp::sig::Vector setAng(const yarp::sig::Vector &q)                              { return iKinChain::setAng(q);                }
     yarp::sig::Vector getAng()                                                        { return iKinChain::getAng();                 }
     double            setAng(const unsigned int i, double _Ang)                       { return iKinChain::setAng(i,_Ang);           }

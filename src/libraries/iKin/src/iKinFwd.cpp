@@ -488,6 +488,24 @@ bool iKinChain::releaseLink(const unsigned int i)
 
 
 /************************************************************************/
+bool iKinChain::isLinkBlocked(const unsigned int i)
+{
+    if (i<N)
+        return allList[i]->isBlocked();
+    else
+    {    
+        if (verbose)
+        {
+            cerr << "isLinkBlocked() failed due to out of range index: ";
+            cerr << i << ">=" << N << endl;
+        }
+
+        return false;
+    }
+}
+
+
+/************************************************************************/
 void iKinChain::setAllConstraints(bool _constrained)
 {
     for (unsigned int i=0; i<N; i++)
