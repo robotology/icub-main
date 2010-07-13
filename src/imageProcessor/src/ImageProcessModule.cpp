@@ -224,7 +224,7 @@ bool ImageProcessModule::updateModule() {
         currentProcessor->blueYellow_yarp=interThread->blueYellow_yarp;
 
         currentProcessor->redGreen_flag=interThread->redGreen_flag;
-        currentProcessor->greenRed_flag=interThread->redGreen_flag;
+        currentProcessor->greenRed_flag=interThread->greenRed_flag;
         currentProcessor->blueYellow_flag=interThread->blueYellow_flag;
 
         interThread->edges_yarp=currentProcessor->edges_yarp;

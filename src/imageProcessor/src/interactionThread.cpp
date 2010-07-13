@@ -108,7 +108,6 @@ void interactionThread::interrupt(){
 
 
 void interactionThread::run(){
-    Time::delay(1);
     while(!isStopping()){
         /*this->inputImg = this->inImagePort.read(false);
         if(0==inputImg)
@@ -117,7 +116,7 @@ void interactionThread::run(){
         //synchronisation with the input image occuring
         if(!interrupted){
             tmp=rgPort.read(true);
-            printf("Out of the reading \n");
+            
             if(tmp!=0){
                 //outPorts();
               
@@ -126,7 +125,6 @@ void interactionThread::run(){
                     //srcsize.width=img->width();
                     reinitialise(tmp->width(), tmp->height());
                     reinit_flag=true;
-                    
                     //startImageProcessor();
                 }
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
@@ -137,7 +135,7 @@ void interactionThread::run(){
                 
                 
                 this->bluePlane=bluePlanePort.read(true);
-                tmp=byPort.read(false);
+                tmp=byPort.read(true);
                 if(0!=tmp){
                     ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);   
                     *blueYellow_flag=1;
@@ -145,7 +143,7 @@ void interactionThread::run(){
                 
                 
                 this->greenPlane=greenPlanePort.read(true);
-                tmp=grPort.read(false);
+                tmp=grPort.read(true);
                 if(0!=tmp){
                     ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
                     *greenRed_flag=1;
@@ -155,7 +153,6 @@ void interactionThread::run(){
                 outPorts();
             }
         }
-        Time::delay(1);
     }
 }
    
