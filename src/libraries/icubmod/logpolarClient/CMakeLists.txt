@@ -11,9 +11,6 @@ IF(NOT SKIP_logpolarclient)
 
   ADD_LIBRARY(logpolarclient ClientLogpolarFrameGrabber.cpp)
 
-  MESSAGE("--> ${logPolar_LIBRARIES}")
-  MESSAGE("--> ${iCubDev_LIBRARIES}")
-  MESSAGE("--> ${YARP_LIBRARIES}")
   TARGET_LINK_LIBRARIES(logpolarclient  iCubDev 
 										logPolar
                                         ${YARP_LIBRARIES})
