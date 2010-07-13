@@ -1,7 +1,7 @@
 /**
 @ingroup  icub_applications
 
-\defgroup icub_zeroForceControl zeroForceControl
+\defgroup icub_demoForceControl demoForceControl
 
 A module for interacting with the robot. 
 
@@ -27,7 +27,7 @@ The parameters which are required to the module are:
 
 \section config_sec Configuration Files
 
-Configuration files are located in the ICUB_DIR/app/zeroForceControl/conf folder. 
+Configuration files are located in the ICUB_DIR/app/demoForceControl/conf folder. 
 
 The files of type partLimbFT.ini (i.e. leftArmFT.ini) contain the information about the different limbs: robot, part, initPosition, joint limits, and others. 
 
@@ -39,7 +39,7 @@ The files of type partLimbFT.ini (i.e. leftArmFT.ini) contain the information ab
 
 To run the application, please do the following :
 
-- manager.py $ICUB_DIR/app/zeroForceControl/scripts/zeroForce.xml  
+- manager.py $ICUB_DIR/app/demoForceControl/scripts/zdemoForceControl.xml  
 
 \author Matteo Fumagalli
 
@@ -47,5 +47,5 @@ Copyright (C) 2008 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at \in app/zeroForceControl/doc.dox
+This file can be edited at \in app/demoForceControl/doc.dox
 **/
