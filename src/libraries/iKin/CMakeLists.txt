@@ -44,8 +44,8 @@ ENDIF(ICUB_USE_IPOPT)
 IF(ICUB_USE_IPOPT)
     icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                        EXTERNAL_INCLUDE_DIRS ${IPOPT_INCLUDE_DIRS}
-                                       DESTINATION include/iCub/iKin
-                                       DEPENDS ctrlLib
+									   DEPENDS ctrlLib
+                                       DESTINATION include/iCub/iKin                                       
                                        FILES ${folder_header})                                   
 ELSE(ICUB_USE_IPOPT)
     icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
