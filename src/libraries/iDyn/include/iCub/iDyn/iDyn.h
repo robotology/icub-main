@@ -73,7 +73,7 @@ namespace iCub
 
 namespace iDyn
 {
-    inline void notImplemented(const unsigned int verbose);
+    void notImplemented(const unsigned int verbose);
 
     class OneLinkNewtonEuler;
     class BaseLinkNewtonEuler;
