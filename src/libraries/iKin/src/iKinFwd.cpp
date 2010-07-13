@@ -16,6 +16,14 @@ using namespace iCub::iKin;
 
 
 /************************************************************************/
+void iCub::iKin::notImplemented(const unsigned verbose)
+{
+    if (verbose)
+        cout<<"iKin: not implemented"<<endl;
+}
+
+
+/************************************************************************/
 iKinLink::iKinLink(double _A, double _D, double _Alpha, double _Offset,
                    double _Min, double _Max)
 {

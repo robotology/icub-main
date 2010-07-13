@@ -73,20 +73,21 @@ namespace iCub
 
 namespace iDyn
 {
+    void notImplemented(const unsigned verbose);
 
-	class OneLinkNewtonEuler;
-	class BaseLinkNewtonEuler;
-	class FinalLinkNewtonEuler;
-	class SensorLinkNewtonEuler;
-	class OneChainNewtonEuler;
-	class OneChainSensorNewtonEuler;
-	class iDynSensor;
-	class iGenericFrame;
+    class OneLinkNewtonEuler;
+    class BaseLinkNewtonEuler;
+    class FinalLinkNewtonEuler;
+    class SensorLinkNewtonEuler;
+    class OneChainNewtonEuler;
+    class OneChainSensorNewtonEuler;
+    class iDynSensor;
+    class iGenericFrame;
     class iFrameOnLink;
-	class iFTransformation;
-	class iDynSensorLeg;
-	class iDynSensorArm;
-	class iCubWholeBody;
+    class iFTransformation;
+    class iDynSensorLeg;
+    class iDynSensorArm;
+    class iCubWholeBody;
 
 
 
@@ -1056,7 +1057,7 @@ public:
     * @return true/false on success/failure. 
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim)
-	{ return true; }
+	{ notImplemented(verbose); return true; }
 
 
 	// base methods - see also iKin.
