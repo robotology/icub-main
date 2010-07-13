@@ -46,17 +46,16 @@ SOURCE_GROUP("Source Files" FILES ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC})
 SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
 
 # add YARP include directories
-INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
 
 # Add our include files into our compiler's search path.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 ADD_LIBRARY(${LM_LIB} ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_HEADER})
 
-TARGET_LINK_LIBRARIES(${LM_LIB} ${ACE_LIBRARIES} ${YARP_LIBRARIES})
+TARGET_LINK_LIBRARIES(${LM_LIB} ${YARP_LIBRARIES})
 
 icub_export_library(${LM_LIB} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                              EXTERNAL_INCLUDE_DIRS ${ACE_INCLUDE_DIRS}
                               DESTINATION include/iCub/learningMachine
                               FILES ${LM_HEADER})
 

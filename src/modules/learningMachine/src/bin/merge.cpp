@@ -528,7 +528,8 @@ public:
      * @return a vector with the string parts
      */
     static std::vector<std::string> split(std::string input, std::string delimiter) {
-        std::string::size_type start, end = 0;
+        std::string::size_type start = 0;
+		std::string::size_type end = 0;
         std::vector<std::string> output;
         while (end != std::string::npos) {
             end = input.find(delimiter, start);

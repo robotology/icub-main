@@ -50,6 +50,8 @@ SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
 
 # add YARP include directories
 INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
+# add ACE dependence (temporary workaround)
+INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIRS})
 # add learningMachine library include directories
 INCLUDE_DIRECTORIES(${learningMachine_INCLUDE_DIRS})
 # add our include files into our compiler's search path.
