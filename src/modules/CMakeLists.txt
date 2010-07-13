@@ -1,4 +1,3 @@
-add_subdirectory(affActionPrimitivesExample)
 add_subdirectory(ctpService)
 add_subdirectory(scriptSequencer)
 add_subdirectory(graspDetectorConf)
