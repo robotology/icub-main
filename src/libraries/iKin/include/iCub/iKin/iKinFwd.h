@@ -308,10 +308,10 @@ public:
 	virtual	yarp::sig::Matrix getCOM()	   const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
 	virtual	double			  getDAng()    const { notImplemented(verbose); return 0.0;                                }
 	virtual	double			  getD2Ang()   const { notImplemented(verbose); return 0.0;                                }
-	virtual	yarp::sig::Matrix getR()	   const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-	virtual	yarp::sig::Matrix getRC()	   const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-	virtual	yarp::sig::Vector getr()	   const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getrC()	   const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Matrix getR()	         { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+	virtual	yarp::sig::Matrix getRC()	         { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+	virtual	yarp::sig::Vector getr()	         { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getrC()	         { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
 	virtual	yarp::sig::Vector getW()	   const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
 	virtual	yarp::sig::Vector getdW()      const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
 	virtual	yarp::sig::Vector getdWM()     const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
