@@ -16,7 +16,7 @@ using namespace iCub::iKin;
 
 
 /************************************************************************/
-void iCub::iKin::notImplemented(const unsigned verbose)
+void iCub::iKin::notImplemented(const unsigned int verbose)
 {
     if (verbose)
         cout<<"iKin: not implemented"<<endl;

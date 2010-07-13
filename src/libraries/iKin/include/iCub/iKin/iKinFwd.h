@@ -53,7 +53,7 @@ namespace iCub
 namespace iKin
 {
 
-inline void notImplemented(const unsigned verbose);
+inline void notImplemented(const unsigned int verbose);
 
 /**
 * \ingroup iKinFwd
