@@ -164,7 +164,7 @@ void affActionPrimitives::init()
 
 
 /************************************************************************/
-bool affActionPrimitives::isValid()
+bool affActionPrimitives::isValid() const
 {
     return configured;
 }
@@ -1361,7 +1361,7 @@ bool affActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequ
 
 
 /************************************************************************/
-bool affActionPrimitives::areFingersMoving(bool &f)
+bool affActionPrimitives::areFingersMoving(bool &f) const
 {
     if (configured)
     {
@@ -1374,7 +1374,7 @@ bool affActionPrimitives::areFingersMoving(bool &f)
 
 
 /************************************************************************/
-bool affActionPrimitives::areFingersInPosition(bool &f)
+bool affActionPrimitives::areFingersInPosition(bool &f) const
 {
     if (configured)
     {
@@ -1387,7 +1387,7 @@ bool affActionPrimitives::areFingersInPosition(bool &f)
 
 
 /************************************************************************/
-bool affActionPrimitives::getCartesianIF(ICartesianControl *&ctrl)
+bool affActionPrimitives::getCartesianIF(ICartesianControl *&ctrl) const
 {
     if (configured)
     {
@@ -1400,7 +1400,7 @@ bool affActionPrimitives::getCartesianIF(ICartesianControl *&ctrl)
 
 
 /************************************************************************/
-bool affActionPrimitives::getPose(Vector &x, Vector &o)
+bool affActionPrimitives::getPose(Vector &x, Vector &o) const
 {
     if (configured)
     {
@@ -1519,7 +1519,7 @@ bool affActionPrimitives::disableReachingTimeout()
 
 
 /************************************************************************/
-bool affActionPrimitives::getTrackingMode()
+bool affActionPrimitives::getTrackingMode() const
 {
     return tracking_mode;
 }
@@ -1916,7 +1916,7 @@ void affActionPrimitivesLayer2::alignJointsBounds()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::isValid()
+bool affActionPrimitivesLayer2::isValid() const
 {
     return (affActionPrimitivesLayer1::isValid() && configuredLayer2);
 }
@@ -2040,7 +2040,7 @@ bool affActionPrimitivesLayer2::latchWrenchOffset()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::getExtWrench(Vector &wrench)
+bool affActionPrimitivesLayer2::getExtWrench(Vector &wrench) const
 {
     if (configured)
     {
@@ -2053,7 +2053,7 @@ bool affActionPrimitivesLayer2::getExtWrench(Vector &wrench)
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::getExtForceThres(double &thres)
+bool affActionPrimitivesLayer2::getExtForceThres(double &thres) const
 {
     if (configured)
     {
@@ -2105,7 +2105,7 @@ bool affActionPrimitivesLayer2::disableContactDetection()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::isContactDetectionEnabled(bool &f)
+bool affActionPrimitivesLayer2::isContactDetectionEnabled(bool &f) const
 {
     if (configured)
     {
@@ -2118,7 +2118,7 @@ bool affActionPrimitivesLayer2::isContactDetectionEnabled(bool &f)
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::checkContact(bool &f)
+bool affActionPrimitivesLayer2::checkContact(bool &f) const
 {
     if (configured)
     {

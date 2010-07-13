@@ -342,7 +342,7 @@ public:
     * Check if the object is initialized correctly. 
     * @return true/fail on success/fail. 
     */
-    virtual bool isValid();
+    virtual bool isValid() const;
 
     /**
     * Deallocate the object.
@@ -550,7 +550,7 @@ public:
     * @param f the result of the check.
     * @return true/false on success/fail. 
     */
-    virtual bool areFingersMoving(bool &f);
+    virtual bool areFingersMoving(bool &f) const;
 
     /**
     * Query if fingers are in position. 
@@ -563,7 +563,7 @@ public:
     *       among fingers or with objects causes the method to
     *       return false.
     */
-    virtual bool areFingersInPosition(bool &f);
+    virtual bool areFingersInPosition(bool &f) const;
 
     /**
     * Return the cartesian interface used internally to control the 
@@ -575,7 +575,7 @@ public:
     *       href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
     *       Interface</a>.
     */
-    virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl);
+    virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl) const;
 
     /**
     * Get the current arm pose.
@@ -586,7 +586,7 @@ public:
     *           za, theta (meters and radians).
     * @return true/false on success/failure.
     */
-    virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o) const;
 
     /**
     * Stop any ongoing arm/hand movements.
@@ -610,7 +610,7 @@ public:
     * Get the current controller mode.
     * @return true/false on tracking/non-tracking mode. 
     */
-    virtual bool getTrackingMode();
+    virtual bool getTrackingMode() const;
 
     /**
     * Enable the waving mode that keeps on moving the arm around a 
@@ -945,7 +945,7 @@ public:
     * Check if the object is initialized correctly. 
     * @return true/fail on success/fail. 
     */
-    virtual bool isValid();
+    virtual bool isValid() const;
 
     /**
     * Deallocate the object.
@@ -1011,7 +1011,7 @@ public:
     *               acting on the end-effector.
     * @return true/false on success/fail. 
     */
-    virtual bool getExtWrench(yarp::sig::Vector &wrench);
+    virtual bool getExtWrench(yarp::sig::Vector &wrench) const;
 
     /**
     * Retrieve the current threshold on the external force used to 
@@ -1019,7 +1019,7 @@ public:
     * @param thres where to return the threshold.
     * @return true/false on success/fail. 
     */
-    virtual bool getExtForceThres(double &thres);
+    virtual bool getExtForceThres(double &thres) const;
 
     /**
     * Set the threshold on the external force used to stop the limb
@@ -1046,7 +1046,7 @@ public:
     * @param f the result of the check.  
     * @return true/false on success/fail. 
     */
-    virtual bool isContactDetectionEnabled(bool &f);
+    virtual bool isContactDetectionEnabled(bool &f) const;
 
     /**
     * Check whether the reaching has been stopped due to a contact 
@@ -1054,7 +1054,7 @@ public:
     * @param f the result of the check. 
     * @return true/false on success/fail. 
     */
-    virtual bool checkContact(bool &f);
+    virtual bool checkContact(bool &f) const;
 };
 
 }
