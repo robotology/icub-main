@@ -39,7 +39,7 @@ using namespace iCub::iDyn;
 //================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iCub::iDyn::notImplemented(const unsigned verbose)
+void iCub::iDyn::notImplemented(const unsigned int verbose)
 {
     if (verbose)
         cout<<"iDyn: not implemented"<<endl;
