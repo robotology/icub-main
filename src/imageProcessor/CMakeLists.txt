@@ -1,4 +1,4 @@
-
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 SET(KEYWORD "imageProcessor")
 
 PROJECT(${KEYWORD})
@@ -6,8 +6,10 @@ PROJECT(${KEYWORD})
 
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(YARP REQUIRED)
-#SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${YARP_DIR}/conf ${ICUB_DIR}/conf)
-#MESSAGE("CMAKE_MODULE_PATH:  ${CMAKE_MODULE_PATH}")
+
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${YARP_DIR}/conf ${ICUB_DIR}/conf)
+MESSAGE("CMAKE_MODULE_PATH:  ${CMAKE_MODULE_PATH}")
+
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(IPP REQUIRED)
 
@@ -30,14 +32,21 @@ MESSAGE("OPENCV_INCLUDE_DIR: ${OPENCV_INCLUDE_DIR}")
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${OPENCV_INCLUDE_DIR}    	
-    ${IPP_INCLUDE_DIRS}	 
-    #$ENV{QT_INCLUDE_DIR}
+    ${OPENCV_INCLUDE_DIR}
+    ${ICUB_INCLUDE_DIRS}
+    ${IPP_INCLUDE_DIRS}	
+    ${YARP_INCLUDE_DIRS}
 )
 
 IF(NOT IPP_INCLUDE_DIRS)
 	MESSAGE(ERROR ": No IPP_INCLUDE_DIR found. Please check it out")	
 ENDIF(NOT IPP_INCLUDE_DIRS)
+
+IF(NOT OPENCV_INCLUDE_DIR)
+	MESSAGE(ERROR ": No OPENCV_INCLUDE_DIR found. Please check it out")	
+ENDIF(NOT OPENCV_INCLUDE_DIR)
+
+
 
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
@@ -55,13 +64,6 @@ LINK_DIRECTORIES(
     #/opt/intel/ipp/sharedlib	
 )
 
-#LINK_LIBRARIES(debug "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib" 
-#	optimized "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib")
-
-
-
-
-
 # Set up our main executable.
 IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
@@ -72,7 +74,6 @@ IF (folder_source)
      TARGET_LINK_LIBRARIES( ${KEYWORD}
       ${OPENCV_LIBRARIES}
       ${YARP_LIBRARIES}
-      #${ODE_LIBRARIES}
       ${IDL_LIBRARIES}
       ${IPP_LIBRARIES} 	
      )	
@@ -80,10 +81,8 @@ IF (folder_source)
      TARGET_LINK_LIBRARIES( ${KEYWORD}
        ${OPENCV_LIBRARIES}
        ${YARP_LIBRARIES}
-       #${ODE_LIBRARIES}
        ${IDL_LIBRARIES}
        ${IPP_LIBRARIES} 
-       #ippi	
        pthread
      )
     ENDIF (WIN32)	
@@ -92,11 +91,5 @@ ELSE (folder_source)
 ENDIF (folder_source)
 
 
-#ADD_LIBRARY(ImageProcessModule
-#    ${ImageProcessModuleSRC}
-#    ${folder_header}
-#)
-
-#INSTALL_TARGETS(/lib ${KEYWORD})
 INSTALL_TARGETS(/bin ${KEYWORD})
 
