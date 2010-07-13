@@ -470,7 +470,7 @@ public:
     * request. 
     * @return true/false if closed or not. 
     */
-    virtual bool isClosed() { return closed; }
+    virtual bool isClosed() const { return closed; }
 
     /**
     * To be called to check whether communication timeout has been 

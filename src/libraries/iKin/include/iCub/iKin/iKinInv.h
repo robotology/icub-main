@@ -279,7 +279,7 @@ public:
     * Returns tolerance for in-target check. 
     * @return tolerance
     */
-    virtual double getInTargetTol() { return inTargetTol; }
+    virtual double getInTargetTol() const { return inTargetTol; }
 
     /**
     * Sets tolerance for watchDog check (1e-4 by default). 
@@ -291,7 +291,7 @@ public:
     * Returns tolerance for watchDog check. 
     * @return tolerance
     */
-    virtual double getWatchDogTol() { return watchDogTol; }
+    virtual double getWatchDogTol() const { return watchDogTol; }
 
     /**
     * Sets maximum number of iterations to trigger the watchDog (200
@@ -304,7 +304,7 @@ public:
     * Returns maximum number of iterations to trigger the watchDog
     * @return iterations limit.
     */
-    virtual int getWatchDogMaxIter() { return watchDogMaxIter; }
+    virtual int getWatchDogMaxIter() const { return watchDogMaxIter; }
 
     /**
     * Checks if the End-Effector is in target. 
@@ -319,7 +319,7 @@ public:
     * IKINCTRL_STATE_INTARGET 
     * IKINCTRL_STATE_DEADLOCK 
     */
-    int get_State() { return State; }
+    int get_State() const { return State; }
 
     /**
     * Sets the state of Pose control settings.
@@ -334,19 +334,19 @@ public:
     * Returns the state of Pose control settings.
     * @return Pose control settings.
     */
-    unsigned int get_ctrlPose() { return ctrlPose; }
+    unsigned int get_ctrlPose() const { return ctrlPose; }
 
     /**
     * Returns the number of Chain DOF
     * @return number of Chain DOF.
     */
-    unsigned int get_dim() { return dim; }
+    unsigned int get_dim() const { return dim; }
 
     /**
     * Returns the number of performed iterations.
     * @return number of performed iterations.
     */
-    unsigned int get_iter() { return iter; }
+    unsigned int get_iter() const { return iter; }
 
     /**
     * Returns the actual cartesian position of the End-Effector.
@@ -489,7 +489,7 @@ public:
     * Returns the gain.
     * @return the gain.
     */
-    double get_Kp() { return Kp; }
+    double get_Kp() const { return Kp; }
 
     /**
     * Destructor.
@@ -673,7 +673,7 @@ public:
     * Returns the current weighting factor mu.
     * @return the current weighting factor mu.
     */
-    double get_mu() { return mu; }
+    double get_mu() const { return mu; }
 
     /**
     * Sets the weighting factor mu equal to the initial value.
@@ -733,7 +733,7 @@ public:
     * Returns the GPM gain (1.0 by default).
     * @return the GPM gain.
     */
-    double get_K() { return K; }
+    double get_K() const { return K; }
 
     /**
     * Sets the safe area ratio [0-1], which is for each joint the
@@ -747,7 +747,7 @@ public:
     * Returns the safe area ratio (0.9 by default).
     * @return the safe area ratio.
     */
-    double get_safeAreaRatio() { return safeAreaRatio; }
+    double get_safeAreaRatio() const { return safeAreaRatio; }
 };
 
 
@@ -985,19 +985,19 @@ public:
     *       for each join, where D=q_max-q_min.
     * @return guard ratio.
     */
-    double get_guardRatio() { return guardRatio; }
+    double get_guardRatio() const { return guardRatio; }
 
     /**
     * Returns the parameter gamma. 
     * @return gamma.
     */
-    double get_gamma() { return gamma; }
+    double get_gamma() const { return gamma; }
 
     /**
     * Returns the task execution time in seconds (1.0 by default). 
     * @return task execution time.
     */
-    double get_execTime() { return execTime; }
+    double get_execTime() const { return execTime; }
 
     /**
     * Returns the actual derivative of joint angles.
