@@ -506,9 +506,14 @@ bool iDynNode::setKinematicMeasure(const Vector &w0, const Vector &dw0, const Ve
 		for(unsigned int i=0; i<rbtList.size(); i++)
 		{
 			if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)			
-				rbtList[i].setKinematicMeasure(w0,dw0,ddp0);	
+            {
+                rbtList[i].setKinematicMeasure(w0,dw0,ddp0);
+                return true;
+            }
 		}
-		return true;
+        if(verbose)
+            cerr<<"iDynNode: error, there is not a node to set kinematic measure!"<<endl;
+		return false;
 	}
 	else
 	{
@@ -714,7 +719,38 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 	//now that all is set, we can really solveWrench()
 	return inputWasOk ;
 }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int iDynNode::howManyWrenchInputs(bool afterAttach) const
+{
+	unsigned int inputNode = 0;
 
+	//check how many limbs have wrench input
+	for(unsigned int i=0; i<rbtList.size(); i++)
+		if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
+			inputNode++;
+
+	// if an attach has been done, we already set one wrench measure, so we don't have to do it again
+	// and we expect FM (or F,M) to be smaller of 1
+	if(afterAttach==true) inputNode--;
+
+	return inputNode;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int iDynNode::howManyKinematicInputs(bool afterAttach) const
+{
+	unsigned int inputNode = 0;
+
+	//check how many limbs have kinematic input
+	for(unsigned int i=0; i<rbtList.size(); i++)
+        if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)			
+			inputNode++;
+
+	// if an attach has been done, we already set one kinematic measure, so we don't have to do it again
+	// actually we expect the number to be zero, because only one limb has kinematic measures
+	if(afterAttach==true) inputNode--;
+
+	return inputNode;
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynNode::getForce() const {	return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -931,6 +967,7 @@ void iDynSensorNode::addLimb(iDynLimb *limb, const Matrix &H, iDynSensor *sensor
 bool iDynSensorNode::solveWrench()
 {
 	unsigned int outputNode = 0;
+    // set to zero the node force/moment
 	F.zero(); Mu.zero();
 
 	//first get the forces/moments from each limb
@@ -987,18 +1024,15 @@ bool iDynSensorNode::solveWrench()
 	return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynSensorNode::setWrenchMeasure(const Matrix &FM)
+bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
 {
-	int inputNode = 0;
 	Vector fi(3); fi.zero();
 	Vector mi(3); mi.zero();
 	Vector FMi(6);FMi.zero();
 	bool inputWasOk = true;
 
 	//check how many limbs have wrench input
-	for(unsigned int i=0; i<rbtList.size(); i++)
-		if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
-			inputNode++;
+	int inputNode = howManyWrenchInputs(afterAttach);
 		
 	// input (eg measured) wrenches are stored in a 6xN matrix: each column is a 6x1 vector
 	// with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
@@ -1010,9 +1044,13 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM)
 	if(FM.cols()<inputNode)
 	{
 		if(verbose)
+		{
 			cerr<<"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: "
 				<<" only "<<FM.cols()<<" f/m available instead of "<<inputNode<<endl
 				<<"          Using default values, all zero."<<endl;
+			if(afterAttach==true)
+			cerr<<"          Remember that the first limb receives wrench input during an attach from another node."<<endl;
+		}
 		inputWasOk = false;
 	}
 	if(FM.rows()!=6)
@@ -1024,11 +1062,17 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM)
 		inputWasOk = false;
 	}
 
+	//set the input forces/moments from each limb at base/end
+	// note: if afterAttach=true we set the wrench only in limbs 1,2,..
+	// if afterAttach=false, we set the wrench in all limbs 0,1,2,..
+	unsigned int startLimb=0;
+	if(afterAttach) startLimb=1;
+
 	//set the measured/input forces/moments from each limb
 	if(inputWasOk)
 	{
 		inputNode = 0;
-		for(unsigned int i=0; i<rbtList.size(); i++)
+		for(unsigned int i=startLimb; i<rbtList.size(); i++)
 		{
 			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
 			{
@@ -1050,7 +1094,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM)
 	else
 	{
 		// default zero values if inputs are wrong sized
-		for(unsigned int i=0; i<rbtList.size(); i++)
+		for(unsigned int i=startLimb; i<rbtList.size(); i++)
 			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
 			{
 				if(rbtList[i].isSensorized()==true)
@@ -1064,16 +1108,13 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM)
 	return inputWasOk ;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
+bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool afterAttach)
 {
-	int inputNode = 0;
 	bool inputWasOk = true;
-
+	
 	//check how many limbs have wrench input
-	for(unsigned int i=0; i<rbtList.size(); i++)
-		if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
-			inputNode++;
-		
+	int inputNode = howManyWrenchInputs(afterAttach);
+			
 	// input (eg measured) wrenches are stored in two 3xN matrix: each column is a 3x1 vector
 	// with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
 	// the order is assumed coherent with the one built when adding limbs
@@ -1084,9 +1125,13 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 	if((Fm.cols()<inputNode)||(Mm.cols()<inputNode))
 	{
 		if(verbose)
+		{
 			cerr<<"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: "
 				<<" only "<<Fm.cols()<<"/"<<Mm.cols()<<" f/m available instead of "<<inputNode<<"/"<<inputNode<<endl
 				<<"          Using default values, all zero."<<endl;
+			if(afterAttach==true)
+			cerr<<"          Remember that the first limb receives wrench input during an attach from another node."<<endl;
+		}
 		inputWasOk = false;
 	}
 	if((Fm.rows()!=3)||(Mm.rows()!=3))
@@ -1098,11 +1143,17 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 		inputWasOk = false;
 	}
 
+	//set the input forces/moments from each limb at base/end
+	// note: if afterAttach=true we set the wrench only in limbs 1,2,..
+	// if afterAttach=false, we set the wrench in all limbs 0,1,2,..
+	unsigned int startLimb=0;
+	if(afterAttach) startLimb=1;
+
 	//set the measured/input forces/moments from each limb	
 	if(inputWasOk)
 	{
 		inputNode = 0;
-		for(unsigned int i=0; i<rbtList.size(); i++)
+		for(unsigned int i=startLimb; i<rbtList.size(); i++)
 		{
 			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
 			{
@@ -1122,12 +1173,12 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 	{
 		// default zero values if inputs are wrong sized
 		Vector fi(3), mi(3); fi.zero(); mi.zero();
-		for(unsigned int i=0; i<rbtList.size(); i++)	
+		for(unsigned int i=startLimb; i<rbtList.size(); i++)	
 			if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
 				rbtList[i].setWrenchMeasure(fi,mi);	
 	}
 
-	//now that all is set, we can really solveWrench()
+	//now that all is set, we can call solveWrench() or update()...
 	return inputWasOk ;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1148,6 +1199,9 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	// solve kinematics
 	solveKinematics();
 
+	//check how many limbs have wrench input
+	inputNode = howManyWrenchInputs(afterAttach);
+
 	//first check if the input is correct
 	if(FM.rows()!=6)
 	{
@@ -1157,21 +1211,14 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 				<<"                Using default values, all zero."<<endl;
 		inputWasOk = false;
 	}
-	if((afterAttach==true)&&(FM.cols()!=(rbtList.size()-1)))
+	if(FM.cols()!=inputNode)
 	{
 		if(verbose)
 			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
-				<<FM.cols()<<" cols instead of "<<(rbtList.size()-1)
-				<<". Remember that the first limb receives wrench input during an attach from another node."<<endl
+				<<FM.cols()<<" cols instead of "<<inputNode
 				<<"                Using default values, all zero."<<endl;
-		inputWasOk = false;
-	}
-	if((afterAttach==false)&&(FM.cols()!=rbtList.size()))
-	{
-		if(verbose)
-			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
-				<<FM.cols()<<" cols instead of "<<rbtList.size()
-				<<"                Using default values, all zero."<<endl;
+		if(afterAttach==true)
+			cerr<<"                Remember that the first limb receives wrench input during an attach from another node."<<endl;
 		inputWasOk = false;
 	}
 
@@ -1256,6 +1303,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	}
 
 	// now look for sensors
+	numSensor = 0;
 	for(unsigned int i=0; i<rbtList.size(); i++)
 	{
 		//now we can estimate the sensor wrench if there's a sensor
@@ -1280,6 +1328,17 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 			}
 	}
 	return ret;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int iDynSensorNode::howManySensors() const
+{
+	unsigned int numSensor = 0;
+	for(unsigned int i=0; i<rbtList.size(); i++)
+	{
+		if(rbtList[i].isSensorized()==true)				
+			numSensor++;
+	}
+	return numSensor;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1344,8 +1403,22 @@ bool iDynSensorTorsoNode::setInertialMeasure(const Vector &w0, const Vector &dw0
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vector &FM_left)
 {
-	Vector FM_up(6); FM_up.zero();
-	return setSensorMeasurement(FM_right,FM_left,FM_up);
+	Matrix FM(6,2); FM.zero();
+	if((FM_right.length()==6)&&(FM_left.length()==6))
+	{
+		FM.setCol(0,FM_right);
+		FM.setCol(1,FM_left);
+		return setWrenchMeasure(FM,true);
+	}
+	else
+	{
+		if(verbose)
+			cerr<<"Node <"<<name<<"> could not set sensor measurements properly due to wrong sized vectors. "
+				<<" FM right/left have lenght "<<FM_right.length()<<","<<FM_left.length()
+				<<" instead of 6,6. Setting everything to zero. "<<endl;
+		setWrenchMeasure(FM,true);
+		return false;
+	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vector &FM_left, const Vector &FM_up)
@@ -1357,7 +1430,7 @@ bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vec
 		FM.setCol(0,FM_up);
 		FM.setCol(1,FM_right);
 		FM.setCol(2,FM_left);
-		return setWrenchMeasure(FM);
+		return setWrenchMeasure(FM,false);
 	}
 	else
 	{
@@ -1394,6 +1467,37 @@ bool iDynSensorTorsoNode::update(const Vector &w0, const Vector &dw0, const Vect
 			cerr<<"Node <"<<name<<"> error, could not update() due to wrong sized vectors. "
 				<<" w0,dw0,ddp0 have size "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()<<" instead of 3,3,3. "
 				<<" FM up/right/left have size "<<FM_up.length()<<","<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6,6. "
+				<<"            Updating without new values."<< endl;
+		update();
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynSensorTorsoNode::update(const Vector &FM_right, const Vector &FM_left, bool afterAttach)
+{
+	if(afterAttach==false)
+	{
+		if(verbose)
+			cerr<<"Node <"<<name<<"> error, could not update() due to missing wrench vectors. "
+			<<"This type of update() only works after an attachTorso() or after having set the central limb wrench and kinematics variables. "
+			<<" You should try with the other update() methods. "
+			<<"Could not perform update(): exiting. "<<endl;
+		return false;
+	}
+
+	if((FM_right.length()==6)&&(FM_left.length()==6))
+	{
+		Matrix FM(6,2); 
+		FM.setCol(0,FM_right);
+		FM.setCol(1,FM_left);
+		setWrenchMeasure(FM,true);
+		return update();
+	}
+	else
+	{
+		if(verbose)
+			cerr<<"Node <"<<name<<"> error, could not update() due to wrong sized vectors. "
+				<<" FM right/left have size "<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6. "
 				<<"            Updating without new values."<< endl;
 		update();
 		return false;
@@ -1442,30 +1546,15 @@ Vector iDynSensorTorsoNode::getTorques(const string &limbType)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynSensorTorsoNode::getTorsoForce() const
-{
-	return F;
-}	
+Vector iDynSensorTorsoNode::getTorsoForce() const {	return F;}	
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynSensorTorsoNode::getTorsoMoment() const
-{
-	return Mu;
-}	
+Vector iDynSensorTorsoNode::getTorsoMoment() const{	return Mu;}	
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynSensorTorsoNode::getTorsoAngVel() const
-{
-	return w;
-}
+Vector iDynSensorTorsoNode::getTorsoAngVel() const{	return w;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynSensorTorsoNode::getTorsoAngAcc() const
-{
-	return dw;
-}
+Vector iDynSensorTorsoNode::getTorsoAngAcc() const{	return dw;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynSensorTorsoNode::getTorsoLinAcc() const
-{
-	return ddp;
-}
+Vector iDynSensorTorsoNode::getTorsoLinAcc() const{	return ddp;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//------------------
@@ -1778,6 +1867,445 @@ void iCubWholeBody::attachTorso()
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubWholeBody::updateAll(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_head, 
+							  const Vector &FM_right_arm, const Vector &FM_left_arm,
+							  const Vector &FM_right_leg, const Vector &FM_left_leg)
+{
+	bool isOk = true;
+	isOk = isOk && upperTorso->update(w0,dw0,ddp0,FM_right_arm,FM_left_arm,FM_head);
+	attachTorso();
+	isOk = isOk && lowerTorso->update(FM_right_leg,FM_left_leg,NODE_AFTER_ATTACH);
+	return isOk;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+//====================================
+//
+//	     iCUB UPPER BODY   
+//
+//====================================
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubUpperBody::iCubUpperBody(const NewEulMode _mode, unsigned int verb)
+:iDynSensorNode("icub_upper_body",_mode,verb)
+{
+    build();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iCubUpperBody::build()
+{
+	leftArm	    = new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
+	rightArm    = new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
+	head		= new iCubNeckInertialDyn(KINBWD_WREBWD);
+    torso       = new iCubTorsoDyn("asiKinArm",KINBWD_WREBWD);
+
+	leftSensor = new iDynSensorArmNoTorso(leftArm,mode,verbose);
+	rightSensor= new iDynSensorArmNoTorso(rightArm,mode,verbose);
+
+	HHead.resize(4,4);	HHead.eye();
+	HLeft.resize(4,4);	HLeft.zero();
+	HRight.resize(4,4);	HRight.zero();
+    HTorso.resize(4,4); HTorso.eye();
+
+	double theta = CTRL_DEG2RAD * (180.0-15.0);
+	HLeft(0,0) = cos(theta);	HLeft(0,1) = 0.0;		HLeft(0,2) = sin(theta);	HLeft(0,3) = 0.003066;
+	HLeft(1,0) = 0.0;			HLeft(1,1) = 1.0;		HLeft(1,2) = 0.0;			HLeft(1,3) = -0.049999;
+	HLeft(2,0) = -sin(theta);	HLeft(2,1) = 0.0;		HLeft(2,2) = cos(theta);	HLeft(2,3) = -0.110261;
+	HLeft(3,3) = 1.0;	
+	HRight(0,0) = -cos(theta);	HRight(0,1) = 0.0;  HRight(0,2) = -sin(theta);	HRight(0,3) = 0.00294;
+	HRight(1,0) = 0.0;			HRight(1,1) = -1.0; HRight(1,2) = 0.0;			HRight(1,3) = -0.050;
+	HRight(2,0) = -sin(theta);	HRight(2,1) = 0.0;	HRight(2,2) = cos(theta);	HRight(2,3) = 0.10997;
+	HRight(3,3) = 1.0;
+
+	// order: head - right arm - left arm - torso
+	addLimb(head,       HHead,                  RBT_NODE_IN,    RBT_NODE_IN);
+	addLimb(rightArm,   HRight, rightSensor,    RBT_NODE_OUT,   RBT_NODE_IN);
+	addLimb(leftArm,    HLeft,  leftSensor,     RBT_NODE_OUT,   RBT_NODE_IN);
+    addLimb(torso,      HTorso,                 RBT_NODE_OUT,   RBT_NODE_OUT);
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubUpperBody::~iCubUpperBody()
+{
+	delete rightSensor; rightSensor = NULL;
+	delete leftSensor;	leftSensor = NULL;
+	delete head;		head = NULL;
+	delete rightArm;	rightArm = NULL;
+	delete leftArm;		leftArm = NULL;
+    delete torso;       torso = NULL;
+
+	rbtList.clear();
+	sensorList.clear();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubUpperBody::setInertialMeasure(const Vector &w0, const Vector &dw0, const Vector &ddp0)
+{
+	return setKinematicMeasure(w0,dw0,ddp0);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubUpperBody::setSensorsWrenchMeasure(const Vector &FM_right, const Vector &FM_left, const Vector &FM_head)
+{
+	Matrix FM(6,3); FM.zero();
+    if((FM_right.length()==6)&&(FM_left.length()==6)&&FM_head.length()==6)
+	{
+        // order: head 0 - rightArm 1 - leftArm 2
+        // note that there's not the torso, because the torso wrench
+        // is set after the wrench phase in the node..
+        FM.setCol(0,FM_head);
+		FM.setCol(1,FM_right);
+		FM.setCol(2,FM_left);
+		return setWrenchMeasure(FM,false);
+	}
+	else
+	{
+		if(verbose)
+			cerr<<"iCubUpperBody could not set sensor measurements properly due to wrong sized vectors. "
+				<<" FM head/right/left have lenght "<<FM_head.length()<<","<<FM_right.length()<<","<<FM_left.length()
+				<<" instead of 6,6. Setting everything to zero. "<<endl;
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubUpperBody::update()
+{
+	bool isOk = true;
+	isOk = solveKinematics();
+	isOk = isOk && solveWrench();
+	return isOk;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_right, const Vector &FM_left, const Vector &FM_head)
+{
+	bool inputOk = true;
+
+	if((FM_right.length()==6)&&(FM_left.length()==6)&&(FM_head.length()==6)&&(w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
+	{
+		setInertialMeasure(w0,dw0,ddp0);
+		setSensorsWrenchMeasure(FM_right,FM_left,FM_head);
+		return update();
+	}
+	else
+	{
+		if(verbose)
+            cerr<<"iCubUpperBody: error, could not update() due to wrong sized vectors. "
+				<<" w0,dw0,ddp0 have size "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()<<" instead of 3,3,3. "
+				<<" FM head,right/left arm have size "<<FM_head.length()<<","<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6,6. "
+				<<"            Updating without new values."<< endl;
+		update();
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_right, const Vector &FM_left)
+{
+	bool inputOk = true;
+
+	if((FM_right.length()==6)&&(FM_left.length()==6)&&(w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
+	{
+        Vector FM_head(6); FM_head.zero();
+		setInertialMeasure(w0,dw0,ddp0);
+		setSensorsWrenchMeasure(FM_right,FM_left,FM_head);
+		return update();
+	}
+	else
+	{
+		if(verbose)
+            cerr<<"iCubUpperBody: error, could not update() due to wrong sized vectors. "
+				<<" w0,dw0,ddp0 have size "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()<<" instead of 3,3,3. "
+				<<" FM right/left arm have size "<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6. "
+				<<"            Updating without new values."<< endl;
+		update();
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	//----------------
+	//      GET
+	//----------------
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iCubUpperBody::getForces(const string &limbType)
+{
+	if(limbType=="head")				return head->getForces();
+	else if(limbType=="left_arm")		return leftArm->getForces();
+	else if(limbType=="right_arm")		return rightArm->getForces();
+    else if(limbType=="torso")          return torso->getForces();
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Matrix(0,0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iCubUpperBody::getMoments(const string &limbType)
+{
+	if(limbType=="head")			return head->getMoments();
+	else if(limbType=="left_arm")	return leftArm->getMoments();
+	else if(limbType=="right_arm")	return rightArm->getMoments();
+	else if(limbType=="torso")      return torso->getMoments();
+    else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Matrix(0,0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getTorques(const string &limbType)
+{
+	if(limbType=="head")			return head->getTorques();
+	else if(limbType=="left_arm")	return leftArm->getTorques();
+	else if(limbType=="right_arm")	return rightArm->getTorques();
+	else if(limbType=="torso")      return torso->getTorques();
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getNodeForce() const  {return F;}	
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getNodeMoment() const {return Mu;}	
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getNodeAngVel() const {return w;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getNodeAngAcc() const {return dw;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getNodeLinAcc() const {return ddp;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	//------------------
+	//    LIMB CALLS
+	//------------------
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::setAng(const string &limbType, const Vector &_q)
+{
+	if(limbType=="head")			return head->setAng(_q);
+	else if(limbType=="left_arm")	return leftArm->setAng(_q);
+	else if(limbType=="right_arm")	return rightArm->setAng(_q);
+	else if(limbType=="torso")      return torso->setAng(_q);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getAng(const string &limbType)
+{
+	if(limbType=="head")			return head->getAng();
+	else if(limbType=="left_arm")	return leftArm->getAng();
+	else if(limbType=="right_arm")	return rightArm->getAng();
+	else if(limbType=="torso")      return torso->getAng();
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iCubUpperBody::setAng(const string &limbType, const unsigned int i, double _q)
+{
+	if(limbType=="head")			return head->setAng(i,_q);
+	else if(limbType=="left_arm")	return leftArm->setAng(i,_q);
+	else if(limbType=="right_arm")	return rightArm->setAng(i,_q);
+	else if(limbType=="torso")      return torso->setAng(i,_q);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iCubUpperBody::getAng(const string &limbType, const unsigned int i)
+{
+	if(limbType=="head")			return head->getAng(i);
+	else if(limbType=="left_arm")	return leftArm->getAng(i);
+	else if(limbType=="right_arm")	return rightArm->getAng(i);
+	else if(limbType=="torso")      return torso->getAng(i);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::setDAng(const string &limbType, const Vector &_dq)
+{
+	if(limbType=="head")			return head->setDAng(_dq);
+	else if(limbType=="left_arm")	return leftArm->setDAng(_dq);
+	else if(limbType=="right_arm")	return rightArm->setDAng(_dq);
+	else if(limbType=="torso")      return torso->setDAng(_dq);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getDAng(const string &limbType)
+{
+	if(limbType=="head")			return head->getDAng();
+	else if(limbType=="left_arm")	return leftArm->getDAng();
+	else if(limbType=="right_arm")	return rightArm->getDAng();
+	else if(limbType=="torso")      return torso->getDAng();
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iCubUpperBody::setDAng(const string &limbType, const unsigned int i, double _dq)
+{
+	if(limbType=="head")			return head->setDAng(i,_dq);
+	else if(limbType=="left_arm")	return leftArm->setDAng(i,_dq);
+	else if(limbType=="right_arm")	return rightArm->setDAng(i,_dq);
+	else if(limbType=="torso")      return torso->setDAng(i,_dq);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iCubUpperBody::getDAng(const string &limbType, const unsigned int i)    
+{
+	if(limbType=="head")			return head->getDAng(i);
+	else if(limbType=="left_arm")	return leftArm->getDAng(i);
+	else if(limbType=="right_arm")	return rightArm->getDAng(i);
+	else if(limbType=="torso")      return torso->getDAng(i);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::setD2Ang(const string &limbType, const Vector &_ddq)
+{
+	if(limbType=="head")			return head->setD2Ang(_ddq);
+	else if(limbType=="left_arm")	return leftArm->setD2Ang(_ddq);
+	else if(limbType=="right_arm")	return rightArm->setD2Ang(_ddq);
+	else if(limbType=="torso")      return torso->setD2Ang(_ddq);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::getD2Ang(const string &limbType)
+{
+	if(limbType=="head")			return head->getD2Ang();
+	else if(limbType=="left_arm")	return leftArm->getD2Ang();
+	else if(limbType=="right_arm")	return rightArm->getD2Ang();
+	else if(limbType=="torso")      return torso->getD2Ang();
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return Vector(0);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iCubUpperBody::setD2Ang(const string &limbType, const unsigned int i, double _ddq)
+{
+	if(limbType=="head")			return head->setD2Ang(i,_ddq);
+	else if(limbType=="left_arm")	return leftArm->setD2Ang(i,_ddq);
+	else if(limbType=="right_arm")	return rightArm->setD2Ang(i,_ddq);
+	else if(limbType=="torso")      return torso->setD2Ang(i,_ddq);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iCubUpperBody::getD2Ang(const string &limbType, const unsigned int i)
+{
+	if(limbType=="head")			return head->getD2Ang(i);
+	else if(limbType=="left_arm")	return leftArm->getD2Ang(i);
+	else if(limbType=="right_arm")	return rightArm->getD2Ang(i);
+	else if(limbType=="torso")      return torso->getD2Ang(i);
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0.0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int iCubUpperBody::setJoints(const string &limbType, const Vector &_q, const Vector &_dq, const Vector &_ddq)
+{
+    Vector qchange = _q;
+    if(limbType=="head")			{head->setD2Ang(_ddq); head->setDAng(_dq); qchange = head->setAng(_q);}
+    else if(limbType=="left_arm")	{leftArm->setD2Ang(_ddq); leftArm->setDAng(_dq); qchange = leftArm->setAng(_q);}
+    else if(limbType=="right_arm")	{rightArm->setD2Ang(_ddq); rightArm->setDAng(_dq); qchange = rightArm->setAng(_q);}
+    else if(limbType=="torso")      {torso->setD2Ang(_ddq); torso->setDAng(_dq); qchange = torso->setAng(_q);}
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0;
+	}
+    if(qchange==_q)
+        return 1;
+    else
+        return 2;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+unsigned int iCubUpperBody::getNLinks(const string &limbType) const
+{
+	if(limbType=="head")			return head->getN();
+	else if(limbType=="left_arm")	return leftArm->getN();
+	else if(limbType=="right_arm")	return rightArm->getN();
+	else if(limbType=="torso")      return torso->getN();
+	else
+	{		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+		return 0;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iCubUpperBody::estimateSensorsWrench(const Matrix &FM, bool afterAttach) 
+{ 
+    return iDynSensorNode::estimateSensorsWrench(FM,afterAttach); 
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    //------------------
+    //    JACOBIANS
+    //------------------
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iCubUpperBody::Jacobian_TorsoHead()			        {	return computeJacobian(3,JAC_KIN, 0,JAC_KIN);	}
+Matrix iCubUpperBody::Jacobian_TorsoArmRight()		        {	return computeJacobian(3,JAC_KIN, 1,JAC_KIN);	}
+Matrix iCubUpperBody::Jacobian_TorsoArmLeft()		        {	return computeJacobian(3,JAC_KIN, 2,JAC_KIN);	}
+Matrix iCubUpperBody::Jacobian_HeadArmRight()		        {	return computeJacobian(0,JAC_IKIN,1,JAC_KIN);	}
+Matrix iCubUpperBody::Jacobian_HeadArmLeft()		        {	return computeJacobian(0,JAC_IKIN,2,JAC_KIN);	}
+Matrix iCubUpperBody::Jacobian_HeadTorso()			        {	return computeJacobian(0,JAC_IKIN,3,JAC_IKIN);	}
+Matrix iCubUpperBody::Jacobian_ArmLeftArmRight()	        {	return computeJacobian(2,JAC_IKIN,1,JAC_KIN);	}
+Matrix iCubUpperBody::Jacobian_ArmRightArmLeft()	        {	return computeJacobian(1,JAC_IKIN,2,JAC_KIN);	}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iCubUpperBody::Pose_TorsoHead(bool axisRep)			{	return computePose(3,JAC_KIN, 0,JAC_KIN, axisRep);	}
+Vector iCubUpperBody::Pose_TorsoArmRight(bool axisRep) 	    {	return computePose(3,JAC_KIN, 1,JAC_KIN, axisRep);	}		
+Vector iCubUpperBody::Pose_TorsoArmLeft(bool axisRep)		{	return computePose(3,JAC_KIN, 2,JAC_KIN, axisRep);	}
+Vector iCubUpperBody::Pose_HeadArmRight(bool axisRep)		{	return computePose(0,JAC_IKIN,1,JAC_KIN, axisRep);	}		
+Vector iCubUpperBody::Pose_HeadArmLeft(bool axisRep)		{	return computePose(0,JAC_IKIN,2,JAC_KIN, axisRep);	}
+Vector iCubUpperBody::Pose_HeadTorso(bool axisRep)			{	return computePose(0,JAC_IKIN,3,JAC_IKIN,axisRep);	}
+Vector iCubUpperBody::Pose_ArmLeftArmRight(bool axisRep)	{	return computePose(2,JAC_IKIN,1,JAC_KIN, axisRep);	}
+Vector iCubUpperBody::Pose_ArmRightArmLeft(bool axisRep)	{	return computePose(1,JAC_IKIN,2,JAC_KIN, axisRep);	}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 
 

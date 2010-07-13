@@ -101,6 +101,11 @@ enum FlowType{ RBT_NODE_IN, RBT_NODE_OUT };
 // JAC_IKIN = inverse flow wrt kinematics
 enum JacobType{ JAC_KIN, JAC_IKIN }; 
 
+#define RBT_HAS_SENSOR	    true
+#define RBT_NO_SENSOR	    false
+#define NODE_AFTER_ATTACH	true
+#define NODE_NO_ATTACH      false
+
 
 /**
 * \ingroup iDynBody
@@ -443,6 +448,22 @@ protected:
 	*/
 	void compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, yarp::sig::Matrix &Pn, yarp::sig::Matrix &H_A_Node);
 
+    /**
+	* @param afterAttach =true only if the limb received wrench parameters during an
+	* attachTorso() procedure
+	* @return the number of limbs with wrench input, if afterAttach=false; if
+	* afterAttach=true, the number is of limbs - 1
+	*/
+	unsigned int howManyWrenchInputs(bool afterAttach=false) const;
+
+    /**
+	* @param afterAttach =true only if the limb received kinematic parameters during an
+	* attachTorso() procedure
+	* @return the number of limbs with kinematic input, if afterAttach=false; if
+	* afterAttach=true, the number is of limbs - 1
+	*/
+	unsigned int howManyKinematicInputs(bool afterAttach=false) const;
+
 public:
 
 	/**
@@ -613,8 +634,13 @@ public:
 	* @param dirB the 'direction' of the chain wrt the jacobian computation
 	* @return the Jacobian matrix
 	*/
-	//yarp::sig::Matrix computeJacobian(unsigned int iChainA, unsigned int iLinkA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB);
-	
+
+	/**
+	* Compute the Jacobian of the chain with limb iChain in the node, in its default direction (as
+	* it would be done by iKin).
+	* @param iChain the index of the chain (the limb) in the node 
+	* @return the Jacobian matrix
+	*/
 	yarp::sig::Matrix computeJacobian(unsigned int iChain);
 
 	yarp::sig::Matrix computeJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB);
@@ -636,6 +662,12 @@ protected:
 
 	/// the list of iDynSensors used to solve each limb after FT sensor measurements
 	std::deque<iDyn::iDynSensor *> sensorList;
+
+
+	/**
+	* @return the number of limbs with sensor
+	*/
+	unsigned int howManySensors() const;
 
 public:
 
@@ -691,17 +723,38 @@ public:
 	virtual bool solveWrench();
 
 	/**
-	* @param F a (3xN) matrix with forces
-	* @param M a (3xN) matrix with moments 
+	* Set the Wrench measures on the limbs attached to the node.
+	* The parameters F and M are (3xN) matrices, where each column
+	* is an external wrench to be used for initializing the wrench phase; N is the number of 
+	* limbs Nlimbs attached to the node. The boolean flag is used in case the external wrench on
+	* the first limb has already been set; this is useful whenever two different nodes are
+	* connected and share information: the first node sends kinematic and wrench information
+	* to the 'first' limb of the second node (eg the torso). In that case the F and M matrices
+	* should only contain external wrench for the other limbs, so it should be a (6x(Nlimbs-1)).
+	* @param F a (3xN) matrix with forces, where N is the number of limbs 
+	* if afterAttach=false, number of limbs -1 if afterAttach=true
+	* @param M a (3xN) matrix with moments , where N is the number of limbs 
+	* if afterAttach=false, number of limbs -1 if afterAttach=true
+	* @param afterAttach a flag for specifying if the external wrench of the first limb has been already set or not
 	* @return true if succeeds, false otherwise
 	*/
-	virtual bool setWrenchMeasure(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
+	virtual bool setWrenchMeasure(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M, bool afterAttach=false);
 
 	/**
-	* @param FM a (6xN) matrix with forces and moments 
+	* Set the Wrench measures on the limbs attached to the node. 
+	* The parameter FM is a (6xN), where each column
+	* is an external wrench to be used for initializing the wrench phase; N is the number of 
+	* limbs Nlimbs attached to the node. The boolean flag is used in case the external wrench on
+	* the first limb has already been set; this is useful whenever two different nodes are
+	* connected and share information: the first node sends kinematic and wrench information
+	* to the 'first' limb of the second node (eg the torso). In that case the FM matrix
+	* should only contain external wrench for the other limbs, so it should be a (6x(Nlimbs-1)).
+	* @param FM a (6xN) matrix with the external wrenches, where N is the number of limbs 
+	* if afterAttach=false, number of limbs -1 if afterAttach=true
+	* @param afterAttach a flag for specifying if the external wrench of the first limb has been already set or not
 	* @return true if succeeds, false otherwise
 	*/
-	virtual bool setWrenchMeasure(const yarp::sig::Matrix &FM);
+	virtual bool setWrenchMeasure(const yarp::sig::Matrix &FM, bool afterAttach=false);
 
 	/**
 	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
@@ -796,6 +849,16 @@ public:
 	* Main method for solving kinematics and wrench among limbs, where information are shared.
 	*/
 	bool update();
+
+	/**
+	* Main method for solving kinematics and wrench among limbs, where information are shared.
+	* This method assumes that the initial kinematics informations have already been set, as the 
+	* external wrench on the central limb: i.e. this method is the one called after attachTorso().
+	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
+	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
+	* @return true if succeeds, false otherwise
+	*/
+	bool update(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, bool afterAttach=true);
 	
 	/**
 	* Main method for solving kinematics and wrench among limbs, where information are shared.
@@ -890,7 +953,8 @@ public:
 	
 	/**
 	* Set the FT sensor measurements on the sensor in right and left limb. This operation is necessary to 
-	* initialize the wrench phase correctly. The central-up limb wrench is initialized with a null vector (=0).
+	* initialize the wrench phase correctly. 
+	* The central-up limb wrench is assumed to be already initialized: for example after an attachTorso().
 	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
 	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
 	* @return true if succeeds, false otherwise
@@ -1040,21 +1104,331 @@ public:
 	iCubWholeBody(const NewEulMode mode=DYNAMIC, unsigned int verbose=VERBOSE);
 
 	/**
-	* Destructor
+	* Standard destructor
 	*/
 	~iCubWholeBody();
 
 	/**
-	* Connect upper and lower torso: this procedure handle the exchange of kinematic and
+	* Connect upper and lower torso: this procedure handles the exchange of kinematic and
 	* wrench variables between the two parts.
 	*/
 	void attachTorso();
 
+	/**
+	* Update all iCub parts: this method sets the inertial information on the head, and all the external or measured
+	* wrenches, both the external (inertial sensor) in the head and the measured ones on the FT sensors. 
+	* Then perform all the kinematic
+	* and wrench computations between upper and lower torso, making the connection with the attachTorso().
+	* Note that if the parameters are wrong, the update is performed with the older values, and the return flag
+	* is false. 
+	* @param w0 a 3x1 vector with the initial/measured angular velocity
+	* @param dw0 a 3x1 vector with the initial/measured angular acceleration
+	* @param ddp0 a 3x1 vector with the initial/measured linear acceleration
+	* @param FM_head a 6x1 vector with the external forces and moments on the head
+	* @param FM_right_arm a 6x1 vector with forces and moments measured by the FT sensor in the right arm
+	* @param FM_left_arm a 6x1 vector with forces and moments measured by the FT sensor in the left arm
+	* @param FM_right_leg a 6x1 vector with forces and moments measured by the FT sensor in the right leg
+	* @param FM_left_leg a 6x1 vector with forces and moments measured by the FT sensor in the left leg
+	* @return true if successful, false otherwise
+	*/
+	bool updateAll(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, 
+		const yarp::sig::Vector &FM_head, const yarp::sig::Vector &FM_right_arm, const yarp::sig::Vector &FM_left_arm, 
+		const yarp::sig::Vector &FM_right_leg, const yarp::sig::Vector &FM_left_leg);
+
+
+	yarp::sig::Matrix computeJacobian(bool whichTorsoA, unsigned int iChainA, JacobType dirA, bool whichTorsoB, unsigned int iChainB, JacobType dirB)
+	{
+        iCub::iDyn::notImplemented(VERBOSE,"iCubWholeBody does not have this computeJacobian() yet. Sorry!");
+	}
+
+	yarp::sig::Vector computePose(bool whichTorsoA, unsigned int iChainA, JacobType dirA, bool whichTorsoB, unsigned int iChainB, JacobType dirB, const bool axisRep)
+	{
+        iCub::iDyn::notImplemented(VERBOSE,"iCubWholeBody does not have this computePose() yet. Sorry! ");	
+	}
+
+
 };
 
-}
 
-}//end of namespace
+
+
+
+/**
+* \ingroup iDynBody
+*
+* A class for connecting head, torso, and left and right arm of the iCub, and exchanging kinematic and 
+* wrench information between limbs, when both left/right limb have FT sensors and the head use the 
+* kinematic and wrench information coming from a inertial measurements. 
+* This class is the best choice to work with iCub for manipulation, i.e. without the legs.
+* The order of limb insertion in the node is:
+* 0 - "head" - head
+* 1 - "right_arm" - right arm
+* 2 - "left_arm" - left arm
+* 3 - "torso" - torso
+* The ordinal number identifies each limb, as well as the string.
+*/
+class iCubUpperBody : protected iDynSensorNode
+{
+protected:
+
+	/// left leg - FT sensor and solver
+	iDyn::iDynSensor * leftSensor;
+	/// right leg - FT sensor and solver
+	iDyn::iDynSensor * rightSensor;
+
+	/// roto-translational matrix defining the head base frame with respect to the torso node
+	yarp::sig::Matrix HHead;
+	/// roto-translational matrix defining the left arm base frame with respect to the torso node
+	yarp::sig::Matrix HLeft;
+	/// roto-translational matrix defining the right arm base frame with respect to the torso node
+	yarp::sig::Matrix HRight;
+	/// roto-translational matrix defining the torso base frame with respect to the torso node
+	yarp::sig::Matrix HTorso;
+
+	/**
+	* Build the node.
+    * The order of limb insertion is:
+    * 0 - "head" - head
+    * 1 - "right_arm" - right arm
+    * 2 - "left_arm" - left arm
+    * 3 - "torso" - torso
+    * The ordinal number identifies each limb, as well as the string.
+	*/
+	virtual void build();
+
+public:
+
+	/// left arm
+	iDyn::iCubArmNoTorsoDyn * leftArm;
+	/// right arm
+	iDyn::iCubArmNoTorsoDyn * rightArm;
+	/// head
+	iDyn::iCubNeckInertialDyn * head;
+	/// torso
+	iDyn::iCubTorsoDyn * torso;
+
+	/**
+	* Constructor.
+	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
+	* @param verb verbosity flag
+	*/
+	iCubUpperBody(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+
+	/**
+	* Destructor
+	*/
+	~iCubUpperBody();
+
+	/**
+	* Main method for solving kinematics and wrench among limbs, where information are shared.
+	*/
+	bool update();
+
+	/**
+	* Main method for solving kinematics and wrench among the iCub limbs, where information are shared.
+    * The inertial measure is set on the head. For wrenches, one is the external one of the head, while the others
+    * are the two measures of the arm FT sensors.
+    * If parameters are uncorrect, the update is performed with the old values (attention: the limb angles may have changed).
+	* @param w0 a 3x1 vector with the inertial/measured angular velocity
+	* @param dw0 a 3x1 vector with the inertial/measured angular acceleration
+	* @param ddp0 a 3x1 vector with the inertial/measured linear acceleration
+	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right arm
+	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left arm
+	* @param FM_head a 6x1 vector with forces and moments initializing the head
+	* @return true if succeeds, false otherwise
+	*/
+	bool update(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
+
+	/**
+	* Main method for solving kinematics and wrench among the iCub limbs, where information are shared.
+    * The inertial measure is set on the head. For wrenches, the two measures of the arm FT sensors are set.
+    * The head wrench is set automatically to zero.
+    * If parameters are uncorrect, the update is performed with the old values (attention: the limb angles may have changed).
+	* @param w0 a 3x1 vector with the inertial/measured angular velocity
+	* @param dw0 a 3x1 vector with the inertial/measured angular acceleration
+	* @param ddp0 a 3x1 vector with the inertial/measured linear acceleration
+	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right arm
+	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left arm
+	* @return true if succeeds, false otherwise
+	*/
+	bool update(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left);
+
+	//----------------
+	//      GET
+	//----------------
+
+	/**
+	* @param limbType a string with the limb name
+	* @return the chosen limb forces
+	*/
+	yarp::sig::Matrix getForces(const std::string &limbType);	
+
+	/**
+	* @param limbType a string with the limb name
+	* @param iLink the link index in the limb
+	* @return the chosen limb-link force
+	*/
+	yarp::sig::Vector getForce(const std::string &limbType, const unsigned int iLink) const	;
+
+	/**
+	* @param limbType a string with the limb name
+	* @return the chosen limb moments
+	*/
+	yarp::sig::Matrix getMoments(const std::string &limbType);
+
+	/**
+	* @param limbType a string with the limb name
+	* @param iLink the link index in the limb
+	* @return the chosen limb-link moment
+	*/
+	yarp::sig::Vector getMoment(const std::string &limbType, const unsigned int iLink) const;
+
+	/**
+	* @param limbType a string with the limb name
+	* @return the chosen limb torques
+	*/
+	yarp::sig::Vector getTorques(const std::string &limbType);
+
+	/**
+	* @param limbType a string with the limb name
+	* @param iLink the link index in the limb
+	* @return the chosen limb-link torque
+	*/
+	double getTorque(const std::string &limbType, const unsigned int iLink) const;
+
+	/**
+	* @return the node force
+	*/
+	yarp::sig::Vector getNodeForce() const;
+	/**
+	* @return the node moment
+	*/
+	yarp::sig::Vector getNodeMoment() const;	
+	/**
+	* @return the node angular velocity
+	*/
+	yarp::sig::Vector getNodeAngVel() const;
+	/**
+	* @return the node angular acceleration
+	*/
+	yarp::sig::Vector getNodeAngAcc() const;
+	/**
+	* @return the node linear acceleration
+	*/
+	yarp::sig::Vector getNodeLinAcc() const;
+
+
+	//----------------
+	//      SET
+	//----------------
+
+	/**
+	* Set the inertial sensor measurements on the head.
+    * If vectors are uncorrect, it does nothing (no default values).
+	* @param w0 a 3x1 vector with the initial/measured angular velocity
+	* @param dw0 a 3x1 vector with the initial/measured angular acceleration
+	* @param ddp0 a 3x1 vector with the initial/measured linear acceleration
+	* @return true if succeeds (correct vectors size), false otherwise
+	*/
+	bool setInertialMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+	
+	/**
+	* Set the FT sensor measurements on the sensor in right and left arm. This operation is necessary to 
+	* initialize the wrench phase correctly. The head wrench initializing wrench is also specified.
+    * If vectors are uncorrect, it does nothing (no default values).
+	* @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right arm
+	* @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left arm
+	* @param FM_head a 6x1 vector with forces and moments initializing the head
+	* @return true if succeeds, false otherwise
+	*/
+	bool setSensorsWrenchMeasure(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
+
+
+	//------------------
+	//    LIMB CALLS
+	//------------------
+
+	yarp::sig::Vector setAng(const std::string &limbType, const yarp::sig::Vector &_q);
+    yarp::sig::Vector getAng(const std::string &limbType);
+    double            setAng(const std::string &limbType, const unsigned int i, double _q);
+    double            getAng(const std::string &limbType, const unsigned int i);
+
+	yarp::sig::Vector setDAng(const std::string &limbType, const yarp::sig::Vector &_dq);
+    yarp::sig::Vector getDAng(const std::string &limbType);
+    double            setDAng(const std::string &limbType, const unsigned int i, double _dq);
+    double            getDAng(const std::string &limbType, const unsigned int i);                                  
+
+	yarp::sig::Vector setD2Ang(const std::string &limbType, const yarp::sig::Vector &_ddq);
+    yarp::sig::Vector getD2Ang(const std::string &limbType);
+    double            setD2Ang(const std::string &limbType, const unsigned int i, double _ddq);
+    double            getD2Ang(const std::string &limbType, const unsigned int i);
+
+    /**
+    * This function sets all the joint position, velocity and acceleration, in a specified limb.
+    * If the commanded joint angles exceeds the joint limits, 0 is returned.
+    * There's no check, at the moment, on the velocity and acceleration limits (not yet supported in iDyn).
+	* @param limbType a string with the limb name
+    * @param _q all joints position
+    * @param _dq all joints velocity
+    * @param _ddq all joints acceleration
+    * @return 0 if the limb name is wrong, 1 if succeed and there's no change in the joints values, 2 if 
+    *    there's a change in the joints positions
+	*/
+    unsigned int setJoints(const std::string &limbType, const yarp::sig::Vector &_q, const yarp::sig::Vector &_dq, const yarp::sig::Vector &_ddq);
+	
+    /**
+	* @param limbType a string with the limb name
+	* @return the number of links of the chosen limb
+	*/
+	unsigned int getNLinks(const std::string &limbType) const;
+
+	/**
+	* Redefinition from iDynSensorNode.
+	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
+	* solving wrenches in the limbs.
+	* @param FM a (6xN) matrix of forces/moments where N is the number of external wrenches for the N limbs of the node
+	* @return a 
+	*/
+	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false); 
+
+
+	//------------------
+	//    JACOBIANS
+	//------------------
+
+	// ridefinitions of the jacobian functions 
+	// note that the jacobians starting at the head are the only ones
+	// with JAC_IKIN direction in the first limb (because we start the jacobian
+	// at the end-effector of the head, go throught its base to the node, and then
+	// to the arm)
+
+	yarp::sig::Matrix Jacobian_TorsoArmRight();
+    yarp::sig::Matrix Jacobian_TorsoArmLeft();
+	yarp::sig::Matrix Jacobian_TorsoHead();
+	yarp::sig::Matrix Jacobian_HeadArmRight();
+	yarp::sig::Matrix Jacobian_HeadArmLeft();
+	yarp::sig::Matrix Jacobian_HeadTorso();
+	yarp::sig::Matrix Jacobian_ArmLeftArmRight();
+	yarp::sig::Matrix Jacobian_ArmRightArmLeft();
+
+	// ridefinitions of the pose function
+	// again the pose is closely related to the sequence of chains, e.g. the pose starting from the 
+	// head has JAC_IKIN direction in the first limb 
+
+	yarp::sig::Vector Pose_TorsoArmRight(bool axisRep = false);
+	yarp::sig::Vector Pose_TorsoArmLeft(bool axisRep = false);
+	yarp::sig::Vector Pose_HeadArmRight(bool axisRep = false);		
+	yarp::sig::Vector Pose_HeadArmLeft(bool axisRep = false);
+	yarp::sig::Vector Pose_TorsoHead(bool axisRep = false);
+	yarp::sig::Vector Pose_HeadTorso(bool axisRep = false);
+	yarp::sig::Vector Pose_ArmLeftArmRight(bool axisRep = false);
+	yarp::sig::Vector Pose_ArmRightArmLeft(bool axisRep = false);
+
+};
+
+
+}// end of namespace iDyn
+}//end of namespace iCub
 
 #endif
 

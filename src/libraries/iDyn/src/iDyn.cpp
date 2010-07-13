@@ -41,8 +41,12 @@ using namespace iCub::iDyn;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCub::iDyn::notImplemented(const unsigned int verbose)
 {
-    if (verbose)
-        cout<<"iDyn: not implemented"<<endl;
+    if(verbose) cout<<"iDyn: error: not implemented"<<endl;
+}
+
+void iCub::iDyn::notImplemented(const unsigned int verbose, const string &msg)
+{
+    if(verbose) cout<<"iDyn: error: not implemented"<<endl<<msg<<endl;
 }
 
 
@@ -1720,19 +1724,34 @@ void iCubTorsoDyn::allocate(const string &_type)
     H0.zero();
 	H0.eye();
 
+
     linkList.resize(3);
 
     if (type=="lower")
     {
-		//      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
+		H0.eye();
+
+        //      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
         linkList[0]=new iDynLink(0,	0,	0,  0,		0,0,0,  0,0,0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
 		linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
 		linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
    
 
     }
+    else if(type=="asiKinArm")
+    {
+        H0.zero();
+        H0(0,1)=-1;
+        H0(1,2)=-1;
+        H0(2,0)=1;
+        H0(3,3)=1;
+        linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,   M_PI/2.0,       0.0,           -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
+        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.0,   M_PI/2.0, -M_PI/2.0,           -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
+        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,   -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+    }
     else
-    {  
+    { 
+        H0.eye();
         linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,   M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
         linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,     0.001,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
         linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);

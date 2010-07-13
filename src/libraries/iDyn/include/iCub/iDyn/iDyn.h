@@ -74,6 +74,7 @@ namespace iCub
 namespace iDyn
 {
     void notImplemented(const unsigned int verbose);
+    void notImplemented(const unsigned int verbose, const std::string &msg);
 
     class OneLinkNewtonEuler;
     class BaseLinkNewtonEuler;
@@ -865,8 +866,6 @@ public:
 	*/
 	void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu);
 	
-	unsigned int      getNTOT()             { return NE->nEndEff; }
-
 	/**
     * Destructor. 
     */
@@ -1066,7 +1065,6 @@ public:
     // redeclared hereafter and simply inherited
 
 	unsigned int      getN() const                                                    { return iDynChain::getN();                   }
-	unsigned int      getNTOT()														  { return iDynChain::getNTOT();                }
 	unsigned int      getDOF() const                                                  { return iDynChain::getDOF();                 }
     bool              blockLink(const unsigned int i, double Ang)                     { return iDynChain::blockLink(i,Ang);         }
     bool              blockLink(const unsigned int i)                                 { return iDynChain::blockLink(i);             }
