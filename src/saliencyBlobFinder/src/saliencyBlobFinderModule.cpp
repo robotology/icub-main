@@ -89,9 +89,6 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 
     printf("\n waiting for connection of the input port \n");
 
-    
-    
-    
     return true;
 }
 

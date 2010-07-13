@@ -14,7 +14,7 @@ interactionThread::interactionThread()
    blobFinder=0;
 
    tmpImage=new ImageOf<PixelMono>;
-   img=new ImageOf<PixelRgb>;
+   img=0;
 
    previous_target_x=0;
    previous_target_y=0;
@@ -83,7 +83,6 @@ void interactionThread::interrupt(){
 
 
 void interactionThread::run(){
-    Time::delay(1);
     while(!isStopping()&&(!interrupted_flag)){
     
         ct++;
@@ -110,10 +109,7 @@ void interactionThread::run(){
         if(ret1&&ret2)
             blobFinder->freetorun=true;
         outPorts();
-
-        Time::delay(1);
     }
-   
 }
 
 /**
