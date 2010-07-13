@@ -47,10 +47,7 @@ private:
     * temporary psb for processing
     */
     int psb;
-    /**
-    * flag that indicates when the reinitiazation has already be done
-    */
-    bool reinit_flag;
+    
     /**
     * input image
     */
@@ -129,7 +126,10 @@ public:
     void setInputImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage);
 
     //______ public attributes________
-
+    /**
+    * flag that indicates when the reinitiazation has already be done
+    */
+    bool reinit_flag;
     /**
     *yarp mono image of the red channel
     */

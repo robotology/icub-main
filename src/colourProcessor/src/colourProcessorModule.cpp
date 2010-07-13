@@ -146,11 +146,11 @@ bool colourProcessorModule::updateModule() {
 
     if((0!=interThread->inputImg)&&(!initflag)){
     
-        /*
-        while(interThread.inputImg->width()==0){
+        
+        while(interThread->inputImg->width()==0){
             
         }
-        */
+        
 	    printf("input port activated! starting the processes ....\n");    
 
         //ConstString portName2 = options.check("name",Value("/worker2")).asString();
@@ -165,6 +165,7 @@ bool colourProcessorModule::updateModule() {
         
         //starting yuv thread and linking all the images
         if(startyuv_flag){
+            while(!rgbProcessor->reinit_flag){}
                 startYuvProcessor();
                 interThread->uvPlane=yuvProcessor->uvPlane;
                 interThread->uPlane=yuvProcessor->uPlane;
@@ -183,17 +184,19 @@ bool colourProcessorModule::updateModule() {
 
 void colourProcessorModule::startRgbProcessor(){
     //rgbProcessorThread rgbProcessor();
-    rgbProcessor->setInputImage(interThread->inputImg);
     //rgbProcessor.resize(width,height);
+    rgbProcessor=new rgbProcessorThread();
     rgbProcessor->start();
+    rgbProcessor->setInputImage(interThread->inputImg);
 }
 
 
 void colourProcessorModule::startYuvProcessor(){
     //rgbProcessorThread rgbProcessor();
-    yuvProcessor->setInputImage(rgbProcessor->redPlane,rgbProcessor->greenPlane,rgbProcessor->bluePlane);
+    yuvProcessor=new yuvProcessorThread();
     //rgbProcessor.resize(width,height);
     yuvProcessor->start();
+    yuvProcessor->setInputImage(rgbProcessor->redPlane,rgbProcessor->greenPlane,rgbProcessor->bluePlane);
 }
 void colourProcessorModule::reinitialise(int weight, int height){
     

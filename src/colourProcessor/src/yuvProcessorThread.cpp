@@ -45,6 +45,9 @@ void yuvProcessorThread::reinitialise(){
     vPlane->resize(width,height);
     uvPlane=new ImageOf<PixelMono>;
     uvPlane->resize(width,height);
+    
+    tmp=new ImageOf<PixelMono>;
+    tmp->resize(width,height);
 }
 
 bool yuvProcessorThread::threadInit(){

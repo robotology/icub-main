@@ -59,6 +59,9 @@ void rgbProcessorThread::reinitialise(){
     greenRed_yarp->resize(width,height);
 	blueYellow_yarp=new ImageOf<PixelMono>;
     blueYellow_yarp->resize(width,height);
+
+    tmp=new ImageOf<PixelMono>;
+    tmp->resize(width,height);
 }
 
 bool rgbProcessorThread::threadInit(){
@@ -69,17 +72,12 @@ bool rgbProcessorThread::threadInit(){
 
 void rgbProcessorThread::run(){
     
-    if(img==0){
-        return;	
+    if(img!=0){
+        if(reinit_flag){
+            extractPlanes(img);
+            colourOpponency();
+        }
     }
-    /*width=img->width();
-    height=img->height();*/
-    /*if(!reinit_flag){
-        reinitialise();
-        reinit_flag=true;
-    }*/
-    extractPlanes(img);
-    colourOpponency();
 }
    
 
@@ -95,6 +93,7 @@ void rgbProcessorThread::setInputImage(ImageOf<PixelRgb>* inputImage){
     this->width=inputImage->width();
     this->height=inputImage->height();
     reinitialise();
+    reinit_flag=true;
 }
 
 /*
