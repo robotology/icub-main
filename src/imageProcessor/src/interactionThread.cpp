@@ -129,12 +129,12 @@ void interactionThread::run(){
                 }
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
                 //this->redGreen_yarp=tmp;
-                this->redPlane=redPlanePort.read(true);
+                //this->redPlane=redPlanePort.read(true);
                 if(0!=redGreen_yarp)
                     *redGreen_flag=1;
                 
                 
-                this->bluePlane=bluePlanePort.read(true);
+                //this->bluePlane=bluePlanePort.read(true);
                 tmp=byPort.read(true);
                 if(0!=tmp){
                     ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);   
@@ -142,7 +142,7 @@ void interactionThread::run(){
                 }
                 
                 
-                this->greenPlane=greenPlanePort.read(true);
+                //this->greenPlane=greenPlanePort.read(true);
                 tmp=grPort.read(true);
                 if(0!=tmp){
                     ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
