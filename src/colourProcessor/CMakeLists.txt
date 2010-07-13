@@ -18,7 +18,9 @@ FIND_PACKAGE(IPP REQUIRED)
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${OPENCV_INCLUDE_DIR}    
+    #${OPENCV_INCLUDE_DIR}
+    ${YARP_INCLUDE_DIRS}
+	${ICUB_INCLUDE_DIRS}
     ${IPP_INCLUDE_DIRS}	 
     #${ODE_INCLUDE_DIRS}	
     #${IPL_INCLUDE_DIRS}	
@@ -57,11 +59,13 @@ IF (folder_source)
     IF(WIN32)	
     TARGET_LINK_LIBRARIES( ${KEYWORD} 
       ${OPENCV_LIBRARIES}
+	  ${YARP_LIBRARIES}
       ${IPP_LIBRARIES}
     )
     ELSE(WIN32) #required in linux
      TARGET_LINK_LIBRARIES( ${KEYWORD}
        ${OPENCV_LIBRARIES}
+	   ${YARP_LIBRARIES}
        ${IPP_LIBRARIES} 	
        pthread
      )
