@@ -1,6 +1,6 @@
 /**
 @ingroup  icub_applications
-\defgroup icub_skin_gui skin_gui
+\defgroup icub_skin_gui iCubSkinGui
 
 This is a basic visualization for the skin and in particular for
 the left and right hand which include the fingertips and the 
