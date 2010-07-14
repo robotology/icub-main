@@ -56,6 +56,7 @@ using namespace yarp::dev;
  * The ESD motion controller device driver.
  * Contains a thread that takes care of polling the can bus for incoming messages.
  */
+
 class yarp::dev::iCubWebotsMotionControl: 
     public DeviceDriver,
             public os::Thread, 
@@ -183,6 +184,7 @@ class yarp::dev::iCubWebotsMotionControl:
   virtual bool getCurrentRaw(int j, double *val);
   virtual bool setMaxCurrentRaw(int j, double val);
   virtual bool getAmpStatusRaw(int *st);
+  virtual bool getAmpStatusRaw(int j, int *st);
   //
   /////////////// END AMPLIFIER INTERFACE
 

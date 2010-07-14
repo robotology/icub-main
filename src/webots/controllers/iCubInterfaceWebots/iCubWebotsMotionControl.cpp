@@ -1095,6 +1095,11 @@ bool iCubWebotsMotionControl::getAmpStatusRaw(int *st)
     return true;
 }
 
+bool iCubWebotsMotionControl::getAmpStatusRaw(int j, int *st)
+{
+    return NOT_YET_IMPLEMENTED("getAmpStatusRaw");
+}
+
 bool iCubWebotsMotionControl::setLimitsRaw(int axis, double min, double max)
 {
 	return NOT_YET_IMPLEMENTED("setLimitsRaw");

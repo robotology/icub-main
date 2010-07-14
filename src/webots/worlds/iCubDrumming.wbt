@@ -6,7 +6,7 @@ WorldInfo {
     "Date: DD MMM YYYY"
   ]
   gravity 0 0 0
-  basicTimeStep 64
+  basicTimeStep 40
   runRealTime TRUE
 }
 Viewpoint {
@@ -2345,7 +2345,7 @@ DEF icub Supervisor {
                                                   ]
                                                 }
                                                 DEF right_hand_touch TouchSensor {
-                                                  translation -0.00996548 -0.0199984 6.5293e-007
+                                                  translation -0.00996548 -0.0199984 6.5293e-07
                                                   rotation 0 1 0 -1.57
                                                   name "right_hand_touch"
                                                   boundingObject DEF right_hand_touch Transform {
@@ -4522,7 +4522,7 @@ DEF icub Supervisor {
                               }
                               maxVelocity 120
                               maxForce 34
-                              position -1.23445e-008
+                              position -1.23445e-08
                               minPosition -0.645772
                               maxPosition 1.39
                             }
@@ -4539,7 +4539,7 @@ DEF icub Supervisor {
                           }
                           maxVelocity 120
                           maxForce 40
-                          position -4.21468e-008
+                          position -4.21468e-08
                           maxPosition 2.80649
                         }
                       ]
@@ -4555,7 +4555,7 @@ DEF icub Supervisor {
                       }
                       maxVelocity 120
                       maxForce 34
-                      position -2.98023e-008
+                      position -2.98023e-08
                       minPosition -1.74
                       maxPosition 0.17
                     }
@@ -4568,7 +4568,7 @@ DEF icub Supervisor {
                   }
                   maxVelocity 0
                   maxForce 9999
-                  position 1.29619e-013
+                  position 1.29619e-13
                 }
                 DEF left_shoulder_fake Servo {
                   translation 0 0.143 0
@@ -4631,7 +4631,7 @@ DEF icub Supervisor {
                                               rotation -1 0 0 0
                                               children [
                                                 DEF left_hand_touch TouchSensor {
-                                                  translation 0.00996153 -0.0199994 1.6333e-006
+                                                  translation 0.00996153 -0.0199994 1.6333e-06
                                                   rotation 0 1 0 1.57
                                                   name "left_hand_touch"
                                                   boundingObject DEF left_hand_touch Transform {
@@ -8970,7 +8970,7 @@ DEF icub Supervisor {
                               }
                               maxVelocity 120
                               maxForce 34
-                              position 1.60982e-015
+                              position 1.60982e-15
                               minPosition -0.645772
                               maxPosition 1.4
                             }
@@ -9205,8 +9205,8 @@ DEF icub Supervisor {
                                                 -0.033971 0.02306 0.087304
                                                 -0.033858 0.02306 0.088183
                                                 -0.033811 0.105219 0.008666
-                                                -0.033798 0.103359 -2.6e-005
-                                                -0.033524 0.023048 6e-005
+                                                -0.033798 0.103359 -2.6e-05
+                                                -0.033524 0.023048 6e-05
                                                 -0.033186 0.100248 0.068494
                                                 -0.03314 0.075009 -0.01081
                                                 -0.033117 0.02306 0.092218
@@ -9317,7 +9317,7 @@ DEF icub Supervisor {
                                                 -0.014178 0.120668 0.048041
                                                 -0.013622 0.128488 -0.009948
                                                 -0.013532 0.02306 0.122637
-                                                -0.013298 0.129726 -7.2e-005
+                                                -0.013298 0.129726 -7.2e-05
                                                 -0.013193 0.124206 -0.020203
                                                 -0.013048 0.02306 -0.03372
                                                 -0.012987 0.02306 0.12185
@@ -9644,7 +9644,7 @@ DEF icub Supervisor {
                                                 0.072656 0.02306 0.121844
                                                 0.072948 0.02306 -0.033588
                                                 0.073089 0.120884 0.048412
-                                                0.07309 0.129726 -7.2e-005
+                                                0.07309 0.129726 -7.2e-05
                                                 0.073148 0.02306 0.122548
                                                 0.073201 0.124206 -0.020203
                                                 0.073421 0.087777 -0.032449
@@ -9768,7 +9768,7 @@ DEF icub Supervisor {
                                                 0.093642 0.02306 0.087303
                                                 0.093671 0.02306 0.08709
                                                 0.093681 0.0695 0.09927
-                                                0.093734 0.103359 -2.6e-005
+                                                0.093734 0.103359 -2.6e-05
                                                 0.093737 0.02306 0.096335
                                                 0.093847 0.037543 0.00246
                                                 0.09385 0.036491 0.002391
@@ -11470,7 +11470,7 @@ DEF icub Supervisor {
                         mass 0.15
                       }
                       maxVelocity 120
-                      position 2.10734e-007
+                      position 2.10734e-07
                       minPosition -1.1
                       maxPosition 1.15
                     }
@@ -11583,8 +11583,8 @@ DEF icub Supervisor {
                   rotation 1 0 0 0
                   children [
                     DEF right_knee_touch TouchSensor {
-                      translation -9.17374e-006 -0.0800156 -0.0229564
-                      rotation -1.98772e-007 1 1.51942e-006 -3.14139
+                      translation -9.17374e-06 -0.0800156 -0.0229564
+                      rotation -1.98772e-07 1 1.51942e-06 -3.14139
                       name "right_knee_touch"
                       boundingObject Transform {
                         children [
@@ -17397,7 +17397,7 @@ DEF icub Supervisor {
                   rotation 1 0 0 0
                   children [
                     DEF left_knee_touch TouchSensor {
-                      translation -9.17374e-006 -0.0800156 -0.0229564
+                      translation -9.17374e-06 -0.0800156 -0.0229564
                       name "left_knee_touch"
                       boundingObject Transform {
                         children [
