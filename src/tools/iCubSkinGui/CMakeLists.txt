@@ -8,16 +8,18 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 
 ADD_DEFINITIONS(${GTKPLUS_C_FLAGS})
 
-INCLUDE_DIRECTORIES(${ctrlLib_INCLUDE_DIRS}
-                      ${GtkPlus_INCLUDE_DIRS}
-					  ${YARP_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src
+                    ${ctrlLib_INCLUDE_DIRS}
+                    ${GtkPlus_INCLUDE_DIRS}
+	            ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib
-										icubmod
-										${GtkPlus_LIBRARIES}
-										${YARP_LIBRARIES})
+				     icubmod
+				     ${GtkPlus_LIBRARIES}
+				     ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+
 
