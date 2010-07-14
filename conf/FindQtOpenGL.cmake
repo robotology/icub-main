@@ -9,7 +9,7 @@
 # QTOPENGL_FOUND          - If false, don't try to use Qt3
 # QTOPENGL_DEFINITIONS    - Additional definitions
 
-SET(QT_USE_QTOPENGL TRUE)
+#SET(QT_USE_QTOPENGL TRUE)
 FIND_PACKAGE(Qt3)
 
 IF(QT_FOUND)
