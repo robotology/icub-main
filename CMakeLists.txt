@@ -108,7 +108,7 @@ else(BUILD_MATLAB_BASED_TOOLS)
 endif(BUILD_MATLAB_BASED_TOOLS)
 
 #### enable testing
-enable_testing()
+include (CTest)
 
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
