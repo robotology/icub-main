@@ -40,14 +40,13 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     ct = 0;
 	inputImage_flag=false;
     reinit_flag=false;
+    init_flag=false;
 
 	currentProcessor=0;
     inputImg=0;
     tmp=0;
     tmp2=0;
 
-    
-    
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
@@ -64,8 +63,7 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
 }
 
 // try to interrupt any communications or resource usage
-bool selectiveAttentionModule::interruptModule() {
-    
+bool selectiveAttentionModule::interruptModule() {    
     cmdPort.interrupt();
 	return true;
 }
@@ -162,22 +160,31 @@ void selectiveAttentionModule::reinitialise(int width, int height){
 
 
 bool selectiveAttentionModule::updateModule() {
-    if(0!=interThread->inputImg){
+    if((0!=interThread->inputImg)&&(!init_flag)){
         
 	    printf("input port activated! starting the processes ....\n");    
 
         //ConstString portName2 = options.check("name",Value("/worker2")).asString();
         //starting rgb thread and linking all the images
-        startselectiveAttentionProcessor();
-        interThread->map1_yarp=currentProcessor->map1_yarp;
-        interThread->map2_yarp=currentProcessor->map2_yarp;
-        interThread->map3_yarp=currentProcessor->map3_yarp;
-        interThread->map4_yarp=currentProcessor->map4_yarp;
-        interThread->map5_yarp=currentProcessor->map5_yarp;
-        interThread->map6_yarp=currentProcessor->map6_yarp;
         
-        interThread->linearCombinationImage=currentProcessor->linearCombinationImage;
-        interThread->outputImage=currentProcessor->outputImage;
+        
+        currentProcessor=new selectiveAttentionProcessor();
+        currentProcessor->resizeImages(interThread->inputImg->width(),interThread->inputImg->height());
+        
+        
+        currentProcessor->map1_yarp=interThread->map1_yarp;
+        currentProcessor->map2_yarp=interThread->map2_yarp;
+        currentProcessor->map3_yarp=interThread->map3_yarp;
+        currentProcessor->map4_yarp=interThread->map4_yarp;
+        currentProcessor->map5_yarp=interThread->map5_yarp;
+        currentProcessor->map6_yarp=interThread->map6_yarp;
+
+        currentProcessor->start();
+        
+        currentProcessor->linearCombinationImage=interThread->linearCombinationImage;
+        currentProcessor->outputImage=interThread->outputImage;
+
+        init_flag=true;
 
     }
     
@@ -186,7 +193,7 @@ bool selectiveAttentionModule::updateModule() {
 
 bool selectiveAttentionModule::startselectiveAttentionProcessor(){
     printf("image processor starting ..... \n");
-    this->currentProcessor->start();
+    
     return true;
 }
 

@@ -142,7 +142,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         * @param x x position of the center of mass of the contours
         * @param y y position of the center of mass of the contours
         */
-        void extractContour(yarp::sig::ImageOf<yarp::sig::PixelMono>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelRgb>* outputImage,yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputColourImage ,int& x,int& y);
+        void extractContour(yarp::sig::ImageOf<yarp::sig::PixelMono>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputColourImage ,int& x,int& y);
         /**
         * function that extracts the colour of a region around a pixel given the input image
         * @param inputColourImage input image where the region colour is read.
@@ -271,7 +271,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         /**
         * result of the selection
         */
-        yarp::sig::ImageOf<yarp::sig::PixelRgb>* outputColourImage;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage2;
         /**
         * result of the combination
         */
