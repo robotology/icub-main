@@ -9,14 +9,14 @@ source_group("Header Files" FILES ${icubgui_HDR})
 qt_wrap_cpp(iCubGui icubgui_MOC_SRC ${icubgui_MOC_HDR})
 
 # Include path to the generated header files
-include_directories(${PROJECT_SOURCE_DIR}/src ${QTOPENGL_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/src ${QT_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 
 # Set defines
-add_definitions(${QTOPENGL_DEFINITIONS})
+add_definitions(${QT_DEFINITIONS})
 
 # Compile and link
 add_executable(iCubGui ${icubgui_HDR} ${icubgui_SRC} ${icubgui_MOC_SRC})
-target_link_libraries(iCubGui ${QTOPENGL_LIBRARIES} ${YARP_LIBRARIES})
+target_link_libraries(iCubGui ${QT_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${YARP_LIBRARIES})
 
 # Install iCubGui
 install(TARGETS iCubGui RUNTIME DESTINATION bin)
