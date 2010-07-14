@@ -487,6 +487,12 @@ public:
 	*/
 	virtual void addLimb(iDyn::iDynLimb *limb, const yarp::sig::Matrix &H, const FlowType kinFlow=RBT_NODE_OUT, const FlowType wreFlow=RBT_NODE_IN, bool hasSensor=false);
 
+    /**
+    * @param iLimb the index of the limb - the index is the number of insertion of the limb in the node
+    * @return the RBT matrix of that limb, attached to the node
+    */
+    yarp::sig::Matrix getRBT(unsigned int iLimb) const;
+
 	/**
 	* Main function to manage the exchange of kinematic information among the limbs attached to the node.
 	* One single limb with kinematic flow of input type must exist: this limb is initilized with the kinematic variables
@@ -1158,7 +1164,7 @@ public:
 *
 * A class for connecting head, torso, and left and right arm of the iCub, and exchanging kinematic and 
 * wrench information between limbs, when both left/right limb have FT sensors and the head use the 
-* kinematic and wrench information coming from a inertial measurements. 
+* kinematic and wrench information coming from the inertial sensor measurements. 
 * This class is the best choice to work with iCub for manipulation, i.e. without the legs.
 * The order of limb insertion in the node is:
 * 0 - "head" - head
@@ -1166,6 +1172,8 @@ public:
 * 2 - "left_arm" - left arm
 * 3 - "torso" - torso
 * The ordinal number identifies each limb, as well as the string.
+* By default, the H0 base matrix of the torso limb is set to be the same as in iKin::iCubArm and iDyn::iCubArmDyn
+* so that the Jacobians torso-arm are the same. For more, check the tutorial multiLimbJacobian.
 */
 class iCubUpperBody : protected iDynSensorNode
 {
@@ -1175,15 +1183,6 @@ protected:
 	iDyn::iDynSensor * leftSensor;
 	/// right leg - FT sensor and solver
 	iDyn::iDynSensor * rightSensor;
-
-	/// roto-translational matrix defining the head base frame with respect to the torso node
-	yarp::sig::Matrix HHead;
-	/// roto-translational matrix defining the left arm base frame with respect to the torso node
-	yarp::sig::Matrix HLeft;
-	/// roto-translational matrix defining the right arm base frame with respect to the torso node
-	yarp::sig::Matrix HRight;
-	/// roto-translational matrix defining the torso base frame with respect to the torso node
-	yarp::sig::Matrix HTorso;
 
 	/**
 	* Build the node.
@@ -1343,6 +1342,13 @@ public:
 	*/
 	bool setSensorsWrenchMeasure(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, const yarp::sig::Vector &FM_head);
 
+    /**
+    * @param limbType a string with the limb name
+    * @param H0 the new H0 matrix for the specified limb
+    * @return true if succeed, false otherwise
+    */
+    bool setH0(const std::string &limbType, const yarp::sig::Matrix &H0);
+
 
 	//------------------
 	//    LIMB CALLS
@@ -1371,7 +1377,7 @@ public:
     * @param _q all joints position
     * @param _dq all joints velocity
     * @param _ddq all joints acceleration
-    * @return 0 if the limb name is wrong, 1 if succeed and there's no change in the joints values, 2 if 
+    * @return 0 if the limb name is wrong, 1 if succeed and there's no change in the joints positions, 2 if 
     *    there's a change in the joints positions
 	*/
     unsigned int setJoints(const std::string &limbType, const yarp::sig::Vector &_q, const yarp::sig::Vector &_dq, const yarp::sig::Vector &_ddq);
