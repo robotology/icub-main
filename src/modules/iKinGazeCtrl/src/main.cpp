@@ -118,6 +118,15 @@ Shifts 8 8 8 8 8 8 8 8 8 8
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving.
  
+-- minAbsVel \e min
+- The parameter \e min specifies the minimum absolute velocity 
+  that can be achieved by the robot [deg/s] due to the
+  approximation performed while delivering data over the
+  network. By default this value is 0.0 having no result on the
+  controller's operations. In case it is different from 0.0, the
+  controller will implement a bang-bang approach whenever the
+  velocity to be delivered goes under the minimum threshold.
+ 
 \section portsa_sec Ports Accessed
  
 The ports the module is connected to: e.g. 
@@ -355,6 +364,7 @@ public:
         double eyesTime;
         double eyeTiltMin;
         double eyeTiltMax;
+        double minAbsVel;
         bool   Robotable;
         double ping_robot_tmo;
 
@@ -404,6 +414,18 @@ public:
             eyeTiltMax=rf.find("eyeTiltMax").asDouble();
         else
             eyeTiltMax=1e9;
+
+        if (rf.check("minAbsVel"))
+        {
+            minAbsVel=CTRL_DEG2RAD*rf.find("minAbsVel").asDouble();
+
+            // minAbsVel is given in absolute form
+            // hence it must be positive
+            if (minAbsVel<0.0)
+                minAbsVel=-minAbsVel;
+        }
+        else
+            minAbsVel=0.0;
 
         if (rf.check("simulation"))
             Robotable=false;
@@ -467,7 +489,8 @@ public:
 
         // create and start threads
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,neckTime,eyesTime,eyeTiltMin,eyeTiltMax,10);        
+                            localHeadName,neckTime,eyesTime,
+                            eyeTiltMin,eyeTiltMax,minAbsVel,10);        
 
         loc=new Localizer(&commData,localHeadName,configFile,10);
 
@@ -695,19 +718,20 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-        cout << "\t--ctrlName      name: controller name (default iKinGazeCtrl)"                     << endl;
-        cout << "\t--robot         name: robot name to connect to (default: icub)"                   << endl;
-        cout << "\t--part          name: robot head port name, (default: head)"                      << endl;
-        cout << "\t--torso         name: robot torso port name (default: torso)"                     << endl;
-        cout << "\t--inertial      name: robot inertial port name (default: inertial)"               << endl;
-        cout << "\t--Tneck         time: specify the neck movements time in seconds (default: 0.70)" << endl;
-        cout << "\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)" << endl;
-        cout << "\t--config        file: file name for kinematics and cameras parameters"            << endl;
-        cout << "\t--context        dir: resource finder searching dir for config file"              << endl;
-        cout << "\t--simulation        : simulate the presence of the robot"                         << endl;
-        cout << "\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot"               << endl;
-        cout << "\t--eyeTiltMin     min: minimum eye tilt angle [deg]"                               << endl;
-        cout << "\t--eyeTiltMax     max: maximum eye tilt angle [deg]"                               << endl;
+        cout << "\t--ctrlName      name: controller name (default iKinGazeCtrl)"                               << endl;
+        cout << "\t--robot         name: robot name to connect to (default: icub)"                             << endl;
+        cout << "\t--part          name: robot head port name, (default: head)"                                << endl;
+        cout << "\t--torso         name: robot torso port name (default: torso)"                               << endl;
+        cout << "\t--inertial      name: robot inertial port name (default: inertial)"                         << endl;
+        cout << "\t--Tneck         time: specify the neck movements time in seconds (default: 0.70)"           << endl;
+        cout << "\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)"           << endl;
+        cout << "\t--config        file: file name for kinematics and cameras parameters"                      << endl;
+        cout << "\t--context        dir: resource finder searching dir for config file"                        << endl;
+        cout << "\t--simulation        : simulate the presence of the robot"                                   << endl;
+        cout << "\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot"                         << endl;
+        cout << "\t--eyeTiltMin     min: minimum eye tilt angle [deg]"                                         << endl;
+        cout << "\t--eyeTiltMax     max: maximum eye tilt angle [deg]"                                         << endl;
+        cout << "\t--minAbsVel      min: minimum absolute velocity that can be achieved [deg/s] (default 0.0)" << endl;
 
         return 0;
     }

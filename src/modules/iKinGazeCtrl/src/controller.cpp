@@ -4,14 +4,14 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                       const string &_robotName, const string &_localName, double _neckTime,
-                       double _eyesTime, const double _eyeTiltMin, const double _eyeTiltMax,
-                       unsigned int _period) :
+                       const string &_robotName, const string &_localName, const double _neckTime,
+                       const double _eyesTime, const double _eyeTiltMin, const double _eyeTiltMax,
+                       const double _minAbsVel, unsigned int _period) :
                        RateThread(_period),     drvTorso(_drvTorso),   drvHead(_drvHead),
                        commData(_commData),     robotName(_robotName), localName(_localName),
                        neckTime(_neckTime),     eyesTime(_eyesTime),   eyeTiltMin(_eyeTiltMin),
-                       eyeTiltMax(_eyeTiltMax), period(_period),       Ts(_period/1000.0),
-                       printAccTime(0.0)
+                       eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel), period(_period),
+                       Ts(_period/1000.0),      printAccTime(0.0)
 {
     Robotable=drvTorso&&drvHead;
 
@@ -245,6 +245,27 @@ void Controller::run()
     {
         v[i]  =vNeck[i];
         v[3+i]=vEyes[i];
+    }
+
+    // apply bang-bang just in case to compensate
+    // for unachievable low velocities
+    if (Robotable)
+    {
+        for (int i=0; i<v.length(); i++)
+        {
+            if ((v[i]>-minAbsVel) && (v[i]<minAbsVel) && !v[i])
+            {
+                // current error in the joint space
+                double e=qd[i]-fbHead[i];
+
+                if (e>0.0)
+                    v[i]=minAbsVel;
+                else if (e<0.0)
+                    v[i]=-minAbsVel;
+                else
+                    v[i]=0.0;
+            }
+        }
     }
 
     // convert to degrees
