@@ -12,9 +12,10 @@ using namespace std;
 interactionThread::interactionThread()
 {
    blobFinder=0;
-
+   reinit_flag=false;  
    tmpImage=new ImageOf<PixelMono>;
    img=0;
+   image_out=0;
 
    previous_target_x=0;
    previous_target_y=0;
@@ -28,6 +29,12 @@ interactionThread::~interactionThread()
 {
    delete tmpImage;
    delete img;
+   delete ptr_inputImgRG;
+   delete ptr_inputImgGR;
+   delete ptr_inputImgBY;
+   delete ptr_inputImgRed;
+   delete ptr_inputImgGreen;
+   delete ptr_inputImgBlue;
 }
 
 
@@ -36,6 +43,25 @@ void interactionThread::reinitialise(int width, int height){
     srcsize.height=height;
 
     img->resize(width,height);
+
+    image_out=new ImageOf<PixelRgb>;
+    image_out->resize( width, height);
+    ptr_inputImg=new ImageOf<PixelMono>;
+    ptr_inputImg->resize( width, height);
+    
+    ptr_inputImgRG=new ImageOf<PixelMono>;
+    ptr_inputImgRG->resize( width, height);
+    ptr_inputImgGR=new ImageOf<PixelMono>;
+    ptr_inputImgGR->resize( width, height);
+    ptr_inputImgBY=new ImageOf<PixelMono>;
+    ptr_inputImgBY->resize( width, height);
+
+    ptr_inputImgRed=new ImageOf<PixelMono>;
+    ptr_inputImgRed->resize( width, height);
+    ptr_inputImgGreen=new ImageOf<PixelMono>;
+    ptr_inputImgGreen->resize( width, height);
+    ptr_inputImgBlue=new ImageOf<PixelMono>;
+    ptr_inputImgBlue->resize( width, height);
 }
 
 void interactionThread::setName(std::string str){
@@ -87,28 +113,27 @@ void interactionThread::run(){
     
         ct++;
         img = inputPort.read(true);
-        if(0==img)
-            return;
+        if(0!=img){
+            if(!reinit_flag){    
+	            srcsize.height=img->height();
+	            srcsize.width=img->width();
+                this->height=img->height();
+                this->width=img->width();
+                reinitialise(img->width(), img->height());
+                reinit_flag=true;
+                tmpImage->resize(this->width,this->height);    
+            }
 
-        if(!reinit_flag){    
-	        srcsize.height=img->height();
-	        srcsize.width=img->width();
-            this->height=img->height();
-            this->width=img->width();
-            reinitialise(img->width(), img->height());
-            reinit_flag=true;
-            tmpImage->resize(this->width,this->height);
-            
+            //copy the inputImg into a buffer
+            //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),tmpImage->getRawImage(), tmpImage->getRowSize(),srcsize);
+            //ippiCopy_8u_C3R(tmpImage->getRawImage(), tmpImage->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
+            bool ret1=true,ret2=true;
+            ret1=getOpponencies();
+            ret2=getPlanes();
+            /*if(ret1&&ret2)
+                blobFinder->freetorun=true;*/
+            outPorts();
         }
-
-        //copy the inputImg into a buffer
-        ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),blobFinder->ptr_inputImg->getRawImage(), blobFinder->ptr_inputImg->getRowSize(),srcsize);
-        bool ret1=true,ret2=true;
-        ret1=getOpponencies();
-        ret2=getPlanes();
-        if(ret1&&ret2)
-            blobFinder->freetorun=true;
-        outPorts();
     }
 }
 
@@ -119,15 +144,15 @@ bool interactionThread::getOpponencies(){
 
     tmpImage=rgPort.read(false);
     if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRG->getRawImage(), blobFinder->ptr_inputImgRG->getRowSize(),srcsize);
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgRG->getRawImage(), ptr_inputImgRG->getRowSize(),srcsize);
    
     tmpImage=grPort.read(false);
     if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGR->getRawImage(), blobFinder->ptr_inputImgGR->getRowSize(),srcsize);
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgGR->getRawImage(), ptr_inputImgGR->getRowSize(),srcsize);
     
     tmpImage=byPort.read(false);
     if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBY->getRawImage(), blobFinder->ptr_inputImgBY->getRowSize(),srcsize);
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBY->getRawImage(), ptr_inputImgBY->getRowSize(),srcsize);
     
     return true;
 }
@@ -139,15 +164,15 @@ bool interactionThread::getPlanes(){
     
     tmpImage=redPort.read(false);
     if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRed->getRawImage(), blobFinder->ptr_inputImgRed->getRowSize(),srcsize);
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgRed->getRawImage(), ptr_inputImgRed->getRowSize(),srcsize);
    
     tmpImage=greenPort.read(false);
     if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGreen->getRawImage(), blobFinder->ptr_inputImgGreen->getRowSize(),srcsize);
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgGreen->getRawImage(), ptr_inputImgGreen->getRowSize(),srcsize);
     
     tmpImage=bluePort.read(false);
     if(tmpImage!=NULL)
-        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBlue->getRawImage(), blobFinder->ptr_inputImgBlue->getRowSize(),srcsize);
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBlue->getRawImage(), ptr_inputImgBlue->getRowSize(),srcsize);
     
     return true;
 }
@@ -159,25 +184,24 @@ bool interactionThread::outPorts(){
     //printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
     
     
-    if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){ 
-        outputPort.prepare() = *(blobFinder->image_out);		
+    if((0!=image_out)&&(outputPort.getOutputCount())){ 
+        outputPort.prepare() = *(image_out);		
         outputPort.write();
     }
 
+    /*
     if(triangulationPort.getOutputCount()){
         Bottle in,bot;
         //Bottle &bot = triangulationPort.prepare(); 
         bot.clear();
-        /*bot.addVocab( Vocab::encode("get") );x 
-        bot.addVocab( Vocab::encode("3dpoint") );
-        bot.addVocab( Vocab::encode("right") );*/
+        
         bot.addString("get");
         bot.addString("3dpoint");
         bot.addString("right");
         bot.addDouble(blobFinder->salience->target_x);
         bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);
         /*bot.addDouble(blobFinder->salience->centroid_x);
-        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);*/
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);*//*
        
         bot.addDouble(1.5); //fixed distance in which the saccade takes place
         triangulationPort.write(bot,in); //stop here till it receives a response
@@ -191,7 +215,9 @@ bool interactionThread::outPorts(){
         }
         bot.clear();
     }
+    */
 
+    /*
     if(gazeControlPort.getOutputCount()){
         if(!this->timeControl_flag){
             Bottle &bot = gazeControlPort.prepare(); 
@@ -236,7 +262,7 @@ bool interactionThread::outPorts(){
                 target_ymap_string=rest.substr(0,found);
                 rest=finalKey.substr(found,finalKey.length()-found);
                 found=finalKey.find(",");
-                target_zmap_string=rest.substr(0,finalKey.length());*/
+                target_zmap_string=rest.substr(0,finalKey.length());*//*
                 
                 //subdived the string into x,y,z
                 //send the command.
@@ -265,19 +291,19 @@ bool interactionThread::outPorts(){
                 }
                 else{
                     iterMap->second++;
-                }*/
+                }*//*
 
             }
         }
-    }
+    }*/
 
+    /*
     if(centroidPort.getOutputCount()){
         Bottle &bot = centroidPort.prepare(); 
         bot.clear();
         
         
-        /*bot.addDouble(blobFinder->salience->maxc); 
-        bot.addDouble(blobFinder->salience->maxr); */
+        
         
         time (&endTimer);
         double dif = difftime (endTimer,startTimer);
@@ -328,7 +354,7 @@ bool interactionThread::outPorts(){
             //printf("%f>%f,%f \n",dif,xrel,yrel);
             bot.addDouble(xrel);  
             bot.addDouble(yrel); 
-            centroidPort.write();*/
+            centroidPort.write();*//*
             
         }
         else if(dif>blobFinder->constantTimeCentroid+0.5){
@@ -338,7 +364,8 @@ bool interactionThread::outPorts(){
            
         }
         
-    }
+    }*/
+
      /*Bottle& _outBottle=_centroidPort->prepare();
      _outBottle.clear();
     //_outBottle.addString("centroid:");

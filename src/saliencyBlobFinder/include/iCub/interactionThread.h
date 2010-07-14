@@ -265,6 +265,38 @@ public:
     */
     ImageOf<PixelRgb> *img;
     /**
+    * image which is the output of the module
+    */
+    ImageOf<PixelRgb>* image_out;
+    /**
+    * pointer to the input image RG
+    */
+    ImageOf<PixelMono>* ptr_inputImg;
+    /**
+    * pointer to the input image RG
+    */
+    ImageOf<PixelMono>* ptr_inputImgRG;
+    /**
+    * pointer to the input image GR
+    */
+    ImageOf<PixelMono>* ptr_inputImgGR;
+    /**
+    * pointer to the input image BY
+    */
+    ImageOf<PixelMono>* ptr_inputImgBY;
+    /**
+    * pointer to the input image RG
+    */
+    ImageOf<PixelMono>* ptr_inputImgRed;
+    /**
+    * pointer to the input image GR
+    */
+    ImageOf<PixelMono>* ptr_inputImgGreen;
+    /**
+    * pointer to the input image BY
+    */
+    ImageOf<PixelMono>* ptr_inputImgBlue;
+    /**
     * flag on when the image is successfully acquired
     */
     int* redGreen_flag;
