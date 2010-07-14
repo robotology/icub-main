@@ -1904,6 +1904,10 @@ void iCubUpperBody::build()
 	rightArm    = new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
 	head		= new iCubNeckInertialDyn(KINBWD_WREBWD);
     torso       = new iCubTorsoDyn("asiKinArm",KINBWD_WREBWD);
+	Matrix H0_torso(4,4);H0_torso.zero();
+	H0_torso(0,1)=-1.0;H0_torso(1,2)=-1.0;H0_torso(2,0)=1.0;H0_torso(3,3)=1.0;
+	torso->setH0(H0_torso);
+
 
 	leftSensor = new iDynSensorArmNoTorso(leftArm,mode,verbose);
 	rightSensor= new iDynSensorArmNoTorso(rightArm,mode,verbose);
