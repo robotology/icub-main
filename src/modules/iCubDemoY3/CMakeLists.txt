@@ -1,23 +1,15 @@
 PROJECT(iCubDemoY3)
 
-SET(USE_NEW_CONFIG FALSE CACHE BOOL "Do you want to use a new experimental config method?")
+file(GLOB folder_source *.cpp)
+file(GLOB folder_header *.h)
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
-FIND_PACKAGE(YARP)
-FIND_PACKAGE(ICUB)
+include_directories(${YARP_INCLUDE_DIRS})
 
-FILE(GLOB folder_source *.cpp)
-FILE(GLOB folder_header *.h)
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
+add_executable(iCubDemoY3 ${folder_source} ${folder_header})
 
-ADD_EXECUTABLE(iCubDemoY3 ${folder_source} ${folder_header})
+target_link_libraries(iCubDemoY3 ${YARP_LIBRARIES})
 
-INSTALL(TARGETS iCubDemoY3 RUNTIME DESTINATION bin)
+install(TARGETS iCubDemoY3 DESTINATION bin)
 
-# organization of configuration files in installations
-SET(appdir app/demoy3)
-SET(d ${ICUB_DIR}/${appdir})
-
-# configuration files
-INSTALL(FILES ${d}/fullBody.txt ${d}/armRight1 ${d}/armLeft1 ${d}/rightLegRemap ${d}/leftLegRemap ${d}/headRemap ${d}/torsoRemap DESTINATION ${appdir})
-INSTALL(FILES ${d}/configSim.ini DESTINATION ${appdir} RENAME config.ini)
