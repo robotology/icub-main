@@ -23,26 +23,20 @@ case "$1" in
 		;;
 	start)
 		$MYSHELL "velocityControl --period 20 --part right_arm &"
-		sleep 1
 		$MYSHELL "velocityControl --period 20 --part left_arm &"
-		sleep 1
 		$MYSHELL "velocityControl --period 20 --part head &"
-		sleep 1
 		$MYSHELL "velocityControl --period 20 --part right_leg &"
-		sleep 1
 		$MYSHELL "velocityControl --period 20 --part left_leg &"
-		sleep 1
+		$MYSHELL "velocityControl --period 20 --part torso &"
+
 		$MYSHELL "clockModule --period 20 --part head &"
-		sleep 1
+
 		$MYSHELL "drumGeneratorModule --period 20 --part head &"
-		sleep 1
 		$MYSHELL "drumGeneratorModule --period 20 --part right_arm &"
-		sleep 1
 		$MYSHELL "drumGeneratorModule --period 20 --part left_arm  &"
-		sleep 1
 		$MYSHELL "drumGeneratorModule --period 20 --part right_leg &"
-		sleep 1
 		$MYSHELL "drumGeneratorModule --period 20 --part left_leg &"
+		$MYSHELL "drumGeneratorModule --period 20 --part torso &"
 		sleep 1
 		;;
 
