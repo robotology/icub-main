@@ -1,5 +1,5 @@
 //
-// An example on finding a multi-limb Jacobian exploiting iDynNode.
+// An example on finding a multi-limb Jacobians exploiting iDynNode.
 // A node with torso, head, a left and right arm is created. Then the Jacobian
 // and the end-effector pose are computed, for different couples of limbs.
 //
@@ -20,7 +20,8 @@ using namespace iCub::iKin;
 using namespace iCub::iDyn;
 
 
-// the class we'll use for this example is inherited from iDynNode.
+// the class we'll use for this example is inherited from iDynNode, and is basically the same as
+// iCubUpperBody (see iDynBody).
 // even if the arms have a FT sensor, in this example we're just using kinematics computations
 // and we're not using the sensor at all, so there's no need to use a iDynSensorNode.
 // we start building an empty node, then adding a right arm (index 0), a torso limb (index 1),
@@ -60,7 +61,19 @@ public:
 		Harm_right(2,0) = -sin(theta);	Harm_right(2,1) = 0.0;	Harm_right(2,2) = cos(theta);	Harm_right(2,3) = 0.10997;
 		Harm_right(3,3) = 1.0;
 
-		// we can add the limbs just setting the roto-translational matrix
+        // this is important:
+        // iCubTorsoDyn is a standalone limb, with a non-initialized base: its H0 matrix is eye()
+        // conversely, iCubArm and iCubArmDyn are referred to the torso base, with a particular H0 matrix       
+        // (0 -1 00; 00 -1 0; 1 000; 0001) by row
+        // if we want to obtain the same Jacobian and pose in the arm as in iCubArm/Dyn (iKin style)
+        // we must set the same H0 in the torso limb before making any computation
+        // note that in iCUbUpperBody H0 has already been set: hence we only set the new H0 in our test
+        // class armWithTorso
+        Matrix H0(4,4); 
+        H0.zero();  H0(0,1)=-1.0;   H0(1,2)=-1.0;   H0(2,0)=1.0;    H0(3,3)=1.0;
+        torso->setH0(H0);
+
+		// now we can add the limbs just setting the roto-translational matrix
 		// since the other parameters (kinematic and wrench flow, sensor flag) are not useful
 		// for our example: the default values are ok
 		addLimb(arm_right,Harm_right);
@@ -71,6 +84,7 @@ public:
 
 	~UpTorso()
 	{
+        // remember to destroy everything!!
 		delete arm_right;
 		delete head;
 		delete torso;
@@ -82,6 +96,12 @@ public:
 	// with JAC_IKIN direction in the first limb (because we start the jacobian
 	// at the end-effector of the head, go throught its base to the node, and then
 	// to the arm)
+    // note the numbers for each limb:
+    // 0 = arm_right
+    // 1 = torso
+    // 2 = head
+    // 3 = arm_left
+    // these numbers are related to the insertion order (addLimb) in the constructor..
 
 	Matrix Jacobian_TorsoArmRight()		{	return computeJacobian(1,JAC_KIN, 0,JAC_KIN);	}
 	Matrix Jacobian_TorsoArmLeft()		{	return computeJacobian(1,JAC_KIN, 3,JAC_KIN);	}
