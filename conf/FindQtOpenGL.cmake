@@ -1,0 +1,33 @@
+# Copyright: (C) 2009 RobotCub Consortium
+# Author: Alessandro Scalzo
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+#
+# Creates:
+# QTOPENGL_INCLUDE_DIRS   - Directories to include to use Qt3
+# QTOPENGL_LIBRARIES      - Files to link against to use Qt3
+# QTOPENGL_FOUND          - If false, don't try to use Qt3
+# QTOPENGL_DEFINITIONS    - Additional definitions
+
+SET(QT_USE_QTOPENGL TRUE)
+FIND_PACKAGE(Qt3)
+
+IF(QT_FOUND)
+	# Search for OpenGL and GLUT
+	FIND_PACKAGE(OpenGL)
+	IF(OPENGL_FOUND)
+		FIND_PACKAGE(GLUT)
+		IF(GLUT_FOUND)
+			SET(QTOPENGL_FOUND TRUE)
+			SET(QTOPENGL_INCLUDE_DIRS ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${QT_INCLUDE_DIR})
+			SET(QTOPENGL_LIBRARIES ${QT_QTOPENGL_LIBRARY} ${QT_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+			SET(QTOPENGL_DEFINITIONS ${QT_DEFINITIONS})
+		#ELSE(GLUT_FOUND)
+		#	MESSAGE("GLUT not found")
+		ENDIF(GLUT_FOUND)
+	#ELSE(OPENGL_FOUND)
+	#	MESSAGE("OpenGL not found")
+	ENDIF(OPENGL_FOUND)
+#ELSE(QT_FOUND)
+#	MESSAGE("Qt3 not found")
+ENDIF(QT_FOUND)
