@@ -94,7 +94,7 @@ yarp connect /icub/right_arm/analog:o /zfc/right_arm/FT:i
  
 \author Matteo Fumagalli
 
-This file can be edited at src/demoForceControl/main.cpp.
+This file can be edited at main/src/modules/demoForceControl/main.cpp.
 */ 
 
 

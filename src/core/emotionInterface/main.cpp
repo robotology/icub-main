@@ -23,7 +23,7 @@ using namespace iCub::contrib;
  * Copyright (C) 2007 Alex Bernardino 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * This file can be edited at src/emotioninterface/main.cpp.
+ * This file can be edited at main/src/core/emotioninterface/main.cpp.
  */
 
 int main(int argc, char *argv[]) {
