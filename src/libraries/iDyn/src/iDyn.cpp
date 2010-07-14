@@ -1152,24 +1152,23 @@ void iDynChain::setIterMode(const ChainComputationMode mode)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix iDynChain::getH0() const
 {
- return H0;
+    return H0;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::setH0(const Matrix &_H0)
 {
- if((_H0.cols()==4)&&(_H0.rows()==4))
- {
-  H0 = _H0;
-  return true;
- }
- else
- {
-  if(verbose) cerr<<"iDynChain: could not set H0 due to wrong sized matrix: "
-      <<_H0.rows()<<"x"<<_H0.cols()<<" instead of 4x4."<<endl;
-  return false;
- }
+     if((_H0.cols()==4)&&(_H0.rows()==4))
+     {
+        H0 = _H0;
+        return true;
+     }
+     else
+     {
+        if(verbose) cerr<<"iDynChain: could not set H0 due to wrong sized matrix: "
+                        <<_H0.rows()<<"x"<<_H0.cols()<<" instead of 4x4."<<endl;
+        return false;
+     }
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//-----------
@@ -1543,7 +1542,7 @@ void iCubArmDyn::allocate(const string &_type)
         linkList[3]=new iDynLink(0.189,		 0.005e-3,  18.7e-3,   1.19e-3,		 123.0e-6,   0.021e-6,  -0.001e-6,    24.4e-6,    4.22e-6,   113.0e-6,			0.0, -0.10774,  M_PI/2.0,           -M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);
         linkList[4]=new iDynLink(0.179,		-0.094e-3, -6.27e-3,  -16.6e-3,		 137.0e-6, -0.453e-06,  0.203e-06,    83.0e-6,    20.7e-6,    99.3e-6,			0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,                0.0, 160.8*CTRL_DEG2RAD);
         linkList[5]=new iDynLink(0.884,		  1.79e-3, -62.9e-3, 0.064e-03,		 743.0e-6,    63.9e-6,  0.851e-06,   336.0e-6,   -3.61e-6,   735.0e-6, 			0.0, -0.15228, -M_PI/2.0, -105.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
-        linkList[6]=new iDynLink(0.074,		 -13.7e-3, -3.71e-3,   1.05e-3,		  28.4e-6,  -0.502e-6,  -0.399e-6,    9.24e-6,  -0.371e-6,    29.9e-6,		  0.015,      0.0,  M_PI/2.0,                 0.0,   0.0*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);//5.5
+        linkList[6]=new iDynLink(0.074,		 -13.7e-3, -3.71e-3,   1.05e-3,		  28.4e-6,  -0.502e-6,  -0.399e-6,    9.24e-6,  -0.371e-6,    29.9e-6,		  0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);
         linkList[7]=new iDynLink(0.525,		-0.347e-3,  71.3e-3,  -4.76e-3,		 766.0e-6,    5.66e-6,    1.40e-6,   164.0e-6,    18.2e-6,   699.0e-6,	        0.0,  -0.1373,  M_PI/2.0,           -M_PI/2.0, -90.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
         linkList[8]=new iDynLink(	 0,			    0,        0,         0,		 	    0,		    0,		    0,			0,			0,		    0,	        0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -90.0*CTRL_DEG2RAD,   0.0*CTRL_DEG2RAD);
         linkList[9]=new iDynLink(0.213,		  7.73e-3, -8.05e-3,  -9.00e-3,		 154.0e-6,	  12.6e-6,   -6.08e-6,   250.0e-6,    17.6e-6,   378.0e-6,	     0.0625,    0.016,       0.0,                M_PI, -20.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD);
@@ -1556,7 +1555,7 @@ void iCubArmDyn::allocate(const string &_type)
         linkList[3]=new iDynLink(0.13,	-0.004e-3, 14.915e-3, -0.019e-3,		54.421e-6,   0.009e-6,     0.0e-6,   9.331e-6,  -0.017e-6,  54.862e-6,			0.0, 0.10774,	   -M_PI/2.0,            M_PI/2.0,  -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);
         linkList[4]=new iDynLink(0.178,  0.097e-3,  -6.271e-3, 16.622e-3,		 137.2e-6,   0.466e-6,   0.365e-6,  82.927e-6, -20.524e-6,  99.274e-6,			0.0,	 0.0,		M_PI/2.0,           -M_PI/2.0,				   0.0,	160.8*CTRL_DEG2RAD);
         linkList[5]=new iDynLink(0.894, -1.769e-3, 63.302e-3, -0.084e-3,	   748.531e-6,  63.340e-6,  -0.903e-6, 338.109e-6,  -4.031e-6, 741.022e-6,			0.0, 0.15228,	   -M_PI/2.0,   75.0*CTRL_DEG2RAD,  -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
-        linkList[6]=new iDynLink(0.074, 13.718e-3,  3.712e-3, -1.046e-3,		28.389e-6,  -0.515e-6,  -0.408e-6,   9.244e-6,  -0.371e-6,  29.968e-6,		 -0.015,     0.0,		M_PI/2.0,                 0.0,    0.0*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);//5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);
+        linkList[6]=new iDynLink(0.074, 13.718e-3,  3.712e-3, -1.046e-3,		28.389e-6,  -0.515e-6,  -0.408e-6,   9.244e-6,  -0.371e-6,  29.968e-6,		 -0.015,     0.0,		M_PI/2.0,                 0.0,    5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);
         linkList[7]=new iDynLink(0.525, 0.264e-3, -71.327e-3,  4.672e-3,	   765.393e-6,   4.337e-6,   0.239e-6, 164.578e-6,  19.381e-6, 698.060e-6,			0.0,  0.1373,		M_PI/2.0,           -M_PI/2.0,	-90.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
         linkList[8]=new iDynLink(	 0,		   0,		   0,		  0,				0,		    0,	        0,		    0,		    0,		    0,			0.0,	 0.0,		M_PI/2.0,            M_PI/2.0,	-90.0*CTRL_DEG2RAD,   0.0*CTRL_DEG2RAD);
         linkList[9]=new iDynLink(0.214, 7.851e-3, -8.319e-3, 9.284e-3,		   157.143e-6,  12.780e-6,   4.823e-6, 247.995e-6, -18.188e-6, 380.535e-6,		 0.0625,  -0.016,			 0.0,                 0.0,	-20.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD);
@@ -1643,8 +1642,11 @@ void iCubArmNoTorsoDyn::allocate(const string &_type)
 
     if (type=="right")
     {
-		linkList[0]=new iDynLink(0.189,		 0.005e-3,  18.7e-3,   1.19e-3,		 123.0e-6,   0.021e-6,  -0.001e-6,    24.4e-6,    4.22e-6,   113.0e-6,			0.0,     -0.0,  M_PI/2.0,           -M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0.179,		-0.094e-3, -6.27e-3,  -16.6e-3,		 137.0e-6, -0.453e-06,  0.203e-06,    83.0e-6,    20.7e-6,    99.3e-6,			0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,                0.0, 160.8*CTRL_DEG2RAD);
+        //note: the D value in joint 0 is different from the corresponding one in iCubArmDyn (and iKin::iCubArm)
+        // in ikin: -0.10774   here: 0.0
+        // see the RBT matrix of the right arm connected to the UpperTorso or UpperBody nodes
+		linkList[0]=new iDynLink(0.189,		 0.005e-3,  18.7e-3,   1.19e-3,		 123.0e-6,   0.021e-6,  -0.001e-6,    24.4e-6,    4.22e-6,   113.0e-6,			0.0,     -0.0,  M_PI/2.0,           -M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD); 
+		linkList[1]=new iDynLink(0.179,		-0.094e-3, -6.27e-3,  -16.6e-3,		 137.0e-6, -0.453e-06,  0.203e-06,    83.0e-6,    20.7e-6,    99.3e-6,			0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,                0.0, 160.8*CTRL_DEG2RAD);
         linkList[2]=new iDynLink(0.884,		  1.79e-3, -62.9e-3, 0.064e-03,		 743.0e-6,    63.9e-6,  0.851e-06,   336.0e-6,   -3.61e-6,   735.0e-6, 			0.0, -0.15228, -M_PI/2.0, -105.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
         linkList[3]=new iDynLink(0.074,		 -13.7e-3, -3.71e-3,   1.05e-3,		  28.4e-6,  -0.502e-6,  -0.399e-6,    9.24e-6,  -0.371e-6,    29.9e-6,		  0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);
         linkList[4]=new iDynLink(0.525,		-0.347e-3,  71.3e-3,  -4.76e-3,		 766.0e-6,    5.66e-6,    1.40e-6,   164.0e-6,    18.2e-6,   699.0e-6,	        0.0,  -0.1373,  M_PI/2.0,           -M_PI/2.0, -90.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
@@ -1653,6 +1655,9 @@ void iCubArmNoTorsoDyn::allocate(const string &_type)
  	}
     else
     {
+        //note: the D value in joint 0 is different from the corresponding one in iCubArmDyn (and iKin::iCubArm)
+        // in ikin:  +0.10774   here: 0.0
+        // see the RBT matrix of the right arm connected to the UpperTorso or UpperBody nodes
         linkList[0]=new iDynLink(0.13,	-0.004e-3, 14.915e-3, -0.019e-3,		54.421e-6,   0.009e-6,     0.0e-6,   9.331e-6,  -0.017e-6,  54.862e-6,			0.0,	 0.0,	   -M_PI/2.0,            M_PI/2.0,  -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);
         linkList[1]=new iDynLink(0.178,  0.097e-3,  -6.271e-3, 16.622e-3,		 137.2e-6,   0.466e-6,   0.365e-6,  82.927e-6, -20.524e-6,  99.274e-6,			0.0,	 0.0,		M_PI/2.0,           -M_PI/2.0,				   0.0,	160.8*CTRL_DEG2RAD);
         linkList[2]=new iDynLink(0.894, -1.769e-3, 63.302e-3, -0.084e-3,	   748.531e-6,  63.340e-6,  -0.903e-6, 338.109e-6,  -4.031e-6, 741.022e-6,			0.0, 0.15228,	   -M_PI/2.0,   75.0*CTRL_DEG2RAD,  -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
@@ -1721,40 +1726,28 @@ void iCubTorsoDyn::allocate(const string &_type)
 	if(type!="lower" && type!="upper")
 		type = "lower";
 
-    H0.zero();
-	H0.eye();
-
+    // note: H0 here is an identity, whereas in iCubArm and iCubArmDyn is different (0 -1 00; 00 -1 0; 1 000; 0001 by row)
+    // the reason is that the torso limb is cursed, and its H0 is different if we consider it a standalone limb attached
+    // to upper body or lower torso nodes. 
+    // check the RBT matrix linking torso to each node, and set the H0 properly before performing computations involving it
+    // like the Jacobians..
+    H0.zero();	H0.eye();
 
     linkList.resize(3);
 
     if (type=="lower")
     {
-		H0.eye();
-
         //      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
         linkList[0]=new iDynLink(0,	0,	0,  0,		0,0,0,  0,0,0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
 		linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
 		linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
-   
-
     }
-    else if(type=="asiKinArm")
-    {
-        H0.zero();
-        H0(0,1)=-1;
-        H0(1,2)=-1;
-        H0(2,0)=1;
-        H0(3,3)=1;
-        linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,   M_PI/2.0,       0.0,           -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,      0.0,   M_PI/2.0, -M_PI/2.0,           -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,   -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
-    }
-    else
+    else // "upper"
     { 
-        H0.eye();
-        linkList[0]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	      0.032,      0.0,   M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
-        linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,	        0.0,     0.001,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
-        linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,	0,0,0,   -0.0233647,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+        //      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
+        linkList[0]=new iDynLink(0,	0,	0,  0,		0,0,0,  0,0,0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+		linkList[1]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+		linkList[2]=new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
     }
 
     for(unsigned int i=0; i<linkList.size(); i++)

@@ -399,6 +399,20 @@ void iDynNode::addLimb(iDynLimb *limb, const Matrix &H, const FlowType kinFlow, 
 	string infoRbt = limb->getType() + " to node";
 	RigidBodyTransformation rbt(limb,H,infoRbt,hasSensor,kinFlow,wreFlow,mode,verbose);
 	rbtList.push_back(rbt);
+}    
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynNode::getRBT(unsigned int iLimb) const
+{
+    if(iLimb<rbtList.size())
+    {
+        return rbtList[iLimb].getRBT();
+    }
+    else
+    {
+        if(verbose) cerr<<"iDynNode: error, could not getRBT() due to out of range index: "
+                        <<iLimb<<", while we have "<<rbtList.size()<<" limbs."<<endl;
+        return Matrix(0,0);
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynNode::solveKinematics()
@@ -1903,29 +1917,37 @@ void iCubUpperBody::build()
 	leftArm	    = new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
 	rightArm    = new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
 	head		= new iCubNeckInertialDyn(KINBWD_WREBWD);
-    torso       = new iCubTorsoDyn("asiKinArm",KINBWD_WREBWD);
-	Matrix H0_torso(4,4);H0_torso.zero();
-	H0_torso(0,1)=-1.0;H0_torso(1,2)=-1.0;H0_torso(2,0)=1.0;H0_torso(3,3)=1.0;
-	torso->setH0(H0_torso);
-
-
+    torso       = new iCubTorsoDyn("lower",KINBWD_WREBWD);
+	
 	leftSensor = new iDynSensorArmNoTorso(leftArm,mode,verbose);
 	rightSensor= new iDynSensorArmNoTorso(rightArm,mode,verbose);
 
-	HHead.resize(4,4);	HHead.eye();
-	HLeft.resize(4,4);	HLeft.zero();
-	HRight.resize(4,4);	HRight.zero();
-    HTorso.resize(4,4); HTorso.eye();
+    /// HHead: roto-translational matrix defining the head base frame with respect to the torso node
+    /// HLeft: roto-translational matrix defining the left arm base frame with respect to the torso node
+    /// HRight: roto-translational matrix defining the right arm base frame with respect to the torso node
+    /// HTorso: roto-translational matrix defining the torso base frame with respect to the torso node
+
+    Matrix HHead(4,4);	    HHead.eye();
+	Matrix HLeft(4,4);	    HLeft.zero();
+	Matrix HRight(4,4);	    HRight.zero();
+    Matrix HTorso(4,4);     HTorso.eye();
+    Matrix H0Torso(4,4);    H0Torso.zero();
 
 	double theta = CTRL_DEG2RAD * (180.0-15.0);
 	HLeft(0,0) = cos(theta);	HLeft(0,1) = 0.0;		HLeft(0,2) = sin(theta);	HLeft(0,3) = 0.003066;
 	HLeft(1,0) = 0.0;			HLeft(1,1) = 1.0;		HLeft(1,2) = 0.0;			HLeft(1,3) = -0.049999;
 	HLeft(2,0) = -sin(theta);	HLeft(2,1) = 0.0;		HLeft(2,2) = cos(theta);	HLeft(2,3) = -0.110261;
 	HLeft(3,3) = 1.0;	
-	HRight(0,0) = -cos(theta);	HRight(0,1) = 0.0;  HRight(0,2) = -sin(theta);	HRight(0,3) = 0.00294;
-	HRight(1,0) = 0.0;			HRight(1,1) = -1.0; HRight(1,2) = 0.0;			HRight(1,3) = -0.050;
-	HRight(2,0) = -sin(theta);	HRight(2,1) = 0.0;	HRight(2,2) = cos(theta);	HRight(2,3) = 0.10997;
+	HRight(0,0) = -cos(theta);	HRight(0,1) = 0.0;      HRight(0,2) = -sin(theta);	HRight(0,3) = 0.00294;
+	HRight(1,0) = 0.0;			HRight(1,1) = -1.0;     HRight(1,2) = 0.0;			HRight(1,3) = -0.050;
+	HRight(2,0) = -sin(theta);	HRight(2,1) = 0.0;	    HRight(2,2) = cos(theta);	HRight(2,3) = 0.10997;
 	HRight(3,3) = 1.0;
+    H0Torso(0,1)=-1.0;          H0Torso(1,2)=-1.0;      H0Torso(2,0)=1.0;           H0Torso(3,3)=1.0;
+
+    // by default, we set the H0 matrix of the torso limb to be coherent with
+    // the H0 in iCubArm (iKin) and iCubArmDyn (the iDyn version of iCubArm)
+    // the main reason is to armonize with iKin the computation of the jacobians
+	torso->setH0(H0Torso);
 
 	// order: head - right arm - left arm - torso
 	addLimb(head,       HHead,                  RBT_NODE_IN,    RBT_NODE_IN);
@@ -1974,6 +1996,20 @@ bool iCubUpperBody::setSensorsWrenchMeasure(const Vector &FM_right, const Vector
 				<<" instead of 6,6. Setting everything to zero. "<<endl;
 		return false;
 	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubUpperBody::setH0(const string &limbType, const Matrix &H0)
+{
+    //setH0 already check the size of the input H0 and returns false if not 4x4
+    if(limbType=="head")			return head->setH0(H0);
+    else if(limbType=="left_arm")	return leftArm->setH0(H0);
+    else if(limbType=="right_arm")	return rightArm->setH0(H0);
+    else if(limbType=="torso")      return torso->setH0(H0);
+    else
+    {		
+        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+	    return false;
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubUpperBody::update()
