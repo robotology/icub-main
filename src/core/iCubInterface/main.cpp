@@ -451,11 +451,12 @@ int main(int argc, char *argv[])
 
 	if (someCartesian)
 	{
-		i->fnitCart();
+		i->finiCart();
 	}
 
-	i->park(); //default behavior is blocking (safer)
-	i->finalize();  
+    i->detachWrappers();
+    i->park(); //default behavior is blocking (safer)
+    i->closeNetworks();
 	ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)
 	delete i; 
 	i=0;

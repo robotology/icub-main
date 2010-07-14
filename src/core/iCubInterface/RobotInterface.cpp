@@ -347,7 +347,7 @@ bool RobotInterface::instantiateInertial(Property &options)
     return ok;
 }
 
-bool RobotInterface::finalize()
+bool RobotInterface::detachWrappers()
 { 
     if (initialized) 
     {
@@ -394,6 +394,11 @@ bool RobotInterface::finalize()
   
     initialized = false;
  
+    return true;
+}
+
+bool RobotInterface::closeNetworks()
+{
     return true;
 }
  

@@ -438,7 +438,7 @@ public:
     /**
     * Finalize cartesian controllers
     */
-    bool fnitCart();
+    bool finiCart();
 
     /**
     * Initializes all robot devices. Reads list of devices to be initialized 
@@ -467,16 +467,14 @@ public:
         yarp::os::Property &options);
 
     /**
-    * Closes all robot devices.
-    */
-    bool finalize();
-
-    /**
     * Park the robot. This function can be blocking or not depending on 
     * the value of the parameter wait.
     * @param wait if true the function blocks and returns only when parking is finished
     */
     void park(bool wait=true);
+
+    bool detachWrappers();
+    bool closeNetworks();
 
     /**
     * Calibrate the robot. This function can be blocking or not depending on 

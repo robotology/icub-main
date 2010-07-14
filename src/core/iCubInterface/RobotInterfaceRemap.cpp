@@ -398,7 +398,7 @@ bool RobotInterfaceRemap::initCart(const::string &file)
     return true;
 }
 
-bool RobotInterfaceRemap::fnitCart()
+bool RobotInterfaceRemap::finiCart()
 {
     CartesianControllersIt it=cartesianControllers.begin();
 
@@ -632,6 +632,10 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         netit++;
     }
 
+    std::cout<<"--> Starting robot calibration!"<<endl;
+    calibrate();
+    std::cout<<"Finished robot calibration!"<<endl;
+
     //now iterate through list of parts to see if all networks have been created correctly
     std::cout<<"--> Now I will go through the list of parts to create the wrappers"<<endl;
 
@@ -821,11 +825,6 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         }
     }
 
-
-    std::cout<<"--> Starting robot calibration!"<<endl;
-    calibrate();
-    std::cout<<"Finished robot calibration!"<<endl;
-
     return true;
 }
 
@@ -990,8 +989,8 @@ bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property 
     return ok;
 }
 
-bool RobotInterfaceRemap::finalize()
-{ 
+bool RobotInterfaceRemap::detachWrappers()
+{
     RobotPartEntry *tmpPart;
     int n=parts.size();
     while(n--)
@@ -1010,9 +1009,13 @@ bool RobotInterfaceRemap::finalize()
         // std::cerr<<"Deleted object";
         parts.pop_back();
     }
+    return true;
+}
 
+bool RobotInterfaceRemap::closeNetworks()
+{
     RobotNetworkEntry *tmpNet;
-    n=networks.size();
+    int n=networks.size();
 
     while(n--)
     {
@@ -1029,10 +1032,8 @@ bool RobotInterfaceRemap::finalize()
         gyro.close();
 
     initialized = false;
-
     return true;
 }
-
 
 // check if automatically discovered network id matches the one 
 // in the Property, substitute it if necessary.

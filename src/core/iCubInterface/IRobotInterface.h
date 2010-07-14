@@ -14,13 +14,14 @@ public:
     virtual bool initialize(const std::string &file)=0;
     virtual bool initCart(const std::string &file)
         {return true;}
-    virtual bool fnitCart()
+    virtual bool finiCart()
         {return true;}
 
     /**
     * Closes all robot devices.
     */
-    virtual bool finalize()=0;
+    virtual bool detachWrappers()=0;
+    virtual bool closeNetworks()=0;
 
     /**
     * Park the robot. This function can be blocking or not depending on 

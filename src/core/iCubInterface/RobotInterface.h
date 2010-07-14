@@ -79,10 +79,8 @@ public:
     */
     bool initialize(const std::string &file);
  
-    /**
-    * Closes all robot devices.
-    */
-    bool finalize();
+    bool detachWrappers();
+    bool closeNetworks();
 
     /**
     * Park the robot. This function can be blocking or not depending on 
