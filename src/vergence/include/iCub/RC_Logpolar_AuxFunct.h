@@ -1,4 +1,3 @@
-
 #ifndef RC_Logpolar_AuxFunct_h
 #define RC_Logpolar_AuxFunct_h
 
@@ -15,6 +14,8 @@
 
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
+using namespace yarp::sig;
+
 namespace _logpolarParams
 {
 	const int _xsize = 320;
@@ -26,8 +27,6 @@ namespace _logpolarParams
 	const double _overlap = 0.00;
 	const int _fmode = 2;
 };
-
-using namespace yarp::sig;
 
 struct Image_Data
 {
@@ -76,74 +75,29 @@ int getTheta(Image_Data par, double x, double y);
 void img2unpaddedVect(unsigned char *v, Image img);
 void unpaddedVect2img(unsigned char *v, Image &img);
 
-inline double __max (double x, double y)
+inline double _max(double x, double y)
 {
     return (x > y) ? x : y;
 }
 
-inline double __min (double x, double y)
+inline double _min (double x, double y)
 {
     return (x < y) ? x : y;
 }
 
-inline bool isWithin(int v,int max, int min)
-{
-	if ( (v <= max) && (v >= min) )
-		return true;
-	else
-		return false;
-}
-
-inline double find_max_value(double *v, int size)
-{
-	double tmpMax = v[0];
-	for (int i = 0; i < size; i++)
-	{
-		if (v[i] >= tmpMax)
-			tmpMax = v[i];
-	}
-	return tmpMax;
-}
-
-inline int find_max_index(double *v, int size)
-{
-	int ind = 0;
-	double tmpMax = v[0];
-	for (int i = 0; i < size; i++)
-	{
-		if (v[i] >= tmpMax)
-		{
-			tmpMax = v[i];
-			ind = i;
-		}
-	}
-	return ind;
-}
-
-inline double find_min_value(double *v, int size)
-{
-	double tmpMin = v[size-1];
-	for (int i = size - 1; i >= 0; i--)
-	{
-		if (v[i] <= tmpMin)
-			tmpMin = v[i];
-	}
-	return tmpMin;
-}
-
-inline int find_min_index(double *v, int size)
-{
-	int ind = size - 1;
-	double tmpMin = v[0];
-	for (int i = size - 1; i >= 0; i--)
-	{
-		if (v[i] <= tmpMin)
-		{
-			tmpMin = v[i];
-			ind = i;
-		}
-	}
-	return ind;
-}
+bool isWithin(int v,int max, int min);
+double find_max_value(double *v, int size);
+int find_max_index(double *v, int size);
+double find_min_value(double *v, int size);
+int find_min_index(double *v, int size);
+Image_Data SetParam(int rho, int theta, int mode, double overlap, int xo, int yo, int xr, int yr);
+double getX(Image_Data par, int rho, int theta);
+double getY(Image_Data par, int rho, int theta);
+int getRho(Image_Data par, double x, double y);
+int getTheta(Image_Data par, double x, double y);
+void Build_Shift_Table(Image_Data par, char *path);
+int Load_Shift_Table(Image_Data par, int *shiftTab, double *stepList, char *path);
+void img2unpaddedVect(unsigned char *v, Image img);
+void unpaddedVect2img(unsigned char *v, Image &img);
 
 #endif
