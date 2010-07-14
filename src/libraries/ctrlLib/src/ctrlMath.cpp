@@ -10,11 +10,10 @@ using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iCub;
 
 
 /************************************************************************/
-double ctrl::dot(const Matrix &A, int colA, const Matrix &B, int colB)
+double iCub::ctrl::dot(const Matrix &A, int colA, const Matrix &B, int colB)
 {
     double ret=0.0;
     size_t nrowsA=A.rows();
@@ -29,7 +28,7 @@ double ctrl::dot(const Matrix &A, int colA, const Matrix &B, int colB)
 
 
 /************************************************************************/
-Vector ctrl::cross(const Vector &a, const Vector &b, unsigned int verbose)
+Vector iCub::ctrl::cross(const Vector &a, const Vector &b, unsigned int verbose)
 {
     Vector v(3);
 
@@ -47,8 +46,8 @@ Vector ctrl::cross(const Vector &a, const Vector &b, unsigned int verbose)
 
 
 /************************************************************************/
-Vector ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
-                   unsigned int verbose)
+Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
+                         unsigned int verbose)
 {
     Vector v(3);
 
@@ -66,8 +65,8 @@ Vector ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
 
 
 /************************************************************************/
-Vector ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b, const Vector &Db,
-                    unsigned int verbose)
+Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
+                          const Vector &Db, unsigned int verbose)
 {
     Vector Dv(3);
 
@@ -85,9 +84,9 @@ Vector ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b, const Ve
 
 
 /************************************************************************/
-Vector ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
-                    const Matrix &B, const Matrix &DB, int colB,
-                    unsigned int verbose)
+Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
+                          const Matrix &B, const Matrix &DB, int colB,
+                          unsigned int verbose)
 {
     Vector Dv(3);
 
@@ -105,7 +104,7 @@ Vector ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
 
 
 /************************************************************************/
-Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
+Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
 {
     if (R.rows()<3 || R.cols()<3)
     {
@@ -119,7 +118,7 @@ Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
     v[0]=R(2,1)-R(1,2);
     v[1]=R(0,2)-R(2,0);
     v[2]=R(1,0)-R(0,1);
-    double r=ctrl::norm(v);
+    double r=iCub::ctrl::norm(v);
     double theta=atan2(0.5*r,0.5*(R(0,0)+R(1,1)+R(2,2)-1));
 
     if (r<1e-9)
@@ -143,7 +142,7 @@ Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
         v[0]=V(0,2);
         v[1]=V(1,2);
         v[2]=V(2,2);
-        r=ctrl::norm(v);
+        r=iCub::ctrl::norm(v);
     }
 
     v=(1.0/r)*v;
@@ -154,7 +153,7 @@ Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
 
 
 /************************************************************************/
-Matrix ctrl::axis2dcm(const Vector &v, unsigned int verbose)
+Matrix iCub::ctrl::axis2dcm(const Vector &v, unsigned int verbose)
 {
     if (v.length()<4)
     {
@@ -200,7 +199,7 @@ Matrix ctrl::axis2dcm(const Vector &v, unsigned int verbose)
 
 
 /************************************************************************/
-Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
+Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
 {
     if (R.rows()<3 || R.cols()<3)
     {
@@ -233,7 +232,7 @@ Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
 
 
 /************************************************************************/
-Matrix ctrl::euler2dcm(const Vector &v, unsigned int verbose)
+Matrix iCub::ctrl::euler2dcm(const Vector &v, unsigned int verbose)
 {
     if (v.length()<3)
     {
@@ -257,7 +256,7 @@ Matrix ctrl::euler2dcm(const Vector &v, unsigned int verbose)
 
 
 /************************************************************************/
-Matrix ctrl::SE3inv(const Matrix &H, unsigned int verbose)
+Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
 {    
     if (H.rows()<4 || H.cols()<4)
     {
@@ -291,7 +290,7 @@ Matrix ctrl::SE3inv(const Matrix &H, unsigned int verbose)
 
 
 /************************************************************************/
-Vector ctrl::sign(const Vector &v)
+Vector iCub::ctrl::sign(const Vector &v)
 {
 	Vector ret(v.length());
 
