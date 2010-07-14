@@ -218,6 +218,10 @@ void blobFinderThread::run(){
     bool conversion=true;
     _outputImage=wOperator->getPlane(ptr_inputImg);
     rain();
+    
+    //redPlane_flag=true;
+    //maxSaliencyBlob_flag=false;
+
     if(redPlane_flag){
         ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;
