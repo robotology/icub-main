@@ -3,7 +3,15 @@
 // A node with torso and right arm is created. Then the Jacobian
 // "torso-arm" is computed, and confronted with the one computed by
 // iKin and iDyn in the arm chain (the one with torso and arm, with the
-// torso links unblocked). The end-effector pose is also computed.
+// torso links unblocked). The end-effector pose is also computed, and
+// as an additional check, the RBT matrices of torso and arm attached to 
+// the node are shown. 
+// Note that iCubArm (iKin) and iCubArmDyn (iDyn) have the same result.
+// The node with the standalone torso gives similar results with 
+// negligible difference, due to the different placement of the frames
+// (see CAD model - and see the RBT matrix). Note that to have the same 
+// base frame we set the H0 matrix of the torso to be the same of the chains
+// torso+arm.
 //
 // Author: Serena Ivaldi - <serena.ivaldi@iit.it>
 
@@ -26,7 +34,9 @@ using namespace iCub::iDyn;
 // even if the arm has a FT sensor, in this example we're just using kinematics computations
 // and we're not using the sensor at all, so there's no need to use a iDynSensorNode.
 // we start building an empty node, then adding a right arm (index 0) and a torso limb (index 1)
-// one can create its own limb (iDynLimb), here we use an icub arm and torso
+// one can create its own limb (iDynLimb), here we use an icub arm and torso.
+// note that this class is a simpler version of iCubUpperBody, which you can find in iDynBody
+// library.
 class ArmWithTorso : public iDynNode
 {
 public:	
@@ -59,6 +69,12 @@ public:
 		addLimb(torso,Htorso);
 	}
 
+    ~ArmWithTorso()
+	{
+		delete arm;
+		delete torso;
+	}
+
 	//ridefinition of the jacobian function
 	Matrix computeJacobianTorsoArm()
 	{
@@ -74,6 +90,7 @@ public:
 };
 
 // useful print functions
+// print a matrix nicely
 void printMatrix(string s, Matrix &m)
 {
 	cout<<s<<endl;
@@ -84,6 +101,7 @@ void printMatrix(string s, Matrix &m)
 		cout<<endl;
 	}
 }
+// print a vector nicely
 void printVector(string s, Vector &v)
 {
 	cout<<s<<endl;
@@ -121,6 +139,11 @@ int main()
 	armTorsoDyn.releaseLink(1);
 	armTorsoDyn.releaseLink(2);
 
+    // last but not least, we create an iCubUpperBody
+    // this is a node, like the one created in this example,
+    // with head, left and right arm, and torso
+    iCubUpperBody upBody;
+
 	// now we set the joint angles for the two limbs
 	// if connected to the real robot, we can take this values from the encoders
 	Vector q_rarm(node.arm->getN());		q_rarm.zero();
@@ -130,37 +153,89 @@ int main()
 	for(i=0;i<q_torso.size();i++)	q_all.push_back(q_torso[i]);
 	for(i=0;i<q_rarm.size();i++)	q_all.push_back(q_rarm[i]);
 	
-	// here we set the joints positions: the only needed for the jacobian
+	// here we set the joints positions: the only ones needed for the jacobian
 	node.arm->setAng(q_rarm);
 	node.torso->setAng(q_torso);
 	armTorso.setAng(q_all);
 	armTorsoDyn.setAng(q_all);
+    upBody.setAng("right_arm",q_rarm);
+    upBody.setAng("torso",q_torso);
 
 	// now we can compute the jacobian and pose vector
+
+    // this is important:
+    // iCubTorsoDyn is a standalone limb, with a non-initialized base: its H0 matrix is eye()
+    // conversely, iCubArm and iCubArmDyn are referred to the torso base, with a particular H0 matrix       
+    // (0 -1 00; 00 -1 0; 1 000; 0001) by row
+    // if we want to obtain the same Jacobian and pose in the arm as in iCubArm/Dyn (iKin style)
+    // we must set the same H0 in the torso limb before making any computation
+    // note that in iCUbUpperBody H0 has already been set: hence we only set the new H0 in our test
+    // class armWithTorso
+    cout<<" Original H0 "<<endl;
+    printMatrix("H0 ikin",armTorso.asChain()->getH0());
+    printMatrix("H0 idyn",armTorsoDyn.getH0());
+    printMatrix("H0 node",node.torso->getH0());
+    printMatrix("H0 upper", upBody.torso->getH0());
+
+    cout<<" Now we set H0 into node's torso .. "<<endl;
+    node.torso->setH0(armTorsoDyn.getH0());
+    printMatrix("H0 node",node.torso->getH0());
 
 	// JAC torso -> arm
 
 	Matrix Jnode = node.computeJacobianTorsoArm();
 	Matrix Jikin = armTorso.GeoJacobian();
 	Matrix Jidyn = armTorsoDyn.GeoJacobian();
+    Matrix Juppe = upBody.Jacobian_TorsoArmRight();
 
 	cout<<endl<<"\n\n************************\n\n";
 	printMatrix("Jacobian torso - hand made with node \n",	Jnode);
 	printMatrix("\nJacobian torso - hand made with iKin \n",Jikin);
 	printMatrix("\nJacobian torso - hand made with iDyn \n",Jidyn);
+    printMatrix("\nJacobian torso - hand made with upperBody \n",Jidyn);
 
 	// pose torso -> arm	
 
 	Vector pose_node_arm = node.computeArmPose(false);
 	Vector pose_ikin_arm = armTorso.EndEffPose(false);
 	Vector pose_idyn_arm = armTorsoDyn.EndEffPose(false);
+    Vector pose_uppe_arm = upBody.Pose_TorsoArmRight(false);
 
 	cout<<endl<<"\n\n************************\n\n";
 	printVector("Pose arm in node \n", pose_node_arm);
 	printVector("\nPose arm in ikin \n", pose_ikin_arm);
 	printVector("\nPose arm in idyn \n", pose_idyn_arm);
+    printVector("\nPose arm in upperBody \n",pose_uppe_arm);
 
 
+	cout<<endl<<"\n\n************************\n\n";
+
+    // another check: printing the denavit- hartenberg matrices of torso and arm
+    // for the node (with two different limbs) and the ikin-style arm+torso
+    // note: remember that the method getDenHart() is only available in iDyn (not in iKin)
+    // in this print you will see that the Denavit-Hartenberg matrices of iCubArmDyn and
+    // iCubTorsoDyn+iCubArmNoTorsoDyn via node are exactly the same, exept for the first one
+    for(i=0; i< (int)node.torso->getN(); i++)
+    {
+        printMatrix(" torso DH node ",node.torso->getDenHart(i));
+        printMatrix(" torso DH ikin ",armTorsoDyn.getDenHart(i));
+    }
+    cout<<endl;
+
+    // 1=torso 0=arm
+    // these numbers refer to the limb insertion in the node
+    printMatrix("RBT torso-node ",node.getRBT(1));
+    printMatrix("RBT node-arm ",node.getRBT(0));
+
+    cout<<endl;
+    for(i=0; i< (int)node.arm->getN(); i++)
+    {
+        printMatrix(" arm DH node ",node.arm->getDenHart(i));
+        printMatrix(" arm DH ikin ",armTorsoDyn.getDenHart(node.torso->getN()+i));
+    }
+
+
+    //exit
 	cin.get();
     return 0;
 }
