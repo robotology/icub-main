@@ -1911,8 +1911,8 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
 
     ippiFree(edgesOutput_ippi);
 
-    /*ippiFree(edgesOutput2_ippi);
-    ippiFree(edgesMask_ippi);*/
+    //ippiFree(edgesOutput2_ippi);
+    ippiFree(edgesMask_ippi);
     //return edgesOutput;
     //return redGreenEdges_yarp;
 }
