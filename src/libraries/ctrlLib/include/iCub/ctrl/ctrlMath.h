@@ -269,27 +269,28 @@ yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 /**
 * \ingroup Maths
 *
-* Returns the Adjoint matrix of a given roto-translational matrix.
-* The Adjoint is a (6x6) matrix: [R , S(r)*R; 0, R]
+* Returns the adjoint matrix of a given roto-translational 
+* matrix. The adjoint is a (6x6) matrix: [R , S(r)*R; 0, R] 
 * where R is the rotational part of H, and r the translational part.
 * @param H is the 4 by 4 rototranslational matrix.
 * @param verbose sets some verbosity.  
-* @return the Adjoint matrix 
+* @return the adjoint matrix 
 */
-yarp::sig::Matrix Adj(const yarp::sig::Matrix &H, unsigned int verbose=0);
+yarp::sig::Matrix adjoint(const yarp::sig::Matrix &H, unsigned int verbose=0);
 
 
 /**
 * \ingroup Maths
 *
-* Returns the inverse of the Adjoint matrix of a given roto-translational matrix.
-* The inverse of an Adjoint is a (6x6) matrix: [R^T , -S(R^T*r)*R^T; 0 , R^T]
-* where R is the rotational part of H, and r the translational part.
+* Returns the inverse of the adjoint matrix of a given 
+* roto-translational matrix. The inverse of an adjoint is a 
+* (6x6) matrix: [R^T , -S(R^T*r)*R^T; 0 , R^T] where R is the 
+* rotational part of H, and r the translational part. 
 * @param H is the 4 by 4 rototranslational matrix.
 * @param verbose sets some verbosity.  
-* @return the inverse of the Adjoint matrix  
+* @return the inverse of the adjoint matrix  
 */
-yarp::sig::Matrix Adjinv(const yarp::sig::Matrix &H, unsigned int verbose=0);
+yarp::sig::Matrix adjointInv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 
 
 }

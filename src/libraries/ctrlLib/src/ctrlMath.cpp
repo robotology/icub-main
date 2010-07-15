@@ -302,7 +302,7 @@ Vector iCub::ctrl::sign(const Vector &v)
 
 
 /************************************************************************/
-Matrix iCub::ctrl::Adj(const Matrix &H, unsigned int verbose)
+Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)
 {
     if((H.rows()!=4) || (H.cols()!=4))
     {
@@ -337,7 +337,7 @@ Matrix iCub::ctrl::Adj(const Matrix &H, unsigned int verbose)
 
 
 /************************************************************************/
-Matrix iCub::ctrl::Adjinv(const Matrix &H, unsigned int verbose)
+Matrix iCub::ctrl::adjointInv(const Matrix &H, unsigned int verbose)
 {
     if((H.rows()!=4) || (H.cols()!=4))
     {
