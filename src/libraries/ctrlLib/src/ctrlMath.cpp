@@ -300,4 +300,76 @@ Vector iCub::ctrl::sign(const Vector &v)
 	return ret;
 }
 
+/************************************************************************/
+Matrix iCub::ctrl::Adj(const Matrix &H, unsigned int verbose)
+{
+    if((H.rows()!=4) || (H.cols()!=4))
+    {
+        if (verbose) cerr<<"CtrlLib: error, Adj() failed due to wrong sized roto-translational matrix, sized " 
+                         <<H.rows()<<"x"<<H.cols()<<" instead of 4x4"<<endl;
+        return Matrix(0,0);
+    }
+
+    // the skew matrix coming from the translational part of H: S(r)
+    // note the commented zeros above to show how the matrix looks like..
+    Matrix S(3,3); S.zero();
+        /* 0 */     S(0,1)=-H(2,3); S(0,2)= H(1,3);
+    S(1,0)= H(2,3);      /* 0 */    S(1,3)=-H(0,3);
+    S(2,0)=-H(1,3); S(2,1)= H(0,3);     /* 0 */
+
+    // this is S(r)*R
+    S = S*H.submatrix(0,2,0,2);
+
+    Matrix A(6,6); A.zero();
+    unsigned int i,j;
+    for(i=0; i<3; i++)
+    {
+        for(j=0;j<3;j++)
+        {
+            A(i,j)      = H(i,j);
+            A(i+3,j+3)  = H(i,j);
+            A(i,j+3)    = S(i,j);
+        }
+    }
+    return A;
+}
+
+/************************************************************************/
+Matrix iCub::ctrl::Adjinv(const Matrix &H, unsigned int verbose)
+{
+    if((H.rows()!=4) || (H.cols()!=4))
+    {
+        if (verbose) cerr<<"CtrlLib: error, Adj() failed due to wrong sized roto-translational matrix, sized " 
+                         <<H.rows()<<"x"<<H.cols()<<" instead of 4x4"<<endl;
+        return Matrix(0,0);
+    }
+    
+    // R^T
+    Matrix Rt = H.submatrix(0,2,0,2).transposed();
+    // R^T * r
+    Vector Rtp = Rt*H.submatrix(0,2,0,3).getCol(3);
+
+    // the skew matrix coming from the translational part of H: S(r)
+    // note the commented zeros above to show how the matrix looks like..
+    Matrix S(3,3); S.zero();
+        /* 0 */       S(0,1)=-Rtp(2);     S(0,2)= Rtp(1);
+    S(1,0)= Rtp(2);      /* 0 */          S(1,3)=-Rtp(0);
+    S(2,0)=-Rtp(1);   S(2,1)= Rtp(0);     /* 0 */
+
+    // this is S(r)*Rt
+    S = S*Rt;
+
+    Matrix A(6,6); A.zero();
+    unsigned int i,j;
+    for(i=0; i<3; i++)
+    {
+        for(j=0;j<3;j++)
+        {
+            A(i,j)      = Rt(i,j);
+            A(i+3,j+3)  = Rt(i,j);
+            A(i,j+3)    = -S(i,j);
+        }
+    }
+    return A;
+}
 
