@@ -127,7 +127,8 @@ void ServerCartesianController::init()
 
     txToken=0.0;
     rxToken=0.0;
-    txTokenLatched=0.0;
+    txTokenLatchedStopControl=0.0;
+    txTokenLatchedGoToRpc=0.0;
     skipSlvRes=false;
 
     // request high resolution scheduling
@@ -245,12 +246,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                     bool ret;
 
                     if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
-                        ret=goTo(IKINCTRL_POSE_FULL,xd,t);
+                        ret=goTo(IKINCTRL_POSE_FULL,xd,t,true);
                     else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
-                        ret=goTo(IKINCTRL_POSE_XYZ,xd,t);
+                        ret=goTo(IKINCTRL_POSE_XYZ,xd,t,true);
 
                     if (ret)
+                    {
+                        // wait for the solver
+                        syncEvent.reset();
+                        syncEvent.wait();
+
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                    }
                     else
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
@@ -757,10 +764,11 @@ bool ServerCartesianController::getNewTarget()
         bool tokened=CartesianHelper::getTokenOption(*b1,&rxToken);
 
         // token shall be not greater than the trasmitted one
-        if (tokened && rxToken>txToken)
+        if (tokened && (rxToken>txToken))
         {
             fprintf(stdout,"%s warning: skipped message from solver due to invalid token (rx=%g)>(thr=%g)\n",
                     ctrlName.c_str(),rxToken,txToken);
+
             return false;
         }
 
@@ -768,10 +776,11 @@ bool ServerCartesianController::getNewTarget()
         // any message with token smaller than the threshold
         if (skipSlvRes)
         {
-            if (tokened && !trackingMode && rxToken<=txTokenLatched)
+            if (tokened && !trackingMode && (rxToken<=txTokenLatchedStopControl))
             {
                 fprintf(stdout,"%s warning: skipped message from solver since controller has been stopped (rx=%g)<=(thr=%g)\n",
-                        ctrlName.c_str(),rxToken,txTokenLatched);
+                        ctrlName.c_str(),rxToken,txTokenLatchedStopControl);
+
                 return false;
             }
             else
@@ -822,6 +831,10 @@ bool ServerCartesianController::getNewTarget()
         {
             xdes=_xdes;
             qdes=_qdes;
+
+            // wake up rpc
+            if (tokened && (rxToken>=txTokenLatchedGoToRpc))
+                syncEvent.signal();
         }
 
         return isNew;
@@ -1363,7 +1376,8 @@ bool ServerCartesianController::connectToSolver()
 
 
 /************************************************************************/
-bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, const double t)
+bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
+                                     const double t, const bool latchToken)
 {    
     if (connected)
     {
@@ -1393,6 +1407,10 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, c
         CartesianHelper::addTokenOption(b,txToken=Time::now());
 
         skipSlvRes=false;
+
+        if (latchToken)
+            txTokenLatchedGoToRpc=txToken;
+
         portSlvOut->writeStrict();
 
         return true;
@@ -1874,7 +1892,7 @@ bool ServerCartesianController::stopControl()
 
         stopLimbVel();
 
-        txTokenLatched=txToken;
+        txTokenLatchedStopControl=txToken;
         skipSlvRes=true;
 
         return true;

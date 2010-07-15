@@ -22,6 +22,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Event.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 
@@ -112,10 +113,12 @@ protected:
 
     double       txToken;
     double       rxToken;
-    double       txTokenLatched;
+    double       txTokenLatchedStopControl;
+    double       txTokenLatchedGoToRpc;
     bool         skipSlvRes;
 
     yarp::os::Semaphore mutex;
+    yarp::os::Event     syncEvent;
     yarp::os::Stamp     txInfo;
 
     yarp::sig::Vector xdes;
@@ -142,7 +145,7 @@ protected:
     void newController();
     bool getNewTarget();
     void sendVelocity(const yarp::sig::Vector &v);
-    bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t);
+    bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);
