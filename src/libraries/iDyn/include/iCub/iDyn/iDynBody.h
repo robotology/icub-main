@@ -419,7 +419,6 @@ public:
 	*/
     yarp::sig::Matrix computeGeoJacobian(const unsigned int iLink, bool rbtRoto = false);
 
-
 	/**
 	* @return a 6x6 diagonal matrix with the rotational matrix of the RBT 
 	*/
@@ -428,6 +427,18 @@ public:
 	yarp::sig::Matrix getH0() const;
 
 	bool setH0(const yarp::sig::Matrix &_H0);
+
+    //---------------
+    //   JAC COM
+    //---------------
+
+    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, bool rbtRoto = false);
+
+	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, bool rbtRoto = false);
+
+    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0, bool rbtRoto = false );
+
+
 
 };
 
@@ -485,6 +496,12 @@ protected:
 	* is used by computeJacobian() and computePose() to merely avoid code duplication.
 	*/
 	void compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, yarp::sig::Matrix &Pn, yarp::sig::Matrix &H_A_Node);
+
+    /**
+	* Compute Pn and H_A_Node matrices given two chains. This function is private, and
+	* is used by computeJacobian() and computePose() to merely avoid code duplication.
+	*/
+	void compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, yarp::sig::Matrix &Pn, yarp::sig::Matrix &H_A_Node);
 
     /**
 	* @param afterAttach =true only if the limb received wrench parameters during an
@@ -666,20 +683,6 @@ public:
 		//-----------------
 
 	/**
-	* Compute the Jacobian between two links in two different chains. The chains are
-	* specified by their index in the list (the progressive number of insertion).
-	* The first limb (limb A - index=iChain0) has the base link of the jacobian (index=iLink0) while
-	* the second limb (limb B - index=iChainN) has the final link of the jacobian (index=iLinkN).
-	* @param iChainA the index of the chain (the limb) in the node having the base (<0>) frame
-	* @param iLinkA the index of the link, in the indexChain0 chain, being the base (<0>) frame for the Jacobian computation
-	* @param dirA the 'direction' of the chain wrt the jacobian computation
-	* @param iChainB the index of the chain (the limb) in the node having the final (<N>) frame
-	* @param iLinkB the index of the link, in the indexChainN chain, being the final (<N>) frame for the Jacobian computation
-	* @param dirB the 'direction' of the chain wrt the jacobian computation
-	* @return the Jacobian matrix
-	*/
-
-	/**
 	* Compute the Jacobian of the limb with index iChain in the node, in its default direction (as
 	* it would be done by iKin).
 	* @param iChain the index of the chain (limb) in the node 
@@ -691,6 +694,11 @@ public:
 	* Compute the Jacobian of the i-th link of the limb with index iChain in the node, in its default 
     * direction (as it would be done by iKin).
     * If the link index is not correct, a null Jacobian is returned.
+    *
+    * Important note: since we are specifying the link index in the chain, the Jacobian computation
+    * will deal with all the links, even blocked links. 
+    * The Jacobian size is not 6x<the DOF until iLinkB> but 6xiLinkB, where 0<iLinkB<N
+    *
 	* @param iChain the index of the chain (limb) in the node 
     * @param iLink  the index of the limnk in the limb
 	* @return the Jacobian matrix
@@ -714,6 +722,26 @@ public:
 	*/
 	yarp::sig::Matrix computeJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB);
 
+    /**
+	* Compute the Jacobian between two links in two different chains. The chains are
+	* specified by their index in the list (the progressive number of insertion).
+	* The first limb has the base of the jacobian (base or end-effector of the limb, depending
+    * on the Jacobian direction JacA) while
+	* the second limb (limb B - index=iChainB) has the final link of the jacobian (index=iLinkB).
+    *
+    * Important note: since we are specifying the link index in chain B, the Jacobian computation
+    * on chain B will deal with all the links, even blocked links. 
+    * The Jacobian size is not 6x(DOF_A + <the DOF until iLinkB>) but 6x(DOF_A+iLinkB), where 0<iLinkB<N
+    *
+	* @param iChainA the index of the chain (the limb) in the node having the base (<0>) frame
+	* @param dirA the 'direction' of the chain wrt the jacobian computation
+	* @param iChainB the index of the chain (the limb) in the node having the final (<N>) frame
+	* @param iLinkB the index of the link, in the indexChainN chain, being the final (<N>) frame for the Jacobian computation
+	* @param dirB the 'direction' of the chain wrt the jacobian computation
+	* @return the Jacobian matrix
+	*/
+	yarp::sig::Matrix computeJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB);
+
 	/**
 	* Compute the Pose of the end-effector, given a "virtual" chain connecting two limbs.
     * The chains are specified by their index in the list (the progressive number of insertion).
@@ -724,7 +752,7 @@ public:
     * at the end-effector; if dirB=JAC_DIR, the final link of the augmented chain is on the end-effector
     * of the chain, otherwise on its base.
     * This method is useful to compute the end-effector pose (i.e. computing the arm pose, when the chain
-    * torso + arm is considered) in a mulit-limb chain.
+    * torso + arm is considered) in a multi-limb chain.
 	* @param iChainA the index of the chain (the limb) in the node having the base frame
 	* @param dirA the 'direction' of visit of the chain
 	* @param iChainB the index of the chain (the limb) in the node having the final frame
@@ -732,6 +760,29 @@ public:
 	* @return the Jacobian matrix
 	*/
 	yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep);
+
+    /**
+	* Compute the Pose of the end-effector, given a "virtual" chain connecting two limbs.
+    * The chains are specified by their index in the list (the progressive number of insertion).
+	* The first limb (limb A - index=iChainA) has the base link of the augmented chain while
+	* the second limb (limb B - index=iChainB) has the final link of the augmented chain, ending in the link iLinkB.
+    * Whether the base/end of the augmented chain coincides with the base/end of the single chains, depends
+    * on the flags dirA,dirB: if dirA=JAC_DIR, then the beginning is at the base of chain, otherwise it is
+    * at the end-effector; if dirB=JAC_DIR, the final link of the augmented chain is on the end-effector
+    * of the chain, otherwise on its base.
+    * This method is useful to compute the end-effector pose (i.e. computing the elbow pose, when the chain
+    * torso + arm is considered) in a multi-limb chain.
+	* @param iChainA the index of the chain (the limb) in the node having the base frame
+	* @param dirA the 'direction' of visit of the chain
+	* @param iChainB the index of the chain (the limb) in the node having the final frame
+	* @param iLinkB the index of the link, in the indexChainN chain, being the final (<N>) frame for the Jacobian computation
+	* @param dirB the 'direction' of visit of the chain
+	* @return the Jacobian matrix
+	*/
+	yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep);
+
+
+
 };
 
 

@@ -369,9 +369,35 @@ bool RigidBodyTransformation::setH0(const Matrix &_H0)
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    //---------------
+	// jacobians COM
+	//---------------
 
-
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeCOMJacobian(const unsigned int iLink, bool rbtRoto)  
+{ 
+    if(rbtRoto==false)
+        return limb->computeCOMJacobian(iLink);
+    else
+        return getR6() * limb->computeCOMJacobian(iLink);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, bool rbtRoto)
+{ 
+   if(rbtRoto==false)
+        return limb->computeCOMJacobian(iLink, Pn);
+    else
+        return getR6() * limb->computeCOMJacobian(iLink, Pn);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &_H0, bool rbtRoto)
+{ 
+   if(rbtRoto==false)
+        return limb->computeCOMJacobian(iLink, Pn, _H0);
+    else
+        return getR6() * limb->computeCOMJacobian(iLink, Pn, _H0);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -896,6 +922,82 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	return J;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB)
+{
+	//first check param coherence:
+	// - wrong limb index
+	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
+	{ 
+		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index "
+						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		return Matrix(0,0);
+	}
+	// - jacobian .. in the same limb @_@
+	if( iChainA==iChainB )
+	{
+		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to weird index for chains "<<iChainA
+						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		return Matrix(0,0);		
+	}
+    // - there's not a link with index iLink in that chain
+    if( iLinkB >= rbtList[iChainB].getNLinks())
+    {
+   		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index for chain "
+            <<iChainB<<": the selected link is "<<iLinkB<<" whereas the maximum is "<<rbtList[iChainB].getNLinks()<<". Returning a null matrix."<<endl;
+		return Matrix(0,0);	 
+    }
+
+	// params are ok, go on..
+
+	// total number of joints = Ndof_A + iLinkB
+    // note that we are taking all the links in chainB, not only the DOF until iLinkB
+	// the total jacobian matrix
+	Matrix J(6,rbtList[iChainA].getDOF() + iLinkB ); J.zero();
+	//the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
+	Matrix Pn; 
+	// the two jacobians
+	Matrix J_A; Matrix J_B;
+	// from base-link (for the jac.) of limb A to base (for the jac.) of limb B
+	Matrix H_A_Node;
+
+	// compute the roto-transf matrix between the base of limb A and the base of limb B
+	// this is used to set the correct reference of vector Pn
+	// H_A_Node is used to initialize J_B properly
+	compute_Pn_HAN(iChainA, dirA, iChainB, iLinkB, dirB, Pn, H_A_Node);
+
+	// now compute jacobian of first and second limb, setting the correct Pn 
+	// JA
+	J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);			
+	// JB
+	// note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0 
+	J_B = rbtList[iChainB].computeGeoJacobian(iLinkB,Pn,H_A_Node,false);
+
+	// finally start building the Jacobian J=[J_A|J_B]
+	unsigned int c=0;
+	unsigned int JAcols = J_A.cols();
+	unsigned int JBcols = J_B.cols();
+
+	if(JAcols+JBcols!=J.cols())
+	{
+		cout<<"iDynNode error: Jacobian should be 6x"<<J.cols()<<" instead is 6x"<<(JAcols+JBcols)<<endl
+			<<"Note: limb A: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
+			<<"      limb B: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
+            <<"              iLinkB = "<<iLinkB<<endl;
+		J.resize(6,JAcols+JBcols);
+	}
+	
+	for(unsigned int r=0; r<6; r++)
+	{
+		for(c=0;c<JAcols;c++)
+			J(r,c)=J_A(r,c);
+		for(c=0;c<JBcols;c++)
+			J(r,JAcols+c)=J_B(r,c);
+	}
+	
+	// now return the jacobian
+	return J;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, Matrix &Pn, Matrix &H_A_Node)
 {
 	// compute the roto-transf matrix between the base of limb A and the base of limb B
@@ -923,6 +1025,39 @@ void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int
 	{
 		// Pn = H_A_Node * H_B^-1
 		Pn = H_A_Node * SE3inv(rbtList[iChainB].getH());
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, Matrix &Pn, Matrix &H_A_Node)
+{
+	// compute the roto-transf matrix between the base of limb A and the base of limb B
+	// this is used to set the correct reference of vector Pn
+	if(dirA==JAC_KIN)
+	{
+		// H_A_Node = H_A * RBT_A^T * RBT_B 
+		// note: RBT_A is transposed because we're going in the opposite direction wrt to one of the RBT
+		H_A_Node = rbtList[iChainA].getH() * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
+	}
+	else //dirA==JAC_IKIN
+	{
+		// H_A_Node = H_A^-1 * RBT_A^T * RBT_B 
+		H_A_Node = SE3inv(rbtList[iChainA].getH()) * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
+	}
+
+	if(dirB==JAC_KIN)
+	{
+		// Pn = H_A_Node * H_B(iLinkB) 
+		// Pn is the roto-transf matrix between base (of jac. in limb A) and end (of jac. in limb B)
+		// it is needed because the two jacobians must refer to a common Pn
+        // here for chain B we stop at the iLinkB link
+        // allLink=true because we deal with all the links (even blocked ones): see motivation in the corresponding
+        // jacobian with iLinkB
+        Pn = H_A_Node * rbtList[iChainB].getH(iLinkB,true);
+	}
+	else //dirB==JAC_IKIN
+	{
+		// Pn = H_A_Node * H_B^-1
+		Pn = H_A_Node * SE3inv(rbtList[iChainB].getH(iLinkB,true));
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -988,6 +1123,76 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	return v;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep)
+{
+	//first check param coherence:
+	// - wrong limb index
+	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
+	{ 
+		if(verbose) cerr<<"iDynNode: error, could not computePose() due to out of range index: limbs have index "
+						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		return Vector(0);
+	}
+	// - jacobian .. in the same limb @_@
+	if( iChainA==iChainB )
+	{
+		if(verbose) cerr<<"iDynNode: error, could not computePose() due to weird index for chains "<<iChainA
+						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		return Vector(0);		
+	}
+    // - there's not a link with index iLink in that chain
+    if( iLinkB >= rbtList[iChainB].getNLinks())
+    {
+   		if(verbose) cerr<<"iDynNode: error, could not computePose() due to out of range index for chain "
+            <<iChainB<<": the selected link is "<<iLinkB<<" whereas the maximum is "<<rbtList[iChainB].getNLinks()<<". Returning a null matrix."<<endl;
+		return Vector(0);	 
+    }
+
+	// params are ok, go on..
+
+	//the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
+	Matrix Pn, H_A_Node; 
+	// the pose vector
+	Vector v;
+
+	// compute the roto-transf matrix between the base of limb A and the base of limb B
+	// this is used to set the correct reference of vector Pn
+	// just ignore H_A_Node
+	compute_Pn_HAN(iChainA, dirA, iChainB, iLinkB, dirB, Pn, H_A_Node);
+
+	// now compute the pose vector v (see iKin for more details)
+	if (axisRep)
+    {
+        v.resize(7);
+        Vector r=dcm2axis(Pn,verbose);
+        v[0]=Pn(0,3);
+        v[1]=Pn(1,3);
+        v[2]=Pn(2,3);
+        v[3]=r[0];
+        v[4]=r[1];
+        v[5]=r[2];
+        v[6]=r[3];
+    }
+    else
+    {
+        v.resize(6);
+		Vector r(3); r.zero();    
+		// Euler Angles as XYZ (see dcm2angle.m)
+		r[0]=atan2(-Pn(2,1),Pn(2,2));
+		r[1]=asin(Pn(2,0));
+		r[2]=atan2(-Pn(1,0),Pn(0,0));
+        v[0]=Pn(0,3);
+        v[1]=Pn(1,3);
+        v[2]=Pn(2,3);
+        v[3]=r[0];
+        v[4]=r[1];
+        v[5]=r[2];
+    }
+	
+	return v;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 

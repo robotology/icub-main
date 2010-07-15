@@ -1255,7 +1255,7 @@ public:
     { return iDynChain::computeCOMJacobian(iLink, Pn);}
 
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
-    { return iDynChain::computeCOMJacobian(iLink, Pn, H0);}
+    { return iDynChain::computeCOMJacobian(iLink, Pn, _H0);}
 
 
 };
