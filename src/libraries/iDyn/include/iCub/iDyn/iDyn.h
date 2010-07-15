@@ -1239,12 +1239,25 @@ public:
 	yarp::sig::Matrix GeoJacobian(const unsigned int i)
 	{ return iDynChain::GeoJacobian(i);			}
 
-	yarp::sig::Matrix getH0() const				{ return iDynChain::getH0();}
-	bool setH0(const yarp::sig::Matrix &_H0)	{ return iDynChain::setH0(_H0);}
+	yarp::sig::Matrix getH0() const				
+    { return iDynChain::getH0();}
 
-	yarp::sig::Matrix getDenHart(unsigned int i) { return iDynChain::getDenHart(i);}
+	bool setH0(const yarp::sig::Matrix &_H0)	
+    { return iDynChain::setH0(_H0);}
 
-    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink)  {return iDynChain::computeCOMJacobian(iLink);}
+	yarp::sig::Matrix getDenHart(unsigned int i) 
+    { return iDynChain::getDenHart(i);}
+
+    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink)  
+    { return iDynChain::computeCOMJacobian(iLink);}
+
+	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn)
+    { return iDynChain::computeCOMJacobian(iLink, Pn);}
+
+    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
+    { return iDynChain::computeCOMJacobian(iLink, Pn, H0);}
+
+
 };
 
 
