@@ -222,6 +222,7 @@ yarp::sig::Vector dcm2axis(const yarp::sig::Matrix &R, unsigned int verbose=0);
 */
 yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
 
+
 /**
 * \ingroup Maths
 *
@@ -235,6 +236,7 @@ yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
 * @return 3 by 1 vector for the Euler angles representation.
 */
 yarp::sig::Vector dcm2euler(const yarp::sig::Matrix &R, unsigned int verbose=0);
+
 
 /**
 * \ingroup Maths
@@ -250,6 +252,7 @@ yarp::sig::Vector dcm2euler(const yarp::sig::Matrix &R, unsigned int verbose=0);
 */
 yarp::sig::Matrix euler2dcm(const yarp::sig::Vector &euler, unsigned int verbose=0);
 
+
 /**
 * \ingroup Maths
 *
@@ -263,7 +266,6 @@ yarp::sig::Matrix euler2dcm(const yarp::sig::Vector &euler, unsigned int verbose
 yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 
 
-
 /**
 * \ingroup Maths
 *
@@ -273,10 +275,9 @@ yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 * @param H is the 4 by 4 rototranslational matrix.
 * @param verbose sets some verbosity.  
 * @return the Adjoint matrix 
-*  
-* @note about 5 times faster than pinv() 
 */
 yarp::sig::Matrix Adj(const yarp::sig::Matrix &H, unsigned int verbose=0);
+
 
 /**
 * \ingroup Maths
@@ -289,7 +290,6 @@ yarp::sig::Matrix Adj(const yarp::sig::Matrix &H, unsigned int verbose=0);
 * @return the inverse of the Adjoint matrix  
 */
 yarp::sig::Matrix Adjinv(const yarp::sig::Matrix &H, unsigned int verbose=0);
-
 
 
 }

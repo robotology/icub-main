@@ -300,6 +300,7 @@ Vector iCub::ctrl::sign(const Vector &v)
 	return ret;
 }
 
+
 /************************************************************************/
 Matrix iCub::ctrl::Adj(const Matrix &H, unsigned int verbose)
 {
@@ -333,6 +334,7 @@ Matrix iCub::ctrl::Adj(const Matrix &H, unsigned int verbose)
     }
     return A;
 }
+
 
 /************************************************************************/
 Matrix iCub::ctrl::Adjinv(const Matrix &H, unsigned int verbose)
@@ -372,4 +374,5 @@ Matrix iCub::ctrl::Adjinv(const Matrix &H, unsigned int verbose)
     }
     return A;
 }
+
 
