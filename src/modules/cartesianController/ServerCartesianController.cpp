@@ -1,8 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Developed by Ugo Pattacini
 
-#include <ace/config.h>
-#include <ace/Vector_T.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 
@@ -13,13 +11,6 @@
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
-
-#define RES_DSC(p)                  ((ACE_Vector<DriverDescriptor>*)p)
-#define RES_LIM(p)                  ((ACE_Vector<IControlLimits*>*)p)
-#define RES_ENC(p)                  ((ACE_Vector<IEncoders*>*)p)
-#define RES_VEL(p)                  ((ACE_Vector<IVelocityControl*>*)p)
-#define RES_JNT(p)                  ((ACE_Vector<int>*)p)
-#define RES_RMP(p)                  ((ACE_Vector<int*>*)p)
 
 #define CARTCTRL_DEFAULT_PER        10
 #define CARTCTRL_DEFAULT_TOL        5e-3
@@ -113,13 +104,6 @@ void ServerCartesianController::init()
     chain=NULL;
     ctrl =NULL;
 
-    lDsc=NULL;
-    lLim=NULL;
-    lEnc=NULL;
-    lVel=NULL;
-    lJnt=NULL;
-    lRmp=NULL;
-
     portSlvIn   =NULL;
     portSlvOut  =NULL;
     portSlvRpc  =NULL;
@@ -143,7 +127,8 @@ void ServerCartesianController::init()
 
     txToken=0.0;
     rxToken=0.0;
-    txTokenLatched=0.0;
+    txTokenLatchedStopControl=0.0;
+    txTokenLatchedGoToRpc=0.0;
     skipSlvRes=false;
 
     // request high resolution scheduling
@@ -261,12 +246,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                     bool ret;
 
                     if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
-                        ret=goTo(IKINCTRL_POSE_FULL,xd,t);
+                        ret=goTo(IKINCTRL_POSE_FULL,xd,t,true);
                     else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
-                        ret=goTo(IKINCTRL_POSE_XYZ,xd,t);
+                        ret=goTo(IKINCTRL_POSE_XYZ,xd,t,true);
 
                     if (ret)
+                    {
+                        // wait for the solver
+                        syncEvent.reset();
+                        syncEvent.wait();
+
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                    }
                     else
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
@@ -652,9 +643,9 @@ void ServerCartesianController::stopLimbVel()
     for (unsigned int i=0; i<chain->getN(); i++)
     {
         if (!(*chain)[i].isBlocked())
-            (*RES_VEL(lVel))[j]->stop((*RES_RMP(lRmp))[j][k]);
+            lVel[j]->stop(lRmp[j][k]);
 
-        if (++k>=(*RES_JNT(lJnt))[j])
+        if (++k>=lJnt[j])
         {
             j++;
             k=0;
@@ -715,10 +706,10 @@ void ServerCartesianController::getFeedback(Vector &_fb)
     int _fbCnt=0;
 
     for (int i=0; i<numDrv; i++)
-        if ((*RES_ENC(lEnc))[i]->getEncoders(fbTmp.data()))
-            for (int j=0; j<(*RES_JNT(lJnt))[i]; j++)
+        if (lEnc[i]->getEncoders(fbTmp.data()))
+            for (int j=0; j<lJnt[i]; j++)
             {
-                double tmp=CTRL_DEG2RAD*fbTmp[(*RES_RMP(lRmp))[i][j]];
+                double tmp=CTRL_DEG2RAD*fbTmp[lRmp[i][j]];
 
                 if ((*chain)[chainCnt].isBlocked())
                     chain->setBlockingValue(chainCnt,tmp);
@@ -727,7 +718,7 @@ void ServerCartesianController::getFeedback(Vector &_fb)
 
                 chainCnt++;
             }
-        else for (int j=0; j<(*RES_JNT(lJnt))[i]; j++)
+        else for (int j=0; j<lJnt[i]; j++)
             if (!(*chain)[chainCnt++].isBlocked())
                 _fbCnt++;
 }
@@ -773,10 +764,11 @@ bool ServerCartesianController::getNewTarget()
         bool tokened=CartesianHelper::getTokenOption(*b1,&rxToken);
 
         // token shall be not greater than the trasmitted one
-        if (tokened && rxToken>txToken)
+        if (tokened && (rxToken>txToken))
         {
             fprintf(stdout,"%s warning: skipped message from solver due to invalid token (rx=%g)>(thr=%g)\n",
                     ctrlName.c_str(),rxToken,txToken);
+
             return false;
         }
 
@@ -784,10 +776,11 @@ bool ServerCartesianController::getNewTarget()
         // any message with token smaller than the threshold
         if (skipSlvRes)
         {
-            if (tokened && !trackingMode && rxToken<=txTokenLatched)
+            if (tokened && !trackingMode && (rxToken<=txTokenLatchedStopControl))
             {
                 fprintf(stdout,"%s warning: skipped message from solver since controller has been stopped (rx=%g)<=(thr=%g)\n",
-                        ctrlName.c_str(),rxToken,txTokenLatched);
+                        ctrlName.c_str(),rxToken,txTokenLatchedStopControl);
+
                 return false;
             }
             else
@@ -838,6 +831,10 @@ bool ServerCartesianController::getNewTarget()
         {
             xdes=_xdes;
             qdes=_qdes;
+
+            // wake up rpc
+            if (tokened && (rxToken>=txTokenLatchedGoToRpc))
+                syncEvent.signal();
         }
 
         return isNew;
@@ -858,14 +855,34 @@ void ServerCartesianController::sendVelocity(const Vector &v)
     {
         if (!(*chain)[i].isBlocked())
         {    
+            double v_cnt=v[cnt];
+
             // send only if changed
-            if (v[cnt]!=velOld[cnt])
-                (*RES_VEL(lVel))[j]->velocityMove((*RES_RMP(lRmp))[j][k],velOld[cnt]=v[cnt]);
+            if (v_cnt!=velOld[cnt])
+            {
+                double thres=lDsc[j].minAbsVels[k];
+
+                // apply bang-bang control to compensate for unachievable low velocities
+                if ((v_cnt>-thres) && (v_cnt<thres) && !v_cnt)
+                {
+                    // current error in the joint space
+                    double e=qdes[cnt]-fb[cnt];
+
+                    if (e>0.0)
+                        v_cnt=thres;
+                    else if (e<0.0)
+                        v_cnt=-thres;
+                    else
+                        v_cnt=0.0;
+                }
+
+                lVel[j]->velocityMove(lRmp[j][k],velOld[cnt]=v_cnt);
+            }
 
             cnt++;
         }
 
-        if (++k>=(*RES_JNT(lJnt))[j])
+        if (++k>=lJnt[j])
         {
             j++;
             k=0;
@@ -1066,8 +1083,6 @@ bool ServerCartesianController::open(Searchable &config)
     if (optGeneral.check("ControllerPeriod"))
         setRate(optGeneral.find("ControllerPeriod").asInt());
 
-    lDsc=new ACE_Vector<DriverDescriptor>;
-
     // scan DRIVER groups
     for (int i=0; i<numDrv; i++)
     {
@@ -1122,7 +1137,21 @@ bool ServerCartesianController::open(Searchable &config)
             return false;
         }
 
-        RES_DSC(lDsc)->push_back(desc);
+        if (Bottle *pMinAbsVelsBottle=optDrv.find("MinAbsVels").asList())
+        {
+            desc.useDefaultMinAbsVel=false;
+            desc.minAbsVels.resize(pMinAbsVelsBottle->size());
+
+            for (int j=0; j<pMinAbsVelsBottle->size(); j++)
+                desc.minAbsVels[j]=pMinAbsVelsBottle->get(j).asDouble();
+        }
+        else
+        {
+            fprintf(stdout,"MinAbsVels option is missing ... using default values\n");
+            desc.useDefaultMinAbsVel=true;
+        }
+
+        lDsc.push_back(desc);
     }
 
     // instantiate kinematic object
@@ -1147,28 +1176,15 @@ bool ServerCartesianController::close()
 
     detachAll();
 
-    if (lDsc)
-        delete RES_DSC(lDsc);
+    for (unsigned int i=0; i<lRmp.size(); i++)
+        delete[] lRmp[i];
 
-    if (lLim)
-        delete RES_LIM(lLim);
-
-    if (lEnc)
-        delete RES_ENC(lEnc);
-
-    if (lVel)
-        delete RES_VEL(lVel);
-
-    if (lJnt)
-        delete RES_JNT(lJnt);
-
-    if (lRmp)
-    {
-        for (unsigned int i=0; i<RES_RMP(lRmp)->size(); i++)
-            delete[] (*RES_RMP(lRmp))[i];
-
-        delete RES_RMP(lRmp);
-    }
+    lDsc.clear();
+    lLim.clear();
+    lEnc.clear();
+    lVel.clear();
+    lJnt.clear();
+    lRmp.clear();
 
     if (limb)
         delete limb;
@@ -1197,27 +1213,21 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         return false;
     }
 
-    lLim=new ACE_Vector<IControlLimits*>;
-    lEnc=new ACE_Vector<IEncoders*>;
-    lVel=new ACE_Vector<IVelocityControl*>;
-    lJnt=new ACE_Vector<int>;
-    lRmp=new ACE_Vector<int*>;
-
     int remainingJoints=chain->getN();
 
     for (int i=0; i<numDrv; i++)
     {
-        fprintf(stdout,"Acquiring info on driver %s... ",(*RES_DSC(lDsc))[i].key.c_str());
+        fprintf(stdout,"Acquiring info on driver %s... ",lDsc[i].key.c_str());
 
         // check if what we require is present within the given list
         int j;
         for (j=0; j<drivers.size(); j++)
-            if ((*RES_DSC(lDsc))[i].key==drivers[j]->key)
+            if (lDsc[i].key==drivers[j]->key)
                 break;
 
         if (j>=drivers.size())
         {
-            fprintf(stdout,"None of provided drivers is of type %s\n",(*RES_DSC(lDsc))[i].key.c_str());
+            fprintf(stdout,"None of provided drivers is of type %s\n",lDsc[i].key.c_str());
             return false;
         }
 
@@ -1250,13 +1260,25 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             int *rmpTmp=new int[joints];
             for (int k=0; k<joints; k++)
-                rmpTmp[k]=(*RES_DSC(lDsc))[i].jointsDirectOrder ? k : joints-k-1;
+                rmpTmp[k]=lDsc[i].jointsDirectOrder ? k : joints-k-1;
 
-            RES_LIM(lLim)->push_back(lim);
-            RES_ENC(lEnc)->push_back(enc);
-            RES_VEL(lVel)->push_back(vel);
-            RES_JNT(lJnt)->push_back(joints);
-            RES_RMP(lRmp)->push_back(rmpTmp);
+            // prepare references for minimum achievable absolute velocities
+            if (lDsc[i].useDefaultMinAbsVel)
+                lDsc[i].minAbsVels.resize(joints,0.0);
+            else if (lDsc[i].minAbsVels.length()<joints)
+            {
+                Vector tmp=lDsc[i].minAbsVels;
+                lDsc[i].minAbsVels.resize(joints,0.0);
+
+                for (int k=0; k<tmp.length(); k++)
+                    lDsc[i].minAbsVels[k]=tmp[k];
+            }
+
+            lLim.push_back(lim);
+            lEnc.push_back(enc);
+            lVel.push_back(vel);
+            lJnt.push_back(joints);
+            lRmp.push_back(rmpTmp);
         }
         else
         {
@@ -1269,10 +1291,10 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     // thresholds at high values
     for (int i=0; i<numDrv; i++)
     {
-        Vector maxAcc((*RES_JNT(lJnt))[i]);
+        Vector maxAcc(lJnt[i]);
         maxAcc=CARTCTRL_MAX_ACCEL;
 
-        (*RES_VEL(lVel))[i]->setRefAccelerations(maxAcc.data());
+        lVel[i]->setRefAccelerations(maxAcc.data());
     }
 
     // create controller
@@ -1354,7 +1376,8 @@ bool ServerCartesianController::connectToSolver()
 
 
 /************************************************************************/
-bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, const double t)
+bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
+                                     const double t, const bool latchToken)
 {    
     if (connected)
     {
@@ -1384,6 +1407,10 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, c
         CartesianHelper::addTokenOption(b,txToken=Time::now());
 
         skipSlvRes=false;
+
+        if (latchToken)
+            txTokenLatchedGoToRpc=txToken;
+
         portSlvOut->writeStrict();
 
         return true;
@@ -1865,7 +1892,7 @@ bool ServerCartesianController::stopControl()
 
         stopLimbVel();
 
-        txTokenLatched=txToken;
+        txTokenLatchedStopControl=txToken;
         skipSlvRes=true;
 
         return true;

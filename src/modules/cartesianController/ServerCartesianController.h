@@ -22,6 +22,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Event.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 
@@ -33,6 +34,8 @@
 #include <iCub/iKinFwd.h>
 #include <iCub/iKinInv.h>
 
+#include <deque>
+
 
 class ServerCartesianController;
 
@@ -41,6 +44,9 @@ struct DriverDescriptor
 {
     yarp::os::ConstString key;
     bool jointsDirectOrder;
+
+    yarp::sig::Vector minAbsVels;
+    bool useDefaultMinAbsVel;
 };
 
 
@@ -92,12 +98,12 @@ protected:
     iKin::iKinChain           *chain;
     iKin::MultiRefMinJerkCtrl *ctrl;    
 
-    void *lDsc;
-    void *lLim;
-    void *lEnc;
-    void *lVel;
-    void *lJnt;
-    void *lRmp;
+    std::deque<DriverDescriptor>             lDsc;
+    std::deque<yarp::dev::IControlLimits*>   lLim;
+    std::deque<yarp::dev::IEncoders*>        lEnc;
+    std::deque<yarp::dev::IVelocityControl*> lVel;
+    std::deque<int>                          lJnt;
+    std::deque<int*>                         lRmp;
 
     unsigned int connectCnt;
     unsigned int ctrlPose;
@@ -107,10 +113,12 @@ protected:
 
     double       txToken;
     double       rxToken;
-    double       txTokenLatched;
+    double       txTokenLatchedStopControl;
+    double       txTokenLatchedGoToRpc;
     bool         skipSlvRes;
 
     yarp::os::Semaphore mutex;
+    yarp::os::Event     syncEvent;
     yarp::os::Stamp     txInfo;
 
     yarp::sig::Vector xdes;
@@ -137,7 +145,7 @@ protected:
     void newController();
     bool getNewTarget();
     void sendVelocity(const yarp::sig::Vector &v);
-    bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t);
+    bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);
