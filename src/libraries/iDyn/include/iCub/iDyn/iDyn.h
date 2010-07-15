@@ -956,6 +956,15 @@ public:
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
 
+    /**
+    * @return the COM matrix of the i-th link
+    */
+    yarp::sig::Matrix getCOM(unsigned int iLink);
+
+    /**
+    * @return the H matrix until the COM of the i-th link
+    */
+    yarp::sig::Matrix getHCOM(unsigned int iLink);
 
 
 };
@@ -1256,6 +1265,12 @@ public:
 
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
     { return iDynChain::computeCOMJacobian(iLink, Pn, _H0);}
+
+    yarp::sig::Matrix getCOM(unsigned int iLink)
+    { return iDynChain::getCOM(iLink); }
+
+    yarp::sig::Matrix getHCOM(unsigned int iLink)
+    { return iDynChain::getHCOM(iLink); }
 
 
 };

@@ -438,7 +438,7 @@ public:
 
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0, bool rbtRoto = false );
 
-
+    yarp::sig::Matrix getHCOM(unsigned int iLink, bool rbtRoto = false);
 
 };
 
@@ -502,6 +502,12 @@ protected:
 	* is used by computeJacobian() and computePose() to merely avoid code duplication.
 	*/
 	void compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, yarp::sig::Matrix &Pn, yarp::sig::Matrix &H_A_Node);
+
+    /**
+	* Compute Pn and H_A_Node matrices given two chains. This function is private, and
+	* is used by computeCOMJacobian() and computeCOMPose() to merely avoid code duplication.
+	*/
+	void compute_Pn_HAN_COM(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, yarp::sig::Matrix &Pn, yarp::sig::Matrix &H_A_Node);
 
     /**
 	* @param afterAttach =true only if the limb received wrench parameters during an
@@ -781,6 +787,14 @@ public:
 	*/
 	yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep);
 
+    
+    //---------------
+    //   JAC COM
+    //---------------
+
+    yarp::sig::Matrix computeCOMJacobian(unsigned int iChain, unsigned int iLink);
+
+    yarp::sig::Matrix computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB);
 
 
 };

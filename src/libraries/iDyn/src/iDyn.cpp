@@ -1330,8 +1330,8 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink)
 {
     if (iLink>=N)
     {
-        cerr<<"computeCOMJacobian() failed due to out of range index: "
-            <<iLink<<">="<<N<<endl;
+        if(verbose) cerr<<"computeCOMJacobian() failed due to out of range index: "
+                        <<iLink<<">="<<N<<endl;
         return Matrix(0,0);
     }
 
@@ -1367,8 +1367,8 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn)
 {
     if (iLink>=N)
     {
-        cerr<<"computeCOMJacobian() failed due to out of range index: "
-            <<iLink<<">="<<N<<endl;
+        if(verbose) cerr<<"computeCOMJacobian() failed due to out of range index: "
+                        <<iLink<<">="<<N<<endl;
         return Matrix(0,0);
     }
 
@@ -1402,8 +1402,8 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn,
 {
     if (iLink>=N)
     {
-        cerr<<"computeCOMJacobian() failed due to out of range index: "
-            <<iLink<<">="<<N<<endl;
+        if(verbose) cerr<<"computeCOMJacobian() failed due to out of range index: "
+                        <<iLink<<">="<<N<<endl;
         return Matrix(0,0);
     }
 
@@ -1431,6 +1431,28 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn,
     }
 
     return J;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::getCOM(unsigned int iLink)
+{
+    if (iLink>=N)
+    {
+        if(verbose) cerr<<"iDynChain: error, getCOM() failed due to out of range index: "
+                        <<iLink<<">="<<N<<endl;
+        return Matrix(0,0);
+    }
+    return allList[iLink]->getCOM();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::getHCOM(unsigned int iLink)
+{
+    if (iLink>=N)
+    {
+        if(verbose) cerr<<"iDynChain: error, getHCOM() failed due to out of range index: "
+                        <<iLink<<">="<<N<<endl;
+        return Matrix(0,0);
+    }
+    return getH(iLink,true) * allList[iLink]->getCOM();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
