@@ -220,6 +220,7 @@ void iCubArmCalibratorJ4::goToZero(int j)
 {
     if (abortCalib)
         return;
+	iControlMode->setPositionMode(j);
     iPosition->setRefSpeed(j, vel[j]);
     iPosition->positionMove(j, pos[j]);
 }
@@ -265,7 +266,8 @@ bool iCubArmCalibratorJ4::park(DeviceDriver *dd, bool wait)
         }
 
 	int timeout = 0;
-    fprintf(stderr, "ARMCALIB::Calling iCubArmCalibratorJ4::park()");
+    fprintf(stderr, "ARMCALIB::Calling iCubArmCalibratorJ4::park() \n");
+	iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 

@@ -212,6 +212,7 @@ bool iCubLegsCalibrator::checkCalibrateJointEnded(int joint)
 
 void iCubLegsCalibrator::goToZero(int j)
 {
+    iControlMode->setPositionMode(j);
     iPosition->setRefSpeed(j, vel[j]);
     iPosition->positionMove(j, pos[j]);
 }
@@ -250,8 +251,9 @@ bool iCubLegsCalibrator::park(DeviceDriver *dd, bool wait)
        return false;
     }
 
-    fprintf(stderr, "LEGSCALIB::Calling iCubLegsCalibrator::park()");
+    fprintf(stderr, "LEGSCALIB::Calling iCubLegsCalibrator::park() \n");
 
+    iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 

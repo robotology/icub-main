@@ -249,6 +249,7 @@ void iCubHandCalibrator::goToZero(int j)
 {
     if (abortCalib)
         return;
+	iControlMode->setPositionMode(j);
     iPosition->setRefSpeed(j, vel[j]);
     iPosition->positionMove(j, pos[j]);
 }
@@ -288,7 +289,8 @@ bool iCubHandCalibrator::park(DeviceDriver *dd, bool wait)
         }
 
 	int timeout = 0;
-    fprintf(stderr, "HANDCALIB::Calling iCubHandCalibrator::park()");
+    fprintf(stderr, "HANDCALIB::Calling iCubHandCalibrator::park() \n");
+	iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 

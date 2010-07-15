@@ -50,7 +50,8 @@ bool iCubHeadCalibrator::park(DeviceDriver *dd, bool wait)
         }
 
 	int timeout = 0;
-    fprintf(stderr, "HEADCALIB::Calling iCubHeadCalibrator::park()");
+    fprintf(stderr, "HEADCALIB::Calling iCubHeadCalibrator::park() \n");
+	iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 
@@ -310,6 +311,7 @@ bool iCubHeadCalibrator::checkCalibrateJointEnded(int joint)
 
 void iCubHeadCalibrator::goToZero(int j)
 {
+	iControlMode->setPositionMode(j);
     iPosition->setRefSpeed(j, vel[j]);
     iPosition->positionMove(j, pos[j]);
 }

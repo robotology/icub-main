@@ -50,7 +50,8 @@ bool iCubTorsoOnlyCalibrator::park(DeviceDriver *dd, bool wait)
         }
 
 	int timeout = 0;
-    fprintf(stderr, "TORSOCALIB::Calling iCubTorsoOnlyCalibrator::park()");
+    fprintf(stderr, "TORSOCALIB::Calling iCubTorsoOnlyCalibrator::park() \n");
+	iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 
@@ -268,6 +269,7 @@ bool iCubTorsoOnlyCalibrator::checkCalibrateJointEnded(int joint)
 
 void iCubTorsoOnlyCalibrator::goToZero(int j)
 {
+	iControlMode->setPositionMode(j);
     iPosition->setRefSpeed(j, vel[j]);
     iPosition->positionMove(j, pos[j]);
 }

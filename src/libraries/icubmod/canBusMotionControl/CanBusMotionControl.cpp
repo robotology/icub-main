@@ -3196,26 +3196,58 @@ bool CanBusMotionControl::disablePidRaw(int axis)
 
 bool CanBusMotionControl::setPositionModeRaw()
 {
-	//Not implemented. Use iControlMode instead.
-    return NOT_YET_IMPLEMENTED("setPositionModeRaw");
+	CanBusResources& r = RES(system_resources);
+    int i;
+    for (i = 0; i < r.getJoints (); i++)
+    {
+        if (ENABLED(i))
+		{
+			_writeByte8(CAN_SET_CONTROL_MODE,i,MODE_POSITION);
+		}
+	}
+	return true;
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw()
 {
-	//Not implemented. Use iControlMode instead.
-    return NOT_YET_IMPLEMENTED("setOpenLoopModeRaw");
+	CanBusResources& r = RES(system_resources);
+    int i;
+    for (i = 0; i < r.getJoints (); i++)
+    {
+        if (ENABLED(i))
+		{
+			_writeByte8(CAN_SET_CONTROL_MODE,i,MODE_OPENLOOP);
+		}
+	}
+	return true;
 }
 
 bool CanBusMotionControl::setTorqueModeRaw()
 {
-	//Not implemented. Use iControlMode instead.
-    return NOT_YET_IMPLEMENTED("setTorqueModeRaw");
+	CanBusResources& r = RES(system_resources);
+    int i;
+    for (i = 0; i < r.getJoints (); i++)
+    {
+        if (ENABLED(i))
+		{
+			_writeByte8(CAN_SET_CONTROL_MODE,i,MODE_TORQUE);
+		}
+	}
+	return true;
 }
 
 bool CanBusMotionControl::setVelocityModeRaw()
 {
-	//Not implemented. Use iControlMode instead.
-    return NOT_YET_IMPLEMENTED("setVelocityModeRaw");
+	CanBusResources& r = RES(system_resources);
+    int i;
+    for (i = 0; i < r.getJoints (); i++)
+    {
+        if (ENABLED(i))
+		{
+			_writeByte8(CAN_SET_CONTROL_MODE,i,MODE_VELOCITY);
+		}
+	}
+	return true;
 }
 
 bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
