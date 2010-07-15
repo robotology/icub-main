@@ -886,6 +886,16 @@ public:
 	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN , const yarp::sig::Matrix &Pn );
 
 	/**
+	* Compute the Jacobian from link 0 to iLinkN. 
+	* This method is used to compute the Jacobian between two links in two different chains.
+	* @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
+    * @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+	*/
+    yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
+	
+	/**
 	* Compute the Jacobian of the chain, from link 0 to N. 
 	* This method is used to compute the Jacobian between two links in two different chains.
 	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
@@ -902,8 +912,15 @@ public:
 	*/
 	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
+    /**
+    * @return H0, the base matrix of the chain
+    */
 	yarp::sig::Matrix getH0() const;
 
+    /**
+    * @param H0 the (4x4) base matrix of the chain
+    * @return true if succeed, false otherwise
+    */
 	bool setH0(const yarp::sig::Matrix &_H0);
 
 	yarp::sig::Matrix getDenHart(unsigned int i) { return allList[i]->getH();}
@@ -1180,6 +1197,9 @@ public:
 
 	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn )
 	{return iDynChain::computeGeoJacobian(iLinkN,Pn);}
+
+    yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
+	{return iDynChain::computeGeoJacobian(iLinkN,Pn,H0);}
 
 	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn )
 	{return iDynChain::computeGeoJacobian(Pn);}

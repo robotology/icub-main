@@ -184,7 +184,6 @@ protected:
 	* OneLinkNewtonEuler: compute Force/Moment.
 	* Here they are fastened and adapted to the RBT.
 	*/
-
 	void computeWrench();
 
 
@@ -366,20 +365,59 @@ public:
 	yarp::sig::Vector getEndEffPose(const bool axisRep = true);
 
 	/**
-	* This method is used to compute the Jacobian between two links in two different chains, eg from link 4 in chain_A
+	* This method is used to compute the Jacobian between two links in two different chains (eg from link 4 in chain_A
 	* to link 3 in chain_B.
 	* @param iLink the index of the link, in the chain, being the base frame for the Jacobian computation
 	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
 	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
-	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+	* @return the Jacobian matrix from the base of the chain until the iLink  (e.g. from link 0 to 4)
 	*/
 	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, bool rbtRoto = false);
 
+    /**
+	* This method is used to compute the Jacobian between two links in two different chains.
+	* @param iLink the index of the link, in the chain, being the base frame for the Jacobian computation
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @param H0 the H0 matrix of the base to be used for the Jacobian computation
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+	*/
+	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &H0, bool rbtRoto = false);
+
+	/**
+	* This method is used to compute the Jacobian between two links in two different chains: in this case
+    * it returns the jacobian matrix of the whole chain (from base to end-effector) when Pn is an external vector.
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix of the chain
+	*/
 	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, bool rbtRoto = false);
 
+    /**
+	* This method is used to compute the Jacobian between two links in two different chains: in this case
+    * it returns the jacobian matrix of the whole chain (from base to end-effector) when Pn is an external vector,
+    * and H0 is an external matrix.
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @param H0 the H0 matrix of the base to be used for the Jacobian computation
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix of the chain
+	*/
 	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &H0, bool rbtRoto = false);
 
+    /**
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix of the chain
+	*/
 	yarp::sig::Matrix computeGeoJacobian(bool rbtRoto = false);
+
+    /**
+    * Returns the Jacobian matrix of the limb until the link whose index is iLink in the chain.
+    * This method basically calls GeoJacobian(iLink) in the iDynChain of the limb.
+	* @param iLink the index of the link, in the chain
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix of the chain - from the base to the i-th link
+	*/
+    yarp::sig::Matrix computeGeoJacobian(const unsigned int iLink, bool rbtRoto = false);
 
 
 	/**
@@ -642,15 +680,57 @@ public:
 	*/
 
 	/**
-	* Compute the Jacobian of the chain with limb iChain in the node, in its default direction (as
+	* Compute the Jacobian of the limb with index iChain in the node, in its default direction (as
 	* it would be done by iKin).
-	* @param iChain the index of the chain (the limb) in the node 
+	* @param iChain the index of the chain (limb) in the node 
 	* @return the Jacobian matrix
 	*/
 	yarp::sig::Matrix computeJacobian(unsigned int iChain);
 
+	/**
+	* Compute the Jacobian of the i-th link of the limb with index iChain in the node, in its default 
+    * direction (as it would be done by iKin).
+    * If the link index is not correct, a null Jacobian is returned.
+	* @param iChain the index of the chain (limb) in the node 
+    * @param iLink  the index of the limnk in the limb
+	* @return the Jacobian matrix
+	*/
+	yarp::sig::Matrix computeJacobian(unsigned int iChain, unsigned int iLink);
+
+	/**
+	* Compute the Jacobian between two links in two different chains. The chains are
+	* specified by their index in the list (the progressive number of insertion).
+	* The first limb (limb A - index=iChainA) has the base link of the jacobian  while
+	* the second limb (limb B - index=iChainB) has the final link of the jacobian.
+    * Whether the base/final of the Jacobian coincides with the base/end of the chains, depends
+    * on the flags dirA,dirB: if dirA=JAC_DIR, then the beginning is at the base of chain, otherwise it is
+    * at the end-effector; if dirB=JAC_DIR, the final link of the jacobian is on the end-effector
+    * of the chain, otherwise on its base.
+	* @param iChainA the index of the chain (the limb) in the node having the base frame
+	* @param dirA the 'direction' of the chain wrt the jacobian computation
+	* @param iChainB the index of the chain (the limb) in the node having the final frame
+	* @param dirB the 'direction' of the chain wrt the jacobian computation
+	* @return the Jacobian matrix
+	*/
 	yarp::sig::Matrix computeJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB);
 
+	/**
+	* Compute the Pose of the end-effector, given a "virtual" chain connecting two limbs.
+    * The chains are specified by their index in the list (the progressive number of insertion).
+	* The first limb (limb A - index=iChainA) has the base link of the augmented chain while
+	* the second limb (limb B - index=iChainB) has the final link of the augmented chain .
+    * Whether the base/end of the augmented chain coincides with the base/end of the single chains, depends
+    * on the flags dirA,dirB: if dirA=JAC_DIR, then the beginning is at the base of chain, otherwise it is
+    * at the end-effector; if dirB=JAC_DIR, the final link of the augmented chain is on the end-effector
+    * of the chain, otherwise on its base.
+    * This method is useful to compute the end-effector pose (i.e. computing the arm pose, when the chain
+    * torso + arm is considered) in a mulit-limb chain.
+	* @param iChainA the index of the chain (the limb) in the node having the base frame
+	* @param dirA the 'direction' of visit of the chain
+	* @param iChainB the index of the chain (the limb) in the node having the final frame
+	* @param dirB the 'direction' of visit of the chain
+	* @return the Jacobian matrix
+	*/
 	yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep);
 };
 

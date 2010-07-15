@@ -318,6 +318,14 @@ Matrix RigidBodyTransformation::computeGeoJacobian(const unsigned int iLink, con
 		return getR6() * limb->computeGeoJacobian(iLink,Pn);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeGeoJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &H0, bool rbtRoto)
+{
+	if(rbtRoto==false)
+		return limb->computeGeoJacobian(iLink,Pn,H0);
+	else
+		return getR6() * limb->computeGeoJacobian(iLink,Pn,H0);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix RigidBodyTransformation::computeGeoJacobian(const Matrix &Pn, bool rbtRoto)
 {
 	if(rbtRoto==false)
@@ -340,6 +348,14 @@ Matrix RigidBodyTransformation::computeGeoJacobian(bool rbtRoto)
 		return limb->GeoJacobian();
 	else
 		return getR6() * limb->GeoJacobian();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix RigidBodyTransformation::computeGeoJacobian(const unsigned int iLink, bool rbtRoto)
+{
+	if(rbtRoto==false)
+		return limb->GeoJacobian(iLink);
+	else
+		return getR6() * limb->GeoJacobian(iLink);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix RigidBodyTransformation::getH0() const
@@ -781,6 +797,37 @@ Vector iDynNode::getLinAcc() const {return ddp;}
 		//    jacobians
 		//-----------------
 
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynNode::computeJacobian(unsigned int iChain)
+{
+    if(iChain<=rbtList.size())
+    {
+        return rbtList[iChain].computeGeoJacobian(false);
+    }
+    else
+    {
+		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index "
+						<<iChain<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		return Matrix(0,0);
+    }
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynNode::computeJacobian(unsigned int iChain, unsigned int iLink)
+{
+    if(iChain<=rbtList.size())
+    {
+        // the check on iLink<=N is performed by iKinChain when calling GeoJacobian(iLink)
+        // from the RBT
+        return rbtList[iChain].computeGeoJacobian(iLink,false);
+    }
+    else
+    {
+		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index "
+						<<iChain<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		return Matrix(0,0);
+    }
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB)
 {

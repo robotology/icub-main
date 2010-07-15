@@ -1215,6 +1215,45 @@ Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn
     return J;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn, const Matrix &_H0)
+{
+	if(DOF==0)
+    {
+		if(verbose)cerr<<"iDynChain: computeGeoJacobian() failed since DOF==0"<<endl;
+        return Matrix(0,0);
+    }
+    if(iLinkN>=N)
+    {
+		if(verbose) cerr<<"iDynChain: computeGeoJacobian() failed due to out of range indexes: "
+						<<"from 0 to "<<iLinkN<<" >= "<<N<<endl;
+        return Matrix(0,0);
+    }
+
+	// the jacobian size is linkN+1: eg, index=2, Njoints=0,1,2=3
+    Matrix J(6, iLinkN+1 );J.zero();
+    Matrix Z;
+    Vector w;
+
+    deque<Matrix> intH;
+    intH.push_back(_H0);
+    for (unsigned int i=0; i<iLinkN; i++)
+        intH.push_back(intH[i]*allList[i]->getH(true));
+
+    for (unsigned int i=0; i<iLinkN; i++)
+    {
+		unsigned int j=hash[i];
+        Z=intH[j];
+        w=cross(Z,2,Pn-Z,3,verbose);
+        J(0,j)=w[0];
+        J(1,j)=w[1];
+        J(2,j)=w[2];
+        J(3,j)=Z(0,2);
+        J(4,j)=Z(1,2);
+        J(5,j)=Z(2,2);
+    }
+    return J;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix iDynChain::computeGeoJacobian(const Matrix &Pn)
 {
 	if (DOF==0)
