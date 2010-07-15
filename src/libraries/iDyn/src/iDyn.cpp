@@ -1319,6 +1319,123 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn, const Matrix &_H0)
     }
     return J;
 }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    //---------------
+	// jacobians COM
+	//---------------
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::computeCOMJacobian(const unsigned int iLink)
+{
+    if (iLink>=N)
+    {
+        cerr<<"computeCOMJacobian() failed due to out of range index: "
+            <<iLink<<">="<<N<<endl;
+        return Matrix(0,0);
+    }
+
+    Matrix J(6,iLink+1);
+    Matrix Pn,Z;
+    Vector w;
+
+    deque<Matrix> intH;
+    intH.push_back(H0);
+
+    for (unsigned int j=0; j<=iLink; j++)
+        intH.push_back(intH[j]*allList[j]->getH(true));
+
+    Pn=intH[iLink+1]*allList[iLink]->getCOM();
+
+    for (unsigned int j=0; j<=iLink; j++)
+    {
+        Z=intH[j];
+        w=cross(Z,2,Pn-Z,3,verbose);
+
+        J(0,j)=w[0];
+        J(1,j)=w[1];
+        J(2,j)=w[2];
+        J(3,j)=Z(0,2);
+        J(4,j)=Z(1,2);
+        J(5,j)=Z(2,2);
+    }
+
+    return J;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn)
+{
+    if (iLink>=N)
+    {
+        cerr<<"computeCOMJacobian() failed due to out of range index: "
+            <<iLink<<">="<<N<<endl;
+        return Matrix(0,0);
+    }
+
+    Matrix J(6,iLink+1);
+    Matrix Z;
+    Vector w;
+
+    deque<Matrix> intH;
+    intH.push_back(H0);
+
+    for (unsigned int j=0; j<=iLink; j++)
+        intH.push_back(intH[j]*allList[j]->getH(true));
+
+    for (unsigned int j=0; j<=iLink; j++)
+    {
+        Z=intH[j];
+        w=cross(Z,2,Pn-Z,3,verbose);
+
+        J(0,j)=w[0];
+        J(1,j)=w[1];
+        J(2,j)=w[2];
+        J(3,j)=Z(0,2);
+        J(4,j)=Z(1,2);
+        J(5,j)=Z(2,2);
+    }
+
+    return J;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &_H0)
+{
+    if (iLink>=N)
+    {
+        cerr<<"computeCOMJacobian() failed due to out of range index: "
+            <<iLink<<">="<<N<<endl;
+        return Matrix(0,0);
+    }
+
+    Matrix J(6,iLink+1);
+    Matrix Z;
+    Vector w;
+
+    deque<Matrix> intH;
+    intH.push_back(_H0);
+
+    for (unsigned int j=0; j<=iLink; j++)
+        intH.push_back(intH[j]*allList[j]->getH(true));
+
+    for (unsigned int j=0; j<=iLink; j++)
+    {
+        Z=intH[j];
+        w=cross(Z,2,Pn-Z,3,verbose);
+
+        J(0,j)=w[0];
+        J(1,j)=w[1];
+        J(2,j)=w[2];
+        J(3,j)=Z(0,2);
+        J(4,j)=Z(1,2);
+        J(5,j)=Z(2,2);
+    }
+
+    return J;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 
 //================================

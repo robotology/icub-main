@@ -923,8 +923,37 @@ public:
     */
 	bool setH0(const yarp::sig::Matrix &_H0);
 
-	yarp::sig::Matrix getDenHart(unsigned int i) { return allList[i]->getH();}
 
+	yarp::sig::Matrix getDenHart(unsigned int i) 
+    { return allList[i]->getH();}
+
+    //---------------
+	// jacobians COM
+	//---------------
+
+    /**
+	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
+	* @param iLinkN the index of the link, in the chain, being the final frame for the Jacobian computation
+	* @return the Jacobian matrix of the COM of the iLink of the chain 
+	*/
+	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink);
+
+    /**
+	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
+	* @param iLinkN the index of the link, in the chain, being the final  frame for the Jacobian computation
+    * @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
+    * @return the Jacobian matrix of the COM of the iLink of the chain 
+	*/
+	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn);
+
+    /**
+	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
+	* @param iLinkN the index of the link, in the chain, being the final frame for the Jacobian computation
+	* @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
+	* @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
+    * @return the Jacobian matrix of the COM of the iLink of the chain 
+	*/
+    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
 
 
@@ -1215,6 +1244,7 @@ public:
 
 	yarp::sig::Matrix getDenHart(unsigned int i) { return iDynChain::getDenHart(i);}
 
+    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink)  {return iDynChain::computeCOMJacobian(iLink);}
 };
 
 
