@@ -400,8 +400,8 @@ public:
 //    virtual bool getAxes(int *ax);
     virtual bool getRefTorqueRaw(int j, double *t);
     virtual bool getRefTorquesRaw(double *t);
-    virtual bool setTorquesRaw(const double *t);
-    virtual bool setTorqueRaw(int j, double t);
+    virtual bool setRefTorquesRaw(const double *t);
+    virtual bool setRefTorqueRaw(int j, double t);
     virtual bool getTorqueRaw(int j, double *t);
     virtual bool getTorquesRaw(double *t);
 

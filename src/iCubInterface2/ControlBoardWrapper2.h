@@ -1884,7 +1884,7 @@ public:
         return false;
     }
 
-    virtual bool setTorques(const double *t)
+    virtual bool setRefTorques(const double *t)
     {
         bool ret=true;
 
@@ -1899,7 +1899,7 @@ public:
 
             if (p->iTorque)
             {
-                ret=ret&&p->iTorque->setTorque(off+base, t[l]);
+                ret=ret&&p->iTorque->setRefTorque(off+base, t[l]);
             }
             else
                 ret=false;
@@ -1907,7 +1907,7 @@ public:
         return ret;
     }
 
-    virtual bool setTorque(int j, double t)
+    virtual bool setRefTorque(int j, double t)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -1918,7 +1918,7 @@ public:
 
         if (p->iTorque)
         {
-            return p->iTorque->setTorque(off+base, t);
+            return p->iTorque->setRefTorque(off+base, t);
         }        
         return false;
     }

@@ -1225,21 +1225,21 @@ public:
         return false;
     }
 
-    virtual bool setTorques(const double *t)
+    virtual bool setRefTorques(const double *t)
     {
         bool ret=false;
         if (torque) {
             ret=true;
             for(int j=0;j<controlledJoints;j++)
-                ret=ret&&torque->setTorque(j+base, t[j]);
+                ret=ret&&torque->setRefTorque(j+base, t[j]);
         }
         return ret;
     }
 
-    virtual bool setTorque(int j, double t)
+    virtual bool setRefTorque(int j, double t)
     {
         if (torque)
-            return torque->setTorque(j+base, t);
+            return torque->setRefTorque(j+base, t);
         return false;
     }
 

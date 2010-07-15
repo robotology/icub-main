@@ -758,6 +758,14 @@ bool AnalogSensor::handleAnalog(void *canbus)
                                     status=IAnalogSensor::AS_ERROR;
 								}
 								ret=decode16(buff, msgid, data->getBuffer());
+								/*
+								//RANDAZ@@@ to implement getTorque() using r._bcastRecvBuffer
+								if (this->isVirtualSensor)
+								{
+									for (int ax=0; ax<6; ax++)
+										r._bcastRecvBuffer[ax]._torque=data->getBuffer()[ax];
+								}
+								*/
 							}
 							break;
 						default:
@@ -2933,7 +2941,7 @@ bool CanBusMotionControl::setReferencesRaw (const double *refs)
 }
 
 /// cmd is a SingleAxis poitner with 1 double arg
-bool CanBusMotionControl::setTorqueRaw (int j, double ref)
+bool CanBusMotionControl::setRefTorqueRaw (int j, double ref)
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
@@ -2951,13 +2959,14 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
         return false;
 
     _mutex.wait();
+	//RANDAZ @@@ maybe i can change this to read directly from analog sensors
     *t=double(r._bcastRecvBuffer[axis]._torque);
     _mutex.post();
     return false;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::setTorquesRaw (const double *refs)
+bool CanBusMotionControl::setRefTorquesRaw (const double *refs)
 {
     CanBusResources& r = RES(system_resources);
 
