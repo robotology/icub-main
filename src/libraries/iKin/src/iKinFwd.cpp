@@ -1027,7 +1027,7 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
     for (unsigned int j=0; j<=i; j++)
         intH.push_back(intH[j]*allList[j]->getH(true));
 
-    Pn=intH[i];
+    Pn=intH[i+1];
 
     for (unsigned int j=0; j<=i; j++)
     {
