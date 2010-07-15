@@ -19,6 +19,7 @@ export LANG=C
 export LC_ALL=C
 
 # main build
+mkdir $ICUB_DIR
 cd $ICUB_DIR
 echo "Main build: in $ICUB_DIR"
 rm -f $ICUB_ROOT/$module/CMakeCache.txt
