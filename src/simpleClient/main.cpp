@@ -550,7 +550,7 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                     {
 					case VOCAB_REF: 
                         {
-                            *ok = torque->setTorque(cmd.get(3).asInt(), cmd.get(4).asDouble());
+                            *ok = torque->setRefTorque(cmd.get(3).asInt(), cmd.get(4).asDouble());
                         }
                         break;
 
@@ -564,7 +564,7 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                                     double *p = new double[njs];    // LATER: optimize to avoid allocation. 
                                     for (i = 0; i < njs; i++)
                                         p[i] = b.get(i).asDouble();
-                                    *ok = torque->setTorques (p);
+                                    *ok = torque->setRefTorques (p);
                                     delete[] p;
                                 }
                         }
