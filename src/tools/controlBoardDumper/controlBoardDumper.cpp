@@ -14,6 +14,7 @@ void controlBoardDumper::setDevice(PolyDriver *Arm_d, int rate, ConstString port
   ok &= Arm_dd->view(pid);
   ok &= Arm_dd->view(amp);
   ok &= Arm_dd->view(lim);
+  ok &= Arm_dd->view(trq);
 
   if (!ok)
     printf("Problems acquiring interfaces\n");

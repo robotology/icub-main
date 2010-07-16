@@ -34,6 +34,7 @@ private:
   IPidControl *pid;
   IAmplifierControl *amp;
   IControlLimits *lim;
+  ITorqueControl *trq;
 
   int numberOfJoints;
   double *data;

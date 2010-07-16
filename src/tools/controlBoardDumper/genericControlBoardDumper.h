@@ -71,3 +71,12 @@ public:
 
   IAmplifierControl *iamp;
 };
+
+class GetTrqs : public GetData
+{
+public:
+  void setInterface (ITorqueControl *);
+  virtual bool getData(double *);
+
+  ITorqueControl *itrq;
+};

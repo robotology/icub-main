@@ -128,3 +128,20 @@ bool GetCurrs::getData(double *e)
   else
     return 0;
 }
+
+void GetTrqs::setInterface(ITorqueControl *i)
+{
+    itrq = i;
+}
+
+bool GetTrqs::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqs\n");
+  if (itrq)
+    {
+	  itrq->getTorques(e);
+      return 1;
+    }
+  else
+    return 0;
+}

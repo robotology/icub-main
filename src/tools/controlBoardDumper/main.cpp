@@ -76,6 +76,7 @@
  * <li> getErrors  (difference between desired and actual position)
  * <li> getOutputs (voltage give to the motor)
  * <li> getCurrents (current given to the motor)
+ * <li> getTorques  (joint torques, if available)
  * </ul>
  * Other data can be easily added by modyfing the classes in the 
  * file genericControlBoardDumper.cpp which contains a class named
@@ -125,7 +126,7 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Module.h>
 
-#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 6
+#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 7
 
 //
 void getRate(Property p, int &r)
@@ -214,6 +215,7 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     availableDataToDump[3] = ConstString("getErrors");
     availableDataToDump[4] = ConstString("getOutputs");
     availableDataToDump[5] = ConstString("getCurrents");
+	availableDataToDump[6] = ConstString("getTorques");
 
 
     if (!p.check("dataToDump"))
@@ -277,6 +279,9 @@ private:
     //amp
     IAmplifierControl *amp;
     GetCurrs myGetCurrs;
+	//torques
+	ITorqueControl *trq;
+	GetTrqs myGetTrqs;
 
 public:
     DumpModule() 
@@ -469,6 +474,23 @@ public:
                                
                             myDumper[i].setGetter(&myGetCurrs);
                         }
+		        if (dataToDump[i] == "getTorques")
+                    if (dd.view(trq))
+                        {
+                            fprintf(stderr, "Initializing a getTorques thread\n");
+                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetTrqs.setInterface(trq);
+                            if (dd.view(stmp))
+                                {
+                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                    myGetTrqs.setStamp(stmp);
+                                }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                               
+                            myDumper[i].setGetter(&myGetTrqs);
+                        }
             }
         Time::delay(1);
         for (int i = 0; i < nData; i++)
@@ -529,7 +551,7 @@ int main(int argc, char *argv[])
     if (!p.check("dataToDump"))
         {
             Value v;
-            v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getErrors getOutputs getCurrents)");
+            v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getErrors getOutputs getCurrents getTorques)");
             p.put("dataToDump", v);
         }
 
