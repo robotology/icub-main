@@ -1,3 +1,30 @@
+//  MTB3 firmware 
+//  Author M.Maggiali
+//  Rev. 2.0.4 del 15/06/2010
+//
+//  Tested on MTB3 boards (DSPIC30F4011)
+//  pic30-gcc V4.03
+//  MPLAB IDE ver 8.46.00.00
+// 
+//
+//  Rev. 2.0.5 del 18/06/2010
+//
+//  I2C at 100KHz
+//
+//  Rev. 2.0.6 del 23/06/2010
+//
+//  I2C at 300KHz
+//  TIMER_VALUE=0x3700;
+//
+//  Rev. 2.0.8 del 25/06/2010
+//
+//  There is a check that if a value is out of the range the value will be discarged 
+//  In the status message there is the count of the errors in the I2C reading
+//
+//  Rev. 2.0.9 del 16/07/2010
+//
+//  Added the CAN filters 
+//  
 
 #include<p30f4011.h>
 #include"can_interface.h"
@@ -50,7 +77,7 @@ struct s_eeprom _EEDATA(1) ee_data =
   0x0,           // EE_B_EEErased             :1
   0x0,           // EE_B_EnableWD             :1
   0x1,           // EE_B_EnableBOR            :1
-  0x0F,          // EE_CAN_BoardAddress;      :8
+  0x05,          // EE_CAN_BoardAddress;      :8
   0x01,          // EE_CAN_MessageDataRate    :8
   0x04,          // EE_CAN_Speed;             :8
   {'T','a','c','t','i','l','e',' ','B','o','a','r','d',' ',' '},
@@ -114,11 +141,12 @@ unsigned char board_MODE=EIGHT_BITS;
 unsigned char new_board_MODE=EIGHT_BITS;
 char _additional_info [32]={'T','a','c','t','i','l','e',' ','S','e','n','s','o','r'};
 unsigned int PW_CONTROL= 0x0B0; // 0x1B0 for 128 decim  
-unsigned int TIMER_VALUE=0x3500;//0x3839;///0x3A00; // Timer duration 0x3000=> 40ms
-unsigned int CONFIG_TYPE=0;
+unsigned int TIMER_VALUE=0x3800;//0x3839;///0x3A00; // Timer duration 0x3000=> 40ms
+unsigned int CONFIG_TYPE=CONFIG_SINGLE;
+unsigned int ERROR_COUNTER=0; //it counts the errors in reading the triangles.
 unsigned int ConValue[2]={0x2200, 0x2200};
 unsigned int PMsgID; //pressure measurement ID 
-unsigned char loadcell[]={0,0,0,0,0,0,0,0};
+unsigned char status[]={0,0,0,0,0,0,0,0};
    
 
 
@@ -140,7 +168,8 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
     WriteTimer1(0x0);
 //    if (CONFIG_TYPE==CONFIG_SINGLE)    ServiceAD7147Isr(CH0);
 //    if (CONFIG_TYPE==CONFIG_ALL)  ServiceAD7147Isr_all(CH0);
-  
+  							   //      TMR1  = 0;          /* Reset Timer1 to 0x0000 */
+    PR1   = TIMER_VALUE;     /* assigning Period to Timer period register */
     IFS0=IFS0 & 0xFFF7;
 }
 void __attribute__((interrupt, no_auto_psv)) _C1Interrupt(void)
@@ -295,15 +324,10 @@ int main(void)
 
         if (flag==1)
         {
-            flag=0;
-         //   if (CONFIG_TYPE==CONFIG_SINGLE)    ServiceAD7147Isr(CH0); 
-         //   if (CONFIG_TYPE==CONFIG_ALL)       ServiceAD7147Isr_all(CH0);
-         //   if (CONFIG_TYPE==CONFIG_THREE)     ServiceAD7147Isr_three(CH0);
- 	
- 
-         i = 0;
-		result=0;
-		mean=0;
+        	flag=0;
+           	i = 0;
+			result=0;
+			mean=0;
 		
 /// ADC conversion
 		while(i<15)
@@ -316,12 +340,14 @@ int main(void)
 			mean=result+mean;
 	        for(l=0;l<10;l++);	
 		}
- 			loadcell[1]=(((mean>>4) &0xFF00) >>0x8);
-	        loadcell[0]=(mean>>4) & 0xFF;
-	        loadcell[3]=((counter &0xFF00) >>0x8); // cycle number
-	        loadcell[2]=(counter & 0xFF);
+ 			status[1]=(((mean>>4) &0xFF00) >>0x8); //the value of the analog input
+	        status[0]=(mean>>4) & 0xFF;
+	        status[3]=((counter &0xFF00) >>0x8); // cycle number
+	        status[2]=(counter & 0xFF);
+	        status[5]=((ERROR_COUNTER &0xFF00) >>0x8); // ERRORS in reading the I2C
+	        status[4]=(ERROR_COUNTER & 0xFF);
 	        counter++;
- 	    CAN1_send(0x100,1,8,loadcell);		
+ 		    CAN1_send(0x100,1,8,status);		
  
  
  ////////////////////////////////////////////////////////				
@@ -357,7 +383,7 @@ int main(void)
 						     	ServiceAD7147Isr_all(CH0);
 		      					for (i=0;i<16;i++)					
 	            				{
-	 							FillCanMessages8bit_all(CH0,i); 	
+	 								FillCanMessages8bit_all(CH0,i); 	
 		      					}
 		      				}
 		      				break;	
@@ -391,7 +417,7 @@ int main(void)
 								ServiceAD7147Isr_all(CH0);
 								for (i=0;i<16;i++)
 	            				{
-								FillCanMessages16bit_all(CH0,i);
+									FillCanMessages16bit_all(CH0,i);
 								}	
 							}
 							break;	
@@ -421,6 +447,7 @@ int main(void)
 							       	WriteTimer1(0);
 					                while (flag==0);
 							        TrianglesInit(CH0);
+
 							}
 							break;	
 							case CONFIG_THREE:
@@ -468,8 +495,7 @@ int main(void)
 				} //switch
         }//if (flag==1)
         CAN1_handleRx(_board_ID);
-        //debug  
-   //     CAN1_send(0x002,1,8,loadcell);	
+    	  
     }//for(;;)
 }//main
 
@@ -533,34 +559,35 @@ void ServiceAD7147Isr(unsigned char Channel)
     unsigned int stagecomplete2[1][1];
     unsigned int stagecomplete3[1][1];
    unsigned int ConfigBuffer[0];
-   unsigned int ntriangles=4;
+   unsigned int nets=4;
     
     		//Calibration configuration
 	ConfigBuffer[0]=0x8000;//0x8000;//0x220;
 			
-	    for (i=0;i<ntriangles;i++)
+	    for (i=0;i<nets;i++)
 	    {		
 	    // Added 0x0B because of register remapping
 	       ReadFromAD7147ViaI2C(CH0,AD7147_ADD[i],(ADCRESULT_S0+0x0B), 2, AD7147Registers[i],AD7147Registers[i+4],AD7147Registers[i+8],AD7147Registers[i+12], ADCRESULT_S0);
 	    }	    
-	    for (i=0;i<ntriangles;i++)
+	    for (i=0;i<nets;i++)
 	    {		
 	    // Added 0x0B because of register remapping
 	       ReadFromAD7147ViaI2C(CH0,AD7147_ADD[i],(ADCRESULT_S2+0x0B), 10, AD7147Registers[i],AD7147Registers[i+4],AD7147Registers[i+8],AD7147Registers[i+12], ADCRESULT_S2);
 	    }
    
-	 	for (i=0;i<ntriangles;i++)
+	 	for (i=0;i<nets;i++)
 	    {
 		   ReadFromAD7147ViaI2C(CH0,AD7147_ADD[i],STAGE_COMPLETE_LIMIT_INT, 1, stagecomplete0[0],stagecomplete1[0],stagecomplete2[0],stagecomplete3[0], 0);		
 		 //   WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],AMB_COMP_CTRL0,1, ConfigBuffer, AMB_COMP_CTRL0);
 	    }
 	  
-	    for (i=0;i<ntriangles;i++)
+	    for (i=0;i<nets;i++)
 	    {
 		 //   ReadFromAD7147ViaI2C(CH0,AD7147_ADD[i],STAGE_COMPLETE_LIMIT_INT, 1, stagecomplete0[0],stagecomplete1[0],stagecomplete2[0],stagecomplete3[0], 0);		
 		      WriteToAD7147ViaI2C(CH0,AD7147_ADD[i],AMB_COMP_CTRL0,1, ConfigBuffer, 0);
-	    }
-
+	///DEBUG	      
+	  //        ConfigAD7147(CH0,i,PW_CONTROL,ConValue); //0 is the number of the device		 
+	    } 
 }
 void ServiceAD7147Isr_all(unsigned char Channel)
 {
@@ -611,7 +638,6 @@ void ServiceAD7147Isr_three(unsigned char Channel)
 //------------------------------------------------------------------------
 void Wait(unsigned int value)    
 {
-	//Nop();
    while (value>0)
         value--;
 }//Wait();
@@ -622,8 +648,7 @@ void TrianglesInit(unsigned char Channel)
 	_prog_addressT p;
     int  source[_FLASH_ROW];
 
-		_init_prog_address(p, CapOffset);  /* get address in program space */
-		
+		_init_prog_address(p, CapOffset);  /* get address in program space */	
 		// delete all the space for the _pCapOffset[32][12]  the ROW is 32 then 12 is the number of ROW to be deleted 		
 		for(i=0;i<6;i++)
 		{
@@ -631,8 +656,7 @@ void TrianglesInit(unsigned char Channel)
 			p += (_FLASH_ROW * 2);	
 		} 
 		j=0; 
-		_init_prog_address(p, CapOffset);  /* get address in program space */
-		
+		_init_prog_address(p, CapOffset);  /* get address in program space */		
     	for (i=0;i<16;i++)
     	{
         	for (k=0;k<12;k++)
@@ -688,44 +712,71 @@ void TrianglesInit_all(unsigned char Channel)
 void FillCanMessages8bit(unsigned char Channel,unsigned char triangleN)
 {
     unsigned char data[8];
-    unsigned int i,val;
+    unsigned int i,j,val,error;
     unsigned int txdata[12];
 	
+		error=0;
 	    for (i=0;i<12;i++)
 	    {
-	        if (_pCapOffset[triangleN][i]>=AD7147Registers[triangleN][ADCRESULT_S0+i])
-	        {
-	            val=((_pCapOffset[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>2);
-	            if (val>=10) txdata[i]=255;
-	            else
-	                txdata[i]=val+244;
-	        } else
-	        {
-	            val=((AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset[triangleN][i])>>2);
-	            if (val>=243)   txdata[i]=1;
-	            else
-	                txdata[i]=244-val;
-	        }
+		    if (((_pCapOffset[triangleN][i]!=0) && ((AD7147Registers[triangleN][ADCRESULT_S0+i]==0))))
+		    {
+			    error=1;
+			    ERROR_COUNTER++;
+			}
+			    
+		    if ((_pCapOffset[triangleN][i]>=(AD7147Registers[triangleN][ADCRESULT_S0+i]+1024)) || //1024 is 256<<2
+		    	(_pCapOffset[triangleN][i]<=(AD7147Registers[triangleN][ADCRESULT_S0+i]-1024)))
+		    {
+			  txdata[i]=244; //244 is no contact  	  
+		//	  error=1;
+			  // 	board_MODE=CALIB;	
+		    }
+		    else
+		    {	
+		        if (_pCapOffset[triangleN][i]>=AD7147Registers[triangleN][ADCRESULT_S0+i])
+		        {
+		            val=((_pCapOffset[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>SHIFT);
+		            if (val>=10) txdata[i]=255;
+		            else
+		                txdata[i]=val+244;
+		        } else
+		        {
+		            val=((AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset[triangleN][i])>>SHIFT);
+		            if (val>=243)   txdata[i]=1;
+		            else
+		                txdata[i]=244-val;
+		        }
+			}
 	    }
-	    PMsgID=0x300;   
-	    PMsgID |= ((triangleN) | BoardConfig.EE_CAN_BoardAddress<<4);
-	    //First message	
-	    data[0]=0x40;       
-		for (i=1;i<8;i++)
+	    
+	    if (error==1)
+	    {
+		      for (j=0;j<4;j++)
+			  {
+			  	ConfigAD7147(CH0,j,PW_CONTROL,ConValue); //0 is the number of the device
+			  }	
+		}
+		else 
 		{
-		    data[i]    = (unsigned char)   (txdata[i-1] & 0xFF); //the last 6 bits	
-	 	}  	
-	
-	    CAN1_send(PMsgID,1,8,data); 
-	    //Second message	
-	    data[0]=0xC0;       
-	   	for (i=1;i<6;i++)
-		{
-		    data[i]    = (unsigned char)   (txdata[i+6] & 0xFF); //the last 6 bits	
-	 	}
-	
-	    CAN1_send(PMsgID,1,6,data);
-
+		    PMsgID=0x300;   
+		    PMsgID |= ((triangleN) | BoardConfig.EE_CAN_BoardAddress<<4);
+		    //First message	
+		    data[0]=0x40;       
+			for (i=1;i<8;i++)
+			{
+			    data[i]    = (unsigned char)   (txdata[i-1] & 0xFF); //the last 6 bits	
+		 	}  	
+		
+		    CAN1_send(PMsgID,1,8,data); 
+		    //Second message	
+		    data[0]=0xC0;       
+		   	for (i=1;i<6;i++)
+			{
+			    data[i]    = (unsigned char)   (txdata[i+6] & 0xFF); //the last 6 bits	
+		 	}
+		
+		    CAN1_send(PMsgID,1,6,data);
+		}
 }
 
 void FillCanMessages8bit_all(unsigned char Channel,unsigned char triangleN)
@@ -737,13 +788,13 @@ void FillCanMessages8bit_all(unsigned char Channel,unsigned char triangleN)
 			i=0;
 	        if (_pCapOffset_all[triangleN][i]>=AD7147Registers[triangleN][ADCRESULT_S0+i])
 	        {
-	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>2;
+	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>SHIFT_ALL;
 	            if (val>=10) txdata[i]=255;
 	            else
 	                txdata[i]=val+244;
 	        } else
 	        {
-	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>2;
+	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>SHIFT_ALL;
 	            if (val>=243)   txdata[i]=1;
 	            else
 	                txdata[i]=244-val;
@@ -766,13 +817,13 @@ void FillCanMessages8bit_three(unsigned char Channel,unsigned char triangleN)
 	    {
 	        if (_pCapOffset_all[triangleN][i]>=AD7147Registers[triangleN][ADCRESULT_S0+i])
 	        {
-	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>2;
+	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>SHIFT_THREE;
 	            if (val>=10) txdata[i]=255;
 	            else
 	                txdata[i]=val+244;
 	        } else
 	        {
-	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>2;
+	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>SHIFT_THREE;
 	            if (val>=243)   txdata[i]=1;
 	            else
 	                txdata[i]=244-val;
