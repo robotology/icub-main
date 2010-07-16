@@ -28,6 +28,38 @@ extern unsigned int ConValue[2];
 
 static canmsg_t CANRxBuffer[CAN_RX_SOFTWARE_BUFFER_SIZE];
 
+void SetBoardCanFilter()
+{
+	// Enable CAN IRQ
+	DisableIntCAN1;
+	
+	// Set request for configuration (inizialization) mode
+	CAN1SetOperationMode(CAN_IDLE_CON & CAN_MASTERCLOCK_1 & CAN_REQ_OPERMODE_CONFIG & CAN_CAPTURE_DIS);
+	while(C1CTRLbits.OPMODE <=3);
+	
+	CAN1SetFilter(0, CAN_FILTER_SID( (CAN_MSG_CLASS_POLLING|BoardConfig.EE_CAN_BoardAddress) ) // 0x20Y
+	  & CAN_RX_EID_DIS, CAN_FILTER_EID(0));
+
+	CAN1SetFilter(2, CAN_FILTER_SID( (CAN_MSG_CLASS_LOADER|BoardConfig.EE_CAN_BoardAddress) )  // 0x70Y
+    & CAN_RX_EID_DIS, CAN_FILTER_EID(0));
+
+	CAN1SetFilter(1, CAN_FILTER_SID( (CAN_MSG_CLASS_LOADER|0x0F) )  // 0x70F
+    & CAN_RX_EID_DIS, CAN_FILTER_EID(0));
+	
+	// set acceptance mask
+	// answer commands from any source //0x70F
+	CAN1SetMask(0, CAN_MASK_SID(0x70F) & CAN_MATCH_FILTER_TYPE, CAN_MASK_EID(0));
+    CAN1SetMask(1, CAN_MASK_SID(0x70F) & CAN_MATCH_FILTER_TYPE, CAN_MASK_EID(0));
+	
+	// abort any spurious Tx
+	CAN1AbortAll();
+	
+	// Set Operation Mode  NORMAL
+	CAN1SetOperationMode(CAN_IDLE_CON & CAN_CAPTURE_DIS &	CAN_MASTERCLOCK_1 & CAN_REQ_OPERMODE_NOR); 
+	
+	// Enable CAN IRQ
+	EnableIntCAN1;
+}
 void CAN_Init()
 {
     char FilterNo = 0, tx_rx_no = 0;
@@ -69,7 +101,7 @@ void CAN_Init()
                                 CAN_SAMPLE1TIME);         
 
 /* Configurazione dei filtri e delle maschere in questo caso RXF0 RXM0 */
-
+ /*
     CAN1SetFilter(              FilterNo,                       // Numero del filtro
                                 CAN_FILTER_SID(0) &             // Valore memorizzato nel filtro sid (standard data frame)
                                 CAN_RX_EID_DIS,             // Abilita/disabilita il filtro
@@ -79,7 +111,8 @@ void CAN_Init()
                                 CAN_MASK_SID(0) &                // Valore memorizzato nella maschera sid (standard data frame)
                                 CAN_MATCH_FILTER_TYPE,  // Controlla il formato del pacchetto dell'informazione
                                 CAN_MASK_EID(0));               // Valore memorizzato nella maschera eid (extended data frame)
-
+*/
+	SetBoardCanFilter();
 /* Impostazione modulo trasmissione e ricezione */    
 
     CAN1SetTXMode(          tx_rx_no,                       // Setta il buffer di trasmissione
@@ -211,13 +244,13 @@ void CAN1_interruptRx (void)
 		CANRxBuffer[canRxBufferIndex-1].CAN_data[i]=*((unsigned char *)&C1RX1B1 + i);
 		CANRxBuffer[canRxBufferIndex-1].CAN_messID=C1RX1SIDbits.SID;//((C1RX1SID & 0xffc)>>2);
 		CANRxBuffer[canRxBufferIndex-1].CAN_length=C1RX1DLCbits.DLC;
-    
         }
     }
     // CAN1_send(7, 1, 4, CANRxBuffer[canRxBufferIndex-1].CAN_data);   
     // put the message in the buffer  
     // clear Rx buffer0 full flag
     C1RX0CONbits.RXFUL = 0;
+    C1RX1CONbits.RXFUL = 0;
     //ERROR;
 }
 
@@ -232,7 +265,7 @@ int CAN1_handleRx (unsigned int board_id)
 
         //  bootloader messages, 
         // ID 0x700 (100 0000 0000b) message class = bootloader message
-        if (((CANRxBuffer[canRxBufferIndex-1].CAN_messID & 0x700) == 0x700) ||((CANRxBuffer[canRxBufferIndex-1].CAN_messID & 0x200) == 0x200))
+       if ((((CANRxBuffer[canRxBufferIndex-1].CAN_messID & 0x700) == 0x700) && (((CANRxBuffer[canRxBufferIndex-1].CAN_messID & 0x00F) == _board_ID)) || ((CANRxBuffer[canRxBufferIndex-1].CAN_messID & 0x00F) == 0x00F)) )
         {
 	        DisableIntT1;  
             IdTx = (CANRxBuffer[canRxBufferIndex-1].CAN_messID & 0x0700);         
@@ -250,7 +283,8 @@ int CAN1_handleRx (unsigned int board_id)
                 CANRxBuffer[canRxBufferIndex-1].CAN_data[3] = _version & 0x00ff;       // firmware revision
                 CANRxBuffer[canRxBufferIndex-1].CAN_data[4] = _build_number & 0x00ff;    // build number
                 CAN1_send(IdTx, 1, 5, CANRxBuffer[canRxBufferIndex-1].CAN_data);                 
-
+		
+			break;
                 // ping command	
             case 4:             
 
@@ -274,12 +308,7 @@ int CAN1_handleRx (unsigned int board_id)
                     			asm ("reset");
                     //                    
                     break;
-			case CAN_SET_BOARD_ID:  //SETTING THE BOARD ID
-					
-					BoardConfig.EE_CAN_BoardAddress= CANRxBuffer[canRxBufferIndex-1].CAN_data[1];
-					_board_ID=BoardConfig.EE_CAN_BoardAddress;
-					SaveEepromBoardConfig();
-			break;	
+		
                 // set additional info					
             case CAN_SET_ADDITIONAL_INFO:
                 if (_board_ID == (CANRxBuffer[canRxBufferIndex-1].CAN_messID & 0x000F))
@@ -325,6 +354,13 @@ int CAN1_handleRx (unsigned int board_id)
 			// Board Setup or Calibration Commands    
     		switch (CANRxBuffer[canRxBufferIndex-1].CAN_data[0])
 			{
+			 	case CAN_SET_BOARD_ID:  //SETTING THE BOARD ID
+					
+					BoardConfig.EE_CAN_BoardAddress= CANRxBuffer[canRxBufferIndex-1].CAN_data[1];
+					_board_ID=BoardConfig.EE_CAN_BoardAddress;
+					SaveEepromBoardConfig();
+					SetBoardCanFilter();
+			break;	
 				case CAN_TACT_SETUP:
 				{
 					
@@ -429,6 +465,7 @@ int CAN1_handleRx (unsigned int board_id)
  	   	
 	
 	    }
+	    
         DisableIntCAN1;
         canRxBufferIndex--;
         EnableIntCAN1;

@@ -63,7 +63,7 @@ Bit 3:1 Pressure Measurements
 
 B[1-7] Pressure Measurements
 */
-#define CAN_MSG_CLASS_LOADER   7
+#define CAN_MSG_CLASS_LOADER   0x700
 
 // For messages of class 011 the meaning of data/ID is defined as follows:
 //  -------------------------- ------------------------

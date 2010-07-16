@@ -15,7 +15,7 @@
 #define CURRENT_BOARD_TYPE       5   //SKIN
 
 // CAN RX message buffer
-#define CAN_RX_SOFTWARE_BUFFER_SIZE 5
+#define CAN_RX_SOFTWARE_BUFFER_SIZE 10
 
 
 // unsigned char can1TxEn;
@@ -147,4 +147,23 @@ void can_send_additional_info();
 
 #define CMD_BROADCAST 0xFF
 #define CMD_BOARD     0x0
-#define CMD_
+
+#define CAN_MSG_CLASS_PERIODIC 0x0300
+// For messages of class 011 the meaning of data/ID is defined as follows:
+//  -------------------------- ----------------
+// |           11b            |        8B      |
+//  -------  -------  -------  -------  ------- 
+// | 3b     | 4b     | 4b     |      B[0-7]    |
+// |class	| Source | Type   |     Payload    |
+//  -------  -------  -------  -------  ------- 
+
+#define CAN_MSG_CLASS_POLLING 0x0200
+// For messages of class 010 the meaning of data/ID is defined as follows:
+//  -------------------------- -------------------------
+// |           11b            |           8B            |
+//  -------  -------  -------  -------  -------  ------- 
+// | 3b     | 4b     | 4b     | B[0]   |     B[1-7]     |
+// |class   | Source | Dest   | C type |    Payload     |
+//  -------  -------  -------  -------  -------  ------- 
+
+#define CAN_MSG_CLASS_LOADER   0x0700

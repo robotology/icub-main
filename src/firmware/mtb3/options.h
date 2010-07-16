@@ -13,6 +13,9 @@
 #define CONFIG_THREE 1
 #define CONFIG_ALL 2
 
+#define SHIFT        2 
+#define SHIFT_THREE  2
+#define SHIFT_ALL    3
 #define TIMER_SINGLE_256dec   0x3700          //timer value default 3A00
 #define TIMER_SINGLE_128dec   0x2D00          //timer value default
 #define TIMER_SINGLE_64dec   0x1A00          //timer value default
@@ -21,7 +24,7 @@
 
 
 #define _version  0x0200
-#define _build_number  7      //changed the I2C speed
+#define _build_number  9      //changed the I2C speed
 
 
 #endif
