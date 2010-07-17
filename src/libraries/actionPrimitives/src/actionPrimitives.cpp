@@ -8,7 +8,7 @@
 #include <gsl/gsl_math.h>
 
 #include <iCub/ctrl/ctrlMath.h>
-#include <iCub/actions/affActionPrimitives.h>
+#include <iCub/action/actionPrimitives.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -122,16 +122,16 @@ public:
 
 
 /************************************************************************/
-affActionPrimitives::affActionPrimitives() :
-                     RateThread(ACTIONPRIM_DEFAULT_PER)
+ActionPrimitives::ActionPrimitives() :
+                  RateThread(ACTIONPRIM_DEFAULT_PER)
 {
     init();
 }
 
 
 /************************************************************************/
-affActionPrimitives::affActionPrimitives(Property &opt) :
-                     RateThread(ACTIONPRIM_DEFAULT_PER)
+ActionPrimitives::ActionPrimitives(Property &opt) :
+                  RateThread(ACTIONPRIM_DEFAULT_PER)
 {
     init();
     open(opt);
@@ -139,7 +139,7 @@ affActionPrimitives::affActionPrimitives(Property &opt) :
 
 
 /************************************************************************/
-void affActionPrimitives::init()
+void ActionPrimitives::init()
 {
     polyHand=polyCart=NULL;
 
@@ -164,14 +164,14 @@ void affActionPrimitives::init()
 
 
 /************************************************************************/
-bool affActionPrimitives::isValid() const
+bool ActionPrimitives::isValid() const
 {
     return configured;
 }
 
 
 /************************************************************************/
-string affActionPrimitives::toCompactString(const Vector &v)
+string ActionPrimitives::toCompactString(const Vector &v)
 {
     char buf[255];
     string ret;
@@ -191,7 +191,7 @@ string affActionPrimitives::toCompactString(const Vector &v)
 
 
 /************************************************************************/
-int affActionPrimitives::printMessage(const char *format, ...)
+int ActionPrimitives::printMessage(const char *format, ...)
 {
     if (verbose)
     {
@@ -210,8 +210,8 @@ int affActionPrimitives::printMessage(const char *format, ...)
 
 
 /************************************************************************/
-bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
-                                         const int j)
+bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
+                                      const int j)
 {
     if (opt.check(key.c_str()))
     {
@@ -249,7 +249,7 @@ bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
 
 
 /************************************************************************/
-bool affActionPrimitives::configHandSeq(Property &opt)
+bool ActionPrimitives::configHandSeq(Property &opt)
 {
     if (opt.check("hand_sequences_file"))
     {
@@ -314,7 +314,7 @@ bool affActionPrimitives::configHandSeq(Property &opt)
 
 
 /************************************************************************/
-bool affActionPrimitives::open(Property &opt)
+bool ActionPrimitives::open(Property &opt)
 {
     if (configured)
     {
@@ -429,7 +429,7 @@ bool affActionPrimitives::open(Property &opt)
 
 
 /************************************************************************/
-void affActionPrimitives::close()
+void ActionPrimitives::close()
 {
     if (closed)
         return;
@@ -483,7 +483,7 @@ void affActionPrimitives::close()
 
 
 /************************************************************************/
-bool affActionPrimitives::isHandSeqEnded()
+bool ActionPrimitives::isHandSeqEnded()
 {
     // latch the current moving fingers set
     set<int> tmpSet=fingersMovingJntsSet;
@@ -552,14 +552,14 @@ bool affActionPrimitives::isHandSeqEnded()
 
 
 /************************************************************************/
-void affActionPrimitives::postReachCallback()
+void ActionPrimitives::postReachCallback()
 {
     latchArmMoveDone=armMoveDone=false;
 }
 
 
 /************************************************************************/
-bool affActionPrimitives::clearActionsQueue()
+bool ActionPrimitives::clearActionsQueue()
 {
     if (configured)
     {
@@ -575,10 +575,10 @@ bool affActionPrimitives::clearActionsQueue()
 
 
 /************************************************************************/
-bool affActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Vector &o,
-                                      const double execTime, const bool oEnabled, const bool execHand,
-                                      const HandWayPoint &handWP, const bool handSeqTerminator,
-                                      affActionPrimitivesCallback *clb)
+bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Vector &o,
+                                   const double execTime, const bool oEnabled, const bool execHand,
+                                   const HandWayPoint &handWP, const bool handSeqTerminator,
+                                   ActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -607,9 +607,9 @@ bool affActionPrimitives::_pushAction(const bool execArm, const Vector &x, const
 
 
 /************************************************************************/
-bool affActionPrimitives::_pushAction(const Vector &x, const Vector &o,
-                                      const string &handSeqKey, const double execTime,
-                                      affActionPrimitivesCallback *clb, const bool oEnabled)
+bool ActionPrimitives::_pushAction(const Vector &x, const Vector &o,
+                                   const string &handSeqKey, const double execTime,
+                                   ActionPrimitivesCallback *clb, const bool oEnabled)
 {
     if (configured)
     {
@@ -655,17 +655,17 @@ bool affActionPrimitives::_pushAction(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
-                                     const string &handSeqKey, const double execTime,
-                                     affActionPrimitivesCallback *clb)
+bool ActionPrimitives::pushAction(const Vector &x, const Vector &o,
+                                  const string &handSeqKey, const double execTime,
+                                  ActionPrimitivesCallback *clb)
 {
     return _pushAction(x,o,handSeqKey,execTime,clb,true);
 }
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const string &handSeqKey,
-                                     const double execTime, affActionPrimitivesCallback *clb)
+bool ActionPrimitives::pushAction(const Vector &x, const string &handSeqKey,
+                                  const double execTime, ActionPrimitivesCallback *clb)
 {
     Vector vectDummy(1);
 
@@ -674,9 +674,9 @@ bool affActionPrimitives::pushAction(const Vector &x, const string &handSeqKey,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
-                                     const double execTime,
-                                     affActionPrimitivesCallback *clb)
+bool ActionPrimitives::pushAction(const Vector &x, const Vector &o,
+                                  const double execTime,
+                                  ActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -692,8 +692,8 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const double execTime,
-                                     affActionPrimitivesCallback *clb)
+bool ActionPrimitives::pushAction(const Vector &x, const double execTime,
+                                  ActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -710,8 +710,8 @@ bool affActionPrimitives::pushAction(const Vector &x, const double execTime,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const string &handSeqKey,
-                                     affActionPrimitivesCallback *clb)
+bool ActionPrimitives::pushAction(const string &handSeqKey,
+                                  ActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -746,7 +746,7 @@ bool affActionPrimitives::pushAction(const string &handSeqKey,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushWaitState(const double tmo, affActionPrimitivesCallback *clb)
+bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -771,8 +771,8 @@ bool affActionPrimitives::pushWaitState(const double tmo, affActionPrimitivesCal
 
 
 /************************************************************************/
-bool affActionPrimitives::reachPose(const Vector &x, const Vector &o,
-                                    const double execTime)
+bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
+                                 const double execTime)
 {
     if (configured)
     {
@@ -800,7 +800,7 @@ bool affActionPrimitives::reachPose(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitives::reachPosition(const Vector &x, const double execTime)
+bool ActionPrimitives::reachPosition(const Vector &x, const double execTime)
 {
     if (configured)
     {
@@ -828,7 +828,7 @@ bool affActionPrimitives::reachPosition(const Vector &x, const double execTime)
 
 
 /************************************************************************/
-bool affActionPrimitives::execQueuedAction()
+bool ActionPrimitives::execQueuedAction()
 {
     bool exec=false;
     Action action;
@@ -861,7 +861,7 @@ bool affActionPrimitives::execQueuedAction()
 
 
 /************************************************************************/
-bool affActionPrimitives::execPendingHandSequences()
+bool ActionPrimitives::execPendingHandSequences()
 {
     bool exec=false;
     Action action;
@@ -887,7 +887,7 @@ bool affActionPrimitives::execPendingHandSequences()
 
 
 /************************************************************************/
-void affActionPrimitives::run()
+void ActionPrimitives::run()
 {
     const double t=Time::now();
 
@@ -962,14 +962,14 @@ void affActionPrimitives::run()
 
 
 /************************************************************************/
-affActionPrimitives::~affActionPrimitives()
+ActionPrimitives::~ActionPrimitives()
 {
     close();
 }
 
 
 /************************************************************************/
-bool affActionPrimitives::stopJntTraj(const int jnt)
+bool ActionPrimitives::stopJntTraj(const int jnt)
 {
     double fb;
 
@@ -981,7 +981,7 @@ bool affActionPrimitives::stopJntTraj(const int jnt)
 
 
 /************************************************************************/
-bool affActionPrimitives::handCheckMotionDone(const int jnt)
+bool ActionPrimitives::handCheckMotionDone(const int jnt)
 {
     double fb;
 
@@ -998,7 +998,7 @@ bool affActionPrimitives::handCheckMotionDone(const int jnt)
 
 
 /************************************************************************/
-void affActionPrimitives::enableTorsoDof()
+void ActionPrimitives::enableTorsoDof()
 {
     // enable torso joints, if any
     if (!torsoActive && norm(enableTorsoSw))
@@ -1013,7 +1013,7 @@ void affActionPrimitives::enableTorsoDof()
 
 
 /************************************************************************/
-void affActionPrimitives::disableTorsoDof()
+void ActionPrimitives::disableTorsoDof()
 {
     // disable torso joints, if any
     if (torsoActive && norm(enableTorsoSw))
@@ -1028,7 +1028,7 @@ void affActionPrimitives::disableTorsoDof()
 
 
 /************************************************************************/
-bool affActionPrimitives::wait(const Action &action)
+bool ActionPrimitives::wait(const Action &action)
 {
     if (configured)
     {        
@@ -1044,7 +1044,7 @@ bool affActionPrimitives::wait(const Action &action)
 
 
 /************************************************************************/
-bool affActionPrimitives::cmdArm(const Action &action)
+bool ActionPrimitives::cmdArm(const Action &action)
 {
     if (configured)
     {
@@ -1093,7 +1093,7 @@ bool affActionPrimitives::cmdArm(const Action &action)
 
 
 /************************************************************************/
-bool affActionPrimitives::cmdHand(const Action &action)
+bool ActionPrimitives::cmdHand(const Action &action)
 {
     if (configured)
     {
@@ -1140,9 +1140,9 @@ bool affActionPrimitives::cmdHand(const Action &action)
 
 
 /************************************************************************/
-bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss,
-                                       const Vector &vels, const Vector &tols, const Vector &thres,
-                                       const double tmo)
+bool ActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss,
+                                    const Vector &vels, const Vector &tols, const Vector &thres,
+                                    const double tmo)
 {
     if ((poss.length()==9) && (vels.length()==9) && (tols.length()==9) && (thres.length()==5))
     {
@@ -1165,7 +1165,7 @@ bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &p
 
 
 /************************************************************************/
-bool affActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &sequence)
+bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &sequence)
 {
     Bottle &bSeq=const_cast<Bottle&>(sequence);
 
@@ -1258,7 +1258,7 @@ bool affActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle
 
 
 /************************************************************************/
-bool affActionPrimitives::isValidHandSeq(const string &handSeqKey)
+bool ActionPrimitives::isValidHandSeq(const string &handSeqKey)
 {
     map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
 
@@ -1270,7 +1270,7 @@ bool affActionPrimitives::isValidHandSeq(const string &handSeqKey)
 
 
 /************************************************************************/
-bool affActionPrimitives::removeHandSeq(const string &handSeqKey)
+bool ActionPrimitives::removeHandSeq(const string &handSeqKey)
 {
     map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
 
@@ -1285,7 +1285,7 @@ bool affActionPrimitives::removeHandSeq(const string &handSeqKey)
 
 
 /************************************************************************/
-deque<string> affActionPrimitives::getHandSeqList()
+deque<string> ActionPrimitives::getHandSeqList()
 {
     map<string,deque<HandWayPoint> >::iterator itr;
     deque<string> q;
@@ -1298,7 +1298,7 @@ deque<string> affActionPrimitives::getHandSeqList()
 
 
 /************************************************************************/
-bool affActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequence)
+bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequence)
 {
     if (isValidHandSeq(handSeqKey))
     {
@@ -1361,7 +1361,7 @@ bool affActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequ
 
 
 /************************************************************************/
-bool affActionPrimitives::areFingersMoving(bool &f) const
+bool ActionPrimitives::areFingersMoving(bool &f) const
 {
     if (configured)
     {
@@ -1374,7 +1374,7 @@ bool affActionPrimitives::areFingersMoving(bool &f) const
 
 
 /************************************************************************/
-bool affActionPrimitives::areFingersInPosition(bool &f) const
+bool ActionPrimitives::areFingersInPosition(bool &f) const
 {
     if (configured)
     {
@@ -1387,7 +1387,7 @@ bool affActionPrimitives::areFingersInPosition(bool &f) const
 
 
 /************************************************************************/
-bool affActionPrimitives::getCartesianIF(ICartesianControl *&ctrl) const
+bool ActionPrimitives::getCartesianIF(ICartesianControl *&ctrl) const
 {
     if (configured)
     {
@@ -1400,7 +1400,7 @@ bool affActionPrimitives::getCartesianIF(ICartesianControl *&ctrl) const
 
 
 /************************************************************************/
-bool affActionPrimitives::getPose(Vector &x, Vector &o) const
+bool ActionPrimitives::getPose(Vector &x, Vector &o) const
 {
     if (configured)
     {
@@ -1413,7 +1413,7 @@ bool affActionPrimitives::getPose(Vector &x, Vector &o) const
 
 
 /************************************************************************/
-bool affActionPrimitives::stopControl()
+bool ActionPrimitives::stopControl()
 {
     if (configured)
     {
@@ -1439,7 +1439,7 @@ bool affActionPrimitives::stopControl()
 
 
 /************************************************************************/
-bool affActionPrimitives::setTrackingMode(const bool f)
+bool ActionPrimitives::setTrackingMode(const bool f)
 {
     if (configured)
     {
@@ -1457,7 +1457,7 @@ bool affActionPrimitives::setTrackingMode(const bool f)
 
 
 /************************************************************************/
-bool affActionPrimitives::enableArmWaving(const Vector &restPos)
+bool ActionPrimitives::enableArmWaving(const Vector &restPos)
 {
     if (configured)
     {
@@ -1476,7 +1476,7 @@ bool affActionPrimitives::enableArmWaving(const Vector &restPos)
 
 
 /************************************************************************/
-bool affActionPrimitives::disableArmWaving()
+bool ActionPrimitives::disableArmWaving()
 {
     if (configured)
     {
@@ -1491,7 +1491,7 @@ bool affActionPrimitives::disableArmWaving()
 
 
 /************************************************************************/
-bool affActionPrimitives::enableReachingTimeout(const double tmo)
+bool ActionPrimitives::enableReachingTimeout(const double tmo)
 {
     if (configured)
     {
@@ -1506,7 +1506,7 @@ bool affActionPrimitives::enableReachingTimeout(const double tmo)
 
 
 /************************************************************************/
-bool affActionPrimitives::disableReachingTimeout()
+bool ActionPrimitives::disableReachingTimeout()
 {
     if (configured)
     {
@@ -1519,14 +1519,14 @@ bool affActionPrimitives::disableReachingTimeout()
 
 
 /************************************************************************/
-bool affActionPrimitives::getTrackingMode() const
+bool ActionPrimitives::getTrackingMode() const
 {
     return tracking_mode;
 }
 
 
 /************************************************************************/
-bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
+bool ActionPrimitives::checkActionsDone(bool &f, const bool sync)
 {
     if (configured)
     {
@@ -1546,7 +1546,7 @@ bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
 
 
 /************************************************************************/
-bool affActionPrimitives::checkActionOnGoing(bool &f, const bool sync)
+bool ActionPrimitives::checkActionOnGoing(bool &f, const bool sync)
 {
     if (configured)
     {
@@ -1566,7 +1566,7 @@ bool affActionPrimitives::checkActionOnGoing(bool &f, const bool sync)
 
 
 /************************************************************************/
-bool affActionPrimitives::syncCheckInterrupt(const bool disable)
+bool ActionPrimitives::syncCheckInterrupt(const bool disable)
 {
     if (configured)
     {
@@ -1583,7 +1583,7 @@ bool affActionPrimitives::syncCheckInterrupt(const bool disable)
 
 
 /************************************************************************/
-bool affActionPrimitives::syncCheckReinstate()
+bool ActionPrimitives::syncCheckReinstate()
 {
     if (configured)
     {
@@ -1596,7 +1596,7 @@ bool affActionPrimitives::syncCheckReinstate()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Vector &d)
+bool ActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)
     {
@@ -1614,7 +1614,7 @@ bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Ve
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Vector &d)
+bool ActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)
     {
@@ -1631,9 +1631,9 @@ bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Ve
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
-                                    const Vector &x2, const Vector &o2,
-                                    const double execTime)
+bool ActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
+                                 const Vector &x2, const Vector &o2,
+                                 const double execTime)
 {
     if (configured)
     {
@@ -1651,7 +1651,7 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 
 
 /************************************************************************/
-affActionPrimitivesLayer1::~affActionPrimitivesLayer1()
+ActionPrimitivesLayer1::~ActionPrimitivesLayer1()
 {
     close();
 }
@@ -1685,16 +1685,16 @@ void touchCallback::exec()
 
 
 /************************************************************************/
-affActionPrimitivesLayer2::affActionPrimitivesLayer2() :
-                           affActionPrimitivesLayer1()
+ActionPrimitivesLayer2::ActionPrimitivesLayer2() :
+                        ActionPrimitivesLayer1()
 {
     init();
 }
 
 
 /************************************************************************/
-affActionPrimitivesLayer2::affActionPrimitivesLayer2(Property &opt) :
-                           affActionPrimitivesLayer1(opt)
+ActionPrimitivesLayer2::ActionPrimitivesLayer2(Property &opt) :
+                        ActionPrimitivesLayer1(opt)
 {
     init();
     skipFatherPart=true;
@@ -1703,7 +1703,7 @@ affActionPrimitivesLayer2::affActionPrimitivesLayer2(Property &opt) :
 
 
 /************************************************************************/
-void affActionPrimitivesLayer2::init()
+void ActionPrimitivesLayer2::init()
 {    
     skipFatherPart=false;
     configuredLayer2=false;
@@ -1724,18 +1724,18 @@ void affActionPrimitivesLayer2::init()
 
 
 /************************************************************************/
-void affActionPrimitivesLayer2::postReachCallback()
+void ActionPrimitivesLayer2::postReachCallback()
 {
     // init the contact variable
     contactDetected=false;
 
     // call the main postReachCallback()
-    affActionPrimitivesLayer1::postReachCallback();
+    ActionPrimitivesLayer1::postReachCallback();
 }
 
 
 /************************************************************************/
-void affActionPrimitivesLayer2::run()
+void ActionPrimitivesLayer2::run()
 {
     // skip until this layer is configured
     if (!configuredLayer2)
@@ -1797,15 +1797,15 @@ void affActionPrimitivesLayer2::run()
 
     // call the main run()
     // the order does matter
-    affActionPrimitivesLayer1::run();
+    ActionPrimitivesLayer1::run();
 }
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::open(Property &opt)
+bool ActionPrimitivesLayer2::open(Property &opt)
 {
     if (!skipFatherPart)
-        affActionPrimitivesLayer1::open(opt);
+        ActionPrimitivesLayer1::open(opt);
 
     if (configuredLayer2)
     {
@@ -1899,7 +1899,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
 
 
 /************************************************************************/
-void affActionPrimitivesLayer2::alignJointsBounds()
+void ActionPrimitivesLayer2::alignJointsBounds()
 {
     IControlLimits *limTorso;
     IControlLimits *limHand;
@@ -1916,21 +1916,21 @@ void affActionPrimitivesLayer2::alignJointsBounds()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::isValid() const
+bool ActionPrimitivesLayer2::isValid() const
 {
-    return (affActionPrimitivesLayer1::isValid() && configuredLayer2);
+    return (ActionPrimitivesLayer1::isValid() && configuredLayer2);
 }
 
 
 /************************************************************************/
-void affActionPrimitivesLayer2::close()
+void ActionPrimitivesLayer2::close()
 {
     if (closed)
         return;
 
     // call the main close()
     // the order does matter
-    affActionPrimitivesLayer1::close();
+    ActionPrimitivesLayer1::close();
 
     if (ftPortIn!=NULL)
     {
@@ -1969,8 +1969,8 @@ void affActionPrimitivesLayer2::close()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
-                                      const Vector &d1, const Vector &d2)
+bool ActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
+                                   const Vector &d1, const Vector &d2)
 {
     if (configured)
     {
@@ -1997,15 +1997,15 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
-                                      const Vector &d)
+bool ActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
+                                   const Vector &d)
 {
-    return affActionPrimitivesLayer1::grasp(x,o,d);
+    return ActionPrimitivesLayer1::grasp(x,o,d);
 }
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vector &d)
+bool ActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)
     {
@@ -2027,7 +2027,7 @@ bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Ve
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::latchWrenchOffset()
+bool ActionPrimitivesLayer2::latchWrenchOffset()
 {
     if (configured)
     {
@@ -2040,7 +2040,7 @@ bool affActionPrimitivesLayer2::latchWrenchOffset()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::getExtWrench(Vector &wrench) const
+bool ActionPrimitivesLayer2::getExtWrench(Vector &wrench) const
 {
     if (configured)
     {
@@ -2053,7 +2053,7 @@ bool affActionPrimitivesLayer2::getExtWrench(Vector &wrench) const
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::getExtForceThres(double &thres) const
+bool ActionPrimitivesLayer2::getExtForceThres(double &thres) const
 {
     if (configured)
     {
@@ -2066,7 +2066,7 @@ bool affActionPrimitivesLayer2::getExtForceThres(double &thres) const
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::setExtForceThres(const double thres)
+bool ActionPrimitivesLayer2::setExtForceThres(const double thres)
 {
     if (configured)
     {
@@ -2079,7 +2079,7 @@ bool affActionPrimitivesLayer2::setExtForceThres(const double thres)
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::enableContactDetection()
+bool ActionPrimitivesLayer2::enableContactDetection()
 {
     if (configured)
     {
@@ -2092,7 +2092,7 @@ bool affActionPrimitivesLayer2::enableContactDetection()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::disableContactDetection()
+bool ActionPrimitivesLayer2::disableContactDetection()
 {
     if (configured)
     {
@@ -2105,7 +2105,7 @@ bool affActionPrimitivesLayer2::disableContactDetection()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::isContactDetectionEnabled(bool &f) const
+bool ActionPrimitivesLayer2::isContactDetectionEnabled(bool &f) const
 {
     if (configured)
     {
@@ -2118,7 +2118,7 @@ bool affActionPrimitivesLayer2::isContactDetectionEnabled(bool &f) const
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer2::checkContact(bool &f) const
+bool ActionPrimitivesLayer2::checkContact(bool &f) const
 {
     if (configured)
     {
@@ -2131,7 +2131,7 @@ bool affActionPrimitivesLayer2::checkContact(bool &f) const
 
 
 /************************************************************************/
-affActionPrimitivesLayer2::~affActionPrimitivesLayer2()
+ActionPrimitivesLayer2::~ActionPrimitivesLayer2()
 {
     close();
 }

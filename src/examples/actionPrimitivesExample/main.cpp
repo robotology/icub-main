@@ -1,9 +1,9 @@
 /** 
-\defgroup affActionPrimitivesExample affActionPrimitivesExample
+\defgroup ationPrimitivesExample ActionPrimitivesExample
  
 @ingroup icub_module  
  
-Example of grasping module based upon \ref affActionPrimitives 
+Example of grasping module based upon \ref ActionPrimitives 
 library. 
 
 Copyright (C) 2009 RobotCub Consortium
@@ -13,7 +13,7 @@ Author: Ugo Pattacini
 CopyPolicy: Released under the terms of the GNU GPL v2.0. 
 
 \section intro_sec Description 
-An example module that makes use of \ref affActionPrimitives 
+An example module that makes use of \ref ActionPrimitives 
 library in order to execute a sequence of simple actions: 
 reaches for an object, tries to grasp it, then lifts it and 
 finally releases it. 
@@ -44,11 +44,11 @@ reach(x2+lift_displacement,o)).
   
 \section lib_sec Libraries 
 - YARP libraries. 
-- \ref affActionPrimitives library.  
+- \ref ActionPrimitives library.  
 
 \section parameters_sec Parameters
 --name \e name
-- specify the module name, which is \e affActionPrimitivesMod by
+- specify the module name, which is \e ActionPrimitivesMod by
   default.
  
 --part \e type 
@@ -60,8 +60,8 @@ Assumes that \ref icub_iCubInterface (with ICartesianControl
 interface implemented) is running. 
  
 \section portsc_sec Ports Created 
-Aside from the internal ports created by \ref 
-affActionPrimitives library, we also have: 
+Aside from the internal ports created by \ref ActionPrimitives 
+library, we also have: 
  
 - \e /<modName>/in receives a bottle containing the 3-d position 
   of the object to grasp.
@@ -80,7 +80,7 @@ None.
 --hand_sequences_file \e file 
 - specify the path to the file containing the hand motion 
   sequences relative to the current context ( \ref
-  affActionPrimitives ).
+  ActionPrimitives ).
  
 --from \e file 
 - specify the configuration file (use \e --context option to 
@@ -91,7 +91,7 @@ should look like as follows:
  
 \code 
 [general]
-// options used to open a affActionPrimitives object 
+// options used to open a ActionPrimitives object 
 robot                           icub
 thread_period                   50
 default_exec_time               3.0
@@ -135,7 +135,7 @@ Windows, Linux
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 #include <yarp/dev/Drivers.h>
-#include <iCub/actions/affActionPrimitives.h>
+#include <iCub/action/actionPrimitives.h>
 
 #include <iostream>
 #include <iomanip>
@@ -145,7 +145,7 @@ Windows, Linux
 #define USE_LEFT    0
 #define USE_RIGHT   1
 
-#define AFFACTIONPRIMITIVESLAYER    affActionPrimitivesLayer1
+#define AFFACTIONPRIMITIVESLAYER    ActionPrimitivesLayer1
 
 YARP_DECLARE_DEVICES(icubmod)
 
@@ -560,10 +560,10 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("affActionPrimitivesExample/conf");
+    rf.setDefaultContext("actionPrimitivesExample/conf");
     rf.setDefaultConfigFile("config.ini");
     rf.setDefault("hand_sequences_file","hand_sequences.ini");
-    rf.setDefault("name","affActionPrimitivesMod");
+    rf.setDefault("name","actionPrimitivesMod");
     rf.configure("ICUB_ROOT",argc,argv);
 
     exampleModule mod;

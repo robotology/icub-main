@@ -1,5 +1,5 @@
 /**
- * \defgroup affActionPrimitives affActionPrimitives
+ * \defgroup ActionPrimitives ActionPrimitives
  *  
  * @ingroup icub_libraries 
  *  
@@ -17,7 +17,7 @@
  * …) in order to eventually execute more sophisticated tasks 
  * without reference to the motion control details. 
  *  
- * \image html affActionPrimitives.jpg 
+ * \image html ActionPrimitives.jpg 
  *  
  * Central to the library's implementation is the concept of 
  * @b action. An action is a "request" for an execution of three
@@ -83,15 +83,15 @@ namespace action
 {
 
 /**
-* \ingroup affActionPrimitives
+* \ingroup ActionPrimitives
 *
 * Class for defining routines to be called when action is 
 * completed. 
 */
-class affActionPrimitivesCallback
+class ActionPrimitivesCallback
 {
 public:
-    affActionPrimitivesCallback() { }
+    ActionPrimitivesCallback() { }
 
     /**
     * Defines the callback body to be called at the action end.
@@ -101,7 +101,7 @@ public:
 
 
 /**
-* \ingroup affActionPrimitives
+* \ingroup ActionPrimitives
 *
 * The base class defining actions. 
 *  
@@ -109,7 +109,7 @@ public:
 * hand (in joint-space) primitive actions and to combine them in 
 * the actions queue. 
 */
-class affActionPrimitives : public yarp::os::RateThread
+class ActionPrimitives : public yarp::os::RateThread
 {
 protected:
     std::string robot;
@@ -193,10 +193,10 @@ protected:
         HandWayPoint handWP;
         bool handSeqTerminator;
         // action callback
-        affActionPrimitivesCallback *clb;
+        ActionPrimitivesCallback *clb;
     };
 
-    affActionPrimitivesCallback *actionClb;
+    ActionPrimitivesCallback *actionClb;
 
     std::deque<Action> actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
@@ -209,10 +209,10 @@ protected:
     virtual bool _pushAction(const bool execArm, const yarp::sig::Vector &x,
                              const yarp::sig::Vector &o, const double execTime,
                              const bool oEnabled, const bool execHand, const HandWayPoint &handWP,
-                             const bool handSeqTerminator, affActionPrimitivesCallback *clb);
+                             const bool handSeqTerminator, ActionPrimitivesCallback *clb);
    virtual bool  _pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                              const std::string &handSeqKey, const double execTime,
-                             affActionPrimitivesCallback *clb, const bool oEnabled);
+                             ActionPrimitivesCallback *clb, const bool oEnabled);
     virtual bool stopJntTraj(const int jnt);
     virtual bool handCheckMotionDone(const int jnt);
     virtual void enableTorsoDof();
@@ -232,21 +232,21 @@ public:
     /**
     * Default Constructor. 
     */
-    affActionPrimitives();
+    ActionPrimitives();
 
     /**
     * Constructor. 
     * @param opt the Property used to configure the object after its
     *            creation.
     */
-    affActionPrimitives(yarp::os::Property &opt);
+    ActionPrimitives(yarp::os::Property &opt);
 
     /**
     * Destructor. 
     *  
     * @note it calls the close() method. 
     */
-    virtual ~affActionPrimitives();
+    virtual ~ActionPrimitives();
 
     /**
     * Configure the object.
@@ -372,7 +372,7 @@ public:
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
                             const std::string &handSeqKey,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
-                            affActionPrimitivesCallback *clb=NULL);
+                            ActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert a combination of arm and hand primitive actions in the 
@@ -395,7 +395,7 @@ public:
     virtual bool pushAction(const yarp::sig::Vector &x, 
                             const std::string &handSeqKey,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
-                            affActionPrimitivesCallback *clb=NULL);
+                            ActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert the arm-primitive action reach for target in the 
@@ -411,7 +411,7 @@ public:
     */
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
-                            affActionPrimitivesCallback *clb=NULL);
+                            ActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert the arm-primitive action reach for target in the 
@@ -425,7 +425,7 @@ public:
     */
     virtual bool pushAction(const yarp::sig::Vector &x,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
-                            affActionPrimitivesCallback *clb=NULL);
+                            ActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert a hand-primitive action in the actions queue.
@@ -435,7 +435,7 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool pushAction(const std::string &handSeqKey,
-                            affActionPrimitivesCallback *clb=NULL);
+                            ActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert a wait state in the actions queue.
@@ -445,7 +445,7 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool pushWaitState(const double tmo,
-                               affActionPrimitivesCallback *clb=NULL);
+                               ActionPrimitivesCallback *clb=NULL);
 
     /**
     * Immediately update the current reaching target (without 
@@ -697,10 +697,10 @@ public:
 
 
 /**
-* \ingroup affActionPrimitives
+* \ingroup ActionPrimitives
 *
 * A derived class defining a first abstraction layer on top of 
-* @ref affActionPrimitives father class. 
+* @ref ActionPrimitives father class. 
 *  
 * It internally predeclares (without actually defining) a set of
 * hand sequence motions key ("open_hand", "close_hand" and 
@@ -711,27 +711,27 @@ public:
 *       combined in higher level actions, thus how further
 *       layers can be inherited from the base class.
 */
-class affActionPrimitivesLayer1 : public affActionPrimitives
+class ActionPrimitivesLayer1 : public ActionPrimitives
 {
 public:
     /**
     * Default Constructor. 
     */
-    affActionPrimitivesLayer1() : affActionPrimitives() { }
+    ActionPrimitivesLayer1() : ActionPrimitives() { }
 
     /**
     * Constructor. 
     * @param opt the Property used to configure the object after its
     *            creation.
     */
-    affActionPrimitivesLayer1(yarp::os::Property &opt) : affActionPrimitives(opt) { }
+    ActionPrimitivesLayer1(yarp::os::Property &opt) : ActionPrimitives(opt) { }
 
     /**
     * Destructor. 
     *  
     * @note it calls the close() method. 
     */
-    virtual ~affActionPrimitivesLayer1();
+    virtual ~ActionPrimitivesLayer1();
 
     /**
     * Grasp the given target (combined action).
@@ -816,17 +816,17 @@ public:
 
 
 // forward declaration
-class affActionPrimitivesLayer2;
+class ActionPrimitivesLayer2;
 
 
 // callback for executing final grasp after contact
-class liftAndGraspCallback : public affActionPrimitivesCallback
+class liftAndGraspCallback : public ActionPrimitivesCallback
 {
 protected:
-    affActionPrimitivesLayer2 *action;
+    ActionPrimitivesLayer2 *action;
 
 public:
-    liftAndGraspCallback(affActionPrimitivesLayer2 *_action) :
+    liftAndGraspCallback(ActionPrimitivesLayer2 *_action) :
                          action(_action) { }
 
     virtual void exec();
@@ -834,13 +834,13 @@ public:
 
 
 // callback for executing touch callback
-class touchCallback : public affActionPrimitivesCallback
+class touchCallback : public ActionPrimitivesCallback
 {
 protected:
-    affActionPrimitivesLayer2 *action;
+    ActionPrimitivesLayer2 *action;
 
 public:
-    touchCallback(affActionPrimitivesLayer2 *_action) :
+    touchCallback(ActionPrimitivesLayer2 *_action) :
                   action(_action) { }
 
     virtual void exec();
@@ -848,14 +848,14 @@ public:
 
 
 /**
-* \ingroup affActionPrimitives
+* \ingroup ActionPrimitives
 *
-* A class that inherits from @ref affActionPrimitivesLayer1 and 
+* A class that inherits from @ref ActionPrimitivesLayer1 and 
 * integrates the force-torque sensing in order to stop the limb 
 * while reaching as soon as a contact with external objects is 
 * detected. 
 */
-class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
+class ActionPrimitivesLayer2 : public ActionPrimitivesLayer1
 {
 protected:
     bool skipFatherPart;
@@ -906,21 +906,21 @@ public:
     /**
     * Default Constructor. 
     */
-    affActionPrimitivesLayer2();
+    ActionPrimitivesLayer2();
 
     /**
     * Constructor. 
     * @param opt the Property used to configure the object after its
     *            creation.
     */
-    affActionPrimitivesLayer2(yarp::os::Property &opt);
+    ActionPrimitivesLayer2(yarp::os::Property &opt);
 
     /**
     * Destructor. 
     *  
     * @note it calls the close() method. 
     */
-    virtual ~affActionPrimitivesLayer2();
+    virtual ~ActionPrimitivesLayer2();
 
     /**
     * Configure the object.
