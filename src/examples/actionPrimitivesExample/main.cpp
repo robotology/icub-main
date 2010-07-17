@@ -1,5 +1,5 @@
 /** 
-\defgroup ationPrimitivesExample ActionPrimitivesExample
+\defgroup ationPrimitivesExample actionPrimitivesExample
  
 @ingroup icub_module  
  
