@@ -1,9 +1,9 @@
-SET(PROJECTNAME affActionPrimitives)
+SET(PROJECTNAME actionPrimitives)
 
 PROJECT(${PROJECTNAME})
 
-SET(folder_source src/affActionPrimitives.cpp)
-SET(folder_header include/iCub/actions/affActionPrimitives.h)
+SET(folder_source src/actionPrimitives.cpp)
+SET(folder_header include/iCub/action/actionPrimitives.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
@@ -19,5 +19,5 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} iDyn
 				   				   
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                    DEPENDS iDyn
-                                   DESTINATION include/iCub/actions                                   
+                                   DESTINATION include/iCub/action
                                    FILES ${folder_header})

@@ -18,7 +18,7 @@ add_subdirectory(iDyn)
 
 add_subdirectory(logPolar)
 
-add_subdirectory(affActionPrimitives)
+add_subdirectory(actionPrimitives)
 
 add_subdirectory(learningMachine)
 
