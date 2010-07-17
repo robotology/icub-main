@@ -17,7 +17,7 @@
  * …) in order to eventually execute more sophisticated tasks 
  * without reference to the motion control details. 
  *  
- * \image html ActionPrimitives.jpg 
+ * \image html actionPrimitives.jpg 
  *  
  * Central to the library's implementation is the concept of 
  * @b action. An action is a "request" for an execution of three
