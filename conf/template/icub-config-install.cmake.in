@@ -12,5 +12,10 @@ set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
 
 include("@CMAKE_INSTALL_PREFIX@/icub-export-install.cmake")
 
+if(MSVC)
+    message(STATUS "Running on windows")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+endif(MSVC)
+
 set (ICUB_FOUND TRUE)
 endif (NOT ICUB_FOUND)

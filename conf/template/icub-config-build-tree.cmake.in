@@ -12,5 +12,10 @@ include("@CMAKE_BINARY_DIR@/@EXPORT_CONFIG_FILE@")
 set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
 set(ICUB_MODULE_PATH "@ICUB_MODULE_PATH@" CACHE INTERNAL "iCub cmake scripts directory")
 
+if(MSVC)
+    message(STATUS "Running on windows")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+endif(MSVC)
+
 set (ICUB_FOUND TRUE)
 endif (NOT ICUB_FOUND)
