@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-#define _inputImg (*(ptr_inputImg))
+//#define _inputImg (*(ptr_inputImg))
 
 #define _inputImgRed (*(ptr_inputImgRed))
 #define _inputImgGreen (*(ptr_inputImgGreen))
@@ -130,7 +130,7 @@ void blobFinderThread::resizeImages(int width, int height){
     outMeanColourLP->resize(width,height);
     outContrastLP->resize(width,height);
 
-    image_out->resize(width,height);
+    //image_out->resize(width,height);
     _procImage->resize(width,height);
     _outputImage->resize(width,height);
     _outputImage3->resize(width,height);
@@ -149,7 +149,7 @@ void blobFinderThread::resizeImages(int width, int height){
 
     blobList = new char [width*height+1];
 
-    _inputImg.resize(width,height);
+    this->ptr_inputImg->resize(width,height);
     _inputImgRed.resize(width,height);
     _inputImgGreen.resize(width,height);
     _inputImgBlue.resize(width,height);
@@ -200,7 +200,7 @@ void blobFinderThread::resetFlags(){
 */
 void blobFinderThread::run(){
 
-
+    freetorun=true;
     if(!freetorun)
         return;
 
@@ -216,8 +216,12 @@ void blobFinderThread::run(){
     
 
     bool conversion=true;
-    _outputImage=wOperator->getPlane(&_inputImg);
+    _outputImage=wOperator->getPlane(ptr_inputImg);
     rain();
+    
+    //redPlane_flag=true;
+    //maxSaliencyBlob_flag=false;
+
     if(redPlane_flag){
         ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;
@@ -339,12 +343,12 @@ void blobFinderThread::run(){
             conversion=false;
         }
         else{
-            _outputImage=wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+            _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
             conversion=true;
         }
     }
     else{
-        _outputImage=wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+        _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
         conversion=true;
     }
 
@@ -376,7 +380,7 @@ void blobFinderThread::run(){
         Ipp8u* im_tmp[3]={im_out,im_out,im_out};
         //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
         //the second transforms the 4-channel image into colorImage for yarp
-        ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),image_out->getRowSize(),srcsize);
+        ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
         ippiFree(im_out);
         //printf("freeing im_tmp0  \n");	
         //ippiFree(im_tmp0);

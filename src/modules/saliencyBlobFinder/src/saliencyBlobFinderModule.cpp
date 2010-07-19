@@ -89,9 +89,6 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 
     printf("\n waiting for connection of the input port \n");
 
-    
-    
-    
     return true;
 }
 
@@ -100,18 +97,19 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 */
 bool saliencyBlobFinderModule::interruptModule() {
     printf("module interrupted .... \n");
-  
     cmdPort.interrupt();
+
+    interThread->interrupt();
     
     return true;
 }
 
 
 bool saliencyBlobFinderModule::close(){
-    
-   
     printf("closing command port .... \n");
     cmdPort.close();
+
+    interThread->stop();
 
     return true;
 }
@@ -197,6 +195,13 @@ bool saliencyBlobFinderModule::updateModule() {
         blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
         blobFinder->start();
         blobFinder->ptr_inputImg=interThread->img;
+        blobFinder->ptr_inputImgRed=interThread->ptr_inputImgRed;
+        blobFinder->ptr_inputImgGreen=interThread->ptr_inputImgGreen;
+        blobFinder->ptr_inputImgBlue=interThread->ptr_inputImgBlue;
+        blobFinder->ptr_inputImgRG=interThread->ptr_inputImgRG;
+        blobFinder->ptr_inputImgGR=interThread->ptr_inputImgGR;
+        blobFinder->ptr_inputImgBY=interThread->ptr_inputImgBY;
+        blobFinder->image_out=interThread->image_out;
         blobFinder->countSpikes=this->countSpikes;
         
 
