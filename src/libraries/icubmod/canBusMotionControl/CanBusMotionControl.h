@@ -270,20 +270,7 @@ class axisTorqueHelper
 	int* torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
 
 	public:
-	inline axisTorqueHelper(int njoints, int* id, int* chan)
-	{
-		jointsNum=njoints;
-		torqueSensorId = new int [jointsNum];
-		torqueSensorChan = new int [jointsNum];
-		if (id!=0)
-            memcpy(torqueSensorId, id, sizeof(int)*jointsNum);
-        else
-            memset(torqueSensorId, 0, sizeof(int)*jointsNum);
-		if (chan!=0)
-            memcpy(torqueSensorChan, chan, sizeof(int)*jointsNum);
-        else
-            memset(torqueSensorChan, 0, sizeof(int)*jointsNum);
-	}
+	axisTorqueHelper(int njoints, int* id, int* chan);
 	inline int getTorqueSensorId (int id)
 	{
 		if (id>=0 && id<jointsNum) return torqueSensorId[id];

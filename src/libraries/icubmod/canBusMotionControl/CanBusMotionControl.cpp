@@ -503,6 +503,21 @@ void CanBackDoor::onRead(Bottle &b)
     semaphore->post();
 }
 
+axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan)
+{
+	jointsNum=njoints;
+	torqueSensorId = new int [jointsNum];
+	torqueSensorChan = new int [jointsNum];
+	if (id!=0)
+        memcpy(torqueSensorId, id, sizeof(int)*jointsNum);
+    else
+		memset(torqueSensorId, 0, sizeof(int)*jointsNum);
+	if (chan!=0)
+        memcpy(torqueSensorChan, chan, sizeof(int)*jointsNum);
+    else
+        memset(torqueSensorChan, 0, sizeof(int)*jointsNum);
+}
+
 AnalogSensor::AnalogSensor():
 data(0)
 {
