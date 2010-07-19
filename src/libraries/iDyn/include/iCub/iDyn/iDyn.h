@@ -840,6 +840,10 @@ public:
 	* initKinematicBase() or initKinematicEnd(). This method 
 	* is protected and it is used by RigidBodyTransformation for setting the Kinematics 
 	* variables.
+    * @param w0 angular velocity
+    * @param dw0 angular acceleration
+    * @param ddp0 linear acceleration
+    * @return true if succeed, false otherwise
 	*/
 	bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
 
@@ -848,6 +852,9 @@ public:
 	* initKinematicBase() or initKinematicEnd(). This method 
 	* is protected and it is used by RigidBodyTransformation for setting the Kinematics 
 	* variables.
+    * @param Fend external force
+    * @param Muend external moment
+    * @return true if succeed, false otherwise
 	*/
 	bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
 
@@ -855,9 +862,29 @@ public:
 	* Calls the proper method to get kinematics variables in OneChainNewtonEuler either
 	* in the base or in the final link. This method is used by RigidBodyTransformation 
 	* for setting the kinematics variables.
+    * @param w the vector which will contain the angular velocity
+    * @param dw the vector which will contain the angular acceleration
+    * @param ddp the vector which will contain the linear acceleration
 	*/
 	void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
+
+    /**
+    * Get the kinematic information of the i-th frame in the OneChainNewtonEuler associated
+    * to the current iDynChain, i.e. the virtual links (Base, Final) are also considered.
+    * @param i the i-th frame in the OneChainNE
+    * @param w the vector which will contain the angular velocity
+    * @param dw the vector which will contain the angular acceleration
+    * @param ddp the vector which will contain the linear acceleration
+    */
 	void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
+
+    /**
+    * Get the wrench information of the i-th frame in the OneChainNewtonEuler associated
+    * to the current iDynChain, i.e. the virtual links (Base, Final) are also considered.
+    * @param i the i-th frame in the OneChainNE
+    * @param F the vector which will contain the force
+    * @param Mu the vector which will contain the moment
+    */
 	void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu);
 	/**
 	* Calls the proper method to get wrench variables in OneChainNewtonEuler either
@@ -913,17 +940,24 @@ public:
 	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
     /**
+    * Return the H0 base matrix of the chain
     * @return H0, the base matrix of the chain
     */
 	yarp::sig::Matrix getH0() const;
 
     /**
+    * Set a new H0 base matrix in the chain
     * @param H0 the (4x4) base matrix of the chain
     * @return true if succeed, false otherwise
     */
 	bool setH0(const yarp::sig::Matrix &_H0);
 
-
+    /**
+    * Return the Denavit-Hartenberg matrix of the i-th link in the chain.
+    * Note that all the links are considered (0<=i<N)
+    * @param i the i-th link in the chain
+    * @return the Denavit-Hartenberg matrix of the i-th link
+    */
 	yarp::sig::Matrix getDenHart(unsigned int i) 
     { return allList[i]->getH();}
 
@@ -956,11 +990,13 @@ public:
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
     /**
+    * Return the COM matrix of the i-th link
     * @return the COM matrix of the i-th link
     */
     yarp::sig::Matrix getCOM(unsigned int iLink);
 
     /**
+    * Return the H matrix until the COM of the i-th link
     * @return the H matrix until the COM of the i-th link
     */
     yarp::sig::Matrix getHCOM(unsigned int iLink);

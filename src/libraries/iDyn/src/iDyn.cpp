@@ -885,6 +885,16 @@ void iDynChain::getKinematicNewtonEuler(Vector &w, Vector &dw, Vector &ddp)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::getFrameKinematic(unsigned int i, Vector &w, Vector &dw, Vector &ddp)
 {
+    if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call getFrameKinematic() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
+				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+		prepareNewtonEuler();
+		initNewtonEuler();
+	}
+
 	Vector dwM(3);dwM=0.0;
 	Vector ddpC(3);ddpC=0.0;
 	NE->getVelAccAfterForward(i,w,dw,dwM,ddp,ddpC);
@@ -892,6 +902,16 @@ void iDynChain::getFrameKinematic(unsigned int i, Vector &w, Vector &dw, Vector 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::getFrameWrench(unsigned int i, Vector &F, Vector &Mu)
 {
+    if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call getFrameWrench() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
+				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+		prepareNewtonEuler();
+		initNewtonEuler();
+	}
+
 	NE->getWrenchAfterForward(i,F,Mu);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
