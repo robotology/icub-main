@@ -176,7 +176,7 @@ private:
     Vector *inertial;
     BufferedPort<Vector> *port_ft_arm_left;
     BufferedPort<Vector> *port_ft_arm_right;
-	BufferedPort<Vector> *port_inertial;
+	BufferedPort<Vector> *port_inertial_thread;
 
 	BufferedPort<Bottle> *port_RATorques;
 	BufferedPort<Bottle> *port_RLTorques;
@@ -339,8 +339,8 @@ public:
         first = true;
         //---------------------PORT--------------------------//
 		
-		port_inertial=new BufferedPort<Vector>;
-		port_inertial->open("/wholebody/inertial:i");
+		port_inertial_thread=new BufferedPort<Vector>;
+		port_inertial_thread->open("/wholebody/inertial:i");
 
         port_ft_arm_left=new BufferedPort<Vector>;
 		port_ft_arm_left->open("/wholebody/left_arm/FT:i");
@@ -396,7 +396,7 @@ public:
     bool threadInit()
     {       
 		calibrateOffset(10);
-        Time::delay(3.0);
+		//Time::delay(3.0);
         return true;
     }
 
@@ -442,33 +442,45 @@ public:
 
     void threadRelease()
     {
-		if(datas) fclose(datas);
+      fprintf(stderr, "Closing the datas\n");
+      if(datas) fclose(datas);
 
-        if (linEst)
+      fprintf(stderr, "Closing the linest\n");
+      if (linEst)
         {
-            delete linEst;
-            linEst = 0;
+	  delete linEst;
+	  linEst = 0;
         }
 
-        if (quadEst)
-        {
+      fprintf(stderr, "Closing the quadEst\n");
+      if (quadEst)
+	  {
             delete quadEst;
             quadEst = 0;
-        }
-        if (InertialEst)
+	  }
+
+      fprintf(stderr, "Closing the InertialEest\n");
+      if (InertialEst)
         {
-            delete InertialEst;
-            InertialEst = 0;
+	  delete InertialEst;
+	  InertialEst = 0;
         }
 
-		closePort(port_RATorques);
-		closePort(port_LATorques);
-		closePort(port_RLTorques);
-		closePort(port_LLTorques);
-
-		closePort(port_inertial);
-		closePort(port_ft_arm_right);
-		closePort(port_ft_arm_left);
+      fprintf(stderr, "Closing the RATorques\n");
+      closePort(port_RATorques);
+      fprintf(stderr, "Closing the LATorques\n");
+      closePort(port_LATorques);
+      fprintf(stderr, "Closing the RLTorques\n");
+      closePort(port_RLTorques);
+      fprintf(stderr, "Closing the LLTorques\n");
+      closePort(port_LLTorques);
+      
+      fprintf(stderr, "Closing the inertial\n");
+      closePort(port_inertial_thread);
+      fprintf(stderr, "Closing the ft_arm_right\n");
+      closePort(port_ft_arm_right);
+      fprintf(stderr, "Closing the ft_arm_left\n");
+      closePort(port_ft_arm_left);
     }   
 
 	void closePort(Contactable *_port)
@@ -549,7 +561,7 @@ public:
 		Offset_RLeg = 1.0/(double)Ntrials * Offset_RLeg;
 		cout<<"Right Leg:	"<<Offset_RLeg.toString()<<endl;
 
-		Time::delay(2.0);
+		//Time::delay(2.0);
 	}
 	void readAndUpdate(bool waitMeasure=false, bool _init=false)
 	{
@@ -558,7 +570,7 @@ public:
         ft_arm_right = port_ft_arm_right->read(waitMeasure);
         ft_leg_left  = port_ft_leg_left->read(waitMeasure);
         ft_leg_right = port_ft_leg_right->read(waitMeasure);
-		inertial = port_inertial->read(waitMeasure);
+		inertial = port_inertial_thread->read(waitMeasure);
 		
 		int sz = 0;
 		if(inertial!=0)
@@ -805,7 +817,7 @@ private:
     Property OptionsTorso;
 
 	
-	dataFilter *port_inertial;
+	dataFilter *port_inertial_input;
 	BufferedPort<Vector> port_filtered;	
 
     inverseDynamics *inv_dyn;
@@ -855,10 +867,10 @@ public:
     {
 		
 		port_filtered.open("/filtered/inertial:o");
-		port_inertial = new dataFilter(port_filtered, rf);
-		port_inertial->useCallback();
-		port_inertial->open("/unfiltered/inertial:i");
-		Time::delay(1.0);
+		port_inertial_input = new dataFilter(port_filtered, rf);
+		port_inertial_input->useCallback();
+		port_inertial_input->open("/unfiltered/inertial:i");
+		//Time::delay(1.0);
 		Network::connect("/icub/inertial","/unfiltered/inertial:i");
 
 
@@ -972,58 +984,75 @@ public:
     bool close()
     {
         fprintf(stderr,"closing... \n");     
-		port_filtered.interrupt();
-		port_filtered.close();
-   
-		if(port_inertial)
-		{
-			port_inertial->interrupt();
-			port_inertial->close();
-			delete port_inertial;
-			port_inertial=0;
-		}
 
-		delete port_inertial;
+	if (inv_dyn)
+	  {
+	    fprintf(stderr,"Stopping the inv_dyn module...");     
+	    inv_dyn->stop();
+	    fprintf(stderr,"inv_dyn module stopped\n");     
+	    delete inv_dyn;
+	    inv_dyn=0;
+	  }
 
-		if (inv_dyn)
-        {
-			inv_dyn->stop();
-            delete inv_dyn;
-            inv_dyn=0;
-        }
+	fprintf(stderr,"interrupting the filtered port \n");     
+	port_filtered.interrupt();
+	fprintf(stderr,"closing the filtered port \n");     
+	port_filtered.close();
 
         if (dd_left_arm)
-        {
+	  {
+	    fprintf(stderr,"Closing dd_left_arm \n");     
+	    dd_left_arm->close();
             delete dd_left_arm;
             dd_left_arm=0;
-        }
+	  }
         if (dd_right_arm)
-        {
+	  {
+	    fprintf(stderr,"Closing dd_right_arm \n");     
+	    dd_right_arm->close();
             delete dd_right_arm;
             dd_right_arm=0;
-        }
+	  }
         if (dd_head)
-        {
+	  {
+	    fprintf(stderr,"Closing dd_head \n");     
+	    dd_head->close();
             delete dd_head;
             dd_head=0;
-        }
-
-		if (dd_left_leg)
-        {
+	  }
+	
+	if (dd_left_leg)
+	  {
+	    fprintf(stderr,"Closing dd_left_leg \n");     
+	    dd_left_leg->close();
             delete dd_left_leg;
             dd_left_leg=0;
-        }
+	  }
         if (dd_right_leg)
-        {
+	  {
+	    fprintf(stderr,"Closing dd_right_leg \n");     
+	    dd_right_leg->close();
             delete dd_right_leg;
             dd_right_leg=0;
-        }
+	  }
         if (dd_torso)
-        {
+	  {
+	    fprintf(stderr,"Closing dd_torso \n");     
+	    dd_torso->close();
             delete dd_torso;
             dd_torso=0;
-        }
+	  }
 
+	if(port_inertial_input)
+	  {
+	    fprintf(stderr,"interrupting the inertial input port \n");     
+	    port_inertial_input->interrupt();
+	    port_inertial_input->close();
+	    delete port_inertial_input;
+	    port_inertial_input=0;
+	  }
+
+	fprintf(stderr,"Wrench observer module was closed successfully! \n");     
         return true;
     }
 
