@@ -30,6 +30,8 @@ set(INSTALL_CONFIG_TEMPLATE "conf/template/icub-config-install.cmake.in")
 
 set(ICUB_MODULE_PATH ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake)
 
+set(ICUB_LINK_FLAGS ${IPOPT_LINK_FLAGS})
+
 set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
   get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY EXTERNAL_INCLUDE_DIRS)

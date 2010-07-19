@@ -16,9 +16,7 @@ project(iCub)
 
 ##### options
 if(MSVC)
-    MESSAGE(STATUS "Running on windows")
-    
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+    MESSAGE(STATUS "Running on windows")    
     
     # ACE uses a bunch of functions MSVC warns about.
     # The warnings make sense in general, but not in this case.
@@ -68,6 +66,8 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
 
 # check for libraries that are strictly required
 if (NOT ICUB_HAS_GSL)
@@ -163,10 +163,4 @@ configure_file(
 
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
-
-
-
-
-
-
 

@@ -9,13 +9,9 @@ message(STATUS "Using iCub from install")
 set(ICUB_INCLUDE_DIRS "@ICUB_INCLUDE_DIRS@" CACHE INTERNAL "Include directories needed for iCub")
 set(ICUB_MODULE_PATH "@ICUB_MODULE_PATH@" CACHE INTERNAL "iCub cmake scripts directory")
 set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
+set(ICUB_LINK_FLAGS "@ICUB_LINK_FLAGS@" CACHE INTERNAL "List of iCub linker options")
 
 include("@CMAKE_INSTALL_PREFIX@/icub-export-install.cmake")
-
-if(MSVC)
-    message(STATUS "Running on windows")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
-endif(MSVC)
 
 set (ICUB_FOUND TRUE)
 endif (NOT ICUB_FOUND)
