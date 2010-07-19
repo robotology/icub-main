@@ -724,7 +724,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             std::string netid=robotOptions.findGroup(analogid.c_str()).find("network").asString().c_str();
             int period=20;
             if (robotOptions.findGroup(analogid.c_str()).check("period")) 
-                robotOptions.findGroup(analogid.c_str()).find("period").asInt();
+                period = robotOptions.findGroup(analogid.c_str()).find("period").asInt();
             else
                 std::cout<<"Warning: could not find period using default value ("<<period<<")\n";
 
