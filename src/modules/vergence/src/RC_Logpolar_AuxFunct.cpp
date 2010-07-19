@@ -1,4 +1,67 @@
+
 #include <iCub/RC_Logpolar_AuxFunct.h>
+
+
+
+bool isWithin(int v,int max, int min)
+{
+	if ( (v <= max) && (v >= min) )
+		return true;
+	else
+		return false;
+}
+
+double find_max_value(double *v, int size)
+{
+	double tmpMax = v[0];
+	for (int i = 0; i < size; i++)
+	{
+		if (v[i] >= tmpMax)
+			tmpMax = v[i];
+	}
+	return tmpMax;
+}
+
+int find_max_index(double *v, int size)
+{
+	int ind = 0;
+	double tmpMax = v[0];
+	for (int i = 0; i < size; i++)
+	{
+		if (v[i] >= tmpMax)
+		{
+			tmpMax = v[i];
+			ind = i;
+		}
+	}
+	return ind;
+}
+
+double find_min_value(double *v, int size)
+{
+	double tmpMin = v[size-1];
+	for (int i = size - 1; i >= 0; i--)
+	{
+		if (v[i] <= tmpMin)
+			tmpMin = v[i];
+	}
+	return tmpMin;
+}
+
+int find_min_index(double *v, int size)
+{
+	int ind = size - 1;
+	double tmpMin = v[0];
+	for (int i = size - 1; i >= 0; i--)
+	{
+		if (v[i] <= tmpMin)
+		{
+			tmpMin = v[i];
+			ind = i;
+		}
+	}
+	return ind;
+}
 
 
 Image_Data SetParam(int rho, int theta, int mode, double overlap, int xo, int yo, int xr, int yr)
@@ -136,7 +199,7 @@ void Build_Shift_Table(Image_Data par, char *path)
 	char File_Name [256];
 	FILE * fout;
 	int mult = 1;
-	int cSize = (int)__min((double)par.Size_X_Orig, (double)par.Size_Y_Orig);
+	int cSize = (int)_min((double)par.Size_X_Orig, (double)par.Size_Y_Orig);
 
 	//Creating StepList
 	n_shifts = 1+6*cSize/(4*mult);
@@ -166,12 +229,10 @@ void Build_Shift_Table(Image_Data par, char *path)
 			}
 		}		
 	}
+
 	//Writing on file
 	sprintf(File_Name,"%s%dx%d_%dx%d_ShiftMap.gio",path, cSize, cSize, par.Size_Theta, par.Size_Rho);
-	printf("trying to write into the file %s .... \n",File_Name);
 	fout = fopen(File_Name,"wb");
-	if(!fout)
-		printf("not correctly open; fout %p\n", fout);
 	fwrite(&n_shifts,sizeof(int),1,fout);
 	fwrite(shifts,sizeof(double),n_shifts,fout);
 	fwrite(ShiftMap,sizeof(int),n_shifts*par.Size_LP,fout);
@@ -188,7 +249,7 @@ int Load_Shift_Table(Image_Data par, int *shiftTab, double *stepList, char *path
 	char File_Name [256];
 	FILE * fin;
 	int n;
-	int cSize = (int)__min((double)par.Size_X_Orig, (double)par.Size_Y_Orig);
+	int cSize = (int)_min((double)par.Size_X_Orig, (double)par.Size_Y_Orig);
 	sprintf(File_Name,"%s%dx%d_%dx%d_ShiftMap.gio",path, cSize, cSize, par.Size_Theta, par.Size_Rho);
 
 	if ((fin = fopen(File_Name,"rb")) == NULL)

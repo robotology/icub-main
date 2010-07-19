@@ -20,18 +20,19 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${ICUB_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
 		    ${iKin_INCLUDE_DIRS}
-		    ${logPolar_INCLUDE_DIRS}			
+		    ${LOGPOLAR_INCLUDE_DIRS}			
 		    ${IPP_INCLUDE_DIRS}
 		    ${OpenCV_INCLUDE_DIR}
 		    )
 
-MESSAGE("OpenCV_INCLUDE_DIR  ${OpenCV_INCLUDE_DIR} OpenCV_LIBRARIES ${OpenCV_LIBRARIES}")
+MESSAGE("logPolar_INCLUDE_DIRS  ${logPolar_INCLUDE_DIRS} logPolar_LIBRARIES ${logPolar_LIBRARIES}  ")
+
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${iKin_LIBRARIES}
                                      ${YARP_LIBRARIES}
-     				     ${logPolar_LIBRARIES}
+     				     ${LOGPOLAR_LIBRARIES}
 				     ${ICUB_LIBRARIES}
 				     ${IPP_LIBRARIES}
 				     ${OpenCV_LIBRARIES}										 )

@@ -1,5 +1,6 @@
-
+#include <iCub/disparityProcessor.h>
 #include <iCub/DisparityTool.h>
+
 //#include <yarp/sig/Image.h>
 //#include <yarp/sig/Vector.h>
 //#include <yarp/sig/ImageFile.h>
@@ -11,6 +12,8 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/sig/Vector.h>*/
+
+
 //// yarp
 #include <yarp/dev/all.h>
 #include <yarp/os/all.h>
@@ -21,24 +24,24 @@
 #include <stdio.h>
 #include <iostream>
 
-#include <iCub/iKin/iKinFwd.h>
+//#include <iCub/iKinFwd.h>
 #include <yarp/math/Math.h>
 //#include <YARPRobotMath.h>
-#include <math.h>
+//#include <math.h>
 
 using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::os;
-using namespace iCub::iKin;
+//using namespace iKin;
 
-const double F = 4;						/// camera F length.
-const double PixScaleX = 120;			/// camera mm to pixel conversion factor.
-const double PixScaleY = 98;			/// same along the y coord.
-const double Periphery2Fovea = 2.0;	
-const int _centerX = 128/2;
-const int _centerY = 128/2;
+//const double F = 4;						/// camera F length.
+//const double PixScaleX = 120;			/// camera mm to pixel conversion factor.
+//const double PixScaleY = 98;			/// same along the y coord.
+//const double Periphery2Fovea = 2.0;	
+//const int _centerX = 128/2;
+//const int _centerY = 128/2;
 
 /*
 const int CenterPeripheryX = _logpolarParams::_xsize/2;
@@ -47,24 +50,26 @@ const int CenterFoveaX = _logpolarParams::_xsizefovea/2;
 const int CenterFoveaY = _logpolarParams::_ysizefovea/2;
 */
 
-const int CenterPeripheryX = 256/2;
-const int CenterPeripheryY = 256/2;
-const int CenterFoveaX = 128/2;
-const int CenterFoveaY = 128/2;
+//const int CenterPeripheryX = 256/2;
+//const int CenterPeripheryY = 256/2;
+//const int CenterFoveaX = 128/2;
+//const int CenterFoveaY = 128/2;
 
 
-const double _maxVerg = 50* M_PI/180;
-const double _minVerg = 0 * M_PI/180;
+//const double _maxVerg = 50* M_PI/180;
+//const double _minVerg = 0 * M_PI/180;
 
 
-class disparityModule : public Module {
+class disparityModule : public RFModule {
 
 private:
-
-	BufferedPort<ImageOf<PixelMono> >  imageOutputPort;
-	BufferedPort<ImageOf<PixelMono> >  imageCentroidPort;
-	BufferedPort<Bottle> targetPort;
-	Port  cmdOutput;
+    /**
+    * flag that indicates when the initialisation has been carried out
+    */
+    bool init_flag;
+	BufferedPort<ImageOf<PixelRgb> >  imageOutputPort;
+	Port cmdOutput;
+    Port cmdPort;
 
 	string outputPortName; 
 	//property to get encoders 
@@ -73,20 +78,19 @@ private:
 	
 	PolyDriver *robotHead, *robotTorso;
 
-
-	iCubEye *leftEye;
-	iCubEye *rightEye;
+	//iCubEye *leftEye;
+	//iCubEye *rightEye;
 	
-	iKinLink *leftLink;
-	iKinLink *rightLink;
-	iKinChain *chainRightEye,  *chainLeftEye;
+	//iKinLink *leftLink;
+	//iKinLink *rightLink;
+	//iKinChain *chainRightEye,  *chainLeftEye;
 
-	Matrix HL, HR ;
+	//Matrix HL, HR ;
 	Vector fb, zl, pl, dl, ml;
 
-	Matrix _Ti;
-	Matrix _Ti0;
-	Matrix _TB0;
+	//Matrix _Ti;
+	//Matrix _Ti0;
+	//Matrix _TB0;
 
 	Vector _q;
 	Vector _it;
@@ -95,12 +99,12 @@ private:
 	Vector _tmp;
 	Vector _tmpEl;
 
-	Vector _leftJoints;
-	Vector _rightJoints;
-	Vector _joints;
+	//Vector _leftJoints;
+	//Vector _rightJoints;
+	//Vector _joints;
 
-	Vector _fixationPoint;
-	Vector _fixationPolar;
+	//Vector _fixationPoint;
+	//Vector _fixationPolar;
 	
 	int _nFrame;
 
@@ -111,18 +115,21 @@ private:
 	BufferedPort < ImageOf<PixelMono > >   histoOutPort; //output histogram
 
    	bool needLeft, needRight;
-    	int imgNumb;
+    int imgNumb;
 	float ratio;
 	FILE *fout;
 
    	ImageOf<PixelRgb> *imgInL;
 	ImageOf<PixelRgb> *imgInR;
-	ImageOf<PixelMono> *imgOut;
-	ImageOf<PixelMono> histo;
+	
 	ImageOf<PixelRgb> Limg;
 	ImageOf<PixelRgb> Rimg;
 
-	DisparityTool Disp;
+	//DisparityTool Disp;
+    /**
+    * processor in charge of measuring the disparity and creating the histogram
+    */
+    disparityProcessor* currentProcessor;
 
 	shift_Struct maxes[4];
 
@@ -132,16 +139,27 @@ public:
 
 	disparityModule();
 	~disparityModule();
-	void merge(ImageOf<PixelRgb> *imgInL,ImageOf<PixelRgb> *imgInR,	ImageOf<PixelMono> *imgOut, int disparityValue, int &maxValue); 
-	void extractCentroid(ImageOf<PixelMono> *imgIn,ImageOf<PixelMono> *imgOut,int &x, int &y, int maxValue);
-	void computeRay (__kinType k, Vector& v, int x, int y); // computes ray that intesects with image plane
-	void peripheryToFovea (int x, int y, int& rx, int& ry) { rx = int(x * Periphery2Fovea); ry = int(y * Periphery2Fovea); }
-	void foveaToPeriphery (int x, int y, int& rx, int& ry) { rx = int(x / Periphery2Fovea); ry = int(y / Periphery2Fovea); } 
-	void intersectRay (__kinType k, const Vector& v, int& x, int& y);
-	void computeDirect (const Vector &joints);
-	void computeFixation (const Matrix &T1, const Matrix &T2);
+    /**
+    * function for initialization and configuration of the RFModule
+    * @param rf resourceFinder reference
+    */
+    virtual bool configure(yarp::os::ResourceFinder &rf);
+    /**
+    * set the attribute options of class Property
+    */
+    void setOptions(yarp::os::Property options); //
+    /**
+    * function that computes the ray vector passing from x,y coordinates in image plane
+    */
+	//void computeRay (__kinType k, Vector& v, int x, int y); 
+	//void peripheryToFovea (int x, int y, int& rx, int& ry) { rx = int(x * Periphery2Fovea); ry = int(y * Periphery2Fovea); }
+	//void foveaToPeriphery (int x, int y, int& rx, int& ry) { rx = int(x / Periphery2Fovea); ry = int(y / Periphery2Fovea); } 
+	//void intersectRay (__kinType k, const Vector& v, int& x, int& y);
+	//void computeDirect (const Vector &joints);
+	//void computeFixation (const Matrix &T1, const Matrix &T2);
 
-	void _cartesianToPolar(const Vector &cartesian, Vector &polar)
+	/*
+    void _cartesianToPolar(const Vector &cartesian, Vector &polar)
 	{
 		polar(0) = atan2(cartesian(1), -cartesian(0));
 		// azimuth
@@ -151,15 +169,19 @@ public:
 		// distance
 		polar(2) = sqrt(cartesian(0)*cartesian(0) + cartesian(1)*cartesian(1)+cartesian(2)*cartesian(2));
 	}
+    */
 
 	virtual bool open(Searchable& config);
 	virtual bool close();
 	virtual bool interruptModule();
 	virtual bool updateModule();
+    /**
+    * DEPRECATED
+    */
 	virtual double getPeriod() {return 0.05;}
 	
 	bool respond(const Bottle& command, Bottle& reply) {
-        	if (command.get(0).asString() == "quit")
+        if (command.get(0).asString() == "quit")
             		return false;     
 		else if (command.get(0).asString() == "help"){
 			cout << " \nWell quite simple....\n" << endl;
@@ -169,7 +191,13 @@ public:
 		{
 			cout << "command not known - type help for more info" << endl;
 		}
-        	return true;
+        return true;
 	}
+
+    // ____________ public attributes ______________
+    /**
+    * output image of the histogram sent on the port
+    */
+    ImageOf<PixelMono> histo;
 };
 

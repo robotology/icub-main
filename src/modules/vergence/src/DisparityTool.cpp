@@ -1,10 +1,10 @@
-
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/DisparityTool.h>
 
 
 DisparityTool::DisparityTool()
 {
-	sprintf(_path,"%s","");
+	//ACE_OS::sprintf(_path,"%s","data/Tables/");
 
 	_shiftFunction	  = NULL;
 	_shiftFunctionInv = NULL;
@@ -15,7 +15,8 @@ DisparityTool::DisparityTool()
 
 	_maxCount = 0.0;
 
-	init(_srho, _stheta, _fmode, _overlap, _xsize, _ysize, _xsizeR, _ysizeR, _srho);
+	//init(_srho, _stheta, _fmode, _overlap, _xsize, _ysize, _xsizeR, _ysizeR, _srho);
+    init(_srho, _stheta, 1, _overlap, _xsize, _ysize, _xsizeR, _ysizeR, _srho);
 }
 
 
@@ -43,15 +44,10 @@ DisparityTool::~DisparityTool()
 
 void DisparityTool::init(int rho, int theta, int mode, double overlap, int xo, int yo, int xr, int yr, int actR)
 {
-	printf("Disparity tool initialisation process started ... \n");
-    printf("setting parameters... rho: %d theta:%d mode:%d overlap:%d \n",rho, theta, mode, overlap);
-    _img = SetParam(rho, theta, mode, overlap, xo, yo, xr, yr);
+	_img = SetParam(rho, theta, mode, overlap, xo, yo, xr, yr);
 	_actRings = actR;
-    printf("allocating vectors... \n ");
 	AllocateVectors();	
-    printf("loading shift maps...\n");
 	LoadShiftMap();
-    printf("computing count vector .... \n");
 	computeCountVector(_count);
 }
 
@@ -72,14 +68,13 @@ void DisparityTool::AllocateVectors()
 	char File_Name [256];
 	FILE * fin;
 	int n;
-	int cSize = (int)__min((double)_img.Size_X_Orig, (double)_img.Size_Y_Orig);
+	int cSize = (int)_min((double)_img.Size_X_Orig, (double)_img.Size_Y_Orig);
+    sprintf(_path,"%s",".");
 	sprintf(File_Name,"%s%dx%d_%dx%d_ShiftMap.gio",_path, cSize, cSize, _img.Size_Theta, _img.Size_Rho);
 
 	if ((fin = fopen(File_Name,"rb")) == NULL)
 	{
-		printf("file name: %s not found. Rebuilding shift table... \n", File_Name);
-        	Build_Shift_Table(_img, _path);
-		printf("Opening file .... \n");
+		Build_Shift_Table(_img, _path);
 		fin = fopen(File_Name,"rb");
 	}
 
@@ -197,7 +192,7 @@ void DisparityTool::makeHistogram(ImageOf<PixelMono>& hImg)
 	}/***/
 
 	unpaddedVect2img(hist, hImg);
-
+    delete [] hist;
 }
 
 
@@ -276,7 +271,7 @@ void DisparityTool::makeNormSSDHistogram(ImageOf<PixelMono>& hImg)
 	}/***/
 
 	unpaddedVect2img(hist, hImg);
-
+    delete [] hist;
 }
 
 
@@ -305,6 +300,10 @@ void DisparityTool::Remap(ImageOf<PixelRgb>  & lpIn, ImageOf<PixelRgb>  & cartOu
 	img2unpaddedVect(tmpLp, lpIn);
     RCgetCartImg (tmpCart, tmpLp, l2cTable, _img.Size_Img_Remap);
 	unpaddedVect2img(tmpCart, cartOut);
+
+    delete[] l2cTable;
+    delete[] tmpCart;
+    delete[] tmpLp;
 }
 
 
@@ -604,6 +603,9 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
 	findShiftMax(_corrFunct);
 	findSecondMaxes(_corrFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
 	
 	return (int)ret.disp;
 }
@@ -749,6 +751,9 @@ int DisparityTool::computeDisparityCorrRGBprod(ImageOf<PixelRgb> & inRImg, Image
 	findShiftMax(_corrFunct);
 	findSecondMaxes(_corrFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
 	
 	return (int)ret.disp;
 }
@@ -883,6 +888,9 @@ int DisparityTool::computeDisparitySSDAvg_RGBsum(ImageOf<PixelRgb> & inRImg, Ima
 	findShiftMax(_ssdFunct);
 	findSecondMaxes(_ssdFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
 	
 	return (int)ret.disp;
 }
@@ -1019,6 +1027,9 @@ int DisparityTool::computeDisparitySSDAvg_RGBprod(ImageOf<PixelRgb> & inRImg, Im
 	findShiftMax(_ssdFunct);
 	findSecondMaxes(_ssdFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
 	
 	return (int)ret.disp;
 }
@@ -1111,6 +1122,10 @@ int DisparityTool::computeDisparitySSD_RGBsum(ImageOf<PixelRgb> & inRImg, ImageO
 	findShiftMax(_ssdFunct);
 	findSecondMaxes(_ssdFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
+
 	return (int)ret.disp;
 }
 
@@ -1202,6 +1217,9 @@ int DisparityTool::computeDisparitySSD_RGBprod(ImageOf<PixelRgb> & inRImg, Image
 	findShiftMax(_ssdFunct);
 	findSecondMaxes(_ssdFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
 	
 	return (int)ret.disp;
 }
@@ -1406,6 +1424,9 @@ int DisparityTool::computeDisparityCorrRGBsum2(ImageOf<PixelRgb> & inRImg, Image
 	findShiftMax(_corrFunct);
 	findSecondMaxes(_corrFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
 	
 	return (int)ret.disp;
 }
@@ -1545,6 +1566,9 @@ int DisparityTool::computeDisparityCorrRGBsum3(ImageOf<PixelRgb> & inRImg, Image
 	findShiftMax(_corrFunct);
 	findSecondMaxes(_corrFunct, _maxShifts[0].index);
 	ret = filterMaxes();
+
+    delete[] lPtr;
+    delete[] rPtr;
 	
 	return (int)ret.disp;
 }
