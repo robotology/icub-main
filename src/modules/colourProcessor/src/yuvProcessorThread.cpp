@@ -1,4 +1,3 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/yuvProcessorThread.h>
 #include <cassert>
 
@@ -46,6 +45,9 @@ void yuvProcessorThread::reinitialise(){
     vPlane->resize(width,height);
     uvPlane=new ImageOf<PixelMono>;
     uvPlane->resize(width,height);
+    
+    tmp=new ImageOf<PixelMono>;
+    tmp->resize(width,height);
 }
 
 bool yuvProcessorThread::threadInit(){

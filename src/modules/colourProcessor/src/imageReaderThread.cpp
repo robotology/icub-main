@@ -99,6 +99,8 @@ bool imageReaderThread::threadInit(){
 * function called when the module is poked with an interrupt command
 */
 void imageReaderThread::interrupt(){
+    interrupted_flag=true; //interrupt of the update cycle before the interrupt of the blocked input port
+
     inputPort.interrupt();
     
     redPort.interrupt();
@@ -114,7 +116,7 @@ void imageReaderThread::interrupt(){
     vPort.interrupt();
     uvPort.interrupt();
 
-    interrupted_flag=true;
+    
 }
 
 
@@ -137,9 +139,9 @@ void imageReaderThread::run(){
                 ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
                
                 outPorts();   
-            }
-        }
-    }
+            }//if
+        }//if
+    }//while
 }
    
 void imageReaderThread::outPorts(){
