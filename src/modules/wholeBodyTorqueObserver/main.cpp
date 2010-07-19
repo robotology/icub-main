@@ -560,8 +560,8 @@ public:
 			Offset_RArm = Offset_RArm + (F_RArm-F_iDyn_RArm);
 			Offset_LLeg = Offset_LLeg + (F_LLeg-F_iDyn_LLeg);
 			Offset_RLeg = Offset_RLeg + (F_RLeg-F_iDyn_RLeg);
-			fprintf(stderr,"!\n");
 		}
+			fprintf(stderr,"!\n");
 		Offset_LArm = 1.0/(double)Ntrials * Offset_LArm;
 		cout<<"Left Arm:	"<<Offset_LArm.toString()<<endl;
 		Offset_RArm = 1.0/(double)Ntrials * Offset_RArm;
