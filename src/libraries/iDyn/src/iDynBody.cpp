@@ -398,12 +398,9 @@ Matrix RigidBodyTransformation::computeCOMJacobian(const unsigned int iLink, con
         return getR6() * limb->computeCOMJacobian(iLink, Pn, _H0);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::getHCOM(unsigned int iLink, bool rbtRoto)
+Matrix RigidBodyTransformation::getHCOM(unsigned int iLink)
 { 
-   if(rbtRoto==false)
-        return limb->getHCOM(iLink);
-    else
-        return getR6() * limb->getHCOM(iLink); 
+   return limb->getHCOM(iLink);
 }
 
 
@@ -655,16 +652,13 @@ bool iDynNode::solveWrench(const Matrix &Fm, const Matrix &Mm)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynNode::setWrenchMeasure(const Matrix &FM)
 {
-	int inputNode = 0;
 	Vector fi(3); fi.zero();
 	Vector mi(3); mi.zero();
 	Vector FMi(6);FMi.zero();
 	bool inputWasOk = true;
 
 	//check how many limbs have wrench input
-	for(unsigned int i=0; i<rbtList.size(); i++)
-		if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
-			inputNode++;
+	int inputNode = howManyWrenchInputs(false);
 		
 	// input (eg measured) wrenches are stored in a 6xN matrix: each column is a 6x1 vector
 	// with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
@@ -722,13 +716,10 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 {
-	int inputNode = 0;
 	bool inputWasOk = true;
 
 	//check how many limbs have wrench input
-	for(unsigned int i=0; i<rbtList.size(); i++)
-		if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)			
-			inputNode++;
+	int inputNode = howManyWrenchInputs(false);
 		
 	// input (eg measured) wrenches are stored in two 3xN matrix: each column is a 3x1 vector
 	// with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb

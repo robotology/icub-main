@@ -27,12 +27,12 @@
  *
  * \section example_sec Example
  *
- * head->setAng(q); 
- * head->setDAng(dq);
- * head->setD2Ang(ddq);
- * node->solveKinematics(w0,dw0,ddp0);
- * Matrix FM(6,1); FM.zero();
- * node->solveWrench(FM);
+ * <tt> head->setAng(q); </tt> \n
+ * <tt> head->setDAng(dq);</tt> \n
+ * <tt> head->setD2Ang(ddq);</tt> \n
+ * <tt> node->solveKinematics(w0,dw0,ddp0);</tt> \n
+ * <tt> Matrix FM(6,1); FM.zero();</tt> \n
+ * <tt> node->solveWrench(FM);</tt> \n
  * 
  * Now that the node is solved, one can get kinematic/dynamic information from 
  * the up (or any attached limb) 
@@ -160,11 +160,13 @@ protected:
 	// useful methods
 
 	/**
+    * Return the rotational 3x3 matrix of the RBT
 	* @return the rotational matrix of the RBT
 	*/
 	yarp::sig::Matrix	getR();	
 	
 	/**
+    * Return the translational part of the RBT matrix
 	* @param proj=true/false
 	* @return the distance vector of the RBT
 	*/
@@ -271,7 +273,8 @@ public:
 	bool setWrenchMeasure(iDyn::iDynSensor *sensor, const yarp::sig::Vector &Fsens, const yarp::sig::Vector &Musens); 
 
 	/**
-	* @return H, the (4x4) roto-translational matrix defining the rigid body transformation
+    * Return the the (4x4) roto-translational matrix defining the rigid body transformation
+	* @return H, the 4x4 matrix of the RBT
 	*/
 	yarp::sig::Matrix getRBT() const;
 	
@@ -308,22 +311,27 @@ public:
 	void setInfoFlow(const FlowType kin, const FlowType wre);
 
 	/**
+    * Return the kinematic flow type
 	* @return the kinematic flow
 	*/
 	FlowType getKinematicFlow() const;
 	
 	/**
+    * return the wrench flow type
 	* @return the wrench flow
 	*/
 	FlowType getWrenchFlow() const;
 
 	/**
+    * Return some information
 	* @return a string with information
 	*/
 	std::string toString() const;
 
 	/**
-	* @return false
+    * Return a boolean, depending if the limb attached to the RBT has a FT sensor
+    * or not.
+	* @return true if the limb has a FT sensor, false otherwise
 	*/
 	bool isSensorized() const;
 
@@ -338,22 +346,30 @@ public:
 	void computeLimbWrench();
 
 	/**
+    * Return the number of links of the limb (N)
 	* @return the number of links in the limb
 	*/
 	unsigned int getNLinks() const;
 
 	/**
+    * Return the number of DOF of the limb (DOF <= N)
 	* @return the number of DOF in the limb
 	*/
 	unsigned int getDOF() const;
 
 	/**
-	* Return the i-th roto-translational matrix of the chain
+    * Return the i-th roto-translational matrix of the chain. This method
+    * basically calls iKinChain::getH(i,allLink). the boolean allLink specifies if
+    * all the links are considered, or only the unblocked ones (DOF)
+	* @param i the link index in the chain (0<=i<N)
+    * @param allLink if all the links are considered
+    * @return H of the i-th link
 	*/
     yarp::sig::Matrix getH(const unsigned int i, const bool allLink=false);        
     
 	/**
-	* Return the end-effector roto-translational matrix
+	* Return the end-effector roto-translational matrix of the end-effector
+    * H of the end-effector
 	*/
 	yarp::sig::Matrix getH(); 
 
@@ -420,25 +436,64 @@ public:
     yarp::sig::Matrix computeGeoJacobian(const unsigned int iLink, bool rbtRoto = false);
 
 	/**
+    * Return a 6x6 diagonal matrix with the rotational matrix of the RBT 
 	* @return a 6x6 diagonal matrix with the rotational matrix of the RBT 
 	*/
 	yarp::sig::Matrix	getR6() const;
-		
+
+    /**
+    * Return the H0 matrix of the limb attached to the RBT
+    * @return the H0 matrix of the limb attached to the RBT
+    */
 	yarp::sig::Matrix getH0() const;
 
+    /**
+    * Set a new H0 matrix in the limb attached to the RBT
+    * @param _H0 the new H0 matrix of the limb attached to the RBT
+    * @return true if succeed, false otherwise
+    */
 	bool setH0(const yarp::sig::Matrix &_H0);
 
     //---------------
     //   JAC COM
     //---------------
 
+    /**
+    * Returns the Jacobian matrix of the COM of the selected link (index = iLink) in the chain.
+	* @param iLink the index of the link, in the chain
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix of the selected link COM 
+	*/
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, bool rbtRoto = false);
 
+    /**
+    * Returns the Jacobian matrix of the COM of the selected link (index = iLink) in the chain: in this case
+    * Pn is an external vector, that happens when multiple limbs are connected.
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @param iLink the index of the link, in the chain
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix of the selected link COM 
+	*/
 	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, bool rbtRoto = false);
 
+    /**
+    * Returns the Jacobian matrix of the COM of the selected link (index = iLink) in the chain: in this case
+    * Pn is an external vector, that happens when multiple limbs are connected. The H0 matrix used to initialize
+    * the Jacobian computation is external too.
+	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+	* @param H0 the H0 matrix of the base to be used for the Jacobian computation
+	* @param iLink the index of the link, in the chain
+	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
+	* @return the Jacobian matrix of the selected link COM 
+	*/
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0, bool rbtRoto = false );
 
-    yarp::sig::Matrix getHCOM(unsigned int iLink, bool rbtRoto = false);
+    /**
+    * Returns the COM matrix of the selected link (index = iLink) in the chain.
+	* @param iLink the index of the link, in the chain
+	* @return the roto-translational matrix of the selected link COM 
+    */
+    yarp::sig::Matrix getHCOM(unsigned int iLink);
 
 };
 
@@ -510,6 +565,8 @@ protected:
 	void compute_Pn_HAN_COM(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, yarp::sig::Matrix &Pn, yarp::sig::Matrix &H_A_Node);
 
     /**
+    * Return the number of limbs with wrench input, i.e. receiving wrench information from
+    * external measurements.
 	* @param afterAttach =true only if the limb received wrench parameters during an
 	* attachTorso() procedure
 	* @return the number of limbs with wrench input, if afterAttach=false; if
@@ -518,6 +575,8 @@ protected:
 	unsigned int howManyWrenchInputs(bool afterAttach=false) const;
 
     /**
+    * Return the number of limbs with kinematic input, i.e. receiving kinematic
+    * information from external measurements.
 	* @param afterAttach =true only if the limb received kinematic parameters during an
 	* attachTorso() procedure
 	* @return the number of limbs with kinematic input, if afterAttach=false; if
@@ -528,12 +587,16 @@ protected:
 public:
 
 	/**
-	*	Default constructor
+	* Default constructor
+    * @param _mode the modality for dynamic computation
 	*/
 	iDynNode(const NewEulMode _mode=DYNAMIC);
 
 	/**
-	*	Constructor
+	* Constructor with parameters
+    * @param _info some information on the node, i.e. its description
+    * @param _mode the modality for dynamic computation
+    * @param verb verbosity level
 	*/
 	iDynNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
 
@@ -549,6 +612,7 @@ public:
 	virtual void addLimb(iDyn::iDynLimb *limb, const yarp::sig::Matrix &H, const FlowType kinFlow=RBT_NODE_OUT, const FlowType wreFlow=RBT_NODE_IN, bool hasSensor=false);
 
     /**
+    * Return the RBT matrix of a certain limb attached to the node.
     * @param iLimb the index of the limb - the index is the number of insertion of the limb in the node
     * @return the RBT matrix of that limb, attached to the node
     */
@@ -647,6 +711,7 @@ public:
 	bool solveWrench(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
 
 	/**
+    * Set the wrench measure on the limbs with input wrench
 	* @param F a (3xN) matrix with forces
 	* @param M a (3xN) matrix with moments 
 	* @return true if succeeds, false otherwise
@@ -654,32 +719,38 @@ public:
 	virtual bool setWrenchMeasure(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
 
 	/**
+    * Set the wrench measure on the limbs with input wrench
 	* @param FM a (6xN) matrix with forces and moments 
 	* @return true if succeeds, false otherwise
 	*/
 	virtual bool setWrenchMeasure(const yarp::sig::Matrix &FM);
 
 	/**
+    * Return the node force
 	* @return the node force
 	*/
 	yarp::sig::Vector getForce() const;
 	
 	/**
+	* Return the node moment
 	* @return the node moment
 	*/
 	yarp::sig::Vector getMoment() const;
 	
 	/**
+    * Return the node angular velocity
 	* @return the node angular velocity
 	*/
 	yarp::sig::Vector getAngVel() const;
 
 	/**
+    * Return the node angular acceleration
 	* @return the node angular acceleration
 	*/
 	yarp::sig::Vector getAngAcc() const;
 
 	/**
+    * Return the node linear acceleration
 	* @return the node linear acceleration
 	*/
 	yarp::sig::Vector getLinAcc() const;
@@ -792,8 +863,28 @@ public:
     //   JAC COM
     //---------------
 
+	/**
+	* Compute the Jacobian of the COM of the i-th link of the limb with index iChain in the node.
+    * If the link index is not correct, a null Jacobian is returned.
+	* @param iChain the index of the chain (limb) in the node 
+    * @param iLink  the index of the limnk in the limb
+	* @return the Jacobian matrix of the COM
+	*/
     yarp::sig::Matrix computeCOMJacobian(unsigned int iChain, unsigned int iLink);
 
+    /**
+	* Compute the Jacobian of the COM of link iLinkB, in chainB, when two different chains (A and B) are connected. The chains are
+	* specified by their index in the list (the progressive number of insertion).
+	* The first limb has the base of the jacobian (base or end-effector of the limb, depending
+    * on the Jacobian direction JacA) while
+	* the second limb (limb B - index=iChainB) has the final link of the jacobian (index=iLinkB).
+  	* @param iChainA the index of the chain (the limb) in the node having the base (<0>) frame
+	* @param dirA the 'direction' of the chain wrt the jacobian computation
+	* @param iChainB the index of the chain (the limb) in the node having the final (<N>) frame
+	* @param iLinkB the index of the link, in the indexChainN chain, being the final (<N>) frame for the Jacobian computation
+	* @param dirB the 'direction' of the chain wrt the jacobian computation
+	* @return the Jacobian matrix of the COM
+	*/
     yarp::sig::Matrix computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB);
 
 
@@ -813,7 +904,6 @@ protected:
 
 	/// the list of iDynSensors used to solve each limb after FT sensor measurements
 	std::deque<iDyn::iDynSensor *> sensorList;
-
 
 	/**
 	* @return the number of limbs with sensor
@@ -998,6 +1088,7 @@ public:
 
 	/**
 	* Main method for solving kinematics and wrench among limbs, where information are shared.
+    * @return true if kinematics and wrench phases succeed, false otherwise
 	*/
 	bool update();
 
@@ -1029,12 +1120,14 @@ public:
 	//----------------
 
 	/**
+    * Return the chosen limb forces, as a 6xN matrix.
 	* @param limbType a string with the limb name
 	* @return the chosen limb forces
 	*/
 	yarp::sig::Matrix getForces(const std::string &limbType);	
 
 	/**
+    * Return the chosen limb-link force, as a 3x1 vector
 	* @param limbType a string with the limb name
 	* @param iLink the link index in the limb
 	* @return the chosen limb-link force
@@ -1042,12 +1135,14 @@ public:
 	yarp::sig::Vector getForce(const std::string &limbType, const unsigned int iLink) const	;
 
 	/**
+    * Return the chosen limb moments, as a 6xN matrix
 	* @param limbType a string with the limb name
 	* @return the chosen limb moments
 	*/
 	yarp::sig::Matrix getMoments(const std::string &limbType);
 
 	/**
+    * Return the chosen limb-link moment, as a 3x1 vector
 	* @param limbType a string with the limb name
 	* @param iLink the link index in the limb
 	* @return the chosen limb-link moment
@@ -1055,12 +1150,14 @@ public:
 	yarp::sig::Vector getMoment(const std::string &limbType, const unsigned int iLink) const;
 
 	/**
+    * Return the chosen limb torques, as a Nx1 vector
 	* @param limbType a string with the limb name
 	* @return the chosen limb torques
 	*/
 	yarp::sig::Vector getTorques(const std::string &limbType);
 
 	/**
+    * Return the chosen limb-link torque, as a real value
 	* @param limbType a string with the limb name
 	* @param iLink the link index in the limb
 	* @return the chosen limb-link torque
@@ -1068,22 +1165,27 @@ public:
 	double getTorque(const std::string &limbType, const unsigned int iLink) const;
 
 	/**
+    * Return the torso force
 	* @return the torso force
 	*/
 	yarp::sig::Vector getTorsoForce() const;
 	/**
+    * Return the torso moment
 	* @return the torso moment
 	*/
 	yarp::sig::Vector getTorsoMoment() const;	
 	/**
+    * Return the torso angular velocity
 	* @return the torso angular velocity
 	*/
 	yarp::sig::Vector getTorsoAngVel() const;
 	/**
+    * Return the torso angular acceleration
 	* @return the torso angular acceleration
 	*/
 	yarp::sig::Vector getTorsoAngAcc() const;
 	/**
+    * Return the torso linear acceleration
 	* @return the torso linear acceleration
 	*/
 	yarp::sig::Vector getTorsoLinAcc() const;
@@ -1127,19 +1229,91 @@ public:
 	//    LIMB CALLS
 	//------------------
 
+    /**
+    * Set joints angle position in the chosen limb
+    * @param _q the joints position
+    * @param limbType a string with limb type
+    * @return the effective joint angles, considering min/max values
+    */
 	yarp::sig::Vector setAng(const std::string &limbType, const yarp::sig::Vector &_q);
+    /**
+    * Get joints angle position in the chosen limb
+    * @param limbType a string with limb type
+    * @return the joint angles
+    */
     yarp::sig::Vector getAng(const std::string &limbType);
+    /**
+    * Set the i-th joint angle position in the chosen limb
+    * @param _q the joint position
+    * @param i the link index in the limb
+    * @param limbType a string with limb type
+    * @return the effective joint angle, considering min/max values
+    */
     double            setAng(const std::string &limbType, const unsigned int i, double _q);
+    /**
+    * Get a joint angle position in the chosen limb
+    * @param limbType a string with limb type
+    * @param i the link index in the limb
+    * @return the joint angle
+    */
     double            getAng(const std::string &limbType, const unsigned int i);
 
+    /**
+    * Set joints angle velocity in the chosen limb
+    * @param _dq the joints velocity
+    * @param limbType a string with limb type
+    * @return the effective joint velocity
+    */
 	yarp::sig::Vector setDAng(const std::string &limbType, const yarp::sig::Vector &_dq);
+    /**
+    * Get joints angle velocity in the chosen limb
+    * @param limbType a string with limb type
+    * @return the joint velocity
+    */
     yarp::sig::Vector getDAng(const std::string &limbType);
+    /**
+    * Set the i-th joint angle velocity in the chosen limb
+    * @param _dq the joint velocity
+    * @param i the link index in the limb
+    * @param limbType a string with limb type
+    * @return the effective joint velocity
+    */
     double            setDAng(const std::string &limbType, const unsigned int i, double _dq);
+    /**
+    * Get a joint angle velocity in the chosen limb
+    * @param limbType a string with limb type
+    * @param i the link index in the limb
+    * @return the joint velocity
+    */
     double            getDAng(const std::string &limbType, const unsigned int i);                                  
 
+    /**
+    * Set joints angle acceleration in the chosen limb
+    * @param _dq the joints acceleration
+    * @param limbType a string with limb type
+    * @return the effective joint acceleration
+    */
 	yarp::sig::Vector setD2Ang(const std::string &limbType, const yarp::sig::Vector &_ddq);
+    /**
+    * Get joints angle acceleration in the chosen limb
+    * @param limbType a string with limb type
+    * @return the joint acceleration
+    */
     yarp::sig::Vector getD2Ang(const std::string &limbType);
+    /**
+    * Set the i-th joint angle acceleration in the chosen limb
+    * @param _ddq the joint acceleration
+    * @param i the link index in the limb
+    * @param limbType a string with limb type
+    * @return the effective joint acceleration
+    */
     double            setD2Ang(const std::string &limbType, const unsigned int i, double _ddq);
+    /**
+    * Get a joint angle acceleration in the chosen limb
+    * @param limbType a string with limb type
+    * @param i the link index in the limb
+    * @return the joint acceleration
+    */
     double            getD2Ang(const std::string &limbType, const unsigned int i);
 
 	/**
@@ -1153,9 +1327,10 @@ public:
 	* Exploit iDynInvSensor methods to retrieve FT sensor measurements after
 	* solving wrenches in the limbs.
 	* @param FM a (6xN) matrix of forces/moments where N is the number of external wrenches for the N limbs of the node
-	* @return a 
+	* @return a (6xM), matrix with estimated wrench for the M sensors
 	*/
-	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false) { return iDynSensorNode::estimateSensorsWrench(FM,afterAttach); }
+	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false) 
+    { return iDynSensorNode::estimateSensorsWrench(FM,afterAttach); }
 
 	
 };
@@ -1287,11 +1462,17 @@ public:
 		const yarp::sig::Vector &FM_right_leg, const yarp::sig::Vector &FM_left_leg);
 
 
+    /**
+    * Not available yet! We'll do it as soon as possible..
+    */
 	yarp::sig::Matrix computeJacobian(bool whichTorsoA, unsigned int iChainA, JacobType dirA, bool whichTorsoB, unsigned int iChainB, JacobType dirB)
 	{
         iCub::iDyn::notImplemented(VERBOSE,"iCubWholeBody does not have this computeJacobian() yet. Sorry!");
 	}
 
+    /**
+    * Not available yet! We'll do it as soon as possible..
+    */
 	yarp::sig::Vector computePose(bool whichTorsoA, unsigned int iChainA, JacobType dirA, bool whichTorsoB, unsigned int iChainB, JacobType dirB, const bool axisRep)
 	{
         iCub::iDyn::notImplemented(VERBOSE,"iCubWholeBody does not have this computePose() yet. Sorry! ");	

@@ -955,7 +955,6 @@ public:
 	*/
     yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
-
     /**
     * @return the COM matrix of the i-th link
     */
