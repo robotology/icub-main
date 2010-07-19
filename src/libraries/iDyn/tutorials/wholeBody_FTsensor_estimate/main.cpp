@@ -113,7 +113,7 @@ int main()
 	// note: afterAttach=false is set to true, because we specify that the torso
 	// already received the wrench for initialization by the upperTorso during
 	// the attachTorso()
-	Matrix fm_sens_lo = icub.lowerTorso->estimateSensorsWrench(FM_lo,true);
+	Matrix fm_sens_lo = icub.lowerTorso->estimateSensorsWrench(FM_lo,NODE_AFTER_ATTACH);
 
 	cout<<endl
 		<<"Estimate FT sensor measurements on upper body: "<<endl
