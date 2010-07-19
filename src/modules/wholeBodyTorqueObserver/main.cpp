@@ -402,7 +402,7 @@ public:
 
     void run()
     {   
-        readAndUpdate();
+        readAndUpdate(true);
 		setZeroJntAngVelAcc();
 		setUpperMeasure();
 		setLowerMeasure();
@@ -430,28 +430,6 @@ public:
 		Vector RLTorques = icub.lowerTorso->getTorques("right_leg");
 		Vector TSTorques = icub.lowerTorso->getTorques("torso");
 				
-		fprintf(stderr,"\n\n\n\n\n\n");
-		for(int i = 0;i<6;i++)
-		{
-			fprintf(stderr,"%+.3lf\t", RLTorques(i));
-		}
-		fprintf(stderr,"\n");
-		for(int i = 0;i<6;i++)
-		{
-			fprintf(stderr,"%+.3lf\t", LATorques(i));
-		}
-		fprintf(stderr,"\n"); 
-		for(int i = 0;i<6;i++)
-		{
-			fprintf(stderr,"%+.3lf\t", RLTorques(i));
-		}
-		fprintf(stderr,"\n"); 
-		for(int i = 0;i<6;i++)
-		{
-			fprintf(stderr,"%+.3lf\t", LLTorques(i));
-		}
-		
-		
 		writeTorque(RLTorques, 2, port_RLTorques);
 		writeTorque(LLTorques, 2, port_LLTorques);
 		writeTorque(RATorques, 1, port_RATorques);
