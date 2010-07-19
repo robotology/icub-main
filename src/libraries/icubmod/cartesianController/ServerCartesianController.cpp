@@ -863,7 +863,7 @@ void ServerCartesianController::sendVelocity(const Vector &v)
                 double thres=lDsc[j].minAbsVels[k];
 
                 // apply bang-bang control to compensate for unachievable low velocities
-                if ((v_cnt>-thres) && (v_cnt<thres) && !v_cnt)
+                if ((v_cnt>-thres) && (v_cnt<thres) && (v_cnt!=0.0))
                 {
                     // current error in the joint space
                     double e=qdes[cnt]-fb[cnt];

@@ -1331,8 +1331,8 @@ void CartesianSolver::prepareJointsRestTask()
         if (!(*prt->chn)[i].isBlocked())
         {            
             qd_3rdTask[offs]=restJntPos[i];
-            w_3rdTask[offs]=restWeights[i]?restWeights[i]:1.0;
-            idx_3rdTask[offs]=restWeights[i]?0:1;
+            w_3rdTask[offs]=(restWeights[i]!=0.0)?restWeights[i]:1.0;
+            idx_3rdTask[offs]=(restWeights[i]!=0.0)?0:1;
 
             offs++;
         }
