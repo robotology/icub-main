@@ -68,7 +68,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor():RateThread(THREAD_RAT
     image_out=new ImageOf<PixelRgb>;
     image_tmp=new ImageOf<PixelMono>;
     outputImage=new ImageOf<PixelMono>;
-    outputColourImage=new ImageOf<PixelRgb>;
+    outputImage2=new ImageOf<PixelMono>;
     linearCombinationImage=new ImageOf<PixelMono>;
         
 }
@@ -97,7 +97,7 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
     delete image_out;
     delete image_tmp;
     delete outputImage;
-    delete outputColourImage;
+    delete outputImage2;
     
 }
 
@@ -107,16 +107,10 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inpu
  
     //IppiSize srcsize={320,240};
 
-    
-    
     //edgesOutput=new ImageOf<PixelMono>;
     //portImage=new ImageOf<PixelRgb>;
     
-    tmp=new ImageOf<PixelMono>;
-    
-    
-    
-    
+    tmp=new ImageOf<PixelMono>;    
 }
 /**
 * 
@@ -129,12 +123,12 @@ void selectiveAttentionProcessor::resizeImages(int width,int height){
     IppiSize srcsize={width,height};
     tmp->resize(width,height);
     //portImage->resize(width,height);
-    map1_yarp->resize(width,height);
+    /*map1_yarp->resize(width,height);
     map2_yarp->resize(width,height);
     map3_yarp->resize(width,height);
     map4_yarp->resize(width,height);
     map5_yarp->resize(width,height);
-    map6_yarp->resize(width,height);
+    map6_yarp->resize(width,height);*/
 
     inImage->resize(width,height);
 
@@ -150,7 +144,7 @@ void selectiveAttentionProcessor::resizeImages(int width,int height){
     image_out->resize(width,height);
     image_tmp->resize(width,height);
     outputImage->resize(width,height);
-    outputColourImage->resize(width,height);
+    outputImage2->resize(width,height);
     linearCombinationImage->resize(width,height);
 
     cvImage16= cvCreateImage(cvSize(width,height),IPL_DEPTH_16S,1);
@@ -175,6 +169,7 @@ void selectiveAttentionProcessor::run(){
     srcsize.width=this->width;
     int rowSize=map1_yarp->getRowSize();
     unsigned char maxValue=0;
+    idle=false;
     if(!idle){
         for(int y=0;y<height;y++){
             for(int x=0;x<width;x++){
@@ -214,9 +209,9 @@ void selectiveAttentionProcessor::run(){
             }   
         }
 
-        
-        //extractContour(outputImage,outputColourImage,inImage,centroid_x,centroid_y);
-        //printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
+        ippiCopy_8u_C1R(outputImage->getRawImage(),outputImage->getRowSize(),outputImage2->getRawImage(),outputImage2->getRowSize(), srcsize);
+        extractContour(outputImage2,inImage,centroid_x,centroid_y);
+        printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
 
         //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
         //get the colour of the inputImage starting in the centroid_x and centroid_y position
@@ -226,7 +221,7 @@ void selectiveAttentionProcessor::run(){
     
 }
 
-void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelRgb>* outputImage,ImageOf<PixelRgb>* inputColourImage,int& x,int& y){
+void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelRgb>* inputColourImage,int& x,int& y){
     IppiSize srcsize;
     srcsize.height=inputImage->height();
     srcsize.width=inputImage->width();

@@ -1,5 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/selectiveAttentionModule.h>
+#include <yarp/os/Network.h>
 
 
 #include <iostream>
@@ -35,48 +36,34 @@ static selectiveAttentionModule *selectiveAttentionModule;
 #define _semaphore (*(ptr_semaphore))
 
 
-bool selectiveAttentionModule::open(Searchable& config) {
+bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     ct = 0;
 	inputImage_flag=false;
     reinit_flag=false;
+    init_flag=false;
 
 	currentProcessor=0;
     inputImg=0;
     tmp=0;
     tmp2=0;
 
-    targetRED=0;
-    targetGREEN=0;
-    targetBLUE=0;
-    salienceTD=0.0;
-    salienceBU=1.0;
-    
-    time (&start);
+    Time::turboBoost();
+    cmdPort.open(getName("/cmd:i"));
+    attach(cmdPort);
 
+    interThread=new interactionThread();
+    interThread->setName(this->getName().c_str());
+    printf("name:%s \n",this->getName().c_str());
+    interThread->start();
 
-    openPorts();   
-    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+    printf("\n waiting for connection of the input port \n");
+
     
     return true;
 }
 
 // try to interrupt any communications or resource usage
-bool selectiveAttentionModule::interruptModule() {
-    printf("interrupting the module.. \n");
-	map1Port.interrupt();
-    map2Port.interrupt();
-    map3Port.interrupt();
-    
-    map4Port.interrupt();
-    map5Port.interrupt();
-    map6Port.interrupt();
-    
-    selectedAttentionPort.interrupt();
-    linearCombinationPort.interrupt();
-    centroidPort.interrupt();
-    feedbackPort.interrupt();
-    
-    inImagePort.interrupt();
+bool selectiveAttentionModule::interruptModule() {    
     cmdPort.interrupt();
 	return true;
 }
@@ -142,24 +129,7 @@ void selectiveAttentionModule::setUp()
 }
 
 bool selectiveAttentionModule::openPorts(){
-	bool ret = false;
-    bool ok=true;
-    //input ports 
-    inImagePort.open(getName("image:i"));
-    map1Port.open(getName("map1:i")); //
-    map2Port.open(getName("map2:i"));; //
-    map3Port.open(getName("map3:i"));; //	 
-    map4Port.open(getName("map4:i"));; 
-    map5Port.open(getName("map5:i"));; 
-    map6Port.open(getName("map6:i"));; 
-
-    
-
-    selectedAttentionPort.open(getName("attention:o"));
-    linearCombinationPort.open(getName("combination:o"));
-    centroidPort.open(getName("centroid:o"));
-    feedbackPort.open(getName("feedback:o"));
-
+	
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
 
@@ -167,130 +137,14 @@ bool selectiveAttentionModule::openPorts(){
 }
 
 bool selectiveAttentionModule::outPorts(){
-	bool ret = false;
-    if((0!=currentProcessor->linearCombinationImage)&&(linearCombinationPort.getOutputCount())){
-        linearCombinationPort.prepare() = *(currentProcessor->linearCombinationImage);
-        linearCombinationPort.write();
-    }
-    
-    if((0!=currentProcessor->outputImage)&&(selectedAttentionPort.getOutputCount())){
-        selectedAttentionPort.prepare() = *(currentProcessor->outputImage);
-        selectedAttentionPort.write();
-    }	
-
-    if(centroidPort.getOutputCount()){  
-        Bottle& commandBottle=centroidPort.prepare();
-        commandBottle.clear();
-        commandBottle.addString("sac");
-        commandBottle.addString("img");
-        commandBottle.addInt(currentProcessor->centroid_x);
-        commandBottle.addInt(currentProcessor->centroid_y);
-        centroidPort.write();
-    }
-
-    if(feedbackPort.getOutputCount()){  
-        //Bottle& commandBottle=feedbackPort.prepare();
-        Bottle in,commandBottle;
-        commandBottle.clear();
-        
-        
-        time (&end);
-        double dif = difftime (end,start);
-        if(dif>30+2){
-                //restart the time interval
-                 time(&start);
-        }
-        else if((dif>2)&&(dif<30+2)){
-            //setting coefficients
-            commandBottle.clear();
-            commandBottle.addVocab(VOCAB3('s','e','t'));
-            commandBottle.addVocab(VOCAB3('k','t','d'));
-            salienceTD=salienceTD+0.1;
-        
-            //if(salienceTD>0.99)
-                salienceTD=1.0;
-            printf("salienceTD \n");
-            commandBottle.addDouble((double)salienceTD);
-            feedbackPort.write(commandBottle,in);
-            commandBottle.clear();
-            commandBottle.addVocab(VOCAB3('s','e','t'));
-            commandBottle.addVocab(VOCAB3('k','b','u'));
-            salienceBU=salienceBU-0.1;
-            
-            //if(salienceBU<=0)
-                salienceBU=0;
-            commandBottle.addDouble((double)salienceBU);
-            feedbackPort.write(commandBottle,in);    
-            printf("read: %f,%f,%f \n",(double)targetRED,(double)targetGREEN,(double)targetBLUE);
-            
-        }
-        else{
-            printf("salienceBU \n");
-            commandBottle.addVocab(VOCAB3('s','e','t'));
-            commandBottle.addVocab(VOCAB3('k','t','d'));
-            salienceTD=0.0;
-            commandBottle.addDouble((double)salienceTD);
-            feedbackPort.write(commandBottle,in);
-            commandBottle.clear();
-            commandBottle.addVocab(VOCAB3('s','e','t'));
-            commandBottle.addVocab(VOCAB3('k','b','u'));
-            salienceBU=1.0;
-            commandBottle.addDouble((double)salienceBU);
-            feedbackPort.write(commandBottle,in);
-            commandBottle.clear();
-            commandBottle.addVocab(VOCAB3('s','e','t'));
-            commandBottle.addVocab(VOCAB3('r','i','n'));
-            commandBottle.addDouble((double)currentProcessor->targetRed);
-            //commandBottle.addDouble(255.0);
-            feedbackPort.write(commandBottle,in);
-            commandBottle.clear();
-            commandBottle.addVocab(VOCAB3('s','e','t'));
-            commandBottle.addVocab(VOCAB3('g','i','n'));
-            commandBottle.addDouble((double)currentProcessor->targetGreen);
-            //commandBottle.addDouble(0.0);
-            feedbackPort.write(commandBottle,in);
-            commandBottle.clear();
-            commandBottle.addVocab(VOCAB3('s','e','t'));
-            commandBottle.addVocab(VOCAB3('b','i','n'));
-            commandBottle.addDouble((double)currentProcessor->targetBlue);
-            feedbackPort.write(commandBottle,in);
-            commandBottle.clear();
-            //commandBottle.addDouble(0.0);
-            printf("%f,%f,%f \n",(double)currentProcessor->targetRed,(double)currentProcessor->targetGreen,(double)currentProcessor->targetBlue);
-        }
-
-        
-    }
-
-    
-    return ret;
+    return true;
 }
 
 bool selectiveAttentionModule::closePorts(){
-    printf("Closing all the ports ... \n");
-	bool ret = false;
-	//int res = 0;
-	// Closing Port(s)
-    //reduce verbosity --paulfitz
-
-    //closing input ports
-    inImagePort.close();
-    map1Port.close();
-    map2Port.close();
-    map3Port.close();
-    map4Port.close();
-    map5Port.close();
-    map6Port.close();
-
-    selectedAttentionPort.close();
-    linearCombinationPort.close();
-    centroidPort.close();
-    feedbackPort.close();
-    
     cmdPort.close();
     printf("All the ports successfully closed ... \n");
 
-	return ret;
+	return true;
 }
 
 
@@ -306,134 +160,40 @@ void selectiveAttentionModule::reinitialise(int width, int height){
 
 
 bool selectiveAttentionModule::updateModule() {
-    string name;
-
-    /*this->inputImg = this->inImagePort.read(false);
-    if(0==inputImg)
-        return true;*/
-
-    //-----------check for any possible command
-    Bottle* command=cmdPort.read(false);
-    if(command!=0){
-        //Bottle* tmpBottle=cmdPort.read(false);
-        ConstString str= command->toString();
-        printf("command received: %s \n", str.c_str());
-        Bottle* reply=new Bottle();
-        this->respond(*command,*reply);
-        command->clear();
-    }
-    //--------read value from the preattentive level
-    if(feedbackPort.getOutputCount()){
-        Bottle in,out;
-        out.clear();
-        out.addString("get");
-        out.addString("ktd");
-        feedbackPort.write(out,in);
-        name=in.pop().asString();
-        salienceTD=in.pop().asDouble();
-        out.clear();
-        in.clear();
+    if((0!=interThread->inputImg)&&(!init_flag)){
         
-        out.addString("get");
-        out.addString("kbu");
-        feedbackPort.write(out,in);
-        name=in.pop().asString();
-        salienceBU=in.pop().asDouble();
-        out.clear();
-        in.clear();
-        
-        out.addString("get");
-        out.addString("rin");
-        feedbackPort.write(out,in);
-        name=in.pop().asString();
-        targetRED=in.pop().asInt();
-        out.clear();
-        in.clear();
-        
-        out.addString("get");
-        out.addString("gin");
-        feedbackPort.write(out,in);
-        name=in.pop().asString();
-        targetGREEN=in.pop().asInt();
-        out.clear();
-        in.clear();
-        
-        out.addString("get");
-        out.addString("bin");
-        feedbackPort.write(out,in);
-        name=in.pop().asString();
-        targetBLUE=in.pop().asDouble();
-        out.clear();
-        in.clear();
-    }
+	    printf("input port activated! starting the processes ....\n");    
 
-    //
-
-    //-------------read input maps
-    //if(map1Port.getInputCount()){
-    //    tmp=map1Port.read(false);
-    //}
-    if(inImagePort.getInputCount()){
-        tmp2=inImagePort.read(false);
-    }
-    if(tmp2==0){
-        return true;
-    }
-    
-    if(!reinit_flag){
-        //srcsize.height=img->height();
-        //srcsize.width=img->width();
-        reinitialise(tmp2->width(), tmp2->height());
-        reinit_flag=true;
+        //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+        //starting rgb thread and linking all the images
+        
+        
         currentProcessor=new selectiveAttentionProcessor();
-        //passes the temporary variable for the mode
-        currentProcessor->resizeImages(tmp2->width(),tmp2->height());
-        startselectiveAttentionProcessor();
-        currentProcessor->setIdle(false);
-    }
-    
-    currentProcessor->inImage=tmp2;
+        currentProcessor->resizeImages(interThread->inputImg->width(),interThread->inputImg->height());
+        
+        
+        currentProcessor->map1_yarp=interThread->map1_yarp;
+        currentProcessor->map2_yarp=interThread->map2_yarp;
+        currentProcessor->map3_yarp=interThread->map3_yarp;
+        currentProcessor->map4_yarp=interThread->map4_yarp;
+        currentProcessor->map5_yarp=interThread->map5_yarp;
+        currentProcessor->map6_yarp=interThread->map6_yarp;
 
-    if(map1Port.getInputCount()){    
-        tmp=map1Port.read(false);
-        if(tmp!=NULL)
-            currentProcessor->map1_yarp=tmp;
-    }
-    if(map2Port.getInputCount()){    
-        tmp=map2Port.read(false);
-        if(tmp!=NULL)
-            currentProcessor->map2_yarp=tmp;
-    }
-    if(map3Port.getInputCount()){
-        tmp=map3Port.read(false);
-        if(tmp!=NULL)
-            currentProcessor->map3_yarp=tmp;
-    }
-    if(map4Port.getInputCount()){
-        tmp=map4Port.read(false);
-        if(tmp!=NULL)
-            currentProcessor->map4_yarp=tmp;
-    }
-    
-    if(map5Port.getInputCount()){
-        tmp=map5Port.read(false);
-        if(tmp==NULL)
-            currentProcessor->map5_yarp=tmp;
-    }
-    if(map6Port.getInputCount()){
-        tmp=map6Port.read(false);
-        if(tmp!=NULL)
-            currentProcessor->map6_yarp=tmp;
-    }
-    
-    outPorts();
+        currentProcessor->start();
+        
+        currentProcessor->linearCombinationImage=interThread->linearCombinationImage;
+        currentProcessor->outputImage=interThread->outputImage;
 
+        init_flag=true;
+
+    }
+    
     return true;
 }
 
 bool selectiveAttentionModule::startselectiveAttentionProcessor(){
     printf("image processor starting ..... \n");
-    this->currentProcessor->start();
+    
     return true;
 }
 
@@ -658,7 +418,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
     mutex.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();
@@ -668,6 +428,5 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
         reply.addVocab(COMMAND_VOCAB_OK);
 
     return ok;
-} 	
-
-
+}
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
