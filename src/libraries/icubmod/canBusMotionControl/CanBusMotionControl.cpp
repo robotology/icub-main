@@ -904,18 +904,26 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++) _zeros[i-1] = xtmp.get(i).asDouble();
     
 	xtmp = p.findGroup("GENERAL").findGroup("TorqueId","a list of associated joint torque sensor ids");
-    if (xtmp.size() != nj+1) {
+    if (xtmp.size() != nj+1)
+	{
 		printf("TorqueId does not have the right number of entries. Using default value = 0 (disabled)\n");
         for(i=1;i<nj+1; i++) _torqueSensorId[i-1] = 0;   
     }
-    for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
+    else
+	{
+		for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
+	}
     
 	xtmp = p.findGroup("GENERAL").findGroup("TorqueChan","a list of associated joint torque sensor channels");
-    if (xtmp.size() != nj+1) {
+    if (xtmp.size() != nj+1)
+	{
         printf("TorqueChan does not have the right number of entries. Using default value = 0 (disabled)\n");
         for(i=1;i<nj+1; i++) _torqueSensorChan[i-1] = 0;   
     }
-    for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
+	else
+	{
+		for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
+	}
 
 	////// PIDS
     int j=0;
