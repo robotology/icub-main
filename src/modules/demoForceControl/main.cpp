@@ -1237,7 +1237,7 @@ public:
 		{
 			fprintf(stderr,"Device not found\n");
             //PortName=PortName+"icub";
-			PortName += "imp";
+			PortName += "imp/";
 		}
 		
 		ConstString partName=rf.find("part").asString();
