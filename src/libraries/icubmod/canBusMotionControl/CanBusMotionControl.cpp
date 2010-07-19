@@ -3002,7 +3002,12 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
         {
 			int id = (*it)->getId();
 			int cfgId   = _axisTorqueHelper->getTorqueSensorId(k);
-			if (id==cfgId)
+			if (cfgId == 0) 
+			{
+				*t=0;
+				break;
+			}
+			else if (cfgId==id)
 			{
 				int cfgChan = _axisTorqueHelper->getTorqueSensorChan(k);
 				yarp::sig::Vector data;
