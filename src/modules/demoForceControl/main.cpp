@@ -495,6 +495,21 @@ public:
 		for (int i=0; i<limbJnt; i++)
 			desPosition(i)=encoders(i);
 	}
+	
+	void setDesiredPositions(Bottle _cmd)			
+	{
+		int jntNum = _cmd.get(0).asInt();
+		fprintf(stderr,"setting jnt %d\n\n\n\n",jntNum);
+		if(jntNum<4)
+		{
+			double jntPos = _cmd.get(1).asDouble();
+
+			if(checkLimits(jntNum,jntPos))
+				desPosition(jntNum)=jntPos;
+			else  fprintf(stderr,"jnt value over limit\n\n\n\n");
+		}
+		else fprintf(stderr,"jnt number exceeded max dimension\n\n\n\n");
+	}
 
 	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string tmplimb):	  
 	  RateThread(_rate), dd(_dd) 
@@ -1053,7 +1068,14 @@ public:
 		  if(FTPid) delete[] FTPid;
 		  //---------------------------------------------
 	  }
-
+	  bool checkLimits(int _jntNum,double _jntPos)
+	  {
+		  if(_jntPos<=minJntLimits[_jntNum] || _jntPos>=maxJntLimits[_jntNum])
+		  {
+			  return false;              			  
+		  }
+		  else return true;
+	  }
 	  Vector checkLimits(Vector q, Vector TAO, Vector dir)
 	  {
 		  Vector t = TAO;
@@ -1061,7 +1083,7 @@ public:
 		  {
 			  if(q(i)<=minJntLimits[i])
 			  {
-                  if(count>=CPRNT)  fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+                  if(count>=CPRNT)  fprintf(stderr,"Jnt %d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
 				  if (dir(i)>0){ if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0,safe\n",dir(i));}
 				  else
 				  {
@@ -1169,32 +1191,32 @@ public:
 
 	bool respond(const Bottle& command, Bottle& reply) 
 	{
-	  string helpMessage =  string(getName().c_str()) + 
+		Bottle position_bot;
+		string helpMessage =  string(getName().c_str()) + 
 							" commands are: \n" +  
 							"help        to display this message\n" + 
 							"verbose     to display debug variables\n" + 
 							"set zfc     to set the zfc behaviour \n" + 
 							"set imp     to set the impedance behaviour) \n";
 
-	  reply.clear(); 
-
-	   if (command.get(0).asString()=="help")
-	   {
+		  reply.clear(); 
+		if (command.get(0).asString()=="help")
+		{
 		  cout << helpMessage;
 		  reply.addString(helpMessage.c_str());
-	   }
-   	   else if (command.get(0).asString()=="verbose")
-	   {
+		}
+		else if (command.get(0).asString()=="verbose")
+		{
 		  if (verbose) reply.addString("setting verbose mode OFF");
 		  else  reply.addString("ok, setting verbose mode ON");
 		  verbose = !(verbose);
-	   }
-	   else if (command.get(0).asString()=="set")
-	   {
+		}
+		else if (command.get(0).asString()=="set")
+		{
 		  //int jnt = command.get(2).asInt(); 
 		  if (command.get(1).asString()=="imp")
 		  {
-		     control_mode= IMPEDANCE;
+			 control_mode= IMPEDANCE;
 			 reply.addString("ok, setting impedance mode");
 			 ft_control->setDesiredPositions();
 		  }
@@ -1203,8 +1225,21 @@ public:
 			 control_mode= ZEROFORCECONTROL;
 			 reply.addString("ok, setting zero force control mode");
 		  }
-	   }
-	   return true;
+		}
+		else if (command.get(0).asString()=="pos")
+		{
+		  //int jnt = command.get(2).asInt(); 
+		  if(control_mode==IMPEDANCE)
+		  {
+			  position_bot.addInt(command.get(1).asInt());
+			  position_bot.addDouble(command.get(2).asDouble());
+
+			  fprintf(stderr,"ok, setting joint position %d: %.2lf [deg]\n",command.get(1).asInt(),command.get(2).asDouble());
+			  ft_control->setDesiredPositions(position_bot);
+		  }
+		  else fprintf(stderr,"cannot assign desired position when zfc is active!!!\n");
+		}
+		return true;
 	}
 	bool configure(ResourceFinder &rf)
 	{
@@ -1237,8 +1272,10 @@ public:
 		{
 			fprintf(stderr,"Device not found\n");
             //PortName=PortName+"icub";
-			PortName += "imp/";
+			PortName += "imp";
 		}
+		
+		PortName += fwdSlash;
 		
 		ConstString partName=rf.find("part").asString();
 		if (rf.check("part"))
@@ -1252,6 +1289,8 @@ public:
 		  Time::delay(3.1);
             return false;
 		}
+		
+		PortName += fwdSlash;
 		//port_FT=new BufferedPort<Vector>;
 		//port_FT->open((PortName+"/FT:i").c_str());
 		Bottle tmp;
@@ -1333,7 +1372,7 @@ public:
 			fprintf(stderr,"device driver created\n");
 		
 		port_FT=new BufferedPort<Vector>;
-		port_FT->open((PortName+"/FT:i").c_str());
+		port_FT->open((PortName+"FT:i").c_str());
 		fprintf(stderr,"input port opened...\n");
 		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf, part);
 		fprintf(stderr,"ft thread istantiated...\n");
