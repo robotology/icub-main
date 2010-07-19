@@ -96,7 +96,7 @@
 /* same as above, deals also with endianism */
 dword BYTE_C(byte x4, byte x3, byte x2, byte x1);
 	 
-#define BYTE_W(x2, x1) (__shl(x1,8) | x2)
+#define BYTE_W(x2, x1) (__shl((int)x1,8) | (int)x2)
 
 #if (JN == 2)
 	#define INIT_ARRAY(x) {x,x}
