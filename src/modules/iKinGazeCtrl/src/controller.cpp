@@ -253,7 +253,7 @@ void Controller::run()
     {
         for (int i=0; i<v.length(); i++)
         {
-            if ((v[i]>-minAbsVel) && (v[i]<minAbsVel) && !v[i])
+            if ((v[i]>-minAbsVel) && (v[i]<minAbsVel) && (v[i]!=0.0))
             {
                 // current error in the joint space
                 double e=qd[i]-fbHead[i];
