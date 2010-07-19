@@ -46,7 +46,7 @@ public:
     * @param buffer_num is the number of the buffer.  0 <= buffer_num <= MAX_STRINGS
     * @return the content of the buffer.
     */
-	inline char* print(int buffer_num);
+	inline char* print(int buffer_num, const char* canDevName, int netNum);
 	
 	/**
     * Resets the string buffer
@@ -142,13 +142,13 @@ int can_string_generic::add_string(void* can_packet)
 	else return -1;
 }
 
-char* can_string_generic::print(int buffer_num)
+char* can_string_generic::print(int buffer_num, const char* canDevName, int netNum)
 {
 	if (buffer_num>=MAX_STRINGS) return 0;
 
 	//DEBUG ONLY
 	//ACE_OS::printf("msg from board %d, (buf:%d) : %s \r\n",data[buffer_num].board_id ,buffer_num, data[buffer_num].text_buffer);
-	fprintf(stderr, "msg from board %d: %s \n",data[buffer_num].board_id , data[buffer_num].text_buffer);
+	fprintf(stderr, "%s [%d] msg from board %d: %s \n", canDevName, netNum, data[buffer_num].board_id , data[buffer_num].text_buffer);
 	
 	return data[buffer_num].text_buffer;
 }
