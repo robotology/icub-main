@@ -1224,12 +1224,37 @@ public:
 
 	// dynamic parameters
 
+	/**
+	* Set the dynamic parameters of the i-th Link with motor.
+    * @param i the i-th Link
+    * @param _m is the Link mass
+    * @param _HC is the rototranslation matrix from the link frame to the center of mass
+    * @param _I is the Inertia matrix
+	* @param _kr is the rotor constant
+	* @param _Fv is the viscous friction constant
+	* @param _Fs is the static friction constant
+	* @param _Im is the rotor inertia
+	*/
 	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im) 
 	{ return iDynChain::setDynamicParameters(i,_m,_HC,_I,_kr,_Fv,_Fs,_Im); }
 
+	/**
+	* Set the dynamic parameters of the i-th Link with motor.
+    * @param i the i-th Link
+    * @param _m is the Link mass
+    * @param _HC is the rototranslation matrix from the link frame to the center of mass
+    * @param _I is the Inertia matrix
+	*/
 	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I)
 	{ return iDynChain::setDynamicParameters(i,_m,_HC,_I); }
 
+	/**
+	* Set the dynamic parameters of the i-th link if the chain is in a static situation (inertia is null).
+    * @param i the link index
+    * @param _m is the link mass
+    * @param _HC is the rototranslation matrix from the link frame to the center of mass
+	* @return true if operation is successful (ie matrices size is correct), false otherwise
+	*/
 	bool setStaticParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC)
 	{ return iDynChain::setStaticParameters(i,_m,_HC); }
 
