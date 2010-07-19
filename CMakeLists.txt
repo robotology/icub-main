@@ -18,8 +18,7 @@ project(iCub)
 if(MSVC)
     MESSAGE(STATUS "Running on windows")
     
-    # These used to be convenient in the old build, now caused a lot of troubles. Are they still needed?
-    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
     
     # ACE uses a bunch of functions MSVC warns about.
     # The warnings make sense in general, but not in this case.
