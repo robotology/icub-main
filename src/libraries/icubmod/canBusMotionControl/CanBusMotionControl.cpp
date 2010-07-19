@@ -758,14 +758,6 @@ bool AnalogSensor::handleAnalog(void *canbus)
                                     status=IAnalogSensor::AS_ERROR;
 								}
 								ret=decode16(buff, msgid, data->getBuffer());
-								/*
-								//RANDAZ@@@ to implement getTorque() using r._bcastRecvBuffer
-								if (this->isVirtualSensor)
-								{
-									for (int ax=0; ax<6; ax++)
-										r._bcastRecvBuffer[ax]._torque=data->getBuffer()[ax];
-								}
-								*/
 							}
 							break;
 						default:
@@ -881,20 +873,36 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) _axisMap[i-1] = xtmp.get(i).asInt();
-    xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
+    
+	xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
     if (xtmp.size() != nj+1) {
         printf("Encoder does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) _angleToEncoder[i-1] = xtmp.get(i).asDouble();
-    xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
+    
+	xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
     if (xtmp.size() != nj+1) {
         printf("Zeros does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) _zeros[i-1] = xtmp.get(i).asDouble();
+    
+	xtmp = p.findGroup("GENERAL").findGroup("TorqueId","a list of associated joint torque sensor ids");
+    if (xtmp.size() != nj+1) {
+		printf("TorqueId does not have the right number of entries. Using default value = 0 (disabled)\n");
+        for(i=1;i<nj+1; i++) _torqueSensorId[i-1] = 0;   
+    }
+    for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
+    
+	xtmp = p.findGroup("GENERAL").findGroup("TorqueChan","a list of associated joint torque sensor channels");
+    if (xtmp.size() != nj+1) {
+        printf("TorqueChan does not have the right number of entries. Using default value = 0 (disabled)\n");
+        for(i=1;i<nj+1; i++) _torqueSensorChan[i-1] = 0;   
+    }
+    for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
 
-    ////// PIDS
+	////// PIDS
     int j=0;
     for(j=0;j<nj;j++)
     {
@@ -1056,6 +1064,8 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _currentLimits=0;
     _velocityShifts=0;
     _velocityTimeout=0;
+    _torqueSensorId=0;						
+	_torqueSensorChan=0;	
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1076,6 +1086,8 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
+    _torqueSensorId= allocAndCheck<int>(nj);					
+	_torqueSensorChan= allocAndCheck<int>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
 	_tpids=allocAndCheck<Pid>(nj);
@@ -1117,7 +1129,8 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<unsigned char>(_destinations);
     checkAndDestroy<int>(_velocityShifts);
     checkAndDestroy<int>(_velocityTimeout);
-
+    checkAndDestroy<int>(_torqueSensorId);					
+	checkAndDestroy<int>(_torqueSensorChan);
 
     checkAndDestroy<Pid>(_pids);
 	checkAndDestroy<Pid>(_tpids);
@@ -1462,6 +1475,7 @@ _done(0)
     system_resources = (void *) new CanBusResources;
     ACE_ASSERT (system_resources != NULL);
     _opened = false;
+	_axisTorqueHelper = 0;
 }
 
 
@@ -1540,6 +1554,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
 	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+	_axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan);
 	ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
 	
@@ -1869,6 +1884,8 @@ bool CanBusMotionControl::close (void)
 
     if (threadPool != 0)
         delete threadPool;
+	if (_axisTorqueHelper != 0)
+		delete _axisTorqueHelper;
 
     checkAndDestroy<double> (_ref_positions);
     checkAndDestroy<double> (_command_speeds);
@@ -2959,10 +2976,38 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
         return false;
 
     _mutex.wait();
-	//RANDAZ @@@ maybe i can change this to read directly from analog sensors
-    *t=double(r._bcastRecvBuffer[axis]._torque);
+    // *** This method is implementented reading data directly from an IAnalogSensor and
+	// not sending/receiving data from the Canbus ***
+	int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
+
+    std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+    while(it!=analogSensors.end())
+    {
+        if (*it)
+        {
+			int id = (*it)->getId();
+			int cfgId   = _axisTorqueHelper->getTorqueSensorId(k);
+			if (id==cfgId)
+			{
+				int cfgChan = _axisTorqueHelper->getTorqueSensorChan(k);
+				yarp::sig::Vector data;
+				int ret=(*it)->read(data);
+                if (ret==yarp::dev::IAnalogSensor::AS_OK)
+				{
+					*t=data[cfgChan];
+				}
+				else
+				{
+					*t=0;
+				}
+				break;
+			}
+        }
+        it++;
+    }
     _mutex.post();
-    return false;
+
+    return true;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
@@ -2983,28 +3028,12 @@ bool CanBusMotionControl::setRefTorquesRaw (const double *refs)
 /// cmd is an array of double (LATER: to be optimized).
 bool CanBusMotionControl::getTorquesRaw (double *t)
 {
-    CanBusResources& r = RES(system_resources);
-
-    int i;
-    _mutex.wait();
-    
-    double stamp=0;
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        t[i] = double(r._bcastRecvBuffer[i]._torque);
-
-        if (stamp<r._bcastRecvBuffer[i]._update_t)
-            stamp=r._bcastRecvBuffer[i]._update_t;
-    }
-    stampEncoders.update(stamp);
-
-    _mutex.post();
-    return true;
+	return NOT_YET_IMPLEMENTED("getTorquesRaw");
 }
 
 bool CanBusMotionControl::disableTorquePidRaw(int j)
 {
-	return NOT_YET_IMPLEMENTED("isableTorquePidRaw");
+	return NOT_YET_IMPLEMENTED("disableTorquePidRaw");
 }
 
 bool CanBusMotionControl::enableTorquePidRaw(int j)

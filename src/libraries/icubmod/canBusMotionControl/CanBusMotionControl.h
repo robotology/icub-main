@@ -121,6 +121,8 @@ public:
     double *_currentLimits;                     /** current limits */
 	int *_velocityShifts;                       /** velocity shifts */
 	int *_velocityTimeout;                      /** velocity shifts */
+	int *_torqueSensorId;						/** Id of associated Joint Torque Sensor */
+	int *_torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
 };
 
 class AnalogData
@@ -259,6 +261,46 @@ public:
     virtual int getChannels();
     virtual bool calibrate(int ch, double v);
     /////////////////////////////////
+};
+
+class axisTorqueHelper
+{
+	int  jointsNum;
+	int* torqueSensorId;						/** Id of associated Joint Torque Sensor */
+	int* torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
+
+	public:
+	inline axisTorqueHelper(int njoints, int* id, int* chan)
+	{
+		jointsNum=njoints;
+		torqueSensorId = new int [jointsNum];
+		torqueSensorChan = new int [jointsNum];
+		if (id!=0)
+            memcpy(torqueSensorId, id, sizeof(int)*jointsNum);
+        else
+            memset(torqueSensorId, 0, sizeof(int)*jointsNum);
+		if (chan!=0)
+            memcpy(torqueSensorChan, chan, sizeof(int)*jointsNum);
+        else
+            memset(torqueSensorChan, 0, sizeof(int)*jointsNum);
+	}
+	inline int getTorqueSensorId (int id)
+	{
+		if (id>=0 && id<jointsNum) return torqueSensorId[id];
+		return 0;
+	}						
+	inline int getTorqueSensorChan (int chan)
+	{
+		if (chan>=0 && chan<jointsNum) return torqueSensorChan[chan];
+		return 0;
+	}
+	inline ~axisTorqueHelper()
+	{
+		delete [] torqueSensorId;
+		delete [] torqueSensorChan;
+		torqueSensorId=0;						
+		torqueSensorChan=0;						
+	}
 };
 
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
@@ -554,6 +596,7 @@ protected:
     bool _writeNone  (int msg, int axis);
 	bool _writeByte8 (int msg, int axis, int value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
+	axisTorqueHelper *_axisTorqueHelper;
 
     // internal stuff.
     double *_ref_speeds;		// used for position control.
