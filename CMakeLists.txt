@@ -147,12 +147,12 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
 						FindIPOPT.cmake
 						FindODE.cmake
 						FindIPP.cmake)
-						
+
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
-  install(FILES ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/${conf} COMPONENT scripts 
-	  DESTINATION conf)
+  install(FILES  conf/${conf} COMPONENT scripts 
+	  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/${conf})
 endforeach(conf)
 
 ## add the "uninstall" target
