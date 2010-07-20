@@ -3001,6 +3001,7 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
     _mutex.wait();
     // *** This method is implementented reading data directly from an IAnalogSensor and
 	// not sending/receiving data from the Canbus ***
+	*t=0; //set output to zero (default value)
 	int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
 
     std::list<AnalogSensor *>::iterator it=analogSensors.begin();
