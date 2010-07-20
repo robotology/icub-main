@@ -248,9 +248,7 @@ public:
         if (tt)
         {
             if (part=="left_arm")
-			{
                 sens = new iDynInvSensorArm(chain,"left",DYNAMIC);
-			}
             else
                 sens = new iDynInvSensorArm(chain,"right",DYNAMIC);
         }
@@ -360,9 +358,6 @@ public:
                 F_offset=0.0;
             }
         }
-		Vector FT_iDyn = F_iDyn;
-		Vector F_sensor = F_measured - F_offset;
-		Vector q_iDyn = limb->getAng();
         port_Wrench->prepare() = FT;
         port_Wrench->write();
     }
