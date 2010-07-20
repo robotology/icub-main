@@ -25,18 +25,6 @@
  * 
  * Windows
  *
- * \section example_sec Example
- *
- * <tt> head->setAng(q); </tt> \n
- * <tt> head->setDAng(dq);</tt> \n
- * <tt> head->setD2Ang(ddq);</tt> \n
- * <tt> node->solveKinematics(w0,dw0,ddp0);</tt> \n
- * <tt> Matrix FM(6,1); FM.zero();</tt> \n
- * <tt> node->solveWrench(FM);</tt> \n
- * 
- * Now that the node is solved, one can get kinematic/dynamic information from 
- * the up (or any attached limb) 
- *
  * \note <b>Release status</b>:  this library is currently under development!
  * Date: first draft 06/2010
  *
