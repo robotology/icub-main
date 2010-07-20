@@ -16,6 +16,8 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
+using namespace std;
+
 
 // available methods for edges detection
 //#define CONVMAX
@@ -24,7 +26,8 @@ using namespace yarp::sig::draw;
 //#define OPENCVSOBEL
 //#define CONVSEQ
 
-selectiveAttentionProcessor::selectiveAttentionProcessor():RateThread(THREAD_RATE){
+selectiveAttentionProcessor::selectiveAttentionProcessor()//:RateThread(THREAD_RATE)
+{
     this->inImage=new ImageOf<PixelRgb>;
     
 
@@ -35,6 +38,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor():RateThread(THREAD_RAT
     inputImage_flag=0;
     idle=true;
     resized_flag=false;
+    interrupted=false;
     
     k1=0.5;
     k2=0.0;
@@ -101,7 +105,8 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
     
 }
 
-selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE){
+selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage)//:RateThread(THREAD_RATE)
+{
     this->inImage=inputImage;
 //    this->portImage=portImage;
  
@@ -112,6 +117,34 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inpu
     
     tmp=new ImageOf<PixelMono>;    
 }
+
+void selectiveAttentionProcessor::reinitialise(int width, int height){
+    srcsize.width=width;
+    srcsize.height=height;
+
+    inputImg=new ImageOf<PixelRgb>;
+    inputImg->resize(width,height);
+
+    linearCombinationImage=new ImageOf<PixelMono>;
+    linearCombinationImage->resize(width,height);
+
+    outputImage=new ImageOf<PixelMono>;
+    outputImage->resize(width,height);
+    map1_yarp=new ImageOf<PixelMono>;
+    map1_yarp->resize(width,height);
+    map2_yarp=new ImageOf<PixelMono>;
+    map2_yarp->resize(width,height);
+    map3_yarp=new ImageOf<PixelMono>;
+    map3_yarp->resize(width,height);
+    map4_yarp=new ImageOf<PixelMono>;
+    map4_yarp->resize(width,height);
+    map5_yarp=new ImageOf<PixelMono>;
+    map5_yarp->resize(width,height);
+    map6_yarp=new ImageOf<PixelMono>;
+    map6_yarp->resize(width,height);
+    
+}
+
 /**
 * 
 */
@@ -158,68 +191,313 @@ void selectiveAttentionProcessor::resizeImages(int width,int height){
 */
 bool selectiveAttentionProcessor::threadInit(){
     printf("Thread initialization .... \n");
+    //input ports 
+    inImagePort.open(getName("/image:i").c_str());
+    map1Port.open(getName("/map1:i").c_str()); 
+    map2Port.open(getName("/map2:i").c_str());
+    map3Port.open(getName("/map3:i").c_str()); 	 
+    map4Port.open(getName("/map4:i").c_str()); 
+    map5Port.open(getName("/map5:i").c_str()); 
+    map6Port.open(getName("/map6:i").c_str()); 
+
+    selectedAttentionPort.open(getName("/attention:o").c_str());
+    linearCombinationPort.open(getName("/combination:o").c_str());
+    centroidPort.open(getName("/centroid:o").c_str());
+    feedbackPort.open(getName("/feedback:o").c_str());
     return true;
 }
+
+void selectiveAttentionProcessor::setName(std::string str){
+    this->name=str; 
+}
+
+
+std::string selectiveAttentionProcessor::getName(const char* p){
+    string str(name);
+    str.append(p);
+    //printf("name: %s", name.c_str());
+    return str;
+}
+
 /**
 * active loop of the thread
 */
 void selectiveAttentionProcessor::run(){
-    IppiSize srcsize;
-    srcsize.height=this->height;
-    srcsize.width=this->width;
-    int rowSize=map1_yarp->getRowSize();
-    unsigned char maxValue=0;
-    idle=false;
-    if(!idle){
-        for(int y=0;y<height;y++){
-            for(int x=0;x<width;x++){
-                unsigned char value=0;
-                if(map1_yarp!=0)
-                    value+=(unsigned char)map1_yarp->getRawImage()[x+y*rowSize]*k1;
-                if(map2_yarp!=0)
-                    value+=(unsigned char)map2_yarp->getRawImage()[x+y*rowSize]*k2;
-                if(map3_yarp!=0)
-                    value+=(unsigned char)map3_yarp->getRawImage()[x+y*rowSize]*k3;
-                if(map4_yarp!=0)
-                    value+=(unsigned char)map4_yarp->getRawImage()[x+y*rowSize]*k4;
-                if(map5_yarp!=0)
-                    value+=(unsigned char)map5_yarp->getRawImage()[x+y*rowSize]*k5;
-                if(map6_yarp!=0)
-                    value+=(unsigned char)map6_yarp->getRawImage()[x+y*rowSize]*k6;
-                if((map1_yarp==0)&&(map2_yarp==0)&&(map3_yarp==0)&&(map4_yarp==0)&&(map5_yarp==0)&&(map6_yarp==0))
-                    value=0;
-                else
-                    linearCombinationImage->getRawImage()[x+y*rowSize]=value;
-                if(maxValue<value)
-                    maxValue=value;
-                linearCombinationImage->getRawImage()[x+y*rowSize]=value;
+
+
+    while(!isStopping()){
+        //1. receiving inputs
+
+        //synchronisation with the input image occuring
+        if(!interrupted){
+            //-----------check for any possible command
+            Bottle* command=0;//=cmdPort.read(false);
+            if(command!=0){
+                //Bottle* tmpBottle=cmdPort.read(false);
+                ConstString str= command->toString();
+                printf("command received: %s \n", str.c_str());
+                Bottle* reply=new Bottle();
+                //this->respond(*command,*reply);
+                command->clear();
             }
-        }
+            //--------read value from the preattentive level
+            if(feedbackPort.getOutputCount()){
+                Bottle in,out;
+                out.clear();
+                out.addString("get");
+                out.addString("ktd");
+                feedbackPort.write(out,in);
+                name=in.pop().asString();
+                salienceTD=in.pop().asDouble();
+                out.clear();
+                in.clear();
+                
+                out.addString("get");
+                out.addString("kbu");
+                feedbackPort.write(out,in);
+                name=in.pop().asString();
+                salienceBU=in.pop().asDouble();
+                out.clear();
+                in.clear();
+                
+                out.addString("get");
+                out.addString("rin");
+                feedbackPort.write(out,in);
+                name=in.pop().asString();
+                targetRED=in.pop().asInt();
+                out.clear();
+                in.clear();
+                
+                out.addString("get");
+                out.addString("gin");
+                feedbackPort.write(out,in);
+                name=in.pop().asString();
+                targetGREEN=in.pop().asInt();
+                out.clear();
+                in.clear();
+                
+                out.addString("get");
+                out.addString("bin");
+                feedbackPort.write(out,in);
+                name=in.pop().asString();
+                targetBLUE=in.pop().asDouble();
+                out.clear();
+                in.clear();
+            }
 
-        for(int y=0;y<height;y++){
-            for(int x=0;x<width;x++){
-                if(maxValue==0)
-                    outputImage->getRawImage()[x+y*rowSize]=0;
-                else if((linearCombinationImage->getRawImage()[x+y*rowSize]>=maxValue-10)&&((linearCombinationImage->getRawImage()[x+y*rowSize]<=maxValue+10))){
-                    outputImage->getRawImage()[x+y*rowSize]=255;
+            //
+
+            //-------------read input maps
+            //if(map1Port.getInputCount()){
+            //    tmp=map1Port.read(false);
+            //}
+            //if(inImagePort.getInputCount()){
+                
+            tmp2=inImagePort.read(true);
+            
+            if(tmp2==0){
+                return;
+            }
+            
+            if(!reinit_flag){
+                //srcsize.height=img->height();
+                //srcsize.width=img->width();
+                reinitialise(tmp2->width(), tmp2->height());
+                reinit_flag=true;
+                //currentProcessor=new selectiveAttentionProcessor();
+                //passes the temporary variable for the mode
+                //currentProcessor->resizeImages(tmp2->width(),tmp2->height());
+                //startselectiveAttentionProcessor();
+                //currentProcessor->setIdle(false);
+            }
+            
+            //currentProcessor->inImage=tmp2;
+
+            if(map1Port.getInputCount()){    
+                tmp=map1Port.read(true);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),srcsize);
+                
+            }
+            if(map2Port.getInputCount()){    
+                tmp=map2Port.read(true);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),srcsize);
+            }
+            if(map3Port.getInputCount()){
+                tmp=map3Port.read(true);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),srcsize);
+            }
+            if(map4Port.getInputCount()){
+                tmp=map4Port.read(true);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),srcsize);
+            }
+            
+            if(map5Port.getInputCount()){
+                tmp=map5Port.read(true);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),srcsize);
+            }
+            if(map6Port.getInputCount()){
+                tmp=map6Port.read(true);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),srcsize);
+            }
+
+            //2. processing of the input images
+            IppiSize srcsize;
+            srcsize.height=this->height;
+            srcsize.width=this->width;
+            int rowSize=map1_yarp->getRowSize();
+            unsigned char maxValue=0;
+            idle=false;
+            if(!idle){
+                for(int y=0;y<height;y++){
+                    for(int x=0;x<width;x++){
+                        unsigned char value=0;
+                        if(map1_yarp!=0)
+                            value+=(unsigned char)map1_yarp->getRawImage()[x+y*rowSize]*k1;
+                        if(map2_yarp!=0)
+                            value+=(unsigned char)map2_yarp->getRawImage()[x+y*rowSize]*k2;
+                        if(map3_yarp!=0)
+                            value+=(unsigned char)map3_yarp->getRawImage()[x+y*rowSize]*k3;
+                        if(map4_yarp!=0)
+                            value+=(unsigned char)map4_yarp->getRawImage()[x+y*rowSize]*k4;
+                        if(map5_yarp!=0)
+                            value+=(unsigned char)map5_yarp->getRawImage()[x+y*rowSize]*k5;
+                        if(map6_yarp!=0)
+                            value+=(unsigned char)map6_yarp->getRawImage()[x+y*rowSize]*k6;
+                        if((map1_yarp==0)&&(map2_yarp==0)&&(map3_yarp==0)&&(map4_yarp==0)&&(map5_yarp==0)&&(map6_yarp==0))
+                            value=0;
+                        else
+                            linearCombinationImage->getRawImage()[x+y*rowSize]=value;
+                        if(maxValue<value)
+                            maxValue=value;
+                        linearCombinationImage->getRawImage()[x+y*rowSize]=value;
+                    }
                 }
-                else{    
-                    outputImage->getRawImage()[x+y*rowSize]=0;
+
+                for(int y=0;y<height;y++){
+                    for(int x=0;x<width;x++){
+                        if(maxValue==0)
+                            outputImage->getRawImage()[x+y*rowSize]=0;
+                        else if((linearCombinationImage->getRawImage()[x+y*rowSize]>=maxValue-10)&&((linearCombinationImage->getRawImage()[x+y*rowSize]<=maxValue+10))){
+                            outputImage->getRawImage()[x+y*rowSize]=255;
+                        }
+                        else{    
+                            outputImage->getRawImage()[x+y*rowSize]=0;
+                        }
+                    }   
                 }
-            }   
-        }
 
-        ippiCopy_8u_C1R(outputImage->getRawImage(),outputImage->getRowSize(),outputImage2->getRawImage(),outputImage2->getRowSize(), srcsize);
-        extractContour(outputImage2,inImage,centroid_x,centroid_y);
-        printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
+                ippiCopy_8u_C1R(outputImage->getRawImage(),outputImage->getRowSize(),outputImage2->getRawImage(),outputImage2->getRowSize(), srcsize);
+                extractContour(outputImage2,inImage,centroid_x,centroid_y);
+                printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
 
-        //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
-        //get the colour of the inputImage starting in the centroid_x and centroid_y position
-        //unsigned char* pColour=inImage->getPixelAddress(centroid_x,centroid_y);
-    
+                //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
+                //get the colour of the inputImage starting in the centroid_x and centroid_y position
+                //unsigned char* pColour=inImage->getPixelAddress(centroid_x,centroid_y);
+            
+            }
+            //3. sending the output on the ports
+            outPorts();
+
+        }//if
+    }// while
+}
+
+bool selectiveAttentionProcessor::outPorts(){
+    bool ret = false;
+    if((0!=linearCombinationImage)&&(linearCombinationPort.getOutputCount())){
+        linearCombinationPort.prepare() = *(linearCombinationImage);
+        linearCombinationPort.write();
     }
     
+    if((0!=outputImage)&&(selectedAttentionPort.getOutputCount())){
+        selectedAttentionPort.prepare() = *(outputImage);
+        selectedAttentionPort.write();
+    }	
+
+    if(centroidPort.getOutputCount()){  
+        Bottle& commandBottle=centroidPort.prepare();
+        commandBottle.clear();
+        commandBottle.addString("sac");
+        commandBottle.addString("img");
+        //commandBottle.addInt(centroid_x);
+        //commandBottle.addInt(centroid_y);
+        centroidPort.write();
+    }
+
+    if(feedbackPort.getOutputCount()){  
+        //Bottle& commandBottle=feedbackPort.prepare();
+        Bottle in,commandBottle;
+        commandBottle.clear();
+        
+        
+        time (&end2);
+        double dif = difftime (end2,start2);
+        if(dif>30+2){
+                //restart the time interval
+                 time(&start2);
+        }
+        else if((dif>2)&&(dif<30+2)){
+            //setting coefficients
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','t','d'));
+            salienceTD=salienceTD+0.1;
+        
+            //if(salienceTD>0.99)
+                salienceTD=1.0;
+            printf("salienceTD \n");
+            commandBottle.addDouble((double)salienceTD);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','b','u'));
+            salienceBU=salienceBU-0.1;
+            
+            //if(salienceBU<=0)
+                salienceBU=0;
+            commandBottle.addDouble((double)salienceBU);
+            feedbackPort.write(commandBottle,in);    
+            printf("read: %f,%f,%f \n",(double)targetRED,(double)targetGREEN,(double)targetBLUE);
+            
+        }
+        else{
+            printf("salienceBU \n");
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','t','d'));
+            salienceTD=0.0;
+            commandBottle.addDouble((double)salienceTD);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','b','u'));
+            salienceBU=1.0;
+            commandBottle.addDouble((double)salienceBU);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('r','i','n'));
+            commandBottle.addDouble((double)targetRed);
+            //commandBottle.addDouble(255.0);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('g','i','n'));
+            commandBottle.addDouble((double)targetGreen);
+            //commandBottle.addDouble(0.0);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('b','i','n'));
+            commandBottle.addDouble((double)targetBlue);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            //commandBottle.addDouble(0.0);
+            printf("%f,%f,%f \n",(double)targetRed,(double)targetGreen,(double)targetBlue);
+        }
+    }
+    return true;
 }
+
 
 void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelRgb>* inputColourImage,int& x,int& y){
     IppiSize srcsize;
@@ -322,10 +600,47 @@ void selectiveAttentionProcessor::getPixelColour(ImageOf<PixelRgb>* inputColourI
 }
 
 /**
+* function called when the module is poked with an interrupt command
+*/
+void selectiveAttentionProcessor::interrupt(){
+    interrupted=true;
+    printf("interrupting the module.. \n");
+	map1Port.interrupt();
+    map2Port.interrupt();
+    map3Port.interrupt();
+    
+    map4Port.interrupt();
+    map5Port.interrupt();
+    map6Port.interrupt();
+    
+    selectedAttentionPort.interrupt();
+    linearCombinationPort.interrupt();
+    centroidPort.interrupt();
+    feedbackPort.interrupt();
+    
+    inImagePort.interrupt();
+    
+}
+
+/**
 *	releases the thread
 */
 void selectiveAttentionProcessor::threadRelease(){
     printf("Thread realeasing .... \n");
+    printf("Closing all the ports.. \n");
+    //closing input ports
+    inImagePort.close();
+    map1Port.close();
+    map2Port.close();
+    map3Port.close();
+    map4Port.close();
+    map5Port.close();
+    map6Port.close();
+
+    selectedAttentionPort.close();
+    linearCombinationPort.close();
+    centroidPort.close();
+    feedbackPort.close();
     
 }
 
@@ -334,6 +649,9 @@ void selectiveAttentionProcessor::setIdle(bool value){
     idle=value;
     mutex.post();
 }
+
+
+
 
 
 

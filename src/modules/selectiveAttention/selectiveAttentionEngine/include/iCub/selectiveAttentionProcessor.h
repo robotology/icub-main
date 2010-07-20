@@ -16,7 +16,8 @@
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-
+#include <string>
+#include <time.h>
 
 const int THREAD_RATE=30;
 
@@ -25,7 +26,7 @@ const int THREAD_RATE=30;
  */
 
 
-class selectiveAttentionProcessor:public yarp::os::RateThread
+class selectiveAttentionProcessor:public yarp::os::Thread
 {
     private:
         /**
@@ -40,7 +41,62 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         * width step of the image with border for 3x3 operator convolution
         */
         int psb_border;
-        
+        /**
+        * IppiSize reference to the dimension of the input image
+        */
+        IppiSize srcsize;
+         /**
+        * temporary mono image
+        */
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;
+         /**
+        * temporary rgb image
+        */
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;
+        /**
+        * a port for the inputImage (colour)
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //
+        /**
+        * input port for the 1st saliency map
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; //
+        /**
+        * input port for the 2nd saliency map
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; //
+        /**
+        * input port for the 3rd saliency map
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; //	 
+        /**
+        * input port for the 4th saliency map
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port; 
+        /**
+        * input port for the 5th saliency map
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; 
+        /**
+        * input port for the 6th saliency map
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; 	
+        /**
+        *  output port that represent the linear combination of different maps
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; 
+        /**
+        *  output port that represent the selected attention output
+        */
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > selectedAttentionPort;
+        /**
+        *  output port where the centroid coordinate is sent
+        */
+        yarp::os::BufferedPort<yarp::os::Bottle > centroidPort; 
+        /**
+        *  port necessary to send back command to the preattentive processors
+        */
+        yarp::os::Port feedbackPort; 
         /**
         * ippi image of the 1st map
         */
@@ -67,12 +123,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         Ipp8u* map6_ippi; //
       
         //yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImagePlane; //temp variable for plane extraction;
-        
-        
-        /**
-        * temp variable for plane extraction;
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;//
+       
         /**
         * temp variable for plane extraction;
         */
@@ -81,7 +132,50 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         * temp variable for plane extraction;
         */
         yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp;
-        
+        /**
+        * value read from the blobFinder component (red intensity of the target)
+        */
+        int targetRED;
+        /**
+        * value read from the blobFinder component (green intensity of the target)
+        */
+        int targetGREEN;
+        /**
+        * value read from the blobFinder component (blue intensity of the target)
+        */
+        int targetBLUE;
+        /**
+        * value of the weight of top-down approach in the blobFinder
+        */
+        double salienceTD;
+        /**
+        * value of the weight of bottom-up approach in the blobFinder
+        */
+        double salienceBU;
+        /**
+        * colour information passed back for the reinforcement
+        */
+        unsigned char targetRed;
+        /**
+        * colour information passed back for the reinforcement
+        */
+        unsigned char targetGreen;
+        /**
+        * colour information passed back for the reinforcement
+        */
+        unsigned char targetBlue;
+        /**
+        * name of the module and rootname of the connection
+        */
+        std::string name;
+        /**
+        * flag that is set after the dimension of the images is defined
+        */
+        bool reinit_flag;
+        /**
+        * flag set when the interrputed function has already be called
+        */
+        bool interrupted;
         /**
         * width of the input image
         */
@@ -130,6 +224,40 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         * @param height height dimension the image is resized to
         */
         void resizeImages(int width, int height);
+        /**
+        * function called when the module is poked with an interrupt command
+        */
+        void interrupt();
+        /**
+        * function that reinitiases some attributes of the class
+        */
+        void reinitialise(int width, int height);
+        /**
+        * function that gives reference to the name of the module
+        * @param name of the module
+        */
+        void setName(std::string name);
+        /**
+        * function that returns the name of the module
+        * @param str string to be added
+        * @return name of the module
+        */
+        std::string getName(const char* str);
+        /**
+        * opens all the ports necessary for the module
+        * @return return whether the operation was successful
+        */
+        bool openPorts();
+        /**
+        * closes all the ports opened when the module started
+        * @return return whether the operation was successful
+        */
+        bool closePorts();
+        /**
+        * streams out data on ports
+        * @return return whether the operation was successful
+        */
+        bool outPorts();
         /**
         * set the flag idle locking the resource
         */
@@ -200,18 +328,6 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         * yarp image of the composition of all the edges
         */
         yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp;
-        /**
-        * colour information passed back for the reinforcement
-        */
-        unsigned char targetRed;
-        /**
-        * colour information passed back for the reinforcement
-        */
-        unsigned char targetGreen;
-        /**
-        * colour information passed back for the reinforcement
-        */
-        unsigned char targetBlue;
         /**
         * coefficient for the linear combination of maps
         */
@@ -284,6 +400,18 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         * center of gravity of the selective attention (y position)
         */
         int centroid_y;
+        /**
+        * time variable
+        */
+        time_t start2;
+        /**
+        * time variable
+        */
+        time_t end2;
+        /**
+        * input image reference
+        */
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
         
 };
 

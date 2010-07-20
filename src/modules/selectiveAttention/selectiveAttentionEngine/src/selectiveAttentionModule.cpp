@@ -51,10 +51,15 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
 
-    interThread=new interactionThread();
-    interThread->setName(this->getName().c_str());
-    printf("name:%s \n",this->getName().c_str());
-    interThread->start();
+    //interThread=new interactionThread();
+    //interThread->setName(this->getName().c_str());
+    //printf("name:%s \n",this->getName().c_str());
+    //interThread->start();
+
+    currentProcessor=new selectiveAttentionProcessor();
+    currentProcessor->setName(this->getName().c_str());
+    //currentProcessor->resizeImages(interThread->inputImg->width(),interThread->inputImg->height());
+    currentProcessor->start();
 
     printf("\n waiting for connection of the input port \n");
 
@@ -65,6 +70,7 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
 // try to interrupt any communications or resource usage
 bool selectiveAttentionModule::interruptModule() {    
     cmdPort.interrupt();
+    currentProcessor->interrupt();
 	return true;
 }
 
@@ -160,6 +166,8 @@ void selectiveAttentionModule::reinitialise(int width, int height){
 
 
 bool selectiveAttentionModule::updateModule() {
+
+    /*
     if((0!=interThread->inputImg)&&(!init_flag)){
         
 	    printf("input port activated! starting the processes ....\n");    
@@ -186,7 +194,7 @@ bool selectiveAttentionModule::updateModule() {
 
         init_flag=true;
 
-    }
+    }*/
     
     return true;
 }
