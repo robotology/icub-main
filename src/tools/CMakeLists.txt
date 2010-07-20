@@ -28,7 +28,7 @@ endif(ICUB_USE_QtOpenGL)
 if(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 	add_subdirectory(iCubGui)
 else(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
-	message("Qt3 or OpenGL or GLUT not selected, skipping iCubGui")
+	message(STATUS "Qt3 or OpenGL or GLUT not selected, skipping iCubGui")
 endif(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 
 
