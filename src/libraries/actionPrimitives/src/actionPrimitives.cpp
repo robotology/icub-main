@@ -1864,8 +1864,14 @@ bool ActionPrimitivesLayer2::open(Property &opt)
         accEst=new AWQuadEstimator(25,1.0);
 
         // create dynamics
-        string type=(part=="right_arm"?"right":"left");
-        dynArm=new iCubArmDyn(type);
+        string armType=(part=="right_arm"?"right":"left");
+        dynArm=new iCubArmDyn(armType);
+
+        // free up torso links
+        dynArm->releaseLink(0);
+        dynArm->releaseLink(1);
+        dynArm->releaseLink(2);
+
         dynSensor=new iDynInvSensorArm(dynArm,DYNAMIC);
         dynTransformer=new iFTransformation(dynSensor);
 
