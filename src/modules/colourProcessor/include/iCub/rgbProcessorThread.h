@@ -174,7 +174,7 @@ public:
     * function that gives reference to the name of the module
     * @param name of the module
     */
-    void setName(const char* name);
+    void setName(std::string name);
     /**
     * function that returns the name of the module
     * @param str string to be added

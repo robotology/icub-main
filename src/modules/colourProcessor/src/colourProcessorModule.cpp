@@ -27,15 +27,14 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     //time_t end;
     time (&start);
 
-    //Time::turboBoost();
+    Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
-    printf("Opened the command port");
     attach(cmdPort);
     //attachTerminal();
-    //printf("resource finder configuration after time turbo boosting \n");
+    printf("resource finder configuration after time turbo boosting \n");
     
     rgbProcessor=0;
-    yuvProcessor=0;
+    //yuvProcessor=0;
 
 
     //interThread=new imageReaderThread();
@@ -44,9 +43,9 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     //interThread->start();
     
     rgbProcessor=new rgbProcessorThread();
-    printf("created a new rgbProcessor");
-    rgbProcessor->setName(this->getName().c_str());
-    printf("name:%s \n",this->getName().c_str());
+    printf("created a new rgbProcessor \n");
+    rgbProcessor->setName(getName().c_str());
+    printf("name: \n ");
     rgbProcessor->start();
     //rgbProcessor->setInputImage(interThread->inputImg);
     

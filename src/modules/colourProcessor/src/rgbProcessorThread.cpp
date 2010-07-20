@@ -23,6 +23,8 @@ rgbProcessorThread::rgbProcessorThread()//:RateThread(THREAD_RATE)
     blueYellow_yarp=0;
 
     img=0;
+
+    string name("hello");
 }
 
 rgbProcessorThread::~rgbProcessorThread()
@@ -70,9 +72,9 @@ void rgbProcessorThread::reinitialise(int width, int height){
 
 }
 
-void rgbProcessorThread::setName(const char* str){
-    this->name.append(str);
-    printf("name: %s", name);
+void rgbProcessorThread::setName(string str){
+   this->name=str;
+   printf("name: %s", name.c_str());
 }
 
 
