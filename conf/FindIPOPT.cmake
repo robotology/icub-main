@@ -27,8 +27,12 @@ IF(WIN32)
    SET(IPOPT_LIBRARIES_RELEASE "")
    SET(IPOPT_LIBRARIES_DEBUG "")
 
-   SET(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
-
+    if (MSVC)
+        SET(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+    else
+        SET(IPOPT_LINK_FLAGS "")
+    endif(MSVC)
+    
 ELSE(WIN32)
 
    FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib NO_DEFAULT_PATH)
