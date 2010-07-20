@@ -5,6 +5,7 @@
 
 //YARP include
 #include <yarp/os/Network.h>
+#include <yarp/os/BufferedPort.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/RateThread.h>
@@ -15,12 +16,14 @@
 
 //IPP include
 #include <ipp.h>
+#include <string>
+
 
 const double TIMEOUT=0.1;
 const double STOP_TIME=3;
 const int THREAD_RATE=30;
 
-class rgbProcessorThread: public yarp::os::RateThread
+class rgbProcessorThread: public yarp::os::Thread
 {
 private:
     /**
@@ -47,11 +50,39 @@ private:
     * temporary psb for processing
     */
     int psb;
-    
     /**
-    * input image
+    * port where the input image is read from
     */
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *img; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inputPort;
+    /**
+    * port where the red plane of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > redPort;
+    /**
+    * port where the green plane of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > greenPort;
+    /**
+    * port where the blue plane of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > bluePort;
+    /**
+    * port where the difference of gaussian R+G- is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort;
+    /**
+    * port where the difference of gaussian G+R- is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort;
+    /**
+    * port where the difference of gaussian B+Y- of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort;
+    /**
+    * port where the yellow plane of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > yellowPort;
+     
     /**
     * temp variable for the plane extraction
     */
@@ -68,6 +99,10 @@ private:
     *temp variable for the plane extraction
     */
     Ipp32f* greenPlane_ippi32_f; //
+    /**
+    * rootname of the module
+    */
+    std::string name;
     
     //_______________ private method  __________________________
 
@@ -87,6 +122,7 @@ private:
     * function that calculates the colour opponency maps as differences of Gaussians
     */
     void colourOpponency();
+    
 public:
     /**
     * constructor of the thread
@@ -109,13 +145,19 @@ public:
     */
     void run();
     /**
+    * function called when the module is interrupted
+    */
+    void interrupted();
+    /**
     *	releases the thread
     */
     void threadRelease();
     /**
     * function that reinitiases some attributes of the class
+    *@param width width of the image
+    *@param height height of the image
     */
-    void reinitialise();
+    void reinitialise(int width, int height);
     /**
     * function that extracts planes from the input image
     */
@@ -124,12 +166,30 @@ public:
     * set the reference to the input image
     */
     void setInputImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage);
-
+    /**
+    *  function that sends images on the output ports
+    */
+    void outPorts();
+    /**
+    * function that gives reference to the name of the module
+    * @param name of the module
+    */
+    void setName(const char* name);
+    /**
+    * function that returns the name of the module
+    * @param str string to be added
+    * @return name of the module
+    */
+    std::string getName(const char* str);
     //______ public attributes________
     /**
     * flag that indicates when the reinitiazation has already be done
     */
     bool reinit_flag;
+    /**
+    * flag that is set when interrupted (blocking port)
+    */
+    bool interrupted_flag;
     /**
     *yarp mono image of the red channel
     */
@@ -154,6 +214,14 @@ public:
     * yarp image for Opponency Map B+Y-
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono>* blueYellow_yarp;
+    /**
+    * input image
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *img;
+    /**
+    * input image
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
 };
 
 #endif //_RGBPROCESSORTHREAD_H_

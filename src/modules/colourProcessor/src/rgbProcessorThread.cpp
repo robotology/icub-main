@@ -2,15 +2,17 @@
 #include <iCub/convert_bitdepth.h>
 #include <ipps.h>
 #include <iostream>
+#include <string>
 
 
 using namespace yarp::sig;
 using namespace yarp::os;
 using namespace std;
 
-rgbProcessorThread::rgbProcessorThread():RateThread(THREAD_RATE)
+rgbProcessorThread::rgbProcessorThread()//:RateThread(THREAD_RATE)
 {
     reinit_flag=false;
+    interrupted_flag=false;
     
     redPlane=0;    
     greenPlane=0;
@@ -38,7 +40,7 @@ rgbProcessorThread::~rgbProcessorThread()
         
 }*/
 
-void rgbProcessorThread::reinitialise(){
+void rgbProcessorThread::reinitialise(int width, int height){
     srcsize.width=width;
     srcsize.height=height;
 
@@ -62,28 +64,98 @@ void rgbProcessorThread::reinitialise(){
 
     tmp=new ImageOf<PixelMono>;
     tmp->resize(width,height);
+
+    inputImg=new ImageOf<PixelRgb>;
+    inputImg->resize(width, height);
+
+}
+
+void rgbProcessorThread::setName(const char* str){
+    this->name.append(str);
+    printf("name: %s", name);
+}
+
+
+std::string rgbProcessorThread::getName(const char* p){
+    string str(name);
+    str.append(p);
+    //printf("name: %s", name.c_str());
+    return str;
 }
 
 bool rgbProcessorThread::threadInit(){
-    printf("Thread initialisation.. \n");    
+    printf("Thread initialisation.. \n"); 
+    inputPort.open(getName("/image:i").c_str());
+        
+    redPort.open(getName("/red:o").c_str());
+    greenPort.open(getName("/green:o").c_str());
+    bluePort.open(getName("/blue:o").c_str());
+
+    rgPort.open(getName("/rg:o").c_str());
+    grPort.open(getName("/gr:o").c_str());
+    byPort.open(getName("/by:o").c_str());
     return true;
 }
 
 
 void rgbProcessorThread::run(){
+    while (!isStopping()) {
+        if(!interrupted_flag){
+            img = this->inputPort.read(true);
+            printf("out of the waiting.... \n");
+
+            if(0!=img){
+                if(!reinit_flag){
+                    this->width=img->width();
+                    this->height=img->height();
+                    srcsize.height=img->height();
+	                srcsize.width=img->width();
+                    reinitialise(img->width(), img->height());
+                    reinit_flag=true;
+                }
+                
+                
+                //copy the inputImg into a buffer
+                //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
+                
+                extractPlanes(img);
+                colourOpponency();
+
+                outPorts();   
+            }//if
+        }//if
+    }//while
     
-    if(img!=0){
-        if(reinit_flag){
-            extractPlanes(img);
-            colourOpponency();
-        }
-    }
+}
+
+void rgbProcessorThread::interrupted(){
+    printf("input port closing .... \n");
+    inputPort.interrupt();
+    
+    interrupted_flag=true;
+    
 }
    
 
 
 void rgbProcessorThread::threadRelease(){
     printf("Thread releasing.. \n");
+    printf("input port closing .... \n");
+    inputPort.close();
+    
+    printf("red channel port closing .... \n");
+    redPort.close();
+    printf("green channel port closing .... \n");
+    greenPort.close();
+    printf("blue channel port closing .... \n");
+    bluePort.close();
+
+    printf("R+G- colourOpponency port closing .... \n");
+    rgPort.close();
+    printf("G+R- colourOpponency port closing .... \n");
+    grPort.close();
+    printf("B+Y- colourOpponency port closing .... \n");
+    byPort.close();
 }
 
 
@@ -92,10 +164,41 @@ void rgbProcessorThread::setInputImage(ImageOf<PixelRgb>* inputImage){
     this->img=inputImage;
     this->width=inputImage->width();
     this->height=inputImage->height();
-    reinitialise();
+    reinitialise(width,height);
     reinit_flag=true;
 }
 
+void rgbProcessorThread::outPorts(){
+    //port2.prepare() = *img;	
+    //rgb section
+    if((redPlane!=0)&&(redPort.getOutputCount())){
+        redPort.prepare() = *(redPlane);		
+        redPort.write();
+    }
+    if((bluePlane!=0)&&(bluePort.getOutputCount())){
+        bluePort.prepare() = *(bluePlane);		
+        bluePort.write();
+    }
+    if((greenPlane!=0)&&(greenPort.getOutputCount())){
+        greenPort.prepare() = *(greenPlane);		
+        greenPort.write();
+    }
+
+    //colour opponency section
+    if((redGreen_yarp!=0)&&(rgPort.getOutputCount())){
+        rgPort.prepare()=*(redGreen_yarp);
+        rgPort.write();
+    }
+    if((greenRed_yarp!=0)&&(grPort.getOutputCount())){
+        grPort.prepare()=*(greenRed_yarp);
+        grPort.write();
+    }
+    if((blueYellow_yarp!=0)&&(byPort.getOutputCount())){
+        byPort.prepare()=*(blueYellow_yarp);
+        byPort.write();
+    }
+
+}
 /*
  * extracts the plane red for the input image
  */
@@ -186,7 +289,7 @@ void rgbProcessorThread::extractPlanes(ImageOf<PixelRgb>* src){
 	this->getRedPlane(src,redPlane);
 	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redPlane->getRawImage(),redPlane->getRowSize(),srcsize);
 
-	this->getGreenPlane(src,greenPlane);
+    this->getGreenPlane(src,greenPlane);
 	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),srcsize);
 }
 
@@ -220,12 +323,14 @@ void rgbProcessorThread::colourOpponency(){
 	Ipp8u* redPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
 	Ipp8u* yellowPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
 	Ipp8u* greenPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
+    
 
 	
-
+    
     ippiCopy_8u_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi,psb,srcsize);
 	ippiCopy_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi,psb,srcsize);
     ippiCopy_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi,psb,srcsize);
+    
 	
 	//3. convolve with a gaussian in order to filter image planes red and green
 	
@@ -233,7 +338,8 @@ void rgbProcessorThread::colourOpponency(){
 	ippiFilterGauss_8u_C1R(redPlane_ippi,psb,redPlane_ippi_f,psb,srcsize,ippMskSize5x5);
 	ippiFilterGauss_8u_C1R(greenPlane_ippi,psb,greenPlane_ippi_f,psb,srcsize,ippMskSize5x5);*/
 
-	int psb2;
+	
+    int psb2;
 	Ipp32f* redPlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
 	Ipp32f* bluePlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
 	Ipp32f* greenPlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
@@ -252,18 +358,17 @@ void rgbProcessorThread::colourOpponency(){
 	Ipp8u* bluePlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
 	Ipp8u* yellowPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
 	Ipp8u* greenPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
+    
 	
     /*ippiConvert_8u32f_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi32,psb2,srcsize);
     ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
     ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);*/
 
-    //Conversion planes in signed char
     
+    //Conversion planes in signed char
     ippiRShiftC_8u_C1IR(1,redPlane_ippi,psb,srcsize);
     ippiRShiftC_8u_C1IR(1,greenPlane_ippi,psb,srcsize);
     ippiRShiftC_8u_C1IR(1,bluePlane_ippi,psb,srcsize);
-    
-    
     //conversion to 32f in order to apply the gauss filter
 	ippiConvert_8u32f_C1R(greenPlane_ippi,psb,greenPlane_ippi32,psb2,srcsize);
 	ippiConvert_8u32f_C1R(bluePlane_ippi,psb,bluePlane_ippi32,psb2,srcsize);
@@ -271,7 +376,8 @@ void rgbProcessorThread::colourOpponency(){
     
   
 	
-	int pBufferSize;
+	
+    int pBufferSize;
 	ippiFilterGaussGetBufferSize_32f_C1R(srcsize, 3, &pBufferSize);
 	Ipp8u *pBufferBlue;
 	pBufferBlue = ippsMalloc_8u(pBufferSize);
@@ -279,7 +385,9 @@ void rgbProcessorThread::colourOpponency(){
 	pBufferRed = ippsMalloc_8u(pBufferSize);
 	Ipp8u *pBufferGreen;
 	pBufferGreen = ippsMalloc_8u(pBufferSize);
+    
 	
+    
 	//ippiFilter possible variables for border ippBorderConst,ippBorderRepl,ippBorderWrap,ippBorderMirror,ippBorderMirrorR
 	Ipp32f value=0;
 	Ipp32f sigma=1;
@@ -291,6 +399,7 @@ void rgbProcessorThread::colourOpponency(){
     ippiConvert_32f8u_C1R(redPlane_ippi32_f,psb2,redPlane_ippi8u_f,psb,srcsize,ippRndNear);
     ippiConvert_32f8u_C1R(greenPlane_ippi32_f,psb2,greenPlane_ippi8u_f,psb,srcsize,ippRndNear);
     ippiConvert_32f8u_C1R(bluePlane_ippi32_f,psb2,bluePlane_ippi8u_f,psb,srcsize,ippRndNear);
+    
 
 
     /*ippiSub_8u_C1RSfs(redPlane_ippi8u,psb,greenPlane_ippi8u_f,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,0);
@@ -317,8 +426,11 @@ void rgbProcessorThread::colourOpponency(){
 	//4.5. subtract the yellow from the blue in order to get B+Y-
 	ippiSub_32f_C1R(bluePlane_ippi32,psb2,yellowPlane_ippi32_f,psb2,blueYellow_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
-    */
+	*/
+    
 
+
+    
     //4.1 subtract the red from the green to obtain R+G-
     ippiSub_32f_C1R(greenPlane_ippi32_f,psb2,redPlane_ippi32,psb2,redGreen_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
@@ -335,6 +447,8 @@ void rgbProcessorThread::colourOpponency(){
 	ippiSub_32f_C1R(yellowPlane_ippi32_f,psb2,bluePlane_ippi32,psb2,blueYellow_ippi32,psb2,srcsize);
 
 	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
+
+    
 
 
     /*for(int i=0;i< width*height; i++){
@@ -435,8 +549,8 @@ void rgbProcessorThread::colourOpponency(){
 	this->redGreen_flag=1;
 	this->greenRed_flag=1;*/
 
+    
     //6. free memory space
-
     ippiFree(bluePlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
 	ippiFree(redPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
 	ippiFree (greenPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
@@ -445,7 +559,8 @@ void rgbProcessorThread::colourOpponency(){
     ippiFree(redGreen_ippi);
 	ippiFree(blueYellow_ippi);
 	ippiFree(greenRed_ippi);
-
+    
+    
     ippiFree(bluePlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
 	ippiFree(redPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
 	ippiFree(yellowPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
@@ -473,6 +588,7 @@ void rgbProcessorThread::colourOpponency(){
 	ippsFree(pBufferBlue);
 	ippsFree(pBufferRed);
 	ippsFree(pBufferGreen);
+    
 }
 
 //----- end-of-file --- ( next line intentionally left blank ) ------------------

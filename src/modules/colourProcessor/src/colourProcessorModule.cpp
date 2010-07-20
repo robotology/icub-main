@@ -37,10 +37,17 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     yuvProcessor=0;
 
 
-    interThread=new imageReaderThread();
-    interThread->setName(this->getName().c_str());
+    //interThread=new imageReaderThread();
+    //interThread->setName(this->getName().c_str());
+    
+    //interThread->start();
+    
+    rgbProcessor=new rgbProcessorThread();
+    rgbProcessor->setName(this->getName().c_str());
     printf("name:%s \n",this->getName().c_str());
-    interThread->start();
+    rgbProcessor->start();
+    //rgbProcessor->setInputImage(interThread->inputImg);
+    
 
     printf("\n waiting for connection of the input port \n");
 
@@ -52,7 +59,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 *function that opens the module
 */
 bool colourProcessorModule::open(Searchable& config) {
-    interThread->start();
+    //interThread->start();
     ct = 0;
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     startRgbProcessor();
@@ -74,7 +81,8 @@ bool colourProcessorModule::open(Searchable& config) {
 bool colourProcessorModule::interruptModule() {
     //interThread.interrupt();
     cmdPort.interrupt();
-    interThread->interrupt();
+    //interThread->interrupt();
+    rgbProcessor->interrupted();
     return true;
 }
 
@@ -90,11 +98,12 @@ bool colourProcessorModule::close(){
 
     if(rgbProcessor!=0)
         rgbProcessor->stop();
-    if(yuvProcessor!=0)
+    /*if(yuvProcessor!=0)
         yuvProcessor->stop();
     if(interThread!=0){
         interThread->stop();
     }
+    */
 
    
     return true;
@@ -144,10 +153,11 @@ bool colourProcessorModule::updateModule() {
         printf("%s \n", commandTOT->c_str());
     }*/
 
-    if((0!=interThread->inputImg)&&(!initflag)){
+    if((0!=rgbProcessor->img)&&(!initflag)){
     
+        /*
         
-        while(interThread->inputImg->width()==0){
+        while(rgbProcessor->inputImg->width()==0){
             
         }
         
@@ -175,6 +185,8 @@ bool colourProcessorModule::updateModule() {
         
 
         initflag=true;
+
+        */
     }
     
     return true;

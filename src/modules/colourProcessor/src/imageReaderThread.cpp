@@ -159,6 +159,22 @@ void imageReaderThread::outPorts(){
         greenPort.prepare() = *(greenPlane);		
         greenPort.write();
     }
+
+    //colour opponency section
+    if((redGreen_yarp!=0)&&(rgPort.getOutputCount())){
+        rgPort.prepare()=*(redGreen_yarp);
+        rgPort.write();
+    }
+    if((greenRed_yarp!=0)&&(grPort.getOutputCount())){
+        grPort.prepare()=*(greenRed_yarp);
+        grPort.write();
+    }
+    if((blueYellow_yarp!=0)&&(byPort.getOutputCount())){
+        byPort.prepare()=*(blueYellow_yarp);
+        byPort.write();
+    }
+
+
     if((yPlane!=0)&&(yPort.getOutputCount())){
         yPort.prepare() = *(yPlane);		
         yPort.write();
@@ -176,19 +192,7 @@ void imageReaderThread::outPorts(){
         uvPort.write();
     }
     
-    //colour opponency section
-    if((redGreen_yarp!=0)&&(rgPort.getOutputCount())){
-        rgPort.prepare()=*(redGreen_yarp);
-        rgPort.write();
-    }
-    if((greenRed_yarp!=0)&&(grPort.getOutputCount())){
-        grPort.prepare()=*(greenRed_yarp);
-        grPort.write();
-    }
-    if((blueYellow_yarp!=0)&&(byPort.getOutputCount())){
-        byPort.prepare()=*(blueYellow_yarp);
-        byPort.write();
-    }
+    
     
 }
 
