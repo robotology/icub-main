@@ -29,6 +29,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 
     //Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
+    printf("Opened the command port");
     attach(cmdPort);
     //attachTerminal();
     //printf("resource finder configuration after time turbo boosting \n");
