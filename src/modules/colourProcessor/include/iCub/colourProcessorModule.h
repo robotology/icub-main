@@ -154,8 +154,6 @@ private:
     * port necessary for rpc commands
     */
     yarp::os::Port cmdPort;
-
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inputPort;
     /**
     * size of the input image
     */
