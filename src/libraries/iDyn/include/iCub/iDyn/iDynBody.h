@@ -762,7 +762,7 @@ public:
     *
     * Important note: since we are specifying the link index in the chain, the Jacobian computation
     * will deal with all the links, even blocked links. 
-    * The Jacobian size is not 6x<the DOF until iLinkB> but 6xiLinkB, where 0<iLinkB<N
+    * The Jacobian size is not 6x(the DOF until iLinkB) but 6xiLinkB, where 0<iLinkB<N
     *
 	* @param iChain the index of the chain (limb) in the node 
     * @param iLink  the index of the limnk in the limb
@@ -796,7 +796,7 @@ public:
     *
     * Important note: since we are specifying the link index in chain B, the Jacobian computation
     * on chain B will deal with all the links, even blocked links. 
-    * The Jacobian size is not 6x(DOF_A + <the DOF until iLinkB>) but 6x(DOF_A+iLinkB), where 0<iLinkB<N
+    * The Jacobian size is not 6x(DOF_A + the DOF until iLinkB) but 6x(DOF_A+iLinkB), where 0<iLinkB<N
     *
 	* @param iChainA the index of the chain (the limb) in the node having the base (<0>) frame
 	* @param dirA the 'direction' of the chain wrt the jacobian computation
