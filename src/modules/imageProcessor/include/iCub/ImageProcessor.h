@@ -14,6 +14,8 @@
 #include <cvaux.h>
 #include <highgui.h>
 
+#include <string>
+
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
@@ -27,9 +29,61 @@ const int THREAD_RATE=10;
 
 //class ImageProcessor:public yarp::os::RateThread
 //class ImageProcessor:public yarp::os::Thread
-class ImageProcessor:public yarp::os::RateThread
+class ImageProcessor:public yarp::os::Thread
 {
     private:
+        /**
+    * IppiSize reference to the dimension of the input image
+    */
+    IppiSize srcsize;
+    /**
+    * a port for the inputImage
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; // 
+    /**
+    * a port for the redPlane
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > redPlanePort; //
+    /**
+    * a port for the greenPlane
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > greenPlanePort; //
+    /**
+    * a port for the bluePlane
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > bluePlanePort; //	 
+    /**
+    * input port for the R+G- colour Opponency Map
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort; 
+    /**
+    * input port for the G+R- colour Opponency Map
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort; 
+    /**
+    * input port for the B+Y- colour Opponency Map
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort; 	
+    /**
+    *  output port for edges in R+G- colour Opponency Map
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgEdgesPort; 
+    /**
+    * output port for edges in G+R- colour Opponency Map
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grEdgesPort; 
+    /**
+    * output port for edges in B+Y- colour Opponency Map
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byEdgesPort;
+    /**
+    * overall edges port combination of maximum values of all the colorOpponency edges
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > edgesPort;
+    /**
+    * name of the module and rootname of the connection
+    */
+    std::string name;
         /**
         * width step of 8u images
         */
@@ -121,7 +175,10 @@ class ImageProcessor:public yarp::os::RateThread
         * temp variable for plane extraction;
         */
         yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp;
-
+        /**
+        * temporary input image
+        */
+        yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImg;    
         /**
         * temp variable for the plane extraction
         */
@@ -198,6 +255,15 @@ class ImageProcessor:public yarp::os::RateThread
         Ipp8u* outputBlueYellow2; // = ippiMalloc_8u_C1(width,height,&psb);
         Ipp8u* outputBlueYellow3; // = ippiMalloc_8u_C1(width,height,&psb);
         Ipp8u* blueYellowBorder;
+
+        /**
+        * flag that is set after the dimension of the images is defined
+        */
+        bool reinit_flag;
+        /**
+        * flag set when the interrputed function has already be called
+        */
+        bool interrupted;
         
     public:
         /**
@@ -229,6 +295,10 @@ class ImageProcessor:public yarp::os::RateThread
         */
         void resizeImages(int width, int height);
         /**
+        * function that reinitilise the images necessary for processing
+        */
+        void reinitialise(int width, int height);
+        /**
         * combines the 3 edge images saving the maximum value for every pixel 
         */
         void combineMax(yarp::sig::ImageOf<yarp::sig::PixelMono>* edgesOutput); //
@@ -251,9 +321,11 @@ class ImageProcessor:public yarp::os::RateThread
         * @param outImage output image passed as reference
         */
         void findEdgesBlueOpponency (yarp::sig::ImageOf<yarp::sig::PixelMono>* outImage); //
-
+        /**
+        * function that sends images on the output port
+        */
+        bool outPorts();
         //yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesRed (); //finds the edges in the red plane
-
         /**
         * finds the edges in the green plane
         * @return the edge image of the green plane
@@ -323,6 +395,17 @@ class ImageProcessor:public yarp::os::RateThread
         * convert pixel order rgba to planar order yuv channels
         */
         void convertRGB(IppiSize sze,Ipp8u * rgba_orig, int psb_o); //
+        /**
+        * function that gives reference to the name of the module
+        * @param name of the module
+        */
+        void setName(std::string name);
+        /**
+        * function that returns the name of the module
+        * @param str string to be added
+        * @return name of the module
+        */
+        std::string getName(const char* str);
         void setInputImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> *src);
         /**
         * process the src image considering the imageprocessor flags
@@ -470,15 +553,15 @@ class ImageProcessor:public yarp::os::RateThread
         /**
         * flag that indicates the colour opponency map is ready B+Y-
         */
-        int* blueYellow_flag;
+        int blueYellow_flag;
         /**
         * flag that indicates the colour opponency map is ready R+G-
         */
-        int* redGreen_flag;
+        int redGreen_flag;
         /**
         * flag that indicates the colour opponency map is ready G+R-
         */
-        int* greenRed_flag;
+        int greenRed_flag;
         /**
         * flag for maximum convolution
         */

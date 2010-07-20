@@ -14,7 +14,7 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
-
+using namespace std;
 
 // available methods for edges detection
 //#define CONVMAX
@@ -23,13 +23,16 @@ using namespace yarp::sig::draw;
 //#define OPENCVSOBEL
 //#define CONVSEQ
 
-ImageProcessor::ImageProcessor():RateThread(THREAD_RATE)
+ImageProcessor::ImageProcessor()//:RateThread(THREAD_RATE)
 {
     this->inImage=NULL;
     portImage=NULL;
 
     maskSeed=4;
     maskTop=20;
+
+    interrupted=false;
+    reinit_flag=false;
 
     canProcess_flag=0;
     inputImage_flag=0;
@@ -54,7 +57,7 @@ ImageProcessor::ImageProcessor():RateThread(THREAD_RATE)
     portImage=new ImageOf<PixelRgb>;
     //this->portImage->resize(320,240);
 
-    edges_yarp=new ImageOf<PixelMono>;
+    edges_yarp=0;
     edgesOutput=new ImageOf<PixelMono>;    
 
     redPlane=new ImageOf<PixelMono>;
@@ -222,7 +225,7 @@ ImageProcessor::~ImageProcessor(){
     //---->cvImage8
 }
 
-ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE)
+ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage)//:RateThread(THREAD_RATE)
 {
     this->inImage=inputImage;
     this->portImage=portImage;
@@ -251,6 +254,29 @@ ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_
     
     
 }
+
+void ImageProcessor::reinitialise(int width, int height){
+    srcsize.width=width;
+    srcsize.height=height;
+    this->width=width;
+    this->height=height;
+
+    inputImg=new ImageOf<PixelRgb>;
+    inputImg->resize(width,height);
+
+    redGreen_yarp=new ImageOf<PixelMono>;
+    redGreen_yarp->resize(width,height);
+    greenRed_yarp=new ImageOf<PixelMono>;
+    greenRed_yarp->resize(width,height);
+    blueYellow_yarp=new ImageOf<PixelMono>;
+    blueYellow_yarp->resize(width,height);
+
+    edges_yarp=new ImageOf<PixelMono>;
+    edges_yarp->resize(width,height);
+
+    resizeImages(width,height);
+}
+
 /**
 * 
 */
@@ -346,25 +372,106 @@ void ImageProcessor::resizeImages(int width,int height){
 */
 bool ImageProcessor::threadInit(){
     printf("Thread initialization .... \n");
+    bool ret = false;
+    bool ok=true;
+    //input ports
+    inImagePort.open(getName("/image:i").c_str());
+	redPlanePort.open(getName("/red:i").c_str());
+    bluePlanePort.open(getName("/blue:i").c_str());
+    greenPlanePort.open(getName("/green:i").c_str());
+
+    rgPort.open(getName("/rg:i").c_str());
+    grPort.open(getName("/gr:i").c_str());
+    byPort.open(getName("/by:i").c_str());
+
+    rgEdgesPort.open(getName("/rgEdges:o").c_str());
+    grEdgesPort.open(getName("/grEdges:o").c_str());
+    byEdgesPort.open(getName("/byEdges:o").c_str());
+
+    edgesPort.open(getName("/edges:o").c_str());
+    
+
+	return true;
     return true;
 }
+
+void ImageProcessor::setName(std::string str){
+    this->name=str; 
+}
+
+
+std::string ImageProcessor::getName(const char* p){
+    string str(name);
+    str.append(p);
+    printf("name: %s", name.c_str());
+    return str;
+}
+
 /**
 * active loop of the thread
 */
 void ImageProcessor::run(){
+while(!isStopping()){
+        /*this->inputImg = this->inImagePort.read(false);
+        if(0==inputImg)
+            return true;*/
 
-    if(*redGreen_flag)
-        findEdgesRedOpponency(redGreenEdges_yarp);
-    if(*greenRed_flag)
-        findEdgesGreenOpponency(greenRedEdges_yarp);
-    if(*blueYellow_flag)
-        findEdgesBlueOpponency(blueYellowEdges_yarp);
+        //synchronisation with the input image occuring
+        if(!interrupted){
+            tmp=rgPort.read(true);
+            
+            if(tmp!=0){
+                //outPorts();
+              
+                if(!reinit_flag){
+                    //srcsize.height=img->height();
+                    //srcsize.width=img->width();
+                    reinitialise(tmp->width(), tmp->height());
+                    reinit_flag=true;
+                    //startImageProcessor();
+                }
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
+                //this->redGreen_yarp=tmp;
+                //this->redPlane=redPlanePort.read(true);
+                if(0!=redGreen_yarp)
+                    redGreen_flag=1;
+                
+                
+                //this->bluePlane=bluePlanePort.read(true);
+                tmp=byPort.read(true);
+                if(0!=tmp){
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);   
+                    blueYellow_flag=1;
+                }
+                
+                
+                //this->greenPlane=greenPlanePort.read(true);
+                tmp=grPort.read(true);
+                if(0!=tmp){
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
+                    greenRed_flag=1;
+                }
+                
 
-    if((*redGreen_flag)&&(*greenRed_flag)&&(*blueYellow_flag)){
-        combineMax(edges_yarp);
-        //lineMax();
+                //--------- processing ------------
+                if(redGreen_flag)
+                    findEdgesRedOpponency(redGreenEdges_yarp);
+                if(greenRed_flag)
+                    findEdgesGreenOpponency(greenRedEdges_yarp);
+                if(blueYellow_flag)
+                    findEdgesBlueOpponency(blueYellowEdges_yarp);
+
+                if((redGreen_flag)&&(greenRed_flag)&&(blueYellow_flag)){
+                    combineMax(edges_yarp);
+                    //lineMax();
+                }
+ 
+                // ------------ providing results ------------------
+                outPorts();
+            }
+        }
     }
-    
+       
 }
 /**
 *	releases the thread
@@ -372,8 +479,39 @@ void ImageProcessor::run(){
 void ImageProcessor::threadRelease(){
     printf("Thread realeasing .... \n");
     
+    bool ret = false;
+	//int res = 0;
+	// Closing Port(s)
+    //reduce verbosity --paulfitz
+
+    //closing input ports
+    inImagePort.close();
+    redPlanePort.close();
+    bluePlanePort.close();
+    greenPlanePort.close();
+    
+    rgPort.close();
+    grPort.close();
+    byPort.close();
+    rgEdgesPort.close();
+    grEdgesPort.close();
+    byEdgesPort.close();
+
+    edgesPort.close();
+
+	//return ret;
 }
 
+
+
+bool ImageProcessor::outPorts(){
+    
+    if((0!=edges_yarp)&&(edgesPort.getOutputCount())){
+        edgesPort.prepare()=*(edges_yarp);
+        edgesPort.write();
+    }
+    return true;
+}
 
 
 /*ImageOf<PixelRgb>* ImageProcessor::findEdges(ImageOf<PixelRgb>* inputImage,int x_order,int y_order){
@@ -1818,6 +1956,7 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
 
     IppiSize srcsize ={width,height};
     
+    
     Ipp8u* edgesBlue_ippi=ippiMalloc_8u_C1(width,height,&psb); 
     Ipp8u* edgesGreen_ippi=ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* edgesRed_ippi=ippiMalloc_8u_C1(width,height,&psb);
@@ -1880,6 +2019,7 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
                 edgesOutput_ippi[i]=edgesBlue_ippi[i];
             else
                 edgesOutput_ippi[i]=edgesGreen_ippi[i];
+  
 
 
         /*if(edgesOutput_ippi[i]==255) 

@@ -33,7 +33,7 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
     double dif=0;
     time_t start,end;
     time (&start);
-    interThread=new interactionThread();
+    //interThread=new interactionThread();
     
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
@@ -41,8 +41,16 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
     //attachTerminal();
     printf("resource finder configuration after time turbo boosting \n");
     
-    interThread->setName(getName().c_str());
-    interThread->start();
+    //interThread->setName(getName().c_str());
+    //interThread->start();
+
+    currentProcessor=new ImageProcessor();
+    currentProcessor->OPENCVSOBEL=this->OPENCVSOBEL;
+    currentProcessor->IPPISOBEL=this->IPPISOBEL;
+    currentProcessor->IPPICROSS=this->IPPICROSS;
+    currentProcessor->IPPISOBEL=this->IPPISOBEL;
+    currentProcessor->setName(getName().c_str());
+    currentProcessor->start();
 
     //inputImg=0;
     
@@ -200,6 +208,7 @@ bool ImageProcessModule::updateModule() {
             
         }*/
 
+        /*
         interThread->width=interThread->redGreen_yarp->width();
         interThread->height=interThread->redGreen_yarp->height();
 
@@ -231,7 +240,7 @@ bool ImageProcessModule::updateModule() {
 
         currentProcessor->start();
 
-        reinit_flag=true;
+        reinit_flag=true;*/
     }
 
     return true;
