@@ -131,7 +131,6 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-
 // class inverseDynamics: class for reading from Vrow and providing FT on an output port
 class inverseDynamics: public RateThread
 {
@@ -214,9 +213,22 @@ public:
         if (tt)
         {
             if (part=="left_arm")
+			{
                 limb = new iCubArmDyn("left");
+				limb->releaseLink(0);
+				limb->releaseLink(1);
+				limb->releaseLink(2);
+				//limb->setAllConstraints(false);
+				 
+			}
             else
+			{
                 limb = new iCubArmDyn("right");
+				limb->releaseLink(0);
+				limb->releaseLink(1);
+				limb->releaseLink(2);
+				//limb->setAllConstraints(false);
+			}
         }
         else
         {
@@ -236,7 +248,9 @@ public:
         if (tt)
         {
             if (part=="left_arm")
+			{
                 sens = new iDynInvSensorArm(chain,"left",DYNAMIC);
+			}
             else
                 sens = new iDynInvSensorArm(chain,"right",DYNAMIC);
         }
@@ -266,9 +280,9 @@ public:
 
         int jnt=jnt1+jnt2;
 
-        q.resize(jnt,0.0);
-        dq.resize(jnt,0.0);
-        d2q.resize(jnt,0.0);
+        q.resize(10,0.0);
+        dq.resize(10,0.0);
+        d2q.resize(10,0.0);
 		w0.resize(3,0.0);
         dw0.resize(3,0.0);
         d2p0.resize(3,0.0);
@@ -306,7 +320,7 @@ public:
         }
         else
         {
-            for (int i=1;i<q.length();i++)
+            for (int i=0;i<q.length();i++)
                 q(i) = encoders(i);
         }
 
@@ -346,6 +360,9 @@ public:
                 F_offset=0.0;
             }
         }
+		Vector FT_iDyn = F_iDyn;
+		Vector F_sensor = F_measured - F_offset;
+		Vector q_iDyn = limb->getAng();
         port_Wrench->prepare() = FT;
         port_Wrench->write();
     }
@@ -503,7 +520,7 @@ public:
             OptionsTorso.put("robot",robot.c_str());
             OptionsTorso.put("part","torso");
             OptionsTorso.put("device","remote_controlboard");
-            OptionsTorso.put("local",(fwdSlash+name+"/torso/client").c_str());
+            OptionsTorso.put("local",(fwdSlash+name+fwdSlash+part+"/torso/client").c_str());
             OptionsTorso.put("remote","/icub/torso");
 
             tt = new PolyDriver(OptionsTorso);
