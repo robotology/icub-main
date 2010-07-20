@@ -502,6 +502,34 @@ void ImageProcessor::threadRelease(){
 	//return ret;
 }
 
+void ImageProcessor::interrupt(){
+    printf("Thread interrupting .... \n");
+    
+    bool ret = false;
+	//int res = 0;
+	// Closing Port(s)
+    //reduce verbosity --paulfitz
+
+    //closing input ports
+    inImagePort.interrupt();
+    redPlanePort.interrupt();
+    bluePlanePort.interrupt();
+    greenPlanePort.interrupt();
+    
+    rgPort.interrupt();
+    grPort.interrupt();
+    byPort.interrupt();
+    rgEdgesPort.interrupt();
+    grEdgesPort.interrupt();
+    byEdgesPort.interrupt();
+
+    edgesPort.interrupt();
+
+	//return ret;
+}
+
+
+
 
 
 bool ImageProcessor::outPorts(){

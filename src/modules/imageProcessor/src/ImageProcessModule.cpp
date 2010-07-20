@@ -102,6 +102,7 @@ bool ImageProcessModule::open(Searchable& config) {
 bool ImageProcessModule::interruptModule() {
     printf("interrupting the module.. \n");
     cmdPort.interrupt();
+    currentProcessor->interrupt();
     //interThread->interrupt();
 	return true;
 }
@@ -114,11 +115,11 @@ bool ImageProcessModule::close() {
         this->currentProcessor->stop();
         //delete currentProcessor;
     }
-    if(0!=interThread){
+    /*if(0!=interThread){
         printf("Thread running! Closing the interaction thread ... \n");
         this->interThread->stop();
         //delete interThread;
-    }	
+        }*/	
     printf("The module has been successfully closed ... \n");
 
     closePorts();

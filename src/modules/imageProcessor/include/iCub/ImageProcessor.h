@@ -286,6 +286,10 @@ class ImageProcessor:public yarp::os::Thread
         * active loop of the thread
         */
         void run();
+    /**
+     *  interrupts the thread
+     */
+    void interrrupt();
         /**
         *	releases the thread
         */
