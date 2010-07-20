@@ -1,6 +1,7 @@
 #include <iCub/blobFinderThread.h>
 
 #include <iostream>
+
 using namespace std;
 
 //#define _inputImg (*(ptr_inputImg))
@@ -19,8 +20,10 @@ using namespace std;
 
 const int THREAD_RATE=30;
 
-blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
+blobFinderThread::blobFinderThread()//:RateThread(THREAD_RATE)
+{
     reinit_flag=false;
+    interrupted_flag=false;
 
     ct=0;
     filterSpikes_flag=true;
@@ -99,6 +102,18 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     searchBY=0;
 }
 
+void blobFinderThread::setName(std::string str){
+    this->name=str; 
+}
+
+
+std::string blobFinderThread::getName(const char* p){
+    string str(name);
+    str.append(p);
+    printf("name: %s", name.c_str());
+    return str;
+}
+
 
 void blobFinderThread::reinitialise(int width, int height){
     img=new ImageOf<PixelRgb>;
@@ -106,6 +121,9 @@ void blobFinderThread::reinitialise(int width, int height){
     this->width=width;
     this->height=height;
     resizeImages(width,height);
+
+    tmpImage=new ImageOf<PixelMono>;
+    tmpImage->resize(width,height);
 }
 
 void blobFinderThread::resizeImages(int width, int height){
@@ -167,7 +185,25 @@ void blobFinderThread::resizeImages(int width, int height){
 */
 bool blobFinderThread::threadInit(){
 
+    bool ret = false;
+    bool ok=true;
     
+    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+    inputPort.open(getName("/image:i").c_str());
+    
+    redPort.open(getName("/red:i").c_str());
+    greenPort.open(getName("/green:i").c_str());
+    bluePort.open(getName("/blue:i").c_str());
+
+    rgPort.open(getName("/rg:i").c_str());
+    grPort.open(getName("/gr:i").c_str());
+    byPort.open(getName("/by:i").c_str());
+
+    outputPort.open(getName("/image:o").c_str());
+    centroidPort.open(getName("/centroid:o").c_str());
+    triangulationPort.open(getName("/triangulation:o").c_str());
+    gazeControlPort.open(getName("/gazeControl:o").c_str());
+
 
 	/*contrastLP_flag=true;
 	meanColour_flag=false;
@@ -196,208 +232,523 @@ void blobFinderThread::resetFlags(){
 }
 
 /**
+* function called when the module is poked with an interrupt command
+*/
+void blobFinderThread::interrupt(){
+    interrupted_flag=true; //this flag must be switched before the unlock of every input port
+
+    inputPort.interrupt();//(getName("image:i"));
+    
+    redPort.interrupt();//open(getName("red:i"));
+    greenPort.interrupt();//open(getName("green:i"));
+    bluePort.interrupt();//open(getName("blue:i"));
+
+    rgPort.interrupt();//open(getName("rg:i"));
+    grPort.interrupt();//open(getName("gr:i"));
+    byPort.interrupt();//open(getName("by:i"));
+
+    outputPort.interrupt();//open(getName("image:o"));
+    centroidPort.interrupt();//open(getName("centroid:o"));
+    triangulationPort.interrupt();//open(getName("triangulation:o"));
+    gazeControlPort.interrupt();//open(getName("gazeControl:o"));
+
+}
+
+/**
 * active loop of the thread
 */
 void blobFinderThread::run(){
 
-    freetorun=true;
-    if(!freetorun)
-        return;
-
-    meanColour_flag=true;
-    blobCataloged_flag=true;
-    bool redPlane_flag=false;
-    bool greenPlane_flag=false;
-    bool bluePlane_flag=false;
-    bool RG_flag=false;
-    bool GR_flag=false;
-    bool BY_flag=false;
-
-    
-
-    bool conversion=true;
-    _outputImage=wOperator->getPlane(ptr_inputImg);
-    rain();
-    
-    //redPlane_flag=true;
-    //maxSaliencyBlob_flag=false;
-
-    if(redPlane_flag){
-        ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(greenPlane_flag){
-        ippiCopy_8u_C1R(this->ptr_inputImgGreen->getRawImage(),this->ptr_inputImgGreen->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(bluePlane_flag){
-        ippiCopy_8u_C1R(this->ptr_inputImgBlue->getRawImage(),this->ptr_inputImgBlue->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(RG_flag){
-        ippiCopy_8u_C1R(this->ptr_inputImgRG->getRawImage(),this->ptr_inputImgRG->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(GR_flag){
-        ippiCopy_8u_C1R(this->ptr_inputImgGR->getRawImage(),this->ptr_inputImgGR->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(BY_flag){
-        ippiCopy_8u_C1R(this->ptr_inputImgBY->getRawImage(),this->ptr_inputImgBY->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-
-    else if(this->foveaBlob_flag){
-        this->salience->drawFoveaBlob(*this->salience->foveaBlob,*this->tagged);
-        ippiCopy_8u_C1R(this->salience->foveaBlob->getRawImage(),this->salience->foveaBlob->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(this->watershed_flag){
-        ippiCopy_8u_C1R(this->wOperator->tSrc.getRawImage(),this->wOperator->tSrc.getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(this->tagged_flag){
-        //printf("dimension of the tagged image %d,%d \n", this->tagged->width(), this->tagged->height());
-        for(int y=0; y<this->tagged->height(); y++){
-            for (int x=0; x<this->tagged->width(); x++){
-                _outputImage->pixel(x,y)=(int)((this->max_tag/255)*this->tagged->pixel(x,y));
+    while(!isStopping()&&(!interrupted_flag)){
+        ct++;
+        img = inputPort.read(true);
+        if(0!=img){
+            if(!reinit_flag){    
+	            srcsize.height=img->height();
+	            srcsize.width=img->width();
+                this->height=img->height();
+                this->width=img->width();
+                reinitialise(img->width(), img->height());
+                reinit_flag=true;
+                tmpImage->resize(this->width,this->height);    
             }
-        }
-        //cvCvtColor(this->tagged->getIplImage(),_outputImage->getIplImage(),CV_GRAY2RGB);
-        //cvCopy(this->tagged->getIplImage(),_outputImage->getIplImage());
-        //ippiCopy_8u_C1R(this->tagged->getRawImage(),320,_outputImage->getRawImage(),320,srcsize);
-        conversion=true;
-    }
-    else if(this->blobList_flag){
-        this->drawAllBlobs(true);
-        if(true){
-            ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),320,srcsize);
-           conversion=true;
-        }
-    }
-    else if(this->maxSaliencyBlob_flag){
-        this->drawAllBlobs(false);
-        if(filterSpikes_flag){
-            count++;
-            if(count>SPIKE_COUNTS){
-                //drawing the blob with max number of spikes
-                count=0;
-                this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
-                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                conversion=true;
-            }
-            else{
-                //counting the first 10 spikes
-                YARPBox box;
-                this->salience->countSpikes(*tagged,max_tag,box);
-                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-            }
+
+            //copy the inputImg into a buffer
+            //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),tmpImage->getRawImage(), tmpImage->getRowSize(),srcsize);
+            //ippiCopy_8u_C3R(tmpImage->getRawImage(), tmpImage->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
+            bool ret1=true,ret2=true;
+            ret1=getOpponencies();
+            ret2=getPlanes();
+            if(ret1&&ret2)
+                freetorun=true;
+            if(!freetorun)
+                return;
+
+            meanColour_flag=true;
+            blobCataloged_flag=true;
+            bool redPlane_flag=false;
+            bool greenPlane_flag=false;
+            bool bluePlane_flag=false;
+            bool RG_flag=false;
+            bool GR_flag=false;
+            bool BY_flag=false;
+
             
-        }
-        else{
-            this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
-            ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-            conversion=true;
-        }
-    }
-    else if(this->contrastLP_flag){
-        this->drawAllBlobs(true);
-        if(filterSpikes_flag){
-            count++;
-            if(count>10){
-                count=0;
-                this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
-                
-                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+
+            bool conversion=true;
+            _outputImage=wOperator->getPlane(ptr_inputImg);
+            rain();
+            
+            //redPlane_flag=true;
+            //maxSaliencyBlob_flag=false;
+
+            if(redPlane_flag){
+                ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
             }
-            else{
-                YARPBox box;
-                this->salience->countSpikes(*tagged,max_tag,box);
-                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+            else if(greenPlane_flag){
+                ippiCopy_8u_C1R(this->ptr_inputImgGreen->getRawImage(),this->ptr_inputImgGreen->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
             }
-        }
-        else{
-            salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
-        }
-        
-        ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
-    }
-    else if(this->colorVQ_flag){
-        this->salience->DrawVQColor(*this->salience->colorVQ_img,*this->tagged);
-        ippiCopy_8u_C3R(this->salience->colorVQ_img->getRawImage(),this->salience->colorVQ_img->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);
-        conversion=false;
-    }
-    else if(this->blobCataloged_flag){
-        if(this->contrastLP_flag){
-            this->drawAllBlobs(true);
-            ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-            conversion=true;
-        }
-        else if(this->meanColour_flag){
-            //_outputImage=_wOperator->getPlane(&_inputImg); 
-            //rain();
-            this->drawAllBlobs(true);
-            ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
-            conversion=false;
-        }
-        else{
-            _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
-            conversion=true;
-        }
-    }
-    else{
-        _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
-        conversion=true;
-    }
+            else if(bluePlane_flag){
+                ippiCopy_8u_C1R(this->ptr_inputImgBlue->getRawImage(),this->ptr_inputImgBlue->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else if(RG_flag){
+                ippiCopy_8u_C1R(this->ptr_inputImgRG->getRawImage(),this->ptr_inputImgRG->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else if(GR_flag){
+                ippiCopy_8u_C1R(this->ptr_inputImgGR->getRawImage(),this->ptr_inputImgGR->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else if(BY_flag){
+                ippiCopy_8u_C1R(this->ptr_inputImgBY->getRawImage(),this->ptr_inputImgBY->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
 
-    //-------
-    
-    if(conversion){
-        int psb;
-        int width=this->width;
-        int height=this->height;
-        
-        Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
-        //Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
-        //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
-        //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
-        //two copies in order to have 2 conversions
-        //the first transform the yarp mono into a 4-channel image
-        ippiCopy_8u_C1R(_outputImage->getRawImage(),_outputImage->getRowSize(),im_out,psb,srcsize);
+            else if(this->foveaBlob_flag){
+                this->salience->drawFoveaBlob(*this->salience->foveaBlob,*this->tagged);
+                ippiCopy_8u_C1R(this->salience->foveaBlob->getRawImage(),this->salience->foveaBlob->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else if(this->watershed_flag){
+                ippiCopy_8u_C1R(this->wOperator->tSrc.getRawImage(),this->wOperator->tSrc.getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else if(this->tagged_flag){
+                //printf("dimension of the tagged image %d,%d \n", this->tagged->width(), this->tagged->height());
+                for(int y=0; y<this->tagged->height(); y++){
+                    for (int x=0; x<this->tagged->width(); x++){
+                        _outputImage->pixel(x,y)=(int)((this->max_tag/255)*this->tagged->pixel(x,y));
+                    }
+                }
+                //cvCvtColor(this->tagged->getIplImage(),_outputImage->getIplImage(),CV_GRAY2RGB);
+                //cvCopy(this->tagged->getIplImage(),_outputImage->getIplImage());
+                //ippiCopy_8u_C1R(this->tagged->getRawImage(),320,_outputImage->getRawImage(),320,srcsize);
+                conversion=true;
+            }
+            else if(this->blobList_flag){
+                this->drawAllBlobs(true);
+                if(true){
+                    ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),320,srcsize);
+                   conversion=true;
+                }
+            }
+            else if(this->maxSaliencyBlob_flag){
+                this->drawAllBlobs(false);
+                if(filterSpikes_flag){
+                    count++;
+                    if(count>SPIKE_COUNTS){
+                        //drawing the blob with max number of spikes
+                        count=0;
+                        this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                        conversion=true;
+                    }
+                    else{
+                        //counting the first 10 spikes
+                        YARPBox box;
+                        this->salience->countSpikes(*tagged,max_tag,box);
+                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                    }
+                    
+                }
+                else{
+                    this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                    ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                    conversion=true;
+                }
+            }
+            else if(this->contrastLP_flag){
+                this->drawAllBlobs(true);
+                if(filterSpikes_flag){
+                    count++;
+                    if(count>10){
+                        count=0;
+                        this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                        
+                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                        conversion=true;
+                    }
+                    else{
+                        YARPBox box;
+                        this->salience->countSpikes(*tagged,max_tag,box);
+                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                    }
+                }
+                else{
+                    salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
+                }
+                
+                ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else if(this->colorVQ_flag){
+                this->salience->DrawVQColor(*this->salience->colorVQ_img,*this->tagged);
+                ippiCopy_8u_C3R(this->salience->colorVQ_img->getRawImage(),this->salience->colorVQ_img->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);
+                conversion=false;
+            }
+            else if(this->blobCataloged_flag){
+                if(this->contrastLP_flag){
+                    this->drawAllBlobs(true);
+                    ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                    conversion=true;
+                }
+                else if(this->meanColour_flag){
+                    //_outputImage=_wOperator->getPlane(&_inputImg); 
+                    //rain();
+                    this->drawAllBlobs(true);
+                    ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
+                    conversion=false;
+                }
+                else{
+                    _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+                    conversion=true;
+                }
+            }
+            else{
+                _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+                conversion=true;
+            }
 
-        //ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
-        //ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
-        //ippiCopy_8u_C1R(im_out, width,im_tmp2,psb,srcsize);
+            //-------
+            
+            if(conversion){
+                int psb;
+                int width=this->width;
+                int height=this->height;
+                
+                Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
+                //Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
+                //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
+                //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
+                //two copies in order to have 2 conversions
+                //the first transform the yarp mono into a 4-channel image
+                ippiCopy_8u_C1R(_outputImage->getRawImage(),_outputImage->getRowSize(),im_out,psb,srcsize);
 
-        //im_tmp0=im_out;
-        //im_tmp1=im_out;
-        //im_tmp2=im_out;
+                //ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
+                //ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
+                //ippiCopy_8u_C1R(im_out, width,im_tmp2,psb,srcsize);
 
-        //Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
+                //im_tmp0=im_out;
+                //im_tmp1=im_out;
+                //im_tmp2=im_out;
 
-        Ipp8u* im_tmp[3]={im_out,im_out,im_out};
-        //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
-        //the second transforms the 4-channel image into colorImage for yarp
-        ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
-        ippiFree(im_out);
-        //printf("freeing im_tmp0  \n");	
-        //ippiFree(im_tmp0);
-        //printf("freeing im_tmp1 \n");	
-        //ippiFree(im_tmp1);
-        //printf("freeing im_tmp2  \n");	
-        //ippiFree(im_tmp2);
-        //printf("freeing ended  \n");	
+                //Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
+
+                Ipp8u* im_tmp[3]={im_out,im_out,im_out};
+                //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
+                //the second transforms the 4-channel image into colorImage for yarp
+                ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
+                ippiFree(im_out);
+                //printf("freeing im_tmp0  \n");	
+                //ippiFree(im_tmp0);
+                //printf("freeing im_tmp1 \n");	
+                //ippiFree(im_tmp1);
+                //printf("freeing im_tmp2  \n");	
+                //ippiFree(im_tmp2);
+                //printf("freeing ended  \n");	
+            }
+            else
+                ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
+            outPorts();
+        }
     }
-    else
-        ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
 }
 /**
 *	releases the thread
 */
 void blobFinderThread::threadRelease(){
+    printf("input port closing .... \n");
+    inputPort.close();
+    
+    printf("red channel port closing .... \n");
+    redPort.close();
+    printf("green channel port closing .... \n");
+    greenPort.close();
+    printf("blue channel port closing .... \n");
+    bluePort.close();
 
+    printf("R+G- colourOpponency port closing .... \n");
+    rgPort.close();
+    printf("G+R- colourOpponency port closing .... \n");
+    grPort.close();
+    printf("B+Y- colourOpponency port closing .... \n");
+    byPort.close();
+
+    printf("closing outputport .... \n");
+    outputPort.close();
+
+    
+    
+    printf("closing communication ports .... \n");
+    centroidPort.close();
+    gazeControlPort.close();
+    triangulationPort.close();
+
+
+}
+
+/**
+* function that reads the ports for colour RGB opponency maps
+*/
+bool blobFinderThread::getOpponencies(){
+
+    tmpImage=rgPort.read(true);
+    if(tmpImage!=NULL)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgRG->getRawImage(), ptr_inputImgRG->getRowSize(),srcsize);
+   
+    tmpImage=grPort.read(true);
+    if(tmpImage!=NULL)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgGR->getRawImage(), ptr_inputImgGR->getRowSize(),srcsize);
+    
+    tmpImage=byPort.read(true);
+    if(tmpImage!=NULL)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBY->getRawImage(), ptr_inputImgBY->getRowSize(),srcsize);
+    
+    return true;
+}
+
+/**
+* function that reads the ports for the RGB planes
+*/
+bool blobFinderThread::getPlanes(){
+    
+    tmpImage=redPort.read(true);
+    if(tmpImage!=NULL)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgRed->getRawImage(), ptr_inputImgRed->getRowSize(),srcsize);
+   
+    tmpImage=greenPort.read(true);
+    if(tmpImage!=NULL)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgGreen->getRawImage(), ptr_inputImgGreen->getRowSize(),srcsize);
+    
+    tmpImage=bluePort.read(true);
+    if(tmpImage!=NULL)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBlue->getRawImage(), ptr_inputImgBlue->getRowSize(),srcsize);
+    
+    return true;
+}
+
+
+bool blobFinderThread::outPorts(){ 
+    
+    //printf("centroid:%f,%f \n",blobFinder->salience->centroid_x,blobFinder->salience->centroid_y);
+    //printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
+    
+    
+    if((0!=image_out)&&(outputPort.getOutputCount())){ 
+        outputPort.prepare() = *(image_out);		
+        outputPort.write();
+    }
+
+    /*
+    if(triangulationPort.getOutputCount()){
+        Bottle in,bot;
+        //Bottle &bot = triangulationPort.prepare(); 
+        bot.clear();
+        
+        bot.addString("get");
+        bot.addString("3dpoint");
+        bot.addString("right");
+        bot.addDouble(blobFinder->salience->target_x);
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);
+        /*bot.addDouble(blobFinder->salience->centroid_x);
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);*//*
+       
+        bot.addDouble(1.5); //fixed distance in which the saccade takes place
+        triangulationPort.write(bot,in); //stop here till it receives a response
+        if (in.size()>0) {
+            target_z=in.pop().asDouble();
+            target_y=in.pop().asDouble()+0.097;
+            target_x=in.pop().asDouble();
+            
+        } else { 
+            printf("No response\n");
+        }
+        bot.clear();
+    }
+    */
+
+    /*
+    if(gazeControlPort.getOutputCount()){
+        if(!this->timeControl_flag){
+            Bottle &bot = gazeControlPort.prepare(); 
+            bot.clear();
+            int target_xmap,target_ymap,target_zmap;
+            
+            bot.addDouble(target_x);  
+            bot.addDouble(target_y); 
+            bot.addDouble(target_z);
+            gazeControlPort.writeStrict();
+        }
+        else{
+            time (&endTimer);
+            double dif = difftime (endTimer,startTimer);
+            if(dif>blobFinder->constantTimeGazeControl+0.5){
+                //restart the time intervall
+                 time(&startTimer);
+            }
+            else if((dif>blobFinder->constantTimeGazeControl)&&(dif<blobFinder->constantTimeGazeControl+0.5)){
+                //output the command
+                //finds the entries with a greater number of occurencies 
+                std::map<const char*,int>::iterator iterMap;
+                /*int previousValue=occurencesMap.begin()->second;
+                std::string finalKey("");
+                iterMap=occurencesMap.begin();
+                for(;iterMap==occurencesMap.end();iterMap++){
+                    if(iterMap->second>previousValue){
+                        sprintf((char*)finalKey.c_str(),"%s",iterMap->first);
+                    }
+                }
+                //estracts the strings of the target
+                size_t found;
+                string target_xmap_string("");
+                string target_ymap_string("");
+                string target_zmap_string("");
+                string rest("");
+
+                found=finalKey.find(",");
+                target_xmap_string=finalKey.substr(0,found);
+                rest=finalKey.substr(found,finalKey.length()-found);
+                found=finalKey.find(",");
+                target_ymap_string=rest.substr(0,found);
+                rest=finalKey.substr(found,finalKey.length()-found);
+                found=finalKey.find(",");
+                target_zmap_string=rest.substr(0,finalKey.length());*//*
+                
+                //subdived the string into x,y,z
+                //send the command.
+                Bottle &bot = gazeControlPort.prepare(); 
+                bot.clear();
+                int target_xmap,target_ymap, target_zmap;
+                bot.addDouble(target_x);  
+                bot.addDouble(target_y); 
+                bot.addDouble(target_z);
+                gazeControlPort.writeStrict();
+                time(&startTimer);
+                //clear the map
+            }
+            else{
+                //idle period
+                //check if it is present and update the map
+                //std::string positionName(" ");
+                /*sprintf((char*)positionName.c_str(),"%f,%f,%f",target_x,target_y,target_z);
+                printf((char*)positionName.c_str());*/
+                /*std::map<const char*,int>::iterator iterMap;
+                
+                iterMap=occurencesMap.find(positionName.c_str());
+
+                if(iterMap==0){
+                    printf("new occurence!");
+                }
+                else{
+                    iterMap->second++;
+                }*//*
+
+            }
+        }
+    }*/
+
+    /*
+    if(centroidPort.getOutputCount()){
+        Bottle &bot = centroidPort.prepare(); 
+        bot.clear();
+        
+        
+        
+        
+        time (&endTimer);
+        double dif = difftime (endTimer,startTimer);
+        if((dif>blobFinder->constantTimeCentroid)&&(dif<=blobFinder->constantTimeCentroid+0.5)){
+            if((blobFinder->salience->target_x<previous_target_x+5)&&(blobFinder->salience->target_x>previous_target_x-5)){
+                if((blobFinder->salience->target_y<previous_target_y+5)&&(blobFinder->salience->target_y>previous_target_y-5)){
+                    //printf("same position \n");
+                }
+                else{
+                    //printf("."); 
+                    bot.addVocab( Vocab::encode("sac") ); 
+                    bot.addVocab( Vocab::encode("img") ); 
+                    double centroidDisplacementY=1.0;
+                    double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2+xdisp)/(_logpolarParams::_xsize/2);
+                    double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2+ydisp)/(-_logpolarParams::_ysize/2);
+                    //printf("%f>%f,%f \n",dif,xrel,yrel);
+                    bot.addDouble(xrel);  
+                    bot.addDouble(yrel); 
+                    centroidPort.write();
+
+                    previous_target_x=blobFinder->salience->target_x;
+                    previous_target_y=blobFinder->salience->target_y;
+                }
+            }
+            else{
+                //printf(".");
+                bot.addVocab( Vocab::encode("sac") ); 
+                bot.addVocab( Vocab::encode("img") ); 
+                double centroidDisplacementY=1.0;
+                double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
+                double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
+                //printf("%f>%f,%f \n",dif,xrel,yrel);
+                bot.addDouble(xrel);  
+                bot.addDouble(yrel); 
+                centroidPort.write();
+
+                previous_target_x=blobFinder->salience->target_x;
+                previous_target_y=blobFinder->salience->target_y;
+            }
+            
+
+
+            /*bot.addVocab( Vocab::encode("sac") ); 
+            bot.addVocab( Vocab::encode("img") ); 
+            double centroidDisplacementY=1.0;
+            double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
+            double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
+            //printf("%f>%f,%f \n",dif,xrel,yrel);
+            bot.addDouble(xrel);  
+            bot.addDouble(yrel); 
+            centroidPort.write();*//*
+            
+        }
+        else if(dif>blobFinder->constantTimeCentroid+0.5){
+            time (&startTimer);
+        }
+        else{
+           
+        }
+        
+    }*/
+
+     /*Bottle& _outBottle=_centroidPort->prepare();
+     _outBottle.clear();
+    //_outBottle.addString("centroid:");
+    _outBottle.addInt(this->sasalience->centroid_x);
+    _outBottle.addInt(this->salience->centroid_y);
+    _outBottle.addInt(this->salience->centroid_x);
+    _outBottle.addInt(this->salience->centroid_y);
+    _centroidPort->writeStrict();*/
+
+    return true;
 }
 
 /**

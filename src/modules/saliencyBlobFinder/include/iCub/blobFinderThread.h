@@ -17,12 +17,28 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-class blobFinderThread : public RateThread{
+class blobFinderThread : public Thread{
 private:
+    /**
+    * port used for centroid position to controlGaze2
+    */
+    BufferedPort<Bottle> centroidPort;
+    /**
+    * port used for centroid position to iKinHead
+    */
+    Port triangulationPort;
+    /**
+    * port used for sending responses from triangulationPort back into i
+    */
+    BufferedPort<Bottle> gazeControlPort;
     /**
     * port where the input image is read from
     */
     BufferedPort<ImageOf<PixelRgb> > inputPort;
+    /**
+    * port that returns the image output
+    */
+    BufferedPort<ImageOf<PixelRgb> > outputPort;
     /**
     * port where the red plane of the image is streamed
     */
@@ -55,7 +71,10 @@ private:
     * image result of the function outContrastLP
     */
     ImageOf<PixelMono> *outContrastLP;
-    
+    /**
+    * buffer image for received image
+    */
+    ImageOf<PixelMono> *tmpImage;
     /**
     * image result of the function meanColourLP;
     */
@@ -73,9 +92,17 @@ private:
     */
     int height;
     /**
+    * name of the module and rootname of the connection
+    */
+    std::string name;
+    /**
     * flag that indicates when the reinitiazation has already be done
     */
     bool reinit_flag;
+    /*
+    * flag that indicates when the thread has been interrupted
+    */
+    bool interrupted_flag;
     /**
      * semaphore for the respond function
      */
@@ -183,6 +210,21 @@ public:
     */
     void reinitialise(int width,int height);
     /**
+    * function called when the module is poked with an interrupt command
+    */
+    void interrupt();
+    /**
+    * function that gives reference to the name of the module
+    * @param name of the module
+    */
+    void setName(std::string name);
+    /**
+    * function that returns the name of the module
+    * @param str string to be added
+    * @return name of the module
+    */
+    std::string getName(const char* str);
+    /**
     * function the applies the watershed (rain falling) algorithm
     */
     void rain();
@@ -190,6 +232,19 @@ public:
     * function that resets all the flags for the desired output
     */
     void resetFlags();
+    /**
+    * streams out data on ports
+    * @return return whether the operation was successful
+    */
+    bool outPorts();
+    /**
+    * function that reads the ports for colour RGB opponency maps
+    */
+    bool getOpponencies();
+    /**
+    * function that reads the ports for the RGB planes
+    */
+    bool getPlanes();
 
     //_________ public attributes _______________
     /**

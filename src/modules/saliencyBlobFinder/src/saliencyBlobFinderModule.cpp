@@ -42,9 +42,11 @@ void saliencyBlobFinderModule::copyFlags(){
     blobFinder->watershed_flag=watershed_flag;
     blobFinder->filterSpikes_flag=filterSpikes_flag;
 
+    /*
     interThread->xdisp=xdisp;
     interThread->ydisp=ydisp;
     interThread->countSpikes=this->countSpikes;
+    */
 }
 
 /**
@@ -83,9 +85,28 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     attach(cmdPort);
     //attachTerminal();
 
-    interThread->setName(this->getName().c_str());
-    printf("name:%s \n",this->getName().c_str());
-    interThread->start();
+    //interThread->setName(this->getName().c_str());
+    //printf("name:%s \n",this->getName().c_str());
+    //interThread->start();
+
+    //initialization of the main thread
+    blobFinder=new blobFinderThread();
+    blobFinder->setName(this->getName().c_str());
+    //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
+    blobFinder->start();
+    /*
+    blobFinder->ptr_inputImg=interThread->img;
+    blobFinder->ptr_inputImgRed=interThread->ptr_inputImgRed;
+    blobFinder->ptr_inputImgGreen=interThread->ptr_inputImgGreen;
+    blobFinder->ptr_inputImgBlue=interThread->ptr_inputImgBlue;
+    blobFinder->ptr_inputImgRG=interThread->ptr_inputImgRG;
+    blobFinder->ptr_inputImgGR=interThread->ptr_inputImgGR;
+    blobFinder->ptr_inputImgBY=interThread->ptr_inputImgBY;
+    blobFinder->image_out=interThread->image_out;
+    */
+    blobFinder->countSpikes=this->countSpikes;
+    //passes the value of flags
+    copyFlags();
 
     printf("\n waiting for connection of the input port \n");
 
@@ -98,8 +119,8 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 bool saliencyBlobFinderModule::interruptModule() {
     printf("module interrupted .... \n");
     cmdPort.interrupt();
-
-    interThread->interrupt();
+    
+    blobFinder->interrupt();
     
     return true;
 }
@@ -187,7 +208,7 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 
 bool saliencyBlobFinderModule::updateModule() {
 
-    if((0!=interThread->img) && (!this->reinit_flag)){
+    /*if((0!=interThread->img) && (!this->reinit_flag)){
 
         
         //initialization of the main thread
@@ -209,6 +230,7 @@ bool saliencyBlobFinderModule::updateModule() {
         copyFlags();
         this->reinit_flag=true;
     }
+    */
 
     /*command=cmdPort.read(PortReader,false);
     if(command!=0){
