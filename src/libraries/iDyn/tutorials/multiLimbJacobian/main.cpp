@@ -91,7 +91,7 @@ public:
 
 // useful print functions
 // print a matrix nicely
-void printMatrix(string s, Matrix &m)
+void printMatrix(string s, const Matrix &m)
 {
 	cout<<s<<endl;
 	for(int i=0;i<m.rows();i++)
