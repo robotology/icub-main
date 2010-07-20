@@ -43,6 +43,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     //interThread->start();
     
     rgbProcessor=new rgbProcessorThread();
+    printf("created a new rgbProcessor");
     rgbProcessor->setName(this->getName().c_str());
     printf("name:%s \n",this->getName().c_str());
     rgbProcessor->start();
