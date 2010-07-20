@@ -27,11 +27,11 @@ IF(WIN32)
    SET(IPOPT_LIBRARIES_RELEASE "")
    SET(IPOPT_LIBRARIES_DEBUG "")
 
-    if (MSVC)
+    IF(MSVC)
         SET(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
-    else
+    ELSE(MSVC)
         SET(IPOPT_LINK_FLAGS "")
-    endif(MSVC)
+    ENDIF(MSVC)
     
 ELSE(WIN32)
 
