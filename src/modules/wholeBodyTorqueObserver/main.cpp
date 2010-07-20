@@ -406,7 +406,7 @@ public:
 		setZeroJntAngVelAcc();
 		setUpperMeasure();
 		setLowerMeasure();
-		if (ft_arm_left!=0 && ft_arm_right!=0 && ft_leg_left!=0 && ft_leg_right!=0)
+		//if (ft_arm_left!=0 && ft_arm_right!=0 && ft_leg_left!=0 && ft_leg_right!=0)
 		{
 			F_RArm = -1.0 * (*ft_arm_right-Offset_RArm);
 			F_LArm = -1.0 * (*ft_arm_left-Offset_LArm);
@@ -531,8 +531,8 @@ public:
 			//read joints and ft sensor
 			readAndUpdate(true,true);
 			setZeroJntAngVelAcc();
-
-			Matrix F_sens_up = icub_init.upperTorso->estimateSensorsWrench(F_ext_up);
+            icub_init.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+			Matrix F_sens_up = icub_init.upperTorso->estimateSensorsWrench(F_ext_up,true);
 			icub_init.lowerTorso->setInertialMeasure(icub_init.upperTorso->getTorsoAngVel(),icub_init.upperTorso->getTorsoAngAcc(),icub_init.upperTorso->getTorsoLinAcc());
 			Matrix F_sens_low = icub_init.lowerTorso->estimateSensorsWrench(F_ext_low,true);
 		
@@ -551,7 +551,16 @@ public:
 			Offset_LLeg = Offset_LLeg + (F_LLeg-F_iDyn_LLeg);
 			Offset_RLeg = Offset_RLeg + (F_RLeg-F_iDyn_RLeg);
 		}
-			fprintf(stderr,"!\n");
+		fprintf(stderr,"!\n");
+		fprintf(stderr, "Ntrials: %d\n", Ntrials);
+		fprintf(stderr, "F_LArm: %s\n", F_LArm.toString().c_str());
+		fprintf(stderr, "F_idyn_LArm: %s\n", F_iDyn_LArm.toString().c_str());
+		fprintf(stderr, "F_RArm: %s\n", F_RArm.toString().c_str());
+		fprintf(stderr, "F_idyn_RArm: %s\n", F_iDyn_RArm.toString().c_str());		
+		fprintf(stderr, "F_LLeg: %s\n", F_LLeg.toString().c_str());
+		fprintf(stderr, "F_idyn_LLeg: %s\n", F_iDyn_LLeg.toString().c_str());		
+		fprintf(stderr, "F_RLeg: %s\n", F_RLeg.toString().c_str());
+		fprintf(stderr, "F_idyn_RLeg: %s\n", F_iDyn_RLeg.toString().c_str());
 		Offset_LArm = 1.0/(double)Ntrials * Offset_LArm;
 		cout<<"Left Arm:	"<<Offset_LArm.toString()<<endl;
 		Offset_RArm = 1.0/(double)Ntrials * Offset_RArm;
