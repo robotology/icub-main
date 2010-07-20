@@ -101,8 +101,8 @@ bool rgbProcessorThread::threadInit(){
 void rgbProcessorThread::run(){
     while (!isStopping()) {
         if(!interrupted_flag){
-            img = this->inputPort.read(true);
-            printf("out of the waiting.... \n");
+            img=this->inputPort.read(true);
+            //printf("out of the waiting.... \n");
 
             if(0!=img){
                 if(!reinit_flag){

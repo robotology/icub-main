@@ -27,8 +27,9 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     //time_t end;
     time (&start);
 
-    Time::turboBoost();
+    //Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
+    inputPort.open("/inputImage");
     attach(cmdPort);
     //attachTerminal();
     //printf("resource finder configuration after time turbo boosting \n");
@@ -136,7 +137,6 @@ void colourProcessorModule::setOptions(yarp::os::Property opt){
 }
 
 bool colourProcessorModule::updateModule() {
-   
     /*Bottle *bot=portTarget.read(false);
     if(bot!=NULL){
         int intValues[4];    
