@@ -190,8 +190,10 @@ private:
     bool first;
 
     AWLinEstimator  *InertialEst;
-    AWLinEstimator  *linEst;
-    AWQuadEstimator *quadEst;
+    AWLinEstimator  *linEstUp;
+    AWQuadEstimator *quadEstUp;
+    AWLinEstimator  *linEstLow;
+    AWQuadEstimator *quadEstLow;
 
     int ctrlJnt;
 	int allJnt;
@@ -222,13 +224,21 @@ private:
 	Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
 	Vector inertial_measurements;
 
-    Vector evalVel(const Vector &x)
+    Vector evalVelUp(const Vector &x)
     {
         AWPolyElement el;
         el.data=x;
         el.time=Time::now();
 
-        return linEst->estimate(el);
+        return linEstUp->estimate(el);
+    }
+	Vector evalVelLow(const Vector &x)
+    {
+        AWPolyElement el;
+        el.data=x;
+        el.time=Time::now();
+
+        return linEstLow->estimate(el);
     }
 	Vector eval_domega(const Vector &x)
     {
@@ -239,13 +249,21 @@ private:
         return InertialEst->estimate(el);
     }
 
-    Vector evalAcc(const Vector &x)
+    Vector evalAccUp(const Vector &x)
     {
         AWPolyElement el;
         el.data=x;
         el.time=Time::now();
 
-        return quadEst->estimate(el);
+        return quadEstUp->estimate(el);
+    }
+    Vector evalAccLow(const Vector &x)
+    {
+        AWPolyElement el;
+        el.data=x;
+        el.time=Time::now();
+
+        return quadEstLow->estimate(el);
     }
 	void init_upper()
 	{
@@ -370,8 +388,10 @@ public:
         ddLR->view(iencs_leg_right);
 		ddT->view(iencs_torso);
 		
-        linEst =new AWLinEstimator(16,1.0);
-        quadEst=new AWQuadEstimator(25,1.0);
+        linEstUp =new AWLinEstimator(16,1.0);
+        quadEstUp=new AWQuadEstimator(25,1.0);
+	    linEstLow =new AWLinEstimator(16,1.0);
+        quadEstLow=new AWQuadEstimator(25,1.0);
 		InertialEst = new AWLinEstimator(16,1.0);
 
 		//-----------parts INIT VARIABLES----------------//
@@ -386,7 +406,7 @@ public:
 		Muend.resize(3,0.0);
 		F_ext_up.resize(6,3);
 		F_ext_up = 0.0;
-		F_ext_low.resize(6,2);
+		F_ext_low.resize(6,3);
 		F_ext_low = 0.0;
 		inertial_measurements.resize(12);
 		inertial_measurements.zero();
@@ -446,19 +466,27 @@ public:
       if(datas) fclose(datas);
 
       fprintf(stderr, "Closing the linest\n");
-      if (linEst)
-        {
-	  delete linEst;
-	  linEst = 0;
-        }
-
+      if (linEstUp)
+      {
+		  delete linEstUp;
+		  linEstUp = 0;
+      }
+      if (linEstLow)
+      {
+		  delete linEstLow;
+		  linEstLow = 0;
+      }
       fprintf(stderr, "Closing the quadEst\n");
-      if (quadEst)
+      if (quadEstUp)
 	  {
-            delete quadEst;
-            quadEst = 0;
+            delete quadEstUp;
+            quadEstUp = 0;
 	  }
-
+      if (quadEstLow)
+	  {
+            delete quadEstLow;
+            quadEstLow = 0;
+	  }
       fprintf(stderr, "Closing the InertialEest\n");
       if (InertialEst)
         {
@@ -518,7 +546,7 @@ public:
 
 	void calibrateOffset(const unsigned int Ntrials)
 	{
-		cout<<"SensToTorques: starting sensor offset calibration .."<<endl;
+		fprintf(stderr,"SensToTorques: starting sensor offset calibration .. \n\n");
 
 		Offset_LArm.zero();
 		Offset_RArm.zero();
@@ -530,11 +558,18 @@ public:
 		{
 			//read joints and ft sensor
 			readAndUpdate(true,true);
+
+			/*
+			// TO BE VERIEFIED IF USEFUL
 			setZeroJntAngVelAcc();
+			setUpperMeasure(true);
+			setLowerMeasure(true);
+			*/
+
             icub_init.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-			Matrix F_sens_up = icub_init.upperTorso->estimateSensorsWrench(F_ext_up,true);
+			Matrix F_sens_up = icub_init.upperTorso->estimateSensorsWrench(F_ext_up,false);
 			icub_init.lowerTorso->setInertialMeasure(icub_init.upperTorso->getTorsoAngVel(),icub_init.upperTorso->getTorsoAngAcc(),icub_init.upperTorso->getTorsoLinAcc());
-			Matrix F_sens_low = icub_init.lowerTorso->estimateSensorsWrench(F_ext_low,true);
+			Matrix F_sens_low = icub_init.lowerTorso->estimateSensorsWrench(F_ext_low,false);
 		
 			F_iDyn_LArm  = -1.0 * F_sens_up.getCol(1);
 			F_iDyn_RArm = -1.0 * F_sens_up.getCol(0);
@@ -625,8 +660,8 @@ public:
 				q_rleg(i) = encoders_leg_right(i);
 				all_q_low(q_torso.length()+q_lleg.length()+i) = q_rleg(i);
 			}
-			all_dq_low = evalVel(all_q_low);
-			all_d2q_low = evalAcc(all_q_low);
+			all_dq_low = evalVelLow(all_q_low);
+			all_d2q_low = evalAccLow(all_q_low);
 			for (int i=0;i<q_torso.length();i++)
 			{
 				dq_torso(i) = all_dq_low(i);
@@ -667,8 +702,8 @@ public:
 			q_rarm(i) = encoders_arm_right(i);
 			all_q_up(q_head.length()+q_larm.length()+i) = q_rarm(i);
 		}
-		all_dq_up = evalVel(all_q_up);
-		all_d2q_up = evalAcc(all_q_up);
+		all_dq_up = evalVelUp(all_q_up);
+		all_d2q_up = evalAccUp(all_q_up);
 		
 		for (int i=0;i<q_head.length();i++)
 		{
@@ -716,7 +751,7 @@ public:
 				icub_init.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
 				icub_init.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
 				icub_init.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
-				fprintf(stderr,"updating lower body kinematic variables for initialization\n");
+				//fprintf(stderr,"updating lower body kinematic variables for initialization\n");
 			}
 		}
 
@@ -747,7 +782,7 @@ public:
 			icub_init.upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
 			icub_init.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
 			icub_init.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-			fprintf(stderr,"updating upper body kinematic variables for initialization\n");
+			//fprintf(stderr,"updating upper body kinematic variables for initialization\n");
 		}
 	}
 	void setZeroJntAngVelAcc()
