@@ -17,7 +17,7 @@
 
 //within Project Include
 #include <iCub/selectiveAttentionProcessor.h>
-#include <iCub/interactionThread.h>
+//#include <iCub/interactionThread.h>
 //#include <iCub/YARPImgRecv.h>
 //#include <iCub/YarpImage2Pixbuf.h>
 
@@ -290,10 +290,7 @@ public:
     * processor that controls the processing of the input image
     */
     selectiveAttentionProcessor *currentProcessor;
-    /**
-    * thread in charge of managing all the interaction with other modules through ports
-    */
-    interactionThread* interThread;
+    
     /**
     * flag that controls if the inputImage has been ever read
     */
