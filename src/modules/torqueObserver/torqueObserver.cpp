@@ -111,6 +111,12 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
 			limb = new iCubArmDyn("right");
 			limbInv = new iCubArmDyn("left");
 		}
+		limb->releaseLink(0);
+		limb->releaseLink(1);
+		limb->releaseLink(2);
+		limbInv->releaseLink(0);
+		limbInv->releaseLink(1);
+		limbInv->releaseLink(2);
 		sens = new iDynSensorArm(dynamic_cast<iCubArmDyn *>(limb),DYNAMIC,VERBOSE);
 		sensInv = new iDynInvSensorArm(dynamic_cast<iCubArmDyn *>(limbInv),DYNAMIC,VERBOSE);
 	}
