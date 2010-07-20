@@ -102,7 +102,7 @@ bool ImageProcessModule::open(Searchable& config) {
 bool ImageProcessModule::interruptModule() {
     printf("interrupting the module.. \n");
     cmdPort.interrupt();
-    interThread->interrupt();
+    //interThread->interrupt();
 	return true;
 }
 
