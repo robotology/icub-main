@@ -1,44 +1,43 @@
 <application>
 <name>Test logpolar grabber and reconstruct</name>
 <dependencies>
-      <port>/tamon-ten</port>
+      <port>/computer1</port>
 </dependencies>
    <module>
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice test_grabber --mode [ball]</parameters>
-      <!-- static_grabber filename C:\Users\pasa\Repository\_cvs\iCub\src\modules\staticgrabber\test.ppm -->
-      <node>tamon-ten</node>
-	  <stdio>tamon-ten</stdio>
+      <node>computer1</node>
+	  <stdio>computer1</stdio>
 	  <tag>logpolar-grabber</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /view1 --x 0 --y 50 --synch</parameters>
-      <node>tamon-ten</node>
+      <node>computer1</node>
 	  <tag>view1</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /view2 --x 320 --y 50 --synch</parameters>
-      <node>tamon-ten</node>
+      <node>computer1</node>
       <tag>view2</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /view3 --x 640 --y 50 --synch</parameters>
-      <node>tamon-ten</node>
+      <node>computer1</node>
       <tag>view3</tag>
    </module>
    <module>
       <name>logpolarRemapper</name>
-      <node>tamon-ten</node>
-      <stdio>tamon-ten</stdio>
+      <node>computer1</node>
+      <stdio>computer1</stdio>
       <tag>remapper</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /view4 --x 960 --y 50 --synch</parameters>
-      <node>tamon-ten</node>
+      <node>computer1</node>
       <tag>view4</tag>
    </module>
 <connection>
