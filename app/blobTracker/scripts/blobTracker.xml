@@ -8,37 +8,37 @@
 		<name>hsiDetector</name>
 		<parameters>--name hsiDetector/icub/left</parameters>
 		<tag>hsiDetector/icub/left</tag>
-		<node>icub-b4</node>
+		<node>icub-b14</node>
 	</module>
 	<module>
 		<name>hsiDetector</name>
 		<parameters>--name hsiDetector/icub/right</parameters>
 		<tag>hsiDetector/icub/right</tag>
-		<node>icub-b4</node>
+		<node>icub-b14</node>
 	</module>
 	<module>
 		<name>blobTracker</name>
-		<parameters>--name blobTracker/icub/left/sat --filter off</parameters>
+		<parameters>--name blobTracker/icub/left --filter on</parameters>
 		<tag>blobTracker/icub/left</tag>
-		<node>icub-b5</node>
+		<node>icub-b15</node>
 	</module>
 	<module>
 		<name>blobTracker</name>
-		<parameters>--name blobTracker/icub/right/sat --filter off</parameters>
+		<parameters>--name blobTracker/icub/right --filter on</parameters>
 		<tag>blobTracker/icub/right</tag>
-		<node>icub-b5</node>
+		<node>icub-b15</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /blobView/icub/left</parameters>
 		<tag>blobView/icub/left</tag>
-		<node>icub15</node>
+		<node>Plutonia</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /blobView/icub/right</parameters>
 		<tag>blobView/icub/right</tag>
-		<node>icub15</node>
+		<node>Plutonia</node>
 	</module>
 
 	<connection>
@@ -53,21 +53,21 @@
 	</connection>
 	<connection>
 		<from>/hsiDetector/icub/left/sat/img:o</from>
-		<to>/blobTracker/icub/left/sat/img:i</to>
+		<to>/blobTracker/icub/left/img:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
 		<from>/hsiDetector/icub/right/sat/img:o</from>
-		<to>/blobTracker/icub/right/sat/img:i</to>
+		<to>/blobTracker/icub/right/img:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-		<from>/blobTracker/icub/left/sat/img:o</from>
+		<from>/blobTracker/icub/left/img:o</from>
 		<to>/blobView/icub/left</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-		<from>/blobTracker/icub/right/sat/img:o</from>
+		<from>/blobTracker/icub/right/img:o</from>
 		<to>/blobView/icub/right</to>
 		<protocol>tcp</protocol>
 	</connection>
