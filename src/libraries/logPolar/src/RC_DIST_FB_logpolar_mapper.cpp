@@ -1508,35 +1508,50 @@ void
 RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg,
             cart2LpPixel * Table, int sizeLp, bool bayerImg)
 {
-    int i, j, k, z;
+    int i, j;
     int r[3];
-    int pos;
     int t = 0;
 
-    z = 3;
+    const int z = (!bayerImg)?3:1;
+    if (bayerImg) {
+        const int sz = sizeLp;
+        unsigned char *img = lpImg;
+        for (j = 0; j < sz; j++, img++) {
+            r[0] = 0;
+            t = 0;
 
-    if (bayerImg)
-        z = 1;
+            const int div = Table[j].divisor;
+            int *pos = Table[j].position;
+            int *w = Table[j].iweight;
+            for (i = 0; i < div; i++, pos++, w++)
+            {
+                r[0] += cartImg[*pos] * *w;
+                t += *w;
+            }
 
-    for (j = 0; j < sizeLp; j++)
-    {
-        for (k = 0; k < z; k++)
-            r[k] = 0;
-
-        t = 0;
-
-        for (i = 0; i < Table[j].divisor; i++)
-        {
-            pos = Table[j].position[i];
-            for (k = 0; k < z; k++)
-                r[k] += cartImg[pos + k] * Table[j].iweight[i];
-            t += Table[j].iweight[i];
+            *img = (unsigned char)(r[0]/t);
         }
-        for (k = 0; k < z; k++)
-        {
-            if (t == 0)
-                printf ("t is zero!, position %d\n",j);
-            lpImg[z * j + k] = (unsigned char) (r[k] / t);
+    }
+    else {
+        const int sz = sizeLp;
+        unsigned char *img = lpImg;
+        for (j = 0; j < sz; j++, img+=3) {
+            r[0] = r[1] = r[2] = 0;
+            t = 0;
+
+            const int div = Table[j].divisor;
+            int *pos = Table[j].position;
+            int *w = Table[j].iweight;
+            for (i = 0; i < div; i++, pos++, w++) {
+                r[0] += cartImg[*pos] * *w;
+                r[1] += cartImg[(*pos)+1] * *w;
+                r[2] += cartImg[(*pos)+2] * *w;
+                t += *w;
+            }
+
+            img[0] = (unsigned char)(r[0] / t);
+            img[1] = (unsigned char)(r[1] / t);
+            img[2] = (unsigned char)(r[2] / t);
         }
     }
 }
