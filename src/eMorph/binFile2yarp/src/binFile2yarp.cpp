@@ -56,8 +56,8 @@ void  binfile2yarp::run()
                 len += sz;
 
                 int duration = getDuration(sz);
-                //printf("duration: %d\n", duration);
-                //fflush(stdout);
+                printf("duration: %d\n", duration);
+                fflush(stdout);
                 // LATER: the timescale has to be checked.
                 yarp::os::Time::delay(duration * 1e-6);
             }
