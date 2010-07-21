@@ -13,5 +13,6 @@ DH:
  0            0.13730    90    -90     REVOLUTE
  0            0          90     90     REVOLUTE
  0.0625      -0.016       0      0     REVOLUTE
-MAX: 0.1
-
+MAX: 5
+TORSO GAIN: 10
+ARM GAIN: 10
