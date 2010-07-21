@@ -32,7 +32,7 @@ IF(PKG_CONFIG_FOUND)
         MESSAGE(STATUS " pkg-config found gtkmm")
     ELSE (GtkMM_FOUND)
         MESSAGE(STATUS " pkg-config could not find gtkmm")
-    ENDIF (GtkKMM_FOUND)
+    ENDIF (GtkMM_FOUND)
 
 else(PKG_CONFIG_FOUND)
     SET(GTKMM_DIR $ENV{GTKMM_BASEPATH})
