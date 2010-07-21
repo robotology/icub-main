@@ -90,141 +90,141 @@
 	<connection>
       <from>/icub/cam/left/logpolar</from>
 		<to>/icub/left_cam/logpolarView</to>
-		<protocol>tcp</protocol>
+		<protocol>mcast</protocol>
 	</connection>
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
 		<to>/colourPU/icub/left_cam/image:i</to>
-		<protocol>tcp</protocol>
+		<protocol>mcast</protocol>
 	</connection>
 	<connection>
       <from>/colourPU/icub/left_cam/ychannel:o</from>
 		<to>/yuvProc/icub/left_cam/Y/image:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/uchannel:o</from>
 		<to>/yuvProc/icub/left_cam/U/image:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/vchannel:o</from>
 		<to>/yuvProc/icub/left_cam/V/image:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/rg:o</from>
 		<to>/imagePU/icub/left_cam/rg:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/gr:o</from>
 		<to>/imagePU/icub/left_cam/gr:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/by:o</from>
 		<to>/imagePU/icub/left_cam/by:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/blobFinder/icub/left_cam/image:o</from>
 		<to>/icub/left_cam/outputView</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/imageProcessorInterface/icub/left_cam/cmd</from>
 		<to>/imagePU/icub/left_cam/cmd</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/imagePU/icub/left_cam/edges:o</from>
 		<to>/blobFinder/icub/left_cam/image:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/rg:o</from>
 		<to>/blobFinder/icub/left_cam/rg:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/gr:o</from>
 		<to>/blobFinder/icub/left_cam/gr:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/by:o</from>
 		<to>/blobFinder/icub/left_cam/by:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/red:o</from>
 		<to>/blobFinder/icub/left_cam/red:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/green:o</from>
 		<to>/blobFinder/icub/left_cam/green:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/blue:o</from>
 		<to>/blobFinder/icub/left_cam/blue:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/blobFinderInterface/icub/left_cam/command:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/icub/cam/left/logpolar</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/image:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/blobFinder/icub/left_cam/image:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map1:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/yuvProc/icub/left_cam/Y/image:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map2:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/yuvProc/icub/left_cam/UV/image:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map3:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/selectiveAttentionEngine/icub/left_cam/combination:o</from>
 		<to>/icub/left_cam/combinationView</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
 		<to>/icub/left_cam/selectionView</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
 		<to>selectiveAttentionEngine/icub/left_cam/cmd</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       <from>/selectiveAttentionEngine/icub/left_cam/feedback:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
 		<to>/blobTracker/icub/left_cam/img:i</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 	<connection>
       	<from>/blobTracker/icub/left_cam/img:o</from>
 		<to>/icub/left_cam/blobTrackerOutput</to>
-		<protocol>tcp</protocol>
+		<protocol>udp</protocol>
 	</connection>
 </application>
