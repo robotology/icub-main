@@ -1143,7 +1143,12 @@ bool ServerCartesianController::open(Searchable &config)
             desc.minAbsVels.resize(pMinAbsVelsBottle->size());
 
             for (int j=0; j<pMinAbsVelsBottle->size(); j++)
+            {
                 desc.minAbsVels[j]=pMinAbsVelsBottle->get(j).asDouble();
+
+                if (desc.minAbsVels[j]<0.0)
+                    desc.minAbsVels[j]=-desc.minAbsVels[j];
+            }
         }
         else
         {
