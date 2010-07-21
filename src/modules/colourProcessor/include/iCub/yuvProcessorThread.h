@@ -9,7 +9,7 @@
 
 //IPP include
 #include <ippi.h>
-
+#include <string>
 
 const double yr=0.299;const double yg=0.587;const double yb=0.114;
 const double ur=-0.147;const double ug=-0.289;const double ub=0.436;
@@ -17,7 +17,7 @@ const double vr=0.615;const double vg=-0.515;const double vb=-0.1;
 
 const int THREAD_RATE_YUV=30;
 
-class yuvProcessorThread: public yarp::os::RateThread
+class yuvProcessorThread: public yarp::os::Thread
 {
 private:
     /**
@@ -104,6 +104,11 @@ public:
     * function that extracts planes from the input image
     */
     void extractYUV();
+    /**
+    * function that gives reference to the name of the module
+    * @param name of the module
+    */
+    void setName(std::string name);
     
     /**
     * set the reference to the input image

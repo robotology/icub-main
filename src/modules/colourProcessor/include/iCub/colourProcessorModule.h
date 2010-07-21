@@ -4,8 +4,8 @@
 
 //within project includes
 #include <iCub/rgbProcessorThread.h>
-#include <iCub/yuvProcessorThread.h>
-#include <iCub/imageReaderThread.h>
+//#include <iCub/yuvProcessorThread.h>
+//#include <iCub/imageReaderThread.h>
 
 //IPP include
 #include <ippi.h>
@@ -247,17 +247,9 @@ public:
 
     //_________ public attributes _______________
     /**
-    * thread in charge of processing the yuv channels
-    */
-    yuvProcessorThread* yuvProcessor;
-    /**
     * thread in charge of processing the rgb channels
     */
     rgbProcessorThread* rgbProcessor;
-    /**
-    * thread in charge of managing all the interaction with other modules through ports
-    */
-    imageReaderThread* interThread;
     
 };
 

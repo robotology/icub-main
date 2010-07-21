@@ -18,6 +18,10 @@
 #include <ipp.h>
 #include <string>
 
+const double yr=0.299;const double yg=0.587;const double yb=0.114;
+const double ur=-0.147;const double ug=-0.289;const double ub=0.436;
+const double vr=0.615;const double vg=-0.515;const double vb=-0.1;
+
 
 const double TIMEOUT=0.1;
 const double STOP_TIME=3;
@@ -82,7 +86,22 @@ private:
     * port where the yellow plane of the image is streamed
     */
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > yellowPort;
-     
+    /**
+    * port where the ychannel of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > yPort;
+    /**
+    * port where the uchannel of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > uPort;
+    /**
+    * port where the vchannel plane of the image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > vPort;
+     /**
+    * port where the uvchannel of the input image is streamed
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > uvPort; 
     /**
     * temp variable for the plane extraction
     */
@@ -103,6 +122,10 @@ private:
     * rootname of the module
     */
     std::string name;
+    /*
+    * pointers to channels for processing
+    */
+    unsigned char *pr,*pg,*pb,*py,*pu,*pv,*puv;
     
     //_______________ private method  __________________________
 
@@ -119,9 +142,30 @@ private:
     */
     void getGreenPlane(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
     /**
+    * function that extracts the y channel
+    */
+    void getYPlane(yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
+    /**
+    * function that extracts the u channel
+    */
+    void getUPlane(yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
+    /**
+    * function that extracts the v channel
+    */
+    void getVPlane(yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
+    /**
+    * function that adds U and V channels
+    */
+    void addUVPlanes();
+    /**
     * function that calculates the colour opponency maps as differences of Gaussians
     */
     void colourOpponency();
+    /**
+    * function that extracts the YUV images from the RGB images
+    */
+    void extractYUV();
+    
     
 public:
     /**
@@ -202,6 +246,22 @@ public:
     *yarp mono image of the blue channel
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono>* bluePlane; 
+    /**
+    *yarp mono image of the y channel (intensity information)
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* yPlane; 
+    /**
+    *yarp mono image of the u channel (chrominance information)
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* uPlane; 
+    /**
+    *yarp mono image of the v channel (chrominance information)
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* vPlane;
+    /**
+    *yarp mono image of the uv channel (chrominance information)
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* uvPlane;
     /**
     * yarp image for Opponency Map R+G-
     */

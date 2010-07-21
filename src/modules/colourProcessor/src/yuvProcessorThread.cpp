@@ -1,11 +1,11 @@
 #include <iCub/yuvProcessorThread.h>
 #include <cassert>
 
-
+using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 
-yuvProcessorThread::yuvProcessorThread():RateThread(THREAD_RATE_YUV)
+yuvProcessorThread::yuvProcessorThread()//:RateThread(THREAD_RATE_YUV)
 {
     reinit_flag=false;
     
@@ -21,14 +21,20 @@ yuvProcessorThread::yuvProcessorThread():RateThread(THREAD_RATE_YUV)
 
 yuvProcessorThread::~yuvProcessorThread()
 {
-    /*delete redPlane;
+    delete redPlane;
     delete greenPlane;
     delete bluePlane;    
     delete yPlane;
     delete uPlane;
     delete vPlane;
-    delete uvPlane;*/
+    delete uvPlane;
 }
+
+void yuvProcessorThread::setName(string str){
+   //this->name=str;
+   //printf("name: %s", name.c_str());
+}
+
 
 
 void yuvProcessorThread::reinitialise(){
@@ -50,25 +56,55 @@ void yuvProcessorThread::reinitialise(){
     tmp->resize(width,height);
 }
 
+
+
 bool yuvProcessorThread::threadInit(){
     printf("Thread initialisation.. \n");
+    /*yPort.open(getName("/ychannel:o").c_str());
+    uPort.open(getName("/uchannel:o").c_str());
+    vPort.open(getName("/vchannel:o").c_str());
+    uvPort.open(getName("/uvchannel:o").c_str());*/
     return true;
 }
 
 
-void yuvProcessorThread::run(){
-    if((0==redPlane)||(0==greenPlane)||(0==bluePlane)){
-        return;	
-    }
-    extractYUV();
-    addUVPlanes();
 
+void yuvProcessorThread::run(){
+    while (!isStopping()) {
+        
+//            img=this->inputPort.read(true);
+            //printf("out of the waiting.... \n");
+
+            /*if(0!=img){
+                if(!reinit_flag){
+                    this->width=img->width();
+                    this->height=img->height();
+                    srcsize.height=img->height();
+	                srcsize.width=img->width();
+                    //reinitialise(img->width(), img->height());
+                    reinit_flag=true;
+                }
+                
+    
+                extractYUV();
+                addUVPlanes();
+
+                //outPorts(); 
+            }//if */
+       
+    }//while
 }
    
 
 
 void yuvProcessorThread::threadRelease(){
     printf("Thread releasing.. \n");
+    printf("intensity channel port closing .... \n");
+    /*yPort.close();
+    printf("chrominance channel port closing .... \n");
+    uPort.close();
+    vPort.close();
+    uvPort.close();*/
 }
 
 

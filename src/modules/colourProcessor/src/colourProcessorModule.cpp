@@ -49,7 +49,6 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     rgbProcessor->start();
     //rgbProcessor->setInputImage(interThread->inputImg);
     
-
     printf("\n waiting for connection of the input port \n");
 
     return true;
@@ -199,17 +198,18 @@ void colourProcessorModule::startRgbProcessor(){
     //rgbProcessor.resize(width,height);
     rgbProcessor=new rgbProcessorThread();
     rgbProcessor->start();
-    rgbProcessor->setInputImage(interThread->inputImg);
+    //rgbProcessor->setInputImage(interThread->inputImg);
 }
 
 
 void colourProcessorModule::startYuvProcessor(){
     //rgbProcessorThread rgbProcessor();
-    yuvProcessor=new yuvProcessorThread();
+    //yuvProcessor=new yuvProcessorThread();
     //rgbProcessor.resize(width,height);
-    yuvProcessor->start();
-    yuvProcessor->setInputImage(rgbProcessor->redPlane,rgbProcessor->greenPlane,rgbProcessor->bluePlane);
+    //yuvProcessor->start();
+    //yuvProcessor->setInputImage(rgbProcessor->redPlane,rgbProcessor->greenPlane,rgbProcessor->bluePlane);
 }
+
 void colourProcessorModule::reinitialise(int weight, int height){
     
 }

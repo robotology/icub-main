@@ -3,6 +3,8 @@
 #include <ipps.h>
 #include <iostream>
 #include <string>
+#include <cassert>
+#include <cmath>
 
 
 using namespace yarp::sig;
@@ -24,17 +26,17 @@ rgbProcessorThread::rgbProcessorThread()//:RateThread(THREAD_RATE)
 
     img=0;
 
-    string name("hello");
+    string name("");
 }
 
 rgbProcessorThread::~rgbProcessorThread()
 {
-    /*delete redPlane;
+    delete redPlane;
     delete greenPlane;
     delete bluePlane;    
     delete greenRed_yarp;
     delete redGreen_yarp;
-    delete blueYellow_yarp;*/
+    delete blueYellow_yarp;
 }
 
 /*processorThread::processorThread(Property &op):processorThread(){
@@ -64,8 +66,16 @@ void rgbProcessorThread::reinitialise(int width, int height){
 	blueYellow_yarp=new ImageOf<PixelMono>;
     blueYellow_yarp->resize(width,height);
 
-    tmp=new ImageOf<PixelMono>;
-    tmp->resize(width,height);
+   
+    yPlane=new ImageOf<PixelMono>;
+    yPlane->resize(width,height);
+    uPlane=new ImageOf<PixelMono>;
+    uPlane->resize(width,height);
+    vPlane=new ImageOf<PixelMono>;
+    vPlane->resize(width,height);
+    uvPlane=new ImageOf<PixelMono>;
+    uvPlane->resize(width,height);
+
 
     inputImg=new ImageOf<PixelRgb>;
     inputImg->resize(width, height);
@@ -96,6 +106,11 @@ bool rgbProcessorThread::threadInit(){
     rgPort.open(getName("/rg:o").c_str());
     grPort.open(getName("/gr:o").c_str());
     byPort.open(getName("/by:o").c_str());
+
+    yPort.open(getName("/ychannel:o").c_str());
+    uPort.open(getName("/uchannel:o").c_str());
+    vPort.open(getName("/vchannel:o").c_str());
+    uvPort.open(getName("/uvchannel:o").c_str());
     return true;
 }
 
@@ -119,9 +134,13 @@ void rgbProcessorThread::run(){
                 
                 //copy the inputImg into a buffer
                 //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
-                
-                extractPlanes(img);
-                colourOpponency();
+                if((redPort.getOutputCount())||(greenPort.getOutputCount())||(bluePort.getOutputCount())||(rgPort.getOutputCount())||(rgPort.getOutputCount())||(rgPort.getOutputCount())){
+                    extractPlanes(img);
+                    colourOpponency();
+                }
+
+                extractYUV();
+                addUVPlanes();
 
                 outPorts();   
             }//if
@@ -136,6 +155,134 @@ void rgbProcessorThread::interrupted(){
     
     interrupted_flag=true;
     
+}
+
+/*
+ * extracts the y channel (intensity) from the input image
+ */
+void rgbProcessorThread::getYPlane(ImageOf<PixelMono>* tmp){
+ 
+
+     py=tmp->getPixelAddress(0,0);
+     pr=redPlane->getPixelAddress(0,0);
+     pg=greenPlane->getPixelAddress(0,0);
+     pb=bluePlane->getPixelAddress(0,0);
+
+     int rowsize=redPlane->getRowSize();
+     int padding=rowsize-width;
+
+    for (int y=0;y<height;y++){
+        for(int x=0;x<width;x++){
+            (*py)=(unsigned char)ceil(yr*(*pr)+yg*(*pg)+yb*(*pb));
+            py++;
+            pr++;pg++;pb++;
+        }
+        for (int i=0;i<padding;i++){
+            py++;
+            pr++;pg++;pb++;
+        }
+    }
+}
+
+/*
+ * extracts the U channel from the input image
+ */
+void rgbProcessorThread::getUPlane(ImageOf<PixelMono>* tmp){
+     pu=tmp->getPixelAddress(0,0);
+     pr=redPlane->getPixelAddress(0,0);
+     pg=greenPlane->getPixelAddress(0,0);
+     pb=bluePlane->getPixelAddress(0,0);
+
+     int rowsize=redPlane->getRowSize();
+     int padding=rowsize-width;
+
+    for (int y=0;y<height;y++){
+        for(int x=0;x<width;x++){
+            (*pu)=(unsigned char)ceil(ur*(*pr)+ug*(*pg)+ub*(*pb)+128);
+            assert((*pu)>=0);
+            assert((*pu)<=255);
+            pu++;
+            pr++;pg++;pb++;
+        }
+        for (int i=0;i<padding;i++){
+            pu++;
+            pr++;pg++;pb++;
+        }
+    }
+
+    
+}
+
+/*
+ * extracts the V channel from the input image
+ */
+void rgbProcessorThread::getVPlane(ImageOf<PixelMono>* tmp){
+	 pv=tmp->getPixelAddress(0,0);
+     pr=redPlane->getPixelAddress(0,0);
+     pg=greenPlane->getPixelAddress(0,0);
+     pb=bluePlane->getPixelAddress(0,0);
+
+     int rowsize=redPlane->getRowSize();
+     int padding=rowsize-width;
+
+    for (int y=0;y<height;y++){
+        for(int x=0;x<width;x++){
+            (*pv)=(unsigned char)ceil(vr*(*pr)+vg*(*pg)+vb*(*pb)+128);
+            assert((*pv)>=0);
+            assert((*pv)<=255);
+            pv++;
+            pr++;pg++;pb++;
+        }
+        for (int i=0;i<padding;i++){
+            pv++;
+            pr++;pg++;pb++;
+        }
+    }
+}
+
+/*
+ * extracts the UV channel adding Uand V planes
+ */
+void rgbProcessorThread::addUVPlanes(){
+	pv=vPlane->getPixelAddress(0,0);
+    pu=uPlane->getPixelAddress(0,0);
+    puv=uvPlane->getPixelAddress(0,0);
+
+    int rowsize=redPlane->getRowSize();
+    int padding=rowsize-width;
+
+    for (int y=0;y<height;y++){
+        for(int x=0;x<width;x++){
+            double value=(double)((*pu)+(*pv));
+            (*puv)=(unsigned char)((value/510)*255);
+            //(*puv)= (*pv);
+            assert((*pv)>=0);
+            assert((*pv)<=255);
+            puv++;
+            pv++;pu++;
+        }
+        for (int i=0;i<padding;i++){
+            puv++;
+            pv++;pu++;
+        }
+    }
+}
+
+void rgbProcessorThread::extractYUV(){
+    IppiSize srcsize ={width,height};
+
+	/*tmp=new ImageOf<PixelMono>;
+	tmp->resize(width,height);*/
+
+    //1.get the red,blue and green planes
+	getYPlane(yPlane);	
+	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),yPlane->getRawImage(),yPlane->getRowSize(),srcsize);
+	
+	getUPlane(uPlane);
+	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),uPlane->getRawImage(),uPlane->getRowSize(),srcsize);
+
+	getVPlane(vPlane);
+	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),vPlane->getRawImage(),vPlane->getRowSize(),srcsize);
 }
    
 
@@ -158,6 +305,12 @@ void rgbProcessorThread::threadRelease(){
     grPort.close();
     printf("B+Y- colourOpponency port closing .... \n");
     byPort.close();
+
+    yPort.close();
+    printf("chrominance channel port closing .... \n");
+    uPort.close();
+    vPort.close();
+    uvPort.close();
 }
 
 
@@ -198,6 +351,23 @@ void rgbProcessorThread::outPorts(){
     if((blueYellow_yarp!=0)&&(byPort.getOutputCount())){
         byPort.prepare()=*(blueYellow_yarp);
         byPort.write();
+    }
+
+     if((yPlane!=0)&&(yPort.getOutputCount())){
+        yPort.prepare() = *(yPlane);		
+        yPort.write();
+    }
+    if((uPlane!=0)&&(uPort.getOutputCount())){
+        uPort.prepare() = *(uPlane);		
+        uPort.write();
+    }
+    if((vPlane!=0)&&(vPort.getOutputCount())){
+        vPort.prepare() = *(vPlane);		
+        vPort.write();
+    }
+    if((uvPlane!=0)&&(uvPort.getOutputCount())){
+        uvPort.prepare() = *(uvPlane);		
+        uvPort.write();
     }
 
 }
