@@ -7,7 +7,7 @@ using namespace std;
 #define centroidDispacementY 10;
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
-    interThread=new interactionThread();
+  //interThread=new interactionThread();
     blobFinder=0;
 
     reinit_flag=false;
@@ -130,7 +130,7 @@ bool saliencyBlobFinderModule::close(){
     printf("closing command port .... \n");
     cmdPort.close();
 
-    interThread->stop();
+    //interThread->stop();
 
     return true;
 }

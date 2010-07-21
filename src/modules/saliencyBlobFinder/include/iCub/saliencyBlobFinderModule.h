@@ -9,7 +9,7 @@
 
 //within project includes
 #include <iCub/blobFinderThread.h>
-#include <iCub/interactionThread.h>
+//#include <iCub/interactionThread.h>
 
 //IPP include
 #include <ippi.h>
@@ -241,10 +241,7 @@ private:
     * main thread responsable to process the input images and produce an output
     */
     blobFinderThread* blobFinder;
-    /**
-    * main thread responsable to communication between ports
-    */
-    interactionThread* interThread;
+   
     /**
     * bottle where the command received is saved ready for the respond
     */
