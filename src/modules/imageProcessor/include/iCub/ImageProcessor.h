@@ -289,7 +289,7 @@ class ImageProcessor:public yarp::os::Thread
     /**
      *  interrupts the thread
      */
-    void interrrupt();
+    void interrupt();
         /**
         *	releases the thread
         */
