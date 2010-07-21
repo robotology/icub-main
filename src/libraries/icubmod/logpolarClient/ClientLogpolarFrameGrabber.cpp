@@ -17,7 +17,7 @@
  */
 
 #include <stdio.h>
-#include <memory.h>
+#include <string.h>
 
 #include <yarp/dev/ServerLogpolarFrameGrabber.h>
 #include <yarp/dev/ClientLogpolarFrameGrabber.h>
