@@ -6,7 +6,7 @@ extern void Wait(unsigned int value);
 void LED_Init()
 {
 	TRISFbits.TRISF5=0;
-	led0=0;	
+	led0=1;	
 }
 
 void LED_test()
