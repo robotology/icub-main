@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 		printf(" \n");
 		return 0;
 	}
-	else{
+    else{
 		//estracts the command from command line
         for (int i=1;i<argc;i++) {
 		    if ((strcmp(argv[i],"--file")==0)||(strcmp(argv[i],"-c")==0)) {
@@ -50,27 +50,33 @@ int main(int argc, char *argv[]) {
 		    options.fromCommand(argc,argv);
 	    }
     }
+	
 
     ResourceFinder* _the_finder = new ResourceFinder;
 	ResourceFinder& finder = *_the_finder;
     finder.setVerbose();
     //---
-    finder.setDefaultConfigFile("protoObjectVisualAttention.ini");
-    finder.setDefaultContext("protoObjectVisualAttention");
+    finder.setDefaultConfigFile("saliencyBlobFinderLeft.ini");
+    finder.setDefaultContext("attentionMechanism/conf");
     //---
-    finder.configure("ICUB_ROOT", argc, argv); 
-	ConstString location = finder.findFile(fname.c_str());
     
+    finder.configure("ICUB_ROOT", argc, argv); 
+    
+    
+    ConstString location = finder.findFile(fname.c_str());
     if (location=="") {
         printf("config file not found: \n");
     }
     else
 	    printf("file found in location: %s \n",location.c_str() );
+    
 
 	prop.fromConfigFile(location.c_str());
     module.setOptions(prop);
+    
 
+    module.configure(finder);
 
-    return module.runModule(finder);
+    return module.runModule();
 
 }

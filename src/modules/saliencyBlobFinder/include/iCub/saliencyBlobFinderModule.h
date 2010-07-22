@@ -202,7 +202,10 @@ private:
     * port necessary for rpc commands
     */
     Port cmdPort;
-    
+    /**
+    * rateThread of the processor Thread
+    */
+    int rateThread;
     /**
     * ipp reference to the size of the input image
     */

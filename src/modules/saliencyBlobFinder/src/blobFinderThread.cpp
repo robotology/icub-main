@@ -1,9 +1,9 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/blobFinderThread.h>
 
 #include <iostream>
 
 using namespace std;
+using namespace yarp::os;
 
 //#define _inputImg (*(ptr_inputImg))
 
@@ -19,9 +19,9 @@ using namespace std;
 
 #define SPIKE_COUNTS 10
 
-const int THREAD_RATE=30;
+const int THREAD_RATE=500;
 
-blobFinderThread::blobFinderThread()//:RateThread(THREAD_RATE)
+blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 {
     reinit_flag=false;
     interrupted_flag=false;
@@ -102,6 +102,89 @@ blobFinderThread::blobFinderThread()//:RateThread(THREAD_RATE)
     searchGR=0;
     searchBY=0;
 }
+
+blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
+{
+    reinit_flag=false;
+    interrupted_flag=false;
+
+    ct=0;
+    filterSpikes_flag=true;
+    count=0;
+
+    //inputImage_flag=false;
+    freetorun=false;
+
+    /*meanColour_flag=true;
+    contrastLP_flag=false;
+    blobCataloged_flag=true;
+    foveaBlob_flag=false;
+    colorVQ_flag=false;
+    blobList_flag=false;
+    maxSaliencyBlob_flag=false;
+    tagged_flag=false;
+    watershed_flag=false;*/
+
+    //bluePlane_flag=false;
+    //redPlane_flag=false;
+    //greenPlane_flag=false;
+    //RG_flag=false;
+    //GR_flag=false;
+    //BY_flag=false;
+    //noOpponencies_flag=true;
+    //noPlanes_flag=true;
+    resized_flag=false;
+    //----
+    //maxSalienceBlob_img=new ImageOf<PixelMono>;
+    outContrastLP=new ImageOf<PixelMono>;
+    outMeanColourLP=new ImageOf<PixelBgr>;
+    
+    //wModule=this;
+
+    max_boxes = new YARPBox[3];
+    //initializing the image plotted out int the drawing area
+    //image_out=new ImageOf<PixelRgb>;
+    _procImage=new ImageOf<PixelRgb>;
+    _outputImage3=new ImageOf<PixelRgb>;
+    _outputImage=new ImageOf<PixelMono>;
+
+    ptr_inputImg=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image
+    //ptr_inputRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
+    //ptr_inputGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
+    //ptr_inputBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
+    ptr_inputImgRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
+    ptr_inputImgGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
+    ptr_inputImgBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
+    //ptr_inputRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
+    //ptr_inputGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
+    //ptr_inputBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
+    ptr_inputImgRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
+    ptr_inputImgGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
+    ptr_inputImgBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
+    
+    _inputImgRGS=new ImageOf<PixelMono>;
+    _inputImgGRS=new ImageOf<PixelMono>;
+    _inputImgBYS=new ImageOf<PixelMono>;
+    
+    blobFov=new ImageOf<PixelMono>;
+    
+
+    salienceBU=0.5;
+    salienceTD=0.5;
+    maxBLOB=4096;
+    minBLOB=100;
+
+    constantTimeGazeControl=1;
+    constantTimeCentroid=1;
+
+    targetRED=1;
+    targetGREEN=1;
+    targetBLUE=1;
+    searchRG=0;
+    searchGR=0;
+    searchBY=0;
+}
+
 
 void blobFinderThread::setName(std::string str){
     this->name=str; 
@@ -191,6 +274,7 @@ bool blobFinderThread::threadInit(){
 
     bool ret = false;
     bool ok=true;
+    startTimer=clock();
     
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     inputPort.open(getName("/image:i").c_str());
@@ -262,10 +346,10 @@ void blobFinderThread::interrupt(){
 * active loop of the thread
 */
 void blobFinderThread::run(){
-
-    while(!isStopping()&&(!interrupted_flag)){
+    if(!interrupted_flag){
         ct++;
-        img = inputPort.read(true);
+        
+        img = inputPort.read(false);
         if(0!=img){
             if(!reinit_flag){    
 	            srcsize.height=img->height();
@@ -274,7 +358,7 @@ void blobFinderThread::run(){
                 this->width=img->width();
                 reinitialise(img->width(), img->height());
                 reinit_flag=true;
-                tmpImage->resize(this->width,this->height);    
+                img->resize(this->width,this->height);    
             }
 
             //copy the inputImg into a buffer
@@ -288,7 +372,7 @@ void blobFinderThread::run(){
             if(!freetorun)
                 return;
 
-            meanColour_flag=false;
+            meanColour_flag=true;
             blobCataloged_flag=true;
             bool redPlane_flag=false;
             bool greenPlane_flag=false;
@@ -423,6 +507,8 @@ void blobFinderThread::run(){
                     //_outputImage=_wOperator->getPlane(&_inputImg); 
                     //rain();
                     this->drawAllBlobs(true);
+                    salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
+                    salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
                     ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
                     conversion=false;
                 }
@@ -477,13 +563,20 @@ void blobFinderThread::run(){
             else
                 ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
             outPorts();
+
+            endTimer=clock();
+            double dif = endTimer-startTimer;
+            //printf("elapsed time in sec : clocks%f  equals_%f \n", dif, (double)CLOCKS_PER_SEC/(endTimer-startTimer));
+            startTimer=clock();
         }
-    }
+    } //if (!interrupted)
 }
 /**
 *	releases the thread
 */
 void blobFinderThread::threadRelease(){
+
+
     printf("input port closing .... \n");
     inputPort.close();
     
@@ -510,8 +603,32 @@ void blobFinderThread::threadRelease(){
     centroidPort.close();
     gazeControlPort.close();
     triangulationPort.close();
+    
+    printf("deleting objects \n");
+    //deleting allocated objects
+    delete outContrastLP;
+    delete outMeanColourLP;
+   
+    delete _procImage;
+    delete _outputImage3;
+    delete _outputImage;
 
+    delete ptr_inputImg; //pointer to the input image
+    
+    delete ptr_inputImgRed; //pointer to the input image of the red plane
+    delete ptr_inputImgGreen; //pointer to the input image of the green plane
+    delete ptr_inputImgBlue; //pointer to the input image of the blue plane
+    delete ptr_inputImgRG; //pointer to the input image of the R+G- colour opponency
+    delete ptr_inputImgGR; //pointer to the input image of the G+R- colour opponency
+    delete ptr_inputImgBY; //pointer to the input image of the B+Y- colour opponency
 
+    printf("deleting images /n");
+    
+    delete _inputImgRGS;
+    delete _inputImgGRS;
+    delete _inputImgBYS;
+    
+    delete blobFov;
 }
 
 /**
@@ -519,18 +636,31 @@ void blobFinderThread::threadRelease(){
 */
 bool blobFinderThread::getOpponencies(){
 
-    tmpImage=rgPort.read(true);
+    
+    tmpImage=rgPort.read(false);
     if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgRG->getRawImage(), ptr_inputImgRG->getRowSize(),srcsize);
-   
-    tmpImage=grPort.read(true);
+    
+    tmpImage=grPort.read(false);
     if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgGR->getRawImage(), ptr_inputImgGR->getRowSize(),srcsize);
     
-    tmpImage=byPort.read(true);
+    tmpImage=byPort.read(false);
     if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBY->getRawImage(), ptr_inputImgBY->getRowSize(),srcsize);
+
     
+    /*
+    ptr_inputImgRG=rgPort.read(false);
+    if(ptr_inputImgRG==0)
+        return false;
+    ptr_inputImgGR=grPort.read(false);
+    if(ptr_inputImgGR==0)
+        return false;
+    ptr_inputImgBY=byPort.read(false); 
+    if(ptr_inputImgBY==0)
+        return false;
+        */
     return true;
 }
 
@@ -538,6 +668,7 @@ bool blobFinderThread::getOpponencies(){
 * function that reads the ports for the RGB planes
 */
 bool blobFinderThread::getPlanes(){
+    
     
     tmpImage=redPort.read(true);
     if(tmpImage!=NULL)
@@ -550,6 +681,8 @@ bool blobFinderThread::getPlanes(){
     tmpImage=bluePort.read(true);
     if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBlue->getRawImage(), ptr_inputImgBlue->getRowSize(),srcsize);
+        
+    
     
     return true;
 }
@@ -927,8 +1060,9 @@ void blobFinderThread::drawAllBlobs(bool stable)
         salienceBU, salienceTD,
         pixelRG, pixelGR, pixelBY, 255); // somma coeff pos=3 somma coeff neg=-3
     //printf("The number of blobs: %d",nBlobs);
-    salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
-    salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
+
+    //salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
+    //salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
     
     //__OLD//meanOppCol.Zero();
     //__OLD//salience.DrawMeanOpponentColorsLP(meanOppCol, tagged);

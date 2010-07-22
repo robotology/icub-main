@@ -9,6 +9,7 @@ using namespace std;
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
   //interThread=new interactionThread();
     blobFinder=0;
+    rateThread=0;
 
     reinit_flag=false;
     reply=new Bottle();
@@ -90,7 +91,10 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     //interThread->start();
 
     //initialization of the main thread
-    blobFinder=new blobFinderThread();
+    if(rateThread==0)
+        blobFinder=new blobFinderThread();
+    else
+        blobFinder=new blobFinderThread(rateThread);
     blobFinder->setName(this->getName().c_str());
     //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
     blobFinder->start();
@@ -129,7 +133,7 @@ bool saliencyBlobFinderModule::interruptModule() {
 bool saliencyBlobFinderModule::close(){
     printf("closing command port .... \n");
     cmdPort.close();
-
+    blobFinder->stop();
     //interThread->stop();
 
     return true;
@@ -143,6 +147,11 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
     if(name!=""){
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
+    }
+    int rate=opt.find("rateThread").asInt();
+    if(rate!=0){
+        printf("|||  Module rateThread as :%d \n", rate);
+        this->rateThread=rate;
     }
     ConstString value=opt.find("mode").asString();
     if(value!=""){

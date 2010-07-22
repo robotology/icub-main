@@ -12,12 +12,14 @@
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
+#include <time.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
 
 
-class blobFinderThread : public Thread{
+
+class blobFinderThread : public yarp::os::RateThread{
 private:
     /**
     * port used for centroid position to controlGaze2
@@ -167,6 +169,14 @@ private:
     * flag that indicates if the images have been resized
     */
     bool resized_flag;
+    /**
+    * time variable
+    */
+    clock_t startTimer;
+    /**
+    * time variable
+    */
+    clock_t endTimer;
     
 
     //_________ private methods ____________
@@ -187,6 +197,10 @@ public:
     * default constructor
     */
     blobFinderThread();
+    /**
+    * constructor
+    */
+    blobFinderThread(int rateThread);
     /**
     * destructor
     */
