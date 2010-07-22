@@ -4,7 +4,6 @@
 	<port>/pc104</port>
 </dependencies>
 
-
    <module>
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2  --d 0 --framerate 30 </parameters>
@@ -12,7 +11,6 @@
           <stdio>icub14</stdio>
 	  <tag>logpolar-grabber-left</tag>
    </module>
-
    <module>
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2  --d 1 --framerate 30 </parameters>
@@ -20,20 +18,6 @@
 	  <stdio>icub14</stdio>
 	  <tag>logpolar-grabber-right</tag>
    </module>
-
-   
-   <module>
-        <name>camCalib</name>
-        <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
-        <node>icub14</node>
-        <tag>camcalib_left</tag>
-    </module> 
-    <module>
-        <name>camCalib</name>
-        <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
-        <node>icub14</node>
-        <tag>camcalib_right</tag> 
-    </module> 
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
@@ -62,21 +46,11 @@
  
 <connection>
   <output>/icub/cam/left</output>
-  <input>/icub/camcalib/left/in</input>
-  <protocol>udp</protocol>
-</connection>
-<connection>
-  <output>/icub/cam/right</output>
-  <input>/icub/camcalib/right/in</input>
-  <protocol>udp</protocol>
-</connection>
-<connection>
-  <output>/icub/camcalib/left/out</output>
   <input>/icub/view/left</input>
   <protocol>mcast</protocol>
 </connection>
 <connection>
-  <output>/icub/camcalib/right/out</output>
+  <output>/icub/cam/right</output>
   <input>/icub/view/right</input>
   <protocol>mcast</protocol>
 </connection>

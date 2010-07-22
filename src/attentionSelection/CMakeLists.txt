@@ -1,58 +1,41 @@
-SET(KEYWORD "attentionSelection")
+add_subdirectory(affActionPrimitivesExample)
+add_subdirectory(ctpService)
+add_subdirectory(scriptSequencer)
+add_subdirectory(graspDetectorConf)
+add_subdirectory(graspDetector)
+add_subdirectory(demoGraspManager_IIT_ISR)
+add_subdirectory(demoReachManager_IIT_ISR)
+add_subdirectory(iKinArmCtrlIF)
+add_subdirectory(iKinHead)
+add_subdirectory(demoForceControl)
+add_subdirectory(velocityControl)
+add_subdirectory(velocityObserver)
+add_subdirectory(wrenchObserver)
+add_subdirectory(torqueObserver)
+add_subdirectory(wholeBodyTorqueObserver)
 
-PROJECT(${KEYWORD})
+if(ICUB_USE_OpenCV)
+    add_subdirectory(indepMotionDetector)
+    add_subdirectory(faceTracker)
+    add_subdirectory(salience)
+else(ICUB_USE_OpenCV)
+    message(STATUS "OpenCV not found/selected, skipping indepMotionDetector")
+    message(STATUS "OpenCV not found/selected, skipping faceTracker")
+endif(ICUB_USE_OpenCV)
 
-FIND_PACKAGE(ICUB)
-FIND_PACKAGE(YARP REQUIRED)
-FIND_PACKAGE(OpenCV REQUIRED)
-FIND_PACKAGE(EGOSPHERELIB REQUIRED)
+if(ICUB_USE_IPOPT)
+    add_subdirectory(iKinArmCtrl)
+    add_subdirectory(iKinGazeCtrl)
+    add_subdirectory(iKinCartesianSolver)
+else(ICUB_USE_IPOPT)
+    message(STATUS "IPOPT not found/selected, skipping iKinArmCtrl")
+    message(STATUS "IPOPT not found/selected, skipping iKinGazeCtrl")
+    message(STATUS "IPOPT not found/selected, skipping iKinCartesianSolver")
+endif(ICUB_USE_IPOPT)
 
-INCLUDE_DIRECTORIES(
-    ${PROJECT_SOURCE_DIR}/include
-    ${EGOSPHERELIB_INCLUDE_DIRS}
-    ${OPENCV_INCLUDE_DIR}
-)
+if(ICUB_USE_IPP)
+    # insert herein modules depending on IPP
+else(ICUB_USE_IPP)
+    message(STATUS "IPP not found/selected, skipping IPP-based modules")
+endif(ICUB_USE_IPP)
 
-# Search for source code.
-FILE(GLOB folder_source 
-	src/main.cpp
-	src/AttentionSelectionModule.cpp
-)
-FILE(GLOB folder_header 
-	include/iCub/AttentionSelectionInterfaces.h
-	include/iCub/AttentionSelectionModule.h
-)
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
-
-# Source code for remote library
-FILE(GLOB source_lib 
-    src/RemoteAttentionSelection.cpp
-)
-FILE(GLOB header_lib
-    include/iCub/RemoteAttentionSelection.h
-    include/iCub/AttentionSelectionInterfaces.h
-)
-SOURCE_GROUP("Source Files" FILES ${source_lib})
-SOURCE_GROUP("Header Files" FILES ${header_lib})
-
-# Set up our main executable.
-IF (folder_source)
-    ADD_EXECUTABLE(${KEYWORD} 
-        ${folder_source} 
-        ${folder_header}
-    )
-ELSE (folder_source)
-    MESSAGE(FATAL_ERROR "No source code files found. Please add something")
-ENDIF (folder_source)
-TARGET_LINK_LIBRARIES(${KEYWORD}
-	${EGOSPHERELIB_LIBRARIES}
-	${OPENCV_LIBRARIES}
-)
-INSTALL_TARGETS(/bin ${KEYWORD})
-
-# Set up library
-ADD_LIBRARY(attentionSelectionLib ${source_lib} ${header_lib})
-TARGET_LINK_LIBRARIES(attentionSelectionLib
-)
-INSTALL_TARGETS(/lib attentionSelectionLib)

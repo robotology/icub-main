@@ -169,15 +169,8 @@ private:
     * flag that indicates if the images have been resized
     */
     bool resized_flag;
-    /**
-    * time variable
-    */
-    clock_t startTimer;
-    /**
-    * time variable
-    */
-    clock_t endTimer;
-    
+
+    double startTimer, endTimer;
 
     //_________ private methods ____________
     /**

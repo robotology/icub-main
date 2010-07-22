@@ -13,19 +13,19 @@ fi;
 case "$1" in
 	start)
 		echo "Starting up yarp server"
-		$cmd "cp -f $YARP_ROOT/bin/yarp /tmp/yarpserver"
-		$cmd "/tmp/yarpserver server 2>&1 2>/dev/null &"
+		$cmd "cp -f $YARP_ROOT/bin/yarpserver3 /tmp/yarpserver3"
+		$cmd "/tmp/yarpserver3 --portdb /tmp/ports.db --subdb /tmp/subs.db 2>&1 2>/dev/null &"
 		echo "done!"
 		;;
 
 	stop)
 		echo "Stopping yarp server"
-		$cmd "killall yarpserver"
+		$cmd "killall yarpserver3"
 		;;
 
 	kill)
 		echo "Killing yarp server"
-		$cmd "killall -9 yarpserver"
+		$cmd "killall -9 yarpserver3"
 		;;
 	*)
 		echo "start stop kill"

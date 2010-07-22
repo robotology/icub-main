@@ -5,6 +5,11 @@
 
 <node>pc104</node>
 <node display="true">icub14</node>
+<node>icub-b4</node>
+<node>icub-b5</node>
+<node>icub-b6</node>
+<node>icub-b7</node>
+<node>icub-b8</node>
 <node>icub-b14</node>
 <node>icub-b15</node>
 <node>icub-b16</node>

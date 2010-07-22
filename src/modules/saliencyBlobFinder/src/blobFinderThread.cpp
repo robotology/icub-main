@@ -274,7 +274,7 @@ bool blobFinderThread::threadInit(){
 
     bool ret = false;
     bool ok=true;
-    startTimer=clock();
+    startTimer = Time::now();
     
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     inputPort.open(getName("/image:i").c_str());
@@ -564,10 +564,10 @@ void blobFinderThread::run(){
                 ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
             outPorts();
 
-            endTimer=clock();
+            endTimer=Time::now();
             double dif = endTimer-startTimer;
-            //printf("elapsed time in sec : clocks%f  equals_%f \n", dif, (double)CLOCKS_PER_SEC/(endTimer-startTimer));
-            startTimer=clock();
+            startTimer=endTimer;
+            printf("elapsed time in sec: %f\n", dif);
         }
     } //if (!interrupted)
 }

@@ -1,11 +1,12 @@
-
+CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 SET(KEYWORD "selectiveAttentionEngine")
 
 PROJECT(${KEYWORD})
 
 
 FIND_PACKAGE(ICUB)
-FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(YARP)
+SET (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(IPP REQUIRED)
@@ -29,15 +30,10 @@ INCLUDE_DIRECTORIES(
     ${YARP_INCLUDE_DIRS}
     ${ICUB_INCLUDE_DIRS}		
     ${PROJECT_SOURCE_DIR}/include
+    ${YARP_INCLUDE_DIRS}
+    ${ICUB_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIR}    	
     ${IPP_INCLUDE_DIRS}	 
-    #/opt/intel/ipp/6.1.1.042/em64t/include
-    #---linux    
-    #$ENV{QT_INCLUDE_DIR}/include
-    #$ENV{QT_INCLUDE_DIR}/include/Qt
-    #$ENV{QT_INCLUDE_DIR}/include/Qt3Support 
-    #--windows
-    $ENV{QT_INCLUDE_DIR}
 )
 
 IF(NOT IPP_INCLUDE_DIRS)
@@ -60,13 +56,6 @@ LINK_DIRECTORIES(
     #/opt/intel/ipp/sharedlib	
 )
 
-#LINK_LIBRARIES(debug "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib" 
-#	optimized "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib")
-
-
-
-
-
 # Set up our main executable.
 IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
@@ -75,16 +64,16 @@ IF (folder_source)
     )
     IF (WIN32) #required in win
      TARGET_LINK_LIBRARIES( ${KEYWORD}
+      ${YARP_LIBRARIES} 
       ${OPENCV_LIBRARIES}
-      #${ODE_LIBRARIES}
       ${IDL_LIBRARIES}
       ${IPP_LIBRARIES}
       ${YARP_LIBRARIES} 	 	
      )	
     ELSE(WIN32) #required in linux
      TARGET_LINK_LIBRARIES( ${KEYWORD}
+       ${YARP_LIBRARIES}
        ${OPENCV_LIBRARIES}
-       #${ODE_LIBRARIES}
        ${IDL_LIBRARIES}
        ${IPP_LIBRARIES} 
        ${YARP_LIBRARIES} 	
@@ -95,8 +84,6 @@ IF (folder_source)
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
-
-
 
 #INSTALL_TARGETS(/lib ${KEYWORD})
 INSTALL_TARGETS(/bin ${KEYWORD})

@@ -181,6 +181,7 @@ void rgbProcessorThread::run(){
                 if(!reinit_flag){
                     this->width=img->width();
                     this->height=img->height();
+		    
                     srcsize.height=img->height();
 	                srcsize.width=img->width();
                     reinitialise(img->width(), img->height());
@@ -194,8 +195,8 @@ void rgbProcessorThread::run(){
                 extractPlanes(img);
                 //colourOpponency();
                 
-                //extractYUV();
-                //addUVPlanes();
+                extractYUV();
+                addUVPlanes();
 
                 outPorts();   
             }//if
