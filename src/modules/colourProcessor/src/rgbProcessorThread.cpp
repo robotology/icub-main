@@ -192,7 +192,7 @@ void rgbProcessorThread::run(){
                 //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
                 
                 extractPlanes(img);
-                colourOpponency();
+                //colourOpponency();
                 
                 //extractYUV();
                 //addUVPlanes();
