@@ -170,7 +170,7 @@ void blobFinderThread::resizeImages(int width, int height){
 
     blobList = new char [width*height+1];
 
-    this->ptr_inputImg->resize(width,height);
+    ptr_inputImg->resize(width,height);
     _inputImgRed.resize(width,height);
     _inputImgGreen.resize(width,height);
     _inputImgBlue.resize(width,height);
@@ -278,7 +278,7 @@ void blobFinderThread::run(){
 
             //copy the inputImg into a buffer
             //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),tmpImage->getRawImage(), tmpImage->getRowSize(),srcsize);
-            //ippiCopy_8u_C3R(tmpImage->getRawImage(), tmpImage->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
+            ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
             bool ret1=true,ret2=true;
             ret1=getOpponencies();
             ret2=getPlanes();
@@ -287,7 +287,7 @@ void blobFinderThread::run(){
             if(!freetorun)
                 return;
 
-            meanColour_flag=true;
+            meanColour_flag=false;
             blobCataloged_flag=true;
             bool redPlane_flag=false;
             bool greenPlane_flag=false;
