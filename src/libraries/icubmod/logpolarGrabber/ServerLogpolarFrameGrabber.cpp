@@ -1078,8 +1078,24 @@ bool StdImageFormatter::format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& bu
                                yarp::sig::ImageOf<yarp::sig::PixelRgb>& formatted) {
     const int w = formatted.width();
     const int h = formatted.height();
-    // LATER: replace this with a proper filtering + subsampling.
-    formatted.copy(buffer, w, h);   // copy & resize.
+
+    // optimized for a common format 320x240 from 640x480 and no padding.
+    if (buffer.width() == 640 && buffer.height() == 480 &&
+        formatted.width() == 320 && formatted.height() == 240) {
+        for (int j = 0; j < h; j++) {
+            unsigned char *src = (unsigned char *)buffer.getRow(j*2);
+            unsigned char *dest = (unsigned char *)formatted.getRow(j);
+            for (int k = 0; k < w; k++, src+=3) {
+                *dest++ = *src++;
+                *dest++ = *src++;
+                *dest++ = *src++;
+            }
+        }
+    }
+    else {
+        // LATER: replace this with a proper filtering + subsampling.
+        formatted.copy(buffer, w, h);   // copy & resize.
+    }
     return true;
 }
 
