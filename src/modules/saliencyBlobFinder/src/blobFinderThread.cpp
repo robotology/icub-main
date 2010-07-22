@@ -60,7 +60,7 @@ blobFinderThread::blobFinderThread()//:RateThread(THREAD_RATE)
 
     max_boxes = new YARPBox[3];
     //initializing the image plotted out int the drawing area
-    image_out=new ImageOf<PixelRgb>;
+    //image_out=new ImageOf<PixelRgb>;
     _procImage=new ImageOf<PixelRgb>;
     _outputImage3=new ImageOf<PixelRgb>;
     _outputImage=new ImageOf<PixelMono>;
@@ -124,6 +124,9 @@ void blobFinderThread::reinitialise(int width, int height){
 
     tmpImage=new ImageOf<PixelMono>;
     tmpImage->resize(width,height);
+
+    image_out=new ImageOf<PixelRgb>;
+    image_out->resize(width,height);
 }
 
 void blobFinderThread::resizeImages(int width, int height){
