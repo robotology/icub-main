@@ -177,18 +177,18 @@ void rgbProcessorThread::run(){
             img=this->inputPort.read(true);
             //printf("out of the waiting.... \n");
 
-            if(0!=img){
-                if(!reinit_flag){
+            if(0!=img) {
+                if(!reinit_flag) {
                     this->width=img->width();
                     this->height=img->height();
 		    
                     srcsize.height=img->height();
-	                srcsize.width=img->width();
+                    srcsize.width=img->width();
                     reinitialise(img->width(), img->height());
                     reinit_flag=true;
                 }
-                
-                
+
+
                 //copy the inputImg into a buffer
                 //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
                 
@@ -216,8 +216,7 @@ void rgbProcessorThread::interrupted(){
 /*
  * extracts the y channel (intensity) from the input image
  */
-void rgbProcessorThread::getYPlane(ImageOf<PixelMono>* tmp){
- 
+void rgbProcessorThread::getYPlane(ImageOf<PixelMono>* tmp) {
 
      py=tmp->getPixelAddress(0,0);
      pr=redPlane->getPixelAddress(0,0);
@@ -227,8 +226,8 @@ void rgbProcessorThread::getYPlane(ImageOf<PixelMono>* tmp){
      int rowsize=redPlane->getRowSize();
      int padding=rowsize-width;
 
-    for (int y=0;y<height;y++){
-        for(int x=0;x<width;x++){
+     for (int y=0;y<height;y++) {
+        for(int x=0;x<width;x++) {
             (*py)=(unsigned char)ceil(yr*(*pr)+yg*(*pg)+yb*(*pb));
             py++;
             pr++;pg++;pb++;
@@ -243,7 +242,7 @@ void rgbProcessorThread::getYPlane(ImageOf<PixelMono>* tmp){
 /*
  * extracts the U channel from the input image
  */
-void rgbProcessorThread::getUPlane(ImageOf<PixelMono>* tmp){
+void rgbProcessorThread::getUPlane(ImageOf<PixelMono>* tmp) {
      pu=tmp->getPixelAddress(0,0);
      pr=redPlane->getPixelAddress(0,0);
      pg=greenPlane->getPixelAddress(0,0);
@@ -252,7 +251,7 @@ void rgbProcessorThread::getUPlane(ImageOf<PixelMono>* tmp){
      int rowsize=redPlane->getRowSize();
      int padding=rowsize-width;
 
-    for (int y=0;y<height;y++){
+     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
             (*pu)=(unsigned char)ceil(ur*(*pr)+ug*(*pg)+ub*(*pb)+128);
             assert((*pu)>=0);
@@ -272,8 +271,8 @@ void rgbProcessorThread::getUPlane(ImageOf<PixelMono>* tmp){
 /*
  * extracts the V channel from the input image
  */
-void rgbProcessorThread::getVPlane(ImageOf<PixelMono>* tmp){
-	 pv=tmp->getPixelAddress(0,0);
+void rgbProcessorThread::getVPlane(ImageOf<PixelMono>* tmp) {
+     pv=tmp->getPixelAddress(0,0);
      pr=redPlane->getPixelAddress(0,0);
      pg=greenPlane->getPixelAddress(0,0);
      pb=bluePlane->getPixelAddress(0,0);
@@ -281,7 +280,7 @@ void rgbProcessorThread::getVPlane(ImageOf<PixelMono>* tmp){
      int rowsize=redPlane->getRowSize();
      int padding=rowsize-width;
 
-    for (int y=0;y<height;y++){
+     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
             (*pv)=(unsigned char)ceil(vr*(*pr)+vg*(*pg)+vb*(*pb)+128);
             assert((*pv)>=0);
@@ -299,8 +298,8 @@ void rgbProcessorThread::getVPlane(ImageOf<PixelMono>* tmp){
 /*
  * extracts the UV channel adding Uand V planes
  */
-void rgbProcessorThread::addUVPlanes(){
-	pv=vPlane->getPixelAddress(0,0);
+void rgbProcessorThread::addUVPlanes() {
+    pv=vPlane->getPixelAddress(0,0);
     pu=uPlane->getPixelAddress(0,0);
     puv=uvPlane->getPixelAddress(0,0);
 
@@ -324,13 +323,14 @@ void rgbProcessorThread::addUVPlanes(){
     }
 }
 
-void rgbProcessorThread::extractYUV(){
-    IppiSize srcsize ={width,height};
+void rgbProcessorThread::extractYUV() {
+
+        IppiSize srcsize ={width,height};
 
 	/*tmp=new ImageOf<PixelMono>;
 	tmp->resize(width,height);*/
 
-    //1.get the red,blue and green planes
+        //1.get the red,blue and green planes
 	getYPlane(yPlane);	
 	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),yPlane->getRawImage(),yPlane->getRowSize(),srcsize);
 	
@@ -343,18 +343,19 @@ void rgbProcessorThread::extractYUV(){
    
 
 
-void rgbProcessorThread::threadRelease(){
+void rgbProcessorThread::threadRelease() {
+
     //----------- freeing memory ----------
     //6. free memory space
     //ippiFree(bluePlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	//ippiFree(redPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	//ippiFree (greenPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+    //ippiFree(redPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+    //ippiFree (greenPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
 
     ippiFree(yellowPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
 
     ippiFree(redGreen_ippi);
-	ippiFree(blueYellow_ippi);
-	ippiFree(greenRed_ippi);
+    ippiFree(blueYellow_ippi);
+    ippiFree(greenRed_ippi);
     
     
     ippiFree(bluePlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
@@ -421,7 +422,8 @@ void rgbProcessorThread::setInputImage(ImageOf<PixelRgb>* inputImage){
     reinit_flag=true;
 }
 
-void rgbProcessorThread::outPorts(){
+void rgbProcessorThread::outPorts() {
+
     //port2.prepare() = *img;	
     //rgb section
     if((redPlane!=0)&&(redPort.getOutputCount())){
@@ -469,11 +471,11 @@ void rgbProcessorThread::outPorts(){
     }
 
 }
+
 /*
  * extracts the plane red for the input image
  */
 void rgbProcessorThread::getRedPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp){
-    
 	
 	//int width=inputImage->width();
 	//int height=inputImage->height();
@@ -488,7 +490,7 @@ void rgbProcessorThread::getRedPlane(ImageOf<PixelRgb>* inputImage,ImageOf<Pixel
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);*/
 	//ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
 	ippiCopy_8u_C3P3R(inputImage->getRawImage(),inputImage->getRowSize(),shift,psb,srcsize);
-    ippiCopy_8u_C1R(shift[0],psb,tmp->getRawImage(),tmp->getRowSize(),srcsize);
+        ippiCopy_8u_C1R(shift[0],psb,tmp->getRawImage(),tmp->getRowSize(),srcsize);
 	/*ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);*/
@@ -497,13 +499,10 @@ void rgbProcessorThread::getRedPlane(ImageOf<PixelRgb>* inputImage,ImageOf<Pixel
 /*
  * extracts the plane green for the input image
  */
-void rgbProcessorThread::getGreenPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp){
-    
+void rgbProcessorThread::getGreenPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp) {
 	
 	//int width=inputImage->width();
 	//int height=inputImage->height();
-    
-	
 	
 	/*IppiSize srcsize;
 	srcsize.height=inputImage->height();
@@ -525,7 +524,6 @@ void rgbProcessorThread::getGreenPlane(ImageOf<PixelRgb>* inputImage,ImageOf<Pix
  * extracts the plane blue for the input image
  */
 void rgbProcessorThread::getBluePlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp){
-    
 	
 	//int width=inputImage->width();
 	//int height=inputImage->height();
@@ -563,42 +561,32 @@ void rgbProcessorThread::extractPlanes(ImageOf<PixelRgb>* src){
 	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),srcsize);
 }
 
-void rgbProcessorThread::colourOpponency(){
-    
-	
-    /*ippiConvert_8u32f_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi32,psb2,srcsize);
-    ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
-    ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);*/
 
-    
-    //ippiCopy_8u_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi,psb,srcsize);
-	//ippiCopy_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi,psb,srcsize);
-    //ippiCopy_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi,psb,srcsize);
+void rgbProcessorThread::colourOpponency() {
 
-    
     //Conversion planes in signed char
     ippiRShiftC_8u_C1IR(1,redPlane->getRawImage(),redPlane->getRowSize(),srcsize);
     ippiRShiftC_8u_C1IR(1,greenPlane->getRawImage(),greenPlane->getRowSize(),srcsize);
     ippiRShiftC_8u_C1IR(1,bluePlane->getRawImage(),bluePlane->getRowSize(),srcsize);
     //conversion to 32f in order to apply the gauss filter
-	ippiConvert_8u32f_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi32,psb2,srcsize);
-	ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
-	ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);
-    
-  
 
-	//ippiFilter possible variables for border ippBorderConst,ippBorderRepl,ippBorderWrap,ippBorderMirror,ippBorderMirrorR
-	Ipp32f value=0;
-	Ipp32f sigma=1;
-	int kernelSize=3;
+    ippiConvert_8u32f_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi32,psb2,srcsize);
+    ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
+    ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);
+ 
+
+    //ippiFilter possible variables for border ippBorderConst,ippBorderRepl,ippBorderWrap,ippBorderMirror,ippBorderMirrorR
+    Ipp32f value=0;
+    Ipp32f sigma=1;
+    int kernelSize=3;
     ippiFilterGaussBorder_32f_C1R(greenPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferGreen);
-	ippiFilterGaussBorder_32f_C1R(bluePlane_ippi32,psb2,bluePlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferBlue);
-	ippiFilterGaussBorder_32f_C1R(redPlane_ippi32,psb2,redPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferRed);
+    ippiFilterGaussBorder_32f_C1R(bluePlane_ippi32,psb2,bluePlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferBlue);
+    ippiFilterGaussBorder_32f_C1R(redPlane_ippi32,psb2,redPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferRed);
 	
     ippiConvert_32f8u_C1R(redPlane_ippi32_f,psb2,redPlane_ippi8u_f,psb,srcsize,ippRndNear);
     ippiConvert_32f8u_C1R(greenPlane_ippi32_f,psb2,greenPlane_ippi8u_f,psb,srcsize,ippRndNear);
     ippiConvert_32f8u_C1R(bluePlane_ippi32_f,psb2,bluePlane_ippi8u_f,psb,srcsize,ippRndNear);
-    
+ 
 
 
     /*ippiSub_8u_C1RSfs(redPlane_ippi8u,psb,greenPlane_ippi8u_f,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,0);
@@ -700,10 +688,8 @@ void rgbProcessorThread::colourOpponency(){
 	}*/
 
 
-	
-	
-	//delete tmp;
-	
+        //delete tmp;
+
 	/*
 	//4.1 subtract the red from the green to obtain R+G-
 	ippiSub_8u_C1RSfs(redPlane_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,0);
@@ -747,10 +733,191 @@ void rgbProcessorThread::colourOpponency(){
 	/*this->blueYellow_flag=1;
 	this->redGreen_flag=1;
 	this->greenRed_flag=1;*/
+}
+
+/* removed and re-implemented */
+#if 0
+void rgbProcessorThread::colourOpponency() {
+
+    /*ippiConvert_8u32f_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi32,psb2,srcsize);
+    ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
+    ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);*/
+    
+    //ippiCopy_8u_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi,psb,srcsize);
+    //ippiCopy_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi,psb,srcsize);
+    //ippiCopy_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi,psb,srcsize);
+    
+    //Conversion planes in signed char
+    ippiRShiftC_8u_C1IR(1,redPlane->getRawImage(),redPlane->getRowSize(),srcsize);
+    ippiRShiftC_8u_C1IR(1,greenPlane->getRawImage(),greenPlane->getRowSize(),srcsize);
+    ippiRShiftC_8u_C1IR(1,bluePlane->getRawImage(),bluePlane->getRowSize(),srcsize);
+    //conversion to 32f in order to apply the gauss filter
+
+    ippiConvert_8u32f_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi32,psb2,srcsize);
+    ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
+    ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);
+ 
+
+    //ippiFilter possible variables for border ippBorderConst,ippBorderRepl,ippBorderWrap,ippBorderMirror,ippBorderMirrorR
+    Ipp32f value=0;
+    Ipp32f sigma=1;
+    int kernelSize=3;
+    ippiFilterGaussBorder_32f_C1R(greenPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferGreen);
+    ippiFilterGaussBorder_32f_C1R(bluePlane_ippi32,psb2,bluePlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferBlue);
+    ippiFilterGaussBorder_32f_C1R(redPlane_ippi32,psb2,redPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferRed);
+	
+    ippiConvert_32f8u_C1R(redPlane_ippi32_f,psb2,redPlane_ippi8u_f,psb,srcsize,ippRndNear);
+    ippiConvert_32f8u_C1R(greenPlane_ippi32_f,psb2,greenPlane_ippi8u_f,psb,srcsize,ippRndNear);
+    ippiConvert_32f8u_C1R(bluePlane_ippi32_f,psb2,bluePlane_ippi8u_f,psb,srcsize,ippRndNear);
+ 
+
+
+    /*ippiSub_8u_C1RSfs(redPlane_ippi8u,psb,greenPlane_ippi8u_f,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,0);
+    ippiSub_8u_C1RSfs(greenPlane_ippi8u,psb,redPlane_ippi8u_f,psb,greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize,0);
+    ippiRShiftC_8u_C1IR(1,redPlane_ippi8u_f,psb,srcsize);
+    ippiRShiftC_8u_C1IR(1,greenPlane_ippi8u_f,psb,srcsize);
+    ippiAdd_8u_C1RSfs(redPlane_ippi8u_f,psb,greenPlane_ippi8u_f,psb,yellowPlane_ippi8u_f,psb,srcsize,0);
+    ippiSub_8u_C1RSfs(bluePlane_ippi8u,psb,yellowPlane_ippi8u_f,psb,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize,0);*/
 
     
+    /*
+	//4.1 subtract the red from the gree    n to obtain R+G-
+	ippiSub_32f_C1R(redPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,greenRed_ippi32,psb2,srcsize);
+	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
+	//4.2 subtract the green from the red to obtain G+R-
+	ippiSub_32f_C1R(greenPlane_ippi32,psb2,redPlane_ippi32_f,psb2,redGreen_ippi32,psb2,srcsize);
+	//ippiSub_8u_C1RSfs(greenRed_ippi,psb,redPlane_ippi_f,psb,greenRed_ippi,psb,srcsize,-1);
+	//4.3 risht shift;
+	//ippiRShiftC_32s_C1IR(1,greenPlane_ippi32_f,psb2,srcsize);
+	//ippiRShiftC_32s_C1IR(1,redPlane_ippi32_f,psb2,srcsize);
+	//4.4 sum the filtered red and filtered green to get the filtered yellow
+	ippiAdd_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32_f,psb2,yellowPlane_ippi32_f,psb2,srcsize);
+	//ippiAdd_8u_C1RSfs(redPlane_ippi_f,psb,greenPlane_ippi_f,psb,yellowPlane_ippi_f,psb,srcsize,-1);
+	//4.5. subtract the yellow from the blue in order to get B+Y-
+	ippiSub_32f_C1R(bluePlane_ippi32,psb2,yellowPlane_ippi32_f,psb2,blueYellow_ippi32,psb2,srcsize);
+	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
+	*/
     
+
+
     
+    //4.1 subtract the red from the green to obtain R+G-
+    ippiSub_32f_C1R(greenPlane_ippi32_f,psb2,redPlane_ippi32,psb2,redGreen_ippi32,psb2,srcsize);
+	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
+	//4.2 subtract the green from the red to obtain G+R-
+	ippiSub_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32,psb2,greenRed_ippi32,psb2,srcsize);
+	//ippiSub_8u_C1RSfs(greenRed_ippi,psb,redPlane_ippi_f,psb,greenRed_ippi,psb,srcsize,-1);
+	//4.3 risht shift;
+	//ippiRShiftC_32s_C1IR(1,greenPlane_ippi32_f,psb2,srcsize);
+	//ippiRShiftC_32s_C1IR(1,redPlane_ippi32_f,psb2,srcsize);
+	//4.4 sum the filtered red and filtered green to get the filtered yellow
+	ippiAdd_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32_f,psb2,yellowPlane_ippi32_f,psb2,srcsize);
+	//ippiAdd_8u_C1RSfs(redPlane_ippi_f,psb,greenPlane_ippi_f,psb,yellowPlane_ippi_f,psb,srcsize,-1);
+	//4.5. subtract the yellow from the blue in order to get B+Y-
+	ippiSub_32f_C1R(yellowPlane_ippi32_f,psb2,bluePlane_ippi32,psb2,blueYellow_ippi32,psb2,srcsize);
+
+	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
+
+    
+
+
+    /*for(int i=0;i< width*height; i++){
+        //searchRG=((targetRED-targetGREEN+255)/510)*255;
+        //searchGR=((targetGREEN-targetRED+255)/510)*255;
+        //PixelMono addRG=((targetRED+targetGREEN)/510)*255;
+        //searchBY=((targetBLUE-addRG+255)/510)*255;
+        redGreen_ippi32[i]=(((redPlane_ippi32_f[i]-greenPlane_ippi32_f[i])+255)/510)*255;
+        greenRed_ippi32[i]=(((greenPlane_ippi32_f[i]-redPlane_ippi32_f[i])+255)/510)*255;
+        yellowPlane_ippi32_f[i]= ((redPlane_ippi32_f[i]+greenPlane_ippi32_f[i])/510)*255;
+        blueYellow_ippi32[i]=((bluePlane_ippi32_f[i]-yellowPlane_ippi32_f[i])/510)*255;
+    }*/
+
+
+	//5. convesion back to 8u images 
+	
+    conv_32f_to_8u(blueYellow_ippi32,psb2,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);
+    conv_32f_to_8u(redGreen_ippi32,psb2,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
+    conv_32f_to_8u(greenRed_ippi32,psb2,greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
+
+    
+
+    //printf("RG:%d ", redGreen_yarp->getRawImage()[100]);
+    //printf("GR:%d ", greenRed_yarp->getRawImage()[100]);
+    //printf("BY:%d ", blueYellow_ippi[100]);
+
+	/*int thresholdHigh=140;
+	int thresholdLow=1;
+	for (int i=0;i<320*240;i++){
+			if(greenRed_ippi[i]==255) 
+				greenRed_ippi[i]=0;
+			else if((greenRed_ippi[i]>thresholdLow)&&(greenRed_ippi[i]<thresholdHigh)) 
+				greenRed_ippi[i]=0;
+			else if(greenRed_ippi[i]<=thresholdLow) 
+				greenRed_ippi[i]=255;
+
+			if(blueYellow_ippi[i]==255)
+				blueYellow_ippi[i]=0;
+			else if((blueYellow_ippi[i]>thresholdLow)&&(blueYellow_ippi[i]<thresholdHigh)) 
+				blueYellow_ippi[i]=0;
+			else if(blueYellow_ippi[i]<=thresholdLow) 
+				blueYellow_ippi[i]=255;
+
+			if(redGreen_ippi[i]==255) 
+				redGreen_ippi[i]=0;	
+			else if((redGreen_ippi[i]>thresholdLow)&&(redGreen_ippi[i]<thresholdHigh)) 
+				redGreen_ippi[i]=0;
+			else if(redGreen_ippi[i]<=thresholdLow) 
+				redGreen_ippi[i]=255;		
+	}*/
+
+
+        //delete tmp;
+
+	/*
+	//4.1 subtract the red from the green to obtain R+G-
+	ippiSub_8u_C1RSfs(redPlane_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,0);
+	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
+	//4.2 subtract the green from the red to obtain G+R-
+	ippiSub_8u_C1RSfs(greenPlane_ippi,psb,redPlane_ippi_f,psb,greenRed_ippi,psb,srcsize,0);
+	//ippiSub_8u_C1RSfs(greenRed_ippi,psb,redPlane_ippi_f,psb,greenRed_ippi,psb,srcsize,-1);
+	//4.3 risht shift;
+	ippiRShiftC_8u_C1IR(1,greenPlane_ippi_f,psb,srcsize);
+	ippiRShiftC_8u_C1IR(1,redPlane_ippi_f,psb,srcsize);
+	//4.4 sum the filtered red and filtered green to get the filtered yellow
+	ippiAdd_8u_C1RSfs(redPlane_ippi_f,psb,greenPlane_ippi_f,psb,yellowPlane_ippi_f,psb,srcsize,1);
+	ippiCopy_8u_C1R(yellowPlane_ippi_f,psb,this->yellowPlane->getPixelAddress(0,0),320,srcsize);
+	//ippiAdd_8u_C1RSfs(redPlane_ippi_f,psb,greenPlane_ippi_f,psb,yellowPlane_ippi_f,psb,srcsize,-1);
+	//4.5. subtract the yellow from the blue in order to get B+Y-
+	ippiSub_8u_C1RSfs(bluePlane_ippi,psb,yellowPlane_ippi_f,psb,blueYellow_ippi,psb,srcsize,0);
+	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
+
+	*/
+	
+	//7. back conversion to YarpImages
+	//ImageOf<PixelMono> *redGreen_yarp=new ImageOf<PixelMono>;
+	//ImageOf<PixelMono> *greenRed_yarp=new ImageOf<PixelMono>;
+	//ImageOf<PixelMono> *blueYellow_yarp=new ImageOf<PixelMono>;
+	//redGreen_yarp->resize(width,height);
+	//greenRed_yarp->resize(width,height);
+	//blueYellow_yarp->resize(width,height);
+	
+    /*ippiCopy_8u_C1R(redGreen_ippi,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
+	ippiCopy_8u_C1R(greenRed_ippi,psb,greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
+	ippiCopy_8u_C1R(blueYellow_ippi,psb,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);*/
+
+	/*ippiCopy_8u_C1R(redPlane->getPixelAddress(0,0),psb,redGreen_yarp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(greenPlane->getPixelAddress(0,0),psb,greenRed_yarp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(bluePlane->getPixelAddress(0,0),psb,blueYellow_yarp->getPixelAddress(0,0),width,srcsize);*/
+    
+	/*blueYellow_yarp=bluePlane;
+	redGreen_yarp=bluePlane;
+	greenRed_yarp=bluePlane;*/
+
+	/*this->blueYellow_flag=1;
+	this->redGreen_flag=1;
+	this->greenRed_flag=1;*/
 }
+
+#endif 
 
 //----- end-of-file --- ( next line intentionally left blank ) ------------------

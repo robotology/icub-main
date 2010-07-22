@@ -73,9 +73,8 @@ bool ImageProcessModule::open(Searchable& config) {
     interThread->setName("/imagePU/");
     interThread->start();
 
-	currentProcessor=0;
+    currentProcessor=0;
     //inputImg=0;
-    
     
     while((interThread->tmp==0)&&(dif<20)){
         time (&end);
@@ -104,7 +103,7 @@ bool ImageProcessModule::interruptModule() {
     cmdPort.interrupt();
     currentProcessor->interrupt();
     //interThread->interrupt();
-	return true;
+    return true;
 }
 
 bool ImageProcessModule::close() {
