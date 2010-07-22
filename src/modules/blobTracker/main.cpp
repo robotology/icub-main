@@ -27,7 +27,9 @@ YARP libraries and OpenCV
   created by the module. By default \e blobTracker is
   useds
 --filter \e on|off
-- This parameter turns on the Kallman Filter for the blobs.  The default is on
+- This parameter turns on the Kalman Filter for the blobs.  The default is off
+--smooth \e on|off
+- This parameter turns on the Gaussian smoothing of the input image.  Default is on
 --num_blobs \e <num>
 - This parameter sets the number of blobs the tracker will track.  Deafult is 10.
  
@@ -91,7 +93,8 @@ private:
     int width, height;
     int max_tracked_blobs;
     bool filterOn;
-        
+    bool smoothingOn;
+
     BufferedPort< ImageOf<PixelMono> >  inPort;
     BufferedPort< ImageOf<PixelBgr> >  outPort;
     BufferedPort<Bottle> blobPort;
@@ -127,14 +130,13 @@ public:
         size_threshold=rf.check("size_threshold",Value(20)).asInt();
         filter_threshold=rf.check("filter_threshold",Value(100)).asInt();
         max_tracked_blobs=rf.check("num_blobs",Value(10)).asInt();
-        str=rf.check("filter",Value("off")).asString().c_str();
-        
-        if(str=="off") {
-            filterOn=false;
-        } else {
-            filterOn=true;
-        }
-        
+
+        str=rf.check("filter",Value("off")).asString().c_str();       
+        filterOn = !(str=="off");
+
+        str=rf.check("smooth",Value("off")).asString().c_str(); 
+        smoothingOn = !(str=="off");
+
         inPort.open(("/"+name+"/img:i").c_str());
         outPort.open(("/"+name+"/img:o").c_str());
         blobPort.open(("/"+name+"/blobs:o").c_str());
@@ -161,6 +163,7 @@ public:
             fprintf(stdout,"name\t\t\t = %s\n",name.c_str());
             fprintf(stdout,"num_blobs\t\t = %d\n",max_tracked_blobs);
             fprintf(stdout,"filter\t\t\t = %d\n",filterOn);
+            fprintf(stdout,"smoothing\t\t\t = %d\n",smoothingOn);
             fprintf(stdout,"size_threshold\t\t = %d\n",size_threshold);
             fprintf(stdout,"filter_threshold\t = %d\n",filter_threshold);
             fprintf(stdout,"\n");
@@ -209,14 +212,20 @@ public:
                         
                     // skip to the next cycle
                     continue;
-                }                               
-                
-                // blur and threshold the input image
-                cvSmooth((IplImage*)pImgIn->getIplImage(), (IplImage*)pImgIn->getIplImage(), CV_BLUR, 5, 5);
+                }                           
+
+                cout << "preparing image..." << endl;
+
+                // blur the image
+                if(smoothingOn) {
+                    cvSmooth((IplImage*)pImgIn->getIplImage(), (IplImage*)pImgIn->getIplImage(), CV_BLUR, 5, 5);
+                }
+
+                // threshold the image
                 cvThreshold( (IplImage*)pImgIn->getIplImage(), (IplImage*)pImgIn->getIplImage(), filter_threshold, 255, CV_THRESH_BINARY );
                 
+                // set up mem storage and find connected components
                 CvMemStorage *mem = cvCreateMemStorage(0);
-
                 cvFindContours( (IplImage*)pImgIn->getIplImage(), mem, &contours );
 
                 // get output image
@@ -251,8 +260,10 @@ public:
                 double x,y,x2,y2,xy;
 
                 for (ptr = contours; ptr != NULL; ptr = ptr->h_next) {
-                    
-                    if( ptr->total >= size_threshold ) {
+
+                    cout << "checking first contour with size: " << fabs(cvContourArea(ptr)) << endl;
+                    // check size of contour
+                    if( fabs(cvContourArea(ptr)) >= size_threshold ) {
                         
                         // get a random color for this blob
                         color = CV_RGB( rand()&255, rand()&255, rand()&255 );
@@ -309,6 +320,8 @@ public:
                     
                     filterSingleBlob->measured.firstMoment.x = singleBlobCenter[0];
                     filterSingleBlob->measured.firstMoment.y = singleBlobCenter[1];
+                    filterSingleBlob->measured.firstMomentDot.x = 0;
+                    filterSingleBlob->measured.firstMomentDot.y = 0;
                     filterSingleBlob->measured.roi = singleBlobCovar;
                     filterSingleBlob->measured.isValid = true;		
                     
@@ -353,6 +366,8 @@ public:
                         Bottle &blob = b.addList();
                         blob.addDouble(filterSingleBlob->filtered.firstMoment.x - width/2.0);
                         blob.addDouble(filterSingleBlob->filtered.firstMoment.y - height/2.0);
+                        blob.addDouble(filterSingleBlob->filtered.firstMomentDot.x);
+                        blob.addDouble(filterSingleBlob->filtered.firstMomentDot.y);
                         blob.addDouble(filterSingleBlob->filtered.roi[0][0]);
                         blob.addDouble(filterSingleBlob->filtered.roi[0][1]);
                         blob.addDouble(filterSingleBlob->filtered.roi[1][0]);
@@ -393,6 +408,8 @@ public:
                         Bottle &blob = b.addList();
                         blob.addDouble(filterSingleBlob->measured.firstMoment.x - width/2.0);
                         blob.addDouble(filterSingleBlob->measured.firstMoment.y - height/2.0);
+                        blob.addDouble(filterSingleBlob->measured.firstMomentDot.x);
+                        blob.addDouble(filterSingleBlob->measured.firstMomentDot.y);
                         blob.addDouble(filterSingleBlob->measured.roi[0][0]);
                         blob.addDouble(filterSingleBlob->measured.roi[0][1]);
                         blob.addDouble(filterSingleBlob->measured.roi[1][0]);
@@ -423,6 +440,8 @@ public:
                                 //blob.addInt(blobID);
                                 blob.addDouble(filters[i]->filtered.firstMoment.x - width/2.0);
                                 blob.addDouble(filters[i]->filtered.firstMoment.y - height/2.0);
+                                blob.addDouble(filters[i]->filtered.firstMomentDot.x);
+                                blob.addDouble(filters[i]->filtered.firstMomentDot.y);
                                 blob.addDouble(filters[i]->filtered.roi[0][0]);
                                 blob.addDouble(filters[i]->filtered.roi[0][1]);
                                 blob.addDouble(filters[i]->filtered.roi[1][0]);
@@ -444,6 +463,8 @@ public:
                             //blob.addInt(blobID);
                             blob.addDouble(rawBlobs[i]->firstMoment.x - width/2.0);
                             blob.addDouble(rawBlobs[i]->firstMoment.y - height/2.0);
+                            blob.addDouble(rawBlobs[i]->firstMomentDot.x);
+                            blob.addDouble(rawBlobs[i]->firstMomentDot.y);
                             blob.addDouble(rawBlobs[i]->roi[0][0]);
                             blob.addDouble(rawBlobs[i]->roi[0][1]);
                             blob.addDouble(rawBlobs[i]->roi[1][0]);
@@ -678,6 +699,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefault("filter","off");
+    rf.setDefault("smooth","on");
     rf.setDefault("size_threshold","25");
     rf.setDefault("filter_threshold","100");
     rf.setDefault("num_blobs", "10");
