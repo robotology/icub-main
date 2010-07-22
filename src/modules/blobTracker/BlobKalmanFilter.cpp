@@ -76,8 +76,8 @@ void BlobKalmanFilter::initialize() {
     
 	initialState[0] = measured.firstMoment.x;
 	initialState[1] = measured.firstMoment.y;
-	initialState[2] = x_dot;
-	initialState[3] = y_dot;
+	initialState[2] = measured.firstMomentDot.x;
+	initialState[3] = measured.firstMomentDot.y;
 	initialState[4] = measured.roi[0][0];
 	initialState[5] = measured.roi[0][1];
 	initialState[6] = measured.roi[1][0];
@@ -85,8 +85,8 @@ void BlobKalmanFilter::initialize() {
 	
 	previousMeasuredVals[0] = measured.firstMoment.x;
 	previousMeasuredVals[1] = measured.firstMoment.y;
-	previousMeasuredVals[2] = x_dot;
-	previousMeasuredVals[3] = y_dot;
+	previousMeasuredVals[2] = measured.firstMomentDot.x;
+	previousMeasuredVals[3] = measured.firstMomentDot.y;
 	previousMeasuredVals[4] = measured.roi[0][0];
 	previousMeasuredVals[5] = measured.roi[0][1];
 	previousMeasuredVals[6] = measured.roi[1][0];
@@ -196,6 +196,8 @@ void BlobKalmanFilter::filterUpdate(double dt) {
         // update filtered data structure from estimates
         filtered.firstMoment.x = x;
         filtered.firstMoment.y = y;
+        filtered.firstMomentDot.x = vel[0];
+        filtered.firstMomentDot.y = vel[1];
         filtered.roi = roi;        
         filtered.firstMomentCov = predictedCovariance;
         for (int i = 0; i < 4; i++)
@@ -211,16 +213,16 @@ void BlobKalmanFilter::filterUpdate(double dt) {
         y = measured.firstMoment.y;
         //x_dot = (x - old_x) / framesElapsed;
         //y_dot = (y - old_y) / framesElapsed;
-        x_dot = (x - old_x) / dt;
-        y_dot = (y - old_y) / dt;
+        measured.firstMomentDot.x = (x - old_x) / dt;
+        measured.firstMomentDot.y = (y - old_y) / dt;
         
         //////////////////////////////////////////////////////
         // update kalman filter model if the measurement has not jumped too far
         
         measuredVals[0] = measured.firstMoment.x;
         measuredVals[1] = measured.firstMoment.y;
-        measuredVals[2] = x_dot;
-        measuredVals[3] = y_dot;
+        measuredVals[2] = measured.firstMomentDot.x;
+        measuredVals[3] = measured.firstMomentDot.y;
         measuredVals[4] = measured.roi[0][0];
         measuredVals[5] = measured.roi[0][1];
         measuredVals[6] = measured.roi[1][0];

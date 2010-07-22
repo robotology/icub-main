@@ -21,6 +21,7 @@ public:
 class FeatureBlob {
 public:
 	CvPoint firstMoment;   //first moment
+	CvPoint firstMomentDot;   //first moment
     yarp::sig::Matrix roi; //Spread of the ROI
 	yarp::sig::Matrix firstMomentCov;  //Variance of first moment
     yarp::sig::Matrix roiCov; //Variance of roi;
@@ -36,6 +37,7 @@ public:
 	void reset() {
         isValid = false;
         firstMoment.x = 0; firstMoment.y = 0;
+        firstMomentDot.x = 0; firstMomentDot.y = 0;
         firstMomentCov.eye();
 		roi.eye();		    
 	}
