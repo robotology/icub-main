@@ -9,8 +9,9 @@ PROJECT(${KEYWORD})
 #SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${YARP_DIR}/conf ${ICUB_DIR}/conf)
 #MESSAGE("CMAKE_MODULE_PATH:  ${CMAKE_MODULE_PATH}")
 
-FIND_PACKAGE(OpenCV REQUIRED)
-FIND_PACKAGE(IPP REQUIRED)
+### don't call find_package here, it is done already for you
+#FIND_PACKAGE(OpenCV REQUIRED)
+#FIND_PACKAGE(IPP REQUIRED)
 
 #---------------------------------------
 #FIND_PACKAGE(GtkPlus REQUIRED)
