@@ -111,7 +111,8 @@ private:
     unsigned char *pr,*pg,*pb,*py,*pu,*pv,*puv;
 
 
-    Ipp8u *redPlane_ippi,*greenPlane_ippi,*bluePlane_ippi,*yellowPlane_ippi;
+    //Ipp8u *redPlane_ippi,*greenPlane_ippi,*bluePlane_ippi;
+    Ipp8u  *yellowPlane_ippi;
     Ipp8u *redGreen_ippi,*greenRed_ippi,*blueYellow_ippi;
     Ipp8u *bluePlane_ippi_f,*redPlane_ippi_f,*yellowPlane_ippi_f,*greenPlane_ippi_f;
 
