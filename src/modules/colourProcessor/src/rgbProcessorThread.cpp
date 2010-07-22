@@ -80,6 +80,64 @@ void rgbProcessorThread::reinitialise(int width, int height){
     inputImg=new ImageOf<PixelRgb>;
     inputImg->resize(width, height);
 
+
+
+    //1. ------------------ Initialisation ---------------------------
+    redPlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
+    greenPlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
+    bluePlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
+    yellowPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+
+    redGreen_ippi= ippiMalloc_8u_C1(width,height,&psb);
+    greenRed_ippi= ippiMalloc_8u_C1(width,height,&psb);
+    blueYellow_ippi= ippiMalloc_8u_C1(width,height,&psb);
+
+    
+	//2.2 convert the shifted planes to the IPP Image (unsigned 8bit)
+	bluePlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
+	redPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
+	yellowPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
+	greenPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
+    
+	
+	//3. convolve with a gaussian in order to filter image planes red and green
+	
+	/*ippiFilterGauss_8u_C1R(bluePlane_ippi,psb,bluePlane_ippi_f,psb,srcsize,ippMskSize5x5);
+	ippiFilterGauss_8u_C1R(redPlane_ippi,psb,redPlane_ippi_f,psb,srcsize,ippMskSize5x5);
+	ippiFilterGauss_8u_C1R(greenPlane_ippi,psb,greenPlane_ippi_f,psb,srcsize,ippMskSize5x5);*/
+
+	
+    //int psb2;
+	redPlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
+	bluePlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
+	greenPlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
+
+	redGreen_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
+	blueYellow_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
+	greenRed_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
+
+
+	redPlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
+	bluePlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
+	yellowPlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
+	greenPlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
+
+    redPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
+	bluePlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
+	yellowPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
+	greenPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
+
+    	
+    int pBufferSize;
+	ippiFilterGaussGetBufferSize_32f_C1R(srcsize, 3, &pBufferSize);
+	
+	pBufferBlue = ippsMalloc_8u(pBufferSize);
+	
+	pBufferRed = ippsMalloc_8u(pBufferSize);
+	
+	pBufferGreen = ippsMalloc_8u(pBufferSize);
+    
+    
 }
 
 void rgbProcessorThread::setName(string str){
@@ -288,6 +346,47 @@ void rgbProcessorThread::extractYUV(){
 
 
 void rgbProcessorThread::threadRelease(){
+    //----------- freeing memory ----------
+    //6. free memory space
+    ippiFree(bluePlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(redPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree (greenPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+    ippiFree(yellowPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+
+    ippiFree(redGreen_ippi);
+	ippiFree(blueYellow_ippi);
+	ippiFree(greenRed_ippi);
+    
+    
+    ippiFree(bluePlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(redPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(yellowPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(greenPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+
+	ippiFree(redPlane_ippi32_f);
+	ippiFree(bluePlane_ippi32_f);
+	ippiFree(greenPlane_ippi32_f);
+	ippiFree(yellowPlane_ippi32_f);
+
+    ippiFree(redPlane_ippi8u_f);// = ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(bluePlane_ippi8u_f);// = ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(yellowPlane_ippi8u_f);// = ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(greenPlane_ippi8u_f);//= ippiMalloc_8u_C1(width,height,&psb);
+
+	ippiFree(redGreen_ippi32);
+	ippiFree(blueYellow_ippi32);
+	ippiFree(greenRed_ippi32);
+    
+	
+	ippiFree(redPlane_ippi32);
+	ippiFree(bluePlane_ippi32);
+	ippiFree(greenPlane_ippi32);
+	
+	ippsFree(pBufferBlue);
+	ippsFree(pBufferRed);
+	ippsFree(pBufferGreen);
+    
+    
     printf("Thread releasing.. \n");
     printf("input port closing .... \n");
     inputPort.close();
@@ -466,75 +565,15 @@ void rgbProcessorThread::extractPlanes(ImageOf<PixelRgb>* src){
 }
 
 void rgbProcessorThread::colourOpponency(){
-    //1. Initialisation
-    Ipp8u* redPlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* greenPlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* bluePlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* yellowPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
-
-    Ipp8u* redGreen_ippi= ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* greenRed_ippi= ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* blueYellow_ippi= ippiMalloc_8u_C1(width,height,&psb);
-
-    //2.1 shifts the 3 planes by one pixel on the right 
-	//ippiRShiftC_8u_C1IR(1,greenPlane->getPixelAddress(0,0),width,srcsize);
-	//ippiRShiftC_8u_C1IR(1,redPlane->getPixelAddress(0,0),width,srcsize);
-	//ippiRShiftC_8u_C1IR(1,yellowPlane->getPixelAddress(0,0),width,srcsize);
-
-	/*DEPRECATED bluePlane_tmp=this->RShiftC(bluePlane);
-	redPlane_tmp=this->RShiftC(redPlane);
-	greenPlane_tmp=this->RShiftC(greenPlane);*/
-	
-	/*ippiRShiftC_8u_C1R(bluePlane->getPixelAddress(0,0),width,1,bluePlane_tmp->getPixelAddress(0,0),width,srcsize);
-	ippiRShiftC_8u_C1R(redPlane->getPixelAddress(0,0),width,1,redPlane_tmp->getPixelAddress(0,0),width,srcsize);
-	ippiRShiftC_8u_C1R(greenPlane->getPixelAddress(0,0),width,1,greenPlane_tmp->getPixelAddress(0,0),width,srcsize);*/
-
-	
-	//2.2 convert the shifted planes to the IPP Image (unsigned 8bit)
-	Ipp8u* bluePlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* redPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* yellowPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* greenPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
-    
-
-	
-    
-    ippiCopy_8u_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi,psb,srcsize);
-	ippiCopy_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi,psb,srcsize);
-    ippiCopy_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi,psb,srcsize);
-    
-	
-	//3. convolve with a gaussian in order to filter image planes red and green
-	
-	/*ippiFilterGauss_8u_C1R(bluePlane_ippi,psb,bluePlane_ippi_f,psb,srcsize,ippMskSize5x5);
-	ippiFilterGauss_8u_C1R(redPlane_ippi,psb,redPlane_ippi_f,psb,srcsize,ippMskSize5x5);
-	ippiFilterGauss_8u_C1R(greenPlane_ippi,psb,greenPlane_ippi_f,psb,srcsize,ippMskSize5x5);*/
-
-	
-    int psb2;
-	Ipp32f* redPlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
-	Ipp32f* bluePlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
-	Ipp32f* greenPlane_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
-
-	Ipp32f* redGreen_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
-	Ipp32f* blueYellow_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
-	Ipp32f* greenRed_ippi32 = ippiMalloc_32f_C1(width,height,&psb2);
-
-
-	Ipp32f* redPlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
-	Ipp32f* bluePlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
-	Ipp32f* yellowPlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
-	Ipp32f* greenPlane_ippi32_f = ippiMalloc_32f_C1(width,height,&psb2);
-
-    Ipp8u* redPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* bluePlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* yellowPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* greenPlane_ippi8u_f = ippiMalloc_8u_C1(width,height,&psb);
     
 	
     /*ippiConvert_8u32f_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi32,psb2,srcsize);
     ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
     ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);*/
+
+    ippiCopy_8u_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi,psb,srcsize);
+	ippiCopy_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi,psb,srcsize);
+    ippiCopy_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi,psb,srcsize);
 
     
     //Conversion planes in signed char
@@ -547,19 +586,7 @@ void rgbProcessorThread::colourOpponency(){
 	ippiConvert_8u32f_C1R(redPlane_ippi,psb,redPlane_ippi32,psb2,srcsize);
     
   
-	
-	
-    int pBufferSize;
-	ippiFilterGaussGetBufferSize_32f_C1R(srcsize, 3, &pBufferSize);
-	Ipp8u *pBufferBlue;
-	pBufferBlue = ippsMalloc_8u(pBufferSize);
-	Ipp8u *pBufferRed;
-	pBufferRed = ippsMalloc_8u(pBufferSize);
-	Ipp8u *pBufferGreen;
-	pBufferGreen = ippsMalloc_8u(pBufferSize);
-    
-	
-    
+
 	//ippiFilter possible variables for border ippBorderConst,ippBorderRepl,ippBorderWrap,ippBorderMirror,ippBorderMirrorR
 	Ipp32f value=0;
 	Ipp32f sigma=1;
@@ -583,7 +610,7 @@ void rgbProcessorThread::colourOpponency(){
 
     
     /*
-	//4.1 subtract the red from the green to obtain R+G-
+	//4.1 subtract the red from the gree    n to obtain R+G-
 	ippiSub_32f_C1R(redPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,greenRed_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
 	//4.2 subtract the green from the red to obtain G+R-
@@ -722,44 +749,7 @@ void rgbProcessorThread::colourOpponency(){
 	this->greenRed_flag=1;*/
 
     
-    //6. free memory space
-    ippiFree(bluePlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(redPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree (greenPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-    ippiFree(yellowPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-
-    ippiFree(redGreen_ippi);
-	ippiFree(blueYellow_ippi);
-	ippiFree(greenRed_ippi);
     
-    
-    ippiFree(bluePlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(redPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(yellowPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(greenPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-
-	ippiFree(redPlane_ippi32_f);
-	ippiFree(bluePlane_ippi32_f);
-	ippiFree(greenPlane_ippi32_f);
-	ippiFree(yellowPlane_ippi32_f);
-
-    ippiFree(redPlane_ippi8u_f);// = ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(bluePlane_ippi8u_f);// = ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(yellowPlane_ippi8u_f);// = ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(greenPlane_ippi8u_f);//= ippiMalloc_8u_C1(width,height,&psb);
-
-	ippiFree(redGreen_ippi32);
-	ippiFree(blueYellow_ippi32);
-	ippiFree(greenRed_ippi32);
-    
-	
-	ippiFree(redPlane_ippi32);
-	ippiFree(bluePlane_ippi32);
-	ippiFree(greenPlane_ippi32);
-	
-	ippsFree(pBufferBlue);
-	ippsFree(pBufferRed);
-	ippsFree(pBufferGreen);
     
 }
 

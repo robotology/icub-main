@@ -50,14 +50,12 @@ private:
     * temporary image mono for processing
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp;
-    /**
-    * temporary psb for processing
-    */
-    int psb;
-    /**
-    * port where the input image is read from
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inputPort;
+    
+    int psb; //temporary psb for processing
+    int psb2; //temporary psb for processing
+
+    
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inputPort; //port where the input image is read from
     /**
     * port where the red plane of the image is streamed
     */
@@ -102,22 +100,7 @@ private:
     * port where the uvchannel of the input image is streamed
     */
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > uvPort; 
-    /**
-    * temp variable for the plane extraction
-    */
-    Ipp32f* redPlane_ippi32_f; //
-    /**
-    * temp variable for the plane extraction
-    */
-    Ipp32f* bluePlane_ippi32_f; //
-    /**
-    * temp variable for the plane extraction
-    */
-    Ipp32f* yellowPlane_ippi32_f; //
-    /**
-    *temp variable for the plane extraction
-    */
-    Ipp32f* greenPlane_ippi32_f; //
+    
     /**
     * rootname of the module
     */
@@ -126,6 +109,25 @@ private:
     * pointers to channels for processing
     */
     unsigned char *pr,*pg,*pb,*py,*pu,*pv,*puv;
+
+
+    Ipp8u *redPlane_ippi,*greenPlane_ippi,*bluePlane_ippi,*yellowPlane_ippi;
+    Ipp8u *redGreen_ippi,*greenRed_ippi,*blueYellow_ippi;
+    Ipp8u *bluePlane_ippi_f,*redPlane_ippi_f,*yellowPlane_ippi_f,*greenPlane_ippi_f;
+
+    Ipp32f *redPlane_ippi32,*bluePlane_ippi32,*greenPlane_ippi32;
+	Ipp32f *redGreen_ippi32,*blueYellow_ippi32,*greenRed_ippi32;
+
+	Ipp32f *redPlane_ippi32_f,*bluePlane_ippi32_f,*greenPlane_ippi32_f,*yellowPlane_ippi32_f;
+    Ipp8u *redPlane_ippi8u_f,*bluePlane_ippi8u_f,*yellowPlane_ippi8u_f,*greenPlane_ippi8u_f;
+
+    Ipp8u *pBufferBlue;
+    Ipp8u *pBufferRed;
+    Ipp8u *pBufferGreen;
+        
+
+        
+       
     
     //_______________ private method  __________________________
 
