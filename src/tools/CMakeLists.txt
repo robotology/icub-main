@@ -3,12 +3,13 @@ add_subdirectory(dataDumper)
 add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
 
+#canLoader needs GtkPlus, but it contains a library needed by other modules
+add_subdirectory(canLoader)
+
 if(ICUB_USE_GtkPlus)
-	add_subdirectory(canLoader)
 	add_subdirectory(robotMotorGui)
 	add_subdirectory(iCubSkinGui)
 else(ICUB_USE_GtkPlus)
-	message(STATUS "GtkPlus not selected, skipping canLoader")
 	message(STATUS "GtkPlus not selected, skipping robotMotorGui")
 	message(STATUS "GtkPlus not selected, skipping iCubSkinGui")
 endif(ICUB_USE_GtkPlus)
