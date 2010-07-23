@@ -36,8 +36,6 @@ IF(PKG_CONFIG_FOUND AND NOT MSVC)
     ENDIF (GtkMM_FOUND)
 
 else(PKG_CONFIG_FOUND AND NOT MSVC)
-	message ("Running on windows msvc")
-
     SET(GTKMM_DIR $ENV{GTKMM_BASEPATH})
 
     # new vs. old style libraries detection (sort of fuzzy, temporary).
