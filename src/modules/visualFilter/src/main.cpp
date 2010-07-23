@@ -25,6 +25,10 @@
 
 #include "iCub/visualFilterModule.h" 
 
+using namespace yarp::os;
+using namespace yarp::sig;
+
+
 int main(int argc, char * argv[])
 {
    /* initialize yarp network */ 

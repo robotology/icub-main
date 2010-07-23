@@ -34,6 +34,10 @@
 
 #include "iCub/visualFilterModule.h"
 
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace std;
+
 
 bool visualFilterModule::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -143,7 +147,7 @@ bool visualFilterModule::configure(yarp::os::ResourceFinder &rf)
 
    attach(handlerPort);                  // attach to port
  
-   attachTerminal();                     // attach to terminal
+   //attachTerminal();                     // attaching to terminal has to be avoided
 
 
    /* create the thread and pass pointers to the module parameters */
@@ -164,6 +168,7 @@ bool visualFilterModule::interruptModule()
    imageIn.interrupt();
    imageOut.interrupt();
    handlerPort.interrupt();
+   vfThread->interrupted=true;
 
    return true;
 }
@@ -176,8 +181,8 @@ bool visualFilterModule::close()
    handlerPort.close();
 
    /* stop the thread */
-
    vfThread->stop();
+
 
    return true;
 }
@@ -228,65 +233,3 @@ double visualFilterModule::getPeriod()
    return 0.1;
 }
 
-visualFilterThread::visualFilterThread(BufferedPort<ImageOf<PixelRgb> > *imageIn, BufferedPort<ImageOf<PixelRgb> > *imageOut, int *threshold)
-{
-   imagePortIn    = imageIn;
-   imagePortOut   = imageOut;
-   thresholdValue = threshold;
-}
-
-bool visualFilterThread::threadInit() 
-{
-   /* initialize variables and create data-structures if needed */
-
-   return true;
-}
-
-void visualFilterThread::run(){
-
-   /* 
-    * do some work ....
-    * for example, convert the input image to a binary image using the threshold provided 
-    */ 
-   
-   unsigned char value;
-
-   while (isStopping() != true) { // the thread continues to run until isStopping() returns true
- 
-      cout << "visualFilterThread: threshold value is " << *thresholdValue << endl;
-      
-      do {
-         image = imagePortIn->read(true);
-      } while (image == NULL);
-      
-      ImageOf<PixelRgb> &binary_image = imagePortOut->prepare();
-      binary_image.resize(image->width(),image->height());
-
-      for (x=0; x<image->width(); x++) {
-         for (y=0; y<image->height(); y++) {
-
-             rgbPixel = image->safePixel(x,y);
-
-             if (((rgbPixel.r + rgbPixel.g + rgbPixel.b)/3) > *thresholdValue) {
-                value = (unsigned char) 255;
-             }
-             else {
-                value = (unsigned char) 0;
-             }
-
-             rgbPixel.r = value;
-             rgbPixel.g = value;
-             rgbPixel.b = value;
-
-             binary_image(x,y) = rgbPixel;
-          }
-       }
-
-       imagePortOut->write();
-   }
-}
-
-void visualFilterThread::threadRelease() 
-{
-   /* for example, delete dynamically created data-structures */
-}

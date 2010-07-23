@@ -1,3 +1,7 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+#ifndef _VISUAL_FILTER_MODULE_H_
+#define _VISUAL_FILTER_MODULE_H_
+
 /** 
  * @ingroup icub_module
  *
@@ -164,8 +168,6 @@
  */ 
 
 
-#ifndef __ICUB_MYMODULE_MODULE_H__
-#define __ICUB_MYMODULE_MODULE_H__
 
 #include <iostream>
 #include <string>
@@ -176,48 +178,20 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Thread.h>
  
-using namespace std;
-using namespace yarp::os; 
-using namespace yarp::sig;
-  
-class visualFilterThread : public Thread
-{
-private:
+//within project includes  
+#include <iCub/visualFilterThread.h>
 
-   /* class variables */
-
-   int      x, y;
-   PixelRgb rgbPixel;
-   ImageOf<PixelRgb> *image;
-  	    
-   /* thread parameters: they are pointers so that they refer to the original variables in myModule */
-
-   BufferedPort<ImageOf<PixelRgb> > *imagePortIn;
-   BufferedPort<ImageOf<PixelRgb> > *imagePortOut;   
-   int *thresholdValue;     
-
-public:
-
-   /* class methods */
-
-   visualFilterThread(BufferedPort<ImageOf<PixelRgb> > *imageIn,  BufferedPort<ImageOf<PixelRgb> > *imageOut, int *threshold );
-   bool threadInit();     
-   void threadRelease();
-   void run(); 
-};
-
-
-class visualFilterModule:public RFModule
+class visualFilterModule:public yarp::os::RFModule
 {
    /* module parameters */
 
-   string moduleName;
-   string robotName; 
-   string robotPortName;  
-   string inputPortName;
-   string outputPortName;  
-   string handlerPortName;
-   string cameraConfigFilename;
+   std::string moduleName;
+   std::string robotName; 
+   std::string robotPortName;  
+   std::string inputPortName;
+   std::string outputPortName;  
+   std::string handlerPortName;
+   std::string cameraConfigFilename;
    float  fxLeft,  fyLeft;          // focal length
    float  fxRight, fyRight;         // focal length
    float  cxLeft,  cyLeft;          // coordinates of the principal point
@@ -226,9 +200,9 @@ class visualFilterModule:public RFModule
 
    /* class variables */
 
-   BufferedPort<ImageOf<PixelRgb> > imageIn;      //example input port
-   BufferedPort<ImageOf<PixelRgb> > imageOut;     //example output port
-   Port handlerPort;      //a port to handle messages 
+   yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageIn;      //example input port
+   yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageOut;     //example output port
+   yarp::os::Port handlerPort;      //a port to handle messages 
 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */
 
@@ -240,12 +214,13 @@ public:
    bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
    bool interruptModule();                       // interrupt, e.g., the ports 
    bool close();                                 // close and shut down the module
-   bool respond(const Bottle& command, Bottle& reply);
+   bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
    double getPeriod(); 
    bool updateModule();
 };
 
 
-#endif // __ICUB_MYMODULE_MODULE_H__
-//empty line to make gcc happy
+#endif // __VISUAL_FILTER_MODULE_H__
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
 
