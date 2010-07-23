@@ -123,6 +123,8 @@ public:
 	int *_velocityTimeout;                      /** velocity shifts */
 	int *_torqueSensorId;						/** Id of associated Joint Torque Sensor */
 	int *_torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
+	double *_maxTorque;						    /** Max torque of a joint */
+	double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
 };
 
 class AnalogData
@@ -252,6 +254,13 @@ public:
 		{return useCalibration;}
 	double* getScaleFactor()
 		{return scaleFactor;}
+	double getScaleFactor(int chan)
+		{
+			if (chan>=0 && chan<data->size())
+				return scaleFactor[chan];
+			else
+				return 0;
+		}
 
     bool open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualSensor);
 
@@ -268,25 +277,45 @@ class axisTorqueHelper
 	int  jointsNum;
 	int* torqueSensorId;						/** Id of associated Joint Torque Sensor */
 	int* torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
+	double* maximumTorque;
+	double* newtonsToSensor;
 
 	public:
-	axisTorqueHelper(int njoints, int* id, int* chan);
-	inline int getTorqueSensorId (int id)
+	axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens );
+	inline int getTorqueSensorId (int jnt)
 	{
-		if (id>=0 && id<jointsNum) return torqueSensorId[id];
+		if (jnt>=0 && jnt<jointsNum) return torqueSensorId[jnt];
 		return 0;
 	}						
-	inline int getTorqueSensorChan (int chan)
+	inline int getTorqueSensorChan (int jnt)
 	{
-		if (chan>=0 && chan<jointsNum) return torqueSensorChan[chan];
+		if (jnt>=0 && jnt<jointsNum) return torqueSensorChan[jnt];
 		return 0;
+	}
+	inline double getMaximumTorque (int jnt)
+	{
+		if (jnt>=0 && jnt<jointsNum) return maximumTorque[jnt];
+		return 0;
+	}						
+	inline double getNewtonsToSensor (int jnt)
+	{
+		if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
+		return 0;
+	}
+	inline int getNumberOfJoints ()
+	{ 
+		return jointsNum;
 	}
 	inline ~axisTorqueHelper()
 	{
 		delete [] torqueSensorId;
 		delete [] torqueSensorChan;
+		delete [] maximumTorque;
+		delete [] newtonsToSensor;
 		torqueSensorId=0;						
 		torqueSensorChan=0;						
+		maximumTorque=0;						
+		newtonsToSensor=0;						
 	}
 };
 

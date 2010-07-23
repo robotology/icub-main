@@ -503,11 +503,13 @@ void CanBackDoor::onRead(Bottle &b)
     semaphore->post();
 }
 
-axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan)
+axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens )
 {
 	jointsNum=njoints;
 	torqueSensorId = new int [jointsNum];
 	torqueSensorChan = new int [jointsNum];
+	maximumTorque = new double [jointsNum];
+	newtonsToSensor = new double [jointsNum];
 	if (id!=0)
         memcpy(torqueSensorId, id, sizeof(int)*jointsNum);
     else
@@ -516,6 +518,15 @@ axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan)
         memcpy(torqueSensorChan, chan, sizeof(int)*jointsNum);
     else
         memset(torqueSensorChan, 0, sizeof(int)*jointsNum);
+	if (maxTrq!=0)
+        memcpy(maximumTorque, maxTrq, sizeof(double)*jointsNum);
+    else
+		memset(maximumTorque, 0, sizeof(double)*jointsNum);
+	if (newtons2sens!=0)
+        memcpy(newtonsToSensor, newtons2sens, sizeof(double)*jointsNum);
+    else
+        memset(newtonsToSensor, 0, sizeof(double)*jointsNum);
+
 }
 
 AnalogSensor::AnalogSensor():
@@ -925,6 +936,25 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 		for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
 	}
 
+	xtmp = p.findGroup("GENERAL").findGroup("TorqueMax","full scale value for a joint torque sensor");
+    if (xtmp.size() != nj+1)
+	{
+        printf("TorqueMax does not have the right number of entries. Using default value = 0\n");
+        for(i=1;i<nj+1; i++) 
+			{
+				_maxTorque[i-1] = 0;
+				_newtonsToSensor[i-1]=1;
+			}
+    }
+	else
+	{
+		for (i = 1; i < xtmp.size(); i++) 
+			{
+				_maxTorque[i-1] = xtmp.get(i).asInt();
+				_newtonsToSensor[i-1] = double(0x8000)/double(_maxTorque[i-1]);
+			}
+	}
+
 	////// PIDS
     int j=0;
     for(j=0;j<nj;j++)
@@ -1089,6 +1119,8 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _velocityTimeout=0;
     _torqueSensorId=0;						
 	_torqueSensorChan=0;	
+	_maxTorque=0;
+	_newtonsToSensor=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1111,6 +1143,8 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _zeros = allocAndCheck<double>(nj);
     _torqueSensorId= allocAndCheck<int>(nj);					
 	_torqueSensorChan= allocAndCheck<int>(nj);
+	_maxTorque=allocAndCheck<double>(nj);
+	_newtonsToSensor=allocAndCheck<double>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
 	_tpids=allocAndCheck<Pid>(nj);
@@ -1154,6 +1188,8 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_velocityTimeout);
     checkAndDestroy<int>(_torqueSensorId);					
 	checkAndDestroy<int>(_torqueSensorChan);
+	checkAndDestroy<double>(_maxTorque);					
+	checkAndDestroy<double>(_newtonsToSensor);
 
     checkAndDestroy<Pid>(_pids);
 	checkAndDestroy<Pid>(_tpids);
@@ -1576,9 +1612,9 @@ bool CanBusMotionControl::open (Searchable &config)
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
-	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-	_axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan);
-	ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
+	_axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
+	ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
 	
     // temporary variables used by the ddriver.
@@ -1614,7 +1650,6 @@ bool CanBusMotionControl::open (Searchable &config)
         disablePid(i);
         disableAmp(i);
     }
-
     Bottle analogList=config.findGroup("analog").tail();
     //    if (analogList!=0)
         if (analogList.size()>0)
@@ -1625,11 +1660,12 @@ bool CanBusMotionControl::open (Searchable &config)
 
                 AnalogSensor *as=instantiateAnalog(config, analogId);
                 if (as!=0)
-                    analogSensors.push_back(as);
+					{
+						analogSensors.push_back(as);
+					}
             }
 
         }
-
     threadPool = new ThreadPool2(res.iBufferFactory);
 
     RateThread::setRate(p._polling_interval);
@@ -1662,7 +1698,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         char analogFormat=analogConfig.find("Format").asInt();
         int analogChannels=analogConfig.find("Channels").asInt();
 		int analogCalibration=analogConfig.find("UseCalibration").asInt();
-		int SensorFullScale=analogConfig.find("FullScale").asInt();
+		//int SensorFullScale=analogConfig.find("FullScale").asInt();
 
 		if (analogConfig.check("PortName"))
 		{
@@ -1754,17 +1790,21 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 									        break;
 								        }
 					        }
-					        yarp::os::Time::delay(0.001);
+					        yarp::os::Time::delay(0.002);
 					        timeout++;
 				        }
 				        while(timeout<32 && full_scale_read==false);
 
-				        if (full_scale_read==false) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost (ch:%d)\n", ch);
+				        if (full_scale_read==false) 
+							{							
+								fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
+								yarp::os::Time::delay(3);
+							}
 			        }
 
                     // debug messages
 		            #if 1
-			             fprintf(stderr, "Sensor Fullscale: ");
+			             fprintf(stderr, "Sensor Fullscale Id %#4X: ",analogId);
 			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[0]);
 			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[1]);
 			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[2]);
@@ -1798,14 +1838,27 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 		else if (analogChannels==6 && analogFormat==16 && isVirtualSensor==true)
 		{	
 			//set the full scale values for a VIRTUAL sensor
-			for (int ch=0; ch<6; ch++)
+			for (int jnt=0; jnt<_axisTorqueHelper->getNumberOfJoints(); jnt++)
 			{
-				analogSensor->getScaleFactor()[ch]=SensorFullScale;
+				int cfgId     = _axisTorqueHelper->getTorqueSensorId(jnt);
+				int cfgChan   = _axisTorqueHelper->getTorqueSensorChan(jnt);
+				if (cfgId == analogId)
+				{
+					for (int ch=0; ch<6; ch++)
+					{
+						if (cfgChan == ch)
+						{
+							double maxTrq = _axisTorqueHelper->getMaximumTorque(jnt);
+							analogSensor->getScaleFactor()[ch]=maxTrq;
+							break;
+						}
+					}
+				}
 			}
 
 	        // debug messages
             #if 1
-	             fprintf(stderr, "Sensor Fullscale: ");
+				 fprintf(stderr, "Sensor Fullscale Id %#4X: ",analogId);
 	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[0]);
 	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[1]);
 	             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[2]);
@@ -2987,7 +3040,8 @@ bool CanBusMotionControl::setRefTorqueRaw (int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    return _writeDWord (CAN_SET_DESIRED_TORQUE, axis, S_32(ref));
+	//I'm sending a DWORD but the value MUST be clamped to S_16. Do not change.
+    return _writeDWord (CAN_SET_DESIRED_TORQUE, axis, S_16(ref));
 }
 
 /// cmd is a SingleAxis pointer with 1 double arg
@@ -3047,7 +3101,8 @@ bool CanBusMotionControl::setRefTorquesRaw (const double *refs)
     int i;
     for (i = 0; i < r.getJoints(); i++)
     {
-        if (_writeDWord (CAN_SET_DESIRED_TORQUE, i, S_32(refs[i])) != true)
+		//I'm sending a DWORD but the value MUST be clamped to S_16. Do not change.
+        if (_writeDWord (CAN_SET_DESIRED_TORQUE, i, S_16(refs[i])) != true)
             return false;
     }
 
