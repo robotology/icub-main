@@ -101,7 +101,11 @@ bool OptFlowEMD::close(){
 
 void OptFlowEMD::calculate_flow(IplImage* imageT, IplImage* imageTMinus1, IplImage* velx, IplImage* vely, IplImage* abs){
 
+#ifdef __CV_BEGIN__
+     __CV_BEGIN__
+#else
      __BEGIN__
+#endif
             
     CV_FUNCNAME( "OptFlowGenGrad::calculate_flow" );
     
@@ -168,7 +172,11 @@ void OptFlowEMD::calculate_flow(IplImage* imageT, IplImage* imageTMinus1, IplIma
                                 NULL));
     }
     
+#ifdef __CV_END__
+    __CV_END__
+#else
     __END__
+#endif
      
 }
 
