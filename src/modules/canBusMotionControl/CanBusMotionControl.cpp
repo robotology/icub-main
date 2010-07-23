@@ -1505,8 +1505,8 @@ bool CanBusMotionControl::open (Searchable &config)
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
-	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-	ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, 0);
+	ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, 0);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
 	
     // temporary variables used by the ddriver.
