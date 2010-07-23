@@ -26,7 +26,8 @@ ENDIF (GTKPLUS_C_FLAG)
 
 FIND_PACKAGE(PkgConfig)
 
-IF(PKG_CONFIG_FOUND)
+IF(PKG_CONFIG_FOUND AND NOT MSVC)
+	message ("Still find package!")
     PKG_CHECK_MODULES(GtkMM gtkmm-2.4)
     IF (GtkMM_FOUND)
         MESSAGE(STATUS " pkg-config found gtkmm")
@@ -34,7 +35,9 @@ IF(PKG_CONFIG_FOUND)
         MESSAGE(STATUS " pkg-config could not find gtkmm")
     ENDIF (GtkMM_FOUND)
 
-else(PKG_CONFIG_FOUND)
+else(PKG_CONFIG_FOUND AND NOT MSVC)
+	message ("Running on windows msvc")
+
     SET(GTKMM_DIR $ENV{GTKMM_BASEPATH})
 
     # new vs. old style libraries detection (sort of fuzzy, temporary).
@@ -189,5 +192,9 @@ else(PKG_CONFIG_FOUND)
     SET (GTKMM_TMP_DBG GTKMM_TMP_REL-NOTFOUND CACHE INTERNAL "")
     SET (GTKMM_TMP_REL GTKMM_TMP_DBG-NOTFOUND CACHE INTERNAL "")
     SET (GTKMM_TMP GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
+	
+	set(GtkMM_LIBRARIES ${GTKMM_LIBRARIES} CACHE INTERNAL "")
+	set(GtkMM_INCLUDE_DIRS ${GtkMM_INCLUDE_DIRS} CACHE INTERNAL "")
+		
+endif(PKG_CONFIG_FOUND AND NOT MSVC)
 
-endif(PKG_CONFIG_FOUND)
