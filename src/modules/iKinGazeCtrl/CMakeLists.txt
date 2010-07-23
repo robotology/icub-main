@@ -2,10 +2,6 @@ SET(PROJECTNAME iKinGazeCtrl)
 
 PROJECT(${PROJECTNAME})
 
-IF(NOT ICUB_USE_IPOPT)
-   MESSAGE(FATAL_ERROR "${PROJECTNAME}: IPOPT is strictly required!")
-ENDIF(NOT ICUB_USE_IPOPT)
-
 SET(folder_header include/iCub/gazeNlp.hpp
                   include/iCub/utils.hpp
                   include/iCub/solver.hpp

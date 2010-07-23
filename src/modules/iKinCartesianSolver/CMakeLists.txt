@@ -2,10 +2,6 @@ SET(PROJECTNAME iKinCartesianSolver)
 
 PROJECT(${PROJECTNAME})
 
-IF(NOT ICUB_USE_IPOPT)
-   MESSAGE(FATAL_ERROR "${PROJECTNAME}: IPOPT is strictly required!")
-ENDIF(NOT ICUB_USE_IPOPT)
-
 SET(folder_source main.cpp)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})

@@ -2,10 +2,6 @@ SET(PROJECTNAME indepMotionDetector)
 
 PROJECT(${PROJECTNAME})
 
-IF(NOT ICUB_USE_OpenCV)
-   MESSAGE(FATAL_ERROR "${PROJECTNAME}: OpenCV is strictly required!")
-ENDIF(NOT ICUB_USE_OpenCV)
-
 SET(folder_source main.cpp)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
