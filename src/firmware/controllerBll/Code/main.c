@@ -447,10 +447,10 @@ void main(void)
 
 //******************************************* COMPUTES CONTROLS *****************************/
 		
-		for (i=0; i<JN; i++) _debug1[i] = PWMoutput[i] = compute_pwm(i);
+		for (i=0; i<JN; i++) _bfc_PWMoutput[i] = PWMoutput[i] = compute_pwm(i);
 
 //		decouple PWM	
-		//decouple_dutycycle_new(PWMoutput);   //new version (july 2010) with torque decupling
+		//decouple_dutycycle_new_joint(PWMoutput);   //new version (july 2010) with torque decupling
 		decouple_dutycycle(PWMoutput);     //previous version
 
 		/* PWM filtering */
