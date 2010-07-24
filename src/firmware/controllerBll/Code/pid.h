@@ -75,6 +75,7 @@ extern Int16   _version ;
 extern bool    _pending_request ;			// whether a request to another card is pending 
 extern Int16   _timeout ;					// used to timeout requests 
 extern Rec_Pid _received_pid[JN];
+extern Int32   _bfc_PWMoutput [JN];
 
 // DEBUG VARIABLES
 extern byte  _t1c;                      // general purpouse counter

@@ -37,6 +37,7 @@ bool    _verbose = false;
 bool    _pending_request = false;					// whether a request to another card is pending 
 Int16   _timeout = 0;								// used to timeout requests 
 Rec_Pid _received_pid[JN];
+Int32   _bfc_PWMoutput [JN] = INIT_ARRAY (0);
 
 // DEBUG VARIABLES
 Int16 _debug1[JN] = INIT_ARRAY (0); 		 	// general purpouse debug
