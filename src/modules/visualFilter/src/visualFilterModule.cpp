@@ -39,136 +39,120 @@ using namespace yarp::sig;
 using namespace std;
 
 
-bool visualFilterModule::configure(yarp::os::ResourceFinder &rf)
-{    
-   /* Process all parameters from both command-line and .ini file */
+bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {    
+    /* Process all parameters from both command-line and .ini file */
 
-   /* get the module name which will form the stem of all module port names */
+    /* get the module name which will form the stem of all module port names */
 
-   moduleName            = rf.check("name", 
+    moduleName            = rf.check("name", 
                            Value("myModule"), 
                            "module name (string)").asString();
 
-   /*
+    /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
     */
-   
-   setName(moduleName.c_str());
 
-   /* now, get the rest of the parameters */
+    setName(moduleName.c_str());
 
-   /*
+    /* now, get the rest of the parameters */
+
+    /*
     * get the robot name which will form the stem of the robot ports names
     * and append the specific part and device required
     */
 
-   robotName             = rf.check("robot", 
+    robotName             = rf.check("robot", 
                            Value("icub"), 
                            "Robot name (string)").asString();
 
-   robotPortName         = "/" + robotName + "/head";
+    robotPortName         = "/" + robotName + "/head";
 
-   /* 
+    /* 
     * get the cameraConfig file and read the required parameter values cx, cy 
     * in both the groups [CAMERA_CALIBRATION_LEFT] and [CAMERA_CALIBRATION_RIGHT]
     */
 
-   cameraConfigFilename  = rf.check("cameraConfig", 
+    cameraConfigFilename  = rf.check("cameraConfig", 
                            Value("icubEyes.ini"), 
                            "camera configuration filename (string)").asString();
 
-   cameraConfigFilename = (rf.findFile(cameraConfigFilename.c_str())).c_str();
+    cameraConfigFilename = (rf.findFile(cameraConfigFilename.c_str())).c_str();
 
-   Property cameraProperties;
+    Property cameraProperties;
 
-   if (cameraProperties.fromConfigFile(cameraConfigFilename.c_str()) == false) {
+    if (cameraProperties.fromConfigFile(cameraConfigFilename.c_str()) == false) {
       cout << "myModule: unable to read camera configuration file" << cameraConfigFilename;
       return 0;
-   }
-   else {
+    }
+    else {
       cxLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cx", Value(160.0), "cx left").asDouble();
       cyLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cy", Value(120.0), "cy left").asDouble();
       cxRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cx", Value(160.0), "cx right").asDouble();
       cyRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cy", Value(120.0), "cy right").asDouble();
-   }
+    }
 
 
-   /* get the name of the input and output ports, automatically prefixing the module name by using getName() */
+    /* get the name of the input and output ports, automatically prefixing the module name by using getName() */
 
-   inputPortName         = "/";
-   inputPortName        += getName(
+    inputPortName         = "/";
+    inputPortName        += getName(
                            rf.check("myInputPort", 
                            Value("/image:i"),
                            "Input image port (string)").asString()
                            );
-   
-   outputPortName        = "/";
-   outputPortName       += getName(
+
+    outputPortName        = "/";
+    outputPortName       += getName(
                            rf.check("myOutputPort", 
                            Value("/image:o"),
                            "Output image port (string)").asString()
                            );
 
 
-   /* get the threshold value */
+    /* get the threshold value */
 
-   thresholdValue        = rf.check("threshold",
+    thresholdValue        = rf.check("threshold",
                            Value(8),
                            "Key value (int)").asInt();
 
 
-   /* do all initialization here */
+    /* do all initialization here */
      
-   /* open ports  */ 
-       
-   if (!imageIn.open(inputPortName.c_str())) {
-      cout << getName() << ": unable to open port " << inputPortName << endl;
-      return false;  // unable to open; let RFModule know so that it won't run
-   }
 
-   if (!imageOut.open(outputPortName.c_str())) {
-      cout << getName() << ": unable to open port " << outputPortName << endl;
-      return false;  // unable to open; let RFModule know so that it won't run
-   }
 
-   /*
+    /*
     * attach a port of the same name as the module (prefixed with a /) to the module
     * so that messages received from the port are redirected to the respond method
     */
 
-   handlerPortName =  "/";
-   handlerPortName += getName();         // use getName() rather than a literal 
- 
-   if (!handlerPort.open(handlerPortName.c_str())) {           
+    handlerPortName =  "";
+    handlerPortName += getName();         // use getName() rather than a literal 
+
+    if (!handlerPort.open(handlerPortName.c_str())) {           
       cout << getName() << ": Unable to open port " << handlerPortName << endl;  
       return false;
-   }
+    }
 
-   attach(handlerPort);                  // attach to port
- 
-   //attachTerminal();                     // attaching to terminal has to be avoided
+    attach(handlerPort);                  // attach to port
 
 
-   /* create the thread and pass pointers to the module parameters */
 
-   vfThread = new visualFilterThread(&imageIn, &imageOut, &thresholdValue);
+    /* create the thread and pass pointers to the module parameters */
+    vfThread = new visualFilterThread();
+    vfThread->setName(getName().c_str());
+    /* now start the thread to do the work */
+    vfThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
-   /* now start the thread to do the work */
-
-   vfThread->start(); // this calls threadInit() and it if returns true, it then calls run()
-
-   return true ;      // let the RFModule know everything went well
+    return true ;      // let the RFModule know everything went well
                       // so that it will then run the module
 }
 
 
 bool visualFilterModule::interruptModule()
 {
-   imageIn.interrupt();
-   imageOut.interrupt();
+   
    handlerPort.interrupt();
-   vfThread->interrupted=true;
 
    return true;
 }
@@ -176,14 +160,11 @@ bool visualFilterModule::interruptModule()
 
 bool visualFilterModule::close()
 {
-   imageIn.close();
-   imageOut.close();
+  
    handlerPort.close();
 
    /* stop the thread */
    vfThread->stop();
-
-
    return true;
 }
 

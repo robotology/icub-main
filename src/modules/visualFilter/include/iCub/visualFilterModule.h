@@ -5,7 +5,7 @@
 /** 
  * @ingroup icub_module
  *
- * \defgroup icub_myModule myModule
+ * \defgroup icub_visualFilter visualFilter
  *
  * This is a simple example to illustrate a module that is compliant with iCub Software Standards, addressing:
  *
@@ -200,8 +200,7 @@ class visualFilterModule:public yarp::os::RFModule
 
    /* class variables */
 
-   yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageIn;      //example input port
-   yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageOut;     //example output port
+  
    yarp::os::Port handlerPort;      //a port to handle messages 
 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */
