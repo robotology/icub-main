@@ -131,6 +131,12 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 # Create everything needed to build our executable.
 add_subdirectory(src)
 
+set(ICUB_EXPERIMENTAL_APP_INSTALL FALSE CACHE BOOL "Turn on app install experimental feature")
+
+if (ICUB_EXPERIMENTAL_APP_INSTALL)
+	add_subdirectory(app)
+endif(ICUB_EXPERIMENTAL_APP_INSTALL)
+
 # export the installed project 
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
 
@@ -146,7 +152,10 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
 						FindGtkMMWin32.cmake
 						FindIPOPT.cmake
 						FindODE.cmake
-						FindIPP.cmake)
+						FindIPP.cmake
+						FindQt3.cmake
+						FindGLUT.cmake
+						FindOpenGL.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
