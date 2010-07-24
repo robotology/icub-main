@@ -9,53 +9,65 @@
 			<node>console</node>
 			<tag>wholeBody_tqObs</tag>
    	</module>
+	<module>
+      		<name>gravityCompensator</name>
+      		<!--parameters></parameters-->
+			<node>console</node>
+			<stdio>console</stdio>
+			<tag>gComp</tag>
+   	</module>
         <connection>
                 <from>/filtered/inertial:o</from>
                 <to>/wholebody/inertial:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/filtered/inertial:o</from>
+                <to>/wholebody_gComp/inertial:i</to>
+                <protocol>udp</protocol>
         </connection>
 
         <connection>
                 <from>/icub/left_arm/analog:o</from>
                 <to>/wholebody/left_arm/FT:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_arm/analog:o</from>
                 <to>/wholebody/right_arm/FT:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/left_leg/analog:o</from>
                 <to>/wholebody/left_leg/FT:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_leg/analog:o</from>
                 <to>/wholebody/right_leg/FT:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
 		
 		
         <connection>
                 <from>/wholebody/left_arm/Torques:o</from>
                 <to>/icub/joint_vsens/left_arm:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/wholebody/right_arm/Torques:o</from>
                 <to>/icub/joint_vsens/right_arm:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/wholebody/left_leg/Torques:o</from>
                 <to>/icub/joint_vsens/left_leg:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/wholebody/right_leg/Torques:o</from>
                 <to>/icub/joint_vsens/right_leg:i</to>
-                <protocol>tcp</protocol>
+                <protocol>udp</protocol>
         </connection>
 		
 <!-- <connection>             <from>/icub/left_arm/FT:o</from>                <to>/icub/left_arm/FT:i</to>                 <protocol>udp</protocol>        </connection> -->
