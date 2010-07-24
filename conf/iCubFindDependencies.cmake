@@ -13,6 +13,10 @@ macro(checkandset_dependency package)
           set(ICUB_USE_${package} FALSE CACHE BOOL "Use package ${package}")
     endif (${package}_FOUND)
     mark_as_advanced(ICUB_HAS_${package})
+    
+    if (NOT ${package}_FOUND AND ICUB_USE_${package})
+        message("Warning: you requested to use the package ${package}, but it is unavailable (or was not found). This might lead to compile errors, we recommend you turn off the ICUB_USE_${package} flag.") 
+    endif (NOT ${package}_FOUND AND ICUB_USE_${package})
 endmacro (checkandset_dependency)
 
 
