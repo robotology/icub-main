@@ -2766,10 +2766,7 @@ bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
 		r.startPacket();
 		r.addMessage (CAN_SET_IMPEDANCE_OFFSET, axis);
 		*((short *)(r._writeBuffer[0].getData()+1)) = S_16(off);
-		*((short *)(r._writeBuffer[0].getData()+3)) = 0;
-		*((short *)(r._writeBuffer[0].getData()+5)) = 0;
-		*((short *)(r._writeBuffer[0].getData()+7)) = 0;
-		r._writeBuffer[0].setLen(8);
+		r._writeBuffer[0].setLen(3);
 		r.writePacket();
     _mutex.post();
 
