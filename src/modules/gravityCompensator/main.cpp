@@ -1,72 +1,40 @@
 /**
 @ingroup icub_module
 
-\defgroup wrenchObserver wrenchObserver
+\defgroup gravityCompensator gravityCompensator
  
-Estimates the external forces and torques acting at the end effector
-through a model based estimation of the robot dynamics
+Estimates the gravitational contribute to motors based on estimation of the robot dynamics
  
 Copyright (C) 2008 RobotCub Consortium
  
 Author: Matteo Fumagalli
  
-Date: first release 8/07/2010 
+Date: first release 24/07/2010 
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
 
-This module estimates the external wrench acting at the end
-effector of the iCub limbs, through a model based compensation 
-of the 6-axis force/torque (FT) sensor's measurements, which are 
-acquired through an input YARP port and provides them to an 
-output YARP ports.
+This module estimates the gravitational term acting on joints due to links weight.
 The estimation is perfomed relying on rigid body dynamics using CAD 
 parameters. 
-The intrinsic offsets of the sensors, which are due to the stresses
-generated during mounting, are defined by the first FT data. In the 
-future it will also be given the possibility to set the offsets of 
-the sensors.
-The model of the sensor measurements consider a fixed base, with z-axis 
-pointing upwards. The estimation of the external wrench applied at the 
-end-effector of the limb has the same orientation of the fixed base frame.
- 
 \section lib_sec Libraries 
 - YARP libraries. 
-- ctrlLib library. 
-- iKin library.
 - iDyn library.  
 
 \section parameters_sec Parameters
 
---name \e name 
-- The parameter \e name identifies the module's name; all the 
-  open ports will be tagged with the prefix <name>/. If not
-  specified \e /ftObs is assumed.
-
-  --robot
-- The parameter \e robot identifies the robot that is used. This parameter defines the
-  prefix of the ports of the device. As default \e icub is used. 
-
---part  
-- The parameter \e part identifies the part of the robot which is used. All the opened 
-  ports will deal with the part which is defined. the default value is \e left_arm 
-
 --rate \e r 
 - The parameter \e r identifies the rate the thread will work. If not
-  specified \e 100ms is assumed. The minimum suggested rate is \e 20ms.
+  specified \e 20ms is assumed. The minimum suggested rate is \e 20ms.
 
 \section portsa_sec Ports Accessed
 The port the service is listening to.
 
 \section portsc_sec Ports Created
  
-- \e <name>/<part>/FT:i (e.g. /ftObs/right_arm/FT:i) receives the input data 
-  vector.
+- \e /wholebody_gComp/inertial:i 
  
-- \e <name>/<part>/wrench:o (e.g. /ftObs/right_arm/wrench:o) provides the estimated 
-  end-effector wrench.
-
 \section in_files_sec Input Data Files
 None.
 
@@ -83,24 +51,14 @@ Linux and Windows.
 By launching the following command: 
  
 \code 
-wrenchObserver --name ftObs --robot icub --part right_arm --rate 50  
+gravityCompensator --rate 50  
 \endcode 
  
-the module will create the listening port /ftObs/right_arm/FT:i for 
-the acquisition of data vector coming for istance from the right arm analog port.
-At the same time it will provide the estimated 
-external wrench at the end-effector to /ftObs/right_arm/wrench:o port. (use --help option to 
-see). 
- 
-Try now the following: 
- 
-\code 
-yarp connect /icub/right_arm/analog:o /ftObs/right_arm/FT:i
-\endcode 
- 
+the module add offset values which are assigned to the IImpedanceControl interface and ITorqueControl interface
+  
 \author Matteo Fumagalli
 
-This file can be edited at \in src/wrenchObserver/main.cpp.
+This file can be edited at \in src/gravityCompensator/main.cpp.
 */ 
 
 #include <yarp/os/BufferedPort.h>
