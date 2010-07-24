@@ -1,3 +1,14 @@
+# Author: Lorenzo Natale
+# Wrap kitware's original FindGLUT script to work on windows with
+# binary distribution. Standardize varibles.
+#
+# In windows require you set GLUT_DIR
+#
+# Set: 
+# GLUT_FOUND
+# GLUT_LIBRARIES
+# GLUT_INCLUDE_DIRS
+
 #message(Find GLUT form iCub package)
 
 # save current CMAKE_MODULE_PATH, disable it 

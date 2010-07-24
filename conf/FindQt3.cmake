@@ -1,3 +1,13 @@
+# Author: Lorenzo Natale
+# Wrap kitware's original FindQt3 script. Standardize varibles.
+#
+# In windows require you set Qt3_DIR
+#
+# Set: 
+# Qt3_FOUND
+# Qt3_LIBRARIES
+# Qt3_INCLUDE_DIRS
+
 #message(Find Qt3 form iCub package)
 
 # save current CMAKE_MODULE_PATH, disable it 
