@@ -14,6 +14,7 @@ add_subdirectory(velocityControl)
 add_subdirectory(velocityObserver)
 #add_subdirectory(visualFilter)
 add_subdirectory(wholeBodyTorqueObserver)
+add_subdirectory(gravityCompensator)
 add_subdirectory(wrenchObserver)
 add_subdirectory(eye2world)
 
