@@ -5,7 +5,7 @@
 /** 
  * @ingroup icub_module
  *
- * \defgroup icub_Module myModule
+ * \defgroup icub_demo demo
  *
  * This is a simple example to illustrate a module that is compliant with iCub Software Standards, addressing:
  *
@@ -51,11 +51,11 @@
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - \c myInputPort \c /image:i \n    
+ * - \c myInputPort \c /demo/image:i \n    
  *   specifies the input port name (this string will be prefixed by \c /myModule 
  *   or whatever else is specifed by the name parameter
  *
- * - \c myOutputPort \c /image:o \n  
+ * - \c myOutputPort \c /demo/image:o \n  
  *   specifies the output port name (this string will be prefixed by \c /myModule 
  *   or whatever else is specifed by the name parameter
  *
@@ -63,7 +63,7 @@
  *   specifies the camera configuration file containing the intrinsic parameters of
  *   the left and right cameras
  *
- * - \c threshold \c 7 \n           
+ * - \c threshold \c 8 \n           
  *   specifies the threshold value
  *
  * 
@@ -125,11 +125,11 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>myModule --name myModule --context myModule/conf --from myModule.ini --robot icub</tt>
+ * <tt>demo --name demo --context demo/conf --from demo.ini --robot icub</tt>
  *
  * \author 
  * 
- * David Vernon
+ * Francesco Rea
  * 
  * Copyright (C) 2009 RobotCub Consortium
  * 
@@ -157,16 +157,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
-
-
-/*
- * Audit Trail
- * -----------
- * 26/08/09  First version validated   DV
- * 12/09/09  Added functionality to read additional configuration file DV
- * 21/09/09  Removed code to replace a double / ("//") in a path as this is now done in getName() DV
- */ 
-
+ 
 
 
 #include <iostream>
