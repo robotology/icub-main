@@ -573,30 +573,35 @@ void can_send_broadcast(void)
 		_canmsg.CAN_data[1] = BYTE_L(_pid[0]);
 		_canmsg.CAN_data[2] = BYTE_H(_pid[1]);
 		_canmsg.CAN_data[3] = BYTE_L(_pid[1]);
-				
+
+
+#ifdef USE_NEW_DECOUPLING
+		_canmsg.CAN_data[4] = BYTE_H((Int16)(_bfc_PWMoutput[0]));
+		_canmsg.CAN_data[5] = BYTE_L((Int16)(_bfc_PWMoutput[0]));
+		_canmsg.CAN_data[6] = BYTE_H((Int16)(_bfc_PWMoutput[1]));
+		_canmsg.CAN_data[7] = BYTE_L((Int16)(_bfc_PWMoutput[1]));	
+#else			
 		if (DutyCycle[0].Dir==0)
 		{
-	    _canmsg.CAN_data[4] = BYTE_H(DutyCycle[0].Duty);
-		_canmsg.CAN_data[5] = BYTE_L(DutyCycle[0].Duty);
-		
+		    _canmsg.CAN_data[4] = BYTE_H(DutyCycle[0].Duty);
+			_canmsg.CAN_data[5] = BYTE_L(DutyCycle[0].Duty);
 	    }
 		else
 		{
-		_canmsg.CAN_data[4] = BYTE_H(-1*(Int16)DutyCycle[0].Duty);
-		_canmsg.CAN_data[5] = BYTE_L(-1*(Int16)DutyCycle[0].Duty);
+			_canmsg.CAN_data[4] = BYTE_H(-1*(Int16)DutyCycle[0].Duty);
+			_canmsg.CAN_data[5] = BYTE_L(-1*(Int16)DutyCycle[0].Duty);
 		}
 		if (DutyCycle[1].Dir==0)
 		{
-	    _canmsg.CAN_data[6] = BYTE_H((Int16)DutyCycle[1].Duty);
-		_canmsg.CAN_data[7] = BYTE_L((Int16)DutyCycle[1].Duty);
-		
+		    _canmsg.CAN_data[6] = BYTE_H((Int16)DutyCycle[1].Duty);
+			_canmsg.CAN_data[7] = BYTE_L((Int16)DutyCycle[1].Duty);	
 	    }
 		else
 		{
-		_canmsg.CAN_data[6] = BYTE_H(-1*(Int16)DutyCycle[1].Duty);
-		_canmsg.CAN_data[7] = BYTE_L(-1*(Int16)DutyCycle[1].Duty);
+			_canmsg.CAN_data[6] = BYTE_H(-1*(Int16)DutyCycle[1].Duty);
+			_canmsg.CAN_data[7] = BYTE_L(-1*(Int16)DutyCycle[1].Duty);
 		}			
-
+#endif
 
 		_canmsg.CAN_length = 8;
 		_canmsg.CAN_frameType = DATA_FRAME;
@@ -715,15 +720,12 @@ void can_send_broadcast(void)
 		{
 			setCanStatus(0);
 		#ifdef DEBUG_CAN_MSG	
-			can_printf("CAN_ERR %d", (UInt8)_canmsg.CAN_data[4]);	
+			can_printf("CANR%d", (UInt8)_canmsg.CAN_data[4]);	
 		#endif
 			send=true;	
 		} 
 		if ((_canmsg.CAN_data[5] & 0x7)) //the first 3 bits
 		{	
-		#ifdef DEBUG_CAN_MSG	
-			can_printf("BOARD STATUS ERROR %d", (UInt8)_canmsg.CAN_data[5]);	
-		#endif	
 			if (mainLoopOVF) mainLoopOVF=false;
 			send=true;
 		}

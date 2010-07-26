@@ -38,7 +38,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 42;
+word    _build_number = 43;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -450,8 +450,11 @@ void main(void)
 		for (i=0; i<JN; i++) _bfc_PWMoutput[i] = PWMoutput[i] = compute_pwm(i);
 
 //		decouple PWM	
-		//decouple_dutycycle_new_joint(PWMoutput);   //new version (july 2010) with torque decupling
-		decouple_dutycycle(PWMoutput);     //previous version
+#ifdef USE_NEW_DECOUPLING
+		decouple_dutycycle_new_joint(PWMoutput); //new version (july 2010) with torque decupling
+#else
+		decouple_dutycycle(PWMoutput);				
+#endif
 
 		/* PWM filtering */
 		for (i=0; i<JN; i++) 
