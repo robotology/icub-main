@@ -31,7 +31,7 @@
 ###################################
 get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
 
-message(STATUS "Now exporting targets for in-tree builds: ${ICUB_TARGETS}")
+#message(STATUS "Now exporting targets for in-tree builds: ${ICUB_TARGETS}")
 set(EXPORT_INCLUDE_FILE icub-export-build-includes.cmake)
 set(EXPORT_CONFIG_FILE icub-export-build.cmake)
 set(ICUB_MODULE_PATH ${CMAKE_BINARY_DIR}/conf)

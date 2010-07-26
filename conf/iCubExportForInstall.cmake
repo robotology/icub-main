@@ -20,9 +20,9 @@
 #
 #
 #### prepare config file for installation
-message(STATUS "Now exporting targets for installed builds: ${ICUB_TARGETS}")
-
 get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
+
+#message(STATUS "Now exporting targets for installed builds: ${ICUB_TARGETS}")
 
 set(EXPORT_CONFIG_FILE icub-export-install.cmake)
 set(INSTALL_CONFIG_FILE icub-config-for-install.cmake)

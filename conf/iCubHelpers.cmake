@@ -89,8 +89,13 @@ MACRO(icub_export_library target)
             message(STATUS "${ext_dirs}")
         endif()
         
-        set(internal_includes ${internal_includes} ${in_dirs})
-        set(external_includes ${external_includes} ${ext_dirs})
+		if (in_dirs)
+			set(internal_includes ${internal_includes} ${in_dirs})
+		endif (in_dirs)
+		
+		if (ext_dirs)
+			set(external_includes ${external_includes} ${ext_dirs})
+		endif(ext_dirs)
     endforeach(d)
   endif(dependencies)
   ############################
