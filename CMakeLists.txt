@@ -137,13 +137,16 @@ if (ICUB_EXPERIMENTAL_APP_INSTALL)
 	add_subdirectory(app)
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
-# export the installed project 
-include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
-
 # export the build tree
+message(STATUS "Now exporting build tree")
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 
+# export the installed project 
+message(STATUS "Now exporting for install")
+include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
+
 ## install cmake scripts
+message(STATUS "Installing cmake scripts")
 set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindCFW2CANAPI.cmake
 						FindESDCANAPI.cmake
