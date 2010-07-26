@@ -849,6 +849,86 @@ bool ClientCartesianController::setInTargetTol(const double tol)
 
 
 /************************************************************************/
+bool ClientCartesianController::getJointsVelocities(Vector &qdot)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_QDOT);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (Bottle *qdotPart=reply.get(1).asList())
+        {
+            qdot.resize(qdotPart->size());
+
+            for (int i=0; i<qdotPart->size(); i++)
+                qdot[i]=qdotPart->get(i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_XDOT);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (Bottle *xdotPart=reply.get(1).asList())
+        {
+            xdot.resize(3);
+            odot.resize(xdotPart->size()-3);
+
+            for (int i=0; i<3; i++)
+                xdot[i]=xdotPart->get(i).asDouble();
+
+            for (int i=0; i<xdotPart->size(); i++)
+                odot[i]=xdotPart->get(3+i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ClientCartesianController::checkMotionDone(bool *f)
 {
     if (!connected)

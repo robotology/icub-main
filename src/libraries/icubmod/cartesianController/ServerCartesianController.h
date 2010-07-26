@@ -123,7 +123,7 @@ protected:
 
     yarp::sig::Vector xdes;
     yarp::sig::Vector qdes;
-    yarp::sig::Vector velOld;
+    yarp::sig::Vector velCmd;
     yarp::sig::Vector fb;
 
     yarp::os::BufferedPort<yarp::os::Bottle>  *portSlvIn;
@@ -188,6 +188,8 @@ public:
     virtual bool setTrajTime(const double t);
     virtual bool getInTargetTol(double *tol);
     virtual bool setInTargetTol(const double tol);
+    virtual bool getJointsVelocities(yarp::sig::Vector &qdot);
+    virtual bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
     virtual bool checkMotionDone(bool *f);
     virtual bool stopControl();
 

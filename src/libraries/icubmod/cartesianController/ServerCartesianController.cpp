@@ -458,6 +458,45 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        case IKINCARTCTRL_VOCAB_OPT_QDOT:
+                        {
+                            Vector qdot;
+    
+                            if (getJointsVelocities(qdot))
+                            {
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                Bottle &qdotPart=reply.addList();
+    
+                                for (int i=0; i<qdot.length(); i++)
+                                    qdotPart.addDouble(qdot[i]);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+    
+                            break;
+                        }
+    
+                        case IKINCARTCTRL_VOCAB_OPT_XDOT:
+                        {
+                            Vector xdot, odot;
+    
+                            if (getTaskVelocities(xdot,odot))
+                            {
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                Bottle &xdotPart=reply.addList();
+    
+                                for (int i=0; i<xdot.length(); i++)
+                                    xdotPart.addDouble(xdot[i]);
+    
+                                for (int i=0; i<odot.length(); i++)
+                                    xdotPart.addDouble(odot[i]);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+    
+                            break;
+                        }
+
                         default:
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
@@ -741,7 +780,7 @@ void ServerCartesianController::newController()
     fb.resize(chain->getDOF());
     getFeedback(fb);
     chain->setAng(fb);
-    velOld.resize(chain->getDOF(),0.0);
+    velCmd.resize(chain->getDOF(),0.0);
     xdes=chain->EndEffPose();
     qdes=chain->getAng();
 
@@ -858,7 +897,7 @@ void ServerCartesianController::sendVelocity(const Vector &v)
             double v_cnt=v[cnt];
 
             // send only if changed
-            if (v_cnt!=velOld[cnt])
+            if (v_cnt!=velCmd[cnt])
             {
                 double thres=lDsc[j].minAbsVels[k];
 
@@ -876,7 +915,7 @@ void ServerCartesianController::sendVelocity(const Vector &v)
                         v_cnt=0.0;
                 }
 
-                lVel[j]->velocityMove(lRmp[j][k],velOld[cnt]=v_cnt);
+                lVel[j]->velocityMove(lRmp[j][k],velCmd[cnt]=v_cnt);
             }
 
             cnt++;
@@ -1875,6 +1914,42 @@ bool ServerCartesianController::setInTargetTol(const double tol)
 
 
 /************************************************************************/
+bool ServerCartesianController::getJointsVelocities(Vector &qdot)
+{
+    if (connected)
+    {
+        qdot=velCmd;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
+{
+    if (connected)
+    {
+        Vector taskVel=ctrl->get_J()*velCmd;
+
+        xdot.resize(3);
+        odot.resize(taskVel.length()-3);
+    
+        for (int i=0; i<xdot.length(); i++)
+            xdot[i]=taskVel[i];
+    
+        for (int i=0; i<odot.length(); i++)
+            odot[i]=taskVel[xdot.length()+i];
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::checkMotionDone(bool *f)
 {
     if (attached)
@@ -1894,8 +1969,9 @@ bool ServerCartesianController::stopControl()
     {
         executingTraj=false;
         motionDone   =true;
-
+        
         stopLimbVel();
+        velCmd=0.0;
 
         txTokenLatchedStopControl=txToken;
         skipSlvRes=true;
