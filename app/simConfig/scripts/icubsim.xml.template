@@ -1,0 +1,47 @@
+<application>
+<name>Simulator example</name>
+<dependencies>
+      <port>/computer1</port>
+</dependencies>
+    <module>
+        <name>iCub_SIM</name>
+        <parameters></parameters>
+        <node>computer1</node>
+        <stdio>computer1</stdio>
+        <tag>simulator</tag>
+    </module>
+    <module>
+        <name>robotMotorGui</name>
+        <parameters></parameters>
+        <node>computer1</node>
+        <stdio>computer1</stdio>
+        <tag>motorgui</tag>
+    </module>
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /leftview --x 700 --y 50 --synch</parameters>
+        <node>computer1</node>
+        <tag>leftview</tag>
+    </module>
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /rightview --x 1020 --y 50 --synch</parameters>
+        <node>computer1</node>
+        <tag>rightview</tag>
+    </module>
+    <module>
+        <name>iCubGui</name>
+        <node>computer1</node>
+        <tag>icubgui</tag>
+    </module>
+    <connection>
+        <from>/icubSim/cam/left</from>
+        <to>/leftview</to>
+        <protocol>udp</protocol>
+    </connection>
+    <connection>
+        <from>/icubSim/cam/right</from>
+        <to>/rightview</to>
+        <protocol>udp</protocol>
+    </connection>
+</application>
