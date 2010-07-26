@@ -123,7 +123,7 @@ private:
 	int tl_x, tl_y;
   	int tr_x, tr_y;
   	int waiting;
-  	bool track, update, acquire;
+  	bool update, acquire;
   	int rad_pen,max_rad_pen;
   	double r, rmax, r_deg, l_deg, t_deg, posx, posy, posz, z_;
 

@@ -565,7 +565,6 @@ void ZDFThread::initAll()
   	tr_x = 0;
 	tr_y = 0;
   	waiting = 0;
-    track = false;
   	rmax = sqrt((msize.width/2.0)*(msize.width/2.0) 
 		+(msize.height/2.0)*(msize.height/2.0));
 
