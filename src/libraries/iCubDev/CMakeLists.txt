@@ -20,7 +20,6 @@ target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
 icub_export_library(${PROJECTNAME} 
                     INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include 
                     DESTINATION include/iCub 
-                    VERBOSE
                     FILES ${folder_header})
 
 
