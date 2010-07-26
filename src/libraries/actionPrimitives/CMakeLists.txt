@@ -18,6 +18,6 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} iDyn
                                       ${YARP_LIBRARIES})
 				   				   
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                   DEPENDS iDyn
+                                   DEPENDS iDyn icubmod
                                    DESTINATION include/iCub/action
                                    FILES ${folder_header})
