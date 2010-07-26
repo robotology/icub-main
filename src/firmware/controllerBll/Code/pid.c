@@ -120,7 +120,7 @@ Int16  _kr_torque[JN] = INIT_ARRAY (10);		// scale factor (negative power of two
 Int16  _ks_imp[JN] = INIT_ARRAY (0);			// stiffness coefficient
 Int16  _kd_imp[JN] = INIT_ARRAY (0);			// damping coefficient
 Int16  _ko_imp[JN] = INIT_ARRAY (0);			// offset
-
+Int16  _error_impedance[JN] = INIT_ARRAY (0);   // position error in impedance control
 		
 #if VERSION == 0x0156
 // CURRENT PID
@@ -190,8 +190,7 @@ Int32 compute_pwm(byte j)
 	Int32 IOUT=0;		
 	byte  i=0;
 	Int32 ImpInputError=0;
-	Int16 ImpError=0;
-
+	
 // input selection depending on firmware version
 /*#if VERSION == 0x0173
 	if 		(j==0) 	strain_val=_strain[1][5]; //directly from 6ax strain
@@ -363,15 +362,15 @@ Int32 compute_pwm(byte j)
 		compute_desired(j);
 		ImpInputError = L_sub(_position[j], _desired[j]);				
 		if (ImpInputError > MAX_16)
-			ImpError = MAX_16;
+			_error_impedance[j] = MAX_16;
 		else
 		if (ImpInputError < MIN_16) 
-			ImpError = MIN_16;
+			_error_impedance[j] = MIN_16;
 		else
 		{
-			ImpError = extract_l(ImpInputError);
+			_error_impedance[j] = extract_l(ImpInputError);
 		}		
-		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(ImpError);
+		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(_error_impedance[j]);
 		_desired_torque[j] += (Int32)_ko_imp[j];
 		_desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
 		PWMOUT = compute_pid_torque(j, _strain_val[j]);
@@ -443,23 +442,10 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 		_error_torque[j] = extract_l(InputError);
 	}
 
-/*		
+		
 	//BEWARE: @@@ THIS ovverrides the position error with the torque error
 	_error[j]=_error_torque[j];
-*/
-
-	//Error decoupling for shoulder torque control
-/*
-	#if VERSION == 0x0174 
-		temp_err[0] = (float)_error_torque[0];
-		temp_err[1] = (float)_error_torque[1];
-		
-		_error_torque[0] = -temp_err[0];
-		_error_torque[1] = -temp_err[1];
-	#endif
-*/
 			
-	//dead band	
 	#ifndef IDENTIF
 /*	if (_error[j]>-1000 && _error[j]<1000)		
 	{
@@ -486,7 +472,7 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 	}
 	
 	/* Derivative */	
-	DerivativePortion = ((Int32) (_error[j]-_error_old_torque[j])) * ((Int32) _kd_torque[j]);
+	DerivativePortion = ((Int32) (_error_torque[j]-_error_old_torque[j])) * ((Int32) _kd_torque[j]);
 
 	if (DerivativePortion>=0)
 	{
