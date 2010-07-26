@@ -1,7 +1,7 @@
 # Author: Lorenzo Natale
 # Wrap kitware's original FindQt3 script. Standardize varibles.
 #
-# In windows require you set Qt3_DIR
+# In windows require you set QTDIR
 #
 # Set: 
 # Qt3_FOUND
@@ -15,11 +15,9 @@
 set(_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH "")
 
-set(Qt3_DIR $ENV{Qt3_DIR})
-
-if (Qt3_DIR)
-	message(${Qt3_DIR})
-endif(Qt3_DIR)
+if (QTDIR)
+	message(${QTDIR})
+endif(QTDIR)
 	
 find_package(Qt3)
 
