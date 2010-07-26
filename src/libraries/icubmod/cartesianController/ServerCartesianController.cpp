@@ -479,7 +479,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_XDOT:
                         {
                             Vector xdot, odot;
-    
+
                             if (getTaskVelocities(xdot,odot))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -1931,7 +1931,13 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 {
     if (connected)
     {
-        Vector taskVel=ctrl->get_J()*velCmd;
+        Matrix J=ctrl->get_J();
+        Vector taskVel;
+
+        if (!J.rows() || (J.cols()!=velCmd.length()))
+            taskVel.resize(7,0.0);
+        else
+            taskVel=J*velCmd;
 
         xdot.resize(3);
         odot.resize(taskVel.length()-3);
