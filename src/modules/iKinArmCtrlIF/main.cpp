@@ -310,25 +310,29 @@ public:
 
         if (t-t0>=PRINT_STATUS_PER)
         {
-            Vector x,o,xdhat,odhat,qdhat;
+            Vector x,o,xdot,odot;
+            Vector xdhat,odhat,qdhat;
 
             arm->getPose(x,o);
+            arm->getTaskVelocities(xdot,odot);
             arm->getDesired(xdhat,odhat,qdhat);
             double e_x=norm(xdhat-x);
 
-            cout<< "xd          [m] = "<<xd.toString()   <<endl;
-            cout<< "xdhat       [m] = "<<xdhat.toString()<<endl;
-            cout<< "x           [m] = "<<x.toString()    <<endl;
-            cout<< "norm(e_x)   [m] = "<<e_x             <<endl;
+            cout<< "xd          [m]   = "<<xd.toString()   <<endl;
+            cout<< "xdhat       [m]   = "<<xdhat.toString()<<endl;
+            cout<< "x           [m]   = "<<x.toString()    <<endl;
+            cout<< "xdot        [m/s] = "<<xdot.toString() <<endl;
+            cout<< "norm(e_x)   [m]   = "<<e_x             <<endl;
 
             if (ctrlCompletePose)
             {
                 double e_o=norm(odhat-o);
 
-                cout<< "od        [rad] = "<<od.toString()   <<endl;
-                cout<< "odhat     [rad] = "<<odhat.toString()<<endl;
-                cout<< "o         [rad] = "<<o.toString()    <<endl;
-                cout<< "norm(e_o) [rad] = "<<e_o             <<endl;
+                cout<< "od        [rad]   = "<<od.toString()   <<endl;
+                cout<< "odhat     [rad]   = "<<odhat.toString()<<endl;
+                cout<< "o         [rad]   = "<<o.toString()    <<endl;
+                cout<< "odot      [rad/s] = "<<odot.toString() <<endl;
+                cout<< "norm(e_o) [rad]   = "<<e_o             <<endl;
             }
 
             cout<<endl;
