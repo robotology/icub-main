@@ -40,7 +40,7 @@ foreach (t ${ICUB_TARGETS})
    set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS}) 
 
    if (ICUB_VERBOSE)
-   message(STATUS "Header files for ${t}: ${target_INCLUDE_DIRS}")
+	message(STATUS "Header files for ${t}: ${target_INCLUDE_DIRS}")
    endif()
 endforeach(t)
 
