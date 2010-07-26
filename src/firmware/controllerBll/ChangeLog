@@ -129,4 +129,12 @@
 	* Added various CAN mesages to set the impedance of a joint
 	* Impedance velocity mode separated by Impedance Position Mode
 	* Current build 41.	
+
+2010-26-July  Marco Randazzo <marco.randazzo@iit.it>
+	* New decoupling matrix for torque control
+ 	* IMPORTANT: in function can_send_broadcast() now PWM is transmitted BEFORE the decoupling.
+ 	             function decouple_dutycycle_new_joint() expects transmitted torques at the joint level (before decoupling),
+		     while the old function decouple_dutycycle() expects torques at motor level (after decoupling) 
+		     you can change this behavior by setting/unsetting the macro USE_NEW_DECOUPLING in decoupling.h 
+	* Current build 43
 	
