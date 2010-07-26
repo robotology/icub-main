@@ -422,17 +422,22 @@ public:
 
     void run()
     {   
-        readAndUpdate(true);
+        static unsigned long int alive_counter = 0;
+        static double curr_time = Time::now();
+        if (Time::now() - curr_time > 60)
+        {
+            printf ("wholeBodyTorqueObserver is alive! running for %d mins.\n",++alive_counter);
+            curr_time = Time::now();
+        }
+        readAndUpdate(false);
 		setZeroJntAngVelAcc();
 		setUpperMeasure();
 		setLowerMeasure();
-		//if (ft_arm_left!=0 && ft_arm_right!=0 && ft_leg_left!=0 && ft_leg_right!=0)
-		{
-			F_RArm = -1.0 * (*ft_arm_right-Offset_RArm);
-			F_LArm = -1.0 * (*ft_arm_left-Offset_LArm);
-			F_RLeg = -1.0 * (*ft_leg_right-Offset_RLeg);
-			F_LLeg = -1.0 * (*ft_leg_left-Offset_LLeg);
-		}
+
+        if (ft_arm_left!=0)  F_LArm = -1.0 * (*ft_arm_left-Offset_LArm);
+        if (ft_arm_right!=0) F_RArm = -1.0 * (*ft_arm_right-Offset_RArm);
+        if (ft_leg_left!=0)  F_LLeg = -1.0 * (*ft_leg_left-Offset_LLeg);
+        if (ft_leg_right!=0) F_RLeg = -1.0 * (*ft_leg_right-Offset_RLeg);
 
 		Vector F_up(6);
 		F_up=0.0;
@@ -609,13 +614,23 @@ public:
 	}
 	void readAndUpdate(bool waitMeasure=false, bool _init=false)
 	{
-		
+		//static double t0,t1,t2,t3,t4,t5;
+        //t0 = Time::now();
+        //debug print        
+        //fprintf (stderr, "%f %6.4f ",this->getRate(),t5-t0);
 		ft_arm_left  = port_ft_arm_left->read(waitMeasure);
+        //t1 = Time::now();        
         ft_arm_right = port_ft_arm_right->read(waitMeasure);
+        //t2 = Time::now();
         ft_leg_left  = port_ft_leg_left->read(waitMeasure);
+        //t3 = Time::now();        
         ft_leg_right = port_ft_leg_right->read(waitMeasure);
+        //t4 = Time::now();
 		inertial = port_inertial_thread->read(waitMeasure);
-		
+        //t5 = Time::now();		
+        //debug print
+        //fprintf (stderr, "%6.4f %6.4f %6.4f %6.4f %6.4f \n",t1-t0,t2-t1,t3-t2,t4-t3,t5-t4);
+
 		int sz = 0;
 		if(inertial!=0)
 		{
