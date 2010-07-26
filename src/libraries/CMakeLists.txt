@@ -22,6 +22,6 @@ add_subdirectory(actionPrimitives)
 
 add_subdirectory(learningMachine)
 
-add_subdirectory(spMap)
+#add_subdirectory(spMap)
 
 
