@@ -1,0 +1,58 @@
+
+<application>
+<name>CHRIS - VVV2010 Demo</name>
+
+        <dependencies>
+            <port>/icub/camcalib/left/out</port>
+            <port>/icub/camcalib/right/out</port>
+            <port>/icub/head/state:o</port>
+            <port>/icub/torso/state:o</port>
+            <port>/icub/cartesianController/left_arm/state:o</port>
+            <port>/icub/cartesianController/right_arm/state:o</port>
+            <port>/iKinGazeCtrl/head/angles:o</port>
+        </dependencies>
+
+    	<module>
+    	    <name>graspDetector</name>
+    	    <parameters>--context graspDetector/conf --from left_armGraspDetector.ini</parameters>
+    	    <node>pwrNode2</node>
+    	    <tag>graspDetectorLeft</tag>
+    	</module>
+    	
+    	<module>
+    	    <name>graspDetector</name>
+    	    <parameters>--context graspDetector/conf --from right_armGraspDetector.ini</parameters>
+    	    <node>pwrNode2</node>
+    	    <tag>graspDetectorRight</tag>
+    	</module>
+
+        <module>
+            <name>eye2world</name>
+            <node>pwrNode2</node>
+            <parameters>--robot icub --context cameraCalibration/conf --eyeCalibration icubEyes.ini --tableConfiguration /usr/local/src/robot/chris/app/spikeNetMotorIF/conf/table.ini</parameters>
+            <tag>eye2world</tag>
+        </module>
+
+
+    	<connection>
+    	    <from>/icub/left_hand/analog:o/fingerDetector/status:o</from> 
+    	    <to>/iFumble/left_arm/detectGrasp:i</to>
+    	</connection>
+    
+    	<connection>
+    	    <from>/icub/right_hand/analog:o/fingerDetector/status:o</from> 
+    	    <to>/iFumble/right_arm/detectGrasp:i</to>
+    	</connection>
+
+        <connection>
+            <from>/icub/head/state:o</from>
+            <to>/eye2world/icub/head/state:i</to>
+        </connection>
+
+        <connection>
+            <from>/icub/torso/state:o</from>
+            <to>/eye2world/icub/torso/state:i</to>
+        </connection>
+
+
+</application>
