@@ -1,3 +1,23 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
 #include <iCub/demoThread.h>
 
 using namespace yarp::os;
@@ -5,7 +25,7 @@ using namespace yarp::sig;
 using namespace std;
 
 demoThread::demoThread(int *threshold) {   
-   thresholdValue = threshold;
+    thresholdValue = threshold;
 }
 
 
@@ -14,13 +34,13 @@ bool demoThread::threadInit() {
     
     /* opening ports */
     if (!imagePortIn.open("/demo/image:i")) {
-      cout << ": unable to open input port " << endl;
-      return false;  // unable to open; let RFModule know so that it won't run
+        cout << ": unable to open input port " << endl;
+        return false;  // unable to open; let RFModule know so that it won't run
     }
 
     if (!imagePortOut.open("/demo/image:o")) {
-      cout  << ": unable to open output port " <<  endl;
-      return false;  // unable to open; let RFModule know so that it won't run
+        cout  << ": unable to open output port " <<  endl;
+        return false;  // unable to open; let RFModule know so that it won't run
     }
 
     return true;
@@ -40,7 +60,7 @@ void demoThread::run() {
 
         image = imagePortIn.read(true);
 
-        if(image!=0){               
+        if(image!=0) { 
             ImageOf<PixelRgb> &binary_image = imagePortOut.prepare();
             binary_image.resize(image->width(),image->height());
 
@@ -50,24 +70,22 @@ void demoThread::run() {
                     rgbPixel = image->safePixel(x,y);
 
                     if (((rgbPixel.r + rgbPixel.g + rgbPixel.b)/3) > *thresholdValue) {
-                    value = (unsigned char) 255;
+                        value = (unsigned char) 255;
                     }
                     else {
-                    value = (unsigned char) 0;
+                        value = (unsigned char) 0;
                     }
 
                     rgbPixel.r = value;
                     rgbPixel.g = value;
                     rgbPixel.b = value;
-
                     binary_image(x,y) = rgbPixel;
                 }
             }
 
             imagePortOut.write();
         }
-      
-    }//while
+    }  //while
 }
 
 void demoThread::threadRelease() {

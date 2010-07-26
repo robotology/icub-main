@@ -1,11 +1,30 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
 #ifndef _DEMO_MODULE_H_
 #define _DEMO_MODULE_H_
 
 /** 
  * @ingroup icub_module
  *
- * \defgroup icub_demo demo
+ * \defgroup icub_demo demoModule
  *
  * This is a simple example to illustrate a module that is compliant with iCub Software Standards, addressing:
  *
@@ -139,27 +158,6 @@
  * 
  */
 
-
-/* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: David Vernon
- * email:   david@vernon.eu
- * website: www.robotcub.org 
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
- 
-
-
 #include <iostream>
 #include <string>
 
@@ -169,10 +167,10 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Thread.h>
  
-//within project includes  
+// within project includes  
 #include <iCub/demoThread.h>
 
-class demoModule:public yarp::os::RFModule {
+class demoModule : public yarp::os::RFModule {
    /* module parameters */
 
    std::string moduleName;
@@ -189,17 +187,13 @@ class demoModule:public yarp::os::RFModule {
    int thresholdValue;
 
    /* class variables */
-
-   
    yarp::os::Port handlerPort;      //a port to handle messages 
 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */
-
    demoThread *dThread;
 
-
 public:
-   
+
    bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
    bool interruptModule();                       // interrupt, e.g., the ports 
    bool close();                                 // close and shut down the module

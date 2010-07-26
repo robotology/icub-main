@@ -1,7 +1,9 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: David Vernon
- * email:   david@vernon.eu
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -20,9 +22,7 @@
 /*
  * Audit Trail
  * -----------
- * 26/08/09  First version validated   DV
- * 12/09/09  Added functionality to read additional configuration file DV
- * 21/09/09  Removed code to replace a double / ("//") in a path as this is now done in getName() DV
+ *  ....
  */ 
 
 /* 
@@ -38,30 +38,24 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
 
-
 bool demoModule::configure(yarp::os::ResourceFinder &rf) {    
     /* Process all parameters from both command-line and .ini file */
-
     /* get the module name which will form the stem of all module port names */
-
     moduleName            = rf.check("name", 
-                           Value("bar"), 
+                           Value("demoModule"), 
                            "module name (string)").asString();
 
     /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
     */
-
     setName(moduleName.c_str());
 
     /* now, get the rest of the parameters */
-
     /*
     * get the robot name which will form the stem of the robot ports names
     * and append the specific part and device required
     */
-
     robotName             = rf.check("robot", 
                            Value("icub"), 
                            "Robot name (string)").asString();
@@ -72,7 +66,6 @@ bool demoModule::configure(yarp::os::ResourceFinder &rf) {
     * get the cameraConfig file and read the required parameter values cx, cy 
     * in both the groups [CAMERA_CALIBRATION_LEFT] and [CAMERA_CALIBRATION_RIGHT]
     */
-
     cameraConfigFilename  = rf.check("cameraConfig", 
                            Value("icubEyes.ini"), 
                            "camera configuration filename (string)").asString();
@@ -82,87 +75,69 @@ bool demoModule::configure(yarp::os::ResourceFinder &rf) {
     Property cameraProperties;
 
     if (cameraProperties.fromConfigFile(cameraConfigFilename.c_str()) == false) {
-      cout << "myModule: unable to read camera configuration file" << cameraConfigFilename;
-      return 0;
+        cout << "myModule: unable to read camera configuration file" << cameraConfigFilename;
+        return 0;
     }
     else {
-      cxLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cx", Value(160.0), "cx left").asDouble();
-      cyLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cy", Value(120.0), "cy left").asDouble();
-      cxRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cx", Value(160.0), "cx right").asDouble();
-      cyRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cy", Value(120.0), "cy right").asDouble();
+        cxLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cx", Value(160.0), "cx left").asDouble();
+        cyLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cy", Value(120.0), "cy left").asDouble();
+        cxRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cx", Value(160.0), "cx right").asDouble();
+        cyRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cy", Value(120.0), "cy right").asDouble();
     }
 
-
     /* get the name of the input and output ports, automatically prefixing the module name by using getName() */
-
     inputPortName         = "/";
     inputPortName        += getName(
                            rf.check("myInputPort", 
-                           Value("/bar/image:i"),
+                           Value("/demoModule/image:i"),
                            "Input image port (string)").asString()
                            );
 
     outputPortName        = "/";
     outputPortName       += getName(
                            rf.check("myOutputPort", 
-                           Value("/bar/image:o"),
+                           Value("/demoModule/image:o"),
                            "Output image port (string)").asString()
                            );
 
-
     /* get the threshold value */
-
     thresholdValue        = rf.check("threshold",
                            Value(8),
                            "Key value (int)").asInt();
 
 
     /* do all initialization here */
-     
-
-
     /*
     * attach a port of the same name as the module (prefixed with a /) to the module
     * so that messages received from the port are redirected to the respond method
     */
-
     handlerPortName =  "/";
     handlerPortName += getName();         // use getName() rather than a literal 
 
     if (!handlerPort.open(handlerPortName.c_str())) {           
-      cout << getName() << ": Unable to open port " << handlerPortName << endl;  
-      return false;
+        cout << getName() << ": Unable to open port " << handlerPortName << endl;  
+        return false;
     }
 
     attach(handlerPort);                  // attach to port
 
-
     /* create the thread and pass pointers to the module parameters */
-
     dThread = new demoThread(&thresholdValue);
 
     /* now start the thread to do the work */
-
     dThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
-    return true ;      // let the RFModule know everything went well
+    return true ;     // let the RFModule know everything went well
                       // so that it will then run the module
 }
 
-
 bool demoModule::interruptModule() {
-
     handlerPort.interrupt();
-
-
     return true;
 }
 
-
 bool demoModule::close() {
-
     handlerPort.close();
-
     /* stop the thread */
     dThread->stop();
 
@@ -197,13 +172,10 @@ bool demoModule::respond(const Bottle& command, Bottle& reply) {
    return true;
 }
 
-
 /* Called periodically every getPeriod() seconds */
 bool demoModule::updateModule() {
     return true;
 }
-
-
 
 double demoModule::getPeriod() {
     /* module periodicity (seconds), called implicitly by myModule */    

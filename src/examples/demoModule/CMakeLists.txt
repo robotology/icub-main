@@ -3,16 +3,14 @@ cmake_minimum_required(VERSION 2.6)
 ELSE(WIN32)
 cmake_minimum_required(VERSION 2.4)
 ENDIF(WIN32)
+
 ## just for avoid annoying warning when using CMake > 2.6
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-SET(KEYWORD "demo")
+SET(KEYWORD "demoModule")
 PROJECT(${KEYWORD})
-
-#FIND_PACKAGE(ICUB)
-#FIND_PACKAGE(YARP REQUIRED)
 
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
@@ -29,14 +27,17 @@ LINK_LIBRARIES(
    ${YARP_LIBRARIES}
 )
 
-
 # Set up the main executable.
 IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
         ${folder_source} 
         ${folder_header}
     )
+
     INSTALL_TARGETS(/bin ${KEYWORD})
+
 ELSE (folder_source)
-    MESSAGE(FATAL_ERROR "No source code files found. Please add something")
+
+    MESSAGE(FATAL_ERROR "No source code files found. Please add something to this project!")
+
 ENDIF (folder_source)
