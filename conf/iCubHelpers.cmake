@@ -26,14 +26,19 @@
 # The function does a bunch of things:
 #
 # -append ${target} to the list of targetes built within the project (global property ICUB_TARGETS)
-# -retrieve INTERNAL_INCLUDE_DIRS/EXTERNAL_INCLUDE_DIRS properties form each dependency
+# -retrieve INTERNAL_INCLUDE_DIRS/EXTERNAL_INCLUDE_DIRS properties for each dependency
 # -build INTERNAL_INCLUDE_DIRS by merging INTERNAL_INCLUDE_DIRS and the property INTERNAL_INCLUDE_DIRS of each 
 #  dependency target -- store it as a property for the current target
+# -creates a DEPENDS property for the target, this contains the list of dependencies
 # -similarly as above for EXTERNAL_INCLUDE_DIRS
 # -merge EXTERNAL/INTERNAL_INCLUDE_DIRS into INCLUDE_DIRS for the current target, store it as property and cache 
 #  variable
 # -set up install rule for copying all FILES to DESTINATION
 # -append export rules for target to a ICUB_EXPORTBUILD_FILE in ${PROJECT_BINARY_DIR}
+#
+# Note: this function has to be called by all targets. cmake  requires that INSTALL
+# is called when targets are created (or in the same CMake list file) so it was not possible
+# to just callect target names and call INSTALL for each of them at the end of the build.
 #
 
 MACRO(icub_export_library target)
@@ -68,11 +73,12 @@ MACRO(icub_export_library target)
   install(TARGETS ${target} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib EXPORT icub-targets)
   export(TARGETS ${target} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
         
+  #important wrap ${dependencies} with "" to allows storing a list of dependencies
+  set_target_properties(${target} PROPERTIES DEPENDS "${dependencies}") 
+		
   ##### Handle include directories        
   # Parsing dependencies
-  if (dependencies)
-    set_target_properties(${target} PROPERTIES DEPENDS ${dependencies})                           
-    
+  if (dependencies)           
     foreach (d ${dependencies})
         get_target_property(in_dirs ${d} INTERNAL_INCLUDE_DIRS)
         get_target_property(ext_dirs ${d} EXTERNAL_INCLUDE_DIRS)
@@ -180,7 +186,7 @@ ENDMACRO(PARSE_ARGUMENTS)
 
 ### From yarp.
 # Helper macro to work around a bug in set_property in cmake 2.6.0
-# We usa icub_ prefix to avoid name clashes with yarp.
+# We use icub_ prefix to avoid name clashes with yarp.
 MACRO(icub_get_property localname _global _property varname)
   set(_icub_exists_chk)
   get_property(_icub_exists_chk GLOBAL PROPERTY ${varname})
