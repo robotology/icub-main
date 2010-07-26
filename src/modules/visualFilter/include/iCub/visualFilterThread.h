@@ -17,31 +17,58 @@ private:
     /* class variables */
 
     IppiSize srcsize; //ROI for the images in the processing
-    
+    IppiSize originalSrcsize; //ROI of he input image
+
     int psb;
 
     int width_orig, height_orig; //dimension of the input image (original)
 
     int width, height; //dimension of the extended input image (extending)
     
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImage;
-
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputExtImage;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImage; //input image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputExtImage; //extended input image
         
     yarp::sig::ImageOf<yarp::sig::PixelMono> *redPlane; //image of the red channel
-
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redPlane2;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redPlane3;
     yarp::sig::ImageOf<yarp::sig::PixelMono> *greenPlane; //image of the green channel
-
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenPlane2;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenPlane3;
     yarp::sig::ImageOf<yarp::sig::PixelMono> *bluePlane; //image of the blue channel
-
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *bluePlane2; //image of the blue channel
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *bluePlane3; //image of the blue channel
     yarp::sig::ImageOf<yarp::sig::PixelMono> *yellowPlane; //image of the blue channel
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *yellowPlane2; //image of the blue channel
+
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redPlus; //positive gaussian-convolved red image 
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redMinus; //negative gaussian-convolved red image
+
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenPlus; //positive gaussian-convolved green image 
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenMinus; //negative gaussian-convolved green image
+
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *bluePlus; //positive gaussian-convolved red image 
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *yellowMinus; //negative gaussian-convolved red image
+
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreen; //colour opponency map (R+G-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRed; //colour opponency map (G+R-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellow; //colour opponency map (B+Y-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *edges; //edges of colour opponency maps 
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreenEdgesHoriz; //edges of colour opponency map (R+G-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedEdgesHoriz; //edges of colour opponency map (G+R-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowEdgesHoriz; //edges of colour opponency map (B+Y-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreenEdgesVert; //edges of colour opponency map (R+G-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedEdgesVert; //edges of colour opponency map (G+R-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowEdgesVert; //edges of colour opponency map (B+Y-)
 
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imagePortIn;     // input port
 
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imagePortOut;     // output port   
 
-    std::string name; //rootname of all the ports opened by this thread
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imagePortExt; //extended image port
 
+    std::string name; //rootname of all the ports opened by this thread
+    
+    
    
 public:
 

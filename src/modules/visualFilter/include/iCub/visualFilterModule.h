@@ -32,13 +32,13 @@
  * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
  * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
  *
- * - \c from \c myModule.ini \n 
+ * - \c from \c visualFilter.ini \n 
  *   specifies the configuration file
  *
- * - \c context \c myModule/conf \n
+ * - \c context \c visualFilter/conf \n
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - \c name \c myModule \n   
+ * - \c name \c visualFilter \n   
  *   specifies the name of the module (used to form the stem of module port names)  
  *
  * - \c robot \c icub \n          
@@ -52,11 +52,11 @@
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
  * - \c myInputPort \c /image:i \n    
- *   specifies the input port name (this string will be prefixed by \c /myModule 
+ *   specifies the input port name (this string will be prefixed by \c /visualFilter 
  *   or whatever else is specifed by the name parameter
  *
  * - \c myOutputPort \c /image:o \n  
- *   specifies the output port name (this string will be prefixed by \c /myModule 
+ *   specifies the output port name (this string will be prefixed by \c /visualFilter 
  *   or whatever else is specifed by the name parameter
  *
  * - \c cameraConfig \c icubEyes.ini \n
@@ -75,7 +75,7 @@
  *
  *  <b>Input ports</b>
  *
- *  - \c /myModule \n
+ *  - \c /visualFilter \n
  *    This port is used to change the parameters of the module at run time or stop the module. \n
  *    The following commands are available
  * 
@@ -86,17 +86,17 @@
  *
  *    Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
- *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: \c yarp \c rpc \c /myModule
+ *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: \c yarp \c rpc \c /visualFilter
  *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
- *  - \c /myModule/image:i \n
+ *  - \c /visualFilter/image:i \n
  *
  * <b>Output ports</b>
  *
- *  - \c /myModule \n
+ *  - \c /visualFilter \n
  *    see above
  *
- *  - \c /myModule/image:o \n
+ *  - \c /visualFilter/image:o \n
  *
  * <b>Port types </b>
  *
@@ -116,8 +116,8 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * \c myModule.ini  in \c $ICUB_ROOT/app/myModule/conf \n
- * \c icubEyes.ini  in \c $ICUB_ROOT/app/myModule/conf
+ * \c visualFilter.ini  in \c $ICUB_ROOT/app/visualFilter/conf \n
+ * \c icubEyes.ini  in \c $ICUB_ROOT/app/visualFilter/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -125,17 +125,17 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>myModule --name myModule --context myModule/conf --from myModule.ini --robot icub</tt>
+ * <tt>visualFilter --name visualFilter --context visualFilter/conf --from visualFilter.ini --robot icub</tt>
  *
  * \author 
  * 
- * David Vernon
+ * Rea Francesco
  * 
- * Copyright (C) 2009 RobotCub Consortium
+ * Copyright (C) 2010 RobotCub Consortium
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at \c $ICUB_ROOT/src/myModule/include/iCub/myModule.h
+ * This file can be edited at \c $ICUB_ROOT/src/visualFilter/include/iCub/visualFilter.h
  * 
  */
 
@@ -158,14 +158,6 @@
  * Public License for more details
  */
 
-
-/*
- * Audit Trail
- * -----------
- * 26/08/09  First version validated   DV
- * 12/09/09  Added functionality to read additional configuration file DV
- * 21/09/09  Removed code to replace a double / ("//") in a path as this is now done in getName() DV
- */ 
 
 
 
