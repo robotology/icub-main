@@ -1937,7 +1937,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         if (!J.rows() || (J.cols()!=velCmd.length()))
             taskVel.resize(7,0.0);
         else
-            taskVel=J*velCmd;
+            taskVel=J*(CTRL_DEG2RAD*velCmd);
 
         xdot.resize(3);
         odot.resize(taskVel.length()-3);
