@@ -4,7 +4,7 @@
  * Copyright (C) 2007 Alex Bernardino (VisLab/ISR/IST)
  */
 
-#include "iCub/vis/spherical_projection.h"
+#include <iCub/vis/spherical_projection.h>
 
 /* 
 Computes spherical projection parameters, from pinhole projection parameters.
