@@ -20,7 +20,7 @@
 
 // iCub
 #include <iCub/ICalibTool.h>
-#include <iCub/spherical_projection.h>
+#include <iCub/vis/spherical_projection.h>
 
 namespace iCub {
     namespace contrib{
