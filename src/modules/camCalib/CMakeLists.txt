@@ -18,13 +18,13 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
-                    ${spMap_INCLUDE_DIRS}
+                    ${iCubVis_INCLUDE_DIRS}
                     ${OPENCV_INCLUDE_DIR}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} spMap
+TARGET_LINK_LIBRARIES(${PROJECTNAME} iCubVis
                                      ${OPENCV_LIBRARIES}
                                      ${YARP_LIBRARIES})
 
