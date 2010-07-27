@@ -2,10 +2,6 @@
 STILL IN TESTING DOCUMENTATION TO COME
 
 */
-
-
-
-
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Vadim Tikhanoff
@@ -81,7 +77,6 @@ private:
 
 	bool leftPort, rightPort; 
 	bool init;
-
 	int psb_in, t_lock_lr, t_lock_ud;
 	//Sizes:
 	IppiSize srcsize, msize, tsize, tisize, trsize;
@@ -115,10 +110,9 @@ private:
 	DoG * dl;
   	DoG * dr;
 	//Multiclass
-	
-	struct MultiClass::Parameters params;
+
+    struct MultiClass::Parameters *params;
 	MultiClass * m;
-	
 
 	int tl_x, tl_y;
   	int tr_x, tr_y;
@@ -126,8 +120,6 @@ private:
   	bool update, acquire;
   	int rad_pen,max_rad_pen;
   	double r, rmax, r_deg, l_deg, t_deg, posx, posy, posz, z_;
-
-	int radial_penalty, bland_dog_thresh, acquire_wait, min_area, max_area, max_spread, cog_snap, bland_prob ;
 	
 	int width, height;
 	double scale;
@@ -141,7 +133,7 @@ private:
 public:
 
     /* class methods */
-    ZDFThread(BufferedPort<ImageOf<PixelBgr> > *inputLeft, BufferedPort<ImageOf<PixelBgr> > *inputRight, BufferedPort<ImageOf<PixelMono> > *outputProb, BufferedPort<ImageOf<PixelMono> > *outputSeg, BufferedPort<ImageOf<PixelMono> > *outputDog);
+    ZDFThread(BufferedPort<ImageOf<PixelBgr> > *inputLeft, BufferedPort<ImageOf<PixelBgr> > *inputRight, BufferedPort<ImageOf<PixelMono> > *outputProb, BufferedPort<ImageOf<PixelMono> > *outputSeg, BufferedPort<ImageOf<PixelMono> > *outputDog, MultiClass::Parameters *parameters);
     
     void initAll();
     bool threadInit();     
@@ -176,6 +168,7 @@ class zdfMod:public RFModule
 	
     Port handlerPort;      //a port to handle messages 
     
+    struct MultiClass::Parameters parameters;
     /* pointer to a new thread to be created and started in configure() and stopped in close() */
     ZDFThread *zdfThread;
 

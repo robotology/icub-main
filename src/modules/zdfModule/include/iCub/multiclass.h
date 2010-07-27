@@ -45,6 +45,15 @@ struct Parameters
 	int smoothness_penalty_base;
 	int smoothness_3sigmaon2;
 	int data_penalty;
+    int bland_dog_thresh; 
+    int radial_penalty; 
+    int acquire_wait;
+    int min_area;
+    int max_area;
+    int max_spread;
+    double cog_snap;
+    double bland_prob;
+    
 };
 	
 	/** Constructor.
