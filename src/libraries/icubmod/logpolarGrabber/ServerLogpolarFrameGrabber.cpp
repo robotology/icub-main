@@ -1081,7 +1081,7 @@ bool StdImageFormatter::format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& bu
 
     // optimized for a common format 320x240 from 640x480 and no padding.
     if (buffer.width() == 640 && buffer.height() == 480 &&
-        formatted.width() == 320 && formatted.height() == 240) {
+        w == 320 && h == 240) {
         for (int j = 0; j < h; j++) {
             unsigned char *src = (unsigned char *)buffer.getRow(j*2);
             unsigned char *dest = (unsigned char *)formatted.getRow(j);
@@ -1091,6 +1091,10 @@ bool StdImageFormatter::format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& bu
                 *dest++ = *src++;
             }
         }
+    }
+    else if (buffer.width() == 640 && buffer.height() == 480 &&
+        w == 640 && h == 480) {
+            memcpy(formatted.getRawImage(), buffer.getRawImage(), buffer.getRawImageSize()); 
     }
     else {
         // LATER: replace this with a proper filtering + subsampling.
