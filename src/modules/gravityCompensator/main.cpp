@@ -117,6 +117,7 @@ class gravityCompensator: public RateThread
 private:
 
 	BufferedPort<Vector> *port_inertial;
+	BufferedPort<Vector> *additional_offset;
 
 	PolyDriver *ddLA;
     PolyDriver *ddRA;
@@ -154,6 +155,7 @@ private:
     Vector encoders_torso;
 
     Vector *inertial;
+    Vector *offset_input;
 
     AWLinEstimator  *linEstUp;
     AWQuadEstimator *quadEstUp;
@@ -180,8 +182,10 @@ private:
     Vector F_LLeg, F_RLeg, F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
 	Matrix F_ext_up, F_ext_low;
 	Vector inertial_measurements;
+	Vector torque_offset;
 
 	Vector torques_LA,torques_RA,torques_LL,torques_RL;
+	Vector ampli_larm, ampli_rarm, ampli_lleg, ampli_rleg;
 	
     Vector evalVelUp(const Vector &x)
     {
@@ -258,6 +262,8 @@ private:
 		all_dq_up.resize(allJnt,0.0);
 		all_d2q_up.resize(allJnt,0.0); 
 		torques_LA.resize(7);torques_RA.resize(7);
+		ampli_larm.resize(7);ampli_larm=1.0;//ampli_larm[0]=1.1;ampli_larm[1]=1.1;ampli_larm[3]=0.8;
+		ampli_rarm.resize(7);ampli_rarm=1.0;//ampli_rarm[0]=1.1;ampli_rarm[1]=1.1;ampli_rarm[3]=0.8;
 	}	
 	void init_lower()
 	{
@@ -294,6 +300,8 @@ private:
 		all_dq_low.resize(allJnt,0.0);
 		all_d2q_low.resize(allJnt,0.0);
 		torques_LL.resize(6);torques_RL.resize(6);
+		ampli_lleg.resize(6);ampli_lleg=1.0;//ampli_lleg[0]=1.0;ampli_lleg[1]=1.1;ampli_lleg[2]=1.1;
+		ampli_rleg.resize(6);ampli_rleg=1.0;//ampli_rleg[0]=1.0;ampli_rleg[1]=1.1;ampli_rleg[2]=1.1;
 	
 	}
 
@@ -343,6 +351,11 @@ public:
 		port_inertial->open("/wholebody_gComp/inertial:i");
 		Network::connect("/filtered/inertial:o","/wholebody_gComp/inertial:i");
 
+		
+		additional_offset=new BufferedPort<Vector>;
+		additional_offset->open("/wholebody_gComp/ctrlOffset:i");
+		*offset_input = 0.0;
+
 		ddLA->view(iencs_arm_left);
         ddRA->view(iencs_arm_right);
 		ddH->view(iencs_head);
@@ -376,6 +389,7 @@ public:
 		init_lower();
 		//-----------CARTESIAN INIT VARIABLES----------------//
 		
+		ctrlJnt = 4;
 		w0.resize(3,0.0);
 		dw0.resize(3,0.0);
 		d2p0.resize(3,0.0);
@@ -387,8 +401,8 @@ public:
 		F_ext_low = 0.0;
 		inertial_measurements.resize(12);
 		inertial_measurements.zero();
+		torque_offset.resize(ctrlJnt);
 
-		ctrlJnt = 4;
 		int ctrl_mode = 0;
 		
 		switch(gravity_mode)
@@ -418,10 +432,22 @@ public:
 	}
 	void readAndUpdate(bool waitMeasure=false)
 	{
-		
 		inertial = port_inertial->read(waitMeasure);
-		
+		offset_input = additional_offset->read(false);
 		int sz = 0;
+		if(offset_input!=0)
+		{
+			sz = offset_input->length();
+			Vector o=*offset_input;
+			torque_offset = 0.0;
+			for(int i=0;i<ctrlJnt;i++)
+				torque_offset[i] = o[i];
+			if(sz>ctrlJnt)
+				fprintf(stderr,"warning...controlled joint < of offsets size!!!");
+		}
+		
+
+		sz = 0;
 		if(inertial!=0)
 		{
 			sz = inertial->length();
@@ -558,7 +584,7 @@ public:
 		evalTorques();
 		return true;
     }
-	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,Vector G,bool releasing=false)
+	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,Vector G, const Vector &ampli, bool releasing=false)
 	{
 		
 		double k,d,o;
@@ -581,11 +607,11 @@ public:
 				case VOCAB_CM_TORQUE:	
 					if(gravity_mode == GRAVITY_COMPENSATION_ON)
 					{
-						iTqs->setRefTorque(i,G[i]);
+						iTqs->setRefTorque(i,ampli[i]*G[i]+torque_offset[i]);
 					}
 					else
 					{
-						iTqs->setRefTorque(i,0.0);
+						iTqs->setRefTorque(i,torque_offset[i]);
 					}
 					break;
 				case VOCAB_CM_IMPEDANCE_POS:
@@ -593,13 +619,14 @@ public:
 					if(gravity_mode == GRAVITY_COMPENSATION_ON)
 					{
 						//fprintf(stderr,"compensating gravity\n");
-						iImp->getImpedance(i,&k,&d,&o);
-						iImp->setImpedance(i,k,d,G[i]);
+						iImp->setImpedanceOffset(i,ampli[i]*G[i]+torque_offset[i]);
+						//iImp->getImpedance(i,&k,&d,&o);
+						//iImp->setImpedance(i,k,d,ampli[i]*G[i]+torque_offset[i]);
 					}
 					else
 					{
-						iImp->getImpedance(i,&k,&d,&o);
-						iImp->setImpedance(i,k,d,0.0);
+						//iImp->getImpedance(i,&k,&d,&o);
+						iImp->setImpedanceOffset(i,torque_offset[i]);
 					}
 					break;
 				default:
@@ -631,21 +658,21 @@ public:
 		Matrix F_sens_low = icub.lowerTorso->estimateSensorsWrench(F_ext_low,false);
 		evalTorques();
 		
-		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA);
-		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA);
+		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
+		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
 		
-		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL);
-		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL);
+		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
+		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
     }
     void threadRelease()
     {
 		Vector Z(10);Z=0.0;
 		
-		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,true);
-		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,true);
+		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
+		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
 		
-		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,true);
-		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,true);
+		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
+		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
 
 		
 		if(linEstUp) {delete linEstUp; linEstUp = 0;}
