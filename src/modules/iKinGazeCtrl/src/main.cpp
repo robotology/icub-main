@@ -34,7 +34,9 @@ relative mode (i.e. wrt to the current head position).
 
 Moreover, this module also implements the server part of the <a 
 href="http://eris.liralab.it/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze 
-Control Interface</a>.
+Control Interface</a>. For a tutorial on how to use the 
+interface, please go <a 
+href="http://eris.liralab.it/iCub/main/dox/html/icub_gaze_interface.html">here</a>. 
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -147,8 +149,8 @@ point:
 - by localizing the target in just one image plane and then 
   sending its relative coordinates together with a guessed
   distance z from the eye's frame to the /<ctrlName>/mono:i
-  port. In this mode the intrinsic cameras parameters are
-  required.
+  port. <b> In this mode the intrinsic cameras parameters are
+  required </b>.
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
