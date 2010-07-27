@@ -219,6 +219,7 @@ void YUVThread::run(){
         Time::delay(0.1);
 
         if (gotY + gotU + gotV > 2){
+
             imgY = imageInputPortY->read(true);
             imgU = imageInputPortU->read(true);
             imgV = imageInputPortV->read(true);
@@ -287,7 +288,12 @@ void YUVThread::run(){
 
 void YUVThread::threadRelease() 
 {
+    cout << "cleaning up things.." << endl;
     /* for example, delete dynamically created data-structures */
+    if (gotY + gotU + gotV > 2){    
+        delete centerSurr;
+    }
+    cout << "cleaning up things.." << endl;
 }
 
 void YUVThread::initAll()
