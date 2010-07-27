@@ -22,9 +22,10 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${iKin_LIBRARIES}
-                                     ${YARP_LIBRARIES}
-     				     ${logPolar_LIBRARIES}
+TARGET_LINK_LIBRARIES(${PROJECTNAME} 
+                     iKin
+                     ${YARP_LIBRARIES}
+     				 logPolar
 				     ${ICUB_LIBRARIES}
 				     ${OpenCV_LIBRARIES}										 )
 
