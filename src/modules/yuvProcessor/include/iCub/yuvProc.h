@@ -159,6 +159,7 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Thread.h>
+#include <yarp/os/Time.h>
 //ipp includes
 #include <ipp.h>
 //local includes
@@ -202,6 +203,7 @@ private:
     CentSur * centerSurr;
     Ipp32f *cs_tot_32f;
     Ipp32f min,max;
+    bool gotY, gotU, gotV;
 
 public:
 

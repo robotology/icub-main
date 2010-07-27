@@ -212,22 +212,21 @@ void YUVThread::run(){
 
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
         
-        do {
-         imgY = imageInputPortY->read(false);
-      } while (imgY == NULL);
+        gotY =  ( imageInputPortY->getInputCount() > 0 );
+    	gotU = ( imageInputPortU->getInputCount() > 0 );
+        gotV = ( imageInputPortV->getInputCount() > 0 );
+        
+        Time::delay(0.1);
 
-        do {
-         imgU = imageInputPortU->read(false);
-      } while (imgU == NULL);
+        if (gotY + gotU + gotV > 2){
+            imgY = imageInputPortY->read(true);
+            imgU = imageInputPortU->read(true);
+            imgV = imageInputPortV->read(true);
 
-        do {
-         imgV = imageInputPortV->read(false);
-      } while (imgV == NULL);
-
-        if (init){//Get first RGB image to establish width, height:
-            cout << "initializing" << endl;   
-            initAll();     
-        }
+            if (init){//Get first RGB image to establish width, height:
+                cout << "initializing" << endl;   
+                initAll();     
+            }
 
     /*  //used for testing: by creating your own YUV image ( from RBG eg...getting logpolar images straight from robot ) with alpha chanenl and separate Y U and V channel 
         ippiCopy_8u_C3R( img->getPixelAddress(0,0),img->getRowSize(), colour_in, psb3, srcsize);
@@ -242,48 +241,48 @@ void YUVThread::run(){
         pyuva[3]= tmp; 
         ippiCopy_8u_C4P4R(yuva_orig,psb4,pyuva,psb,srcsize);
         */
-        
-        ippiCopy_8u_C1R( imgY->getRawImage(), imgY->getRowSize(), y_orig, y_psb, srcsize);
-        ippiCopy_8u_C1R( imgU->getRawImage(), imgU->getRowSize(), u_orig, u_psb, srcsize);
-        ippiCopy_8u_C1R( imgV->getRawImage(), imgV->getRowSize(), v_orig, v_psb, srcsize);
+            ippiCopy_8u_C1R( imgY->getRawImage(), imgY->getRowSize(), y_orig, y_psb, srcsize);
+            ippiCopy_8u_C1R( imgU->getRawImage(), imgU->getRowSize(), u_orig, u_psb, srcsize);
+            ippiCopy_8u_C1R( imgV->getRawImage(), imgV->getRowSize(), v_orig, v_psb, srcsize);
 
-        //intensity process: performs centre-surround uniqueness analysis
-        centerSurr->proc_im_8u( y_orig , y_psb );
-        ippiCopy_8u_C1R(centerSurr->get_centsur_norm8u(),centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize);
- 
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+            //intensity process: performs centre-surround uniqueness analysis
+            centerSurr->proc_im_8u( y_orig , y_psb );
+            ippiCopy_8u_C1R(centerSurr->get_centsur_norm8u(),centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize);
+     
+    //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        //Colour process U performs centre-surround uniqueness analysis:
-        centerSurr->proc_im_8u( u_orig , u_psb );
-        ippiAdd_32f_C1IR(centerSurr->get_centsur_32f(),centerSurr->get_psb_32f(),cs_tot_32f,psb_32f,srcsize);
-        //Colour process V:
-        centerSurr->proc_im_8u( v_orig , v_psb );
-        ippiAdd_32f_C1IR(centerSurr->get_centsur_32f(),centerSurr->get_psb_32f(),cs_tot_32f,psb_32f,srcsize);
+            //Colour process U performs centre-surround uniqueness analysis:
+            centerSurr->proc_im_8u( u_orig , u_psb );
+            ippiAdd_32f_C1IR(centerSurr->get_centsur_32f(),centerSurr->get_psb_32f(),cs_tot_32f,psb_32f,srcsize);
+            //Colour process V:
+            centerSurr->proc_im_8u( v_orig , v_psb );
+            ippiAdd_32f_C1IR(centerSurr->get_centsur_32f(),centerSurr->get_psb_32f(),cs_tot_32f,psb_32f,srcsize);
 
-        //get min max
-        ippiMinMax_32f_C1R(cs_tot_32f,psb_32f,srcsize,&min,&max); 
-        if (max==min){max=255.0;min=0.0;}
-        ippiScale_32f8u_C1R(cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize,min,max);
- 
+            //get min max
+            ippiMinMax_32f_C1R(cs_tot_32f,psb_32f,srcsize,&min,&max); 
+            if (max==min){max=255.0;min=0.0;}
+            ippiScale_32f8u_C1R(cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize,min,max);
+     
 
-		//revert to yarp image
-		ippiCopy_8u_C1R(ycs_out, ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), srcsize);
-		ippiCopy_8u_C1R(colcs_out, col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), srcsize);
+	        //revert to yarp image
+	        ippiCopy_8u_C1R(ycs_out, ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), srcsize);
+	        ippiCopy_8u_C1R(colcs_out, col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), srcsize);
 
-        //output Y centre-surround results to ports
-        if (imageOutPortY->getOutputCount()>0){
-            imageOutPortY->prepare() = *img_out_Y;	
-            imageOutPortY->write();
+            //output Y centre-surround results to ports
+            if (imageOutPortY->getOutputCount()>0){
+                imageOutPortY->prepare() = *img_out_Y;	
+                imageOutPortY->write();
+            }
+            //output UV centre-surround results to ports
+            if (imageOutPortUV->getOutputCount()>0){
+                imageOutPortUV->prepare() = *img_out_UV;	
+                imageOutPortUV->write();
+            }
+
+            //reset
+            ippiSet_32f_C1R(0.0,cs_tot_32f,psb_32f,srcsize);
         }
-        //output UV centre-surround results to ports
-        if (imageOutPortUV->getOutputCount()>0){
-            imageOutPortUV->prepare() = *img_out_UV;	
-            imageOutPortUV->write();
-        }
-
-        //reset
-        ippiSet_32f_C1R(0.0,cs_tot_32f,psb_32f,srcsize);    
-    }
+    } //while
 }
 
 void YUVThread::threadRelease() 

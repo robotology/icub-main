@@ -236,6 +236,8 @@ void ZDFThread::run(){
 		leftPort =  ( imageInLeft->getInputCount() > 0 );
     	rightPort = ( imageInRight->getInputCount() > 0 );
         
+        Time::delay(0.1);
+
 		if ( leftPort + rightPort > 1){
 
         	img_in_left = imageInLeft->read(true);

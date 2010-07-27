@@ -137,7 +137,7 @@ void CentSur::make_pyramid(Ipp32f* im_32f,int p_32_)
     		       pyramid[sg],   //dst
     		       psb_p[sg],     //dst step
     		       psize[sg],     //dst size
-    		       sd,sd,IPPI_INTER_LINEAR);    
+    		       sd,sd,IPPI_INTER_LINEAR);   
 
         //filter:
         ippiFilterGaussBorder_32f_C1R(pyramid[sg],
