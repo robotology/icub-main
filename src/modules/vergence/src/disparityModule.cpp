@@ -3,162 +3,30 @@
 
 using namespace yarp::math;
 
-disparityModule::disparityModule(){
+disparityModule::disparityModule() {
     init_flag=false;
     currentProcessor=0;
-    
-	ratio = 4.00;
-	//Disp.init(84,ratio);
-	
-	
+    ratio = 4.00;
     robotHead = 0;
-	robotTorso = 0;
-
-
-	/*leftEye = new iCubEye("left");
-	rightEye = new iCubEye("right");
-
-    
-	
-	leftEye->releaseLink(0);rightEye->releaseLink(0);
-	leftEye->releaseLink(1);rightEye->releaseLink(1);
-	leftEye->releaseLink(2);rightEye->releaseLink(2);
-	leftEye->releaseLink(3);rightEye->releaseLink(3);
-	leftEye->releaseLink(4);rightEye->releaseLink(4);
-	leftEye->releaseLink(5);rightEye->releaseLink(5);
-	leftEye->releaseLink(6);rightEye->releaseLink(6);
-	leftEye->releaseLink(7);rightEye->releaseLink(7);
-
-    
-	chainRightEye=rightEye->asChain();
-  	chainLeftEye =leftEye->asChain();*/
-
-	
-    //cout << "chainRightEye " << (*chainRightEye)[0].getAng() << endl;
-
-    /*
-	(*chainRightEye)[0].setAng( 1.0 );
-	cout << "chainRightEye " << (*chainRightEye)[0].getAng() << endl;
-    */
-
-    /*
-	
-	fprintf(stderr,"Left Eye kinematic parameters:\n");
-  	for (unsigned int i=0; i<chainLeftEye->getN(); i++){
-    	fprintf(stderr,"#%d: %g, %g, %g, %g\n",i,
-        (*chainLeftEye)[i].getA(),
-        (*chainLeftEye)[i].getD(),
-        (*chainLeftEye)[i].getAlpha(),
-        (*chainLeftEye)[i].getOffset());
-  	}
-	
-	fprintf(stderr,"Right Eye kinematic parameters:\n");
-  	for (unsigned int i=0; i<chainRightEye->getN(); i++){
-    	fprintf(stderr,"#%d: %g, %g, %g, %g\n",i,
-    	(*chainRightEye)[i].getA(),
-        (*chainRightEye)[i].getD(),
-        (*chainRightEye)[i].getAlpha(),
-        (*chainRightEye)[i].getOffset());
-  	}
-
-	cout << "GET N: " << chainRightEye->getN() << endl;
-	cout << "GET DOF: " << chainRightEye->getDOF() << endl;
-
-    */
-    
-
-/*	// define the links in standard D-H convention
-	//A,  D, alpha, offset(*), min theta, max theta
-	leftLink = new iKinLink( (*chainLeftEye)[7].getA(), (*chainLeftEye)[7].getD(), (*chainLeftEye)[7].getAlpha(), (*chainLeftEye)[7].getOffset(), 0, 0);
-	rightLink = new iKinLink( (*chainRightEye)[7].getA(), (*chainRightEye)[7].getD(), (*chainRightEye)[7].getAlpha(), (*chainRightEye)[7].getOffset(), 0, 0);
-*/
-
-    /*
-	fb.resize(9);
-	fb = 0;
-	_q.resize(3);
-	_it.resize(3);
-	_o.resize(3);
-	_epx.resize(3);
-	_tmp.resize(3);
-	_tmpEl.resize(3);
-
-	_fixationPoint.resize(3);
-	_fixationPolar.resize(3);
-
-	_leftJoints.resize(9);
-	_rightJoints.resize(9);
-    */
+    robotTorso = 0;
 }
 
-disparityModule::~disparityModule(){
-
-	/*delete leftEye;
-	delete rightEye;
-	delete robotTorso;
-	delete robotHead;*/
-}
-
+disparityModule::~disparityModule() { } 
 
 bool disparityModule::configure(ResourceFinder &rf) {
     //create the imageIn ports
-	imageInLeft.open(getName( "/left" ));
-	imageInRight.open(getName( "/right" ));	
-	cmdOutput.open(getName("/output"));
-	imageOutputPort.open(getName("/image:o"));
-	histoOutPort.open(getName("/histo:o"));
+    
+    imageInLeft.open(getName( "/left" ));
+    imageInRight.open(getName( "/right" ));	
+    cmdOutput.open(getName("/output"));
+    imageOutputPort.open(getName("/image:o"));
+    histoOutPort.open(getName("/histo:o"));
 
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
 
-    /*interThread=new interactionThread();
-    interThread->setName(this->getName().c_str());
-    printf("name:%s \n",this->getName().c_str());
-    interThread->start();*/
-
     printf("\n waiting for connection of the input port \n");
-
-	//fout = fopen("disp_data.txt", "wa");
-	//fflush( stdout );
-
-	/*optionsTorso.put("device", "remote_controlboard");
-   	optionsTorso.put("local", "/local1");
-   	optionsTorso.put("remote", "/icubSim/torso"); 
-
-   	robotTorso = new PolyDriver(optionsTorso);
-
-   	if (!robotTorso->isValid()) {
-     	printf("Cannot connect to robot torso\n");
-     	return 1;
-   	}
-   	robotTorso->view(encTorso);
-   	if ( encTorso==NULL) {
-    	printf("Cannot get interface to robot torso\n");
-     	robotTorso->close();
-    	return 1;
-   	}
-
-	optionsHead.put("device", "remote_controlboard");
-	optionsHead.put("local", "/local");
-	optionsHead.put("remote", "/icubSim/head");
-
-	robotHead = new PolyDriver (optionsHead);
-
-	if (!robotHead->isValid()){
-		printf("cannot connect to robot head\n");
-		return 1;
-	}
-	robotHead->view(encHead);
-	if (encHead == NULL) {
-		printf("cannot get interface to the head\n");
-		robotHead->close();
-		return 1;
-	}
-
-    leftEye = new iCubEye("left");
-	rightEye = new iCubEye("right");*/
-   
     return true;
 }
 
@@ -166,31 +34,26 @@ bool disparityModule::configure(ResourceFinder &rf) {
 /**
 * ------------- DEPRECATED ------------------
 */
-bool disparityModule::open( Searchable& config ){
+bool disparityModule::open( Searchable& config ) {
 	
-
 	imageOutputPort.open("/vergence/image:o");
 	histoOutPort.open("/vergence/histo:o");
-
-	printf("opening .....");
-	fout = fopen("data/disp_data.txt", "wa");
-	//fflush( stdout );
 
 	optionsTorso.put("device", "remote_controlboard");
    	optionsTorso.put("local", "/local1");
    	optionsTorso.put("remote", "/icub/torso"); // CHANGE FOR THE ROBOT
 
    	robotTorso = new PolyDriver(optionsTorso);
-
    	if (!robotTorso->isValid()) {
-     	printf("Cannot connect to robot torso\n");
-     	return 1;
+     	    printf("Cannot connect to robot torso\n");
+     	    return 1;
    	}
+
    	robotTorso->view(encTorso);
    	if ( encTorso==NULL) {
-    	printf("Cannot get interface to robot torso\n");
-     	robotTorso->close();
-    	return 1;
+    	    printf("Cannot get interface to robot torso\n");
+     	    robotTorso->close();
+    	    return 1;
    	}
 
 	optionsHead.put("device", "remote_controlboard");
@@ -200,29 +63,30 @@ bool disparityModule::open( Searchable& config ){
 	robotHead = new PolyDriver (optionsHead);
 
 	if (!robotHead->isValid()){
-		printf("cannot connect to robot head\n");
-		return 1;
+	    printf("cannot connect to robot head\n");
+	    return 1;
 	}
 	robotHead->view(encHead);
 	if (encHead == NULL) {
-		printf("cannot get interface to the head\n");
-		robotHead->close();
-		return 1;
+	    printf("cannot get interface to the head\n");
+	    robotHead->close();
+	    return 1;
 	}
 	
 	return true;
 }
 
-void disparityModule::setOptions(yarp::os::Property opt){
-	//options	=opt;
+void disparityModule::setOptions(yarp::os::Property opt) {
     // definition of the name of the module
+
     ConstString name=opt.find("name").asString();
-    if(name!=""){
+    if(name!="") {
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
     }
+
     ConstString value=opt.find("mode").asString();
-    if(value!=""){
+    if(value!="") {
     }
 }
 
@@ -231,10 +95,6 @@ bool disparityModule::close(){
 	histoOutPort.close();
 	imageInLeft.close();
 	imageInRight.close();
-	
-	//fclose (fout);
-	//printf("stouting .... \n");
-	//fflush( stdout );    
 	return true;
 }
 

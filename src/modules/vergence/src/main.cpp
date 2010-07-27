@@ -3,6 +3,8 @@
 #include <yarp/os/RFModule.h>
 #include <iCub/disparityModule.h>
 
+#include <string.h>
+
 using namespace yarp::os;
 using namespace std;
 
