@@ -1,10 +1,8 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/DisparityTool.h>
 
-
 DisparityTool::DisparityTool()
 {
-	//ACE_OS::sprintf(_path,"%s","data/Tables/");
 
 	_shiftFunction	  = NULL;
 	_shiftFunctionInv = NULL;
@@ -15,7 +13,6 @@ DisparityTool::DisparityTool()
 
 	_maxCount = 0.0;
 
-	//init(_srho, _stheta, _fmode, _overlap, _xsize, _ysize, _xsizeR, _ysizeR, _srho);
     init(_srho, _stheta, 1, _overlap, _xsize, _ysize, _xsizeR, _ysizeR, _srho);
 }
 
@@ -338,7 +335,6 @@ void DisparityTool::computeCountVector(int *count)
 	}
 
 }
-
 
 void DisparityTool::findShiftMax(const double *corr)
 {

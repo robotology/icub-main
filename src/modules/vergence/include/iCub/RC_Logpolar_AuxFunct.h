@@ -1,10 +1,6 @@
 #ifndef RC_Logpolar_AuxFunct_h
 #define RC_Logpolar_AuxFunct_h
 
-
-//#include <ace/config.h>
-//#include <ace/OS.h>
-
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 

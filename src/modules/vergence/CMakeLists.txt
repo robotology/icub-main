@@ -1,8 +1,6 @@
 SET(PROJECTNAME vergence)
 PROJECT(${PROJECTNAME})
 
-#SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
-
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 FILE(GLOB folder_header include/iCub/*.h)
 
@@ -12,13 +10,10 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${ICUB_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
-		    ${iKin_INCLUDE_DIRS}
-		    ${logPolar_INCLUDE_DIRS}			
-		    ${OpenCV_INCLUDE_DIR}
+		            ${iKin_INCLUDE_DIRS}
+		            ${logPolar_INCLUDE_DIRS}			
+		            ${OpenCV_INCLUDE_DIR}
 		    )
-
-#		    ${IPP_INCLUDE_DIRS}
-#MESSAGE("logPolar_INCLUDE_DIRS  ${logPolar_INCLUDE_DIRS} logPolar_LIBRARIES ${logPolar_LIBRARIES}  ")
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
@@ -29,6 +24,5 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME}
 				     ${ICUB_LIBRARIES}
 				     ${OpenCV_LIBRARIES}										 )
 
-# ${IPP_LIBRARIES}
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 

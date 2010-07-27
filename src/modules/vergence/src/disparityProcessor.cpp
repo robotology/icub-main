@@ -1,11 +1,28 @@
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea, Vadim Tikhanoff
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
 #include <iCub/disparityProcessor.h>
 
-//using namespace iKin;
 using namespace yarp::math;
 const int THREAD_RATE=10;
 
 disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
     cout<< "initialisation process "<<endl;
+    cout << "HERE" <<endl;
 	ratio = 4.00;
 	//Disp.init(84,ratio);
 	
@@ -14,7 +31,6 @@ disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
     imgInL=0;
     imgInR=0;
 
-	
 	fb.resize(9);
 	fb = 0;
 	_q.resize(3);
@@ -40,41 +56,57 @@ disparityProcessor::~disparityProcessor(){
 }
 
 
+void disparityProcessor::setName(string name, string robotName) {
+    this->moduleName = name;
+    this->robotName = robotName;
+}
 
 bool disparityProcessor::threadInit(){
+    cout << "HERE1" <<endl;
+
+    string torsoPort, headPort;
+  
+    torsoPort = "/" + robotName + "/torso";
+    headPort = "/" + robotName + "/head";
+
 	optionsTorso.put("device", "remote_controlboard");
-   	optionsTorso.put("local", "/local1");
-   	optionsTorso.put("remote", "/icubSim/torso"); // CHANGE FOR THE ROBOT
+   	optionsTorso.put("local", "/localTorso");
+   	optionsTorso.put("remote", torsoPort.c_str() ); // CHANGE FOR THE ROBOT
 
    	robotTorso = new PolyDriver(optionsTorso);
 
    	if (!robotTorso->isValid()) {
      	printf("Cannot connect to robot torso\n");
-     	//return 1;
    	}
    	robotTorso->view(encTorso);
    	if ( encTorso==NULL) {
     	printf("Cannot get interface to robot torso\n");
      	robotTorso->close();
-    	//return 1;
    	}
 
 	optionsHead.put("device", "remote_controlboard");
-	optionsHead.put("local", "/local");
-	optionsHead.put("remote", "/icubSim/head");
+	optionsHead.put("local", "/localhead");
+	optionsHead.put("remote", headPort.c_str());
 
 	robotHead = new PolyDriver (optionsHead);
 
 	if (!robotHead->isValid()){
 		printf("cannot connect to robot head\n");
-		//return 1;
 	}
 	robotHead->view(encHead);
 	if (encHead == NULL) {
 		printf("cannot get interface to the head\n");
 		robotHead->close();
-		//return 1;
 	}
+
+    string imageInLeftName = moduleName+"/left:i";
+    imageInLeft.open(imageInLeftName.c_str());
+
+    string imageInRightName = moduleName+"/right:i";
+    imageInRight.open(imageInRightName.c_str());
+
+    string imageHistoName = moduleName+"/histo:o";
+    histoOutPort.open(imageHistoName.c_str());
 
     rightEye = new iCubEye("right");
     leftEye = new iCubEye("left");
@@ -99,8 +131,6 @@ bool disparityProcessor::threadInit(){
 
 	chainRightEye=rightEye->asChain();
   	chainLeftEye =leftEye->asChain();
-
-    
     
 	cout << "chainRightEye " << (*chainRightEye)[0].getAng() << endl;
 	(*chainRightEye)[0].setAng( 1.0 );
@@ -124,233 +154,129 @@ bool disparityProcessor::threadInit(){
         (*chainRightEye)[i].getAlpha(),
         (*chainRightEye)[i].getOffset());
   	}
-
-	cout << "GET N: " << chainRightEye->getN() << endl;
-	cout << "GET DOF: " << chainRightEye->getDOF() << endl;
-    
-
-/*	// define the links in standard D-H convention
-	//A,  D, alpha, offset(*), min theta, max theta
-	leftLink = new iKinLink( (*chainLeftEye)[7].getA(), (*chainLeftEye)[7].getD(), (*chainLeftEye)[7].getAlpha(), (*chainLeftEye)[7].getOffset(), 0, 0);
-	rightLink = new iKinLink( (*chainRightEye)[7].getA(), (*chainRightEye)[7].getD(), (*chainRightEye)[7].getAlpha(), (*chainRightEye)[7].getOffset(), 0, 0);
-*/
-
-	//imageOutputPort.open("/vergence/image:o");
-	//histoOutPort.open("/vergence/histo:o");
-
-	
-    //fout = fopen("data/disp_data.txt", "wa");
-	//fflush( stdout );
-
-    
 	
 	return true;
 }
-
-
 
 void disparityProcessor::threadRelease(){
-	/*imageOutputPort.close();
-	histoOutPort.close();
-	printf("saving left \n");
-	imageInLeft.close();
-	printf("saving right \n");
-	imageInRight.close();
-	printf("fclosing.... \n");
-	fclose (fout);
-	printf("stouting .... \n");
-	//fflush( stdout );    
-    */
 	
-    //return true;
-}
+	histoOutPort.close();
+	imageInLeft.close();
+	imageInRight.close();
+    cmdOutput.close();
+    delete leftEye;
+    delete rightEye;   
+	delete robotHead;
+	delete robotTorso;
 
-/*
-bool disparityProcessor::interrupt(){
-	imageOutputPort.interrupt();
-	histoOutPort.interrupt();
-	imageInLeft.interrupt();
-	imageInRight.interrupt();
-
-	return true;
 }
-*/
 
 void disparityProcessor::run(){	
-    
+   // cout << "waiting for connection " << endl;
+    needLeft =  ( imageInLeft.getInputCount() > 0 );
+    needRight = ( imageInRight.getInputCount() > 0 );
 
+    if( needLeft + needRight > 1 ) {
+
+        int disparityVal = 0;
+        double corrVal = 0.0;
+
+        //create vector thast contains head encoders
+        Vector _head(6), _torso(3);
+        if (encTorso->getEncoders(_torso.data()))
+            for (int i=0; i<3; i++)
+                fb[i]=_torso[2-i];    // reversed order
+
+        if (encHead->getEncoders(_head.data()))
+            for (int i=0; i<6; i++)
+                fb[3+i]=_head[i];
+
+        Vector q = (M_PI/180.0)*fb; // to radians
+
+        q[7]=(M_PI/180.0)*(fb[7]+fb[8]/2);
+        HL = leftEye->getH(q);
+        q[7]=(M_PI/180.0)*(fb[7]-fb[8]/2);
+        HR = rightEye->getH(q);
+
+        _nFrame = chainRightEye->getN(); //HL.rows();
+        _joints.resize( _nFrame );
+
+        Vector tempV;
+        tempV.resize(3);
+        // computes ray that intesects with image plane
+        computeRay( KIN_RIGHT_PERI , tempV, _centerX, _centerY);
+
+        // ------------------------------------------------------------------compute min 
+	    Vector tmpPos;
+	    tmpPos.resize(9);
+	    tmpPos = q;
+
+	    tmpPos(7)  = - ( _maxVerg + tmpPos(8) );
+	    computeDirect( tmpPos );
+	    int x, y;
+	    intersectRay( KIN_RIGHT_PERI, tempV, x, y );
+	    float min;
+	    min = _centerX - x;
+
+	    // ------------------------------------------------------------------compute max 
+	    tmpPos = q;
+	    tmpPos(7)  = - ( _minVerg + tmpPos(8) );
+	    computeDirect( tmpPos );
+	    intersectRay( KIN_RIGHT_PERI, tempV, x, y );
+	    float max;
+	    max = _centerX - x;
 	
-   
-	
-	//needLeft =  ( imageInLeft.getInputCount() > 0 );
-	//needRight = ( imageInRight.getInputCount() > 0 );
+	    int hWidth = 0;		
+	    int hHeight = 0;
+	    double _minDisp = Disp.shiftToDisparity(Disp.getLimitsMin());
+	    double _maxDisp = Disp.shiftToDisparity(Disp.getLimitsMax());
 
-	int disparityVal = 0;
-	double corrVal = 0.0;
-    	
-	//create vector thast contains head encoders
-	Vector _head(6), _torso(3);
-	if (encTorso->getEncoders(_torso.data()))
-    for (int i=0; i<3; i++)
-        fb[i]=_torso[2-i];    // reversed order
-	
- 	if (encHead->getEncoders(_head.data()))
-    for (int i=0; i<6; i++)
-        fb[3+i]=_head[i];
-	
-	Vector q = (M_PI/180.0)*fb; // to radians
+        _minDisp = 2.0*206.026*tan(fb[8]*M_PI/180.0 - _maxVerg) + 0.5;
+        _maxDisp = 2.0*206.026*tan(fb[8]*M_PI/180.0 - _minVerg) - 0.5;
+        Disp.setInhibition((int)_maxDisp, (int)_minDisp);
 
-    q[7]=(M_PI/180.0)*(fb[7]+fb[8]/2);
-	HL = leftEye->getH(q);
-    q[7]=(M_PI/180.0)*(fb[7]-fb[8]/2);
-    HR = rightEye->getH(q);
+        imgInL = imageInLeft.read(false);
+		imgInR = imageInRight.read(false);
 
-	_nFrame = chainRightEye->getN(); //HL.rows();
-	_joints.resize( _nFrame );
+        if( ( imgInL != NULL ) && ( imgInR != NULL ) ){
 
-	 
-    Vector tempV;
-	tempV.resize(3);
-	// computes ray that intesects with image plane
-	computeRay( KIN_RIGHT_PERI , tempV, _centerX, _centerY);
+            disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 4);
 
-	// ------------------------------------------------------------------compute min 
-	Vector tmpPos;
-	tmpPos.resize(9);
-	tmpPos = q;
+            hWidth = Disp.getShiftLevels();
+            hHeight = hWidth/2;	
+            histo.resize(hWidth, hHeight);
 
-	tmpPos(7)  = - ( _maxVerg + tmpPos(8) );
-	computeDirect( tmpPos );
-	int x, y;
-	intersectRay( KIN_RIGHT_PERI, tempV, x, y );
-	float min;
-	min = _centerX - x;
+            for (int k = 0; k < 4; k++)
+                maxes[k] = Disp.getMax(k);
 
-	// ------------------------------------------------------------------compute max 
-	tmpPos = q;
-	tmpPos(7)  = - ( _minVerg + tmpPos(8) );
-	computeDirect( tmpPos );
-	intersectRay( KIN_RIGHT_PERI, tempV, x, y );
-	float max;
-	max = _centerX - x;
+            cout << "disparity Val " << disparityVal  << endl;
 
-    
-	
-	//cout << "min: " << min << " max: " << max << " " << "fixation " << _fixationPoint.toString().c_str() << endl;
-	
-	int hWidth = 0;		
-	int hHeight = 0;
-	double _minDisp = Disp.shiftToDisparity(Disp.getLimitsMin());
-	double _maxDisp = Disp.shiftToDisparity(Disp.getLimitsMax());
+            Disp.makeHistogram(histo);
+            if ( histoOutPort.getOutputCount() > 0 ) { 
+                histoOutPort.prepare() = histo;	
+                histoOutPort.write();
+            }
 
-	if ( needLeft + needRight > 1)
-	{
-		_minDisp = 2.0*206.026*tan(fb[8]*M_PI/180.0 - _maxVerg) + 0.5;
-		_maxDisp = 2.0*206.026*tan(fb[8]*M_PI/180.0 - _minVerg) - 0.5;
-		Disp.setInhibition((int)_maxDisp, (int)_minDisp);
+            angle=fb[8]-(180/M_PI)*atan(disparityVal/(2*206.026));
+            if(angle<0)
+            angle=0;		
+            cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
 
-		//imgInL = imageInLeft.read(true);
-		//imgInR = imageInRight.read(true);
-        if((imgInL!=0)&&(imgInR!=0)){
-
-		    /*Limg.resize(imgInL->width()/ratio,imgInL->height()/ratio);
-		    Rimg.resize(imgInR->width()/ratio,imgInR->height()/ratio);
-		    Disp.downSample(*imgInL, Limg);
-		    Disp.downSample(*imgInR, Rimg);*/
-
-		    //send to port
-		    //Disp._shiftFunction[Disp._shifts[0]]
-
-		    //Calcolo la funzione di correlazione e le disp dei massimi e scrivo i risultati su file
-		    disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 4);
-
-		    hWidth = Disp.getShiftLevels();
-		    hHeight = hWidth/2;	
-		    histo.resize(hWidth, hHeight);
-
-		    for (int k = 0; k < 4; k++)
-			    maxes[k] = Disp.getMax(k);
-
-		    //printf( "\n\tMax Shift:\n\t\tdisp index: %d\tdisp value: %d\tcorr value: %f\n", maxes[0].index, (int)maxes[0].disp, maxes[0].corr);
-		    //printf( "\n\tSecond Max:\n\t\tdisp index: %d\tdisp value: %d\tcorr value: %f\n", maxes[1].index,(int) maxes[1].disp, maxes[1].corr);
-		    //printf( "\n\tThird Max:\n\t\tdisp index: %d\tdisp value: %d\tcorr value: %f\n", maxes[2].index, (int)maxes[2].disp, maxes[2].corr);
-		    //printf( "\n\tZero Shift:\n\t\tdisp index: %d\tdisp value: %d\tcorr value: %f\n\n\n", maxes[3].index, (int)maxes[3].disp, maxes[3].corr);
-    		
-		    //cout << "disparity Val " << disparityVal << " Corrval " << corrVal << " DISPARITY " << Disp._shiftFunction[Disp._shifts[0]] << endl;
-		    cout << "disparity Val " << disparityVal  << endl;
-
-		    Disp.makeHistogram(histo);
-		    /*if ( histoOutPort.getOutputCount() > 0 ){ 
-			    cout<< "histo out"<<endl;
-			    histoOutPort.prepare() = histo;	
-			    histoOutPort.write();
-		    }*/
-    		
-
-		    /*if ( imageOutputPort.getOutputCount() > 0 ){ 
-			    imageOutputPort.prepare() = *imgInL;	
-			    imageOutputPort.write();
-		    }*/
-		    /*
-		    //vergence control from disparity calculations\
-					    theta = -K * di 
-		    //theta -> first derivative of the vergence angle\
-		    K     ->constant gain\
-		    di    ->disparity index	
-
-		    double K  = 0.25;
-		    double theta = -K * disparityVal;
-
-
-		    double angle  = fb[8] + theta;/*q[8]
-		    Bottle& b = cmdOutput.prepare(); 
- 		    char verg[100];
-		    sprintf(verg, "Vergence (position %lf)", angle);
-    		
-    		
-		    //cout << verg << endl;
-		    b.addString(verg);
-		    //b.addString(verg);
-		    //b.addDouble(angle);
-		    //b.addString(verg2);
-		    cmdOutput.write();
-		    b.clear();
-
-		    cout << "theta " << theta << " angle " << angle <<" current " << fb[8] << endl;
-
-		    */
-		    angle=fb[8]-(180/M_PI)*atan(disparityVal/(2*206.026));
-		    if(angle<0)
-			    angle=0;		
-		    cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
-
-
-    		/*
-		    Bottle in,bot;
-            //Bottle &bot = triangulationPort.prepare(); 
-            bot.clear();
-
-		    //Bottle& b = cmdOutput.prepare(); 
- 		    char verg[100];
-		    sprintf(verg, "set pos 5 %f", angle);
-    		
-    		
-    //		bot.addString(verg);
-		    bot.addString("set");
-		    bot.addString("pos");		
-		    bot.addInt(5);
-		    bot.addDouble(angle);
-		    cmdOutput.write(bot,in);
-		    bot.clear();
-            */
-        }//end if
-	}
-
-	fflush( stdout );
-	//return true;
+            if ( cmdOutput.getOutputCount() > 0 ) { 
+                Bottle in,bot;
+                bot.clear();
+                char verg[100];
+                sprintf(verg, "set pos 5 %f", angle);
+                bot.addString("set");
+                bot.addString("pos");		
+                bot.addInt(5);
+                bot.addDouble(angle);
+                cmdOutput.write(bot,in);
+                bot.clear();
+            }
+        }
+    }
 } 	
-
-
 
 void disparityProcessor::computeRay(__kinType k, Vector& v, int x, int y){
 	if (k == KIN_LEFT)
@@ -434,7 +360,7 @@ void disparityProcessor::computeRay(__kinType k, Vector& v, int x, int y){
 		v = 0;
 }
 
-/// given an up to date kin matrix, it computes the x,y point where a given ray v intersects the img plane.
+// given an up to date kin matrix, it computes the x,y point where a given ray v intersects the img plane.
 void disparityProcessor::intersectRay (__kinType k, const Vector& v, int& x, int& y)
 {
 	if (k == KIN_LEFT || k == KIN_LEFT_PERI)
@@ -545,7 +471,6 @@ void disparityProcessor::computeDirect (const Vector &joints)
 	// I *KNOW* this is awful because doesn't use n_ref_frame
 	// we don't need joints copy 'cause we don't use computeDirect(Joints)
 
-
 	_leftJoints(0) = joints(0);
 	_leftJoints(1) = joints(1);
 	_leftJoints(2) = joints(2);
@@ -554,7 +479,6 @@ void disparityProcessor::computeDirect (const Vector &joints)
 	_leftJoints(5) = joints(5);
 	_leftJoints(6) = joints(6);
 	_leftJoints(7) = joints(8);
-
 
 	_rightJoints(0) = joints(0);
 	_rightJoints(1) = joints(1);
@@ -576,7 +500,6 @@ void disparityProcessor::computeDirect (const Vector &joints)
 
 	
 }
-
 
 // check out 'cause I have modified the index numeration (Fra)
 // as input two roto-traslation matrices 4x4
