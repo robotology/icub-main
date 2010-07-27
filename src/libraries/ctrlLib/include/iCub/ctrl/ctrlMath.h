@@ -16,7 +16,11 @@
  * Collection of mathematical functions
  *
  * \author Ugo Pattacini, Serena Ivaldi, Francesco Nori
+ * 
+ * Copyright (C) 2008 RobotCub Consortium
  *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+ *  
  */ 
 
 

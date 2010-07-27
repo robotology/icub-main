@@ -6,7 +6,11 @@
  * Definition of primitive actions for dealing with affordances 
  * and more. 
  *
- * \author Ugo Pattacini
+ * \author Ugo Pattacini 
+ *  
+ * Copyright (C) 2008 RobotCub Consortium
+ *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
  *
  * \section intro_sec Description
  *

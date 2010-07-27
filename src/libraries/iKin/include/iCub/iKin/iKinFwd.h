@@ -28,7 +28,11 @@
  *
  * Date: first release 16/06/2008
  *
- * \author Ugo Pattacini
+ * \author Ugo Pattacini 
+ *  
+ * Copyright (C) 2008 RobotCub Consortium
+ *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */ 
 
