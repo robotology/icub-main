@@ -5,7 +5,7 @@ using namespace yarp::math;
 const int THREAD_RATE=10;
 
 disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
-
+    cout<< "initialisation process "<<endl;
 	ratio = 4.00;
 	//Disp.init(84,ratio);
 	

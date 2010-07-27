@@ -16,15 +16,14 @@ disparityModule::~disparityModule() { }
 bool disparityModule::configure(ResourceFinder &rf) {
     //create the imageIn ports
     
-    imageInLeft.open(getName( "/left" ));
-    imageInRight.open(getName( "/right" ));	
-    cmdOutput.open(getName("/output"));
-    imageOutputPort.open(getName("/image:o"));
-    histoOutPort.open(getName("/histo:o"));
+   
 
     Time::turboBoost();
     cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
+
+    currentProcessor=new disparityProcessor();
+    currentProcessor->start();
 
     printf("\n waiting for connection of the input port \n");
     return true;
@@ -34,6 +33,7 @@ bool disparityModule::configure(ResourceFinder &rf) {
 /**
 * ------------- DEPRECATED ------------------
 */
+/*
 bool disparityModule::open( Searchable& config ) {
 	
 	imageOutputPort.open("/vergence/image:o");
@@ -75,6 +75,7 @@ bool disparityModule::open( Searchable& config ) {
 	
 	return true;
 }
+*/
 
 void disparityModule::setOptions(yarp::os::Property opt) {
     // definition of the name of the module
@@ -91,24 +92,18 @@ void disparityModule::setOptions(yarp::os::Property opt) {
 }
 
 bool disparityModule::close(){
-	imageOutputPort.close();
-	histoOutPort.close();
-	imageInLeft.close();
-	imageInRight.close();
+	
 	return true;
 }
 
 bool disparityModule::interruptModule(){
-	imageOutputPort.interrupt();
-	histoOutPort.interrupt();
-	imageInLeft.interrupt();
-	imageInRight.interrupt();
+	
 
 	return true;
 }
 
 bool disparityModule::updateModule(){	
-	
+/*	
 	needLeft =  ( imageInLeft.getInputCount() > 0 );
 	needRight = ( imageInRight.getInputCount() > 0 );
 
@@ -126,7 +121,7 @@ bool disparityModule::updateModule(){
         }
     }
 
-    
+  */  
 	//int disparityVal = 0;
 	//double corrVal = 0.0;
     
@@ -220,7 +215,8 @@ bool disparityModule::updateModule(){
 		//cout << "disparity Val " << disparityVal  << endl;
 
 		//Disp.makeHistogram(histo);
-		if ( histoOutPort.getOutputCount() > 0 ){ 
+		/*
+        if ( histoOutPort.getOutputCount() > 0 ){ 
 			histoOutPort.prepare() = currentProcessor->histo;	
 			histoOutPort.write();
 		}
@@ -230,6 +226,7 @@ bool disparityModule::updateModule(){
 			imageOutputPort.prepare() = *imgInL;	
 			imageOutputPort.write();
 		}
+        */
 
 		/*
 		//vergence control from disparity calculations\
@@ -265,6 +262,8 @@ bool disparityModule::updateModule(){
 		//	angle=0;		
 		//cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
 
+        /*
+
         if(currentProcessor!=0){
 		
 		    Bottle in,bot;
@@ -286,9 +285,11 @@ bool disparityModule::updateModule(){
             }
         }//end if(currentProcessor!=0)
 	//}
+
+    */
 	
     
-//	fflush( stdout );
+
 	return true;
 } 	
 

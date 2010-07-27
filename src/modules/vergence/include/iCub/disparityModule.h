@@ -110,10 +110,7 @@ private:
 
 	double leftMax, leftMin, rightMax, rightMin;
 
-	BufferedPort < ImageOf<PixelRgb > >    imageInLeft;  //left camera port
-	BufferedPort < ImageOf<PixelRgb > >    imageInRight; //right camera port
-	BufferedPort < ImageOf<PixelMono > >   histoOutPort; //output histogram
-
+	
    	bool needLeft, needRight;
     int imgNumb;
 	float ratio;
@@ -171,7 +168,6 @@ public:
 	}
     */
 
-	virtual bool open(Searchable& config);
 	virtual bool close();
 	virtual bool interruptModule();
 	virtual bool updateModule();
