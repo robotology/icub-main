@@ -35,7 +35,7 @@ set(ICUB_LINK_FLAGS ${IPOPT_LINK_FLAGS})
 set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
   get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY EXTERNAL_INCLUDE_DIRS)
-  get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
+  #get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
   
    set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS}) 
 
