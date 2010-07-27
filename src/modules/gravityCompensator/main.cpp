@@ -354,7 +354,7 @@ public:
 		
 		additional_offset=new BufferedPort<Vector>;
 		additional_offset->open("/wholebody_gComp/ctrlOffset:i");
-		*offset_input = 0.0;
+		//*offset_input = 0.0;
 
 		ddLA->view(iencs_arm_left);
         ddRA->view(iencs_arm_right);
@@ -584,10 +584,10 @@ public:
 		evalTorques();
 		return true;
     }
-	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,Vector G, const Vector &ampli, bool releasing=false)
+	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false)
 	{
 		
-		double k,d,o;
+		//double k,d,o;
 		/*int f,l;
 		if(part=="arm")
 		{
@@ -634,8 +634,8 @@ public:
 			}
 			if(releasing)
 			{
-				iImp->getImpedance(i,&k,&d,&o);
-				iImp->setImpedance(i,k,d,0.0);
+                fprintf(stderr,"releasing... \n");
+				iImp->setImpedanceOffset(i,0.0);
 				iTqs->setRefTorque(i,0.0);
 			}
 		}
@@ -673,6 +673,7 @@ public:
 		
 		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
 		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
+        Time::delay(1.0);
 
 		
 		if(linEstUp) {delete linEstUp; linEstUp = 0;}
@@ -770,7 +771,7 @@ public:
 		//remote += "icub/";
 		//remote += part;
 
-		attachTerminal();                     // attach to terminal
+		//attachTerminal();                     // attach to terminal
 
 
 
@@ -893,6 +894,12 @@ public:
     {
 		/*if(g_comp->isRunning()) { g_comp->stop(); delete g_comp; g_comp = 0;}
 		if(dd) { delete dd; dd = 0;}*/
+        if(g_comp)
+        {
+            g_comp->stop();
+            delete g_comp; g_comp = 0;
+        }
+
         return true;
     }
 
