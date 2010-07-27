@@ -41,36 +41,36 @@
 <connection>
   <output>/icub/camcalib/left/out</output>
   <input>/cam/left</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/camcalib/right/out</output>
   <input>/cam/right</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/camcalib/left/out</output>
   <input>/zdfMod/imageLeft:i</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/camcalib/right/out</output>
   <input>/zdfMod/imageRight:i</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/zdfMod/imageProb:o</output>
   <input>/view/Prob</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/zdfMod/imageSeg:o</output>
   <input>/view/Seg</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/zdfMod/imageDog:o</output>
   <input>/view/Dog</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 </application>

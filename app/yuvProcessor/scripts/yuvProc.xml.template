@@ -41,41 +41,41 @@
 <connection>
   <output>/icub/cam/left/logpolar</output>
   <input>/cam/left</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/cam/right/logpolar</output>
   <input>/cam/right</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/cam/left/logpolar</output>
   <input>/colourPU/image:i</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/colourPU/ychannel:o</output>
   <input>/yuvProc/Y/image:i</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/colourPU/uchannel:o</output>
   <input>/yuvProc/U/image:i</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/colourPU/vchannel:o</output>
   <input>/yuvProc/V/image:i</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/yuvProc/Y/image:o</output>
   <input>/view/Y</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/yuvProc/UV/image:o</output>
   <input>/view/UV</input>
-  <protocol>tcp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 </application>
