@@ -178,7 +178,7 @@ bool disparityModule::open( Searchable& config ){
 
 	optionsTorso.put("device", "remote_controlboard");
    	optionsTorso.put("local", "/local1");
-   	optionsTorso.put("remote", "/icubSim/torso"); // CHANGE FOR THE ROBOT
+   	optionsTorso.put("remote", "/icub/torso"); // CHANGE FOR THE ROBOT
 
    	robotTorso = new PolyDriver(optionsTorso);
 
@@ -195,7 +195,7 @@ bool disparityModule::open( Searchable& config ){
 
 	optionsHead.put("device", "remote_controlboard");
 	optionsHead.put("local", "/local");
-	optionsHead.put("remote", "/icubSim/head");
+	optionsHead.put("remote", "/icub/head");
 
 	robotHead = new PolyDriver (optionsHead);
 
