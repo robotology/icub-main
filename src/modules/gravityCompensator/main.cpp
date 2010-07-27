@@ -771,7 +771,7 @@ public:
 		//remote += "icub/";
 		//remote += part;
 
-		//attachTerminal();                     // attach to terminal
+		attachTerminal();                     // attach to terminal
 
 
 
