@@ -31,6 +31,7 @@ STILL IN TESTING DOCUMENTATION TO COME
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Thread.h>
+#include <yarp/os/Time.h>
 //ipp includes
 #include <ipp.h>
 #include <stdlib.h>
@@ -38,6 +39,8 @@ STILL IN TESTING DOCUMENTATION TO COME
 #include "iCub/coord.h"
 #include "iCub/dog.h"
 #include "iCub/multiclass.h"
+
+#include "yarp/os/Time.h"
 
 //use NDT or RANK comparision?
 #define RANK0_NDT1 1 //0 (NDT FASTER and RANK a little too sensitive)

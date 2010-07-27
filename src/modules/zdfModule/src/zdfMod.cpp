@@ -589,6 +589,14 @@ void ZDFThread::run(){
 void ZDFThread::threadRelease() 
 {
     /* for example, delete dynamically created data-structures */
+     cout << "cleaning up things.." << endl;
+    if ( leftPort + rightPort > 1){
+        delete dl;
+        delete dr;
+        delete m;
+    }
+
+    cout << "finished cleaning.." << endl;
 }
 
 void ZDFThread::initAll()
