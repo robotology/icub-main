@@ -848,6 +848,29 @@
 		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }
+
+//-------------------------------------------------------------------
+#define CAN_SET_IMPEDANCE_OFFSET_HANDLER(x) \
+{ \
+	if (CAN_LEN == 3) \
+	{ \
+		_ko_imp[axis] = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
+		_general_board_error = ERROR_NONE; \
+	} \
+	else \
+		_general_board_error = ERROR_FMT; \
+}
+//-------------------------------------------------------------------
+#define CAN_GET_IMPEDANCE_OFFSET_HANDLER(x) \
+{ \
+	PREPARE_HEADER; \
+		CAN_LEN = 3; \
+		CAN_DATA[1] = BYTE_H(_ko_imp[axis]); \
+		CAN_DATA[2] = BYTE_L(_ko_imp[axis]); \
+		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
+		_general_board_error = ERROR_NONE; \
+}
+
 //-------------------------------------------------------------------
 #define CAN_SET_TORQUE_PIDLIMITS_HANDLER(x) \
 { \

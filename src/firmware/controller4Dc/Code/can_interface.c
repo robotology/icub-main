@@ -442,7 +442,9 @@ byte can_interface (void)
 				HANDLE_MSG (CAN_GET_POS_PIDLIMITS, CAN_GET_POS_PIDLIMITS_HANDLER)
 				HANDLE_MSG (CAN_SET_IMPEDANCE_PARAMS, CAN_SET_IMPEDANCE_PARAMS_HANDLER)
 				HANDLE_MSG (CAN_GET_IMPEDANCE_PARAMS, CAN_GET_IMPEDANCE_PARAMS_HANDLER)
-								
+				HANDLE_MSG (CAN_SET_IMPEDANCE_OFFSET, CAN_SET_IMPEDANCE_OFFSET_HANDLER)
+				HANDLE_MSG (CAN_GET_IMPEDANCE_OFFSET, CAN_GET_IMPEDANCE_OFFSET_HANDLER)
+											
 		//		HANDLE_MSG (CAN_GET_ACTIVE_ENCODER_POSITION, CAN_GET_ACTIVE_ENCODER_POSITION_HANDLER)
 				
 				END_MSG_TABLE		
@@ -491,6 +493,7 @@ void can_send_broadcast(void)
 	bool FAULT_OVL2;
 	bool FAULT_OVL3;
 	bool FAULT_UND;
+	static byte old_control_mode[JN] = INIT_ARRAY (MODE_IDLE);
 	
 	/*
 		//USE THIS TO BROADCAST EVERY 1ms (DEBUG ONLY!)
@@ -639,31 +642,21 @@ void can_send_broadcast(void)
 			sendA=true;
 		}
 		//Control Mode axes 0
-		if (_control_mode[0]==0)
+		_canmsg.CAN_data[1]= _control_mode[0];	
+		if (_control_mode[0] != old_control_mode[0])
 		{
-			_canmsg.CAN_data[1]= MODE_IDLE;	
+			sendA = true;
+			old_control_mode[0]=_control_mode[0];
 		}
-		if (_control_mode[0]&0x03)
-		{
-			_canmsg.CAN_data[1]= MODE_CONTROLLED; 			
-		}
-		if (_control_mode[0]>0x03)
-		{
-			_canmsg.CAN_data[1]= MODE_CALIB; 		
-		}
+		
 		//Control Mode axes 1
-		if (_control_mode[1]==0)
+		_canmsg.CAN_data[3]= _control_mode[1]; 		
+		if (_control_mode[1] != old_control_mode[1])
 		{
-			_canmsg.CAN_data[3]= MODE_IDLE;	
+			sendA = true;
+			old_control_mode[1]=_control_mode[1];
 		}
-		if (_control_mode[1]&0x03)
-		{
-			_canmsg.CAN_data[3]= MODE_CONTROLLED; 			
-		}
-		if (_control_mode[1]>0x03)
-		{
-			_canmsg.CAN_data[3]= MODE_CALIB; 		
-		}
+
 		//CANBUS ERRORS
 		_canmsg.CAN_data[4] = getCanStatus();
 		//MAIN LOOP overflow
@@ -760,31 +753,21 @@ void can_send_broadcast(void)
 			sendB=true;
 		}
 		//Control Mode axes 2
-		if (_control_mode[2]==0)
+		_canmsg.CAN_data[1]= _control_mode[2];	
+		if (_control_mode[2] != old_control_mode[2])
 		{
-			_canmsg.CAN_data[1]= MODE_IDLE;	
+			sendB = true;
+			old_control_mode[2]=_control_mode[2];
 		}
-		if (_control_mode[2]&0x03)
+		
+		//Control Mode axes 3
+		_canmsg.CAN_data[3]= _control_mode[3]; 		
+		if (_control_mode[1] != old_control_mode[3])
 		{
-			_canmsg.CAN_data[1]= MODE_CONTROLLED; 			
+			sendB = true;
+			old_control_mode[3]=_control_mode[3];
 		}
-		if (_control_mode[2]>0x03)
-		{
-			_canmsg.CAN_data[1]= MODE_CALIB; 	
-		}
-				//Control Mode axes 1
-		if (_control_mode[3]==0)
-		{
-			_canmsg.CAN_data[3]= MODE_IDLE;	
-		}
-		if (_control_mode[3]&0x03)
-		{
-			_canmsg.CAN_data[3]= MODE_CONTROLLED; 			
-		}
-		if (_control_mode[3]>0x03)
-		{
-			_canmsg.CAN_data[3]= MODE_CALIB; 		
-		}
+
 		//CANBUS ERRORS
 		_canmsg.CAN_data[4] = getCanStatus();
 		//MAIN LOOP overflow
