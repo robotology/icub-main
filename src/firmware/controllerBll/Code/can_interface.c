@@ -529,6 +529,7 @@ void can_send_broadcast(void)
 	int iretval,k; 
 	bool send;
 	CAN1_TError *canError=0;
+	static byte old_control_mode[JN] = INIT_ARRAY (MODE_IDLE);
 	
 	_countBoardStatus++;
 	
@@ -652,6 +653,11 @@ void can_send_broadcast(void)
 	
 		//Control Mode axes 0
 		_canmsg.CAN_data[1]= _control_mode[0];	
+		if (_control_mode[0] != old_control_mode[0])
+		{
+			send = true;
+			old_control_mode[0]=_control_mode[0];
+		}
 		
 		//  - - - PWM CHANNEL B (axis 1) - - -
 		_fault[1] = getReg (PWMB_PMFSA);
@@ -684,7 +690,12 @@ void can_send_broadcast(void)
 		#endif
 		//Control Mode axes 1
 		_canmsg.CAN_data[3]= _control_mode[1]; 		
-		
+		if (_control_mode[1] != old_control_mode[1])
+		{
+			send = true;
+			old_control_mode[1]=_control_mode[1];
+		}
+				
 		//CANBUS ERRORS
 		_canmsg.CAN_data[4] = getCanStatus();
 		//MAIN LOOP overflow
