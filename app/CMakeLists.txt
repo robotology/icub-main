@@ -9,14 +9,7 @@ SET(ROBOT_NAME "$ENV{ICUB_ROBOTNAME}" CACHE PATH
 
 SET(ROBOT_DIR "$ENV{ICUB_ROOT}/app/${ROBOT_NAME}")
 
-IF ("${ROBOT_NAME}" STREQUAL "")
-  MESSAGE(STATUS "No robot name")
-ELSE ("${ROBOT_NAME}" STREQUAL "")
-  IF (EXISTS ${ROBOT_DIR})
-	# MESSAGE(STATUS "Setting up install for ${ROBOT_NAME}")
-	# ADD_SUBDIRECTORY(${ROBOT_NAME})
-  ENDIF(EXISTS ${ROBOT_DIR})
-ENDIF ("${ROBOT_NAME}" STREQUAL "")
+
 
 add_custom_command(OUTPUT f-app-main
 					COMMAND ${CMAKE_COMMAND} -E make_directory ${ICUB_DESTINATION_APP}
@@ -28,7 +21,16 @@ add_custom_command(OUTPUT f-app-main
 					)
 					
 add_subdirectory(default)
-add_subdirectory(${ROBOT_NAME})
+
+IF ("${ROBOT_NAME}" STREQUAL "")
+  MESSAGE(STATUS "No robot name")
+ELSE ("${ROBOT_NAME}" STREQUAL "")
+  IF (EXISTS ${ROBOT_DIR})
+	# MESSAGE(STATUS "Setting up install for ${ROBOT_NAME}")
+	add_subdirectory(${ROBOT_NAME})
+  ENDIF(EXISTS ${ROBOT_DIR})
+ENDIF ("${ROBOT_NAME}" STREQUAL "")
+
 
 add_custom_target(app DEPENDS f-app-main)
 
