@@ -12,7 +12,6 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${YARP_INCLUDE_DIRS}
 		            ${iKin_INCLUDE_DIRS}
 		            ${logPolar_INCLUDE_DIRS}			
-		            ${OpenCV_INCLUDE_DIR}
 		    )
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
@@ -22,7 +21,7 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME}
                      ${YARP_LIBRARIES}
      				 logPolar
 				     ${ICUB_LIBRARIES}
-				     ${OpenCV_LIBRARIES}										 )
+    				 )
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 

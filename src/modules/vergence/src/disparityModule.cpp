@@ -28,35 +28,35 @@ disparityModule::disparityModule() {
     robotTorso = 0;
 }
 
-disparityModule::~disparityModule() {} 
+disparityModule::~disparityModule() {
+
+} 
 
 bool disparityModule::configure( ResourceFinder &rf ) {
     
-    if ( rf.check("moduleName") )
-        moduleName =rf.find("moduleName").asString();
+    if ( rf.check( "moduleName" ) )
+        moduleName =rf.find( "moduleName" ).asString();
     else    
         moduleName ="/vergence";
-
     /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
     */
-
     setName( moduleName.c_str() );
 
     /*
     * get the robot name which will form the stem of the robot ports names
     * and append the specific part and device required
     */
-    if ( rf.check("robot") )
-        robotName=rf.find("robot").asString();
+    if ( rf.check( "robot" ) )
+        robotName=rf.find( "robot" ).asString();
     else
         robotName="icub";
 
     robotPortName = "/" + robotName + "/head";
     
     currentProcessor = new disparityProcessor();
-    currentProcessor->setName(moduleName, robotName);
+    currentProcessor->setName( moduleName, robotName );
     currentProcessor->start();
 
     cmdPort.open(getName("/cmd:i"));

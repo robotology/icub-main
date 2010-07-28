@@ -18,13 +18,12 @@
 #include <iCub/disparityProcessor.h>
 
 using namespace yarp::math;
-const int THREAD_RATE=10;
+const int THREAD_RATE = 30;
 
 disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
     cout<< "initialisation process "<<endl;
     cout << "HERE" <<endl;
 	ratio = 4.00;
-	//Disp.init(84,ratio);
 	
 	robotHead = 0;
 	robotTorso = 0;
@@ -45,6 +44,7 @@ disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
 
 	_leftJoints.resize(9);
 	_rightJoints.resize(9);
+    dispInit = false;
 }
 
 disparityProcessor::~disparityProcessor(){
@@ -62,7 +62,6 @@ void disparityProcessor::setName(string name, string robotName) {
 }
 
 bool disparityProcessor::threadInit(){
-    cout << "HERE1" <<endl;
 
     string torsoPort, headPort;
   
@@ -154,6 +153,13 @@ bool disparityProcessor::threadInit(){
         (*chainRightEye)[i].getAlpha(),
         (*chainRightEye)[i].getOffset());
   	}
+     
+    _nFrame = chainRightEye->getN(); //HL.rows();
+    _joints.resize( _nFrame );
+    _head.resize(6), 
+    _torso.resize(3);
+    tmpPos.resize(9);
+    tempV.resize(3);
 	
 	return true;
 }
@@ -172,94 +178,86 @@ void disparityProcessor::threadRelease(){
 }
 
 void disparityProcessor::run(){	
-   // cout << "waiting for connection " << endl;
+   
+    int disparityVal = 0;
+    double corrVal = 0.0;
+
+    //create vector thast contains head encoders
+    
+    if (encTorso->getEncoders(_torso.data()))
+        for (int i=0; i<3; i++)
+            fb[i]=_torso[2-i];    // reversed order
+
+    if (encHead->getEncoders(_head.data()))
+        for (int i=0; i<6; i++)
+            fb[3+i]=_head[i];
+
+    Vector q = (M_PI/180.0)*fb; // to radians
+
+    q[7]=(M_PI/180.0)*(fb[7]+fb[8]/2);
+   // HL = leftEye->getH(q);
+    q[7]=(M_PI/180.0)*(fb[7]-fb[8]/2);
+    //HR = rightEye->getH(q);
+
+    // computes ray that intesects with image plane
+    computeRay( KIN_RIGHT_PERI , tempV, _centerX, _centerY);
+
+    //------------------------------------------------------------------compute min 
+    tmpPos = q;
+
+    tmpPos(7)  = - ( _maxVerg + tmpPos(8) );
+    computeDirect( tmpPos );
+    int x, y;
+    intersectRay( KIN_RIGHT_PERI, tempV, x, y );
+    float min;
+    min = _centerX - x;
+
+    // ------------------------------------------------------------------compute max 
+    tmpPos = q;
+    tmpPos(7)  = - ( _minVerg + tmpPos(8) );
+    computeDirect( tmpPos );
+    intersectRay( KIN_RIGHT_PERI, tempV, x, y );
+    float max;
+    max = _centerX - x;
+
+    int hWidth = 0;		
+    int hHeight = 0;
+    double _minDisp = Disp.shiftToDisparity(Disp.getLimitsMin());
+    double _maxDisp = Disp.shiftToDisparity(Disp.getLimitsMax());
+
+    _minDisp = 2.0*206.026*tan( fb[8] * M_PI/180.0 - _maxVerg ) + 0.5; // changed from minVerg
+    _maxDisp = 2.0*206.026*tan( fb[8] * M_PI/180.0 - _maxVerg ) - 0.5; // changed from minVerg
+
+    Disp.setInhibition((int)_maxDisp, (int)_minDisp);
+
     needLeft =  ( imageInLeft.getInputCount() > 0 );
     needRight = ( imageInRight.getInputCount() > 0 );
 
     if( needLeft + needRight > 1 ) {
 
-        int disparityVal = 0;
-        double corrVal = 0.0;
-
-        //create vector thast contains head encoders
-        Vector _head(6), _torso(3);
-        if (encTorso->getEncoders(_torso.data()))
-            for (int i=0; i<3; i++)
-                fb[i]=_torso[2-i];    // reversed order
-
-        if (encHead->getEncoders(_head.data()))
-            for (int i=0; i<6; i++)
-                fb[3+i]=_head[i];
-
-        Vector q = (M_PI/180.0)*fb; // to radians
-
-        q[7]=(M_PI/180.0)*(fb[7]+fb[8]/2);
-        HL = leftEye->getH(q);
-        q[7]=(M_PI/180.0)*(fb[7]-fb[8]/2);
-        HR = rightEye->getH(q);
-
-        _nFrame = chainRightEye->getN(); //HL.rows();
-        _joints.resize( _nFrame );
-
-        Vector tempV;
-        tempV.resize(3);
-        // computes ray that intesects with image plane
-        computeRay( KIN_RIGHT_PERI , tempV, _centerX, _centerY);
-
-        // ------------------------------------------------------------------compute min 
-	    Vector tmpPos;
-	    tmpPos.resize(9);
-	    tmpPos = q;
-
-	    tmpPos(7)  = - ( _maxVerg + tmpPos(8) );
-	    computeDirect( tmpPos );
-	    int x, y;
-	    intersectRay( KIN_RIGHT_PERI, tempV, x, y );
-	    float min;
-	    min = _centerX - x;
-
-	    // ------------------------------------------------------------------compute max 
-	    tmpPos = q;
-	    tmpPos(7)  = - ( _minVerg + tmpPos(8) );
-	    computeDirect( tmpPos );
-	    intersectRay( KIN_RIGHT_PERI, tempV, x, y );
-	    float max;
-	    max = _centerX - x;
-	
-	    int hWidth = 0;		
-	    int hHeight = 0;
-	    double _minDisp = Disp.shiftToDisparity(Disp.getLimitsMin());
-	    double _maxDisp = Disp.shiftToDisparity(Disp.getLimitsMax());
-
-        _minDisp = 2.0*206.026*tan(fb[8]*M_PI/180.0 - _maxVerg) + 0.5;
-        _maxDisp = 2.0*206.026*tan(fb[8]*M_PI/180.0 - _minVerg) - 0.5;
-        Disp.setInhibition((int)_maxDisp, (int)_minDisp);
-
         imgInL = imageInLeft.read(false);
 		imgInR = imageInRight.read(false);
 
-        if( ( imgInL != NULL ) && ( imgInR != NULL ) ){
+        if( ( imgInL != NULL ) && ( imgInR != NULL ) ) {
 
+            if( !dispInit ) {
+                Disp.setSize( imgInR );
+                dispInit = true;            
+            }
             disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 4);
-
-            hWidth = Disp.getShiftLevels();
-            hHeight = hWidth/2;	
-            histo.resize(hWidth, hHeight);
-
-            for (int k = 0; k < 4; k++)
-                maxes[k] = Disp.getMax(k);
 
             cout << "disparity Val " << disparityVal  << endl;
 
-            Disp.makeHistogram(histo);
             if ( histoOutPort.getOutputCount() > 0 ) { 
+                Disp.makeHistogram(histo);
                 histoOutPort.prepare() = histo;	
                 histoOutPort.write();
             }
 
             angle=fb[8]-(180/M_PI)*atan(disparityVal/(2*206.026));
             if(angle<0)
-            angle=0;		
+                angle=0;		
+
             cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
 
             if ( cmdOutput.getOutputCount() > 0 ) { 
@@ -497,14 +495,12 @@ void disparityProcessor::computeDirect (const Vector &joints)
 	Matrix RE = rightEye->getH();
 	Matrix LE = leftEye->getH();	
 	computeFixation ( RE, LE );
-
-	
 }
 
 // check out 'cause I have modified the index numeration (Fra)
 // as input two roto-traslation matrices 4x4
-void disparityProcessor::computeFixation (const Matrix &T1, const Matrix &T2)
-{
+void disparityProcessor::computeFixation (const Matrix &T1, const Matrix &T2) {
+
 	double tmp1;
 	double tmp2;
 	double tmp3;

@@ -1,8 +1,6 @@
 
 #include <iCub/RC_Logpolar_AuxFunct.h>
 
-
-
 bool isWithin(int v,int max, int min)
 {
 	if ( (v <= max) && (v >= min) )
@@ -260,12 +258,12 @@ int Load_Shift_Table(Image_Data par, int *shiftTab, double *stepList, char *path
 
 	fread(&n,sizeof(int),1,fin);
 
-	//Should allocate before. Maybe this doesn't work
+	/*//Should allocate before. Maybe this doesn't work
 	if (shiftTab == NULL)
 		shiftTab = new int[n*par.Size_LP];
 	if (stepList == NULL)
 		stepList = new double[n];
-	/***/
+	**/
 
 	fread(stepList,sizeof(double),n,fin);
 	fread(shiftTab,sizeof(int),n*par.Size_LP,fin);
@@ -277,8 +275,8 @@ int Load_Shift_Table(Image_Data par, int *shiftTab, double *stepList, char *path
 void img2unpaddedVect(unsigned char *v, Image img)
 {
 	//Should allocate before. Maybe this doesn't work
-	if (v == NULL)
-		v = new unsigned char[img.height()*img.width()*img.getPixelSize()];
+	//if (v == NULL)
+		//v = new unsigned char[img.height()*img.width()*img.getPixelSize()];
 	/***/
 
 	for (int i = 0; i < img.height(); i++)

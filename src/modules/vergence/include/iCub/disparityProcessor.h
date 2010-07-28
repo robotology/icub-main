@@ -47,58 +47,44 @@ const int CenterPeripheryY = 256/2;
 const int CenterFoveaX = 128/2;
 const int CenterFoveaY = 128/2;
 
-const double _maxVerg = 50* M_PI/180;
+const double _maxVerg = 50 * M_PI/180;
 const double _minVerg = 0 * M_PI/180;
 
 class disparityProcessor : public RateThread {
 private:
 
-    yarp::os::BufferedPort < ImageOf<PixelRgb > > imageInLeft;  //left camera port
-    yarp::os::BufferedPort < ImageOf<PixelRgb > >  imageInRight; //right camera port
-    yarp::os::BufferedPort < ImageOf<PixelMono > >  histoOutPort; //output histogram
+    BufferedPort < ImageOf<PixelRgb > > imageInLeft;  //left camera port
+    BufferedPort < ImageOf<PixelRgb > >  imageInRight; //right camera port
+    BufferedPort < ImageOf<PixelMono > >  histoOutPort; //output histogram
     Port cmdOutput;
 	string outputPortName; 
-    yarp::os::Property optionsHead, optionsTorso;
-    yarp::dev::IEncoders *encHead, *encTorso;
+    Property optionsHead, optionsTorso;
+    IEncoders *encHead, *encTorso;
 	
-    yarp::dev::PolyDriver *robotHead, *robotTorso;
+    PolyDriver *robotHead, *robotTorso;
 
-    iCubEye *leftEye;
-	iCubEye *rightEye;
+    iCubEye *leftEye, *rightEye;
 	
-	iKinLink *leftLink;
-	iKinLink *rightLink;
+	iKinLink *leftLink, *rightLink;
 	iKinChain *chainRightEye,  *chainLeftEye;
 
 	Matrix HL, HR ;
 	Vector fb, zl, pl, dl, ml;
 
-	Matrix _Ti;
-	Matrix _Ti0;
-	Matrix _TB0;
+	Matrix _Ti, _Ti0, _TB0;
 
-	Vector _q;
-	Vector _it;
-	Vector _o;
-	Vector _epx;
-	Vector _tmp;
-	Vector _tmpEl;
+	Vector _q, _it, _o, _epx, _tmp, _tmpEl;
 
-	Vector _leftJoints;
-	Vector _rightJoints;
-	Vector _joints;
+	Vector _leftJoints, _rightJoints, _joints;
 
-	Vector _fixationPoint;
-	Vector _fixationPolar;
+	Vector _fixationPoint, _fixationPolar;
 	
 	int _nFrame;
 
 	double leftMax, leftMin, rightMax, rightMin;
 
    	bool needLeft, needRight;
-    int imgNumb;
 	float ratio;
-	FILE *fout;
 
     ImageOf<PixelRgb> Limg;
     ImageOf<PixelRgb> Rimg;
@@ -108,6 +94,9 @@ private:
 	shift_Struct maxes[4];
 
     string moduleName, robotName; 
+    Vector tempV, tmpPos;
+    Vector _head, _torso;
+    bool dispInit;
     
 
 public:

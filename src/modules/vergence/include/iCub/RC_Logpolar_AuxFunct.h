@@ -70,6 +70,11 @@ int getRho(Image_Data par, double x, double y);
 int getTheta(Image_Data par, double x, double y);
 void img2unpaddedVect(unsigned char *v, Image img);
 void unpaddedVect2img(unsigned char *v, Image &img);
+bool isWithin(int v,int max, int min);
+double find_max_value(double *v, int size);
+int find_max_index(double *v, int size);
+double find_min_value(double *v, int size);
+int find_min_index(double *v, int size);
 
 inline double _max(double x, double y)
 {
@@ -80,20 +85,5 @@ inline double _min (double x, double y)
 {
     return (x < y) ? x : y;
 }
-
-bool isWithin(int v,int max, int min);
-double find_max_value(double *v, int size);
-int find_max_index(double *v, int size);
-double find_min_value(double *v, int size);
-int find_min_index(double *v, int size);
-Image_Data SetParam(int rho, int theta, int mode, double overlap, int xo, int yo, int xr, int yr);
-double getX(Image_Data par, int rho, int theta);
-double getY(Image_Data par, int rho, int theta);
-int getRho(Image_Data par, double x, double y);
-int getTheta(Image_Data par, double x, double y);
-void Build_Shift_Table(Image_Data par, char *path);
-int Load_Shift_Table(Image_Data par, int *shiftTab, double *stepList, char *path);
-void img2unpaddedVect(unsigned char *v, Image img);
-void unpaddedVect2img(unsigned char *v, Image &img);
 
 #endif

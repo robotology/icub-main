@@ -114,7 +114,6 @@ public:
         "quit \n";
     reply.clear(); 
 
-
     if ( command.get(0).asString() == "quit" )
         return false;     
     else if ( command.get(0).asString() == "help" ){
@@ -127,10 +126,8 @@ public:
     }
     return true;
     }
-    /**
-    * output image of the histogram sent on the port
-    */
-    ImageOf<PixelMono> histo;
+    
+    ImageOf<PixelMono> histo;//output image of the histogram sent on the port
 };
 //make gcc happy
 
