@@ -29,7 +29,7 @@
 	<module>
                 <name>eye2world</name>
                 <node>/localhost</node>
-		<parameters> --in /in --context cameraCalibration/conf --eyeCalibration icubEyes.ini --tableConfiguration /home/icub/opencvTests/testEyes2World/table.ini</parameters>
+		<parameters> --in /in --context cameraCalibration/conf --eyeCalibration icubEyes.ini --tableConfiguration /usr/local/src/robot/iCub/app/iFumble/conf/table.ini</parameters>
                 <tag>eye2world</tag>
         </module>
         <connection>
