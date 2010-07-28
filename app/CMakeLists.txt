@@ -10,8 +10,8 @@ SET(ROBOT_NAME "$ENV{ICUB_ROBOTNAME}" CACHE PATH
 SET(ROBOT_DIR "$ENV{ICUB_ROOT}/app/${ROBOT_NAME}")
 
 
-
-add_custom_command(OUTPUT f-app-main
+set(dummy ${CMAKE_BINARY_DIR}/f-app-main)
+add_custom_command(OUTPUT ${dummy}
 					COMMAND ${CMAKE_COMMAND} -E make_directory ${ICUB_DESTINATION_APP}
 					COMMAND ${CMAKE_COMMAND} -E make_directory ${ICUB_DESTINATION_APP}/app
 					COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini ${ICUB_DESTINATION_APP}
@@ -32,7 +32,8 @@ ELSE ("${ROBOT_NAME}" STREQUAL "")
 ENDIF ("${ROBOT_NAME}" STREQUAL "")
 
 
-add_custom_target(app DEPENDS f-app-main)
+add_custom_target(app ALL DEPENDS ${dummy})
 
 icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS app)
+icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS_FILES ${dummy})
 

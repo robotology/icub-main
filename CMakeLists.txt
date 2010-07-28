@@ -144,7 +144,7 @@ add_subdirectory(src)
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
 	## add custom targets
 	icub_get_property(applications GLOBAL PROPERTY ICUB_APPLICATIONS)
-	#message(STATUS "Exporting applications: ${applications}")
+	message(STATUS "Exporting applications: ${applications}")
 	add_custom_target(INSTALL_APPLICATIONS DEPENDS ${applications})
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
