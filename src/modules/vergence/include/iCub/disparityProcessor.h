@@ -16,7 +16,7 @@
  * Public License for more details
  */
 
-#include <iCub/DisparityTool.h>
+#include <iCub/disparityTool.h>
 // yarp
 #include <yarp/dev/all.h>
 #include <yarp/os/all.h>

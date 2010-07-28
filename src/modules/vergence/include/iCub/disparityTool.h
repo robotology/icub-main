@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <iostream>
 
-#include <iCub/RC_Logpolar_AuxFunct.h>
+#include <iCub/rcLogPolarAuxFunc.h>
 
 #ifdef YARP_HAS_PRAGMA_ONCE
 #	pragma once

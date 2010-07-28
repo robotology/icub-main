@@ -17,7 +17,7 @@
  */
 
 #include <iCub/disparityProcessor.h>
-#include <iCub/DisparityTool.h>
+#include <iCub/disparityTool.h>
 
 // yarp
 #include <yarp/math/Math.h>

@@ -1,5 +1,5 @@
 
-#include <iCub/RC_Logpolar_AuxFunct.h>
+#include <iCub/rcLogPolarAuxFunc.h>
 
 bool isWithin(int v,int max, int min)
 {
