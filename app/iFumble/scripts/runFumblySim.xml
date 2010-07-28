@@ -1,0 +1,152 @@
+
+
+<!-- 
+yarp run server /localhost
+yarp rpc /iFumble/iconTroll/rpc
+
+
+/opt/icub/svn20100715/robotcub/trunk/iCub/app/default/scripts/manager.py /opt/icub/svn20100715/robotcub/trunk/iCub/app/iFumble/scripts/runFumbly.xml
+yarpserver &
+sleep 1
+yarp run server /localhost
+
+cd /opt/icub/svn20100715/robotcub/trunk/iCub/app/iFumble/scripts/
+/opt/icub/svn20100715/robotcub/trunk/iCub/app/default/scripts/manager.py runFumbly.xml&
+
+-->
+<application>
+<name>dataAssociator</name>
+<!--        <dependencies>
+		<port>/icub/cam/left</port> 
+		<port>/icub/head/state:o</port> 	
+		<port>/icub/torso/state:o</port> 
+	</dependencies>-->
+
+
+        <module>
+                <name>iCub_SIM</name>
+                <node>localhost</node>
+                <tag>iCub_SIM</tag>
+        </module>          
+
+
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <node>localhost</node>
+                <parameters>--context simCartesianControl/conf --part left_arm</parameters>
+                <tag>iKinCartesianSolver1</tag>
+        </module>          
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <node>localhost</node>
+                <parameters>--context simCartesianControl/conf --part right_arm</parameters>
+                <tag>iKinCartesianSolver2</tag>
+        </module>          
+
+
+
+        <module>
+                <name>simCartesianControl</name>
+                <node>localhost</node>
+                <tag>simCartesianControl</tag>
+        </module>          
+
+
+
+
+
+<!--
+	<module>
+                <name>moveHandToTap</name>
+                <node>/localhost</node>
+                <tag>moveHandToTap</tag>
+        </module>
+-->
+<!--
+        <module>
+                <name>dataAssoc</name>
+                <node>localhost</node>
+                <tag>dataAssoc</tag>
+        </module>
+    -->      
+        <module>
+                <name>/opt/icub/svn20100715/robotcub/trunk/iCub/contrib/src/iFumble/iconTroll/build/iconTroll</name>
+                <node>localhost</node>
+                <tag>iconTroll</tag>
+        </module>          
+
+        <module>
+                <name>/opt/icub/svn20100715/robotcub/trunk/iCub/contrib/src/iFumble/iBranch/build/iFumbly</name>
+                <node>localhost</node>
+                <tag>iFumbly</tag>
+        </module>          
+
+        <module>
+                <name>SimpleGMRModule</name>
+                <node>localhost</node>
+                <tag>iLearnStuff</tag>
+        </module>          
+
+          <!--
+        <module>
+                <name>sendBlobs2Eye2World</name>
+                <node>/localhost</node>
+                <tag>sendBlobs</tag>
+        </module>
+	-->
+	<module>
+                <name>eye2world</name>
+                <node>localhost</node>
+		<parameters> --in /in --context cameraCalibration/conf --eyeCalibration icubEyes.ini --tableConfiguration app/iFumble/conf/table.ini</parameters>
+                <tag>eye2world</tag>
+        </module>
+        
+        <connection>
+        <from>/iFumble/iconTroll/toFumblyRpc</from>
+        <to>/iFumble/iFumbly/rpc</to>
+        </connection>
+        
+        <connection>
+	  <from>/iFumble/iFumbly/rpc</from>
+	  <to>/iFumble/iconTroll/toFumblyRpc</to>        
+        </connection>        
+        
+        <!--
+        <connection>
+                <from>/icub/cam/left</from>
+                <to>/iFumble/trackBlobs/left/in</to>
+        </connection>
+        
+	<connection>
+                <from>/iFumble/trackBlobs/left/eyesWorld/out</from>
+                <to>/eye2world/in </to>
+                
+        </connection>
+       
+	<connection>
+                <from>/icub/head/state:o</from>
+                <to>/eye2world/myRobot/head/state:i</to>
+                
+        </connection>
+	<connection>
+                <from>/icub/torso/state:o</from>
+                <to>/eye2world/myRobot/torso/state:i</to>
+                
+        </connection>
+	<connection>
+                <from>/eye2world/out</from>
+                <to>/iFumble/traza/eye2world/in</to>
+                
+        </connection>
+	
+        <connection>
+                <from>/iFumble/traza/3dpos/out</from>
+                <to>/iFumble/moveHand2Tap/in</to>
+                
+        </connection>
+
+
+-->
+</application>
