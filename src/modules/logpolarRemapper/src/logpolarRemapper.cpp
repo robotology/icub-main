@@ -229,9 +229,12 @@ public:
      */
     virtual void threadRelease() {
         lpApi->freeLookupTables();
+        active = false;
+    }
+
+    virtual void onStop() {
         poly.close();
         out.close();
-        active = false;
     }
 
     /* 
@@ -249,6 +252,9 @@ public:
 
                 // then write to out port
                 writer.write(true);
+            }
+            else {
+                Time::delay(2.0);
             }
         }
     }
@@ -325,7 +331,7 @@ public:
 
         // optional, attach to terminal if you want that text typed at the console
         // is redirected to the respond method
-        attachTerminal();
+        //attachTerminal();
 
         Remapper::configure(rf);
         Remapper::start();
