@@ -1,43 +1,25 @@
-IF(WIN32)
-cmake_minimum_required(VERSION 2.6)
-ELSE(WIN32)
-cmake_minimum_required(VERSION 2.4)
-ENDIF(WIN32)
+#
+# demoModule CMake file.
+#
+set(PROJECTNAME "demoModule")
+project(${PROJECTNAME})
 
-## just for avoid annoying warning when using CMake > 2.6
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
-SET(KEYWORD "demoModule")
-PROJECT(${KEYWORD})
-
-INCLUDE_DIRECTORIES(
+include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${YARP_INCLUDE_DIRS} 	
 )
 
 # Search for source code.
-FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
-FILE(GLOB folder_header include/iCub/*.h)
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
+file(GLOB folder_source src/*.cpp src/*.cc src/*.c)
+file(GLOB folder_header include/iCub/*.h)
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
-LINK_LIBRARIES(
-   ${YARP_LIBRARIES}
+add_executable(${PROJECTNAME} 
+	${folder_source} 
+	${folder_header}
 )
 
-# Set up the main executable.
-IF (folder_source)
-    ADD_EXECUTABLE(${KEYWORD} 
-        ${folder_source} 
-        ${folder_header}
-    )
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}) 
 
-    INSTALL_TARGETS(/bin ${KEYWORD})
-
-ELSE (folder_source)
-
-    MESSAGE(FATAL_ERROR "No source code files found. Please add something to this project!")
-
-ENDIF (folder_source)
+install(TARGETS ${PROJECTNAME} DESTINATION bin)
