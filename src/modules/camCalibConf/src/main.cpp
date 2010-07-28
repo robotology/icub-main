@@ -21,7 +21,7 @@ using namespace iCub::contrib;
 /**
  * @ingroup icub_module
  *
- * \defgroup icub_camcalibconf camcalibconf
+ * \defgroup icub_camcalibconf camCalibConf
  *
  * Calculates camera calibration parameters for the camcalib module.
  *
