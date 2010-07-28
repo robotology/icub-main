@@ -1,23 +1,7 @@
-IF(WIN32)
-cmake_minimum_required(VERSION 2.6)
-ELSE(WIN32)
-cmake_minimum_required(VERSION 2.4)
-ENDIF(WIN32)
-
-## just for avoid annoying warning when using CMake > 2.6
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
 
 SET(KEYWORD "logPolarTransform")
 
 PROJECT(${KEYWORD})
-
-FIND_PACKAGE(ICUB)
-FIND_PACKAGE(YARP REQUIRED)
-#FIND_PACKAGE(ICUBVIS REQUIRED)
-#FIND_PACKAGE(LOGPOLAR REQUIRED)
-#FIND_PACKAGE(FOURIERVISION REQUIRED)
 
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
@@ -40,10 +24,8 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 LINK_LIBRARIES(
 	${YARP_LIBRARIES}
-	${iCubVis_LIBRARIES}
-	${ICUB_LIBRARIES}
-	${FOURIERVISION_LIBRARIES}
-	${logPolar_LIBRARIES}
+	iCubVis
+	logPolar
 )
 
 

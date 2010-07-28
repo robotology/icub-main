@@ -8,7 +8,6 @@ SET(ROBOT_NAME "$ENV{ICUB_ROBOTNAME}" CACHE PATH
 	"Name of your robot")
 
 SET(ROBOT_DIR "$ENV{ICUB_ROOT}/app/${ROBOT_NAME}")
-SET(ICUB_APP "$ENV{ICUB_DIR}/app")
 
 IF ("${ROBOT_NAME}" STREQUAL "")
   MESSAGE(STATUS "No robot name")
@@ -19,26 +18,19 @@ ELSE ("${ROBOT_NAME}" STREQUAL "")
   ENDIF(EXISTS ${ROBOT_DIR})
 ENDIF ("${ROBOT_NAME}" STREQUAL "")
 
-add_custom_command(OUTPUT copy
-					COMMAND  ${CMAKE_COMMAND} -E echo "Dummy command1"
-					COMMENT "Running copy command"
+add_custom_command(OUTPUT f-app-main
+					COMMAND ${CMAKE_COMMAND} -E make_directory ${ICUB_DESTINATION_APP}
+					COMMAND ${CMAKE_COMMAND} -E make_directory ${ICUB_DESTINATION_APP}/app
+					COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini ${ICUB_DESTINATION_APP}
+					COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py ${ICUB_DESTINATION_APP}/app/
+					COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template ${ICUB_DESTINATION_APP}/app/
+					COMMENT "Setting up application directory"
 					)
 					
-include("iCubAddApplication.cmake")
-iCubAddApplication(default ${ICUB_APP})
+add_subdirectory(default)
+add_subdirectory(${ROBOT_NAME})
 
-add_custom_target(INSTALL_APPLICATIONS DEPENDS copy)
+add_custom_target(app DEPENDS f-app-main)
 
-#ADD_SUBDIRECTORY(attentionDistributed)
-#ADD_SUBDIRECTORY(iha)
-#ADD_SUBDIRECTORY(demoy3)
-#ADD_SUBDIRECTORY(crossPowerSpectrumVergence)
-#ADD_SUBDIRECTORY(armCartesianController)
-#ADD_SUBDIRECTORY(faceExpressions)
-
-
-
-
-
-
+icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS app)
 

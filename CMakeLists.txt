@@ -128,13 +128,24 @@ set_property(GLOBAL PROPERTY ICUB_TARGETS)
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 
+set(ICUB_EXPERIMENTAL_APP_INSTALL FALSE CACHE BOOL "Turn on app install experimental feature")
+
+SET(ICUB_DESTINATION_APP "$ENV{ICUB_ROOT}" CACHE TYPE PATH)
+
+########### populate applications
+if (ICUB_EXPERIMENTAL_APP_INSTALL)
+	add_subdirectory(app)
+endif(ICUB_EXPERIMENTAL_APP_INSTALL)
+
 # Create everything needed to build our executable.
 add_subdirectory(src)
 
-set(ICUB_EXPERIMENTAL_APP_INSTALL FALSE CACHE BOOL "Turn on app install experimental feature")
-
+############ generate custom target that exports all applications
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
-	add_subdirectory(app)
+	## add custom targets
+	icub_get_property(applications GLOBAL PROPERTY ICUB_APPLICATIONS)
+	#message(STATUS "Exporting applications: ${applications}")
+	add_custom_target(INSTALL_APPLICATIONS DEPENDS ${applications})
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
 # export the build tree

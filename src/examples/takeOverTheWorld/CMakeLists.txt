@@ -32,6 +32,19 @@ include_directories(${YARP_INCLUDE_DIRS})
 add_executable(${PROJECTNAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECTNAME} sharksWithLasers ${YARP_LIBRARIES})
 
+################ application
+set(appname takeOverTheWorld)
+icub_app(${appname})
+
+#file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template)
+file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/*.ini)
+
+icub_app_install(${appname} 
+				FILES ${conf}
+				DESTINATION conf/example1)			
+				
+icub_add_target(${appname})
+
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 

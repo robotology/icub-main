@@ -1,34 +1,19 @@
-SET(APP_NAME default)
+set(appname default)
 
-PROJECT($APP_NAME)
+icub_app(${appname})
 
-SET(appdir app/${APP_NAME})
-SET(scripts "${ICUB_DIR}/${appdir}/scripts")
-SET(conf "${ICUB_DIR}/${appdir}/conf")
-SET(dapp "${ICUB_APP}/default")
+file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template)
+file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 
-INSTALL(CODE "MESSAGE(\"Installing ${APP_NAME}\")")
+icub_app_install(${appname} 
+				FILES ${scripts}
+				DESTINATION scripts)
 
-# some scripts
-INSTALL(FILES 
-  ${scripts}/cameras
-  ${scripts}/checkNodes.sh
-  ${scripts}/checkPorts.sh
-  ${scripts}/cycle-fr.sh
-  ${scripts}/cycle.sh
-  ${scripts}/dragonfly
-  ${scripts}/dragonfly-local
-  ${scripts}/viewers
-  ${scripts}/viewers-local
-  ${scripts}/config.sh.template
-  ${scripts}/config-nodes.sh.template
-  ${scripts}/icub-cluster.sh
-  ${scripts}/cluster-config.sh.template
-  DESTINATION ${dapp}/scripts
-  PERMISSIONS 
-  OWNER_EXECUTE OWNER_READ OWNER_WRITE 
-  GROUP_READ GROUP_WRITE
-  WORLD_READ)
+icub_app_install(${appname} 
+				FILES ${conf}
+				DESTINATION conf)			
+				
+icub_add_target(${appname})
 
-#INSTALL(FILES ${d}/config.sh DESTINATION ${appdir} RENAME config.ini)
-#INSTALL(FILES ${d}/config.sh DESTINATION ${dest})
+
+
