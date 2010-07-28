@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Francesco Rea, Vadim Tikhanoff
@@ -18,23 +19,11 @@
 
 #include <iCub/disparityProcessor.h>
 #include <iCub/disparityTool.h>
-
+#include <yarp/os/RFModule.h>
+#include <yarp/os/Bottle.h>
 // yarp
 #include <yarp/math/Math.h>
-#include <yarp/dev/all.h>
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
-#include <yarp/dev/all.h>
-
-// std
-#include <stdio.h>
-#include <iostream>
-
-using namespace std;
-using namespace yarp;
-using namespace yarp::sig;
-using namespace yarp::dev;
-using namespace yarp::os;
+#include <yarp/sig/Image.h>
 
 class disparityModule : public RFModule {
 
@@ -104,30 +93,26 @@ public:
     virtual bool interruptModule();
     virtual bool updateModule();
 
-    virtual double getPeriod() {return 0.05;}
-
     bool respond( const Bottle& command, Bottle& reply ) {
 
-    string helpMessage =  string( getName().c_str() ) + 
-        "commands are: \n" +  
-        "help \n" + 
-        "quit \n";
-    reply.clear(); 
+        string helpMessage =  string( getName().c_str() ) + 
+            "commands are: \n" +  
+            "help \n" + 
+            "quit \n";
+        reply.clear(); 
 
-    if ( command.get(0).asString() == "quit" )
-        return false;     
-    else if ( command.get(0).asString() == "help" ){
-        cout << helpMessage;
-        reply.addString( "ok" ); 
-    }
-    else
-    {
-        cout << "command not known - type help for more info" << endl;
-    }
-    return true;
+        if ( command.get(0).asString() == "quit" )
+            return false;     
+        else if ( command.get(0).asString() == "help" ) {
+            cout << helpMessage;
+            reply.addString( "ok" ); 
+        }
+        else {
+            cout << "command not known - type help for more info" << endl;
+        }
+        return true;
     }
     
     ImageOf<PixelMono> histo;//output image of the histogram sent on the port
 };
 //make gcc happy
-

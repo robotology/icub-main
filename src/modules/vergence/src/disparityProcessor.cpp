@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Francesco Rea, Vadim Tikhanoff
@@ -107,6 +108,9 @@ bool disparityProcessor::threadInit(){
     string imageHistoName = moduleName+"/histo:o";
     histoOutPort.open(imageHistoName.c_str());
 
+    string outputCommand = moduleName+"/cmd:o";
+    cmdOutput.open(outputCommand.c_str());
+
     rightEye = new iCubEye("right");
     leftEye = new iCubEye("left");
 	
@@ -195,7 +199,7 @@ void disparityProcessor::run(){
     Vector q = (M_PI/180.0)*fb; // to radians
 
     q[7]=(M_PI/180.0)*(fb[7]+fb[8]/2);
-   // HL = leftEye->getH(q);
+    //HL = leftEye->getH(q);
     q[7]=(M_PI/180.0)*(fb[7]-fb[8]/2);
     //HR = rightEye->getH(q);
 
@@ -225,8 +229,8 @@ void disparityProcessor::run(){
     double _minDisp = Disp.shiftToDisparity(Disp.getLimitsMin());
     double _maxDisp = Disp.shiftToDisparity(Disp.getLimitsMax());
 
-    _minDisp = 2.0*206.026*tan( fb[8] * M_PI/180.0 - _maxVerg ) + 0.5; // changed from minVerg
-    _maxDisp = 2.0*206.026*tan( fb[8] * M_PI/180.0 - _maxVerg ) - 0.5; // changed from minVerg
+    _minDisp = 2.0 * 206.026 * tan( fb[8] * M_PI/180.0 - _maxVerg ) + 0.5; 
+    _maxDisp = 2.0 * 206.026 * tan( fb[8] * M_PI/180.0 - _minVerg ) - 0.5;
 
     Disp.setInhibition((int)_maxDisp, (int)_minDisp);
 

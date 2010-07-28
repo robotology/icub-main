@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Francesco Rea, Vadim Tikhanoff
@@ -18,9 +19,10 @@
 
 #include <iCub/disparityTool.h>
 // yarp
-#include <yarp/dev/all.h>
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
+#include <yarp/os/RateThread.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/sig/Image.h>
 // std
 #include <stdio.h>
 #include <iostream>
@@ -31,8 +33,8 @@
 using namespace std;
 using namespace yarp;
 using namespace yarp::sig;
-using namespace yarp::dev;
 using namespace yarp::os;
+using namespace yarp::dev;
 using namespace iCub::iKin;
 
 const double F = 4;						/// camera F length.

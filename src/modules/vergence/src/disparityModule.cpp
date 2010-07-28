@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Francesco Rea, Vadim Tikhanoff
@@ -17,11 +18,14 @@
  */
 
 #include <iCub/disparityModule.h>
+// std
+#include <stdio.h>
+#include <iostream>
 
-using namespace yarp::math;
+using namespace std;
 
 disparityModule::disparityModule() {
-    init_flag=false;
+    init_flag = false;
     currentProcessor = 0;
     ratio = 4.00;
     robotHead = 0;
