@@ -555,7 +555,7 @@ assert(o1);
 		glTranslated(-xpos,-ypos,-zpos);
 
         // set up any video textures
-       
+        
         if (video!=0)
             DrawVideo(video);
 
@@ -818,7 +818,9 @@ assert(o1);
 	
     Simulation(){
         video=new VideoTexture;
-    
+        string moduleName = odeinit.getName();
+        video->setName( moduleName ); 
+        odeinit._iCub->eyeLidsPortName = moduleName;
         Property options;
 		
 		SimConfig finder;

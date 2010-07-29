@@ -8,23 +8,30 @@
  * \note Release under GNU GPL v2.0
  **/
 
-
 #ifndef SIMCONFIG_INC
 #define SIMCONFIG_INC
 
 #include <yarp/os/ConstString.h>
 #include <yarp/os/Value.h>
+// std
+#include <stdio.h>
+#include <iostream>
+
+using namespace std;
+#include <string>
 
 class SimConfig {
 public:
     // can't actually configure from command line yet, since
     // some config files get loaded before main() - this needs
     // to be fixed.
-    void configure(int argc, char *argv[]);
+    string configure(int argc, char *argv[], string & moduleName);
     
     yarp::os::ConstString find(const char *fileName);
 	yarp::os::ConstString findPath(const char *key);
     bool isActive();
+    static string moduleName;
+    
     
 };
 

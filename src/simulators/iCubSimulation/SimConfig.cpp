@@ -6,12 +6,13 @@
  * \date 2008
  * \note Release under GNU GPL v2.0
  **/
-
-
-
 #include "SimConfig.h"
+// std
+#include <stdio.h>
+#include <iostream>
 
 using namespace yarp::os;
+using namespace std;
 
 #ifndef EXPERIMENTAL_CONFIG_METHOD
 
@@ -26,13 +27,15 @@ bool SimConfig::isActive() { return false; }
 // HERE we use capability-style configuration search
 
 #include <yarp/os/ResourceFinder.h>
-#include <stdlib.h>
+// std
 #include <stdio.h>
+#include <iostream>
 
 static ResourceFinder *_the_finder = NULL;
 
-static void configureFinder(int argc, char *argv[])
+static string configureFinder(int argc, char *argv[], string &moduleName)
 {
+    //string moduleName;
      if (_the_finder==NULL) {
         _the_finder = new ResourceFinder;
         if (_the_finder!=NULL) {
@@ -41,9 +44,18 @@ static void configureFinder(int argc, char *argv[])
             finder.setDefaultConfigFile("simulator.ini");
             finder.setDefaultContext("simConfig");
             finder.configure("ICUB_ROOT", argc, argv); 
+            if ( finder.check( "moduleName" ) ) {
+                moduleName = finder.find( "moduleName" ).asString();
+                moduleName = "/" + moduleName;
+                cout << "NEW MODULE NAME " << moduleName << endl;
+            }
+            else {    
+                moduleName ="/icubSim";
+                cout << "OLD MODULE NAME " << moduleName << endl;
+            }
         }
     }
-
+    return moduleName;
 }
 
 static ResourceFinder& getFinder() {   
@@ -60,7 +72,7 @@ static ResourceFinder& getFinder() {
     }
     if (_the_finder==NULL) {
         printf("Could not create ResourceFinder, no memory\n");
-        exit(1);
+       // exit(1);
     }
 
     return *_the_finder;
@@ -70,7 +82,7 @@ ConstString SimConfig::find(const char *fileName) {
    // printf("SimConfig: asked to find %s\n", fileName);
     ConstString location = getFinder().findFile(fileName);
     if (location!="") {
-     //   printf("Found config: %s\n", location.c_str());
+     //printf("Found config: %s\n", location.c_str());
     }
     return location;
 }
@@ -80,10 +92,11 @@ ConstString SimConfig::findPath(const char *key) {
 	return getFinder().findPath(key);//find(key);
   // return getFinder().find(key);
 }
-void SimConfig::configure(int argc, char *argv[])
+string SimConfig::configure(int argc, char *argv[], string &moduleName )
 {
-    configureFinder(argc, argv);
-
+    //string moduleName;
+    configureFinder( argc, argv, moduleName );
+    return moduleName;
 }
 
 bool SimConfig::isActive() { return true; }

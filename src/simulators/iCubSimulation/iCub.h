@@ -20,6 +20,7 @@
 #include "MS3D.h"
 #include "xloader.h"
 #include <ode/ode.h>
+#include <string>
 
 #include "EyeLidsController.h"
 
@@ -27,6 +28,7 @@
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
 #endif 
 using namespace yarp::os;
+using namespace std;
 
 class ICubData{ 
 public:	
@@ -49,6 +51,7 @@ public:
 
 	bool reinitialized;
 	float eyeLidRot;
+    string eyeLidsPortName;
 
     int inc;
 

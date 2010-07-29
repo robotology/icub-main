@@ -32,10 +32,10 @@ void VideoTexture::apply(unsigned int *textures) {
         inputs[i]->apply(textures);
     }
 }
-
-
 bool VideoTexture::add(Searchable& config) {
     TextureInput *entry = new TextureInput;
+    entry->setName(videoPort);
+
     if (entry!=NULL) {
         bool ok = entry->open(config);
         if (!ok) {
@@ -43,19 +43,30 @@ bool VideoTexture::add(Searchable& config) {
             entry = NULL;
         } else {
             inputs.push_back(entry);
+            
             return true;
         }
 	}
     return false;
 }
 
+void VideoTexture::setName(string name) {
+    this->videoPort = name;
+}
 
+void TextureInput::setName(string name) {
+    this->moduleName = name;
+}
 
 bool TextureInput::open(Searchable& config) {
     textureIndex = config.check("textureIndex",Value(-1),
                                 "texture index").asInt();
-    port.open(config.check("port",Value("/texture"),
-                            "local port name").asString());
+
+    ConstString texturePort = config.check("port",Value("/texture"),"local port name").asString();
+
+    string portStr = this->moduleName + texturePort.c_str();
+    port.open( portStr.c_str() );
+
     return true;
 }
 

@@ -598,8 +598,10 @@ void ICubSim::draw(){
 		glTranslatef(0,-0.002,0.007);
 		glScalef(0.95,1,1);
 		iCubHeadModel->draw(false,8); 
-		if (eyeLids==0)
-            eyeLids=new EyeLids; 
+		if (eyeLids==0){
+            eyeLids=new EyeLids;
+            eyeLids->setName( eyeLidsPortName );
+        } 
 
 		eyeLids->checkPort();
 		glTranslatef(0,0,0.067);

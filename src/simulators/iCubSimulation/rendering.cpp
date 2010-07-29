@@ -464,8 +464,8 @@ void DrawVideo(VideoTexture *video) {
 		}
         first = false;
 	}
-#endif
-	video->apply(Texture);
+#endif    
+	video->apply( Texture );
 }
 
 void DrawX (dTriMeshX trim, int whichtexture){

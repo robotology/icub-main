@@ -36,7 +36,14 @@ public:
 	worldSim *_wrld;
 	bool stop;
     bool sync;
+    string name;
 
+    void setName( string module ){
+        name = module;
+    }
+    string getName(){
+        return name;
+    }
 
 	OdeInit():mutex(1)
 	{	
@@ -54,6 +61,8 @@ public:
 			_iCub = new ICubSim(world, space, 0,0,0);
 			_wrld = new worldSim(world, space, 0,0,0);	
 	}
+
+    
 
     ~OdeInit()
     {

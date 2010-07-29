@@ -17,15 +17,20 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 #include <yarp/os/Time.h>
-//#include <yarp/sig/ImageFile.h>
-//#include <yarp/sig/ImageDraw.h>
 
 #include <vector>
+#include <string>
+// std
+#include <stdio.h>
+#include <iostream>
+
+using namespace std;
 
 class TextureInput {
 private:
     int textureIndex;
     double lastData;
+    string moduleName;
     int t;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > port;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> cache, input;
@@ -39,7 +44,7 @@ public:
 	~TextureInput(){
 		port.close();
 	} 
-
+    void setName( string module );
     bool open(yarp::os::Searchable& config);
     void apply(unsigned int *textures);
 };
@@ -51,12 +56,15 @@ public:
 
     ~VideoTexture();
 
+    string videoPort;
     bool add(const char *port, int textureIndex) {
         yarp::os::Property config;
         config.put("port",port);
         config.put("textureIndex",textureIndex);
         return add(config);
     }
+
+    void setName( string module );
 
     bool add(yarp::os::Searchable& config);
 

@@ -149,6 +149,8 @@ using namespace yarp::dev;
 
 VideoTexture *Simulation::video=0;
 
+//string globalName;
+
 OdeInit *_odeinit = NULL;
  OdeInit& getOdeInit() {
   if (_odeinit==NULL) {
@@ -210,20 +212,20 @@ public:
         sloth = 0;
     }
     
+    string moduleName;
     cart2LpPixel * c2ltable;
     bool firstpass;
 
     ImageOf<PixelRgb> buffer;
 
     bool cartToLogPolar(ImageOf<PixelRgb> &lp, const ImageOf<PixelRgb> &cart);
-    //bool getFovealImage(ImageOf<PixelRgb> &image);
     bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
 
     bool open();
     bool runModule();
 
 	bool configure(int argc, char **argv){
-		finder.configure(argc, argv);
+		finder.configure(argc, argv, moduleName );
 		return true;	
 	}
 
@@ -325,8 +327,6 @@ public:
 	}
 
     bool respond (const Bottle &command, Bottle &reply) {
-       //fprintf(stderr, "Reading from world port...\n");
-		//glDisable(GL_CULL_FACE);
         ConstString cmd = command.get(0).asString();
         bool ok = true;
         bool done = false;
@@ -1104,8 +1104,6 @@ public:
     void sendImage(BufferedPort<ImageOf<PixelRgb> >& port);
     void sendImageFov(BufferedPort<ImageOf<PixelRgb> >& port);
     void sendImageLog(BufferedPort<ImageOf<PixelRgb> >& port);
-    
-   
 };
 
 
@@ -1142,31 +1140,49 @@ void SimulatorModule::init()
   	//start left arm device driver
 	ConstString left_arm = finder.find("left_arm");
 	options.fromConfigFile(left_arm.c_str());
+    ConstString leftArmPort = options.check("name",Value(1),"what did the user select?").asString();
+    string leftArm = moduleName + leftArmPort.c_str();
+    options.put("name", leftArm.c_str() );
   	iCubLArm = new PolyDriver(options);
 
   	//start right arm device driver
   	ConstString right_arm = finder.find("right_arm");
 	options.fromConfigFile(right_arm.c_str());
+    ConstString rightArmPort = options.check("name",Value(1),"what did the user select?").asString();
+    string rightArm = moduleName + rightArmPort.c_str();
+    options.put("name", rightArm.c_str() );
   	iCubRArm = new PolyDriver(options);
 
   	//start head device driver
   	ConstString head = finder.find("head");
 	options.fromConfigFile(head.c_str());
+    ConstString headPort = options.check("name",Value(1),"what did the user select?").asString();
+    string headStr = moduleName + headPort.c_str();
+    options.put("name", headStr.c_str() );
   	iCubHead = new PolyDriver(options);
 
   	//start left leg device driver
  	ConstString left_leg = finder.find("left_leg");
 	options.fromConfigFile(left_leg.c_str());
+    ConstString leftLegPort = options.check("name",Value(1),"what did the user select?").asString();
+    string leftLeg = moduleName + leftLegPort.c_str();
+    options.put("name", leftLeg.c_str() );
   	iCubLLeg = new PolyDriver(options);
 
    	//start right leg device driver
  	ConstString right_leg = finder.find("right_leg");
 	options.fromConfigFile(right_leg.c_str());
+    ConstString rightLegPort = options.check("name",Value(1),"what did the user select?").asString();
+    string rightLeg = moduleName + rightLegPort.c_str();
+    options.put("name", rightLeg.c_str() );
   	iCubRLeg = new PolyDriver(options);
 
     //start torso device driver
   	ConstString torso = finder.find("torso");
 	options.fromConfigFile(torso.c_str());
+    ConstString torsoPort = options.check("name",Value(1),"what did the user select?").asString();
+    string torsoStr = moduleName + torsoPort.c_str();
+    options.put("name", torsoStr.c_str() );
   	iCubTorso = new PolyDriver(options);
 
 	//odeinit._wrld->model_DIR = finder.findPath("model_path_default").asString();
@@ -1187,41 +1203,71 @@ void SimulatorModule::initImagePorts() {
 
 	ConstString cameras = finder.find("cameras");
 	options.fromConfigFile(cameras.c_str());
-   	//readConfig(options,"conf/Sim_camera.ini");
     
     ConstString nameExternal = 
         options.check("name_wide",
-                      Value("/icubSim/cam"),
+                      Value("/cam"),
                       "Name of external view camera port").asString();
     
     ConstString nameLeft = 
         options.check("name_left",
-                      Value("/icubSim/cam/left"),
+                      Value("/cam/left"),
                       "Name of left camera port").asString();
     
     ConstString nameRight = 
         options.check("name_right",
-                      Value("/icubSim/cam/right"),
+                      Value("/cam/right"),
                       "Name of right camera port").asString();
 
-    portLeft.open(nameLeft);
-    portRight.open(nameRight);
-    portWide.open(nameExternal);
+    ConstString nameLeftFov = 
+        options.check("name_leftFov",
+                      Value("/cam/left/fov"),
+                      "Name of left camera fovea port").asString();
+    ConstString nameRightFov = 
+        options.check("name_rightFov",
+                      Value("/cam/right/fov"),
+                      "Name of right camera fovea port ").asString();
 
-    portLeftFov.open("/icubSim/cam/left/fovea");
-    portRightFov.open("/icubSim/cam/right/fovea");
+    ConstString nameLeftLog = 
+        options.check("name_leftLog",
+                      Value("/cam/left/logpolar"),
+                      "Name of left camera logpolar port").asString();
+    ConstString nameRightLog = 
+        options.check("name_rightLog",
+                      Value("/cam/right/logpolar"),
+                      "Name of right camera logpolar port").asString();
 
-    portLeftLog.open("/icubSim/cam/left/logpolar");
-    portRightLog.open("/icubSim/cam/right/logpolar");
+
+    string leftCam = moduleName + nameLeft.c_str();
+    string rightCam = moduleName + nameRight.c_str();
+    string mainCam = moduleName + nameExternal.c_str();
+    
+    string leftFov = moduleName + nameLeftFov.c_str();
+    string rightFov = moduleName + nameRightFov.c_str();
+    string leftLog = moduleName + nameLeftLog.c_str();
+    string rightLog = moduleName + nameRightLog.c_str();
+
+    portLeft.open( leftCam.c_str());
+    portRight.open( rightCam.c_str() );
+    portWide.open( mainCam.c_str() );
+
+    portLeftFov.open( leftFov.c_str() );
+    portRightFov.open( rightFov.c_str() );
+
+    portLeftLog.open( leftLog.c_str() );
+    portRightLog.open( rightLog.c_str() );
 }
 
 
 bool SimulatorModule::open() {
     
 	cmdPort.setReader(*this);
-	cmdPort.open("/icubSim/world");
-	tactilePort.open("/icubSim/touch");
-    inertialPort.open("/icubSim/inertial");
+    string world = moduleName + "/world";
+    string tactile = moduleName + "/touch";
+    string inertial = moduleName + "/inertial";
+	cmdPort.open( world.c_str() );
+	tactilePort.open( tactile.c_str() );
+    inertialPort.open( inertial.c_str() );
 
     if (odeinit._iCub->actVision=="on") {
         initImagePorts();
@@ -1475,8 +1521,10 @@ int main( int argc, char** argv)
 	printf("\nODE configuration: %s\n\n", dGetConfiguration());
     MyNetwork yarp;
     SimConfig finder;
+
+    string moduleName;
 		
-    finder.configure(argc, argv);
+    finder.configure(argc, argv, moduleName);
 
 	odeinit._wrld->OBJNUM = 0;
 	odeinit._wrld->waitOBJ = 0;
@@ -1498,7 +1546,6 @@ int main( int argc, char** argv)
 
 	a = b = c = 0;
 	
-	
     Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
         "controlboard",
         "iCubSimulationControl"));
@@ -1510,7 +1557,8 @@ int main( int argc, char** argv)
 
     SimulatorModule module;
     simulatorModule = &module;
-
+    module.moduleName = moduleName;
+    _odeinit->setName (moduleName);
     module.open();
 
     // this blocks until termination (through ctrl+c or a kill)

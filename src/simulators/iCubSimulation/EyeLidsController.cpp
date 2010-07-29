@@ -15,7 +15,7 @@ using namespace std;
 
 EyeLids::EyeLids()
 {
-    OpenPort();
+    
 }
 
 EyeLids::~EyeLids()
@@ -28,9 +28,16 @@ void EyeLids::ClosePort()
    port.close();
 }
 
+void EyeLids::setName(string name) {
+    this->portName = name;
+    OpenPort();
+}
+
 bool EyeLids::OpenPort()
 {
-    port.open("/icubSim/face/eyelids");
+    string eyelidsName = "/face/eyelids";
+    string eyelicsPort = this->portName + eyelidsName;
+    port.open( eyelicsPort.c_str() );
 	return true;
 }
 

@@ -20,6 +20,9 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
 #include <iostream>
+#include <string>
+
+using namespace std;
 
 class EyeLids
 {
@@ -29,7 +32,9 @@ public:
 	
     yarp::os::BufferedPort<yarp::os::Bottle> port;
 public:
+    string portName;
 	float eyeLidsRotation;
+    void setName( string module );
 	bool OpenPort();
     
     void ClosePort();
