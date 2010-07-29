@@ -38,8 +38,10 @@ disparityModule::~disparityModule() {
 
 bool disparityModule::configure( ResourceFinder &rf ) {
     
-    if ( rf.check( "moduleName" ) )
-        moduleName =rf.find( "moduleName" ).asString();
+    if ( rf.check( "moduleName" ) ) {
+        moduleName = rf.find( "moduleName" ).asString();
+        moduleName = "/" + moduleName;
+    }
     else    
         moduleName ="/vergence";
     /*
