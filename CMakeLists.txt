@@ -145,9 +145,9 @@ if (ICUB_EXPERIMENTAL_APP_INSTALL)
 	## add custom targets
 	icub_get_property(applications GLOBAL PROPERTY ICUB_APPLICATIONS)
 	message(STATUS "Exporting applications: ${applications}")
-	add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/install-apps COMMAND "" COMMENT "Global app install")
-	add_custom_target(INSTALL_APPLICATIONS ALL DEPENDS app-default)
-	add_dependencies(INSTALL_APPLICATIONS app-default)
+#	add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/install-apps COMMAND "" COMMENT "Global app install")
+	add_custom_target(INSTALL_APPLICATIONS)
+	add_dependencies(INSTALL_APPLICATIONS ${applications})
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
 # export the build tree
