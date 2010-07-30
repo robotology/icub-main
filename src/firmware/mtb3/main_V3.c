@@ -25,7 +25,15 @@
 //
 //  Added the CAN filters 
 //  
-
+//
+//  Rev 2.0.10 del 28/07/2010
+//
+//  solved few bugs
+//
+//  Rev 2.0.11 del 29/07/2010
+//  ConfigBuffer[STAGE_CAL_EN]=0x0FFF;
+//
+//
 #include<p30f4011.h>
 #include"can_interface.h"
 #include "AD7147RegMap.h"

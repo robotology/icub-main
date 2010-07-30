@@ -191,25 +191,25 @@ void ConfigAD7147(unsigned char Channel, unsigned int i,unsigned int pw_control_
 	ConfigBuffer[PWR_CONTROL]=pw_control_val;	// Full power mode enabled at 32ms - 12 sequences - 256 decimation factor
 //	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],PWR_CONTROL, 1, ConfigBuffer, PWR_CONTROL);
 	// Run data path for all sequences
-	ConfigBuffer[STAGE_CAL_EN]=0x0;//0x0FFF;
+//	ConfigBuffer[STAGE_CAL_EN]=0x0;//0x0FFF;
 //	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],STAGE_CAL_EN, 1, ConfigBuffer, STAGE_CAL_EN);
 
 	//Calibration configuration
 	ConfigBuffer[AMB_COMP_CTRL0]=0x0;;//0x220;//0x220;
-	ConfigBuffer[AMB_COMP_CTRL1]=0x14C8;//0x14C8;
-	ConfigBuffer[AMB_COMP_CTRL2]=0x0832;//0xBFF;//0x0832;
+	ConfigBuffer[AMB_COMP_CTRL1]=0x0;//0x14C8;
+	ConfigBuffer[AMB_COMP_CTRL2]=0x0;//0xBFF;//0x0832;
 	//Interrupt configuration
 	ConfigBuffer[STAGE_LOW_INT_EN]=0x0000;
 	ConfigBuffer[STAGE_HIGH_INT_EN]=0x0000;
-	ConfigBuffer[STAGE_COMPLETE_INT_EN]=0x800;//0x800;//0x0001;//0x0001;
+	ConfigBuffer[STAGE_COMPLETE_INT_EN]=0x400;//0x800;//0x0001;//0x0001;
 	ConfigBuffer[STAGE_LOW_LIMIT_INT]=0x0000;
 	ConfigBuffer[STAGE_HIGH_LIMIT_INT]=0x0000;
-	ConfigBuffer[STAGE_COMPLETE_LIMIT_INT]=0x000;//0x0FFF;
+	ConfigBuffer[STAGE_COMPLETE_LIMIT_INT]=0xfff;//0x0FFF;
 //	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],AMB_COMP_CTRL0, 9, ConfigBuffer, AMB_COMP_CTRL0);
 		WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],PWR_CONTROL, 11, ConfigBuffer, PWR_CONTROL);
 	// Run data path for all sequences
-//	ConfigBuffer[STAGE_CAL_EN]=0x0;//0x0FFF;
-//	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],STAGE_CAL_EN, 1, ConfigBuffer, STAGE_CAL_EN);
+	ConfigBuffer[STAGE_CAL_EN]=0x0FFF;//0x0FFF;
+	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],STAGE_CAL_EN, 1, ConfigBuffer, STAGE_CAL_EN);
 }
 
 void ConfigAD7147_ALL(unsigned char Channel,unsigned int i,unsigned int pw_control_val, unsigned int *convalue)
@@ -255,8 +255,8 @@ void ConfigAD7147_ALL(unsigned char Channel,unsigned int i,unsigned int pw_contr
 
 	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],PWR_CONTROL, 8, ConfigBuffer, PWR_CONTROL);
 	// Run data path for all sequences
-//	ConfigBuffer[STAGE_CAL_EN]=0x0;//0x0FFF;
-//	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],STAGE_CAL_EN, 1, ConfigBuffer, STAGE_CAL_EN);
+	ConfigBuffer[STAGE_CAL_EN]=0x0fff;//0x0FFF;
+	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],STAGE_CAL_EN, 1, ConfigBuffer, STAGE_CAL_EN);
 }
 
 void ConfigAD7147_THREE(unsigned char Channel,unsigned int i,unsigned int pw_control_val, unsigned int *convalue)
@@ -328,6 +328,6 @@ void ConfigAD7147_THREE(unsigned char Channel,unsigned int i,unsigned int pw_con
 
 	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],PWR_CONTROL, 8, ConfigBuffer, PWR_CONTROL);
 	// Run data path for all sequences
-//	ConfigBuffer[STAGE_CAL_EN]=0x0;//0x0FFF;
-//	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],STAGE_CAL_EN, 1, ConfigBuffer, STAGE_CAL_EN);
+	ConfigBuffer[STAGE_CAL_EN]=0x0FFF;//0x0FFF;
+	WriteToAD7147ViaI2C(Channel,AD7147_ADD[i],STAGE_CAL_EN, 1, ConfigBuffer, STAGE_CAL_EN);
 }
