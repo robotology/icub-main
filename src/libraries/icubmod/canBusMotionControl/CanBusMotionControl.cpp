@@ -221,13 +221,23 @@ public:
 		case 	MODE_IDLE:
 			printf ("[%d] board  %d MODE_IDLE \r\n", net, addr);
 			break;
-		case 	MODE_CONTROLLED:
-			printf ("[%d] board %d MODE_CONTROLLED \r\n", net, addr);
+		case 	MODE_POSITION:
+			printf ("[%d] board  %d MODE_POSITION \r\n", net, addr);
 			break;
-		case 	MODE_CALIB:
-			printf ("[%d] board  %d MODE_CALIB \r\n", net, addr);
+		case 	MODE_VELOCITY:
+			printf ("[%d] board  %d MODE_VELOCITY \r\n", net, addr);
+			break;
+		case 	MODE_TORQUE:
+			printf ("[%d] board  %d MODE_TORQUE \r\n", net, addr);
+			break;
+		case 	MODE_IMPEDANCE_POS:
+			printf ("[%d] board  %d MODE_IMPEDANCE_POS \r\n", net, addr);
+			break;
+		case 	MODE_IMPEDANCE_VEL:
+			printf ("[%d] board  %d MODE_IMPEDANCE_VEL \r\n", net, addr);
 			break;
 		default:
+			printf ("[%d] board  %d MODE_UNKNOWN \r\n", net, addr);
 			break;
 		}
 	}
@@ -2555,15 +2565,64 @@ bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
 	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_IMPEDANCE_VEL);
 }
 
+bool CanBusMotionControl::getControlModesRaw(int *v)
+{
+	DEBUG("Calling GET_CONTROL_MODES\n");
+    CanBusResources& r = RES(system_resources);
+    int i;
+	int temp;
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
+		switch (temp)
+		{
+			case MODE_IDLE:
+				v[i]=VOCAB_CM_IDLE;
+				break;
+			case MODE_POSITION:
+				v[i]=VOCAB_CM_POSITION;
+				break;				
+			case MODE_VELOCITY:
+				v[i]=VOCAB_CM_VELOCITY;
+				break;
+			case MODE_TORQUE:
+				*v=VOCAB_CM_TORQUE;
+				break;
+			case MODE_IMPEDANCE_POS:
+				v[i]=VOCAB_CM_IMPEDANCE_POS;
+				break;
+			case MODE_IMPEDANCE_VEL:
+				v[i]=VOCAB_CM_IMPEDANCE_VEL;
+				break;
+			case MODE_OPENLOOP:
+				v[i]=VOCAB_CM_OPENLOOP;
+				break;
+			default:
+				v[i]=VOCAB_CM_UNKNOWN;
+				break;
+		}
+    }
+    _mutex.post();
+    return true;
+}
+
 bool CanBusMotionControl::getControlModeRaw(int j, int *v)
 {
-	if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-    return false;
+    CanBusResources& r = RES(system_resources);
+    if (!(j>= 0 && j <= r.getJoints())) 
+	{
+		*v=VOCAB_CM_UNKNOWN;
+		return false;
+	}
 
     short s;
 
     DEBUG("Calling GET_CONTROL_MODE\n");
-    _readWord16 (CAN_GET_CONTROL_MODE, j, s); 
+	//_readWord16 (CAN_GET_CONTROL_MODE, j, s); 
+
+    _mutex.wait();
+    s = r._bcastRecvBuffer[j]._controlmodeStatus;
   
     switch (s)
     {
@@ -2592,6 +2651,8 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
         *v=VOCAB_CM_UNKNOWN;
         break;
     }
+	_mutex.post();
+
 	return true;
 }
 

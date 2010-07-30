@@ -503,6 +503,7 @@ public:
 	virtual bool setImpedanceVelocityModeRaw(int j);
 	virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
+	virtual bool getControlModesRaw(int* v);
 
 	///////////// OpenLoop control interface raw
     ///
