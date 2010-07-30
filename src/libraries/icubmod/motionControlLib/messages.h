@@ -28,8 +28,6 @@
 
 #define MODE_OPENLOOP               0x50
 
-#define MODE_CONTROLLED				1
-#define MODE_CALIB					2
 /*
  * this is 8 bits long, MSB is the channel (0 or 1). 
  */
