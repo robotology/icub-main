@@ -60,7 +60,7 @@ byte calibrate (byte channel, byte type, Int16 param1,Int16 param2, Int16 param3
 			_pad_enabled[channel] = false;
 			PWM_outputPadDisable(channel);
 	//		AS1_printStringEx ("Calibration ABS_DIGITAL aborted\r\n");
-	//		AS1_printStringEx ("Offset setted\r\n");			
+	//		AS1_printStringEx ("Offset set\r\n");			
 		}
 #elif VERSION==0x0153 || VERSION==0x0157 
 	//  	AS1_printStringEx ("Calibration ABS_DIGITAL started \r\n");
@@ -98,7 +98,7 @@ byte calibrate (byte channel, byte type, Int16 param1,Int16 param2, Int16 param3
 			_pad_enabled[channel] = false;
 			PWM_outputPadDisable(channel);
 	//		AS1_printStringEx ("Calibration ABS_DIGITAL aborted\r\n");
-	//		AS1_printStringEx ("Offset setted\r\n");			
+	//		AS1_printStringEx ("Offset set\r\n");			
 		}
 #endif
 	}   
