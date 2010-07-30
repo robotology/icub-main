@@ -79,7 +79,7 @@ public:
         if (index < 0)
             index = 0;
         else if (index > (max-min))
-            index = max-min;			  
+            index = (int)(max-min);
         return _shiftFunctionInv[index]; 
     }
 

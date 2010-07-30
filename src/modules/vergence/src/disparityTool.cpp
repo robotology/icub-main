@@ -26,7 +26,7 @@ DisparityTool::DisparityTool() {
     _corrFunct		  = NULL;
     _ssdFunct         = NULL;
     _count			  = NULL;
-    _maxCount = 0.0;
+    _maxCount = 0;
     rPtr              = NULL; 
     lPtr              = NULL;
     init(_srho, _stheta, 1, _overlap, _xsize, _ysize, _xsizeR, _ysizeR, _srho);
@@ -317,7 +317,7 @@ shift_Struct DisparityTool::filterMaxes() {
     float threshold2 = 0.05f;
     float vals[__nMaxes];
     for (int i = 0; i < __nMaxes - 1; i++) {
-        vals[i] = _maxShifts[i].corr;
+        vals[i] = (float)_maxShifts[i].corr;
         if ( !isWithin(_maxShifts[i].index, _shiftMax, _shiftMin) || (vals[i] < threshold) )
             vals[i] = -1;
     }

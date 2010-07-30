@@ -214,7 +214,7 @@ void disparityProcessor::run(){
     int x, y;
     intersectRay( KIN_RIGHT_PERI, tempV, x, y );
     float min;
-    min = _centerX - x;
+    min = (float)(_centerX - x);
 
     // ------------------------------------------------------------------compute max 
     tmpPos = q;
@@ -222,7 +222,7 @@ void disparityProcessor::run(){
     computeDirect( tmpPos );
     intersectRay( KIN_RIGHT_PERI, tempV, x, y );
     float max;
-    max = _centerX - x;
+    max = (float)(_centerX - x);
 
     int hWidth = 0;		
     int hHeight = 0;
