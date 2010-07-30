@@ -598,8 +598,8 @@ void ICubSim::draw(){
 		glTranslatef(0,-0.002,0.007);
 		glScalef(0.95,1,1);
 		iCubHeadModel->draw(false,8); 
-		if (eyeLids==0){
-            eyeLids=new EyeLids;
+		if (!eyeLids){
+            eyeLids = new EyeLids;
             eyeLids->setName( eyeLidsPortName );
         } 
 
@@ -2500,5 +2500,6 @@ ICubSim::ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z)
 : ICubData() {
 	resetSpeeds();
 	init(world, space, X, Y, Z);
-    eyeLids=0;
+    reinitialized = false;
+    eyeLids = 0;
 }

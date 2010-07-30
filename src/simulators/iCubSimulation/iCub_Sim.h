@@ -78,7 +78,7 @@ float zoom = 0;
 //angle of rotation
 float xpos = 0, ypos = 0, zpos = 0, xrot = 0, yrot = 0, angle=0.0;
 float lastx, lasty;
-float xrotrad, yrotrad;
+float xrotrad = 0, yrotrad = 0;
 clock_t startTime, finishTime;
 double duration, frames, FPS,seconds, TimestepManager;
 static float test[3];
@@ -140,11 +140,6 @@ public:
 		//drawText(text, textPos);
 	}
 
-	static void quit(int code)
-	{
-		SDL_Quit();
-		yarp::os::exit(code);
-	}
 	static void handle_key_down(SDL_keysym* keysym)
 	{
 		switch (keysym->sym)
@@ -536,7 +531,6 @@ assert(o1);
 
 	static void draw_screen(){
         
-		static clock_t startTimeODE= clock(), finishTimeODE= clock();
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
 
 		if (extractImages || odeinit._iCub->actVision == "on"){
@@ -786,8 +780,7 @@ assert(o1);
 
 		odeinit._wrld->WAITLOADING = false;
 		odeinit._wrld->static_model = false;
-		while(!odeinit.stop)
-		{
+		while(!odeinit.stop) {
 			/* Process incoming events. */
 			process_events();
 			/* Draw the screen. */
@@ -813,11 +806,13 @@ assert(o1);
 		//stop the timer
 		SDL_RemoveTimer(id);
 		//Stop the thread
-		SDL_KillThread( thread );
+		//SDL_KillThread( thread );
+        SDL_WaitThread( thread, NULL );
+        //SDL_Quit();
 	}
 	
     Simulation(){
-        video=new VideoTexture;
+        video = new VideoTexture;
         string moduleName = odeinit.getName();
         video->setName( moduleName ); 
         odeinit._iCub->eyeLidsPortName = moduleName;
@@ -839,6 +834,7 @@ assert(o1);
     ~Simulation()
     {
         delete video;
+        
     }
 };
 

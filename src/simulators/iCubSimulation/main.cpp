@@ -310,6 +310,11 @@ public:
             delete iCubTorso;
             iCubTorso = NULL;
         }
+        for (int x =0; x < a; x++)
+            dTriMeshXDestroy(odeinit._wrld->trimesh[x]);
+    
+        
+
         return true;
     }
 
@@ -769,7 +774,7 @@ public:
 							
 							ConstString tmp = (char *) odeinit._wrld->model_DIR.c_str();
 							model = tmp + "/" + model;
-							odeinit._wrld->trimesh[a] = dLoadMeshFromX(model); // HERE THE MODEL SHOULD HAVE THE PATH
+							odeinit._wrld->trimesh[a] = dLoadMeshFromX(model);
 							if (!odeinit._wrld->trimesh[a]){
 								cout << "Check spelling/location of file" << endl;
 							}else{
@@ -794,7 +799,7 @@ public:
 								odeinit._wrld->WAITLOADING = true;	
 							}
 								odeinit.mutexTexture.post();
-
+                            
 						}
 						if (setBody==9){
 
@@ -1565,7 +1570,7 @@ int main( int argc, char** argv)
     module.runModule();
 
     module.closeModule();
-
+    finder.deleteFinder();
     delete _odeinit;
 
     dCloseODE();

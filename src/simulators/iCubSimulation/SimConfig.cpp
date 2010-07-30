@@ -33,6 +33,11 @@ bool SimConfig::isActive() { return false; }
 
 static ResourceFinder *_the_finder = NULL;
 
+void SimConfig::deleteFinder(){
+    cout << "deleting finder " << endl;
+    delete _the_finder;
+}
+
 static string configureFinder(int argc, char *argv[], string &moduleName)
 {
     //string moduleName;

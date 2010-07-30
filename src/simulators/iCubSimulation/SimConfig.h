@@ -21,7 +21,9 @@ using namespace std;
 #include <string>
 
 class SimConfig {
+    
 public:
+
     // can't actually configure from command line yet, since
     // some config files get loaded before main() - this needs
     // to be fixed.
@@ -31,7 +33,7 @@ public:
 	yarp::os::ConstString findPath(const char *key);
     bool isActive();
     static string moduleName;
-    
+    void deleteFinder();
     
 };
 
