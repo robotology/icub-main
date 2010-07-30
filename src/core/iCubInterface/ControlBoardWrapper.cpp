@@ -80,7 +80,46 @@ void CommandsHelper::handleControlModeMsg(const yarp::os::Bottle& cmd,
             break;
         case VOCAB_GET:
             {
-                if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODE)
+				if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODES)
+				{
+					int *p = new int[controlledJoints];
+					*ok = iControlMode->getControlModes(p);
+					response.addVocab(VOCAB_IS);
+					response.addVocab(VOCAB_CM_CONTROL_MODES);   
+					Bottle& b = response.addList();
+					int i;
+					for (i = 0; i < controlledJoints; i++)
+					{
+						switch (p[i])
+						{
+							case 0: //IDLE
+								b.addVocab(VOCAB_CM_UNKNOWN);
+							break;
+							case 1:
+								b.addVocab(VOCAB_CM_POSITION);
+							break;				
+							case 2:
+								b.addVocab(VOCAB_CM_VELOCITY);
+							break;
+							case 3:
+								b.addVocab(VOCAB_CM_TORQUE);
+							break;
+							case 4: 
+								b.addVocab(VOCAB_CM_IMPEDANCE_POS);
+							break;
+							case 5: 
+								b.addVocab(VOCAB_CM_IMPEDANCE_VEL);
+							break;
+							default:
+								b.addVocab(VOCAB_CM_UNKNOWN);
+							break;
+						}
+					}
+					delete[] p;
+					*rec=true;
+				}
+
+                else if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODE)
                 {
 					int p=-1;
 					int axis = cmd.get(3).asInt();
@@ -115,7 +154,7 @@ void CommandsHelper::handleControlModeMsg(const yarp::os::Bottle& cmd,
 						break;
 					}
                     *rec=true;
-                }
+                 }
             }
             break;
         default:

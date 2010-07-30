@@ -1451,7 +1451,13 @@ public:
         return false;
     }
 
-	
+    virtual bool getControlModes(int *modes)
+    {
+        if (iControlMode)
+            return iControlMode->getControlModes(modes);
+        return false;
+    }
+
 	virtual bool setOutput(int j, double v)
     {
         if (iOpenLoop)

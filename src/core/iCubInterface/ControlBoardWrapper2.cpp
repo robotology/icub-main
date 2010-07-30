@@ -277,7 +277,9 @@ void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
 					break;
 				}
         }
-        break;
+		lastRpcStamp.update();
+        appendTimeStamp(response, lastRpcStamp);
+        break; // case VOCAB_GET
     default:
         {
             *rec=false;
@@ -342,7 +344,25 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
             {
                 if (caller->verbose())
                     fprintf(stderr, "GET command\n");
-                if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODE)
+				if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODES)
+				{
+				        if (caller->verbose())
+                            fprintf(stderr, "getControlModes\n");
+						int *p = new int[controlledJoints];
+						*ok = iMode->getControlModes(p);
+
+						response.addVocab(VOCAB_IS);
+						response.addVocab(VOCAB_CM_CONTROL_MODES);   
+
+						Bottle& b = response.addList();
+						int i;
+						for (i = 0; i < controlledJoints; i++)
+							b.addVocab(p[i]);
+						delete[] p;
+						
+						*rec=true;
+				}
+                else if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODE)
                     {
                         if (caller->verbose())
                             fprintf(stderr, "getControlMode\n");
@@ -360,7 +380,9 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
                         *rec=true;
                     }
             }
-            break;
+            lastRpcStamp.update();
+			appendTimeStamp(response, lastRpcStamp);
+			break; // case VOCAB_GET
         default:
             {
                 *rec=false;
@@ -660,7 +682,9 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 
                     }
 			}
-            break;
+			lastRpcStamp.update();
+            appendTimeStamp(response, lastRpcStamp);
+            break; // case VOCAB_GET
         }
 }
 

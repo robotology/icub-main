@@ -2536,6 +2536,30 @@ public:
         return false;
     }
 
+    virtual bool getControlModes(int *modes)
+    {
+       bool ret=true;
+
+	    DEBUG_CW2("Calling GET_CONTROL_MODES\n");
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iMode)
+            {
+                ret=ret&&p->iMode->getControlMode(off+base, modes+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
+    }
+
     virtual bool setOutput(int j, double v)
     {
         int off=device.lut[j].offset;
