@@ -3,8 +3,8 @@
  *  
  * @ingroup icub_libraries 
  *  
- * Definition of primitive actions for dealing with affordances 
- * and more. 
+ * Abstract layers for dealing with primitive actions (reach, 
+ * grasp and more). 
  *
  * \author Ugo Pattacini 
  *  
