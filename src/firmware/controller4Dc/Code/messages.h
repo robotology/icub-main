@@ -223,8 +223,8 @@
 	byte value = 0; \
 	if (CAN_LEN == 2) \
 	{ \
-		can_printf("CTRLMODE SET"); \
 		value = (CAN_DATA[1]); \
+		can_printf("CTRLMODE SET:%d",value); \
 		if (value>=0 && value <=0x50) _control_mode[axis] = value; \
 		_general_board_error = ERROR_NONE; \
 		_desired_torque[axis]=0; \
@@ -786,19 +786,19 @@
 		CAN_LEN = 3; \
 		CAN_DATA[1] = BYTE_H(_error[axis]); \
 		CAN_DATA[2] = BYTE_L(_error[axis]); \
-		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
+		CAN1_send ( CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }
 
 //-------------------------------------------------------------------
 #define CAN_SET_TORQUE_PID_HANDLER(x) \
 { \
-	if (CAN_LEN == 9) \
+	if (CAN_LEN == 8) \
 	{ \
 		_kp_torque[axis] = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 		_ki_torque[axis] = BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
 		_kd_torque[axis] = BYTE_W(CAN_DATA[5], CAN_DATA[6]); \
-		_kr_torque[axis] = BYTE_W(CAN_DATA[7], CAN_DATA[8]); \
+		_kr_torque[axis] = (CAN_DATA[7]); \
 		_general_board_error = ERROR_NONE; \
 	} \
 	else \
@@ -808,7 +808,7 @@
 #define CAN_GET_TORQUE_PID_HANDLER(x) \
 { \
 	PREPARE_HEADER; \
-		CAN_LEN = 9; \
+		CAN_LEN = 8; \
 		CAN_DATA[1] = BYTE_H(_kp_torque[axis]); \
 		CAN_DATA[2] = BYTE_L(_kp_torque[axis]); \
 		CAN_DATA[3] = BYTE_H(_ki_torque[axis]); \
@@ -816,7 +816,6 @@
 		CAN_DATA[5] = BYTE_H(_kd_torque[axis]); \
 		CAN_DATA[6] = BYTE_L(_kd_torque[axis]); \
 		CAN_DATA[7] = BYTE_H(_kr_torque[axis]); \
-		CAN_DATA[8] = BYTE_L(_kr_torque[axis]); \
 		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }
