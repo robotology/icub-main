@@ -49,8 +49,8 @@ static string configureFinder(int argc, char *argv[], string &moduleName)
             finder.setDefaultConfigFile("simulator.ini");
             finder.setDefaultContext("simConfig");
             finder.configure("ICUB_ROOT", argc, argv); 
-            if ( finder.check( "moduleName" ) ) {
-                moduleName = finder.find( "moduleName" ).asString();
+            if ( finder.check( "name" ) ) {
+                moduleName = finder.find( "name" ).asString();
                 moduleName = "/" + moduleName;
                 cout << "NEW MODULE NAME " << moduleName << endl;
             }
