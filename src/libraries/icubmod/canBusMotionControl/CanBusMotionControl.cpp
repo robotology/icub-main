@@ -1798,7 +1798,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 				        if (full_scale_read==false) 
 							{							
 								fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
-								yarp::os::Time::delay(3);
+                                //yarp::os::Time::delay(3);
 							}
 			        }
 
