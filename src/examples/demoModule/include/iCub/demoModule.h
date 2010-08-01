@@ -26,8 +26,9 @@
  *
  * \defgroup icub_demo demoModule
  *
- * This is a simple example to illustrate a module that is compliant with iCub Software Standards, addressing:
+ * This is a simple example to illustrate a module that is compliant with iCub Software Standards
  *
+ * Addressing:
  * - configuration
  * - graceful shut-down
  * - thread-based execution
