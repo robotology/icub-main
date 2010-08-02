@@ -23,6 +23,10 @@ IF (folder_source)
         ${folder_source} 
         ${folder_header}
     )
+
+    TARGET_LINK_LIBRARIES(${KEYWORD} ${IPP_LIBRARIES}
+                                     ${YARP_LIBRARIES})	
+
     INSTALL_TARGETS(/bin ${KEYWORD})
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
