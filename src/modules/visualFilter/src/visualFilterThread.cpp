@@ -107,7 +107,7 @@ void visualFilterThread::run() {
             //extending logpolar input image
             extending();
             //extracting RGB and Y planes
-            extractPlanes();
+            //extractPlanes();
             //gaussing filtering of the of RGB and Y
             //filtering();
             //colourOpponency map construction
@@ -117,7 +117,7 @@ void visualFilterThread::run() {
             //sending the edge image on the outport
                  
             if((edges!=0)&&(imagePortOut.getOutputCount())){
-                imagePortOut.prepare() =*(edges);		
+                imagePortOut.prepare() =*(edges);
                 imagePortOut.write();
             }
             if((redGreen!=0)&&(rgPort.getOutputCount())){
@@ -236,9 +236,9 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
 void visualFilterThread::extractPlanes() {
     Ipp8u* shift[3];
     int psb;
-	shift[0]=redPlane->getRawImage(); 
-	shift[1]=greenPlane->getRawImage();
-	shift[2]=bluePlane->getRawImage();
+    shift[0]=redPlane->getRawImage(); 
+    shift[1]=greenPlane->getRawImage();
+    shift[2]=bluePlane->getRawImage();
     ippiCopy_8u_C3P3R(inputExtImage->getRawImage(),inputExtImage->getRowSize(),shift,redPlane->getRowSize(),srcsize);
     ippiAdd_8u_C1RSfs(redPlane->getRawImage(),redPlane->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),yellowPlane->getRawImage(),yellowPlane->getRowSize(),srcsize,1);
 }
