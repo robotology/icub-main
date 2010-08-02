@@ -1,4 +1,5 @@
 #include <iCub/visualFilterThread.h>
+#include <cstring>
 
 using namespace yarp::os;
 using namespace yarp::sig;
