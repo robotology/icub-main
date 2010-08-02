@@ -35,7 +35,6 @@ namespace yarp{
 
 /*
  * @ingroup icub_icubDev
- * /defgroup icub_logpolarframegrabberimage LogPolar FrameGrabberImage
  * Logpolar frame grabber interfaces (specialized for the logpolar images).
  */
 class yarp::dev::ILogpolarFrameGrabberImage {
@@ -83,7 +82,6 @@ public:
 
 /**
  * @ingroup icub_icubDev
- * /defgroup icub_logpolarapi LogPolar API
  * Interface to the logpolar library/API.
  */
 class yarp::dev::ILogpolarAPI {
