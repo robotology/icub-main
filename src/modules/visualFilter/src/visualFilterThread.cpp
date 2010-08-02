@@ -1,5 +1,4 @@
 #include <iCub/visualFilterThread.h>
-#include <string.h>
 
 
 using namespace yarp::os;
@@ -178,10 +177,12 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
     ippiCopy_8u_C3R(inputOrigImage->getRawImage(),inputOrigImage->getRowSize(),inputExtImage->getPixelAddress(maxSize,maxSize),inputExtImage->getRowSize(),originalSrcsize);    
     //memcpy of the horizontal fovea lines (rows) 
     int sizeBlock=width_orig/2;
+    /*
     for( int i=0;i<maxSize;i++) {
         memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),inputExtImage->getPixelAddress(maxSize,maxSize+i),sizeBlock*sizeof(PixelRgb));
         memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),inputExtImage->getPixelAddress(sizeBlock,maxSize+i),sizeBlock*sizeof(PixelRgb));
     }
+    */
     //copy of the block adiacent angular positions (columns)
     unsigned char* ptrDestRight;
     unsigned char* ptrOrigRight;
