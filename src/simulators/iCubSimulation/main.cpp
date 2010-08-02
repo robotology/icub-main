@@ -377,23 +377,19 @@ public:
 						setBody = 1;
 						break;
 					case VOCAB3('b','o','x'):
-						//bid = odeinit._iCub->body[1];//temporary then will be replaced...
-                        if (odeinit._iCub->actHead=="on"){bid = odeinit._iCub->neck[0];}
-						else {bid = odeinit._iCub->head;}
+                        bid = odeinit._wrld->tempBody;
 						setBody = 2;
 						break;
 					case VOCAB4('s','b','o','x'):
-						bid2 = odeinit._iCub->geom_cube[0];//temporary then will be replaced...
+						bid2 = odeinit._wrld->tempGeom[0];//temporary then will be replaced...
 						setBody = 5;
 						break;
 					case VOCAB3('c','y','l'):
-						//bid = odeinit._iCub->body[1];//temporary then will be replaced...
-                        if (odeinit._iCub->actHead=="on"){bid = odeinit._iCub->neck[0];}
-						else {bid = odeinit._iCub->head;}
+						bid = odeinit._wrld->tempBody;
 						setBody = 6;
 						break;
 					case VOCAB4('s','c','y','l'):
-						bid2 = odeinit._iCub->geom_cube[0];//temporary then will be replaced...
+						bid2 = odeinit._wrld->tempGeom[0];//temporary then will be replaced...
 						setBody = 7;
 						break;
 					case VOCAB4('l','h','a','n'):
@@ -407,27 +403,23 @@ public:
 						setBody = 4;
 						break;
 					case VOCAB4('m','o','d','e'):
-						if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10]; }
-						else {bid = odeinit._iCub->l_hand;}
+						bid = odeinit._wrld->tempBody;
 						setBody = 8;
 						break;
 					case VOCAB4('s','m','o','d'):
-						if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10];}
-						else {bid = odeinit._iCub->l_hand;}
+						bid2 = odeinit._wrld->tempGeom[0];
 						setBody = 9;
 						break;
 					case VOCAB4('m','d','i','r'):
-						if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10];}
-						else {bid = odeinit._iCub->l_hand;}
+						bid2 = odeinit._wrld->tempGeom[0];
 						setBody = 10;
 						break;
                     case VOCAB3('s','p','h'):
-                        if (odeinit._iCub->actHead=="on"){bid = odeinit._iCub->neck[0];}
-						else {bid = odeinit._iCub->head;}
+                        bid = odeinit._wrld->tempBody;
 						setBody = 11;
 						break;
                     case VOCAB4('s','s','p','h'):
-						bid2 = odeinit._iCub->geom_cube[0];
+						bid2 = odeinit._wrld->tempGeom[0];
 						setBody = 12;
 						break;
 				}

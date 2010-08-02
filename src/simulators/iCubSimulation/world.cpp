@@ -181,7 +181,8 @@ void worldSim::loadTexture(ConstString texture, int numTexture){
 }
 
 void worldSim::setPosition(dReal agent1X, dReal agent1Y, dReal agent1Z ) {
-
+        dBodySetPosition(tempBody,-0.0,0.2, -100);  
+        dGeomSetPosition(tempGeom[1],-0.4,0.2, -100);
 	if (actWorld == "on"){
 		dGeomSetPosition(tableGeom[0],0.3,0.25,0.3);
 		dGeomSetPosition(tableGeom[1],-0.3,0.25,0.3);
@@ -215,6 +216,11 @@ void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z )
 	*/	
 	boxObj = dSimpleSpaceCreate(space);
 	dSpaceSetCleanup(boxObj,0);
+
+    tempBody = dBodyCreate (world);
+	tempGeom[0] = dCreateBox (space,0.1,0.1,0.1);
+    dGeomSetBody(tempGeom[0],tempBody);
+    tempGeom[1] = dCreateBox (space,0.1,0.1,0.1);
 	
 	if (actWorld == "on"){
 		dMass m, m2;

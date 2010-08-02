@@ -79,6 +79,9 @@ public:
 	dBodyID tableBody[5];
 	dGeomID tableGeom[5];
 
+    dBodyID tempBody;
+	dGeomID tempGeom[2];
+
 	dBodyID ballBody;
 	dGeomID ballGeom;
 
