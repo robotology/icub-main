@@ -65,7 +65,6 @@ bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {
     robotName             = rf.check("robot", 
                            Value("icub"), 
                            "Robot name (string)").asString();
-
     robotPortName         = "/" + robotName + "/head";
 
     /* 

@@ -234,13 +234,27 @@ void visualFilterThread::filtering() {
     0.0113, 0.0149, 0.0176, 0.0186, 0.0176, 0.0149, 0.0113};
     int divisor = 1;
     IppiPoint anchor={4,4};
-    //--->
-    ippiFilterGauss_8u_C1R(redPlane->getPixelAddress(maxKernelSize+1,maxKernelSize), redPlane->getRowSize(),redPlus->getPixelAddress(maxKernelSize+1,maxKernelSize),redPlus->getRowSize(),originalSrcsize,ippMskSize5x5);
-    ippiFilter32f_8u_C1R(redPlane->getPixelAddress(maxKernelSize+1,maxKernelSize),redPlane->getRowSize(),redMinus->getPixelAddress(maxKernelSize+1,maxKernelSize),redMinus->getRowSize(),originalSrcsize,srcMinus,srcMinusSize,anchor);
-    ippiFilterGauss_8u_C1R(greenPlane->getPixelAddress(maxKernelSize+1,maxKernelSize), greenPlane->getRowSize(),greenPlus->getPixelAddress(maxKernelSize+1,maxKernelSize),greenPlus->getRowSize(),originalSrcsize,ippMskSize5x5);
-    ippiFilter32f_8u_C1R(greenPlane->getPixelAddress(maxKernelSize+1,maxKernelSize),greenPlane->getRowSize(),greenMinus->getPixelAddress(maxKernelSize+1,maxKernelSize),greenMinus->getRowSize(),originalSrcsize,srcMinus,srcMinusSize,anchor);
-    ippiFilterGauss_8u_C1R(bluePlane->getPixelAddress(maxKernelSize+1,maxKernelSize), bluePlane->getRowSize(),bluePlus->getPixelAddress(maxKernelSize+1,maxKernelSize),bluePlus->getRowSize(),srcsize,ippMskSize5x5);
-    ippiFilter32f_8u_C1R(yellowPlane->getPixelAddress(maxKernelSize+1,maxKernelSize),yellowPlane->getRowSize(),yellowMinus->getPixelAddress(maxKernelSize+1,maxKernelSize),yellowMinus->getRowSize(),originalSrcsize,srcMinus,srcMinusSize,anchor);
+    
+    /*
+    ippiFilter32f_8u_C1R(redPlane->getPixelAddress(maxKernelSize,maxKernelSize),redPlane->getRowSize(),redMinus->getPixelAddress(maxKernelSize,maxKernelSize),redMinus->getRowSize(),originalSrcsize,srcMinus,srcMinusSize,anchor);
+    ippiFilter32f_8u_C1R(yellowPlane->getPixelAddress(maxKernelSize,maxKernelSize),yellowPlane->getRowSize(),yellowMinus->getPixelAddress(maxKernelSize,maxKernelSize),yellowMinus->getRowSize(),originalSrcsize,srcMinus,srcMinusSize,anchor);
+    ippiFilter32f_8u_C1R(greenPlane->getPixelAddress(maxKernelSize,maxKernelSize),greenPlane->getRowSize(),greenMinus->getPixelAddress(maxKernelSize,maxKernelSize),greenMinus->getRowSize(),originalSrcsize,srcMinus,srcMinusSize,anchor);
+    */
+    ippiFilter32f_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redMinus->getRawImage(),redMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
+    ippiFilter32f_8u_C1R(yellowPlane->getRawImage(),yellowPlane->getRowSize(),yellowMinus->getRawImage(),yellowMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
+    ippiFilter32f_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenMinus->getRawImage(),greenMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
+
+    /*
+    ippiFilterGauss_8u_C1R(bluePlane->getPixelAddress(maxKernelSize,maxKernelSize), bluePlane->getRowSize(),bluePlus->getPixelAddress(maxKernelSize,maxKernelSize),bluePlus->getRowSize(),srcsize,ippMskSize5x5);
+    ippiFilterGauss_8u_C1R(redPlane->getPixelAddress(maxKernelSize,maxKernelSize), redPlane->getRowSize(),redPlus->getPixelAddress(maxKernelSize,maxKernelSize),redPlus->getRowSize(),originalSrcsize,ippMskSize5x5);
+    ippiFilterGauss_8u_C1R(greenPlane->getPixelAddress(maxKernelSize,maxKernelSize), greenPlane->getRowSize(),greenPlus->getPixelAddress(maxKernelSize,maxKernelSize),greenPlus->getRowSize(),originalSrcsize,ippMskS
+    */
+
+    ippiFilterGauss_8u_C1R(bluePlane->getRawImage(), bluePlane->getRowSize(),bluePlus->getRawImage(),bluePlus->getRowSize(),srcsize,ippMskSize5x5);
+    ippiFilterGauss_8u_C1R(redPlane->getRawImage(), redPlane->getRowSize(),redPlus->getRawImage(),redPlus->getRowSize(),srcsize,ippMskSize5x5);
+    ippiFilterGauss_8u_C1R(greenPlane->getRawImage(), greenPlane->getRowSize(),greenPlus->getRawImage(),greenPlus->getRowSize(),srcsize,ippMskSize5x5);
+
+    
 }
 
 void visualFilterThread::colourOpponency() {
