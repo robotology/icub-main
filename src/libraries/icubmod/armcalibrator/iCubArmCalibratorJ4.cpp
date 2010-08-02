@@ -30,6 +30,8 @@ iCubArmCalibratorJ4::iCubArmCalibratorJ4()
     param1 = NULL;
     param2 = NULL;
     param3 = NULL;
+	original_pid = NULL;
+    limited_pid = NULL;
     pos = NULL;
     vel = NULL;
     homeVel=0;
@@ -121,6 +123,11 @@ bool iCubArmCalibratorJ4::close ()
     param2 = NULL;
     if (param3 != NULL) delete[] param3;
     param3 = NULL;
+
+    if (original_pid != NULL) delete [] original_pid;
+	original_pid = NULL;
+    if (limited_pid != NULL) delete [] limited_pid;
+	limited_pid = NULL;
 
     if (pos != NULL) delete[] pos;
     pos = NULL;
