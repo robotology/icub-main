@@ -4,9 +4,9 @@
 		<port>/icub/cam/left/logpolar</port> 
 	</dependencies>
 	<module>
-		<name>colourProcessor</name>
-		<parameters>--file colourProcessorLeft.ini --context attentionMechanism/conf</parameters>
-		<tag>colourLeft</tag>
+		<name>visualFilter</name>
+		<parameters>--name /visualFilter/icub/left_cam</parameters>
+		<tag>vFilter</tag>
 		<node>/icub-b15</node>
 	</module>
 	<module>
@@ -16,20 +16,8 @@
 		<node>/icub-b15</node>
 	</module>
 	<module>
-		<name>imageProcessor</name>
-		<parameters>--file imageProcessorLeft.ini --context attentionMechanism/conf</parameters>
-		<tag>imageLeft</tag>
-		<node>/icub-b15</node>
-	</module>
-	<module>
-		<name>imageProcessorInterface</name>
-		<parameters>--name /imageProcessorInterface/icub/left_cam</parameters>
-		<tag>imageInterfaceLeft</tag>
-		<node>/icub14</node>
-	</module>
-	<module>
 		<name>saliencyBlobFinder</name>
-		<parameters>--file saliencyBlobFinderLeft.ini --context attentionMechanism/conf</parameters>
+		<parameters></parameters>
 		<tag>saliencyBlobFinderLeft</tag>
 		<node>/icub-b15</node>
 	</module>
@@ -47,37 +35,27 @@
 	</module>
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
-		<to>/colourPU/icub/left_cam/image:i</to>
+		<to>/visualFilter/icub/left_cam/image:i</to>
 		<protocol>mcast</protocol>
 	</connection>
 	<connection>
-        <from>/colourPU/icub/left_cam/ychannel:o</from>
-		<to>/yuvProc/icub/left_cam/Y/image:i</to>
+      	<from>/visualFilter/icub/left_cam/rg:o</from>
+		<to>/blobFinder/icub/left_cam/rg:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/icub/left_cam/uchannel:o</from>
-		<to>/yuvProc/icub/left_cam/U/image:i</to>
+      	<from>/visualFilter/icub/left_cam/gr:o</from>
+		<to>/blobFinder/icub/left_cam/gr:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/icub/left_cam/vchannel:o</from>
-		<to>/yuvProc/icub/left_cam/V/image:i</to>
+      	<from>/visualFilter/icub/left_cam/by:o</from>
+		<to>/blobFinder/icub/left_cam/by:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/icub/left_cam/rg:o</from>
-		<to>/imagePU/icub/left_cam/rg:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-      	<from>/colourPU/icub/left_cam/gr:o</from>
-		<to>/imagePU/icub/left_cam/gr:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-      	<from>/colourPU/icub/left_cam/by:o</from>
-		<to>/imagePU/icub/left_cam/by:i</to>
+      	<from>/visualFilter/icub/left_cam/image:o</from>
+		<to>/blobFinder/icub/left_cam/edges:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
@@ -86,47 +64,12 @@
 		<protocol>udp</protocol>
 	</connection>
 	<connection>
-      	<from>/imageProcessorInterface/icub/left_cam/cmd</from>
-		<to>/imagePU/icub/left_cam/cmd</to>
-		<protocol>udp</protocol>
-	</connection>
-	<connection>
-      	<from>/imagePU/icub/left_cam/edges:o</from>
+      	<from>/icub/cam/left/logpolar</from>
 		<to>/blobFinder/icub/left_cam/image:i</to>
-		<protocol>shmem</protocol>
+		<protocol>mcast</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/icub/left_cam/rg:o</from>
-		<to>/blobFinder/icub/left_cam/rg:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-      	<from>/colourPU/icub/left_cam/gr:o</from>
-		<to>/blobFinder/icub/left_cam/gr:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-      	<from>/colourPU/icub/left_cam/by:o</from>
-		<to>/blobFinder/icub/left_cam/by:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-      	<from>/colourPU/icub/left_cam/red:o</from>
-		<to>/blobFinder/icub/left_cam/red:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-      	<from>/colourPU/icub/left_cam/green:o</from>
-		<to>/blobFinder/icub/left_cam/green:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-      	<from>/colourPU/icub/left_cam/blue:o</from>
-		<to>/blobFinder/icub/left_cam/blue:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-        <from>/blobFinderInterface/icub/left_cam/command:o</from>
+        	<from>/blobFinderInterface/icub/left_cam/command:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>udp</protocol>
 	</connection>
