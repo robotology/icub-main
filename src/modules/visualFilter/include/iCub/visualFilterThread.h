@@ -61,15 +61,14 @@ private:
     yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowEdgesVert; //edges of colour opponency map (B+Y-)
 
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imagePortIn;     // input port
-
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imagePortOut;     // output port   
-
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imagePortExt; //extended image port
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort; //Colour opponency map R+G-
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort; //Colour opponency map G+R-
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort; //Colour opponency map B+Y-
 
     std::string name; //rootname of all the ports opened by this thread
-    
-    
-   
+
 public:
 
     /**

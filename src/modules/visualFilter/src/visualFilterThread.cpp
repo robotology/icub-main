@@ -44,7 +44,6 @@ visualFilterThread::visualFilterThread() {
 
 bool visualFilterThread::threadInit() {
     /* open ports  */ 
-
     if (!imagePortIn.open(getName("/image:i").c_str())) {
         cout <<": unable to open port "  << endl;
         return false;  // unable to open; let RFModule know so that it won't run
@@ -59,7 +58,18 @@ bool visualFilterThread::threadInit() {
         cout << ": unable to open port "  << endl;
         return false;  // unable to open; let RFModule know so that it won't run
     }
-    /* initialize variables and create data-structures if needed */
+    if (!rgPort.open(getName("/rg:o").c_str())) {
+        cout << ": unable to open port "  << endl;
+        return false;  // unable to open; let RFModule know so that it won't run
+    }
+    if (!grPort.open(getName("/gr:o").c_str())) {
+        cout << ": unable to open port "  << endl;
+        return false;  // unable to open; let RFModule know so that it won't run
+    }
+    if (!byPort.open(getName("/by:o").c_str())) {
+        cout << ": unable to open port "  << endl;
+        return false;  // unable to open; let RFModule know so that it won't run
+    }
     return true;
 }
 
@@ -110,13 +120,24 @@ void visualFilterThread::run() {
                 imagePortOut.prepare() =*(edges);		
                 imagePortOut.write();
             }
+            if((redGreen!=0)&&(rgPort.getOutputCount())){
+                rgPort.prepare() =*(redGreen);
+                rgPort.write();
+            }
+            if((greenRed!=0)&&(grPort.getOutputCount())){
+                grPort.prepare() =*(greenRed);
+                grPort.write();
+            }
+            if((blueYellow!=0)&&(byPort.getOutputCount())){
+                byPort.prepare() =*(blueYellow);
+                byPort.write();
+            }
             if((inputExtImage!=0)&&(imagePortExt.getOutputCount())){
-                imagePortExt.prepare() = *(inputExtImage);		
+                imagePortExt.prepare() = *(inputExtImage);
                 imagePortExt.write();
             }
-
         }
-   }//while 
+   }
 }
 
 void visualFilterThread::resize(int width_orig,int height_orig) {
@@ -372,11 +393,17 @@ void visualFilterThread::threadRelease() {
 }
 
 void visualFilterThread::onStop(){
-   imagePortIn.interrupt();
-   imagePortOut.interrupt();
-   imagePortIn.close();
-   imagePortOut.close();
-   imagePortExt.close();
+    imagePortIn.interrupt();
+    imagePortOut.interrupt();
+    rgPort.interrupt();
+    grPort.interrupt();
+    byPort.interrupt();
+    imagePortIn.close();
+    imagePortOut.close();
+    imagePortExt.close();
+    rgPort.close();
+    grPort.close();
+    byPort.close();
 }
 
 
