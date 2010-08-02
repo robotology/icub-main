@@ -198,180 +198,109 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 class saliencyBlobFinderModule : public yarp::os::RFModule{
 private:
     
-    /**
-    * port necessary for rpc commands
-    */
-    Port cmdPort;
-    /**
-    * rateThread of the processor Thread
-    */
-    int rateThread;
-    /**
-    * ipp reference to the size of the input image
-    */
-    IppiSize srcsize;
-    /**
-    * width of the input image
-    */
-    int width;
-    /**
-    * height of the input image
-    */
-    int height;
-    /**
-    *   number spikes that have to be counted before the maxSaliency blob can be choosen
-    */
-    int countSpikes;
-    /**
-    * dispacement on the x axis for the target
-    */
-    int xdisp;
-    /**
-    * dispacement on the y axis for the target
-    */
-    int ydisp;
-    /**
-    * flag that indicates when the reinitiazation has already be done
-    */
-    bool reinit_flag;
-    /**
-     * semaphore for the respond function
-     */
-     Semaphore mutex;
+    Port cmdPort; //port necessary for rpc commands
+    int rateThread; // rateThread of the processor Thread
+    IppiSize srcsize; //ipp reference to the size of the input image
     
+    int width; //width of the input image
+    int height; //height of the input image
+    int countSpikes; //number spikes that have to be counted before the maxSaliency blob can be choosen
+    int xdisp; //dispacement on the x axis for the target
+    int ydisp; //dispacement on the y axis for the target
     
-    /**
-    * main thread responsable to process the input images and produce an output
-    */
-    blobFinderThread* blobFinder;
-   
-    /**
-    * bottle where the command received is saved ready for the respond
-    */
-    Bottle* command;
-    /**
-    * bottle where the reply will be stored for further purpose
-    */
-    Bottle* reply;
+    bool reinit_flag; //flag that indicates when the reinitiazation has already be done
     
-    
-    //_________ private methods ____________
-    
+    Semaphore mutex; //semaphore for the respond function
+    blobFinderThread* blobFinder; //main thread responsable to process the input images and produce an output
+    Bottle* command; //bottle where the command received is saved ready for the respond
+    Bottle* reply; //bottle where the reply will be stored for further purpose
+
+    std::map<const char*,int> occurencesMap; //map of the occurences of control positions
+    std::string moduleName; //name of the module read from configuration 
+    int thresholdArea; //max dimension of the area in order to consider the blob interesting
+
     /**
     * function that copies flags to the blobFinder thread
     */
     void copyFlags();
-    /**
-    * map of the occurences of control positions
-    */
-    std::map<const char*,int> occurencesMap;
-    /**
-    * max dimension of the area in order to consider the blob interesting
-    */ 
-    int thresholdArea;
     
     
 public:
+    
     /**
     * default constructor
     */
     saliencyBlobFinderModule();
+    
     /**
     * destructor
     */
     ~saliencyBlobFinderModule(){};
+    
     /**
     *opens the port and intialise the module
     * @param config configuration of the module
     */
     bool open(Searchable& config); 
+    
     /**
     * tries to interrupt any communications or resource usage
     */
     bool interruptModule(); // 
+    
     /**
     * function that set the options detected from the command line
     * @param opt options passed to the module
     */
     void setOptions(yarp::os::Property opt);
+    
     /**
     * function for initialization and configuration of the RFModule
     * @param rf resourceFinder reference
     */
     virtual bool configure(yarp::os::ResourceFinder &rf);
+    
     /**
     * catches all the commands that have to be executed when the module is closed
     */
     bool close(); 
+    
     /**
     * function that reinitiases some attributes of the class
     * @param width width of the input image
     * @param height height of the input image
     */
     void reinitialise(int width,int height);
+    
     /**
     * respond to command coming from the command port
     * @param command command received by the module
     * @param reply answer that this module gives to the command (if any)
     */
     bool respond(const Bottle &command,Bottle &reply);
+    
     /**
     * updates the module
     */
     bool updateModule();
+    
     /**
     * function that streams the images out on the ports
     */
     void outPorts();
 
-
-    //_________ public attributes _______________
     
-    //---------- flags --------------------------
-    /**
-    * flag for drawing contrastLP
-    */
-    bool contrastLP_flag;
-    /**
-    * flag for drawing meanColourImage
-    */
-    bool meanColour_flag;
-    /**
-    * flag for drawing blobCatalog
-    */
-    bool blobCataloged_flag;
-    /**
-    * flag for drawing foveaBlob
-    */
-    bool foveaBlob_flag;
-    /**
-    * flag for drawing colorVQ
-    */
-    bool colorVQ_flag;
-    /**
-    * flag for drawing maxSaliencyBlob
-    */
-    bool maxSaliencyBlob_flag;
-    /**
-    * flag for drawing blobList
-    */
-    bool blobList_flag;
-    /**
-    * flag for the drawings
-    */
-    bool tagged_flag;
-    /**
-    * flag for drawing watershed image
-    */
-    bool watershed_flag;
-    /**
-    * it indicates if the control of the time is on
-    */
-    bool timeControl_flag;
-    /**
-    *  indicates if the process that filters the spikes is on
-    */
-    bool filterSpikes_flag;
+    bool contrastLP_flag; //flag for drawing contrastLP
+    bool meanColour_flag; //flag for drawing meanColourImage
+    bool blobCataloged_flag; //flag for drawing blobCatalog
+    bool foveaBlob_flag; //flag for drawing foveaBlob
+    bool colorVQ_flag; //flag for drawing colorVQ
+    bool maxSaliencyBlob_flag; //flag for drawing maxSaliencyBlob
+    bool blobList_flag; //flag for drawing blobList
+    bool tagged_flag; //flag for the drawings
+    bool watershed_flag; //flag for drawing watershed image
+    bool timeControl_flag; //it indicates if the control of the time is on
+    bool filterSpikes_flag; //indicates if the process that filters the spikes is on
 
    
 };

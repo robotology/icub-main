@@ -202,6 +202,8 @@ std::string blobFinderThread::getName(const char* p){
 void blobFinderThread::reinitialise(int width, int height){
     img=new ImageOf<PixelRgb>;
     img->resize(width,height);
+    edges=new ImageOf<PixelMono>;
+    edges->resize(width,height);
     this->width=width;
     this->height=height;
     resizeImages(width,height);
@@ -209,9 +211,10 @@ void blobFinderThread::reinitialise(int width, int height){
     tmpImage=new ImageOf<PixelMono>;
     tmpImage->resize(width,height);
 
-    image_out=new ImageOf<PixelRgb>;
+    image_out=new ImageOf<PixelMono>;
     image_out->resize(width,height);
 }
+
 
 void blobFinderThread::resizeImages(int width, int height){
     this->width=width;
@@ -268,7 +271,7 @@ void blobFinderThread::resizeImages(int width, int height){
 
 
 /**
-*	initialization of the thread 
+*initialization of the thread 
 */
 bool blobFinderThread::threadInit(){
 
@@ -278,6 +281,7 @@ bool blobFinderThread::threadInit(){
     
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     inputPort.open(getName("/image:i").c_str());
+    edgesPort.open(getName("/image:i").c_str());
     
     redPort.open(getName("/red:i").c_str());
     greenPort.open(getName("/green:i").c_str());
@@ -292,30 +296,19 @@ bool blobFinderThread::threadInit(){
     triangulationPort.open(getName("/triangulation:o").c_str());
     gazeControlPort.open(getName("/gazeControl:o").c_str());
 
-
-	/*contrastLP_flag=true;
-	meanColour_flag=false;
-	blobCataloged_flag=false;
-	foveaBlob_flag=false;
-	colorVQ_flag=false;
-	maxSaliencyBlob_flag=false;
-	blobList_flag=false;
-    tagged_flag=false;
-	watershed_flag=false;*/
-
     return true;
 }
 
 void blobFinderThread::resetFlags(){
     contrastLP_flag=false;
-	meanColour_flag=false;
-	blobCataloged_flag=false;
-	foveaBlob_flag=false;
-	colorVQ_flag=false;
-	maxSaliencyBlob_flag=false;
-	blobList_flag=false;
+    meanColour_flag=false;
+    blobCataloged_flag=false;
+    foveaBlob_flag=false;
+    colorVQ_flag=false;
+    maxSaliencyBlob_flag=false;
+    blobList_flag=false;
     tagged_flag=false;
-	watershed_flag=false;
+    watershed_flag=false;
     
 }
 
@@ -326,6 +319,7 @@ void blobFinderThread::interrupt(){
     interrupted_flag=true; //this flag must be switched before the unlock of every input port
 
     inputPort.interrupt();//(getName("image:i"));
+    edgesPort.interrupt();//getName(edges:i);
     
     redPort.interrupt();//open(getName("red:i"));
     greenPort.interrupt();//open(getName("green:i"));
@@ -352,8 +346,8 @@ void blobFinderThread::run(){
         img = inputPort.read(false);
         if(0!=img){
             if(!reinit_flag){    
-	            srcsize.height=img->height();
-	            srcsize.width=img->width();
+                srcsize.height=img->height();
+                srcsize.width=img->width();
                 this->height=img->height();
                 this->width=img->width();
                 reinitialise(img->width(), img->height());
@@ -365,8 +359,8 @@ void blobFinderThread::run(){
             //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),tmpImage->getRawImage(), tmpImage->getRowSize(),srcsize);
             ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
             bool ret1=true,ret2=true;
-            ret1=getOpponencies();
-            ret2=getPlanes();
+            ret1=getOpponencies(); 
+            ret2=getPlanes(img);
             if(ret1&&ret2)
                 freetorun=true;
             if(!freetorun)
@@ -384,11 +378,14 @@ void blobFinderThread::run(){
             
 
             bool conversion=true;
-            _outputImage=wOperator->getPlane(ptr_inputImg);
+            //_outputImage is the single channel image of the edges _outputImage=edges
+            //_outputImage=wOperator->getPlane(ptr_inputImg);
+            _outputImage=edgesPort.read(false);
+            //rain function uses as source image the _outputImage
             rain();
             
-            //redPlane_flag=true;
-            //maxSaliencyBlob_flag=false;
+            redPlane_flag=true;
+            maxSaliencyBlob_flag=false;
 
             if(redPlane_flag){
                 ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
@@ -431,9 +428,6 @@ void blobFinderThread::run(){
                         _outputImage->pixel(x,y)=(int)((this->max_tag/255)*this->tagged->pixel(x,y));
                     }
                 }
-                //cvCvtColor(this->tagged->getIplImage(),_outputImage->getIplImage(),CV_GRAY2RGB);
-                //cvCopy(this->tagged->getIplImage(),_outputImage->getIplImage());
-                //ippiCopy_8u_C1R(this->tagged->getRawImage(),320,_outputImage->getRawImage(),320,srcsize);
                 conversion=true;
             }
             else if(this->blobList_flag){
@@ -575,7 +569,31 @@ void blobFinderThread::run(){
 *	releases the thread
 */
 void blobFinderThread::threadRelease(){
+    //deleting allocated objects
+    
+    delete outContrastLP;
+    delete outMeanColourLP;
+   
+    delete _procImage;
+    delete _outputImage3;
+    delete _outputImage;
 
+    delete ptr_inputImg; //pointer to the input image
+    delete edges; //pointer to the edges image
+    
+    delete ptr_inputImgRed; //pointer to the input image of the red plane
+    delete ptr_inputImgGreen; //pointer to the input image of the green plane
+    delete ptr_inputImgBlue; //pointer to the input image of the blue plane
+    delete ptr_inputImgRG; //pointer to the input image of the R+G- colour opponency
+    delete ptr_inputImgGR; //pointer to the input image of the G+R- colour opponency
+    delete ptr_inputImgBY; //pointer to the input image of the B+Y- colour opponency
+
+    
+    delete _inputImgRGS;
+    delete _inputImgGRS;
+    delete _inputImgBYS;
+    
+    delete blobFov;
 
     printf("input port closing .... \n");
     inputPort.close();
@@ -605,30 +623,7 @@ void blobFinderThread::threadRelease(){
     triangulationPort.close();
     
     printf("deleting objects \n");
-    //deleting allocated objects
-    delete outContrastLP;
-    delete outMeanColourLP;
-   
-    delete _procImage;
-    delete _outputImage3;
-    delete _outputImage;
-
-    delete ptr_inputImg; //pointer to the input image
     
-    delete ptr_inputImgRed; //pointer to the input image of the red plane
-    delete ptr_inputImgGreen; //pointer to the input image of the green plane
-    delete ptr_inputImgBlue; //pointer to the input image of the blue plane
-    delete ptr_inputImgRG; //pointer to the input image of the R+G- colour opponency
-    delete ptr_inputImgGR; //pointer to the input image of the G+R- colour opponency
-    delete ptr_inputImgBY; //pointer to the input image of the B+Y- colour opponency
-
-    printf("deleting images /n");
-    
-    delete _inputImgRGS;
-    delete _inputImgGRS;
-    delete _inputImgBYS;
-    
-    delete blobFov;
 }
 
 /**
@@ -667,9 +662,8 @@ bool blobFinderThread::getOpponencies(){
 /**
 * function that reads the ports for the RGB planes
 */
-bool blobFinderThread::getPlanes(){
-    
-    
+bool blobFinderThread::getPlanes(ImageOf<PixelRgb>* inputImage){
+    /*
     tmpImage=redPort.read(true);
     if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgRed->getRawImage(), ptr_inputImgRed->getRowSize(),srcsize);
@@ -681,9 +675,16 @@ bool blobFinderThread::getPlanes(){
     tmpImage=bluePort.read(true);
     if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBlue->getRawImage(), ptr_inputImgBlue->getRowSize(),srcsize);
-        
-    
-    
+    */
+
+    Ipp8u* shift[3];
+    int psb;
+    shift[0]=ptr_inputImgRed->getRawImage(); 
+    shift[1]=ptr_inputImgGreen->getRawImage();
+    shift[2]=ptr_inputImgBlue->getRawImage();
+    ippiCopy_8u_C3P3R(inputImage->getRawImage(),inputImage->getRowSize(),shift,ptr_inputImgRed->getRowSize(),srcsize);
+    //ippiAdd_8u_C1RSfs(redPlane->getRawImage(),redPlane->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),yellowPlane->getRawImage(),yellowPlane->getRowSize(),srcsize,1);
+
     return true;
 }
 
@@ -695,7 +696,7 @@ bool blobFinderThread::outPorts(){
     
     
     if((0!=image_out)&&(outputPort.getOutputCount())){ 
-        outputPort.prepare() = *(image_out);		
+        outputPort.prepare() = *(image_out);
         outputPort.write();
     }
 
@@ -894,27 +895,14 @@ bool blobFinderThread::outPorts(){
 void blobFinderThread::rain(){
     max_tag=wOperator->apply(*_outputImage,_tagged);
     //printf("MAX_TAG=%d",wModule->max_tag);
-    /*bool ret=getPlanes();
-    if(ret==false){
-        //printf("No Planes! \n");
-        //return;
-    }
-    ret=getOpponencies();
-    if(ret==false){
-        //printf("No Opponency! \n");
-        //return;
-    }*/
+    
+    /*
     int psb32s;
     IppiSize srcsize={this->width,this->height};
     Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
     Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
     Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-    /*ImageOf<PixelMono> *_inputImgRGS=new ImageOf<PixelMono>;
-    ImageOf<PixelMono> *_inputImgGRS=new ImageOf<PixelMono>;
-    ImageOf<PixelMono> *_inputImgBYS=new ImageOf<PixelMono>;
-    _inputImgRGS->resize(320,240);
-    _inputImgGRS->resize(320,240);
-    _inputImgBYS->resize(320,240);*/
+    
     if(ptr_inputImgRG!=0){
         ippiScale_8u32s_C1R(_inputImgRG.getRawImage(),_inputImgRG.getRowSize(),_inputImgRGS32,psb32s,srcsize);
         ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)_inputImgRGS->getRawImage(),_inputImgRGS->getRowSize(),srcsize);
@@ -938,12 +926,15 @@ void blobFinderThread::rain(){
         return;
     salience->blobCatalog(_tagged, _inputImgRG, _inputImgGR, _inputImgBY,
         _inputImgBlue, _inputImgGreen, _inputImgRed, max_tag);
+        */
+
     blobCataloged_flag=true;
     //istruction to set the ptr_tagged in the Watershed Module with the static variable _tagged
     tagged=ptr_tagged; //ptr_tagged is the pointer to _tagged
-    ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
+
+    /*ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
     ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
-    ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
+    ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);*/
 }
 
 void blobFinderThread::drawAllBlobs(bool stable)

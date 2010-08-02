@@ -16,15 +16,15 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
     
 
     //---------- flags --------------------------
-	contrastLP_flag=false;
-	meanColour_flag=false;
-	blobCataloged_flag=false;
-	foveaBlob_flag=false;
-	colorVQ_flag=false;
-	maxSaliencyBlob_flag=false;
-	blobList_flag=false;
-	tagged_flag=false;
-	watershed_flag=false;
+    contrastLP_flag=false;
+    meanColour_flag=false;
+    blobCataloged_flag=false;
+    foveaBlob_flag=false;
+    colorVQ_flag=false;
+    maxSaliencyBlob_flag=false;
+    blobList_flag=false;
+    tagged_flag=false;
+    watershed_flag=false;
 
     timeControl_flag=true;
     filterSpikes_flag=true;
@@ -43,72 +43,47 @@ void saliencyBlobFinderModule::copyFlags(){
     blobFinder->watershed_flag=watershed_flag;
     blobFinder->filterSpikes_flag=filterSpikes_flag;
 
-    /*
-    interThread->xdisp=xdisp;
-    interThread->ydisp=ydisp;
-    interThread->countSpikes=this->countSpikes;
-    */
 }
 
-/**
-*function that opens the module DEPRECATED
-*/
-/*
-bool saliencyBlobFinderModule::open(Searchable& config) {
-    ct = 0;
-    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-    inputPort.open(getName("image:i"));
-    
-    redPort.open(getName("red:i"));
-    greenPort.open(getName("green:i"));
-    bluePort.open(getName("blue:i"));
 
-    rgPort.open(getName("rg:i"));
-    grPort.open(getName("gr:i"));
-    byPort.open(getName("by:i"));
-
-    outputPort.open(getName("image:o"));
-    centroidPort.open(getName("centroid:o"));
-    triangulationPort.open(getName("triangulation:o"));
-    gazeControlPort.open(getName("gazeControl:o"));
-    cmdPort.open(getName("cmd"));
-    attach(cmdPort);
-
-    time (&start);
-    
-    return true;
-}*/
 
 bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
-//    ct = 0;
+/* Process all parameters from both command-line and .ini file */
 
-    cmdPort.open(getName("cmd"));
-    attach(cmdPort);
-    //attachTerminal();
+    /* get the module name which will form the stem of all module port names */
 
-    //interThread->setName(this->getName().c_str());
-    //printf("name:%s \n",this->getName().c_str());
-    //interThread->start();
+    moduleName            = rf.check("name", 
+                           Value("/blobFinder"), 
+                           "module name (string)").asString();
+
+    /*
+    * before continuing, set the module name before getting any other parameters, 
+    * specifically the port names which are dependent on the module name
+    */
+    setName(moduleName.c_str());
+
+    /* now, get the rest of the parameters */
+
+    /*
+    * get the ratethread which will define the period of the processing thread
+    */
+    rateThread             = rf.check("ratethread", 
+                           Value("30"), 
+                           "processing ratethread (int)").asInt();
+
+    
 
     //initialization of the main thread
     if(rateThread==0)
         blobFinder=new blobFinderThread();
     else
         blobFinder=new blobFinderThread(rateThread);
+
     blobFinder->setName(this->getName().c_str());
     //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
     blobFinder->start();
-    /*
-    blobFinder->ptr_inputImg=interThread->img;
-    blobFinder->ptr_inputImgRed=interThread->ptr_inputImgRed;
-    blobFinder->ptr_inputImgGreen=interThread->ptr_inputImgGreen;
-    blobFinder->ptr_inputImgBlue=interThread->ptr_inputImgBlue;
-    blobFinder->ptr_inputImgRG=interThread->ptr_inputImgRG;
-    blobFinder->ptr_inputImgGR=interThread->ptr_inputImgGR;
-    blobFinder->ptr_inputImgBY=interThread->ptr_inputImgBY;
-    blobFinder->image_out=interThread->image_out;
-    */
     blobFinder->countSpikes=this->countSpikes;
+
     //passes the value of flags
     copyFlags();
 
@@ -123,7 +98,7 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 bool saliencyBlobFinderModule::interruptModule() {
     printf("module interrupted .... \n");
     cmdPort.interrupt();
-    
+  
     blobFinder->interrupt();
     
     return true;
@@ -273,8 +248,8 @@ bool saliencyBlobFinderModule::updateModule() {
         return true;
 
     if(!reinit_flag){    
-	    srcsize.height=img->height();
-	    srcsize.width=img->width();
+        srcsize.height=img->height();
+        srcsize.width=img->width();
         this->height=img->height();
         this->width=img->width();
         reinitialise(img->width(), img->height());
