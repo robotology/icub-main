@@ -13,7 +13,7 @@
 #include <yarp/os/Time.h>
 
 #include "iCubArmCalibratorJ8.h"
-
+#include <math.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -329,8 +329,8 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
     while ( (!finished) && (!abortCalib))
     {
 		iEncoders->getEncoder(j, &ang);
-		fprintf(stderr, "ARMCALIB (joint %d) curr:%f des:%f -> err:%f\n", j, ang, pos[j], abs(ang-pos[j]));
-		if (abs(ang-pos[j])<POSITION_THRESHOLD) finished=true;
+		fprintf(stderr, "ARMCALIB (joint %d) curr:%f des:%f -> err:%f\n", j, ang, pos[j], fabs(ang-pos[j]));
+		if (fabs(ang-pos[j])<POSITION_THRESHOLD) finished=true;
 
         Time::delay (0.5);
         timeout ++;
