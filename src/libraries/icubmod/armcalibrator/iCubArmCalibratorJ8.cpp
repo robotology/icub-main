@@ -32,6 +32,8 @@ iCubArmCalibratorJ8::iCubArmCalibratorJ8()
     param1 = NULL;
     param2 = NULL;
     param3 = NULL;
+	original_pid = NULL;
+    limited_pid = NULL;
     pos = NULL;
     vel = NULL;
     homeVel=0;
@@ -128,6 +130,11 @@ bool iCubArmCalibratorJ8::close ()
     if (param3 != NULL) delete[] param3;
     param3 = NULL;
 
+    if (original_pid != NULL) delete [] original_pid;
+	original_pid = NULL;
+    if (limited_pid != NULL) delete [] limited_pid;
+	limited_pid = NULL;
+
     if (pos != NULL) delete[] pos;
     pos = NULL;
     if (vel != NULL) delete[] vel;
@@ -169,6 +176,9 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     if (!ret)
         return false;
 
+	original_pid=new Pid[nj];
+	limited_pid =new Pid[nj];
+	bool calibration_ok=true;
     int k;
 	int shoulderSetOfJoints[] = {0, 1 , 2, 3};
     for (k =0; k < 4; k++)
@@ -180,6 +190,12 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 
     for (k = 0; k < nj; k++) 
     {
+		iPids->getPid(k,&original_pid[k]);
+		limited_pid[k]=original_pid[k];
+		limited_pid[k].max_int=60;
+		limited_pid[k].max_output=60;
+		if (k<4) iPids->setPid(k,limited_pid[k]);
+
         fprintf(stderr, "ARMCALIB::Calling enable amp for joint %d\n", k);
         iAmps->enableAmp(k);
         fprintf(stderr, "ARMCALIB::Calling enable pid for joint %d\n", k);
@@ -194,8 +210,20 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 	for (k = 0; k < 4; k++)
     {
         //fprintf(stderr, "ARMCALIB::Waiting for joint %d movement\n", k);
-		checkGoneToZero(shoulderSetOfJoints[k]);
+		calibration_ok &= checkGoneToZeroThreshold(shoulderSetOfJoints[k]);
     }
+    if (calibration_ok)
+	{
+		fprintf(stderr, "ARMCALIB::calibration done!\n");
+		for (k = 0; k < 4; k++)
+			iPids->setPid(k,original_pid[k]);
+	}
+	else
+	{
+		fprintf(stderr, "ARMCALIB::calibration failed!\n");
+		for (k = 0; k < 4; k++)
+			iAmps->disableAmp(k);
+	}
 
     ret = true;
     bool x;
@@ -289,6 +317,33 @@ void iCubArmCalibratorJ8::checkGoneToZero(int j)
     }
     if (abortCalib)
         fprintf(stderr, "ARMCALIB::abort wait for joint %d going to zero!\n", j);
+}
+
+bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
+{
+    // wait.
+    bool finished = false;
+    int timeout = 0;
+	double ang=0;
+    while ( (!finished) && (!abortCalib))
+    {
+		iEncoders->getEncoder(j, &ang);
+		fprintf(stderr, "ARMCALIB (joint %d) curr:%f des:%f -> err:%f\n", j, ang, pos[j], abs(ang-pos[j]));
+		if (abs(ang-pos[j])<POSITION_THRESHOLD) finished=true;
+
+        Time::delay (0.5);
+        timeout ++;
+
+        if (timeout >= GO_TO_ZERO_TIMEOUT)
+        {
+            fprintf(stderr, "ARMCALIB::Timeout on joint %d while going to zero!\n", j);
+			return false;
+        }
+    }
+    if (abortCalib)
+        fprintf(stderr, "ARMCALIB::abort wait for joint %d going to zero!\n", j);
+
+	return finished;
 }
 
 bool iCubArmCalibratorJ8::park(DeviceDriver *dd, bool wait)
