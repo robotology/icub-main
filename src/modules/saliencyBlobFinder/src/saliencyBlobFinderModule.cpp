@@ -115,7 +115,7 @@ bool saliencyBlobFinderModule::close(){
 }
 
 void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
-    //options	=opt;
+    //options=opt;
     // definition of the mode
     // definition of the name of the module
     ConstString name=opt.find("name").asString();
@@ -194,7 +194,6 @@ bool saliencyBlobFinderModule::updateModule() {
 
     /*if((0!=interThread->img) && (!this->reinit_flag)){
 
-        
         //initialization of the main thread
         blobFinder=new blobFinderThread();
         blobFinder->reinitialise(interThread->img->width(),interThread->img->height());

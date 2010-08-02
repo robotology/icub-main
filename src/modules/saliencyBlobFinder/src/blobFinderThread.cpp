@@ -359,7 +359,8 @@ void blobFinderThread::run(){
             //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),tmpImage->getRawImage(), tmpImage->getRowSize(),srcsize);
             ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
             bool ret1=true,ret2=true;
-            ret1=getOpponencies(); 
+            /ret1=getOpponencies(); 
+            ret1=true;
             ret2=getPlanes(img);
             if(ret1&&ret2)
                 freetorun=true;
