@@ -23,6 +23,7 @@ using namespace yarp::dev;
 const int PARK_TIMEOUT=30;
 const int GO_TO_ZERO_TIMEOUT=20;
 const int CALIBRATE_JOINT_TIMEOUT=20;
+const double POSITION_THRESHOLD=5.0;
 
 const int numberOfJoints=8;
 
