@@ -164,11 +164,6 @@ bool zdfMod::configure(yarp::os::ResourceFinder &rf)
                            Value("zdfMod"), 
                            "module name (string)").asString();
 
-   /*
-    * before continuing, set the module name before getting any other parameters, 
-    * specifically the port names which are dependent on the module name
-    */
-   
     setName(moduleName.c_str());
 
     parameters.iter_max = rf.findGroup("PARAMS").check("max_iteration",Value(1),"what did the user select?").asInt();
@@ -185,68 +180,6 @@ bool zdfMod::configure(yarp::os::ResourceFinder &rf)
     parameters.max_spread = rf.findGroup("PARAMS").check("max_spread",Value(1),"what did the user select?").asInt();
     parameters.cog_snap = rf.findGroup("PARAMS").check("cog_snap",Value(1),"what did the user select?").asDouble();
     parameters.bland_prob = rf.findGroup("PARAMS").check("bland_prob",Value(1),"what did the user select?").asDouble();
-
-    /* get the name of the input and output ports, automatically prefixing the module name by using getName() */
- 
-    inputNameLeft      = "/";
-    inputNameLeft      += getName(
-                       rf.check("inPortLeft", 
-                       Value("/imageLeft:i"),
-                       "Input image port (string)").asString()
-                       );
-
-	inputNameRight     = "/";
-    inputNameRight     += getName(
-                       rf.check("inPortRight", 
-                       Value("/imageRight:i"),
-                       "Input image port (string)").asString()
-                       );
-   
-    outputNameProb     = "/";
-    outputNameProb     += getName(
-                       rf.check("outPortProb", 
-                       Value("/imageProb:o"),
-                       "Output image port (string)").asString()
-                       );
-
-	outputNameSeg     = "/";
-    outputNameSeg     += getName(
-                      rf.check("outPortSeg", 
-                      Value("/imageSeg:o"),
-                      "Output image port (string)").asString()
-                       );
-	
-	outputNameDog     = "/";
-    outputNameDog     += getName(
-                      rf.check("outPortDog", 
-                      Value("/imageDog:o"),
-                      "Output image port (string)").asString()
-                       );
-
-
-    /* do all initialization here */
-    /* open ports  */ 
-       
-    if (!inputLeft.open(inputNameLeft.c_str())) {
-        cout << getName() << ": unable to open port " << inputNameLeft << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-	if (!inputRight.open(inputNameRight.c_str())) {
-        cout << getName() << ": unable to open port " << inputNameRight << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-    if (!outputProb.open(outputNameProb.c_str())) {
-        cout << getName() << ": unable to open port " << outputNameProb << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-	if (!outputSeg.open(outputNameSeg.c_str())) {
-        cout << getName() << ": unable to open port " << outputNameSeg << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-	if (!outputDog.open(outputNameDog.c_str())) {
-        cout << getName() << ": unable to open port " << outputNameDog << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
 
    /*
     * attach a port of the same name as the module (prefixed with a /) to the module
@@ -266,36 +199,40 @@ bool zdfMod::configure(yarp::os::ResourceFinder &rf)
 
     /* create the thread and pass pointers to the module parameters */
 
-    zdfThread = new ZDFThread( &inputLeft, &inputRight, &outputProb, &outputSeg, &outputDog, &parameters );
+    zdfThread = new ZDFThread( &parameters );
+
+    /*pass the name of the module in order to create ports*/
+
+    zdfThread->setName(moduleName);
 
     /* now start the thread to do the work */
     zdfThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
-    return true ;      // let the RFModule know everything went well
+    return true ;
 }
 
+/* Called periodically every getPeriod() seconds */
 
-bool zdfMod::interruptModule()
-{
-    inputLeft.interrupt();
-    inputRight.interrupt();
-	outputProb.interrupt();
-    outputSeg.interrupt();
-    handlerPort.interrupt();
+bool zdfMod::updateModule() {
+
+    return true;
+}
+
+bool zdfMod::interruptModule() {
+
+    return true;
+}
+
+bool zdfMod::close() {
+
     zdfThread->stop();
     return true;
 }
 
-bool zdfMod::close()
-{
-    inputLeft.close();    
-    inputRight.close();
-	outputProb.close();    
-    outputSeg.close();
-	handlerPort.interrupt();
-    zdfThread->stop();
-    return true;
+double zdfMod::getPeriod() {
+    return 0.1;
 }
+
 
 bool zdfMod::respond(const Bottle& command, Bottle& reply) 
 {
@@ -320,35 +257,35 @@ bool zdfMod::respond(const Bottle& command, Bottle& reply)
     return true;
 }
 
-/* Called periodically every getPeriod() seconds */
+ZDFThread::ZDFThread( MultiClass::Parameters *parameters ) {
 
-bool zdfMod::updateModule()
-{
-    return true;
-}
-
-double zdfMod::getPeriod()
-{
-    /* module periodicity (seconds), called implicitly by myModule */
-    
-    return 0.1;
-}
-
-ZDFThread::ZDFThread(BufferedPort<ImageOf<PixelBgr> > *inputLeft, BufferedPort<ImageOf<PixelBgr> > *inputRight, BufferedPort<ImageOf<PixelMono> > *outputProb, BufferedPort<ImageOf<PixelMono> > *outputSeg, BufferedPort<ImageOf<PixelMono> > *outputDog, MultiClass::Parameters *parameters)
-{
-    imageInLeft   = inputLeft;
-    imageInRight  = inputRight;
-	imageOutProb  = outputProb;
-    imageOutSeg   = outputSeg;
-	imageOutDog   = outputDog;
     params = parameters;
-
 }
 
-bool ZDFThread::threadInit() 
-{
+void ZDFThread::setName(string module) {
+    this->moduleName = module;
+}
+
+bool ZDFThread::threadInit() {
     /* initialize variables and create data-structures if needed */
     init = true;
+
+    //create all ports
+    inputNameLeft = moduleName + "/imageLeft:i";
+    imageInLeft.open( inputNameLeft.c_str() );
+    
+    inputNameRight = moduleName + "/imageRight:i";
+    imageInRight.open( inputNameRight.c_str() );
+
+    outputNameProb = moduleName + "/imageProb:o";
+    imageOutProb.open( outputNameProb.c_str() );
+
+    outputNameSeg = moduleName + "/imageSeg:o";
+    imageOutSeg.open( outputNameSeg.c_str() );
+    
+    outputNameDog = moduleName + "/imageDog:o";
+    imageOutDog.open( outputNameDog.c_str() );
+    
     return true;
 }
 
@@ -356,16 +293,16 @@ void ZDFThread::run(){
 
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
         
-		leftPort =  ( imageInLeft->getInputCount() > 0 );
-    	rightPort = ( imageInRight->getInputCount() > 0 );
+		leftPort =  ( imageInLeft.getInputCount() > 0 );
+    	rightPort = ( imageInRight.getInputCount() > 0 );
         
         Time::delay(0.1);
 
 		if ( leftPort + rightPort > 1){
 
-        	img_in_left = imageInLeft->read(true);
+        	img_in_left = imageInLeft.read(true);
 		
-        	img_in_right = imageInRight->read(true);
+        	img_in_right = imageInRight.read(true);
 
 			if (init){//Get first RGB image to establish width, height:
             	cout << "initializing" << endl;   
@@ -374,8 +311,8 @@ void ZDFThread::run(){
         	}
 
 
-		cvShowImage("Settings", NULL);  
-    	cvWaitKey(10);
+		//cvShowImage("Settings", NULL);  
+    	//cvWaitKey(10);
 
 		//processing for zdf
 		//resize the images
@@ -385,8 +322,14 @@ void ZDFThread::run(){
 			ippiCopy_8u_C3R( img_in_right->getRawImage(), img_in_right->getRowSize(), r_orig, psb, srcsize);
       	}else{
 			//scale to width,height:
-			ippiResize_8u_C3R( img_in_left->getRawImage(), insize, img_in_left->width() * 3, inroi, l_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
-			ippiResize_8u_C3R( img_in_right->getRawImage(), insize, img_in_right->width() * 3, inroi, r_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
+            ippiResizeGetBufSize(inroi, inroi, 3, IPPI_INTER_CUBIC, &BufferSize);
+            Ipp8u* pBuffer=ippsMalloc_8u(BufferSize);
+            ippiResizeSqrPixel_8u_C3R( img_in_left->getRawImage(), insize, psb, inroi, l_orig, psb, inroi, scale, scale, 0, 0, IPPI_INTER_CUBIC, pBuffer);   
+            ippiResizeSqrPixel_8u_C3R( img_in_right->getRawImage(), insize, psb, inroi, r_orig, psb, inroi, scale, scale, 0, 0, IPPI_INTER_CUBIC, pBuffer);     
+            ippsFree(pBuffer);
+            //the following is deprecated...use previous
+			//ippiResize_8u_C3R( img_in_left->getRawImage(), insize, img_in_left->width() * 3, inroi, l_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
+			//ippiResize_8u_C3R( img_in_right->getRawImage(), insize, img_in_right->width() * 3, inroi, r_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
 		}
 		//copy to grayscale
 		ippiRGBToGray_8u_C3C1R( l_orig, psb , rec_im_ly, psb_in, srcsize );
@@ -430,6 +373,7 @@ void ZDFThread::run(){
 					temp_r,
 					psb_t,tsize,
 					res_t, psb_rest);
+
 		ippiMaxIndx_32f_C1R(res_t,psb_rest,trsize,&max_t,&sx,&sy);
 		if (max_t < 0.50){ //shift_sim_t
 		//this also prevents tracking motion:
@@ -461,16 +405,12 @@ void ZDFThread::run(){
 						//use RANK:
 						get_rank(c,fov_l,psb_m,rank1);
 						get_rank(c,fov_r,psb_m,rank2);
-						//get_rank(c,dl->get_dog_onoff(),dl->get_psb(),rank1);
-						//get_rank(c,dr->get_dog_onoff(),dr->get_psb(),rank2);
 						cmp_res = cmp_rank(rank1,rank2);
 	      			}
 	    			else{ 
 						//use NDT:
 						get_ndt(c,fov_l,psb_m,ndt1);
 						get_ndt(c,fov_r,psb_m,ndt2);
-						//get_ndt(c,dl->get_dog_onoff(),dl->get_psb(),ndt1);
-						//get_ndt(c,dr->get_dog_onoff(),dr->get_psb(),ndt2);
 						cmp_res = cmp_ndt( ndt1, ndt2 );
 	      			}
 	      			zd_prob_8u[ j * psb_m + i] = (int)(cmp_res * 255.0);
@@ -530,7 +470,7 @@ void ZDFThread::run(){
 		if (area >= params->min_area && area <= params->max_area && spread<= params->max_spread){ 
   			//don't update templates to image centre any more as we have a nice target
    			acquire = false;
-  			//update templates to(wards) segmentation CoG:
+            //update templates to(wards) segmentation CoG:
   			printf("area:%d spread:%f cogx:%f cogy:%f - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
   			//Bring cog of target towards centre of fovea:
   			//SNAP GAZE TO OBJECT:
@@ -562,24 +502,21 @@ void ZDFThread::run(){
 		//ippiMulC_8u_C1IRSfs(40,seg_im,psb_m,msize,0)
 		
 		//send it all
-		if (imageOutProb->getOutputCount()>0){ 
-            //revert to yarp image
+		if (imageOutProb.getOutputCount()>0){ 
             ippiCopy_8u_C1R( zd_prob_8u, psb_m, img_out_prob->getRawImage(), img_out_prob->getRowSize(), msize );
-			imageOutProb->prepare() = *img_out_prob;	
-           	imageOutProb->write();
+			imageOutProb.prepare() = *img_out_prob;	
+           	imageOutProb.write();
         }
 
-		if (imageOutSeg->getOutputCount()>0){
-            //revert to yarp image
+		if (imageOutSeg.getOutputCount()>0){
             ippiCopy_8u_C1R( seg_im, psb_m, img_out_seg->getRawImage(), img_out_seg->getRowSize(), msize );
-           	imageOutSeg->prepare() = *img_out_seg;	
-           	imageOutSeg->write();
+           	imageOutSeg.prepare() = *img_out_seg;	
+           	imageOutSeg.write();
         }
-		if (imageOutDog->getOutputCount()>0){
-            //revert to yarp image
+		if (imageOutDog.getOutputCount()>0){
             ippiCopy_8u_C1R( seg_dog, psb_m, img_out_dog->getRawImage(), img_out_dog->getRowSize(), msize );
-           	imageOutDog->prepare() = *img_out_dog;	
-           	imageOutDog->write();
+           	imageOutDog.prepare() = *img_out_dog;	
+           	imageOutDog.write();
         }
 
 		}
@@ -589,25 +526,31 @@ void ZDFThread::run(){
 void ZDFThread::threadRelease() 
 {
     /* for example, delete dynamically created data-structures */
-     cout << "cleaning up things.." << endl;
+    cout << "cleaning up things.." << endl;
     if ( leftPort + rightPort > 1){
         delete dl;
         delete dr;
         delete m;
     }
-
+    cout << "closing ports.." << endl;
+    imageOutProb.close();
+    imageOutSeg.close();
+    imageOutDog.close();
+    imageInLeft.close();
+    imageInRight.close();
+    
     cout << "finished cleaning.." << endl;
 }
 
-void ZDFThread::initAll()
-{
-    cvNamedWindow( "Settings", 0) ; 
+void ZDFThread::initAll() {
+
+/*  cvNamedWindow( "Settings", 0) ; 
     cvCreateTrackbar( "DATA_PENALTY", "Settings", &params->data_penalty, 255, 0 );
     cvCreateTrackbar( "SMOOTHNESS_PENALTY_BASE", "Settings", &params->smoothness_penalty_base, 255, 0 );
     cvCreateTrackbar( "SMOOTHNESS_PENALTY", "Settings", &params->smoothness_penalty, 1000, 0 );
     cvCreateTrackbar( "RADIAL_PENALTY", "Settings", &params->radial_penalty, 255, 0 );
     cvCreateTrackbar( "SMOOTHNESS_3SIGMAON2", "Settings", &params->smoothness_3sigmaon2, 255, 0 );
-    cvCreateTrackbar( "BLAND_DOG_THRESH", "Settings", &params->bland_dog_thresh, 255, 0 );
+    cvCreateTrackbar( "BLAND_DOG_THRESH", "Settings", &params->bland_dog_thresh, 255, 0 );*/
 
     cout << "Received left input image dimensions: " << img_in_left->width() << " " << img_in_left->height() << endl;
     cout << "Received right input image dimensions: " << img_in_right->width() << " " << img_in_right->height() << endl;
@@ -622,6 +565,7 @@ void ZDFThread::initAll()
 
     printf("Scaling to image dimensions: (%d,%d). Scale factor %f\n", width, height,scale);
 
+    BufferSize=0;
     inroi.x=0;
     inroi.y=0;
     inroi.width  =  img_in_left->width();

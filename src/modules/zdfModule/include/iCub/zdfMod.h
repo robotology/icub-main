@@ -1,7 +1,3 @@
-/*
-STILL IN TESTING DOCUMENTATION TO COME
-
-*/
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Vadim Tikhanoff
@@ -35,6 +31,7 @@ STILL IN TESTING DOCUMENTATION TO COME
 //ipp includes
 #include <ipp.h>
 #include <stdlib.h>
+#include <string>
 
 #include "iCub/coord.h"
 #include "iCub/dog.h"
@@ -63,6 +60,13 @@ class ZDFThread : public Thread
 {
 private:
 
+    /*port name strings*/
+    string inputNameLeft;
+	string inputNameRight;
+    string outputNameProb;
+	string outputNameSeg;  
+	string outputNameDog;      
+
     /* class variables */
     ImageOf<PixelBgr>  *img_in_left;
 	ImageOf<PixelBgr>  *img_in_right;
@@ -72,11 +76,11 @@ private:
 
     /* thread parameters: they are pointers so that they refer to the original variables */
 
-    BufferedPort<ImageOf<PixelBgr> >  *imageInLeft;
-	BufferedPort<ImageOf<PixelBgr> >  *imageInRight;
-    BufferedPort<ImageOf<PixelMono> >  *imageOutProb;
-	BufferedPort<ImageOf<PixelMono> >  *imageOutSeg;
-	BufferedPort<ImageOf<PixelMono> >  *imageOutDog;
+    BufferedPort<ImageOf<PixelBgr> >  imageInLeft;
+	BufferedPort<ImageOf<PixelBgr> >  imageInRight;
+    BufferedPort<ImageOf<PixelMono> >  imageOutProb;
+	BufferedPort<ImageOf<PixelMono> >  imageOutSeg;
+	BufferedPort<ImageOf<PixelMono> >  imageOutDog;
 
 	bool leftPort, rightPort; 
 	bool init;
@@ -132,11 +136,15 @@ private:
 	int psb;
 	IppiRect inroi;
 	IppiSize insize;
+    int BufferSize;
+    
+    //string containing module name
+    string moduleName;
 
 public:
 
     /* class methods */
-    ZDFThread(BufferedPort<ImageOf<PixelBgr> > *inputLeft, BufferedPort<ImageOf<PixelBgr> > *inputRight, BufferedPort<ImageOf<PixelMono> > *outputProb, BufferedPort<ImageOf<PixelMono> > *outputSeg, BufferedPort<ImageOf<PixelMono> > *outputDog, MultiClass::Parameters *parameters);
+    ZDFThread( MultiClass::Parameters *parameters );
     
     void initAll();
     bool threadInit();     
@@ -148,26 +156,14 @@ public:
 	void get_ndt(Coord c,Ipp8u *im, int w, int*list);
 	double cmp_ndt(int*l1, int*l2);
 	void getAreaCoGSpread(Ipp8u*im, int p,IppiSize s, int*parea,double*pdx,double*pdy,double*pspread);
+    void setName(string module);
 };
 
 class zdfMod:public RFModule
 {
     /* module parameters */
     string moduleName; 
-    //string inputPortName;
-    string inputNameLeft;
-	string inputNameRight;
-    string outputNameProb;
-	string outputNameSeg;  
-	string outputNameDog;      
     string handlerName;
-
-    /* class variables */
-    BufferedPort<ImageOf<PixelBgr> > inputLeft;  // input port left
-	BufferedPort<ImageOf<PixelBgr> > inputRight;  // input port right
-    BufferedPort<ImageOf<PixelMono> > outputProb; // output port probability map
-	BufferedPort<ImageOf<PixelMono> > outputSeg; // output port segmentation
-	BufferedPort<ImageOf<PixelMono> > outputDog; // output port segmentation
 	
     Port handlerPort;      //a port to handle messages 
     
