@@ -86,6 +86,7 @@ private:
     void goToZero(int j);
     bool checkCalibrateJointEnded(int j);
     void checkGoneToZero(int j);
+	bool checkGoneToZeroThreshold(int j);
 
     IControlCalibration2 *iCalibrate;
     IAmplifierControl *iAmps;
@@ -100,6 +101,8 @@ private:
 	double *param3;
 	double *pos;
 	double *vel;
+	Pid    *original_pid;
+	Pid    *limited_pid;
     double *homeVel;
     double *homePos;
     bool abortCalib;

@@ -10,6 +10,7 @@
 #include <yarp/os/Time.h>
 
 #include "iCubArmCalibratorJ4.h"
+#include "math.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -19,6 +20,7 @@ using namespace yarp::dev;
 const int PARK_TIMEOUT=30;
 const int GO_TO_ZERO_TIMEOUT=20;
 const int CALIBRATE_JOINT_TIMEOUT=20;
+const double POSITION_THRESHOLD=5.0;
 
 const int numberOfJoints=4;
 
@@ -163,6 +165,9 @@ bool iCubArmCalibratorJ4::calibrate(DeviceDriver *dd)
 
 	fprintf(stderr, "ARMCALIB::start! new calibrator for torque controlled shoulder by randaz \n");
 
+	original_pid=new Pid[nj];
+	limited_pid =new Pid[nj];
+	bool calibration_ok=true;
     int k;
 	for (k =0; k < nj; k++)
 		calibrateJoint(k);
@@ -170,6 +175,12 @@ bool iCubArmCalibratorJ4::calibrate(DeviceDriver *dd)
 
     for (k = 0; k < nj; k++) 
     {
+		iPids->getPid(k,&original_pid[k]);
+		limited_pid[k]=original_pid[k];
+		limited_pid[k].max_int=60;
+		limited_pid[k].max_output=60;
+		iPids->setPid(k,limited_pid[k]);
+
         fprintf(stderr, "ARMCALIB::Calling enable amp for joint %d\n", k);
         iAmps->enableAmp(k);
         fprintf(stderr, "ARMCALIB::Calling enable pid for joint %d\n", k);
@@ -179,9 +190,21 @@ bool iCubArmCalibratorJ4::calibrate(DeviceDriver *dd)
 	for (k = 0; k < nj; k++)
 		goToZero(k);
 	for (k = 0; k < nj; k++)
-		checkGoneToZero(k);
+		calibration_ok &= checkGoneToZeroThreshold(k);
 	//////////////////////////////////////////
-    fprintf(stderr, "ARMCALIB::calibration done!\n");
+	if (calibration_ok)
+	{
+		fprintf(stderr, "ARMCALIB::calibration done!\n");
+		for (k = 0; k < nj; k++)
+			iPids->setPid(k,original_pid[k]);
+	}
+	else
+	{
+		fprintf(stderr, "ARMCALIB::calibration failed!\n");
+		for (k = 0; k < nj; k++)
+			iAmps->disableAmp(k);
+	}
+
     return ret;
 }
 
@@ -244,6 +267,33 @@ void iCubArmCalibratorJ4::checkGoneToZero(int j)
     }
     if (abortCalib)
         fprintf(stderr, "ARMCALIB::abort wait for joint %d going to zero!\n", j);
+}
+
+bool iCubArmCalibratorJ4::checkGoneToZeroThreshold(int j)
+{
+    // wait.
+    bool finished = false;
+    int timeout = 0;
+	double ang=0;
+    while ( (!finished) && (!abortCalib))
+    {
+		iEncoders->getEncoder(j, &ang);
+		fprintf(stderr, "ARMCALIB (joint %d) curr:%f des:%f -> err:%f\n", j, ang, pos[j], abs(ang-pos[j]));
+		if (abs(ang-pos[j])<POSITION_THRESHOLD) finished=true;
+
+        Time::delay (0.5);
+        timeout ++;
+
+        if (timeout >= GO_TO_ZERO_TIMEOUT)
+        {
+            fprintf(stderr, "ARMCALIB::Timeout on joint %d while going to zero!\n", j);
+			return false;
+        }
+    }
+    if (abortCalib)
+        fprintf(stderr, "ARMCALIB::abort wait for joint %d going to zero!\n", j);
+
+	return finished;
 }
 
 bool iCubArmCalibratorJ4::park(DeviceDriver *dd, bool wait)
