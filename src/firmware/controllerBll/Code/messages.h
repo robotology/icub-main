@@ -116,7 +116,6 @@ extern char    _additional_info [32];
 	calibrate (axis, CAN_DATA[1], BYTE_W(CAN_DATA[2], CAN_DATA[3]), \
 								  BYTE_W(CAN_DATA[4], CAN_DATA[5]), \
    								  BYTE_W(CAN_DATA[6], CAN_DATA[7])); \
-	_calibrated[axis] = false; \
 	_general_board_error = ERROR_NONE; \
 }
 //-------------------------------------------------------------------

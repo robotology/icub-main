@@ -138,3 +138,6 @@
 		     you can change this behavior by setting/unsetting the macro USE_NEW_DECOUPLING in decoupling.h 
 	* Current build 43
 	
+2010-02-Aug  Marco Randazzo <marco.randazzo@iit.it>
+    * receiving a calibration command (_calibrated[i]==true) is now mandatory in order to turn PWM ON
+	* Current build 44

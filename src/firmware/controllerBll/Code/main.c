@@ -38,7 +38,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 43;
+word    _build_number = 44;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -112,6 +112,7 @@ void main(void)
 	byte tailVel=0; //tail is (head+1)%winSize
 	byte winSizePos=35;
 	byte winSizeVel=55;
+	UInt16 calibCount = 0;
 	//Int32 windSizePos=35;
 	//Int32 windSizeVel=50;
 	Int32 positionWindow[35][JN]; //max window size: 254
@@ -565,11 +566,24 @@ void main(void)
 		/* generate PWM */		
 		for (i=0; i<JN; i++)
 		{
-			if (_pad_enabled[i] == false) _control_mode[i] = MODE_IDLE;
+			if (_pad_enabled[i] == false) 
+			{
+				_control_mode[i] = MODE_IDLE;
+			}
+			else if (_calibrated[i] == false)
+			{
+				if (calibCount++>=500)
+				{
+					can_printf("calib failed:%d",i);	
+					calibCount=0;
+				}
+				_control_mode[i] = MODE_IDLE;
+			}
 			else	
-			
+			{
 				PWM_generate(i,_pid[i]);
-		//		setReg (TMRD0_CNTR, 39998);              
+		//		setReg (TMRD0_CNTR, 39998);              				
+			}
 			
 		}
 	
