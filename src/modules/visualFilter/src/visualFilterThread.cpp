@@ -73,13 +73,13 @@ bool visualFilterThread::threadInit() {
     return true;
 }
 
-void visualFilterThread::setName(string str){
+void visualFilterThread::setName(string str) {
     this->name=str;
     printf("name: %s", name.c_str());
 }
 
 
-std::string visualFilterThread::getName(const char* p){
+std::string visualFilterThread::getName(const char* p) {
     string str(name);
     str.append(p);
     //printf("name: %s", name.c_str());
@@ -101,7 +101,7 @@ void visualFilterThread::run() {
         
         inputImage = imagePortIn.read(true);
 
-        if(inputImage!=NULL){
+        if(inputImage!=NULL) {
             resize(inputImage->width(),inputImage->height());      
           
             //extending logpolar input image
@@ -116,23 +116,23 @@ void visualFilterThread::run() {
             //edgesExtract();
             //sending the edge image on the outport
                  
-            if((edges!=0)&&(imagePortOut.getOutputCount())){
-                imagePortOut.prepare() =*(edges);
+            if((redPlane!=0)&&(imagePortOut.getOutputCount())) {
+                imagePortOut.prepare() =*(redPlane);
                 imagePortOut.write();
             }
-            if((redGreen!=0)&&(rgPort.getOutputCount())){
+            if((redGreen!=0)&&(rgPort.getOutputCount())) {
                 rgPort.prepare() =*(redGreen);
                 rgPort.write();
             }
-            if((greenRed!=0)&&(grPort.getOutputCount())){
+            if((greenRed!=0)&&(grPort.getOutputCount())) {
                 grPort.prepare() =*(greenRed);
                 grPort.write();
             }
-            if((blueYellow!=0)&&(byPort.getOutputCount())){
+            if((blueYellow!=0)&&(byPort.getOutputCount())) {
                 byPort.prepare() =*(blueYellow);
                 byPort.write();
             }
-            if((inputExtImage!=0)&&(imagePortExt.getOutputCount())){
+            if((inputExtImage!=0)&&(imagePortExt.getOutputCount())) {
                 imagePortExt.prepare() = *(inputExtImage);
                 imagePortExt.write();
             }
@@ -212,7 +212,7 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
         ptrOrigRight=inputExtImage->getPixelAddress(maxSize,row);
         ptrDestLeft=inputExtImage->getPixelAddress(0,row);
         ptrOrigLeft=inputExtImage->getPixelAddress(width-maxSize,row);
-        for(int i=0;i<maxSize;i++){
+        for(int i=0;i<maxSize;i++) {
             //right block
             *ptrDestRight=*ptrOrigRight;
             ptrDestRight++;ptrOrigRight++;
@@ -236,10 +236,25 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
 void visualFilterThread::extractPlanes() {
     Ipp8u* shift[3];
     int psb;
-    shift[0]=redPlane->getRawImage(); 
+    shift[0]=redPlane->getRawImage();
     shift[1]=greenPlane->getRawImage();
     shift[2]=bluePlane->getRawImage();
-    ippiCopy_8u_C3P3R(inputExtImage->getRawImage(),inputExtImage->getRowSize(),shift,redPlane->getRowSize(),srcsize);
+    Ipp8u* inputPointer=inputExtImage->getRawImage();
+    //ippiCopy_8u_C3P3R(inputExtImage->getRawImage(),inputExtImage->getRowSize(),shift,redPlane->getRowSize(),srcsize);
+    for(int r=0;r<inputExtImage->height();r++) {
+        for(int c=0;c<inputExtImage->getRowSize();c++) {
+            *shift[0]=*inputPointer;
+            inputPointer++;
+            *shift[1]=*inputPointer;
+            inputPointer++;
+            *shift[2]=*inputPointer;
+            inputPointer++;
+            shift[0]++;
+            shift[1]++;
+            shift[2]++;
+        }
+    }
+    
     ippiAdd_8u_C1RSfs(redPlane->getRawImage(),redPlane->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),yellowPlane->getRawImage(),yellowPlane->getRowSize(),srcsize,1);
 }
 
@@ -296,7 +311,7 @@ void visualFilterThread::colourOpponency() {
     ippiSub_8u_C1RSfs(yellowPlane2->getRawImage(),yellowPlane2->getRowSize(),bluePlane3->getRawImage(),bluePlane3->getRowSize(),blueYellow->getRawImage(),blueYellow->getRowSize(),srcsize,0);
 }
 
-double max(double a,double b,double c){
+double max(double a,double b,double c) {
     if(a>b)
         if(a>c)
             return a;
@@ -349,7 +364,7 @@ void visualFilterThread::edgesExtract() {
         for(int i=0;i<rowsize-width_orig;i++) {            
             pedges++;
         }
-        for(int i=0;i<rowsize2-width_orig-maxKernelSize+maxKernelSize;i++){
+        for(int i=0;i<rowsize2-width_orig-maxKernelSize+maxKernelSize;i++) {
             prgh++;prgv++;
             pgrh++;pgrv++;
             pbyh++;pbyv++;
@@ -392,7 +407,7 @@ void visualFilterThread::threadRelease() {
     delete blueYellowEdgesVert;
 }
 
-void visualFilterThread::onStop(){
+void visualFilterThread::onStop() {
     imagePortIn.interrupt();
     imagePortOut.interrupt();
     rgPort.interrupt();
