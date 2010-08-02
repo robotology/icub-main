@@ -108,12 +108,12 @@ void visualFilterThread::run() {
             extending();
             //extracting RGB and Y planes
             extractPlanes();
-            //gaussing filtering of the of RGBY
-            filtering();
+            //gaussing filtering of the of RGB and Y
+            //filtering();
             //colourOpponency map construction
-            colourOpponency();
+            //colourOpponency();
             //applying sobel operators on the colourOpponency maps and combining via maximisation of the 3 edges
-            edgesExtract();
+            //edgesExtract();
             //sending the edge image on the outport
                  
             if((edges!=0)&&(imagePortOut.getOutputCount())){
