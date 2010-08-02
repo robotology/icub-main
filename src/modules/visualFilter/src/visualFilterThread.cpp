@@ -107,7 +107,7 @@ void visualFilterThread::run() {
             //extending logpolar input image
             extending();
             //extracting RGB and Y planes
-            //extractPlanes();
+            extractPlanes();
             //gaussing filtering of the of RGB and Y
             //filtering();
             //colourOpponency map construction
@@ -254,7 +254,6 @@ void visualFilterThread::extractPlanes() {
             shift[2]++;
         }
     }
-    
     ippiAdd_8u_C1RSfs(redPlane->getRawImage(),redPlane->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),yellowPlane->getRawImage(),yellowPlane->getRowSize(),srcsize,1);
 }
 
