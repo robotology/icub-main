@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: David Vernon
- * email:   david@vernon.eu
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -17,13 +17,6 @@
  */
 
 
-/*
- * Audit Trail
- * -----------
- * 26/08/09  First version validated   DV
- * 12/09/09  Added functionality to read additional configuration file DV
- * 21/09/09  Removed code to replace a double / ("//") in a path as this is now done in getName() DV
- */ 
 
 /* 
  * Configure method. Receive a previously initialized

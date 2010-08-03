@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: David Vernon
- * email:   david@vernon.eu
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -17,11 +17,7 @@
  */
   
 
-/*
- * Audit Trail
- * -----------
- * 26/07/07  First version validated   DV
- */ 
+
 
 #include "iCub/visualFilterModule.h" 
 
