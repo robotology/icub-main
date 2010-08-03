@@ -19,8 +19,8 @@ using namespace yarp::dev;
 
 const int PARK_TIMEOUT=30;
 const int GO_TO_ZERO_TIMEOUT=20;
-const int CALIBRATE_JOINT_TIMEOUT=20;
-const double POSITION_THRESHOLD=5.0;
+const int CALIBRATE_JOINT_TIMEOUT=25;
+const double POSITION_THRESHOLD=2.0;
 
 const int numberOfJoints=4;
 
@@ -282,11 +282,17 @@ bool iCubArmCalibratorJ4::checkGoneToZeroThreshold(int j)
     bool finished = false;
     int timeout = 0;
 	double ang=0;
+	double delta=0;
     while ( (!finished) && (!abortCalib))
     {
 		iEncoders->getEncoder(j, &ang);
-		fprintf(stderr, "ARMCALIB (joint %d) curr:%f des:%f -> err:%f\n", j, ang, pos[j], fabs(ang-pos[j]));
-		if (fabs(ang-pos[j])<POSITION_THRESHOLD) finished=true;
+		delta = fabs(ang-pos[j]);
+		fprintf(stderr, "ARMCALIB (joint %d) curr:%f des:%f -> delta:%f\n", j, ang, pos[j], delta);
+		if (delta<POSITION_THRESHOLD) 
+		{
+			fprintf(stderr, "ARMCALIB (joint %d) completed! delta:%f\n", j,delta);
+			finished=true;
+		}
 
         Time::delay (0.5);
         timeout ++;
