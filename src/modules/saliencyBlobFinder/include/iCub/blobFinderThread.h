@@ -53,7 +53,7 @@ private:
     ImageOf<PixelMono> *edges; //edges image
    
     WatershedOperator *wOperator; //reference to the watershed operator
-       char* blobList; //vector of boolean which tells whether there is a blob or not
+    char* blobList; //vector of boolean which tells whether there is a blob or not
     
     ImageOf<PixelRgb>* _outputImage3; //pointer to the 3 channels output image of the watershed algorithm
     ImageOf<PixelMono> *_inputImgRGS; //input image of the opponency R+G-
@@ -107,6 +107,11 @@ public:
     * active loop of the thread
     */
     void run();
+
+    /**
+    * Call this to stop the thread, this call blocks until the thread is terminated (and releaseThread() called). 
+    */
+    void stop();
 
     /**
     *releases the thread

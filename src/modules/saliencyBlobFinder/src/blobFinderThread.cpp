@@ -564,37 +564,9 @@ void blobFinderThread::run() {
         }
     } //if (!interrupted)
 }
-/**
-*	releases the thread
-*/
-void blobFinderThread::threadRelease(){
-    //deleting allocated objects
-    
-    delete outContrastLP;
-    delete outMeanColourLP;
-   
-    delete _procImage;
-    delete _outputImage3;
-    delete _outputImage;
-
-    delete ptr_inputImg; //pointer to the input image
-    delete edges; //pointer to the edges image
-    
-    delete ptr_inputImgRed; //pointer to the input image of the red plane
-    delete ptr_inputImgGreen; //pointer to the input image of the green plane
-    delete ptr_inputImgBlue; //pointer to the input image of the blue plane
-    delete ptr_inputImgRG; //pointer to the input image of the R+G- colour opponency
-    delete ptr_inputImgGR; //pointer to the input image of the G+R- colour opponency
-    delete ptr_inputImgBY; //pointer to the input image of the B+Y- colour opponency
-
-    
-    delete _inputImgRGS;
-    delete _inputImgGRS;
-    delete _inputImgBYS;
-    
-    delete blobFov;
 
 
+void blobFinderThread::stop(){
     printf("R+G- colourOpponency port closing .... \n");
     rgPort.close();
     printf("G+R- colourOpponency port closing .... \n");
@@ -612,8 +584,36 @@ void blobFinderThread::threadRelease(){
     centroidPort.close();
     gazeControlPort.close();
     triangulationPort.close();
-    
-    
+    threadRelease();
+}
+
+/**
+*	releases the thread
+*/
+void blobFinderThread::threadRelease(){
+    //deleting allocated objects
+    delete outContrastLP;
+    delete outMeanColourLP;
+
+    delete _procImage;
+    delete _outputImage3;
+    delete _outputImage;
+
+    delete ptr_inputImg; //pointer to the input image
+    delete edges; //pointer to the edges image
+
+    delete ptr_inputImgRed; //pointer to the input image of the red plane
+    delete ptr_inputImgGreen; //pointer to the input image of the green plane
+    delete ptr_inputImgBlue; //pointer to the input image of the blue plane
+    delete ptr_inputImgRG; //pointer to the input image of the R+G- colour opponency
+    delete ptr_inputImgGR; //pointer to the input image of the G+R- colour opponency
+    delete ptr_inputImgBY; //pointer to the input image of the B+Y- colour opponency
+
+    delete _inputImgRGS;
+    delete _inputImgGRS;
+    delete _inputImgBYS;
+
+    delete blobFov;
 }
 
 /**
