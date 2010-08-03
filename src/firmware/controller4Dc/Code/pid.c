@@ -104,6 +104,7 @@ Int16  _kr[JN] = INIT_ARRAY (3);				// scale factor (negative power of two)
 
 
 // TORQUE PID
+Int16  _strain_val[JN] = INIT_ARRAY (0);
 Int16  _error_torque[JN] ;						// actual feedback error 
 Int16  _error_old_torque[JN] ;					// error at t-1 
 Int16  _pid_torque[JN] ;						// pid result 
@@ -236,6 +237,121 @@ Int32 compute_pwm(byte j)
 	PWMoutput = compute_filtpid(j, PWMoutput);
 #endif
 	return PWMoutput;
+}
+
+/*
+ * compute PID torque (integral is implemented).
+ */
+Int32 compute_pid_torque(byte j, Int16 strain_val)
+{
+	Int32 ProportionalPortion, DerivativePortion, IntegralPortion;
+	Int32 IntegralError;
+	Int32 PIDoutput;
+	Int32 InputError;
+	float temp_err[JN] = INIT_ARRAY (0.0);
+
+	byte i=0;
+	byte k=0;
+	static Int32 DerPort[2][10]={{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}};	
+	Int16 Coeff[10]={1,1,1,1,1,1,1,1,1,1};
+	Int16 Sum_Coeff=10; //should be equal to the sum of Coeffs
+	
+	/* the error @ previous cycle */
+	
+	_error_old_torque[j] = _error_torque[j];
+
+	InputError = L_sub(	_desired_torque[j], (Int32)strain_val);
+			
+	if (InputError > MAX_16)
+		_error_torque[j] = MAX_16;
+	else
+	if (InputError < MIN_16) 
+		_error_torque[j] = MIN_16;
+	else
+	{
+		_error_torque[j] = extract_l(InputError);
+	}
+
+		
+	//BEWARE: @@@ THIS ovverrides the position error with the torque error
+	_error[j]=_error_torque[j];			
+			
+	/* Proportional */
+	ProportionalPortion = ((Int32) _error_torque[j]) * ((Int32)_kp_torque[j]);
+	
+	if (ProportionalPortion>=0)
+	{
+		ProportionalPortion = ProportionalPortion >> _kr_torque[j]; 
+	}
+	else
+	{
+		ProportionalPortion = -(-ProportionalPortion >> _kr_torque[j]);
+	}
+	
+	/* Derivative */	
+	DerivativePortion = ((Int32) (_error_torque[j]-_error_old_torque[j])) * ((Int32) _kd_torque[j]);
+
+	if (DerivativePortion>=0)
+	{
+		DerivativePortion = DerivativePortion >> _kr_torque[j]; 
+	}
+	else
+	{
+		DerivativePortion = -(-DerivativePortion >> _kr_torque[j]);
+	}
+  
+//	AS1_printDWordAsCharsDec(DerivativePortion);
+	for(k=9;k>0;k--)
+	{
+		DerPort[j][k]=DerPort[j][k-1];
+	}
+	DerPort[j][0]=DerivativePortion;
+	
+	DerivativePortion=0;
+	for(k=0;k<10;k++)
+	{ 
+		DerivativePortion+=DerPort[j][k]*Coeff[k];
+	}	
+	DerivativePortion=DerivativePortion/Sum_Coeff;
+		
+	/* Integral */
+	IntegralError =  ( (Int32) _error_torque[j]) * ((Int32) _ki_torque[j]);
+	
+	/* Integral */
+	IntegralError = ( (Int32) _error_torque[j]) * ((Int32) _ki_torque[j]);
+
+	if (IntegralError>=0)
+	{
+		IntegralError = (IntegralError >> _kr_torque[j]); // integral reduction 
+	}
+	else
+	{
+		IntegralError = -(-IntegralError >> _kr_torque[j]); // integral reduction 
+	}
+	if (IntegralError > MAX_16)
+		IntegralError = (Int32) MAX_16;
+	if (IntegralError < MIN_16) 
+		IntegralError = (Int32) MIN_16;
+	
+	_integral_torque[j] = L_add(_integral_torque[j], IntegralError);
+	IntegralPortion = (Int32) _integral_torque[j];
+	/* Accumulator saturation */
+	if (IntegralPortion >= _integral_limit_torque[j])
+	{
+		IntegralPortion = _integral_limit_torque[j];
+		_integral_torque[j] =  _integral_limit_torque[j];
+	}		
+	else
+		if (IntegralPortion < - (_integral_limit_torque[j]))
+		{
+			IntegralPortion = - (_integral_limit_torque[j]);
+			_integral_torque[j] = (-_integral_limit_torque[j]);
+		}
+		
+	_pd_torque[j] = L_add(ProportionalPortion, DerivativePortion);
+	PIDoutput = L_add(_pd_torque[j], IntegralPortion);
+	
+	return PIDoutput;
 }
 
 /*
@@ -787,3 +903,40 @@ void smooth_pid(byte jnt)
 	}
 		
 }
+
+/***************************************************************************/
+/**
+ * this function turns off pwm of joint <jnt> if <strain_num> watchdog is
+ * triggered (returns false). Returns true otherwise (all ok).
+ * the force value contained in the <strain_channel> is assigned to strain_val
+ ***************************************************************************/
+bool read_force_data (byte jnt, byte strain_num, byte strain_chan)
+{
+	if (_control_mode[jnt] == MODE_TORQUE ||
+		_control_mode[jnt] == MODE_IMPEDANCE_POS ||
+		_control_mode[jnt] == MODE_IMPEDANCE_VEL )
+		{
+			if (_strain_wtd[strain_num]==0)
+			{
+				_control_mode[jnt] = MODE_IDLE;	
+				_pad_enabled[jnt] = false;
+					
+				can_printf("WDT:strain%d",jnt);	//@@@ DEBUG: REMOVE ME LATER
+				#ifdef DEBUG_CAN_MSG
+					can_printf("WARN:strain watchdog! disabling pwm");				
+				#endif	
+				
+				PWM_outputPadDisable(jnt);	
+				_strain_val[jnt]=0;
+				return false;
+			}
+			else
+			{
+				_strain_val[jnt]=_strain[strain_num][strain_chan];
+				return true;	
+			}	
+		}
+	_strain_val[jnt]=_strain[strain_num][strain_chan];
+	return true;		
+}
+

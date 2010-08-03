@@ -6,6 +6,7 @@
 #include "controller.h"
 #include "options.h"
 #include "can1.h"
+#include "strain_board.h"
 
 #ifndef VERSION
 #	error "No valid version specified"
@@ -17,6 +18,7 @@
 
 Int32 compute_pwm(byte j);
 Int32 compute_pid2(byte j);
+Int32 compute_pid_torque(byte j, Int16 strain_val);
 Int32 compute_current_pid(byte j);
 Int32 compute_pid_abs(byte j);
 Int32 compute_filtpid(byte jnt, Int32 PID);
@@ -27,6 +29,8 @@ void check_desired_within_limits(byte i, Int32 previous_desired);
 
 void init_smooth_pid(byte jnt,Int16 finalp,Int16 finald,byte finals, Int16 Time);
 void smooth_pid(byte jnt);
+
+bool read_force_data (byte,byte,byte);
 
 /******************************************************/
 // stable global data 
@@ -143,6 +147,7 @@ extern Int16  _kr[JN] ;					// scale factor (negative power of two)
 
 
 // TORQUE PID
+extern Int16  _strain_val[JN];
 extern Int16  _error_torque[JN] ;			// actual feedback error 
 extern Int16  _error_old_torque[JN] ;		// error at t-1 
 extern Int16  _pid_torque[JN] ;				// pid result 

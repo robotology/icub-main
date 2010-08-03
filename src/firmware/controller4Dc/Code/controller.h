@@ -60,11 +60,12 @@
 #define JN					4		/* number of axes */
 
 
-#define MODE_IDLE							0
-#define MODE_POSITION 						1
-#define MODE_VELOCITY						2
-#define MODE_TORQUE							3
-#define MODE_IMPEDANCE						4
+#define MODE_IDLE							0x00
+#define MODE_POSITION 						0x01
+#define MODE_VELOCITY						0x02
+#define MODE_TORQUE							0x03
+#define MODE_IMPEDANCE_POS					0x04
+#define MODE_IMPEDANCE_VEL					0x05
 #define MODE_CALIB_ABS_POS_SENS				0x10
 #define MODE_CALIB_HARD_STOPS				0x20
 //#define MODE_HANDLE_HARD_STOPS				0x30

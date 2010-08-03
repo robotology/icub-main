@@ -557,9 +557,11 @@ void main(void)
 		for (i=0; i<JN; i++) 
 		{
 			if (_control_mode[i] == MODE_TORQUE ||
-			 	_control_mode[i] == MODE_IMPEDANCE)
+			 	_control_mode[i] == MODE_IMPEDANCE_POS ||
+			 	_control_mode[i] == MODE_IMPEDANCE_VEL)
 				PWMoutput[i] = lpf_ord1_3hz (PWMoutput[i], i);	
 		}
+
 //******************************************* LIMIT CHECK FOR FORCE CONTORL******************/
 		// Protection for joints out of the admissible range during force control
 		for (i=0; i<JN; i++)  check_range_torque(i, _safeband[i], PWMoutput);
@@ -756,6 +758,8 @@ void decouple_positions(void)
 #endif
 }
 
+
+
 /***************************************************************************/
 /**
  * This function checks if the joint is in range during torque control mode
@@ -764,11 +768,12 @@ void check_range_torque(byte i, Int16 band, Int32 *PWM)
 {
 	static UInt32 TrqLimitCount =0;
  	if (_control_mode[i] == MODE_TORQUE ||
-	  	_control_mode[i] == MODE_IMPEDANCE)
+	  	_control_mode[i] == MODE_IMPEDANCE_POS ||
+	  	_control_mode[i] == MODE_IMPEDANCE_VEL)
  		{
 	 		if  (_position[i] > _max_position[i])
 	 		{
-	 			if ((_position[i]-_position_old[i])>=0)
+	 			if (_speed[i]>=0)
 				{
 					PWM[i] = 0;	
 				}
@@ -783,7 +788,7 @@ void check_range_torque(byte i, Int16 band, Int32 *PWM)
 	 		}
 	 		if  (_position[i] < _min_position[i])   
 	 		{
-	 			if ((_position[i]-_position_old[i])<=0)
+	 			if (_speed[i]<=0)
 				{
 					PWM[i] = 0;			
 				}				
