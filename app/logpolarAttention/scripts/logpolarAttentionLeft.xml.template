@@ -7,37 +7,37 @@
 		<name>visualFilter</name>
 		<parameters>--name /visualFilter/icub/left_cam</parameters>
 		<tag>vFilter</tag>
-		<node>/icub-b15</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>YUVProcessor</name>
 		<parameters>--name yuvProc/icub/left_cam</parameters>
 		<tag>yuvProcessorLeft</tag>
-		<node>/icub-b15</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinder</name>
 		<parameters></parameters>
 		<tag>saliencyBlobFinderLeft</tag>
-		<node>/icub-b15</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinderInterface</name>
 		<parameters>--name /blobFinderInterface/icub/left_cam </parameters>
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
-		<node>/icub14</node>
+		<node>/console</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/outputView --x 0 --y 600 --synch</parameters>
 		<tag>blobFinderOutLeft</tag>
-		<node>/icub14</node>
+		<node>/console</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/output3View --x 0 --y 1200 --synch</parameters>
 		<tag>blobFinderOut3Left</tag>
-		<node>/icub14</node>
+		<node>/console</node>
 	</module>
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
