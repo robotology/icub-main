@@ -70,7 +70,7 @@
 	</connection>
 	<connection>
         	<from>/blobFinderInterface/icub/left_cam/command:o</from>
-		<to>/blobFinder/icub/left_cam/cmd</to>
+		<to>/blobFinder/icub/left_cam</to>
 		<protocol>udp</protocol>
 	</connection>
 </application>
