@@ -50,8 +50,7 @@ using namespace yarp::sig::draw;
 // J(csi, eta) = J(F, eta) within the fovea
 // Jan 2004 -- by nat
 
-namespace _logpolarParams
-{
+namespace _logpolarParams {
     const int _xsize = 320; //const int _xsize = 256;
     const int _ysize = 240; //const int _ysize = 256;
     const int _srho = 152;
@@ -71,8 +70,7 @@ namespace _logpolarParams
     const double _k2 = _lambda/(pow(_lambda,_sfovea)*(_lambda-1));
 };
 
-struct Image_Data
-{
+struct Image_Data {
     // Logarithm Index
     double Log_Index;
     bool Valid_Log_Index;

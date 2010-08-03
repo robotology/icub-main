@@ -79,6 +79,10 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
     ptr_inputImgRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
     ptr_inputImgGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
     ptr_inputImgBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
+    edges=new ImageOf<yarp::sig::PixelMono>; //pointer to the edges image
+    img=new ImageOf<PixelRgb>;
+    tmpImage=new ImageOf<PixelMono>;
+    image_out=new ImageOf<PixelMono>;
     
     _inputImgRGS=new ImageOf<PixelMono>;
     _inputImgGRS=new ImageOf<PixelMono>;
@@ -161,6 +165,10 @@ blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
     ptr_inputImgRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
     ptr_inputImgGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
     ptr_inputImgBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
+    edges=new ImageOf<yarp::sig::PixelMono>; //pointer to the edges image
+    img=new ImageOf<PixelRgb>;
+    tmpImage=new ImageOf<PixelMono>;
+    image_out=new ImageOf<PixelMono>;
     
     _inputImgRGS=new ImageOf<PixelMono>;
     _inputImgGRS=new ImageOf<PixelMono>;
@@ -191,7 +199,7 @@ void blobFinderThread::setName(std::string str){
 }
 
 
-std::string blobFinderThread::getName(const char* p){
+std::string blobFinderThread::getName(const char* p) {
     string str(name);
     str.append(p);
     printf("name: %s", name.c_str());
@@ -199,26 +207,20 @@ std::string blobFinderThread::getName(const char* p){
 }
 
 
-void blobFinderThread::reinitialise(int width, int height){
-    img=new ImageOf<PixelRgb>;
-    img->resize(width,height);
-    edges=new ImageOf<PixelMono>;
-    edges->resize(width,height);
+void blobFinderThread::reinitialise(int width, int height) {
     this->width=width;
     this->height=height;
-    resizeImages(width,height);
 
-    tmpImage=new ImageOf<PixelMono>;
+    img->resize(width,height);
+    edges->resize(width,height);
     tmpImage->resize(width,height);
-
-    image_out=new ImageOf<PixelMono>;
     image_out->resize(width,height);
+    
+    resizeImages(width,height);
 }
 
 
-void blobFinderThread::resizeImages(int width, int height){
-    this->width=width;
-    this->height=height;
+void blobFinderThread::resizeImages(int width, int height) {
     srcsize.height=height;
     srcsize.width=width;
 
@@ -281,11 +283,7 @@ bool blobFinderThread::threadInit(){
     
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     inputPort.open(getName("/image:i").c_str());
-    edgesPort.open(getName("/image:i").c_str());
-    
-    redPort.open(getName("/red:i").c_str());
-    greenPort.open(getName("/green:i").c_str());
-    bluePort.open(getName("/blue:i").c_str());
+    edgesPort.open(getName("/edges:i").c_str());
 
     rgPort.open(getName("/rg:i").c_str());
     grPort.open(getName("/gr:i").c_str());
@@ -320,10 +318,7 @@ void blobFinderThread::interrupt(){
 
     inputPort.interrupt();//(getName("image:i"));
     edgesPort.interrupt();//getName(edges:i);
-    
-    redPort.interrupt();//open(getName("red:i"));
-    greenPort.interrupt();//open(getName("green:i"));
-    bluePort.interrupt();//open(getName("blue:i"));
+
 
     rgPort.interrupt();//open(getName("rg:i"));
     grPort.interrupt();//open(getName("gr:i"));
@@ -339,13 +334,13 @@ void blobFinderThread::interrupt(){
 /**
 * active loop of the thread
 */
-void blobFinderThread::run(){
+void blobFinderThread::run() {
     if(!interrupted_flag){
         ct++;
-        
+        //reading input port and extracting colour planes
         img = inputPort.read(false);
         if(0!=img){
-            if(!reinit_flag){    
+            if(!reinit_flag) {
                 srcsize.height=img->height();
                 srcsize.width=img->width();
                 this->height=img->height();
@@ -359,7 +354,7 @@ void blobFinderThread::run(){
             //ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),tmpImage->getRawImage(), tmpImage->getRowSize(),srcsize);
             ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
             bool ret1=true,ret2=true;
-            /ret1=getOpponencies(); 
+            ret1=getOpponencies();
             ret1=true;
             ret2=getPlanes(img);
             if(ret1&&ret2)
@@ -381,7 +376,9 @@ void blobFinderThread::run(){
             bool conversion=true;
             //_outputImage is the single channel image of the edges _outputImage=edges
             //_outputImage=wOperator->getPlane(ptr_inputImg);
-            _outputImage=edgesPort.read(false);
+            tmpImage=edgesPort.read(false);
+            if(tmpImage!=NULL)
+                ippiCopy_8u_C3R(tmpImage->getRawImage(),tmpImage->getRowSize(),edges->getRawImage(), edges->getRowSize(),srcsize);
             //rain function uses as source image the _outputImage
             rain();
             
@@ -524,13 +521,13 @@ void blobFinderThread::run(){
                 int width=this->width;
                 int height=this->height;
                 
-                Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
+                //Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
                 //Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
                 //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
                 //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
                 //two copies in order to have 2 conversions
                 //the first transform the yarp mono into a 4-channel image
-                ippiCopy_8u_C1R(_outputImage->getRawImage(),_outputImage->getRowSize(),im_out,psb,srcsize);
+                ippiCopy_8u_C1R(_outputImage->getRawImage(),_outputImage->getRowSize(),image_out->getRawImage(),image_out->getRowSize(),srcsize);
 
                 //ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
                 //ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
@@ -542,11 +539,11 @@ void blobFinderThread::run(){
 
                 //Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
 
-                Ipp8u* im_tmp[3]={im_out,im_out,im_out};
+                //Ipp8u* im_tmp[3]={im_out,im_out,im_out};
                 //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
                 //the second transforms the 4-channel image into colorImage for yarp
-                ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
-                ippiFree(im_out);
+                //ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
+                //ippiFree(im_out);
                 //printf("freeing im_tmp0  \n");	
                 //ippiFree(im_tmp0);
                 //printf("freeing im_tmp1 \n");	
@@ -557,6 +554,7 @@ void blobFinderThread::run(){
             }
             else
                 ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
+
             outPorts();
 
             endTimer=Time::now();
@@ -596,15 +594,6 @@ void blobFinderThread::threadRelease(){
     
     delete blobFov;
 
-    printf("input port closing .... \n");
-    inputPort.close();
-    
-    printf("red channel port closing .... \n");
-    redPort.close();
-    printf("green channel port closing .... \n");
-    greenPort.close();
-    printf("blue channel port closing .... \n");
-    bluePort.close();
 
     printf("R+G- colourOpponency port closing .... \n");
     rgPort.close();
@@ -616,14 +605,14 @@ void blobFinderThread::threadRelease(){
     printf("closing outputport .... \n");
     outputPort.close();
 
-    
-    
+    printf("input port closing .... \n");
+    inputPort.close();
+
     printf("closing communication ports .... \n");
     centroidPort.close();
     gazeControlPort.close();
     triangulationPort.close();
     
-    printf("deleting objects \n");
     
 }
 
@@ -631,7 +620,6 @@ void blobFinderThread::threadRelease(){
 * function that reads the ports for colour RGB opponency maps
 */
 bool blobFinderThread::getOpponencies(){
-
     
     tmpImage=rgPort.read(false);
     if(tmpImage!=NULL)

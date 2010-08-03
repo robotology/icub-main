@@ -53,7 +53,7 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     /* get the module name which will form the stem of all module port names */
 
     moduleName            = rf.check("name", 
-                           Value("/blobFinder"), 
+                           Value("/blobFinder/icub/left_cam"), 
                            "module name (string)").asString();
 
     /*
@@ -68,10 +68,15 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     * get the ratethread which will define the period of the processing thread
     */
     rateThread             = rf.check("ratethread", 
-                           Value("30"), 
+                           Value(30), 
                            "processing ratethread (int)").asInt();
 
-    
+    if (!cmdPort.open(getName())) {           
+      cout << getName() << ": Unable to open port " << endl;  
+      return false;
+    }
+
+    attach(cmdPort);                  // attach to port
 
     //initialization of the main thread
     if(rateThread==0)
@@ -98,7 +103,6 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 bool saliencyBlobFinderModule::interruptModule() {
     printf("module interrupted .... \n");
     cmdPort.interrupt();
-  
     blobFinder->interrupt();
     
     return true;

@@ -19,7 +19,7 @@ using namespace yarp::sig;
 
 
 
-class blobFinderThread : public yarp::os::RateThread{
+class blobFinderThread : public yarp::os::RateThread {
 private:
     
     BufferedPort<Bottle> centroidPort; //port used for centroid position to controlGaze2
@@ -29,9 +29,6 @@ private:
     BufferedPort<ImageOf<PixelRgb> > inputPort; //port where the input image is read from
     BufferedPort<ImageOf<PixelMono> > edgesPort; //port where the edges image is read
     BufferedPort<ImageOf<PixelMono> > outputPort; //port that returns the image output
-    BufferedPort<ImageOf<PixelMono> > redPort; //port where the red plane of the image is streamed
-    BufferedPort<ImageOf<PixelMono> > greenPort; //port where the green plane of the image is streamed
-    BufferedPort<ImageOf<PixelMono> > bluePort; //port where the blue plane of the image is streamed
     BufferedPort<ImageOf<PixelMono> > rgPort; //port where the difference of gaussian R+G- is streamed
     BufferedPort<ImageOf<PixelMono> > grPort; //port where the difference of gaussian G+R- is streamed
     BufferedPort<ImageOf<PixelMono> > byPort; //port where the difference of gaussian B+Y- of the image is streamed
