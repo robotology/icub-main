@@ -3,6 +3,7 @@
 #include <yarp/math/Math.h>
 #include <iCub/SalienceOperator.h>
 #include <string>
+#include <cstring>
 #include <sstream>
 
 #define TH_AREA 10

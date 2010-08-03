@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/ColorVQ.h>
-
+#include <cstdlib>
 #define DBGPF1 if (0)
 
 void ColorVQ::Resize(int x, int y, int fovea)
