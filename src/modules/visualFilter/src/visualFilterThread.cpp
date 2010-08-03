@@ -373,7 +373,7 @@ void visualFilterThread::edgesExtract() {
 
 void visualFilterThread::threadRelease() {
     /* for example, delete dynamically created data-structures */
-    /*
+    
     delete redPlane;
     delete redPlane2;
     delete redPlane3;
@@ -405,7 +405,7 @@ void visualFilterThread::threadRelease() {
     delete redGreenEdgesVert;
     delete greenRedEdgesVert;
     delete blueYellowEdgesVert;
-    */
+    
 }
 
 void visualFilterThread::onStop() {
