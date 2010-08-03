@@ -27,7 +27,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
     interrupted_flag=false;
 
     ct=0;
-    filterSpikes_flag=true;
+    filterSpikes_flag=false;
     count=0;
 
     //inputImage_flag=false;
@@ -113,7 +113,7 @@ blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
     interrupted_flag=false;
 
     ct=0;
-    filterSpikes_flag=true;
+    filterSpikes_flag=false;
     count=0;
 
     //inputImage_flag=false;
@@ -290,6 +290,7 @@ bool blobFinderThread::threadInit(){
     byPort.open(getName("/by:i").c_str());
 
     outputPort.open(getName("/image:o").c_str());
+    outputPort3.open(getName("/imageC3:o").c_str());
     centroidPort.open(getName("/centroid:o").c_str());
     triangulationPort.open(getName("/triangulation:o").c_str());
     gazeControlPort.open(getName("/gazeControl:o").c_str());
@@ -325,6 +326,7 @@ void blobFinderThread::interrupt(){
     byPort.interrupt();//open(getName("by:i"));
 
     outputPort.interrupt();//open(getName("image:o"));
+    outputPort3.interrupt();
     centroidPort.interrupt();//open(getName("centroid:o"));
     triangulationPort.interrupt();//open(getName("triangulation:o"));
     gazeControlPort.interrupt();//open(getName("gazeControl:o"));
@@ -362,14 +364,16 @@ void blobFinderThread::run() {
             if(!freetorun)
                 return;
 
-            meanColour_flag=false;
-            blobCataloged_flag=false;
+            /*meanColour_flag=false;
+            blobCataloged_flag=false;*/
+
             bool redPlane_flag=false;
             bool greenPlane_flag=false;
             bool bluePlane_flag=false;
             bool RG_flag=false;
             bool GR_flag=false;
             bool BY_flag=false;
+            
 
             
 
@@ -382,10 +386,12 @@ void blobFinderThread::run() {
             //rain function uses as source image the _outputImage
             rain();
 
-            blobCataloged_flag=false;
+            /*
+            blobCataloged_flag=true;
             redPlane_flag=false;
-            maxSaliencyBlob_flag=false;
+            maxSaliencyBlob_flag=true;
             contrastLP_flag=false;
+            */
 
             if(redPlane_flag){
                 ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
@@ -517,7 +523,7 @@ void blobFinderThread::run() {
             }
 
             //-------
-            
+            /*
             if(conversion){
                 int psb;
                 int width=this->width;
@@ -556,13 +562,14 @@ void blobFinderThread::run() {
             }
             else
                 ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
+            */
 
             outPorts();
 
-            endTimer=Time::now();
+            /*endTimer=Time::now();
             double dif = endTimer-startTimer;
             startTimer=endTimer;
-            printf("elapsed time in sec: %f\n", dif);
+            printf("elapsed time in sec: %f\n", dif);*/
         }
     } //if (!interrupted)
 }
@@ -578,6 +585,7 @@ void blobFinderThread::stop(){
 
     printf("closing outputport .... \n");
     outputPort.close();
+    outputPort3.close();
 
     printf("input port closing .... \n");
     inputPort.close();
@@ -681,14 +689,13 @@ bool blobFinderThread::getPlanes(ImageOf<PixelRgb>* inputImage){
 
 
 bool blobFinderThread::outPorts(){ 
-    
-    //printf("centroid:%f,%f \n",blobFinder->salience->centroid_x,blobFinder->salience->centroid_y);
-    //printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
-    
-    
-    if((0!=image_out)&&(outputPort.getOutputCount())){ 
-        outputPort.prepare() = *(image_out);
+    if((0!=_outputImage)&&(outputPort.getOutputCount())){ 
+        outputPort.prepare() = *(_outputImage);
         outputPort.write();
+    }
+    if((0!=_outputImage3)&&(outputPort3.getOutputCount())){ 
+        outputPort3.prepare() = *(_outputImage3);
+        outputPort3.write();
     }
 
     /*

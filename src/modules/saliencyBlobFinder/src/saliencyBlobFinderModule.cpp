@@ -27,7 +27,7 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
     watershed_flag=false;
 
     timeControl_flag=true;
-    filterSpikes_flag=true;
+    filterSpikes_flag=false;
 }
 
 void saliencyBlobFinderModule::copyFlags(){

@@ -29,6 +29,7 @@ private:
     BufferedPort<ImageOf<PixelRgb> > inputPort; //port where the input image is read from
     BufferedPort<ImageOf<PixelMono> > edgesPort; //port where the edges image is read
     BufferedPort<ImageOf<PixelMono> > outputPort; //port that returns the image output
+    BufferedPort<ImageOf<PixelRgb> > outputPort3; //port that returns the image output 3channels
     BufferedPort<ImageOf<PixelMono> > rgPort; //port where the difference of gaussian R+G- is streamed
     BufferedPort<ImageOf<PixelMono> > grPort; //port where the difference of gaussian G+R- is streamed
     BufferedPort<ImageOf<PixelMono> > byPort; //port where the difference of gaussian B+Y- of the image is streamed
