@@ -762,7 +762,7 @@ void can_send_broadcast(void)
 		
 		//Control Mode axes 3
 		_canmsg.CAN_data[3]= _control_mode[3]; 		
-		if (_control_mode[1] != old_control_mode[3])
+		if (_control_mode[3] != old_control_mode[3])
 		{
 			sendB = true;
 			old_control_mode[3]=_control_mode[3];
