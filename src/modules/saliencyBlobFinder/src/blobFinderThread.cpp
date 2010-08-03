@@ -362,8 +362,8 @@ void blobFinderThread::run() {
             if(!freetorun)
                 return;
 
-            meanColour_flag=true;
-            blobCataloged_flag=true;
+            meanColour_flag=false;
+            blobCataloged_flag=false;
             bool redPlane_flag=false;
             bool greenPlane_flag=false;
             bool bluePlane_flag=false;
@@ -378,12 +378,14 @@ void blobFinderThread::run() {
             //_outputImage=wOperator->getPlane(ptr_inputImg);
             tmpImage=edgesPort.read(false);
             if(tmpImage!=NULL)
-                ippiCopy_8u_C3R(tmpImage->getRawImage(),tmpImage->getRowSize(),edges->getRawImage(), edges->getRowSize(),srcsize);
+                ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),_outputImage->getRawImage(), _outputImage->getRowSize(),srcsize);
             //rain function uses as source image the _outputImage
             rain();
-            
-            redPlane_flag=true;
+
+            blobCataloged_flag=false;
+            redPlane_flag=false;
             maxSaliencyBlob_flag=false;
+            contrastLP_flag=false;
 
             if(redPlane_flag){
                 ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
@@ -510,7 +512,7 @@ void blobFinderThread::run() {
                 }
             }
             else{
-                _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+                //_outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
                 conversion=true;
             }
 
@@ -885,6 +887,7 @@ void blobFinderThread::rain(){
     max_tag=wOperator->apply(*_outputImage,_tagged);
     //printf("MAX_TAG=%d",wModule->max_tag);
     
+    
     /*
     int psb32s;
     IppiSize srcsize={this->width,this->height};
@@ -913,17 +916,21 @@ void blobFinderThread::rain(){
     }
     else
         return;
+        */
+
     salience->blobCatalog(_tagged, _inputImgRG, _inputImgGR, _inputImgBY,
         _inputImgBlue, _inputImgGreen, _inputImgRed, max_tag);
-        */
+        
 
     blobCataloged_flag=true;
     //istruction to set the ptr_tagged in the Watershed Module with the static variable _tagged
     tagged=ptr_tagged; //ptr_tagged is the pointer to _tagged
 
-    /*ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
+    /*
+    ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
     ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
-    ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);*/
+    ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
+    */
 }
 
 void blobFinderThread::drawAllBlobs(bool stable)
