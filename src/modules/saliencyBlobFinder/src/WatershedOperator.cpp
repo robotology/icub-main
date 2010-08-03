@@ -8,9 +8,9 @@
 #include <yarp/sig/all.h>
 
 //openCV include
-#include <cv.h>
-#include <cvaux.h>
-#include <highgui.h>
+//#include <cv.h>
+//#include <cvaux.h>
+//#include <highgui.h>
 
 
 using namespace yarp::os;

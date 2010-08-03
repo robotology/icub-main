@@ -3,9 +3,9 @@
 #define _WATERSHEDOPERATOR_H_
 
 //openCV include
-#include <cv.h>
-#include <cvaux.h>
-#include <highgui.h>
+//#include <cv.h>
+//#include <cvaux.h>
+//#include <highgui.h>
 //IPP include
 #include <ipp.h>
 
