@@ -13,26 +13,25 @@
 # QWT_INCLUDE_DIR      = where to find headers 
 #
 
-set(QWT_DIR $ENV{QWT_DIR})
 
 #MESSAGE("Searching for QWT")
 FIND_PATH(QWT_INCLUDE_DIR qwt.h 
   PATHS /usr/include
   /usr/local/include
-  $ENV{QWT_DIR}/src 
-  PATH_SUFFIXES qwt-qt3 qwt
+  "$ENV{QWT_DIR}/src" 
+  PATH_SUFFIXES qwt-qt4 qwt
   )
-FIND_LIBRARY(QWT_LIBRARY NAMES libqwt qwt PATHS 
+FIND_LIBRARY(QWT_LIBRARY qwt PATHS 
   /usr/lib
   /usr/local/lib
-  $ENV{QWT_DIR}/lib
+  "$ENV{QWT_DIR}/lib" 
   )
 IF (NOT QWT_LIBRARY)
   # try using ubuntu lib naming
-  FIND_LIBRARY(QWT_LIBRARY qwt-qt3 PATHS 
+  FIND_LIBRARY(QWT_LIBRARY qwt-qt4 PATHS 
     /usr/lib
     /usr/local/lib
-    $ENV{QWT_DIR}/lib
+    "$ENV{QWT_DIR}/lib" 
     )
 ENDIF (NOT QWT_LIBRARY)
 
