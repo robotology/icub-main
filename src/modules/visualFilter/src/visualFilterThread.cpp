@@ -116,8 +116,8 @@ void visualFilterThread::run() {
             //edgesExtract();
             //sending the edge image on the outport
                  
-            if((redPlane!=0)&&(imagePortOut.getOutputCount())) {
-                imagePortOut.prepare() =*(redPlane);
+            if((edges!=0)&&(imagePortOut.getOutputCount())) {
+                imagePortOut.prepare() =*(edges);
                 imagePortOut.write();
             }
             if((redGreen!=0)&&(rgPort.getOutputCount())) {
