@@ -318,7 +318,7 @@ bool WatershedModule::close() {
     */
     port_Blobs.close(); //
     
-    closePorts();
+    //closePorts();
 
         
     return true;
@@ -1189,7 +1189,7 @@ static void updateStatusbar (GtkStatusbar  *statusbar)
     searchBY=((wModule->targetBLUE-addRG+255)/510)*255;
     wModule->searchBY=searchBY;
 
-    msg = g_strdup_printf ("%s - %.1f fps    r:%f;g:%f;b:%f     RG:%d;GR:%d;BY:%d","WatershedModule", fps, 
+    msg = g_strdup_printf ("r:%f;g:%f;b:%f     RG:%d;GR:%d;BY:%d", 
         wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
     //printf("r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f",wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
 
@@ -1578,7 +1578,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     //gtk_init (&argc, &argv);
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "saliencyBlobFinderInterface");
-    gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
+    gtk_window_set_default_size(GTK_WINDOW (window), 320, 500); 
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
     g_signal_connect (G_OBJECT (window), "destroy",
                       G_CALLBACK (cleanExit),
@@ -1600,17 +1600,18 @@ GtkWidget* WatershedModule::createMainWindow(void)
     menubar = createMenubar();
     gtk_box_pack_start (GTK_BOX (box), menubar, FALSE, TRUE, 0); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
     //gtk_widget_size_request(menubar, &actualSize);
-    // Drawing Area : here the image will be drawed
-    da = gtk_drawing_area_new ();
     
-    g_signal_connect (da, "expose_event", G_CALLBACK (expose_CB), NULL);
+    // Drawing Area : here the image will be drawed
+    //da = gtk_drawing_area_new ();
+    //g_signal_connect (da, "expose_event", G_CALLBACK (expose_CB), NULL);
     /*if (_options.outputEnabled == 1)
         {
             g_signal_connect (da, "button_press_event", G_CALLBACK (clickDA_CB), NULL);
             // Ask to receive events the drawing area doesn't normally subscribe to
             gtk_widget_set_events (da, gtk_widget_get_events (da) | GDK_BUTTON_PRESS_MASK);
         }*/
-    gtk_box_pack_start(GTK_BOX(box), da, TRUE, TRUE, 0);
+    //gtk_box_pack_start(GTK_BOX(box), da, TRUE, TRUE, 0);
+
     //Toolbox area
     //creates the area as collection of port processes sequence
     box2 = gtk_vbox_new (FALSE, 0); // parameters (gboolean homogeneous_space, gint spacing);
@@ -1967,9 +1968,9 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);*/
 
-    label = gtk_label_new ("choose output:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
+    //label = gtk_label_new ("choose output:");
+    //gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
+    //gtk_widget_show (label);
 
 
     scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
@@ -1982,12 +1983,51 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
     //-----Check Buttons
     box4=  gtk_vbox_new (FALSE, 0);
-        gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
     //-----box4
     box4=  gtk_vbox_new (FALSE, 0);
-    
+
+    label = gtk_label_new ("1channel output:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+    GtkWidget *buttonradio;
+    GSList *group;
+
+    buttonradio = gtk_radio_button_new_with_label (NULL, "Watershed-->");
+    g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed");
+    gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
+    gtk_widget_show (buttonradio);
+    group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
+
+    buttonradio = gtk_radio_button_new_with_label(group, "Tagged-->");
+    g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonradio), TRUE);
+    gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
+    gtk_widget_show (buttonradio);
+    group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
+    buttonradio = gtk_radio_button_new_with_label(group, "ContrastLP-->");
+    g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonradio), TRUE);
+    gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
+    gtk_widget_show (buttonradio);
+    group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
+    buttonradio = gtk_radio_button_new_with_label(group, "FoveaBlob-->");
+    g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FoveaBlob");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonradio), TRUE);
+    gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
+    gtk_widget_show (buttonradio);
+    group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
+    buttonradio = gtk_radio_button_new_with_label(group, "MaxSaliencyBlob-->");
+    g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MaxSaliencyBlob");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonradio), TRUE);
+    gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
+    gtk_widget_show (buttonradio);
+    group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
+
+/*
     // A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Watershed-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
@@ -2001,14 +2041,6 @@ GtkWidget* WatershedModule::createMainWindow(void)
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
-
-
-    // A checkbutton to control whether the value is displayed or not
-    /*buttonCheck = gtk_check_button_new_with_label("ContrastLP-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);*/
 
     // A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP-->");
@@ -2038,11 +2070,55 @@ GtkWidget* WatershedModule::createMainWindow(void)
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MaxSaliencyBlob");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
+    */
 
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
     //---box 4
+
+
+    box4=  gtk_vbox_new (FALSE, 0);
+
+    label = gtk_label_new ("3channels output:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);    
+
+    //GtkWidget *buttonradio;
+    //GSList *group;
+
+    buttonradio = gtk_radio_button_new_with_label (NULL, "MeanColoursLP-->");
+    g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColourLP");
+    gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
+    gtk_widget_show (buttonradio);
+    group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
+
+    buttonradio = gtk_radio_button_new_with_label(group, "none-->");
+    g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "none");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonradio), TRUE);
+    gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
+    gtk_widget_show (buttonradio);
+    group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
+
+    
+    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    gtk_widget_show (box4);
+    //---box 4
+
+/*
+    // A checkbutton to control whether the value is displayed or not
+    buttonCheck = gtk_check_button_new_with_label("Watershed-->");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed");
+    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
+    gtk_widget_show (buttonCheck);
+    
+    // A checkbutton to control whether the value is displayed or not
+    buttonCheck = gtk_check_button_new_with_label("Tagged-->");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged");
+    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
+    gtk_widget_show (buttonCheck);
 
     //-------run button
     
