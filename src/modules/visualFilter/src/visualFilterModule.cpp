@@ -143,21 +143,17 @@ bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {
 
 bool visualFilterModule::interruptModule()
 {
-   
-   handlerPort.interrupt();
-
-   return true;
+    handlerPort.interrupt();
+    return true;
 }
 
 
 bool visualFilterModule::close()
 {
-  
-   handlerPort.close();
-
-   /* stop the thread */
-   vfThread->stop();
-   return true;
+    handlerPort.close();
+    /* stop the thread */
+    vfThread->stop();
+    return true;
 }
 
 

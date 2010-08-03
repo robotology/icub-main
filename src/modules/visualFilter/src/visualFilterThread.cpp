@@ -109,11 +109,11 @@ void visualFilterThread::run() {
             //extracting RGB and Y planes
             extractPlanes();
             //gaussing filtering of the of RGB and Y
-            //filtering();
+            filtering();
             //colourOpponency map construction
-            //colourOpponency();
+            colourOpponency();
             //applying sobel operators on the colourOpponency maps and combining via maximisation of the 3 edges
-            //edgesExtract();
+            edgesExtract();
             //sending the edge image on the outport
                  
             if((edges!=0)&&(imagePortOut.getOutputCount())) {
@@ -373,6 +373,7 @@ void visualFilterThread::edgesExtract() {
 
 void visualFilterThread::threadRelease() {
     /* for example, delete dynamically created data-structures */
+    /*
     delete redPlane;
     delete redPlane2;
     delete redPlane3;
@@ -404,20 +405,23 @@ void visualFilterThread::threadRelease() {
     delete redGreenEdgesVert;
     delete greenRedEdgesVert;
     delete blueYellowEdgesVert;
+    */
 }
 
 void visualFilterThread::onStop() {
+    
     imagePortIn.interrupt();
     imagePortOut.interrupt();
     rgPort.interrupt();
     grPort.interrupt();
     byPort.interrupt();
-    imagePortIn.close();
+    
     imagePortOut.close();
     imagePortExt.close();
     rgPort.close();
     grPort.close();
     byPort.close();
+    imagePortIn.close();
 }
 
 
