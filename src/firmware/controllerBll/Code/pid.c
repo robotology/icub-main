@@ -444,20 +444,7 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 
 		
 	//BEWARE: @@@ THIS ovverrides the position error with the torque error
-	_error[j]=_error_torque[j];
-			
-	#ifndef IDENTIF
-/*	if (_error[j]>-1000 && _error[j]<1000)		
-	{
-		temp2=_error[j];
-		temp=(float)(__abs(_error[j]));
-		temp=temp/1000.0f;
-		temp2*=temp;
-		_error[j]=temp2;
-		//_error[j]=0;
-	}
-*/
-	#endif
+	_error[j]=_error_torque[j];			
 			
 	/* Proportional */
 	ProportionalPortion = ((Int32) _error_torque[j]) * ((Int32)_kp_torque[j]);
