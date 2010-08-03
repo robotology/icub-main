@@ -76,7 +76,7 @@ class WatershedOperator {
     ImageOf<PixelInt> downPos2;
     ImageOf<PixelInt> downPos;
     ImageOf<PixelMono> tmp;
-    IplImage *tmpMsk;
+    //IplImage *tmpMsk;
     /**
     * reference to the colour quantizator
     */
