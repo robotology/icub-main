@@ -172,7 +172,7 @@ public:
 	short _axisStatus;
 	char  _canStatus;
 	char  _boardStatus;
-	short  _controlmodeStatus;
+	char  _controlmodeStatus;
     double _update_e;
 
     // msg 4
@@ -2111,7 +2111,7 @@ void CanBusMotionControl::handleBroadcasts()
 					r._bcastRecvBuffer[j]._canStatus= *((char *)(data+4));
 					r._bcastRecvBuffer[j]._boardStatus= *((char *)(data+5));
                     r._bcastRecvBuffer[j]._update_e = before;
-					r._bcastRecvBuffer[j]._controlmodeStatus=*((short *)(data+1));
+					r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+1));
                     r._bcastRecvBuffer[j]._address=addr;
                     r._bcastRecvBuffer[j]._canTxError+=*((char *) (data+6));
                     r._bcastRecvBuffer[j]._canRxError+=*((char *) (data+7));                                    
@@ -2151,7 +2151,7 @@ void CanBusMotionControl::handleBroadcasts()
                         r._bcastRecvBuffer[j]._address=addr;
 						r._bcastRecvBuffer[j]._axisStatus= *((short *)(data+2));
                         r._bcastRecvBuffer[j]._update_e = before;	
-						r._bcastRecvBuffer[j]._controlmodeStatus=*((short *)(data+3));
+						r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+3));
                         // r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
 					    if (r._bcastRecvBuffer[j].isOverCurrent()) printf ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
                         if (r._bcastRecvBuffer[j].isFaultUndervoltage()) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
