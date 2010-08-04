@@ -35,10 +35,17 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/output3View --x 0 --y 1200 --synch</parameters>
+		<parameters>--name /icub/left_cam/output3View --x 600 --y 600 --synch</parameters>
 		<tag>blobFinderOut3Left</tag>
 		<node>/console</node>
 	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /icub/left_cam/checkView --x 1200 --y 600 --synch</parameters>
+		<tag>blobFinderCheck</tag>
+		<node>/console</node>
+	</module>
+	
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
 		<to>/visualFilter/icub/left_cam/image:i</to>
@@ -72,6 +79,11 @@
 	<connection>
       	<from>/blobFinder/icub/left_cam/imageC3:o</from>
 		<to>/icub/left_cam/output3View</to>
+		<protocol>udp</protocol>
+	</connection>
+	<connection>
+      	<from>/blobFinder/icub/left_cam/check:o</from>
+		<to>/icub/left_cam/checkView</to>
 		<protocol>udp</protocol>
 	</connection>
 	<connection>
