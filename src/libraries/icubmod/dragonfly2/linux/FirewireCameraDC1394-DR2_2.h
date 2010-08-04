@@ -13,6 +13,8 @@
 //  L      I  N  NN  U   U   X X
 //  LLLLL  I  N   N   UUU   X   X
 
+// Added modes 3,4,5 by Alexis Maldonado and Federico Ruiz Ugalde
+
 #ifndef __FIREWIRE_CAMERA_DR2_H__
 #define __FIREWIRE_CAMERA_DR2_H__
 
@@ -31,6 +33,8 @@
 #define DR_RGB_HALF_RES     1 // 320 x 240 RGB8
 #define DR_RGB_FULL_RES     2 // 640 x 480 RGB8
 #define DR_BAYER_FULL_RES   3 // 640 x 480 RAW + software Bayer decoding
+#define DR_BAYER_RAW16_FULL_RES   4 // 640 x 480 RAW16 + software Bayer decoding VNG
+#define DR_YUV422_FULL_RES   5 // 640 x 480 YUV422 FORMAT7 0 1.5bytes/pixel
 
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
@@ -78,6 +82,7 @@ protected:
     dc1394_t *m_dc1394_handle;
     dc1394camera_list_t *m_pCameraList;
     dc1394video_frame_t m_ConvFrame;
+    dc1394video_frame_t m_ConvFrame_tmp;
 
     int m_nNumCameras;
     int m_nActiveCams;

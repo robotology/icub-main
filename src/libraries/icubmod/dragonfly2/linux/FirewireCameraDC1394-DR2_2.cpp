@@ -104,7 +104,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     m_dc1394_handle=NULL;
     m_nNumCameras=0;
     m_nInvalidFrames=0;
-    m_ConvFrame.image=new unsigned char[648*488*3];
+    m_ConvFrame.image=new unsigned char[648*488*3*2];
+    m_ConvFrame_tmp.image=new unsigned char[648*488*2];
 
     if (!(m_dc1394_handle=dc1394_new()))
     {
@@ -185,6 +186,18 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
         SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW8,44);
+        break;
+
+    case DR_BAYER_RAW16_FULL_RES:
+        if (!size_x) { size_x=640; }
+        if (!size_y) { size_y=480; }
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW16,44);
+        break;
+
+    case DR_YUV422_FULL_RES:
+        if (!size_x) { size_x=640; }
+        if (!size_y) { size_y=480; }
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_YUV422,44);
         break;
 
     default:
@@ -344,6 +357,12 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
         buffDim=xdim*ydim*2;
         maxFramerate=DC1394_FRAMERATE_60;
         break;
+    case DC1394_VIDEO_MODE_FORMAT7_0: 
+        xdim=640; 
+        ydim=480; 
+        buffDim=xdim*ydim*3;
+        maxFramerate=DC1394_FRAMERATE_60;
+        break;
     default: return false;
     }
 
@@ -358,6 +377,7 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
     // calculate maximum allowed framerate at given image format
     static const double twoCams=0.5; // only half bandwith available with two cams
     double fpsMax=twoCams*double(busSpeed)/double(buffDim);
+    printf("fpsMax = %f\n",fpsMax);
 
     dc1394framerate_t framerate;
     
@@ -644,6 +664,23 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
 	{
 		dc1394_debayer_frames(m_pFrame,&m_ConvFrame,DC1394_BAYER_METHOD_BILINEAR);
 		memcpy(pBuffer,m_ConvFrame.image,m_ConvFrame.size[0]*m_ConvFrame.size[1]*3);
+	}
+	else if (m_pFrame->color_coding==DC1394_COLOR_CODING_RAW16)
+	{
+		dc1394_debayer_frames(m_pFrame,&m_ConvFrame,DC1394_BAYER_METHOD_BILINEAR);
+		m_ConvFrame_tmp.size[0]=m_pFrame->size[0];
+		m_ConvFrame_tmp.size[1]=m_pFrame->size[1];
+		m_ConvFrame_tmp.position[0]=0;
+		m_ConvFrame_tmp.position[1]=0;
+		m_ConvFrame_tmp.color_coding=DC1394_COLOR_CODING_RGB8;
+		m_ConvFrame_tmp.data_depth=24;
+		m_ConvFrame_tmp.image_bytes=m_ConvFrame_tmp.total_bytes=3*m_pFrame->size[0]*m_pFrame->size[1];
+		m_ConvFrame_tmp.padding_bytes=0;
+		m_ConvFrame_tmp.stride=3*m_pFrame->size[0];
+		m_ConvFrame_tmp.data_in_padding=DC1394_FALSE;
+		m_ConvFrame_tmp.little_endian=m_pFrame->little_endian;
+		dc1394_convert_frames(&m_ConvFrame,&m_ConvFrame_tmp);
+		memcpy(pBuffer,m_ConvFrame_tmp.image,m_ConvFrame_tmp.size[0]*m_ConvFrame_tmp.size[1]*3);
 	}
 	else
 	{
