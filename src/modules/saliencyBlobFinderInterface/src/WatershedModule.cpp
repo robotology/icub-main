@@ -269,9 +269,9 @@ bool WatershedModule::threadInit(){
 void WatershedModule::run(){
     printf("starting the gtk_main \n");
     gtk_main();
-    
     gtk_widget_destroy(mainWindow);
-    this->onStop();
+    this->interrupt();
+    this->close();
 //    bfModule->close();
     //this->close();
     //yarp::os::Network::fini();
@@ -292,41 +292,41 @@ bool WatershedModule::close() {
     /**
     * a port for reading the edge image 
     */
-        port_in.close(); // 
+    port_in.close(); // 
     /**
     * a port for reading the input Image of the Red Plane
     */
-        portRedPlane.close(); // 
+    portRedPlane.close(); // 
     /**
     * a port for reading the input Image of the Green Plane
     */
-        portGreenPlane.close();
+    portGreenPlane.close();
     /**
     * a port for reading the input Image of the Blue Plane 
     */
-        portBluePlane.close(); 
+    portBluePlane.close(); 
     /**
     * a port for reading the R+G- colour opponency Image
     */
-        portRG.close(); // 
+    portRG.close(); // 
     /**
     * a port for reading the G+R- colour opponency Image
     */
-        portGR.close(); // 
+    portGR.close(); // 
     /**
     * a port for reading the B+Y- colour opponency Image 
     */
-        portBY.close(); // 
+    portBY.close(); // 
     /**
     * port where the processed image is buffered out
     */
-        port_out.close(); //
+    port_out.close(); //
     /**
     * port where the image of the found blob is put
     */
     port_Blobs.close(); //
     
-    //closePorts();
+    closePorts();
 
         
     return true;
