@@ -103,7 +103,7 @@ static blobFinderModule* bfModule;
 #define _tagged (*(ptr_tagged))
 #define _semaphore (*(ptr_semaphore))
 
-WatershedModule::WatershedModule():RateThread(THREADRATE){
+WatershedModule::WatershedModule() { //:RateThread(THREADRATE){
     ct=0;
 
     message=new std::string();
@@ -268,15 +268,23 @@ bool WatershedModule::threadInit(){
 
 void WatershedModule::run(){
     printf("starting the gtk_main \n");
-    gtk_main ();
+    gtk_main();
+    
     gtk_widget_destroy(mainWindow);
-    bfModule->close();
-    this->close();
-    yarp::os::Network::fini();
+    this->onStop();
+//    bfModule->close();
+    //this->close();
+    //yarp::os::Network::fini();
 }
 
 void WatershedModule::threadRelease(){
-    close();
+
+}
+
+void WatershedModule::onStop(){
+    gtk_main_quit();
+    this->interrupt();
+    this->close();
 }
 
 bool WatershedModule::close() {
@@ -372,15 +380,13 @@ void WatershedModule::setModule(void* refModule){
 
 bool getPlanes(){
     bool ret = false;
-    ret = _imgRecvRed.Update();
-    if (ret == false){
-        return false;
-    }
-    ret = _imgRecvGreen.Update();
-    ret = _imgRecvBlue.Update();
+    //ret = _imgRecvRed.Update();
+    
+    //ret = _imgRecvGreen.Update();
+    //ret = _imgRecvBlue.Update();
 
     
-
+    /*
     _semaphore.wait();
     ret = _imgRecvRed.GetLastImage(&_inputImgRed);
     wModule->ptr_inputRed=&_inputImgRed;
@@ -393,6 +399,7 @@ bool getPlanes(){
     ret = _imgRecvBlue.GetLastImage(&_inputImgBlue);
     wModule->ptr_inputBlue=&_inputImgBlue;
     _semaphore.post();
+    */
     
     //printf("GetImage: out of the semaphore \n");
     return ret;
@@ -400,14 +407,14 @@ bool getPlanes(){
 
 bool getOpponencies(){
     bool ret = false;
+    /*
     ret = _imgRecvRG.Update();
     ret = _imgRecvGR.Update();
     ret = _imgRecvBY.Update();
+    */
 
-    if (ret == false){
-        return false;
-    }
-
+    
+    /*
     _semaphore.wait();
     ret = _imgRecvGR.GetLastImage(&_inputImgGR);
     wModule->ptr_inputGR=&_inputImgGR;
@@ -421,6 +428,7 @@ bool getOpponencies(){
     wModule->ptr_inputBY=&_inputImgBY;
     _semaphore.post();
     //printf("GetImage: out of the semaphore \n");
+    */
     return ret;
 }
 /**
@@ -1037,7 +1045,7 @@ bool WatershedModule::outPorts(){
 }
 
 bool getImage(){
-    bool ret = false;
+    /*bool ret = false;
     ret = _imgRecv.Update();
 
     if (ret == false){
@@ -1048,8 +1056,8 @@ bool getImage(){
     ret = _imgRecv.GetLastImage(&_inputImg);
     _semaphore.post();
     
-    //printf("GetImage: out of the semaphore \n");
-    return ret;
+    //printf("GetImage: out of the semaphore \n");*/
+    return false;
 }
 
 
@@ -1305,13 +1313,13 @@ GtkWidget* WatershedModule::createMenubar(void)
 
 
 void WatershedModule::createObjects() {
-    ptr_imgRecv = new YARPImgRecv;
+    /*ptr_imgRecv = new YARPImgRecv;
     ptr_imgRecvRed = new YARPImgRecv;
     ptr_imgRecvGreen = new YARPImgRecv;
     ptr_imgRecvBlue = new YARPImgRecv;
     ptr_imgRecvRG = new YARPImgRecv;
     ptr_imgRecvGR = new YARPImgRecv;
-    ptr_imgRecvBY = new YARPImgRecv;
+    ptr_imgRecvBY = new YARPImgRecv;*/
 
     
 
@@ -1480,15 +1488,15 @@ bool WatershedModule::closePorts(){
     // Registering Port(s)
     //reduce verbosity --paulfitz
     //printf("Closing port %s on network %s...\n", getName("in"),"default");
-    ret = _imgRecv.Disconnect();
+    //ret = _imgRecv.Disconnect();
     //--------
-    ret = _imgRecvRed.Disconnect(); //("/rea/Watershed/inRed","default");
-    ret = _imgRecvGreen.Disconnect();//("/rea/Watershed/inGreen","default");
-    ret = _imgRecvBlue.Disconnect(); //("/rea/Watershed/inBlue","default");
+    //ret = _imgRecvRed.Disconnect(); //("/rea/Watershed/inRed","default");
+    //ret = _imgRecvGreen.Disconnect();//("/rea/Watershed/inGreen","default");
+    //ret = _imgRecvBlue.Disconnect(); //("/rea/Watershed/inBlue","default");
     //--------
-    ret = _imgRecvRG.Disconnect();//("/rea/Watershed/inRG","default");
-    ret = _imgRecvGR.Disconnect();//("/rea/Watershed/inGR","default");
-    ret = _imgRecvBY.Disconnect();//("/rea/Watershed/inBY","default");
+    //ret = _imgRecvRG.Disconnect();//("/rea/Watershed/inRG","default");
+    //ret = _imgRecvGR.Disconnect();//("/rea/Watershed/inGR","default");
+    //ret = _imgRecvBY.Disconnect();//("/rea/Watershed/inBY","default");
     //-------------
     if (true)
         {		
@@ -1508,7 +1516,7 @@ bool WatershedModule::closePorts(){
 
 void WatershedModule::setUp()
 {
-    if (true)
+    /*if (true)
         _imgRecv.SetLogopolar(false);
     else
         _imgRecv.SetLogopolar(true);
@@ -1517,6 +1525,7 @@ void WatershedModule::setUp()
         _imgRecv.SetFovea(false);
     else
         _imgRecv.SetFovea(true);
+        */
     
     if (openPorts() == false)
         return;
@@ -2087,7 +2096,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     //GtkWidget *buttonradio;
     //GSList *group;
 
-    buttonradio = gtk_radio_button_new_with_label (NULL, "MeanColoursLP-->");
+    buttonradio = gtk_radio_button_new_with_label (group, "MeanColoursLP-->");
     g_signal_connect (G_OBJECT (buttonradio), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColourLP");
     gtk_box_pack_start (GTK_BOX (box4), buttonradio, TRUE, TRUE, 0);
     gtk_widget_show (buttonradio);

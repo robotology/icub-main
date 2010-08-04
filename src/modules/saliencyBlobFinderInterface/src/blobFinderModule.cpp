@@ -33,7 +33,7 @@ bool blobFinderModule::open(Searchable& config) {
 
 bool blobFinderModule::close(){
     cmdPort.close();
-    gui->close();
+    gui->stop();
     return true;
 }
 
