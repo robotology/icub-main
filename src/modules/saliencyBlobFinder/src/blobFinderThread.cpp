@@ -269,9 +269,11 @@ void blobFinderThread::reinitialise(int width, int height) {
     }
 
     float scaleFactor = (float) RCcomputeScaleFactor (nEcc,nAng, 200, 200, 1.0 );
-    RCbuildL2CMap (nEcc, nAng, 200, 200, 1,scaleFactor , 0, 0, ELLIPTICAL, "./");
+    string path("./");
+    char* ppath=(char*)path.c_str();
+    RCbuildL2CMap (nEcc, nAng, 200, 200, 1,scaleFactor , 0, 0, ELLIPTICAL, ppath);
     //allocate logpolar to cartesian look-up table
-    RCallocateL2CTable (l2cTable, 200,200, "./");
+    RCallocateL2CTable (l2cTable, 200,200, ppath);
 }
 
 
