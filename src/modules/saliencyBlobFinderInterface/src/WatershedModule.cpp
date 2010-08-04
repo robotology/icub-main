@@ -1344,11 +1344,10 @@ ConstString WatershedModule::getName(ConstString suffix){
 
 bool WatershedModule::openPorts(){
     bool ret = false;
-    //int res = 0;
-    // Registering Port(s)
-    //reduce verbosity --paulfitz
+    
+    /*
     printf("Registering port %s on network %s...\n",  getName("image:i").c_str(),"default");
-    ret = _imgRecv.Connect((char*)getName("image:i").c_str(),"default");
+    ret = _imgRecv.Connect(getName("image:i").c_str(),"default");
     if (ret == true)
         {
             printf("Port registration succeed!\n");
@@ -1426,6 +1425,7 @@ bool WatershedModule::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
+        */
     //-------------
     if (true)
         {		
