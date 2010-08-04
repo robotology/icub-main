@@ -122,22 +122,36 @@ extern char    _additional_info [32];
 #if VERSION == 0x0152 
 	#define CAN_ENABLE_PWM_PAD_HANDLER(x) \
 	{ \
-		if (_pad_enabled[0] == false &&	_pad_enabled[1] == false) \
+		if (_calibrated[0] == true && _calibrated[1] == true) \
 		{ \
-			PWM_outputPadEnable(0); \
-			PWM_outputPadEnable(1); \
-			_general_board_error = ERROR_NONE; \
-			can_printf("PWM ENA COUPLED:0 & 1");\
+			if (_pad_enabled[0] == false &&	_pad_enabled[1] == false) \
+			{ \
+				PWM_outputPadEnable(0); \
+				PWM_outputPadEnable(1); \
+				_general_board_error = ERROR_NONE; \
+				can_printf("PWM ENA COUPLED:0 & 1");\
+			} \
+		} \
+		else \
+		{ \
+			can_printf("calib failed 0&1"); \
 		} \
 	}
 #else
 	#define CAN_ENABLE_PWM_PAD_HANDLER(x) \
 	{ \
-		PWM_outputPadEnable(axis); \
-		_control_mode[axis] = MODE_IDLE; \
-		_general_board_error = ERROR_NONE; \
-		can_printf("PWM ENA:%d",axis);\
-	}
+		if (_calibrated[axis] == true) \
+		{ \
+			PWM_outputPadEnable(axis); \
+			_control_mode[axis] = MODE_IDLE; \
+			_general_board_error = ERROR_NONE; \
+			can_printf("PWM ENA:%d",axis);\
+		} \
+		else \
+		{ \
+			can_printf("calib failed:%d",axis); \
+		} \
+	} 
 #endif
 
 //-------------------------------------------------------------------
