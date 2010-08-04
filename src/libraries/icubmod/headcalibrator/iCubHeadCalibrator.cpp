@@ -235,7 +235,7 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
 	int secondSetOfJoints[] = {1, 3};
 	for (k =0; k < 6; k++)
         if (firstSetOfJoints[k]<nj)
-            calibrateJoint(firstSetOfJoints[k]);
+            calibrateJoint(firstSetOfJoints[k]); //LATER: calibrateJoint will be removed after enableAmp
 	for (k =0; k < 6; k++)
     {
         if (firstSetOfJoints[k]<nj)
@@ -265,7 +265,7 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
     /////////////////////////////////////
 	for (k =0; k < 2; k++)
         if (secondSetOfJoints[k]<nj)
-            calibrateJoint(secondSetOfJoints[k]);
+            calibrateJoint(secondSetOfJoints[k]); //LATER: calibrateJoint will be removed after enableAmp
 	for (k =0; k < 2; k++)
     {
         if (secondSetOfJoints[k]<nj)
