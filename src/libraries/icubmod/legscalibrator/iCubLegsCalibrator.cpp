@@ -145,7 +145,11 @@ bool iCubLegsCalibrator::calibrate(DeviceDriver *dd)
     if (!ret)
         return false;
 
-    int k;
+    int k=0;
+	int j=0;
+
+	for (j=0; j < nj; j++)
+		calibrateJoint(j);
 
     for(k = 0; k < nj; k++) 
     {
@@ -155,9 +159,6 @@ bool iCubLegsCalibrator::calibrate(DeviceDriver *dd)
 
     ret = true;
     bool x;
-	int j;
-		for (j=0; j < nj; j++)
-			calibrateJoint(j);
 
 		for (j =0; j < nj; j++)
 		{
