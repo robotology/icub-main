@@ -112,7 +112,6 @@ void main(void)
 	byte tailVel=0; //tail is (head+1)%winSize
 	byte winSizePos=35;
 	byte winSizeVel=55;
-	UInt16 calibCount = 0;
 	//Int32 windSizePos=35;
 	//Int32 windSizeVel=50;
 	Int32 positionWindow[35][JN]; //max window size: 254
@@ -568,15 +567,6 @@ void main(void)
 		{
 			if (_pad_enabled[i] == false) 
 			{
-				_control_mode[i] = MODE_IDLE;
-			}
-			else if (_calibrated[i] == false)
-			{
-				if (calibCount++>=500)
-				{
-					can_printf("calib failed:%d",i);	
-					calibCount=0;
-				}
 				_control_mode[i] = MODE_IDLE;
 			}
 			else	
