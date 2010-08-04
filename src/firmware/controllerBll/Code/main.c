@@ -447,7 +447,12 @@ void main(void)
 
 //******************************************* COMPUTES CONTROLS *****************************/
 		
-		for (i=0; i<JN; i++) _bfc_PWMoutput[i] = PWMoutput[i] = compute_pwm(i);
+		for (i=0; i<JN; i++) 
+		{
+			_bfc_PWMoutput[i] = PWMoutput[i] = compute_pwm(i);	
+			if      (_bfc_PWMoutput[i] < -MAX_DUTY) _bfc_PWMoutput[i]=-MAX_DUTY;
+			else if (_bfc_PWMoutput[i] > MAX_DUTY)  _bfc_PWMoutput[i]= MAX_DUTY;
+		}
 
 //		decouple PWM	
 #ifdef USE_NEW_DECOUPLING
