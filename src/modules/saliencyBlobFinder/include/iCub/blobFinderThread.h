@@ -159,8 +159,9 @@ public:
     
     /**
     * function the applies the watershed (rain falling) algorithm
+    * @param edgesImage image representing the edges extracted from colourOpponency maps
     */
-    void rain();
+    void rain(ImageOf<PixelMono>* edgesImage);
     
     /**
     * function that resets all the flags for the desired output

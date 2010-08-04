@@ -426,8 +426,8 @@ void blobFinderThread::run() {
             if(!freetorun)
                 return;
 
-            /*meanColour_flag=false;
-            blobCataloged_flag=false;*/
+            //meanColour_flag=false;
+            //blobCataloged_flag=true;
 
             bool redPlane_flag=false;
             bool greenPlane_flag=false;
@@ -444,17 +444,10 @@ void blobFinderThread::run() {
             //_outputImage=wOperator->getPlane(ptr_inputImg);
             tmpImage=edgesPort.read(false);
             if(tmpImage!=NULL)
-                ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),_outputImage->getRawImage(), _outputImage->getRowSize(),srcsize);
+                ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),edges->getRawImage(), edges->getRowSize(),srcsize);
             //rain function uses as source image the _outputImage
-            rain();
+            rain(edges);
 
-            /*
-            blobCataloged_flag=true;
-            redPlane_flag=true;
-            maxSaliencyBlob_flag=false;
-            contrastLP_flag=false;
-            */
-           
 
             if(redPlane_flag){
                 ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
@@ -494,17 +487,17 @@ void blobFinderThread::run() {
                 //printf("dimension of the tagged image %d,%d \n", this->tagged->width(), this->tagged->height());
                 for(int y=0; y<this->tagged->height(); y++){
                     for (int x=0; x<this->tagged->width(); x++){
-                        _outputImage->pixel(x,y)=(int)((this->max_tag/255)*this->tagged->pixel(x,y));
+                        int imgvalue=*tagged->getPixelAddress(x,y);
+                        int value=(int)ceil(((double)max_tag/255)*imgvalue);
+                        _outputImage->pixel(x,y)=value;
                     }
                 }
                 conversion=true;
             }
             else if(this->blobList_flag){
                 this->drawAllBlobs(true);
-                if(true){
-                    ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),320,srcsize);
-                   conversion=true;
-                }
+                ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
             }
             else if(this->maxSaliencyBlob_flag){
                 this->drawAllBlobs(false);
@@ -592,53 +585,11 @@ void blobFinderThread::run() {
                 conversion=true;
             }
 
-            //-------
-            /*
-            if(conversion){
-                int psb;
-                int width=this->width;
-                int height=this->height;
-                
-                //Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
-                //Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
-                //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
-                //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
-                //two copies in order to have 2 conversions
-                //the first transform the yarp mono into a 4-channel image
-                ippiCopy_8u_C1R(_outputImage->getRawImage(),_outputImage->getRowSize(),image_out->getRawImage(),image_out->getRowSize(),srcsize);
-
-                //ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
-                //ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
-                //ippiCopy_8u_C1R(im_out, width,im_tmp2,psb,srcsize);
-
-                //im_tmp0=im_out;
-                //im_tmp1=im_out;
-                //im_tmp2=im_out;
-
-                //Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
-
-                //Ipp8u* im_tmp[3]={im_out,im_out,im_out};
-                //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
-                //the second transforms the 4-channel image into colorImage for yarp
-                //ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
-                //ippiFree(im_out);
-                //printf("freeing im_tmp0  \n");	
-                //ippiFree(im_tmp0);
-                //printf("freeing im_tmp1 \n");	
-                //ippiFree(im_tmp1);
-                //printf("freeing im_tmp2  \n");	
-                //ippiFree(im_tmp2);
-                //printf("freeing ended  \n");	
-            }
-            else
-                ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
-            */
-
             outPorts();
 
             if(checkPort.getOutputCount()){
                 //ippiRShiftC_8u_
-                if(maxSaliencyBlob_flag){
+                if((maxSaliencyBlob_flag)||(contrastLP_flag)){
                     Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
                     ippiCopy_8u_P3C3R(im_tmp,_outputImage->getRowSize(),img->getRawImage(),img->getRowSize(),srcsize);
                     ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),img->getRawImage(),img->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
@@ -982,8 +933,8 @@ bool blobFinderThread::outPorts(){
 /**
 * applies the watershed (rain falling) algorithm
 */
-void blobFinderThread::rain(){
-    max_tag=wOperator->apply(*_outputImage,_tagged);
+void blobFinderThread::rain(ImageOf<PixelMono>* edgesImage){
+    max_tag=wOperator->apply(*edgesImage,_tagged);
     //printf("MAX_TAG=%d",wModule->max_tag);
     
     
@@ -1096,15 +1047,15 @@ void blobFinderThread::drawAllBlobs(bool stable)
     PixelMono searchTD=0;
     PixelMono pixelRG=0,pixelGR=0,pixelBY=0;
     searchRG=((targetRED-targetGREEN+255)/510)*255;
-    pixelRG=255-searchRG;
-    //pixelRG=targetRED;
+    //pixelRG=255-searchRG;
+    pixelRG=targetRED;
     searchGR=((targetGREEN-targetRED+255)/510)*255;
-    pixelGR=255-searchGR;
-    //pixelGR=targetGREEN;
+    //pixelGR=255-searchGR;
+    pixelGR=targetGREEN;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
     searchBY=((targetBLUE-addRG+255)/510)*255; 
-    pixelBY=255-searchBY;
-    //pixelBY=targetBLUE;
+    //pixelBY=255-searchBY;
+    pixelBY=targetBLUE;
     //printf("%d,%d,%d \n",pixelRG, pixelGR,pixelBY);
 
     //int psb32s;

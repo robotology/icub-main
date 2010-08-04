@@ -21,7 +21,7 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
     blobCataloged_flag=false;
     foveaBlob_flag=false;
     colorVQ_flag=false;
-    maxSaliencyBlob_flag=false;
+    maxSaliencyBlob_flag=true;
     blobList_flag=false;
     tagged_flag=false;
     watershed_flag=false;
@@ -393,6 +393,15 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 if(0!=blobFinder){
                     this->blobFinder->resetFlags();
                     this->blobFinder->contrastLP_flag=true;
+                }
+                ok =true;
+            }
+                break;
+            case COMMAND_VOCAB_WAT:{
+                printf("image of the watershed \n");
+                if(0!=blobFinder){
+                    this->blobFinder->resetFlags();
+                    this->blobFinder->watershed_flag=true;
                 }
                 ok =true;
             }

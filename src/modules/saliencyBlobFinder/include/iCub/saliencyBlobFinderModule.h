@@ -44,6 +44,7 @@
 #define COMMAND_VOCAB_MAXSALIENCY VOCAB3('m','a','x')
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
 #define COMMAND_VOCAB_FOVEA VOCAB3('f','o','v')
+#define COMMAND_VOCAB_WAT VOCAB3('w','a','t')
 // other commands
 #define COMMAND_VOCAB_TCON VOCAB3('t','c','o') //time contant for the controlGaze2
 #define COMMAND_VOCAB_TCEN VOCAB3('t','c','e') //time constant for the iKinGazeCtrl
