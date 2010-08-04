@@ -4,20 +4,14 @@ SET(KEYWORD "saliencyBlobFinder")
 
 PROJECT(${KEYWORD})
 
-#FIND_PACKAGE(ICUB)
-#FIND_PACKAGE(YARP)
-#SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
-#FIND_PACKAGE(OpenCV REQUIRED)
-#FIND_PACKAGE(IPP REQUIRED)
-
-
 
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
     ${ICUB_INCLUDE_DIRS}
     ${YARP_INCLUDE_DIRS}
-    ${IPP_INCLUDE_DIRS}	 
+    ${IPP_INCLUDE_DIRS}
+    ${logPolar_INCLUDE_DIRS}
 )
 
 
@@ -38,6 +32,7 @@ IF (folder_source)
     TARGET_LINK_LIBRARIES( ${KEYWORD} 
       			${YARP_LIBRARIES}
 			${IPP_LIBRARIES}
+			logPolar
     )
 
 ELSE (folder_source)
