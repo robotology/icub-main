@@ -4,7 +4,6 @@
 #include "pid.h"
 #include "can1.h" 
 
-
 /***************************************************************************/
 /**
  * this function decouples encoder readings.
@@ -102,6 +101,10 @@ void decouple_positions(void)
 */
 #endif
 }
+
+#define a_coeff 1.6455F
+#define b_coeff 1.6455F
+#define t_coeff 0,6077F
 
 #ifndef USE_NEW_DECOUPLING
 /***************************************************************************/
@@ -472,9 +475,6 @@ void decouple_dutycycle(Int32 *pwm)
 /**
  * this function decouples PWM (new version joint version).
  ***************************************************************************/
-#define a_coeff 1.6455F
-#define b_coeff 1.6455F
-#define t_coeff 0,6077F
  
 void decouple_dutycycle_new_joint(Int32 *pwm)
 {
