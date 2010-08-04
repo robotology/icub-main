@@ -9,10 +9,13 @@
 //IPP include
 #include <ippi.h>
 
-//YARP include
+//YARP includes
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <time.h>
+
+//logPolar include
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -34,6 +37,7 @@ private:
     BufferedPort<ImageOf<PixelMono> > grPort; //port where the difference of gaussian G+R- is streamed
     BufferedPort<ImageOf<PixelMono> > byPort; //port where the difference of gaussian B+Y- of the image is streamed
     BufferedPort<ImageOf<PixelMono> > yellowPort; //port where the yellow plane of the image is streamed
+    BufferedPort<ImageOf<PixelRgb> > checkPort; //port where the remapped image is streamed
 
     ImageOf<PixelMono> *outContrastLP; //image result of the function outContrastLP
     ImageOf<PixelMono> *tmpImage; //buffer image for received image
@@ -57,6 +61,8 @@ private:
     char* blobList; //vector of boolean which tells whether there is a blob or not
     
     ImageOf<PixelRgb>* _outputImage3; //pointer to the 3 channels output image of the watershed algorithm
+    ImageOf<PixelRgb>* _outputImage3Merged; //pointer to the 3 channels output image plus the saliencymap
+    ImageOf<PixelRgb>* _outputImage3Cart; //pointer to the cartesian image of the saliency
     ImageOf<PixelMono> *_inputImgRGS; //input image of the opponency R+G-
     ImageOf<PixelMono> *_inputImgGRS; //input image of the opponency G+R-
     ImageOf<PixelMono> *_inputImgBYS; //input image of the opponency B+Y-
@@ -67,6 +73,8 @@ private:
     int searchRG; //R+G- value for the search
     int searchGR; //G+R- value for the search
     int searchBY; //B+Y- value for the search
+
+    lp2CartPixel *l2cTable; //look-up table for cartesian reconstruction
     
     
     double startTimer, endTimer;
@@ -77,12 +85,17 @@ private:
     * @param height height of the input image
     */
     void resizeImages(int width, int height);
+
     /**
     * function that extracts characteristics of all the blobs in the catalogue and save them
     * @param stable parameters that enable some lines of code for the stable version
     */
     void drawAllBlobs(bool stable);
     
+    /**
+    * function that free memory allocated for the look-up table
+    */
+    bool freeLookupTables();
 public:
     /**
     * default constructor

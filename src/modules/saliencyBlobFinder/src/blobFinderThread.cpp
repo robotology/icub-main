@@ -21,17 +21,46 @@ using namespace yarp::os;
 
 const int THREAD_RATE=500;
 
+bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,const yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp,lp2CartPixel *l2cTable) {
+    // adjust padding.
+    if (lp.getPadding() != 0) {
+        int i;
+        const int byte = lp.width() * sizeof(PixelRgb);
+        unsigned char *d = lp.getRawImage();
+        for (i = 1; i < lp.height(); i ++) {
+            unsigned char *s = (unsigned char *)lp.getRow(i);
+            memmove(d, s, byte);
+            d += byte;
+        }
+    }
+
+    // LATER: assert whether lp & cart are effectively of the correct size.
+    RCgetCartImg (cart.getRawImage(), lp.getRawImage(), l2cTable, cart.width() * cart.height());
+
+    // adjust padding.
+    if (cart.getPadding() != 0) {
+        const int byte = cart.width() * sizeof(PixelRgb);
+        int i;
+        for (i = cart.height()-1; i >= 1; i--) {
+            unsigned char *d = cart.getRow(i);
+            unsigned char *s = cart.getRawImage() + i*byte;
+            memmove(d, s, byte);
+        }
+    }
+    return true;
+}
+
 blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 {
     reinit_flag=false;
     interrupted_flag=false;
-
     ct=0;
     filterSpikes_flag=false;
     count=0;
-
     //inputImage_flag=false;
     freetorun=false;
+
+    l2cTable=0;
 
     /*meanColour_flag=true;
     contrastLP_flag=false;
@@ -64,6 +93,8 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
     //image_out=new ImageOf<PixelRgb>;
     _procImage=new ImageOf<PixelRgb>;
     _outputImage3=new ImageOf<PixelRgb>;
+    _outputImage3Merged=new ImageOf<PixelRgb>;
+    _outputImage3Cart=new ImageOf<PixelRgb>;
     _outputImage=new ImageOf<PixelMono>;
 
     ptr_inputImg=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image
@@ -111,13 +142,12 @@ blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
 {
     reinit_flag=false;
     interrupted_flag=false;
-
     ct=0;
     filterSpikes_flag=false;
     count=0;
-
-    //inputImage_flag=false;
     freetorun=false;
+
+    l2cTable=0;
 
     /*meanColour_flag=true;
     contrastLP_flag=false;
@@ -150,6 +180,8 @@ blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
     //image_out=new ImageOf<PixelRgb>;
     _procImage=new ImageOf<PixelRgb>;
     _outputImage3=new ImageOf<PixelRgb>;
+    _outputImage3Merged=new ImageOf<PixelRgb>;
+    _outputImage3Cart=new ImageOf<PixelRgb>;
     _outputImage=new ImageOf<PixelMono>;
 
     ptr_inputImg=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image
@@ -206,6 +238,12 @@ std::string blobFinderThread::getName(const char* p) {
     return str;
 }
 
+bool blobFinderThread::freeLookupTables() {
+        if (l2cTable)
+            RCdeAllocateL2CTable(l2cTable);
+        //l2cTable = 0;
+        return true;
+    }
 
 void blobFinderThread::reinitialise(int width, int height) {
     this->width=width;
@@ -217,6 +255,23 @@ void blobFinderThread::reinitialise(int width, int height) {
     image_out->resize(width,height);
     
     resizeImages(width,height);
+
+    //save look-up table to file
+    int nEcc,nAng;
+    nEcc=height;
+    nAng=width;
+
+    if (l2cTable == 0) {
+        l2cTable = new lp2CartPixel[width*height];
+        if (l2cTable == 0) {
+            fprintf(stderr, "logPolarLibrary: can't allocate l2c lookup tables, wrong size?\n");
+        }
+    }
+
+    float scaleFactor = (float) RCcomputeScaleFactor (nEcc,nAng, 200, 200, 1.0 );
+    RCbuildL2CMap (nEcc, nAng, 200, 200, 1,scaleFactor , 0, 0, ELLIPTICAL, "./");
+    //allocate logpolar to cartesian look-up table
+    RCallocateL2CTable (l2cTable, 200,200, "./");
 }
 
 
@@ -244,6 +299,8 @@ void blobFinderThread::resizeImages(int width, int height) {
     _procImage->resize(width,height);
     _outputImage->resize(width,height);
     _outputImage3->resize(width,height);
+    _outputImage3Merged->resize(width,height);
+    _outputImage3Cart->resize(200,200);
 
     //ptr_inputRed->resize(width,height);
     //ptr_inputGreen->resize(width,height);
@@ -284,6 +341,7 @@ bool blobFinderThread::threadInit(){
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     inputPort.open(getName("/image:i").c_str());
     edgesPort.open(getName("/edges:i").c_str());
+    checkPort.open(getName("/check:o").c_str());
 
     rgPort.open(getName("/rg:i").c_str());
     grPort.open(getName("/gr:i").c_str());
@@ -294,6 +352,8 @@ bool blobFinderThread::threadInit(){
     centroidPort.open(getName("/centroid:o").c_str());
     triangulationPort.open(getName("/triangulation:o").c_str());
     gazeControlPort.open(getName("/gazeControl:o").c_str());
+
+    
 
     return true;
 }
@@ -319,7 +379,7 @@ void blobFinderThread::interrupt(){
 
     inputPort.interrupt();//(getName("image:i"));
     edgesPort.interrupt();//getName(edges:i);
-
+    checkPort.interrupt();
 
     rgPort.interrupt();//open(getName("rg:i"));
     grPort.interrupt();//open(getName("gr:i"));
@@ -388,10 +448,11 @@ void blobFinderThread::run() {
 
             /*
             blobCataloged_flag=true;
-            redPlane_flag=false;
-            maxSaliencyBlob_flag=true;
+            redPlane_flag=true;
+            maxSaliencyBlob_flag=false;
             contrastLP_flag=false;
             */
+           
 
             if(redPlane_flag){
                 ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
@@ -445,6 +506,7 @@ void blobFinderThread::run() {
             }
             else if(this->maxSaliencyBlob_flag){
                 this->drawAllBlobs(false);
+                /*
                 if(filterSpikes_flag){
                     count++;
                     if(count>SPIKE_COUNTS){
@@ -467,9 +529,14 @@ void blobFinderThread::run() {
                     ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                     conversion=true;
                 }
+                */
+                this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
             }
             else if(this->contrastLP_flag){
                 this->drawAllBlobs(true);
+                /*
                 if(filterSpikes_flag){
                     count++;
                     if(count>10){
@@ -488,7 +555,8 @@ void blobFinderThread::run() {
                 else{
                     salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
                 }
-                
+                */
+                //salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
                 ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
             }
@@ -566,6 +634,21 @@ void blobFinderThread::run() {
 
             outPorts();
 
+            if(checkPort.getOutputCount()){
+                //ippiRShiftC_8u_
+                if(maxSaliencyBlob_flag){
+                    Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
+                    ippiCopy_8u_P3C3R(im_tmp,_outputImage->getRowSize(),img->getRawImage(),img->getRowSize(),srcsize);
+                    ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),img->getRawImage(),img->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
+                }
+                else
+                    ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
+
+                logpolarToCart(*_outputImage3Cart,*_outputImage3Merged,l2cTable);
+                checkPort.prepare() = *(_outputImage3Cart);
+                checkPort.write();
+            }
+
             /*endTimer=Time::now();
             double dif = endTimer-startTimer;
             startTimer=endTimer;
@@ -573,6 +656,7 @@ void blobFinderThread::run() {
         }
     } //if (!interrupted)
 }
+
 
 
 void blobFinderThread::stop(){
@@ -586,6 +670,7 @@ void blobFinderThread::stop(){
     printf("closing outputport .... \n");
     outputPort.close();
     outputPort3.close();
+    checkPort.close();
 
     printf("input port closing .... \n");
     inputPort.close();
@@ -601,12 +686,17 @@ void blobFinderThread::stop(){
 *	releases the thread
 */
 void blobFinderThread::threadRelease(){
+    //freeing look-up tables
+    freeLookupTables();
+
     //deleting allocated objects
     delete outContrastLP;
     delete outMeanColourLP;
 
     delete _procImage;
     delete _outputImage3;
+    delete _outputImage3Merged;
+    delete _outputImage3Cart;
     delete _outputImage;
 
     delete ptr_inputImg; //pointer to the input image
@@ -1000,28 +1090,29 @@ void blobFinderThread::drawAllBlobs(bool stable)
     //__OLD//salience.checkIOR(tagged, IORBoxes, num_IORBoxes);
     //__OLD//salience.doIOR(tagged, IORBoxes, num_IORBoxes);
     //float salienceBU=1.0,salienceTD=0.0;
-    IppiSize srcsize={this->width,this->height};
+    //IppiSize srcsize={this->width,this->height};
     PixelMono searchTD=0;
     PixelMono pixelRG=0,pixelGR=0,pixelBY=0;
-    //searchRG=((targetRED-targetGREEN+255)/510)*255;
-    //pixelRG=255-searchRG;
-    pixelRG=targetRED;
-    //searchGR=((targetGREEN-targetRED+255)/510)*255;
-    //pixelGR=255-searchGR;
-    pixelGR=targetGREEN;
+    searchRG=((targetRED-targetGREEN+255)/510)*255;
+    pixelRG=255-searchRG;
+    //pixelRG=targetRED;
+    searchGR=((targetGREEN-targetRED+255)/510)*255;
+    pixelGR=255-searchGR;
+    //pixelGR=targetGREEN;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
-    //searchBY=((targetBLUE-addRG+255)/510)*255; 
-    //pixelBY=255-searchBY;
-    pixelBY=targetBLUE;
+    searchBY=((targetBLUE-addRG+255)/510)*255; 
+    pixelBY=255-searchBY;
+    //pixelBY=targetBLUE;
     //printf("%d,%d,%d \n",pixelRG, pixelGR,pixelBY);
 
-    int psb32s;
+    //int psb32s;
     //int psb8u;
-    Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-    Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-    Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
+    //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
+    //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
+    //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
     //Ipp8s* _inputImgRGS8s=ippiMalloc_8u_C1(width,height,&psb8u);
-    //_inputImgGR
+
+    /*
     if(ptr_inputImgRG!=NULL){
         //_inputImgRGS->copy(*ptr_inputImgRG,320,240);
         ippiScale_8u32s_C1R(_inputImgRG.getRawImage(),_inputImgRG.getRowSize(),_inputImgRGS32,psb32s,srcsize);
@@ -1031,7 +1122,6 @@ void blobFinderThread::drawAllBlobs(bool stable)
     }
     else
         return;
-    //_inputImgGR
     if(ptr_inputImgGR!=NULL){
         //_inputImgGRS->copy(*ptr_inputImgGR,320,240);
         ippiScale_8u32s_C1R(_inputImgGR.getRawImage(),_inputImgGR.getRowSize(),_inputImgGRS32,psb32s,srcsize);
@@ -1040,7 +1130,6 @@ void blobFinderThread::drawAllBlobs(bool stable)
     }
     else
         return;
-    //_inputImgBY
     if(ptr_inputImgBY!=NULL){
         //_inputImgBYS->copy(*ptr_inputImgBY,320,240);
         ippiScale_8u32s_C1R(_inputImgBY.getRawImage(),_inputImgBY.getRowSize(),_inputImgBYS32,psb32s,srcsize);
@@ -1049,11 +1138,11 @@ void blobFinderThread::drawAllBlobs(bool stable)
     }
     else
         return;
+    */
     int nBlobs=salience->DrawContrastLP2(_inputImgRG, _inputImgGR, _inputImgBY,
         *outContrastLP, *tagged, max_tag,
         salienceBU, salienceTD,
         pixelRG, pixelGR, pixelBY, 255); // somma coeff pos=3 somma coeff neg=-3
-    //printf("The number of blobs: %d",nBlobs);
 
     //salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
     //salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
@@ -1070,8 +1159,8 @@ void blobFinderThread::drawAllBlobs(bool stable)
     //__OLD//rain.tags2Watershed(tagged, oldWshed);
 
     //delete(blobList);
-    ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
-    ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
-    ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
+    //ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
+    //ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
+    //ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
     //ippiFree(_inputImgRGS8s);
 }

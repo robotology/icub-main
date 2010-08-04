@@ -660,13 +660,13 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             m_boxes[i].cRG=t_abs;
 
             mlp=integralGR->getMeanLp(a,b,c,d);
-            tmp=255*height*width*mlp;
+            tmp=255*height*width*(int)floor(mlp);
             t=tmp-m_boxes[i].meanGR;
             t_abs=abs(t);
             m_boxes[i].cGR=t_abs;
             
             mlp=integralBY->getMeanLp(a,b,c,d);
-            tmp=255*height*width*(int)floor(integralBY->getMeanLp(a,b,c,d));
+            tmp=255*height*width*(int)floor(mlp);
             t=tmp-m_boxes[i].meanBY;
             t_abs=abs(t);
             m_boxes[i].cBY=t_abs;

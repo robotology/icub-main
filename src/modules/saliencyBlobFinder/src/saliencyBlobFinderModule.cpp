@@ -71,6 +71,13 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
                            Value(30), 
                            "processing ratethread (int)").asInt();
 
+    /*
+    * gets the minBounding area for blob neighbours definition
+    */
+    minBoundingArea             = rf.check("minBoundingArea", 
+                           Value(225), 
+                           "minBoundingArea (int)").asInt();
+
     if (!cmdPort.open(getName())) {           
       cout << getName() << ": Unable to open port " << endl;  
       return false;

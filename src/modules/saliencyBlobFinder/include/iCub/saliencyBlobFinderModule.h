@@ -200,6 +200,7 @@ private:
     
     Port cmdPort; //port necessary for rpc commands
     int rateThread; // rateThread of the processor Thread
+    int minBoundingArea; // minimum bounding area around the blob for neighbourhood definition
     IppiSize srcsize; //ipp reference to the size of the input image
     
     int width; //width of the input image
