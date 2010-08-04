@@ -208,7 +208,18 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
 
 	bool x;
 
+	/////////////////////////////////////
+	//calibrate the torso              //
     /////////////////////////////////////
+
+	//BLL boards must receive calibration message before enabling PWM
+	for (k = 6; k < nj; k++) 
+    {
+		//bll boards are joint 6 7 8 (9)
+		calibrateJoint(k);
+	}
+    
+	/////////////////////////////////////
 	//enable all joints                //
     /////////////////////////////////////
 
