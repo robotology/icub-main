@@ -20,12 +20,6 @@ else(ICUB_USE_GtkMM)
 	message(STATUS "GtkMM not selected, skipping frameGrabberGui2")
 endif(ICUB_USE_GtkMM)
 
-if(ICUB_USE_QtOpenGL)
-	add_subdirectory(iCubGui)
-else(ICUB_USE_QtOpenGL)
-	message(STATUS "QtOpenGL not selected, skipping iCubGui")
-endif(ICUB_USE_QtOpenGL)
-
 if(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 	add_subdirectory(iCubGui)
 else(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
