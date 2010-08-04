@@ -9,6 +9,7 @@
 
 #include <yarp/os/Time.h>
 #include "iCubArmCalibrator.h"
+#include <math.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -17,7 +18,8 @@ using namespace yarp::dev;
 
 const int PARK_TIMEOUT=30;
 const int GO_TO_ZERO_TIMEOUT=20;
-const int CALIBRATE_JOINT_TIMEOUT=20;
+const int CALIBRATE_JOINT_TIMEOUT=25;
+const double POSITION_THRESHOLD=2.0;
 
 const int numberOfJoints=16;
 
@@ -27,6 +29,8 @@ iCubArmCalibrator::iCubArmCalibrator()
     param1 = NULL;
     param2 = NULL;
     param3 = NULL;
+	original_pid = NULL;
+    limited_pid = NULL;
     pos = NULL;
     vel = NULL;
     homeVel=0;
@@ -115,6 +119,11 @@ bool iCubArmCalibrator::close ()
     if (param3 != NULL) delete[] param3;
     param3 = NULL;
 
+    if (original_pid != NULL) delete [] original_pid;
+	original_pid = NULL;
+    if (limited_pid != NULL) delete [] limited_pid;
+	limited_pid = NULL;
+
     if (pos != NULL) delete[] pos;
     pos = NULL;
     if (vel != NULL) delete[] vel;
@@ -150,7 +159,18 @@ bool iCubArmCalibrator::calibrate(DeviceDriver *dd)
     if (!ret)
         return false;
 
+	original_pid=new Pid[nj];
+	limited_pid =new Pid[nj];
+	bool calibration_ok=true;
     int k;
+	int shoulderSetOfJoints[] = {0, 1 , 2, 3};
+    for (k =0; k < 4; k++)
+    {
+        //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
+        calibrateJoint(shoulderSetOfJoints[k]);
+    }
+    Time::delay(1.0);
+
     for (k = 0; k < nj; k++) 
     {
         fprintf(stderr, "ARMCALIB::Calling enable amp for joint %d\n", k);
@@ -257,6 +277,39 @@ void iCubArmCalibrator::checkGoneToZero(int j)
     }
     if (abortCalib)
         fprintf(stderr, "ARMCALIB::abort wait for joint %d going to zero!\n", j);
+}
+
+bool iCubArmCalibrator::checkGoneToZeroThreshold(int j)
+{
+    // wait.
+    bool finished = false;
+    int timeout = 0;
+	double ang=0;
+	double delta=0;
+    while ( (!finished) && (!abortCalib))
+    {
+		iEncoders->getEncoder(j, &ang);
+		delta = fabs(ang-pos[j]);
+		fprintf(stderr, "ARMCALIB (joint %d) curr:%f des:%f -> delta:%f\n", j, ang, pos[j], delta);
+		if (delta<POSITION_THRESHOLD)
+		{
+			fprintf(stderr, "ARMCALIB (joint %d) completed! delta:%f\n", j,delta);
+			finished=true;
+		}
+
+        Time::delay (0.5);
+        timeout ++;
+
+        if (timeout >= GO_TO_ZERO_TIMEOUT)
+        {
+            fprintf(stderr, "ARMCALIB::Timeout on joint %d while going to zero!\n", j);
+			return false;
+        }
+    }
+    if (abortCalib)
+        fprintf(stderr, "ARMCALIB::abort wait for joint %d going to zero!\n", j);
+
+	return finished;
 }
 
 bool iCubArmCalibrator::park(DeviceDriver *dd, bool wait)
