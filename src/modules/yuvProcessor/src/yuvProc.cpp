@@ -17,6 +17,7 @@
  */
 
 #include "iCub/yuvProc.h"
+#include "yarp/os/impl/NameClient.h"
 
 bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -149,6 +150,7 @@ bool yuvProc::close()
     handlerPort.close();
     /* stop the thread */
     yuvThread->stop();
+    delete yuvThread;
     return true;
 }
 
@@ -197,6 +199,8 @@ YUVThread::YUVThread(BufferedPort<ImageOf<PixelMono> > *inputPortY, BufferedPort
     imageInputPortV    = inputPortV;
     imageOutPortY   = outPortY;
     imageOutPortUV   = outPortUV;
+    min = 0.0;
+    max = 0.0;
 }
 
 bool YUVThread::threadInit() 
@@ -263,19 +267,18 @@ void YUVThread::run(){
             ippiMinMax_32f_C1R(cs_tot_32f,psb_32f,srcsize,&min,&max); 
             if (max==min){max=255.0;min=0.0;}
             ippiScale_32f8u_C1R(cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize,min,max);
-     
-
-	        //revert to yarp image
-	        ippiCopy_8u_C1R(ycs_out, ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), srcsize);
-	        ippiCopy_8u_C1R(colcs_out, col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), srcsize);
 
             //output Y centre-surround results to ports
             if (imageOutPortY->getOutputCount()>0){
+                //revert to yarp image
+                ippiCopy_8u_C1R(ycs_out, ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), srcsize);
                 imageOutPortY->prepare() = *img_out_Y;	
                 imageOutPortY->write();
             }
             //output UV centre-surround results to ports
             if (imageOutPortUV->getOutputCount()>0){
+                //revert to yarp image
+                ippiCopy_8u_C1R(colcs_out, col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), srcsize);
                 imageOutPortUV->prepare() = *img_out_UV;	
                 imageOutPortUV->write();
             }
@@ -292,7 +295,16 @@ void YUVThread::threadRelease()
     /* for example, delete dynamically created data-structures */
     if (gotY + gotU + gotV > 2){    
         delete centerSurr;
+        delete img_out_Y;
+        delete img_out_UV;
+        ippiFree(ycs_out);
+        ippiFree(y_orig);
+        ippiFree(u_orig); 
+        ippiFree(v_orig);    
+        ippiFree(cs_tot_32f);
+        ippiFree(colcs_out);
     }
+    yarp::os::impl::NameClient::removeNameClient();
     cout << "cleaning up things.." << endl;
 }
 
@@ -318,8 +330,8 @@ void YUVThread::initAll()
     //tmp         = ippiMalloc_8u_C1(width,height,&psb);// to separate alpha channel
     //pyuva = (Ipp8u**) malloc(4*sizeof(Ipp8u*));
 
-    cs_tot_32f  = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
-    colcs_out   = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&col_psb);
+    cs_tot_32f  = ippiMalloc_32f_C1(srcsize.width,srcsize.height, &psb_32f);
+    colcs_out   = ippiMalloc_8u_C1(srcsize.width,srcsize.height, &col_psb);
 
     ncsscale = 4;
     centerSurr  = new CentSur(srcsize,ncsscale);

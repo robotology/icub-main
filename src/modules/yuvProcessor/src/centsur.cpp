@@ -58,9 +58,24 @@ CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
     cs_tot_8u  = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb_8u);
 }
 
-CentSur::~CentSur()
-{
-
+CentSur::~CentSur() {
+    ippiFree(im_in_32f);
+    ippiFree(tmp_im_32f);
+    ippiFree(cs_tot_32f);
+    ippiFree(cs_tot_8u);
+    
+    for (int ng=0;ng<ngauss;ng++) {
+        ippiFree(pyramid[ng]);
+        ippiFree(pyramid_gauss[ng]);
+        ippiFree(gauss[ng]);
+    }
+    free(psize);
+    free(proi);
+    free(psb_p);
+    free(pyramid);
+    free(pyramid_gauss);
+    free(gauss);
+    free(pbuf);
 }
 
 void CentSur::proc_im_8u(Ipp8u* im_8u, int psb_){
