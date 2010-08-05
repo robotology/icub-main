@@ -1,135 +1,3 @@
-/** 
- * @ingroup icub_module
- *
- * \defgroup icub_zdfModule zdfMod
- *
- * Receives the left and right images from the robot and segments objects that are located in the fovea. Performs marker-less pixel-wise segmentation of an object located in the fovea.The output is an image of the segmented object in grayscale and a difference of gausian segmentation.
- *
- * 
- * \section lib_sec Libraries
- *
- * YARP
- * IPP
- * OPENCV
- *
- * \section parameters_sec Parameters
- * 
- * <b>Command-line Parameters <\b> 
- * 
- * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
- * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
- *
- * - \c from \c zdfMod.ini \n 
- *   specifies the configuration file
- *
- * - \c context \c zdfMod/conf \n
- *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
- *
- * - \c name \c zdfMod \n   
- *   specifies the name of the module (used to form the stem of module port names)  
- *
- * <b>Configuration File Parameters </b>
- *
- * The following key-value pairs can be specified as parameters in the configuration file 
- * (they can also be specified as command-line parameters if you so wish). 
- * The value part can be changed to suit your needs; the default values are shown below. 
- *   
- * - \c inPortLeft \c /imageLeft:i \n    
- *   specifies the input port name (this string will be prefixed by \c /zdfMod 
- *   or whatever else is specifed by the name parameter
- *
- * - \c inPortRight \c /imageRight:i \n    
- *   specifies the input port name (this string will be prefixed by \c /zdfMod 
- *   or whatever else is specifed by the name parameter
- *
- * - \c outPortProb \c /imageProb:o \n    
- *   specifies the input port name (this string will be prefixed by \c /zdfMod 
- *   or whatever else is specifed by the name parameter
- *
- * - \c outPortSeg \c /imageSeg:o \n  
- *   specifies the output port name (this string will be prefixed by \c /zdfMod 
- *   or whatever else is specifed by the name parameter
- *
- * - \c outPortDog \c /imageDog:o \n  
- *   specifies the output port name (this string will be prefixed by \c /zdfMod 
- *   or whatever else is specifed by the name parameter
-
- * \section portsa_sec Ports Accessed
- * 
- * - None
- *                      
- * \section portsc_sec Ports Created
- *
- *  <b>Input ports</b>
- *
- *  - \c /zdfMod \n
- *    This port is used to change the parameters of the module at run time or stop the module. \n
- *    The following commands are available
- * 
- *    \c help \n
- *    \c quit \n
- *
- *    Note that the name of this port mirrors whatever is provided by the \c --name parameter value
- *    The port is attached to the terminal so that you can type in commands and receive replies.
- *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: \c yarp \c rpc \c /zdfMod
- *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
- *       
- *  - \c /zdfMod/imageLeft:i \n
- *  - \c /zdfMod/imageRight:i \n
- *
- * <b>Output ports</b>
- *
- *  - \c /zdfMod \n
- *    see above
- *
- *  - \c /zdfMod/imageProb:o \n
- *  - \c /zdfMod/imageSeg:o \n
- *  - \c /zdfMod/imageDog:o \n
- *
- * <b>Port types </b>
- *
- * The functional specification only names the ports to be used to communicate with the module 
- * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
- *
- * \c BufferedPort<ImageOf<PixelBgr> >   \c inPortLeft; \n 
- * \c BufferedPort<ImageOf<PixelBgr> >   \c inPortRight; \n 
- * \c BufferedPort<ImageOf<PixelMono> >   \c outPortProb; \n 
- * \c BufferedPort<ImageOf<PixelMono> >   \c outPortSeg;   
- * \c BufferedPort<ImageOf<PixelMono> >   \c outPortDog;       
- *
- * \section in_files_sec Input Data Files
- *
- * None
- *
- * \section out_data_sec Output Data Files
- *
- * None
- *
- * \section conf_file_sec Configuration Files
- *
- * \c zdfMod.ini  in \c $ICUB_ROOT/app/zdfMod/conf \n
- * 
- * \section tested_os_sec Tested OS
- *
- * Linux: Ubuntu 9.10 and Debian Stable 
- *
- * \section example_sec Example Instantiation of the Module
- * 
- * <tt>zdfMod --name zdfMod --context zdfMod/conf --from zdfMod.ini </tt>
- *
- * \author 
- * 
- * Vadim Tikhanoff, Andrew Dankers
- * 
- * Copyright (C) 2009 RobotCub Consortium
- * 
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * This file can be edited at \c $ICUB_ROOT/src/yuvProc/include/iCub/yuvProc.h
- * 
- */
-
-
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Vadim Tikhanoff Andrew Dankers
@@ -154,6 +22,7 @@
 //OPENCV
 #include <cv.h>
 #include <highgui.h>
+#include "yarp/os/impl/NameClient.h"
 
 bool zdfMod::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -219,13 +88,15 @@ bool zdfMod::updateModule() {
 }
 
 bool zdfMod::interruptModule() {
-
+    handlerPort.interrupt();
     return true;
 }
 
 bool zdfMod::close() {
-
+    handlerPort.close();
     zdfThread->stop();
+    cout << "deleteing thread " << endl;
+    delete zdfThread;
     return true;
 }
 
@@ -271,19 +142,19 @@ bool ZDFThread::threadInit() {
     init = true;
 
     //create all ports
-    inputNameLeft = moduleName + "/imageLeft:i";
+    inputNameLeft = "/" + moduleName + "/imageLeft:i";
     imageInLeft.open( inputNameLeft.c_str() );
     
-    inputNameRight = moduleName + "/imageRight:i";
+    inputNameRight = "/" + moduleName + "/imageRight:i";
     imageInRight.open( inputNameRight.c_str() );
 
-    outputNameProb = moduleName + "/imageProb:o";
+    outputNameProb = "/" + moduleName + "/imageProb:o";
     imageOutProb.open( outputNameProb.c_str() );
 
-    outputNameSeg = moduleName + "/imageSeg:o";
+    outputNameSeg = "/" + moduleName + "/imageSeg:o";
     imageOutSeg.open( outputNameSeg.c_str() );
     
-    outputNameDog = moduleName + "/imageDog:o";
+    outputNameDog = "/" + moduleName + "/imageDog:o";
     imageOutDog.open( outputNameDog.c_str() );
     
     return true;
@@ -310,13 +181,9 @@ void ZDFThread::run(){
                 cout << "done initializing " << endl;   
         	}
 
-
-		//cvShowImage("Settings", NULL);  
-    	//cvWaitKey(10);
-
 		//processing for zdf
-		//resize the images
-		if (scale==1.0){
+		
+		if (scale==1.0){ //resize the images if needed
 			//copy yarp image to IPP
 			ippiCopy_8u_C3R( img_in_left->getRawImage(),  img_in_left->getRowSize(), l_orig, psb, srcsize);
 			ippiCopy_8u_C3R( img_in_right->getRawImage(), img_in_right->getRowSize(), r_orig, psb, srcsize);
@@ -340,7 +207,7 @@ void ZDFThread::run(){
 			ippiCopy_8u_C1R(&rec_im_ry [(( srcsize.height - tsize.height ) / 2 ) * psb_in + ( srcsize.width - tsize.width ) /2 ], psb_in, temp_r, psb_t, tsize);
 		}
 
-		//MAKE LEFT FOVEA
+		//CREATE LEFT FOVEA
 		//find left template in left image:
 		ippiCrossCorrValid_NormLevel_8u32f_C1R(&rec_im_ly[(( srcsize.height - tisize.height )/2)*psb_in + ( srcsize.width - tisize.width )/2],
 				       psb_in, tisize,
@@ -350,9 +217,7 @@ void ZDFThread::run(){
 
 		ippiMaxIndx_32f_C1R( res_t, psb_rest, trsize, &max_t, &sx, &sy); 
 
-		//cout << "X Y " <<  sx << " " << sy << endl;
-
-		if (max_t < 0.60){  //shift_sim_t
+		/*if (max_t < 0.60){  //shift_sim_t
 	  		//this also prevents tracking motion:
 	  		tl_x = 0;
 	  		tl_y = 0;
@@ -361,7 +226,7 @@ void ZDFThread::run(){
 	  	//this initiates tracking motion if non-zero:
 	  		tl_x = sx - trsize.width /2;
 	  		tl_y = sy - trsize.height /2;
-		}
+		}*/
 		//ippiCopy_8u_C1R( rec_im_ly, psb_in, fov_l, psb_m, srcsize);
 		ippiCopy_8u_C1R( &rec_im_ly [ ( mid_y + tl_y ) * psb_in + mid_x + tl_x], psb_in, fov_l, psb_m, msize ); //original
 
@@ -375,7 +240,7 @@ void ZDFThread::run(){
 					res_t, psb_rest);
 
 		ippiMaxIndx_32f_C1R(res_t,psb_rest,trsize,&max_t,&sx,&sy);
-		if (max_t < 0.50){ //shift_sim_t
+		/*if (max_t < 0.50){ //shift_sim_t
 		//this also prevents tracking motion:
 			tr_x = 0;
 			tr_y = 0;
@@ -384,17 +249,17 @@ void ZDFThread::run(){
 			//this initiates tracking motion if non-zero:
 			tr_x = sx - trsize.width/2;
 			tr_y = sy - trsize.height/2;
-		}
+		}*/
 		//ippiCopy_8u_C1R( rec_im_ry, psb_in, fov_r, psb_m, srcsize);
 		ippiCopy_8u_C1R(&rec_im_ry[(mid_y+tr_y+dpix_y)*psb_in + mid_x+tr_x],psb_in,fov_r,psb_m,msize); // original
-
 
 		dl->proc( fov_l, psb_m );
 		dr->proc( fov_r, psb_m );
 
 		//**************************
 		//SPATIAL ZD probability map from fov_l and fov_r:
-		//perform RANK or NDT kernel comparison:		
+		//perform RANK or NDT kernel comparison:	
+        	
 		for (int j=koffsety;j<msize.height-koffsety;j++){
   			c.y=j;
   			for (int i=koffsetx;i<msize.width-koffsetx;i++){
@@ -432,7 +297,6 @@ void ZDFThread::run(){
 	    		//apply radial penalty
 	    		zd_prob_8u[j*psb_m+i]-= rad_pen;
 	    
-	    		//OTHER:
 	    		//manufacture NZD prob (other):
 	    		o_prob_8u[psb_m*j+i] = 255 - zd_prob_8u[psb_m*j+i];
 	  		}
@@ -464,7 +328,6 @@ void ZDFThread::run(){
     			}
   			}
 		}
-/**/
 			
 		//If nice segmentation:
 		if (area >= params->min_area && area <= params->max_area && spread<= params->max_spread){ 
@@ -496,10 +359,6 @@ void ZDFThread::run(){
   			acquire = true;
 		}
 
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------
-		//ippiThreshold_LTVal_8u_C1IR( seg_im, psb_m, msize, (Ipp8u)1, (Ipp8u)4);			
-		//ippiSubC_8u_C1IRSfs(1,seg_im,psb_m,msize,0);
-		//ippiMulC_8u_C1IRSfs(40,seg_im,psb_m,msize,0)
 		
 		//send it all
 		if (imageOutProb.getOutputCount()>0){ 
@@ -528,17 +387,39 @@ void ZDFThread::threadRelease()
     /* for example, delete dynamically created data-structures */
     cout << "cleaning up things.." << endl;
     if ( leftPort + rightPort > 1){
+        cout << "cleaning up dynamically created objects" << endl;
         delete dl;
         delete dr;
         delete m;
+    
+        ippiFree(l_orig);
+        ippiFree(r_orig);
+        ippiFree(rec_im_ly);
+        ippiFree(rec_im_ry);
+        ippiFree(res_t);
+        ippiFree(out);
+        ippiFree(seg_im);
+        ippiFree(seg_dog);
+        ippiFree(fov_l);
+        ippiFree(fov_r);
+        ippiFree(zd_prob_8u);
+        ippiFree(o_prob_8u);
+        free(p_prob);
+        ippiFree(temp_l);
+        ippiFree(temp_r);
+        delete img_out_prob;
+        delete img_out_seg;
+        delete img_out_dog;
     }
+
     cout << "closing ports.." << endl;
+    imageInLeft.close();
+    imageInRight.close();
     imageOutProb.close();
     imageOutSeg.close();
     imageOutDog.close();
-    imageInLeft.close();
-    imageInRight.close();
     
+    yarp::os::impl::NameClient::removeNameClient();
     cout << "finished cleaning.." << endl;
 }
 

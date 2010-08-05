@@ -32,7 +32,8 @@ MultiClass::MultiClass(IppiSize im_size_, int psb_in_, int n_, Parameters *_para
 
 MultiClass::~MultiClass()
 {
-
+    ippFree (out);
+    free (ptr_im);
 }
 
 
@@ -106,8 +107,8 @@ void MultiClass::proc(Ipp8u* im_, Ipp8u** prob_)
     }
   
   
-  delete permutation;
-  delete buf;
+  delete [] permutation;
+  delete [] buf;
 }
 
 

@@ -42,16 +42,31 @@ DoG::DoG(IppiSize srcsize_)
 
 DoG::~DoG()
 {
-
+    ippFree(in_pad_8u);
+    ippFree(in_pad);
+    ippFree(tmp1);
+    ippFree(tmp2);
+    ippFree(tmp3);
+    ippFree(dog);
+    ippFree(dog_on);
+    ippFree(dog_off);
+    ippFree(dog_onoff);
+    ippFree(out_dog_on);
+    ippFree(out_dog_off);
+    ippFree(out_dog_onoff);    
 }
 
-void DoG::conv_32f_to_8u(Ipp32f*im_i,int p4_,Ipp8u*im_o,int p1_,IppiSize srcsize_)
-{
-  Ipp32f min,max;
-  ippiMinMax_32f_C1R(im_i,p4_,srcsize_,&min,&max);
-  if (max==min){max=255.0;min=0.0;}
-  ippiScale_32f8u_C1R(im_i,p4_,im_o,p1_,srcsize_,min,max);
-}
+void DoG::conv_32f_to_8u( Ipp32f*im_i, int p4_, Ipp8u*im_o, int p1_, IppiSize srcsize_) {
+
+    Ipp32f min = NULL;
+    Ipp32f max = NULL;
+    //ippiMinMax_32f_C1R( im_i,p4_,srcsize_,&min,&max);
+    if (max == min){
+        max=255.0; 
+        min=0.0;
+    }
+    //ippiScale_32f8u_C1R(im_i, p4_, im_o, p1_, srcsize_, min, max );
+} 
 
 
 void DoG::proc(Ipp8u*in_, int psb_in_)
