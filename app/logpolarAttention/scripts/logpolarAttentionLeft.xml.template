@@ -17,7 +17,7 @@
 	</module>
 	<module>
 		<name>saliencyBlobFinder</name>
-		<parameters></parameters>
+		<parameters>--from saliencyBlobFinderLeft.ini --context logpolarAttention/conf</parameters>
 		<tag>saliencyBlobFinderLeft</tag>
 		<node>/powerNode1</node>
 	</module>
@@ -27,6 +27,12 @@
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
 		<node>/console</node>
 	</module>
+		<module>
+		<name>selectiveAttentionEgine</name>
+		<parameters>--from selectiveAttentionLeft.ini --context logpolarAttention/conf </parameters>
+		<tag>selectiveAttLeft</tag>
+		<node>/powerNode1</node>
+	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/outputView --x 0 --y 600 --synch</parameters>
@@ -35,17 +41,22 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/output3View --x 600 --y 600 --synch</parameters>
+		<parameters>--name /icub/left_cam/output3View --x 300 --y 600 --synch</parameters>
 		<tag>blobFinderOut3Left</tag>
 		<node>/console</node>
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/checkView --x 1200 --y 600 --synch</parameters>
+		<parameters>--name /icub/left_cam/checkView --x 600 --y 600 --synch</parameters>
 		<tag>blobFinderCheck</tag>
 		<node>/console</node>
 	</module>
-	
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /icub/left_cam/attentionView --x 900 --y 600 --synch</parameters>
+		<tag>attView</tag>
+		<node>/console</node>
+	</module>
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
 		<to>/visualFilter/icub/left_cam/image:i</to>
@@ -96,4 +107,20 @@
 		<to>/blobFinder/icub/left_cam</to>
 		<protocol>udp</protocol>
 	</connection>
+	<from>/icub/cam/left/logpolar</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/image:i</to>
+		<protocol>mcast</protocol>
+	</connection>
+	<connection>
+        	<from>/blobFinder/icub/left_cam/image:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/map1:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
+		<to> /icub/left_cam/attentionView</to>
+		<protocol>udp</protocol>
+	</connection>
+	
+
 </application>
