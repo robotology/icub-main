@@ -23,7 +23,6 @@ const int THREAD_RATE = 100;
 
 disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
     cout<< "initialisation process "<<endl;
-    cout << "HERE" <<endl;
 	ratio = 4.00;
 	
 	robotHead = 0;
@@ -231,7 +230,7 @@ void disparityProcessor::run(){
                 dispInit = true;            
             }
             disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 4);
-           // disparityVal = Disp.computeMono(*imgInR, *imgInL, 4.0);
+            //disparityVal = Disp.computeMono(*imgInR, *imgInL, 4.0);
 
             cout << "disparity Val " << disparityVal  << endl;
 
@@ -451,28 +450,14 @@ void disparityProcessor::intersectRay (__kinType k, const Vector& v, int& x, int
 
 void disparityProcessor::computeDirect (const Vector &joints)
 {
-
 	// the joint vector is devided into right and left
 	// I *KNOW* this is awful because doesn't use n_ref_frame
-	// we don't need joints copy 'cause we don't use computeDirect(Joints)
+	// we don't need joints copy because we don't use computeDirect(Joints)
 
-	_leftJoints(0) = joints(0);
-	_leftJoints(1) = joints(1);
-	_leftJoints(2) = joints(2);
-	_leftJoints(3) = joints(3);
-	_leftJoints(4) = joints(4);
-	_leftJoints(5) = joints(5);
-	_leftJoints(6) = joints(6);
-	_leftJoints(7) = joints(8);
-
-	_rightJoints(0) = joints(0);
-	_rightJoints(1) = joints(1);
-	_rightJoints(2) = joints(2);
-	_rightJoints(3) = joints(3);
-	_rightJoints(4) = joints(4);
-	_rightJoints(5) = joints(5);
-	_rightJoints(6) = joints(6);
-	_rightJoints(7) = joints(7);
+    for (int i = 0; i < 9; i++ ){
+        _leftJoints(i) = joints(i);
+        _rightJoints(i) = joints(i);
+    }
 	
 	//cout << "rightJoints " << _rightJoints.toString().c_str() << endl;
 	(*chainLeftEye).setAng( _leftJoints );

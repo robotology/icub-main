@@ -460,17 +460,19 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
     ret = filterMaxes();
 
     //cout << "Final time: " << (Time::now() - TimeStart) << endl;
-
+    cout << "index " << ret.index << " corr " << ret.corr << " disp " << ret.disp << endl; 
     return (int)ret.disp;
 }
 
 int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, double value) {
 
-    TimeStart = Time::now();
+    //TimeStart = Time::now();
     cout << "ShiftLevels: " << _shiftLevels << endl;
     cout << "ActRings: " << _actRings << endl;
     cout << "Theta: " << _img.Size_Theta << endl;
     
+    img2unpaddedVectMultiple(lPtr, inLImg, rPtr, inRImg);
+
     int i,j,k, k1;
     int i2,i1;//iR,iL
     double numr   = 0;
@@ -501,11 +503,9 @@ int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & 
     double sum2B = 0;
     double nElem = 0;
 
-    unsigned char * fullPtr,* fovPtr;
-
-    fullPtr = (unsigned char*)inRImg.getRawImage();
-    fovPtr = (unsigned char*)inLImg.getRawImage();
-
+    //unsigned char * fullPtr,* fovPtr;
+   // fullPtr = (unsigned char*)inRImg.getRawImage();
+   // fovPtr = (unsigned char*)inLImg.getRawImage();
     int tIndex;
 
    // int AddedPadSize = computePadSize(_img.Size_Theta*_img.LP_Planes,_img.padding) - _img.Size_Theta*_img.LP_Planes;
@@ -536,8 +536,8 @@ int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & 
         grayAv1 = 0;
         grayAv2 = 0;
 
-        fullPtr = (unsigned char*)inRImg.getRawImage();
-        fovPtr = (unsigned char*)inLImg.getRawImage();
+      //  fullPtr = (unsigned char*)inRImg.getRawImage();
+      //  fovPtr = (unsigned char*)inLImg.getRawImage();
 
         if (_count[k] == _maxCount) {
             for (j=0; j<_actRings; j++) {
@@ -547,12 +547,12 @@ int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & 
                     i1 = 3 * (tIndex+i);
 
                     if (i2 > 0) {
-                        pixel1.r = *fovPtr++;
-                        pixel2.r = fullPtr[i2];
-                        pixel1.g = *fovPtr++;
-                        pixel2.g = fullPtr[i2+1];
-                        pixel1.b = *fovPtr++;
-                        pixel2.b = fullPtr[i2+2];
+                        pixel1.r = *lPtr++;
+                        pixel2.r = rPtr[i2];
+                        pixel1.g = *lPtr++;
+                        pixel2.g = rPtr[i2+1];
+                        pixel1.b = *lPtr++;
+                        pixel2.b = rPtr[i2+2];
 
                         double gray1 = (pixel1.r + pixel1.g+pixel1.b)/3.0;
                         double gray2 = (pixel2.r+pixel2.g+pixel2.b)/3.0;
@@ -582,7 +582,7 @@ int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & 
 
                         nElem++;
                     }
-                    else fovPtr +=3;
+                   else rPtr +=3;
                 }
                // fovPtr+=AddedPadSize;
             }
@@ -595,22 +595,25 @@ int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & 
             tmpB = (den_1b-sum1B*sum1B/nElem)*(den_2b-sum2B*sum2B/nElem);
 
             _corrFunct[k] = 0;
-            if (tmpR>0)
+            if (tmpR>0){
+                cout << "tmpR" << endl;
                 _corrFunct[k] += (numr-sum1R*sum2R/nElem)/sqrt(tmpR);
-
-            if (tmpG>0)
+            }
+            if (tmpG>0){
+                cout << "tmpG" << endl;
                 _corrFunct[k] += (numg-sum1G*sum2G/nElem)/sqrt(tmpG);
-
-            if (tmpB>0)
+            }
+            if (tmpB>0){
+                cout << "tmpB" << endl;
                 _corrFunct[k] += (numb-sum1B*sum2B/nElem)/sqrt(tmpB);
-                      
+            }
             _corrFunct[k] /= 3.0;
 
-      //      _std2[k] = (1/nElem)*(sigma2-grayAv2*grayAv2/nElem)/(128*128);
-       //     _std1[k]= (1/nElem)*(sigma1-grayAv1*grayAv1/nElem)/(128*128);
+      //   _std2[k] = (1/nElem)*(sigma2-grayAv2*grayAv2/nElem)/(128*128);
+       //  _std1[k]= (1/nElem)*(sigma1-grayAv1*grayAv1/nElem)/(128*128);
         }
         else{
-        //_corrFunct[k] = 0;
+        _corrFunct[k] = 0;
      //   _std2[k] = 0;
      //   _std1[k] = 0;
         }
@@ -619,6 +622,9 @@ int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & 
     findShiftMax(_corrFunct);
     findSecondMaxes(_corrFunct, _maxShifts[0].index);
     ret = filterMaxes();
-     cout << "Final time: " << (Time::now() - TimeStart) << endl;
+    
+    cout << "index " << ret.index << " corr " << ret.corr << " disp " << ret.disp << endl; 
+
+    // cout << "Final time: " << (Time::now() - TimeStart) << endl;
     return (int)ret.disp;
 }
