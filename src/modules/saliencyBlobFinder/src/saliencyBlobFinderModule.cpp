@@ -51,7 +51,6 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 /* Process all parameters from both command-line and .ini file */
 
     /* get the module name which will form the stem of all module port names */
-
     moduleName            = rf.check("name", 
                            Value("/blobFinder/icub/left_cam"), 
                            "module name (string)").asString();

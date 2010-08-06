@@ -15,8 +15,6 @@ int main(int argc, char *argv[]) {
     Network yarp;
     Time::turboBoost();
 
-   /* create your module */
-
    saliencyBlobFinderModule module; 
 
    /* prepare and configure the resource finder */
