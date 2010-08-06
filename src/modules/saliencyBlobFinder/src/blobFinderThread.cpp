@@ -140,6 +140,8 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 
 blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
 {
+    ippSetNumThreads();
+
     reinit_flag=false;
     interrupted_flag=false;
     ct=0;
