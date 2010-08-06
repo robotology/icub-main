@@ -20,7 +20,6 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <iCub/disparityModule.h>
-
 #include <string.h>
 
 using namespace yarp::os;
@@ -30,7 +29,6 @@ int main(int argc, char *argv[])
 {
     /* initialize yarp network */ 
     Network yarp;
-
     /* create the module */
     disparityModule module; 
 
@@ -40,7 +38,6 @@ int main(int argc, char *argv[])
     rf.setDefaultConfigFile("attentionMechanism.ini"); //overridden by --from parameter
     rf.setDefaultContext("attentionMechanism/conf");   //overridden by --context parameter
     rf.configure("ICUB_ROOT", argc, argv);
-
+     
     module.runModule(rf);
-
 }

@@ -19,7 +19,7 @@
 #include <iCub/disparityProcessor.h>
 
 using namespace yarp::math;
-const int THREAD_RATE = 30;
+const int THREAD_RATE = 100;
 
 disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
     cout<< "initialisation process "<<endl;
@@ -50,10 +50,6 @@ disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
 
 disparityProcessor::~disparityProcessor(){
 
-	delete leftEye;
-	delete rightEye;
-	delete robotTorso;
-	delete robotHead;
 }
 
 
@@ -114,33 +110,20 @@ bool disparityProcessor::threadInit(){
     rightEye = new iCubEye("right");
     leftEye = new iCubEye("left");
 	
-	leftEye->releaseLink(0);
-	leftEye->releaseLink(1);
-	leftEye->releaseLink(2);
-	leftEye->releaseLink(3);
-	leftEye->releaseLink(4);
-	leftEye->releaseLink(5);
-	leftEye->releaseLink(6);
-	leftEye->releaseLink(7);
-
-    rightEye->releaseLink(0);
-    rightEye->releaseLink(1);
-    rightEye->releaseLink(2);
-    rightEye->releaseLink(3);
-    rightEye->releaseLink(4);
-    rightEye->releaseLink(5);
-    rightEye->releaseLink(6);
-    rightEye->releaseLink(7);
-
+    for (int i = 0; i < 8; i++ ){
+        leftEye->releaseLink(i);
+        rightEye->releaseLink(i);
+    }
+  
 	chainRightEye=rightEye->asChain();
   	chainLeftEye =leftEye->asChain();
     
-	cout << "chainRightEye " << (*chainRightEye)[0].getAng() << endl;
+	//cout << "chainRightEye " << (*chainRightEye)[0].getAng() << endl;
 	(*chainRightEye)[0].setAng( 1.0 );
-	cout << "chainRightEye " << (*chainRightEye)[0].getAng() << endl;
+	//cout << "chainRightEye " << (*chainRightEye)[0].getAng() << endl;
 	
     
-	fprintf(stderr,"Left Eye kinematic parameters:\n");
+	/*fprintf(stderr,"Left Eye kinematic parameters:\n");
   	for (unsigned int i=0; i<chainLeftEye->getN(); i++){
     	fprintf(stderr,"#%d: %g, %g, %g, %g\n",i,
         (*chainLeftEye)[i].getA(),
@@ -156,13 +139,14 @@ bool disparityProcessor::threadInit(){
         (*chainRightEye)[i].getD(),
         (*chainRightEye)[i].getAlpha(),
         (*chainRightEye)[i].getOffset());
-  	}
+  	}*/
      
     _nFrame = chainRightEye->getN(); //HL.rows();
     _joints.resize( _nFrame );
     _head.resize(6), 
     _torso.resize(3);
     tmpPos.resize(9);
+    tempV.zero();
     tempV.resize(3);
 	
 	return true;
@@ -178,7 +162,6 @@ void disparityProcessor::threadRelease(){
     delete rightEye;   
 	delete robotHead;
 	delete robotTorso;
-
 }
 
 void disparityProcessor::run(){	
@@ -188,7 +171,6 @@ void disparityProcessor::run(){
 
     //create vector thast contains head encoders
     
-    if (encTorso->getEncoders(_torso.data()))
         for (int i=0; i<3; i++)
             fb[i]=_torso[2-i];    // reversed order
 
@@ -249,6 +231,7 @@ void disparityProcessor::run(){
                 dispInit = true;            
             }
             disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 4);
+           // disparityVal = Disp.computeMono(*imgInR, *imgInL, 4.0);
 
             cout << "disparity Val " << disparityVal  << endl;
 

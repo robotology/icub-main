@@ -17,6 +17,7 @@
  * Public License for more details
  */
 #include <iCub/disparityTool.h>
+#include <yarp/os/Time.h>
 
 DisparityTool::DisparityTool() {
 
@@ -49,7 +50,7 @@ DisparityTool::~DisparityTool() {
     if (_count != NULL)
         delete [] _count;
 
-    if (_shiftFunctionInv == NULL)
+    if (_shiftFunctionInv != NULL)
         delete [] _shiftFunctionInv;
 
     delete[] lPtr;
@@ -69,7 +70,8 @@ void DisparityTool::init( int rho, int theta, int mode, double overlap, int xo, 
     _actRings = actR;
     AllocateVectors();	
     LoadShiftMap();
-    computeCountVector( _count );
+    computeCountVector( _count );   
+    cout << "RINGS" << actR << endl;
 }
 
 
@@ -344,9 +346,16 @@ shift_Struct DisparityTool::filterMaxes() {
 
 
 int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step) {
-
+     
     img2unpaddedVectMultiple(lPtr, inLImg, rPtr, inRImg);
 
+  //  cout << "ShiftLevels: " << _shiftLevels << endl;
+  //  cout << "ActRings: " << _actRings << endl;
+ //   cout << "Theta: " << _img.Size_Theta << endl;
+   // cout << "Step: " << step << endl;
+
+   // TimeStart = Time::now();
+    
     //Correlation Function Computation
     for (k = 0; k < _shiftLevels; k++) {
 
@@ -392,6 +401,7 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
             average_Lb /= _count[k];
             average_Rb /= _count[k];
         }
+     //   cout << "Loop1 time: " << (Time::now() - TimeStart) << endl;
 
         numr   = 0;
         den_Lr = 0;
@@ -411,7 +421,7 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
                 iL = 3 * (j*_img.Size_Theta + i);
 
                 if (iR > 0) {
-                //Red
+                   //Red
                     pixelL = lPtr[iL] - average_Lr;
                     pixelR = rPtr[iR] - average_Rr;
                     numr   += (pixelL * pixelR);
@@ -440,17 +450,175 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
         _corrFunct[k] = (R_corr + G_corr + B_corr) / 3.0;
         _corrFunct[k] *= _count[k];
         _corrFunct[k] /= _maxCount;
+       // cout << "Loop2 time: " << (Time::now() - TimeStart) << endl;
 
     }
+    //cout << "Loops time: " << (Time::now() - TimeStart) << endl;
 
     findShiftMax(_corrFunct);
     findSecondMaxes(_corrFunct, _maxShifts[0].index);
     ret = filterMaxes();
 
-    //double endtime = Time::now();
-    //double result = endtime - TimeStart;
-    //TimeStart = Time::now(); 
-    //cout << "TIME " << result << endl;
+    //cout << "Final time: " << (Time::now() - TimeStart) << endl;
 
+    return (int)ret.disp;
+}
+
+int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, double value) {
+
+    TimeStart = Time::now();
+    cout << "ShiftLevels: " << _shiftLevels << endl;
+    cout << "ActRings: " << _actRings << endl;
+    cout << "Theta: " << _img.Size_Theta << endl;
+    
+    int i,j,k, k1;
+    int i2,i1;//iR,iL
+    double numr   = 0;
+    double den_1r = 0;
+    double den_2r = 0;
+    double numg   = 0;
+    double den_1g = 0;
+    double den_2g = 0;
+    double numb   = 0;
+    double den_1b = 0;
+    double den_2b = 0;
+
+    double sigma2 = 0;
+    double sigma1 = 0;
+    double grayAv1 = 0;
+    double grayAv2 = 0;
+
+    //YarpPixelRGBFloat pixel1;
+    //YarpPixelRGBFloat pixel2;
+    PixelRgb pixel1, pixel2;
+    
+    
+    double sum1R = 0;
+    double sum2R = 0;
+    double sum1G = 0;
+    double sum2G = 0;
+    double sum1B = 0;
+    double sum2B = 0;
+    double nElem = 0;
+
+    unsigned char * fullPtr,* fovPtr;
+
+    fullPtr = (unsigned char*)inRImg.getRawImage();
+    fovPtr = (unsigned char*)inLImg.getRawImage();
+
+    int tIndex;
+
+   // int AddedPadSize = computePadSize(_img.Size_Theta*_img.LP_Planes,_img.padding) - _img.Size_Theta*_img.LP_Planes;
+
+    for (k=0; k<_shiftLevels; k++) {
+        k1 = k * _img.Size_LP; //Positioning on the table
+
+        numr   = 0;
+        den_1r = 0;
+        den_2r = 0;
+        numg   = 0;
+        den_1g = 0;
+        den_2g = 0;
+        numb   = 0;
+        den_1b = 0;
+        den_2b = 0;
+
+        sum1R = 0;
+        sum2R = 0;
+        sum1G = 0;
+        sum2G = 0;
+        sum1B = 0;
+        sum2B = 0;
+        nElem = 0;
+
+        sigma1 = 0;
+        sigma2 = 0;
+        grayAv1 = 0;
+        grayAv2 = 0;
+
+        fullPtr = (unsigned char*)inRImg.getRawImage();
+        fovPtr = (unsigned char*)inLImg.getRawImage();
+
+        if (_count[k] == _maxCount) {
+            for (j=0; j<_actRings; j++) {
+                tIndex = j*_img.Size_Theta;
+                for (i=0; i<_img.Size_Theta; i++) {
+                    i2 = _shiftMap[k1 + tIndex+i];
+                    i1 = 3 * (tIndex+i);
+
+                    if (i2 > 0) {
+                        pixel1.r = *fovPtr++;
+                        pixel2.r = fullPtr[i2];
+                        pixel1.g = *fovPtr++;
+                        pixel2.g = fullPtr[i2+1];
+                        pixel1.b = *fovPtr++;
+                        pixel2.b = fullPtr[i2+2];
+
+                        double gray1 = (pixel1.r + pixel1.g+pixel1.b)/3.0;
+                        double gray2 = (pixel2.r+pixel2.g+pixel2.b)/3.0;
+
+                        numr   += (pixel1.r * pixel2.r);
+                        sum1R += pixel1.r;
+                        sum2R += pixel2.r;
+                        den_1r += (pixel1.r * pixel1.r);
+                        den_2r += (pixel2.r * pixel2.r);
+
+                        numg   += (pixel1.g * pixel2.g);
+                        sum1G += pixel1.g;
+                        sum2G += pixel2.g;
+                        den_1g += (pixel1.g * pixel1.g);
+                        den_2g += (pixel2.g * pixel2.g);
+
+                        numb   += (pixel1.b * pixel2.b);
+                        sum1B += pixel1.b;
+                        sum2B += pixel2.b;
+                        den_1b += (pixel1.b * pixel1.b);
+                        den_2b += (pixel2.b * pixel2.b);
+
+                        sigma1 += gray1*gray1;
+                        sigma2 += gray2*gray2;
+                        grayAv1 += gray1;
+                        grayAv2 += gray2;
+
+                        nElem++;
+                    }
+                    else fovPtr +=3;
+                }
+               // fovPtr+=AddedPadSize;
+            }
+
+            double tmpR;
+            double tmpG;
+            double tmpB;
+            tmpR = (den_1r-sum1R*sum1R/nElem)*(den_2r-sum2R*sum2R/nElem);
+            tmpG = (den_1g-sum1G*sum1G/nElem)*(den_2g-sum2G*sum2G/nElem);
+            tmpB = (den_1b-sum1B*sum1B/nElem)*(den_2b-sum2B*sum2B/nElem);
+
+            _corrFunct[k] = 0;
+            if (tmpR>0)
+                _corrFunct[k] += (numr-sum1R*sum2R/nElem)/sqrt(tmpR);
+
+            if (tmpG>0)
+                _corrFunct[k] += (numg-sum1G*sum2G/nElem)/sqrt(tmpG);
+
+            if (tmpB>0)
+                _corrFunct[k] += (numb-sum1B*sum2B/nElem)/sqrt(tmpB);
+                      
+            _corrFunct[k] /= 3.0;
+
+      //      _std2[k] = (1/nElem)*(sigma2-grayAv2*grayAv2/nElem)/(128*128);
+       //     _std1[k]= (1/nElem)*(sigma1-grayAv1*grayAv1/nElem)/(128*128);
+        }
+        else{
+        //_corrFunct[k] = 0;
+     //   _std2[k] = 0;
+     //   _std1[k] = 0;
+        }
+    }
+
+    findShiftMax(_corrFunct);
+    findSecondMaxes(_corrFunct, _maxShifts[0].index);
+    ret = filterMaxes();
+     cout << "Final time: " << (Time::now() - TimeStart) << endl;
     return (int)ret.disp;
 }

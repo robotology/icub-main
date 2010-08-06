@@ -84,13 +84,14 @@ public:
     }
 
     int computeDisparityCorrRGBsum (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
-    int computeDisparityCorrRGBsum2 (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
+    int computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, double value);
+    /*int computeDisparityCorrRGBsum2 (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
     int computeDisparityCorrRGBsum3 (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
     int computeDisparityCorrRGBprod (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
     int computeDisparitySSD_RGBsum (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
     int computeDisparitySSD_RGBprod (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
     int computeDisparitySSDAvg_RGBsum (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
-    int computeDisparitySSDAvg_RGBprod (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);
+    int computeDisparitySSDAvg_RGBprod (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, int step);*/
     void makeHistogram(ImageOf<PixelMono> & hImg);
     void makeNormSSDHistogram(ImageOf<PixelMono> & hImg);
     void Remap(ImageOf<PixelRgb>  & lpIn, ImageOf<PixelRgb>  & cartOut);
@@ -108,7 +109,7 @@ public:
     void AllocateVectors();
     void setSize( ImageOf<PixelRgb> *inRImg );
 
-protected:
+private:
 
     Image_Data _img;
     int imageSize;
