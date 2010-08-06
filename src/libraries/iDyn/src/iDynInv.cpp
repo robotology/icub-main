@@ -1378,8 +1378,8 @@ void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
 		ddp = getR().transposed() * link->getLinAcc() 
-			+ cross(w,getr(true))
-			+ cross(dw,cross(w,getr(true)));
+			+ cross(dw,getr(true))
+			+ cross(w,cross(w,getr(true)));
 		break;
 	case STATIC:
 		ddp = getR().transposed() * link->getLinAcc();
