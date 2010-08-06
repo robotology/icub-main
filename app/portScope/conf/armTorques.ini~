@@ -1,0 +1,15 @@
+local /scope/armTorques:i
+
+rows 2
+cols 2
+
+
+dx 390
+dy 805
+
+x 800
+y   0
+
+remote ((/icub/joint_left_arm/analog:o) (/icub/joint_right_arm/analog:o) (/icub/joint_left_arm/analog:o) (/icub/joint_right_arm/analog:o))
+index  (((0 1)) ((0 1)) ((2 3)) ((2 3)))
+

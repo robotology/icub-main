@@ -1,0 +1,13 @@
+local /scope/armCurrents:i
+
+rows 2
+cols 2
+
+dx 390
+dy 390
+
+x 400
+y 440
+
+remote ((/icub/controlBoardDumper/left_arm/getCurrents) (/icub/controlBoardDumper/right_arm/getCurrents) (/icub/controlBoardDumper/left_arm/getCurrents) (/icub/controlBoardDumper/right_arm/getCurrents))
+index  (((0 1 2)) ((0 1 2)) ((3 4 5)) ((3 4 5)))

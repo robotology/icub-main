@@ -1,0 +1,15 @@
+local /scope/armOutputs:i
+
+rows 2
+cols 2
+
+dx 390
+dy 390
+
+x   0
+y 440
+
+
+remote ((/icub/controlBoardDumper/left_arm/getOutputs) (/icub/controlBoardDumper/right_arm/getOutputs) (/icub/controlBoardDumper/left_arm/getOutputs) (/icub/controlBoardDumper/right_arm/getOutputs))
+index  (((0 1 2)) ((0 1 2)) ((3 4 5)) ((3 4 5)))
+
