@@ -999,7 +999,7 @@ void blobFinderThread::rain(ImageOf<PixelMono>* edgesImage){
 void blobFinderThread::drawAllBlobs(bool stable)
 {
     salience->ComputeSalienceAll(this->max_tag,this->max_tag);
-    //extracts the PixelBgr color of a particular blob identified by the id (last parameter)
+    //extracts the PixelBgr color of a fovea blob
     PixelBgr varFoveaBlob = salience->varBlob(*tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, 1);
 
     salience->drawFoveaBlob(*blobFov, *tagged);
@@ -1060,16 +1060,16 @@ void blobFinderThread::drawAllBlobs(bool stable)
     PixelMono searchTD=0;
     PixelMono pixelRG=0,pixelGR=0,pixelBY=0;
     searchRG=((targetRED-targetGREEN+255)/510)*255;
-    //pixelRG=255-searchRG;
-    pixelRG=targetRED;
+    pixelRG=searchRG;
+    //pixelRG=targetRED;
     searchGR=((targetGREEN-targetRED+255)/510)*255;
-    //pixelGR=255-searchGR;
-    pixelGR=targetGREEN;
+    pixelGR=searchGR;
+    //pixelGR=targetGREEN;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
     searchBY=((targetBLUE-addRG+255)/510)*255; 
-    //pixelBY=255-searchBY;
-    pixelBY=targetBLUE;
-    //printf("%d,%d,%d \n",pixelRG, pixelGR,pixelBY);
+    pixelBY=searchBY;
+    //pixelBY=targetBLUE;
+    printf("%d,%d,%d \n",pixelRG, pixelGR,pixelBY);
 
     //int psb32s;
     //int psb8u;

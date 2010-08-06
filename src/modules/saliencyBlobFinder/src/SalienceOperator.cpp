@@ -618,8 +618,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             
             //__OLD//int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*.75;
             //__OLD//int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*.75;
-            int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*1;
-            int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*1;
+            int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*1; //surrounding area coeff 1
+            int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*1; //surrounding area coeff 1
 
 
             int a,b,c,d;
@@ -656,6 +656,9 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             mlp=integralRG->getMeanLp(a,b,c,d);
             tmp=255*height*width*(int)floor(mlp);
             t=tmp-m_boxes[i].meanRG;
+            if(m_boxes[i].meanRG>128){
+                printf("");
+            }
             t_abs=abs(t);
             m_boxes[i].cRG=t_abs;
 
@@ -672,10 +675,11 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             m_boxes[i].cBY=t_abs;
             
 
-            /*__OLD//salienceBU=sqrt(m_boxes[i].cRG*m_boxes[i].cRG+
+            /*__OLD*/
+            salienceBU=sqrt((double)m_boxes[i].cRG*m_boxes[i].cRG+
                             m_boxes[i].cGR*m_boxes[i].cGR+
                             m_boxes[i].cBY*m_boxes[i].cBY);
-            salienceBU=salienceBU/sqrt(3);*/
+            salienceBU=255-salienceBU/sqrt(3.0);
 
             /*__OLD//salienceBU=m_boxes[i].cRG;
             if (salienceBU<m_boxes[i].cGR)
@@ -685,7 +689,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
 
             //__OLD//sum of abs of contrast differences
             // BU(bottom up) is the sum of abs of contrast divergence
-            salienceBU=m_boxes[i].cRG+m_boxes[i].cGR+m_boxes[i].cBY;
+            //salienceBU=m_boxes[i].cRG+m_boxes[i].cGR+m_boxes[i].cBY;
             
             // CALCULATE THE TOP-DOWN SALIENCY 
             // as the euclidian distance between the colour of the blob and the colour of the target
@@ -756,7 +760,9 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
     for (int i = 1; i < numBlob; i++) {
             if (m_boxes[i].valid) {
             //calculates the salience total
-            m_boxes[i].salienceTotal=pBU*(a1*m_boxes[i].salienceBU+b1)+pTD*(a2*m_boxes[i].salienceTD+b2);
+            double saliencyTD_norm=a2*m_boxes[i].salienceTD+b2;
+            double saliencyBU_norm=a1*m_boxes[i].salienceBU+b1;
+            m_boxes[i].salienceTotal=pBU*saliencyBU_norm+pTD*saliencyTD_norm;
             //correction between salience interval
             if (m_boxes[i].salienceTotal<minSalienceTot)
                 minSalienceTot=m_boxes[i].salienceTotal;
