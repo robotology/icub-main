@@ -8,6 +8,7 @@
 
 // outside project includes
 #include <ippi.h>
+#include <ippcore.h>
 
 
 class visualFilterThread : public yarp::os::Thread

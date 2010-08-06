@@ -43,6 +43,8 @@ visualFilterThread::visualFilterThread() {
 
 
 bool visualFilterThread::threadInit() {
+    ippSetNumThreads(1);
+
     /* open ports  */ 
     if (!imagePortIn.open(getName("/image:i").c_str())) {
         cout <<": unable to open port "  << endl;
