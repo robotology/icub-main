@@ -51,7 +51,7 @@ if(ICUB_USE_IPP)
     # insert herein modules depending on IPP
     #add_subdirectory(imageProcessor)
     add_subdirectory(saliencyBlobFinder)
-    #add_subdirectory(saliencyBlobFinderInterface)
+    add_subdirectory(saliencyBlobFinderInterface)
     #add_subdirectory(colourProcessor)
     add_subdirectory(visualFilter)
 else(ICUB_USE_IPP)
