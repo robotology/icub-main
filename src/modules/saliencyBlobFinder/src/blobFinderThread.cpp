@@ -52,6 +52,8 @@ bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,const yarp::si
 
 blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 {
+    
+    ippSetNumThreads(1);
     reinit_flag=false;
     interrupted_flag=false;
     ct=0;
@@ -140,7 +142,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 
 blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
 {
-    ippSetNumThreads();
+    ippSetNumThreads(1);
 
     reinit_flag=false;
     interrupted_flag=false;
