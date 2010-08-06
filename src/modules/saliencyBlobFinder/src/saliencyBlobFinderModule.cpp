@@ -409,7 +409,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 string s(command.get(2).asString().c_str());
                 printf("image composed by mean colour blobs selected as output\n");
                 if(0!=blobFinder){
-                    this->blobFinder->resetFlags();
+                    //this->blobFinder->resetFlags();
                     this->blobFinder->meanColour_flag=true;
                 }
                 //reply.addString("connection 1");

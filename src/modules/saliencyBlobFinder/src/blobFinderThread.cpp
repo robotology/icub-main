@@ -499,8 +499,36 @@ void blobFinderThread::run() {
                 ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
             }
+            /*else if(this->blobCataloged_flag){
+                if(this->contrastLP_flag){
+                    this->drawAllBlobs(true);
+                    ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                    conversion=true;
+                }*/
+            else if(this->meanColour_flag){
+                //_outputImage=_wOperator->getPlane(&_inputImg); 
+                //rain();
+                this->drawAllBlobs(true);
+                salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
+                salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
+                ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
+                conversion=false;
+                if(maxSaliencyBlob_flag) {
+                    this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                    ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                }
+                else if(contrastLP_flag) {
+                    ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                }
+            }
+                /*
+                else{
+                    _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+                    conversion=true;
+                }*/
+            //}
             else if(this->maxSaliencyBlob_flag){
-                this->drawAllBlobs(false);
+                this->drawAllBlobs(true);
                 /*
                 if(filterSpikes_flag){
                     count++;
@@ -560,26 +588,7 @@ void blobFinderThread::run() {
                 ippiCopy_8u_C3R(this->salience->colorVQ_img->getRawImage(),this->salience->colorVQ_img->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);
                 conversion=false;
             }
-            else if(this->blobCataloged_flag){
-                if(this->contrastLP_flag){
-                    this->drawAllBlobs(true);
-                    ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(this->meanColour_flag){
-                    //_outputImage=_wOperator->getPlane(&_inputImg); 
-                    //rain();
-                    this->drawAllBlobs(true);
-                    salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
-                    salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
-                    ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
-                    conversion=false;
-                }
-                else{
-                    _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
-                    conversion=true;
-                }
-            }
+            
             else{
                 //_outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
                 conversion=true;
@@ -588,15 +597,15 @@ void blobFinderThread::run() {
             outPorts();
 
             if(checkPort.getOutputCount()){
-                //ippiRShiftC_8u_
-                if((maxSaliencyBlob_flag)||(contrastLP_flag)){
+                if (meanColour_flag) {
+                    ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
+                }
+                else {
                     Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
                     ippiCopy_8u_P3C3R(im_tmp,_outputImage->getRowSize(),img->getRawImage(),img->getRowSize(),srcsize);
                     ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),img->getRawImage(),img->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
                 }
-                else
-                    ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
-
+                    
                 logpolarToCart(*_outputImage3Cart,*_outputImage3Merged,l2cTable);
                 checkPort.prepare() = *(_outputImage3Cart);
                 checkPort.write();
