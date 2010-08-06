@@ -1394,7 +1394,7 @@ void SensorLinkNewtonEuler::computeLinAccC()
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		ddpC = getLinAcc() + cross(getAngVel(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC()));
+		ddpC = getLinAcc() + cross(getAngAcc(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC()));
 		break;
 	case STATIC:
 		ddpC = ddp;
