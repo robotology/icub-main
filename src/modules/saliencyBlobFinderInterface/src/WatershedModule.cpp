@@ -1153,6 +1153,16 @@ static void cb_digits_scaleb( GtkAdjustment *adj )
     wModule->message->assign(str.c_str());
 }
 
+static void cb_digits_scalemin( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+    wModule->minBoundingArea=adj->value;
+    printf("minBoundingArea: %f",wModule->minBoundingArea);
+    std::string str("");
+    sprintf((char *)str.c_str(),"set mBA %2.2f",wModule->minBoundingArea);
+    wModule->message->assign(str.c_str());
+}
+
 static void cb_digits_scaletime( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
@@ -1736,7 +1746,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     
     
     GtkWidget *scale;
-    GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb, *adjtime;
+    GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb,*adjmin, *adjtime;
     GtkWidget *hscale, *vscale;
 
 
@@ -1887,6 +1897,18 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (hscale);
     g_signal_connect (G_OBJECT (adjb), "value_changed",
                       G_CALLBACK (cb_digits_scaleb), NULL);
+
+    label = gtk_label_new ("minBounding area:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    adjmin = gtk_adjustment_new (225,100,1000,1,1,1);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjmin));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adjmin), "value_changed",
+                      G_CALLBACK (cb_digits_scalemin), NULL);
     
     label = gtk_label_new ("time decimal constant1 (x y z):");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);

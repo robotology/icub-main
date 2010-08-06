@@ -258,7 +258,6 @@ public:
     */
     void drawAllBlobs(bool stable);
     
-    //----------------- PUBLIC ATTRIBUTES -----------------------------
     /**
     * counter
     */
@@ -288,30 +287,15 @@ public:
     * time constant of the robot in seconds for the format (set img x y)
     */
     double timeCentroid;
-    /**
-    * red intensity of the target that has been found 
-    */
-    double targetRED;
-    /**
-    * green intensity of the target that has been found 
-    */
-    double targetGREEN;
-    /**
-    * blue intensity of the target that has been found 
-    */
-    double targetBLUE;
-    /**
-    * R+G- value for the search
-    */
-    int searchRG;
-    /**
-    * G+R- value for the search
-    */
-    int searchGR;
-    /**
-    * B+Y- value for the search
-    */
-    int searchBY;
+
+    double targetRED; //red intensity of the target that has been found 
+    double targetGREEN; //green intensity of the target that has been found 
+    double targetBLUE; //blue intensity of the target that has been found 
+    double minBoundingArea; //area of surrouning neighbourhood
+
+    int searchRG; //R+G- value for the search
+    int searchGR; //G+R- value for the search
+    int searchBY; //B+Y- value for the search
 
     /**
     * Output Bottle Port for any possible command
