@@ -28,7 +28,7 @@
 		<node>/console</node>
 	</module>
 		<module>
-		<name>selectiveAttentionEgine</name>
+		<name>selectiveAttentionEngine</name>
 		<parameters>--from selectiveAttentionLeft.ini --context logpolarAttention/conf </parameters>
 		<tag>selectiveAttLeft</tag>
 		<node>/powerNode1</node>
@@ -107,6 +107,7 @@
 		<to>/blobFinder/icub/left_cam</to>
 		<protocol>udp</protocol>
 	</connection>
+	<connection>
 	<from>/icub/cam/left/logpolar</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/image:i</to>
 		<protocol>mcast</protocol>
