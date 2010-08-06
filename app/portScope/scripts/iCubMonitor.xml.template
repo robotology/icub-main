@@ -1,0 +1,59 @@
+<application>
+<name> leftArmControlBoardMonitor </name>		
+    <dependencies>
+        <port>/icub/left_arm/state:o </port>
+	    <port>/icub/left_arm/analog:o </port>
+        <port>/icub/right_arm/state:o </port>
+	    <port>/icub/right_arm/analog:o </port>
+    </dependencies>
+
+    <module>
+        <name>controlBoardDumper</name>
+        <tag>iCubDumperRightArmCurrents</tag>
+        <parameters>--from icubRightArm.ini</parameters>
+        <node>node1</node>
+    </module>
+
+    <module>
+        <name>controlBoardDumper</name>
+        <tag>iCubDumperLeftArmCurrents</tag>
+        <parameters>--from icubLeftArm.ini</parameters>
+        <node>node2</node>
+    </module>
+
+    <module>
+        <name>portScope</name>
+        <tag>iCubScopeArmStatus</tag>
+        <parameters>--from armStatus.ini</parameters>
+        <node>console</node>
+    </module>
+
+    <module>
+        <name>portScope</name>
+        <tag>iCubScopeArmFT</tag>
+        <parameters>--from armFT.ini</parameters>
+        <node>console</node>
+    </module>
+
+    <module>
+        <name>portScope</name>
+        <tag>iCubScopeArmTorques</tag>
+        <parameters>--from armTorques.ini</parameters>
+        <node>console</node>
+    </module>
+
+    <module>
+        <name>portScope</name>
+        <tag>iCubScopeArmCurrents</tag>
+        <parameters>--from armCurrents.ini</parameters>
+        <node>console</node>
+    </module>
+
+    <module>
+        <name>portScope</name>
+        <tag>iCubScopeArmOutputs</tag>
+        <parameters>--from armOutputs.ini</parameters>
+        <node>console</node>
+    </module>
+
+</application>
