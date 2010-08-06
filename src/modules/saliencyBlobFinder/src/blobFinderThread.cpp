@@ -52,8 +52,7 @@ bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,const yarp::si
 
 blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 {
-    
-    ippSetNumThreads(1);
+    //ippSetNumThreads(1);
     reinit_flag=false;
     interrupted_flag=false;
     ct=0;
@@ -142,7 +141,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 
 blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
 {
-    ippSetNumThreads(1);
+    //ippSetNumThreads(1);
 
     reinit_flag=false;
     interrupted_flag=false;
@@ -227,6 +226,7 @@ blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
     searchRG=0;
     searchGR=0;
     searchBY=0;
+    minBoundingArea=225;
 }
 
 
@@ -1029,7 +1029,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
         for (int i=0; i<2; i++) {
             memset(blobList, 0, sizeof(char)*(max_tag+1));
             wOperator->findNeighborhood(*tagged, 0, 0, blobList);
-            const int minBoundingArea=15*15;
+            //const int minBoundingArea=15*15;
             int count=salience->countSmallBlobs(*tagged, blobList, max_tag, minBoundingArea);
             //printf("Count of small blobs: %d \n",count);
             blobList[1]=0;

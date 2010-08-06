@@ -472,6 +472,14 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 ok=true;
             }
                 break;
+            case COMMAND_VOCAB_MBA:{
+                double w = command.get(2).asDouble();
+                printf("set mBA: %f \n", w);
+                if(0!=blobFinder)
+                    blobFinder->minBoundingArea=w;
+                ok=true;
+            }
+                break;
             case COMMAND_VOCAB_RIN:{
                 double w = command.get(2).asDouble();
                 printf("set rin: %f \n", w);

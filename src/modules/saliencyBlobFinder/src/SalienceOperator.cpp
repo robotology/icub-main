@@ -700,6 +700,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                             BYdistance*BYdistance);
             //printf("%d:   %d,%d,%d \n",i,m_boxes[i].meanRG,m_boxes[i].meanGR,m_boxes[i].meanBY);
             salienceTD=255-salienceTD/sqrt(3.0);
+            //salienceTD=255-salienceTD;
            
             
             /*__OLD//salienceTD=abs(m_boxes[i].meanRG-prg);

@@ -57,6 +57,8 @@
 #define COMMAND_VOCAB_BIN VOCAB3('b','i','n') //blue intensity value
 #define COMMAND_VOCAB_MAXDB VOCAB3('M','d','b') //Maximum dimension of the blob drawn
 #define COMMAND_VOCAB_MINDB VOCAB3('m','d','b') //minimum dimension of the blob drawn
+#define COMMAND_VOCAB_MBA VOCAB3('m','B','A') //minimum dimension of the bounding area
+
 
 
 // directional saliency filter vocab's
