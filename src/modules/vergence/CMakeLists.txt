@@ -8,7 +8,7 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
-                    ${ICUB_INCLUDE_DIRS}
+                    ${ACE_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
 		            ${iKin_INCLUDE_DIRS}
 		            ${logPolar_INCLUDE_DIRS}			
@@ -20,7 +20,7 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME}
                      iKin
                      ${YARP_LIBRARIES}
      				 logPolar
-				     ${ICUB_LIBRARIES}
+				     ${ACE_LIBRARIES}
     				 )
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
