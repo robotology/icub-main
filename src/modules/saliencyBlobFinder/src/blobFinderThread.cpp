@@ -1,3 +1,4 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/blobFinderThread.h>
 #include <cstring>
 #include <iostream>
@@ -227,6 +228,7 @@ blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
     searchGR=0;
     searchBY=0;
     minBoundingArea=225;
+
 }
 
 

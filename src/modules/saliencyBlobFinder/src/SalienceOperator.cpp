@@ -72,7 +72,7 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
     _img.padding =1; // YarpImageAlign;
     _img.Pix_Numb = 2;
     _img.Fovea_Type = 0;
-
+    pArea=1.0;
 
 }
 
@@ -618,8 +618,10 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             
             //__OLD//int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*.75;
             //__OLD//int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*.75;
-            int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*1; //surrounding area coeff 1
-            int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*1; //surrounding area coeff 1
+            //int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*1; //surrounding area coeff 1
+            //int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*1; //surrounding area coeff 1
+            int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*pArea; //surrounding area coeff 1
+            int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*pArea; //surrounding area coeff 1
 
 
             int a,b,c,d;

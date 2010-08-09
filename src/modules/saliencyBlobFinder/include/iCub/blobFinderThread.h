@@ -224,7 +224,6 @@ public:
     int max_tag; //number of blobs
     int countSpikes; //number of spikes which are count to get the strongest
     int minBoundingArea; //dimension of the bounding area in saliency BU algorithm
-    double pArea; //percentage of the blobdimension considered surrounding area
 };
 
 #endif //__BLOBFINDERTHREAD_H_

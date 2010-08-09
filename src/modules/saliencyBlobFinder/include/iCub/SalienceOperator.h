@@ -415,74 +415,27 @@ public:
     * @param box reference to the box whose area will be returned
     */
     inline int TotalArea(YARPBox& box) { return (box.xmax - box.xmin + 1) * (box.ymax - box.ymin + 1); }
-    //---attributes
-    /**
-    * color quantizator
-    */
-    ColorVQ *colorVQ;
-    /** 
-    * integral image of R+G-
-    */
-    YARPIntegralImage *integralRG;
-    /** 
-    * integral image of G+R-
-    */
-    YARPIntegralImage *integralGR;
-    /** 
-    * integral image of B+Y-
-    */
-    YARPIntegralImage *integralBY;
-    /**
-    * colour quantization image
-    */
-    ImageOf<PixelBgr>* colorVQ_img;
-    /**
-    * one channel image representing the fovea blob
-    */
-    ImageOf<PixelMono>* foveaBlob;
-    /**
-    * image of the most salient blob
-    */
-    ImageOf<PixelMono>* maxSalienceBlob_img;
-    /**
-    * center of the max saliency blob, x coordinate
-    */
-    double centroid_x;
-    /**
-    * center of the max saliency blob, x coordinate
-    */
-    double centroid_y;
-    /**
-    * center of the blob that has strongest reinforcement, x coordinate in cartesian space
-    */
-    double target_x;
-    /**
-    * center of the blob that has strongest reinforcement, y coordinate in cartesian space
-    */
-    double target_y;
-    /**
-    * center of the blob that has strongest reinforcement, x coordinate in logPolar space
-    */
-    int target_c;
-    /**
-    * center of the blob that has strongest reinforcement, y coordinate in logPolar space
-    */
-    int target_r;
 
-    /**
-    * center of the max saliency blob, logpolar c coordinate
-    */
-    double maxc;
-    /**
-    * center of the max saliency blob, logpolar r coordinate
-    */
-    double maxr;
-    /**
-    * map which contains the number of spikes for a specific blob
-    */
-    std::map<std::string,int> spikeMap;
+    ColorVQ *colorVQ; //color quantizator
+    YARPIntegralImage *integralRG; //integral image of R+G-
+    YARPIntegralImage *integralGR; //integral image of G+R-
 
-   
+    YARPIntegralImage *integralBY; //integral image of B+Y-
+    ImageOf<PixelBgr>* colorVQ_img; //colour quantization image
+    ImageOf<PixelMono>* foveaBlob; //one channel image representing the fovea blob
+    ImageOf<PixelMono>* maxSalienceBlob_img; //image of the most salient blob
+
+    double centroid_x; //center of the max saliency blob, x coordinate
+    double centroid_y; //center of the max saliency blob, x coordinate
+    double target_x; //center of the blob that has strongest reinforcement, x coordinate in cartesian space
+    double target_y; //center of the blob that has strongest reinforcement, y coordinate in cartesian space
+    int target_c; //center of the blob that has strongest reinforcement, x coordinate in logPolar space
+    int target_r; //center of the blob that has strongest reinforcement, y coordinate in logPolar space
+    double maxc; //center of the max saliency blob, logpolar c coordinate
+    double maxr; //center of the max saliency blob, logpolar r coordinate
+    std::map<std::string,int> spikeMap; //map which contains the number of spikes for a specific blob
+
+    double pArea; //percentage of the blobdimension considered surrounding area
     
 };
 

@@ -486,7 +486,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 int w = command.get(2).asInt();
                 printf("set PAR: %f \n", w);
                 if(0!=blobFinder)
-                    blobFinder->pArea=w/100;
+                    blobFinder->salience->pArea=w/100;
                 ok=true;
             }
                 break;
