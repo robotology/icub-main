@@ -557,9 +557,9 @@ void blobFinderThread::run() {
             this->drawAllBlobs(true);
             this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
             ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-            //salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
-            //salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
-            //ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
+            salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
+            salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
+            ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
 
             outPorts();
 

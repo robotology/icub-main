@@ -45,6 +45,7 @@
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
 #define COMMAND_VOCAB_FOVEA VOCAB3('f','o','v')
 #define COMMAND_VOCAB_WAT VOCAB3('w','a','t')
+#define COMMAND_VOCAB_PAR VOCAB3('p','a','r')
 // other commands
 #define COMMAND_VOCAB_TCON VOCAB3('t','c','o') //time contant for the controlGaze2
 #define COMMAND_VOCAB_TCEN VOCAB3('t','c','e') //time constant for the iKinGazeCtrl
@@ -102,24 +103,19 @@ IPP
 \section parameters_sec Parameters
 Here is a  comprehensive list of the parameters you can pass to the module.
 --name (string) name of the module. The name of all the ports will be istantiated starting from this name 
---file (string) name of the configuration file.
+--from (string) name of the configuration file.
+--context (string) name of the application
  
 \section portsa_sec Ports Accessed
 - /blobFinderInterface/command:o : once manually connected to the <name>/cmd the graphical interface is able to control this module (for further information press Help Button in the interface)
-- /colourPU/red:o:  red plane of the input image
-- /colourPU/green:o : green plane of the input image
-- /colourPU/blue:o : blue plane of the input image
-- /colourPU/rg:o :  colour opponency map of the input image (difference of gaussian)
-- /colourPU/gr:o : colour opponency map of the input image (difference of gaussian)
-- /colourPU/by:o : colour opponency map of the input image (difference of gaussian)
-- /imagePU/edges:o : edges extracted from the input image
+- /visualFilter/rg:o :  colour opponency map of the input image (difference of gaussian)
+- /visualFilter/gr:o : colour opponency map of the input image (difference of gaussian)
+- /visualFilter/by:o : colour opponency map of the input image (difference of gaussian)
+- /visualFilter/edges:o : edges extracted from the input image
 
 \section portsc_sec Ports Created
 - <name>/cmd
 - <name>/image:i
-- <name>/red:i
-- <name>/green:i
-- <name>/blue:i
 - <name>/rg:i
 - <name>/gr:i
 - <name>/by:i
@@ -135,9 +131,6 @@ Output ports:
 
 Input ports:
 - <name>/image:i: input ports which takes as input a yarp::sig::ImageOf<PixelRgb>
-- <name>/red:i: reads out a yarp::sig::ImageOf<PixelMono> which is the red plane
-- <name>/green:i:  reads out a yarp::sig::Image<PixelMono> which is the green plane
-- <name>/blue:i:  reads out a yarp::sig::Image<PixelMono> which is the blue plane
 - <name>/rg:i: acquires the input stream of the R+G- opponency map
 - <name>/gr:i: acquires the input stream of the G+R- opponency map
 - <name>/by:i: acquires the input stream of th B+Y- opponency map
@@ -161,6 +154,8 @@ This module is able to respond to the following set of commands:
 - set mdb: minimum dimension of the blob analysed
 - set tco: set the timeconstant in second for output format (x y z) 3d space
 - set tce: set the time constant in second for output forma (img x y) imageplane
+- set mBA: set minimum bounding area
+- set pAR: set percentage of the blob dimension considered surrounding area
 
 - rset flt : reset the filter
 
@@ -187,7 +182,7 @@ saliencyBlobFinder.ini
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-saliencyBlobFinder --file saliencyBlobFinder.ini
+saliencyBlobFinder --from saliencyBlobFinder.ini --context attentionMechanism/conf --name /blobFinder/icub/left_cam
 
 \author Francesco Rea
 

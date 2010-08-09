@@ -324,6 +324,8 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set rin : set red intensity value for the target to be sought");
             reply.addString("set gin : set green intensity value for the target to be sought");
             reply.addString("set bin : set blue intensity value for the target to be sought");
+            reply.addString("set wax : set minumum bounding area");
+            reply.addString("set par : set percentage of the blob dimension considered surrounding area");
             reply.addString("\n");
             reply.addString("set tcon : set the constantTimeGazeControl (ex.: format for iKinGazeCtrl) ");
             reply.addString("set tcen : set the constantTimeCentroidControl (ex.: format for controlGaze2) ");
@@ -477,6 +479,14 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 printf("set mBA: %f \n", w);
                 if(0!=blobFinder)
                     blobFinder->minBoundingArea=w;
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_PAR:{
+                int w = command.get(2).asInt();
+                printf("set PAR: %f \n", w);
+                if(0!=blobFinder)
+                    blobFinder->pArea=w/100;
                 ok=true;
             }
                 break;
