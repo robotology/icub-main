@@ -2,5 +2,5 @@ SET(KEYWORD "attentionSelection")
 
 PROJECT(${KEYWORD})
 
-add_subdirectory(attentionSelectionEngine)
-add_subdirectory(attentionSelectionInterface)
+add_subdirectory(selectiveAttentionEngine)
+add_subdirectory(selectiveAttentionInterface)
