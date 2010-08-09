@@ -43,7 +43,7 @@ visualFilterThread::visualFilterThread() {
 
 
 bool visualFilterThread::threadInit() {
-    //ippSetNumThreads(1);
+    ippSetNumThreads(1);
 
     /* open ports  */ 
     if (!imagePortIn.open(getName("/image:i").c_str())) {
@@ -292,8 +292,6 @@ void visualFilterThread::filtering() {
     ippiFilterGauss_8u_C1R(bluePlane->getRawImage(), bluePlane->getRowSize(),bluePlus->getRawImage(),bluePlus->getRowSize(),srcsize,ippMskSize5x5);
     ippiFilterGauss_8u_C1R(redPlane->getRawImage(), redPlane->getRowSize(),redPlus->getRawImage(),redPlus->getRowSize(),srcsize,ippMskSize5x5);
     ippiFilterGauss_8u_C1R(greenPlane->getRawImage(), greenPlane->getRowSize(),greenPlus->getRawImage(),greenPlus->getRowSize(),srcsize,ippMskSize5x5);
-
-    
 }
 
 void visualFilterThread::colourOpponency() {
@@ -363,7 +361,7 @@ void visualFilterThread::edgesExtract() {
             pedges++;
             
         }
-        for(int i=0;i<rowsize-width_orig;i++) {            
+        for(int i=0;i<rowsize-width_orig;i++) {
             pedges++;
         }
         for(int i=0;i<rowsize2-width_orig-maxKernelSize+maxKernelSize;i++) {
