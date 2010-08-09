@@ -5,12 +5,12 @@ SET(KEYWORD "selectiveAttentionInterface")
 PROJECT(${KEYWORD})
 
 
-FIND_PACKAGE(ICUB)
-FIND_PACKAGE(YARP REQUIRED)
-SET (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
-FIND_PACKAGE(OpenCV REQUIRED)
+#FIND_PACKAGE(ICUB)
+#FIND_PACKAGE(YARP REQUIRED)
+#SET (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
+#FIND_PACKAGE(OpenCV REQUIRED)
 #FIND_PACKAGE(ODE REQUIRED)
-FIND_PACKAGE(IPP REQUIRED)
+#FIND_PACKAGE(IPP REQUIRED)
 #FIND_PACKAGE(QT)
 
 #---------------------------------------
@@ -32,7 +32,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
     ${ICUB_INCLUDE_DIRS}
     ${YARP_INCLUDE_DIRS}
-    ${OPENCV_INCLUDE_DIR}    	
+    ${OpenCV_INCLUDE_DIR}    	
     ${IPP_INCLUDE_DIRS}	 
     #---linux    
     #$ENV{QT_INCLUDE_DIR}/include
@@ -52,38 +52,11 @@ FILE(GLOB folder_header include/iCub/*.h)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-SET(selectiveAttentionModuleSRC
-    src/selectiveAttentionModule.cpp
-)
-
 
 LINK_DIRECTORIES(
     ${ICUB_SOURCE_DIR}
     #/opt/intel/ipp/sharedlib	
 )
-
-#LINK_LIBRARIES(debug "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib" 
-#	optimized "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib")
-
-IF (WIN32) #required in win
-  LINK_LIBRARIES(
-    ${OPENCV_LIBRARIES}
-    ${YARP_LIBRARIES}
-    ${IDL_LIBRARIES}
-    ${IPP_LIBRARIES} 
-    #ippi	
-)	
-ELSE(WIN32) #required in linux
-  LINK_LIBRARIES(
-    ${OPENCV_LIBRARIES}
-    ${YARP_LIBRARIES}
-    ${IDL_LIBRARIES}
-    ${IPP_LIBRARIES} 
-    #ippi	
-    pthread
-)
-ENDIF (WIN32)
-
 
 
 # Set up our main executable.
@@ -91,12 +64,14 @@ IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
         ${folder_source} 
         ${folder_header}
+    )
+    TARGET_LINK_LIBRARIES( ${KEYWORD}
+      ${YARP_LIBRARIES}  	
     )	
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
 
 
-INSTALL_TARGETS(/lib ${KEYWORD})
 INSTALL_TARGETS(/bin ${KEYWORD})
 
