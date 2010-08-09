@@ -453,6 +453,7 @@ void blobFinderThread::run() {
             rain(edges);
 
 
+            /*
             if(redPlane_flag){
                 ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
@@ -503,12 +504,12 @@ void blobFinderThread::run() {
                 ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
             }
-            /*else if(this->blobCataloged_flag){
-                if(this->contrastLP_flag){
-                    this->drawAllBlobs(true);
-                    ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }*/
+            //else if(this->blobCataloged_flag){
+            //    if(this->contrastLP_flag){
+            //        this->drawAllBlobs(true);
+            //        ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+            //        conversion=true;
+            //    }
             else if(this->meanColour_flag){
                 //_outputImage=_wOperator->getPlane(&_inputImg); 
                 //rain();
@@ -525,64 +526,19 @@ void blobFinderThread::run() {
                     ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 }
             }
-                /*
-                else{
-                    _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
-                    conversion=true;
-                }*/
+                //else{
+                //    _outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+                //    conversion=true;
+                }
             //}
             else if(this->maxSaliencyBlob_flag){
                 this->drawAllBlobs(true);
-                /*
-                if(filterSpikes_flag){
-                    count++;
-                    if(count>SPIKE_COUNTS){
-                        //drawing the blob with max number of spikes
-                        count=0;
-                        this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
-                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                        conversion=true;
-                    }
-                    else{
-                        //counting the first 10 spikes
-                        YARPBox box;
-                        this->salience->countSpikes(*tagged,max_tag,box);
-                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    }
-                    
-                }
-                else{
-                    this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
-                    ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                */
                 this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
                 ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
             }
             else if(this->contrastLP_flag){
                 this->drawAllBlobs(true);
-                /*
-                if(filterSpikes_flag){
-                    count++;
-                    if(count>10){
-                        count=0;
-                        this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
-                        
-                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                        conversion=true;
-                    }
-                    else{
-                        YARPBox box;
-                        this->salience->countSpikes(*tagged,max_tag,box);
-                        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    }
-                }
-                else{
-                    salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
-                }
-                */
                 //salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
                 ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
@@ -596,7 +552,14 @@ void blobFinderThread::run() {
             else{
                 //_outputImage=wOperator->getPlane(ptr_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
                 conversion=true;
-            }
+            }*/
+
+            this->drawAllBlobs(true);
+            this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+            ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+            salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
+            salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
+            ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
 
             outPorts();
 
