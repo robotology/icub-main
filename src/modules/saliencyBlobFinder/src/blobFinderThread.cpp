@@ -565,6 +565,7 @@ void blobFinderThread::run() {
 
             outPorts();
 
+            
             if(checkPort.getOutputCount()){
                 if (meanColour_flag) {
                     ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
@@ -579,6 +580,7 @@ void blobFinderThread::run() {
                 checkPort.prepare() = *(_outputImage3Cart);
                 checkPort.write();
             }
+            
 
             /*endTimer=Time::now();
             double dif = endTimer-startTimer;
