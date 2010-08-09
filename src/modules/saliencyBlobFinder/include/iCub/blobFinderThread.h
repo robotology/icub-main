@@ -8,6 +8,7 @@
 
 //IPP include
 #include <ippi.h>
+#include <ippcore.h>
 
 //YARP includes
 #include <yarp/os/all.h>
