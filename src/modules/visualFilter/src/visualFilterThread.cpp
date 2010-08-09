@@ -241,7 +241,8 @@ void visualFilterThread::extractPlanes() {
     shift[2]=bluePlane->getRawImage();
     yellowP=yellowPlane->getRawImage();
     Ipp8u* inputPointer=inputExtImage->getRawImage();
-    //ippiCopy_8u_C3P3R(inputExtImage->getRawImage(),inputExtImage->getRowSize(),shift,redPlane->getRowSize(),srcsize);
+    int paddingMono=redPlane->getRowSize()-redPlane->width();
+    int padding3C=inputExtImage->getRowSize()-inputExtImage->width()*3;
     for(int r=0;r<inputExtImage->height();r++) {
         for(int c=0;c<inputExtImage->width();c++) {
             *shift[0]=*inputPointer;
@@ -256,8 +257,12 @@ void visualFilterThread::extractPlanes() {
             shift[2]++;
             yellowP++;
         }
+        inputPointer+=padding3C;
+        shift[0]+=paddingMono;
+        shift[1]+=paddingMono;
+        shift[2]+=paddingMono;
+        yellowP+=paddingMono;
     }
-    //ippiAdd_8u_C1RSfs(redPlane->getRawImage(),redPlane->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),yellowPlane->getRawImage(),yellowPlane->getRowSize(),srcsize,1);
 }
 
     
