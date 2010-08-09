@@ -38,32 +38,52 @@ static selectiveAttentionModule *selectiveAttentionModule;
 
 bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     ct = 0;
-	inputImage_flag=false;
+    inputImage_flag=false;
     reinit_flag=false;
     init_flag=false;
 
-	currentProcessor=0;
+    currentProcessor=0;
     inputImg=0;
     tmp=0;
     tmp2=0;
 
-    Time::turboBoost();
-    cmdPort.open(getName("/cmd:i"));
-    attach(cmdPort);
+    /* get the module name which will form the stem of all module port names */
+    moduleName            = rf.check("name", 
+                           Value("/selectiveAttentionEngine/icub/left_cam"), 
+                           "module name (string)").asString();
 
-    //interThread=new interactionThread();
-    //interThread->setName(this->getName().c_str());
-    //printf("name:%s \n",this->getName().c_str());
-    //interThread->start();
+    /*
+    * before continuing, set the module name before getting any other parameters, 
+    * specifically the port names which are dependent on the module name
+    */
+    setName(moduleName.c_str());
 
-    currentProcessor=new selectiveAttentionProcessor();
+    /* now, get the rest of the parameters */
+
+    /*
+    * get the ratethread which will define the period of the processing thread
+    */
+    rateThread             = rf.check("ratethread", 
+                           Value(30), 
+                           "processing ratethread (int)").asInt();
+
+
+    if (!cmdPort.open(getName())) {           
+      cout << getName() << ": Unable to open port " << endl;  
+      return false;
+    }
+
+    attach(cmdPort);                  // attach to port
+
+    //initialization of the main thread
+    
+    currentProcessor=new selectiveAttentionProcessor(rateThread);
+
     currentProcessor->setName(this->getName().c_str());
-    //currentProcessor->resizeImages(interThread->inputImg->width(),interThread->inputImg->height());
+    //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
     currentProcessor->start();
 
     printf("\n waiting for connection of the input port \n");
-
-    
     return true;
 }
 
@@ -71,7 +91,7 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
 bool selectiveAttentionModule::interruptModule() {    
     cmdPort.interrupt();
     currentProcessor->interrupt();
-	return true;
+    return true;
 }
 
 bool selectiveAttentionModule::close() {
@@ -81,13 +101,13 @@ bool selectiveAttentionModule::close() {
         printf("Thread running! Closing the thread ... \n");
         this->currentProcessor->stop();
     }
-	this->closePorts();
+    this->closePorts();
     printf("The module has been successfully closed ... \n");
-	return true;
+    return true;
 }
 
 void selectiveAttentionModule::setOptions(yarp::os::Property opt){
-	//options	=opt;
+    //options	=opt;
     // definition of the name of the module
     ConstString name=opt.find("name").asString();
     if(name!=""){
@@ -110,36 +130,36 @@ void selectiveAttentionModule::createObjects() {
 
 
 bool getImage(){
-	bool ret = false;
-	//ret = _imgRecv.Update();
-	if (ret == false){
-		return false;
-	}
+    bool ret = false;
+    //ret = _imgRecv.Update();
+    if (ret == false){
+        return false;
+    }
 
-	_semaphore.wait();
-	//ret = _imgRecv.GetLastImage(&_inputImg);
-	_semaphore.post();
+    _semaphore.wait();
+    //ret = _imgRecv.GetLastImage(&_inputImg);
+    _semaphore.post();
     printf("Acquired a new image for _imgRecv /n ");
-	
-	//selectiveAttentionModule->processor1->inImage=&_inputImg;
-	//selectiveAttentionModule->processor2->inImage=&_inputImg;
-	//selectiveAttentionModule->processor3->inImage=&_inputImg;
-	//printf("GetImage: out of the semaphore \n");
-	//selectiveAttentionModule->inputImage_flag=true;
-	return ret;
+    
+    //selectiveAttentionModule->processor1->inImage=&_inputImg;
+    //selectiveAttentionModule->processor2->inImage=&_inputImg;
+    //selectiveAttentionModule->processor3->inImage=&_inputImg;
+    //printf("GetImage: out of the semaphore \n");
+    //selectiveAttentionModule->inputImage_flag=true;
+    return ret;
 }
 
 void selectiveAttentionModule::setUp()
 {
-	printf("Module setting up automatically ..../n");
+    printf("Module setting up automatically ..../n");
 }
 
 bool selectiveAttentionModule::openPorts(){
-	
+    
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
 
-	return true;
+    return true;
 }
 
 bool selectiveAttentionModule::outPorts(){
@@ -150,7 +170,7 @@ bool selectiveAttentionModule::closePorts(){
     cmdPort.close();
     printf("All the ports successfully closed ... \n");
 
-	return true;
+    return true;
 }
 
 
@@ -170,7 +190,7 @@ bool selectiveAttentionModule::updateModule() {
     /*
     if((0!=interThread->inputImg)&&(!init_flag)){
         
-	    printf("input port activated! starting the processes ....\n");    
+        printf("input port activated! starting the processes ....\n");    
 
         //ConstString portName2 = options.check("name",Value("/worker2")).asString();
         //starting rgb thread and linking all the images

@@ -146,73 +146,27 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 **/
 
-class selectiveAttentionModule : public yarp::os::RFModule{
+class selectiveAttentionModule : public yarp::os::RFModule {
 private:
-     
-    /*
-    * command port of the module
-    */
-    yarp::os::Port cmdPort;
-    /**
-    * counter of the module
-    */
-    int ct;
-    /**
-    * options of the connection
-    */
-    yarp::os::Property options;	//
-    /**
-    * width of the input image
-    */
-    int width;
-    /**
-    * height of the input image
-    */
-    int height;
-    /**
-    * flag that indicates when the reinitiazation has already be done
-    */
-    bool reinit_flag;
-    /**
-    * semaphore for the respond function
-    */
-    yarp::os::Semaphore mutex;
-     /**
-    * input image reference
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
-     /**
-    * temporary mono image
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;
-     /**
-    * temporary rgb image
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;
-    /**
-    * input image of the 1st map
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map1Img;
-    /**
-    * input image of the 2nd map
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map2Img;
-    /**
-    * input image of the 3rd map
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map3Img;
-    /**
-    * input image of the 4th map
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map4Img;
-    /**
-    * input image of the 5th map
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map5Img;
-    /**
-    * input image of the 6th map
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map6Img;
+
+    yarp::os::Port cmdPort; //command port of the module
+    int ct; //counter of the module
+    yarp::os::Property options;   // options of the connection
+    int width; //width of the input image
+    int height; //height of the input image
+    int rateThread; // rateThread of the processor Thread
+    bool reinit_flag; //flag that indicates when the reinitiazation has already be done
+    yarp::os::Semaphore mutex; //semaphore for the respond function
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg; //input image reference
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp; //temporary mono image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2; //temporary rgb image
+    
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map1Img; //input image of the 1st map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map2Img; //input image of the 2nd map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map3Img; //input image of the 3rd map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map4Img; //input image of the 4th map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map5Img; //input image of the 5th map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map6Img; //input image of the 6th map
     
 
     /**
@@ -220,10 +174,10 @@ private:
     */
     void resetFlags();
 
-     
 public:
     /**
     *open the ports of the module
+    *@param config configuration of the module
     */
     bool open(yarp::os::Searchable& config); //
     /**
@@ -245,14 +199,19 @@ public:
     virtual bool configure(yarp::os::ResourceFinder &rf);
     /**
     * set the attribute options of class Property
+    *@param options of the current module
     */
     void setOptions(yarp::os::Property options); //
     /**
     * function to reainitialise the attributes of the class
+    * @param weight size of the input image
+    * @param height size of the input image
     */
     void reinitialise(int weight, int height);
     /**
     * respond to command coming from the command port
+    * @param command command received
+    * @param reply bottle used as a reply
     */
     bool respond(const yarp::os::Bottle &command,yarp::os::Bottle &reply);
     /**
@@ -263,8 +222,6 @@ public:
     * sets the adjustments in the window
     */
     void setAdjs();
-    //gint timeout_CB (gpointer data);
-    //bool getImage();
     /**
     * opens all the ports necessary for the module
     */
@@ -285,21 +242,11 @@ public:
     * function that starts the selectiveAttentionProcessor
     */
     bool startselectiveAttentionProcessor();
-    //_____________ ATTRIBUTES __________________
-    /**
-    * processor that controls the processing of the input image
-    */
-    selectiveAttentionProcessor *currentProcessor;
-    
-    /**
-    * flag that controls if the inputImage has been ever read
-    */
-    bool inputImage_flag;
-    /**
-    * check of the already happened initialisation
-    */
-    bool init_flag;
-    
+
+    selectiveAttentionProcessor *currentProcessor; //processor that controls the processing of the input image
+    bool inputImage_flag; //flag that controls if the inputImage has been ever read
+    bool init_flag; //check of the already happened initialisation
+    std::string moduleName; //name of the module read from configuration 
 };
 
 #endif //_selectiveAttentionModule_H_

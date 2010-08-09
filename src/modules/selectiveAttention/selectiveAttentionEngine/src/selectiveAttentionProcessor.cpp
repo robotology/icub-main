@@ -26,10 +26,9 @@ using namespace std;
 //#define OPENCVSOBEL
 //#define CONVSEQ
 
-selectiveAttentionProcessor::selectiveAttentionProcessor()//:RateThread(THREAD_RATE)
+selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
 {
     this->inImage=new ImageOf<PixelRgb>;
-    
 
     maskSeed=4;
     maskTop=20;
@@ -105,12 +104,9 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
     
 }
 
-selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage)//:RateThread(THREAD_RATE)
-{
+selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE) {
     this->inImage=inputImage;
 //    this->portImage=portImage;
- 
-    //IppiSize srcsize={320,240};
 
     //edgesOutput=new ImageOf<PixelMono>;
     //portImage=new ImageOf<PixelRgb>;
@@ -225,9 +221,6 @@ std::string selectiveAttentionProcessor::getName(const char* p){
 void selectiveAttentionProcessor::run(){
 
 
-    while(!isStopping()){
-        //1. receiving inputs
-
         //synchronisation with the input image occuring
         if(!interrupted){
             //-----------check for any possible command
@@ -293,7 +286,7 @@ void selectiveAttentionProcessor::run(){
             //}
             //if(inImagePort.getInputCount()){
                 
-            tmp2=inImagePort.read(true);
+            tmp2=inImagePort.read(false);
             
             if(tmp2==0){
                 return;
@@ -314,29 +307,29 @@ void selectiveAttentionProcessor::run(){
             //currentProcessor->inImage=tmp2;
 
             if(map1Port.getInputCount()){    
-                tmp=map1Port.read(true);
+                tmp=map1Port.read(false);
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),srcsize);
                 
             }
             if(map2Port.getInputCount()){    
-                tmp=map2Port.read(true);
+                tmp=map2Port.read(false);
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),srcsize);
             }
             if(map3Port.getInputCount()){
-                tmp=map3Port.read(true);
+                tmp=map3Port.read(false);
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),srcsize);
             }
             if(map4Port.getInputCount()){
-                tmp=map4Port.read(true);
+                tmp=map4Port.read(false);
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),srcsize);
             }
             
             if(map5Port.getInputCount()){
-                tmp=map5Port.read(true);
+                tmp=map5Port.read(false);
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),srcsize);
             }
             if(map6Port.getInputCount()){
-                tmp=map6Port.read(true);
+                tmp=map6Port.read(false);
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),srcsize);
             }
 
@@ -399,7 +392,6 @@ void selectiveAttentionProcessor::run(){
             outPorts();
 
         }//if
-    }// while
 }
 
 bool selectiveAttentionProcessor::outPorts(){

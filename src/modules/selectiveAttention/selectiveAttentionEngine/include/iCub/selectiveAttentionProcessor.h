@@ -26,7 +26,7 @@ const int THREAD_RATE=30;
  */
 
 
-class selectiveAttentionProcessor:public yarp::os::Thread
+class selectiveAttentionProcessor:public yarp::os::RateThread
 {
     private:
         /**
@@ -197,7 +197,7 @@ class selectiveAttentionProcessor:public yarp::os::Thread
         /**
         * default constructor
         */
-        selectiveAttentionProcessor();//
+        selectiveAttentionProcessor(int rateThread);//
         /**
         * default destructor
         */
