@@ -43,7 +43,7 @@ visualFilterThread::visualFilterThread() {
 
 
 bool visualFilterThread::threadInit() {
-    ippSetNumThreads(1);
+    //ippSetNumThreads(1);
 
     /* open ports  */ 
     if (!imagePortIn.open(getName("/image:i").c_str())) {
@@ -98,9 +98,6 @@ void visualFilterThread::run() {
    unsigned char value;
 
    while (isStopping() != true) { // the thread continues to run until isStopping() returns true
- 
-      
-        
         inputImage = imagePortIn.read(true);
 
         if(inputImage!=NULL) {
@@ -237,26 +234,30 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
     
 void visualFilterThread::extractPlanes() {
     Ipp8u* shift[3];
+    Ipp8u* yellowP;
     int psb;
     shift[0]=redPlane->getRawImage();
     shift[1]=greenPlane->getRawImage();
     shift[2]=bluePlane->getRawImage();
+    yellowP=yellowPlane->getRawImage();
     Ipp8u* inputPointer=inputExtImage->getRawImage();
     //ippiCopy_8u_C3P3R(inputExtImage->getRawImage(),inputExtImage->getRowSize(),shift,redPlane->getRowSize(),srcsize);
     for(int r=0;r<inputExtImage->height();r++) {
-        for(int c=0;c<inputExtImage->getRowSize();c++) {
+        for(int c=0;c<inputExtImage->width();c++) {
             *shift[0]=*inputPointer;
             inputPointer++;
             *shift[1]=*inputPointer;
             inputPointer++;
             *shift[2]=*inputPointer;
             inputPointer++;
+            *yellowP=(unsigned char)ceil((double)*shift[0]/2+(double)*shift[1]/2);
             shift[0]++;
             shift[1]++;
             shift[2]++;
+            yellowP++;
         }
     }
-    ippiAdd_8u_C1RSfs(redPlane->getRawImage(),redPlane->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),yellowPlane->getRawImage(),yellowPlane->getRowSize(),srcsize,1);
+    //ippiAdd_8u_C1RSfs(redPlane->getRawImage(),redPlane->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),yellowPlane->getRawImage(),yellowPlane->getRowSize(),srcsize,1);
 }
 
     
