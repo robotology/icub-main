@@ -656,9 +656,6 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             mlp=integralRG->getMeanLp(a,b,c,d);
             tmp=255*height*width*(int)floor(mlp);
             t=tmp-m_boxes[i].meanRG;
-            if(m_boxes[i].meanRG>128){
-                printf("");
-            }
             t_abs=abs(t);
             m_boxes[i].cRG=t_abs;
 

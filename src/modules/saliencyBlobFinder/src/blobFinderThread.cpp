@@ -557,9 +557,9 @@ void blobFinderThread::run() {
             this->drawAllBlobs(true);
             this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
             ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-            salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
-            salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
-            ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
+            //salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
+            //salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
+            //ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
 
             outPorts();
 
@@ -1032,7 +1032,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
     searchBY=((targetBLUE-addRG+255)/510)*255; 
     pixelBY=searchBY;
     //pixelBY=targetBLUE;
-    printf("%d,%d,%d \n",pixelRG, pixelGR,pixelBY);
+    //printf("colour: %d,%d,%d  coeff: %f,%f\n",pixelRG, pixelGR,pixelBY,salienceBU,salienceTD);
 
     //int psb32s;
     //int psb8u;
@@ -1068,6 +1068,12 @@ void blobFinderThread::drawAllBlobs(bool stable)
     else
         return;
     */
+    if(salienceBU<1) {
+        salienceBU=0;
+    }
+    if(salienceTD<1) {
+        salienceTD=0;
+    }
     int nBlobs=salience->DrawContrastLP2(_inputImgRG, _inputImgGR, _inputImgBY,
         *outContrastLP, *tagged, max_tag,
         salienceBU, salienceTD,
