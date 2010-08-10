@@ -51,12 +51,11 @@ IF (folder_source)
         ${folder_source} 
         ${folder_header}
     )	 
-	TARGET_LINK_LIBRARIES( ${KEYWORD}
+    TARGET_LINK_LIBRARIES( ${KEYWORD}
     	OpenCV
     	${YARP_LIBRARIES}
-    	${IDL_LIBRARIES}
     	${IPP_LIBRARIES}
-	) 
+    ) 
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
