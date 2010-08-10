@@ -634,7 +634,7 @@ public:
 
         // modify tip to reflect scale factor 
         double angle = atan2( (double) p_current.y-tip.y, (double) p_current.x-tip.x );
-        double hypot = sqrt( (p_current.y-tip.y)*(p_current.y-tip.y) + (p_current.x-tip.x)*(p_current.x-tip.x) );
+        double hypot = sqrt( (double) (p_current.y-tip.y)*(p_current.y-tip.y) + (p_current.x-tip.x)*(p_current.x-tip.x) );
 
         tip.x = (int) (p_current.x - scale_factor * hypot * cos(angle));
         tip.y = (int) (p_current.y - scale_factor * hypot * sin(angle));

@@ -1,6 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-      
 #include <yarp/sig/Matrix.h>
 #include <cv.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
 
