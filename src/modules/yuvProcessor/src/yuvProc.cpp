@@ -17,7 +17,7 @@
  */
 
 #include "iCub/yuvProc.h"
-#include "yarp/os/impl/NameClient.h"
+//#include "yarp/os/impl/NameClient.h"
 
 bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -304,7 +304,7 @@ void YUVThread::threadRelease()
         ippiFree(cs_tot_32f);
         ippiFree(colcs_out);
     }
-    yarp::os::impl::NameClient::removeNameClient();
+    //yarp::os::impl::NameClient::removeNameClient();
     cout << "cleaning up things.." << endl;
 }
 
