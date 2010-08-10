@@ -6,6 +6,8 @@
 using namespace std;
 using namespace yarp::os;
 
+const int defaultSize = 240;
+
 //#define _inputImg (*(ptr_inputImg))
 
 #define _inputImgRed (*(ptr_inputImgRed))
@@ -268,18 +270,18 @@ void blobFinderThread::reinitialise(int width, int height) {
     nAng=width;
 
     if (l2cTable == 0) {
-        l2cTable = new lp2CartPixel[width*height];
+        l2cTable = new lp2CartPixel[480*480];
         if (l2cTable == 0) {
             fprintf(stderr, "logPolarLibrary: can't allocate l2c lookup tables, wrong size?\n");
         }
     }
 
-    float scaleFactor = (float) RCcomputeScaleFactor (nEcc,nAng, 200, 200, 1.0 );
+    float scaleFactor = (float) RCcomputeScaleFactor (nEcc,nAng,defaultSize,defaultSize, 1.0 );
     string path("./");
     char* ppath=(char*)path.c_str();
-    RCbuildL2CMap (nEcc, nAng, 200, 200, 1,scaleFactor , 0, 0, ELLIPTICAL, ppath);
+    RCbuildL2CMap (nEcc, nAng, defaultSize, defaultSize, 1.0,scaleFactor , 0, 0, ELLIPTICAL, ppath);
     //allocate logpolar to cartesian look-up table
-    RCallocateL2CTable (l2cTable, 200,200, ppath);
+    RCallocateL2CTable (l2cTable, defaultSize,defaultSize, ppath);
 }
 
 
@@ -308,7 +310,7 @@ void blobFinderThread::resizeImages(int width, int height) {
     _outputImage->resize(width,height);
     _outputImage3->resize(width,height);
     _outputImage3Merged->resize(width,height);
-    _outputImage3Cart->resize(200,200);
+    _outputImage3Cart->resize(defaultSize,defaultSize);
 
     //ptr_inputRed->resize(width,height);
     //ptr_inputGreen->resize(width,height);
