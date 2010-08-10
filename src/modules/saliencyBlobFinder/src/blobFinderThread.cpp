@@ -270,7 +270,7 @@ void blobFinderThread::reinitialise(int width, int height) {
     nAng=width;
 
     if (l2cTable == 0) {
-        l2cTable = new lp2CartPixel[480*480];
+        l2cTable = new lp2CartPixel[defaultSize*defaultSize];
         if (l2cTable == 0) {
             fprintf(stderr, "logPolarLibrary: can't allocate l2c lookup tables, wrong size?\n");
         }
