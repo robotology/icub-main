@@ -160,6 +160,7 @@ Particle filtering is a Monte Carlo sampling approach to Bayesian filtering. It 
 #define __ICUB_PARTICLE_MOD_H__
 
 #include <iostream>
+#include <string>
 #include <cv.h>
 #include <highgui.h>
 
@@ -170,6 +171,7 @@ Particle filtering is a Monte Carlo sampling approach to Bayesian filtering. It 
 #include <yarp/os/Thread.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Time.h>
+#include <time.h>
 
 /* From GSL */
 #include <gsl/gsl_rng.h>

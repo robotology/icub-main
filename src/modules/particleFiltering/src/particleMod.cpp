@@ -125,7 +125,7 @@ PARTICLEThread::PARTICLEThread() {
     right_regions = (CvRect **) malloc(sizeof(CvRect*));
 	num_particles = PARTICLES;    /* number of particles */
 	rng = gsl_rng_alloc( gsl_rng_mt19937 );
-    gsl_rng_set( rng, time(NULL) );
+    gsl_rng_set( rng, (unsigned long)time(NULL) );
     i = 0;
     getTemplate = false;
     getImageLeft = false;
@@ -209,7 +209,7 @@ void PARTICLEThread::run() {
 
             getTemplate =  ( imageInTemp.getInputCount() > 0 );
             
-            if ( getTemplate > 0 ){
+            if ( getTemplate ){ //>0
                 tpl = imageInTemp.read(false);
       
                 if ( tpl != NULL ){
@@ -389,7 +389,7 @@ int PARTICLEThread::get_regionsImage( IplImage* frame, CvRect** regions ) {
     firstFrame = false;
     params p;
     CvRect* r;
-    int i, x1, y1, x2, y2, w, h;
+    int i; //x1, y1, x2, y2, w, h;
 
     p.orig_img = cvCloneImage( frame );
     p.cur_img = NULL;
@@ -494,7 +494,7 @@ void PARTICLEThread::normalize_histogram( PARTICLEThread::histogram* histo ) {
     // compute sum of all bins and multiply each bin by the sum's inverse 
     for( i = 0; i < n; i++ )
         sum += hist[i];
-    inv_sum = 1.0 / sum;
+    inv_sum = 1.0f / sum;
     for( i = 0; i < n; i++ )
         hist[i] *= inv_sum;
 }
@@ -527,8 +527,8 @@ PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, hi
     for( i = 0; i < n; i++ ) {
         width = regions[i].width;
         height = regions[i].height;
-        x = regions[i].x + width / 2;
-        y = regions[i].y + height / 2;
+        x = regions[i].x + (float)(width / 2);
+        y = regions[i].y + (float) (height / 2);
         for( j = 0; j < np; j++ ) {
             particles[k].x0 = particles[k].xp = particles[k].x = x;
             particles[k].y0 = particles[k].yp = particles[k].y = y;
@@ -545,8 +545,8 @@ PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, hi
     while( k < p ) {
         width = regions[i].width;
         height = regions[i].height;
-        x = regions[i].x + width / 2;
-        y = regions[i].y + height / 2;
+        x = regions[i].x + (float) (width / 2);
+        y = regions[i].y + (float) (height / 2);
         particles[k].x0 = particles[k].xp = particles[k].x = x;
         particles[k].y0 = particles[k].yp = particles[k].y = y;
         particles[k].sp = particles[k].s = 1.0;
@@ -568,13 +568,13 @@ PARTICLEThread::particle PARTICLEThread::transition( PARTICLEThread::particle p,
     // sample new state using second-order autoregressive dynamics 
     x = pfot_A1 * ( p.x - p.x0 ) + pfot_A2 * ( p.xp - p.x0 ) +
     pfot_B0 * gsl_ran_gaussian( rng, TRANS_X_STD ) + p.x0;
-    pn.x = MAX( 0.0, MIN( (float)w - 1.0, x ) );
+    pn.x = MAX( 0.0f, MIN( (float)w - 1.0f, x ) );
     y = pfot_A1 * ( p.y - p.y0 ) + pfot_A2 * ( p.yp - p.y0 ) +
     pfot_B0 * gsl_ran_gaussian( rng, TRANS_Y_STD ) + p.y0;
-    pn.y = MAX( 0.0, MIN( (float)h - 1.0, y ) );
+    pn.y = MAX( 0.0f, MIN( (float)h - 1.0f, y ) );
     s = pfot_A1 * ( p.s - 1.0 ) + pfot_A2 * ( p.sp - 1.0 ) +
-    pfot_B0 * gsl_ran_gaussian( rng, TRANS_S_STD ) + 1.0;
-    pn.s = MAX( 0.1, s );
+    pfot_B0 * gsl_ran_gaussian( rng, TRANS_S_STD ) + 1.0f;
+    pn.s = MAX( 0.1f, s );
 
     pn.xp = p.x;
     pn.yp = p.y;
@@ -623,7 +623,7 @@ float PARTICLEThread::histo_dist_sq( histogram* h1, histogram* h2 ) {
     for( i = 0; i < n; i++ )
         sum += sqrt( hist1[i]*hist2[i] );
 
-    return 1.0 - sum;
+    return 1.0f - sum;
 }
 
 
