@@ -246,15 +246,14 @@ public:
                 filterSingleBlob->measured.reset();
                 
                 // reset blob features
-                for(int i=0;i<rawBlobs.size(); i++) {
+                for(unsigned int i=0;i<rawBlobs.size(); i++) {
                     rawBlobs[i]->reset();
                 }
-                for(int i=0;i<filters.size(); i++) {
+                for(unsigned int i=0;i<filters.size(); i++) {
                     filters[i]->measured.reset();
                 }                
                 
                 double area = 0;
-                double total_area = 0;
                 double filtered_area = 0;
                 int num_blobs = 0;
                 double x,y,x2,y2,xy;
@@ -318,8 +317,8 @@ public:
                     Matrix singleBlobCovar(2,2);
                     util.getSingleBlobCharacteristics((IplImage*)imgOut.getIplImage(), &singleBlobCenter, &singleBlobCovar);
                     
-                    filterSingleBlob->measured.firstMoment.x = singleBlobCenter[0];
-                    filterSingleBlob->measured.firstMoment.y = singleBlobCenter[1];
+                    filterSingleBlob->measured.firstMoment.x = (int)singleBlobCenter[0];
+                    filterSingleBlob->measured.firstMoment.y = (int)singleBlobCenter[1];
                     filterSingleBlob->measured.firstMomentDot.x = 0;
                     filterSingleBlob->measured.firstMomentDot.y = 0;
                     filterSingleBlob->measured.roi = singleBlobCovar;
@@ -344,8 +343,8 @@ public:
                         p = filterSingleBlob->filtered.firstMoment;
 
                         // filter the centroid
-                        p_last.x = p_last.x + alpha*(p.x - p_last.x);
-                        p_last.y = p_last.y + alpha*(p.y - p_last.y);        
+                        p_last.x = (int)(p_last.x + alpha*(p.x - p_last.x));
+                        p_last.y = (int)(p_last.y + alpha*(p.y - p_last.y));        
 
                         // get covar
                         filtered_area = util.getBox2DFromCov(p, filterSingleBlob->filtered.roi, &box);                                                
@@ -386,8 +385,8 @@ public:
                         p = filterSingleBlob->measured.firstMoment;                  
 
                         // filter the centroid
-                        p_last.x = p_last.x + alpha*(p.x - p_last.x);
-                        p_last.y = p_last.y + alpha*(p.y - p_last.y);        
+                        p_last.x = (int)(p_last.x + alpha*(p.x - p_last.x));
+                        p_last.y = (int)(p_last.y + alpha*(p.y - p_last.y));        
 
                         // get blob covar
                         area = util.getBox2DFromCov(filterSingleBlob->measured.firstMoment, filterSingleBlob->measured.roi, &box);
@@ -496,11 +495,11 @@ public:
         filterSingleBlob->reset();
         delete filterSingleBlob;
         
-        for(int i=0; i<filters.size(); i++) {
+        for(unsigned int i=0; i<filters.size(); i++) {
             delete filters[i];
         }
         filters.clear();
-        for(int i=0; i<rawBlobs.size(); i++) {
+        for(unsigned int i=0; i<rawBlobs.size(); i++) {
             delete rawBlobs[i];
         }
         rawBlobs.clear();

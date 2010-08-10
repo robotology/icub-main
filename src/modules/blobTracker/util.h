@@ -59,8 +59,8 @@ public:
         PrincipleComponent 	pc;
 	    double area;
         
-        _center.x = (float)center.x;
-        _center.y = (float)center.y;
+        _center.x = (double)center.x;
+        _center.y = (double)center.y;
         
 	    if(getEigenVectorFromCov(cov, &pc)) {
             _size.width = (float)pc.mag1 * 3.2;

@@ -196,8 +196,8 @@ void BlobKalmanFilter::filterUpdate(double dt) {
         // update filtered data structure from estimates
         filtered.firstMoment.x = x;
         filtered.firstMoment.y = y;
-        filtered.firstMomentDot.x = vel[0];
-        filtered.firstMomentDot.y = vel[1];
+        filtered.firstMomentDot.x = (int)vel[0];
+        filtered.firstMomentDot.y = (int)vel[1];
         filtered.roi = roi;        
         filtered.firstMomentCov = predictedCovariance;
         for (int i = 0; i < 4; i++)
@@ -213,8 +213,8 @@ void BlobKalmanFilter::filterUpdate(double dt) {
         y = measured.firstMoment.y;
         //x_dot = (x - old_x) / framesElapsed;
         //y_dot = (y - old_y) / framesElapsed;
-        measured.firstMomentDot.x = (x - old_x) / dt;
-        measured.firstMomentDot.y = (y - old_y) / dt;
+        measured.firstMomentDot.x = (int)((x - old_x) / dt);
+        measured.firstMomentDot.y = (int)((y - old_y) / dt);
         
         //////////////////////////////////////////////////////
         // update kalman filter model if the measurement has not jumped too far
