@@ -22,7 +22,7 @@
 //OPENCV
 //#include <cv.h>
 //#include <highgui.h>
-#include "yarp/os/impl/NameClient.h"
+//#include "yarp/os/impl/NameClient.h"
 
 bool zdfMod::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -419,7 +419,7 @@ void ZDFThread::threadRelease()
     imageOutSeg.close();
     imageOutDog.close();
     
-    yarp::os::impl::NameClient::removeNameClient();
+    //yarp::os::impl::NameClient::removeNameClient();
     cout << "finished cleaning.." << endl;
 }
 
