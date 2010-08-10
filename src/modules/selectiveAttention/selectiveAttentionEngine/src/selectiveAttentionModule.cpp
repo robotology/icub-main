@@ -186,36 +186,16 @@ void selectiveAttentionModule::reinitialise(int width, int height){
 
 
 bool selectiveAttentionModule::updateModule() {
-
-    /*
-    if((0!=interThread->inputImg)&&(!init_flag)){
-        
-        printf("input port activated! starting the processes ....\n");    
-
-        //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-        //starting rgb thread and linking all the images
-        
-        
-        currentProcessor=new selectiveAttentionProcessor();
-        currentProcessor->resizeImages(interThread->inputImg->width(),interThread->inputImg->height());
-        
-        
-        currentProcessor->map1_yarp=interThread->map1_yarp;
-        currentProcessor->map2_yarp=interThread->map2_yarp;
-        currentProcessor->map3_yarp=interThread->map3_yarp;
-        currentProcessor->map4_yarp=interThread->map4_yarp;
-        currentProcessor->map5_yarp=interThread->map5_yarp;
-        currentProcessor->map6_yarp=interThread->map6_yarp;
-
-        currentProcessor->start();
-        
-        currentProcessor->linearCombinationImage=interThread->linearCombinationImage;
-        currentProcessor->outputImage=interThread->outputImage;
-
-        init_flag=true;
-
+    //-----------check for any possible command
+    /*Bottle* command=0;//=cmdPort.read(false);
+    if(command!=0){
+        Bottle* tmpBottle=cmdPort.read(false);
+        ConstString str= command->toString();
+        printf("command received: %s \n", str.c_str());
+        Bottle* reply=new Bottle();
+        respond(*command,*reply);
+        command->clear();
     }*/
-    
     return true;
 }
 

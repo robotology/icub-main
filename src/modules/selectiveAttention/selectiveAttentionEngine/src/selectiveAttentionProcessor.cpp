@@ -84,7 +84,7 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
 
     delete map1_yarp;
     delete map2_yarp;
-    delete map3_yarp;	
+    delete map3_yarp;
     delete map4_yarp;
     delete map5_yarp;
     delete map6_yarp;
@@ -218,16 +218,7 @@ void selectiveAttentionProcessor::run(){
 
         //synchronisation with the input image occuring
         if(!interrupted){
-            //-----------check for any possible command
-            Bottle* command=0;//=cmdPort.read(false);
-            if(command!=0){
-                //Bottle* tmpBottle=cmdPort.read(false);
-                ConstString str= command->toString();
-                printf("command received: %s \n", str.c_str());
-                Bottle* reply=new Bottle();
-                //this->respond(*command,*reply);
-                command->clear();
-            }
+            
             //--------read value from the preattentive level
             if(feedbackPort.getOutputCount()){
                 Bottle in,out;
@@ -579,22 +570,20 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
     cvReleaseMemStorage(&stor);
     cvReleaseImage(&dst);
     //cvReleaseMemStorage(&storage);
-
-        
 }
 
 
 void selectiveAttentionProcessor::getPixelColour(ImageOf<PixelRgb>* inputColourImage,int x ,int y, unsigned char &targetRed, unsigned char &targetGreen, unsigned char &targetBlue){
-      //printf("max image dim:%d with rowsize %d \n",inImage->getRawImageSize(),inImage->getRowSize());
-        unsigned char pColour=inImage->getRawImage()[(x*3)+y*inImage->getRowSize()];
-        targetRed=pColour;
-        //pColour++;
-        pColour=inImage->getRawImage()[(x*3)+1+y*inImage->getRowSize()];
-        targetGreen=pColour;
-        //pColour++;
-        pColour=inImage->getRawImage()[(x*3)+2+y*inImage->getRowSize()];
-        targetBlue=pColour;
-        //printf("colour found: %d %d %d \n",(int) targetBlue,(int)targetGreen,(int)targetRed);
+    //printf("max image dim:%d with rowsize %d \n",inImage->getRawImageSize(),inImage->getRowSize());
+    unsigned char pColour=inImage->getRawImage()[(x*3)+y*inImage->getRowSize()];
+    targetRed=pColour;
+    //pColour++;
+    pColour=inImage->getRawImage()[(x*3)+1+y*inImage->getRowSize()];
+    targetGreen=pColour;
+    //pColour++;
+    pColour=inImage->getRawImage()[(x*3)+2+y*inImage->getRowSize()];
+    targetBlue=pColour;
+    //printf("colour found: %d %d %d \n",(int) targetBlue,(int)targetGreen,(int)targetRed);
 }
 
 /**
@@ -603,7 +592,7 @@ void selectiveAttentionProcessor::getPixelColour(ImageOf<PixelRgb>* inputColourI
 void selectiveAttentionProcessor::interrupt(){
     interrupted=true;
     printf("interrupting the module.. \n");
-	map1Port.interrupt();
+    map1Port.interrupt();
     map2Port.interrupt();
     map3Port.interrupt();
     
