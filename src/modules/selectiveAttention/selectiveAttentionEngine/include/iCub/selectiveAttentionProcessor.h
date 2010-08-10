@@ -29,98 +29,29 @@ const int THREAD_RATE=30;
 class selectiveAttentionProcessor:public yarp::os::RateThread
 {
     private:
-        /**
-        * width step of 8u images
-        */
-        int psb;
-        /**
-        * width step of 32f images
-        */
-        int psb32;
-        /**
-        * width step of the image with border for 3x3 operator convolution
-        */
-        int psb_border;
-        /**
-        * IppiSize reference to the dimension of the input image
-        */
-        IppiSize srcsize;
-         /**
-        * temporary mono image
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;
-         /**
-        * temporary rgb image
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;
-        /**
-        * a port for the inputImage (colour)
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //
-        /**
-        * input port for the 1st saliency map
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; //
-        /**
-        * input port for the 2nd saliency map
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; //
-        /**
-        * input port for the 3rd saliency map
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; //	 
-        /**
-        * input port for the 4th saliency map
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port; 
-        /**
-        * input port for the 5th saliency map
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; 
-        /**
-        * input port for the 6th saliency map
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; 	
-        /**
-        *  output port that represent the linear combination of different maps
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; 
-        /**
-        *  output port that represent the selected attention output
-        */
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > selectedAttentionPort;
-        /**
-        *  output port where the centroid coordinate is sent
-        */
-        yarp::os::BufferedPort<yarp::os::Bottle > centroidPort; 
-        /**
-        *  port necessary to send back command to the preattentive processors
-        */
-        yarp::os::Port feedbackPort; 
-        /**
-        * ippi image of the 1st map
-        */
-        Ipp8u* map1_ippi; //
-        /**
-        * ippi image of the 2nd map
-        */
-        Ipp8u* map2_ippi; //
-        /**
-        * ippi image of the 3rd map
-        */
-        Ipp8u* map3_ippi; //
-        /**
-        * ippi image of the 4th map
-        */
-        Ipp8u* map4_ippi; //
-        /**
-        * ippi image of the 5th map
-        */
-        Ipp8u* map5_ippi; //
-        /**
-        * ippi image of the 6th map
-        */
-        Ipp8u* map6_ippi; //
+        int psb; //width step of 8u images
+        int psb32; //width step of 32f images
+        int psb_border; //width step of the image with border for 3x3 operator convolution
+        IppiSize srcsize; //IppiSize reference to the dimension of the input image
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp; //temporary mono image
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2; //temporary rgb image
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //a port for the inputImage (colour)
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; // input port for the 1st saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; // input port for the 2nd saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; // input port for the 3rd saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port; //input port for the 4th saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; //input port for the 5th saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; //input port for the 6th saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; //output port that represent the linear combination of different maps
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > selectedAttentionPort; //output port that represent the selected attention output
+        yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;  //output port where the centroid coordinate is sent
+        yarp::os::Port feedbackPort; //port necessary to send back command to the preattentive processors
+        Ipp8u* map1_ippi; //ippi image of the 1st map
+        Ipp8u* map2_ippi; //ippi image of the 2nd map
+        Ipp8u* map3_ippi; //ippi image of the 3rd map
+        Ipp8u* map4_ippi; //ippi image of the 4th map
+        Ipp8u* map5_ippi; //ippi image of the 5th map
+        Ipp8u* map6_ippi; //ippi image of the 6th map
       
         //yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImagePlane; //temp variable for plane extraction;
        
@@ -195,7 +126,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         
     public:
         /**
-        * default constructor
+        * constructor
         */
         selectiveAttentionProcessor(int rateThread);//
         /**

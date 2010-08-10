@@ -29,7 +29,7 @@ using namespace std;
 selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
 {
     this->inImage=new ImageOf<PixelRgb>;
-
+    reinit_flag=false;
     maskSeed=4;
     maskTop=20;
 
@@ -115,8 +115,10 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inpu
 }
 
 void selectiveAttentionProcessor::reinitialise(int width, int height){
-    srcsize.width=width;
-    srcsize.height=height;
+    this->srcsize.width=width;
+    this->srcsize.height=height;
+    this->width=width;
+    this->height=height;
 
     inputImg=new ImageOf<PixelRgb>;
     inputImg->resize(width,height);
@@ -141,15 +143,8 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     
 }
 
-/**
-* 
-*/
-void selectiveAttentionProcessor::resizeImages(int width,int height){
-    this->height=height;
-    this->width=width;
+void selectiveAttentionProcessor::resizeImages(int width,int height) {
 
-    
-    IppiSize srcsize={width,height};
     tmp->resize(width,height);
     //portImage->resize(width,height);
     /*map1_yarp->resize(width,height);
@@ -305,41 +300,56 @@ void selectiveAttentionProcessor::run(){
             }
             
             //currentProcessor->inImage=tmp2;
-
+            
             if(map1Port.getInputCount()){    
                 tmp=map1Port.read(false);
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),srcsize);
+                if(tmp!=0) {
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),this->srcsize);
+                    idle=false;
+                }
                 
             }
             if(map2Port.getInputCount()){    
                 tmp=map2Port.read(false);
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),srcsize);
+                if(tmp!=0) {
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),this->srcsize);
+                    idle=false;
+                }
             }
             if(map3Port.getInputCount()){
                 tmp=map3Port.read(false);
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),srcsize);
+                if(tmp!=0) {
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),this->srcsize);
+                    idle=false;
+                }
             }
             if(map4Port.getInputCount()){
                 tmp=map4Port.read(false);
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),srcsize);
+                if(tmp!=0) {
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),this->srcsize);
+                    idle=false;
+                }
             }
             
             if(map5Port.getInputCount()){
                 tmp=map5Port.read(false);
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),srcsize);
+                if(tmp!=0) {
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),this->srcsize);
+                    idle=false;
+                }
             }
             if(map6Port.getInputCount()){
                 tmp=map6Port.read(false);
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),srcsize);
+                if(tmp!=0) {
+                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),this->srcsize);
+                    idle=false;
+                }
             }
 
             //2. processing of the input images
-            IppiSize srcsize;
-            srcsize.height=this->height;
-            srcsize.width=this->width;
             int rowSize=map1_yarp->getRowSize();
             unsigned char maxValue=0;
-            idle=false;
+            
             if(!idle){
                 for(int y=0;y<height;y++){
                     for(int x=0;x<width;x++){
@@ -380,18 +390,16 @@ void selectiveAttentionProcessor::run(){
                 }
 
                 ippiCopy_8u_C1R(outputImage->getRawImage(),outputImage->getRowSize(),outputImage2->getRawImage(),outputImage2->getRowSize(), srcsize);
-                extractContour(outputImage2,inImage,centroid_x,centroid_y);
-                printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
+                //extractContour(outputImage2,inImage,centroid_x,centroid_y);
+                //printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
 
                 //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
                 //get the colour of the inputImage starting in the centroid_x and centroid_y position
                 //unsigned char* pColour=inImage->getPixelAddress(centroid_x,centroid_y);
-            
+                //3. sending the output on the ports
+                outPorts();
             }
-            //3. sending the output on the ports
-            outPorts();
-
-        }//if
+        }
 }
 
 bool selectiveAttentionProcessor::outPorts(){
@@ -404,7 +412,7 @@ bool selectiveAttentionProcessor::outPorts(){
     if((0!=outputImage)&&(selectedAttentionPort.getOutputCount())){
         selectedAttentionPort.prepare() = *(outputImage);
         selectedAttentionPort.write();
-    }	
+    }
 
     if(centroidPort.getOutputCount()){  
         Bottle& commandBottle=centroidPort.prepare();
@@ -492,13 +500,11 @@ bool selectiveAttentionProcessor::outPorts(){
 
 
 void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelRgb>* inputColourImage,int& x,int& y){
-    IppiSize srcsize;
-    srcsize.height=inputImage->height();
-    srcsize.width=inputImage->width();
+    
     CvMemStorage* stor=cvCreateMemStorage(0);
     CvBox2D box;
     CvSeq* cont = cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvSeq), sizeof(CvPoint) , stor);
-    cvFindContours( inputImage->getIplImage(), stor, &cont, sizeof(CvContour),
+    cvFindContours(inputImage->getIplImage(), stor, &cont, sizeof(CvContour),
                 CV_RETR_LIST, CV_CHAIN_APPROX_NONE, cvPoint(0,0));
     IplImage* dst = cvCreateImage( cvGetSize(outputImage->getIplImage()), 8, 3 );
     cvZero(dst);   
