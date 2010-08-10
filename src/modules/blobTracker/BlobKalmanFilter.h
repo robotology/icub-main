@@ -53,11 +53,11 @@ public:
  	}
 
     virtual void update(yarp::sig::Vector measuredVals) {   
-        float m[measuredVals.size()];
+        std::vector<float> m(measuredVals.size());
 		for(int i=0; i<measuredVals.size(); i++) {
 			m[i] = (float)measuredVals[i];
 		}
-		Mmat = cvMat(measuredVals.size(), 1, CV_32FC1, m);	       	
+		Mmat = cvMat(measuredVals.size(), 1, CV_32FC1, &m[0]);	       	
         cvKalmanCorrect(kalman, &Mmat);
     }
 

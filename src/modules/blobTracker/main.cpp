@@ -519,8 +519,8 @@ public:
         double max_error = 1000000;
         int i, j, k;
         int min_error, mini = 0, minj = 0;
-        int m_assignment[max_tracked_blobs];  //keep track of which raw blob has been assigned to which measurement slot
-        int assignment[max_tracked_blobs];
+        vector<int> m_assignment(max_tracked_blobs);  //keep track of which raw blob has been assigned to which measurement slot
+        vector<int> assignment(max_tracked_blobs);
         bool isInitialize = false;
         
         if (pass) {
@@ -539,8 +539,8 @@ public:
                 m_assignment[i] = -1;
             }
             
-            int distmat[max_tracked_blobs][max_tracked_blobs];
-            int assignments[max_tracked_blobs][2];
+            Matrix distmat(max_tracked_blobs,max_tracked_blobs);
+            Matrix assignments(max_tracked_blobs,2);
             for (i = 0; i < max_tracked_blobs; i++) {
                 for (j = 0; j < count; j++) {
                     if (filters[i]->filtered.isValid == true && rawBlobs[j]->isValid == true)  {
