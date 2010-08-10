@@ -60,12 +60,12 @@ void DoG::conv_32f_to_8u( Ipp32f*im_i, int p4_, Ipp8u*im_o, int p1_, IppiSize sr
 
     Ipp32f min = NULL;
     Ipp32f max = NULL;
-    //ippiMinMax_32f_C1R( im_i,p4_,srcsize_,&min,&max);
+    ippiMinMax_32f_C1R( im_i,p4_,srcsize_,&min,&max);
     if (max == min){
         max=255.0; 
         min=0.0;
     }
-    //ippiScale_32f8u_C1R(im_i, p4_, im_o, p1_, srcsize_, min, max );
+    ippiScale_32f8u_C1R(im_i, p4_, im_o, p1_, srcsize_, min, max );
 } 
 
 
