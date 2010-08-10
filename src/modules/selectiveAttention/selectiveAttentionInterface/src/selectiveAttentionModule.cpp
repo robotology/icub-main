@@ -259,21 +259,21 @@ bool selectiveAttentionModule::closePorts(){
             
             
             
-            printf("Closing port %s on network %s...\n", getName("/out"),"dafult");
-            printf("Closing port %s on network %s...\n", getName("/out2"),"dafult");
-            printf("Closing port %s on network %s...\n", getName("/out3"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/out").c_str(),"default");
+            printf("Closing port %s on network %s...\n", getName("/out2").c_str(),"default");
+            printf("Closing port %s on network %s...\n", getName("/out3").c_str(),"default");
             _pOutPort->close(); //->open(getName("/out");
             _pOutPort2->close(); //open(getName("/out2");
             _pOutPort3->close(); //open(getName("/out3");
-            printf("Closing port %s on network %s...\n", getName("/outRG"),"dafult");
-            printf("Closing port %s on network %s...\n", getName("/outGR"),"dafult");
-            printf("Closing port %s on network %s...\n", getName("/outBY"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outRG").c_str(),"default");
+            printf("Closing port %s on network %s...\n", getName("/outGR").c_str(),"default");
+            printf("Closing port %s on network %s...\n", getName("/outBY").c_str(),"default");
             portRg->close(); //open(getName("/outRG");
             portGr->close(); //open(getName("/outGR");
             portBy->close(); //open(getName("/outBY");
-            printf("Closing port %s on network %s...\n", getName("/outRed"),"dafult");
-            printf("Closing port %s on network %s...\n", getName("/outGreen"),"dafult");
-            printf("Closing port %s on network %s...\n", getName("/outBlue"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outRed").c_str(),"default");
+            printf("Closing port %s on network %s...\n", getName("/outGreen").c_str(),"default");
+            printf("Closing port %s on network %s...\n", getName("/outBlue").c_str(),"default");
             portRedPlane->close(); //open(getName("/outRed");
             portGreenPlane->close(); //open(getName("/outGreen");
             portBluePlane->close(); //open(getName("/outBlue");*/
