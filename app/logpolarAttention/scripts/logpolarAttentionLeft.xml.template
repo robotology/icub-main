@@ -118,10 +118,12 @@
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-        	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
-		<to> /icub/left_cam/attentionView</to>
+        	<from>/visualFilter/icub/left_cam/rg:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/map2:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>		<to>/icub/left_cam/attentionView</to>
 		<protocol>udp</protocol>
 	</connection>
-	
-
 </application>
