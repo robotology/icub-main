@@ -8,34 +8,28 @@ SET(PROJECTNAME particleModule)
 
 PROJECT(${PROJECTNAME})
 
-INCLUDE_DIRECTORIES(
-    ${PROJECT_SOURCE_DIR}/include
-    ${YARP_INCLUDE_DIRS}
-	${OpenCV_INCLUDE_DIRS}
-)
-
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 FILE(GLOB folder_header include/iCub/*.h)
+
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-LINK_LIBRARIES(
+INCLUDE_DIRECTORIES(
+    ${PROJECT_SOURCE_DIR}/include
+    ${YARP_INCLUDE_DIRS}
+    ${GSL_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+)
+ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header} )
+
+TARGET_LINK_LIBRARIES(
+    ${PROJECTNAME} 
 	${OpenCV_LIBRARIES}
 	${YARP_LIBRARIES}
+    ${GSL_LIBRARIES}
 )
-
-# Set up the main executable.
-IF (folder_header)
-    ADD_EXECUTABLE(${PROJECTNAME} 
-        ${folder_source} 
-        ${folder_header}
-    )
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
-
-ELSE (folder_header)
-    MESSAGE(FATAL_ERROR "No source code files found. Please add something")
-ENDIF (folder_header)
 
 
 
