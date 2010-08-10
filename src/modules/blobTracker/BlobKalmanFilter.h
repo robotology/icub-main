@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <cv.h>
+#include <vector>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include "util.h" 
