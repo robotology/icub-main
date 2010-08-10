@@ -17,7 +17,7 @@
  */
 
 #include "iCub/particleMod.h"
-#include "yarp/os/impl/NameClient.h"
+//#include "yarp/os/impl/NameClient.h"
 
 bool particleMod::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -299,7 +299,7 @@ void PARTICLEThread::threadRelease()
         cout << "releasing temp" << endl;        
         cvReleaseImage(&temp);
     }
-    yarp::os::impl::NameClient::removeNameClient();
+    //yarp::os::impl::NameClient::removeNameClient();
     cout << "finished closing ports" << endl;
 }
 

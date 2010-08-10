@@ -160,7 +160,6 @@ Particle filtering is a Monte Carlo sampling approach to Bayesian filtering. It 
 #define __ICUB_PARTICLE_MOD_H__
 
 #include <iostream>
-#include <string>
 #include <cv.h>
 #include <highgui.h>
 
