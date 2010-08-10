@@ -3,7 +3,6 @@ SET(KEYWORD "selectiveAttentionEngine")
 
 PROJECT(${KEYWORD})
 
-
 #FIND_PACKAGE(ICUB)
 #FIND_PACKAGE(YARP)
 #SET (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_DIR}/conf ${YARP_DIR}/conf)
@@ -43,43 +42,20 @@ FILE(GLOB folder_header include/iCub/*.h)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-SET(selectiveAttentionModuleSRC
-    src/selectiveAttentionModule.cpp
-)
-
-
-LINK_DIRECTORIES(
-    ${ICUB_SOURCE_DIR}
-    #/opt/intel/ipp/sharedlib	
-)
-
 # Set up our main executable.
 IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
         ${folder_source} 
         ${folder_header}
     )
-    IF (WIN32) #required in win
-     TARGET_LINK_LIBRARIES( ${KEYWORD}
+    TARGET_LINK_LIBRARIES( ${KEYWORD}
       ${YARP_LIBRARIES} 
-      ${OPENCV_LIBRARIES}
-      ${IDL_LIBRARIES}
+      ${OPENCV_LIBRARIES}  
       ${IPP_LIBRARIES} 	
      )	
-    ELSE(WIN32) #required in linux
-     TARGET_LINK_LIBRARIES( ${KEYWORD}
-       ${YARP_LIBRARIES}
-       ${OPENCV_LIBRARIES}
-       ${IDL_LIBRARIES}
-       ${IPP_LIBRARIES} 
-       #ippi	
-       pthread
-     )
-    ENDIF (WIN32)	
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
 
-#INSTALL_TARGETS(/lib ${KEYWORD})
 INSTALL_TARGETS(/bin ${KEYWORD})
 
