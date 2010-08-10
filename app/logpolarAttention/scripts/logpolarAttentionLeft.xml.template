@@ -27,11 +27,17 @@
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
 		<node>/console</node>
 	</module>
-		<module>
+	<module>
 		<name>selectiveAttentionEngine</name>
 		<parameters>--from selectiveAttentionLeft.ini --context logpolarAttention/conf </parameters>
 		<tag>selectiveAttLeft</tag>
 		<node>/powerNode1</node>
+	</module>
+	<module>
+		<name>selectiveAttentionInterface</name>
+		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
+		<tag>selectiveAttInterface</tag>
+		<node>/console</node>
 	</module>
 	<module>
 		<name>yarpview</name>
@@ -123,7 +129,13 @@
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-        	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>		<to>/icub/left_cam/attentionView</to>
+        	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
+		<to>/icub/left_cam/attentionView</to>
+		<protocol>udp</protocol>
+	</connection>
+	<connection>
+        	<from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam</to>
 		<protocol>udp</protocol>
 	</connection>
 </application>
