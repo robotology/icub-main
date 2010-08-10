@@ -729,7 +729,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     //g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (delete_event), NULL);
     // Box for main window
     GtkWidget *box;
-    GtkWidget *box2,*box3,*box4,*box5,*box6;
+    GtkWidget *box2,*box3,*box4,*box5;
     box = gtk_vbox_new (FALSE, 0); // parameters (gboolean homogeneous_space, gint spacing);
     gtk_container_add (GTK_CONTAINER (window), box);
     // MenuBar for main window
@@ -753,7 +753,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     //creates the area as collection of port processes sequence
     box2 = gtk_vbox_new (FALSE, 0); // parameters (gboolean homogeneous_space, gint spacing);
     gtk_container_add (GTK_CONTAINER (window), box2);
-    GtkWidget *button,*button2,*buttonCheck;
+    GtkWidget *button,*button2;
     GtkWidget *boxButton,*boxButton2;
     GtkWidget *boxButtons;
     GtkWidget *boxSliders;
@@ -784,7 +784,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     GtkWidget *scrollbar;
     GtkWidget *separator;
     GtkWidget *label;
-    GtkWidget *scale;
+    //GtkWidget *scale;
     GtkObject *adj1, *adj2,*adj3, *adj4,*adj5, *adj6;
     GtkWidget *hscale, *vscale;
 
