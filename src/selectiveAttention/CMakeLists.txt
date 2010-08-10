@@ -5,5 +5,5 @@ PROJECT (selectiveAttention)
 
 FIND_PACKAGE(YARP REQUIRED)
 
-ADD_SUBDIRECTORY(selectiveAttentionInterface)
-ADD_SUBDIRECTORY(selectiveAttentionEngine)
+#ADD_SUBDIRECTORY(selectiveAttentionInterface)
+#ADD_SUBDIRECTORY(selectiveAttentionEngine)
