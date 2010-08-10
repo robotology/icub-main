@@ -63,7 +63,7 @@
 		<tag>attView</tag>
 		<node>/console</node>
 	</module>
-		<module>
+	<module>
 		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/combinationView --x 1200 --y 600 --synch</parameters>
 		<tag>combView</tag>
@@ -139,8 +139,8 @@
 		<to>/icub/left_cam/attentionView</to>
 		<protocol>udp</protocol>
 	</connection>
-		<connection>
-        	<from/selectiveAttentionEngine/icub/left_cam/combination:o></from>
+	<connection>
+        	<from>/selectiveAttentionEngine/icub/left_cam/combination:o></from>
 		<to>/icub/left_cam/combinationView</to>
 		<protocol>udp</protocol>
 	</connection>
