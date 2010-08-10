@@ -20,8 +20,8 @@
 #include <math.h>
 
 //OPENCV
-#include <cv.h>
-#include <highgui.h>
+//#include <cv.h>
+//#include <highgui.h>
 #include "yarp/os/impl/NameClient.h"
 
 bool zdfMod::configure(yarp::os::ResourceFinder &rf)
