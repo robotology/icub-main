@@ -17,12 +17,6 @@ PROJECT(${KEYWORD})
 #INCLUDE_DIRECTORIES(${GTKPLUS_INCLUDE_DIR})
 #---------------------------------------
 
-#--------------------------
-#FIND_PACKAGE(LOGPOLAR REQUIRED)
-#LINK_LIBRARIES(${LOGPOLAR_LIBRARIES})
-#INCLUDE_DIRECTORIES(${LOGPOLAR_INCLUDE_DIRS})
-#--------------------------
-
 
 #search for includes
 INCLUDE_DIRECTORIES(
@@ -58,7 +52,6 @@ IF (folder_source)
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
-
 
 INSTALL_TARGETS(/bin ${KEYWORD})
 
