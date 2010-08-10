@@ -51,11 +51,11 @@ endif(ICUB_USE_IPOPT)
 
 if(ICUB_USE_IPP)
     # insert herein modules depending on IPP
-	#add_subdirectory(colourProcessor)
+    #add_subdirectory(colourProcessor)
     #add_subdirectory(imageProcessor)
     add_subdirectory(saliencyBlobFinder)
     add_subdirectory(saliencyBlobFinderInterface)
-    #add_subdirectory(selectiveAttention)
+    add_subdirectory(selectiveAttention)
     add_subdirectory(visualFilter)
     add_subdirectory(zdfModule)
     add_subdirectory(yuvProcessor)
