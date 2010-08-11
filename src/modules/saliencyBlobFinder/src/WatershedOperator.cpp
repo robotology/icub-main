@@ -60,6 +60,7 @@ WatershedOperator::~WatershedOperator()
     if (neigh!=NULL) delete [] neigh;
     if (neighL!=NULL) delete [] neighL;
     if (neighR!=NULL) delete [] neighR;
+    delete outputImage;
 }
 
 

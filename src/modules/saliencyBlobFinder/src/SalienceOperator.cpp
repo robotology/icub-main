@@ -90,7 +90,13 @@ SalienceOperator::~SalienceOperator(){
         }
     }
     */
-    
+    delete maxSalienceBlob_img;
+    delete colorVQ_img;
+    delete foveaBlob;
+    delete integralRG;
+    delete integralGR;
+    delete integralBY;
+    free(_angShiftMap);
 }
 
 void SalienceOperator::DrawVQColor(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tagged)

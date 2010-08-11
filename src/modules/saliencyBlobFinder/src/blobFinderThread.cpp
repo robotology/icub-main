@@ -623,7 +623,8 @@ void blobFinderThread::stop(){
 void blobFinderThread::threadRelease(){
     //freeing look-up tables
     freeLookupTables();
-
+    delete[] max_boxes;
+    
     //deleting allocated objects
     delete outContrastLP;
     delete outMeanColourLP;
@@ -648,7 +649,15 @@ void blobFinderThread::threadRelease(){
     delete _inputImgGRS;
     delete _inputImgBYS;
 
+    delete img;
+    delete tmpImage;
+    delete image_out;
+
     delete blobFov;
+
+    delete wOperator;
+    delete salience;
+    delete ptr_tagged;
 }
 
 /**
