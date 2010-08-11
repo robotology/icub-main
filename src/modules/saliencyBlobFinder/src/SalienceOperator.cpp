@@ -744,8 +744,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
         }
     }
 
-    printf("maxSalienceTD:%d minSalienceTD:%d \n",maxSalienceTD,minSalienceTD);
-    printf("maxSalienceBU:%d minSalienceBU:%d \n",maxSalienceBU,minSalienceBU);
+    //printf("maxSalienceTD:%d minSalienceTD:%d \n",maxSalienceTD,minSalienceTD);
+    //printf("maxSalienceBU:%d minSalienceBU:%d \n",maxSalienceBU,minSalienceBU);
     //coefficients for normalisation of BU (a1,b1)
     if (maxSalienceBU!=minSalienceBU) {
         //__OLD//a1=255.*(maxDest-1)/(maxSalienceBU-minSalienceBU);
@@ -778,7 +778,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                 maxSalienceTot=m_boxes[i].salienceTotal;
         }
     }
-    printf("maxSalienceTOT:%d minSalienceTOT:%d \n",maxSalienceTot,minSalienceTot);
+    //printf("maxSalienceTOT:%d minSalienceTOT:%d \n",maxSalienceTot,minSalienceTot);
     //normalise the value into the range of grayscale image (a3,b3)
     if (maxSalienceTot!=minSalienceTot) {
         a3=((double)(maxDest-1))/(maxSalienceTot-minSalienceTot);
