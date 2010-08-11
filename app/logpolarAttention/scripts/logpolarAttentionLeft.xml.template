@@ -10,7 +10,7 @@
 		<node>/powerNode1</node>
 	</module>
 	<module>
-		<name>YUVProcessor</name>
+		<name>yuvProcessor</name>
 		<parameters>--name yuvProc/icub/left_cam</parameters>
 		<tag>yuvProcessorLeft</tag>
 		<node>/powerNode1</node>
@@ -132,6 +132,16 @@
 	<connection>
         	<from>/visualFilter/icub/left_cam/rg:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map2:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        	<from>/visualFilter/icub/left_cam/gr:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/map3:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        	<from>/visualFilter/icub/left_cam/by:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/map4:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
