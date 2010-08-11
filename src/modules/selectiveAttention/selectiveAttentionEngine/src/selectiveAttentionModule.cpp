@@ -64,7 +64,7 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     * get the ratethread which will define the period of the processing thread
     */
     rateThread             = rf.check("ratethread", 
-                           Value(30), 
+                           Value(33), 
                            "processing ratethread (int)").asInt();
 
 
