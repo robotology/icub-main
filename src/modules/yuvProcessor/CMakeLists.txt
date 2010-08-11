@@ -1,9 +1,3 @@
-IF(WIN32)
-cmake_minimum_required(VERSION 2.6)
-ELSE(WIN32)
-cmake_minimum_required(VERSION 2.4)
-ENDIF(WIN32)
-
 SET(PROJECTNAME yuvProcessor)
 PROJECT(${PROJECTNAME})
 
