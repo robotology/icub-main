@@ -86,10 +86,7 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     attach(cmdPort);                  // attach to port
 
     //initialization of the main thread
-    if(rateThread==0)
-        blobFinder=new blobFinderThread();
-    else
-        blobFinder=new blobFinderThread(rateThread);
+    blobFinder=new blobFinderThread(rateThread);
 
     blobFinder->setName(this->getName().c_str());
     //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
