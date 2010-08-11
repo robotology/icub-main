@@ -517,7 +517,8 @@ public:
         double threshold = 60; //150;
         double max_error = 1000000;
         int i, j, k;
-        int min_error, mini = 0, minj = 0;
+        double min_error;
+        int mini = 0, minj = 0;
         vector<int> m_assignment(max_tracked_blobs);  //keep track of which raw blob has been assigned to which measurement slot
         vector<int> assignment(max_tracked_blobs);
         bool isInitialize = false;
@@ -555,7 +556,7 @@ public:
             //find the globally minimum distance assignment
             if (isInitialize) {
                 for (k = 0; k < count; k++) {
-                    min_error = 100000;
+                    min_error = 100000.0;
                     for (i = 0; i < max_tracked_blobs; i++) {
                         // for (j = 0; j < count; j++)
                         // {
@@ -583,7 +584,7 @@ public:
                 
                 //assign raw blobs to matched nearest measurement slots
                 for (k = 0; k < count; k++) {
-                    i = assignments[k][0]; j = assignments[k][1];
+                    i = (int)assignments[k][0]; j = (int)assignments[k][1];
                     if (i != -1 && j != -1) {
                         assignment[j] = i; //assign jth raw blob to ith measurement slot
                         filters[i]->measured.firstMoment.x = rawBlobs[j]->firstMoment.x;
