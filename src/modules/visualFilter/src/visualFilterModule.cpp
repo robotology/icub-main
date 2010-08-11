@@ -32,7 +32,7 @@ using namespace yarp::sig;
 using namespace std;
 
 
-bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {    
+bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {
     /* Process all parameters from both command-line and .ini file */
 
     /* get the module name which will form the stem of all module port names */
@@ -153,6 +153,7 @@ bool visualFilterModule::close()
     handlerPort.close();
     /* stop the thread */
     vfThread->stop();
+    delete vfThread;
     return true;
 }
 
@@ -198,7 +199,6 @@ bool visualFilterModule::updateModule()
 double visualFilterModule::getPeriod()
 {
    /* module periodicity (seconds), called implicitly by myModule */
-    
    return 0.1;
 }
 
