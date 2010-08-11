@@ -4,9 +4,20 @@
       <port>/icub02</port>
 </dependencies>
 <module>
-	  <name>zdfModule</name>
+	  <name>vergence</name>
+     <parameters>--robot icub </parameters>
 	  <node>quad</node>
-	<tag>zdfModule</tag>
+	<tag>vergence</tag>
+   </module>
+<module>
+	  <name>zdfMod</name>
+	  <node>quad</node>
+	<tag>zdfMod</tag>
+   </module>
+<module>
+	  <name>particleModule</name>
+	  <node>quad</node>
+	<tag>particleModule</tag>
    </module>
 <module>
       <name>yarpview</name>
@@ -22,39 +33,72 @@
    </module>
   <module>
       <name>yarpview</name>
-      <parameters>--name /view/Prob --x 0 --y 350 </parameters>
+      <parameters>--name /view/Prob --x 0 --y 360 </parameters>
       <node>quad</node>
 	<tag>view Prob</tag>
    </module>
 <module>
       <name>yarpview</name>
-      <parameters>--name /view/Seg --x 320 --y 350 </parameters>
+      <parameters>--name /view/Seg --x 320 --y 360 </parameters>
       <node>quad</node>
 	<tag>view Seg</tag>
    </module>
 <module>
       <name>yarpview</name>
-      <parameters>--name /view/Dog --x 320 --y 350 </parameters>
+      <parameters>--name /view/Dog --x 0 --y 700 </parameters>
       <node>quad</node>
 	<tag>view Dog</tag>
    </module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /view/Temp --x 0 --y 700 </parameters>
+      <node>quad</node>
+	<tag>view Temp</tag>
+   </module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /view/left --x 320 --y 350 </parameters>
+      <node>quad</node>
+	<tag>view left</tag>
+   </module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /view/right --x 320 --y 350 </parameters>
+      <node>quad</node>
+	<tag>view right</tag>
+</module>
 <connection>
-  <output>/icub/camcalib/left/out</output>
+  <output>/icub/cam/left/logpolar</output>
+  <input>/vergence/left:i</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right/logpolar</output>
+  <input>/vergence/right:i</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/vergence/cmd:o</output>
+  <input>/icub/head/rpc:i</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/left</output>
   <input>/cam/left</input>
   <protocol>mcast</protocol>
 </connection>
 <connection>
-  <output>/icub/camcalib/right/out</output>
+  <output>/icub/cam/right</output>
   <input>/cam/right</input>
   <protocol>mcast</protocol>
 </connection>
 <connection>
-  <output>/icub/camcalib/left/out</output>
+  <output>/icub/cam/left</output>
   <input>/zdfMod/imageLeft:i</input>
   <protocol>mcast</protocol>
 </connection>
 <connection>
-  <output>/icub/camcalib/right/out</output>
+  <output>/icub/cam/right</output>
   <input>/zdfMod/imageRight:i</input>
   <protocol>mcast</protocol>
 </connection>
@@ -71,6 +115,36 @@
 <connection>
   <output>/zdfMod/imageDog:o</output>
   <input>/view/Dog</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/zdfMod/imageTemp:o</output>
+  <input>/view/Temp</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/left</output>
+  <input>/particleMod/left/image:i</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right</output>
+  <input>/particleMod/right/image:i</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/zdfMod/imageTemp:o</output>
+  <input>/particleMod/template/image:i</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/particleMod/left/image:o</output>
+  <input>/view/left</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/particleMod/right/image:o</output>
+  <input>/view/right</input>
   <protocol>mcast</protocol>
 </connection>
 </application>
