@@ -1083,10 +1083,10 @@ void blobFinderThread::drawAllBlobs(bool stable)
     else
         return;
     */
-    if(salienceBU<1) {
+    if(salienceBU<=0.01) {
         salienceBU=0;
     }
-    if(salienceTD<1) {
+    if(salienceTD<=0.01) {
         salienceTD=0;
     }
     int nBlobs=salience->DrawContrastLP2(_inputImgRG, _inputImgGR, _inputImgBY,

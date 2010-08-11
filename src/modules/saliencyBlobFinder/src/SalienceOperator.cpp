@@ -740,9 +740,12 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                 minSalienceTD=salienceTD;
             else if (salienceTD>maxSalienceTD)
                 maxSalienceTD=salienceTD;
+            
         }
     }
 
+    printf("maxSalienceTD:%d minSalienceTD:%d \n",maxSalienceTD,minSalienceTD);
+    printf("maxSalienceBU:%d minSalienceBU:%d \n",maxSalienceBU,minSalienceBU);
     //coefficients for normalisation of BU (a1,b1)
     if (maxSalienceBU!=minSalienceBU) {
         //__OLD//a1=255.*(maxDest-1)/(maxSalienceBU-minSalienceBU);
@@ -775,6 +778,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                 maxSalienceTot=m_boxes[i].salienceTotal;
         }
     }
+    printf("maxSalienceTOT:%d minSalienceTOT:%d \n",maxSalienceTot,minSalienceTot);
     //normalise the value into the range of grayscale image (a3,b3)
     if (maxSalienceTot!=minSalienceTot) {
         a3=((double)(maxDest-1))/(maxSalienceTot-minSalienceTot);
@@ -1001,9 +1005,9 @@ void SalienceOperator::resize(const int width1, const int height1)
 * @param rg R+G-
 * @param gr G+R-
 * @param by B+Y-
-* @param red the Red plane
-* @param blue the blue plane
-* @param green green planes
+* @param rl the Red plane
+* @param gl green planes
+* @param bl the blue plane
 * @param tagged tagged image 
 */
 void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
