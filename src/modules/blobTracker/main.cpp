@@ -624,7 +624,7 @@ public:
     void getArrowPoints(CvPoint p_current, CvPoint p_last, int scale_factor, CvPoint &tip, CvPoint &tip_left, CvPoint &tip_right) { 
 
         CvPoint dp;
-
+        double pi = 3.14159265;
         // compute 1-step length
         dp.x = p_current.x - p_last.x;
         dp.y = p_current.y - p_last.y;
@@ -640,11 +640,11 @@ public:
         tip.x = (int) (p_current.x - scale_factor * hypot * cos(angle));
         tip.y = (int) (p_current.y - scale_factor * hypot * sin(angle));
 
-        tip_left.x = (int) (tip.x + 9 * cos(angle + M_PI / 4));
-        tip_left.y = (int) (tip.y + 9 * sin(angle + M_PI / 4));
+        tip_left.x = (int) (tip.x + 9 * cos(angle + pi / 4));
+        tip_left.y = (int) (tip.y + 9 * sin(angle + pi / 4));
 
-        tip_right.x = (int) (tip.x + 9 * cos(angle - M_PI / 4));
-        tip_right.y = (int) (tip.y + 9 * sin(angle - M_PI / 4));
+        tip_right.x = (int) (tip.x + 9 * cos(angle - pi / 4));
+        tip_right.y = (int) (tip.y + 9 * sin(angle - pi / 4));
 
     }
  
