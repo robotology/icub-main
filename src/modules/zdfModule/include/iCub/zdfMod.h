@@ -196,7 +196,8 @@ private:
 	string inputNameRight;
     string outputNameProb;
 	string outputNameSeg;  
-	string outputNameDog;      
+	string outputNameDog;   
+    string outputNameTemp;       
 
     /* class variables */
     ImageOf<PixelBgr>  *img_in_left;
@@ -204,6 +205,7 @@ private:
     ImageOf<PixelMono> *img_out_prob;    
 	ImageOf<PixelMono> *img_out_seg;
 	ImageOf<PixelMono> *img_out_dog;
+    ImageOf<PixelBgr> *img_out_temp;
 
     /* thread parameters: they are pointers so that they refer to the original variables */
 
@@ -212,12 +214,13 @@ private:
     BufferedPort<ImageOf<PixelMono> >  imageOutProb;
 	BufferedPort<ImageOf<PixelMono> >  imageOutSeg;
 	BufferedPort<ImageOf<PixelMono> >  imageOutDog;
+    BufferedPort<ImageOf<PixelBgr> >  imageOutTemp;
 
 	bool leftPort, rightPort; 
 	bool init;
 	int psb_in, t_lock_lr, t_lock_ud;
 	//Sizes:
-	IppiSize srcsize, msize, tsize, tisize, trsize;
+	IppiSize srcsize, msize, tsize, tisize, trsize, imgsize;
 	//Vars:
 	int sx,sy;
   	Ipp32f max_v, max_t;
@@ -231,15 +234,14 @@ private:
 
 	Coord c;
 
-	int psb_m,psb_t,psb_rest,psb_resv;
+	int psb_m,psb_t,psb_rest,psb_resv, psb_trgb, psbtemp;
 	int nclasses, dpix_y;
 
 	Ipp32f *res_t; 
-  	Ipp8u *out, *seg_im, *seg_dog, *fov_l, *fov_r, *zd_prob_8u, *o_prob_8u;
+  	Ipp8u *out, *seg_im, *seg_dog, *fov_l, *fov_r, *zd_prob_8u, *o_prob_8u, *whatever, *tempImg;
 	Ipp8u **p_prob;
   	//templates:
   	Ipp8u *temp_l, *temp_r;
-
   	//input:
   	Ipp8u *rec_im_ly;
   	Ipp8u *rec_im_ry;
@@ -267,6 +269,7 @@ private:
 	int psb;
 	IppiRect inroi;
 	IppiSize insize;
+    IppiSize tempSize;
     int BufferSize;
     
     //string containing module name

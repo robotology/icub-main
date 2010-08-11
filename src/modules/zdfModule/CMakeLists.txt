@@ -1,9 +1,3 @@
-IF(WIN32)
-cmake_minimum_required(VERSION 2.6)
-ELSE(WIN32)
-cmake_minimum_required(VERSION 2.4)
-ENDIF(WIN32)
-
 SET(PROJECTNAME zdfMod)
 PROJECT(${PROJECTNAME})
 
@@ -31,6 +25,8 @@ TARGET_LINK_LIBRARIES(
 	#${OpenCV_LIBRARIES}
 	pthread
 )
+
+INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 
 

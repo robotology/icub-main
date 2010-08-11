@@ -156,6 +156,9 @@ bool ZDFThread::threadInit() {
     
     outputNameDog = "/" + moduleName + "/imageDog:o";
     imageOutDog.open( outputNameDog.c_str() );
+
+    outputNameTemp = "/" + moduleName + "/imageTemp:o";
+    imageOutTemp.open( outputNameTemp.c_str() );
     
     return true;
 }
@@ -341,6 +344,99 @@ void ZDFThread::run(){
   			cog_y*= params->cog_snap;
   			ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
   			ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
+            
+            if (imageOutTemp.getOutputCount()>0){ 
+
+                //take original image and cut away the patch to send off
+                //ippiCopy_8u_C1R( temp_l ,psb_t, whatever, psb_trgb, tsize); // original
+                
+                //IppiSize ROISize = { tsize.width, tsize.height };
+                //ippiCopy_8u_C3R( l_orig + (srcsize.width/2 - tsize.width)*3 + (srcsize.height/2 - tsize.height)*psb, psb, img_out_temp->getRawImage(), img_out_temp->getRowSize(), ROISize );
+                int top = -1;
+                int left = -1;
+                int right = -1;
+                int bottom = -1;
+             
+                for (int j=0;j<msize.height * psb_m;j++){
+                    
+                    if ( (int)seg_im[ j ] > 0){
+                        top = j/psb_m; 
+                        break;
+                    }
+            
+                }
+                for (int j=msize.height * psb_m;j >0; j--){
+
+                    if ( (int)seg_im[ j ] > 0){
+                        bottom = j/psb_m; 
+                        break;
+                    }
+                }
+                bool out = false;
+                for (int i=0;i<msize.width;i++){
+                    for (int j=0;j<msize.height;j++){
+                        if ( (int)seg_im[i + j *psb_m] > 0){
+                            left = i; 
+                            out = true;
+                            break;
+                        }
+                    }
+                    if (out)break;
+                }
+                out = false;
+                for (int i=msize.width;i >0; i--){
+                    for (int j=0;j<msize.height;j++){
+                        if ( (int)seg_im[i + j *psb_m] > 0){
+                            right = i; 
+                            out = true;
+                            break;
+                        }
+                    }
+                    if (out)break;
+                }
+
+                int u = 0;
+                int v = 0;
+                tempSize.width = right-left + 1;
+                tempSize.height = bottom-top + 1;
+                //cout << top << " " << bottom << " " << left << " " << right << endl; 
+                //cout << tempSize.width << " " << tempSize.height << endl;
+
+                tempImg = ippiMalloc_8u_C3( tempSize.width, tempSize.height, &psbtemp);
+              
+                img_out_temp = new ImageOf<PixelBgr>;
+                img_out_temp->resize(tempSize.width, tempSize.height);
+                 
+               for (int j = top; j < bottom +1;j++){
+  			        for (int i = left; i < right + 1;i++){
+                        
+                        if ( (int)seg_im[i + j *psb_m] > 0){
+                            int x = srcsize.width/2 - msize.width/2 + i;
+                            int y = srcsize.height/2 - msize.height/2 + j; 
+                            
+                            tempImg[u*3 + v * psbtemp] = r_orig[x*3 + y * psb];
+                            tempImg[u*3 + v * psbtemp + 1] = r_orig[x*3 + y * psb + 1];
+                            tempImg[u*3 + v * psbtemp + 2] = r_orig[x*3 + y * psb + 2];    
+                        }else{
+                            tempImg[u*3 + v * psbtemp] = 0;
+                            tempImg[u*3 + v * psbtemp + 1] = 0;
+                            tempImg[u*3 + v * psbtemp + 2] = 0;
+                        }
+                        u ++; 
+                        
+                    }     
+                    u = 0;
+                    v ++;
+                }
+                
+                ippiCopy_8u_C3R( tempImg, psbtemp, img_out_temp->getRawImage(), img_out_temp->getRowSize() , tempSize);
+
+                imageOutTemp.prepare() = *img_out_temp;	
+           	    imageOutTemp.write();
+
+                delete img_out_temp;
+                ippiFree (tempImg);
+            }
   			//We've updated, so reset waiting:
  			waiting=0;
    			//report that we-ve updated templates:
@@ -391,7 +487,7 @@ void ZDFThread::threadRelease()
         delete dl;
         delete dr;
         delete m;
-    
+        
         ippiFree(l_orig);
         ippiFree(r_orig);
         ippiFree(rec_im_ly);
@@ -407,9 +503,11 @@ void ZDFThread::threadRelease()
         free(p_prob);
         ippiFree(temp_l);
         ippiFree(temp_r);
+        ippiFree(whatever);
         delete img_out_prob;
         delete img_out_seg;
         delete img_out_dog;
+       //delete img_out_temp;
     }
 
     cout << "closing ports.." << endl;
@@ -418,6 +516,7 @@ void ZDFThread::threadRelease()
     imageOutProb.close();
     imageOutSeg.close();
     imageOutDog.close();
+    imageOutTemp.close();
     
     //yarp::os::impl::NameClient::removeNameClient();
     cout << "finished cleaning.." << endl;
@@ -459,6 +558,8 @@ void ZDFThread::initAll() {
     msize.height = 128;//should be taken from ini file // was 128
     tsize.width  = 32;//same 
     tsize.height = 32;//same
+    imgsize.width  = 64;//same 
+    imgsize.height = 64;//same
 
     t_lock_lr = 32;//same
     t_lock_ud = 32;//same
@@ -489,7 +590,7 @@ void ZDFThread::initAll() {
     nclasses = 2;
     dpix_y = 0;
 
-    l_orig      = ippiMalloc_8u_C3( srcsize.width, srcsize.height, &psb);// to separate Y channel
+    l_orig      = ippiMalloc_8u_C3( srcsize.width, srcsize.height, &psb);
     r_orig      = ippiMalloc_8u_C3( srcsize.width, srcsize.height, &psb);
 
     rec_im_ly   = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb_in);
@@ -540,6 +641,15 @@ void ZDFThread::initAll() {
 
     img_out_dog = new ImageOf<PixelMono>;
     img_out_dog->resize(msize.width, msize.height);
+
+    //img_out_temp = new ImageOf<PixelBgr>;
+   // img_out_temp->resize(msize.width, msize.height);
+
+    whatever = ippiMalloc_8u_C3( msize.width, msize.height, &psb_trgb);
+    IppiSize roi = {msize.width,msize.height};
+    ippiSet_8u_C3R( 0, whatever, psb_trgb, roi);
+
+    
 
     cmp_res = 0.0;
     init = false;
