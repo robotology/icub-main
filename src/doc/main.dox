@@ -16,6 +16,7 @@ Topics:
  - \ref icub_applications \endref - a list of documented applications 
    (collections of modules)
  - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software
+ - The documentation for contributed software is here: <a href="http://eris.liralab.it/iCub/contrib"> Contrib documentation </A> 
  - Programmer's checklist:
   - \ref compile_status \endref - check if your code is compiling on a test server
   - <a href="http://eris.liralab.it/wiki/Licensing"> Licensing </A> - have you declared your authorship, and rights granted?
