@@ -144,6 +144,11 @@ public:
     * closes the modules and all its components
     */
     bool close(); //
+
+     /**
+    * interrupt of the ports
+    */
+    void interrupt();
     /**
     * active control of the Module
     */

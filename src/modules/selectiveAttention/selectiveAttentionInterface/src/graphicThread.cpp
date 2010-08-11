@@ -37,7 +37,7 @@ static selectiveAttentionModule *module;
 /**
 * default constructor
 */
-graphicThread::graphicThread():RateThread(THREADRATE){
+graphicThread::graphicThread() {
     maxAdj=100.0;
     minAdj=0.0;
     stepAdj=0.1;   
@@ -70,8 +70,8 @@ bool graphicThread::threadInit(){
     // All GTK applications must have a gtk_main(). Control ends here
     // and waits for an event to occur (like a key press or
     // mouse event).
-    char *c=(char*)this->getName("/in").c_str();
-    bool ret = _imgRecv.Connect(c,"default");
+    //char *c=(char*)this->getName("/in").c_str();
+    //bool ret = _imgRecv.Connect(c,"default");
     //bool ret = _imgRecv.Connect("imageProcessorInterface/in","default");
     return true;
 }
@@ -79,18 +79,26 @@ bool graphicThread::threadInit(){
 /**
 * active loop of the thread
 */
-void graphicThread::run(){
+void graphicThread::run() {
     gtk_main ();
     module->close();
     gtk_widget_destroy(mainWindow);
-    close();
+    //this->interrupt();
+    this->close();
     //ACE_OS::exit(0);
 }
+
+void graphicThread::onStop() {
+    gtk_main_quit();
+    //this->interrupt();
+    this->close();
+}
+
 /**
-*	releases the thread
+*releases the thread
 */
 void graphicThread::threadRelease(){
-    close();
+
 }
 
 void graphicThread::close(){
@@ -494,7 +502,7 @@ void graphicThread::updateStatusbar (GtkStatusbar  *statusbar)
  
     gtk_statusbar_pop (statusbar, 0); // clear any previous message, underflow is allowed 
                     
-    msg = g_strdup_printf ("%s - %.1f fps","selectiveAttentionInterface", fps);
+    msg = g_strdup_printf ("%s ","selectiveAttentionInterface");
 
     gtk_statusbar_push (statusbar, 0, msg);
 
@@ -714,7 +722,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     //gtk_init (&argc, &argv);
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "selectiveAttentionInterface");
-    gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
+    gtk_window_set_default_size(GTK_WINDOW (window), 220, 300); 
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
     g_signal_connect (G_OBJECT (window), "destroy",
                       G_CALLBACK (gtk_main_quit),
@@ -737,16 +745,15 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box), menubar, FALSE, TRUE, 0); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
     //gtk_widget_size_request(menubar, &actualSize);
     // Drawing Area : here the image will be drawed
-    da = gtk_drawing_area_new ();
-    
-    g_signal_connect (da, "expose_event", G_CALLBACK (expose_CB), NULL);
+    //da = gtk_drawing_area_new ();
+    //g_signal_connect (da, "expose_event", G_CALLBACK (expose_CB), NULL);
     /*if (_options.outputEnabled == 1)
         {
             g_signal_connect (da, "button_press_event", G_CALLBACK (clickDA_CB), NULL);
             // Ask to receive events the drawing area doesn't normally subscribe to
             gtk_widget_set_events (da, gtk_widget_get_events (da) | GDK_BUTTON_PRESS_MASK);
         }*/
-    gtk_box_pack_start(GTK_BOX(box), da, TRUE, TRUE, 0);
+    //gtk_box_pack_start(GTK_BOX(box), da, TRUE, TRUE, 0);
     
     
     //Toolbox area
@@ -911,457 +918,23 @@ GtkWidget* graphicThread::createMainWindow(void)
     //-----Check Buttons
     box4=  gtk_vbox_new (FALSE, 0);
     
-    /*
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("InputImage1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *data = "InputImage1";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), data);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
 
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datag1 = "Green1";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datag1);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    char *datar1 = "Red1";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datar1);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datab1 = "Blue1";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datab1);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Yellow1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datay1 = "Yellow1";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datay1);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-    */
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
     //-----box4
     box4=  gtk_vbox_new (FALSE, 0);
-    /*
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    char *dataco1 = "ColourOpponency11";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), dataco1);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    char *datafe1 = "FindEdges1";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datafe1);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datan22 = "Normalize2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datan22);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("CombineMax1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    char *datacm1 = "CombineMax1";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datacm1);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-    */
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
     //---box 4
 
-    /*
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "OpencvSobel");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "OpencvSobel");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-    */
 
     separator = gtk_hseparator_new ();
     gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
     gtk_widget_show (separator);
 
-    //----------BOX3 SECTION:2
-    //box3 is the single area that controls the processing towards the output port
-    //every processes sequence has a sequence of checkboxes a label and a button
-    /*box3 = gtk_hbox_new (FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (box2), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
-
-    box5 = gtk_vbox_new (FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (box5), 0);
-
-    label = gtk_label_new ("Canny:Threshold U:");
-    gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-    
-    adj1 = gtk_adjustment_new (2.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
-    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);
-    g_signal_connect (G_OBJECT (adj1), "value_changed",
-                      G_CALLBACK (cb_digits_scale), NULL);
-
-
-    label = gtk_label_new ("Canny:Threshold L:");
-    gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-    adj2 = gtk_adjustment_new (1.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
-    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);
-    g_signal_connect (G_OBJECT (adj2), "value_changed",
-                      G_CALLBACK (cb_digits_scale2), NULL);
-
-    gtk_box_pack_start (GTK_BOX (box3), box5, FALSE, FALSE, 0);
-    gtk_widget_show (box5);
-
-
-    label = gtk_label_new ("Processing Options:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-
-    scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    // Notice how this causes the scales to always be updated
-    // continuously when the scrollbar is moved 
-    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
-    //                                 GTK_UPDATE_CONTINUOUS);
-    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    //gtk_widget_show (scrollbar);
-
-    //-----Check Buttons
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("InputImage2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *dataii2 = "InputImage2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), dataii2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datag2 = "Green2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datag2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    char *datar2 = "Red2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datar2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datab2 = "Blue2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datab2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Yellow2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datay2 = "Yellow2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datay2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-    //-----box4
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("ColourOpponency2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *dataco2 = "ColourOpponency2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), dataco2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("FindEdges2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datafe2 = "FindEdges2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datafe2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Normalize2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datan2 = "Normalize2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datan2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("CombineMax2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datacm2 = "CombineMax2";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datacm2);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-    //---box 4
-    
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "outputPort2");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "Show Output port 2");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    //------ SEPARATOR
-    separator = gtk_hseparator_new ();
-    gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
-    gtk_widget_show (separator);
-
-
-    //----------BOX3 SECTION:3
-    //box3 is the single area that controls the processing towards the output port
-    //every processes sequence has a sequence of checkboxes a label and a button
-    box3 = gtk_hbox_new (FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (box2), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
-
-    box5 = gtk_vbox_new (FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (box5), 0);
-
-    label = gtk_label_new ("Canny:Threshold U:");
-    gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-    
-    adj1 = gtk_adjustment_new (2.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
-    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);
-    g_signal_connect (G_OBJECT (adj1), "value_changed",
-                      G_CALLBACK (cb_digits_scale), NULL);
-
-
-    label = gtk_label_new ("Canny:Threshold L:");
-    gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-    adj2 = gtk_adjustment_new (1.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
-    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);
-    g_signal_connect (G_OBJECT (adj2), "value_changed",
-                      G_CALLBACK (cb_digits_scale2), NULL);
-
-    gtk_box_pack_start (GTK_BOX (box3), box5, FALSE, FALSE, 0);
-    gtk_widget_show (box5);
-
-    label = gtk_label_new ("Processing Options:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-
-    scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    // Notice how this causes the scales to always be updated
-     // continuously when the scrollbar is moved 
-    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
-      //                           GTK_UPDATE_CONTINUOUS);
-    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    //gtk_widget_show (scrollbar);
-
-    //-----Check Buttons
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("InputImage3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *dataii3 = "InputImage3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), dataii3);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-    
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green3-->");
-    char *datag3 = "Green3";
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datag3);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    char *datar3 = "Red3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datar3);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datab3 = "Blue3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datab3);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Yellow3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datay3 = "Yellow3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datay3);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-    //-----box4
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("ColourOpponency3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *dataco3 = "ColourOppenency3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), dataco3);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("FindEdges3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datafe3 = "FindEdges3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datafe3);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Normalize3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datan3 = "Normalize3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), data);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("CombineMax3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    char *datacm3 = "CombineMax3";
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), data);
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-    //---box 4*/
-    
-    /*
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "IppSobel");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "IppSobel");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ConvolveMax");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "ConvolveMax");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ConvolveSeq");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "ConvolveSeq");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ConvolveFil");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "ConvolveFilter");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-    */
 
     //------ SEPARATOR
     separator = gtk_hseparator_new ();

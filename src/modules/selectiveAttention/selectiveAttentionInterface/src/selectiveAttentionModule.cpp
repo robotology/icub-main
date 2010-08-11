@@ -82,6 +82,11 @@ bool selectiveAttentionModule::close() {
     return true;
     }
 
+void selectiveAttentionModule::interrupt() {
+    cmdPort.interrupt();
+    commandOutput.interrupt();
+}
+
 void selectiveAttentionModule::setOptions(yarp::os::Property opt){
     options	=opt;
 }

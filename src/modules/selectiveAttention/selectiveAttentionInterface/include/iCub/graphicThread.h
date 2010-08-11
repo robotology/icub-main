@@ -21,20 +21,20 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-class graphicThread : public RateThread{
+class graphicThread : public Thread{
 private:
     /**
-	* maximum value for the gtk sliding control
-	*/
-	double maxAdj;
-	/**
-	* maximum value for the gtk sliding control
-	*/
-	double minAdj;
-	/**
-	* step adjustment for the gtk sliding control
-	*/
-	double stepAdj;
+    * maximum value for the gtk sliding control
+    */
+    double maxAdj;
+    /**
+    * maximum value for the gtk sliding control
+    */
+    double minAdj;
+    /**
+    * step adjustment for the gtk sliding control
+    */
+    double stepAdj;
     /**
     * name of the thread (rootname)
     */
@@ -74,60 +74,82 @@ public:
     * function that safely close this thread
     */
     void close();
+    
+   
+
+
+        /**
+    * function called after the stop is called
+    */
+    void onStop();
+
     /**
     * set the name of the thread (root name of the ports)
     */
     void setName(yarp::os::ConstString value);
+
     /**
     * return the name of this thread
     */
     ConstString getName();
+
     /**
     * return the name of this thread +suffix
     * @param suffix suffix attached to the name of the thread
     */
     ConstString getName(ConstString suffix);
+
     /**
-	* sets the module up
-	*/
-	void setUp();
+    * sets the module up
+    */
+    void setUp();
+    
     /**
-	* sets the adjustments in the window
-	*/
-	void setAdjs();
+    * sets the adjustments in the window
+    */
+    void setAdjs();
+
     /**
     * set the reference to the module that has istantiated this thread
     * @param module reference to the module
     */
     void setselectiveAttentionModule(void *module);
+
     /**
-	* creates the main Window
-	*/
-	GtkWidget* createMainWindow(); //
-	/**
-	* menuFileSingle callback
-	*/
-	static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-	/**
-	* menufileset callback
-	*/
-	gint menuFileSet_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-	/**
-	* creates the menubar
-	*/
-	GtkWidget* createMenubar();
-	/**
-	* updates status bar
-	*/
-	void updateStatusbar (GtkStatusbar  *statusbar);
-	/**
-	* creates some objects necessary for the window
-	*/
-	void createObjects();
+    * creates the main Window
+    */
+    GtkWidget* createMainWindow(); //
+
+    /**
+    * menuFileSingle callback
+    */
+    static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
+
+    /**
+    * menufileset callback
+    */
+    gint menuFileSet_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
+
+    /**
+    * creates the menubar
+    */
+    GtkWidget* createMenubar();
+
+    /**
+    * updates status bar
+    */
+    void updateStatusbar (GtkStatusbar  *statusbar);
+
+    /**
+    * creates some objects necessary for the window
+    */
+    void createObjects();
+
     /**
     * open  all the necessary ports
     */
     bool openPorts();
+
     /**
     * function that set the output on ports
     */
