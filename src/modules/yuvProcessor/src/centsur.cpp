@@ -39,7 +39,7 @@ CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
     gauss         = (Ipp32f**)  malloc(ngauss*sizeof(Ipp32f*));
 
     for (int ng=0;ng<ngauss;ng++){
-        psize[ng].width   = (int)ceil(((double)srcsize.width)/pow(2,ng));
+        psize[ng].width   = (int)ceil(((double)srcsize.width)/pow(2.0f, ng));
         psize[ng].height  = (int)ceil((((double)srcsize.height)/((double)srcsize.width))*psize[ng].width);
         proi[ng].x        = 0;
         proi[ng].y        = 0;
@@ -132,7 +132,7 @@ void CentSur::make_pyramid(Ipp32f* im_32f,int p_32_)
 				psb_p[0],
 				psize[0],
 				KERNSIZE,
-				sigma, 
+				(Ipp32f)sigma, 
 				ippBorderRepl, //borderType
 				0.0,           //foo
 				pbuf);
@@ -161,14 +161,14 @@ void CentSur::make_pyramid(Ipp32f* im_32f,int p_32_)
     				  psb_p[sg],
     				  psize[sg],
     				  KERNSIZE,
-    				  sigma,
+    				  (Ipp32f)sigma,
     				  ippBorderRepl,//borderType
     				  0.0,          //foo
     				  pbuf);
     
     
         //Upsize and store to gauss:
-        su = pow(2,sg);
+        su = pow(2.0f,sg);
         ippiResize_32f_C1R(pyramid_gauss[sg],
     		       psize[sg],
     		       psb_p[sg],

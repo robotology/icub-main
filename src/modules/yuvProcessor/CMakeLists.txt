@@ -21,7 +21,7 @@ TARGET_LINK_LIBRARIES(
     ${PROJECTNAME}
 	${IPP_LIBRARIES}
 	${YARP_LIBRARIES}
-	pthread
+	#pthread
 )
 
 
