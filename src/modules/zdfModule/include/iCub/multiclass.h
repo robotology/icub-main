@@ -17,9 +17,6 @@
 #include <stdlib.h>
 #include "iCub/coord.h"
 
-
-using namespace std;
-
 /** 
   * The neighbourhood structure.
   */
@@ -39,7 +36,7 @@ public:
 struct Parameters
 {
 	int iter_max;	
-  	bool randomize_every_iteration;
+  	int randomize_every_iteration;
 	  
 	int smoothness_penalty;
 	int smoothness_penalty_base;

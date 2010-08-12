@@ -18,6 +18,7 @@
 
 #include "iCub/zdfMod.h"
 #include <math.h>
+#include <cmath>
 
 //OPENCV
 //#include <cv.h>
@@ -34,7 +35,6 @@ bool zdfMod::configure(yarp::os::ResourceFinder &rf)
                            "module name (string)").asString();
 
     setName(moduleName.c_str());
-
     parameters.iter_max = rf.findGroup("PARAMS").check("max_iteration",Value(1),"what did the user select?").asInt();
     parameters.randomize_every_iteration = rf.findGroup("PARAMS").check("randomize_iteration",Value(1),"what did the user select?").asInt();
     parameters.smoothness_penalty_base = rf.findGroup("PARAMS").check("smoothness_penalty_base",Value(1),"what did the user select?").asInt();
@@ -342,8 +342,11 @@ void ZDFThread::run(){
   			//SNAP GAZE TO OBJECT:
   			cog_x*= params->cog_snap;
   			cog_y*= params->cog_snap;
-  			ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
-  			ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
+			//floor(val + 0.5) instead of round
+			ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) floor ( cog_x + 0.5 ) ) ) + ( mid_y_m + ( ( int ) floor ( cog_y + 0.5) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
+			ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) floor ( cog_x + 0.5 ) ) ) + ( mid_y_m + ( ( int ) floor ( cog_y + 0.5) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
+			//ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
+  			//ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
             
             if (imageOutTemp.getOutputCount()>0){ 
 
@@ -799,7 +802,7 @@ double ZDFThread::cmp_rank(int*l1, int*l2)
         }
     }
 
-    tau = (is) / (sqrt(n1) * sqrt(n2));
+    tau = (is) / (sqrt((float)n1) * sqrt((float)n2));
     // svar = (4.0 * n + 10.0) / (9.0 * n * (n - 1.0));
     // z = tau / sqrt(svar);
     // prob = erfcc(abs(z) / 1.4142136);
@@ -829,7 +832,7 @@ void ZDFThread::getAreaCoGSpread(Ipp8u*im_,int psb_,IppiSize sz_,int*parea,doubl
     }
 }
 
-    *parea = naccum;
+    *parea = (int)naccum;
     //cout << "naccum " << naccum << endl;
     if (naccum > 0.0){
     *pdx = -(sz_.width/2.0 - xaccum/naccum - 1.0);

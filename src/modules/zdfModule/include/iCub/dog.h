@@ -26,9 +26,6 @@
 
 #define PAD_BORD 8
 
-
-using namespace std;
-
 /** 
   * A processing class that constructs on- and off-centre difference-of-Gaussian maps.
   */

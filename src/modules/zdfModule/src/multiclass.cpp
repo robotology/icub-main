@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
@@ -68,7 +68,7 @@ void MultiClass::proc(Ipp8u* im_, Ipp8u** prob_)
   int buf_num;
   int label;
   int E_old;
-  unsigned int seed = time(NULL);
+  unsigned int seed = (unsigned int)time(NULL);
   srand(1);
   int *permutation = new int[nmaps];
   bool *buf = new bool[nmaps];

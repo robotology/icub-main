@@ -5,8 +5,6 @@
 
 #include <stdlib.h>
 
-using namespace std;
- 
       
 struct Coord{
 	int x, y;
