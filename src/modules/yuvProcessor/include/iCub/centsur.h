@@ -46,7 +46,7 @@ public:
 	Ipp8u*  get_centsur_norm8u(){return cs_tot_8u;}
 	int get_psb_8u(){return psb_8u;}
 	int get_psb_32f(){return psb_32f;}
-
+    int bufferSize, bufferSizeGauss;
 private:
 	void make_pyramid(Ipp32f* im_in, int pin32_);
 	Ipp32f **pyramid,**pyramid_gauss,**gauss,*cs_tot_32f,*tmp_im_32f,*im_in_32f;
