@@ -399,12 +399,12 @@ class App:
             time.sleep(PROCESS_POLL_INTERVAL)
                
         if (fin_time < time.time()):
-            self.logfile.writelines("Process timed out killing "+str(cmd)+"\n")
-            print "--> Error process timed out",
+            self.logfile.writelines("Command timed out, now killing "+str(cmd)+"\n")
+            print "--> Command timed out",
             print "you can try increasing the timeout time",
             print "however this is probably due to a problem to your",
             print "yarp network (address conflict?)"
-            print "See log file /tmp/"+self.application.getName()+".log"
+            print "See log file "+ self.application.getLogFilename()
             print "I'll now kill ", cmd, ""
             os.kill(p.pid, signal.SIGKILL)
 
@@ -621,6 +621,7 @@ def fileExists(f):
         return 1
 
 if __name__ == '__main__':
+   
     #first check arguments
     argc = len(sys.argv)
 
@@ -739,11 +740,11 @@ if __name__ == '__main__':
                 napp.pushConnection(output, input, "tcp")
 
         # getting temp directory
-        tmpPath  = os.getenv("TMP");
-	if (tmpPath==None):
-		tmpPath="/tmp"
+        tempDirectory  = os.getenv("TMP");
+	if (tempDirectory==None):
+		tempDirectory="/tmp"
         
-        logfilename=tmpPath+"/"+napp.getName()+".log"
+        logfilename=tempDirectory+"/"+napp.getName()+".log"
         napp.setLogFilename(logfilename)
         applicationList.append(napp)
 
