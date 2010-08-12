@@ -31,6 +31,9 @@ visualFilterThread::visualFilterThread() {
     redGreen=new ImageOf<PixelMono>;
     greenRed=new ImageOf<PixelMono>;
     blueYellow=new ImageOf<PixelMono>;
+    redGreenAbs=new ImageOf<PixelMono>;
+    greenRedAbs=new ImageOf<PixelMono>;
+    blueYellowAbs=new ImageOf<PixelMono>;
 
     edges=new ImageOf<PixelMono>;
     redGreenEdgesHoriz=new ImageOf<PixelMono>;
@@ -39,6 +42,8 @@ visualFilterThread::visualFilterThread() {
     redGreenEdgesVert=new ImageOf<PixelMono>;
     greenRedEdgesVert=new ImageOf<PixelMono>;
     blueYellowEdgesVert=new ImageOf<PixelMono>;
+
+    resized=false;
 }
 
 
@@ -89,19 +94,15 @@ std::string visualFilterThread::getName(const char* p) {
 }
 
 void visualFilterThread::run() {
-
-   /* 
-    * do some work ....
-    * for example, convert the input image to a binary image using the threshold provided 
-    */ 
-   
    unsigned char value;
-
    while (isStopping() != true) { // the thread continues to run until isStopping() returns true
         inputImage = imagePortIn.read(true);
 
         if(inputImage!=NULL) {
-            resize(inputImage->width(),inputImage->height());      
+            if(!resized){
+                resize(inputImage->width(),inputImage->height());
+                resized=true;
+            }
           
             //extending logpolar input image
             extending();
@@ -176,8 +177,9 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
     redGreen->resize(width, height);
     greenRed->resize(width, height);
     blueYellow->resize(width, height);
-
-    
+    redGreenAbs->resize(width, height);
+    greenRedAbs->resize(width, height);
+    blueYellowAbs->resize(width, height);
     
     redGreenEdgesHoriz->resize(width, height);
     greenRedEdgesHoriz->resize(width, height);
@@ -185,6 +187,15 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
     redGreenEdgesVert->resize(width, height);
     greenRedEdgesVert->resize(width, height);
     blueYellowEdgesVert->resize(width, height);
+
+    ippiFilterSobelHorizGetBufferSize_8u16s_C1R(srcsize, ippMskSize3x3, &size1);
+    buffer = ippsMalloc_8u(size1);
+    redGreenH16s= ippiMalloc_16s_C1(width,height,&psb16s);
+    greenRedH16s= ippiMalloc_16s_C1(width,height,&psb16s);
+    blueYellowH16s= ippiMalloc_16s_C1(width,height,&psb16s);
+    redGreenV16s= ippiMalloc_16s_C1(width,height,&psb16s);
+    greenRedV16s= ippiMalloc_16s_C1(width,height,&psb16s);
+    blueYellowV16s= ippiMalloc_16s_C1(width,height,&psb16s);
 }
 
 
@@ -230,8 +241,7 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
     }
     return inputExtImage;
 }
-   
-    
+
 void visualFilterThread::extractPlanes() {
     Ipp8u* shift[3];
     Ipp8u* yellowP;
@@ -265,10 +275,9 @@ void visualFilterThread::extractPlanes() {
     }
 }
 
-    
 void visualFilterThread::filtering() {
-    IppiSize srcPlusSize = { 5, 5 };
-    IppiSize srcMinusSize = { 7, 7 };
+    IppiSize srcPlusSize = { 5, 5 }; //variance=1
+    IppiSize srcMinusSize = { 7, 7 }; //variance=3 which is 3 times the variance 1
     Ipp32f srcMinus[7*7] ={0.0113, 0.0149, 0.0176, 0.0186, 0.0176, 0.0149, 0.0113,
     0.0149, 0.0197, 0.0233, 0.0246, 0.0233, 0.0197, 0.0149,
     0.0176, 0.0233, 0.0275, 0.0290, 0.0275, 0.0233, 0.0176,
@@ -316,7 +325,7 @@ void visualFilterThread::colourOpponency() {
     ippiSub_8u_C1RSfs(yellowPlane2->getRawImage(),yellowPlane2->getRowSize(),bluePlane3->getRawImage(),bluePlane3->getRowSize(),blueYellow->getRawImage(),blueYellow->getRowSize(),srcsize,0);
 }
 
-double max(double a,double b,double c) {
+float max(float a,float b,float c) {
     if(a>b)
         if(a>c)
             return a;
@@ -329,51 +338,166 @@ double max(double a,double b,double c) {
             return c;
 }
 
+/*
+void visualFilterThread::lineMax(ImageOf<PixelMono> &src, ImageOf<PixelMono> &dst) {
+    int fovHeight=100;
+    for (int y=0; y<fovHeight; y++) {
+        for (int x=0; x<width; x++) {
+            dst(x,y)=src(x,y)*2.5; //con soglia 4
+            //dst(x,y)=src(x,y)*3.5; //con soglia 6
+        }
+    }
+
+    for (int y=fovHeight; y<height; y++) {
+        for (int x=0; x<width; x++) {
+            dst(x,y)=src(x,y)*(3.51773*exp(-0.00832991*y)); //con soglia 4
+            //dst(x,y)=src(x,y)*(5.58286*exp(-0.011389*y)); //con soglia 6
+        }
+    }
+}
+*/
+
 void visualFilterThread::edgesExtract() {
+
+    unsigned char* prg=redGreen->getRawImage();
+    unsigned char* pgr=greenRed->getRawImage();
+    unsigned char* pby=blueYellow->getRawImage();
+    unsigned char* prga=redGreenAbs->getRawImage();
+    unsigned char* pgra=greenRedAbs->getRawImage();
+    unsigned char* pbya=blueYellowAbs->getRawImage();
+    int padding=redGreen->getRowSize()-width;
+    for(int row=0;row<height;row++) {
+        for(int col=0;col<width;col++) {
+            if(*prg<128) {
+                *prga=128+(127-*prg);
+            }
+            else
+                *prga=*prg;
+            if(*pgr<128) {
+                *pgra=128+(127-*pgr);
+            }
+            else
+                *pgra=*pgr;
+            if(*pby<128) {
+                *pbya=128+(127-*pby);
+            }
+            else
+                *pbya=*pby;
+            
+            prg++;pgr++;pby++;
+            prga++;pgra++;pbya++;
+        }
+        prg+=padding;
+        pgr+=padding;
+        pby+=padding;
+        prga+=padding;
+        pgra+=padding;
+        pbya+=padding;
+    }
+
+
     //sobel operations
-    ippiFilterSobelHoriz_8u_C1R(redGreen->getPixelAddress(maxKernelSize,maxKernelSize),redGreen->getRowSize(),redGreenEdgesHoriz->getRawImage(),redGreenEdgesHoriz->getRowSize(),originalSrcsize);
-    ippiFilterSobelVert_8u_C1R(redGreen->getPixelAddress(maxKernelSize,maxKernelSize),redGreen->getRowSize(),redGreenEdgesVert->getRawImage(),redGreenEdgesVert->getRowSize(),originalSrcsize);
-    ippiFilterSobelHoriz_8u_C1R(greenRed->getPixelAddress(maxKernelSize,maxKernelSize),greenRed->getRowSize(),greenRedEdgesHoriz->getRawImage(),greenRedEdgesHoriz->getRowSize(),originalSrcsize);
-    ippiFilterSobelVert_8u_C1R(greenRed->getPixelAddress(maxKernelSize,maxKernelSize),greenRed->getRowSize(),greenRedEdgesVert->getRawImage(),greenRedEdgesVert->getRowSize(),originalSrcsize);
-    ippiFilterSobelHoriz_8u_C1R(blueYellow->getPixelAddress(maxKernelSize,maxKernelSize),blueYellow->getRowSize(),blueYellowEdgesHoriz->getRawImage(),blueYellowEdgesHoriz->getRowSize(),originalSrcsize);
-    ippiFilterSobelVert_8u_C1R(blueYellow->getPixelAddress(maxKernelSize,maxKernelSize),blueYellow->getRowSize(),blueYellowEdgesVert->getRawImage(),blueYellowEdgesVert->getRowSize(),originalSrcsize);
+    ippiFilterSobelHorizBorder_8u16s_C1R(redGreenAbs->getRawImage(),redGreenAbs->getRowSize(), redGreenH16s, psb16s, srcsize,ippMskSize3x3, ippBorderRepl, 0,buffer);
+    ippiFilterSobelHorizBorder_8u16s_C1R(greenRedAbs->getRawImage(),greenRedAbs->getRowSize(), greenRedH16s, psb16s, srcsize,ippMskSize3x3, ippBorderRepl, 0,buffer);
+    ippiFilterSobelHorizBorder_8u16s_C1R(blueYellowAbs->getRawImage(),blueYellowAbs->getRowSize(), blueYellowH16s, psb16s, srcsize,ippMskSize3x3, ippBorderRepl, 0,buffer);
+    ippiFilterSobelVertBorder_8u16s_C1R(redGreenAbs->getRawImage(),redGreenAbs->getRowSize(), redGreenV16s, psb16s, srcsize,ippMskSize3x3, ippBorderRepl, 0,buffer);
+    ippiFilterSobelVertBorder_8u16s_C1R(greenRedAbs->getRawImage(),greenRedAbs->getRowSize(), greenRedV16s, psb16s, srcsize,ippMskSize3x3, ippBorderRepl, 0,buffer);
+    ippiFilterSobelVertBorder_8u16s_C1R(blueYellowAbs->getRawImage(),blueYellowAbs->getRowSize(), blueYellowV16s, psb16s, srcsize,ippMskSize3x3, ippBorderRepl, 0,buffer);    
+
+    /*
+    ippiFilterSobelHoriz_8u_C1R(redGreenAbs->getPixelAddress(maxKernelSize,maxKernelSize),redGreen->getRowSize(),redGreenEdgesHoriz->getRawImage(),redGreenEdgesHoriz->getRowSize(),originalSrcsize);
+    ippiFilterSobelVert_8u_C1R(redGreenAbs->getPixelAddress(maxKernelSize,maxKernelSize),redGreen->getRowSize(),redGreenEdgesVert->getRawImage(),redGreenEdgesVert->getRowSize(),originalSrcsize);
+    ippiFilterSobelHoriz_8u_C1R(greenRedAbs->getPixelAddress(maxKernelSize,maxKernelSize),greenRed->getRowSize(),greenRedEdgesHoriz->getRawImage(),greenRedEdgesHoriz->getRowSize(),originalSrcsize);
+    ippiFilterSobelVert_8u_C1R(greenRedAbs->getPixelAddress(maxKernelSize,maxKernelSize),greenRed->getRowSize(),greenRedEdgesVert->getRawImage(),greenRedEdgesVert->getRowSize(),originalSrcsize);
+    ippiFilterSobelHoriz_8u_C1R(blueYellowAbs->getPixelAddress(maxKernelSize,maxKernelSize),blueYellow->getRowSize(),blueYellowEdgesHoriz->getRawImage(),blueYellowEdgesHoriz->getRowSize(),originalSrcsize);
+    ippiFilterSobelVert_8u_C1R(blueYellowAbs->getPixelAddress(maxKernelSize,maxKernelSize),blueYellow->getRowSize(),blueYellowEdgesVert->getRawImage(),blueYellowEdgesVert->getRowSize(),originalSrcsize);
+    */
+
+    //check the range of the output of these filters
     //pointers
-    unsigned char* prgh=redGreenEdgesHoriz->getRawImage();
+    /*unsigned char* prgh=redGreenEdgesHoriz->getRawImage();
     unsigned char* prgv=redGreenEdgesVert->getRawImage();
     unsigned char* pgrh=greenRedEdgesHoriz->getRawImage();
     unsigned char* pgrv=greenRedEdgesVert->getRawImage();
     unsigned char* pbyh=blueYellowEdgesHoriz->getRawImage();
-    unsigned char* pbyv=blueYellowEdgesVert->getRawImage();
+    unsigned char* pbyv=blueYellowEdgesVert->getRawImage();*/
     unsigned char* pedges=edges->getRawImage();
-
     int rowsize=edges->getRowSize();
-    int rowsize2=redGreenEdgesHoriz->getRowSize();
-
+    int rowsize2=psb16s;
+    double rgvmax=0,rghmax=0,maxa=0,maxb=0,maxc=0,rghminusmax=0,rghminusmin=255, maxValuemax=0;
+    int j=maxKernelSize*(rowsize2/sizeof(signed short))+maxKernelSize;
     //edges extraction
     for(int row=0;row<height_orig;row++) {
         for(int col=0;col<width_orig;col++) {
-            double a=sqrt(pow((double)*prgh,2)+pow((double)*prgv,2));
-            double b=sqrt(pow((double)*pgrh,2)+pow((double)*pgrv,2));
-            double c=sqrt(pow((double)*pbyh,2)+pow((double)*pbyv,2));
-            if(row<height_orig-2)
-                *pedges=(unsigned char)ceil(max(a,b,c));
-            else
+            /*unsigned char rgh=*prgh; unsigned char rgv=*prgv;
+            unsigned char grh=*pgrh; unsigned char grv=*pgrv;
+            unsigned char byh=*pbyh; unsigned char byv=*pbyv;*/
+            /*signed short rgh=*redGreenH16s; signed short rgv=*redGreenV16s;
+            signed short grh=*greenRedH16s; signed short grv=*greenRedV16s;
+            signed short byh=*blueYellowH16s; signed short byv=*blueYellowV16s;*/
+            float rghd=(float)redGreenH16s[j];float rgvd=(float)redGreenV16s[j];
+            float grhd=(float)greenRedH16s[j];float grvd=(float)greenRedV16s[j];
+            float byhd=(float)blueYellowH16s[j];float byvd=(float)blueYellowV16s[j];
+            /*float rghd=(float)redGreenH8s;float rgvd=(float)redGreenV8s;
+            float grhd=(float)greenRedH8s;float grvd=(float)greenRedV8s;
+            float byhd=(float)blueYellowH8s;float byvd=(float)blueYellowH8s;*/
+            //shifting between [-128,127]
+            /*float rghminus=floor(rghd/2);float rgvminus=ceil(-rgvd/2);
+            if(rghminusmax<rghminus){
+                    rghminusmax=rghminus;
+            }
+            if(rghminusmin>rghminus)
+                    rghminusmin=rghminus;
+            float grhminus=floor(grhd/2);float grvminus=ceil(-grvd/2);
+            float byhminus=floor(byhd/2);float byvminus=ceil(-byvd/2);*/
+            //module of the vector
+            float a=sqrt(pow(rghd,2)+pow(rgvd,2));
+            float b=sqrt(pow(grhd,2)+pow(grvd,2));
+            float c=sqrt(pow(byhd,2)+pow(byvd,2));
+            // normalisation max module=179.60/181.01
+            if(maxa<a)
+                maxa=a;
+            if(maxb<b)
+                maxb=b;
+            if(maxc<c)
+                maxc=c;
+            float rgnorm=(255.0/300.0)*a;
+            float grnorm=(255.0/300.0)*b;
+            float bynorm=(255.0/300.0)*c;
+            if(row<height_orig-2){
+                float maxValue=floor(max(rgnorm,grnorm,bynorm));
+                if(maxValuemax<maxValue)
+                    maxValuemax=maxValue;
+                unsigned char maxChar=(unsigned char) maxValue;
+                *pedges=maxChar;
+            }
+            else {
                 *pedges=0;
-            
-            prgh++;prgv++;
+            }
+                        
+           /* prgh++;prgv++;
             pgrh++;pgrv++;
-            pbyh++;pbyv++;
+            pbyh++;pbyv++;*/
+            /*redGreenH16s++;redGreenV16s++;
+            greenRedH16s++;greenRedV16s++;
+            blueYellowH16s++;blueYellowV16s++;*/
             pedges++;
-            
+            j++;
         }
         for(int i=0;i<rowsize-width_orig;i++) {
             pedges++;
+            
         }
-        for(int i=0;i<rowsize2-width_orig-maxKernelSize+maxKernelSize;i++) {
-            prgh++;prgv++;
+        for(int i=0;i<(rowsize2/sizeof(signed short))-width_orig-maxKernelSize+maxKernelSize;i++) {
+            /*prgh++;prgv++;
             pgrh++;pgrv++;
-            pbyh++;pbyv++;
+            pbyh++;pbyv++;*/
+            /*redGreenH16s++;redGreenV16s++;
+            greenRedH16s++;greenRedV16s++;
+            blueYellowH16s++;blueYellowV16s++;*/
+            j++;
         }
+        
     }
 }
 
@@ -403,6 +527,9 @@ void visualFilterThread::threadRelease() {
     delete redGreen;
     delete greenRed;
     delete blueYellow;
+    delete redGreenAbs;
+    delete greenRedAbs;
+    delete blueYellowAbs;
     delete edges;
     
     delete redGreenEdgesHoriz;
@@ -412,6 +539,13 @@ void visualFilterThread::threadRelease() {
     delete greenRedEdgesVert;
     delete blueYellowEdgesVert;
     
+    ippsFree(buffer);
+    ippiFree(redGreenH16s);
+    ippiFree(greenRedH16s);
+    ippiFree(blueYellowH16s);
+    ippiFree(redGreenV16s);
+    ippiFree(greenRedV16s);
+    ippiFree(blueYellowV16s);
 }
 
 void visualFilterThread::onStop() {
@@ -429,5 +563,4 @@ void visualFilterThread::onStop() {
     byPort.close();
     imagePortIn.close();
 }
-
 
