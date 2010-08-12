@@ -8,6 +8,9 @@
 
 // outside project includes
 #include <ippi.h>
+#include <ipp.h>
+#include <ipps.h>
+#include <ippcv.h>
 #include <ippcore.h>
 
 
@@ -21,11 +24,11 @@ private:
     IppiSize originalSrcsize; //ROI of he input image
 
     int psb;
-
     int width_orig, height_orig; //dimension of the input image (original)
-
     int width, height; //dimension of the extended input image (extending)
-    
+    int size1; //size of the buffer
+    int psb16s; //step size of the Ipp16s vectors
+   
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImage; //input image
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputExtImage; //extended input image
         
@@ -53,6 +56,9 @@ private:
     yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreen; //colour opponency map (R+G-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRed; //colour opponency map (G+R-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellow; //colour opponency map (B+Y-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreenAbs; //colour opponency map (R+G-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedAbs; //colour opponency map (G+R-)
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowAbs; //colour opponency map (B+Y-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *edges; //edges of colour opponency maps 
     yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreenEdgesHoriz; //edges of colour opponency map (R+G-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedEdgesHoriz; //edges of colour opponency map (G+R-)
@@ -68,7 +74,16 @@ private:
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort; //Colour opponency map G+R-
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort; //Colour opponency map B+Y-
 
+    Ipp16s* redGreenH16s, *redGreenV16s; //memory allocated for redGreen edges
+    Ipp16s* greenRedH16s, *greenRedV16s; //memory allocated for greenRed edges
+    Ipp16s* blueYellowH16s, *blueYellowV16s; //memory allocated for blueYellow edges
+
+    Ipp8u* buffer; //buffer necessary for the sobel operation
+
     std::string name; //rootname of all the ports opened by this thread
+
+
+    bool resized; //flag to check if the variables have been already resized
 
 public:
 
@@ -133,6 +148,11 @@ public:
     * applying sobel operators on the colourOpponency maps and combining via maximisation of the 3 edges
     */
     void edgesExtract();
+
+    /*
+    * maximisation of the fovea response
+    */
+    //void lineMax(yarp::sig::ImageOf<yarp::sig::PixelMono &src, yarp::sig::ImageOf<yarp::sig::PixelMono &dst);
 
 };
 
