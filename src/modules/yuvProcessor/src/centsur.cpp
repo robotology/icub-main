@@ -145,18 +145,18 @@ void CentSur::make_pyramid(Ipp32f* im_32f,int p_32_)
     su = 2.0;
     for (int sg=1;sg<ngauss;sg++){
         //Downsize previous pyramid image by half:
-        /*ippiResize_32f_C1R(pyramid[sg-1], //source 
+        ippiResize_32f_C1R(pyramid[sg-1], //source 
     		       psize[sg-1],   //source size
     		       psb_p[sg-1],   //source step
     		       proi[sg-1],    //source roi
     		       pyramid[sg],   //dst
     		       psb_p[sg],     //dst step
     		       psize[sg],     //dst size
-    		       sd,sd,IPPI_INTER_LINEAR);   */
-        ippiResizeGetBufSize(proi[sg-1], proi[sg-1], 3, IPPI_INTER_CUBIC, &bufferSize);
+    		       sd,sd,IPPI_INTER_LINEAR);   
+       /* ippiResizeGetBufSize(proi[sg-1], proi[sg-1], 3, IPPI_INTER_CUBIC, &bufferSize);
         Ipp8u* pBuffer = ippsMalloc_8u(bufferSize);
         ippiResizeSqrPixel_32f_C1R( pyramid[sg-1], psize[sg-1], psb_p[sg-1], proi[sg-1], pyramid[sg], psb_p[sg], proi[sg-1], sd, sd, 0, 0, IPPI_INTER_CUBIC, pBuffer);      
-        ippsFree(pBuffer);
+        ippsFree(pBuffer);*/
         //filter:
         ippiFilterGaussBorder_32f_C1R(pyramid[sg],
     				  psb_p[sg],
@@ -172,17 +172,17 @@ void CentSur::make_pyramid(Ipp32f* im_32f,int p_32_)
     
         //Upsize and store to gauss:
         su = pow(2.0f,sg);
-       /* ippiResize_32f_C1R(pyramid_gauss[sg],
+        ippiResize_32f_C1R(pyramid_gauss[sg],
     		       psize[sg],
     		       psb_p[sg],
     		       proi[sg],
     		       gauss[sg],
     		       psb_32f,
     		       srcsize,
-    		       su,su,IPPI_INTER_LINEAR);  */ 
-        ippiResizeGetBufSize(proi[sg], proi[sg], 3, IPPI_INTER_CUBIC, &bufferSizeGauss);
+    		       su,su,IPPI_INTER_LINEAR);   
+        /*ippiResizeGetBufSize(proi[sg], proi[sg], 3, IPPI_INTER_CUBIC, &bufferSizeGauss);
         Ipp8u* pBufferGauss = ippsMalloc_8u(bufferSizeGauss);
         ippiResizeSqrPixel_32f_C1R( pyramid_gauss[sg], psize[sg], psb_p[sg], proi[sg], gauss[sg], psb_32f, proi[sg], su, su, 0, 0, IPPI_INTER_CUBIC, pBufferGauss);      
-        ippsFree(pBufferGauss); 
+        ippsFree(pBufferGauss); */
   }
 }
