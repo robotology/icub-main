@@ -1516,9 +1516,12 @@ int main( int argc, char** argv)
 {		
 	dInitODE2(0); 
 	printf("\nODE configuration: %s\n\n", dGetConfiguration());
-    MyNetwork yarp;
-    SimConfig finder;
+    Network yarp;
 
+    if (!yarp.checkNetwork())
+        return -1;
+
+    SimConfig finder;
     string moduleName;
 		
     finder.configure(argc, argv, moduleName);
@@ -1558,7 +1561,7 @@ int main( int argc, char** argv)
     _odeinit->setName (moduleName);
     module.open();
 
-    // this blocks until termination (through ctrl+c or a kill)
+    //this blocks until termination (through ctrl+c or a kill)
     module.runModule();
 
     module.closeModule();
