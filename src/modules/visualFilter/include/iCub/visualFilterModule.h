@@ -7,15 +7,13 @@
  *
  * \defgroup icub_visualFilter visualFilter
  *
- * This is a simple example to illustrate a module that is compliant with iCub Software Standards, addressing:
+ * This is a module that correctly applies filters to the input logpolar image:
  *
- * - configuration
- * - graceful shut-down
- * - thread-based execution
- * - run-time user interaction
- * - documentation and coding standards
- *
- * Functionally, the module just converts an input image to a binary image based on the supplied threshold
+ * - extract colour oppenency maps based on RGB colours
+ * - extract edges based on sobel operator
+ * - 
+ * - 
+ * 
  *
  * A complete tutorial for this example is available on the iCub wiki at 
  * http://eris.liralab.it/wiki/Summary_of_iCub_Software_Development_Guidelines
@@ -38,10 +36,10 @@
  * - \c context \c visualFilter/conf \n
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - \c name \c visualFilter \n   
+ * - \c name \c visualFilter \n 
  *   specifies the name of the module (used to form the stem of module port names)  
  *
- * - \c robot \c icub \n          
+ * - \c robot \c icub \n 
  *   specifies the name of the robot (used to form the root of robot port names)
  *
  *
@@ -51,20 +49,6 @@
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - \c myInputPort \c /image:i \n    
- *   specifies the input port name (this string will be prefixed by \c /visualFilter 
- *   or whatever else is specifed by the name parameter
- *
- * - \c myOutputPort \c /image:o \n  
- *   specifies the output port name (this string will be prefixed by \c /visualFilter 
- *   or whatever else is specifed by the name parameter
- *
- * - \c cameraConfig \c icubEyes.ini \n
- *   specifies the camera configuration file containing the intrinsic parameters of
- *   the left and right cameras
- *
- * - \c threshold \c 7 \n           
- *   specifies the threshold value
  *
  * 
  * \section portsa_sec Ports Accessed
@@ -157,8 +141,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
-
-
 
 
 #include <iostream>

@@ -28,8 +28,11 @@ private:
     int width, height; //dimension of the extended input image (extending)
     int size1; //size of the buffer
     int psb16s; //step size of the Ipp16s vectors
+    int lambda; //costant for the temporal filter
    
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImage; //input image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImagePrev; //input image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImageFiltered; //input image
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputExtImage; //extended input image
         
     yarp::sig::ImageOf<yarp::sig::PixelMono> *redPlane; //image of the red channel
@@ -60,12 +63,6 @@ private:
     yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedAbs; //colour opponency map (G+R-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowAbs; //colour opponency map (B+Y-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *edges; //edges of colour opponency maps 
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreenEdgesHoriz; //edges of colour opponency map (R+G-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedEdgesHoriz; //edges of colour opponency map (G+R-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowEdgesHoriz; //edges of colour opponency map (B+Y-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreenEdgesVert; //edges of colour opponency map (R+G-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedEdgesVert; //edges of colour opponency map (G+R-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowEdgesVert; //edges of colour opponency map (B+Y-)
 
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imagePortIn;     // input port
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imagePortOut;     // output port   
@@ -77,11 +74,9 @@ private:
     Ipp16s* redGreenH16s, *redGreenV16s; //memory allocated for redGreen edges
     Ipp16s* greenRedH16s, *greenRedV16s; //memory allocated for greenRed edges
     Ipp16s* blueYellowH16s, *blueYellowV16s; //memory allocated for blueYellow edges
-
     Ipp8u* buffer; //buffer necessary for the sobel operation
 
     std::string name; //rootname of all the ports opened by this thread
-
 
     bool resized; //flag to check if the variables have been already resized
 
@@ -118,11 +113,6 @@ public:
     void resize(int width, int height);
 
     /**
-    * extending logpolar input image in fovea and theta axis
-    */
-    void extending();
-
-    /**
     * function that extendes the original image of the desired value for future convolutions (in-place operation)
     * @param origImage originalImage
     * @param extDimension dimension of the extention on each of the sides of the image
@@ -133,6 +123,11 @@ public:
     * extracting RGB and Y planes
     */
     void extractPlanes();
+
+    /**
+    * function that filters the input image in time 
+    */
+    void filterInputImage();
 
     /**
     * gaussing filtering of the of RGBY

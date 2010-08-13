@@ -98,7 +98,7 @@ void visualFilterThread::run() {
             if(!resized){
                 resize(inputImage->width(),inputImage->height());
                 resized=true;
-                ippiCopy_8u_C3R(inputImage->width(),inputImage->getRowSize(),inputImagePrev->getRawImage,inputImagePrev->getRowSize(),originalSrcsize);
+                ippiCopy_8u_C3R(inputImage->getRawImage(),inputImage->getRowSize(),inputImagePrev->getRawImage(),inputImagePrev->getRowSize(),originalSrcsize);
             }
             else{
                 filterInputImage();
@@ -193,10 +193,37 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
     blueYellowV16s= ippiMalloc_16s_C1(width,height,&psb16s);
 }
 
-void visualFilterModule::filterInputImage(){
+void visualFilterThread::filterInputImage(){
+    float inputPrev=0;
+    float inputCurr=0;
+    float inputFiltered=0;
+    unsigned char * pPrev= inputImagePrev->getRawImage();
+    unsigned char* pCurr=inputImage->getRawImage();
+    unsigned char* pFiltered=inputImageFiltered->getRawImage();
+    int padding= inputImage->getRowSize()-width_orig*3;
     for(int row=0;row<height_orig;row++) {
         for(int col=0;col<width_orig;col++) {
+            //channel 1
+            inputPrev=(float) *pPrev;
+            inputCurr=(float) *pCurr;
+            inputFiltered=lambda*inputCurr+(1-lambda)*inputPrev;
+            *pFiltered=(unsigned char)ceil(inputFiltered);
+            pPrev++;pCurr++;pFiltered++;
+            //channel 2
+            inputPrev=(float) *pPrev;
+            inputCurr=(float) *pCurr;
+            inputFiltered=lambda*inputCurr+(1-lambda)*inputPrev;
+            *pFiltered=(unsigned char)ceil(inputFiltered);
+            pPrev++;pCurr++;pFiltered++;
+            //channel 3
+            inputPrev=(float) *pPrev;
+            inputCurr=(float) *pCurr;
+            inputFiltered=lambda*inputCurr+(1-lambda)*inputPrev;
+            *pFiltered=(unsigned char)ceil(inputFiltered);
         }
+        pPrev+=padding;
+        pCurr+=padding;
+        pFiltered+=padding;
     }
 }
 
