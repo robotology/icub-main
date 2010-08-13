@@ -53,6 +53,12 @@
 	</module>
 	<module>
 		<name>yarpview</name>
+		<parameters>--name /icub/left_cam/salienceView --x 300 --y 400 --synch</parameters>
+		<tag>salienceMapView</tag>
+		<node>/console</node>
+	</module>
+	<module>
+		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/checkView --x 600 --y 600 --synch</parameters>
 		<tag>blobFinderCheck</tag>
 		<node>/console</node>
@@ -104,6 +110,11 @@
 		<to>/icub/left_cam/output3View</to>
 		<protocol>udp</protocol>
 	</connection>
+		<connection>
+      	<from>/blobFinder/icub/left_cam/salienceMap:o</from>
+		<to>/icub/left_cam/salienceView</to>
+		<protocol>udp</protocol>
+	</connection>
 	<connection>
       	<from>/blobFinder/icub/left_cam/check:o</from>
 		<to>/icub/left_cam/checkView</to>
@@ -125,7 +136,7 @@
 		<protocol>mcast</protocol>
 	</connection>
 	<connection>
-        	<from>/blobFinder/icub/left_cam/image:o</from>
+        	<from>/blobFinder/icub/left_cam/salienceMap:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map1:i</to>
 		<protocol>shmem</protocol>
 	</connection>
@@ -142,6 +153,16 @@
 	<connection>
         	<from>/visualFilter/icub/left_cam/by:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map4:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        	<from>/yuvProc/icub/left_cam/Y/image:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/map5:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        	<from>/yuvProc/icub/left_cam/UV/image:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/map6:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
