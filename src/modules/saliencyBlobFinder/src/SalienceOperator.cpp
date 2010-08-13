@@ -687,7 +687,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             salienceBU=sqrt((double)m_boxes[i].cRG*m_boxes[i].cRG+
                             m_boxes[i].cGR*m_boxes[i].cGR+
                             m_boxes[i].cBY*m_boxes[i].cBY);
-            salienceBU=255-salienceBU/sqrt(3.0);
+            salienceBU=0+salienceBU/sqrt(3.0);
 
             /*__OLD//salienceBU=m_boxes[i].cRG;
             if (salienceBU<m_boxes[i].cGR)
