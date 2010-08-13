@@ -22,7 +22,7 @@ const int defaultSize = 240;
 
 #define SPIKE_COUNTS 10
 
-const int THREAD_RATE=500;
+const int THREAD_RATE=33;
 
 bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,const yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp,lp2CartPixel *l2cTable) {
     // adjust padding.

@@ -634,24 +634,27 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             c = m_boxes[i].rmax+rdim;
             d = m_boxes[i].rmin-rdim;
             if (cdim<width/3) {
-                a = m_boxes[i].cmin+cdim;
+                a = m_boxes[i].cmax+cdim;
                 b = m_boxes[i].cmin-cdim;
             } else {
                 a = 0;
                 b = 251;
             }
 
-            /*__OLD//tmp=255*height*width*integralRG.getSaliencyLp(m_boxes[i].cmax+cdim,
+            /*__OLD//tmp=255*height*width*integralRG.getSaliencyLp(
+                m_boxes[i].cmax+cdim,
                 m_boxes[i].cmin-cdim,
                 m_boxes[i].rmax+rdim,
                 m_boxes[i].rmin-rdim)/(rdim*cdim);
             m_boxes[i].cRG=abs(tmp-m_boxes[i].meanRG);
-            tmp=255*height*width*integralGR.getSaliencyLp(m_boxes[i].cmax+cdim,
+            tmp=255*height*width*integralGR.getSaliencyLp(
+                m_boxes[i].cmax+cdim,
                 m_boxes[i].cmin-cdim,
                 m_boxes[i].rmax+rdim,
                 m_boxes[i].rmin-rdim)/(rdim*cdim);
             m_boxes[i].cGR=abs(tmp-m_boxes[i].meanGR);
-            tmp=255*height*width*integralBY.getSaliencyLp(m_boxes[i].cmax+cdim,
+            tmp=255*height*width*integralBY.getSaliencyLp(
+                m_boxes[i].cmax+cdim,
                 m_boxes[i].cmin-cdim,
                 m_boxes[i].rmax+rdim,
                 m_boxes[i].rmin-rdim)/(rdim*cdim);
