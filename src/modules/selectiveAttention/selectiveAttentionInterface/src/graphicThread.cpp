@@ -4,7 +4,7 @@
 #include <cstdlib>
 
 
-#define THREADRATE 30
+#define THREADRATE 500
 
 static GtkWidget *menubar;
 static GtkWidget *fileMenu, *imageMenu, *helpMenu;
@@ -37,7 +37,7 @@ static selectiveAttentionModule *module;
 /**
 * default constructor
 */
-graphicThread::graphicThread() {
+graphicThread::graphicThread():RateThread(THREADRATE) {
     maxAdj=100.0;
     minAdj=0.0;
     stepAdj=0.1;   
@@ -70,9 +70,6 @@ bool graphicThread::threadInit(){
     // All GTK applications must have a gtk_main(). Control ends here
     // and waits for an event to occur (like a key press or
     // mouse event).
-    //char *c=(char*)this->getName("/in").c_str();
-    //bool ret = _imgRecv.Connect(c,"default");
-    //bool ret = _imgRecv.Connect("imageProcessorInterface/in","default");
     return true;
 }
 
@@ -80,11 +77,12 @@ bool graphicThread::threadInit(){
 * active loop of the thread
 */
 void graphicThread::run() {
-    gtk_main ();
-    module->close();
-    gtk_widget_destroy(mainWindow);
+    
+     gtk_main_iteration();
+    
+    //gtk_widget_destroy(mainWindow);
     //this->interrupt();
-    this->close();
+    //this->close();
     //ACE_OS::exit(0);
 }
 
@@ -103,10 +101,6 @@ void graphicThread::threadRelease(){
 
 void graphicThread::close(){
      printf("Closing port for visual representation");
-     
-     /*if(ptr_imgRecv->)
-        _imgRecv.Disconnect();*/
-     
 }
 
 void graphicThread::setselectiveAttentionModule(void* moduleReference){
@@ -150,25 +144,12 @@ void graphicThread::outPorts(){
 
 }
 
-static bool getImage(){
-    /*
-    bool ret = false;
-    ret = _imgRecv.Update();
-    if (ret == false){
-        return false;
-    }
-
-    _semaphore.wait();
-    ret = _imgRecv.GetLastImage(&_inputImg);
-    _semaphore.post();
-    printf("Acquired a new image for _imgRecv /n ");
-    */
+static bool getImage() {
     
     return true;
 }
 
-void graphicThread::setUp()
-{
+void graphicThread::setUp() {
     if (false)
         _imgRecv.SetLogopolar(false);
     else
@@ -312,6 +293,7 @@ static void cb_digits_scale6( GtkAdjustment *adj )
     module->command->assign(str.c_str());
 }
 static gint timeout_CB (gpointer data){
+    /*
     if (getImage()){
             //             int imageWidth, imageHeight, pixbufWidth, pixbufHeight;
             //             _semaphore.wait();
@@ -331,6 +313,7 @@ static gint timeout_CB (gpointer data){
     }
     //send the images on the outports
     module->outPorts();
+    */
     return TRUE;
 }
 
@@ -813,7 +796,7 @@ GtkWidget* graphicThread::createMainWindow(void)
 
     frame = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 320, 240);
     // TimeOut used to refresh the screen
-    timeout_ID = gtk_timeout_add (1000, timeout_CB, NULL);
+    //timeout_ID = gtk_timeout_add (1000, timeout_CB, NULL);
 
     mainWindow=window;
 
