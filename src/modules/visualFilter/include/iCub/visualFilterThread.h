@@ -28,7 +28,7 @@ private:
     int width, height; //dimension of the extended input image (extending)
     int size1; //size of the buffer
     int psb16s; //step size of the Ipp16s vectors
-    int lambda; //costant for the temporal filter
+    float lambda; //costant for the temporal filter
    
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImage; //input image
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImagePrev; //input image

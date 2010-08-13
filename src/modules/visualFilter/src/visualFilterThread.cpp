@@ -46,6 +46,7 @@ visualFilterThread::visualFilterThread() {
     redGreenV16s=0;
     greenRedV16s=0;
     blueYellowV16s=0;
+    lambda=0.5;
 
     resized=false;
 }
@@ -113,7 +114,7 @@ void visualFilterThread::run() {
             }
           
             //extending logpolar input image
-            extender(inputImage,maxKernelSize);
+            extender(inputImageFiltered,maxKernelSize);
             //extracting RGB and Y planes
             extractPlanes();
             //gaussing filtering of the of RGB and Y
@@ -209,7 +210,8 @@ void visualFilterThread::filterInputImage(){
     unsigned char* pCurr=inputImage->getRawImage();
     unsigned char* pFiltered=inputImageFiltered->getRawImage();
     int padding= inputImage->getRowSize()-width_orig*3;
-    for(int row=0;row<height_orig;row++) {
+    int row=0;
+    for(;row<height_orig;row++) {
         for(int col=0;col<width_orig;col++) {
             //channel 1
             inputPrev=(float) *pPrev;
@@ -228,11 +230,13 @@ void visualFilterThread::filterInputImage(){
             inputCurr=(float) *pCurr;
             inputFiltered=lambda*inputCurr+(1-lambda)*inputPrev;
             *pFiltered=(unsigned char)ceil(inputFiltered);
+            pPrev++;pCurr++;pFiltered++;
         }
         pPrev+=padding;
         pCurr+=padding;
         pFiltered+=padding;
     }
+    ippiCopy_8u_C3R(inputImage->getRawImage(),inputImage->getRowSize(),inputImagePrev->getRawImage(),inputImagePrev->getRowSize(),originalSrcsize);
 }
 
 
@@ -589,6 +593,7 @@ void visualFilterThread::onStop() {
     
     imagePortIn.interrupt();
     imagePortOut.interrupt();
+    imagePortExt.interrupt();
     rgPort.interrupt();
     grPort.interrupt();
     byPort.interrupt();
