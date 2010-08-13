@@ -151,6 +151,7 @@ void graphicThread::outPorts(){
 }
 
 static bool getImage(){
+    /*
     bool ret = false;
     ret = _imgRecv.Update();
     if (ret == false){
@@ -161,13 +162,9 @@ static bool getImage(){
     ret = _imgRecv.GetLastImage(&_inputImg);
     _semaphore.post();
     printf("Acquired a new image for _imgRecv /n ");
+    */
     
-    //selectiveAttentionModule->processor1->inImage=&_inputImg;
-    //selectiveAttentionModule->processor2->inImage=&_inputImg;
-    //selectiveAttentionModule->processor3->inImage=&_inputImg;
-    //printf("GetImage: out of the semaphore \n");
-    //selectiveAttentionModule->inputImage_flag=true;
-    return ret;
+    return true;
 }
 
 void graphicThread::setUp()
@@ -255,13 +252,11 @@ static GtkWidget *xpm_label_box( gchar     *xpm_filename,
 //-------------------------------------------------
 // Call Backs
 //-------------------------------------------------
-
-
 static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     //selectiveAttentionModule->processor1->cannyOperator->setThresholdU((double)adj->value);
-    printf("k1: %f \n",(double) adj->value);
+    //printf("k1: %f \n",(double) adj->value);
     std::string str("");
     sprintf((char *)str.c_str(),"set k1 %2.2f",adj->value);
     module->command->assign(str.c_str());
@@ -271,7 +266,7 @@ static void cb_digits_scale2( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     //selectiveAttentionModule->processor1->cannyOperator->setThresholdL((double)adj->value);
-    printf("k2: %f \n",(double) adj->value);
+    //printf("k2: %f \n",(double) adj->value);
     std::string str("");
     sprintf((char *)str.c_str(),"set k2 %2.2f",adj->value);
     module->command->assign(str.c_str());
@@ -281,7 +276,7 @@ static void cb_digits_scale3( GtkAdjustment *adj )
 {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskSeed=adj->value;
-    printf("k3: %f \n",(double) adj->value);
+    //printf("k3: %f \n",(double) adj->value);
     std::string str("");
     sprintf((char *)str.c_str(),"set k3 %2.2f",adj->value);
     module->command->assign(str.c_str());
@@ -291,7 +286,7 @@ static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
-    printf("k4: %f \n",(double) adj->value);
+    //printf("k4: %f \n",(double) adj->value);
     std::string str("");
     sprintf((char *)str.c_str(),"set k4 %2.2f",adj->value);
     module->command->assign(str.c_str());
@@ -301,7 +296,7 @@ static void cb_digits_scale5( GtkAdjustment *adj )
 {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
-    printf("k5: %f \n",(double) adj->value);
+    //printf("k5: %f \n",(double) adj->value);
     std::string str("");
     sprintf((char *)str.c_str(),"set k5 %2.2f",adj->value);
     module->command->assign(str.c_str());
@@ -313,7 +308,7 @@ static void cb_digits_scale6( GtkAdjustment *adj )
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     printf("k6: %f \n",(double) adj->value);
     std::string str("");
-    sprintf((char *)str.c_str(),"set k6 %2.2f",adj->value);
+    //sprintf((char *)str.c_str(),"set k6 %2.2f",adj->value);
     module->command->assign(str.c_str());
 }
 static gint timeout_CB (gpointer data){
@@ -332,17 +327,7 @@ static gint timeout_CB (gpointer data){
             //            }
             //            _frameN++;
             
-            gtk_widget_queue_draw (da);
-            
-
-            //selectiveAttentionModule->currentProcessor->canProcess_flag=1;
-            //selectiveAttentionModule->processor1->canProcess_flag=1;
-            //selectiveAttentionModule->processor2->canProcess_flag=1;
-            //selectiveAttentionModule->processor3->canProcess_flag=1;
-
-            //            if (_savingSet)
-            //                saveCurrentFrame();
-            
+            //gtk_widget_queue_draw (da);
     }
     //send the images on the outports
     module->outPorts();
@@ -384,107 +369,6 @@ static void cb_draw_value( GtkToggleButton *button )
             //selectiveAttentionModule->processor1->yellowPlane_flag=1;
         }
     }
-    /*
-    else if(!strcmp(button->button.label_text,"FindEdges1-->")){
-        if(button->active){
-            selectiveAttentionModule->processor1->findEdges_flag=1;
-            printf("processor1->findEdges_flag activated");
-        }
-        else
-            selectiveAttentionModule->processor1->findEdges_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"FindEdges2-->")){
-        if(button->active)
-            selectiveAttentionModule->processor2->findEdges_flag=1;
-        else
-            selectiveAttentionModule->processor2->findEdges_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"FindEdges3-->")){
-        if(button->active)
-            selectiveAttentionModule->processor3->findEdges_flag=1;
-        else
-            selectiveAttentionModule->processor3->findEdges_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"ColourOpponency1-->")){
-        if(button->active)
-            selectiveAttentionModule->processor1->colourOpponency_flag=1;
-        else
-            selectiveAttentionModule->processor1->colourOpponency_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"ColourOpponency2-->")){
-        if(button->active){
-            selectiveAttentionModule->processor2->colourOpponency_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor2->colourOpponency_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"ColourOpponency3-->")){
-        if(button->active){
-            selectiveAttentionModule->processor3->colourOpponency_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor3->colourOpponency_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"CombineMax1-->")){
-        if(button->active)
-            selectiveAttentionModule->processor1->combineMax_flag=1;
-        else
-            selectiveAttentionModule->processor1->combineMax_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"CombineMax2-->")){
-        if(button->active){
-            selectiveAttentionModule->processor2->combineMax_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor2->combineMax_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"CombineMax3-->")){
-        if(button->active){
-            selectiveAttentionModule->processor3->normalize_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor3->normalize_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"Normalize1-->")){
-        if(button->active)
-            selectiveAttentionModule->processor1->normalize_flag=1;
-        else
-            selectiveAttentionModule->processor1->normalize_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"Normalize2-->")){
-        if(button->active){
-            selectiveAttentionModule->processor2->normalize_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor2->normalize_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"Normalize3-->")){
-        if(button->active){
-            selectiveAttentionModule->processor3->normalize_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor3->normalize_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"InputImage1-->")){
-        if(button->active)
-            selectiveAttentionModule->processor1->inputImage_flag=1;
-        else
-            selectiveAttentionModule->processor1->inputImage_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"InputImage2-->")){
-        if(button->active){
-            selectiveAttentionModule->processor2->inputImage_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor2->inputImage_flag=0;
-    }
-    else if(!strcmp(button->button.label_text,"InputImage3-->")){
-        if(button->active){
-            selectiveAttentionModule->processor3->inputImage_flag=1;
-        }
-        else
-            selectiveAttentionModule->processor3->inputImage_flag=0;
-    }*/
 }
 
 
@@ -559,33 +443,6 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 unsigned int rowstride;
                 unsigned int imageWidth, imageHeight, areaWidth, areaHeight;
 
-                
-                _outputImage=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
-               _outputImage->resize(320,240);
-                /*
-                if(selectiveAttentionModule->currentProcessor==NULL){
-                    //printf("currentProcessor resulted nil");
-                    return false;
-                }
-                if(selectiveAttentionModule->currentProcessor->canProcess_flag==false){
-                    //printf("expose_CB:_inputImg NULL");
-                    return false;
-                }
-                else
-                {
-                    if(!selectiveAttentionModule->currentProcessor->resized_flag)
-                        selectiveAttentionModule->currentProcessor->resizeImages(_inputImg.width(),_inputImg.height());
-                }
-                */
-
-                /*_outputImage=selectiveAttentionModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
-                printf("_outputImage: 0x%08x\n", _outputImage);
-                if(_outputImage==NULL){
-                    return FALSE;
-                }*/
-
-                
-
                 _semaphore.wait();
                 bool result=yarpImage2Pixbuf(_outputImage, frame);
                 imageWidth = _inputImg.width();
@@ -606,6 +463,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 unsigned int pixbufWidth=gdk_pixbuf_get_width(frame);
                 unsigned int pixbufHeight=gdk_pixbuf_get_height(frame);
 
+
+                /*
                 if ((imageWidth!=pixbufWidth) || (imageHeight!=pixbufHeight))
                     {
                         g_object_unref(frame);
@@ -653,6 +512,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                                             pixels,
                                             rowstride);
                     }
+                    */
         }
         else{
             //printf("mainWindow results nil");*/
@@ -953,7 +813,7 @@ GtkWidget* graphicThread::createMainWindow(void)
 
     frame = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 320, 240);
     // TimeOut used to refresh the screen
-    timeout_ID = gtk_timeout_add (100, timeout_CB, NULL);
+    timeout_ID = gtk_timeout_add (1000, timeout_CB, NULL);
 
     mainWindow=window;
 

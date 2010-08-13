@@ -92,73 +92,8 @@ void selectiveAttentionModule::setOptions(yarp::os::Property opt){
 }
 
 bool selectiveAttentionModule::updateModule() {
-    // output the images
-    //port.prepare() = *img;
-    //port.write();
-    //port2.prepare() = *yarpReturnImagePointer;
-    //port2.write();
-    //port_plane.prepare()= *blue_plane;
-    //port_plane.write();
-    
-    //delete yarpReturnImagePointer;
-    //-----------------------------------
     return true;
 }
-
-/*_DEPRECATED bool selectiveAttentionModule::updateModule() {
-    ImageOf<PixelRgb> *img = port.read();
-    if (img==NULL) return false;;
-    int width=img->width();
-    int height=img->height();
-    int psb,psb4;
-    
-    Ipp8u *colour1=ippiMalloc_8u_C4(width,height,&psb4);
-    Ipp8u *y1=ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u *u1=ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u *v1=ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u *out=ippiMalloc_8u_C1(width,height,&psb);
-    
-    IppiSize srcsize;
-    srcsize.width=width;
-    srcsize.height=height;
-    
-    IplImage *cvImage = cvCreateImage(cvSize(img->width(),  img->height()), 	IPL_DEPTH_8U, 1 );
-    // add a blue circle
-    PixelRgb blue(0,0,255);
-    addCircle(*img,blue,ct,50,10);
-    ct = (ct+5)%img->width();
-    ImageProcessor* imageProcessor=new ImageProcessor(img);
-    ImageOf<PixelRgb> *yarpReturnImagePointer=imageProcessor->findEdges(img,1,1);   
-    ImageOf<PixelMono> *blue_plane=imageProcessor->getBluePlane(img);
-    cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
-    //delete img;
-    printf("Showing OpenCV/IPL image\n");
-    
-    //--------conversion to logPolar----------------
-    CvScalar s;
-    //----------conversion to YARP COLOUR------------------
-    yarpReturnImagePointer=imageProcessor->getOutputImage();
-    // output the images
-    port.prepare() = *img;
-    port.write();
-    port2.prepare() = *yarpReturnImagePointer;
-    port2.write();
-    port_plane.prepare()= *blue_plane;
-    port_plane.write();
-    
-    //delete yarpReturnImagePointer;
-
-    //-----------------------------------
-    this->createMainWindow();
-
-    return true;
-}*/
-
-
-
-
-
-
 
 bool selectiveAttentionModule::openPorts(){
     bool ret = false;
@@ -180,50 +115,11 @@ bool selectiveAttentionModule::openPorts(){
             return false;
         }
     
-
     return true;
 }
 
 bool selectiveAttentionModule::outPorts(){
     bool ret = false;
-    //if((processor1->canProcess_flag)&&(processor2->canProcess_flag)&&(processor3->canProcess_flag))
-    /*if(false)
-    {
-        //printf("Entered in outPorts \n");
-        this->_pOutPort->prepare()=*(this->processor1->portImage);
-        this->_pOutPort2->prepare()=*(this->processor2->portImage);
-        this->_pOutPort3->prepare()=*(this->processor3->portImage);
-        //printf("After prepares \n");
-        this->_pOutPort->write();
-        this->_pOutPort2->write();
-        this->_pOutPort3->write();
-        //printf("Entered in outPorts \n");
-    }*/
-    //if((currentProcessor->blueYellow_flag)&&(currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)){
-    /*
-    if(false){
-        //if(currentProcessor->redGreen_yarp!=0xcdcdcdcd)
-        this->portRg->prepare()=*(this->currentProcessor->redGreen_yarp);
-        //if((unsigned int)currentProcessor->greenRed_yarp!=0xcdcdcdcd)
-        this->portGr->prepare()=*(this->currentProcessor->greenRed_yarp);
-        //if((unsigned int)currentProcessor->blueYellow_yarp!=0xcdcdcdcd)
-        this->portBy->prepare()=*(this->currentProcessor->blueYellow_yarp);
-        //printf("After prepares \n");
-        this->portRg->write();
-        this->portGr->write();
-        this->portBy->write();
-        //printf("Entered in outPorts \n");
-        //if((unsigned int)currentProcessor->redPlane!=0xcdcdcdcd)
-        this->portRedPlane->prepare()=*(this->currentProcessor->redPlane);
-        //if((unsigned int)currentProcessor->greenPlane!=0xcdcdcdcd)
-        this->portGreenPlane->prepare()=*(this->currentProcessor->greenPlane);
-        //if((unsigned int)currentProcessor->bluePlane!=0xcdcdcdcd)
-        this->portBluePlane->prepare()=*(this->currentProcessor->bluePlane);
-        //printf("After prepares \n");
-        this->portRedPlane->write();
-        this->portGreenPlane->write();
-        this->portBluePlane->write();
-    }*/
     
     //command->assign("help");
     if(strcmp(command->c_str(),"")&&(commandOutput.getOutputCount())){
@@ -295,9 +191,3 @@ bool selectiveAttentionModule::closePorts(){
 
     return true;
 }
-
-
-
-
-
-
