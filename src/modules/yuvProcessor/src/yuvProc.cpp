@@ -191,14 +191,9 @@ void YUVThread::run(){
 //-----------------------------------REMEMBER THAT THE CONNECTION TO LOG IS OBSOLETE AS SHOULD CONNECT TO COLOUR PROCESSOR DIRECTLY!!!!!!
 
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
-        
-        gotImg =  ( imageInputPort->getInputCount() > 0 );
 
-        Time::delay(0.1);
-
-        if (gotImg > 0) {
-
-            img = imageInputPort->read(false);
+        img = imageInputPort->read(true);
+        if(img!=NULL) {
 
             if (init){//Get first RGB image to establish width, height:
                 cout << "initializing" << endl;   
@@ -224,7 +219,7 @@ void YUVThread::run(){
             //intensity process: performs centre-surround uniqueness analysis
             centerSurr->proc_im_8u( y_orig , psb );
             ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize);
-    //-----------------------------------------------------------------------------------------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
             //Colour process U performs centre-surround uniqueness analysis:
             centerSurr->proc_im_8u( u_orig , psb );
@@ -243,7 +238,7 @@ void YUVThread::run(){
 
             unsigned char* imgY = img_Y->getPixelAddress( KERNSIZE, KERNSIZE );
             unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZE, KERNSIZE );
-        
+
             unsigned char* imgYo = img_out_Y->getRawImage();
             unsigned char* imgUVo = img_out_UV->getRawImage();
 
@@ -282,7 +277,7 @@ void YUVThread::run(){
 void YUVThread::threadRelease() 
 {
     cout << "cleaning up things.." << endl;
-    if (gotImg > 0){    
+    if (img!=NULL){    
         delete centerSurr;
         delete img_out_Y;
         delete img_out_UV;
@@ -334,7 +329,7 @@ void YUVThread::initAll()
     ncsscale = 4;
 
     centerSurr  = new CentSur( srcsize , ncsscale);
-    
+
     inputExtImage=new ImageOf<PixelRgb>;
     inputExtImage->resize(srcsize.width, srcsize.height);
 
