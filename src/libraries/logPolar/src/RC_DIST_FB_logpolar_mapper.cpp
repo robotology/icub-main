@@ -1561,7 +1561,6 @@ RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg,
               lp2CartPixel * Table, int cartSize)
 {
     int i, j, k;
-
     int tempPixel[3];
 
     for (j = 0; j < cartSize; j++)
@@ -1592,23 +1591,23 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
 
 	int cSize = xSize;
 	
-	if(xSize>ySize)
+	if (xSize > ySize)
 		cSize = ySize;
 
-    double angle = (2.0 * PI / nAng);   //Angular size of one pixel
+    double angle = (2.0 * PI / nAng);   // Angular size of one pixel
     double sinus = sin (angle / 2.0);
     double tangent = sinus / cos (angle / 2.0);
 
-    int fov;                    //Number of rings in fovea
+    int fov;                    // Number of rings in fovea
     int lim;
 
-    double lambda;              //Log Index
-    double firstRing;           //Diameter of the receptive fields in the first ring when overlap is 0
-    double *currRad;            //Distance of the center of the current ring RF's from the center of the mapping
-    double *nextRad;            //Distance of the center of the next ring's RF's from the center of the mapping
-    double r0;                  //lower limit of RF0 in the "pure" log polar mapping
+    double lambda;              // Log Index
+    double firstRing;           // Diameter of the receptive fields in the first ring when overlap is 0
+    double *currRad;            // Distance of the center of the current ring RF's from the center of the mapping
+    double *nextRad;            // Distance of the center of the next ring's RF's from the center of the mapping
+    double r0;                  // lower limit of RF0 in the "pure" log polar mapping
 
-    double x0, y0;              //Cartesian Coordinates
+    double x0, y0;              // Cartesian Coordinates
     double locX, locY, locRad;
     double *radii;
     double *tangaxis;
@@ -1689,7 +1688,6 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
             L = L * L;
             tangaxis[rho] = tangent * sqrt (L - A);
         }
-
     }
 
     radialaxis[0] = 0.5 * scaleFact * (firstRing) * (overlap + 1.0);
@@ -1704,25 +1702,23 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
         if (mode != ELLIPTICAL)
             focus[rho] = 0;
         else
-	{
+        {
             focus[rho] =
                 -sqrt (fabs (radialaxis[rho] * radialaxis[rho] -
                              tangaxis[rho] * tangaxis[rho]));
-	}
+        }
         if (tangaxis[rho] >= radialaxis[rho])
             focus[rho] = -focus[rho];
 
         radii2[rho] = radii[rho] * radii[rho];
     }
-
-
-    int totalcounter = 0;       //Table Size
+    
+    int totalcounter = 0; // Table Size
 
     FILE *fout;
     char filename[256];
 
     sprintf (filename, "%sLP2C.gio", path);
-
     fout = fopen (filename, "wb");
 
     double *sintable;
@@ -1738,7 +1734,7 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
 
     for (j = 0; j < nAng; j++)
     {
-        sintable[j] = sin (angle * (j + 0.5));  //Angular positions of the centers of the RF's
+        sintable[j] = sin (angle * (j + 0.5));  // Angular positions of the centers of the RF's
         costable[j] = cos (angle * (j + 0.5));
     }
 
@@ -1766,20 +1762,16 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
             {
                 F0x = x0 - focus[rho] * sintable[theta];
                 F1x = x0 + focus[rho] * sintable[theta];
-
                 F0y = y0 + focus[rho] * costable[theta];
                 F1y = y0 - focus[rho] * costable[theta];
-
                 maxaxis = tangaxis[rho];
             }
             else
             {
                 F0x = x0 - focus[rho] * costable[theta];
                 F1x = x0 + focus[rho] * costable[theta];
-
                 F0y = y0 - focus[rho] * sintable[theta];
                 F1y = y0 + focus[rho] * sintable[theta];
-
                 maxaxis = radialaxis[rho];
             }
             if ((mode == RADIAL) || (mode == TANGENTIAL))
@@ -1802,10 +1794,8 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
                         if ((inty + vOffset < ySize) && (inty + vOffset >= 0))
                             if ((intx + hOffset < xSize)
                                 && (intx + hOffset >= 0))
-                                partCtr[(inty + vOffset) * xSize + intx +
-                                        hOffset]++;
+                                partCtr[(inty + vOffset) * xSize + intx + hOffset]++;
                 }
-
         }
     }
 
@@ -1830,7 +1820,6 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
 
         for (theta = 0; theta < nAng; theta++)
         {
-
             x0 = scaleFact * currRad[rho] * costable[theta];
             y0 = scaleFact * currRad[rho] * sintable[theta];
 
@@ -1853,13 +1842,11 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
             if ((mode == RADIAL) || (mode == TANGENTIAL))
                 maxaxis = radii[rho];
 
-
             for (locX = (x0 - lim); locX <= (x0 + lim); locX += step)
                 for (locY = (y0 - lim); locY <= (y0 + lim); locY += step)
                 {
                     intx = (int) (locX + xSize / 2);
                     inty = (int) (locY + ySize / 2);
-
 
                     locRad =
                         sqrt ((locX - F0x) * (locX - F0x) +
@@ -1870,42 +1857,28 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
 
                     if (locRad < 2 * maxaxis)
                         if ((inty + vOffset < ySize) && (inty + vOffset >= 0))
-                            if ((intx + hOffset < xSize)
-                                && (intx + hOffset >= 0))
+                            if ((intx + hOffset < xSize) && (intx + hOffset >= 0))
                             {
                                 found = false;
-                                for (j = 0;
-                                     j <
-                                     partCtr[(inty + vOffset) * xSize + intx +
-                                             hOffset]; j++)
+                                for (j = 0; j < partCtr[(inty + vOffset) * xSize + intx + hOffset]; j++)
                                 {
-                                    if (Lp2CMap
-                                        [(inty + vOffset) * xSize + intx +
-                                         hOffset].position[j] ==
-                                        3 * (rho * nAng + theta))
+                                    if (Lp2CMap [(inty + vOffset) * xSize + intx + hOffset].position[j] == 3 * (rho * nAng + theta))
                                     {
                                         found = true;
                                         break;
                                     }
                                 }
+
                                 if (!found)
                                 {
-                                    Lp2CMap[(inty + vOffset) * xSize + intx +
-                                            hOffset].
-                                        position[Lp2CMap
-                                                 [(inty + vOffset) * xSize +
-                                                  intx + hOffset].iweight] =
-                                        3 * (rho * nAng + theta);
-                                    Lp2CMap[(inty + vOffset) * xSize + intx +
-                                            hOffset].iweight++;
+                                    Lp2CMap[(inty + vOffset) * xSize + intx + hOffset].position[Lp2CMap [(inty + vOffset) * xSize + intx + hOffset].iweight] = 3 * (rho * nAng + theta);
+                                    Lp2CMap[(inty + vOffset) * xSize + intx + hOffset].iweight++;
                                 }
-
                             }
                 }
         }
     }
-
-
+    
     fwrite (&totalcounter, sizeof (int), 1, fout);
     for (j = 0; j < xSize * ySize; j++)
     {
@@ -1917,7 +1890,6 @@ RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
     fwrite (&totalcounter, sizeof (int), 1, fout);
     fclose (fout);
 
-    delete[]partCtr;
-
+    delete[] partCtr;
     return 0;
 }

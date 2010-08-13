@@ -128,7 +128,7 @@ public:
         if (cart.getPadding() != 0) {
             int i;
             const int byte = cart.width() * sizeof(PixelRgb);
-            unsigned char *d = cart.getRawImage();
+            unsigned char *d = cart.getRawImage() + byte;
             for (i = 1; i < cart.height(); i ++) {
                 unsigned char *s = (unsigned char *)cart.getRow(i);
                 memmove(d, s, byte);
@@ -158,7 +158,7 @@ public:
         if (lp.getPadding() != 0) {
             int i;
             const int byte = lp.width() * sizeof(PixelRgb);
-            unsigned char *d = lp.getRawImage();
+            unsigned char *d = lp.getRawImage() + byte;
             for (i = 1; i < lp.height(); i ++) {
                 unsigned char *s = (unsigned char *)lp.getRow(i);
                 memmove(d, s, byte);
