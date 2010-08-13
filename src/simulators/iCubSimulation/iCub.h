@@ -3,7 +3,6 @@
 /*
  * Copyright (C) 2007 Vadim Tikhanoff
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
  */
 
 /**
@@ -37,7 +36,7 @@ public:
 	#define NUM 10			// max number of objects
 
 	ConstString configPath;
-ICubData();
+	ICubData();
 };
 
 class ICubSim : public ICubData {
@@ -48,7 +47,6 @@ public:
     double elev;
 	
 //    dGeomID screenGeom;
-
 	bool reinitialized;
 	float eyeLidRot;
     string eyeLidsPortName;
@@ -56,7 +54,6 @@ public:
     int inc;
 
 	dSpaceID iCub;
-	//dBodyID body_cube[1000];
 	dGeomID geom_cube[1];
 
 	dBodyID iCubHead;

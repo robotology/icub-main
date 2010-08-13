@@ -7,7 +7,6 @@
 /*
  * Copyright (C) 2008 Martin Peniak Vadim Tikhanoff
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
  */
 /**
  * \file EyeLidsController.h
