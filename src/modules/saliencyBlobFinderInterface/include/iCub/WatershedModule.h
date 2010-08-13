@@ -122,13 +122,8 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class WatershedModule : public Thread {
 private:
-    /**
-    * a port for reading the edge image 
-    */
-    BufferedPort<ImageOf<PixelRgb> > port_in; // 
-    /**
-    * a port for reading the input Image of the Red Plane
-    */
+    BufferedPort<ImageOf<PixelRgb> > port_in; // a port for reading the edge image 
+    
     BufferedPort<ImageOf<PixelRgb> > portRedPlane; // 
     /**
     * a port for reading the input Image of the Green Plane
@@ -164,7 +159,6 @@ private:
      ConstString name;
         
 public:
-    //------------------ PUBLIC METHODS -----------------------------------
 
     /**
     * default constructor
@@ -183,14 +177,17 @@ public:
     *	initialization of the thread 
     */
     bool threadInit();
+
     /**
     * active loop of the thread
     */
     void run();
+
     /**
     *	releases the thread
     */
     void threadRelease();
+
     /**
     * interrupts any communications or resource usage
     */
@@ -249,15 +246,7 @@ public:
     * close additional ports
     */
     bool closePorts();
-    /**
-    * applies the rain falling watershed
-    */
-    void rain();
-    /**
-    * draws all the blobs in the module
-    */
-    void drawAllBlobs(bool stable);
-    
+
     /**
     * counter
     */

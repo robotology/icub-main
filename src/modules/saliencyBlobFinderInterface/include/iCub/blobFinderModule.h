@@ -98,47 +98,43 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class blobFinderModule : public Module {
 private:
-    /**
-	* port where the commands are sent
-	*/
-    BufferedPort<Bottle > cmdPort;
-	/**
-	* options of the connection
-	*/
-	Property options;	//
+
+    BufferedPort<Bottle > cmdPort; //port where the commands are sent
+   
+    Property options;	//options of the connection
 
 public:
     //------------------ PUBLIC METHODS -----------------------------------
 
-	/**
-	* default constructor
-	*/
-	blobFinderModule();
     /**
-	* default destructor
-	*/
+    * default constructor
+    */
+    blobFinderModule();
+    /**
+    * default destructor
+    */
     ~blobFinderModule();
-	/**
-	* open and initialise the module
-	*/
-	bool open(Searchable& config); //
-	/**
-	* try to interrupt any communications or resource usage
-	*/
+    /**
+    * open and initialise the module
+    */
+    bool open(Searchable& config); //
+    /**
+    * try to interrupt any communications or resource usage
+    */
     bool interruptModule(); // 
-	/**
-	* closes all the ports 
-	*/
-	bool close(); //
-	/**
-	* active control of the Module
-	*/
-	bool updateModule();
+    /**
+    * closes all the ports 
+    */
+    bool close(); //
+    /**
+    * active control of the Module
+    */
+    bool updateModule();
     
     /**
-	* set the attribute options of class Property
-	*/
-	void setOptions(Property options); //
+    * set the attribute options of class Property
+    */
+    void setOptions(Property options); //
     
     ///----------- public attributes -------------
     WatershedModule* gui;

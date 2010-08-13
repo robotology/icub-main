@@ -334,41 +334,14 @@ bool WatershedModule::close() {
 
 // try to interrupt any communications or resource usage
 bool WatershedModule::interrupt(){
-    /**
-    * a port for reading the edge image 
-    */
-        port_in.interrupt(); // 
-    /**
-    * a port for reading the input Image of the Red Plane
-    */
-        portRedPlane.interrupt(); // 
-    /**
-    * a port for reading the input Image of the Green Plane
-    */
-        portGreenPlane.interrupt();
-    /**
-    * a port for reading the input Image of the Blue Plane 
-    */
-        portBluePlane.interrupt(); 
-    /**
-    * a port for reading the R+G- colour opponency Image
-    */
-        portRG.interrupt(); // 
-    /**
-    * a port for reading the G+R- colour opponency Image
-    */
-        portGR.interrupt(); // 
-    /**
-    * a port for reading the B+Y- colour opponency Image 
-    */
-        portBY.interrupt(); // 
-    /**
-    * port where the processed image is buffered out
-    */
+    port_in.interrupt(); // 
+    portRedPlane.interrupt(); // 
+    portGreenPlane.interrupt();
+    portBluePlane.interrupt(); 
+    portRG.interrupt(); // 
+    portGR.interrupt(); // 
+    portBY.interrupt(); // 
     port_out.interrupt(); //
-    /**
-    * port where the image of the found blob is put
-    */
     port_Blobs.interrupt(); //
     return true;
 }
@@ -431,63 +404,7 @@ bool getOpponencies(){
     */
     return ret;
 }
-/**
-* main function that associates any pixel in the image to a tagged blob
-*/
-void WatershedModule::rain(){
-        max_tag=wOperator->apply(*_outputImage,_tagged);
-        //printf("MAX_TAG=%d",wModule->max_tag);
-        /*bool ret=getPlanes();
-        if(ret==false){
-            //printf("No Planes! \n");
-            //return;
-        }
-        ret=getOpponencies();
-        if(ret==false){
-            //printf("No Opponency! \n");
-            //return;
-        }*/
-        int psb32s;
-        IppiSize srcsize={this->width,this->height};
-        Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-        Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-        Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-        /*ImageOf<PixelMono> *_inputImgRGS=new ImageOf<PixelMono>;
-        ImageOf<PixelMono> *_inputImgGRS=new ImageOf<PixelMono>;
-        ImageOf<PixelMono> *_inputImgBYS=new ImageOf<PixelMono>;
-        _inputImgRGS->resize(320,240);
-        _inputImgGRS->resize(320,240);
-        _inputImgBYS->resize(320,240);*/
-        if(ptr_inputImgRG!=NULL){
-            ippiScale_8u32s_C1R(_inputImgRG.getRawImage(),_inputImgRG.getRowSize(),_inputImgRGS32,psb32s,srcsize);
-            ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)wModule->_inputImgRGS->getRawImage(),wModule->_inputImgRGS->getRowSize(),srcsize);
-            //_inputImgRGS->copy(_inputImgRG,320,240);
-        }
-        else
-            return;
-        if(ptr_inputImgGR!=NULL){
-            ippiScale_8u32s_C1R(_inputImgGR.getRawImage(),_inputImgGR.getRowSize(),_inputImgGRS32,psb32s,srcsize);
-            ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)wModule->_inputImgGRS->getRawImage(),wModule->_inputImgGRS->getRowSize(),srcsize);
-            //_inputImgGRS->copy(_inputImgGR,320,240);
-        }
-        else
-            return;
-        if(ptr_inputImgBY!=NULL){
-            ippiScale_8u32s_C1R(_inputImgBY.getRawImage(),_inputImgBY.getRowSize(),_inputImgBYS32,psb32s,srcsize);
-            ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)wModule->_inputImgBYS->getRawImage(),wModule->_inputImgBYS->getRowSize(),srcsize);
-            //_inputImgBYS->copy(_inputImgBY,320,240);
-        }
-        else
-            return;
-        salience->blobCatalog(_tagged, *wModule->_inputImgRGS, *wModule->_inputImgGRS, *wModule->_inputImgBYS,
-            _inputImgBlue, _inputImgGreen, _inputImgRed, wModule->max_tag);
-        blobCataloged_flag=true;
-        //istruction to set the ptr_tagged in the Watershed Module with the static variable _tagged
-        tagged=ptr_tagged; //ptr_tagged is the pointer to _tagged
-        ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
-        ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
-        ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
-}
+
 
 
 //-------------------------------------------------
@@ -499,7 +416,7 @@ static void callback( GtkWidget *widget,gpointer   data ){
     printf ("Hello again - %s was pressed \n", (char *) data);
     
     if(!strcmp((char *)data,"Rain1")){
-        wModule->rain();
+        
     }
     else if(!strcmp((char *)data,"Rain2")){
         printf("Rain2");
@@ -513,15 +430,15 @@ static void callback( GtkWidget *widget,gpointer   data ){
     }
     else if(!strcmp((char *)data,"DrawAllBlobs1")){
         printf("DrawAllBlobs1");
-        wModule->drawAllBlobs(false);
+        //wModule->drawAllBlobs(false);
     }
     else if(!strcmp((char *)data,"DrawAllBlobs2")){
         printf("DrawAllBlobs2");
-        wModule->drawAllBlobs(false);
+        //wModule->drawAllBlobs(false);
     }
     else if(!strcmp((char *)data,"DrawAllBlobs3")){
         printf("DrawAllBlobs3");
-        wModule->drawAllBlobs(false);
+        //wModule->drawAllBlobs(false);
     }
     else if(!strcmp((char *)data,"drawFoveaBlob1")){
         printf("drawFoveaBlob1");
@@ -595,195 +512,28 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
     if(frame){
         //printf("frame not null");
         if (mainWindow){
-                //printf("frame and mainWindow present \n");
-                guchar *pixels;
-                unsigned int rowstride;
-                unsigned int imageWidth,imageHeight,areaWidth, areaHeight;
-                
-
-                if(!wModule->inputImage_flag){
-                    return true;
-                }
-                IppiSize srcsize={wModule->width,wModule->height};
-                //bool ret=getPlanes();				
-                /*if(ret==false){
-                    //printf("No Planes! \n");
-                    //return TRUE;
-                }
-                else{
-                    wModule->noPlanes_flag=false;
-                }*/
-                //ret=getOpponencies();
-                /*if(ret==false){
-                    //printf("No Opponency! \n");
-                    //return TRUE;
-                }
-                else{
-                    wModule->noOpponencies_flag=false;
-                }*/
-                if(wModule->noOpponencies_flag | wModule->noPlanes_flag){
-                    return true;
-                }
-
-                wModule->ct++;
-
-                //=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
-                //_outputImage->resize(320,240);
-                bool conversion=true;
-                //_outputImage=_wOperator->getPlane(&_inputImg); 
-                //wModule->rain();
-                
-                if(wModule->foveaBlob_flag){
-                    //wModule->salience->drawFoveaBlob(*wModule->salience->foveaBlob,*wModule->tagged);
-                    //ippiCopy_8u_C1R(wModule->salience->foveaBlob->getRawImage(),wModule->salience->foveaBlob->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->redPlane_flag){
-                    //ippiCopy_8u_C1R(wModule->ptr_inputRed->getRawImage(),wModule->ptr_inputRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->greenPlane_flag){
-                    //ippiCopy_8u_C1R(wModule->ptr_inputGreen->getRawImage(),wModule->ptr_inputGreen->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->bluePlane_flag){
-                    //ippiCopy_8u_C1R(wModule->ptr_inputBlue->getRawImage(),wModule->ptr_inputBlue->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->RG_flag){
-                    //ippiCopy_8u_C1R(wModule->ptr_inputRG->getRawImage(),wModule->ptr_inputRG->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->GR_flag){
-                    //ippiCopy_8u_C1R(wModule->ptr_inputGR->getRawImage(),wModule->ptr_inputGR->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->BY_flag){
-                    //ippiCopy_8u_C1R(wModule->ptr_inputBY->getRawImage(),wModule->ptr_inputBY->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->watershed_flag){
-                    //ippiCopy_8u_C1R(wModule->wOperator->tSrc.getRawImage(),wModule->wOperator->tSrc.getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->tagged_flag){
-                    //printf("dimension of the tagged image %d,%d \n", wModule->tagged->width(), wModule->tagged->height());
-                    for(int y=0; y<wModule->tagged->height(); y++){
-                        for (int x=0; x<wModule->tagged->width(); x++){
-                           // _outputImage->pixel(x,y)=(int)((wModule->max_tag/255)*wModule->tagged->pixel(x,y));
-                        }
-                    }
-                    //cvCvtColor(wModule->tagged->getIplImage(),_outputImage->getIplImage(),CV_GRAY2RGB);
-                    //cvCopy(wModule->tagged->getIplImage(),_outputImage->getIplImage());
-                    //ippiCopy_8u_C1R(wModule->tagged->getRawImage(),320,_outputImage->getRawImage(),320,srcsize);
-                    conversion=true;
-                }
-                else if(wModule->blobList_flag){
-                   // wModule->drawAllBlobs(false);
-                    /*if(wModule->blobList!=""){
-                        ippiCopy_8u_C1R((unsigned char*)wModule->blobList,320,_outputImage->getRawImage(),320,srcsize);
-                        conversion=true;
-                    }*/
-                }
-                else if(wModule->maxSaliencyBlob_flag){
-                    //wModule->drawAllBlobs(false);
-                    //wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
-                    //ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getRawImage(),wModule->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->contrastLP_flag){
-                    //wModule->drawAllBlobs(false);
-                    //ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
-                    //ippiCopy_8u_C1R(wModule->outContrastLP->getRawImage(),wModule->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                    conversion=true;
-                }
-                else if(wModule->colorVQ_flag){
-                    //wModule->salience->DrawVQColor(*wModule->salience->colorVQ_img,*wModule->tagged);
-                    //ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getRawImage(),wModule->salience->colorVQ_img->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);
-                    conversion=false;
-                }
-                else if(wModule->blobCataloged_flag){
-                    if(wModule->contrastLP_flag){
-                        //wModule->drawAllBlobs(false);
-                        //ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
-                        //ippiCopy_8u_C1R(wModule->outContrastLP->getRawImage(),wModule->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-                        conversion=true;
-                    }
-                    else if(wModule->meanColour_flag){
-                        //_outputImage=_wOperator->getPlane(&_inputImg); 
-                        //rain();
-                        //wModule->drawAllBlobs(false);
-                        //ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),wModule->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
-                        conversion=false;
-                    }
-                    /*else
-                    _outputImage=_wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image*/
-                }
-                /*else
-                _outputImage=_wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image*/
-
-                //-------
-                
-                /*if(conversion){
-                    int psb;
-                    int width=wModule->width;
-                    int height=wModule->height;
-                    Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
-                    //Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
-                    //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
-                    //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
-                    //two copies in order to have 2 conversions
-                    //the first transform the yarp mono into a 4-channel image
-                    ippiCopy_8u_C1R(_outputImage->getRawImage(), _outputImage->getRowSize(),im_out,psb,srcsize);
-
-                    //ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
-                    //ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
-                    //ippiCopy_8u_C1R(im_out, width,im_tmp2,psb,srcsize);
-
-                    //im_tmp0=im_out;
-                    //im_tmp1=im_out;
-                    //im_tmp2=im_out;
-
-                    //Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
-
-                    Ipp8u* im_tmp[3]={im_out,im_out,im_out};
-                    //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
-                    //the second transforms the 4-channel image into colorImage for yarp
-                    ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getRawImage(),wModule->image_out->getRowSize(),srcsize);
-                    ippiFree(im_out);
-                    //printf("freeing im_tmp0  \n");	
-                    //ippiFree(im_tmp0);
-                    //printf("freeing im_tmp1 \n");	
-                    //ippiFree(im_tmp1);
-                    //printf("freeing im_tmp2  \n");	
-                    //ippiFree(im_tmp2);
-                    //printf("freeing ended  \n");	
-                }
-                else
-                    ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),wModule->image_out->getRawImage(),wModule->image_out->getRowSize(),srcsize);*/
-                
                 //----------
                 _semaphore.wait();
                 bool result=yarpImage2Pixbuf(wModule->image_out, frame);
                 //bool result=yarpImage2Pixbuf(&_inputImg, frame);
-                imageWidth = _inputImg.width();
-                imageHeight = _inputImg.height();
+                int imageWidth = _inputImg.width();
+                int imageHeight = _inputImg.height();
                 _semaphore.post();
 
-                
-                
                 
                 if (imageWidth==0||imageHeight==0) {
                     printf("exit for dimension nil \n");
                     return TRUE;
                 }
      
-                areaWidth = event->area.width;
-                areaHeight = event->area.height;
+                int areaWidth = event->area.width;
+                int areaHeight = event->area.height;
 
                 unsigned int pixbufWidth=gdk_pixbuf_get_width(frame);
                 unsigned int pixbufHeight=gdk_pixbuf_get_height(frame);
 
+
+                /*
                 if ((imageWidth!=pixbufWidth) || (imageHeight!=pixbufHeight))
                     {
                         g_object_unref(frame);
@@ -826,6 +576,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                                             pixels,
                                             rowstride);
                     }
+                    */
         }
         else{
             //printf("mainWindow results nil");
@@ -1045,18 +796,6 @@ bool WatershedModule::outPorts(){
 }
 
 bool getImage(){
-    /*bool ret = false;
-    ret = _imgRecv.Update();
-
-    if (ret == false){
-        return false;
-    }
-
-    _semaphore.wait();
-    ret = _imgRecv.GetLastImage(&_inputImg);
-    _semaphore.post();
-    
-    //printf("GetImage: out of the semaphore \n");*/
     return false;
 }
 
@@ -1087,7 +826,7 @@ static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->salienceBU=adj->value/100;
-    printf("salienceBU: %f",wModule->salienceBU);
+    //printf("salienceBU: %f",wModule->salienceBU);
     std::string str("");
     sprintf((char *)str.c_str(),"set kbu %2.2f",wModule->salienceBU);
     wModule->message->assign(str.c_str());
@@ -1097,7 +836,7 @@ static void cb_digits_scale2( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->salienceTD=adj->value/100;
-    printf("salienceTD: %f",wModule->salienceTD);
+    //printf("salienceTD: %f",wModule->salienceTD);
     std::string str("");
     sprintf((char *)str.c_str(),"set ktd %2.2f",wModule->salienceTD);
     wModule->message->assign(str.c_str());
@@ -1107,7 +846,7 @@ static void cb_digits_scale3( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->maxBLOB=adj->value;
-    printf("maxBLOB: %f",wModule->maxBLOB);
+    //printf("maxBLOB: %f",wModule->maxBLOB);
     std::string str("");
     sprintf((char *)str.c_str(),"set Mdb %d",wModule->maxBLOB);
     wModule->message->assign(str.c_str());
@@ -1117,7 +856,7 @@ static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->minBLOB=adj->value;
-    printf("minBLOB: %d",wModule->minBLOB);
+    //printf("minBLOB: %d",wModule->minBLOB);
     std::string str("");
     sprintf((char *)str.c_str(),"set mdb %d",wModule->minBLOB);
     wModule->message->assign(str.c_str());
@@ -1127,7 +866,7 @@ static void cb_digits_scaler( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->targetRED=adj->value;
-    printf("targetRED: %f",wModule->targetRED);
+    //printf("targetRED: %f",wModule->targetRED);
     std::string str("");
     sprintf((char *)str.c_str(),"set rin %2.2f",wModule->targetRED);
     wModule->message->assign(str.c_str());
@@ -1137,7 +876,7 @@ static void cb_digits_scaleg( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->targetGREEN=adj->value;
-    printf("targetGREEN: %f",wModule->targetGREEN);
+    //printf("targetGREEN: %f",wModule->targetGREEN);
     std::string str("");
     sprintf((char *)str.c_str(),"set gin %2.2f",wModule->targetGREEN);
     wModule->message->assign(str.c_str());
@@ -1147,7 +886,7 @@ static void cb_digits_scaleb( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->targetBLUE=adj->value;
-    printf("targetBLUE: %f",wModule->targetBLUE);
+    //printf("targetBLUE: %f",wModule->targetBLUE);
     std::string str("");
     sprintf((char *)str.c_str(),"set bin %2.2f",wModule->targetBLUE);
     wModule->message->assign(str.c_str());
@@ -1157,7 +896,7 @@ static void cb_digits_scalemin( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->minBoundingArea=adj->value;
-    printf("minBoundingArea: %f",wModule->minBoundingArea);
+    //printf("minBoundingArea: %f",wModule->minBoundingArea);
     std::string str("");
     sprintf((char *)str.c_str(),"set mBA %2.2f",wModule->minBoundingArea);
     wModule->message->assign(str.c_str());
@@ -1167,7 +906,7 @@ static void cb_digits_scaletime( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->reactivity=adj->value;
-    printf("constant time for the iKinControlGaze: %f",wModule->reactivity/10);
+    //printf("constant time for the iKinControlGaze: %f",wModule->reactivity/10);
     std::string str("");
     sprintf((char *)str.c_str(),"set tco %2.2f",wModule->reactivity/10);
     wModule->message->assign(str.c_str());
@@ -1177,7 +916,7 @@ static void cb_digits_scaletime2( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->timeCentroid=adj->value;
-    printf("constant time for the controlGaze2: %f",wModule->timeCentroid/10);
+    //printf("constant time for the controlGaze2: %f",wModule->timeCentroid/10);
     std::string str("");
     sprintf((char *)str.c_str(),"set tce %2.2f",wModule->timeCentroid/10);
     wModule->message->assign(str.c_str());
@@ -1362,163 +1101,58 @@ ConstString WatershedModule::getName(ConstString suffix){
 
 bool WatershedModule::openPorts(){
     bool ret = false;
-    
-    /*
-    printf("Registering port %s on network %s...\n",  getName("image:i").c_str(),"default");
-    ret = _imgRecv.Connect(getName("image:i").c_str(),"default");
-    if (ret == true)
-        {
-            printf("Port registration succeed!\n");
-        }
-    else
+    _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+    //printf("Registering port %s on network %s...\n", getName("outputImage:o"),"default");
+    bool ok = _pOutPort->open( getName("outputImage:o").c_str());
+    if  (ok)
+        printf("Port registration succeed!\n");
+    else 
         {
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    //--------
-    ret = _imgRecvRed.Connect((char*) getName("inRed:i").c_str(),"default");
-    if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-    else
+    _pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+    //printf("Registering port %s on network %s...\n", getName("outBlobs:o"),"default");
+    ok = _pOutPort2->open( getName("outBlobs:o").c_str());
+    if  (ok)
+        printf("Port registration succeed!\n");
+    else 
         {
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvGreen.Connect((char*) getName("inGreen:i").c_str(),"default");
-    if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-    else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-    ret = _imgRecvBlue.Connect((char*) getName("inBlue:i").c_str(),"default");
-    if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-    else
+    _pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+    //printf("Registering port %s on network %s...\n", getName("outView:o"),"default");
+    ok = _pOutPort3->open( getName("outView:o").c_str());
+    if  (ok)
+        printf("Port registration succeed!\n");
+    else 
         {
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    //--------
-    ret = _imgRecvRG.Connect((char*) getName("inRG:i").c_str(),"default");
-    if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-    else
+    commandPort = new yarp::os::BufferedPort<Bottle >;
+    //printf("Registering port %s on network %s...\n", getName("command:o"),"default");
+    ok = commandPort->open( getName("command:o").c_str());
+    if  (ok)
+        printf("Port registration succeed!\n");
+    else 
         {
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvGR.Connect((char*) getName("inGR:i").c_str(),"default");
-    if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-    else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-    ret = _imgRecvBY.Connect((char*) getName("inBY:i").c_str(),"default");
-    if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-    else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-        */
-    //-------------
-    if (true)
-        {		
-            _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            //printf("Registering port %s on network %s...\n", getName("outputImage:o"),"default");
-            bool ok = _pOutPort->open( getName("outputImage:o").c_str());
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-            _pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            //printf("Registering port %s on network %s...\n", getName("outBlobs:o"),"default");
-            ok = _pOutPort2->open( getName("outBlobs:o").c_str());
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-            _pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            //printf("Registering port %s on network %s...\n", getName("outView:o"),"default");
-            ok = _pOutPort3->open( getName("outView:o").c_str());
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-            commandPort = new yarp::os::BufferedPort<Bottle >;
-            //printf("Registering port %s on network %s...\n", getName("command:o"),"default");
-            ok = commandPort->open( getName("command:o").c_str());
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-        }
-
     return true;
 }
 
 bool WatershedModule::closePorts(){
-    bool ret = false;
-    //int res = 0;
-    // Registering Port(s)
-    //reduce verbosity --paulfitz
-    //printf("Closing port %s on network %s...\n", getName("in"),"default");
-    //ret = _imgRecv.Disconnect();
-    //--------
-    //ret = _imgRecvRed.Disconnect(); //("/rea/Watershed/inRed","default");
-    //ret = _imgRecvGreen.Disconnect();//("/rea/Watershed/inGreen","default");
-    //ret = _imgRecvBlue.Disconnect(); //("/rea/Watershed/inBlue","default");
-    //--------
-    //ret = _imgRecvRG.Disconnect();//("/rea/Watershed/inRG","default");
-    //ret = _imgRecvGR.Disconnect();//("/rea/Watershed/inGR","default");
-    //ret = _imgRecvBY.Disconnect();//("/rea/Watershed/inBY","default");
-    //-------------
-    if (true)
-        {		
-            _pOutPort->close();
-            //printf("Closing port %s on network %s...\n", getName("out"),"default");
-            _pOutPort2->close();
-            //printf("Closing port %s on network %s...\n", getName("outBlobs:o"),"default");
-            _pOutPort3->close();
-            //printf("Closing port %s on network %s...\n", getName("outView:o"),"default");
-            commandPort->close();
-            //printf("Closing port %s on network %s...\n", getName("centroid:o"),"default");
-        }
+    _pOutPort->close();
+    //printf("Closing port %s on network %s...\n", getName("out"),"default");
+    _pOutPort2->close();
+    //printf("Closing port %s on network %s...\n", getName("outBlobs:o"),"default");
+    _pOutPort3->close();
+    //printf("Closing port %s on network %s...\n", getName("outView:o"),"default");
+    commandPort->close();
+    //printf("Closing port %s on network %s...\n", getName("centroid:o"),"default");
 
     return true;
 }
@@ -1526,20 +1160,9 @@ bool WatershedModule::closePorts(){
 
 void WatershedModule::setUp()
 {
-    /*if (true)
-        _imgRecv.SetLogopolar(false);
-    else
-        _imgRecv.SetLogopolar(true);
-    
-    if (true)
-        _imgRecv.SetFovea(false);
-    else
-        _imgRecv.SetFovea(true);
-        */
-    
     if (openPorts() == false)
         return;
-    
+
 }
 
 static void scale_set_default_values( GtkScale *scale )
@@ -2058,52 +1681,6 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (buttonradio);
     group = gtk_radio_button_group (GTK_RADIO_BUTTON (buttonradio));
 
-/*
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Watershed-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-    
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Tagged-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("MeanColoursLP-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("FoveaBlob-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FoveaBlob");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("ContrastLP-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("MaxSaliencyBlob-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MaxSaliencyBlob");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-    */
-
-
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
     //---box 4
@@ -2136,601 +1713,12 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (box4);
     //---box 4
 
-/*
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Watershed-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-    
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Tagged-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    //-------run button
-    
-    /*
-    button = gtk_button_new ();
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs1");
-    boxButton = xpm_label_box (NULL, (gchar*)"DrawAllBlobs1");
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-    */
-
-    /*
-    button = gtk_button_new ();
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob1");
-    boxButton = xpm_label_box (NULL, (gchar*)"drawFoveaBlob1");
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-    */
-
-    /*
-    button = gtk_button_new ();
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor1");
-    boxButton = xpm_label_box (NULL, (gchar*)"drawVQColor1");
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-    */
-
-    /*
-    button = gtk_button_new ();
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "maxSalienceBlob1");
-    boxButton = xpm_label_box (NULL,(gchar*) "maxSalienceBlob1");
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-    */
 
     //------ HSEPARATOR ---------------
     separator = gtk_hseparator_new ();
     gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
     gtk_widget_show (separator);
 
-    //----------BOXA SECTION:2
-    //boxA is the area that contains the two subsection for watershed and saliency operators
-    /*boxA = gtk_hbox_new (FALSE, 0);
-    
-    gtk_container_set_border_width (GTK_CONTAINER (boxA), 0);
-    gtk_box_pack_start (GTK_BOX (box2), boxA, TRUE, TRUE, 0);
-    gtk_widget_show (boxA);
-    gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
-    
-    //--box3 section A
-    box3 = gtk_hbox_new (FALSE, 0);
-    //hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    //gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    //scale_set_default_values (GTK_SCALE (hscale));
-    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    //gtk_widget_show (hscale);
-
-    label = gtk_label_new ("Options:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-
-    scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    
-    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
-                                 GTK_UPDATE_CONTINUOUS);
-    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    //gtk_widget_show (scrollbar);
-
-    //-----Check Buttons
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-    //-----box4
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColourOpponency11");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("MeanColoursLP1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-    //---box 4
-
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Rain2");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "Rain2");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
-
-    //---- vSeparator
-    separator = gtk_vseparator_new ();
-    gtk_box_pack_start (GTK_BOX (box3), separator, FALSE, TRUE, 3);
-    gtk_widget_show (separator);
-    
-    //--box3 section B
-    //box3 = gtk_hbox_new (FALSE, 0);
-    //hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    //gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    //scale_set_default_values (GTK_SCALE (hscale));
-    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    //gtk_widget_show (hscale);
-
-    label = gtk_label_new ("Options:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-
-    scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    
-    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
-                                 GTK_UPDATE_CONTINUOUS);
-    gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    gtk_widget_show (scrollbar);
-
-    //-----Check Buttons
-    box4=  gtk_vbox_new (FALSE, 0);
-    
-    /*-------------
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-    ---------------*/
-
-    /*
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-    //-----box4
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("ContrastLP2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP2");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("MeanColoursLP2-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP2");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-    //---box 4
-
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs2");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "DrawAllBlobs2");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob2");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "drawFoveaBlob2");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor2");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "drawVQColor2");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    //------ HSEPARATOR ---------------
-    separator = gtk_hseparator_new ();
-    gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
-    gtk_widget_show (separator);
-
-    //----------BOXA SECTION:3
-    //boxA is the area that contains the two subsection for watershed and saliency operators
-    boxA = gtk_hbox_new (FALSE, 0);
-    box3 = gtk_hbox_new (FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (boxA), 0);
-    gtk_box_pack_start (GTK_BOX (box2), boxA, TRUE, TRUE, 0);
-    gtk_widget_show (boxA);
-    gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
-    
-    //--box3 section A
-    //hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    // gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    // scale_set_default_values (GTK_SCALE (hscale));
-    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    //gtk_widget_show (hscale);
-
-    label = gtk_label_new ("Options:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-
-    scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    
-    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
-                                 GTK_UPDATE_CONTINUOUS);
-    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    //gtk_widget_show (scrollbar);
-
-    //-----Check Buttons
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-    //-----box4
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColourOpponency11");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FindEdges1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-    //---box 4
-
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Rain3");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "Rain3");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
-
-    //---- vSeparator
-    separator = gtk_vseparator_new ();
-    gtk_box_pack_start (GTK_BOX (box3), separator, FALSE, TRUE, 3);
-    gtk_widget_show (separator);
-    
-    //--box3 section B
-    // hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    // gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    //scale_set_default_values (GTK_SCALE (hscale));
-    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    //gtk_widget_show (hscale);
-
-    label = gtk_label_new ("OCheckList:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-
-    scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    
-    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
-                                 GTK_UPDATE_CONTINUOUS);
-    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    //gtk_widget_show (scrollbar);
-
-    //-----Check Buttons
-    box4=  gtk_vbox_new (FALSE, 0);
-
-    /*--------------------
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    -----*/
-    /*
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-    //-----box4
-    box4=  gtk_vbox_new (FALSE, 0);
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("ContrastLP3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP3");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("MeanColoursLP3-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP3");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-    gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-    //---box 4
-
-    //-------run button
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs3");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "DrawAllBlobs3");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob3");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "drawFoveaBlob3");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);
-
-    button = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor3");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "drawVQColor3");
-    // Pack and show all our widgets
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-    gtk_widget_show (button);*/
-
-    //------ HSEPARATOR ---------------
     separator = gtk_hseparator_new ();
     gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
     gtk_widget_show (separator);
@@ -2746,138 +1734,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
     frame = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 320, 240);
     // TimeOut used to refresh the screen
-    timeout_ID = gtk_timeout_add (100, timeout_CB, NULL);
+    timeout_ID = gtk_timeout_add (1000, timeout_CB, NULL);
 
     mainWindow=window;
 
     return window;
-}
-
-
-
-void WatershedModule::drawAllBlobs(bool stable)
-{
-    salience->ComputeSalienceAll(this->max_tag,this->max_tag);
-    //extracts the PixelBgr color of a particular blob identified by the id (last parameter)
-    PixelBgr varFoveaBlob = salience->varBlob(*tagged, *wModule->ptr_inputRG, *wModule->ptr_inputGR, *wModule->ptr_inputBY, 1);
-
-    salience->drawFoveaBlob(*blobFov, *tagged);
-    //__OLD//salience.drawBlobList(blobFov, tagged, blobList, max_tag, 127);
-    
-    //list of boolean whether is present or not a blob
-    
-    memset(blobList, 0, sizeof(char)*(max_tag+1));
-    // - faster
-    // - it considers also "lateral" pixels
-    // - it doesn't add pixels iteratively
-    wOperator->findNeighborhood(*tagged, 0, 0, blobList);
-    salience->fuseFoveaBlob3(*tagged, blobList, varFoveaBlob,max_tag);
-
-    // alternative method
-    //__OLD//rain.fuseFoveaBlob(tagged, blobList, max_tag);
-    
-    //__OLD//blobList[1]=2; // so the fovea blob is eliminated by the removeBlobList
-    //__OLD//salience.statBlobList(tagged, blobList, max_tag, fovBox);
-    YARPBox fovBox;
-    fovBox=salience->getBlobNum(1);
-    //__OLD//salience.removeBlobList(blobList, max_tag);
-    //----->salience->removeFoveaBlob(*tagged);
-    //__OLD//salience.updateFoveaBlob(tagged, blobList, max_tag);
-
-    if (stable) {
-        for (int i=0; i<2; i++) {
-            memset(blobList, 0, sizeof(char)*(max_tag+1));
-            wOperator->findNeighborhood(*tagged, 0, 0, blobList);
-            const int minBoundingArea=15*15;
-            int count=salience->countSmallBlobs(*tagged, blobList, max_tag, minBoundingArea);
-            printf("Count of small blobs: %d \n",count);
-            blobList[1]=0;
-            salience->mergeBlobs(*tagged, blobList, max_tag, 1);
-        }
-
-        /*__OLD//while (num!=0) {
-            blobList[1]=0;
-            salience.mergeBlobs(tagged, blobList, max_tag, 1);
-            memset(blobList, 0, sizeof(char)*max_tag);
-            rain.findNeighborhood(tagged, 0, 0, blobList);
-            num = salience.checkSmallBlobs(tagged, blobList, max_tag, minBoundingArea);
-        }*/
-    }
-        
-    //__OLD//salience.drawFoveaBlob(blobFov, tagged);
-    //__OLD//salience.drawBlobList(blobFov, tagged, blobList, max_tag, 127);
-    
-    // Comment the following line to disable the elimination of non valid blob
-    //salience->RemoveNonValidNoRange(max_tag, BLOB_MAXSIZE, BLOB_MINSIZE);
-    salience->RemoveNonValidNoRange(max_tag,maxBLOB,minBLOB);
-    
-    //__OLD//salience.DrawContrastLP(rg, gr, by, tmp1, tagged, max_tag, 0, 1, 30, 42, 45); // somma coeff pos=3 somma coeff neg=-3
-    //__OLD//salience.checkIOR(tagged, IORBoxes, num_IORBoxes);
-    //__OLD//salience.doIOR(tagged, IORBoxes, num_IORBoxes);
-    //float salienceBU=1.0,salienceTD=0.0;
-    IppiSize srcsize={this->width,this->height};
-    PixelMono searchTD=0;
-    searchRG=((targetRED-targetGREEN+255)/510)*255;
-    searchGR=((targetGREEN-targetRED+255)/510)*255;
-    PixelMono addRG=((targetRED+targetGREEN)/510)*255;
-    searchBY=((targetBLUE-addRG+255)/510)*255;
-    int psb32s,psb8u;
-    Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-    Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-    Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
-    //Ipp8s* _inputImgRGS8s=ippiMalloc_8u_C1(width,height,&psb8u);
-    //_inputImgGR
-    if(ptr_inputImgRG!=NULL){
-        //_inputImgRGS->copy(*ptr_inputImgRG,320,240);
-        ippiScale_8u32s_C1R(_inputImgRG.getRawImage(),_inputImgRG.getRowSize(),_inputImgRGS32,psb32s,srcsize);
-        //_inputImgRGS8s=(Ipp8s*)_inputImgRGS->getRawImage();
-        ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)_inputImgRGS->getRawImage(),_inputImgRGS->getRowSize(),srcsize);
-        //ippiCopy_8u_C1R(_inputImgRG.getPixelAddress(0,0),320,_inputImgRGS->getPixelAddress(0,0),320,srcsize);
-    }
-    else
-        return;
-    //_inputImgGR
-    if(ptr_inputImgGR!=NULL){
-        //_inputImgGRS->copy(*ptr_inputImgGR,320,240);
-        ippiScale_8u32s_C1R(_inputImgGR.getRawImage(),_inputImgGR.getRowSize(),_inputImgGRS32,psb32s,srcsize);
-        ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)_inputImgGRS->getRawImage(),_inputImgGRS->getRowSize(),srcsize);
-        //ippiCopy_8u_C1R(_inputImgGR.getPixelAddress(0,0),320,_inputImgGRS->getPixelAddress(0,0),320,srcsize);
-    }
-    else
-        return;
-    //_inputImgBY
-    if(ptr_inputImgBY!=NULL){
-        //_inputImgBYS->copy(*ptr_inputImgBY,320,240);
-        ippiScale_8u32s_C1R(_inputImgBY.getRawImage(),_inputImgBY.getRowSize(),_inputImgBYS32,psb32s,srcsize);
-        ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)_inputImgBYS->getRawImage(),_inputImgBYS->getRowSize(),srcsize);
-        //ippiCopy_8u_C1R(_inputImgBY.getPixelAddress(0,0),320,_inputImgBYS->getPixelAddress(0,0),320,srcsize);
-    }
-    else
-        return;
-    int nBlobs=salience->DrawContrastLP2(*_inputImgGRS, *_inputImgGRS, *_inputImgBYS,
-        *outContrastLP, *tagged, max_tag,
-        salienceBU, salienceTD,
-        searchRG, searchGR, searchBY, 255); // somma coeff pos=3 somma coeff neg=-3
-    //printf("The number of blobs: %d",nBlobs);
-    salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
-    salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
-    
-    //__OLD//meanOppCol.Zero();
-    //__OLD//salience.DrawMeanOpponentColorsLP(meanOppCol, tagged);
-
-    /*__OLD//blobFinder.DrawGrayLP(tmp1, tagged, 200);
-    //__OLD//ACE_OS::sprintf(savename, "./rain.ppm");
-    //__OLD//YARPImageFile::Write(savename, tmp1);*/
-
-    
-
-    //__OLD//rain.tags2Watershed(tagged, oldWshed);
-
-    //delete(blobList);
-    ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
-    ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
-    ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
-    //ippiFree(_inputImgRGS8s);
 }
 
 
