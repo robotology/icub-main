@@ -99,17 +99,16 @@ std::string visualFilterThread::getName(const char* p) {
 }
 
 void visualFilterThread::run() {
-   unsigned char value;
-   while (isStopping() != true) { // the thread continues to run until isStopping() returns true
+    while (isStopping() != true) { // the thread continues to run until isStopping() returns true
         inputImage = imagePortIn.read(true);
 
         if(inputImage!=NULL) {
-            if(!resized){
+            if (!resized) {
                 resize(inputImage->width(),inputImage->height());
                 resized=true;
                 ippiCopy_8u_C3R(inputImage->getRawImage(),inputImage->getRowSize(),inputImagePrev->getRawImage(),inputImagePrev->getRowSize(),originalSrcsize);
             }
-            else{
+            else {
                 filterInputImage();
             }
           
@@ -202,7 +201,20 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
     blueYellowV16s= ippiMalloc_16s_C1(width,height,&psb16s);
 }
 
-void visualFilterThread::filterInputImage(){
+void visualFilterThread::filterInputImage() {
+
+    int i;
+    const int sz = inputImage->getRawImageSize();
+    unsigned char * pFiltered = inputImageFiltered->getRawImage();
+    unsigned char * pCurr = inputImageFiltered->getRawImage();
+    const float ul = 1 - lambda;
+    for (i = 0; i < sz; i++) {
+        *pFiltered = (unsigned char)(lambda * *pCurr++ + ul * *pFiltered + .5f);
+        pFiltered ++;
+    }
+
+
+#if 0
     float inputPrev=0;
     float inputCurr=0;
     float inputFiltered=0;
@@ -236,7 +248,9 @@ void visualFilterThread::filterInputImage(){
         pCurr+=padding;
         pFiltered+=padding;
     }
-    ippiCopy_8u_C3R(inputImage->getRawImage(),inputImage->getRowSize(),inputImagePrev->getRawImage(),inputImagePrev->getRowSize(),originalSrcsize);
+#endif
+
+//    ippiCopy_8u_C3R(inputImage->getRawImage(),inputImage->getRowSize(),inputImagePrev->getRawImage(),inputImagePrev->getRowSize(),originalSrcsize);
 }
 
 
@@ -282,7 +296,6 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
 void visualFilterThread::extractPlanes() {
     Ipp8u* shift[3];
     Ipp8u* yellowP;
-    int psb;
     shift[0]=redPlane->getRawImage();
     shift[1]=greenPlane->getRawImage();
     shift[2]=bluePlane->getRawImage();
@@ -315,15 +328,17 @@ void visualFilterThread::extractPlanes() {
 void visualFilterThread::filtering() {
     IppiSize srcPlusSize = { 5, 5 }; //variance=1
     IppiSize srcMinusSize = { 7, 7 }; //variance=3 which is 3 times the variance 1
-    Ipp32f srcMinus[7*7] ={0.0113, 0.0149, 0.0176, 0.0186, 0.0176, 0.0149, 0.0113,
-    0.0149, 0.0197, 0.0233, 0.0246, 0.0233, 0.0197, 0.0149,
-    0.0176, 0.0233, 0.0275, 0.0290, 0.0275, 0.0233, 0.0176,
-    0.0186, 0.0246, 0.0290, 0.0307, 0.0290, 0.0246, 0.0186,
-    0.0176, 0.0233, 0.0275, 0.0290, 0.0275, 0.0233, 0.0176,
-    0.0149, 0.0197, 0.0233, 0.0246, 0.0233, 0.0197, 0.0149,
-    0.0113, 0.0149, 0.0176, 0.0186, 0.0176, 0.0149, 0.0113};
+    Ipp32f srcMinus[7*7] = {
+        0.0113f, 0.0149f, 0.0176f, 0.0186f, 0.0176f, 0.0149f, 0.0113f,
+        0.0149f, 0.0197f, 0.0233f, 0.0246f, 0.0233f, 0.0197f, 0.0149f,
+        0.0176f, 0.0233f, 0.0275f, 0.0290f, 0.0275f, 0.0233f, 0.0176f,
+        0.0186f, 0.0246f, 0.0290f, 0.0307f, 0.0290f, 0.0246f, 0.0186f,
+        0.0176f, 0.0233f, 0.0275f, 0.0290f, 0.0275f, 0.0233f, 0.0176f,
+        0.0149f, 0.0197f, 0.0233f, 0.0246f, 0.0233f, 0.0197f, 0.0149f,
+        0.0113f, 0.0149f, 0.0176f, 0.0186f, 0.0176f, 0.0149f, 0.0113f
+    };
     int divisor = 1;
-    IppiPoint anchor={4,4};
+    IppiPoint anchor = {4,4};
     
     /*
     ippiFilter32f_8u_C1R(redPlane->getPixelAddress(maxKernelSize,maxKernelSize),redPlane->getRowSize(),redMinus->getPixelAddress(maxKernelSize,maxKernelSize),redMinus->getRowSize(),originalSrcsize,srcMinus,srcMinusSize,anchor);
