@@ -39,6 +39,14 @@ visualFilterThread::visualFilterThread() {
 
     edges=new ImageOf<PixelMono>;
 
+    buffer=0;
+    redGreenH16s=0;
+    greenRedH16s=0;
+    blueYellowH16s=0;
+    redGreenV16s=0;
+    greenRedV16s=0;
+    blueYellowV16s=0;
+
     resized=false;
 }
 
@@ -561,14 +569,20 @@ void visualFilterThread::threadRelease() {
     delete blueYellowAbs;
     delete edges;
 
-
-    ippsFree(buffer);
-    ippiFree(redGreenH16s);
-    ippiFree(greenRedH16s);
-    ippiFree(blueYellowH16s);
-    ippiFree(redGreenV16s);
-    ippiFree(greenRedV16s);
-    ippiFree(blueYellowV16s);
+    if(buffer!=0)
+        ippsFree(buffer);
+    if(redGreenH16s!=0)
+        ippiFree(redGreenH16s);
+    if(greenRedH16s!=0)
+        ippiFree(greenRedH16s);
+    if(blueYellowH16s!=0)
+        ippiFree(blueYellowH16s);
+    if(redGreenV16s!=0)
+        ippiFree(redGreenV16s);
+    if(greenRedV16s!=0)
+        ippiFree(greenRedV16s);
+    if(blueYellowV16s!=0)
+        ippiFree(blueYellowV16s);
 }
 
 void visualFilterThread::onStop() {

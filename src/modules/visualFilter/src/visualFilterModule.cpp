@@ -40,7 +40,6 @@ bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {
     moduleName            = rf.check("name", 
                            Value("visualFilter"), 
                            "module name (string)").asString();
-    moduleName="/"+moduleName;
     /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
