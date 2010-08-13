@@ -33,6 +33,7 @@ private:
     BufferedPort<ImageOf<PixelRgb> > inputPort; //port where the input image is read from
     BufferedPort<ImageOf<PixelMono> > edgesPort; //port where the edges image is read
     BufferedPort<ImageOf<PixelMono> > outputPort; //port that returns the image output
+    BufferedPort<ImageOf<PixelMono> > saliencePort; //port that returns the salience map
     BufferedPort<ImageOf<PixelRgb> > outputPort3; //port that returns the image output 3channels
     BufferedPort<ImageOf<PixelMono> > rgPort; //port where the difference of gaussian R+G- is streamed
     BufferedPort<ImageOf<PixelMono> > grPort; //port where the difference of gaussian G+R- is streamed
@@ -74,6 +75,7 @@ private:
     int searchRG; //R+G- value for the search
     int searchGR; //G+R- value for the search
     int searchBY; //B+Y- value for the search
+    
 
     lp2CartPixel *l2cTable; //look-up table for cartesian reconstruction
     
@@ -212,8 +214,7 @@ public:
     bool tagged_flag; //flag for the drawings
     bool watershed_flag; //flag for drawing watershed image
     bool filterSpikes_flag; //function that indicates if the stimuli have to be processed
-    int maxBLOB; //maxBLOB dimension
-    int minBLOB; //minBLOB dimension
+    
     double salienceTD; //saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
     double salienceBU; //saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
     double targetRED; //red intensity of the target that has been found 
@@ -221,10 +222,14 @@ public:
     double targetBLUE; //blue intensity of the target that has been found 
     double constantTimeGazeControl; //value that represent the constantTimeGazeControl of the sensorial system in terms of second
     double constantTimeCentroid; //value that represent the constantTimeCentroid of the sensorial system in terms of second
+
+    int maxBLOB; //maxBLOB dimension
+    int minBLOB; //minBLOB dimension
     int count; //counter of cycle for maxsaliency blob
     int max_tag; //number of blobs
     int countSpikes; //number of spikes which are count to get the strongest
     int minBoundingArea; //dimension of the bounding area in saliency BU algorithm
+    int saddleThreshold; //threshold necessary to determine the saddle point of rain falling watershed
 };
 
 #endif //__BLOBFINDERTHREAD_H_

@@ -145,7 +145,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE)
 blobFinderThread::blobFinderThread(int rateThread):RateThread(rateThread)
 {
     ippSetNumThreads(1);
-
+    saddleThreshold=10;
     reinit_flag=false;
     interrupted_flag=false;
     ct=0;
@@ -296,7 +296,7 @@ void blobFinderThread::resizeImages(int width, int height) {
     ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
     ptr_tagged->resize(widthstep,height);
     
-    this->wOperator=new WatershedOperator(true,width,height,widthstep,10);
+    this->wOperator=new WatershedOperator(true,width,height,widthstep,saddleThreshold);
     //_wOperator=this->wOperator;
     this->salience=new SalienceOperator(width,height);
     //_salience=this->salience;
@@ -358,6 +358,7 @@ bool blobFinderThread::threadInit(){
     byPort.open(getName("/by:i").c_str());
 
     outputPort.open(getName("/image:o").c_str());
+    saliencePort.open(getName("/salienceMap:o").c_str());
     outputPort3.open(getName("/imageC3:o").c_str());
     centroidPort.open(getName("/centroid:o").c_str());
     triangulationPort.open(getName("/triangulation:o").c_str());
@@ -396,6 +397,7 @@ void blobFinderThread::interrupt(){
     byPort.interrupt();//open(getName("by:i"));
 
     outputPort.interrupt();//open(getName("image:o"));
+    saliencePort.interrupt();
     outputPort3.interrupt();
     centroidPort.interrupt();//open(getName("centroid:o"));
     triangulationPort.interrupt();//open(getName("triangulation:o"));
@@ -572,7 +574,13 @@ void blobFinderThread::run() {
                 if (meanColour_flag) {
                     ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
                 }
-                else {
+                else if(contrastLP_flag){
+                    ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                    Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
+                    ippiCopy_8u_P3C3R(im_tmp,_outputImage->getRowSize(),img->getRawImage(),img->getRowSize(),srcsize);
+                    ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),img->getRawImage(),img->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
+                }
+                else{
                     Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
                     ippiCopy_8u_P3C3R(im_tmp,_outputImage->getRowSize(),img->getRawImage(),img->getRowSize(),srcsize);
                     ippiAdd_8u_C3RSfs(ptr_inputImg->getRawImage(),ptr_inputImg->getRowSize(),img->getRawImage(),img->getRowSize(),_outputImage3Merged->getRawImage(),_outputImage3Merged->getRowSize(),srcsize,1);
@@ -605,6 +613,7 @@ void blobFinderThread::stop(){
     printf("closing outputport .... \n");
     outputPort.close();
     outputPort3.close();
+    saliencePort.close();
     checkPort.close();
 
     printf("input port closing .... \n");
@@ -730,6 +739,10 @@ bool blobFinderThread::outPorts(){
     if((0!=_outputImage3)&&(outputPort3.getOutputCount())){ 
         outputPort3.prepare() = *(_outputImage3);
         outputPort3.write();
+    }
+    if((0!=outContrastLP)&&(saliencePort.getOutputCount())){ 
+        saliencePort.prepare() = *(outContrastLP);
+        saliencePort.write();
     }
 
     /*

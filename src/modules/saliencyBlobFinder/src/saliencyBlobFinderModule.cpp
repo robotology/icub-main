@@ -78,6 +78,13 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
                            Value(225), 
                            "minBoundingArea (int)").asInt();
 
+    /*
+    * saddlePoint threshold
+    */
+    minBoundingArea             = rf.check("saddleThreshold", 
+                           Value(10), 
+                           "saddleThreshold (int)").asInt();
+
     if (!cmdPort.open(getName())) {           
       cout << getName() << ": Unable to open port " << endl;
       return false;

@@ -59,7 +59,7 @@
 #define COMMAND_VOCAB_MAXDB VOCAB3('M','d','b') //Maximum dimension of the blob drawn
 #define COMMAND_VOCAB_MINDB VOCAB3('m','d','b') //minimum dimension of the blob drawn
 #define COMMAND_VOCAB_MBA VOCAB3('m','B','A') //minimum dimension of the bounding area
-
+#define COMMAND_VOCAB_STH VOCAB3('s','t','h') //minimum dimension of the bounding area
 
 
 // directional saliency filter vocab's
