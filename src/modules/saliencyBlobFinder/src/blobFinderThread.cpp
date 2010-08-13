@@ -29,7 +29,7 @@ bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,const yarp::si
     if (lp.getPadding() != 0) {
         int i;
         const int byte = lp.width() * sizeof(PixelRgb);
-        unsigned char *d = lp.getRawImage();
+        unsigned char *d = lp.getRawImage() + byte;
         for (i = 1; i < lp.height(); i ++) {
             unsigned char *s = (unsigned char *)lp.getRow(i);
             memmove(d, s, byte);
