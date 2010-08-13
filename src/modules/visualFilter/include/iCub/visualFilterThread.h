@@ -31,7 +31,7 @@ private:
     float lambda; //costant for the temporal filter
    
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImage; //input image
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImagePrev; //input image
+    //yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImagePrev; //input image
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImageFiltered; //input image
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputExtImage; //extended input image
         

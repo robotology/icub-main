@@ -20,7 +20,7 @@ visualFilterThread::visualFilterThread() {
     yellowPlane=new ImageOf<PixelMono>;
     yellowPlane2=new ImageOf<PixelMono>;
     inputExtImage=new ImageOf<PixelRgb>;
-    inputImagePrev=new ImageOf<PixelRgb>;
+//    inputImagePrev=new ImageOf<PixelRgb>;
     inputImageFiltered=new ImageOf<PixelRgb>;
 
     redPlus=new ImageOf<PixelMono>;
@@ -106,14 +106,14 @@ void visualFilterThread::run() {
             if (!resized) {
                 resize(inputImage->width(),inputImage->height());
                 resized=true;
-                ippiCopy_8u_C3R(inputImage->getRawImage(),inputImage->getRowSize(),inputImagePrev->getRawImage(),inputImagePrev->getRowSize(),originalSrcsize);
+//                ippiCopy_8u_C3R(inputImage->getRawImage(),inputImage->getRowSize(),inputImagePrev->getRawImage(),inputImagePrev->getRowSize(),originalSrcsize);
             }
             else {
                 filterInputImage();
             }
           
             //extending logpolar input image
-            extender(inputImageFiltered,maxKernelSize);
+            extender(inputImage,maxKernelSize);
             //extracting RGB and Y planes
             extractPlanes();
             //gaussing filtering of the of RGB and Y
@@ -162,8 +162,10 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
 
     //resizing plane images
     edges->resize(width_orig, height_orig);
-    inputImagePrev->resize(width_orig, height_orig);
+//    inputImagePrev->resize(width_orig, height_orig);
     inputImageFiltered->resize(width_orig, height_orig);
+    inputImageFiltered->zero();
+ 
     inputExtImage->resize(width,height);
     redPlane->resize(width,height);
     redPlane2->resize(width,height);
@@ -207,7 +209,7 @@ void visualFilterThread::filterInputImage() {
     const int sz = inputImage->getRawImageSize();
     unsigned char * pFiltered = inputImageFiltered->getRawImage();
     unsigned char * pCurr = inputImageFiltered->getRawImage();
-    const float ul = 1 - lambda;
+    const float ul = 1.0f - lambda;
     for (i = 0; i < sz; i++) {
         *pFiltered = (unsigned char)(lambda * *pCurr++ + ul * *pFiltered + .5f);
         pFiltered ++;
@@ -569,7 +571,7 @@ void visualFilterThread::threadRelease() {
     delete yellowPlane;
     delete yellowPlane2;
     delete inputExtImage;
-    delete inputImagePrev;
+    //delete inputImagePrev;
     delete inputImageFiltered;
     delete inputImage;
 
