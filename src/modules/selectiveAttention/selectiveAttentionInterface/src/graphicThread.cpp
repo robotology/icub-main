@@ -117,7 +117,6 @@ void graphicThread::setName(yarp::os::ConstString value){
 }
 
 ConstString graphicThread::getName(){
-    
     return fname;
 }
 
@@ -150,7 +149,6 @@ void graphicThread::outPorts(){
 }
 
 static bool getImage() {
-    
     return true;
 }
 

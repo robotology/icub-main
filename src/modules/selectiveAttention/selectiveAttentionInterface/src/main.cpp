@@ -61,8 +61,12 @@ int main(int argc, char *argv[]) {
 	
 	//initialise Yarp Network
     Network yarp;
+
+    //g_thread_init (NULL);
+    gdk_threads_init ();
+    gdk_threads_enter ();
 	// This is called in all GTK applications. Arguments are parsed
-	// from the command line and are returned to the application.
+	// from the command line and are returned to the application
     gtk_init (&argc, &argv);
 
 	
