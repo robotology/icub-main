@@ -38,9 +38,9 @@ bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {
     /* get the module name which will form the stem of all module port names */
 
     moduleName            = rf.check("name", 
-                           Value("myModule"), 
+                           Value("visualFilter"), 
                            "module name (string)").asString();
-
+    moduleName="/"+moduleName;
     /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
@@ -60,58 +60,9 @@ bool visualFilterModule::configure(yarp::os::ResourceFinder &rf) {
                            "Robot name (string)").asString();
     robotPortName         = "/" + robotName + "/head";
 
-    /* 
-    * get the cameraConfig file and read the required parameter values cx, cy 
-    * in both the groups [CAMERA_CALIBRATION_LEFT] and [CAMERA_CALIBRATION_RIGHT]
-    */
-
-    cameraConfigFilename  = rf.check("cameraConfig", 
-                           Value("icubEyes.ini"), 
-                           "camera configuration filename (string)").asString();
-
-    cameraConfigFilename = (rf.findFile(cameraConfigFilename.c_str())).c_str();
-
-    Property cameraProperties;
-
-    if (cameraProperties.fromConfigFile(cameraConfigFilename.c_str()) == false) {
-      cout << "myModule: unable to read camera configuration file" << cameraConfigFilename;
-      return 0;
-    }
-    else {
-      cxLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cx", Value(160.0), "cx left").asDouble();
-      cyLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cy", Value(120.0), "cy left").asDouble();
-      cxRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cx", Value(160.0), "cx right").asDouble();
-      cyRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cy", Value(120.0), "cy right").asDouble();
-    }
-
-
-    /* get the name of the input and output ports, automatically prefixing the module name by using getName() */
-
-    inputPortName         = "/";
-    inputPortName        += getName(
-                           rf.check("myInputPort", 
-                           Value("/image:i"),
-                           "Input image port (string)").asString()
-                           );
-
-    outputPortName        = "/";
-    outputPortName       += getName(
-                           rf.check("myOutputPort", 
-                           Value("/image:o"),
-                           "Output image port (string)").asString()
-                           );
-
-
-    /* get the threshold value */
-
-    thresholdValue        = rf.check("threshold",
-                           Value(8),
-                           "Key value (int)").asInt();
-
 
     /* do all initialization here */
      
-
 
     /*
     * attach a port of the same name as the module (prefixed with a /) to the module

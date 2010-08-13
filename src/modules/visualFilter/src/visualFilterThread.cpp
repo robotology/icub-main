@@ -20,6 +20,8 @@ visualFilterThread::visualFilterThread() {
     yellowPlane=new ImageOf<PixelMono>;
     yellowPlane2=new ImageOf<PixelMono>;
     inputExtImage=new ImageOf<PixelRgb>;
+    inputImagePrev=new ImageOf<PixelRgb>;
+    inputImageFiltered=new ImageOf<PixelRgb>;
 
     redPlus=new ImageOf<PixelMono>;
     redMinus=new ImageOf<PixelMono>;
@@ -36,12 +38,6 @@ visualFilterThread::visualFilterThread() {
     blueYellowAbs=new ImageOf<PixelMono>;
 
     edges=new ImageOf<PixelMono>;
-    redGreenEdgesHoriz=new ImageOf<PixelMono>;
-    greenRedEdgesHoriz=new ImageOf<PixelMono>;
-    blueYellowEdgesHoriz=new ImageOf<PixelMono>;
-    redGreenEdgesVert=new ImageOf<PixelMono>;
-    greenRedEdgesVert=new ImageOf<PixelMono>;
-    blueYellowEdgesVert=new ImageOf<PixelMono>;
 
     resized=false;
 }
@@ -102,10 +98,14 @@ void visualFilterThread::run() {
             if(!resized){
                 resize(inputImage->width(),inputImage->height());
                 resized=true;
+                ippiCopy_8u_C3R(inputImage->width(),inputImage->getRowSize(),inputImagePrev->getRawImage,inputImagePrev->getRowSize(),originalSrcsize);
+            }
+            else{
+                filterInputImage();
             }
           
             //extending logpolar input image
-            extending();
+            extender(inputImage,maxKernelSize);
             //extracting RGB and Y planes
             extractPlanes();
             //gaussing filtering of the of RGB and Y
@@ -154,6 +154,8 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
 
     //resizing plane images
     edges->resize(width_orig, height_orig);
+    inputImagePrev->resize(width_orig, height_orig);
+    inputImageFiltered->resize(width_orig, height_orig);
     inputExtImage->resize(width,height);
     redPlane->resize(width,height);
     redPlane2->resize(width,height);
@@ -180,13 +182,6 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
     redGreenAbs->resize(width, height);
     greenRedAbs->resize(width, height);
     blueYellowAbs->resize(width, height);
-    
-    redGreenEdgesHoriz->resize(width, height);
-    greenRedEdgesHoriz->resize(width, height);
-    blueYellowEdgesHoriz->resize(width, height);
-    redGreenEdgesVert->resize(width, height);
-    greenRedEdgesVert->resize(width, height);
-    blueYellowEdgesVert->resize(width, height);
 
     ippiFilterSobelHorizGetBufferSize_8u16s_C1R(srcsize, ippMskSize3x3, &size1);
     buffer = ippsMalloc_8u(size1);
@@ -198,10 +193,13 @@ void visualFilterThread::resize(int width_orig,int height_orig) {
     blueYellowV16s= ippiMalloc_16s_C1(width,height,&psb16s);
 }
 
-
-void visualFilterThread::extending() {
-    extender(inputImage,maxKernelSize);
+void visualFilterModule::filterInputImage(){
+    for(int row=0;row<height_orig;row++) {
+        for(int col=0;col<width_orig;col++) {
+        }
+    }
 }
+
 
 ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize) {
     //copy of the image 
@@ -221,7 +219,7 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
         ptrDestRight=inputExtImage->getPixelAddress(width-maxSize,row);
         ptrOrigRight=inputExtImage->getPixelAddress(maxSize,row);
         ptrDestLeft=inputExtImage->getPixelAddress(0,row);
-        ptrOrigLeft=inputExtImage->getPixelAddress(width-maxSize,row);
+        ptrOrigLeft=inputExtImage->getPixelAddress(width-maxSize-maxSize,row);
         for(int i=0;i<maxSize;i++) {
             //right block
             *ptrDestRight=*ptrOrigRight;
@@ -484,10 +482,12 @@ void visualFilterThread::edgesExtract() {
             pedges++;
             j++;
         }
+        /*
         for(int i=0;i<rowsize-width_orig;i++) {
             pedges++;
-            
         }
+        */
+        pedges+=rowsize-width_orig;
         for(int i=0;i<(rowsize2/sizeof(signed short))-width_orig-maxKernelSize+maxKernelSize;i++) {
             /*prgh++;prgv++;
             pgrh++;pgrv++;
@@ -503,7 +503,6 @@ void visualFilterThread::edgesExtract() {
 
 void visualFilterThread::threadRelease() {
     /* for example, delete dynamically created data-structures */
-    
     delete redPlane;
     delete redPlane2;
     delete redPlane3;
@@ -516,6 +515,9 @@ void visualFilterThread::threadRelease() {
     delete yellowPlane;
     delete yellowPlane2;
     delete inputExtImage;
+    delete inputImagePrev;
+    delete inputImageFiltered;
+    delete inputImage;
 
     delete redPlus;
     delete redMinus;
@@ -531,14 +533,8 @@ void visualFilterThread::threadRelease() {
     delete greenRedAbs;
     delete blueYellowAbs;
     delete edges;
-    
-    delete redGreenEdgesHoriz;
-    delete greenRedEdgesHoriz;
-    delete blueYellowEdgesHoriz;
-    delete redGreenEdgesVert;
-    delete greenRedEdgesVert;
-    delete blueYellowEdgesVert;
-    
+
+
     ippsFree(buffer);
     ippiFree(redGreenH16s);
     ippiFree(greenRedH16s);
