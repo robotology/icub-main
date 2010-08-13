@@ -3,8 +3,13 @@
 #include <cstring>
 #include <cstdlib>
 
+#define G_PRIORITY_HIGH            -1
+#define G_PRIORITY_DEFAULT          0
+#define G_PRIORITY_LOW	            -300
 
-#define THREADRATE 500
+
+
+#define THREADRATE 50
 
 static GtkWidget *menubar;
 static GtkWidget *fileMenu, *imageMenu, *helpMenu;
