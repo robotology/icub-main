@@ -17,6 +17,10 @@
  */
 
 #include "iCub/yuvProc.h"
+#include <stdio.h>
+#include <stdlib.h>
+ #include <string.h>
+#define KERNSIZE 5
 //#include "yarp/os/impl/NameClient.h"
 
 bool yuvProc::configure(yarp::os::ResourceFinder &rf)
@@ -37,24 +41,10 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 
     /* get the name of the input and output ports, automatically prefixing the module name by using getName() */
  
-    inputPortNameY           = "/";
-    inputPortNameY           += getName(
-                           rf.check("Y_IN", 
-                           Value("/Y/image:i"),
-                           "Input image port (string)").asString()
-                           );
-
-    inputPortNameU           = "/";
-    inputPortNameU           += getName(
-                           rf.check("U_IN", 
-                           Value("/U/image:i"),
-                           "Input image port (string)").asString()
-                           );
-
-    inputPortNameV           = "/";
-    inputPortNameV           += getName(
-                           rf.check("V_IN", 
-                           Value("/V/image:i"),
+    inputPortName           = "/";
+    inputPortName           += getName(
+                           rf.check("IMG_IN", 
+                           Value("/image:i"),
                            "Input image port (string)").asString()
                            );
     
@@ -74,18 +64,10 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
                            );
 
     /* do all initialization here */
-    /* open ports  */ 
+    /* open ports  */  
        
-    if (!inputPortY.open(inputPortNameY.c_str())) {
-        cout << getName() << ": unable to open port " << inputPortNameY << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-    if (!inputPortU.open(inputPortNameU.c_str())) {
-        cout << getName() << ": unable to open port " << inputPortNameU << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-    if (!inputPortV.open(inputPortNameV.c_str())) {
-        cout << getName() << ": unable to open port " << inputPortNameV << endl;
+    if (!inputPort.open(inputPortName.c_str())) {
+        cout << getName() << ": unable to open port " << inputPortName << endl;
         return false;  // unable to open; let RFModule know so that it won't run
     }
 
@@ -118,7 +100,7 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 
     /* create the thread and pass pointers to the module parameters */
 
-    yuvThread = new YUVThread(&inputPortY,&inputPortU, &inputPortV, &outPortY, &outPortUV);
+    yuvThread = new YUVThread(&inputPort, &outPortY, &outPortUV);
 
     /* now start the thread to do the work */
     yuvThread->start(); // this calls threadInit() and it if returns true, it then calls run()
@@ -129,9 +111,7 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 
 bool yuvProc::interruptModule()
 {
-    inputPortY.interrupt();
-    inputPortU.interrupt();
-    inputPortV.interrupt();
+    inputPort.interrupt();
     outPortY.interrupt();
     outPortUV.interrupt();
     handlerPort.interrupt();
@@ -142,9 +122,7 @@ bool yuvProc::interruptModule()
 
 bool yuvProc::close()
 {
-    inputPortY.close();
-    inputPortU.close();
-    inputPortV.close();    
+    inputPort.close();
     outPortY.close();
     outPortUV.close();   
     handlerPort.close();
@@ -192,13 +170,11 @@ double yuvProc::getPeriod()
     return 0.1;
 }
 
-YUVThread::YUVThread(BufferedPort<ImageOf<PixelMono> > *inputPortY, BufferedPort<ImageOf<PixelMono> > *inputPortU, BufferedPort<ImageOf<PixelMono> > *inputPortV, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV)
+YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV)
 {
-    imageInputPortY    = inputPortY;
-    imageInputPortU    = inputPortU;
-    imageInputPortV    = inputPortV;
-    imageOutPortY   = outPortY;
-    imageOutPortUV   = outPortUV;
+    imageInputPort    = inputPort;
+    imageOutPortY  = outPortY; 
+    imageOutPortUV  = outPortUV;
     min = 0.0;
     max = 0.0;
 }
@@ -216,51 +192,45 @@ void YUVThread::run(){
 
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
         
-        gotY =  ( imageInputPortY->getInputCount() > 0 );
-    	gotU = ( imageInputPortU->getInputCount() > 0 );
-        gotV = ( imageInputPortV->getInputCount() > 0 );
-        
+        gotImg =  ( imageInputPort->getInputCount() > 0 );
+
         Time::delay(0.1);
 
-        if (gotY + gotU + gotV > 2){
+        if (gotImg > 0) {
 
-            imgY = imageInputPortY->read(true);
-            imgU = imageInputPortU->read(true);
-            imgV = imageInputPortV->read(true);
+            img = imageInputPort->read(false);
 
             if (init){//Get first RGB image to establish width, height:
                 cout << "initializing" << endl;   
-                initAll();     
+                initAll();
+                cout << "done initializing" << endl;        
             }
+            extender( img, KERNSIZE ); //here extendorig
 
-    /*  //used for testing: by creating your own YUV image ( from RBG eg...getting logpolar images straight from robot ) with alpha chanenl and separate Y U and V channel 
-        ippiCopy_8u_C3R( img->getPixelAddress(0,0),img->getRowSize(), colour_in, psb3, srcsize);
-        //convert to RGBA:
-        ippiCopy_8u_C3AC4R(colour_in,psb3,colour,psb4,srcsize);
-        //convert to Y,U,V image channels:
-        ippiRGBToYUV_8u_AC4R(colour,psb4,yuva_orig,psb4,srcsize);
-        //extract Y, U, V Images
-        pyuva[0]= y_orig;
-        pyuva[1]= u_orig;
-        pyuva[2]= v_orig; 
-        pyuva[3]= tmp; 
-        ippiCopy_8u_C4P4R(yuva_orig,psb4,pyuva,psb,srcsize);
-        */
-            ippiCopy_8u_C1R( imgY->getRawImage(), imgY->getRowSize(), y_orig, y_psb, srcsize);
-            ippiCopy_8u_C1R( imgU->getRawImage(), imgU->getRowSize(), u_orig, u_psb, srcsize);
-            ippiCopy_8u_C1R( imgV->getRawImage(), imgV->getRowSize(), v_orig, v_psb, srcsize);
+            //create your own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel 
+            ippiCopy_8u_C3R( inputExtImage->getRawImage(),inputExtImage->getRowSize(), orig, img_psb, srcsize );
+
+            //convert to RGBA:
+            ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
+            //convert to Y,U,V image channels:
+            ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize);
+            //extract Y, U, V Images
+            pyuva[0]= y_orig;
+            pyuva[1]= u_orig;
+            pyuva[2]= v_orig; 
+            pyuva[3]= tmp; 
+            ippiCopy_8u_C4P4R(yuva_orig,psb4,pyuva,psb,srcsize);
 
             //intensity process: performs centre-surround uniqueness analysis
-            centerSurr->proc_im_8u( y_orig , y_psb );
-            ippiCopy_8u_C1R(centerSurr->get_centsur_norm8u(),centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize);
-     
+            centerSurr->proc_im_8u( y_orig , psb );
+            ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize);
     //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
             //Colour process U performs centre-surround uniqueness analysis:
-            centerSurr->proc_im_8u( u_orig , u_psb );
+            centerSurr->proc_im_8u( u_orig , psb );
             ippiAdd_32f_C1IR(centerSurr->get_centsur_32f(),centerSurr->get_psb_32f(),cs_tot_32f,psb_32f,srcsize);
             //Colour process V:
-            centerSurr->proc_im_8u( v_orig , v_psb );
+            centerSurr->proc_im_8u( v_orig , psb );
             ippiAdd_32f_C1IR(centerSurr->get_centsur_32f(),centerSurr->get_psb_32f(),cs_tot_32f,psb_32f,srcsize);
 
             //get min max
@@ -268,22 +238,42 @@ void YUVThread::run(){
             if (max==min){max=255.0;min=0.0;}
             ippiScale_32f8u_C1R(cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize,min,max);
 
+            ippiCopy_8u_C1R(ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize);
+            ippiCopy_8u_C1R(colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize);
+
+            unsigned char* imgY = img_Y->getPixelAddress( KERNSIZE, KERNSIZE );
+            unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZE, KERNSIZE );
+        
+            unsigned char* imgYo = img_out_Y->getRawImage();
+            unsigned char* imgUVo = img_out_UV->getRawImage();
+
+            int rowsize= img_out_Y->getRowSize();
+            int rowsize2= img_Y->getRowSize();
+
+            for(int row=0;row<origsize.height;row++) {
+                for(int col=0;col<origsize.width;col++) {
+                    *imgYo = *imgY;
+                    *imgUVo = *imgUV;
+                    imgYo++;imgUVo++;
+                    imgY++;imgUV++;
+                }    
+                imgYo+=rowsize - origsize.width;
+                imgUVo+=rowsize - origsize.width;
+                imgY+=rowsize2 - origsize.width - KERNSIZE + KERNSIZE;
+                imgUV+=rowsize2 - origsize.width - KERNSIZE + KERNSIZE;
+            }
             //output Y centre-surround results to ports
             if (imageOutPortY->getOutputCount()>0){
-                //revert to yarp image
-                ippiCopy_8u_C1R(ycs_out, ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), srcsize);
                 imageOutPortY->prepare() = *img_out_Y;	
                 imageOutPortY->write();
             }
+
             //output UV centre-surround results to ports
             if (imageOutPortUV->getOutputCount()>0){
-                //revert to yarp image
-                ippiCopy_8u_C1R(colcs_out, col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), srcsize);
                 imageOutPortUV->prepare() = *img_out_UV;	
                 imageOutPortUV->write();
             }
-
-            //reset
+            //reset 
             ippiSet_32f_C1R(0.0,cs_tot_32f,psb_32f,srcsize);
         }
     } //while
@@ -292,54 +282,112 @@ void YUVThread::run(){
 void YUVThread::threadRelease() 
 {
     cout << "cleaning up things.." << endl;
-    /* for example, delete dynamically created data-structures */
-    if (gotY + gotU + gotV > 2){    
+    if (gotImg > 0){    
         delete centerSurr;
         delete img_out_Y;
         delete img_out_UV;
-        ippiFree(ycs_out);
+        delete img_Y;
+        delete img_UV;
+        delete inputExtImage;
+        ippiFree(orig);
+        ippiFree(colour); 
+        ippiFree(tmp); 
+        free (pyuva);
+        ippiFree(yuva_orig);
         ippiFree(y_orig);
-        ippiFree(u_orig); 
-        ippiFree(v_orig);    
+        ippiFree(u_orig);
+        ippiFree(v_orig);
         ippiFree(cs_tot_32f);
         ippiFree(colcs_out);
+        ippiFree(ycs_out);
     }
-    //yarp::os::impl::NameClient::removeNameClient();
-    cout << "cleaning up things.." << endl;
+    cout << "finished cleaning up" << endl;
 }
 
 void YUVThread::initAll()
 {
-    width = imgY->width();
-    height = imgY->height();
-    cout << "Received input image dimensions: " << imgY->width() << " " << imgY->height() << endl;
     init = false;
-    srcsize.width = width;
-    srcsize.height = height;
-  
-    //yuva_orig = ippiMalloc_8u_C1(width*4,height,&psb4);
-    //colour_in   = ippiMalloc_8u_C3(width,height,&psb3);
-    //colour      = ippiMalloc_8u_C4(width,height,&psb4);
+    origsize.width = img->width();
+    origsize.height = img->height();
 
-    ycs_out     = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&ycs_psb);
+    srcsize.width = origsize.width + 2 * KERNSIZE;
+    srcsize.height = origsize.height + 2 * KERNSIZE;
+
+    cout << "Received input image dimensions: " << origsize.width << " " << origsize.height << endl;
+    cout << "Will extend these to: " << srcsize.width << " " << srcsize.height << endl;
+
+    orig    = ippiMalloc_8u_C3(srcsize.width,srcsize.height,&img_psb);
+    colour  = ippiMalloc_8u_C4(srcsize.width,srcsize.height,&psb4);
+
+    yuva_orig = ippiMalloc_8u_C1(srcsize.width*4,srcsize.height,&psb4);
+    y_orig    = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
+    u_orig    = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
+    v_orig    = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
     
-    y_orig      = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&y_psb);// to separate Y channel
-    u_orig      = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&u_psb);// to separate U channel
-    v_orig      = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&v_psb);// to separate V channel
-
-    //tmp         = ippiMalloc_8u_C1(width,height,&psb);// to separate alpha channel
-    //pyuva = (Ipp8u**) malloc(4*sizeof(Ipp8u*));
+    tmp     = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);// to separate alpha channel
+    pyuva = (Ipp8u**) malloc(4*sizeof(Ipp8u*));
 
     cs_tot_32f  = ippiMalloc_32f_C1(srcsize.width,srcsize.height, &psb_32f);
-    colcs_out   = ippiMalloc_8u_C1(srcsize.width,srcsize.height, &col_psb);
+    colcs_out   = ippiMalloc_8u_C1(srcsize.width,srcsize.height,  &col_psb);
+    ycs_out     = ippiMalloc_8u_C1(srcsize.width,srcsize.height,  &ycs_psb);
 
     ncsscale = 4;
-    centerSurr  = new CentSur(srcsize,ncsscale);
 
-	img_out_Y = new ImageOf<PixelMono>;
-	img_out_Y->resize(srcsize.width, srcsize.height);
+    centerSurr  = new CentSur( srcsize , ncsscale);
+    
+    inputExtImage=new ImageOf<PixelRgb>;
+    inputExtImage->resize(srcsize.width, srcsize.height);
+
+	img_Y = new ImageOf<PixelMono>;
+	img_Y->resize(srcsize.width, srcsize.height);
+
+	img_UV = new ImageOf<PixelMono>;
+	img_UV->resize(srcsize.width, srcsize.height);
+
+    img_out_Y = new ImageOf<PixelMono>;
+	img_out_Y->resize(origsize.width, origsize.height);
 
 	img_out_UV = new ImageOf<PixelMono>;
-	img_out_UV->resize(srcsize.width, srcsize.height);
-	
+	img_out_UV->resize(origsize.width, origsize.height);
+        
 }
+
+ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize) {
+    //copy of the image 
+    ippiCopy_8u_C3R(inputOrigImage->getRawImage(),inputOrigImage->getRowSize(),inputExtImage->getPixelAddress(maxSize,maxSize),inputExtImage->getRowSize(),origsize);    
+    //memcpy of the horizontal fovea lines (rows) 
+    int sizeBlock=origsize.width/2;
+    for( int i=0;i<maxSize;i++) {
+        memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),inputExtImage->getPixelAddress(maxSize,maxSize+i),sizeBlock*sizeof(PixelRgb));
+        memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),inputExtImage->getPixelAddress(sizeBlock,maxSize+i),sizeBlock*sizeof(PixelRgb));
+    }
+    //copy of the block adiacent angular positions (columns)
+    unsigned char* ptrDestRight;
+    unsigned char* ptrOrigRight;
+    unsigned char* ptrDestLeft;
+    unsigned char* ptrOrigLeft;
+    for( int row=0;row<height;row++ ) {
+        ptrDestRight=inputExtImage->getPixelAddress(width-maxSize,row);
+        ptrOrigRight=inputExtImage->getPixelAddress(maxSize,row);
+        ptrDestLeft=inputExtImage->getPixelAddress(0,row);
+        ptrOrigLeft=inputExtImage->getPixelAddress(width-maxSize-maxSize,row);
+        for(int i=0;i<maxSize;i++) {
+            //right block
+            *ptrDestRight=*ptrOrigRight;
+            ptrDestRight++;ptrOrigRight++;
+            *ptrDestRight=*ptrOrigRight;
+            ptrDestRight++;ptrOrigRight++;
+            *ptrDestRight=*ptrOrigRight;
+            ptrDestRight++;ptrOrigRight++;
+            //left block
+            *ptrDestLeft=*ptrOrigLeft;
+            ptrDestLeft++;ptrOrigLeft++;
+            *ptrDestLeft=*ptrOrigLeft;
+            ptrDestLeft++;ptrOrigLeft++;
+            *ptrDestLeft=*ptrOrigLeft;
+            ptrDestLeft++;ptrOrigLeft++;
+        }
+    }
+    return inputExtImage;
+}
+

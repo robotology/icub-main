@@ -174,43 +174,45 @@ class YUVThread : public Thread
 private:
 
     /* class variables */
-    ImageOf<PixelMono> *imgY;
-  	ImageOf<PixelMono> *imgU;    
-    ImageOf<PixelMono> *imgV;
+    ImageOf<PixelRgb> *img;
+    ImageOf<PixelRgb> *inputExtImage;
+    ImageOf<PixelRgb> *imgExt;
+    ImageOf<PixelRgb> *inputImage; //input image
 
 	ImageOf<PixelMono> *img_out_Y;    
 	ImageOf<PixelMono> *img_out_UV;
+    ImageOf<PixelMono> *img_Y;    
+	ImageOf<PixelMono> *img_UV;
 
     /* thread parameters: they are pointers so that they refer to the original variables */
 
-    BufferedPort<ImageOf<PixelMono> >  *imageInputPortY;
-    BufferedPort<ImageOf<PixelMono> >  *imageInputPortU;
-    BufferedPort<ImageOf<PixelMono> >  *imageInputPortV;
-
+    BufferedPort<ImageOf<PixelRgb> >  *imageInputPort;
     BufferedPort<ImageOf<PixelMono> > *imageOutPortY;
     BufferedPort<ImageOf<PixelMono> > *imageOutPortUV;  
 
-    IppiSize srcsize;
+    IppiSize srcsize, origsize;
     int width, height;
     int ncsscale;
     bool init;
     //int psb, psb4, psb3, ycs_psb, col_psb, psb_32f;
-    int y_psb, u_psb, v_psb;
-    int ycs_psb, col_psb, psb_32f;
-    //Ipp8u *colour_in, *colour, *ycs_out, *yuva_orig, *y_orig, *u_orig, *v_orig, *tmp; 
-    Ipp8u *ycs_out, *y_orig, *u_orig, *v_orig, *colcs_out;  
-    //Ipp8u** pyuva;
+    
+    //Ipp8u *colour_in, *colour, *ycs_out, *yuva_orig, *y_orig, *u_orig, *v_orig, *tmp;  
+    Ipp8u** pyuva;
     CentSur * centerSurr;
     Ipp32f *cs_tot_32f;
     Ipp32f min,max;
-    bool gotY, gotU, gotV;
+    bool gotImg;
+
+    Ipp8u *orig, *colour, *yuva_orig, *y_orig, *u_orig, *v_orig, *tmp, *ycs_out, *colcs_out;
+    int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f;
 
 public:
 
-    /* class methods */
-    YUVThread(BufferedPort<ImageOf<PixelMono> > *inputPortY,BufferedPort<ImageOf<PixelMono> > *inputPortU, BufferedPort<ImageOf<PixelMono> > *inputPortV, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV);
-    
+   /* class methods */
+    YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPortY, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV);
     void initAll();
+    void extending();
+    ImageOf<PixelRgb>* extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize);
     bool threadInit();     
     void threadRelease();
     void run(); 
@@ -221,25 +223,20 @@ class yuvProc:public RFModule
     /* module parameters */
     string moduleName; 
     //string inputPortName;
-    string inputPortNameY;
-    string inputPortNameU;
-    string inputPortNameV;
+    string inputPortName;
 
     string outputPortNameY;  
     string outputPortNameUV;    
     string handlerPortName;
 
     /* class variables */
-    BufferedPort<ImageOf<PixelMono> > inputPortY;  // input port
-    BufferedPort<ImageOf<PixelMono> > inputPortU;
-    BufferedPort<ImageOf<PixelMono> > inputPortV;
+    BufferedPort<ImageOf<PixelRgb> > inputPort;  // input port
     BufferedPort<ImageOf<PixelMono> > outPortY;  // intensity output port
     BufferedPort<ImageOf<PixelMono> > outPortUV; // chrominance output port
     Port handlerPort;      //a port to handle messages 
     
     /* pointer to a new thread to be created and started in configure() and stopped in close() */
     YUVThread *yuvThread;
-
 public:
 
     bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
