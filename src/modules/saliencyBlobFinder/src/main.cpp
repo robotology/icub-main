@@ -7,26 +7,23 @@
 #include <string.h>
 using namespace std;
 
-
-
 int main(int argc, char *argv[]) {
-        
     //initialise Yarp Network
     Network yarp;
     Time::turboBoost();
 
-   saliencyBlobFinderModule module; 
+    saliencyBlobFinderModule module; 
 
-   /* prepare and configure the resource finder */
+    /* prepare and configure the resource finder */
 
-   ResourceFinder rf;
-   rf.setVerbose(true);
-   rf.setDefaultConfigFile("blobFinderLeft.ini");  //overridden by --from parameter
-   rf.setDefaultContext("attentionMechanism/conf");   //overridden by --context parameter
-   rf.configure("ICUB_ROOT", argc, argv);
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultConfigFile("blobFinderLeft.ini");  //overridden by --from parameter
+    rf.setDefaultContext("attentionMechanism/conf");   //overridden by --context parameter
+    rf.configure("ICUB_ROOT", argc, argv);
  
-   /* run the module: runModule() calls configure first and, if successful, it then runs */
-   module.runModule(rf);
+    /* run the module: runModule() calls configure first and, if successful, it then runs */
+    module.runModule(rf);
 
-   return 0;
+    return 0;
 }

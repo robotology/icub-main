@@ -192,7 +192,6 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 **/
 
-
 class saliencyBlobFinderModule : public yarp::os::RFModule{
 private:
     
@@ -223,9 +222,7 @@ private:
     */
     void copyFlags();
     
-    
 public:
-    
     /**
     * default constructor
     */
@@ -287,7 +284,6 @@ public:
     * function that streams the images out on the ports
     */
     void outPorts();
-
     
     bool contrastLP_flag; //flag for drawing contrastLP
     bool meanColour_flag; //flag for drawing meanColourImage
@@ -300,8 +296,6 @@ public:
     bool watershed_flag; //flag for drawing watershed image
     bool timeControl_flag; //it indicates if the control of the time is on
     bool filterSpikes_flag; //indicates if the process that filters the spikes is on
-
-   
 };
 
 #endif //__SALIENCYBLOBFINDERMODULE_H_

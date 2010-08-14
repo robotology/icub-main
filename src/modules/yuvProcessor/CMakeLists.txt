@@ -1,27 +1,26 @@
-SET(PROJECTNAME yuvProcessor)
-PROJECT(${PROJECTNAME})
+set(PROJECTNAME yuvProcessor)
+project(${PROJECTNAME})
 
 # Search for source code.
-FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
-FILE(GLOB folder_header include/iCub/*.h)
+file(GLOB folder_source src/*.cpp src/*.cc src/*.c)
+file(GLOB folder_header include/iCub/*.h)
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
-
-INCLUDE_DIRECTORIES(
+include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${YARP_INCLUDE_DIRS}
 	${ICUB_INCLUDE_DIRS}
 	${IPP_INCLUDE_DIRS}
 )
 
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header} )
+add_executable(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(
+target_link_libraries(
     ${PROJECTNAME}
 	${IPP_LIBRARIES}
 	${YARP_LIBRARIES}
-	#pthread
 )
 
+install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
