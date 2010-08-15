@@ -1,3 +1,28 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Rea Francesco
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file visualFilterThread.cpp
+ * @brief Implementation of the visual filter thread (see visualFilterThread.h).
+ */
+
 #include <iCub/visualFilterThread.h>
 #include <cstring>
 
@@ -5,7 +30,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
 
-#define maxKernelSize 5
+const int maxKernelSize = 5;
 
 visualFilterThread::visualFilterThread() {
     redPlane=new ImageOf<PixelMono>;
@@ -51,9 +76,10 @@ visualFilterThread::visualFilterThread() {
 }
 
 bool visualFilterThread::threadInit() {
+    /* important, this effectively disables the OMP library parallelization in the IPP */
     ippSetNumThreads(1);
 
-    /* open ports  */ 
+    /* open ports */ 
     if (!imagePortIn.open(getName("/image:i").c_str())) {
         cout <<": unable to open port "  << endl;
         return false;  // unable to open; let RFModule know so that it won't run
@@ -212,13 +238,21 @@ void visualFilterThread::filterInputImage() {
 
 ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImage, int maxSize) {
     // copy of the image 
-    ippiCopy_8u_C3R(inputOrigImage->getRawImage(),inputOrigImage->getRowSize(),inputExtImage->getPixelAddress(maxSize,maxSize),inputExtImage->getRowSize(),originalSrcsize);    
+    ippiCopy_8u_C3R(inputOrigImage->getRawImage(),
+                    inputOrigImage->getRowSize(),
+                    inputExtImage->getPixelAddress(maxSize,maxSize),
+                    inputExtImage->getRowSize(),
+                    originalSrcsize);
 
     // memcpy of the horizontal fovea lines (rows) 
     int sizeBlock = width_orig / 2;
     for(int i = 0; i < maxSize; i++) {
-        memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),inputExtImage->getPixelAddress(maxSize,maxSize+i),sizeBlock*sizeof(PixelRgb));
-        memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),inputExtImage->getPixelAddress(sizeBlock,maxSize+i),sizeBlock*sizeof(PixelRgb));
+        memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),
+               inputExtImage->getPixelAddress(maxSize,maxSize+i),
+               sizeBlock*sizeof(PixelRgb));
+        memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),
+               inputExtImage->getPixelAddress(sizeBlock,maxSize+i),
+               sizeBlock*sizeof(PixelRgb));
     }
 
     // copy of the block adjacent angular positions (columns)
@@ -254,42 +288,48 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
 }
 
 void visualFilterThread::extractPlanes() {
+    /* check ipp for the existence of output by plane (rather than by pixel) */
     Ipp8u* shift[3];
     Ipp8u* yellowP;
-    shift[0]=redPlane->getRawImage();
-    shift[1]=greenPlane->getRawImage();
-    shift[2]=bluePlane->getRawImage();
-    yellowP=yellowPlane->getRawImage();
-    Ipp8u* inputPointer=inputExtImage->getRawImage();
+    
+    shift[0] = redPlane->getRawImage();
+    shift[1] = greenPlane->getRawImage();
+    shift[2] = bluePlane->getRawImage();
+    yellowP = yellowPlane->getRawImage();
+    Ipp8u* inputPointer = inputExtImage->getRawImage();
+
+    /* use getPadding!!!! */
     int paddingMono=redPlane->getRowSize()-redPlane->width();
     int padding3C=inputExtImage->getRowSize()-inputExtImage->width()*3;
 
-    for(int r=0;r<inputExtImage->height();r++) {
-        for(int c=0;c<inputExtImage->width();c++) {
-            *shift[0]=*inputPointer;
-            inputPointer++;
-            *shift[1]=*inputPointer;
-            inputPointer++;
-            *shift[2]=*inputPointer;
-            inputPointer++;
-            *yellowP=(unsigned char)ceil((double)*shift[0]/2+(double)*shift[1]/2);
+    const int h = inputExtImage->height();
+    const int w = inputExtImage->width();
+
+    for(int r = 0; r < h; r++) {
+        for(int c = 0; c < w; c++) {
+            *shift[0] = *inputPointer++;
+            *shift[1] = *inputPointer++;
+            *shift[2] = *inputPointer++;
+
+            *yellowP++ = (unsigned char)((*shift[0] >> 1) + (*shift[1] >> 1));
+
             shift[0]++;
             shift[1]++;
             shift[2]++;
-            yellowP++;
         }
-        inputPointer+=padding3C;
-        shift[0]+=paddingMono;
-        shift[1]+=paddingMono;
-        shift[2]+=paddingMono;
-        yellowP+=paddingMono;
+
+        inputPointer += padding3C;
+        shift[0] += paddingMono;
+        shift[1] += paddingMono;
+        shift[2] += paddingMono;
+        yellowP += paddingMono;
     }
 }
 
 void visualFilterThread::filtering() {
-    IppiSize srcPlusSize = { 5, 5 }; //variance=1
-    IppiSize srcMinusSize = { 7, 7 }; //variance=3 which is 3 times the variance 1
-    Ipp32f srcMinus[7*7] = {
+    IppiSize srcPlusSize = { 5, 5 };    // variance=1
+    IppiSize srcMinusSize = { 7, 7 };   // variance=3 which is 3 times the variance 1
+    static Ipp32f srcMinus[7*7] = {
         0.0113f, 0.0149f, 0.0176f, 0.0186f, 0.0176f, 0.0149f, 0.0113f,
         0.0149f, 0.0197f, 0.0233f, 0.0246f, 0.0233f, 0.0197f, 0.0149f,
         0.0176f, 0.0233f, 0.0275f, 0.0290f, 0.0275f, 0.0233f, 0.0176f,
@@ -298,9 +338,11 @@ void visualFilterThread::filtering() {
         0.0149f, 0.0197f, 0.0233f, 0.0246f, 0.0233f, 0.0197f, 0.0149f,
         0.0113f, 0.0149f, 0.0176f, 0.0186f, 0.0176f, 0.0149f, 0.0113f
     };
+
     int divisor = 1;
     IppiPoint anchor = {4,4};
     
+    /* gaussian is separable and therefore it's cheaper to comput by row and then by columns rather than using this one! */
     ippiFilter32f_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redMinus->getRawImage(),redMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
     ippiFilter32f_8u_C1R(yellowPlane->getRawImage(),yellowPlane->getRowSize(),yellowMinus->getRawImage(),yellowMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
     ippiFilter32f_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenMinus->getRawImage(),greenMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
@@ -311,6 +353,7 @@ void visualFilterThread::filtering() {
 }
 
 void visualFilterThread::colourOpponency() {
+    // and in-place operations???
     ippiRShiftC_8u_C1R(redPlus->getRawImage(),redPlane->getRowSize(),1,redPlane2->getRawImage(),redPlane2->getRowSize(),srcsize);
     ippiAddC_8u_C1RSfs(redPlane2->getRawImage(),redPlane2->getRowSize(),128,redPlane3->getRawImage(),redPlane3->getRowSize(),srcsize,0);
     ippiRShiftC_8u_C1R(redMinus->getRawImage(),redMinus->getRowSize(),1,redPlane2->getRawImage(),redPlane2->getRowSize(),srcsize);
@@ -326,7 +369,7 @@ void visualFilterThread::colourOpponency() {
     ippiSub_8u_C1RSfs(yellowPlane2->getRawImage(),yellowPlane2->getRowSize(),bluePlane3->getRawImage(),bluePlane3->getRowSize(),blueYellow->getRawImage(),blueYellow->getRowSize(),srcsize,0);
 }
 
-float max(float a,float b,float c) {
+inline float max(float a,float b,float c) {
     if(a>b)
         if(a>c)
             return a;
@@ -389,14 +432,17 @@ void visualFilterThread::edgesExtract() {
     int rowsize=edges->getRowSize();
     int rowsize2=psb16s;
     double rgvmax=0,rghmax=0,maxa=0,maxb=0,maxc=0,rghminusmax=0,rghminusmin=255, maxValuemax=0;
-    int j=maxKernelSize*(rowsize2/sizeof(signed short))+maxKernelSize;
+    int j = maxKernelSize*(rowsize2/sizeof(signed short))+maxKernelSize;
 
     // edges extraction
-    for(int row=0;row<height_orig;row++) {
-        for(int col=0;col<width_orig;col++) {
-            float rghd=(float)redGreenH16s[j];float rgvd=(float)redGreenV16s[j];
-            float grhd=(float)greenRedH16s[j];float grvd=(float)greenRedV16s[j];
-            float byhd=(float)blueYellowH16s[j];float byvd=(float)blueYellowV16s[j];
+    for (int row = 0; row < height_orig; row++) {
+        for (int col = 0; col < width_orig; col++) {
+            float rghd = (float)redGreenH16s[j];
+            float rgvd = (float)redGreenV16s[j];
+            float grhd = (float)greenRedH16s[j];
+            float grvd = (float)greenRedV16s[j];
+            float byhd = (float)blueYellowH16s[j];
+            float byvd = (float)blueYellowV16s[j];
 
             // module of the vector
             float a=sqrt(pow(rghd,2)+pow(rgvd,2));
@@ -411,14 +457,15 @@ void visualFilterThread::edgesExtract() {
             if(maxc<c)
                 maxc=c;
             
-            float rgnorm=(255.0/300.0)*a;
-            float grnorm=(255.0/300.0)*b;
-            float bynorm=(255.0/300.0)*c;
+            float rgnorm = (255.0f/300.0f)*a;
+            float grnorm = (255.0f/300.0f)*b;
+            float bynorm = (255.0f/300.0f)*c;
             
             if (row<height_orig-2) {
                 float maxValue=floor(max(rgnorm,grnorm,bynorm));
                 if(maxValuemax<maxValue)
                     maxValuemax=maxValue;
+                
                 unsigned char maxChar=(unsigned char) maxValue;
                 *pedges=maxChar;
             }
@@ -430,16 +477,18 @@ void visualFilterThread::edgesExtract() {
             j++;
         }
 
-        pedges+=rowsize-width_orig;
-        for(int i=0;i<(rowsize2/sizeof(signed short))-width_orig-maxKernelSize+maxKernelSize;i++) {
+        pedges += rowsize-width_orig;
+        /* throw a warning and besides it's not clear why it subtracts & sum maxKernelSize! */
+        for(int i = 0; i < (rowsize2 / sizeof(signed short)) - width_orig - maxKernelSize + maxKernelSize; i++) {
             j++;
-        }
-        
+        } 
     }
 }
 
 void visualFilterThread::threadRelease() {
     /* for example, delete dynamically created data-structures */
+
+    /* NOPE! this is wrong, delete in the destructor since these were allocateed in the class constructor */
     delete redPlane;
     delete redPlane2;
     delete redPlane3;

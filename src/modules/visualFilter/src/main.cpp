@@ -1,3 +1,5 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Francesco Rea
@@ -16,8 +18,10 @@
  * Public License for more details
  */
   
-
-
+/**
+ * @file main.cpp
+ * @brief main code for the visual  filter module; this is part of the logpolar attention system.
+ */
 
 #include "iCub/visualFilterModule.h" 
 
@@ -27,15 +31,8 @@ using namespace yarp::sig;
 
 int main(int argc, char * argv[])
 {
-   /* initialize yarp network */ 
-
    Network yarp;
-
-   /* create your module */
-
    visualFilterModule module; 
-
-   /* prepare and configure the resource finder */
 
    ResourceFinder rf;
    rf.setVerbose(true);
@@ -43,10 +40,8 @@ int main(int argc, char * argv[])
    rf.setDefaultContext("attentionMechanism/conf");   //overridden by --context parameter
    rf.configure("ICUB_ROOT", argc, argv);
  
-   /* run the module: runModule() calls configure first and, if successful, it then runs */
-
    module.runModule(rf);
-
    return 0;
 }
+
 

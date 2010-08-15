@@ -1,4 +1,29 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Rea Francesco
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file visualFilterModule.h
+ * @brief Simple module that implements DoG on input logpolar images and later extra edges;
+ * normally the output is processed by the blob finder module.
+ */
+
 #ifndef _VISUAL_FILTER_MODULE_H_
 #define _VISUAL_FILTER_MODULE_H_
 
@@ -11,13 +36,8 @@
  *
  * - extract colour oppenency maps based on RGB colours
  * - extract edges based on sobel operator
- * - 
- * - 
- * 
- *
- * A complete tutorial for this example is available on the iCub wiki at 
- * http://eris.liralab.it/wiki/Summary_of_iCub_Software_Development_Guidelines
- *
+ * - take the modulus value of the edges over several channels (RG, Gr, BY)
+ * - take the maximum of the edges of the channels
  * 
  * \section lib_sec Libraries
  *
@@ -105,7 +125,7 @@
  * 
  * \section tested_os_sec Tested OS
  *
- * Windows
+ * Windows, Linux
  *
  * \section example_sec Example Instantiation of the Module
  * 
@@ -114,34 +134,11 @@
  * \author 
  * 
  * Rea Francesco
- * 
  * Copyright (C) 2010 RobotCub Consortium
- * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
  * This file can be edited at \c $ICUB_ROOT/src/visualFilter/include/iCub/visualFilter.h
  * 
  */
-
-
-/* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Rea Francesco
- * email:   francesco.rea@iit.it
- * website: www.robotcub.org 
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
 
 #include <iostream>
 #include <string>
@@ -172,18 +169,11 @@ class visualFilterModule:public yarp::os::RFModule
    float  cxRight, cyRight;         // coordinates of the principal point
    int thresholdValue;
 
-   /* class variables */
-
-  
-   yarp::os::Port handlerPort;      //a port to handle messages 
-
+   yarp::os::Port handlerPort;      // a port to handle messages 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */
-
    visualFilterThread *vfThread;
 
-
 public:
-   
    bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
    bool interruptModule();                       // interrupt, e.g., the ports 
    bool close();                                 // close and shut down the module
