@@ -192,13 +192,13 @@ Particle filtering is a Monte Carlo sampling approach to Bayesian filtering.The 
 #define S_MAX 1.0
 #define V_MAX 1.0
 /* standard deviations for gaussian sampling in transition model */
-#define TRANS_X_STD 1.0
-#define TRANS_Y_STD 0.5
-#define TRANS_S_STD 0.001
+#define TRANS_X_STD 1.0f
+#define TRANS_Y_STD 0.5f
+#define TRANS_S_STD 0.001f
 /* autoregressive dynamics parameters for transition model */
-#define pfot_A1  2.0
-#define pfot_A2 -1.0
-#define pfot_B0  1.0000
+#define pfot_A1  2.0f
+#define pfot_A2 -1.0f
+#define pfot_B0  1.0000f
 /* distribution parameter */
 #define LAMBDA 20
  

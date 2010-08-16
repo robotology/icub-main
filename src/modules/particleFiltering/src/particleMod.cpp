@@ -569,13 +569,13 @@ PARTICLEThread::particle PARTICLEThread::transition( PARTICLEThread::particle p,
 
     // sample new state using second-order autoregressive dynamics 
     x = pfot_A1 * ( p.x - p.x0 ) + pfot_A2 * ( p.xp - p.x0 ) +
-    pfot_B0 * gsl_ran_gaussian( rng, TRANS_X_STD ) + p.x0;
+    pfot_B0 * (float)(gsl_ran_gaussian( rng, TRANS_X_STD )) + p.x0;
     pn.x = MAX( 0.0f, MIN( (float)w - 1.0f, x ) );
     y = pfot_A1 * ( p.y - p.y0 ) + pfot_A2 * ( p.yp - p.y0 ) +
-    pfot_B0 * gsl_ran_gaussian( rng, TRANS_Y_STD ) + p.y0;
+    pfot_B0 * (float)(gsl_ran_gaussian( rng, TRANS_Y_STD )) + p.y0;
     pn.y = MAX( 0.0f, MIN( (float)h - 1.0f, y ) );
-    s = pfot_A1 * ( p.s - 1.0 ) + pfot_A2 * ( p.sp - 1.0 ) +
-    pfot_B0 * gsl_ran_gaussian( rng, TRANS_S_STD ) + 1.0f;
+    s = pfot_A1 * ( p.s - 1.0f ) + pfot_A2 * ( p.sp - 1.0f ) +
+    pfot_B0 * (float)(gsl_ran_gaussian( rng, TRANS_S_STD )) + 1.0f;
     pn.s = MAX( 0.1f, s );
 
     pn.xp = p.x;
