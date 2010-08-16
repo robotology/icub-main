@@ -20,7 +20,7 @@
   
 /**
  * @file main.cpp
- * @brief main code for the visual  filter module; this is part of the logpolar attention system.
+ * @brief main code for the visual filter module; this is part of the logpolar attention system.
  */
 
 #include "iCub/visualFilterModule.h" 

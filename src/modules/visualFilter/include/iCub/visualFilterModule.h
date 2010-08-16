@@ -45,7 +45,7 @@
  *
  * \section parameters_sec Parameters
  * 
- * <b>Command-line Parameters <\b> 
+ * <b>Command-line Parameters</b> 
  * 
  * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
  * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
@@ -63,7 +63,7 @@
  *   specifies the name of the robot (used to form the root of robot port names)
  *
  *
- * <b>Configuration File Parameters </b>
+ * <b>Configuration File Parameters</b>
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters if you so wish). 
@@ -102,7 +102,7 @@
  *
  *  - \c /visualFilter/image:o \n
  *
- * <b>Port types </b>
+ * <b>Port types</b>
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
@@ -131,12 +131,11 @@
  * 
  * <tt>visualFilter --name visualFilter --context visualFilter/conf --from visualFilter.ini --robot icub</tt>
  *
- * \author 
- * 
- * Rea Francesco
- * Copyright (C) 2010 RobotCub Consortium
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * This file can be edited at \c $ICUB_ROOT/src/visualFilter/include/iCub/visualFilter.h
+ * \author Rea Francesco, Giorgio Metta
+ *
+ * Copyright (C) 2010 RobotCub Consortium\n
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.\n
+ * This file can be edited at \c $ICUB_ROOT/main/src/modules/visualFilter/include/iCub/visualFilter.h
  * 
  */
 
