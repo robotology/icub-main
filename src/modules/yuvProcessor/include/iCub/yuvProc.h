@@ -174,7 +174,6 @@ class YUVThread : public Thread
 private:
 
     /* class variables */
-    ImageOf<PixelRgb> *img;
     ImageOf<PixelRgb> *inputExtImage;
     ImageOf<PixelRgb> *imgExt;
     ImageOf<PixelRgb> *inputImage; //input image
@@ -193,7 +192,7 @@ private:
     IppiSize srcsize, origsize;
     int width, height;
     int ncsscale;
-    bool init;
+    bool allocated;
     //int psb, psb4, psb3, ycs_psb, col_psb, psb_32f;
     
     //Ipp8u *colour_in, *colour, *ycs_out, *yuva_orig, *y_orig, *u_orig, *v_orig, *tmp;  
@@ -216,6 +215,8 @@ public:
     bool threadInit();     
     void threadRelease();
     void run(); 
+    void allocate(ImageOf<PixelRgb> *img);
+    void deallocate();
 };
 
 class yuvProc:public RFModule

@@ -25,6 +25,11 @@
 
 CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
 {
+    psb_p = 0;
+    pbufsize = 0;
+    psb_8u = 0;
+    psb_32f =0;
+    ngauss = 0;
 
     srcsize = ss_;
     ngauss = ngs;
@@ -59,6 +64,7 @@ CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
 }
 
 CentSur::~CentSur() {
+
     ippiFree(im_in_32f);
     ippiFree(tmp_im_32f);
     ippiFree(cs_tot_32f);
@@ -110,7 +116,7 @@ void CentSur::proc_im_32f(Ipp32f* im_32f, int psb_in_32f_)
   	}
   
   	//norm8u:
-  	//conv_32f_to_8u(cs_tot_32f,psb_32f,cs_tot_8u,psb_8u,srcsize);//----------------------------------to look at conver bitdepth locally
+  	//conv_32f_to_8u(cs_tot_32f,psb_32f,cs_tot_8u,psb_8u,srcsize);
   	Ipp32f min,max;
   	ippiMinMax_32f_C1R(cs_tot_32f,psb_32f,srcsize,&min,&max);
   	if (max==min){max=255.0;min=0.0;}

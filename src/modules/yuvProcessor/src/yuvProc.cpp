@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
  #include <string.h>
+#include <cassert>
 #define KERNSIZE 5
 //#include "yarp/os/impl/NameClient.h"
 
@@ -175,32 +176,56 @@ YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<I
     imageInputPort    = inputPort;
     imageOutPortY  = outPortY; 
     imageOutPortUV  = outPortUV;
+    inputExtImage = NULL;
+    imgExt = NULL;
+    inputImage = NULL;
+	img_out_Y = NULL;    
+	img_out_UV = NULL;
+    img_Y = NULL;    
+	img_UV = NULL;
+    pyuva = NULL;
+    centerSurr = NULL;
+    cs_tot_32f = NULL;
+    orig = NULL;
+    colour = NULL;
+    yuva_orig = NULL;
+    y_orig = NULL; 
+    u_orig = NULL; 
+    v_orig = NULL; 
+    tmp = NULL;
+    ycs_out = NULL; 
+    colcs_out = NULL;
+
+    allocated = false;
+
     min = 0.0;
     max = 0.0;
+    img_psb = 0;
+    psb4 = 0;
+    psb = 0; 
+    ycs_psb = 0;
+    col_psb = 0;
+    psb_32f = 0;
 }
 
 bool YUVThread::threadInit() 
 {
     /* initialize variables and create data-structures if needed */
-    init = true;
     return true;
 }
 
 void YUVThread::run(){
 
-//-----------------------------------REMEMBER THAT THE CONNECTION TO LOG IS OBSOLETE AS SHOULD CONNECT TO COLOUR PROCESSOR DIRECTLY!!!!!!
-
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
 
-        img = imageInputPort->read(true);
-        if(img!=NULL) {
-
-            if (init){//Get first RGB image to establish width, height:
-                cout << "initializing" << endl;   
-                initAll();
-                cout << "done initializing" << endl;        
+        ImageOf<PixelRgb> *img = imageInputPort->read(true);
+        if(img != NULL) {
+            if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height()) {
+                deallocate();
+                allocate(img);
             }
-            extender( img, KERNSIZE ); //here extendorig
+        
+            extender( img, KERNSIZE ); //here extending
 
             //create your own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel 
             ippiCopy_8u_C3R( inputExtImage->getRawImage(),inputExtImage->getRowSize(), orig, img_psb, srcsize );
@@ -233,6 +258,7 @@ void YUVThread::run(){
             if (max==min){max=255.0;min=0.0;}
             ippiScale_32f8u_C1R(cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize,min,max);
 
+            //revert to yarp image
             ippiCopy_8u_C1R(ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize);
             ippiCopy_8u_C1R(colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize);
 
@@ -247,16 +273,17 @@ void YUVThread::run(){
 
             for(int row=0;row<origsize.height;row++) {
                 for(int col=0;col<origsize.width;col++) {
-                    *imgYo = *imgY;
+                    *imgYo  = *imgY;
                     *imgUVo = *imgUV;
-                    imgYo++;imgUVo++;
-                    imgY++;imgUV++;
+                    imgYo++;  imgUVo++;
+                    imgY++;   imgUV++;
                 }    
                 imgYo+=rowsize - origsize.width;
                 imgUVo+=rowsize - origsize.width;
-                imgY+=rowsize2 - origsize.width - KERNSIZE + KERNSIZE;
+                imgY+=rowsize2 - origsize.width - KERNSIZE + KERNSIZE; // just to remind that need to do this
                 imgUV+=rowsize2 - origsize.width - KERNSIZE + KERNSIZE;
             }
+
             //output Y centre-surround results to ports
             if (imageOutPortY->getOutputCount()>0){
                 imageOutPortY->prepare() = *img_out_Y;	
@@ -277,31 +304,56 @@ void YUVThread::run(){
 void YUVThread::threadRelease() 
 {
     cout << "cleaning up things.." << endl;
-    if (img!=NULL){    
-        delete centerSurr;
-        delete img_out_Y;
-        delete img_out_UV;
-        delete img_Y;
-        delete img_UV;
-        delete inputExtImage;
-        ippiFree(orig);
-        ippiFree(colour); 
-        ippiFree(tmp); 
-        free (pyuva);
-        ippiFree(yuva_orig);
-        ippiFree(y_orig);
-        ippiFree(u_orig);
-        ippiFree(v_orig);
-        ippiFree(cs_tot_32f);
-        ippiFree(colcs_out);
-        ippiFree(ycs_out);
-    }
+    deallocate();
     cout << "finished cleaning up" << endl;
 }
 
-void YUVThread::initAll()
+void YUVThread::deallocate()
 {
-    init = false;
+    delete centerSurr;
+    delete img_out_Y;
+    delete img_out_UV;
+    delete img_Y;
+    delete img_UV;
+    delete inputExtImage;
+    ippiFree(orig);
+    ippiFree(colour); 
+    ippiFree(tmp); 
+    free (pyuva);
+    ippiFree(yuva_orig);
+    ippiFree(y_orig);
+    ippiFree(u_orig);
+    ippiFree(v_orig);
+    ippiFree(cs_tot_32f);
+    ippiFree(colcs_out);
+    ippiFree(ycs_out);
+
+    inputExtImage = NULL;
+    imgExt = NULL;
+    inputImage = NULL;
+	img_out_Y = NULL;    
+	img_out_UV = NULL;
+    img_Y = NULL;    
+	img_UV = NULL;
+    pyuva = NULL;
+    centerSurr = NULL;
+    cs_tot_32f = NULL;
+    orig = NULL;
+    colour = NULL;
+    yuva_orig = NULL;
+    y_orig = NULL; 
+    u_orig = NULL; 
+    v_orig = NULL; 
+    tmp = NULL;
+    ycs_out = NULL; 
+    colcs_out = NULL;
+    
+    allocated = false;
+}
+
+void YUVThread::allocate(ImageOf<PixelRgb> *img)
+{
+    assert (allocated == false);
     origsize.width = img->width();
     origsize.height = img->height();
 
@@ -328,30 +380,32 @@ void YUVThread::initAll()
 
     ncsscale = 4;
 
-    centerSurr  = new CentSur( srcsize , ncsscale);
+    centerSurr  = new CentSur( srcsize , ncsscale );
 
     inputExtImage=new ImageOf<PixelRgb>;
-    inputExtImage->resize(srcsize.width, srcsize.height);
+    inputExtImage->resize( srcsize.width, srcsize.height );
 
 	img_Y = new ImageOf<PixelMono>;
-	img_Y->resize(srcsize.width, srcsize.height);
+	img_Y->resize( srcsize.width, srcsize.height );
 
 	img_UV = new ImageOf<PixelMono>;
-	img_UV->resize(srcsize.width, srcsize.height);
+	img_UV->resize( srcsize.width, srcsize.height );
 
     img_out_Y = new ImageOf<PixelMono>;
-	img_out_Y->resize(origsize.width, origsize.height);
+	img_out_Y->resize( origsize.width, origsize.height );
 
 	img_out_UV = new ImageOf<PixelMono>;
-	img_out_UV->resize(origsize.width, origsize.height);
+	img_out_UV->resize( origsize.width, origsize.height );
         
+    allocated = true;
 }
 
 ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize) {
+
     //copy of the image 
     ippiCopy_8u_C3R(inputOrigImage->getRawImage(),inputOrigImage->getRowSize(),inputExtImage->getPixelAddress(maxSize,maxSize),inputExtImage->getRowSize(),origsize);    
     //memcpy of the horizontal fovea lines (rows) 
-    int sizeBlock=origsize.width/2;
+    const int sizeBlock=origsize.width/2;
     for( int i=0;i<maxSize;i++) {
         memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),inputExtImage->getPixelAddress(maxSize,maxSize+i),sizeBlock*sizeof(PixelRgb));
         memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),inputExtImage->getPixelAddress(sizeBlock,maxSize+i),sizeBlock*sizeof(PixelRgb));
@@ -361,12 +415,16 @@ ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage,int max
     unsigned char* ptrOrigRight;
     unsigned char* ptrDestLeft;
     unsigned char* ptrOrigLeft;
+
     for( int row=0;row<height;row++ ) {
+
         ptrDestRight=inputExtImage->getPixelAddress(width-maxSize,row);
         ptrOrigRight=inputExtImage->getPixelAddress(maxSize,row);
         ptrDestLeft=inputExtImage->getPixelAddress(0,row);
         ptrOrigLeft=inputExtImage->getPixelAddress(width-maxSize-maxSize,row);
+
         for(int i=0;i<maxSize;i++) {
+
             //right block
             *ptrDestRight=*ptrOrigRight;
             ptrDestRight++;ptrOrigRight++;
@@ -374,6 +432,7 @@ ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage,int max
             ptrDestRight++;ptrOrigRight++;
             *ptrDestRight=*ptrOrigRight;
             ptrDestRight++;ptrOrigRight++;
+
             //left block
             *ptrDestLeft=*ptrOrigLeft;
             ptrDestLeft++;ptrOrigLeft++;
