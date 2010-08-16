@@ -106,6 +106,11 @@ public:
     */
     visualFilterThread();
 
+    /**
+     * destructor
+     */
+    ~visualFilterThread();
+
     bool threadInit();     
     void threadRelease();
     void run(); 

@@ -75,6 +75,53 @@ visualFilterThread::visualFilterThread() {
     resized=false;
 }
 
+visualFilterThread::~visualFilterThread() {
+    delete redPlane;
+    delete redPlane2;
+    delete redPlane3;
+    delete greenPlane;
+    delete greenPlane2;
+    delete greenPlane3;
+    delete bluePlane;
+    delete bluePlane2;
+    delete bluePlane3;
+    delete yellowPlane;
+    delete yellowPlane2;
+    delete inputExtImage;
+    delete inputImageFiltered;
+    delete inputImage;
+
+    delete redPlus;
+    delete redMinus;
+    delete greenPlus;
+    delete greenMinus;
+    delete bluePlus;
+    delete yellowMinus;
+
+    delete redGreen;
+    delete greenRed;
+    delete blueYellow;
+    delete redGreenAbs;
+    delete greenRedAbs;
+    delete blueYellowAbs;
+    delete edges;
+
+    if(buffer!=0)
+        ippsFree(buffer);
+    if(redGreenH16s!=0)
+        ippiFree(redGreenH16s);
+    if(greenRedH16s!=0)
+        ippiFree(greenRedH16s);
+    if(blueYellowH16s!=0)
+        ippiFree(blueYellowH16s);
+    if(redGreenV16s!=0)
+        ippiFree(redGreenV16s);
+    if(greenRedV16s!=0)
+        ippiFree(greenRedV16s);
+    if(blueYellowV16s!=0)
+        ippiFree(blueYellowV16s);
+}
+
 bool visualFilterThread::threadInit() {
     /* important, this effectively disables the OMP library parallelization in the IPP */
     ippSetNumThreads(1);
@@ -245,50 +292,32 @@ ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImag
                     originalSrcsize);
 
     // memcpy of the horizontal fovea lines (rows) 
-    int sizeBlock = width_orig / 2;
+    const int sizeBlock = width_orig / 2;
     for(int i = 0; i < maxSize; i++) {
         memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),
                inputExtImage->getPixelAddress(maxSize,maxSize+i),
                sizeBlock*sizeof(PixelRgb));
         memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),
-               inputExtImage->getPixelAddress(sizeBlock,maxSize+i),
+               inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize+i),
                sizeBlock*sizeof(PixelRgb));
     }
 
     // copy of the block adjacent angular positions (columns)
-    unsigned char* ptrDestRight;
-    unsigned char* ptrOrigRight;
-    unsigned char* ptrDestLeft;
-    unsigned char* ptrOrigLeft;
+    const int px = maxSize * sizeof(PixelRgb);
     for (int row = 0; row < height; row++) {
-        ptrDestRight=inputExtImage->getPixelAddress(width-maxSize,row);
-        ptrOrigRight=inputExtImage->getPixelAddress(maxSize,row);
-        ptrDestLeft=inputExtImage->getPixelAddress(0,row);
-        ptrOrigLeft=inputExtImage->getPixelAddress(width-maxSize-maxSize,row);
-        
-        for (int i = 0; i < maxSize; i++) {
-            //right block
-            *ptrDestRight=*ptrOrigRight;
-            ptrDestRight++;ptrOrigRight++;
-            *ptrDestRight=*ptrOrigRight;
-            ptrDestRight++;ptrOrigRight++;
-            *ptrDestRight=*ptrOrigRight;
-            ptrDestRight++;ptrOrigRight++;
-            
-            //left block
-            *ptrDestLeft=*ptrOrigLeft;
-            ptrDestLeft++;ptrOrigLeft++;
-            *ptrDestLeft=*ptrOrigLeft;
-            ptrDestLeft++;ptrOrigLeft++;
-            *ptrDestLeft=*ptrOrigLeft;
-            ptrDestLeft++;ptrOrigLeft++;
-        }
+        memcpy (inputExtImage->getPixelAddress(width-maxSize,row),
+                inputExtImage->getPixelAddress(maxSize,row),
+                px);
+        memcpy (inputExtImage->getPixelAddress(0,row),
+                inputExtImage->getPixelAddress(width-maxSize-maxSize,row),
+                px);
     }
+
     return inputExtImage;
 }
 
 void visualFilterThread::extractPlanes() {
-    /* check ipp for the existence of output by plane (rather than by pixel) */
+    /* check ipp for the existence of functions with output by plane (rather than by pixel) */
     Ipp8u* shift[3];
     Ipp8u* yellowP;
     
@@ -299,8 +328,8 @@ void visualFilterThread::extractPlanes() {
     Ipp8u* inputPointer = inputExtImage->getRawImage();
 
     /* use getPadding!!!! */
-    int paddingMono=redPlane->getRowSize()-redPlane->width();
-    int padding3C=inputExtImage->getRowSize()-inputExtImage->width()*3;
+    int paddingMono = redPlane->getPadding(); //redPlane->getRowSize()-redPlane->width();
+    int padding3C = inputExtImage->getPadding(); //inputExtImage->getRowSize()-inputExtImage->width()*3;
 
     const int h = inputExtImage->height();
     const int w = inputExtImage->width();
@@ -327,8 +356,11 @@ void visualFilterThread::extractPlanes() {
 }
 
 void visualFilterThread::filtering() {
-    IppiSize srcPlusSize = { 5, 5 };    // variance=1
-    IppiSize srcMinusSize = { 7, 7 };   // variance=3 which is 3 times the variance 1
+    IppiSize srcPlusSize = { 5, 5 };    // variance = 1
+    IppiSize srcMinusSize = { 7, 7 };   // variance = 3 which is 3 times the variance 1
+    const int halfSize = 3;             // 7/3 (square kernel always)
+    IppiSize gaussRoi = { width_orig+4, height_orig+2 };    // the size of the Roi is determined by the remainder of the border (5-halfSize)
+
     static Ipp32f srcMinus[7*7] = {
         0.0113f, 0.0149f, 0.0176f, 0.0186f, 0.0176f, 0.0149f, 0.0113f,
         0.0149f, 0.0197f, 0.0233f, 0.0246f, 0.0233f, 0.0197f, 0.0149f,
@@ -339,34 +371,33 @@ void visualFilterThread::filtering() {
         0.0113f, 0.0149f, 0.0176f, 0.0186f, 0.0176f, 0.0149f, 0.0113f
     };
 
-    int divisor = 1;
-    IppiPoint anchor = {4,4};
+    IppiPoint anchor = {3,3};
     
     /* gaussian is separable and therefore it's cheaper to comput by row and then by columns rather than using this one! */
-    ippiFilter32f_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redMinus->getRawImage(),redMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
-    ippiFilter32f_8u_C1R(yellowPlane->getRawImage(),yellowPlane->getRowSize(),yellowMinus->getRawImage(),yellowMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
-    ippiFilter32f_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenMinus->getRawImage(),greenMinus->getRowSize(),srcsize,srcMinus,srcMinusSize,anchor);
+    ippiFilter32f_8u_C1R(redPlane->getPixelAddress(halfSize,halfSize), redPlane->getRowSize(), redMinus->getPixelAddress(halfSize,halfSize), redMinus->getRowSize(), gaussRoi, srcMinus, srcMinusSize, anchor);
+    ippiFilter32f_8u_C1R(yellowPlane->getPixelAddress(halfSize,halfSize), yellowPlane->getRowSize(), yellowMinus->getPixelAddress(halfSize,halfSize), yellowMinus->getRowSize(), gaussRoi, srcMinus, srcMinusSize, anchor);
+    ippiFilter32f_8u_C1R(greenPlane->getPixelAddress(halfSize,halfSize), greenPlane->getRowSize(), greenMinus->getPixelAddress(halfSize,halfSize), greenMinus->getRowSize(), gaussRoi, srcMinus, srcMinusSize, anchor);
 
-    ippiFilterGauss_8u_C1R(bluePlane->getRawImage(), bluePlane->getRowSize(),bluePlus->getRawImage(),bluePlus->getRowSize(),srcsize,ippMskSize5x5);
-    ippiFilterGauss_8u_C1R(redPlane->getRawImage(), redPlane->getRowSize(),redPlus->getRawImage(),redPlus->getRowSize(),srcsize,ippMskSize5x5);
-    ippiFilterGauss_8u_C1R(greenPlane->getRawImage(), greenPlane->getRowSize(),greenPlus->getRawImage(),greenPlus->getRowSize(),srcsize,ippMskSize5x5);
+    ippiFilterGauss_8u_C1R(bluePlane->getPixelAddress(halfSize,halfSize), bluePlane->getRowSize(), bluePlus->getPixelAddress(halfSize,halfSize), bluePlus->getRowSize(), gaussRoi, ippMskSize5x5);
+    ippiFilterGauss_8u_C1R(redPlane->getPixelAddress(halfSize,halfSize), redPlane->getRowSize(), redPlus->getPixelAddress(halfSize,halfSize), redPlus->getRowSize(), gaussRoi, ippMskSize5x5);
+    ippiFilterGauss_8u_C1R(greenPlane->getPixelAddress(halfSize,halfSize), greenPlane->getRowSize(), greenPlus->getPixelAddress(halfSize,halfSize), greenPlus->getRowSize(), gaussRoi, ippMskSize5x5);
 }
 
 void visualFilterThread::colourOpponency() {
     // and in-place operations???
-    ippiRShiftC_8u_C1R(redPlus->getRawImage(),redPlane->getRowSize(),1,redPlane2->getRawImage(),redPlane2->getRowSize(),srcsize);
-    ippiAddC_8u_C1RSfs(redPlane2->getRawImage(),redPlane2->getRowSize(),128,redPlane3->getRawImage(),redPlane3->getRowSize(),srcsize,0);
-    ippiRShiftC_8u_C1R(redMinus->getRawImage(),redMinus->getRowSize(),1,redPlane2->getRawImage(),redPlane2->getRowSize(),srcsize);
-    ippiRShiftC_8u_C1R(greenPlus->getRawImage(),greenPlus->getRowSize(),1,greenPlane2->getRawImage(),greenPlane2->getRowSize(),srcsize);
-    ippiAddC_8u_C1RSfs(greenPlane2->getRawImage(),greenPlane2->getRowSize(),128,greenPlane3->getRawImage(),greenPlane3->getRowSize(),srcsize,0);
-    ippiRShiftC_8u_C1R(greenMinus->getRawImage(),greenMinus->getRowSize(),1,greenPlane2->getRawImage(),greenPlane2->getRowSize(),srcsize);
-    ippiRShiftC_8u_C1R(bluePlus->getRawImage(),bluePlus->getRowSize(),1,bluePlane2->getRawImage(),bluePlane2->getRowSize(),srcsize);
-    ippiAddC_8u_C1RSfs(bluePlane2->getRawImage(),bluePlane2->getRowSize(),128,bluePlane3->getRawImage(),bluePlane3->getRowSize(),srcsize,0);
-    ippiRShiftC_8u_C1R(yellowMinus->getRawImage(),yellowMinus->getRowSize(),1,yellowPlane2->getRawImage(),yellowPlane2->getRowSize(),srcsize);
+    ippiRShiftC_8u_C1R(redPlus->getRawImage(), redPlane->getRowSize(), 1, redPlane2->getRawImage(), redPlane2->getRowSize(), srcsize);
+    ippiAddC_8u_C1RSfs(redPlane2->getRawImage(), redPlane2->getRowSize(), 128, redPlane3->getRawImage(), redPlane3->getRowSize(), srcsize, 0);
+    ippiRShiftC_8u_C1R(redMinus->getRawImage(), redMinus->getRowSize(), 1, redPlane2->getRawImage(), redPlane2->getRowSize(), srcsize);
+    ippiRShiftC_8u_C1R(greenPlus->getRawImage(), greenPlus->getRowSize(),1, greenPlane2->getRawImage(), greenPlane2->getRowSize(), srcsize);
+    ippiAddC_8u_C1RSfs(greenPlane2->getRawImage(), greenPlane2->getRowSize(), 128, greenPlane3->getRawImage(), greenPlane3->getRowSize(), srcsize, 0);
+    ippiRShiftC_8u_C1R(greenMinus->getRawImage(), greenMinus->getRowSize(), 1, greenPlane2->getRawImage(), greenPlane2->getRowSize(), srcsize);
+    ippiRShiftC_8u_C1R(bluePlus->getRawImage(), bluePlus->getRowSize(), 1, bluePlane2->getRawImage(), bluePlane2->getRowSize(), srcsize);
+    ippiAddC_8u_C1RSfs(bluePlane2->getRawImage(), bluePlane2->getRowSize(), 128, bluePlane3->getRawImage(), bluePlane3->getRowSize(), srcsize, 0);
+    ippiRShiftC_8u_C1R(yellowMinus->getRawImage(), yellowMinus->getRowSize(), 1, yellowPlane2->getRawImage(), yellowPlane2->getRowSize(), srcsize);
 
-    ippiSub_8u_C1RSfs(greenPlane2->getRawImage(),greenPlane2->getRowSize(),redPlane3->getRawImage(),redPlane3->getRowSize(),redGreen->getRawImage(),redGreen->getRowSize(),srcsize,0);
-    ippiSub_8u_C1RSfs(redPlane2->getRawImage(),redPlane2->getRowSize(),greenPlane3->getRawImage(),greenPlane3->getRowSize(),greenRed->getRawImage(),greenRed->getRowSize(),srcsize,0);
-    ippiSub_8u_C1RSfs(yellowPlane2->getRawImage(),yellowPlane2->getRowSize(),bluePlane3->getRawImage(),bluePlane3->getRowSize(),blueYellow->getRawImage(),blueYellow->getRowSize(),srcsize,0);
+    ippiSub_8u_C1RSfs(greenPlane2->getRawImage(), greenPlane2->getRowSize(), redPlane3->getRawImage(), redPlane3->getRowSize(), redGreen->getRawImage(), redGreen->getRowSize(), srcsize, 0);
+    ippiSub_8u_C1RSfs(redPlane2->getRawImage(), redPlane2->getRowSize(), greenPlane3->getRawImage(), greenPlane3->getRowSize(), greenRed->getRawImage(), greenRed->getRowSize(), srcsize, 0);
+    ippiSub_8u_C1RSfs(yellowPlane2->getRawImage(), yellowPlane2->getRowSize(), bluePlane3->getRawImage(), bluePlane3->getRowSize(), blueYellow->getRawImage(), blueYellow->getRowSize(), srcsize, 0);
 }
 
 inline float max(float a,float b,float c) {
@@ -478,7 +509,7 @@ void visualFilterThread::edgesExtract() {
         }
 
         pedges += rowsize-width_orig;
-        /* throw a warning and besides it's not clear why it subtracts & sum maxKernelSize! */
+        /* throw a warning (at compile time) and besides it's not clear why it subtracts & sum maxKernelSize! */
         for(int i = 0; i < (rowsize2 / sizeof(signed short)) - width_orig - maxKernelSize + maxKernelSize; i++) {
             j++;
         } 
@@ -486,53 +517,7 @@ void visualFilterThread::edgesExtract() {
 }
 
 void visualFilterThread::threadRelease() {
-    /* for example, delete dynamically created data-structures */
-
-    /* NOPE! this is wrong, delete in the destructor since these were allocateed in the class constructor */
-    delete redPlane;
-    delete redPlane2;
-    delete redPlane3;
-    delete greenPlane;
-    delete greenPlane2;
-    delete greenPlane3;
-    delete bluePlane;
-    delete bluePlane2;
-    delete bluePlane3;
-    delete yellowPlane;
-    delete yellowPlane2;
-    delete inputExtImage;
-    delete inputImageFiltered;
-    delete inputImage;
-
-    delete redPlus;
-    delete redMinus;
-    delete greenPlus;
-    delete greenMinus;
-    delete bluePlus;
-    delete yellowMinus;
-
-    delete redGreen;
-    delete greenRed;
-    delete blueYellow;
-    delete redGreenAbs;
-    delete greenRedAbs;
-    delete blueYellowAbs;
-    delete edges;
-
-    if(buffer!=0)
-        ippsFree(buffer);
-    if(redGreenH16s!=0)
-        ippiFree(redGreenH16s);
-    if(greenRedH16s!=0)
-        ippiFree(greenRedH16s);
-    if(blueYellowH16s!=0)
-        ippiFree(blueYellowH16s);
-    if(redGreenV16s!=0)
-        ippiFree(redGreenV16s);
-    if(greenRedV16s!=0)
-        ippiFree(greenRedV16s);
-    if(blueYellowV16s!=0)
-        ippiFree(blueYellowV16s);
+    resized = false;
 }
 
 void visualFilterThread::onStop() {
