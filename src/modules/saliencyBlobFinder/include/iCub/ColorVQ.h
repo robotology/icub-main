@@ -1,46 +1,53 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea, Giorgio Metta and Francesco Orabona
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file ColorVQ.h
+ * @brief definition of the color quantization class.
+ */
+
 #ifndef _COLORVQ_H_
 #define _COLORVQ_H_
 
-
-//YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-//openCV include
-//#include <cv.h>
-//#include <cvaux.h>
-//#include <highgui.h>
-
-//within Project Include
-//#include <iCub/ImageProcessor.h>
-
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
-
-
-
 // bounding box type.
 class ColorVQ {
-    ImageOf<PixelInt> tmp1;
-    ImageOf<PixelInt> tmp2;
+private:
+    yarp::sig::ImageOf<yarp::sig::PixelInt> tmp1;
+    yarp::sig::ImageOf<yarp::sig::PixelInt> tmp2;
     
     int height, width;
 
-public:
-    
+public:  
     ColorVQ() {}
     ColorVQ(int x, int y, int fovea) { Resize(x, y, fovea); }
     ~ColorVQ() {}
 
     void Resize(int x, int y, int fovea);
-    void Variance(ImageOf<PixelMono> &src, ImageOf<PixelInt> &dst, int size);
-    void Compactness(ImageOf<PixelMono> &src, int fovea, int val, int eps);
-    void DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &dst, unsigned char t);
-    void DominantQuantization(PixelBgr src, PixelBgr &dst, unsigned char t);
+    void Variance(yarp::sig::ImageOf<yarp::sig::PixelMono> &src, yarp::sig::ImageOf<yarp::sig::PixelInt> &dst, int size);
+    void Compactness(yarp::sig::ImageOf<yarp::sig::PixelMono> &src, int fovea, int val, int eps);
+    void DominantQuantization(yarp::sig::ImageOf<yarp::sig::PixelBgr> &src, yarp::sig::ImageOf<yarp::sig::PixelBgr> &dst, unsigned char t);
+    void DominantQuantization(yarp::sig::PixelBgr src, yarp::sig::PixelBgr &dst, unsigned char t);
 };
-
 
 
 #endif //_COLORVQ_H_

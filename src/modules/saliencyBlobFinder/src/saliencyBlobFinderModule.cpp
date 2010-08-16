@@ -1,21 +1,42 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file saliencyBlobFinderModule.cpp
+ * @brief module class implementation of the blob finder module.
+ */
+
 #include <iCub/saliencyBlobFinderModule.h>
 
 using namespace std;
 
-#define NOTIMECONTROL true
+const bool NOTIMECONTROL = true;
+const int centroidDispacementY = 10;
 
-#define centroidDispacementY 10;
-
-saliencyBlobFinderModule::saliencyBlobFinderModule(){
-  //interThread=new interactionThread();
+saliencyBlobFinderModule::saliencyBlobFinderModule() {
     blobFinder=0;
     rateThread=0;
 
     reinit_flag=false;
     reply=new Bottle();
-    
 
-    //---------- flags --------------------------
     contrastLP_flag=false;
     meanColour_flag=false;
     blobCataloged_flag=false;
@@ -30,8 +51,7 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
     filterSpikes_flag=false;
 }
 
-void saliencyBlobFinderModule::copyFlags(){
-
+void saliencyBlobFinderModule::copyFlags() {
     blobFinder->contrastLP_flag=contrastLP_flag;
     blobFinder->meanColour_flag=meanColour_flag;
     blobFinder->blobCataloged_flag=blobCataloged_flag;
@@ -42,14 +62,10 @@ void saliencyBlobFinderModule::copyFlags(){
     blobFinder->tagged_flag=tagged_flag;
     blobFinder->watershed_flag=watershed_flag;
     blobFinder->filterSpikes_flag=filterSpikes_flag;
-
 }
 
 
-
 bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
-/* Process all parameters from both command-line and .ini file */
-
     /* get the module name which will form the stem of all module port names */
     moduleName            = rf.check("name", 
                            Value("/blobFinder/icub/left_cam"), 
@@ -61,33 +77,25 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     */
     setName(moduleName.c_str());
 
-    /* now, get the rest of the parameters */
-
     /*
     * get the ratethread which will define the period of the processing thread
     */
-    rateThread             = rf.check("ratethread", 
-                           Value(33), 
-                           "processing ratethread (int)").asInt();
-    cout<<"Module started with the parameter ratethread:"<<rateThread<<endl;
+    rateThread = rf.check("ratethread", Value(33), "processing ratethread (int)").asInt();
+    cout << "Module started with the parameter ratethread: " << rateThread << endl;
 
     /*
     * gets the minBounding area for blob neighbours definition
     */
-    minBoundingArea             = rf.check("minBoundingArea", 
-                           Value(225), 
-                           "minBoundingArea (int)").asInt();
+    minBoundingArea = rf.check("minBoundingArea", Value(225), "minBoundingArea (int)").asInt();
 
     /*
     * saddlePoint threshold
     */
-    minBoundingArea             = rf.check("saddleThreshold", 
-                           Value(10), 
-                           "saddleThreshold (int)").asInt();
+    minBoundingArea = rf.check("saddleThreshold", Value(10), "saddleThreshold (int)").asInt();
 
-    if (!cmdPort.open(getName())) {           
-      cout << getName() << ": Unable to open port " << endl;
-      return false;
+    if (!cmdPort.open(getName())) {
+        cout << getName() << ": Unable to open port " << endl;
+        return false;
     }
 
     attach(cmdPort);                  // attach to port
@@ -96,15 +104,11 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
     blobFinder=new blobFinderThread(rateThread);
 
     blobFinder->setName(this->getName().c_str());
-    //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
     blobFinder->start();
     blobFinder->countSpikes=this->countSpikes;
 
-    //passes the value of flags
     copyFlags();
-
-    printf("\n waiting for connection of the input port \n");
-
+    cout << "waiting for connection of the input port" << endl;
     return true;
 }
 
@@ -112,192 +116,103 @@ bool saliencyBlobFinderModule::configure(ResourceFinder &rf){
 * tries to interrupt any communications or resource usage
 */
 bool saliencyBlobFinderModule::interruptModule() {
-    printf("module interrupted .... \n");
+    cout << "module interrupted" << endl;
     cmdPort.interrupt();
     blobFinder->interrupt();
-    
     return true;
 }
 
 
-bool saliencyBlobFinderModule::close(){
-    printf("closing command port .... \n");
+bool saliencyBlobFinderModule::close() {
+    cout << "closing command port" << endl;
     cmdPort.close();
     blobFinder->stop();
-    //interThread->stop();
-
     return true;
 }
 
-void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
-    //options=opt;
-    // definition of the mode
-    // definition of the name of the module
+void saliencyBlobFinderModule::setOptions(yarp::os::Property opt) {
+    //
     ConstString name=opt.find("name").asString();
-    if(name!=""){
-        printf("|||  Module named as :%s \n", name.c_str());
+    if (name != "") {
+        cout << "|||  Module named as: " << name.c_str() << endl;
         this->setName(name.c_str());
     }
     int rate=opt.find("rateThread").asInt();
-    if(rate!=0){
-        printf("|||  Module rateThread as :%d \n", rate);
+    if (rate != 0) {
+        cout << "|||  Module rateThread as: " << rate << endl;
         this->rateThread=rate;
     }
     ConstString value=opt.find("mode").asString();
-    if(value!=""){
-        printf("|||  Module operating mode :%s \n", value.c_str());
-        if(value=="MEA"){
+    if (value != "") {
+        cout << "|||  Module operating mode: " << value.c_str() << endl;
+        if(value == "MEA") {
             meanColour_flag=true;
-            printf("meancolour image as output selected \n");
+            cout << "meancolour image as output selected" << endl;
         }
-        if(value=="MAX"){
+        if(value == "MAX") {
             maxSaliencyBlob_flag=true;
-            printf("max_saliency image as output selected \n");
+            cout << "max_saliency image as output selected" << endl;
         }
     }
     value=opt.find("filter").asString();
-    if(value!=""){
-        printf("|||  Module filter :%s \n", value.c_str());
-        if(value=="spikes"){
+    if(value != "") {
+        cout << "|||  Module filter: " << value.c_str() << endl;
+        if (value == "spikes") {
             filterSpikes_flag=true;
-            printf("stimuli filter ON \n");
+            cout << "stimuli filter ON" << endl;
         }
-        if(value=="kalman"){
-            printf("kalman filter ON \n");
+        if (value == "kalman") {
+            cout << "kalman filter ON" << endl;
         }
-        if(value=="off"){
+        if (value == "off") {
             filterSpikes_flag=false;
-            printf("all the filters OFF \n");
+            cout << "all the filters OFF" << endl;
         }
     }
     value=opt.find("timeControl").asString();
-    if(value!=""){
-        printf("|||  Module time control flag :%s \n", value.c_str());
-        if(value=="ON"){
+    if (value != "") {
+        cout << "|||  Module time control flag :" << value.c_str() << endl;
+        if (value == "ON") {
             this->timeControl_flag=true;
-            printf("time control ON \n");
+            cout << "time control ON" << endl;
         }
         
-        if(value=="OFF"){
+        if (value == "OFF") {
             this->timeControl_flag=false;
-            printf("time control OFF \n");
+            cout << "time control OFF" << endl;
         }
     }
     int numValue=opt.find("xdisp").asInt();
-    if(numValue!=0){
-        printf("|||  Module x disp :%d \n", numValue);
+    if (numValue != 0) {
+        cout << "|||  Module x disp: " << numValue << endl;
         this->xdisp=numValue;
     }
     numValue=opt.find("ydisp").asInt();
-    if(numValue!=0){
-        printf("|||  Module y disp :%d \n", numValue);
+    if (numValue != 0) {
+        cout << "|||  Module y disp: " << numValue << endl;
         this->ydisp=numValue;
     }
     numValue=opt.find("countSpikes").asInt();
-    if(numValue!=0){
-        printf("|||  Module countSpikes :%d \n", numValue);
+    if (numValue != 0) {
+        cout << "|||  Module countSpikes: " << numValue << endl;
         this->countSpikes=numValue;
     }
     numValue=opt.find("thresholddArea").asInt();
-    if(numValue!=0){
-        printf("|||  Module threshold area :%d \n", numValue);
+    if (numValue != 0) {
+        cout << "|||  Module threshold area: " << numValue << endl;
         this->thresholdArea=numValue;
     }
 }
 
 bool saliencyBlobFinderModule::updateModule() {
-
-    /*if((0!=interThread->img) && (!this->reinit_flag)){
-
-        //initialization of the main thread
-        blobFinder=new blobFinderThread();
-        blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
-        blobFinder->start();
-        blobFinder->ptr_inputImg=interThread->img;
-        blobFinder->ptr_inputImgRed=interThread->ptr_inputImgRed;
-        blobFinder->ptr_inputImgGreen=interThread->ptr_inputImgGreen;
-        blobFinder->ptr_inputImgBlue=interThread->ptr_inputImgBlue;
-        blobFinder->ptr_inputImgRG=interThread->ptr_inputImgRG;
-        blobFinder->ptr_inputImgGR=interThread->ptr_inputImgGR;
-        blobFinder->ptr_inputImgBY=interThread->ptr_inputImgBY;
-        blobFinder->image_out=interThread->image_out;
-        blobFinder->countSpikes=this->countSpikes;
-        
-
-        //passes the value of flags
-        copyFlags();
-        this->reinit_flag=true;
-    }
-    */
-
-    /*command=cmdPort.read(PortReader,false);
-    if(command!=0){
-        //Bottle* tmpBottle=cmdPort.read(false);
-        ConstString str= command->toString();
-        printf("command received: %s \n", str.c_str());
-        this->respond(*command,*reply);
-        printf("module reply: %s \n",reply->toString().c_str());
-    }*/
-    
-    /*Bottle *bot=portTarget.read(false);
-    if(bot!=NULL){
-        int intValues[4];    
-        for(int i=0;i<4;i++){
-            yarp::os::Value v=bot->pop();
-            printf("integer:%d \n", v.asInt());
-            intValues[3-i]=v.asInt();
-        }
-        targetLeftX=intValues[0];
-        targetLeftY=intValues[1];
-        targetRightX=intValues[2];
-        targetRightY=intValues[3];
-        std::string *commandTOT=new string(bot->toString().c_str());
-        printf("%s \n", commandTOT->c_str());
-    }*/
-    
-    /*
-    ct++;
-    img = this->inputPort.read(false);
-    if(0==img)
-        return true;
-
-    if(!reinit_flag){    
-        srcsize.height=img->height();
-        srcsize.width=img->width();
-        this->height=img->height();
-        this->width=img->width();
-        reinitialise(img->width(), img->height());
-        reinit_flag=true;
-        tmpImage->resize(this->width,this->height);
-        //initialization of the main thread
-        blobFinder=new blobFinderThread();
-        blobFinder->reinitialise(img->width(), img->height());
-        blobFinder->start();
-        blobFinder->ptr_inputImg=img;
-        blobFinder->countSpikes=this->countSpikes;
-        //passes the value of flags
-        copyFlags();
-    }
-
-    //copy the inputImg into a buffer
-    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),blobFinder->ptr_inputImg->getRawImage(), blobFinder->ptr_inputImg->getRowSize(),srcsize);
-    bool ret1=true,ret2=true;
-    ret1=getOpponencies();
-    ret2=getPlanes();
-    if(ret1&&ret2)
-        blobFinder->freetorun=true;
-    outPorts();*/
     return true;
 }
 
-
-
-void saliencyBlobFinderModule::reinitialise(int weight, int height){
+void saliencyBlobFinderModule::reinitialise(int weight, int height) {
 }
 
-
-bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
-        
+bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply) {
+     
     bool ok = false;
     bool rec = false; // is the command recognized?
 
@@ -308,14 +223,10 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
         rec = true;
         {
             reply.addString("help");
-
             reply.addString("\n");
             reply.addString("get fn \t: general get command \n");
-            
-
             reply.addString("\n");
             reply.addString("set s1 <s> \t: general set command \n");
-
             reply.addString("\n");
             reply.addString("set mea : plots the meancolour image \n");
             reply.addString("set clp : streams out the contrast LP image");
@@ -334,9 +245,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("\n");
             reply.addString("set tcon : set the constantTimeGazeControl (ex.: format for iKinGazeCtrl) ");
             reply.addString("set tcen : set the constantTimeCentroidControl (ex.: format for controlGaze2) ");
-
             reply.addString("\n");
-
             reply.addString("get kbu : set coefficient k of the bottom-up saliency calculation ");
             reply.addString("get ktd : set coefficient k of the top-down saliency calculation ");
             reply.addString("get Mdb : set maximum dimension allowed for blobs ");
@@ -344,8 +253,6 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("get rin : set red intensity value for the target to be sought");
             reply.addString("get gin : set green intensity value for the target to be sought");
             reply.addString("get bin : set blue intensity value for the target to be sought");
-
-
             ok = true;
         }
         break;
@@ -370,7 +277,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 //ok = filter->respond(subCommand, reply);
             }
             else{
-                printf("filter name  does not match top filter name ");
+                cout << "filter name  does not match top filter name" << endl;
                 ok = false;
             }
         }
@@ -385,7 +292,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_MAXSALIENCY:{
                 int nb = command.get(2).asInt();
-                printf("most salient blob as output has been selected \n");
+                cout << "most salient blob as output has been selected" << endl;
                 if(0!=blobFinder){
                     this->blobFinder->resetFlags();
                     this->blobFinder->maxSaliencyBlob_flag=true;
@@ -395,7 +302,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             }
                 break;
             case COMMAND_VOCAB_CONTRASTLP:{
-                printf("image of the saliency (grayscale) \n");
+                cout << "image of the saliency (grayscale)" << endl;
                 if(0!=blobFinder){
                     this->blobFinder->resetFlags();
                     this->blobFinder->contrastLP_flag=true;
@@ -404,7 +311,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             }
                 break;
             case COMMAND_VOCAB_WAT:{
-                printf("image of the watershed \n");
+                cout << "image of the watershed" << endl;
                 if(0!=blobFinder){
                     this->blobFinder->resetFlags();
                     this->blobFinder->watershed_flag=true;
@@ -414,7 +321,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_MEANCOLOURS:{
                 string s(command.get(2).asString().c_str());
-                printf("image composed by mean colour blobs selected as output\n");
+                cout << "image composed by mean colour blobs selected as output" << endl;
                 if(0!=blobFinder){
                     //this->blobFinder->resetFlags();
                     this->blobFinder->meanColour_flag=true;
@@ -425,7 +332,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_TAGGED:{
                 //int j = command.get(2).asInt();
-                printf("image of tags(unsigned char) given to blobs  \n");
+                cout << "image of tags(unsigned char) given to blobs" << endl;
                 if(0!=blobFinder){
                     blobFinder->resetFlags();
                     blobFinder->tagged_flag=true;
@@ -436,7 +343,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_FOVEA:{
                 //int j = command.get(2).asInt();
-                printf("image of the fovea \n");
+                cout << "image of the fovea" << endl;
                 if(0!=blobFinder){
                     blobFinder->resetFlags();
                     blobFinder->foveaBlob_flag=true;
@@ -447,7 +354,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_TCON:{
                 //int j = command.get(2).asInt();
-                printf("constantTimeGazeControl of the output   \n");
+                cout << "constantTimeGazeControl of the output" << endl;
                 double w= command.get(2).asDouble();
                 if(0!=blobFinder)
                     this->blobFinder->constantTimeGazeControl=w;
@@ -456,7 +363,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_TCEN:{
                 //int j = command.get(2).asInt();
-                printf("constantTimeCentroid of the output \n");
+                cout << "constantTimeCentroid of the output" << endl;
                 double w= command.get(2).asDouble();
                 if(0!=blobFinder)
                     this->blobFinder->constantTimeCentroid=w;
@@ -465,7 +372,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_KBU:{
                 double w = command.get(2).asDouble();
-                printf("set kbu: %f \n", w);
+                cout << "set kbu: " << w << endl;
                 if(0!=blobFinder)
                     this->blobFinder->salienceBU=w;
                 ok=true;
@@ -473,7 +380,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_KTD:{
                 double w = command.get(2).asDouble();
-                printf("set ktd: %f \n", w);
+                cout << "set ktd: " << w << endl;
                 if(0!=blobFinder)
                     blobFinder->salienceTD=w;
                 ok=true;
@@ -481,7 +388,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_MBA:{
                 double w = command.get(2).asDouble();
-                printf("set mBA: %f \n", w);
+                cout << "set mBA: " << w << endl;
                 if(0!=blobFinder)
                     blobFinder->minBoundingArea=w;
                 ok=true;
@@ -489,7 +396,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_PAR:{
                 int w = command.get(2).asInt();
-                printf("set PAR: %f \n", w);
+                cout << "set PAR: " << w << endl;
                 if(0!=blobFinder)
                     blobFinder->salience->pArea=w/100;
                 ok=true;
@@ -497,7 +404,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_RIN:{
                 double w = command.get(2).asDouble();
-                printf("set rin: %f \n", w);
+                cout << "set rin: " << w << endl;
                 if(0!=blobFinder)
                     blobFinder->targetRED=w;
                 ok=true;
@@ -505,7 +412,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_GIN:{
                 double w = command.get(2).asDouble();
-                printf("set gin: %f \n", w);
+                cout << "set gin: " << w << endl;
                 if(0!=blobFinder)
                     blobFinder->targetGREEN=w;
                 ok=true;
@@ -513,7 +420,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_BIN:{
                 double w = command.get(2).asDouble();
-                printf("set bin: %f \n", w);
+                cout << "set bin: " << w << endl;
                 if(0!=blobFinder)
                     blobFinder->targetBLUE=w;
                 ok=true;
@@ -544,12 +451,12 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
         {
             switch(command.get(1).asVocab()) {
             case COMMAND_VOCAB_RGB_PROCESSOR:{
-                printf("RUN RGB \n");
+                cout << "RUN RGB" << endl;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_YUV_PROCESSOR:{
-                printf("RUN YUV \n");
+                cout << "RUN YUV" << endl;
                 ok=true;
             }
                 break;
@@ -564,7 +471,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
         {
             switch(command.get(1).asVocab()) {
             case COMMAND_VOCAB_FLT:{
-                printf("reset filter");
+                cout << "reset filter" << endl;
                 ok=true;
             }
                 break;

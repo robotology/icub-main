@@ -1,5 +1,28 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea, Giorgio Metta and Francesco Orabona
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file SalienceOperator.cpp
+ * @brief implementation of the salicence operator class (also old code ported from YARP 1).
+ */
+
 #include <yarp/math/Math.h>
 #include <iCub/SalienceOperator.h>
 #include <string>
@@ -1343,6 +1366,7 @@ int SalienceOperator::Get_XY_Center(double *xx, double *yy, int rho, int theta, 
         if (Temp_Size_Theta>par->Size_Theta)
             Temp_Size_Theta = par->Size_Theta;
 
+    const double PI = 3.1415926535897932384626433832795;
     *xx = mod * cos(Ang_Shift[rho]+td*PI/(Temp_Size_Theta/2.0)) * scalefactor;
     *yy = mod * sin(Ang_Shift[rho]+td*PI/(Temp_Size_Theta/2.0)) * scalefactor;
 

@@ -1,10 +1,36 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea, Giorgio Metta and Francesco Orabona
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file ColorVQ.h
+ * @brief implementation of the color quantization class.
+ */
+
 #include <iCub/ColorVQ.h>
 #include <cstdlib>
 #define DBGPF1 if (0)
 
-void ColorVQ::Resize(int x, int y, int fovea)
-{
+using namespace yarp::sig;
+//using namespace yarp::os;
+
+void ColorVQ::Resize(int x, int y, int fovea) {
 	tmp1.resize(x, y);
 	tmp2.resize(x, y);
 
@@ -13,20 +39,9 @@ void ColorVQ::Resize(int x, int y, int fovea)
 }
 
 
-void ColorVQ::Variance(ImageOf<PixelMono> &src, ImageOf<PixelInt> &dst, int size)
-{
-	//__IPLDEPRECATED__iplConvert((IplImage*) src, (IplImage*) tmp1);
-	tmp2=tmp1;
-	
-	//__IPLDEPRECATED__iplSquare((IplImage*) tmp1, (IplImage*) tmp1);
-	//__IPLDEPRECATED__iplBlur((IplImage*) tmp1, (IplImage*) tmp1, size, size, (size-1)/2, (size-1)/2);
-
-	//__IPLDEPRECATED__iplBlur((IplImage*) tmp2, (IplImage*) tmp2, size, size, (size-1)/2, (size-1)/2);
-	//__IPLDEPRECATED__iplSquare((IplImage*) tmp2, (IplImage*) tmp2);
-
-	//__IPLDEPRECATED__iplSubtract((IplImage*) tmp1, (IplImage*) tmp2, (IplImage*) dst);
+void ColorVQ::Variance(ImageOf<PixelMono> &src, ImageOf<PixelInt> &dst, int size) {
+	tmp2 = tmp1;
 }
-
 
 void ColorVQ::Compactness(ImageOf<PixelMono> &src, int fovea, int val, int eps)
 {

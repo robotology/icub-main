@@ -1,16 +1,33 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea, Giorgio Metta and Francesco Orabona
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file YARPIntegralImage.h
+ * @brief definition of the integral image class (very old code from 2001 or so).
+ */
+
 #ifndef __YARPINTEGRALIMAGE__
 #define __YARPINTEGRALIMAGE__
 
-//#include <yarp/YARPImage.h>
-//YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
-
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
-
 #include <math.h>
 
 class YARPIntegralImage
@@ -22,7 +39,7 @@ public:
 
     void resize(int nR, int nC, int sfovea = 0);
 
-    inline void get(ImageOf<PixelMono> &out);
+    inline void get(yarp::sig::ImageOf<yarp::sig::PixelMono> &out);
     inline float get(int c, int r)
     { return _integralImg(c,r)/_max; }
 
@@ -32,22 +49,22 @@ public:
     inline double getSaliency(int maxX, int minX, int maxY, int minY);
     inline double getSaliencyLp(int maxT, int minT, int maxR, int minR);
     
-    int computeCartesian(ImageOf<PixelMonoSigned> &input);
-    int computeCartesian(ImageOf<PixelMono> &input);
-    int computeLp(ImageOf<PixelMonoSigned> &input);
-    int computeLp(ImageOf<PixelMono> &input);
+    int computeCartesian(yarp::sig::ImageOf<yarp::sig::PixelMonoSigned> &input);
+    int computeCartesian(yarp::sig::ImageOf<yarp::sig::PixelMono> &input);
+    int computeLp(yarp::sig::ImageOf<yarp::sig::PixelMonoSigned> &input);
+    int computeLp(yarp::sig::ImageOf<yarp::sig::PixelMono> &input);
 
 private:
     void _resize(int nC, int nR, int sfovea);
-    ImageOf<PixelFloat> _integralImg;
-    ImageOf<PixelFloat> _rowSum;
+    yarp::sig::ImageOf<yarp::sig::PixelFloat> _integralImg;
+    yarp::sig::ImageOf<yarp::sig::PixelFloat> _rowSum;
     int _nRows;
     int _nCols;
     int _nfovea;
     float _max;
 };
 
-inline void YARPIntegralImage::get(ImageOf<PixelMono> &out)
+inline void YARPIntegralImage::get(yarp::sig::ImageOf<yarp::sig::PixelMono> &out)
 {
     int r,c;
     float *src;
@@ -60,7 +77,7 @@ inline void YARPIntegralImage::get(ImageOf<PixelMono> &out)
         dst = (unsigned char *) out.getRawImage()[r];
         for(c = 0; c < _nCols; c++)
         {
-            *dst = (PixelMono)(((*src)*255)/_max + 0.5);
+            *dst = (yarp::sig::PixelMono)(((*src)*255)/_max + 0.5);
             src++;
             dst++;
         }
