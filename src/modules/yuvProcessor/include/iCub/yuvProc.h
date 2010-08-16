@@ -3,8 +3,8 @@
  *
  * \defgroup icub_yuvProcessor yuvProcessor
  *
- * Receives the rectified Y (intensity) channel from the coulourProcessor Module and performs centre-surround processing with a construction of an intensity uniqueness map (intensity saliency) via a difference-of-Gaussian pyramid filter bank. 
- * It also receives rectified U and V chrominance channels from the same module and constructs a colour chrominance uniqueness map (colour saliency) using the same technique.
+ * Receives an rgb image, extract the Y, U and V planes and performs centre-surround processing with a construction of an intensity uniqueness map (intensity saliency) via a difference-of-Gaussian pyramid filter bank. 
+ * It also constructs a colour chrominance uniqueness map (colour saliency) using the same technique.
  *
  * 
  * \section lib_sec Libraries
@@ -34,15 +34,7 @@
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - \c YUVPort \c /Y/image:i \n    
- *   specifies the input port name (this string will be prefixed by \c /yuvProc 
- *   or whatever else is specifed by the name parameter
- *
- * - \c YUVPort \c /U/image:i \n    
- *   specifies the input port name (this string will be prefixed by \c /yuvProc 
- *   or whatever else is specifed by the name parameter
- *
- * - \c YUVPort \c /V/image:i \n    
+ * - \c YUVPort \c /image:i \n    
  *   specifies the input port name (this string will be prefixed by \c /yuvProc 
  *   or whatever else is specifed by the name parameter
  *
@@ -62,7 +54,7 @@
  *
  *  <b>Input ports</b>
  *
- *  - \c /yuvProc \n
+ *  - \c /yuvProc \n 
  *    This port is used to change the parameters of the module at run time or stop the module. \n
  *    The following commands are available
  * 
@@ -74,9 +66,7 @@
  *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: \c yarp \c rpc \c /yuvProc
  *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
- *  - \c /yuvProc/Y/image:i \n
- *  - \c /yuvProc/U/image:i \n
- *  - \c /yuvProc/V/image:i \n
+ *  - \c /yuvProc/image:i \n
  *
  * <b>Output ports</b>
  *
@@ -91,11 +81,9 @@
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * \c BufferedPort<ImageOf<PixelMono> >   \c myInputPortY; \n 
- * \c BufferedPort<ImageOf<PixelMono> >   \c myInputPortU; \n 
- * \c BufferedPort<ImageOf<PixelMono> >   \c myInputPortV; \n 
- * \c BufferedPort<ImageOf<PixelMono> >   \c YPort;   
- * \c BufferedPort<ImageOf<PixelMono> >   \c UVPort;       
+ * \c BufferedPort<ImageOf<PixelRgb> >   \c  inputPort; \n 
+ * \c BufferedPort<ImageOf<PixelMono> >   \c outPortY;   
+ * \c BufferedPort<ImageOf<PixelMono> >   \c outPortUV;       
  *
  * \section in_files_sec Input Data Files
  *
@@ -174,17 +162,14 @@ class YUVThread : public Thread
 private:
 
     /* class variables */
-    ImageOf<PixelRgb> *inputExtImage;
-    ImageOf<PixelRgb> *imgExt;
-    ImageOf<PixelRgb> *inputImage; //input image
+    //ImageOf<PixelRgb> *inputExtImage;
 
-	ImageOf<PixelMono> *img_out_Y;    
-	ImageOf<PixelMono> *img_out_UV;
-    ImageOf<PixelMono> *img_Y;    
-	ImageOf<PixelMono> *img_UV;
+	ImageOf<PixelMono> *img_out_Y; // output Y image
+	ImageOf<PixelMono> *img_out_UV;// output UV image
+    //ImageOf<PixelMono> *img_Y;    
+	//ImageOf<PixelMono> *img_UV;
 
     /* thread parameters: they are pointers so that they refer to the original variables */
-
     BufferedPort<ImageOf<PixelRgb> >  *imageInputPort;
     BufferedPort<ImageOf<PixelMono> > *imageOutPortY;
     BufferedPort<ImageOf<PixelMono> > *imageOutPortUV;  
@@ -193,14 +178,10 @@ private:
     int width, height;
     int ncsscale;
     bool allocated;
-    //int psb, psb4, psb3, ycs_psb, col_psb, psb_32f;
-    
-    //Ipp8u *colour_in, *colour, *ycs_out, *yuva_orig, *y_orig, *u_orig, *v_orig, *tmp;  
+   
     Ipp8u** pyuva;
     CentSur * centerSurr;
     Ipp32f *cs_tot_32f;
-    Ipp32f min,max;
-    bool gotImg;
 
     Ipp8u *orig, *colour, *yuva_orig, *y_orig, *u_orig, *v_orig, *tmp, *ycs_out, *colcs_out;
     int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f;
@@ -209,9 +190,9 @@ public:
 
    /* class methods */
     YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPortY, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV);
-    void initAll();
-    void extending();
-    ImageOf<PixelRgb>* extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize);
+    /* the following is not used but left for now to check bugs with Francesco Rea*/
+    //ImageOf<PixelRgb>* extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize);
+
     bool threadInit();     
     void threadRelease();
     void run(); 
@@ -223,7 +204,6 @@ class yuvProc:public RFModule
 {
     /* module parameters */
     string moduleName; 
-    //string inputPortName;
     string inputPortName;
 
     string outputPortNameY;  
@@ -234,9 +214,9 @@ class yuvProc:public RFModule
     BufferedPort<ImageOf<PixelRgb> > inputPort;  // input port
     BufferedPort<ImageOf<PixelMono> > outPortY;  // intensity output port
     BufferedPort<ImageOf<PixelMono> > outPortUV; // chrominance output port
-    Port handlerPort;      //a port to handle messages 
+    Port handlerPort;      //port to handle messages 
     
-    /* pointer to a new thread to be created and started in configure() and stopped in close() */
+    /* pointer to the working thread */
     YUVThread *yuvThread;
 public:
 

@@ -53,7 +53,7 @@ private:
 	Ipp8u *cs_tot_8u,*pbuf;
 	int *psb_p,pbufsize,psb_8u,psb_32f,ngauss;
 	IppiSize srcsize,*psize;
-	IppiRect *proi;
+	IppiRect *proi, *dstRect;
 	double sd,su,sigma;
 
 };
