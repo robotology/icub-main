@@ -2,8 +2,8 @@
 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Francesco Rea
- * email:   francesco.rea@iit.it
+ * Authors: $YOUR_NAME
+ * email:   $YOUR_EMAIL
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -18,6 +18,11 @@
  * Public License for more details
  */
 
+/**
+ * @file demoThread.cpp
+ * @brief implementation of the demoThread (for the demoModule) methods.
+ */
+
 #include <iCub/demoThread.h>
 
 using namespace yarp::os;
@@ -28,8 +33,11 @@ demoThread::demoThread(int *threshold) {
     thresholdValue = threshold;
 }
 
-
 bool demoThread::threadInit() {
+    /*
+     * PLEASE remove useless comments from code later when implementing your class.
+     */
+
     /* initialize variables and create data-structures if needed */
     
     /* opening ports */
@@ -47,14 +55,11 @@ bool demoThread::threadInit() {
 }
 
 void demoThread::run() {
-
     /* 
     * do some work ....
     * for example, convert the input image to a binary image using the threshold provided 
     */ 
-
     unsigned char value;
-
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
         cout << "demoThread: threshold value is " << *thresholdValue << endl;
 

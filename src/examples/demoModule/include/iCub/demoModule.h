@@ -2,8 +2,8 @@
 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Francesco Rea
- * email:   francesco.rea@iit.it
+ * Authors: $YOUR_NAME
+ * email:   $YOUR_EMAIL
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -16,6 +16,11 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
+ */
+
+/**
+ * @file demoModule.h
+ * @brief this file contains the definition of the main module code (that is the module yarp implmentation using the RFModule class.
  */
 
 #ifndef _DEMO_MODULE_H_
@@ -47,7 +52,7 @@
  *
  * \section parameters_sec Parameters
  * 
- * <b>Command-line Parameters <\b> 
+ * <b>Command-line Parameters</b> 
  * 
  * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
  * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
@@ -147,15 +152,11 @@
  * 
  * <tt>demo --name demo --context demo/conf --from demo.ini --robot icub</tt>
  *
- * \author 
+ * \author your name
  * 
- * Francesco Rea
- * 
- * Copyright (C) 2009 RobotCub Consortium
- * 
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * This file can be edited at \c $ICUB_ROOT/src/myModule/include/iCub/myModule.h
+ * Copyright (C) 2009 RobotCub Consortium\n
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.\n
+ * This file can be edited at \c $ICUB_ROOT/main/src/examples/demoModule/include/iCub/myModule.h
  * 
  */
 
@@ -171,36 +172,38 @@
 // within project includes  
 #include <iCub/demoThread.h>
 
+/**
+ * here you need to document your classes.
+ */
 class demoModule : public yarp::os::RFModule {
-   /* module parameters */
+    std::string moduleName;
+    std::string robotName; 
+    std::string robotPortName;  
+    std::string inputPortName;
+    std::string outputPortName;  
+    std::string handlerPortName;
+    std::string cameraConfigFilename;
+    float  fxLeft,  fyLeft;          // focal length
+    float  fxRight, fyRight;         // focal length
+    float  cxLeft,  cyLeft;          // coordinates of the principal point
+    float  cxRight, cyRight;         // coordinates of the principal point
+    int thresholdValue;
 
-   std::string moduleName;
-   std::string robotName; 
-   std::string robotPortName;  
-   std::string inputPortName;
-   std::string outputPortName;  
-   std::string handlerPortName;
-   std::string cameraConfigFilename;
-   float  fxLeft,  fyLeft;          // focal length
-   float  fxRight, fyRight;         // focal length
-   float  cxLeft,  cyLeft;          // coordinates of the principal point
-   float  cxRight, cyRight;         // coordinates of the principal point
-   int thresholdValue;
+    yarp::os::Port handlerPort;      //a port to handle messages 
 
-   /* class variables */
-   yarp::os::Port handlerPort;      //a port to handle messages 
-
-   /* pointer to a new thread to be created and started in configure() and stopped in close() */
-   demoThread *dThread;
+    /* pointer to a new thread to be created and started in configure() and stopped in close() */
+    demoThread *dThread;
 
 public:
-
-   bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
-   bool interruptModule();                       // interrupt, e.g., the ports 
-   bool close();                                 // close and shut down the module
-   bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
-   double getPeriod(); 
-   bool updateModule();
+    /** 
+     * document your methods too.
+     */
+    bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
+    bool interruptModule();                       // interrupt, e.g., the ports 
+    bool close();                                 // close and shut down the module
+    bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
+    double getPeriod(); 
+    bool updateModule();
 };
 
 

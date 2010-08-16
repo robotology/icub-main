@@ -2,8 +2,8 @@
 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Francesco Rea
- * email:   francesco.rea@iit.it
+ * Authors: $YOUR_NAME
+ * email:   $YOUR_EMAIL
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -18,6 +18,11 @@
  * Public License for more details
  */
 
+/**
+ * @file demoThread.h
+ * @brief this file contains the definition of an additional thread that does the job for the main module.
+ */
+
 #ifndef _DEMO_THREAD_H_
 #define _DEMO_THREAD_H_
 
@@ -25,7 +30,9 @@
 #include <yarp/os/all.h>
 #include <iostream>
 
-
+/**
+ * theoretically, here you should document your class(es) and methods. 
+ */
 class demoThread : public yarp::os::Thread {
 private:
    int      x, y;
@@ -37,7 +44,18 @@ private:
    int *thresholdValue; 
 
 public:
+   /**
+    * contructor.
+    * @param threshold threshold for image filtering.
+    */
    demoThread(int *threshold);
+
+   /**
+    * destructor.
+    */
+   ~demoThread() {}
+
+   // and so forth... don't forget to document all your methods.
    bool threadInit();     
    void threadRelease();
    void run(); 

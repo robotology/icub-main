@@ -17,7 +17,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
-  
+
+/**
+ * @file main.cpp
+ * @brief main code for your module. This shows up in the list of files.
+ */
 
 #include "iCub/demoModule.h" 
 
@@ -27,15 +31,11 @@ using namespace yarp::sig;
 
 int main(int argc, char * argv[]) {
    /* initialize yarp network */ 
-
    Network yarp;
-
    /* create your module */
-
    demoModule module; 
 
    /* prepare and configure the resource finder */
-
    ResourceFinder rf;
    rf.setVerbose(true);
    rf.setDefaultConfigFile("demo.ini"); //overridden by --from parameter
@@ -43,7 +43,6 @@ int main(int argc, char * argv[]) {
    rf.configure("ICUB_ROOT", argc, argv);
  
    /* run the module: runModule() calls configure first and, if successful, it then runs */
-
    module.runModule(rf);
 
    return 0;

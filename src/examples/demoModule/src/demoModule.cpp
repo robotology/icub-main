@@ -2,8 +2,8 @@
 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Francesco Rea
- * email:   francesco.rea@iit.it
+ * Authors: $YOUR_NAME
+ * email:   $YOUR_EMAIL
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -18,19 +18,16 @@
  * Public License for more details
  */
 
+/**
+ * @file demoModule.cpp
+ * @brief implementation of the demoModule methods following the RFModule standards.
+ */
 
 /*
  * Audit Trail
  * -----------
- *  ....
+ *  .... if any
  */ 
-
-/* 
- * Configure method. Receive a previously initialized
- * resource finder object. Use it to configure your module.
- * If you are migrating from the old Module, this is the 
- *  equivalent of the "open" method.
- */
 
 #include "iCub/demoModule.h"
 
@@ -38,7 +35,18 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
 
+/* 
+ * Configure method. Receive a previously initialized
+ * resource finder object. Use it to configure your module.
+ * If you are migrating from the old Module, this is the 
+ * equivalent of the "open" method.
+ */
+
 bool demoModule::configure(yarp::os::ResourceFinder &rf) {    
+    /*
+     * PLEASE remove useless comments when writing actual code. If needed then use Doxygen comments and tags.
+     */
+
     /* Process all parameters from both command-line and .ini file */
     /* get the module name which will form the stem of all module port names */
     moduleName            = rf.check("name", 
@@ -143,7 +151,6 @@ bool demoModule::close() {
 
     return true;
 }
-
 
 bool demoModule::respond(const Bottle& command, Bottle& reply) {
   string helpMessage =  string(getName().c_str()) + 
