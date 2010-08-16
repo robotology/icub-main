@@ -3,9 +3,8 @@
  *
  * \defgroup icub_particleFiltering particleModule
  *
- * Object tracking is a tricky problem. A general, all-purpose object tracking algorithm must deal with difficulties like camera motion, erratic object motion, cluttered backgrounds, and other moving objects. Such hurdles render general image processing techniques an inadequate solution to the object tracking problem.
-
-Particle filtering is a Monte Carlo sampling approach to Bayesian filtering. It has many uses but has become the state of the art in object tracking. Conceptually, a particle filtering algorithm maintains a probability distribution over the state of the system it is monitoring, in this case, the state -- location, scale, etc. -- of the object being tracked. In most cases, non-linearity and non-Gaussianity in the object's motion and likelihood models yields an intractable filtering distribution. Particle filtering overcomes this intractability by representing the distribution as a set of weighted samples, or particles. Each particle represents a possible instantiation of the state of the system. In other words, each particle describes one possible location of the object being tracked. The set of particles contains more weight at locations where the object being tracked is more likely to be. We can thus determine the most probable state of the object by finding the location in the particle filtering distribution with the highest weight.
+This module expects a template from the following port /particleMod/template/image:i in order to commence tracking. This is a simple single-object tracker that uses a color histogram-based observation model. 
+Particle filtering is a Monte Carlo sampling approach to Bayesian filtering.The particle filtering algorithm maintains a probability distribution over the state of the system it is monitoring, in this case, the state -- location, scale, etc. -- of the object being tracked. Particle filtering represents the distribution as a set of weighted samples, or particles. Each particle describes one possible location of the object being tracked. The set of particles contains more weight at locations where the object being tracked is more likely to be. The most probable state of the object is determined by finding the location in the particle filtering distribution with the highest weight.
  *
  * 
  * \section lib_sec Libraries
@@ -123,11 +122,11 @@ Particle filtering is a Monte Carlo sampling approach to Bayesian filtering. It 
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>YUVProcessor --name yuvProc --context particleFiltering/conf --from particleMod.ini </tt>
+ * <tt>particleMod --name particleFiltering --context particleFiltering/conf --from particleMod.ini </tt>
  *
  * \author 
  * 
- * Vadim Tikhanoff, Andrew Dankers
+ * Vadim Tikhanoff, Andrew Dankers.
  * 
  * Copyright (C) 2009 RobotCub Consortium
  * 
@@ -202,7 +201,6 @@ Particle filtering is a Monte Carlo sampling approach to Bayesian filtering. It 
 #define pfot_B0  1.0000
 /* distribution parameter */
 #define LAMBDA 20
-
  
 using namespace std;
 using namespace yarp::os; 
@@ -266,8 +264,9 @@ private:
 public:
 
     /* class methods */
-    PARTICLEThread( );
-    
+    PARTICLEThread();
+    ~PARTICLEThread();
+
     typedef struct params {
   		CvPoint loc1[MAX_OBJECTS];
   		CvPoint loc2[MAX_OBJECTS];

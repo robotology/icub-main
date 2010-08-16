@@ -118,6 +118,20 @@ double particleMod::getPeriod() {
     return 0.1;
 }
 
+PARTICLEThread::~PARTICLEThread(){
+    free_regions ( left_regions, num_objects );
+    free_regions ( right_regions, num_objects );
+    gsl_rng_free ( rng );
+    free_histos ( ref_histos_left, num_objects);
+    free_histos ( ref_histos_right, num_objects);
+    free ( particles_l );
+    free ( particles_r );
+    if (temp){
+        cout << "releasing temp" << endl;        
+        cvReleaseImage(&temp);
+    }
+}
+
 PARTICLEThread::PARTICLEThread() {
     firstFrame = true;
 	num_objects = 0;
@@ -209,7 +223,7 @@ void PARTICLEThread::run() {
 
             getTemplate =  ( imageInTemp.getInputCount() > 0 );
             
-            if ( getTemplate ){ //>0
+            if ( getTemplate ){
                 tpl = imageInTemp.read(false);
       
                 if ( tpl != NULL ){
@@ -277,14 +291,6 @@ void PARTICLEThread::run() {
 void PARTICLEThread::threadRelease() 
 {
     cout << "cleaning up..." << endl;
-
-    free_regions ( left_regions, num_objects );
-    free_regions ( right_regions, num_objects );
-    gsl_rng_free ( rng );
-    free_histos ( ref_histos_left, num_objects);
-    free_histos ( ref_histos_right, num_objects);
-    free ( particles_l );
-    free ( particles_r );
     cout << "attempting to close ports" << endl;
     imageInTemp.close();
     imageInLeft.close();
@@ -295,10 +301,6 @@ void PARTICLEThread::threadRelease()
     imageOutRightBlob.close();
     target.close();
     
-    if (temp){
-        cout << "releasing temp" << endl;        
-        cvReleaseImage(&temp);
-    }
     //yarp::os::impl::NameClient::removeNameClient();
     cout << "finished closing ports" << endl;
 }
@@ -337,7 +339,7 @@ void PARTICLEThread::runAll(IplImage *left, IplImage *right, Vector& target){
         particles_r = init_distribution( *right_regions, ref_histos_right, num_objects, num_particles );
     }
     else{
-    // perform prediction and measurement for each particle --------------------
+        // perform prediction and measurement for each particle of left camera
         for( j = 0; j < num_particles; j++ ) {
             particles_l[j] = transition( particles_l[j], w, h, rng );
             s = particles_l[j].s;
@@ -347,12 +349,12 @@ void PARTICLEThread::runAll(IplImage *left, IplImage *right, Vector& target){
             cvRound( particles_l[j].height * s ),
             particles_l[j].histo );
         }
-    // normalize weights and resample a set of unweighted particles----------------
+        // normalize weights and resample a set of unweighted particles
         normalize_weights( particles_l, num_particles );
         new_particles_l = resample( particles_l, num_particles );
         free( particles_l );
         particles_l = new_particles_l;
-
+        // perform prediction and measurement for each particle of right camera
         for( j = 0; j < num_particles; j++ ) {
             particles_r[j] = transition( particles_r[j], w, h, rng );
             s = particles_r[j].s;
