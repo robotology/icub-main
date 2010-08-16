@@ -147,7 +147,7 @@
  * 
  * Copyright (C) 2009 RobotCub Consortium\n
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.\n
- * This file can be edited at \c $ICUB_ROOT/main/src/examples/demoModule/include/iCub/myModule.h
+ * This file can be edited at \c $ICUB_ROOT/main/src/modules/saliencyBlobFinder/include/iCub/saliencyBlobFinderModule.h
  * 
  */
 

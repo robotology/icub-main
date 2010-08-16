@@ -192,7 +192,7 @@ void visualFilterThread::run() {
             edgesExtract();
             // sending the edge image on the outport
                  
-            // it sends output to the port even if nothing is connected to it, including a copy of the image into the buffer :(
+            // the copy to the port object can be avoided...
             if((edges!=0)&&(imagePortOut.getOutputCount())) {
                 imagePortOut.prepare() = *(edges);
                 imagePortOut.write();

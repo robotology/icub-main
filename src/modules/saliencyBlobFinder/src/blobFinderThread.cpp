@@ -31,9 +31,9 @@
 using namespace std;
 using namespace yarp::os;
 
-const int defaultSize = 240;
+const int defaultSize = 256;
 const int SPIKE_COUNTS = 10;
-const int THREAD_RATE = 33;
+const int THREAD_RATE = 100;
 
 #define _inputImgRed (*(ptr_inputImgRed))
 #define _inputImgGreen (*(ptr_inputImgGreen))
@@ -319,7 +319,7 @@ void blobFinderThread::run() {
     //
     if (!interrupted_flag) {
         ct++;
-        // reading input port and extracting colour planes
+        // ...
         img = inputPort.read(false);
         if (0 != img) {
             if (!reinit_flag) {
@@ -332,7 +332,7 @@ void blobFinderThread::run() {
                 img->resize(this->width,this->height);    
             }
 
-            ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(),srcsize);
+            ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(), ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(), srcsize);
 
             bool ret1=true,ret2=true;
             ret1=getOpponencies();
@@ -353,7 +353,7 @@ void blobFinderThread::run() {
             bool conversion=true;
             tmpImage=edgesPort.read(false);
             if (tmpImage != 0)
-                ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),edges->getRawImage(), edges->getRowSize(),srcsize);
+                ippiCopy_8u_C1R(tmpImage->getRawImage(), tmpImage->getRowSize(), edges->getRawImage(), edges->getRowSize(), srcsize);
             rain(edges);
 
             this->drawAllBlobs(true);
@@ -390,6 +390,7 @@ void blobFinderThread::run() {
     } // if (!interrupted)
 }
 
+// thread closure is dubious code...
 void blobFinderThread::stop() {
     rgPort.close();
     grPort.close();
@@ -421,15 +422,15 @@ void blobFinderThread::threadRelease() {
 bool blobFinderThread::getOpponencies() {
 
     tmpImage=rgPort.read(false);
-    if(tmpImage!=NULL)
+    if (tmpImage != NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgRG->getRawImage(), ptr_inputImgRG->getRowSize(),srcsize);
     
     tmpImage=grPort.read(false);
-    if(tmpImage!=NULL)
+    if (tmpImage != NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgGR->getRawImage(), ptr_inputImgGR->getRowSize(),srcsize);
     
     tmpImage=byPort.read(false);
-    if(tmpImage!=NULL)
+    if (tmpImage != NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),ptr_inputImgBY->getRawImage(), ptr_inputImgBY->getRowSize(),srcsize);
 
     return true;
