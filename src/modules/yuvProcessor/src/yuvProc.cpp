@@ -22,7 +22,7 @@
  #include <string.h>
 #include <cassert>
 
-#define KERNSIZE 12
+const int KERNSIZEMAX = 12;
 
 //#include "yarp/os/impl/NameClient.h"
 
@@ -176,9 +176,9 @@ YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<I
     imageOutPortUV  = outPortUV;
 	img_out_Y = NULL;    
 	img_out_UV = NULL;
-    //inputExtImage = NULL;
-    //img_Y = NULL;    
-	//img_UV = NULL;
+    inputExtImage = NULL;
+    img_Y = NULL;    
+	img_UV = NULL;
     pyuva = NULL;
     centerSurr = NULL;
     cs_tot_32f = NULL;
@@ -199,7 +199,48 @@ YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<I
     ycs_psb = 0;
     col_psb = 0;
     psb_32f = 0;
+    getImage = false;
 }
+
+YUVThread::~YUVThread()
+{
+    delete centerSurr;
+    delete img_out_Y;
+    delete img_out_UV;
+    delete img_Y;
+    delete img_UV;
+    delete inputExtImage;
+    ippiFree(orig);
+    ippiFree(colour); 
+    ippiFree(tmp); 
+    free (pyuva);
+    ippiFree(yuva_orig);
+    ippiFree(y_orig);
+    ippiFree(u_orig);
+    ippiFree(v_orig);
+    ippiFree(cs_tot_32f);
+    ippiFree(colcs_out);
+    ippiFree(ycs_out);
+
+	img_out_Y = NULL;    
+	img_out_UV = NULL;
+    inputExtImage = NULL;
+    img_Y = NULL;    
+	img_UV = NULL;
+    pyuva = NULL;
+    centerSurr = NULL;
+    cs_tot_32f = NULL;
+    orig = NULL;
+    colour = NULL;
+    yuva_orig = NULL;
+    y_orig = NULL; 
+    u_orig = NULL; 
+    v_orig = NULL; 
+    tmp = NULL;
+    ycs_out = NULL; 
+    colcs_out = NULL;
+}
+
 
 bool YUVThread::threadInit() 
 {
@@ -210,91 +251,96 @@ bool YUVThread::threadInit()
 void YUVThread::run(){
 
     while ( isStopping() != true ) { // the thread continues to run until isStopping() returns true
-
-        ImageOf<PixelRgb> *img = imageInputPort->read(true);
-        if(img != NULL) {
-            if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
-                deallocate();
-                allocate( img );
-            }
         
-            //extender( img, KERNSIZE ); //commented this function as it is not correct. Instead using the following from IPP
-            ippiCopyReplicateBorder_8u_C3R( img->getRawImage(), img->getRowSize(), origsize, orig, img_psb, srcsize, KERNSIZE, KERNSIZE );
+        //getImage =  ( imageInputPort.getInputCount() > 0 );
+        if (imageInputPort->getInputCount()){
 
-            //create your own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel 
-            //ippiCopy_8u_C3R( inputExtImage->getRawImage(),inputExtImage->getRowSize(), orig, img_psb, srcsize );
+            ImageOf<PixelRgb> *img = imageInputPort->read(false);
+            if(img != NULL) {
+                if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
+                    deallocate();
+                    allocate( img );
+                }
+                
+                 // extend logpolar input image
+                //extender( img, KERNSIZEMAX );
+                ippiCopyReplicateBorder_8u_C3R( img->getRawImage(), img->getRowSize(), origsize, orig, img_psb, srcsize, KERNSIZEMAX, KERNSIZEMAX );
+                
+                //create our own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel )
+               // ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
 
-            //convert to RGBA:
-            ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
-            //convert to Y,U,V image channels:
-            ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize);
-            //extract Y, U, V Images
-            pyuva[0]= y_orig;
-            pyuva[1]= u_orig;
-            pyuva[2]= v_orig; 
-            pyuva[3]= tmp; 
-            ippiCopy_8u_C4P4R( yuva_orig, psb4, pyuva, psb, srcsize );
+                //convert to RGBA:
+                ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
+                //convert to Y,U,V image channels:
+                ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize);
+                //extract Y, U, V Images
+                pyuva[0]= y_orig;
+                pyuva[1]= u_orig;
+                pyuva[2]= v_orig; 
+                pyuva[3]= tmp; 
+                ippiCopy_8u_C4P4R( yuva_orig, psb4, pyuva, psb, srcsize );
 
-            //intensity process: performs centre-surround uniqueness analysis
-            centerSurr->proc_im_8u( y_orig , psb );
-            ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize );
-        //-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                //intensity process: performs centre-surround uniqueness analysis
+                centerSurr->proc_im_8u( y_orig , psb );
+                ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize );
+               
+                //Colour process U performs centre-surround uniqueness analysis:
+                centerSurr->proc_im_8u( u_orig , psb );
+                ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+                //Colour process V:performs centre-surround uniqueness analysis:
+                centerSurr->proc_im_8u( v_orig , psb );
+                ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
 
-            //Colour process U performs centre-surround uniqueness analysis:
-            centerSurr->proc_im_8u( u_orig , psb );
-            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
-            //Colour process V:performs centre-surround uniqueness analysis:
-            centerSurr->proc_im_8u( v_orig , psb );
-            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+                Ipp32f valueMin,valueMax;
+                valueMin = 0.0;
+                valueMax = 0.0;
 
-            Ipp32f valueMin,valueMax;
-            valueMin = 0.0;
-            valueMax = 0.0;
-            //get min max
-            ippiMinMax_32f_C1R( cs_tot_32f, psb_32f, srcsize, &valueMin, &valueMax );
-            
-            if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f; }
-            ippiScale_32f8u_C1R( cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize, valueMin, valueMax );
+                //get min max
+                ippiMinMax_32f_C1R( cs_tot_32f, psb_32f, srcsize, &valueMin, &valueMax );
+                //if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f; }
+                ippiScale_32f8u_C1R( cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize, valueMin, valueMax );
 
-            //downsize revert to yarp image
-            ippiCopy_8u_C1R( &ycs_out[ KERNSIZE * ycs_psb/4 + KERNSIZE ], ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), origsize );
-            ippiCopy_8u_C1R( &colcs_out[ KERNSIZE * col_psb/4 + KERNSIZE ],col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), origsize );
+                ippiCopy_8u_C1R( ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize );
+                ippiCopy_8u_C1R( colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
 
-            //following is nasty therefore modified the previous instructions to do the job.
+                //ippiCopy_8u_C1R( &ycs_out[ KERNSIZEMAX * ycs_psb/4 + KERNSIZEMAX ], ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), srcsize );
+               // ippiCopy_8u_C1R( &colcs_out[ KERNSIZEMAX * col_psb/4 + KERNSIZEMAX ],col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), srcsize );
 
-            /*unsigned char* imgY = img_Y->getPixelAddress( KERNSIZE, KERNSIZE );
-            unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZE, KERNSIZE );
-            unsigned char* imgYo = img_out_Y->getRawImage();
-            unsigned char* imgUVo = img_out_UV->getRawImage();
-            int rowsize= img_out_Y->getRowSize();
-            int rowsize2= img_Y->getRowSize();
+                //following is nasty
+                unsigned char* imgY = img_Y->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
+                unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
+                unsigned char* imgYo = img_out_Y->getRawImage();
+                unsigned char* imgUVo = img_out_UV->getRawImage();
+                int rowsize= img_out_Y->getRowSize();
+                int rowsize2= img_Y->getRowSize();
 
-            for(int row=0;row<origsize.height;row++) {
-                for(int col=0;col<origsize.width;col++) {
-                    *imgYo  = *imgY;
-                    *imgUVo = *imgUV;
-                    imgYo++;  imgUVo++;
-                    imgY++;   imgUV++;
-                }    
-                imgYo+=rowsize - origsize.width;
-                imgUVo+=rowsize - origsize.width;
-                imgY+=rowsize2 - origsize.width - KERNSIZE + KERNSIZE; // just to remind that need to do this
-                imgUV+=rowsize2 - origsize.width - KERNSIZE + KERNSIZE;
-            }*/
+                for(int row=0; row<origsize.height; row++) {
+                    for(int col=0; col<origsize.width; col++) {
+                        *imgYo  = *imgY;
+                        *imgUVo = *imgUV;
+                        imgYo++;  imgUVo++;
+                        imgY++;   imgUV++;
+                    }    
+                    imgYo+=rowsize - origsize.width;
+                    imgUVo+=rowsize - origsize.width;
+                    imgY+=rowsize2 - origsize.width;
+                    imgUV+=rowsize2 - origsize.width;
+                }
 
-            //output Y centre-surround results to ports
-            if ( imageOutPortY->getOutputCount()>0 ){
-                imageOutPortY->prepare() = *img_out_Y;	
-                imageOutPortY->write();
+                //output Y centre-surround results to ports
+                if ( imageOutPortY->getOutputCount()>0 ){
+                    imageOutPortY->prepare() = *img_out_Y;	
+                    imageOutPortY->write();
+                }
+
+                //output UV centre-surround results to ports
+                if ( imageOutPortUV->getOutputCount()>0 ){
+                    imageOutPortUV->prepare() = *img_out_UV;	
+                    imageOutPortUV->write();
+                }
+                //reset 
+                ippiSet_32f_C1R( 0.0, cs_tot_32f, psb_32f, srcsize );
             }
-
-            //output UV centre-surround results to ports
-            if ( imageOutPortUV->getOutputCount()>0 ){
-                imageOutPortUV->prepare() = *img_out_UV;	
-                imageOutPortUV->write();
-            }
-            //reset 
-            ippiSet_32f_C1R( 0.0, cs_tot_32f, psb_32f, srcsize );
         }
     } //while
 }
@@ -311,26 +357,26 @@ void YUVThread::deallocate()
     delete centerSurr;
     delete img_out_Y;
     delete img_out_UV;
-    //delete img_Y;
-    //delete img_UV;
-    //delete inputExtImage;
-    ippiFree(orig);
-    ippiFree(colour); 
-    ippiFree(tmp); 
-    free (pyuva);
-    ippiFree(yuva_orig);
-    ippiFree(y_orig);
-    ippiFree(u_orig);
-    ippiFree(v_orig);
-    ippiFree(cs_tot_32f);
-    ippiFree(colcs_out);
-    ippiFree(ycs_out);
+    delete img_Y;
+    delete img_UV;
+    delete inputExtImage;
+    ippiFree( orig );
+    ippiFree( colour ); 
+    ippiFree( tmp ); 
+    free ( pyuva );
+    ippiFree( yuva_orig );
+    ippiFree( y_orig );
+    ippiFree( u_orig );
+    ippiFree( v_orig );
+    ippiFree( cs_tot_32f );
+    ippiFree( colcs_out );
+    ippiFree( ycs_out );
 
 	img_out_Y = NULL;    
 	img_out_UV = NULL;
-    //inputExtImage = NULL;
-    //img_Y = NULL;    
-	//img_UV = NULL;
+    inputExtImage = NULL;
+    img_Y = NULL;    
+	img_UV = NULL;
     pyuva = NULL;
     centerSurr = NULL;
     cs_tot_32f = NULL;
@@ -347,14 +393,14 @@ void YUVThread::deallocate()
     allocated = false;
 }
 
-void YUVThread::allocate(ImageOf<PixelRgb> *img)
+void YUVThread::allocate( ImageOf<PixelRgb> *img )
 {
     assert (allocated == false);
     origsize.width = img->width();
     origsize.height = img->height();
 
-    srcsize.width = origsize.width + KERNSIZE * 2;
-    srcsize.height = origsize.height +KERNSIZE * 2;
+    srcsize.width = origsize.width + 2 * KERNSIZEMAX;
+    srcsize.height = origsize.height + 2 * KERNSIZEMAX;
 
     cout << "Received input image dimensions: " << origsize.width << " " << origsize.height << endl;
     cout << "Will extend these to: " << srcsize.width << " " << srcsize.height << endl;
@@ -362,7 +408,7 @@ void YUVThread::allocate(ImageOf<PixelRgb> *img)
     orig    = ippiMalloc_8u_C3( srcsize.width, srcsize.height, &img_psb );
     colour  = ippiMalloc_8u_C4( srcsize.width, srcsize.height, &psb4);
 
-    yuva_orig = ippiMalloc_8u_C1( srcsize.width*4, srcsize.height, &psb4);
+    yuva_orig = ippiMalloc_8u_C1( srcsize.width *4, srcsize.height, &psb4);
     y_orig    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
     u_orig    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
     v_orig    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
@@ -378,14 +424,14 @@ void YUVThread::allocate(ImageOf<PixelRgb> *img)
 
     centerSurr  = new CentSur( srcsize , ncsscale );
 
-    //inputExtImage=new ImageOf<PixelRgb>;
-    //inputExtImage->resize( srcsize.width, srcsize.height );
+    inputExtImage=new ImageOf<PixelRgb>;
+    inputExtImage->resize( srcsize.width, srcsize.height );
 
-	//img_Y = new ImageOf<PixelMono>;
-	//img_Y->resize( srcsize.width, srcsize.height );
+	img_Y = new ImageOf<PixelMono>;
+	img_Y->resize( srcsize.width, srcsize.height );
 
-	//img_UV = new ImageOf<PixelMono>;
-	//img_UV->resize( srcsize.width, srcsize.height );
+	img_UV = new ImageOf<PixelMono>;
+	img_UV->resize( srcsize.width, srcsize.height );
 
     img_out_Y = new ImageOf<PixelMono>;
 	img_out_Y->resize( origsize.width, origsize.height );
@@ -397,49 +443,36 @@ void YUVThread::allocate(ImageOf<PixelRgb> *img)
     cout << "done allocating" << endl;
 }
 
-/*
-ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize) {
 
-    //copy of the image 
-    ippiCopy_8u_C3R(inputOrigImage->getRawImage(),inputOrigImage->getRowSize(),inputExtImage->getPixelAddress(maxSize,maxSize),inputExtImage->getRowSize(),origsize);    
-    //memcpy of the horizontal fovea lines (rows) 
-    const int sizeBlock=origsize.width/2;
-    for( int i=0;i<maxSize;i++) {
-      memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),inputExtImage->getPixelAddress(maxSize,maxSize+i),sizeBlock*sizeof(PixelRgb));
-      memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),inputExtImage->getPixelAddress(sizeBlock,maxSize+i),sizeBlock*sizeof(PixelRgb));
+ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage, int maxSize) {
+    // copy of the image 
+    ippiCopy_8u_C3R(inputOrigImage->getRawImage(),
+                    inputOrigImage->getRowSize(),
+                    inputExtImage->getPixelAddress(maxSize,maxSize),
+                    inputExtImage->getRowSize(),
+                    origsize);
+
+    // memcpy of the horizontal fovea lines (rows) 
+    const int sizeBlock = origsize.width / 2;
+    for(int i = 0; i < maxSize; i++) {
+        memcpy( inputExtImage->getPixelAddress( sizeBlock + maxSize, maxSize-1-i ),
+               inputExtImage->getPixelAddress( maxSize, maxSize+i ),
+               sizeBlock*sizeof(PixelRgb));
+        memcpy( inputExtImage->getPixelAddress( maxSize, maxSize-1-i ),
+               inputExtImage->getPixelAddress( sizeBlock + maxSize, maxSize+i ),
+               sizeBlock*sizeof(PixelRgb));
     }
-    //copy of the block adiacent angular positions (columns)
-    unsigned char* ptrDestRight;
-    unsigned char* ptrOrigRight;
-    unsigned char* ptrDestLeft;
-    unsigned char* ptrOrigLeft;
 
-    for( int row=0;row<height;row++ ) {
-
-        ptrDestRight=inputExtImage->getPixelAddress(width-maxSize,row);
-        ptrOrigRight=inputExtImage->getPixelAddress(maxSize,row);
-        ptrDestLeft=inputExtImage->getPixelAddress(0,row);
-        ptrOrigLeft=inputExtImage->getPixelAddress(width-maxSize-maxSize,row);
-
-        for(int i=0;i<maxSize;i++) {
-
-            //right block
-            *ptrDestRight=*ptrOrigRight;
-            ptrDestRight++;ptrOrigRight++;
-            *ptrDestRight=*ptrOrigRight;
-            ptrDestRight++;ptrOrigRight++;
-            *ptrDestRight=*ptrOrigRight;
-            ptrDestRight++;ptrOrigRight++;
-
-            //left block
-            *ptrDestLeft=*ptrOrigLeft;
-            ptrDestLeft++;ptrOrigLeft++;
-            *ptrDestLeft=*ptrOrigLeft;
-            ptrDestLeft++;ptrOrigLeft++;
-            *ptrDestLeft=*ptrOrigLeft;
-            ptrDestLeft++;ptrOrigLeft++;
-        }
+    // copy of the block adjacent angular positions (columns)
+    const int px = maxSize * sizeof(PixelRgb);
+    for (int row = 0; row < height; row++) {
+        memcpy ( inputExtImage->getPixelAddress( width-maxSize, row ),
+                inputExtImage->getPixelAddress( maxSize,row ), px);
+        memcpy ( inputExtImage->getPixelAddress( 0, row ),
+                inputExtImage->getPixelAddress( width- maxSize-maxSize, row ), px);
     }
+
     return inputExtImage;
 }
-*/
+
+

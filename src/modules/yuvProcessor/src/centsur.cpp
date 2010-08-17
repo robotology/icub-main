@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include "iCub/centsur.h"
 
-#define KERNSIZE 5    //kernsize (odd, >= 3)
+#define KERNSIZE 3    //kernsize (odd, >= 3)
 
 CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
 {
@@ -45,8 +45,8 @@ CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
     gauss         = (Ipp32f**)  malloc(ngauss*sizeof(Ipp32f*));
 
     for (int ng=0;ng<ngauss;ng++){
-        psize[ng].width   = (int)ceil(((double)srcsize.width)/pow(2.0f, ng));
-        psize[ng].height  = (int)ceil((((double)srcsize.height)/((double)srcsize.width))*psize[ng].width);
+        psize[ng].width   = (int)ceil( ( (double)srcsize.width )/double(1<< ng) );//pow(2.0f, ng));
+        psize[ng].height  = (int)ceil( ( ((double)srcsize.height)/ ( (double)srcsize.width) ) * psize[ng].width );
         proi[ng].x        = 0;
         proi[ng].y        = 0;
         proi[ng].width    = psize[ng].width;
@@ -88,9 +88,9 @@ CentSur::~CentSur() {
 
 void CentSur::proc_im_8u(Ipp8u* im_8u, int psb_){
     //convert im precision to 32f:
-    ippiConvert_8u32f_C1R(im_8u,psb_,im_in_32f,psb_32f,srcsize);
+    ippiConvert_8u32f_C1R( im_8u, psb_, im_in_32f, psb_32f, srcsize );
     //process as normal:
-    proc_im_32f(im_in_32f,psb_32f);
+    proc_im_32f( im_in_32f, psb_32f );
 }
 
 void CentSur::proc_im_32f(Ipp32f* im_32f, int psb_in_32f_)
@@ -121,14 +121,13 @@ void CentSur::proc_im_32f(Ipp32f* im_32f, int psb_in_32f_)
   	//conv_32f_to_8u(cs_tot_32f,psb_32f,cs_tot_8u,psb_8u,srcsize);
   	Ipp32f min = 0.0f;
     Ipp32f max = 0.0f;
-  	ippiMinMax_32f_C1R(cs_tot_32f,psb_32f,srcsize,&min,&max);
+  	ippiMinMax_32f_C1R(cs_tot_32f, psb_32f, srcsize, &min, &max);
   	//if (max == min){max=255.0f;min=0.0f;}
-  	ippiScale_32f8u_C1R(cs_tot_32f,psb_32f,cs_tot_8u,psb_8u,srcsize,min,max);
+  	ippiScale_32f8u_C1R( cs_tot_32f, psb_32f, cs_tot_8u, psb_8u, srcsize, min,max);
 }
 
-void CentSur::make_pyramid(Ipp32f* im_32f,int p_32_)
+void CentSur::make_pyramid( Ipp32f* im_32f, int p_32_ )
 {
-
     //copy im to pyramid[0]:
     ippiCopy_32f_C1R(im_32f,p_32_,
     	   pyramid[0],psb_p[0],
@@ -147,26 +146,26 @@ void CentSur::make_pyramid(Ipp32f* im_32f,int p_32_)
 				pbuf);
 
     //copy filter output (within padding) to gauss:
-    ippiCopy_32f_C1R(pyramid_gauss[0],psb_p[0],gauss[0],psb_32f,srcsize);
+    ippiCopy_32f_C1R( pyramid_gauss[0], psb_p[0], gauss[0], psb_32f, srcsize );
   
     //others:
     sd = 0.5;
     su = 2.0;
     for (int sg=1;sg<ngauss;sg++){
         //Downsize previous pyramid image by half:
-   /*     ippiResize_32f_C1R(pyramid[sg-1], //source 
+       ippiResize_32f_C1R(pyramid[sg-1], //source 
     		       psize[sg-1],   //source size
     		       psb_p[sg-1],   //source step
     		       proi[sg-1],    //source roi
     		       pyramid[sg],   //dst
     		       psb_p[sg],     //dst step
     		       psize[sg],     //dst size
-    		       sd,sd,IPPI_INTER_LINEAR);   */
+    		       sd,sd,IPPI_INTER_LINEAR);   
 
-        ippiResizeGetBufSize(proi[sg-1], proi[sg], 1, IPPI_INTER_LINEAR, &bufferSize);
-        Ipp8u* pBuffer = ippsMalloc_8u(bufferSize);                                                           
-        ippiResizeSqrPixel_32f_C1R( pyramid[sg-1], psize[sg-1], psb_p[sg-1], proi[sg-1], pyramid[sg], psb_p[sg], proi[sg], sd, sd, 0, 0, IPPI_INTER_LINEAR, pBuffer);      
-        ippsFree(pBuffer);
+    //   ippiResizeGetBufSize(proi[sg-1], proi[sg], 1, IPPI_INTER_LINEAR, &bufferSize);
+    //    Ipp8u* pBuffer = ippsMalloc_8u(bufferSize);                                                           
+    //    ippiResizeSqrPixel_32f_C1R( pyramid[sg-1], psize[sg-1], psb_p[sg-1], proi[sg-1], pyramid[sg], psb_p[sg], proi[sg], sd, sd, 0, 0, IPPI_INTER_LINEAR, pBuffer);      
+    //    ippsFree(pBuffer);
 
         //filter:
         ippiFilterGaussBorder_32f_C1R(pyramid[sg],

@@ -162,12 +162,12 @@ class YUVThread : public Thread
 private:
 
     /* class variables */
-    //ImageOf<PixelRgb> *inputExtImage;
+    ImageOf<PixelRgb> *inputExtImage;
 
 	ImageOf<PixelMono> *img_out_Y; // output Y image
 	ImageOf<PixelMono> *img_out_UV;// output UV image
-    //ImageOf<PixelMono> *img_Y;    
-	//ImageOf<PixelMono> *img_UV;
+    ImageOf<PixelMono> *img_Y;    
+	ImageOf<PixelMono> *img_UV;
 
     /* thread parameters: they are pointers so that they refer to the original variables */
     BufferedPort<ImageOf<PixelRgb> >  *imageInputPort;
@@ -177,7 +177,7 @@ private:
     IppiSize srcsize, origsize;
     int width, height;
     int ncsscale;
-    bool allocated;
+    bool allocated, getImage;
    
     Ipp8u** pyuva;
     CentSur * centerSurr;
@@ -190,8 +190,9 @@ public:
 
    /* class methods */
     YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPortY, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV);
+    ~YUVThread();
     /* the following is not used but left for now to check bugs with Francesco Rea*/
-    //ImageOf<PixelRgb>* extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize);
+    ImageOf<PixelRgb>* extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize);
 
     bool threadInit();     
     void threadRelease();
