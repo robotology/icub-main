@@ -31,8 +31,6 @@
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
-#include <iCub/RC_DIST_FB_logpolar_mapper.h>
-//#include <time.h>
 
 #include <iCub/WatershedOperator.h>
 #include <iCub/SalienceOperator.h>
@@ -45,20 +43,14 @@ using namespace yarp::sig;
  */
 class blobFinderThread : public yarp::os::RateThread {
 private:
-    BufferedPort<Bottle> centroidPort;                  // port used for centroid position to controlGaze2
-    Port triangulationPort;                             // port used for centroid position to iKinHead
-    BufferedPort<Bottle> gazeControlPort;               // port used for sending responses from triangulationPort back into i
-
     BufferedPort<ImageOf<PixelRgb> > inputPort;         // port where the input image is read from
     BufferedPort<ImageOf<PixelMono> > edgesPort;        // port where the edges image is read
-    BufferedPort<ImageOf<PixelMono> > outputPort;       // port that returns the image output
     BufferedPort<ImageOf<PixelMono> > saliencePort;     // port that returns the salience map
     BufferedPort<ImageOf<PixelRgb> > outputPort3;       // port that returns the image output 3channels
     BufferedPort<ImageOf<PixelMono> > rgPort;           // port where the difference of gaussian R+G- is streamed
     BufferedPort<ImageOf<PixelMono> > grPort;           // port where the difference of gaussian G+R- is streamed
     BufferedPort<ImageOf<PixelMono> > byPort;           // port where the difference of gaussian B+Y- of the image is streamed
     BufferedPort<ImageOf<PixelMono> > yellowPort;       // port where the yellow plane of the image is streamed
-    BufferedPort<ImageOf<PixelRgb> > checkPort;         // port where the remapped image is streamed
 
     ImageOf<PixelMono> *outContrastLP;                  // image result of the function outContrastLP
     ImageOf<PixelMono> *tmpImage;                       // buffer image for received image
@@ -81,22 +73,15 @@ private:
     WatershedOperator *wOperator;                       // pointer to the watershed operator
     char* blobList;                                     // vector of boolean which tells whether there is a blob or not
     
-    ImageOf<PixelRgb>* _outputImage3;                   // pointer to the 3 channels output image of the watershed algorithm
-    ImageOf<PixelRgb>* _outputImage3Merged;             // pointer to the 3 channels output image plus the saliencymap
-    ImageOf<PixelRgb>* _outputImage3Cart;               // pointer to the cartesian image of the saliency
+    ImageOf<PixelRgb>  *_outputImage3;                  // pointer to the 3 channels output image of the watershed algorithm
     ImageOf<PixelMono> *_inputImgRGS;                   // input image of the opponency R+G-
     ImageOf<PixelMono> *_inputImgGRS;                   // input image of the opponency G+R-
     ImageOf<PixelMono> *_inputImgBYS;                   // input image of the opponency B+Y-
-    ImageOf<PixelInt> *ptr_tagged;                      // pointer to the image of tags
-    ImageOf<PixelInt>* tagged;                          // vector of tags to the sequence of blobs
-    ImageOf<PixelMono> *blobFov;                        // image of the fovea blob
+    ImageOf<PixelInt>  *ptr_tagged;                     // pointer to the image of tags
     
     int searchRG;                                       // R+G- value for the search
     int searchGR;                                       // G+R- value for the search
     int searchBY;                                       // B+Y- value for the search
-    
-    // LATER: remove reconstruction.
-    lp2CartPixel *l2cTable;                             // look-up table for cartesian reconstruction
     
     /**
     * resizes all the needed images
@@ -137,11 +122,6 @@ public:
     * active loop of the thread
     */
     void run();
-
-    /**
-    * Call this to stop the thread, this call blocks until the thread is terminated (and releaseThread() called). 
-    */
-    void stop();
 
     /**
     *releases the thread
@@ -185,12 +165,6 @@ public:
     void resetFlags();
     
     /**
-    * streams out data on ports
-    * @return return whether the operation was successful
-    */
-    bool outPorts();
-    
-    /**
     * function that reads the ports for colour RGB opponency maps
     */
     bool getOpponencies();
@@ -217,7 +191,6 @@ public:
     ImageOf<PixelMono> *ptr_inputImgGR;                     // pointer to the input image G+R-
     ImageOf<PixelMono> *ptr_inputImgBY;                     // pointer to the input image B+Y-
     ImageOf<PixelRgb>* _procImage;                          // pointer to the output image of the watershed algorithm
-    ImageOf<PixelMono>* _outputImage;                       // pointer to the output image of the watershed algorithm
 
     bool contrastLP_flag;                                   // flag for drawing contrastLP
     bool meanColour_flag;                                   // flag for drawing meanColourImage

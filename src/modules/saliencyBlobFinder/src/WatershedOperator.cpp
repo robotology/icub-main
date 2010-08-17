@@ -8,19 +8,12 @@
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-//openCV include
-//#include <cv.h>
-//#include <cvaux.h>
-//#include <highgui.h>
-
-
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
-
 WatershedOperator::WatershedOperator(const bool lp, const int width1, 
-                                     const int height1, const int wstep, const PixelMono th){
+                                     const int height1, const int wstep, const PixelMono th) {
     neighborhood8=true;
     watershedColor=0;
     basinColor=255;
@@ -29,13 +22,12 @@ WatershedOperator::WatershedOperator(const bool lp, const int width1,
 
     outputImage=new ImageOf<PixelMono>;
     outputImage->resize(width1,height1);
-    
 
     resize(width1, height1, wstep, th);
 }
 
 
-void WatershedOperator::resize(const int width1, const int height1, const int wstep, const PixelMono th){
+void WatershedOperator::resize(const int width1, const int height1, const int wstep, const PixelMono th) {
     width=width1;
     height=height1;
     imageSize=width*height;
@@ -54,8 +46,7 @@ void WatershedOperator::resize(const int width1, const int height1, const int ws
 }
 
 
-WatershedOperator::~WatershedOperator()
-{
+WatershedOperator::~WatershedOperator() {
     if (tempRegion!=NULL) delete [] tempRegion;
     if (neigh!=NULL) delete [] neigh;
     if (neighL!=NULL) delete [] neighL;
@@ -64,8 +55,7 @@ WatershedOperator::~WatershedOperator()
 }
 
 
-void WatershedOperator::createNeighborhood(const int widthStep, const bool neigh8)
-{
+void WatershedOperator::createNeighborhood(const int widthStep, const bool neigh8) {
     if (!neigh8)
         neighSize=4;
     else
@@ -130,8 +120,7 @@ void WatershedOperator::createNeighborhood(const int widthStep, const bool neigh
 }
 
 
-void WatershedOperator::tags2Watershed(const ImageOf<PixelInt>& src, ImageOf<PixelMono>& dest)
-{
+void WatershedOperator::tags2Watershed(const ImageOf<PixelInt>& src, ImageOf<PixelMono>& dest) {
     //TODO: translate the following single instruction in a series of istr.
     PixelInt *p_src=(PixelInt *)src.getRawImage();
     PixelMono *p_dst;
@@ -247,67 +236,12 @@ void WatershedOperator::tags2Watershed(const ImageOf<PixelInt>& src, ImageOf<Pix
 }
 
 
-/*__OLD//void WatershedOperator::tags2Watershed(const ImageOf<PixelInt>& src, ImageOf<PixelMono>& dest)
-{
-    const int WSHED =  0; // watersheds have value 0
-    
-    int *p_src=(int *)src.getRawImage();
-    unsigned char *p_dest;
-
-    // 4-neighborhood is sufficient here, so the watersheds won't get too thick
-    // only for visualisation (calculation by user-parameter)
-    createNeighborhood(((IplImage *)src)->widthStep, false);
-
-    dest.Resize(width, height);
-    p_dest=(unsigned char *)dest.getRawImage();
-
-    int currentPoint=0;
-    for (int r=0; r<height; r++) {
-        for (int c=0; c<width; c++)	{
-            int currentValue = p_src[currentPoint];
-
-            if (currentValue == WSHED) // watershed
-                p_dest[currentPoint] = watershedColor;
-            else {                     // point is labeled
-                // assume point is in basin
-                p_dest[currentPoint] = basinColor;
-                // check for adjacent basins
-                int n;
-                for(n=0;n<neighSize;n++) {
-                    int currentNeighbor = currentPoint + neigh[n];
-                    // skip invalid neighbors (pixel outside of image)
-                    if (invalidNeighbor(currentPoint,currentNeighbor)) continue;
-                    if (currentValue != p_src[currentNeighbor]) {
-                        // different basin bordering => declare point as watershed
-                        p_dest[currentPoint] = watershedColor;
-                        break; // next currentPoint
-                    }
-                }
-            }
-            currentPoint++;
-        }
-        currentPoint+=padding;
-    }
-}*/
-
-
 void WatershedOperator::connectivityGraph(const ImageOf<PixelInt>& src, bool *matr, int max_tag)
 {
     PixelInt *p_src=(PixelInt *)src.getRawImage();
     int i,j,n,pos,p;
 
     memset(matr, false, sizeof(bool)*max_tag*max_tag);
-
-    // first row
-    // first pixel
-    /*__OLD//p=0;
-    for(n=neighSize/2-1; n<neighSize; n++) {
-        pos = p + neighL[n];
-        if (p_src[p]!=p_src[pos]) {
-            p_dst[p] = val;
-            break;
-        }
-    }*/
     p=1;
 
     // first row, 1->150
@@ -390,14 +324,6 @@ void WatershedOperator::connectivityGraph(const ImageOf<PixelInt>& src, bool *ma
         }
         p++;
     }
-    // last pixel of the last row
-    /*__OLD//for(n=0; n<neighSize/2+1; n++) {
-        pos = p + neighR[n];
-        if (p_src[p]!=p_src[pos]) {
-            matr[max_tag*p_src[p]+p_src[pos]]=true;
-            matr[max_tag*p_src[pos]+p_src[p]]=true;
-        }
-    }*/
 }
 
 
@@ -824,29 +750,7 @@ void WatershedOperator::findLowerNeigh(const ImageOf<PixelMono>& src)
                 }
             }
         }
-
-        
-        /*__OLD//p=0;
-        for(j=0; j<height; j++) {
-            for(i=0; i<width; i++) {
-                if(p_downPos[p] == saddle) {
-                    for(n=0; n<neighSize; n++) {
-                        pos = p + neigh[n];
-                        //if (invalidNeighbor(p,pos)) continue;
-                        if(p_src[p]==p_src[pos] && p_downPos[pos] >= 0) { 
-                            // no more saddle, no lokalMin
-                            p_downPos[p] = p_downPos[pos];
-                            change = true;
-                            break; // next i
-                        }
-                    }
-                }
-                p++;
-            }
-            p+=padding;
-        }*/
     }
-
 }
 
 /**
@@ -896,63 +800,6 @@ void WatershedOperator::createTmpImage(const ImageOf<PixelMono>& src)
         }
     }
 }
-/*void WatershedOperator::createTmpImage(const ImageOf<PixelMono>& src)
-{
-    static const int lokalMin = -1;
-    static const int saddle = -2;
-    unsigned char *p_src=(unsigned char *)src.getRawImage();
-    PixelInt *p_downPos;
-    PixelInt *p_downPos2;
-    unsigned char *p_tSrc;
-    int i,j,p;
-
-    //__OLD//downPos2=downPos;
-    //__OLD//downPos2.Resize(widthStep,height);
-
-    p_downPos=(PixelInt *)downPos.getRawImage();
-    p_downPos2=(PixelInt *)downPos2.getRawImage();
-    
-    //remaining saddle points must be lokalMins
-    // and all points<threshold are lokalMins
-    tSrc=src;
-    p_tSrc=(unsigned char *)tSrc.getRawImage();
-    p=0;
-    for(j = 0; j < height ; j++) {
-        for(i = 0; i < width; i++) {
-            if (p_tSrc[p] < threshold) {
-                p_downPos2[p] = lokalMin;
-                p_tSrc[p] = threshold;
-            }
-            else if(p_downPos[p] == saddle)
-                p_downPos2[p] = lokalMin;
-            else
-                p_downPos2[p]=p_downPos[p];
-            p++;
-        }
-        p+=padding;
-    }
-}*/
-
-
-// On place apply
-/*__OLD//bool WatershedOperator::apply(ImageOf<PixelMono>& srcdest)
-{
-    return apply(srcdest, srcdest);
-}*/
-
-
-/*__OLD//bool WatershedOperator::apply(const ImageOf<PixelMono>& src, ImageOf<PixelMono>& dest)
-{
-    //matrix<int> result;
-    ImageOf<PixelInt> result;
-
-    if (apply(src, result)) {
-      tags2Watershed(result, dest);
-      return true;
-    }
-
-    return false;
-}*/
 
 /**
 * @fn apply 
@@ -1162,110 +1009,3 @@ int WatershedOperator::applyOnOld(const ImageOf<PixelMono> &src, ImageOf<PixelIn
 }
 
 
-/*void WatershedOperator::findNeighborhood(ImageOf<PixelInt>& tagged, int x, int y, char *blobList)
-{
-    int i,j,n,pos,p;
-    PixelInt seed=tagged(x,y);
-    PixelInt *p_tagged=(PixelInt *)tagged.getRawImage();
-
-    // first row
-    // first pixel
-    p=0;
-    for(n=neighSize/2-1; n<neighSize; n++) {
-        pos = p + neighL[n];
-        if (p_tagged[pos]==seed) {
-            blobList[p_tagged[p]]=1;
-            break;
-        }
-    }
-    p++;
-    // first row, 1->150
-    // Note that the pixel of the first row are all the same, so it is
-    // useless to check the "far" neighborhoods
-    for(i=1; i<width-1; i++) {
-        for(n=neighSize/2-1; n<neighSize; n++) { // no top Neighbor
-            pos = p + neigh[n];
-            if (p_tagged[pos]==seed) {
-                blobList[p_tagged[p]]=1;
-                break;
-            }
-        }
-        p++;
-    }
-    // last pixel of the first row
-    for(n=neighSize/2-1; n<neighSize; n++) {
-        pos = p + neighR[n];
-        if (p_tagged[pos]==seed) {
-            blobList[p_tagged[p]]=1;
-            break;
-        }
-    }
-    p++;
-    p+=padding;
-
-    // inner part
-    for(j=1; j<height-1; j++) {
-        // first pixel of the inner part
-        for(n=0; n<neighSize; n++) {
-            pos = p + neighL[n];
-            if (p_tagged[pos]==seed) {
-                blobList[p_tagged[p]]=1;
-                break;
-            }
-        }
-        p++;
-        
-        for(i=1; i<width-1; i++) {
-            for(n=0; n<neighSize; n++) {
-                pos = p + neigh[n];
-                if (p_tagged[pos]==seed) {
-                    blobList[p_tagged[p]]=1;
-                    break;
-                }
-            }
-            p++;
-        }
-        
-        //last pixel of the inner part
-        for(n=0; n<neighSize; n++) {
-            pos = p + neighR[n];
-            if (p_tagged[pos]==seed) {
-                blobList[p_tagged[p]]=1;
-                break;
-            }
-        }
-        p++;
-        
-        p+=padding;
-    }
-
-    // last row
-    // first pixel
-    for(n=0; n<neighSize/2+1; n++) {
-        pos = p + neighL[n];
-        if (p_tagged[pos]==seed) {
-            blobList[p_tagged[p]]=1;
-            break;
-        }
-    }
-    p++;
-    // last row, 1->150
-    for(i=1; i<width-1; i++) {
-        for(n=0; n<neighSize/2+1; n++) { // no top Neighbor
-            pos = p + neigh[n];
-            if (p_tagged[pos]==seed) {
-                blobList[p_tagged[p]]=1;
-                break;
-            }
-        }
-        p++;
-    }
-    // last pixel of the last row
-    for(n=0; n<neighSize/2+1; n++) {
-        pos = p + neighR[n];
-        if (p_tagged[pos]==seed) {
-            blobList[p_tagged[p]]=1;
-            break;
-        }
-    }
-}*/
