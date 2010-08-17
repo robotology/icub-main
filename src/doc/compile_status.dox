@@ -2,13 +2,16 @@
 /**
   * \page compile_status Compile status
 
-You can monitor which iCub modules are currently compiling at:
+On our dashboard you can monitor the status of the compilation for YARP and the iCub software:
 
- - <a href="http://eris.liralab.it/iCub/main/reports/etch/">The Linux/gcc compile status report on Debian etch</A>
- - <a href="http://eris.liralab.it/iCub/main/reports/lenny">The Linux/gcc compile status report on Debian lenny</A>
- - <a href="http://eris.liralab.it/iCub/main/reports/karmic">The Linux/gcc compile status report on Ubuntu 9.10</A>
- - <a href="http://eris.liralab.it/iCub/main/reports/msvc8">The Windows/MSVC8 status report</A>
+ - <a href="http://dashboard.icub.org/">The iCub dashboard</A>
 
+Tests are performed:
+ - Every hour, only after new commits (Continuous builds).
+ - Every night, full checkout and build (Nightly builds).
+
+Tests report compilation errors and warnings. Close to the name of each machine you find the configuration of 
+the machine (environment variables, installed packages).
 
 Failure to compile can be for a very trivial reasons, and is
 not necessarily a reflection of code quality.
@@ -24,12 +27,10 @@ Some tips for developers:
    Visual Studio does not mean it will compile on gcc (or the other way around).
    Also, remember that newer compilers might be stricter than old ones.   
 
- - The current list of packages you can rely on 
-   being present is listed at the end of the compile report for each
-   platform. See the Dependencies chapter of the manual to see the official list 
-   of dependencies.
+ - The current list of packages you can rely on. See the Dependencies chapter 
+   of the manual to see the official list of dependencies.
    
- - Don't forget environment variables. See the manual for more informations
+ - Once again don't forget environment variables. See the manual for more informations
    on this.
 
 This page can be edited at src/doc/compile_status.dox.
