@@ -113,7 +113,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 // GTK Includes 
 //=============================================================================
 #include <gtk/gtk.h>
-#include "ViewerResources.h"
+#include "viewerResources.h"
 #include <string>
 
 //-------------------------------------------------
