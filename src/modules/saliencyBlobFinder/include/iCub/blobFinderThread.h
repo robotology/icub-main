@@ -62,10 +62,7 @@ private:
     
     std::string name;                                   // name of the module and rootname of the connection
     bool reinit_flag;                                   // flag that indicates when the reinitiazation has already be done
-    bool interrupted_flag;                              // flag that indicates when the thread has been interrupted
     bool resized_flag;                                  // flag that indicates if the images have been resized
-    Semaphore mutex;                                    // semaphore for the respond function
-    int ct;                                             // execution step counter
     
     ImageOf<PixelRgb> *img;                             // input image
     ImageOf<PixelMono> *edges;                          // edges image
@@ -78,11 +75,30 @@ private:
     ImageOf<PixelMono> *_inputImgGRS;                   // input image of the opponency G+R-
     ImageOf<PixelMono> *_inputImgBYS;                   // input image of the opponency B+Y-
     ImageOf<PixelInt>  *ptr_tagged;                     // pointer to the image of tags
-    
-    int searchRG;                                       // R+G- value for the search
-    int searchGR;                                       // G+R- value for the search
-    int searchBY;                                       // B+Y- value for the search
-    
+
+private:
+    SalienceOperator *salience;                             // reference to the salience operator
+    YARPBox* max_boxes;                                     // pointer to the most salient blob
+
+    ImageOf<PixelMono> *image_out;                          // image which is plotted in the drawing area
+    ImageOf<PixelRgb> *image_out2;                          // image which is plotted in the drawing area
+
+    ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;             // pointer to the input image
+    ImageOf<PixelMono> *ptr_inputImgRed;                    // pointer to the red plane input image
+    ImageOf<PixelMono> *ptr_inputImgGreen;                  // pointer to the green plane input image
+    ImageOf<PixelMono> *ptr_inputImgBlue;                   // pointer to the input blue plane image
+    ImageOf<PixelMono> *ptr_inputImgRG;                     // pointer to the input image R+G-
+    ImageOf<PixelMono> *ptr_inputImgGR;                     // pointer to the input image G+R-
+    ImageOf<PixelMono> *ptr_inputImgBY;                     // pointer to the input image B+Y-
+    ImageOf<PixelRgb>* _procImage;                          // pointer to the output image of the watershed algorithm
+
+    int maxBLOB;                                            // maxBLOB dimension
+    int minBLOB;                                            // minBLOB dimension
+    int max_tag;                                            // number of blobs
+    int minBoundingArea;                                    // dimension of the bounding area in saliency BU algorithm
+    int saddleThreshold;                                    // threshold necessary to determine the saddle point of rain falling watershed
+
+private: 
     /**
     * resizes all the needed images
     * @param width width of the input image
@@ -175,49 +191,45 @@ public:
     */
     bool getPlanes(ImageOf<PixelRgb>* inputImage);
 
-public:
-    SalienceOperator *salience;                             // reference to the salience operator
-    YARPBox* max_boxes;                                     // pointer to the most salient blob
-    bool freetorun;                                         // flag that allows the thread to run since all the inputs are ready
+    /**
+     *
+     */
+    inline bool setMinBoundingArea(int w) { minBoundingArea = w; return true; }
 
-    ImageOf<PixelMono> *image_out;                          // image which is plotted in the drawing area
-    ImageOf<PixelRgb> *image_out2;                          // image which is plotted in the drawing area
+    /**
+     *
+     */
+    inline int getMinBoundingArea() const { return minBoundingArea; }
 
-    ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;             // pointer to the input image
-    ImageOf<PixelMono> *ptr_inputImgRed;                    // pointer to the red plane input image
-    ImageOf<PixelMono> *ptr_inputImgGreen;                  // pointer to the green plane input image
-    ImageOf<PixelMono> *ptr_inputImgBlue;                   // pointer to the input blue plane image
-    ImageOf<PixelMono> *ptr_inputImgRG;                     // pointer to the input image R+G-
-    ImageOf<PixelMono> *ptr_inputImgGR;                     // pointer to the input image G+R-
-    ImageOf<PixelMono> *ptr_inputImgBY;                     // pointer to the input image B+Y-
-    ImageOf<PixelRgb>* _procImage;                          // pointer to the output image of the watershed algorithm
+    /**
+     *
+     */
+    inline bool setSaliencyPercentageArea(double p) { return salience->setPercentageArea(p); }
 
-    bool contrastLP_flag;                                   // flag for drawing contrastLP
-    bool meanColour_flag;                                   // flag for drawing meanColourImage
-    bool blobCataloged_flag;                                // flag for drawing blobCatalog
-    bool foveaBlob_flag;                                    // flag for drawing foveaBlob
-    bool colorVQ_flag;                                      // flag for drawing colorVQ
-    bool maxSaliencyBlob_flag;                              // flag for drawing maxSaliencyBlob
-    bool blobList_flag;                                     // flag for drawing blobList
-    bool tagged_flag;                                       // flag for the drawings
-    bool watershed_flag;                                    // flag for drawing watershed image
-    bool filterSpikes_flag;                                 // function that indicates if the stimuli have to be processed
-    
-    double salienceTD;                                      // saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
-    double salienceBU;                                      // saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
-    double targetRED;                                       // red intensity of the target that has been found 
-    double targetGREEN;                                     // green intensity of the target that has been found 
-    double targetBLUE;                                      // blue intensity of the target that has been found 
-    double constantTimeGazeControl;                         // value that represent the constantTimeGazeControl of the sensorial system in terms of second
-    double constantTimeCentroid;                            // value that represent the constantTimeCentroid of the sensorial system in terms of second
+    /**
+     *
+     */
+    inline double getSaliencyPercentageArea() const { return salience->getPercentageArea(); }
 
-    int maxBLOB;                                            // maxBLOB dimension
-    int minBLOB;                                            // minBLOB dimension
-    int count;                                              // counter of cycle for maxsaliency blob
-    int max_tag;                                            // number of blobs
-    int countSpikes;                                        // number of spikes which are count to get the strongest
-    int minBoundingArea;                                    // dimension of the bounding area in saliency BU algorithm
-    int saddleThreshold;                                    // threshold necessary to determine the saddle point of rain falling watershed
+    /**
+     *
+     */
+    inline bool setMaxBlobSize(int s) { maxBLOB = s; return true; }
+
+    /**
+     *
+     */
+    inline int getMaxBlobSize() const { return maxBLOB; }
+
+    /**
+     *
+     */
+    inline bool setMinBlobSize(int s) { minBLOB = s; return true; }
+
+    /**
+     *
+     */
+    inline int getMinBlobSize() const { return minBLOB; }
 };
 
 #endif //__BLOBFINDERTHREAD_H_

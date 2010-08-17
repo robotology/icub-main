@@ -152,8 +152,6 @@
  */
 
 #include <iostream>
-#include <map>
-
 #include <ippi.h>
 
 #include <yarp/os/all.h>
@@ -163,52 +161,14 @@
 
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
-#define COMMAND_VOCAB_RSET VOCAB4('r','s','e','t')
-#define COMMAND_VOCAB_FLT VOCAB3('f','l','t')
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
 #define COMMAND_VOCAB_GET VOCAB3('g','e','t')
-#define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
 #define COMMAND_VOCAB_IS VOCAB2('i','s')
 #define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
 #define COMMAND_VOCAB_OK VOCAB2('o','k')
-#define COMMAND_VOCAB_CHILD_COUNT VOCAB2('c','c')
-
-#define COMMAND_VOCAB_NAME VOCAB2('s','1')
-#define COMMAND_VOCAB_CHILD_NAME VOCAB2('c','n')
-#define COMMAND_VOCAB_SALIENCE_THRESHOLD VOCAB2('t','h')
-#define COMMAND_VOCAB_NUM_BLUR_PASSES VOCAB2('s','2')
-#define COMMAND_VOCAB_RGB_PROCESSOR VOCAB3('r','g','b')
-#define COMMAND_VOCAB_YUV_PROCESSOR VOCAB3('y','u','v')
-// command vocab for the output produced
-#define COMMAND_VOCAB_MEANCOLOURS VOCAB3('m','e','a')
-#define COMMAND_VOCAB_TAGGED VOCAB3('t','a','g')
-#define COMMAND_VOCAB_MAXSALIENCY VOCAB3('m','a','x')
-#define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
-#define COMMAND_VOCAB_FOVEA VOCAB3('f','o','v')
-#define COMMAND_VOCAB_WAT VOCAB3('w','a','t')
-#define COMMAND_VOCAB_PAR VOCAB3('p','a','r')
-// other commands
-#define COMMAND_VOCAB_TCON VOCAB3('t','c','o')  // time contant for the controlGaze2
-#define COMMAND_VOCAB_TCEN VOCAB3('t','c','e')  // time constant for the iKinGazeCtrl
-
-
-#define COMMAND_VOCAB_KBU VOCAB3('k','b','u')   // weight of the bottom-up algorithm
-#define COMMAND_VOCAB_KTD VOCAB3('k','t','d')   // weight of top-down algorithm
-#define COMMAND_VOCAB_RIN VOCAB3('r','i','n')   // red intensity value
-#define COMMAND_VOCAB_GIN VOCAB3('g','i','n')   // green intensity value
-#define COMMAND_VOCAB_BIN VOCAB3('b','i','n')   // blue intensity value
-#define COMMAND_VOCAB_MAXDB VOCAB3('M','d','b') // maximum dimension of the blob drawn
-#define COMMAND_VOCAB_MINDB VOCAB3('m','d','b') // minimum dimension of the blob drawn
-#define COMMAND_VOCAB_MBA VOCAB3('m','B','A')   // minimum dimension of the bounding area
-#define COMMAND_VOCAB_STH VOCAB3('s','t','h')   // minimum dimension of the bounding area
-
-// directional saliency filter vocab's
-#define COMMAND_VOCAB_DIRECTIONAL_NUM_DIRECTIONS VOCAB3('d','n','d')
-#define COMMAND_VOCAB_DIRECTIONAL_NUM_SCALES VOCAB3('d','n','s')
-#define COMMAND_VOCAB_DIRECTIONAL_DBG_SCALE_INDEX VOCAB3('d','s','i')
-#define COMMAND_VOCAB_DIRECTIONAL_DBG_DIRECTION_INDEX VOCAB3('d','d','i')
-#define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAMES VOCAB4('d','a','n','s')
-#define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAME VOCAB3('d','a','n')
+#define COMMAND_VOCAB_MAXDB VOCAB3('M','d','b')         // maximum dimension of the blob drawn
+#define COMMAND_VOCAB_MINDB VOCAB3('m','d','b')         // minimum dimension of the blob drawn
+#define COMMAND_VOCAB_MBA VOCAB3('m','B','A')           // minimum dimension of the bounding area
 
 /*
  * LATER: proper Doxygen documentation.
@@ -216,43 +176,20 @@
 class saliencyBlobFinderModule : public yarp::os::RFModule{
 private:
     Port cmdPort;               // port necessary for rpc commands
-    int rateThread;             // rateThread of the processor Thread
+    
+    int threadRate;             // rate of the processor Thread
     int minBoundingArea;        // minimum bounding area around the blob for neighbourhood definition
     IppiSize srcsize;           // ipp reference to the size of the input image
     
     int width;                  // width of the input image
     int height;                 // height of the input image
-    int countSpikes;            // number spikes that have to be counted before the maxSaliency blob can be choosen
-    int xdisp;                  // dispacement on the x axis for the target
-    int ydisp;                  // dispacement on the y axis for the target
     
-    bool reinit_flag;           // flag that indicates when the reinitiazation has already be done
-    
-    Semaphore mutex;            // semaphore for the respond function
+    Semaphore mutex;            // semaphore for the respond function (UNUSED?)
     blobFinderThread* blobFinder; //main thread responsable to process the input images and produce an output
     Bottle* command;            // bottle where the command received is saved ready for the respond
     Bottle* reply;              // bottle where the reply will be stored for further purpose
 
-    std::map<const char*,int> occurencesMap; //map of the occurences of control positions
     std::string moduleName;     // name of the module read from configuration 
-    int thresholdArea;          // max dimension of the area in order to consider the blob interesting
-
-    /**
-    * copy flags to the blobFinder thread
-    */
-    void copyFlags();
-
-    bool contrastLP_flag;           // flag for drawing contrastLP
-    bool meanColour_flag;           // flag for drawing meanColourImage
-    bool blobCataloged_flag;        // flag for drawing blobCatalog
-    bool foveaBlob_flag;            // flag for drawing foveaBlob
-    bool colorVQ_flag;              // flag for drawing colorVQ
-    bool maxSaliencyBlob_flag;      // flag for drawing maxSaliencyBlob
-    bool blobList_flag;             // flag for drawing blobList
-    bool tagged_flag;               // flag for the drawings
-    bool watershed_flag;            // flag for drawing watershed image
-    bool timeControl_flag;          // it indicates if the control of the time is on
-    bool filterSpikes_flag;         // indicates if the process that filters the spikes is on
 
 public:
     /**
@@ -277,12 +214,6 @@ public:
     bool interruptModule(); // 
     
     /**
-     * function that set the options detected from the command line
-     * @param opt options passed to the module
-     */
-    void setOptions(yarp::os::Property opt);
-    
-    /**
      * function for initialization and configuration of the RFModule
      * @param rf resourceFinder reference
      * @return true iff ???
@@ -296,30 +227,18 @@ public:
     bool close(); 
     
     /**
-     * function that reinitiases some attributes of the class
-     * @param width width of the input image
-     * @param height height of the input image
-     */
-    void reinitialise(int width,int height);
-    
-    /**
      * respond to command coming from the command port
      * @param command command received by the module
      * @param reply answer that this module gives to the command (if any)
      * @return
      */
-    bool respond(const Bottle &command,Bottle &reply);
+    bool respond(const Bottle &command, Bottle &reply);
     
     /**
      * updates the module
      * return true iff...
      */
     bool updateModule();
-    
-    /**
-     * function that streams the images out on the ports
-     */
-    void outPorts();
 };
 
 #endif //__SALIENCYBLOBFINDERMODULE_H_

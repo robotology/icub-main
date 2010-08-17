@@ -31,66 +31,46 @@
 using namespace std;
 using namespace yarp::os;
 
-const int defaultSize = 256;
-const int SPIKE_COUNTS = 10;
-const int THREAD_RATE = 100;
+const int DEFAULT_THREAD_RATE = 100;
 
-blobFinderThread::blobFinderThread(int rateThread = THREAD_RATE) : RateThread(rateThread)
+blobFinderThread::blobFinderThread(int rateThread = DEFAULT_THREAD_RATE) : RateThread(rateThread)
 {
     /* important, makes IPP single threaded! */
     ippSetNumThreads(1);
-    saddleThreshold=10;
-    reinit_flag=false;
-    interrupted_flag=false;
-    filterSpikes_flag=false;
-    freetorun=false;
-    resized_flag=false;
-    ct=0;
-    count=0;
+
+    saddleThreshold = 10;
+    reinit_flag = false;
+    resized_flag = false;
 
     outContrastLP=new ImageOf<PixelMono>;
     outMeanColourLP=new ImageOf<PixelBgr>;
 
-    max_boxes = new YARPBox[3];
-    _procImage=new ImageOf<PixelRgb>;
-    _outputImage3=new ImageOf<PixelRgb>;
+    _procImage = new ImageOf<PixelRgb>;
+    _outputImage3 = new ImageOf<PixelRgb>;
 
-    ptr_inputImg=new ImageOf<yarp::sig::PixelRgb>; 
-    ptr_inputImgRed=new ImageOf<yarp::sig::PixelMono>; 
-    ptr_inputImgGreen= new ImageOf<yarp::sig::PixelMono>; 
-    ptr_inputImgBlue= new ImageOf<yarp::sig::PixelMono>; 
-    ptr_inputImgRG= new ImageOf<yarp::sig::PixelMono>; 
-    ptr_inputImgGR= new ImageOf<yarp::sig::PixelMono>; 
-    ptr_inputImgBY= new ImageOf<yarp::sig::PixelMono>; 
-    edges=new ImageOf<yarp::sig::PixelMono>; 
-    img=new ImageOf<PixelRgb>;
-    tmpImage=new ImageOf<PixelMono>;
-    image_out=new ImageOf<PixelMono>;
+    ptr_inputImg = new ImageOf<yarp::sig::PixelRgb>; 
+    ptr_inputImgRed = new ImageOf<yarp::sig::PixelMono>; 
+    ptr_inputImgGreen = new ImageOf<yarp::sig::PixelMono>; 
+    ptr_inputImgBlue = new ImageOf<yarp::sig::PixelMono>; 
+    ptr_inputImgRG = new ImageOf<yarp::sig::PixelMono>; 
+    ptr_inputImgGR = new ImageOf<yarp::sig::PixelMono>; 
+    ptr_inputImgBY = new ImageOf<yarp::sig::PixelMono>; 
+    edges = new ImageOf<yarp::sig::PixelMono>; 
+    img = new ImageOf<PixelRgb>;
+    tmpImage = new ImageOf<PixelMono>;
+    image_out = new ImageOf<PixelMono>;
     
-    _inputImgRGS=new ImageOf<PixelMono>;
-    _inputImgGRS=new ImageOf<PixelMono>;
-    _inputImgBYS=new ImageOf<PixelMono>;
-    
-    salienceBU=1.;
-    salienceTD=0.;
-    maxBLOB=4096;
-    minBLOB=100;
+    _inputImgRGS = new ImageOf<PixelMono>;
+    _inputImgGRS = new ImageOf<PixelMono>;
+    _inputImgBYS = new ImageOf<PixelMono>;
 
-    constantTimeGazeControl=1;
-    constantTimeCentroid=1;
-
-    targetRED=1;
-    targetGREEN=1;
-    targetBLUE=1;
-    searchRG=0;
-    searchGR=0;
-    searchBY=0;
-    minBoundingArea=225;
+    // some standard parameters on the blob search.
+    maxBLOB = 4096;
+    minBLOB = 100;
+    minBoundingArea = 225;
 }
 
 blobFinderThread::~blobFinderThread() {
-    delete[] max_boxes;
-    
     delete outContrastLP;
     delete outMeanColourLP;
     delete _procImage;
@@ -128,59 +108,57 @@ std::string blobFinderThread::getName(const char* p) {
 }
 
 void blobFinderThread::reinitialise(int width, int height) {
-    this->width=width;
-    this->height=height;
+    this->width = width;
+    this->height = height;
 
-    img->resize(width,height);
-    edges->resize(width,height);
-    tmpImage->resize(width,height);
-    image_out->resize(width,height);
+    img->resize(width, height);
+    edges->resize(width, height);
+    tmpImage->resize(width, height);
+    image_out->resize(width, height);
     
-    resizeImages(width,height);
+    resizeImages(width, height);
+
+    reinit_flag = true;
 }
 
 void blobFinderThread::resizeImages(int width, int height) {
-    srcsize.height=height;
-    srcsize.width=width;
+    srcsize.height = height;
+    srcsize.width = width;
 
-    double divider = ceil(width/32.0);
-    int widthstep = int(divider*32);
+    const int widthstep = int(ceil(width/32.0)*32);
 
     ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
-    ptr_tagged->resize(widthstep,height);
+    ptr_tagged->resize(widthstep, height);
     
-    this->wOperator=new WatershedOperator(true,width,height,widthstep,saddleThreshold);
-    this->salience=new SalienceOperator(width,height);
+    this->wOperator=new WatershedOperator(true, width, height, widthstep, saddleThreshold);
+    this->salience=new SalienceOperator(width, height);
 
-    outMeanColourLP->resize(width,height);
-    outContrastLP->resize(width,height);
+    outMeanColourLP->resize(width, height);
+    outContrastLP->resize(width, height);
 
-    _procImage->resize(width,height);
-    _outputImage3->resize(width,height);
-    _inputImgRGS->resize(width,height);
-    _inputImgGRS->resize(width,height);
-    _inputImgBYS->resize(width,height);
+    _procImage->resize(width, height);
+    _outputImage3->resize(width, height);
+    _inputImgRGS->resize(width, height);
+    _inputImgGRS->resize(width, height);
+    _inputImgBYS->resize(width, height);
 
     blobList = new char [width*height+1];
 
-    ptr_inputImg->resize(width,height);
-    ptr_inputImgRed->resize(width,height);
-    ptr_inputImgGreen->resize(width,height);
-    ptr_inputImgBlue->resize(width,height);
-    ptr_inputImgRG->resize(width,height);
-    ptr_inputImgGR->resize(width,height);
-    ptr_inputImgBY->resize(width,height);
+    ptr_inputImg->resize(width, height);
+    ptr_inputImgRed->resize(width, height);
+    ptr_inputImgGreen->resize(width, height);
+    ptr_inputImgBlue->resize(width, height);
+    ptr_inputImgRG->resize(width, height);
+    ptr_inputImgGR->resize(width, height);
+    ptr_inputImgBY->resize(width, height);
 
-    resized_flag=true;
+    resized_flag = true;
 }
 
 /**
  * initialization of the thread 
  */
 bool blobFinderThread::threadInit() {
-    bool ret = false;
-    bool ok=true;
-  
     inputPort.open(getName("/image:i").c_str());
     edgesPort.open(getName("/edges:i").c_str());
     rgPort.open(getName("/rg:i").c_str());
@@ -189,28 +167,13 @@ bool blobFinderThread::threadInit() {
 
     saliencePort.open(getName("/salienceMap:o").c_str());
     outputPort3.open(getName("/imageC3:o").c_str());
-
     return true;
-}
-
-void blobFinderThread::resetFlags() {
-    contrastLP_flag=false;
-    meanColour_flag=false;
-    blobCataloged_flag=false;
-    foveaBlob_flag=false;
-    colorVQ_flag=false;
-    maxSaliencyBlob_flag=false;
-    blobList_flag=false;
-    tagged_flag=false;
-    watershed_flag=false;
 }
 
 /**
 * function called when the module is poked with an interrupt command
 */
 void blobFinderThread::interrupt() {
-    interrupted_flag=true;          // this flag must be switched before the unlock of every input port
-
     inputPort.interrupt();          // getName("image:i");
     edgesPort.interrupt();          // getName(edges:i);
     rgPort.interrupt();             // open(getName("rg:i"));
@@ -225,52 +188,49 @@ void blobFinderThread::interrupt() {
  */
 void blobFinderThread::run() {
     //
-    if (!interrupted_flag) {
-        ct++;
-        // ...
-        img = inputPort.read(false);
-        if (0 != img) {
-            if (!reinit_flag) {
-                srcsize.height=img->height();
-                srcsize.width=img->width();
-                height=img->height();
-                width=img->width();
-                reinitialise(img->width(), img->height());
-                reinit_flag=true;
-            }
+    img = inputPort.read(false);
+    if (0 != img) {
+        if (!reinit_flag) {
 
-            ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(), ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(), srcsize);
+            srcsize.height=img->height();
+            srcsize.width=img->width();
+            height=img->height();
+            width=img->width();
 
-            bool ret1=true, ret2=true;
-            ret1 = getOpponencies();
-            ret2 = getPlanes(img);
-            if (!ret1 || !ret2)
-                return;
-
-            tmpImage=edgesPort.read(false);
-            if (tmpImage != 0)
-                ippiCopy_8u_C1R(tmpImage->getRawImage(), tmpImage->getRowSize(), edges->getRawImage(), edges->getRowSize(), srcsize);
-
-            rain(edges);
-            drawAllBlobs(false);
-
-            //salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img, max_tag, *tagged);
-            //ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(), salience->maxSalienceBlob_img->getRowSize(), _outputImage->getRawImage(), _outputImage->getRowSize(), srcsize);
-
-            salience->ComputeMeanColors(max_tag);
-            salience->DrawMeanColorsLP(*outMeanColourLP, *ptr_tagged);
-            ippiCopy_8u_C3R(outMeanColourLP->getRawImage(), outMeanColourLP->getRowSize(), _outputImage3->getRawImage(), _outputImage3->getRowSize(), srcsize);	
-
-            if((0 != _outputImage3) && (outputPort3.getOutputCount())) { 
-                outputPort3.prepare() = *(_outputImage3);
-                outputPort3.write();
-            }
-            if((0 != outContrastLP) && (saliencePort.getOutputCount())) { 
-                saliencePort.prepare() = *(outContrastLP);
-                saliencePort.write();
-            }        
+            reinitialise(img->width(), img->height());
         }
-    } // if (!interrupted)
+
+        ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(), ptr_inputImg->getRawImage(), ptr_inputImg->getRowSize(), srcsize);
+
+        bool ret1=true, ret2=true;
+        ret1 = getOpponencies();
+        ret2 = getPlanes(img);
+        if (!ret1 || !ret2)
+            return;
+
+        tmpImage=edgesPort.read(false);
+        if (tmpImage != 0)
+            ippiCopy_8u_C1R(tmpImage->getRawImage(), tmpImage->getRowSize(), edges->getRawImage(), edges->getRowSize(), srcsize);
+
+        rain(edges);
+        drawAllBlobs(false);
+
+        //salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img, max_tag, *tagged);
+        //ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(), salience->maxSalienceBlob_img->getRowSize(), _outputImage->getRawImage(), _outputImage->getRowSize(), srcsize);
+
+        salience->ComputeMeanColors(max_tag);
+        salience->DrawMeanColorsLP(*outMeanColourLP, *ptr_tagged);
+        ippiCopy_8u_C3R(outMeanColourLP->getRawImage(), outMeanColourLP->getRowSize(), _outputImage3->getRawImage(), _outputImage3->getRowSize(), srcsize);	
+
+        if((0 != _outputImage3) && (outputPort3.getOutputCount())) { 
+            outputPort3.prepare() = *(_outputImage3);
+            outputPort3.write();
+        }
+        if((0 != outContrastLP) && (saliencePort.getOutputCount())) { 
+            saliencePort.prepare() = *(outContrastLP);
+            saliencePort.write();
+        }        
+    }
 }
 
 /**
@@ -312,10 +272,10 @@ bool blobFinderThread::getOpponencies() {
  */
 bool blobFinderThread::getPlanes(ImageOf<PixelRgb>* inputImage) {
     Ipp8u* shift[3];
-    shift[0]=ptr_inputImgRed->getRawImage(); 
-    shift[1]=ptr_inputImgGreen->getRawImage();
-    shift[2]=ptr_inputImgBlue->getRawImage();
-    ippiCopy_8u_C3P3R(inputImage->getRawImage(),inputImage->getRowSize(),shift,ptr_inputImgRed->getRowSize(),srcsize);
+    shift[0] = ptr_inputImgRed->getRawImage(); 
+    shift[1] = ptr_inputImgGreen->getRawImage();
+    shift[2] = ptr_inputImgBlue->getRawImage();
+    ippiCopy_8u_C3P3R(inputImage->getRawImage(), inputImage->getRowSize(), shift, ptr_inputImgRed->getRowSize(), srcsize);
     return true;
 }
 
@@ -337,7 +297,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
     salience->ComputeSalienceAll(max_tag, max_tag);
 
     // extracts the PixelBgr color of tag=1. Assuming this is the fovea?
-    PixelBgr varFoveaBlob = salience->varBlob(*ptr_tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, (*ptr_tagged)(0,0));
+    PixelBgr varFoveaBlob = salience->varBlob(*ptr_tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, 1 /* (*ptr_tagged)(0,0) */);
 
     // draw the fovea blob into the blobFov image? Also assuming the tag=1.
     //salience->drawFoveaBlob(*blobFov, *tagged);

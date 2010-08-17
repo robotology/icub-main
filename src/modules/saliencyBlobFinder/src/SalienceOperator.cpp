@@ -73,7 +73,6 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
     _img.Pix_Numb = 2;
     _img.Fovea_Type = 0;
     pArea=1.0;
-
 }
 
 SalienceOperator::~SalienceOperator() {
