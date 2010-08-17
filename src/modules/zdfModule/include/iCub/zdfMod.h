@@ -159,26 +159,23 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Time.h>
-//ipp includes
 #include <ipp.h>
 #include <stdlib.h>
 #include <string>
-
 #include "iCub/coord.h"
 #include "iCub/dog.h"
 #include "iCub/multiclass.h"
-
 #include "yarp/os/Time.h"
 
-//use NDT or RANK comparision?
+//use NDT or RANK comparision
 #define RANK0_NDT1 1 //0 (NDT FASTER and RANK a little too sensitive)
 //NDT:
 #define NDTX     1
 #define NDTY     1
 #define NDTSIZE  4 //4 or 8: 4
 //RANK:
-#define RANKY    1 //1 or 2: 1
-#define RANKX    1  //1 or 2: 1
+#define RANKY    1 //1 or 2
+#define RANKX    1  //1 or 2
 #define RANKSIZE 9  //9 or 25: 9
 
 #define NDTEQ    0 //0
@@ -192,35 +189,29 @@ class ZDFThread : public Thread
 private:
 
     /*port name strings*/
-    string inputNameLeft;
-	string inputNameRight;
-    string outputNameProb;
-	string outputNameSeg;  
-	string outputNameDog;   
-    string outputNameTemp;       
+    string inputNameLeft;           //string containing input port name left
+	string inputNameRight;          //string containing input port name right
+    string outputNameProb;          //string containing the probability output port name
+	string outputNameSeg;           //string containing the segmentation output port name
+	string outputNameDog;           //string containing the difference of gaussian output port name
+    string outputNameTemp;          //string containing the segmented template output port name
 
-    /* class variables */
-    ImageOf<PixelBgr>  *img_in_left;
-	ImageOf<PixelBgr>  *img_in_right;
-    ImageOf<PixelMono> *img_out_prob;    
-	ImageOf<PixelMono> *img_out_seg;
-	ImageOf<PixelMono> *img_out_dog;
-    ImageOf<PixelBgr> *img_out_temp;
+    ImageOf<PixelMono> *img_out_prob;   //probability image
+	ImageOf<PixelMono> *img_out_seg;    //segmentation image
+	ImageOf<PixelMono> *img_out_dog;    //difference of gaussian image
+    ImageOf<PixelBgr> *img_out_temp;    //template image
 
-    /* thread parameters: they are pointers so that they refer to the original variables */
+    BufferedPort<ImageOf<PixelBgr> >  imageInLeft;      //input port cartesian image left
+	BufferedPort<ImageOf<PixelBgr> >  imageInRight;     //input port cartesian image right
+    BufferedPort<ImageOf<PixelMono> >  imageOutProb;    //output port probability image
+	BufferedPort<ImageOf<PixelMono> >  imageOutSeg;     //output port segmented image
+	BufferedPort<ImageOf<PixelMono> >  imageOutDog;     //output port difference of gaussian image
+    BufferedPort<ImageOf<PixelBgr> >  imageOutTemp;     //output port template image
 
-    BufferedPort<ImageOf<PixelBgr> >  imageInLeft;
-	BufferedPort<ImageOf<PixelBgr> >  imageInRight;
-    BufferedPort<ImageOf<PixelMono> >  imageOutProb;
-	BufferedPort<ImageOf<PixelMono> >  imageOutSeg;
-	BufferedPort<ImageOf<PixelMono> >  imageOutDog;
-    BufferedPort<ImageOf<PixelBgr> >  imageOutTemp;
-
-	bool leftPort, rightPort; 
-	bool init;
+	bool allocated; // flag to check if the variables have been already allocated
 	int psb_in, t_lock_lr, t_lock_ud;
 	//Sizes:
-	IppiSize srcsize, msize, tsize, tisize, trsize, imgsize;
+	IppiSize srcsize, msize, tsize, tisize, trsize, imgsize; //ippi variables containing all different sizes
 	//Vars:
 	int sx,sy;
   	Ipp32f max_v, max_t;
@@ -238,7 +229,7 @@ private:
 	int nclasses, dpix_y;
 
 	Ipp32f *res_t; 
-  	Ipp8u *out, *seg_im, *seg_dog, *fov_l, *fov_r, *zd_prob_8u, *o_prob_8u, *whatever, *tempImg;
+  	Ipp8u *out, *seg_im, *seg_dog, *fov_l, *fov_r, *zd_prob_8u, *o_prob_8u, *tempImg;
 	Ipp8u **p_prob;
   	//templates:
   	Ipp8u *temp_l, *temp_r;
@@ -246,11 +237,10 @@ private:
   	Ipp8u *rec_im_ly;
   	Ipp8u *rec_im_ry;
 
-	//DoG:
+	//Difference of Gaussian:
 	DoG * dl;
   	DoG * dr;
 	//Multiclass
-
     struct MultiClass::Parameters *params;
 	MultiClass * m;
 
@@ -277,10 +267,20 @@ private:
 
 public:
 
-    /* class methods */
+    /**
+    * constructor
+    */
     ZDFThread( MultiClass::Parameters *parameters );
-    
-    void initAll();
+    /**
+     * destructor
+     */
+    ~ZDFThread();
+
+    /**
+     * allocate all memory and variables
+     */    
+    void allocate(ImageOf<PixelBgr> *img);
+    void deallocate();
     bool threadInit();     
     void threadRelease();
     void run(); 
@@ -301,7 +301,7 @@ class zdfMod:public RFModule
 	
     Port handlerPort;      //a port to handle messages 
     
-    struct MultiClass::Parameters parameters;
+    struct MultiClass::Parameters parameters; // multi class parameters passed to the thread
     /* pointer to a new thread to be created and started in configure() and stopped in close() */
     ZDFThread *zdfThread;
 

@@ -1,4 +1,3 @@
-/* maxflow.cpp */
 /* Vladimir Kolmogorov (vnk@cs.cornell.edu), 2001. */
 
 #include <stdio.h>

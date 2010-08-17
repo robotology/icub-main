@@ -19,11 +19,7 @@
 #include "iCub/zdfMod.h"
 #include <math.h>
 #include <cmath>
-
-//OPENCV
-//#include <cv.h>
-//#include <highgui.h>
-//#include "yarp/os/impl/NameClient.h"
+#include <cassert>
 
 bool zdfMod::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -63,15 +59,13 @@ bool zdfMod::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
-    attach(handlerPort);                  // attach to port
-    //attachTerminal();                     // attach to terminal (maybe not such a good thing...)
+    attach(handlerPort);               // attach to port
+    //attachTerminal();                // attach to terminal (maybe not such a good thing...)
 
     /* create the thread and pass pointers to the module parameters */
-
     zdfThread = new ZDFThread( &parameters );
 
     /*pass the name of the module in order to create ports*/
-
     zdfThread->setName(moduleName);
 
     /* now start the thread to do the work */
@@ -82,17 +76,21 @@ bool zdfMod::configure(yarp::os::ResourceFinder &rf)
 
 /* Called periodically every getPeriod() seconds */
 
-bool zdfMod::updateModule() {
+bool zdfMod::updateModule() 
+{
 
     return true;
 }
 
-bool zdfMod::interruptModule() {
+bool zdfMod::interruptModule() 
+{
+
     handlerPort.interrupt();
     return true;
 }
 
-bool zdfMod::close() {
+bool zdfMod::close() 
+{
     handlerPort.close();
     zdfThread->stop();
     cout << "deleteing thread " << endl;
@@ -100,7 +98,8 @@ bool zdfMod::close() {
     return true;
 }
 
-double zdfMod::getPeriod() {
+double zdfMod::getPeriod() 
+{
     return 0.1;
 }
 
@@ -128,18 +127,63 @@ bool zdfMod::respond(const Bottle& command, Bottle& reply)
     return true;
 }
 
-ZDFThread::ZDFThread( MultiClass::Parameters *parameters ) {
-
+ZDFThread::ZDFThread( MultiClass::Parameters *parameters ) 
+{
+    
     params = parameters;
+    img_out_prob = NULL;    
+	img_out_seg = NULL;
+	img_out_dog = NULL;
+    img_out_temp = NULL;
+    res_t = NULL; 
+  	out= NULL, seg_im = NULL, seg_dog = NULL, fov_l = NULL, fov_r = NULL, zd_prob_8u = NULL, o_prob_8u = NULL, tempImg = NULL;
+	p_prob = NULL;
+  	//templates:
+  	temp_l = NULL, temp_r = NULL;
+  	//input:
+  	rec_im_ly = NULL;
+  	rec_im_ry = NULL;
+	//Difference of Gaussian:
+	dl = NULL;
+  	dr = NULL;
+	m = NULL;
+    l_orig = NULL, r_orig = NULL;
+    allocated = false;
 }
 
-void ZDFThread::setName(string module) {
+ZDFThread::~ZDFThread( )
+{
+    delete dl;
+    delete dr;
+    delete m;
+    ippiFree(l_orig);
+    ippiFree(r_orig);
+    ippiFree(rec_im_ly);
+    ippiFree(rec_im_ry);
+    ippiFree(res_t);
+    ippiFree(out);
+    ippiFree(seg_im);
+    ippiFree(seg_dog);
+    ippiFree(fov_l);
+    ippiFree(fov_r);
+    ippiFree(zd_prob_8u);
+    ippiFree(o_prob_8u);
+    free(p_prob);
+    ippiFree(temp_l);
+    ippiFree(temp_r);
+    delete img_out_prob;
+    delete img_out_seg;
+    delete img_out_dog; 
+}
+
+void ZDFThread::setName(string module) 
+{
     this->moduleName = module;
 }
 
-bool ZDFThread::threadInit() {
+bool ZDFThread::threadInit() 
+{
     /* initialize variables and create data-structures if needed */
-    init = true;
 
     //create all ports
     inputNameLeft = "/" + moduleName + "/imageLeft:i";
@@ -163,369 +207,328 @@ bool ZDFThread::threadInit() {
     return true;
 }
 
-void ZDFThread::run(){
+void ZDFThread::run()
+{
 
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
         
-		leftPort =  ( imageInLeft.getInputCount() > 0 );
-    	rightPort = ( imageInRight.getInputCount() > 0 );
-        
-        Time::delay(0.1);
+        ImageOf<PixelBgr> *img_in_left = imageInLeft.read(true);
+        ImageOf<PixelBgr> *img_in_right = imageInRight.read(true);
 
-		if ( leftPort + rightPort > 1){
+        if(img_in_left != NULL && img_in_right != NULL) {
 
-        	img_in_left = imageInLeft.read(true);
-		
-        	img_in_right = imageInRight.read(true);
-
-			if (init){//Get first RGB image to establish width, height:
-            	cout << "initializing" << endl;   
-            	initAll();  
-                cout << "done initializing " << endl;   
-        	}
-
-		//processing for zdf
-		
-		if (scale==1.0){ //resize the images if needed
-			//copy yarp image to IPP
-			ippiCopy_8u_C3R( img_in_left->getRawImage(),  img_in_left->getRowSize(), l_orig, psb, srcsize);
-			ippiCopy_8u_C3R( img_in_right->getRawImage(), img_in_right->getRowSize(), r_orig, psb, srcsize);
-      	}else{
-			//scale to width,height:
-            ippiResizeGetBufSize(inroi, inroi, 3, IPPI_INTER_CUBIC, &BufferSize);
-            Ipp8u* pBuffer=ippsMalloc_8u(BufferSize);
-            ippiResizeSqrPixel_8u_C3R( img_in_left->getRawImage(), insize, psb, inroi, l_orig, psb, inroi, scale, scale, 0, 0, IPPI_INTER_CUBIC, pBuffer);   
-            ippiResizeSqrPixel_8u_C3R( img_in_right->getRawImage(), insize, psb, inroi, r_orig, psb, inroi, scale, scale, 0, 0, IPPI_INTER_CUBIC, pBuffer);     
-            ippsFree(pBuffer);
-            //the following is deprecated...use previous
-			//ippiResize_8u_C3R( img_in_left->getRawImage(), insize, img_in_left->width() * 3, inroi, l_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
-			//ippiResize_8u_C3R( img_in_right->getRawImage(), insize, img_in_right->width() * 3, inroi, r_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
-		}
-		//copy to grayscale
-		ippiRGBToGray_8u_C3C1R( l_orig, psb , rec_im_ly, psb_in, srcsize );
-		ippiRGBToGray_8u_C3C1R( r_orig, psb , rec_im_ry, psb_in, srcsize );
-
-		if (acquire){
-			ippiCopy_8u_C1R(&rec_im_ly [(( srcsize.height - tsize.height ) / 2 ) * psb_in + ( srcsize.width - tsize.width ) /2 ], psb_in, temp_l, psb_t, tsize);			
-			ippiCopy_8u_C1R(&rec_im_ry [(( srcsize.height - tsize.height ) / 2 ) * psb_in + ( srcsize.width - tsize.width ) /2 ], psb_in, temp_r, psb_t, tsize);
-		}
-
-		//CREATE LEFT FOVEA
-		//find left template in left image:
-		ippiCrossCorrValid_NormLevel_8u32f_C1R(&rec_im_ly[(( srcsize.height - tisize.height )/2)*psb_in + ( srcsize.width - tisize.width )/2],
-				       psb_in, tisize,
-				       temp_l,
-				       psb_t, tsize,
-				       res_t, psb_rest);
-
-		ippiMaxIndx_32f_C1R( res_t, psb_rest, trsize, &max_t, &sx, &sy); 
-
-		/*if (max_t < 0.60){  //shift_sim_t
-	  		//this also prevents tracking motion:
-	  		tl_x = 0;
-	  		tl_y = 0;
-		}
-		else{ 
-	  	//this initiates tracking motion if non-zero:
-	  		tl_x = sx - trsize.width /2;
-	  		tl_y = sy - trsize.height /2;
-		}*/
-		//ippiCopy_8u_C1R( rec_im_ly, psb_in, fov_l, psb_m, srcsize);
-		ippiCopy_8u_C1R( &rec_im_ly [ ( mid_y + tl_y ) * psb_in + mid_x + tl_x], psb_in, fov_l, psb_m, msize ); //original
-
-		//**************************
-		//MAKE RIGHT FOVEA
-		//find right template in right image:
-		ippiCrossCorrValid_NormLevel_8u32f_C1R(&rec_im_ry[((srcsize.height-tisize.height)/2 + dpix_y )*psb_in + (srcsize.width-tisize.width)/2],
-					psb_in,tisize,
-					temp_r,
-					psb_t,tsize,
-					res_t, psb_rest);
-
-		ippiMaxIndx_32f_C1R(res_t,psb_rest,trsize,&max_t,&sx,&sy);
-		/*if (max_t < 0.50){ //shift_sim_t
-		//this also prevents tracking motion:
-			tr_x = 0;
-			tr_y = 0;
-		}
-		else{ 
-			//this initiates tracking motion if non-zero:
-			tr_x = sx - trsize.width/2;
-			tr_y = sy - trsize.height/2;
-		}*/
-		//ippiCopy_8u_C1R( rec_im_ry, psb_in, fov_r, psb_m, srcsize);
-		ippiCopy_8u_C1R(&rec_im_ry[(mid_y+tr_y+dpix_y)*psb_in + mid_x+tr_x],psb_in,fov_r,psb_m,msize); // original
-
-		dl->proc( fov_l, psb_m );
-		dr->proc( fov_r, psb_m );
-
-		//**************************
-		//SPATIAL ZD probability map from fov_l and fov_r:
-		//perform RANK or NDT kernel comparison:	
-        	
-		for (int j=koffsety;j<msize.height-koffsety;j++){
-  			c.y=j;
-  			for (int i=koffsetx;i<msize.width-koffsetx;i++){
-	    			c.x=i;
-	    			//if either l or r textured at this retinal location: 
-	    		if (dl->get_dog_onoff()[i + j*dl->get_psb()] >= params->data_penalty || dr->get_dog_onoff()[i + j*dr->get_psb()] >= params->bland_dog_thresh ){      
-	      			if (RANK0_NDT1==0){
-						//use RANK:
-						get_rank(c,fov_l,psb_m,rank1);
-						get_rank(c,fov_r,psb_m,rank2);
-						cmp_res = cmp_rank(rank1,rank2);
-	      			}
-	    			else{ 
-						//use NDT:
-						get_ndt(c,fov_l,psb_m,ndt1);
-						get_ndt(c,fov_r,psb_m,ndt2);
-						cmp_res = cmp_ndt( ndt1, ndt2 );
-	      			}
-	      			zd_prob_8u[ j * psb_m + i] = (int)(cmp_res * 255.0);
-	    		}
-	    		else{
-	      				//untextured in both l & r, so set to bland prob (ZD):
-	      			zd_prob_8u[j*psb_m+i] = (int)(params->bland_prob * 255.0);//bland_prob
-	    		} 
-
-	    		//RADIAL PENALTY:
-	    		//The further from the origin, less likely it's ZD, so reduce zd_prob radially:
-	    		//current radius:
-	    		r = sqrt((c.x-msize.width/2.0)*(c.x-msize.width/2.0)+(c.y-msize.height/2.0)*(c.y-msize.height/2.0));
-	    		rad_pen =  (int) ( (r/rmax)* params->radial_penalty );//radial_penalty
-	    		max_rad_pen = zd_prob_8u[j*psb_m+i];
-	    		if(max_rad_pen < rad_pen) {
-	      			rad_pen=max_rad_pen;
-	    		}
-	    		//apply radial penalty
-	    		zd_prob_8u[j*psb_m+i]-= rad_pen;
-	    
-	    		//manufacture NZD prob (other):
-	    		o_prob_8u[psb_m*j+i] = 255 - zd_prob_8u[psb_m*j+i];
-	  		}
-		}
-
-		//DO MRF OPTIMISATION!!:
-		m->proc( fov_r, p_prob ); //provide edge map and probability map!
-		//cache for distribution:
-		ippiCopy_8u_C1R( m->get_class(), m->get_psb(), out, psb_m, msize);
-		
-		//evaluate result:
-		getAreaCoGSpread(out, psb_m , msize, &area, &cog_x, &cog_y, &spread); 	
-	
-		cog_x_send = cog_x;
-		cog_y_send = cog_y;
-		
-		//we have mask and image  (out)   [0/255].
-		//construct masked image  (fov_l) [0..255]:
-		for (int j=0;j<msize.height;j++){
-  			for (int i=0;i<msize.width;i++){
-    			if (out[i + j*psb_m  ]==0){
-      				seg_im[ j * psb_m + i] = 0;
-      				seg_dog[ j * psb_m + i] = 0;
-    			}
-    			else{
-						//cout << "here also " << endl;
-     				seg_dog [ j * psb_m + i] = dr->get_dog_onoff()[j*psb_m + i];
-      				seg_im [ j * psb_m + i] = fov_r[j * psb_m + i];
-    			}
-  			}
-		}
-			
-		//If nice segmentation:
-		if (area >= params->min_area && area <= params->max_area && spread<= params->max_spread){ 
-  			//don't update templates to image centre any more as we have a nice target
-   			acquire = false;
-            //update templates to(wards) segmentation CoG:
-  			printf("area:%d spread:%f cogx:%f cogy:%f - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
-  			//Bring cog of target towards centre of fovea:
-  			//SNAP GAZE TO OBJECT:
-  			cog_x*= params->cog_snap;
-  			cog_y*= params->cog_snap;
-			//floor(val + 0.5) instead of round
-			ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) floor ( cog_x + 0.5 ) ) ) + ( mid_y_m + ( ( int ) floor ( cog_y + 0.5) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
-			ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) floor ( cog_x + 0.5 ) ) ) + ( mid_y_m + ( ( int ) floor ( cog_y + 0.5) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
-			//ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
-  			//ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
-            
-            if (imageOutTemp.getOutputCount()>0){ 
-
-                //take original image and cut away the patch to send off
-                //ippiCopy_8u_C1R( temp_l ,psb_t, whatever, psb_trgb, tsize); // original
-                
-                //IppiSize ROISize = { tsize.width, tsize.height };
-                //ippiCopy_8u_C3R( l_orig + (srcsize.width/2 - tsize.width)*3 + (srcsize.height/2 - tsize.height)*psb, psb, img_out_temp->getRawImage(), img_out_temp->getRowSize(), ROISize );
-                int top = -1;
-                int left = -1;
-                int right = -1;
-                int bottom = -1;
-             
-                for (int j=0;j<msize.height * psb_m;j++){
-                    
-                    if ( (int)seg_im[ j ] > 0){
-                        top = j/psb_m; 
-                        break;
-                    }
-            
-                }
-                for (int j=msize.height * psb_m;j >0; j--){
-
-                    if ( (int)seg_im[ j ] > 0){
-                        bottom = j/psb_m; 
-                        break;
-                    }
-                }
-                bool out = false;
-                for (int i=0;i<msize.width;i++){
-                    for (int j=0;j<msize.height;j++){
-                        if ( (int)seg_im[i + j *psb_m] > 0){
-                            left = i; 
-                            out = true;
-                            break;
-                        }
-                    }
-                    if (out)break;
-                }
-                out = false;
-                for (int i=msize.width;i >0; i--){
-                    for (int j=0;j<msize.height;j++){
-                        if ( (int)seg_im[i + j *psb_m] > 0){
-                            right = i; 
-                            out = true;
-                            break;
-                        }
-                    }
-                    if (out)break;
-                }
-
-                int u = 0;
-                int v = 0;
-                tempSize.width = right-left + 1;
-                tempSize.height = bottom-top + 1;
-                //cout << top << " " << bottom << " " << left << " " << right << endl; 
-                //cout << tempSize.width << " " << tempSize.height << endl;
-
-                tempImg = ippiMalloc_8u_C3( tempSize.width, tempSize.height, &psbtemp);
-              
-                img_out_temp = new ImageOf<PixelBgr>;
-                img_out_temp->resize(tempSize.width, tempSize.height);
-                 
-               for (int j = top; j < bottom +1;j++){
-  			        for (int i = left; i < right + 1;i++){
-                        
-                        if ( (int)seg_im[i + j *psb_m] > 0){
-                            int x = srcsize.width/2 - msize.width/2 + i;
-                            int y = srcsize.height/2 - msize.height/2 + j; 
-                            
-                            tempImg[u*3 + v * psbtemp] = r_orig[x*3 + y * psb];
-                            tempImg[u*3 + v * psbtemp + 1] = r_orig[x*3 + y * psb + 1];
-                            tempImg[u*3 + v * psbtemp + 2] = r_orig[x*3 + y * psb + 2];    
-                        }else{
-                            tempImg[u*3 + v * psbtemp] = 0;
-                            tempImg[u*3 + v * psbtemp + 1] = 0;
-                            tempImg[u*3 + v * psbtemp + 2] = 0;
-                        }
-                        u ++; 
-                        
-                    }     
-                    u = 0;
-                    v ++;
-                }
-                
-                ippiCopy_8u_C3R( tempImg, psbtemp, img_out_temp->getRawImage(), img_out_temp->getRowSize() , tempSize);
-
-                imageOutTemp.prepare() = *img_out_temp;	
-           	    imageOutTemp.write();
-
-                delete img_out_temp;
-                ippiFree (tempImg);
+            if( !allocated || img_in_left->width() != insize.width || img_in_left->height() != insize.height) {
+                deallocate();
+                allocate(img_in_left);
             }
-  			//We've updated, so reset waiting:
- 			waiting=0;
-   			//report that we-ve updated templates:
-  			update = true;
-		}
-		//Otherwise, just keep previous templates:
-		else{
-  			printf("area:%d spread:%f cogx:%f cogy:%f\n",area,spread,cog_x,cog_y);	
-  			waiting++;
-   			//report that we didn't update template:
-  			update = false;
-		}
+
+		    //processing for zdf
+		    if (scale==1.0){ //resize the images if needed
+			    //copy yarp image to IPP
+			    ippiCopy_8u_C3R( img_in_left->getRawImage(),  img_in_left->getRowSize(), l_orig, psb, srcsize);
+			    ippiCopy_8u_C3R( img_in_right->getRawImage(), img_in_right->getRowSize(), r_orig, psb, srcsize);
+          	}else{
+			    //scale to width,height:
+                ippiResizeGetBufSize(inroi, inroi, 3, IPPI_INTER_CUBIC, &BufferSize);
+                Ipp8u* pBuffer=ippsMalloc_8u(BufferSize);
+                ippiResizeSqrPixel_8u_C3R( img_in_left->getRawImage(), insize, psb, inroi, l_orig, psb, inroi, scale, scale, 0, 0, IPPI_INTER_CUBIC, pBuffer);   
+                ippiResizeSqrPixel_8u_C3R( img_in_right->getRawImage(), insize, psb, inroi, r_orig, psb, inroi, scale, scale, 0, 0, IPPI_INTER_CUBIC, pBuffer);     
+                ippsFree(pBuffer);
+                //the following is deprecated...use previous
+			    //ippiResize_8u_C3R( img_in_left->getRawImage(), insize, img_in_left->width() * 3, inroi, l_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
+			    //ippiResize_8u_C3R( img_in_right->getRawImage(), insize, img_in_right->width() * 3, inroi, r_orig, psb, srcsize, scale, scale, IPPI_INTER_CUBIC);
+		    }
+		    //copy to grayscale
+		    ippiRGBToGray_8u_C3C1R( l_orig, psb , rec_im_ly, psb_in, srcsize );
+		    ippiRGBToGray_8u_C3C1R( r_orig, psb , rec_im_ry, psb_in, srcsize );
+
+		    if (acquire){
+			    ippiCopy_8u_C1R(&rec_im_ly [(( srcsize.height - tsize.height ) / 2 ) * psb_in + ( srcsize.width - tsize.width ) /2 ], psb_in, temp_l, psb_t, tsize);			
+			    ippiCopy_8u_C1R(&rec_im_ry [(( srcsize.height - tsize.height ) / 2 ) * psb_in + ( srcsize.width - tsize.width ) /2 ], psb_in, temp_r, psb_t, tsize);
+		    }
+
+		    //Create left fovea and find left template in left image
+		    ippiCrossCorrValid_NormLevel_8u32f_C1R(&rec_im_ly[(( srcsize.height - tisize.height )/2)*psb_in + ( srcsize.width - tisize.width )/2],
+				           psb_in, tisize,
+				           temp_l,
+				           psb_t, tsize,
+				           res_t, psb_rest);
+
+		    ippiMaxIndx_32f_C1R( res_t, psb_rest, trsize, &max_t, &sx, &sy); 
+		    //ippiCopy_8u_C1R( rec_im_ly, psb_in, fov_l, psb_m, srcsize);
+		    ippiCopy_8u_C1R( &rec_im_ly [ ( mid_y + tl_y ) * psb_in + mid_x + tl_x], psb_in, fov_l, psb_m, msize ); //original
+
+		    //**************************
+		    //Create right fovea and find right template in right image:
+		    ippiCrossCorrValid_NormLevel_8u32f_C1R(&rec_im_ry[((srcsize.height-tisize.height)/2 + dpix_y )*psb_in + (srcsize.width-tisize.width)/2],
+					    psb_in,tisize,
+					    temp_r,
+					    psb_t,tsize,
+					    res_t, psb_rest);
+
+		    ippiMaxIndx_32f_C1R(res_t,psb_rest,trsize,&max_t,&sx,&sy);
+		    //ippiCopy_8u_C1R( rec_im_ry, psb_in, fov_r, psb_m, srcsize);
+		    ippiCopy_8u_C1R(&rec_im_ry[(mid_y+tr_y+dpix_y)*psb_in + mid_x+tr_x],psb_in,fov_r,psb_m,msize); // original
+
+            //Star diffence of gaussian on foveated images
+		    dl->proc( fov_l, psb_m );
+		    dr->proc( fov_r, psb_m );
+
+		    //**************************
+		    //SPATIAL ZD probability map from fov_l and fov_r:
+		    //perform RANK or NDT kernel comparison:	            	
+		    for (int j=koffsety;j<msize.height-koffsety;j++){
+      			c.y=j;
+      			for (int i=koffsetx;i<msize.width-koffsetx;i++){
+	        			c.x=i;
+	        			//if either l or r textured at this retinal location: 
+	        		if (dl->get_dog_onoff()[i + j*dl->get_psb()] >= params->data_penalty || dr->get_dog_onoff()[i + j*dr->get_psb()] >= params->bland_dog_thresh ){      
+	          			if (RANK0_NDT1==0){
+						    //use RANK:
+						    get_rank(c,fov_l,psb_m,rank1);
+						    get_rank(c,fov_r,psb_m,rank2);
+						    cmp_res = cmp_rank(rank1,rank2);
+	          			}
+	        			else{ 
+						    //use NDT:
+						    get_ndt(c,fov_l,psb_m,ndt1);
+						    get_ndt(c,fov_r,psb_m,ndt2);
+						    cmp_res = cmp_ndt( ndt1, ndt2 );
+	          			}
+	          			zd_prob_8u[ j * psb_m + i] = (int)(cmp_res * 255.0);
+	        		}
+	        		else{
+	          				//untextured in both l & r, so set to bland prob (ZD):
+	          			zd_prob_8u[j*psb_m+i] = (int)(params->bland_prob * 255.0);//bland_prob
+	        		} 
+
+	        		//RADIAL PENALTY:
+	        		//The further from the origin, less likely it's ZD, so reduce zd_prob radially:
+	        		//current radius:
+	        		r = sqrt((c.x-msize.width/2.0)*(c.x-msize.width/2.0)+(c.y-msize.height/2.0)*(c.y-msize.height/2.0));
+	        		rad_pen =  (int) ( (r/rmax)* params->radial_penalty );//radial_penalty
+	        		max_rad_pen = zd_prob_8u[j*psb_m+i];
+	        		if(max_rad_pen < rad_pen) {
+	          			rad_pen=max_rad_pen;
+	        		}
+	        		//apply radial penalty
+	        		zd_prob_8u[j*psb_m+i]-= rad_pen;
+	        
+	        		//manufacture NZD prob (other):
+	        		o_prob_8u[psb_m*j+i] = 255 - zd_prob_8u[psb_m*j+i];
+	      		}
+		    }
+
+		    //Do MRF optimization:
+		    m->proc( fov_r, p_prob ); //provide edge map and probability map
+		    //cache for distribution:
+		    ippiCopy_8u_C1R( m->get_class(), m->get_psb(), out, psb_m, msize);
+		
+		    //evaluate result:
+		    getAreaCoGSpread(out, psb_m , msize, &area, &cog_x, &cog_y, &spread); 	
 	
-		if(waiting >= 25 ){ //acquire_wait
-  			printf("Acquiring new target until nice seg (waiting:%d >= acquire_wait:%d)\n",waiting, params->acquire_wait );//acquire_wait
-  			acquire = true;
-		}
+		    cog_x_send = cog_x;
+		    cog_y_send = cog_y;
+		
+		    //we have mask and image  (out)   [0/255].
+		    //construct masked image  (fov_l) [0..255]:
+		    for (int j=0;j<msize.height;j++){
+      			for (int i=0;i<msize.width;i++){
+        			if (out[i + j*psb_m  ]==0){
+          				seg_im[ j * psb_m + i] = 0;
+          				seg_dog[ j * psb_m + i] = 0;
+        			}
+        			else{
+						    //cout << "here also " << endl;
+         				seg_dog [ j * psb_m + i] = dr->get_dog_onoff()[j*psb_m + i];
+          				seg_im [ j * psb_m + i] = fov_r[j * psb_m + i];
+        			}
+      			}
+		    }
+			
+		    //If nice segmentation:
+		    if (area >= params->min_area && area <= params->max_area && spread<= params->max_spread){ 
+      			//don't update templates to image centre any more as we have a nice target
+       			acquire = false;
+                //update templates towards segmentation CoG:
+      			printf("area:%d spread:%f cogx:%f cogy:%f - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
+      			//Bring cog of target towards centre of fovea:
+      			//SNAP GAZE TO OBJECT:
+      			cog_x*= params->cog_snap;
+      			cog_y*= params->cog_snap;
+			    //floor(val + 0.5) instead of round
+			    ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) floor ( cog_x + 0.5 ) ) ) + ( mid_y_m + ( ( int ) floor ( cog_y + 0.5) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
+			    ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) floor ( cog_x + 0.5 ) ) ) + ( mid_y_m + ( ( int ) floor ( cog_y + 0.5) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
+			    //ippiCopy_8u_C1R(&fov_l[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_l, psb_t, tsize );
+      			//ippiCopy_8u_C1R(&fov_r[( mid_x_m + ( (int) round ( cog_x ) ) ) + ( mid_y_m + ( ( int ) round ( cog_y) ) ) * psb_m], psb_m, temp_r, psb_t, tsize );
+                
+                //retreive only the segmented object in order to send as template
+                if (imageOutTemp.getOutputCount()>0){ 
+
+                    int top = -1;
+                    int left = -1;
+                    int right = -1;
+                    int bottom = -1;
+                 
+                    for (int j=0;j<msize.height * psb_m;j++){
+                        
+                        if ( (int)seg_im[ j ] > 0){
+                            top = j/psb_m; 
+                            break;
+                        }
+                
+                    }
+                    for (int j=msize.height * psb_m;j >0; j--){
+
+                        if ( (int)seg_im[ j ] > 0){
+                            bottom = j/psb_m; 
+                            break;
+                        }
+                    }
+                    bool out = false;
+                    for (int i=0;i<msize.width;i++){
+                        for (int j=0;j<msize.height;j++){
+                            if ( (int)seg_im[i + j *psb_m] > 0){
+                                left = i; 
+                                out = true;
+                                break;
+                            }
+                        }
+                        if (out)break;
+                    }
+                    out = false;
+                    for (int i=msize.width;i >0; i--){
+                        for (int j=0;j<msize.height;j++){
+                            if ( (int)seg_im[i + j *psb_m] > 0){
+                                right = i; 
+                                out = true;
+                                break;
+                            }
+                        }
+                        if (out)break;
+                    }
+
+                    int u = 0;
+                    int v = 0;
+                    tempSize.width = right-left + 1;
+                    tempSize.height = bottom-top + 1;
+
+                    tempImg = ippiMalloc_8u_C3( tempSize.width, tempSize.height, &psbtemp);
+                  
+                    img_out_temp = new ImageOf<PixelBgr>;
+                    img_out_temp->resize(tempSize.width, tempSize.height);
+                     
+                   for (int j = top; j < bottom +1;j++){
+      			        for (int i = left; i < right + 1;i++){
+                            
+                            if ( (int)seg_im[i + j *psb_m] > 0){
+                                int x = srcsize.width/2 - msize.width/2 + i;
+                                int y = srcsize.height/2 - msize.height/2 + j; 
+                                
+                                tempImg[u*3 + v * psbtemp] = r_orig[x*3 + y * psb];
+                                tempImg[u*3 + v * psbtemp + 1] = r_orig[x*3 + y * psb + 1];
+                                tempImg[u*3 + v * psbtemp + 2] = r_orig[x*3 + y * psb + 2];    
+                            }else{
+                                tempImg[u*3 + v * psbtemp] = 0;
+                                tempImg[u*3 + v * psbtemp + 1] = 0;
+                                tempImg[u*3 + v * psbtemp + 2] = 0;
+                            }
+                            u ++; 
+                            
+                        }     
+                        u = 0;
+                        v ++;
+                    }
+                    
+                    ippiCopy_8u_C3R( tempImg, psbtemp, img_out_temp->getRawImage(), img_out_temp->getRowSize() , tempSize);
+
+                    imageOutTemp.prepare() = *img_out_temp;	
+               	    imageOutTemp.write();
+
+                    delete img_out_temp;
+                    ippiFree (tempImg);
+                }
+      			//We've updated, so reset waiting:
+     			waiting=0;
+       			//report that we-ve updated templates:
+      			update = true;
+		    }
+		    //Otherwise, just keep previous templates:
+		    else{
+      			printf("area:%d spread:%f cogx:%f cogy:%f\n",area,spread,cog_x,cog_y);	
+      			waiting++;
+       			//report that we didn't update template:
+      			update = false;
+		    }
+	
+		    if(waiting >= 25 ){ //acquire_wait
+      			printf("Acquiring new target until nice seg (waiting:%d >= acquire_wait:%d)\n",waiting, params->acquire_wait );//acquire_wait
+      			acquire = true;
+		    }
 
 		
-		//send it all
-		if (imageOutProb.getOutputCount()>0){ 
-            ippiCopy_8u_C1R( zd_prob_8u, psb_m, img_out_prob->getRawImage(), img_out_prob->getRowSize(), msize );
-			imageOutProb.prepare() = *img_out_prob;	
-           	imageOutProb.write();
-        }
+		    //send it all when connections are established
+		    if (imageOutProb.getOutputCount()>0){ 
+                ippiCopy_8u_C1R( zd_prob_8u, psb_m, img_out_prob->getRawImage(), img_out_prob->getRowSize(), msize );
+			    imageOutProb.prepare() = *img_out_prob;	
+               	imageOutProb.write();
+            }
 
-		if (imageOutSeg.getOutputCount()>0){
-            ippiCopy_8u_C1R( seg_im, psb_m, img_out_seg->getRawImage(), img_out_seg->getRowSize(), msize );
-           	imageOutSeg.prepare() = *img_out_seg;	
-           	imageOutSeg.write();
-        }
-		if (imageOutDog.getOutputCount()>0){
-            ippiCopy_8u_C1R( seg_dog, psb_m, img_out_dog->getRawImage(), img_out_dog->getRowSize(), msize );
-           	imageOutDog.prepare() = *img_out_dog;	
-           	imageOutDog.write();
-        }
-
+		    if (imageOutSeg.getOutputCount()>0){
+                ippiCopy_8u_C1R( seg_im, psb_m, img_out_seg->getRawImage(), img_out_seg->getRowSize(), msize );
+               	imageOutSeg.prepare() = *img_out_seg;	
+               	imageOutSeg.write();
+            }
+		    if (imageOutDog.getOutputCount()>0){
+                ippiCopy_8u_C1R( seg_dog, psb_m, img_out_dog->getRawImage(), img_out_dog->getRowSize(), msize );
+               	imageOutDog.prepare() = *img_out_dog;	
+               	imageOutDog.write();
+            }
 		}
 	}
 }
 
 void ZDFThread::threadRelease() 
 {
-    /* for example, delete dynamically created data-structures */
-    cout << "cleaning up things.." << endl;
-    if ( leftPort + rightPort > 1){
-        cout << "cleaning up dynamically created objects" << endl;
-        delete dl;
-        delete dr;
-        delete m;
-        
-        ippiFree(l_orig);
-        ippiFree(r_orig);
-        ippiFree(rec_im_ly);
-        ippiFree(rec_im_ry);
-        ippiFree(res_t);
-        ippiFree(out);
-        ippiFree(seg_im);
-        ippiFree(seg_dog);
-        ippiFree(fov_l);
-        ippiFree(fov_r);
-        ippiFree(zd_prob_8u);
-        ippiFree(o_prob_8u);
-        free(p_prob);
-        ippiFree(temp_l);
-        ippiFree(temp_r);
-        ippiFree(whatever);
-        delete img_out_prob;
-        delete img_out_seg;
-        delete img_out_dog;
-       //delete img_out_temp;
-    }
-
     cout << "closing ports.." << endl;
     imageInLeft.close();
     imageInRight.close();
     imageOutProb.close();
     imageOutSeg.close();
     imageOutDog.close();
-    imageOutTemp.close();
-    
-    //yarp::os::impl::NameClient::removeNameClient();
+    imageOutTemp.close(); 
     cout << "finished cleaning.." << endl;
 }
 
-void ZDFThread::initAll() {
+void ZDFThread::deallocate() {
+
+    cout << "cleaning up dynamically created objects" << endl;
+    delete dl;
+    delete dr;
+    delete m;
+    ippiFree(l_orig);
+    ippiFree(r_orig);
+    ippiFree(rec_im_ly);
+    ippiFree(rec_im_ry);
+    ippiFree(res_t);
+    ippiFree(out);
+    ippiFree(seg_im);
+    ippiFree(seg_dog);
+    ippiFree(fov_l);
+    ippiFree(fov_r);
+    ippiFree(zd_prob_8u);
+    ippiFree(o_prob_8u);
+    free(p_prob);
+    ippiFree(temp_l);
+    ippiFree(temp_r);
+    delete img_out_prob;
+    delete img_out_seg;
+    delete img_out_dog;
+
+    allocated = false;
+}
+void ZDFThread::allocate(ImageOf<PixelBgr> *img) {
+     assert (allocated == false);
 
 /*  cvNamedWindow( "Settings", 0) ; 
     cvCreateTrackbar( "DATA_PENALTY", "Settings", &params->data_penalty, 255, 0 );
@@ -535,37 +538,37 @@ void ZDFThread::initAll() {
     cvCreateTrackbar( "SMOOTHNESS_3SIGMAON2", "Settings", &params->smoothness_3sigmaon2, 255, 0 );
     cvCreateTrackbar( "BLAND_DOG_THRESH", "Settings", &params->bland_dog_thresh, 255, 0 );*/
 
-    cout << "Received left input image dimensions: " << img_in_left->width() << " " << img_in_left->height() << endl;
-    cout << "Received right input image dimensions: " << img_in_right->width() << " " << img_in_right->height() << endl;
+    cout << "Received left input image dimensions: " << img->width() << " " << img->height() << endl;
+    cout << "Received right input image dimensions: " << img->width() << " " << img->height() << endl;
 
     width = 320; 
     height = 240;
     scale = 1.0;
-    scale  = ((double)width)/img_in_left->width();
+    scale  = ((double)width)/img->width();
 
-    insize.width = img_in_left->width();
-    insize.height = img_in_left->height();
+    insize.width = img->width();
+    insize.height = img->height();
 
     printf("Scaling to image dimensions: (%d,%d). Scale factor %f\n", width, height,scale);
 
     BufferSize=0;
     inroi.x=0;
     inroi.y=0;
-    inroi.width  =  img_in_left->width();
-    inroi.height = img_in_left->height();
+    inroi.width  =  img->width();
+    inroi.height = img->height();
 
-    srcsize.width = width;//img_in_left->width();
-    srcsize.height = height;//img_in_left->height();
+    srcsize.width = img->width();
+    srcsize.height = img->height();
 
     msize.width  = 128;//should be taken from ini file // was 128
     msize.height = 128;//should be taken from ini file // was 128
-    tsize.width  = 32;//same 
-    tsize.height = 32;//same
-    imgsize.width  = 64;//same 
-    imgsize.height = 64;//same
+    tsize.width  = 32;//should be taken from ini file 
+    tsize.height = 32;//should be taken from ini file
+    imgsize.width  = 64;//should be taken from ini file 
+    imgsize.height = 64;//should be taken from ini file
 
-    t_lock_lr = 32;//same
-    t_lock_ud = 32;//same
+    t_lock_lr = 32;//should be taken from ini file
+    t_lock_ud = 32;//should be taken from ini file
 
     tisize.width  = tsize.width  + 2 * t_lock_lr;
     tisize.height = tsize.height + 2 * t_lock_ud;
@@ -645,18 +648,9 @@ void ZDFThread::initAll() {
     img_out_dog = new ImageOf<PixelMono>;
     img_out_dog->resize(msize.width, msize.height);
 
-    //img_out_temp = new ImageOf<PixelBgr>;
-   // img_out_temp->resize(msize.width, msize.height);
-
-    whatever = ippiMalloc_8u_C3( msize.width, msize.height, &psb_trgb);
-    IppiSize roi = {msize.width,msize.height};
-    ippiSet_8u_C3R( 0, whatever, psb_trgb, roi);
-
-    
-
     cmp_res = 0.0;
-    init = false;
     area = 0;
+    allocated = true;
 }
 
 

@@ -1,4 +1,3 @@
-/* energy.h */
 /* Vladimir Kolmogorov (vnk@cs.cornell.edu), 2003. */
 
 /*
