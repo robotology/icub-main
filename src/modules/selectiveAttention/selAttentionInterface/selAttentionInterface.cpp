@@ -35,7 +35,6 @@ GtkWidget *mainWindow=0;
 static GdkPixbuf *frame = NULL;
 
 BufferedPort<yarp::sig::FlexImage> *ptr_inputPort=0;
-//InputCallback *ptr_portCallback=0;
 
 
 std::string* command; //reference to the string refering to the last command to send
@@ -742,7 +741,7 @@ GtkWidget* createMainWindow(void) {
     //gtk_init (&argc, &argv);
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "selectiveAttentionInterface");
-    gtk_window_set_default_size(GTK_WINDOW (window), 220, 300); 
+    gtk_window_set_default_size(GTK_WINDOW (window), 205, 300); 
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
     g_signal_connect (G_OBJECT (window), "destroy",
                       G_CALLBACK (gtk_main_quit),
@@ -787,25 +786,7 @@ GtkWidget* createMainWindow(void) {
     gtk_container_set_border_width (GTK_CONTAINER (boxButtons), 0);
     boxSliders = gtk_hbox_new (TRUE, 0); // parameters (gboolean homogeneous_space, gint spacing);
     gtk_container_set_border_width (GTK_CONTAINER (boxSliders), 0);
-     // Create a new button 
-    button = gtk_button_new ();
-    button2 = gtk_button_new ();
-    // Connect the "clicked" signal of the button to our callback 
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "output1");
-    g_signal_connect (G_OBJECT (button2), "clicked",G_CALLBACK (callback), (gpointer) "output2");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL,"output1");
-    boxButton2= xpm_label_box (NULL,"output2");
-    // Pack and show all our widgets 
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-    gtk_widget_show (boxButton2);
-    gtk_container_add (GTK_CONTAINER (button2), boxButton2);
-    gtk_widget_show (button2);
-    gtk_container_add (GTK_CONTAINER (boxButtons), button);
-    gtk_container_add (GTK_CONTAINER (boxButtons), button2);
-    gtk_container_add (GTK_CONTAINER (box2), boxButtons);
+    
     //-----SCALE section
     GtkWidget *scrollbar;
     GtkWidget *separator;
