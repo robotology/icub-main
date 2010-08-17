@@ -1,7 +1,7 @@
 /**
 @ingroup icub_module
 
-\defgroup wrenchObserver wrenchObserver
+\defgroup wholeBodyTorqueObserver wholeBodyTorqueObserver
  
 Estimates the external forces and torques acting at the end effector
 through a model based estimation of the robot dynamics
@@ -130,7 +130,7 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-FILE* datas = fopen("datas_all.txt","w+");
+//FILE* datas = fopen("datas_all.txt","w+");
 
 #define MAX_JN 12
 #define MAX_FILTER_ORDER 6
@@ -223,6 +223,8 @@ private:
     Vector F_LLeg, F_RLeg, F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
 	Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
 	Vector inertial_measurements;
+
+    FILE* datas;
 
     Vector evalVelUp(const Vector &x)
     {
@@ -414,7 +416,8 @@ public:
     }
 
     bool threadInit()
-    {       
+    {   
+        datas = fopen("datas_all.txt","w+");
 		calibrateOffset(10);
 		//Time::delay(3.0);
         return true;
