@@ -21,7 +21,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-class graphicThread : public RateThread {
+class graphicThread : public Thread {
 private:
     /**
     * maximum value for the gtk sliding control

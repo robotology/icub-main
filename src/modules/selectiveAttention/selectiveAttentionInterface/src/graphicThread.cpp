@@ -42,7 +42,7 @@ static selectiveAttentionModule *module;
 /**
 * default constructor
 */
-graphicThread::graphicThread():RateThread(THREADRATE) {
+graphicThread::graphicThread(){
     maxAdj=100.0;
     minAdj=0.0;
     stepAdj=0.1;   
@@ -75,6 +75,7 @@ bool graphicThread::threadInit(){
     // All GTK applications must have a gtk_main(). Control ends here
     // and waits for an event to occur (like a key press or
     // mouse event).
+    gtk_main();
     return true;
 }
 
@@ -82,13 +83,6 @@ bool graphicThread::threadInit(){
 * active loop of the thread
 */
 void graphicThread::run() {
-    
-     gtk_main_iteration();
-    
-    //gtk_widget_destroy(mainWindow);
-    //this->interrupt();
-    //this->close();
-    //ACE_OS::exit(0);
 }
 
 void graphicThread::onStop() {
@@ -128,7 +122,6 @@ ConstString graphicThread::getName(ConstString suffix){
 
 
 void graphicThread::outPorts(){
-
     if(strcmp("",command->c_str())){
         Bottle& commandBottle=commandPort->prepare();
         commandBottle.clear();
@@ -240,7 +233,7 @@ static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     //selectiveAttentionModule->processor1->cannyOperator->setThresholdU((double)adj->value);
-    //printf("k1: %f \n",(double) adj->value);
+    printf("k1: %f \n",(double) adj->value);
     std::string str("");
     sprintf((char *)str.c_str(),"set k1 %2.2f",adj->value);
     module->command->assign(str.c_str());
@@ -799,7 +792,7 @@ GtkWidget* graphicThread::createMainWindow(void)
 
     frame = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 320, 240);
     // TimeOut used to refresh the screen
-    //timeout_ID = gtk_timeout_add (1000, timeout_CB, NULL);
+    timeout_ID = gtk_timeout_add (100, timeout_CB, NULL);
 
     mainWindow=window;
 
