@@ -27,6 +27,7 @@
 
 #include <string>
 #include <sstream>
+#include <cstring>
 
 using namespace yarp::os;
 using namespace std;
