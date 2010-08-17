@@ -337,7 +337,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
     salience->ComputeSalienceAll(max_tag, max_tag);
 
     // extracts the PixelBgr color of tag=1. Assuming this is the fovea?
-    PixelBgr varFoveaBlob = salience->varBlob(*ptr_tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, 1);
+    PixelBgr varFoveaBlob = salience->varBlob(*ptr_tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, (*ptr_tagged)(0,0));
 
     // draw the fovea blob into the blobFov image? Also assuming the tag=1.
     //salience->drawFoveaBlob(*blobFov, *tagged);
