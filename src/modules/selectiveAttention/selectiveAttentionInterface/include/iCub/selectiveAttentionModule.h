@@ -109,10 +109,7 @@ private:
     * command port(output) in order to control the related engine module
     */
     yarp::os::BufferedPort<Bottle > commandOutput;
-    /**
-    * reference to the graphic unit interface managed by a thread
-    */
-    graphicThread* gui;
+
     /**
     * counter of the module
     */
@@ -240,6 +237,10 @@ public:
     * reference to the string refering to the last command to send
     */
     std::string* command;
+    /**
+    * reference to the graphic unit interface managed by a thread
+    */
+    graphicThread* gui;
 };
 
 #endif //_selectiveAttentionModule_H_
