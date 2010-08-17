@@ -259,7 +259,6 @@ void YUVThread::run(){
                 if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
                     deallocate();
                     allocate( img );
-                    cout << "allocating and deallocating " << endl;
                 }
                 
                  // extend logpolar input image

@@ -163,7 +163,6 @@ private:
 
     /* class variables */
     ImageOf<PixelRgb> *inputExtImage; // extended input image
-
     ImageOf<PixelMono> *img_Y;        // extended output Y image
 	ImageOf<PixelMono> *img_UV;       // extended output Y image
 	ImageOf<PixelMono> *img_out_Y;    // output Y image
@@ -194,7 +193,6 @@ private:
     int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f; //images rowsizes
 
 public:
-
     /**
     * constructor
     */

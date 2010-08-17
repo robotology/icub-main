@@ -84,8 +84,6 @@ public:
      */
 	int get_psb_8u(){return psb_8u;}
 
- 
-    int bufferSize, bufferSizeGauss; // buffer sizes for resize function
 private:
 
     /**
@@ -105,7 +103,6 @@ private:
 	IppiRect *proi, *dstRect;
 
 	double sd,su,sigma;
-
 };
 #endif
 //empty line to make gcc happy
