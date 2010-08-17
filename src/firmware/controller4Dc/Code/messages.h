@@ -662,7 +662,11 @@
 	{ \
 		if (_control_mode[axis] != MODE_IDLE) \
 		{ \
-			_control_mode[axis] = MODE_POSITION; \
+			if (_control_mode[axis] != MODE_IMPEDANCE_POS && \
+				_control_mode[axis] != MODE_IMPEDANCE_VEL ) \
+			    _control_mode[axis] = MODE_POSITION; \
+			else \
+			    _control_mode[axis] = MODE_IMPEDANCE_POS; \
 			_set_point[axis] = BYTE_C(CAN_DATA[1], CAN_DATA[2], CAN_DATA[3], CAN_DATA[4]); \
 			if (_set_point[axis] < _min_position[axis]) \
 				_set_point[axis] = _min_position[axis]; \
@@ -696,9 +700,14 @@
 		if (_control_mode[axis] != MODE_IDLE && IS_DONE(axis)) \
 		{ \
 			_vel_counter[axis] = 0; \
-			if (_control_mode[axis] == MODE_POSITION) \
+			if (_control_mode[axis] == MODE_POSITION || \
+				_control_mode[axis] == MODE_IMPEDANCE_POS ) \
 				_desired_vel[axis] = 0; \
-			_control_mode[axis] = MODE_VELOCITY; \
+			if (_control_mode[axis] != MODE_IMPEDANCE_POS && \
+				_control_mode[axis] != MODE_IMPEDANCE_VEL ) \
+			    _control_mode[axis] = MODE_VELOCITY; \
+			else \
+			    _control_mode[axis] = MODE_IMPEDANCE_VEL; \
 			_set_point[axis] = 0; \
 			_set_vel[axis] = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 			_set_acc[axis] = BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
@@ -873,7 +882,7 @@
 //-------------------------------------------------------------------
 #define CAN_SET_TORQUE_PIDLIMITS_HANDLER(x) \
 { \
-	if (CAN_LEN == 9) \
+	if (CAN_LEN == 8) \
 	{ \
 		_ko_torque[axis] 				= BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 		_pid_limit_torque[axis] 		= BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
@@ -887,7 +896,7 @@
 #define CAN_GET_TORQUE_PIDLIMITS_HANDLER(x) \
 { \
 	PREPARE_HEADER; \
-		CAN_LEN = 9; \
+		CAN_LEN = 8; \
 		CAN_DATA[1] = BYTE_H(_ko_torque[axis]); \
 		CAN_DATA[2] = BYTE_L(_ko_torque[axis]); \
 		CAN_DATA[3] = BYTE_H(_pid_limit_torque[axis]); \
@@ -895,7 +904,6 @@
 		CAN_DATA[5] = BYTE_H(_integral_limit_torque[axis]); \
 		CAN_DATA[6] = BYTE_L(_integral_limit_torque[axis]); \
 		CAN_DATA[7] = 0; \
-		CAN_DATA[8] = 0; \
 		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }
@@ -903,12 +911,12 @@
 //-------------------------------------------------------------------
 #define CAN_SET_POS_PID_HANDLER(x) \
 { \
-	if (CAN_LEN == 9) \
+	if (CAN_LEN == 8) \
 	{ \
 		_kp[axis] = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 		_ki[axis] = BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
 		_kd[axis] = BYTE_W(CAN_DATA[5], CAN_DATA[6]); \
-		_kr[axis] = BYTE_W(CAN_DATA[7], CAN_DATA[8]); \
+		_kr[axis] = CAN_DATA[7]; \
 		_general_board_error = ERROR_NONE; \
 	} \
 	else \
@@ -918,7 +926,7 @@
 #define CAN_GET_POS_PID_HANDLER(x) \
 { \
 	PREPARE_HEADER; \
-		CAN_LEN = 9; \
+		CAN_LEN = 8; \
 		CAN_DATA[1] = BYTE_H(_kp[axis]); \
 		CAN_DATA[2] = BYTE_L(_kp[axis]); \
 		CAN_DATA[3] = BYTE_H(_ki[axis]); \
@@ -926,7 +934,6 @@
 		CAN_DATA[5] = BYTE_H(_kd[axis]); \
 		CAN_DATA[6] = BYTE_L(_kd[axis]); \
 		CAN_DATA[7] = BYTE_H(_kr[axis]); \
-		CAN_DATA[8] = BYTE_L(_kr[axis]); \
 		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }
@@ -934,7 +941,7 @@
 //-------------------------------------------------------------------
 #define CAN_SET_POS_PIDLIMITS_HANDLER(x) \
 { \
-	if (CAN_LEN == 9) \
+	if (CAN_LEN == 8) \
 	{ \
 		_ko[axis] 				= BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 		_pid_limit[axis] 		= BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
@@ -948,7 +955,7 @@
 #define CAN_GET_POS_PIDLIMITS_HANDLER(x) \
 { \
 	PREPARE_HEADER; \
-		CAN_LEN = 9; \
+		CAN_LEN = 8; \
 		CAN_DATA[1] = BYTE_H(_ko[axis]); \
 		CAN_DATA[2] = BYTE_L(_ko[axis]); \
 		CAN_DATA[3] = BYTE_H(_pid_limit[axis]); \
@@ -956,7 +963,6 @@
 		CAN_DATA[5] = BYTE_H(_integral_limit[axis]); \
 		CAN_DATA[6] = BYTE_L(_integral_limit[axis]); \
 		CAN_DATA[7] = 0; \
-		CAN_DATA[8] = 0; \
 		CAN1_send(CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }

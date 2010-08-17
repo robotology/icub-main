@@ -120,9 +120,10 @@ Int16  _ko_torque[JN] = INIT_ARRAY (0);			// offset
 Int16  _kr_torque[JN] = INIT_ARRAY (3);			// scale factor (negative power of two) 
 
 // JOINT IMPEDANCE
-Int16  _ks_imp[JN] = INIT_ARRAY (20);			// stiffness coefficient
+Int16  _ks_imp[JN] = INIT_ARRAY (0);			// stiffness coefficient
 Int16  _kd_imp[JN] = INIT_ARRAY (0);			// damping coefficient
 Int16  _ko_imp[JN] = INIT_ARRAY (0);			// offset
+Int16  _error_impedance[JN] = INIT_ARRAY (0);   // position error in impedance control
 											
 #if VERSION == 0x0116
 // CURRENT PID
@@ -191,6 +192,27 @@ Int32 compute_pwm(byte j)
 {
 	Int32 PWMoutput = 0;
 	Int32 Ioutput = 0;
+	byte  i=0;
+	Int32 ImpInputError=0;
+
+#if   VERSION == 0x0119
+	//arm
+	read_force_data (0, WDT_JNT_STRAIN_12,4); //wrist pronosupination
+	read_force_data (1, -1               ,0); //wrist pitch disabled
+	read_force_data (2, -1               ,0); //wrist yaw   disabled
+	read_force_data (3, -1               ,0); //fingers disabled
+#elif   VERSION == 0x0201
+    //armV2
+    read_force_data (0, WDT_JNT_STRAIN_12,4); //wrist pronosupination
+	read_force_data (1, -1				 ,0); //@@@TODO differential 1 for icubV2
+	read_force_data (2, -1				 ,0); //@@@TODO differential wrist 2 for icubV2
+	read_force_data (3, -1				 ,0); //fingers disabled
+#endif
+
+	//watchdog update
+	for (i=0; i<STRAIN_MAX; i++)
+		if (_strain_wtd[i]>0) _strain_wtd[i]--;
+				  	
 		
 	switch (_control_mode[j])
 	{
@@ -216,7 +238,32 @@ Int32 compute_pwm(byte j)
 		PWMoutput = PWMoutput + _ko[j];
 		_pd[j] = _pd[j] + _ko[j];
 		break;
-
+	case MODE_TORQUE: 
+		PWMoutput = compute_pid_torque(j, _strain_val[j]);
+		PWMoutput = PWMoutput + _ko_torque[j];
+		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
+	break;
+	case MODE_IMPEDANCE_POS:
+	case MODE_IMPEDANCE_VEL: 
+		compute_desired(j);
+		ImpInputError = L_sub(_position[j], _desired[j]);				
+		if (ImpInputError > MAX_16)
+			_error_impedance[j] = MAX_16;
+		else
+		if (ImpInputError < MIN_16) 
+			_error_impedance[j] = MIN_16;
+		else
+		{
+			_error_impedance[j] = extract_l(ImpInputError);
+		}		
+		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(_error_impedance[j]);
+		_desired_torque[j] += (Int32)_ko_imp[j];
+		_desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
+		PWMoutput = compute_pid_torque(j, _strain_val[j]);
+		PWMoutput = PWMoutput + _ko_torque[j];
+		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
+	break;
+	
 #endif
 			
 	case MODE_CALIB_HARD_STOPS:
@@ -916,14 +963,26 @@ bool read_force_data (byte jnt, byte strain_num, byte strain_chan)
 		_control_mode[jnt] == MODE_IMPEDANCE_POS ||
 		_control_mode[jnt] == MODE_IMPEDANCE_VEL )
 		{
+			if (strain_num==-1)
+			{
+				_control_mode[jnt] = MODE_IDLE;	
+				_pad_enabled[jnt] = false;
+
+				#ifdef DEBUG_CAN_MSG					
+					can_printf("WARN:force control not allowed jnt:%d",jnt);
+				#endif
+								
+				PWM_outputPadDisable(jnt);	
+				_strain_val[jnt]=0;
+				return false;				
+			}
 			if (_strain_wtd[strain_num]==0)
 			{
 				_control_mode[jnt] = MODE_IDLE;	
 				_pad_enabled[jnt] = false;
 					
-				can_printf("WDT:strain%d",jnt);	//@@@ DEBUG: REMOVE ME LATER
 				#ifdef DEBUG_CAN_MSG
-					can_printf("WARN:strain watchdog! disabling pwm");				
+					can_printf("WARN:strain watchdog disabling pwm jnt:%d",jnt);				
 				#endif	
 				
 				PWM_outputPadDisable(jnt);	
