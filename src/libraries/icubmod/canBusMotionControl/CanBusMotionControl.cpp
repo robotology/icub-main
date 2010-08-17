@@ -417,20 +417,20 @@ void CanBackDoor::onRead(Bottle &b)
 	switch (commandId)
 	{
 		case 1: //shoulder torque message
-			dval[0] = b.get(1).asDouble();
-			dval[1] = b.get(2).asDouble();
-			dval[2] = b.get(3).asDouble();
-			dval[3] = b.get(4).asDouble();
-			dval[4] = 0; //RANDAZ_TODO
+			dval[0] = b.get(1).asDouble(); //shoulder 1 pitch
+			dval[1] = b.get(2).asDouble(); //shoulder 2 roll
+			dval[2] = b.get(3).asDouble(); //shoulder 3 yaw
+			dval[3] = b.get(4).asDouble(); //elbow
+			dval[4] = b.get(5).asDouble(); //wrist pronosupination
 			dval[5] = 0; //RANDAZ_TODO
 		break;
 		case 2: //legs torque message
-			dval[0] = b.get(1).asDouble();
-			dval[1] = b.get(2).asDouble();
-			dval[2] = b.get(3).asDouble();
-			dval[3] = b.get(4).asDouble();
-			dval[4] = b.get(5).asDouble();
-			dval[5] = b.get(6).asDouble();
+			dval[0] = b.get(1).asDouble(); //hip pitch
+			dval[1] = b.get(2).asDouble(); //hip roll
+			dval[2] = b.get(3).asDouble(); //hip yaw
+			dval[3] = b.get(4).asDouble(); //knee
+			dval[4] = b.get(5).asDouble(); //ankle pitch
+			dval[5] = b.get(6).asDouble(); //ankle roll
 		break;
 		default:
 			fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName().c_str());
