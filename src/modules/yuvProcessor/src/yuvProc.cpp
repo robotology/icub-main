@@ -22,7 +22,7 @@
  #include <string.h>
 #include <cassert>
 
-const int KERNSIZEMAX = 12;
+const int KERNSIZEMAX = 9;
 
 //#include "yarp/os/impl/NameClient.h"
 
@@ -199,7 +199,6 @@ YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<I
     ycs_psb = 0;
     col_psb = 0;
     psb_32f = 0;
-    getImage = false;
 }
 
 YUVThread::~YUVThread()
@@ -260,15 +259,13 @@ void YUVThread::run(){
                 if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
                     deallocate();
                     allocate( img );
+                    cout << "allocating and deallocating " << endl;
                 }
                 
                  // extend logpolar input image
-                //extender( img, KERNSIZEMAX );
-                ippiCopyReplicateBorder_8u_C3R( img->getRawImage(), img->getRowSize(), origsize, orig, img_psb, srcsize, KERNSIZEMAX, KERNSIZEMAX );
-                
+                extender( img, KERNSIZEMAX );
                 //create our own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel )
-               // ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
-
+                ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
                 //convert to RGBA:
                 ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
                 //convert to Y,U,V image channels:
@@ -291,22 +288,19 @@ void YUVThread::run(){
                 centerSurr->proc_im_8u( v_orig , psb );
                 ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
 
+                //get min max
                 Ipp32f valueMin,valueMax;
                 valueMin = 0.0;
                 valueMax = 0.0;
-
-                //get min max
                 ippiMinMax_32f_C1R( cs_tot_32f, psb_32f, srcsize, &valueMin, &valueMax );
                 //if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f; }
                 ippiScale_32f8u_C1R( cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize, valueMin, valueMax );
-
+                
+                //revert to yarp images
                 ippiCopy_8u_C1R( ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize );
                 ippiCopy_8u_C1R( colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
 
-                //ippiCopy_8u_C1R( &ycs_out[ KERNSIZEMAX * ycs_psb/4 + KERNSIZEMAX ], ycs_psb, img_out_Y->getRawImage(), img_out_Y->getRowSize(), srcsize );
-               // ippiCopy_8u_C1R( &colcs_out[ KERNSIZEMAX * col_psb/4 + KERNSIZEMAX ],col_psb, img_out_UV->getRawImage(), img_out_UV->getRowSize(), srcsize );
-
-                //following is nasty
+                //this is nasty, resizes the images...
                 unsigned char* imgY = img_Y->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
                 unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
                 unsigned char* imgYo = img_out_Y->getRawImage();
@@ -400,7 +394,7 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
     origsize.height = img->height();
 
     srcsize.width = origsize.width + 2 * KERNSIZEMAX;
-    srcsize.height = origsize.height + 2 * KERNSIZEMAX;
+    srcsize.height = origsize.height + 2* KERNSIZEMAX;
 
     cout << "Received input image dimensions: " << origsize.width << " " << origsize.height << endl;
     cout << "Will extend these to: " << srcsize.width << " " << srcsize.height << endl;
@@ -465,11 +459,11 @@ ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage, int ma
 
     // copy of the block adjacent angular positions (columns)
     const int px = maxSize * sizeof(PixelRgb);
-    for (int row = 0; row < height; row++) {
-        memcpy ( inputExtImage->getPixelAddress( width-maxSize, row ),
+    for (int row = 0; row < srcsize.height; row++) {
+        memcpy ( inputExtImage->getPixelAddress( srcsize.width-maxSize, row ),
                 inputExtImage->getPixelAddress( maxSize,row ), px);
         memcpy ( inputExtImage->getPixelAddress( 0, row ),
-                inputExtImage->getPixelAddress( width- maxSize-maxSize, row ), px);
+                inputExtImage->getPixelAddress( srcsize.width- maxSize-maxSize, row ), px);
     }
 
     return inputExtImage;

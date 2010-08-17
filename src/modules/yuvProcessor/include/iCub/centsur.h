@@ -35,28 +35,77 @@ using namespace std;
 	
 class CentSur { 
 public:
+    /**
+    * constructor
+    */
 	CentSur(IppiSize imsize, int nscale, double sigma = 1.0);
+    /**
+     * destructor
+     */
 	~CentSur();
 
+    /**
+     * convert image to 32f precision
+     */
 	void proc_im_8u(Ipp8u* im_8u, int psb_8u);
+
+    /**
+     * process 32f image creating gauss pyramids:
+     */
 	void proc_im_32f(Ipp32f* im_32f, int psb_32f);
+    
+    /**
+     * returns gaussians
+     */
 	Ipp32f* get_gauss(int s){return gauss[s];}
+
+    /**
+     * returns pyramids
+     */
 	Ipp32f* get_pyramid(int s){return pyramid[s];}
+
+    /**
+     * get center surround image in 32f precision
+     */
 	Ipp32f* get_centsur_32f(){return cs_tot_32f;} 
+
+    /**
+     * get center surround image in 8u precision
+     */
 	Ipp8u*  get_centsur_norm8u(){return cs_tot_8u;}
-	int get_psb_8u(){return psb_8u;}
+    
+    /**
+     * get center surround row size in 32f precision
+     */
 	int get_psb_32f(){return psb_32f;}
-    int bufferSize, bufferSizeGauss;
+
+    /**
+     * get center surround row size in 8uf precision
+     */
+	int get_psb_8u(){return psb_8u;}
+
+ 
+    int bufferSize, bufferSizeGauss; // buffer sizes for resize function
 private:
+
+    /**
+     * creates pyramids
+     */
 	void make_pyramid(Ipp32f* im_in, int pin32_);
+
+    
 	Ipp32f **pyramid,**pyramid_gauss,**gauss,*cs_tot_32f,*tmp_im_32f,*im_in_32f;
+
 	Ipp8u *cs_tot_8u,*pbuf;
+
 	int *psb_p,pbufsize,psb_8u,psb_32f,ngauss;
+
 	IppiSize srcsize,*psize;
+
 	IppiRect *proi, *dstRect;
+
 	double sd,su,sigma;
 
 };
-
 #endif
 //empty line to make gcc happy

@@ -162,36 +162,53 @@ class YUVThread : public Thread
 private:
 
     /* class variables */
-    ImageOf<PixelRgb> *inputExtImage;
+    ImageOf<PixelRgb> *inputExtImage; // extended input image
 
-	ImageOf<PixelMono> *img_out_Y; // output Y image
-	ImageOf<PixelMono> *img_out_UV;// output UV image
-    ImageOf<PixelMono> *img_Y;    
-	ImageOf<PixelMono> *img_UV;
+    ImageOf<PixelMono> *img_Y;        // extended output Y image
+	ImageOf<PixelMono> *img_UV;       // extended output Y image
+	ImageOf<PixelMono> *img_out_Y;    // output Y image
+	ImageOf<PixelMono> *img_out_UV;   // output UV image
 
-    /* thread parameters: they are pointers so that they refer to the original variables */
-    BufferedPort<ImageOf<PixelRgb> >  *imageInputPort;
-    BufferedPort<ImageOf<PixelMono> > *imageOutPortY;
-    BufferedPort<ImageOf<PixelMono> > *imageOutPortUV;  
+    BufferedPort<ImageOf<PixelRgb> >  *imageInputPort; //input port log polar RGB
+    BufferedPort<ImageOf<PixelMono> > *imageOutPortY;  //output port intensity process
+    BufferedPort<ImageOf<PixelMono> > *imageOutPortUV; //output port colour process
 
-    IppiSize srcsize, origsize;
-    int width, height;
-    int ncsscale;
-    bool allocated, getImage;
+    IppiSize srcsize, origsize;  //ippsises used for calculations
+    int ncsscale;  // center surround scale
+    bool allocated;// flag to check if the variables have been already allocated
    
-    Ipp8u** pyuva;
-    CentSur * centerSurr;
-    Ipp32f *cs_tot_32f;
-
-    Ipp8u *orig, *colour, *yuva_orig, *y_orig, *u_orig, *v_orig, *tmp, *ycs_out, *colcs_out;
-    int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f;
+    CentSur * centerSurr; 
+   
+    Ipp8u *orig;        //extended input image
+    Ipp8u *colour;      //extended rgb+a image
+    Ipp8u *yuva_orig;   //extended yuv+a image    
+    Ipp8u** pyuva;      //extended yuv+a image used to extract y, u and v plane
+    
+    Ipp8u *y_orig;      //extended y plane
+    Ipp8u *u_orig;      //extended u plane
+    Ipp8u *v_orig;      //extended v plane
+    Ipp8u *tmp;         //extended tmp containing alpha
+    Ipp32f *cs_tot_32f; //extended 
+    Ipp8u *ycs_out;     //final extended intensity center surround image
+    Ipp8u *colcs_out;   //final extended coulour center surround image
+    int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f; //images rowsizes
 
 public:
 
-   /* class methods */
+    /**
+    * constructor
+    */
     YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPortY, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV);
+    /**
+     * destructor
+     */
     ~YUVThread();
-    /* the following is not used but left for now to check bugs with Francesco Rea*/
+
+    /**
+    * function that extendes the original image of the desired value for future convolutions (in-place operation)
+    * @param origImage originalImage
+    * @param extDimension dimension of the extention on each of the sides of the image
+    */
     ImageOf<PixelRgb>* extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize);
 
     bool threadInit();     
@@ -204,12 +221,11 @@ public:
 class yuvProc:public RFModule
 {
     /* module parameters */
-    string moduleName; 
-    string inputPortName;
-
-    string outputPortNameY;  
-    string outputPortNameUV;    
-    string handlerPortName;
+    string moduleName;              //string containing module name 
+    string inputPortName;           //string containing input port name 
+    string outputPortNameY;         //string containing output intensity port name 
+    string outputPortNameUV;        //string containing output colour port name 
+    string handlerPortName;         //string containing handler port name
 
     /* class variables */
     BufferedPort<ImageOf<PixelRgb> > inputPort;  // input port
