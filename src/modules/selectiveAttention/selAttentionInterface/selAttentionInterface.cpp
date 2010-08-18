@@ -769,12 +769,7 @@ void cleanExit() {
 int myMain(int argc, char* argv[]) {
     yarp::os::Network yarp;
 
-    yarp::os::ResourceFinder rf;
-    rf.setVerbose(true);
-    rf.setDefaultConfigFile("selAttentionInterface.ini"); //overridden by --from parameter
-    rf.setDefaultContext("logPolarAttention/conf");   //overridden by --context parameter
-    rf.configure("ICUB_ROOT", argc, argv);
-
+    
     //initialize threads in gtk, copied almost verbatim from
     // http://library.gnome.org/devel/gdk/unstable/gdk-Threads.htm
     g_thread_init (NULL);
@@ -784,7 +779,14 @@ int myMain(int argc, char* argv[]) {
     _frameN = 0;
     timeout_ID = 0;
     setOptionsToDefault();
-    configure(rf);
+
+    yarp::os::ResourceFinder* rf;
+    rf=new ResourceFinder();
+    rf->setVerbose(true);
+    rf->setDefaultConfigFile("selAttentionInterface.ini"); //overridden by --from parameter
+    rf->setDefaultContext("logPolarAttention/conf");   //overridden by --context parameter
+    rf->configure("ICUB_ROOT", argc, argv);
+    configure(*rf);
     
     // Parse command line parameters, do this before
     // calling gtk_init(argc, argv) otherwise weird things 
