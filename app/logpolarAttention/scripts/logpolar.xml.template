@@ -1,100 +1,40 @@
 <application>
-	<name>AttentionMechanism Left </name>
- 	<dependencies>
-		<port>/icub/cam/left/logpolar</port> 
-	</dependencies>
-	<module>
-		<name>visualFilter</name>
-		<parameters>--name /visualFilter/icub/left_cam</parameters>
-		<tag>vFilter</tag>
-		<node>/powerNode1</node>
-	</module>
-	<module>
-		<name>yuvProcessor</name>
-		<parameters>--name yuvProc/icub/left_cam</parameters>
-		<tag>yuvProcessorLeft</tag>
-		<node>/powerNode1</node>
-	</module>
-	<module>
-		<name>saliencyBlobFinder</name>
-		<parameters>--from saliencyBlobFinderLeft.ini --context logpolarAttention/conf</parameters>
-		<tag>saliencyBlobFinderLeft</tag>
-		<node>/powerNode1</node>
-	</module>
-	<module>
-		<name>selectiveAttentionEngine</name>
-		<parameters>--from selectiveAttentionLeft.ini --context logpolarAttention/conf </parameters>
-		<tag>selectiveAttLeft</tag>
-		<node>/powerNode1</node>
-	</module>
-	<connection>
-                <from>/icub/cam/left/logpolar</from>
-		<to>/visualFilter/icub/left_cam/image:i</to>
-		<protocol>mcast</protocol>
-	</connection>
-        <connection>
-                <from>/icub/cam/left/logpolar</from>
-		<to>/yuvProc/icub/left_cam/image:i</to>
-		<protocol>mcast</protocol>
-	</connection>
-	<connection>
-      	        <from>/visualFilter/icub/left_cam/rg:o</from>
-		<to>/blobFinder/icub/left_cam/rg:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-                <from>/visualFilter/icub/left_cam/gr:o</from>
-		<to>/blobFinder/icub/left_cam/gr:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-                <from>/visualFilter/icub/left_cam/by:o</from>
-		<to>/blobFinder/icub/left_cam/by:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-                <from>/visualFilter/icub/left_cam/image:o</from>
-		<to>/blobFinder/icub/left_cam/edges:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-                <from>/icub/cam/left/logpolar</from>
-		<to>/blobFinder/icub/left_cam/image:i</to>
-		<protocol>mcast</protocol>
-	</connection>
-	<connection>
-                <from>/icub/cam/left/logpolar</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/image:i</to>
-		<protocol>mcast</protocol>
-	</connection>
-	<connection>
-        	<from>/blobFinder/icub/left_cam/salienceMap:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/map1:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-        	<from>/visualFilter/icub/left_cam/rg:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/map2:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-        	<from>/visualFilter/icub/left_cam/gr:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/map3:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-        	<from>/visualFilter/icub/left_cam/by:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/map4:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-        	<from>/yuvProc/icub/left_cam/Y/image:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/map5:i</to>
-		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-        	<from>/yuvProc/icub/left_cam/UV/image:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/map6:i</to>
-		<protocol>shmem</protocol>
-	</connection>
+<name>Display logpolar images</name>
+<dependencies>
+      <port>/pc104</port>
+</dependencies>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/logp/left --x 0 --y 50 --synch</parameters>
+      <node>icub15</node>
+      <tag>icublogpleft</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/logp/right --x 320 --y 50 --synch</parameters>
+      <node>icub15</node>
+      <tag>icublogpright</tag>
+   </module>
+   <module>
+      <name>logpolarRemapper</name>
+      <parameters>--remote /icub/cam/left --width 480 --height 480</parameters>
+      <node>icub15</node>
+      <tag>remapperleft</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view/left/rec --x 640 --y 50 --synch</parameters>
+      <node>icub15</node>
+      <tag>viewremapperleft</tag>
+   </module>
+<connection>
+  <output>/icub/cam/left/logpolar</output>
+  <input>/icub/logp/left</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right/logpolar</output>
+  <input>/icub/logp/right</input>
+  <protocol>mcast</protocol>
+</connection>
 </application>

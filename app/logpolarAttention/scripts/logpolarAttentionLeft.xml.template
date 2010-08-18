@@ -22,116 +22,48 @@
 		<node>/powerNode1</node>
 	</module>
 	<module>
-		<name>saliencyBlobFinderInterface</name>
-		<parameters>--name /blobFinderInterface/icub/left_cam </parameters>
-		<tag>saliencyBlobFinderInterfaceLeft</tag>
-		<node>/console</node>
-	</module>
-	<module>
 		<name>selectiveAttentionEngine</name>
 		<parameters>--from selectiveAttentionLeft.ini --context logpolarAttention/conf </parameters>
 		<tag>selectiveAttLeft</tag>
 		<node>/powerNode1</node>
 	</module>
-	<module>
-		<name>selectiveAttentionInterface</name>
-		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
-		<tag>selectiveAttInterface</tag>
-		<node>/console</node>
-	</module>
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/outputView --x 0 --y 600 --synch</parameters>
-		<tag>blobFinderOutLeft</tag>
-		<node>/console</node>
-	</module>
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/output3View --x 300 --y 600 --synch</parameters>
-		<tag>blobFinderOut3Left</tag>
-		<node>/console</node>
-	</module>
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/salienceView --x 300 --y 400 --synch</parameters>
-		<tag>salienceMapView</tag>
-		<node>/console</node>
-	</module>
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/checkView --x 600 --y 600 --synch</parameters>
-		<tag>blobFinderCheck</tag>
-		<node>/console</node>
-	</module>
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/attentionView --x 900 --y 600 --synch</parameters>
-		<tag>attView</tag>
-		<node>/console</node>
-	</module>
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/combinationView --x 1200 --y 600 --synch</parameters>
-		<tag>combView</tag>
-		<node>/console</node>
-	</module>
 	<connection>
-      	<from>/icub/cam/left/logpolar</from>
+                <from>/icub/cam/left/logpolar</from>
 		<to>/visualFilter/icub/left_cam/image:i</to>
 		<protocol>mcast</protocol>
 	</connection>
+        <connection>
+                <from>/icub/cam/left/logpolar</from>
+		<to>/yuvProc/icub/left_cam/image:i</to>
+		<protocol>mcast</protocol>
+	</connection>
 	<connection>
-      	<from>/visualFilter/icub/left_cam/rg:o</from>
+      	        <from>/visualFilter/icub/left_cam/rg:o</from>
 		<to>/blobFinder/icub/left_cam/rg:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-      	<from>/visualFilter/icub/left_cam/gr:o</from>
+                <from>/visualFilter/icub/left_cam/gr:o</from>
 		<to>/blobFinder/icub/left_cam/gr:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-      	<from>/visualFilter/icub/left_cam/by:o</from>
+                <from>/visualFilter/icub/left_cam/by:o</from>
 		<to>/blobFinder/icub/left_cam/by:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-      	<from>/visualFilter/icub/left_cam/image:o</from>
+                <from>/visualFilter/icub/left_cam/image:o</from>
 		<to>/blobFinder/icub/left_cam/edges:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-      	<from>/blobFinder/icub/left_cam/image:o</from>
-		<to>/icub/left_cam/outputView</to>
-		<protocol>udp</protocol>
-	</connection>
-	<connection>
-      	<from>/blobFinder/icub/left_cam/imageC3:o</from>
-		<to>/icub/left_cam/output3View</to>
-		<protocol>udp</protocol>
-	</connection>
-		<connection>
-      	<from>/blobFinder/icub/left_cam/salienceMap:o</from>
-		<to>/icub/left_cam/salienceView</to>
-		<protocol>udp</protocol>
-	</connection>
-	<connection>
-      	<from>/blobFinder/icub/left_cam/check:o</from>
-		<to>/icub/left_cam/checkView</to>
-		<protocol>udp</protocol>
-	</connection>
-	<connection>
-      	<from>/icub/cam/left/logpolar</from>
+                <from>/icub/cam/left/logpolar</from>
 		<to>/blobFinder/icub/left_cam/image:i</to>
 		<protocol>mcast</protocol>
 	</connection>
 	<connection>
-        	<from>/blobFinderInterface/icub/left_cam/command:o</from>
-		<to>/blobFinder/icub/left_cam</to>
-		<protocol>udp</protocol>
-	</connection>
-	<connection>
-	<from>/icub/cam/left/logpolar</from>
+                <from>/icub/cam/left/logpolar</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/image:i</to>
 		<protocol>mcast</protocol>
 	</connection>
@@ -164,20 +96,5 @@
         	<from>/yuvProc/icub/left_cam/UV/image:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map6:i</to>
 		<protocol>shmem</protocol>
-	</connection>
-	<connection>
-        	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
-		<to>/icub/left_cam/attentionView</to>
-		<protocol>udp</protocol>
-	</connection>
-	<connection>
-        	<from>/selectiveAttentionEngine/icub/left_cam/combination:o</from>
-		<to>/icub/left_cam/combinationView</to>
-		<protocol>udp</protocol>
-	</connection>
-	<connection>
-        	<from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam</to>
-		<protocol>udp</protocol>
 	</connection>
 </application>
