@@ -99,6 +99,7 @@ private:
 	double *param1;
 	double *param2;
 	double *param3;
+	int    *maxPWM;
 	double *pos;
 	double *vel;
 	Pid    *original_pid;

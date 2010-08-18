@@ -32,6 +32,7 @@ iCubArmCalibratorJ4::iCubArmCalibratorJ4()
     param3 = NULL;
 	original_pid = NULL;
     limited_pid = NULL;
+	maxPWM = NULL;
     pos = NULL;
     vel = NULL;
     homeVel=0;
@@ -64,6 +65,7 @@ bool iCubArmCalibratorJ4::open (yarp::os::Searchable& config)
     param1 = new double[nj];
     param2 = new double[nj];
     param3 = new double[nj];
+	maxPWM = new int[nj];
 
     pos = new double[nj];
     vel = new double[nj];
@@ -109,6 +111,16 @@ bool iCubArmCalibratorJ4::open (yarp::os::Searchable& config)
 
     for (i = 1; i < xtmp.size(); i++)
         homeVel[i-1] = xtmp.get(i).asDouble();
+   if (p.findGroup("CALIBRATION").check("MaxPWM")) 
+   {
+	   xtmp = p.findGroup("CALIBRATION").findGroup("MaxPWM");
+	   for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
+   }
+   else
+   {
+	   fprintf(stderr, "ARMCALIB::MaxPWM parameter not found, assuming 60\n");
+	   for (i = 1; i < nj+1; i++) maxPWM[i-1] = 60;
+   }
 
     return true;
 }
@@ -124,6 +136,8 @@ bool iCubArmCalibratorJ4::close ()
     if (param3 != NULL) delete[] param3;
     param3 = NULL;
 
+	if (maxPWM != NULL) delete [] maxPWM;
+	maxPWM = NULL;
     if (original_pid != NULL) delete [] original_pid;
 	original_pid = NULL;
     if (limited_pid != NULL) delete [] limited_pid;
@@ -184,8 +198,8 @@ bool iCubArmCalibratorJ4::calibrate(DeviceDriver *dd)
     {
 		iPids->getPid(k,&original_pid[k]);
 		limited_pid[k]=original_pid[k];
-		limited_pid[k].max_int=60;
-		limited_pid[k].max_output=60;
+		limited_pid[k].max_int=maxPWM[k];
+		limited_pid[k].max_output=maxPWM[k];
 		iPids->setPid(k,limited_pid[k]);
 
         fprintf(stderr, "ARMCALIB::Calling enable amp for joint %d\n", k);
