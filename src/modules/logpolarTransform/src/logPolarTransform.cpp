@@ -195,10 +195,7 @@ bool LogPolarTransform::respond(const Bottle& command, Bottle& reply)
     string helpMessage =  string(getName().c_str()) + 
                         " commands are: \n" +  
                         "help \n" + 
-                        "quit \n" + 
-                        "set overlap <n> ... set the overlap of the receptive fields \n" + 
-                        "(where <n> is an real number) \n";
-
+                        "quit \n";
     reply.clear(); 
 
     if (command.get(0).asString()=="quit") {
@@ -208,12 +205,6 @@ bool LogPolarTransform::respond(const Bottle& command, Bottle& reply)
     else if (command.get(0).asString()=="help") {
         cout << helpMessage;
         reply.addString("ok");
-    }
-    else if (command.get(0).asString()=="set") {
-        if (command.get(1).asString()=="overlap") {
-            overlap = command.get(2).asDouble(); // set parameter value
-            reply.addString("ok");
-        }
     }
     return true;
 }
@@ -266,8 +257,8 @@ bool LogPolarTransformThread::threadInit()
     // the logpolar mapping has always depth 3 (RGB) but we need to copy the input image in case it's monochrome.
     const int depth = 3; 
  
-    cout << "||| logPolarTransformThread: width = " << width << " " << height << endl;
-    cout << "||| logPolarTransformThread: angles = " << *anglesValue << " " << *ringsValue << endl;
+    cout << "||| logPolarTransformThread: width = " << width << " height = " << height << endl;
+    cout << "||| logPolarTransformThread: angles = " << *anglesValue << " rings = " << *ringsValue << endl;
 
     /* create the input image of the correct resolution  */
     if (*directionValue == CARTESIAN2LOGPOLAR) {
@@ -291,9 +282,6 @@ void LogPolarTransformThread::run() {
         if (image != 0) 
         {
             if (*directionValue == CARTESIAN2LOGPOLAR) {
-                // LATER: check whether we actually need this copy.
-                //*cartesian = *image;   
-
                 // adjust padding.
                 if (image->getPadding() != 0) {
                     const int byte = image->width() * sizeof(PixelRgb);
@@ -326,9 +314,6 @@ void LogPolarTransformThread::run() {
                 imagePortOut->write();
             }
             else {
-                // LATER: check whether we actually need this copy.
-                //*logpolar = *image;   
-                
                 // adjust padding.
                 if (image->getPadding() != 0) {
                     int i;
@@ -343,6 +328,7 @@ void LogPolarTransformThread::run() {
 
                 ImageOf<PixelRgb> &outputImage = imagePortOut->prepare();
                 outputImage.resize(*xSizeValue,*ySizeValue);
+                outputImage.zero(); // this requires a fix into the library.
 
                 // LATER: assert whether lp & cart are effectively of the correct size.
                 RCgetCartImg (outputImage.getRawImage(), image->getRawImage(), l2cTable, *xSizeValue * * ySizeValue);
