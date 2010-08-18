@@ -19,12 +19,14 @@
 #include "iCub/yuvProc.h"
 #include <stdio.h>
 #include <stdlib.h>
- #include <string.h>
+#include <string.h>
 #include <cassert>
 
 const int KERNSIZEMAX = 9;
 
-//#include "yarp/os/impl/NameClient.h"
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace std;
 
 bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -34,6 +36,8 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
     moduleName            = rf.check("name", 
                            Value("yuvProc"), 
                            "module name (string)").asString();
+
+    period = rf.check("period", Value(100), "").asInt();
 
    /*
     * before continuing, set the module name before getting any other parameters, 
@@ -103,7 +107,7 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 
     /* create the thread and pass pointers to the module parameters */
 
-    yuvThread = new YUVThread(&inputPort, &outPortY, &outPortUV);
+    yuvThread = new YUVThread(&inputPort, &outPortY, &outPortUV, period);
 
     /* now start the thread to do the work */
     yuvThread->start(); // this calls threadInit() and it if returns true, it then calls run()
@@ -169,7 +173,7 @@ double yuvProc::getPeriod()
     return 0.1;
 }
 
-YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV)
+YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV, int p=100) : RateThread(p)
 {
     imageInputPort    = inputPort;
     imageOutPortY  = outPortY; 
@@ -247,95 +251,91 @@ bool YUVThread::threadInit()
     return true;
 }
 
-void YUVThread::run(){
-
-    while ( isStopping() != true ) { // the thread continues to run until isStopping() returns true
-        
-        //getImage =  ( imageInputPort.getInputCount() > 0 );
-        if (imageInputPort->getInputCount()){
-
-            ImageOf<PixelRgb> *img = imageInputPort->read(false);
-            if(img != NULL) {
-                if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
-                    deallocate();
-                    allocate( img );
-                }
-                
-                 // extend logpolar input image
-                extender( img, KERNSIZEMAX );
-                //create our own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel )
-                ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
-                //convert to RGBA:
-                ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
-                //convert to Y,U,V image channels:
-                ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize);
-                //extract Y, U, V Images
-                pyuva[0]= y_orig;
-                pyuva[1]= u_orig;
-                pyuva[2]= v_orig; 
-                pyuva[3]= tmp; 
-                ippiCopy_8u_C4P4R( yuva_orig, psb4, pyuva, psb, srcsize );
-
-                //intensity process: performs centre-surround uniqueness analysis
-                centerSurr->proc_im_8u( y_orig , psb );
-                ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize );
-               
-                //Colour process U performs centre-surround uniqueness analysis:
-                centerSurr->proc_im_8u( u_orig , psb );
-                ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
-                //Colour process V:performs centre-surround uniqueness analysis:
-                centerSurr->proc_im_8u( v_orig , psb );
-                ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
-
-                //get min max
-                Ipp32f valueMin,valueMax;
-                valueMin = 0.0;
-                valueMax = 0.0;
-                ippiMinMax_32f_C1R( cs_tot_32f, psb_32f, srcsize, &valueMin, &valueMax );
-                //if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f; }
-                ippiScale_32f8u_C1R( cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize, valueMin, valueMax );
-                
-                //revert to yarp images
-                ippiCopy_8u_C1R( ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize );
-                ippiCopy_8u_C1R( colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
-
-                //this is nasty, resizes the images...
-                unsigned char* imgY = img_Y->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
-                unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
-                unsigned char* imgYo = img_out_Y->getRawImage();
-                unsigned char* imgUVo = img_out_UV->getRawImage();
-                int rowsize= img_out_Y->getRowSize();
-                int rowsize2= img_Y->getRowSize();
-
-                for(int row=0; row<origsize.height; row++) {
-                    for(int col=0; col<origsize.width; col++) {
-                        *imgYo  = *imgY;
-                        *imgUVo = *imgUV;
-                        imgYo++;  imgUVo++;
-                        imgY++;   imgUV++;
-                    }    
-                    imgYo+=rowsize - origsize.width;
-                    imgUVo+=rowsize - origsize.width;
-                    imgY+=rowsize2 - origsize.width;
-                    imgUV+=rowsize2 - origsize.width;
-                }
-
-                //output Y centre-surround results to ports
-                if ( imageOutPortY->getOutputCount()>0 ){
-                    imageOutPortY->prepare() = *img_out_Y;	
-                    imageOutPortY->write();
-                }
-
-                //output UV centre-surround results to ports
-                if ( imageOutPortUV->getOutputCount()>0 ){
-                    imageOutPortUV->prepare() = *img_out_UV;	
-                    imageOutPortUV->write();
-                }
-                //reset 
-                ippiSet_32f_C1R( 0.0, cs_tot_32f, psb_32f, srcsize );
+void YUVThread::run() {
+    //
+    if (imageInputPort->getInputCount()) {
+        //
+        ImageOf<PixelRgb> *img = imageInputPort->read(false);
+        if (img != NULL) {
+            if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
+                deallocate();
+                allocate( img );
             }
+                
+            // extend logpolar input image
+            extender( img, KERNSIZEMAX );
+            //create our own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel )
+            ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
+            //convert to RGBA:
+            ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
+            //convert to Y,U,V image channels:
+            ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize);
+            //extract Y, U, V Images
+            pyuva[0]= y_orig;
+            pyuva[1]= u_orig;
+            pyuva[2]= v_orig; 
+            pyuva[3]= tmp; 
+            ippiCopy_8u_C4P4R( yuva_orig, psb4, pyuva, psb, srcsize );
+
+            //intensity process: performs centre-surround uniqueness analysis
+            centerSurr->proc_im_8u( y_orig , psb );
+            ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize );
+               
+            //Colour process U performs centre-surround uniqueness analysis:
+            centerSurr->proc_im_8u( u_orig , psb );
+            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+            //Colour process V:performs centre-surround uniqueness analysis:
+            centerSurr->proc_im_8u( v_orig , psb );
+            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+
+            //get min max
+            Ipp32f valueMin,valueMax;
+            valueMin = 0.0;
+            valueMax = 0.0;
+            ippiMinMax_32f_C1R( cs_tot_32f, psb_32f, srcsize, &valueMin, &valueMax );
+            //if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f; }
+            ippiScale_32f8u_C1R( cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize, valueMin, valueMax );
+                
+            //revert to yarp images
+            ippiCopy_8u_C1R( ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize );
+            ippiCopy_8u_C1R( colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
+
+            //this is nasty, resizes the images...
+            unsigned char* imgY = img_Y->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
+            unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
+            unsigned char* imgYo = img_out_Y->getRawImage();
+            unsigned char* imgUVo = img_out_UV->getRawImage();
+            int rowsize= img_out_Y->getRowSize();
+            int rowsize2= img_Y->getRowSize();
+
+            for(int row=0; row<origsize.height; row++) {
+                for(int col=0; col<origsize.width; col++) {
+                    *imgYo  = *imgY;
+                    *imgUVo = *imgUV;
+                    imgYo++;  imgUVo++;
+                    imgY++;   imgUV++;
+                }    
+                imgYo+=rowsize - origsize.width;
+                imgUVo+=rowsize - origsize.width;
+                imgY+=rowsize2 - origsize.width;
+                imgUV+=rowsize2 - origsize.width;
+            }
+
+            //output Y centre-surround results to ports
+            if ( imageOutPortY->getOutputCount()>0 ){
+                imageOutPortY->prepare() = *img_out_Y;	
+                imageOutPortY->write();
+            }
+
+            //output UV centre-surround results to ports
+            if ( imageOutPortUV->getOutputCount()>0 ){
+                imageOutPortUV->prepare() = *img_out_UV;	
+                imageOutPortUV->write();
+            }
+            //reset 
+            ippiSet_32f_C1R( 0.0, cs_tot_32f, psb_32f, srcsize );
         }
-    } //while
+    }
 }
 
 void YUVThread::threadRelease() 

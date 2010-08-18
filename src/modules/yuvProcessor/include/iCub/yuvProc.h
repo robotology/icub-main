@@ -143,34 +143,29 @@
 #include <string>
 
 #include <yarp/sig/Image.h>
+#include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/Thread.h>
 #include <yarp/os/Time.h>
-//ipp includes
+
 #include <ipp.h>
-//local includes
 #include "iCub/centsur.h"
  
-using namespace std;
-using namespace yarp::os; 
-using namespace yarp::sig;
-  
-class YUVThread : public Thread
+class YUVThread : public yarp::os::RateThread
 {
 private:
 
     /* class variables */
-    ImageOf<PixelRgb> *inputExtImage; // extended input image
-    ImageOf<PixelMono> *img_Y;        // extended output Y image
-	ImageOf<PixelMono> *img_UV;       // extended output Y image
-	ImageOf<PixelMono> *img_out_Y;    // output Y image
-	ImageOf<PixelMono> *img_out_UV;   // output UV image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputExtImage; // extended input image
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *img_Y;        // extended output Y image
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *img_UV;       // extended output Y image
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *img_out_Y;    // output Y image
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *img_out_UV;   // output UV image
 
-    BufferedPort<ImageOf<PixelRgb> >  *imageInputPort; //input port log polar RGB
-    BufferedPort<ImageOf<PixelMono> > *imageOutPortY;  //output port intensity process
-    BufferedPort<ImageOf<PixelMono> > *imageOutPortUV; //output port colour process
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  *imageInputPort; //input port log polar RGB
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > *imageOutPortY;  //output port intensity process
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > *imageOutPortUV; //output port colour process
 
     IppiSize srcsize, origsize;  //ippsises used for calculations
     int ncsscale;  // center surround scale
@@ -192,56 +187,68 @@ private:
     Ipp8u *colcs_out;   //final extended coulour center surround image
     int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f; //images rowsizes
 
-public:
-    /**
-    * constructor
-    */
-    YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPortY, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV);
-    /**
-     * destructor
-     */
-    ~YUVThread();
-
     /**
     * function that extendes the original image of the desired value for future convolutions (in-place operation)
     * @param origImage originalImage
     * @param extDimension dimension of the extention on each of the sides of the image
     */
-    ImageOf<PixelRgb>* extender(ImageOf<PixelRgb>* inputOrigImage,int maxSize);
+    yarp::sig::ImageOf<yarp::sig::PixelRgb>* extender(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputOrigImage, int maxSize);
+
+public:
+    /**
+    * constructor
+    * @param inputPort is the image input port.
+    * @param outPortY is the center surround saliency of the Y channel.
+    * @param outPortUV is the center surround saliency of the UV channels combined.
+    * @param p is the thread period in milliseconds (default = 100).
+    */
+    YUVThread(
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *inputPort, 
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > *outPortY, 
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > *outPortUV, 
+        int p);
+    
+    /**
+     * destructor
+     */
+    ~YUVThread();
 
     bool threadInit();     
     void threadRelease();
     void run(); 
-    void allocate(ImageOf<PixelRgb> *img);
+    void allocate(yarp::sig::ImageOf<yarp::sig::PixelRgb> *img);
     void deallocate();
 };
 
-class yuvProc:public RFModule
+class yuvProc : public yarp::os::RFModule
 {
     /* module parameters */
-    string moduleName;              //string containing module name 
-    string inputPortName;           //string containing input port name 
-    string outputPortNameY;         //string containing output intensity port name 
-    string outputPortNameUV;        //string containing output colour port name 
-    string handlerPortName;         //string containing handler port name
+    std::string moduleName;              //string containing module name 
+    std::string inputPortName;           //string containing input port name 
+    std::string outputPortNameY;         //string containing output intensity port name 
+    std::string outputPortNameUV;        //string containing output colour port name 
+    std::string handlerPortName;         //string containing handler port name
 
     /* class variables */
-    BufferedPort<ImageOf<PixelRgb> > inputPort;  // input port
-    BufferedPort<ImageOf<PixelMono> > outPortY;  // intensity output port
-    BufferedPort<ImageOf<PixelMono> > outPortUV; // chrominance output port
-    Port handlerPort;      //port to handle messages 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inputPort;  // input port
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > outPortY;  // intensity output port
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > outPortUV; // chrominance output port
+    yarp::os::Port handlerPort;      //port to handle messages 
     
     /* pointer to the working thread */
     YUVThread *yuvThread;
+    int period;
+
 public:
 
     bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
     bool interruptModule();                       // interrupt, e.g., the ports 
     bool close();                                 // close and shut down the module
-    bool respond(const Bottle& command, Bottle& reply);
+    bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
     double getPeriod(); 
     bool updateModule();
 };
 
 #endif
+
 //empty line to make gcc happy

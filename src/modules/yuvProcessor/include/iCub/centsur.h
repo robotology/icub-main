@@ -31,8 +31,6 @@
 
 #include <ipp.h>
 
-using namespace std;
-	
 class CentSur { 
 public:
     /**
