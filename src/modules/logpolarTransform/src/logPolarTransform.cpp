@@ -273,6 +273,7 @@ bool LogPolarTransformThread::threadInit()
         cerr << "can't allocate lookup tables" << endl;
         return false;
     }
+    cout << "||| lookup table allocation done" << endl;
 
     inputImage = new ImageOf<PixelRgb>;
     inputImage->resize(width, height);
