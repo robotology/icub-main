@@ -186,8 +186,8 @@ Int16 _version = 0x0172;
  */
 Int32 compute_pwm(byte j)
 {
-	Int32 PWMOUT=0;
-	Int32 IOUT=0;		
+	Int32 PWMoutput = 0;
+	Int32 Ioutput = 0;
 	byte  i=0;
 	Int32 ImpInputError=0;
 	
@@ -293,15 +293,15 @@ Int32 compute_pwm(byte j)
 	case MODE_VELOCITY: 
 	case MODE_CALIB_ABS_POS_SENS:
 		compute_desired(j);
-		PWMOUT = compute_pid2(j);
-		PWMOUT = PWMOUT + _ko[j];
+		PWMoutput = compute_pid2(j);
+		PWMoutput = PWMoutput + _ko[j];
 		_pd[j] = _pd[j] + _ko[j];
 		break;		
 	case MODE_TORQUE: 
 	
 	#ifndef IDENTIF 
-		PWMOUT = compute_pid_torque(j, _strain[0][5]);
-		PWMOUT = PWMOUT + _ko_torque[j];
+		PWMoutput = compute_pid_torque(j, _strain[0][5]);
+		PWMoutput = PWMoutput + _ko_torque[j];
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
 	#endif
 
@@ -314,15 +314,15 @@ Int32 compute_pwm(byte j)
 		if (openloop_identif==true)
 		{
 		 	//for open   loop transfer function
-			_desired_torque[j] = PWMOUT = (Int16)100*(sin(wt[j]));      
+			_desired_torque[j] = PWMoutput = (Int16)100*(sin(wt[j]));      
 		}
 		else
 		{
 			//for closed loop transfer function
 			_desired_torque[j]=(Int16)_ki[0]*(sin(wt[j]));
-			PWMOUT = compute_pid_torque(j, 5); 
-		//	PWMOUT -= (-_kr[0] * _speed[1])>>4;
-			PWMOUT = PWMOUT + _ko_torque[j];
+			PWMoutput = compute_pid_torque(j, 5); 
+		//	PWMoutput -= (-_kr[0] * _speed[1])>>4;
+			PWMoutput = PWMoutput + _ko_torque[j];
 			_pd_torque[j] = _pd_torque[j] + _ko_torque[j];	
 		}	
 	#endif
@@ -337,7 +337,7 @@ Int32 compute_pwm(byte j)
 		compute_desired(j); 
 		IOUT = compute_pid2(j); 	
 		ENFORCE_CURRENT_LIMITS(j, IOUT); 
-		PWMOUT = compute_current_pid(j); 		
+		PWMoutput = compute_current_pid(j); 		
 		break;
 	
 #else //all other firmware versions
@@ -345,16 +345,16 @@ Int32 compute_pwm(byte j)
 	case MODE_VELOCITY:
 	case MODE_CALIB_ABS_POS_SENS:
 		compute_desired(j);
-		PWMOUT = compute_pid2(j);
-		PWMOUT = PWMOUT + _ko[j];
+		PWMoutput = compute_pid2(j);
+		PWMoutput = PWMoutput + _ko[j];
 		_pd[j] = _pd[j] + _ko[j];
 	break;
 	case MODE_OPENLOOP:
-		PWMOUT = _ko[j];
+		PWMoutput = _ko[j];
 	break;
 	case MODE_TORQUE: 
-		PWMOUT = compute_pid_torque(j, _strain_val[j]);
-		PWMOUT = PWMOUT + _ko_torque[j];
+		PWMoutput = compute_pid_torque(j, _strain_val[j]);
+		PWMoutput = PWMoutput + _ko_torque[j];
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
 	break;
 	case MODE_IMPEDANCE_POS:
@@ -373,14 +373,14 @@ Int32 compute_pwm(byte j)
 		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(_error_impedance[j]);
 		_desired_torque[j] += (Int32)_ko_imp[j];
 		_desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
-		PWMOUT = compute_pid_torque(j, _strain_val[j]);
-		PWMOUT = PWMOUT + _ko_torque[j];
+		PWMoutput = compute_pid_torque(j, _strain_val[j]);
+		PWMoutput = PWMoutput + _ko_torque[j];
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
 	break;
 #endif
 	
 	case MODE_CALIB_HARD_STOPS:
-		PWMOUT = _pwm_calibration[j];
+		PWMoutput = _pwm_calibration[j];
 		_counter_calib +=1;
 		break;
 		
@@ -397,17 +397,17 @@ Int32 compute_pwm(byte j)
 	#ifdef IDENTIF 
 		reset_identif(j);
 	#endif	
-		PWMOUT=0;
+		PWMoutput=0;
 	break; 
 	}
 	
 	
-	#ifdef SMOOTH_PID_CTRL
-	PWMOUT = compute_filtpid(j, PWMOUT);
-	#endif
+#ifdef SMOOTH_PID_CTRL
+	PWMoutput = compute_filtpid(j, PWMoutput);
+#endif
 	
-	return PWMOUT;
-} 
+	return PWMoutput;
+}
 
 /*
  * compute PID torque (integral is implemented).
@@ -959,14 +959,26 @@ bool read_force_data (byte jnt, byte strain_num, byte strain_chan)
 		_control_mode[jnt] == MODE_IMPEDANCE_POS ||
 		_control_mode[jnt] == MODE_IMPEDANCE_VEL )
 		{
+			if (strain_num==-1)
+			{
+				_control_mode[jnt] = MODE_IDLE;	
+				_pad_enabled[jnt] = false;
+
+				#ifdef DEBUG_CAN_MSG					
+					can_printf("WARN:force control not allowed jnt:%d",jnt);
+				#endif
+								
+				PWM_outputPadDisable(jnt);	
+				_strain_val[jnt]=0;
+				return false;				
+			}
 			if (_strain_wtd[strain_num]==0)
 			{
 				_control_mode[jnt] = MODE_IDLE;	
 				_pad_enabled[jnt] = false;
 					
-				can_printf("WDT:strain%d",jnt);	//@@@ DEBUG: REMOVE ME LATER
 				#ifdef DEBUG_CAN_MSG
-					can_printf("WARN:strain watchdog! disabling pwm");				
+					can_printf("WARN:strain watchdog disabling pwm jnt:%d",jnt);				
 				#endif	
 				
 				PWM_outputPadDisable(jnt);	
