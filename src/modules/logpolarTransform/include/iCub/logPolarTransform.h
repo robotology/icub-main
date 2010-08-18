@@ -3,7 +3,7 @@
 /** 
  * @ingroup icub_module
  *
- * \defgroup icub_logPolarTransform logPolarTransform
+ * \defgroup icub_logpolarTransform logpolarTransform
  *
  * Perform a log-polar transform on an input image and generate a transformed output image.
  * The direction of the transform, from Cartesian to log-polar or vice versa, is specified by a flag in the configuration file.
@@ -22,7 +22,7 @@
  * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
  * (e.g. \c --from file.ini). The value part can be changed to suit your needs; the default values are shown below. 
  *
- * - \c from \c logPolarTransform.ini   \n    
+ * - \c from \c logpolarTransform.ini   \n    
  *   specifies the configuration file
  *
  * - \c context \c LogPolarTransform/conf  \n
@@ -76,7 +76,7 @@
  *
  *  <b>Input ports</b>
  *
- *  - \c /logPolarTransform \n
+ *  - \c /logpolarTransform \n
  *    This port is used to change the parameters of the module at run time or stop the module
  *    The following commands are available
  * 
@@ -90,14 +90,14 @@
  *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /LogPolarTransform
  *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
- *  - /logPolarTransform/image:i
+ *  - /logpolarTransform/image:i
  *
  * <b>Output ports</b>
  *
- *  - \c /logPolarTransform
+ *  - \c /logpolarTransform
  *    see above
  *
- *  - \c /logPolarTransform/image:o
+ *  - \c /logpolarTransform/image:o
  *
  * <b>Port types </b>
  *
@@ -117,7 +117,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * \c logPolarTransform.ini  in \c $ICUB_ROOT/app/logPolarTransform/conf
+ * \c logpolarTransform.ini  in \c $ICUB_ROOT/app/logpolarTransform/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -125,8 +125,8 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from lp2cart.ini  </tt>
- * <tt>logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from cart2lp.ini  </tt>
+ * <tt>logpolarTransform --name logPolarTransform --context logpolarTransform/conf --from lp2cart.ini  </tt>
+ * <tt>logpolarTransform --name logpolarTransform --context logpolarTransform/conf --from cart2lp.ini  </tt>
  *
  * \author 
  *
@@ -136,7 +136,7 @@
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at $ICUB_ROOT/src/logPolarTransform/include/iCub/logPolarTransform.h
+ * This file can be edited at $ICUB_ROOT/src/logpolarTransform/include/iCub/logPolarTransform.h
  * 
  */
 
