@@ -237,7 +237,10 @@ Int32 compute_pwm(byte j)
 		PWMoutput = compute_pid2(j);
 		PWMoutput = PWMoutput + _ko[j];
 		_pd[j] = _pd[j] + _ko[j];
-		break;
+	break;
+	case MODE_OPENLOOP:
+		PWMoutput = _ko[j];
+	break;
 	case MODE_TORQUE: 
 		PWMoutput = compute_pid_torque(j, _strain_val[j]);
 		PWMoutput = PWMoutput + _ko_torque[j];
@@ -654,7 +657,7 @@ Int32 step_velocity (byte jj)
 	//since the desired velocity is expressed in
 	//[16*encoders_tics/ms] we divide the desired
 	//velocity by 16 with a shift of 4 bits
-	//(more in general: _desired_vel[jj] wich has a default value of 4)
+	//(more in general: _desired_vel[jj] which has a default value of 4)
 	_tmp_desired_vel = (__abs(_desired_vel[jj]) >> _vel_shift[jj]);
 	if (_desired_vel[jj] > 0)
 		u0 =   _tmp_desired_vel * CONTROLLER_PERIOD;
@@ -706,6 +709,7 @@ void compute_desired(byte i)
 		switch (_control_mode[i])
 		{
 		case MODE_POSITION:
+		case MODE_IMPEDANCE_POS:
 		case MODE_CALIB_ABS_AND_INCREMENTAL:
 			_desired[i] = step_trajectory (i);
 			break;
@@ -728,11 +732,12 @@ void compute_desired(byte i)
 			break;
 							
 		case MODE_VELOCITY:
+		case MODE_IMPEDANCE_VEL:
 			_desired[i] += step_trajectory_delta (i);
 			_desired[i] += step_velocity (i);
 			// checks if the velocity messages streaming
 			// has been interrupted (i.e. last message
-			// received  more than VELOCITY_TIMEOUT ms ago)
+			// received  more than _vel_timeout ms ago)
 			if (_set_vel[i] != 0)
 			  	{
 			    	_vel_counter[i]++;

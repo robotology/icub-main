@@ -70,6 +70,7 @@
 #define MODE_CALIB_HARD_STOPS				0x20
 //#define MODE_HANDLE_HARD_STOPS				0x30
 #define MODE_CALIB_ABS_AND_INCREMENTAL		0x40
+#define MODE_OPENLOOP              			0x50
 
 //   Calibration Type Messages 
 #define CALIB_HARD_STOPS            0 
