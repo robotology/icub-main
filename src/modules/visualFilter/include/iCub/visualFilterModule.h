@@ -83,9 +83,9 @@
  *    This port is used to change the parameters of the module at run time or stop the module. \n
  *    The following commands are available
  * 
- *    \c help \n
- *    \c quit \n
- *    \c set \c thr \c <n>   ... set the threshold for binary segmentation of the input RGB image 
+ *  -  \c help \n
+ *  -  \c quit \n
+ *  -  \c set \c thr \c <n>   ... set the threshold for binary segmentation of the input RGB image 
  *    (where \c <n> is an integer number)
  *
  *    Note that the name of this port mirrors whatever is provided by the \c --name parameter value
