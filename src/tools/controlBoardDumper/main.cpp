@@ -88,13 +88,13 @@
  * format:
  * \code
  *
- * controlBoardDumper --robot r --part p --rate r --joints (i1 i2 i3...iN) --dataToDump (data1...dataN)
+ * controlBoardDumper --robot r --part p --rate r --joints "(i1 i2 i3...iN)" --dataToDump "(data1...dataN)"
  *
  * \endcode
  * and the example is:
  * \code
  *
- * controlBoardDumper --robot icub --part head --rate 20 --joints "(0 1 2)" --dataToDump (getCurrents getOutputs)
+ * controlBoardDumper --robot icub --part head --rate 20 --joints "(0 1 2)" --dataToDump "(getCurrents getOutputs)"
  *
  * \endcode
 
@@ -149,6 +149,11 @@ int getNumberUsedJoints(Property p, int &n)
         }
     Value& joints =  p.find("joints");
     Bottle *pJoints = joints.asList();
+	if (pJoints == 0)
+	{
+            fprintf(stderr, "Error in option 'joints'\n");
+            return 0;
+	}
     n = pJoints->size();
 
     return 1;
@@ -163,6 +168,11 @@ int getUsedJointsMap(Property p, int n, int* thetaMap)
         }
     Value& joints =  p.find("joints");
     Bottle *pJoints = joints.asList();
+	if (pJoints == 0)
+	{
+            fprintf(stderr, "Error in option 'joints'\n");
+            return 0;
+	}
     if (pJoints->size()!=n)
         {
             fprintf(stderr, "The 'nJoints' and 'joints' params are incompatible");
@@ -198,6 +208,11 @@ int getNumberDataToDump(Property p, int &n)
         }
     Value& list = p.find("dataToDump");
     Bottle *pList = list.asList();
+	if (pList == 0)
+	{
+            fprintf(stderr, "Error in option 'dataToDump'\n");
+            return 0;
+	}
     n = pList->size();
     return 1;
 }
