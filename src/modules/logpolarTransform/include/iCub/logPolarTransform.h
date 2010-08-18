@@ -80,11 +80,9 @@
  *    This port is used to change the parameters of the module at run time or stop the module
  *    The following commands are available
  * 
- *    help \n
- *    quit \n
- *    set overlap <n>   ... set the overlap of the receptive fields
- *    (where <n> is an real number)
- *
+ *  -  help \n
+ *  -  quit \n
+ *  
  *    Note that the name of this port mirrors whatever is provided by the \c  --name \c parameter \c value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
  *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /LogPolarTransform
