@@ -30,6 +30,7 @@
  * @file logPolarTransform.cpp
  * @brief implementation of the logpolar transform module classes (generic logpolar module).
  */
+#include <memory.h>
 
 #include "iCub/logPolarTransform.h"
 
