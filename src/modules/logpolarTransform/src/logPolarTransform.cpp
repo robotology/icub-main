@@ -226,7 +226,7 @@ double LogPolarTransform::getPeriod()
    return 0.1;
 }
 
-LogPolarTransformThread::LogPolarTransformThread(BufferedPort<ImageOf<PixelRgb> > *imageIn, BufferedPort<ImageOf<PixelRgb> > *imageOut, 
+LogPolarTransformThread::LogPolarTransformThread(BufferedPort<FlexImage> *imageIn, BufferedPort<ImageOf<PixelRgb> > *imageOut, 
                                                  int *direction, int *x, int *y, int *angles, int *rings, double *overlap)
 {
     imagePortIn        = imageIn;
@@ -239,12 +239,13 @@ LogPolarTransformThread::LogPolarTransformThread(BufferedPort<ImageOf<PixelRgb> 
     overlapValue       = overlap;
     c2lTable = 0;
     l2cTable = 0;
+    inputImage = 0;
 }
 
 bool LogPolarTransformThread::threadInit() 
 {
     /* grab an image to set the image size */
-    ImageOf<PixelRgb> *image;
+    FlexImage *image;
     do {
         image = imagePortIn->read(true);
     } while (image == NULL && !isStopping());
@@ -272,23 +273,29 @@ bool LogPolarTransformThread::threadInit()
         return false;
     }
 
+    inputImage = new ImageOf<PixelRgb>;
+    inputImage->resize(width, height);
+
     return true;
 }
 
 void LogPolarTransformThread::run() {
     //
     while (isStopping() != true) {
-        ImageOf<PixelRgb> *image = imagePortIn->read(true);
+        FlexImage *image = imagePortIn->read(true);
         if (image != 0) 
         {
+            // copies the input image (generic) into a PixelRgb image.
+            inputImage->copy(*image);
+
             if (*directionValue == CARTESIAN2LOGPOLAR) {
                 // adjust padding.
-                if (image->getPadding() != 0) {
-                    const int byte = image->width() * sizeof(PixelRgb);
-                    unsigned char *d = (unsigned char *)image->getRawImage() + byte;
+                if (inputImage->getPadding() != 0) {
+                    const int byte = inputImage->width() * sizeof(PixelRgb);
+                    unsigned char *d = (unsigned char *)inputImage->getRawImage() + byte;
                     int i;
-                    for (i = 1; i < image->height(); i++) {
-                        unsigned char *s = (unsigned char *)image->getRow(i);
+                    for (i = 1; i < inputImage->height(); i++) {
+                        unsigned char *s = (unsigned char *)inputImage->getRow(i);
                         memmove(d, s, byte);
                         d += byte; 
                     }
@@ -298,7 +305,7 @@ void LogPolarTransformThread::run() {
                 outputImage.resize(*anglesValue,*ringsValue);
 
                 // LATER: assert whether lp & cart are effectively nang * necc as the c2lTable requires.
-                RCgetLpImg (outputImage.getRawImage(), (unsigned char *)image->getRawImage(), c2lTable, *anglesValue * *ringsValue, 0);
+                RCgetLpImg (outputImage.getRawImage(), (unsigned char *)inputImage->getRawImage(), c2lTable, *anglesValue * *ringsValue, 0);
 
                 // adjust padding.
                 if (outputImage.getPadding() != 0) {
@@ -315,12 +322,12 @@ void LogPolarTransformThread::run() {
             }
             else {
                 // adjust padding.
-                if (image->getPadding() != 0) {
+                if (inputImage->getPadding() != 0) {
                     int i;
-                    const int byte = image->width() * sizeof(PixelRgb);
-                    unsigned char *d = image->getRawImage() + byte;
-                    for (i = 1; i < image->height(); i ++) {
-                        unsigned char *s = (unsigned char *)image->getRow(i);
+                    const int byte = inputImage->width() * sizeof(PixelRgb);
+                    unsigned char *d = inputImage->getRawImage() + byte;
+                    for (i = 1; i < inputImage->height(); i ++) {
+                        unsigned char *s = (unsigned char *)inputImage->getRow(i);
                         memmove(d, s, byte);
                         d += byte;
                     }
@@ -331,7 +338,7 @@ void LogPolarTransformThread::run() {
                 outputImage.zero(); // this requires a fix into the library.
 
                 // LATER: assert whether lp & cart are effectively of the correct size.
-                RCgetCartImg (outputImage.getRawImage(), image->getRawImage(), l2cTable, *xSizeValue * * ySizeValue);
+                RCgetCartImg (outputImage.getRawImage(), inputImage->getRawImage(), l2cTable, *xSizeValue * * ySizeValue);
 
                 // adjust padding.
                 if (outputImage.getPadding() != 0) {
@@ -351,6 +358,8 @@ void LogPolarTransformThread::run() {
 }
 
 void LogPolarTransformThread::threadRelease() {
+    if (inputImage) delete inputImage;
+    inputImage = 0;
     freeLookupTables();
 }
 

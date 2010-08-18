@@ -165,6 +165,7 @@
  * -----------
  * 20/09/09  Began development  DV
  * 18/08/10  Removed dependency on fourierVision, simpler.  GM
+ * 18/08/10  Made flexbible input. GM
  */ 
 
 /**
@@ -192,14 +193,11 @@
 class LogPolarTransformThread : public yarp::os::Thread
 {
 private:
-//    yarp::sig::PixelRgb rgbPixel;
-//    yarp::sig::ImageOf<yarp::sig::PixelRgb> *image;
-//    yarp::sig::ImageOf<yarp::sig::PixelRgb> *cartesian;
-//    yarp::sig::ImageOf<yarp::sig::PixelRgb> *logpolar;
-  	    
     /* thread parameters: they are pointers so that they refer to the original variables in LogPolarTransform */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *imagePortIn;
+    yarp::os::BufferedPort<yarp::sig::FlexImage> *imagePortIn;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *imagePortOut;   
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImage;
+
     int *directionValue;     
     int *anglesValue;     
     int *ringsValue;   
@@ -211,7 +209,7 @@ private:
     lp2CartPixel *l2cTable;
 
 public:
-    LogPolarTransformThread(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *imageIn,  yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *imageOut, 
+    LogPolarTransformThread(yarp::os::BufferedPort<yarp::sig::FlexImage > *imageIn,  yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *imageOut, 
                             int *direction, int *x, int *y, int *angles, int  *rings, double *overlap);
     bool threadInit();     
     void threadRelease();
@@ -228,7 +226,7 @@ enum {
 
 class LogPolarTransform : public yarp::os::RFModule
 {
-    int debug;
+    //int debug;
 
     std::string moduleName;
     std::string robotPortName;  
@@ -245,7 +243,7 @@ class LogPolarTransform : public yarp::os::RFModule
 
     /* class variables */
 
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageIn;      // input port
+    yarp::os::BufferedPort<yarp::sig::FlexImage> imageIn;      // input port
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageOut;     // output port
     yarp::os::Port handlerPort;                              //a port to handle messages 
 
