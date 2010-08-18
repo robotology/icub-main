@@ -429,7 +429,7 @@ public:
         static double curr_time = Time::now();
         if (Time::now() - curr_time > 60)
         {
-            printf ("wholeBodyTorqueObserver is alive! running for %d mins.\n",++alive_counter);
+            printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
         }
         readAndUpdate(false);
