@@ -131,19 +131,7 @@ gint clickDA_CB (GtkWidget *widget, GdkEventButton *event, gpointer data);
 // Menubar CBs
 gint menuFileQuit_CB(GtkWidget *widget, gpointer data);
 gint menuHelpAbout_CB(GtkWidget *widget, gpointer data);
-gint menuImageSize_CB(GtkWidget *widget, gpointer data);
-gint menuImageRatio_CB(GtkWidget *widget, gpointer data);
 gint menuImageInterval_CB(GtkWidget *widget, gpointer data);
-gint menuImageFramerate_CB(GtkWidget *widget, gpointer data);
-gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-gint menuFileSet_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-gint menuImageFreeze_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-// Dialogs CBs
-gint saveSingleDelete_CB(GtkWidget *widget, gpointer data);
-gint saveSetDelete_CB(GtkWidget *widget, gpointer data);
-gint saveSingleClicked_CB(GtkWidget *widget, gpointer data);
-gint saveSetStartClicked_CB(GtkWidget *widget, gpointer data);
-gint saveSetStopClicked_CB(GtkWidget *widget, gpointer data);
 
 void setTimedMode(guint dT);
 

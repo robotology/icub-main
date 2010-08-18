@@ -49,7 +49,7 @@ GtkWidget *saveSingleDialog;
 GtkWidget *saveSetDialog;
 GtkWidget *menubar;
 GtkWidget *fileMenu, *imageMenu, *helpMenu;
-GtkWidget *fileItem, *imageItem, *helpItem;
+GtkWidget *fileItem, *helpItem;
 GtkWidget *fileSingleItem, *fileSetItem, *fileQuitItem;
 GtkWidget *imageSizeItem, *imageRatioItem, *imageFreezeItem, *imageFramerateItem;
 GtkWidget *synchroDisplayItem;
@@ -407,229 +407,6 @@ gint menuHelpAbout_CB(GtkWidget *widget, gpointer data) {
 }
 
 
-gint menuImageSize_CB(GtkWidget *widget, gpointer data) {
-    int targetWidth, targetHeight;
-    targetWidth = _resources.imageWidth();
-    targetHeight = _resources.imageHeight();
-    if (targetWidth!=0&&targetHeight!=0) {
-        unsigned int windowH=mainWindow->allocation.height;
-        unsigned int windowW=mainWindow->allocation.width;
-        //unsigned int daH=_resources.drawArea->allocation.height;
-        //unsigned int daW=_resources.drawArea->allocation.width;
-
-        //trick: we compute the new size of the window by difference
-        int daH=200;
-        int daW=200;
-        unsigned int newHeight=(windowH-daH)+targetHeight;
-        unsigned int newWidth=(windowW-daW)+targetWidth;
-        gtk_window_resize(GTK_WINDOW(mainWindow), newWidth, newHeight);
-    }
-    return TRUE;
-}
-
-gint menuImageRatio_CB(GtkWidget *widget, gpointer data) {
-    double ratio;
-    int imgWidth, imgHeight;
-    int targetWidth, targetHeight;
-    imgWidth = _resources.imageWidth();
-    imgHeight = _resources.imageHeight();
-    if (imgWidth!=0&&imgHeight!=0) {
-        unsigned int windowH=mainWindow->allocation.height;
-        unsigned int windowW=mainWindow->allocation.width;
-        int daH=200;
-        int daW=200;
-        //unsigned int daW = _resources.drawArea->allocation.width;
-        //unsigned int daH = _resources.drawArea->allocation.height;
-        ratio = double(imgWidth) / double(imgHeight);
-        targetWidth = int(double(daH) * ratio);
-        targetHeight = daH;
- 
-        //trick: we compute the new size of the window by difference
-        unsigned int newHeight=(windowH-daH)+targetHeight;
-        unsigned int newWidth=(windowW-daW)+targetWidth;
-        gtk_window_resize(GTK_WINDOW(mainWindow), newWidth, newHeight);    }
-    return TRUE;
-}
-
-gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
-    if ( gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget)) ) 
-        {
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSetItem), FALSE);
-            gtk_widget_show_all (saveSingleDialog);
-        } 
-    else 
-        {
-            gtk_widget_hide (saveSingleDialog);
-        }
-
-    return TRUE;
-}
-
-gint menuFileSet_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
-#if GTK_CHECK_VERSION(2,6,0)
-
-    if ( gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget)) ) 
-        {
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSingleItem), FALSE);
-                    
-            gtk_widget_show_all (saveSetDialog);
-        } 
-    else 
-        {
-            gtk_widget_hide (saveSetDialog);
-        }
-
-#endif
-
-    return TRUE;
-}
-
-gint menuSynchroDisplay_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
-    if ( gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget)) ) 
-        {
-            setSynchroMode(); 
-            _options.synch=true;
-        } 
-    else 
-        {
-            setTimedMode(_options.refreshTime);
-            _options.synch=false;
-        }
-    return TRUE;
-}
-
-
-gint menuImageFreeze_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
-    if ( gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget)) ) 
-        {
-            _resources.freeze();    
-        } 
-    else 
-        {
-            _resources.unfreeze();
-        }
-    return TRUE;
-}
-
-gint saveSingleDelete_CB (GtkWidget *widget, gpointer data) {
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSingleItem), FALSE);
-
-    return (TRUE);
-}
-
-gint saveSetDelete_CB (GtkWidget *widget, gpointer data) {
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSetItem), FALSE);
-
-    return (TRUE);
-}
-
-gint saveSingleClicked_CB(GtkWidget *widget, gpointer data) {
-    return (TRUE);
-}
-
-gint saveSetStartClicked_CB(GtkWidget *widget, gpointer data) {
-    _savingSet = true;
-        
-    return (TRUE);
-}
-
-gint saveSetStopClicked_CB(GtkWidget *widget, gpointer data) {
-    _savingSet = false;
-        
-    return (TRUE);
-}
-
-gint menuImageFramerate_CB(GtkWidget *widget, gpointer data) {
-    GtkWidget *dialog;
-    GtkWidget *hbox;
-    GtkWidget *stock;
-
-    GtkWidget *label;
-    GtkWidget *spinner;
-    GtkAdjustment *spinner_adj;
-    gint response;
-
-    dialog = gtk_dialog_new_with_buttons ("New Refresh Time",
-                                          GTK_WINDOW (mainWindow),
-                                          GTK_DIALOG_MODAL,
-                                          GTK_STOCK_OK,
-                                          GTK_RESPONSE_OK,
-                                          GTK_STOCK_CANCEL,
-                                          GTK_RESPONSE_CANCEL,
-                                          NULL);
-
-    hbox = gtk_hbox_new (FALSE, 8);
-    gtk_container_set_border_width (GTK_CONTAINER (hbox), 8);
-    stock = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
-    gtk_box_pack_start (GTK_BOX (hbox), stock, FALSE, FALSE, 0);
-    label = gtk_label_new_with_mnemonic ("Insert new refresh time (in mSec):");
-    gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-    spinner_adj = (GtkAdjustment *) gtk_adjustment_new (_options.refreshTime, 10.0, 1000.0, 1.0, 5.0, 5.0);
-    spinner = gtk_spin_button_new (spinner_adj, 1.0, 0);
-    gtk_box_pack_start (GTK_BOX (hbox), spinner, FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
-    
-    gtk_widget_show_all (hbox);
-    
-    response = gtk_dialog_run (GTK_DIALOG (dialog));
-
-    if (response == GTK_RESPONSE_OK)
-        {
-            _options.refreshTime = (int) gtk_spin_button_get_value (GTK_SPIN_BUTTON(spinner));
-            
-            if (!_options.synch)
-                setTimedMode(_options.refreshTime);
-
-            gchar *msg;
-            msg = g_strdup_printf ("%s",_options.portName);
-            updateStatusbar(statusbar,msg);
-            g_free(msg);
-        }
-
-    gtk_widget_destroy (dialog);
-
-    return (TRUE);
-}
-
-gint clickDA_CB (GtkWidget *widget, GdkEventButton *event, gpointer data) {
-    int imageX, imageY;
-    int clickX, clickY;
-    int daWidth, daHeight;
-    int imageWidth, imageHeight;
-    double ratioX, ratioY;
-
-    imageWidth = _resources.imageWidth();
-    imageHeight = _resources.imageHeight();
-
-    if ( (imageWidth != 0) && (imageHeight != 0) )
-        {
-            daWidth = widget->allocation.width;
-            daHeight = widget->allocation.height;
-            clickX = (int) event->x;
-            clickY = (int) event->y;
-            ratioX = double(clickX) / double(daWidth);
-            ratioY = double(clickY) / double(daHeight);
-            imageX = int(imageWidth * ratioX + 0.5);
-            imageY = int(imageHeight * ratioY + 0.5);
-
-            printf("Transmitting click information...\n");
-            if (_pOutPort!=NULL) {
-                yarp::os::Bottle& bot = _pOutPort->prepare();
-                bot.clear();
-                bot.addInt(imageX);
-                bot.addInt(imageY);
-                //_pOutPort->Content() = _outBottle;
-                _pOutPort->write();
-            }
-    
-        } else {
-            printf("I would send a position, but there's no image for scaling\n");
-        }
-
-    return TRUE;
-}
-
-
 void setTimedMode(guint dT) {
    // ptr_portCallback->mustDraw(false);
     if (timeout_ID!=0)
@@ -666,8 +443,6 @@ GtkWidget* createSaveSingleDialog(void) {
     gtk_widget_set_size_request (GTK_WIDGET(button), 150,50);
     gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 16); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
     gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
-    gtk_signal_connect (GTK_OBJECT (button), "clicked", GTK_SIGNAL_FUNC (saveSingleClicked_CB), NULL);
-    gtk_signal_connect (GTK_OBJECT (dialog), "delete_event", GTK_SIGNAL_FUNC (saveSingleDelete_CB), NULL);
     
     //gtk_container_set_border_width(GTK_CONTAINER(hbox), 5);
     
@@ -700,9 +475,6 @@ GtkWidget* createSaveSetDialog(void) {
     gtk_box_pack_start (GTK_BOX (hbox), saveButton, TRUE, TRUE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
     gtk_box_pack_start (GTK_BOX (hbox), stopButton, TRUE, TRUE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
     gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
-    gtk_signal_connect (GTK_OBJECT (saveButton), "clicked", GTK_SIGNAL_FUNC (saveSetStartClicked_CB), NULL);
-    gtk_signal_connect (GTK_OBJECT (stopButton), "clicked", GTK_SIGNAL_FUNC (saveSetStopClicked_CB), NULL);
-    gtk_signal_connect (GTK_OBJECT (dialog), "delete_event", GTK_SIGNAL_FUNC (saveSetDelete_CB), NULL);
 
     return dialog;
 }
@@ -799,16 +571,10 @@ GtkWidget* createMenubar(void) {
     GtkWidget *menuSeparator;	
     // Submenus Items on menubar
     fileItem = gtk_menu_item_new_with_label ("File");
-    imageItem = gtk_menu_item_new_with_label ("Image");
+    
     helpItem = gtk_menu_item_new_with_label ("Help");
     // Submenu: File 
     fileMenu = gtk_menu_new();
-    fileSingleItem = gtk_check_menu_item_new_with_label ("Save single image..");
-    gtk_menu_append( GTK_MENU(fileMenu), fileSingleItem);
-    gtk_signal_connect( GTK_OBJECT(fileSingleItem), "toggled", GTK_SIGNAL_FUNC(menuFileSingle_CB), mainWindow);
-    fileSetItem = gtk_check_menu_item_new_with_label ("Save a set of images..");
-    gtk_menu_append( GTK_MENU(fileMenu), fileSetItem);
-    gtk_signal_connect( GTK_OBJECT(fileSetItem), "toggled", GTK_SIGNAL_FUNC(menuFileSet_CB), mainWindow);
     menuSeparator = gtk_separator_menu_item_new();
     gtk_menu_append( GTK_MENU(fileMenu), menuSeparator);
     fileQuitItem = gtk_menu_item_new_with_label ("Quit");
@@ -816,27 +582,12 @@ GtkWidget* createMenubar(void) {
     gtk_signal_connect( GTK_OBJECT(fileQuitItem), "activate", GTK_SIGNAL_FUNC(menuFileQuit_CB), mainWindow);
     // Submenu: Image  
     imageMenu = gtk_menu_new();
-    imageSizeItem = gtk_menu_item_new_with_label ("Original size");
-    gtk_menu_append( GTK_MENU(imageMenu), imageSizeItem);
-    gtk_signal_connect( GTK_OBJECT(imageSizeItem), "activate", GTK_SIGNAL_FUNC(menuImageSize_CB), mainWindow);
-    imageRatioItem = gtk_menu_item_new_with_label ("Original aspect ratio");
-    gtk_menu_append( GTK_MENU(imageMenu), imageRatioItem);
-    gtk_signal_connect( GTK_OBJECT(imageRatioItem), "activate", GTK_SIGNAL_FUNC(menuImageRatio_CB), mainWindow);
     menuSeparator = gtk_separator_menu_item_new();
     gtk_menu_append( GTK_MENU(imageMenu), menuSeparator);
-    imageFreezeItem = gtk_check_menu_item_new_with_label ("Freeze");
-    gtk_menu_append( GTK_MENU(imageMenu), imageFreezeItem);
-    gtk_signal_connect( GTK_OBJECT(imageFreezeItem), "toggled", GTK_SIGNAL_FUNC(menuImageFreeze_CB), mainWindow);
     menuSeparator = gtk_separator_menu_item_new();
     gtk_menu_append( GTK_MENU(imageMenu), menuSeparator);
     synchroDisplayItem = gtk_check_menu_item_new_with_label ("Synch display");
-    gtk_menu_append( GTK_MENU(imageMenu), synchroDisplayItem);
-    gtk_signal_connect( GTK_OBJECT(synchroDisplayItem), "toggled", GTK_SIGNAL_FUNC(menuSynchroDisplay_CB), mainWindow);
-    menuSeparator = gtk_separator_menu_item_new();
     gtk_menu_append( GTK_MENU(imageMenu), menuSeparator);
-    imageFramerateItem = gtk_menu_item_new_with_label ("Change refresh interval..");
-    gtk_menu_append( GTK_MENU(imageMenu), imageFramerateItem);
-    gtk_signal_connect( GTK_OBJECT(imageFramerateItem), "activate", GTK_SIGNAL_FUNC(menuImageFramerate_CB), mainWindow);
     // Submenu: Help
     helpMenu = gtk_menu_new();	
     helpAboutItem = gtk_menu_item_new_with_label ("About..");
@@ -844,11 +595,10 @@ GtkWidget* createMenubar(void) {
     gtk_signal_connect( GTK_OBJECT(helpAboutItem), "activate", GTK_SIGNAL_FUNC(menuHelpAbout_CB), mainWindow);
     // linking the submenus to items on menubar
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(fileItem), fileMenu);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(imageItem), imageMenu);
+    
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(helpItem), helpMenu);
     // appending the submenus to the menubar
     gtk_menu_bar_append(GTK_MENU_BAR(menubar), fileItem);
-    gtk_menu_bar_append(GTK_MENU_BAR(menubar), imageItem);
     gtk_menu_item_set_right_justified (GTK_MENU_ITEM (helpItem), TRUE);
     gtk_menu_bar_append(GTK_MENU_BAR(menubar), helpItem);
   
@@ -1316,9 +1066,9 @@ void closePorts() {
     _pOutPort->close();
     bool ok = true;
     if  (ok)
-        g_print("Port %s unregistration succeed!\n", _options.outPortName);
+        printf("Port %s unregistration succeed!\n", _options.outPortName);
     else 
-        g_print("ERROR: Port %s unregistration failed.\n", _options.outPortName);
+        printf("ERROR: Port %s unregistration failed.\n", _options.outPortName);
     delete _pOutPort;
     _pOutPort = NULL;
 
@@ -1343,22 +1093,26 @@ void cleanExit() {
 int myMain(int argc, char* argv[]) {
     yarp::os::Network yarp;
 
-    yarp::os::ResourceFinder rf;
-    rf.setVerbose(true);
-    rf.setDefaultConfigFile("selAttentionInterface.ini"); //overridden by --from parameter
-    rf.setDefaultContext("logPolarAttention/conf");   //overridden by --context parameter
-    rf.configure("ICUB_ROOT", argc, argv);
+    
 
     //initialize threads in gtk, copied almost verbatim from
     // http://library.gnome.org/devel/gdk/unstable/gdk-Threads.htm
     g_thread_init (NULL);
     gdk_threads_init ();
     gdk_threads_enter ();
+    
     createObjects();
     _frameN = 0;
     timeout_ID = 0;
     setOptionsToDefault();
-    configure(rf);
+
+    yarp::os::ResourceFinder* rf;
+    rf=new ResourceFinder();
+    rf->setVerbose(true);
+    rf->setDefaultConfigFile("salBlobFinderInterface.ini"); //overridden by --from parameter
+    rf->setDefaultContext("logPolarAttention/conf");   //overridden by --context parameter
+    rf->configure("ICUB_ROOT", argc, argv);
+    configure(*rf);
     
     // Parse command line parameters, do this before
     // calling gtk_init(argc, argv) otherwise weird things 
@@ -1410,7 +1164,6 @@ exitRoutine:
     gdk_threads_leave ();
 
     closePorts();
-
     deleteObjects();
     return 0;
 }
