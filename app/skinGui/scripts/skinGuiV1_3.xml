@@ -3,37 +3,37 @@
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from lefthand_V1_3.ini</parameters>
-	  <node>console</node>
+	  <node>icubsrv</node>
 	<tag>skinGuiLeftHand</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from righthand_V1_3.ini</parameters>
-	  <node>console</node>
+	  <node>icubsrv</node>
 	<tag>skinGuiRightHand</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from leftforearm_lower.ini</parameters>
-	  <node>console</node>
+	  <node>icubsrv</node>
 	<tag>skinGuiLeftForearm_lower</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from leftforearm_upper.ini</parameters>
-	  <node>console</node>
+	  <node>icubsrv</node>
 	<tag>skinGuiLeftForearm_upper</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from rightforearm_lower.ini</parameters>
-	  <node>console</node>
+	  <node>icubsrv</node>
 	<tag>skinGuiRightForearm_lower</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from rightforearm_upper.ini</parameters>
-	  <node>console</node>
+	  <node>icubsrv</node>
 	<tag>skinGuiRightForearm_upper</tag>
    </module>
 <connection>
