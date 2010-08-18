@@ -246,9 +246,6 @@ LogPolarTransformThread::LogPolarTransformThread(BufferedPort<ImageOf<PixelRgb> 
     anglesValue        = angles;
     ringsValue         = rings;
     overlapValue       = overlap;
-    cartesian = 0;
-    logpolar = 0;
-
     c2lTable = 0;
     l2cTable = 0;
 }
@@ -256,6 +253,7 @@ LogPolarTransformThread::LogPolarTransformThread(BufferedPort<ImageOf<PixelRgb> 
 bool LogPolarTransformThread::threadInit() 
 {
     /* grab an image to set the image size */
+    ImageOf<PixelRgb> *image;
     do {
         image = imagePortIn->read(true);
     } while (image == NULL && !isStopping());
@@ -273,18 +271,8 @@ bool LogPolarTransformThread::threadInit()
 
     /* create the input image of the correct resolution  */
     if (*directionValue == CARTESIAN2LOGPOLAR) {
-        cartesian   = new ImageOf<PixelRgb>;
-        cartesian->resize(width, height);
-        logpolar    = new ImageOf<PixelRgb>;
-        logpolar->resize(*anglesValue, *ringsValue);
         *xSizeValue = width;
         *ySizeValue = height;
-    }
-    else {
-        logpolar    = new ImageOf<PixelRgb>;
-        logpolar->resize(width, height);
-        cartesian   = new ImageOf<PixelRgb>;
-        cartesian->resize(*xSizeValue, *ySizeValue);
     }
 
     cout << "||| initializing the logpolar mapping" << endl;
@@ -377,9 +365,6 @@ void LogPolarTransformThread::run() {
 }
 
 void LogPolarTransformThread::threadRelease() {
-    if (cartesian != 0)  delete cartesian;
-    if (logpolar != 0)   delete logpolar;
-
     freeLookupTables();
 }
 
