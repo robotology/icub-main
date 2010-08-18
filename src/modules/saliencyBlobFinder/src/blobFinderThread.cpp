@@ -35,9 +35,6 @@ const int DEFAULT_THREAD_RATE = 100;
 
 blobFinderThread::blobFinderThread(int rateThread = DEFAULT_THREAD_RATE) : RateThread(rateThread)
 {
-    /* important, makes IPP single threaded! */
-    ippSetNumThreads(1);
-
     saddleThreshold = 10;
     reinit_flag = false;
     resized_flag = false;
@@ -231,6 +228,8 @@ void blobFinderThread::run() {
             saliencePort.write();
         }        
     }
+    else
+        Time::delay(0.5);
 }
 
 /**

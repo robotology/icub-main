@@ -31,7 +31,13 @@
 #include <string.h>
 using namespace std;
 
+#include <ippi.h>
+#include <ippcore.h>
+
 int main(int argc, char *argv[]) {
+    /* important, makes IPP single threaded! */
+    ippSetNumThreads(1);
+
     Network yarp;
     Time::turboBoost();
 

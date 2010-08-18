@@ -18,10 +18,16 @@
 
 #include "iCub/yuvProc.h" 
 
+#include <ippi.h>
+#include <ippcore.h>
+
 using namespace yarp::os;
 
 int main(int argc, char * argv[])
 {
+    /* important, this effectively disables the OMP library parallelization in the IPP */
+    ippSetNumThreads(2);
+
     /* initialize yarp network */ 
     Network yarp;
 

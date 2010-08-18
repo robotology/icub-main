@@ -123,9 +123,6 @@ visualFilterThread::~visualFilterThread() {
 }
 
 bool visualFilterThread::threadInit() {
-    /* important, this effectively disables the OMP library parallelization in the IPP */
-    ippSetNumThreads(1);
-
     /* open ports */ 
     if (!imagePortIn.open(getName("/image:i").c_str())) {
         cout <<": unable to open port "  << endl;

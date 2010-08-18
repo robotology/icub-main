@@ -24,6 +24,8 @@
  */
 
 #include "iCub/visualFilterModule.h" 
+#include <ippi.h>
+#include <ippcore.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -31,17 +33,20 @@ using namespace yarp::sig;
 
 int main(int argc, char * argv[])
 {
-   Network yarp;
-   visualFilterModule module; 
+    /* important, this effectively disables the OMP library parallelization in the IPP */
+    ippSetNumThreads(1);
 
-   ResourceFinder rf;
-   rf.setVerbose(true);
-   rf.setDefaultConfigFile("visualFilterModule.ini"); //overridden by --from parameter
-   rf.setDefaultContext("attentionMechanism/conf");   //overridden by --context parameter
-   rf.configure("ICUB_ROOT", argc, argv);
+    Network yarp;
+    visualFilterModule module; 
+
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultConfigFile("visualFilterModule.ini"); //overridden by --from parameter
+    rf.setDefaultContext("attentionMechanism/conf");   //overridden by --context parameter
+    rf.configure("ICUB_ROOT", argc, argv);
  
-   module.runModule(rf);
-   return 0;
+    module.runModule(rf);
+    return 0;
 }
 
 
