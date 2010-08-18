@@ -10,14 +10,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${logPolar_INCLUDE_DIRS}
     ${YARP_INCLUDE_DIRS}
-    #${iCubVis_INCLUDE_DIRS}	
-    #${FOURIERVISION_INCLUDE_DIRS}
 )
-
-#message("iCubVis_INCLUDE_DIRS: ${iCubVis_INCLUDE_DIRS} ")
-#message("iCubVis_LIBRARIES: ${iCubVis_LIBRARIES} ")
-#message("iKin_LIBRARIES: ${iKin_LIBRARIES}")
-#iCubVis
 
 if (folder_source)
 	add_executable(${PROJECTNAME} ${folder_source} ${header_files})
