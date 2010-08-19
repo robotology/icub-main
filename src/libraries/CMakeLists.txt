@@ -12,7 +12,7 @@ else(ICUB_USE_OpenCV)
 endif(ICUB_USE_OpenCV)
 
 add_subdirectory(iCubDev)
-add_subdirectory(logPolar)
+add_subdirectory(logpolar)
 add_subdirectory(ctrlLib)
 add_subdirectory(iKin)
 add_subdirectory(iDyn)
