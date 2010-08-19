@@ -333,6 +333,7 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 			}
 		}
 		break;
+
 	case VOCAB_GET:
 		//printf("get command received\n");
 		{
@@ -453,20 +454,20 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				response.addInt(int(fgCtrlDC1394->hasFeatureDC1394(cmd.get(1).asInt())));
 				return true;
 			case VOCAB_DRSETVAL: // VOCAB_DRSETVAL 01
-				return fgCtrlDC1394->setFeatureDC1394(cmd.get(1).asInt(),cmd.get(2).asDouble());
+				response.addInt(int(fgCtrlDC1394->setFeatureDC1394(cmd.get(1).asInt(),cmd.get(2).asDouble())));
+                return true;
 			case VOCAB_DRGETVAL: // VOCAB_DRGETVAL 02
 				response.addDouble(fgCtrlDC1394->getFeatureDC1394(cmd.get(1).asInt()));
 				return true;
-
 			case VOCAB_DRHASACT: // VOCAB_DRHASACT 03
 				response.addInt(int(fgCtrlDC1394->hasOnOffDC1394(cmd.get(1).asInt())));
 				return true;
 			case VOCAB_DRSETACT: // VOCAB_DRSETACT 04
-				return fgCtrlDC1394->setActiveDC1394(cmd.get(1).asInt(), (cmd.get(2).asInt())?true:false );
+				response.addInt(int(fgCtrlDC1394->setActiveDC1394(cmd.get(1).asInt(), cmd.get(2).asInt()?true:false)));
+                return true;
 			case VOCAB_DRGETACT: // VOCAB_DRGETACT 05
 				response.addInt(int(fgCtrlDC1394->getActiveDC1394(cmd.get(1).asInt())));
 				return true;
-
 			case VOCAB_DRHASMAN: // VOCAB_DRHASMAN 06
 				response.addInt(int(fgCtrlDC1394->hasManualDC1394(cmd.get(1).asInt())));
 				return true;
@@ -477,13 +478,14 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				response.addInt(int(fgCtrlDC1394->hasOnePushDC1394(cmd.get(1).asInt())));
 				return true;
 			case VOCAB_DRSETMOD: // VOCAB_DRSETMOD 09
-				return fgCtrlDC1394->setModeDC1394(cmd.get(1).asInt(), (cmd.get(2).asInt())?true:false);
+				response.addInt(int(fgCtrlDC1394->setModeDC1394(cmd.get(1).asInt(),cmd.get(2).asInt()?true:false)));
+                return true;
 			case VOCAB_DRGETMOD: // VOCAB_DRGETMOD 10
 				response.addInt(int(fgCtrlDC1394->getModeDC1394(cmd.get(1).asInt())));
 				return true;
 			case VOCAB_DRSETONP: // VOCAB_DRSETONP 11
-				return fgCtrlDC1394->setOnePushDC1394(cmd.get(1).asInt());
-
+				response.addInt(int(fgCtrlDC1394->setOnePushDC1394(cmd.get(1).asInt())));
+                return true;
 			case VOCAB_DRGETMSK: // VOCAB_DRGETMSK 12
 				response.addInt(int(fgCtrlDC1394->getVideoModeMaskDC1394()));
 				return true;
@@ -491,8 +493,8 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				response.addInt(int(fgCtrlDC1394->getVideoModeDC1394()));
 				return true;
 			case VOCAB_DRSETVMD: // VOCAB_DRSETVMD 14
-				return fgCtrlDC1394->setVideoModeDC1394(cmd.get(1).asInt());
-
+				response.addInt(int(fgCtrlDC1394->setVideoModeDC1394(cmd.get(1).asInt())));
+                return true;
 			case VOCAB_DRGETFPM: // VOCAB_DRGETFPM 15
 				response.addInt(int(fgCtrlDC1394->getFPSMaskDC1394()));
 				return true;
@@ -500,15 +502,14 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				response.addInt(int(fgCtrlDC1394->getFPSDC1394()));
 				return true;
 			case VOCAB_DRSETFPS: // VOCAB_DRSETFPS 17
-				return fgCtrlDC1394->setFPSDC1394(cmd.get(1).asInt());
-
-
+				response.addInt(int(fgCtrlDC1394->setFPSDC1394(cmd.get(1).asInt())));
+                return true;
 			case VOCAB_DRGETISO: // VOCAB_DRGETISO 18
 				response.addInt(int(fgCtrlDC1394->getISOSpeedDC1394()));
 				return true;
 			case VOCAB_DRSETISO: // VOCAB_DRSETISO 19
-				return fgCtrlDC1394->setISOSpeedDC1394(cmd.get(1).asInt());
-
+				response.addInt(int(fgCtrlDC1394->setISOSpeedDC1394(cmd.get(1).asInt())));
+                return true;
 			case VOCAB_DRGETCCM: // VOCAB_DRGETCCM 20
 				response.addInt(int(fgCtrlDC1394->getColorCodingMaskDC1394(cmd.get(1).asInt())));
 				return true;
@@ -516,10 +517,11 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				response.addInt(int(fgCtrlDC1394->getColorCodingDC1394()));
 				return true;
 			case VOCAB_DRSETCOD: // VOCAB_DRSETCOD 22
-				return fgCtrlDC1394->setColorCodingDC1394(cmd.get(1).asInt());
-
+				response.addInt(int(fgCtrlDC1394->setColorCodingDC1394(cmd.get(1).asInt())));
+                return true;
 			case VOCAB_DRSETWHB: // VOCAB_DRSETWHB 23
-				return fgCtrlDC1394->setWhiteBalanceDC1394(cmd.get(1).asDouble(),cmd.get(2).asDouble());
+				response.addInt(int(fgCtrlDC1394->setWhiteBalanceDC1394(cmd.get(1).asDouble(),cmd.get(2).asDouble())));
+                return true;
 			case VOCAB_DRGETWHB: // VOCAB_DRGETWHB 24
 				{
 					double b,r;
@@ -531,61 +533,68 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 
 			case VOCAB_DRGETF7M: // VOCAB_DRGETF7M 25
 				{
-					unsigned int xstep,ystep,xdim,ydim;
-					fgCtrlDC1394->getFormat7MaxWindowDC1394(xdim,ydim,xstep,ystep);
+					unsigned int xstep,ystep,xdim,ydim,xoffstep,yoffstep;
+					fgCtrlDC1394->getFormat7MaxWindowDC1394(xdim,ydim,xstep,ystep,xoffstep,yoffstep);
 					response.addInt(xdim);
 					response.addInt(ydim);
 					response.addInt(xstep);
 					response.addInt(ystep);
+					response.addInt(xoffstep);
+					response.addInt(yoffstep);
 				}
 				return true;
 			case VOCAB_DRGETWF7: // VOCAB_DRGETWF7 26
 				{
 					unsigned int xdim,ydim;
-					fgCtrlDC1394->getFormat7WindowDC1394(xdim,ydim);
+                    int x0,y0;
+					fgCtrlDC1394->getFormat7WindowDC1394(xdim,ydim,x0,y0);
 					response.addInt(xdim);
 					response.addInt(ydim);
+                    response.addInt(x0);
+					response.addInt(y0);
 				}
 				return true;
 			case VOCAB_DRSETWF7: // VOCAB_DRSETWF7 27
-				return fgCtrlDC1394->setFormat7WindowDC1394(cmd.get(1).asInt(),cmd.get(2).asInt());
-
+				response.addInt(int(fgCtrlDC1394->setFormat7WindowDC1394(cmd.get(1).asInt(),cmd.get(2).asInt(),cmd.get(3).asInt(),cmd.get(4).asInt())));
+                return true;
 			case VOCAB_DRSETOPM: // VOCAB_DRSETOPM 28
-				return fgCtrlDC1394->setOperationModeDC1394((cmd.get(1).asInt())?true:false);
-
+				response.addInt(int(fgCtrlDC1394->setOperationModeDC1394(cmd.get(1).asInt()?true:false)));
+                return true;
 			case VOCAB_DRGETOPM: // VOCAB_DRGETOPM 29
 				response.addInt(fgCtrlDC1394->getOperationModeDC1394());
 				return true;
-
 			case VOCAB_DRSETTXM: // VOCAB_DRSETTXM 30
-				return fgCtrlDC1394->setTransmissionDC1394((cmd.get(1).asInt())?true:false);
-
+				response.addInt(int(fgCtrlDC1394->setTransmissionDC1394(cmd.get(1).asInt()?true:false)));
+                return true;
 			case VOCAB_DRGETTXM: // VOCAB_DRGETTXM 31
 				response.addInt(fgCtrlDC1394->getTransmissionDC1394());
 				return true;
-			/*
+		    /*
 			case VOCAB_DRSETBAY: // VOCAB_DRSETBAY 32
-			return fgCtrlDC1394->setBayerDC1394(bool(cmd.get(1).asInt()));
-
+				response.addInt(int(fgCtrlDC1394->setBayerDC1394(bool(cmd.get(1).asInt()))));
+                return true;
 			case VOCAB_DRGETBAY: // VOCAB_DRGETBAY 33
-			response.addInt(fgCtrlDC1394->getBayerDC1394());
-			return true;
+				response.addInt(fgCtrlDC1394->getBayerDC1394());
+				return true;
 			*/
 			case VOCAB_DRSETBCS: // VOCAB_DRSETBCS 34
-				return fgCtrlDC1394->setBroadcastDC1394((cmd.get(1).asInt())?true:false);
+				response.addInt(int(fgCtrlDC1394->setBroadcastDC1394(cmd.get(1).asInt()?true:false)));
+                return true;
 			case VOCAB_DRSETDEF: // VOCAB_DRSETDEF 35
-				return fgCtrlDC1394->setDefaultsDC1394();
+				response.addInt(int(fgCtrlDC1394->setDefaultsDC1394()));
+                return true;
 			case VOCAB_DRSETRST: // VOCAB_DRSETRST 36
-				return fgCtrlDC1394->setResetDC1394();
+				response.addInt(int(fgCtrlDC1394->setResetDC1394()));
+                return true;
 			case VOCAB_DRSETPWR: // VOCAB_DRSETPWR 37
-				return fgCtrlDC1394->setPowerDC1394((cmd.get(1).asInt())?true:false);
-
+				response.addInt(int(fgCtrlDC1394->setPowerDC1394(cmd.get(1).asInt()?true:false)));
+                return true;
 			case VOCAB_DRSETCAP: // VOCAB_DRSETCAP 38
-				return fgCtrlDC1394->setCaptureDC1394((cmd.get(1).asInt())?true:false);
-
+				response.addInt(int(fgCtrlDC1394->setCaptureDC1394(cmd.get(1).asInt()?true:false)));
+                return true;
 			case VOCAB_DRSETBPP: // VOCAB_DRSETCAP 39
-				return fgCtrlDC1394->setBytesPerPacketDC1394(cmd.get(1).asInt());	
-
+				response.addInt(int(fgCtrlDC1394->setBytesPerPacketDC1394(cmd.get(1).asInt())));	
+                return true;
 			case VOCAB_DRGETBPP: // VOCAB_DRGETTXM 40
 				response.addInt(fgCtrlDC1394->getBytesPerPacketDC1394());
 				return true;
