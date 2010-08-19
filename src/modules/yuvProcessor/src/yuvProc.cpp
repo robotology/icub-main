@@ -20,72 +20,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cassert>
 
 const int KERNSIZEMAX = 9;
 
-using namespace yarp::os;
-using namespace yarp::sig;
 using namespace std;
+using namespace yarp::os; 
+using namespace yarp::sig;
 
 bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 {    
     /* Process all parameters from both command-line and .ini file */
 
-    /* get the module name which will form the stem of all module port names */
     moduleName            = rf.check("name", 
                            Value("yuvProc"), 
                            "module name (string)").asString();
 
-    period = rf.check("period", Value(100), "").asInt();
-
-   /*
-    * before continuing, set the module name before getting any other parameters, 
-    * specifically the port names which are dependent on the module name
-    */
-   
-    setName(moduleName.c_str());
-
-    /* get the name of the input and output ports, automatically prefixing the module name by using getName() */
- 
-    inputPortName           = "/";
-    inputPortName           += getName(
-                           rf.check("IMG_IN", 
-                           Value("/image:i"),
-                           "Input image port (string)").asString()
-                           );
+    imageType            = rf.check("image", 
+                           Value("yuv"), 
+                           "image type (string)").asString();
     
-   
-    outputPortNameY         = "/";
-    outputPortNameY         += getName(
-                           rf.check("YPort", 
-                           Value("/Y/image:o"),
-                           "Output Y port (string)").asString()
-                           );
-
-    outputPortNameUV       = "/";
-    outputPortNameUV       += getName(
-                           rf.check("UVPort", 
-                           Value("/UV/image:o"),
-                           "Output UV port (string)").asString()
-                           );
-
-    /* do all initialization here */
-    /* open ports  */  
-       
-    if (!inputPort.open(inputPortName.c_str())) {
-        cout << getName() << ": unable to open port " << inputPortName << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-
-    if (!outPortY.open(outputPortNameY.c_str())) {
-        cout << getName() << ": unable to open port " << outputPortNameY << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
-    if (!outPortUV.open(outputPortNameUV.c_str())) {
-        cout << getName() << ": unable to open port " << outputPortNameUV << endl;
-        return false;  // unable to open; let RFModule know so that it won't run
-    }
+    period               = rf.check("period", Value(100), "thread period").asInt();
 
    /*
     * attach a port of the same name as the module (prefixed with a /) to the module
@@ -100,14 +54,10 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
-    attach(handlerPort);                  // attach to port
- 
-    //attachTerminal();                     // attach to terminal (maybe not such a good thing...)
-
+    attach(handlerPort);    // attach to port
 
     /* create the thread and pass pointers to the module parameters */
-
-    yuvThread = new YUVThread(&inputPort, &outPortY, &outPortUV, period);
+    yuvThread = new YUVThread(period, moduleName, imageType);
 
     /* now start the thread to do the work */
     yuvThread->start(); // this calls threadInit() and it if returns true, it then calls run()
@@ -117,32 +67,22 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 
 bool yuvProc::interruptModule()
 {
-    inputPort.interrupt();
-    outPortY.interrupt();
-    outPortUV.interrupt();
     handlerPort.interrupt();
-    yuvThread->stop();
     return true;
 }
 
 bool yuvProc::close()
 {
-    inputPort.close();
-    outPortY.close();
-    outPortUV.close();   
     handlerPort.close();
     /* stop the thread */
     yuvThread->stop();
+    cout << "deleting thread " << endl;
     delete yuvThread;
     return true;
 }
 
 bool yuvProc::respond(const Bottle& command, Bottle& reply) 
 {
-    string helpMessage =  string(getName().c_str()) + 
-                        " commands are: \n" +  
-                        "help \n" + 
-                        "quit \n";
     reply.clear(); 
 
     if (command.get(0).asString()=="quit") {
@@ -150,7 +90,9 @@ bool yuvProc::respond(const Bottle& command, Bottle& reply)
         return false;     
     }
     else if (command.get(0).asString()=="help") {
-        cout << helpMessage;
+        cout << "Options:" << endl << endl;
+        cout << "\t--name       name: module name (default: visUnique)"                    << endl;
+        cout << "\t--image      type: image type to process (default: yuv)"                   << endl;
         reply.addString("ok");
     }
     else{
@@ -161,134 +103,137 @@ bool yuvProc::respond(const Bottle& command, Bottle& reply)
 
 /* Called periodically every getPeriod() seconds */
 
-bool yuvProc::updateModule()
+bool yuvProc::updateModule() 
 {
     return true;
 }
 
-double yuvProc::getPeriod()
+double yuvProc::getPeriod() 
 {
     /* module periodicity (seconds), called implicitly by myModule */
-    
     return 0.1;
-}
-
-YUVThread::YUVThread(BufferedPort<ImageOf<PixelRgb> > *inputPort, BufferedPort<ImageOf<PixelMono> > *outPortY, BufferedPort<ImageOf<PixelMono> > *outPortUV, int p=100) : RateThread(p)
-{
-    imageInputPort    = inputPort;
-    imageOutPortY  = outPortY; 
-    imageOutPortUV  = outPortUV;
-	img_out_Y = NULL;    
-	img_out_UV = NULL;
-    inputExtImage = NULL;
-    img_Y = NULL;    
-	img_UV = NULL;
-    pyuva = NULL;
-    centerSurr = NULL;
-    cs_tot_32f = NULL;
-    orig = NULL;
-    colour = NULL;
-    yuva_orig = NULL;
-    y_orig = NULL; 
-    u_orig = NULL; 
-    v_orig = NULL; 
-    tmp = NULL;
-    ycs_out = NULL; 
-    colcs_out = NULL;
-
-    allocated = false;
-    img_psb = 0;
-    psb4 = 0;
-    psb = 0; 
-    ycs_psb = 0;
-    col_psb = 0;
-    psb_32f = 0;
 }
 
 YUVThread::~YUVThread()
 {
-    delete centerSurr;
-    delete img_out_Y;
-    delete img_out_UV;
-    delete img_Y;
-    delete img_UV;
-    delete inputExtImage;
-    ippiFree(orig);
-    ippiFree(colour); 
-    ippiFree(tmp); 
-    free (pyuva);
-    ippiFree(yuva_orig);
-    ippiFree(y_orig);
-    ippiFree(u_orig);
-    ippiFree(v_orig);
-    ippiFree(cs_tot_32f);
-    ippiFree(colcs_out);
-    ippiFree(ycs_out);
+    
+}
 
-	img_out_Y = NULL;    
+YUVThread::YUVThread( int period, string moduleName, string imgType ):RateThread(period) 
+{
+    isYUV = true;
+    //set up module name
+    this->moduleName = moduleName;
+
+    //set up module name
+    if (imgType == "yuv" || imgType == "YUV") {
+        cout << "will run module using the YUV image colour space" << endl;
+    }else if (imgType == "hsv" || imgType == "HSV") {
+        isYUV = false;
+        cout << "will run module using the HSV image colour space" << endl;
+    }else{
+        cout << "probably an error in the colour space will use default: YUV" << endl;
+    }
+    cout << "initialising Variables" << endl;
+
+    img_out_Y = NULL;    
 	img_out_UV = NULL;
+    img_out_V = NULL;
     inputExtImage = NULL;
     img_Y = NULL;    
 	img_UV = NULL;
+    img_V = NULL;
     pyuva = NULL;
     centerSurr = NULL;
     cs_tot_32f = NULL;
     orig = NULL;
     colour = NULL;
     yuva_orig = NULL;
-    y_orig = NULL; 
-    u_orig = NULL; 
-    v_orig = NULL; 
+    first_plane = NULL; 
+    second_plane  = NULL; 
+    third_plane  = NULL; 
     tmp = NULL;
-    ycs_out = NULL; 
+    ycs_out = NULL;
+    scs_out = NULL; 
+    vcs_out = NULL; 
     colcs_out = NULL;
-}
 
+    allocated = false;
+}
 
 bool YUVThread::threadInit() 
 {
-    /* initialize variables and create data-structures if needed */
+    string temp[3];
+    if ( isYUV ){
+        temp[0] = "Y";
+        temp[1] = "UV";
+    }else{
+        temp[0] = "H";
+        temp[1] = "S";
+        temp[2] = "V";
+    }
+    //create all ports
+    inputPortName = "/" + moduleName + "/image:i";
+    imageInputPort.open( inputPortName.c_str() );
+
+    outputPortName1 = "/" + moduleName + "/" + temp[0] + "/image:o";
+    imageOutPort1.open( outputPortName1.c_str() );
+    
+    outputPortName2 = "/" + moduleName + "/" + temp[1] + "/image:o";
+    imageOutPort2.open( outputPortName2.c_str() );
+    
+    if (!isYUV) {
+        outputPortName3 = "/" + moduleName + "/" + temp[2] + "/image:o";
+        imageOutPort3.open( outputPortName3.c_str() );
+    }
+   
     return true;
 }
 
-void YUVThread::run() {
-    //
-    if (imageInputPort->getInputCount()) {
-        //
-        ImageOf<PixelRgb> *img = imageInputPort->read(false);
-        if (img != NULL) {
-            if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
-                deallocate();
-                allocate( img );
-            }
-                
-            // extend logpolar input image
-            extender( img, KERNSIZEMAX );
-            //create our own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel )
-            //ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
-            ippiCopy_8u_C3AC4R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), colour, psb4, srcsize );
-            //convert to RGBA:
-            //ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
-            //convert to Y,U,V image channels:
-            ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize);
-            //extract Y, U, V Images
-            pyuva[0]= y_orig;
-            pyuva[1]= u_orig;
-            pyuva[2]= v_orig; 
-            pyuva[3]= tmp; 
-            ippiCopy_8u_C4P4R( yuva_orig, psb4, pyuva, psb, srcsize );
+void YUVThread::run() 
+{
+    ImageOf<PixelRgb> *img = imageInputPort.read(false);
+    
+    if(img != NULL) {
+        if( !allocated || img->width() != img_out_Y->width() || img->height() != img_out_Y->height() ) {
+            deallocate();
+            allocate( img );
+        }
+        extender( img, KERNSIZEMAX );
 
-            //intensity process: performs centre-surround uniqueness analysis
-            centerSurr->proc_im_8u( y_orig , psb );
-            ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize );
-               
-            //Colour process U performs centre-surround uniqueness analysis:
-            centerSurr->proc_im_8u( u_orig , psb );
-            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
-            //Colour process V:performs centre-surround uniqueness analysis:
-            centerSurr->proc_im_8u( v_orig , psb );
-            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+        ippiCopy_8u_C3AC4R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), colour, psb4, srcsize );
 
+        if ( isYUV )
+            ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize );
+        else
+            ippiRGBToHSV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize );
+
+        //extract planes
+        pyuva[0]= first_plane; //Y or H
+        pyuva[1]= second_plane;//U or S
+        pyuva[2]= third_plane; //V or V
+        pyuva[3]= tmp; 
+        ippiCopy_8u_C4P4R( yuva_orig, psb4, pyuva, psb, srcsize );
+
+        //performs centre-surround uniqueness analysis on first plane
+        centerSurr->proc_im_8u( first_plane , psb );
+        ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize );
+
+        //performs centre-surround uniqueness analysis on second plane:
+        centerSurr->proc_im_8u( second_plane , psb );
+        if ( isYUV )
+            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+        else
+            ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), scs_out, ycs_psb , srcsize ); 
+
+        //Colour process V:performs centre-surround uniqueness analysis:
+        centerSurr->proc_im_8u( third_plane , psb );
+        if ( isYUV )
+            ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+        else
+            ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), vcs_out, ycs_psb , srcsize ); 
+
+        if ( isYUV ){
             //get min max
             Ipp32f valueMin,valueMax;
             valueMin = 0.0;
@@ -296,100 +241,75 @@ void YUVThread::run() {
             ippiMinMax_32f_C1R( cs_tot_32f, psb_32f, srcsize, &valueMin, &valueMax );
             //if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f; }
             ippiScale_32f8u_C1R( cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize, valueMin, valueMax );
-                
-            //revert to yarp images
-            ippiCopy_8u_C1R( ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize );
+        }
+  
+        //revert to yarp images
+        ippiCopy_8u_C1R( ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize );
+        
+        if ( isYUV ){
             ippiCopy_8u_C1R( colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
+        }else{
+            ippiCopy_8u_C1R( scs_out, ycs_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
+            ippiCopy_8u_C1R( vcs_out, ycs_psb, img_V->getRawImage(), img_V->getRowSize(), srcsize );
+        }
 
-            //this is nasty, resizes the images...
-            unsigned char* imgY = img_Y->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
-            unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
-            unsigned char* imgYo = img_out_Y->getRawImage();
-            unsigned char* imgUVo = img_out_UV->getRawImage();
-            int rowsize= img_out_Y->getRowSize();
-            int rowsize2= img_Y->getRowSize();
+        //this is nasty, resizes the images...
+        unsigned char* imgY = img_Y->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
+        unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
+        unsigned char* imgV;
+        unsigned char* imgVo;
+        if (!isYUV){
+           imgV = img_V->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
+           imgVo = img_out_V->getRawImage();
+        }
+        
+        unsigned char* imgYo = img_out_Y->getRawImage();
+        unsigned char* imgUVo = img_out_UV->getRawImage();
+        int rowsize= img_out_Y->getRowSize();
+        int rowsize2= img_Y->getRowSize();
 
-            for(int row=0; row<origsize.height; row++) {
-                for(int col=0; col<origsize.width; col++) {
-                    *imgYo  = *imgY;
-                    *imgUVo = *imgUV;
-                    imgYo++;  imgUVo++;
-                    imgY++;   imgUV++;
-                }    
-                imgYo+=rowsize - origsize.width;
-                imgUVo+=rowsize - origsize.width;
-                imgY+=rowsize2 - origsize.width;
-                imgUV+=rowsize2 - origsize.width;
+        for(int row=0; row<origsize.height; row++) {
+            for(int col=0; col<origsize.width; col++) {
+                *imgYo  = *imgY;
+                *imgUVo = *imgUV;
+                if (!isYUV) {
+                    *imgVo = *imgV;
+                    imgVo++;  imgV++;          
+                }
+                imgYo++;  imgUVo++;
+                imgY++;   imgUV++;
+            }    
+            imgYo+=rowsize - origsize.width;
+            imgUVo+=rowsize - origsize.width;
+            imgY+=rowsize2 - origsize.width;
+            imgUV+=rowsize2 - origsize.width;
+            if (!isYUV) {
+                imgVo+=rowsize - origsize.width;
+                imgV+=rowsize2 - origsize.width;       
             }
+        }
 
-            //output Y centre-surround results to ports
-            if ( imageOutPortY->getOutputCount()>0 ){
-                imageOutPortY->prepare() = *img_out_Y;	
-                imageOutPortY->write();
-            }
+        //output Y centre-surround results to ports
+        if ( imageOutPort1.getOutputCount()>0 ){
+            imageOutPort1.prepare() = *img_out_Y;	
+            imageOutPort1.write();
+        }
 
-            //output UV centre-surround results to ports
-            if ( imageOutPortUV->getOutputCount()>0 ){
-                imageOutPortUV->prepare() = *img_out_UV;	
-                imageOutPortUV->write();
-            }
-            //reset 
-            ippiSet_32f_C1R( 0.0, cs_tot_32f, psb_32f, srcsize );
+        //output UV centre-surround results to ports
+        if ( imageOutPort2.getOutputCount()>0 ){
+             imageOutPort2.prepare() = *img_out_UV;	
+            imageOutPort2.write();
+        }
+        //output UV centre-surround results to ports
+        if ( !isYUV && imageOutPort3.getOutputCount()>0 ){
+            imageOutPort3.prepare() = *img_out_V;	
+            imageOutPort3.write();
         }
     }
 }
 
-void YUVThread::threadRelease() 
-{
-    cout << "cleaning up things.." << endl;
-    deallocate();
-    cout << "finished cleaning up" << endl;
-}
-
-void YUVThread::deallocate()
-{
-    delete centerSurr;
-    delete img_out_Y;
-    delete img_out_UV;
-    delete img_Y;
-    delete img_UV;
-    delete inputExtImage;
-    ippiFree( orig );
-    ippiFree( colour ); 
-    ippiFree( tmp ); 
-    free ( pyuva );
-    ippiFree( yuva_orig );
-    ippiFree( y_orig );
-    ippiFree( u_orig );
-    ippiFree( v_orig );
-    ippiFree( cs_tot_32f );
-    ippiFree( colcs_out );
-    ippiFree( ycs_out );
-
-	img_out_Y = NULL;    
-	img_out_UV = NULL;
-    inputExtImage = NULL;
-    img_Y = NULL;    
-	img_UV = NULL;
-    pyuva = NULL;
-    centerSurr = NULL;
-    cs_tot_32f = NULL;
-    orig = NULL;
-    colour = NULL;
-    yuva_orig = NULL;
-    y_orig = NULL; 
-    u_orig = NULL; 
-    v_orig = NULL; 
-    tmp = NULL;
-    ycs_out = NULL; 
-    colcs_out = NULL;
-    
-    allocated = false;
-}
-
 void YUVThread::allocate( ImageOf<PixelRgb> *img )
 {
-    assert (allocated == false);
     origsize.width = img->width();
     origsize.height = img->height();
 
@@ -399,13 +319,12 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
     cout << "Received input image dimensions: " << origsize.width << " " << origsize.height << endl;
     cout << "Will extend these to: " << srcsize.width << " " << srcsize.height << endl;
 
-    orig    = ippiMalloc_8u_C3( srcsize.width, srcsize.height, &img_psb );
     colour  = ippiMalloc_8u_C4( srcsize.width, srcsize.height, &psb4);
 
     yuva_orig = ippiMalloc_8u_C1( srcsize.width *4, srcsize.height, &psb4);
-    y_orig    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
-    u_orig    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
-    v_orig    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
+    first_plane    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
+    second_plane    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
+    third_plane   = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
     
     tmp     = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb );// to separate alpha channel
     pyuva = (Ipp8u**) malloc(4*sizeof(Ipp8u*));
@@ -413,16 +332,21 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
     cs_tot_32f  = ippiMalloc_32f_C1( srcsize.width, srcsize.height, &psb_32f );
     colcs_out   = ippiMalloc_8u_C1( srcsize.width, srcsize.height,  &col_psb );
     ycs_out     = ippiMalloc_8u_C1( srcsize.width, srcsize.height,  &ycs_psb );
+    scs_out     = ippiMalloc_8u_C1( srcsize.width, srcsize.height,  &ycs_psb );
+    vcs_out     = ippiMalloc_8u_C1( srcsize.width, srcsize.height,  &ycs_psb );
 
     ncsscale = 4;
 
     centerSurr  = new CentSur( srcsize , ncsscale );
 
-    inputExtImage=new ImageOf<PixelRgb>;
+    inputExtImage = new ImageOf<PixelRgb>;
     inputExtImage->resize( srcsize.width, srcsize.height );
 
 	img_Y = new ImageOf<PixelMono>;
 	img_Y->resize( srcsize.width, srcsize.height );
+
+    img_V = new ImageOf<PixelMono>;
+	img_V->resize( srcsize.width, srcsize.height );
 
 	img_UV = new ImageOf<PixelMono>;
 	img_UV->resize( srcsize.width, srcsize.height );
@@ -432,11 +356,84 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
 
 	img_out_UV = new ImageOf<PixelMono>;
 	img_out_UV->resize( origsize.width, origsize.height );
+
+    img_out_V = new ImageOf<PixelMono>;
+	img_out_V->resize( origsize.width, origsize.height );
         
     allocated = true;
     cout << "done allocating" << endl;
 }
 
+void YUVThread::deallocate( )
+{
+    delete centerSurr;
+    delete img_out_Y;
+    delete img_out_UV;
+    delete img_out_V;
+    delete img_Y;
+    delete img_UV;
+    delete img_V;
+    delete inputExtImage;
+    ippiFree( colour ); 
+    ippiFree( tmp ); 
+    free ( pyuva );
+    ippiFree( yuva_orig );
+    ippiFree( first_plane );
+    ippiFree( second_plane );
+    ippiFree( third_plane );
+    ippiFree( cs_tot_32f );
+    ippiFree( colcs_out );
+    ippiFree( ycs_out );
+    ippiFree( scs_out );
+    ippiFree( vcs_out );
+	img_out_Y = NULL;    
+	img_out_UV = NULL;
+    img_out_V = NULL;
+    inputExtImage = NULL;
+    img_Y = NULL;    
+	img_UV = NULL;
+    img_V = NULL;
+    pyuva = NULL;
+    centerSurr = NULL;
+    //cs_tot_32f = NULL;
+    //orig = NULL;
+    colour = NULL;
+    yuva_orig = NULL;
+    first_plane = NULL; 
+    second_plane = NULL; 
+    third_plane = NULL; 
+    tmp = NULL;
+    ycs_out = NULL; 
+    scs_out = NULL;
+    vcs_out = NULL;
+    colcs_out = NULL;
+    
+    allocated = false;
+}
+
+void YUVThread::threadRelease() 
+{
+    deallocate();
+}
+
+void YUVThread::onStop() 
+{
+    
+    cout << "cleaning up..." << endl;
+    cout << "attempting to close ports" << endl;
+    imageInputPort.interrupt();
+    imageOutPort1.interrupt();
+    imageOutPort2.interrupt();
+    imageInputPort.close();
+    imageOutPort1.close();
+    imageOutPort2.close();
+
+    if ( !isYUV ) {
+        imageOutPort3.close();
+    }
+    
+    cout << "finished closing ports" << endl;
+}
 
 ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage, int maxSize) {
     // copy of the image 
@@ -468,5 +465,3 @@ ImageOf<PixelRgb>* YUVThread::extender(ImageOf<PixelRgb>* inputOrigImage, int ma
 
     return inputExtImage;
 }
-
-

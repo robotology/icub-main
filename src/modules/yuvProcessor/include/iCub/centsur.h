@@ -30,7 +30,7 @@
 #define __CENTSUR_H__
 
 #include <ipp.h>
-
+	
 class CentSur { 
 public:
     /**
@@ -101,6 +101,8 @@ private:
 	IppiRect *proi, *dstRect;
 
 	double sd,su,sigma;
+    Ipp8u* pBuffer;
+    Ipp8u* pBufferGauss;
 };
 #endif
 //empty line to make gcc happy

@@ -23,6 +23,8 @@
 
 #define KERNSIZE 3    //kernsize (odd, >= 3)
 
+using namespace std;
+
 CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
 {
     psb_p = 0;
@@ -67,6 +69,9 @@ CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
     tmp_im_32f = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
     cs_tot_32f = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
     cs_tot_8u  = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb_8u);
+    
+    pBuffer = NULL;
+    pBufferGauss = NULL;
 }
 
 CentSur::~CentSur() {
@@ -89,6 +94,11 @@ CentSur::~CentSur() {
     free(pyramid_gauss);
     free(gauss);
     free(pbuf);
+
+     if (pBuffer)
+        ippsFree (pBuffer);
+     if (pBufferGauss)
+        ippsFree (pBufferGauss);
 }
 
 void CentSur::proc_im_8u(Ipp8u* im_8u, int psb_)
@@ -159,14 +169,14 @@ void CentSur::make_pyramid( Ipp32f* im_32f, int p_32_ )
     su = 2.0;
     for (int sg=1;sg<ngauss;sg++){
         //Downsize previous pyramid image by half:
-
         int interpolation = IPPI_INTER_LANCZOS;
-        Ipp8u* pBuffer;
+        
         int bufferSize = 0;
         ippiResizeGetBufSize(proi[sg-1], dstRect[sg], 1, interpolation, &bufferSize);
         pBuffer = ippsMalloc_8u(bufferSize);                                             
         ippiResizeSqrPixel_32f_C1R( pyramid[sg-1], psize[sg-1], psb_p[sg-1], proi[sg-1], pyramid[sg], psb_p[sg], proi[sg], sd, sd, 0, 0, interpolation, pBuffer);      
         ippsFree(pBuffer); 
+        pBuffer = NULL;
         
         //filter:
         ippiFilterGaussBorder_32f_C1R(pyramid[sg],
@@ -180,16 +190,15 @@ void CentSur::make_pyramid( Ipp32f* im_32f, int p_32_ )
     				  0.0,          //foo
     				  pbuf);
     
-    
         //Upsize and store to gauss:
         //su = pow( 2.0f, sg );
         su = double(1<< sg); // a bit faster....
         
-        Ipp8u* pBufferGauss;
         int bufferSizeGauss = 0;
         ippiResizeGetBufSize(proi[sg], dstRect[sg], 1, interpolation, &bufferSizeGauss);
         pBufferGauss = ippsMalloc_8u(bufferSizeGauss);
         ippiResizeSqrPixel_32f_C1R( pyramid_gauss[sg], psize[sg], psb_p[sg], proi[sg], gauss[sg], psb_32f, dstRect[sg], su, su, 0, 0, interpolation, pBufferGauss);      
         ippsFree(pBufferGauss);
-  }
+        pBufferGauss = NULL;
+    }
 }
