@@ -32,7 +32,7 @@
 // GTK Includes 
 //=============================================================================
 #include <gtk/gtk.h>
-#include "ViewerResources.h"
+#include "viewerResources.h"
 #include <string>
 
 //-------------------------------------------------
