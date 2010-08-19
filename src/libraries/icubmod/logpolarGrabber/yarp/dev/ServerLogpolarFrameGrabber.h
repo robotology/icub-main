@@ -111,15 +111,11 @@ public:
  */
 class yarp::dev::LogpolarImageFormatter : public yarp::dev::BaseFormatter<yarp::sig::ImageOf<yarp::sig::PixelRgb> > {
 protected:
-    iCub::logpolar::logpolarTransform* trsf;
+    iCub::logpolar::logpolarTransform trsf;
 
 public:
-    /**
-     * Set a pointer to the logpolarTrasform class, not particularly elegant but saves reallocation of the logpolar tables.
-     * @param t is the pointer to a logpolarTransform class.
-     * @return true always.
-     */
-    virtual bool setTableInstance(iCub::logpolar::logpolarTransform *t) { trsf = t; return true;}
+    LogpolarImageFormatter();
+    virtual ~LogpolarImageFormatter();
 
     /**
      * The format method takes a raw buffer image and formats according to the
