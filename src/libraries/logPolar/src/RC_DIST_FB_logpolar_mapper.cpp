@@ -1,9 +1,10 @@
 /*
  *  logpolar mapper library. subsamples rectangular images into logpolar.
  *
- *  Copyright (C) 2005 Fabio Berton, LIRA-Lab
+ *  Copyright (C) 2005-2010 The RobotCub Consortium
+ *  Author: Fabio Berton & Giorgio Metta
  *  RobotCub Consortium, European Commission FP6 Project IST-004370
- *  email:   fberton@dist.unige.it
+ *  email:   fberton@dist.unige.it, giorgio.metta@iit.it
  *  website: www.robotcub.org
  *
  *  Permission is granted to copy, distribute, and/or modify this program 
@@ -15,219 +16,222 @@
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
  *  PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- *  $Id: RC_DIST_FB_logpolar_mapper.cpp,v 1.11 2009/06/18 08:30:13 nat Exp $
  */
 
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif
+/**
+ * \file rc_dist_fb_logpolar_mapper.cpp 
+ * \brief Implementation of the logpolar class.
+ */
 
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
-#include <stdio.h>
+#include <iostream>
 #include <math.h>
-#include <memory.h>
+#include <memory>
 
-#define MODE1
+//#define MODE1
 
-inline double
-__max (double x, double y)
-{
+using namespace iCub::logpolar;
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace std;
+
+// implementation of the ILogpolarAPI interface.
+bool logpolarTransform::allocLookupTables(int necc, int nang, int w, int h, double overlap) {
+    //
+    necc_ = necc;
+    nang_ = nang;
+    width_ = w;
+    height_ = h;
+    overlap_ = overlap;
+
+    if (c2lTable == 0) {
+        c2lTable = new cart2LpPixel[necc*nang];
+        if (c2lTable == 0) {
+            cerr << "logpolarTransform: can't allocate c2l lookup tables, wrong size?" << endl;
+            return false;
+        }
+    }
+
+    if (l2cTable == 0) {
+        l2cTable = new lp2CartPixel[w*h];
+        if (l2cTable == 0) {
+            cerr << "logPolarLibrary: can't allocate l2c lookup tables, wrong size?" << endl;
+            if (c2lTable) 
+                delete[] c2lTable;
+            c2lTable = 0;
+            return false;
+        }
+    }
+
+    const double scaleFact = RCcomputeScaleFactor ();    
+    RCbuildC2LMap (scaleFact, ELLIPTICAL);
+    RCbuildL2CMap (scaleFact, 0, 0, ELLIPTICAL);
+
+    return true;
+}
+
+bool logpolarTransform::freeLookupTables() {
+    if (c2lTable)
+        RCdeAllocateC2LTable ();
+    if (l2cTable)
+        RCdeAllocateL2CTable ();
+    return true;
+}
+
+bool logpolarTransform::cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp, 
+                            const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart) {
+    // adjust padding.
+    if (cart.getPadding() != 0) {
+        const int byte = cart.width() * sizeof(PixelRgb);
+        unsigned char *d = (unsigned char *)cart.getRawImage() + byte;
+        int i;
+        for (i = 1; i < cart.height(); i++) {
+            unsigned char *s = (unsigned char *)cart.getRow(i);
+            memmove(d, s, byte);
+            d += byte; 
+        }
+    }
+
+    // LATER: assert whether lp & cart are effectively nang * necc as the c2lTable requires.
+    RCgetLpImg (lp.getRawImage(), (unsigned char *)cart.getRawImage(), c2lTable, lp.height()*lp.width(), 0);
+
+    // adjust padding.
+    if (lp.getPadding() != 0) {
+        const int byte = lp.width() * sizeof(PixelRgb);
+        int i;
+        for (i = lp.height()-1; i >= 1; i--) {
+            unsigned char *d = lp.getRow(i);
+            unsigned char *s = lp.getRawImage() + i*byte;
+            memmove(d, s, byte);
+        }
+    }
+
+    return true;
+}
+
+bool logpolarTransform::logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,
+                            const yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp) {
+    // adjust padding.
+    if (lp.getPadding() != 0) {
+        int i;
+        const int byte = lp.width() * sizeof(PixelRgb);
+        unsigned char *d = lp.getRawImage() + byte;
+        for (i = 1; i < lp.height(); i ++) {
+            unsigned char *s = (unsigned char *)lp.getRow(i);
+            memmove(d, s, byte);
+            d += byte;
+        }
+    }
+
+    // LATER: assert whether lp & cart are effectively of the correct size.
+    RCgetCartImg (cart.getRawImage(), lp.getRawImage(), l2cTable, cart.width() * cart.height());
+
+    // adjust padding.
+    if (cart.getPadding() != 0) {
+        const int byte = cart.width() * sizeof(PixelRgb);
+        int i;
+        for (i = cart.height()-1; i >= 1; i--) {
+            unsigned char *d = cart.getRow(i);
+            unsigned char *s = cart.getRawImage() + i*byte;
+            memmove(d, s, byte);
+        }
+    }
+    return true;
+}
+
+// internal implementation of the logpolarTransform class.
+
+inline double __max64f (double x, double y) {
     return (x > y) ? x : y;
 }
 
-int
-RCallocateC2LTable (cart2LpPixel * Table, int nEcc, int nAng, bool bayerImg,
-                    char *path)
+void logpolarTransform::RCdeAllocateC2LTable ()
 {
-    char filename[256];
-    int tablesize;
-    int sizeLP = nEcc * nAng;
-    int j;
-    int *temppos;
-    int *tempiw;
-    int tempctr;
-
-    if (bayerImg)
-        sprintf (filename, "%sC2LPBayer.gio", path);
-    else
-        sprintf (filename, "%sC2LP.gio", path);
-
-    FILE *fin;
-
-    if ((fin = fopen (filename, "rb")) == NULL)
-        return 1;
-    else
-    {
-        fread (&tablesize, sizeof (int), 1, fin);
-
-        temppos = new int[tablesize];
-        tempiw = new int[tablesize];
-
-        if ((temppos == NULL) || (tempiw == NULL))
-        {
-            fclose (fin);
-            return 2;
+    if (c2lTable) {
+        const int sz = necc_ * nang_;
+        for (int i = 0; i < sz; i++) {
+            delete[] c2lTable[i].position;
+            delete[] c2lTable[i].iweight;
         }
-        else
-        {
-            tempctr = 0;
-
-            for (j = 0; j < sizeLP; j++)
-            {
-                fread (&Table[j].divisor, sizeof (int), 1, fin);
-                tempctr += Table[j].divisor;
-                if (tempctr > tablesize)
-                {
-                    Table[j].divisor = 0;
-                    break;
-                }
-                fread (temppos, sizeof (int), Table[j].divisor, fin);
-                fread (tempiw, sizeof (int), Table[j].divisor, fin);
-                Table[j].position = temppos;
-                Table[j].iweight = tempiw;
-                temppos += Table[j].divisor;
-                tempiw += Table[j].divisor;
-            }
-            fclose (fin);
-        }
+        delete[] c2lTable;
     }
-    return 0;
+    c2lTable = 0;
 }
 
-int
-RCallocateL2CTable (lp2CartPixel * Table, int xSize, int ySize, char *path)
+void logpolarTransform::RCdeAllocateL2CTable ()
 {
-    char filename[256];
-    int tablesize;
-    int cartSize = xSize * ySize;
-    int j;
-    int *temppos;
-    int tempctr;
-
-    sprintf (filename, "%sLP2C.gio", path);
-
-    FILE *fin;
-
-    if ((fin = fopen (filename, "rb")) == NULL)
-        return 1;
-    else
-    {
-        fread (&tablesize, sizeof (int), 1, fin);
-
-        temppos = new int[tablesize];
-
-        if (temppos == NULL)
-        {
-            fclose (fin);
-            return 2;
+    if (l2cTable) {
+        const int sz = width_ * height_;
+        for (int i = 0; i < sz; i++) {
+            delete[] l2cTable[i].position;
         }
-        else
-        {
-            tempctr = 0;
-
-            for (j = 0; j < cartSize; j++)
-            {
-                fread (&Table[j].iweight, sizeof (int), 1, fin);
-                tempctr += Table[j].iweight;
-                if (tempctr > tablesize)
-                {
-                    Table[j].iweight = 0;
-                    break;
-                }
-                fread (temppos, sizeof (int), Table[j].iweight, fin);
-                Table[j].position = temppos;
-                temppos += Table[j].iweight;
-            }
-
-            fclose (fin);
-        }
+        delete[] l2cTable;
     }
-    return 0;
+    l2cTable = 0;
 }
 
-void
-RCdeAllocateC2LTable (cart2LpPixel * Table)
-{
-    delete[]Table[0].position;
-    delete[]Table[0].iweight;
-    delete[]Table;
-}
-
-void
-RCdeAllocateL2CTable (lp2CartPixel * Table)
-{
-    delete[]Table[0].position;
-    delete[]Table;
-}
-
-double
-RCgetLogIndex (int nAng)
+double logpolarTransform::RCgetLogIndex ()
 {
     double logIndex;
-
-    logIndex = (1.0 + sin (PI / nAng)) / (1.0 - sin (PI / nAng));
-
+    logIndex = (1.0 + sin (PI / nang_)) / (1.0 - sin (PI / nang_));
     return logIndex;
 }
 
-double
-RCcomputeScaleFactor (int nEcc, int nAng, int xSize, int ySize, double overlap)
+double logpolarTransform::RCcomputeScaleFactor ()
 {
     double maxRad;
     double receptFieldRadius;
     double r0;
     double lambda;
     int fov;
-	int cSize = xSize;
+	int cSize = width_;
 	
-	if(xSize>ySize)
-		cSize = ySize;
+	if (width_ > height_)
+		cSize = height_;
 
     double totalRadius;
-
-    double angle = (2.0 * PI / nAng);   //Angular size of one pixel
+    double angle = (2.0 * PI / nang_);   // Angular size of one pixel
     double sinus = sin (angle / 2.0);
 
     lambda = (1.0 + sinus) / (1.0 - sinus);
     fov = (int) (lambda / (lambda - 1));
     r0 = 1.0 / (pow (lambda, fov) * (lambda - 1));
 
-    maxRad = pow (lambda, nEcc - 1) * (r0 + 0.5 / pow (lambda, fov));
+    maxRad = pow (lambda, necc_ - 1) * (r0 + 0.5 / pow (lambda, fov));
 
-    receptFieldRadius = maxRad * 2.0 * sinus * (overlap + 1.0) / (2.0);
-
+    receptFieldRadius = maxRad * 2.0 * sinus * (overlap_ + 1.0) / (2.0);
     totalRadius = maxRad + receptFieldRadius;
-
     totalRadius = (cSize / 2) / totalRadius;
-
     return totalRadius;
 }
 
-int
-RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
-               double scaleFact, int mode, char *path)
+int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
 {
-    if (overlap <= -1.0)
+    // store map in c2lTable which is supposedly already allocated (while the internal arrays are allocated on the fly).
+
+    if (overlap_ <= -1.0) {
+        cerr << "logpolarTransform: overlap must be greater than -1" << endl;
         return 1;
+    }
 
-	int cSize = xSize;
+	int cSize = width_;
 	
-	if(xSize>ySize)
-		cSize = ySize;
+	if (width_ > height_)
+		cSize = height_;
 
-    double angle = (2.0 * PI / nAng);   //Angular size of one pixel
+    double angle = (2.0 * PI / nang_);   // Angular size of one pixel
     double sinus = sin (angle / 2.0);
     double tangent = sinus / cos (angle / 2.0);
 
     int fov;
     int lim;
 
-    double lambda;              //Log Index
-    double firstRing;           //Diameter of the receptive fields in the first ring when overlap is 0
-    double *currRad;            //Distance of the center of the current ring RF's from the center of the mapping
-    double *nextRad;            //Distance of the center of the next ring's RF's from the center of the mapping
-    double r0;                  //lower limit of RF0 in the "pure" log polar mapping
+    double lambda;              // Log Index
+    double firstRing;           // Diameter of the receptive fields in the first ring when overlap is 0
+    double *currRad;            // Distance of the center of the current ring RF's from the center of the mapping
+    double *nextRad;            // Distance of the center of the next ring's RF's from the center of the mapping
+    double r0;                  // lower limit of RF0 in the "pure" log polar mapping
 
     double x0, y0;
     double locX, locY, locRad;
@@ -251,80 +255,68 @@ RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
     firstRing = (1.0 / (lambda - 1)) - (int) (1.0 / (lambda - 1));
     r0 = 1.0 / (pow (lambda, fov) * (lambda - 1));
 
-    tangaxis = new double[nEcc];
-    radialaxis = new double[nEcc];
-    focus = new double[nEcc];
-    radii2 = new double[nEcc];
+    tangaxis = new double[necc_];
+    radialaxis = new double[necc_];
+    focus = new double[necc_];
+    radii2 = new double[necc_];
 
-    currRad = new double[nEcc];
-    nextRad = new double[nEcc];
+    currRad = new double[necc_];
+    nextRad = new double[necc_];
 
-    if ((tangaxis == NULL) || (radialaxis == NULL) || (focus == NULL)
-        || (radii2 == NULL))
-        return 2;
-
-    if ((currRad == NULL) || (nextRad == NULL))
-        return 2;
+    if ((tangaxis == 0) || (radialaxis == 0) || (focus == 0) || (radii2 == 0) || (currRad == 0) || (nextRad == 0))
+        goto C2LAllocError;
 
     /************************
      * RF's size Computation *
      ************************/
 
-    for (rho = 0; rho < nEcc; rho++)
-    {
+    for (rho = 0; rho < necc_; rho++) {
         if (rho < fov)
-            if (rho == 0)
-            {
+            if (rho == 0) {
                 currRad[rho] = firstRing * 0.5;
                 nextRad[rho] = firstRing;
             }
-            else
-            {
+            else {
                 currRad[rho] = rho + firstRing - 0.5;
                 nextRad[rho] = currRad[rho] + 1.0;
             }
-        else
-        {
+        else {
             currRad[rho] = pow (lambda, rho) * (r0 + 0.5 / pow (lambda, fov));
             nextRad[rho] = lambda * currRad[rho];
         }
         tangaxis[rho] =
-            scaleFact * 2.0 * currRad[rho] * sinus * (overlap + 1.0) / (2.0);
+            scaleFact * 2.0 * currRad[rho] * sinus * (overlap_ + 1.0) / (2.0);
 
         radialaxis[rho] =
-            scaleFact * (nextRad[rho] - currRad[rho]) * (overlap + 1.0);
+            scaleFact * (nextRad[rho] - currRad[rho]) * (overlap_ + 1.0);
 
         if (rho < fov)
             radialaxis[rho] /= 2.0;
         else
             radialaxis[rho] /= (1.0 + lambda);
 
-        if ((rho < fov) && (mode == ELLIPTICAL))
-        {
+        if ((rho < fov) && (mode == ELLIPTICAL)) {
             A = radialaxis[rho] * radialaxis[rho];
-            L = scaleFact * currRad[rho] * (overlap + 1.0);
+            L = scaleFact * currRad[rho] * (overlap_ + 1.0);
             L = L * L;
             tangaxis[rho] = tangent * sqrt (L - A);
         }
-
     }
-    radialaxis[0] = 0.5 * scaleFact * (firstRing) * (overlap + 1.0);
+    radialaxis[0] = 0.5 * scaleFact * (firstRing) * (overlap_ + 1.0);
 
     if (mode == RADIAL)
         radii = radialaxis;
     else
         radii = tangaxis;
 
-    for (rho = 0; rho < nEcc; rho++)
-    {
+    for (rho = 0; rho < necc_; rho++) {
         if (mode != ELLIPTICAL)
             focus[rho] = 0;
-        else
-	{
+        else {
             focus[rho] =
                 -sqrt (fabs (radialaxis[rho] * radialaxis[rho] -
                              tangaxis[rho] * tangaxis[rho]));
-	}
+        }
 
         if (tangaxis[rho] >= radialaxis[rho])
             focus[rho] = -focus[rho];
@@ -332,30 +324,17 @@ RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
         radii2[rho] = radii[rho] * radii[rho];
     }
 
-    int totalcounter = 0;
-
-    FILE *fout;
-    char filename[256];
-
-    sprintf (filename, "%sC2LP.gio", path);
-
-    fout = fopen (filename, "wb");
-
-    fwrite (&totalcounter, sizeof (int), 1, fout);
-
+    //int totalcounter = 0;
     double *sintable;
     double *costable;
-
     int intx, inty;
+    sintable = new double[nang_];
+    costable = new double[nang_];
 
-    sintable = new double[nAng];
-    costable = new double[nAng];
+    if ((sintable == 0) || (costable == 0))
+        goto C2LAllocError;
 
-    if ((sintable == NULL) || (costable == NULL))
-        return 2;
-
-    for (j = 0; j < nAng; j++)
-    {
+    for (j = 0; j < nang_; j++) {
         sintable[j] = sin (angle * (j + 0.5));
         costable[j] = cos (angle * (j + 0.5));
     }
@@ -365,12 +344,14 @@ RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
     float *weight;
     double precision = 10.0;
 
-    for (rho = 0; rho < nEcc; rho++)
-    {
+    // the main table pointer.
+    cart2LpPixel *table = c2lTable;
+
+    for (rho = 0; rho < necc_; rho++) {
         if ((mode == RADIAL) || (mode == TANGENTIAL))
             lim = (int) (radii[rho] + 1.5);
         else
-            lim = (int) (__max (tangaxis[rho], radialaxis[rho]) + 1.5);
+            lim = (int) (__max64f (tangaxis[rho], radialaxis[rho]) + 1.5);
 
         step = lim / precision;
 
@@ -380,32 +361,28 @@ RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
         mapsize = (int) (precision * lim * precision * lim + 1);
 
         c2LpMap.position = new int[mapsize];
-//      c2LpMap.weight = new float [mapsize];
         weight = new float[mapsize];
         c2LpMap.iweight = new int[mapsize];
 
-        if ((c2LpMap.position == NULL) || (weight == NULL)
-            || (c2LpMap.iweight == NULL))
-            return 2;
+        if ((c2LpMap.position == 0) || (weight == 0) || (c2LpMap.iweight == 0))
+            goto C2LAllocError;
 
-        for (theta = 0; theta < nAng; theta++)
-        {
+        for (theta = 0; theta < nang_; theta++) {
+            //
             memset (c2LpMap.position, 0, mapsize);
             memset (weight, 0, mapsize);
 
             x0 = scaleFact * currRad[rho] * costable[theta];
             y0 = scaleFact * currRad[rho] * sintable[theta];
 
-            if (focus[rho] >= 0)
-            {
+            if (focus[rho] >= 0) {
                 F0x = x0 - focus[rho] * sintable[theta];
                 F0y = y0 + focus[rho] * costable[theta];
                 F1x = x0 + focus[rho] * sintable[theta];
                 F1y = y0 - focus[rho] * costable[theta];
                 maxaxis = tangaxis[rho];
             }
-            else
-            {
+            else {
                 F0x = x0 - focus[rho] * costable[theta];
                 F0y = y0 - focus[rho] * sintable[theta];
                 F1x = x0 + focus[rho] * costable[theta];
@@ -415,13 +392,12 @@ RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
 
             if ((mode == RADIAL) || (mode == TANGENTIAL))
                 maxaxis = radii[rho];
-		
 
             for (locX = (x0 - lim); locX <= (x0 + lim); locX += step)
-                for (locY = (y0 - lim); locY <= (y0 + lim); locY += step)
-                {
-                    intx = (int) (locX + xSize / 2);
-                    inty = (int) (locY + ySize / 2);
+                for (locY = (y0 - lim); locY <= (y0 + lim); locY += step) {
+
+                    intx = (int) (locX + width_ / 2);
+                    inty = (int) (locY + height_ / 2);
 
                     locRad =
                         sqrt ((locX - F0x) * (locX - F0x) +
@@ -429,33 +405,26 @@ RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
                     locRad +=
                         sqrt ((locX - F1x) * (locX - F1x) +
                               (locY - F1y) * (locY - F1y));
-                    if (locRad < 2 * maxaxis)
-                    {
-                        if ((inty < ySize) && (inty >= 0))
-                        {
-                            if ((intx < xSize) && (intx >= 0))
-                            {
+
+                    if (locRad < 2 * maxaxis) {
+                        if ((inty < height_) && (inty >= 0)) {
+                            if ((intx < width_) && (intx >= 0)) {
                                 found = false;
                                 j = 0;
-                                while ((j < mapsize)
-                                       && (c2LpMap.position[j] != 0))
-                                {
-                                    if (c2LpMap.position[j] ==
-                                        3 * (inty * xSize + intx))
-                                    {
+                                while ((j < mapsize) && (c2LpMap.position[j] != 0)) {
+                                    //
+                                    if (c2LpMap.position[j] == 3 * (inty * width_ + intx)) {
                                         weight[j]++;
                                         found = true;
                                         j = mapsize;
                                     }
                                     j++;
                                 }
+
                                 if (!found)
-                                    for (j = 0; j < mapsize; j++)
-                                    {
-                                        if (c2LpMap.position[j] == 0)
-                                        {
-                                            c2LpMap.position[j] =
-                                                3 * (inty * xSize + intx);
+                                    for (j = 0; j < mapsize; j++) {
+                                        if (c2LpMap.position[j] == 0) {
+                                            c2LpMap.position[j] = 3 * (inty * width_ + intx);
                                             weight[j]++;
                                             break;
                                         }
@@ -464,55 +433,422 @@ RCbuildC2LMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
                         }
                     }
                 }
+
             for (j = 0; j < mapsize; j++)
                 if (weight[j] == 0)
                     break;
 
             c2LpMap.divisor = j;
-
-            totalcounter += c2LpMap.divisor;
+            //totalcounter += c2LpMap.divisor;
 
             float sum = 0.0;
             int k;
             for (k = 0; k < j; k++)
                 sum += weight[k];
-            for (k = 0; k < j; k++)
-            {
+
+            for (k = 0; k < j; k++) {
                 weight[k] = weight[k] / sum;
                 c2LpMap.iweight[k] = (int) (weight[k] * 65536.0);
-       }     
+            } 
 	
-	fwrite (&c2LpMap.divisor, sizeof (int), 1, fout);
-            fwrite (c2LpMap.position, sizeof (int), c2LpMap.divisor, fout);
-            fwrite (c2LpMap.iweight, sizeof (int), c2LpMap.divisor, fout);
-
+            *table++ = c2LpMap;
         }
-        delete[]c2LpMap.position;
-        delete[]weight;
-        delete[]c2LpMap.iweight;
     }
 
-    delete[]tangaxis;
-    delete[]radialaxis;
-    delete[]focus;
-    delete[]radii2;
-    delete[]currRad;
-    delete[]nextRad;
-    delete[]sintable;
-    delete[]costable;
-
-    fseek (fout, 0, SEEK_SET);
-    fwrite (&totalcounter, sizeof (int), 1, fout);
-    fclose (fout);
-
+    // clean up temporaries.
+    if (tangaxis) delete[] tangaxis;
+    if (radialaxis) delete[] radialaxis;
+    if (focus) delete[] focus;
+    if (radii2) delete[] radii2;
+    if (currRad) delete[] currRad;
+    if (nextRad) delete[] nextRad;
+    if (sintable) delete[] sintable;
+    if (costable) delete[] costable;
     return 0;
 
+C2LAllocError:
+    // clean up temporaries.
+    if (tangaxis) delete[] tangaxis;
+    if (radialaxis) delete[] radialaxis;
+    if (focus) delete[] focus;
+    if (radii2) delete[] radii2;
+    if (currRad) delete[] currRad;
+    if (nextRad) delete[] nextRad;
+    if (sintable) delete[] sintable;
+    if (costable) delete[] costable;
+    return 2;
+}
+
+void RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg, cart2LpPixel * Table, int sizeLp, bool bayerImg)
+{
+    int i, j;
+    int r[3];
+    int t = 0;
+
+    const int z = (!bayerImg)?3:1;
+    if (bayerImg) {
+        const int sz = sizeLp;
+        unsigned char *img = lpImg;
+        for (j = 0; j < sz; j++, img++) {
+            r[0] = 0;
+            t = 0;
+
+            const int div = Table[j].divisor;
+            int *pos = Table[j].position;
+            int *w = Table[j].iweight;
+            for (i = 0; i < div; i++, pos++, w++)
+            {
+                r[0] += cartImg[*pos] * *w;
+                t += *w;
+            }
+
+            *img = (unsigned char)(r[0]/t);
+        }
+    }
+    else {
+        const int sz = sizeLp;
+        unsigned char *img = lpImg;
+        for (j = 0; j < sz; j++, img+=3) {
+            r[0] = r[1] = r[2] = 0;
+            t = 0;
+
+            const int div = Table[j].divisor;
+            int *pos = Table[j].position;
+            int *w = Table[j].iweight;
+            for (i = 0; i < div; i++, pos++, w++) {
+                r[0] += cartImg[*pos] * *w;
+                r[1] += cartImg[(*pos)+1] * *w;
+                r[2] += cartImg[(*pos)+2] * *w;
+                t += *w;
+            }
+
+            img[0] = (unsigned char)(r[0] / t);
+            img[1] = (unsigned char)(r[1] / t);
+            img[2] = (unsigned char)(r[2] / t);
+        }
+    }
+}
+
+void RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg, lp2CartPixel * Table, int cartSize)
+{
+    int i, j, k;
+    int tempPixel[3];
+
+    for (j = 0; j < cartSize; j++)
+    {
+        for (k = 0; k < 3; k++)
+            tempPixel[k] = 0;
+
+        if (Table[j].iweight != 0)
+        {
+            for (i = 0; i < Table[j].iweight; i++)
+                for (k = 0; k < 3; k++)
+                {
+                    tempPixel[k] += lpImg[Table[j].position[i] + k];
+                }
+            for (k = 0; k < 3; k++)
+                cartImg[3 * j + k] = tempPixel[k] / Table[j].iweight;
+        }
+    }
+}
+
+// inverse logpolar.
+int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset, int mode)
+{
+    if (overlap_ <= -1.0) {
+        cerr << "logpolarTransform: overlap must be greater than -1" << endl;
+        return 1;
+    }
+
+	int cSize = width_;
+	
+	if (width_ > height_)
+		cSize = height_;
+
+    double angle = (2.0 * PI / nang_);   // Angular size of one pixel
+    double sinus = sin (angle / 2.0);
+    double tangent = sinus / cos (angle / 2.0);
+    int fov;                    // Number of rings in fovea
+    int lim;
+
+    double lambda;              // Log Index
+    double firstRing;           // Diameter of the receptive fields in the first ring when overlap is 0
+    double *currRad;            // Distance of the center of the current ring RF's from the center of the mapping
+    double *nextRad;            // Distance of the center of the next ring's RF's from the center of the mapping
+    double r0;                  // lower limit of RF0 in the "pure" log polar mapping
+
+    double x0, y0;              // Cartesian Coordinates
+    double locX, locY, locRad;
+    double *radii;
+    double *tangaxis;
+    double *radialaxis;
+    double *focus;
+    double *radii2;
+    double A;
+    double L;
+    int *partCtr;
+    double step;
+    double F0x, F0y, F1x, F1y;
+    double maxaxis;
+
+    int rho, theta, j;
+
+    //lp2CartPixel *Lp2CMap = new lp2CartPixel[xSize * ySize];
+
+    partCtr = new int[width_ * height_];
+    memset (partCtr, 0, width_ * height_ * sizeof (int));
+    lambda = (1.0 + sinus) / (1.0 - sinus);
+    fov = (int) (lambda / (lambda - 1));
+    firstRing = (1.0 / (lambda - 1)) - (int) (1.0 / (lambda - 1));
+    r0 = 1.0 / (pow (lambda, fov) * (lambda - 1));
+
+    tangaxis = new double[necc_];
+    radialaxis = new double[necc_];
+    focus = new double[necc_];
+    radii2 = new double[necc_];
+    currRad = new double[necc_];
+    nextRad = new double[necc_];
+
+    if ((tangaxis == 0) || (radialaxis == 0) || (focus == 0) || (radii2 == 0) || (currRad == 0) || (nextRad == 0))
+        goto L2CAllocError;
+
+    /************************
+     * RF's size Computation *
+     ************************/
+
+    for (rho = 0; rho < necc_; rho++) {
+        if (rho < fov)
+            if (rho == 0) {
+                currRad[rho] = firstRing * 0.5;
+                nextRad[rho] = firstRing;
+            }
+            else {
+                currRad[rho] = rho + firstRing - 0.5;
+                nextRad[rho] = currRad[rho] + 1.0;
+            }
+        else {
+            currRad[rho] = pow (lambda, rho) * (r0 + 0.5 / pow (lambda, fov));
+            nextRad[rho] = lambda * currRad[rho];
+        }
+        
+        tangaxis[rho] =
+            scaleFact * 2.0 * currRad[rho] * sinus * (overlap_ + 1.0) / (2.0);
+
+        radialaxis[rho] =
+            scaleFact * (nextRad[rho] - currRad[rho]) * (overlap_ + 1.0);
+
+        if (rho < fov)
+            radialaxis[rho] /= 2.0;
+        else
+            radialaxis[rho] /= (1.0 + lambda);
+
+        if ((rho < fov) && (mode == ELLIPTICAL))
+        {
+            A = radialaxis[rho] * radialaxis[rho];
+            L = scaleFact * currRad[rho] * (overlap_ + 1.0);
+            L = L * L;
+            tangaxis[rho] = tangent * sqrt (L - A);
+        }
+    }
+
+    radialaxis[0] = 0.5 * scaleFact * (firstRing) * (overlap_ + 1.0);
+
+    if (mode == RADIAL)
+        radii = radialaxis;
+    else
+        radii = tangaxis;
+
+    for (rho = 0; rho < necc_; rho++) {
+        if (mode != ELLIPTICAL)
+            focus[rho] = 0;
+        else {
+            focus[rho] =
+                -sqrt (fabs (radialaxis[rho] * radialaxis[rho] -
+                             tangaxis[rho] * tangaxis[rho]));
+        }
+        if (tangaxis[rho] >= radialaxis[rho])
+            focus[rho] = -focus[rho];
+
+        radii2[rho] = radii[rho] * radii[rho];
+    }
+    
+    double *sintable;
+    double *costable;
+    int intx, inty;
+
+    sintable = new double[nang_];
+    costable = new double[nang_];
+    if ((sintable == 0) || (costable == 0))
+        goto L2CAllocError;
+
+    for (j = 0; j < nang_; j++) {
+        sintable[j] = sin (angle * (j + 0.5));  // Angular positions of the centers of the RF's
+        costable[j] = cos (angle * (j + 0.5));
+    }
+
+    bool found;
+    double precision = 10.0;
+
+    for (rho = 0; rho < necc_; rho++) {
+        //
+        if ((mode == RADIAL) || (mode == TANGENTIAL))
+            lim = (int) (radii[rho] + 1.5);
+        else
+            lim = (int) (__max64f (tangaxis[rho], radialaxis[rho]) + 1.5);
+
+        step = lim / precision;
+
+        if (step > 1)
+            step = 1;
+
+        for (theta = 0; theta < nang_; theta++) {
+            //
+            x0 = scaleFact * currRad[rho] * costable[theta];
+            y0 = scaleFact * currRad[rho] * sintable[theta];
+
+            if (focus[rho] >= 0) {
+                F0x = x0 - focus[rho] * sintable[theta];
+                F1x = x0 + focus[rho] * sintable[theta];
+                F0y = y0 + focus[rho] * costable[theta];
+                F1y = y0 - focus[rho] * costable[theta];
+                maxaxis = tangaxis[rho];
+            }
+            else {
+                F0x = x0 - focus[rho] * costable[theta];
+                F1x = x0 + focus[rho] * costable[theta];
+                F0y = y0 - focus[rho] * sintable[theta];
+                F1y = y0 + focus[rho] * sintable[theta];
+                maxaxis = radialaxis[rho];
+            }
+            if ((mode == RADIAL) || (mode == TANGENTIAL))
+                maxaxis = radii[rho];
+
+            for (locX = (x0 - lim); locX <= (x0 + lim); locX += step)
+                for (locY = (y0 - lim); locY <= (y0 + lim); locY += step) {
+                    //
+                    intx = (int) (locX + width_ / 2);
+                    inty = (int) (locY + height_ / 2);
+
+                    locRad =
+                        sqrt ((locX - F0x) * (locX - F0x) +
+                              (locY - F0y) * (locY - F0y));
+                    locRad +=
+                        sqrt ((locX - F1x) * (locX - F1x) +
+                              (locY - F1y) * (locY - F1y));
+
+                    if (locRad < 2 * maxaxis)
+                        if ((inty + vOffset < height_) && (inty + vOffset >= 0))
+                            if ((intx + hOffset < width_)
+                                && (intx + hOffset >= 0))
+                                partCtr[(inty + vOffset) * width_ + intx + hOffset]++;
+                }
+        }
+    }
+
+    lp2CartPixel *table = l2cTable;
+    for (j = 0; j < width_ * height_; j++) {
+        table[j].position = new int[partCtr[j]];
+        memset (table[j].position, -1, sizeof (int) * partCtr[j]);
+        table[j].iweight = 0;
+    }
+
+    for (rho = 0; rho < necc_; rho++) {
+        if ((mode == RADIAL) || (mode == TANGENTIAL))
+            lim = (int) (radii[rho] + 1.5);
+        else
+            lim = (int) (__max64f (tangaxis[rho], radialaxis[rho]) + 1.5);
+
+        step = lim / precision;
+
+        if (step > 1)
+            step = 1;
+
+        for (theta = 0; theta < nang_; theta++) {
+            //
+            x0 = scaleFact * currRad[rho] * costable[theta];
+            y0 = scaleFact * currRad[rho] * sintable[theta];
+
+            if (focus[rho] >= 0) {
+                F0x = x0 - focus[rho] * sintable[theta];
+                F0y = y0 + focus[rho] * costable[theta];
+                F1x = x0 + focus[rho] * sintable[theta];
+                F1y = y0 - focus[rho] * costable[theta];
+                maxaxis = tangaxis[rho];
+            }
+            else {
+                F0x = x0 - focus[rho] * costable[theta];
+                F0y = y0 - focus[rho] * sintable[theta];
+                F1x = x0 + focus[rho] * costable[theta];
+                F1y = y0 + focus[rho] * sintable[theta];
+                maxaxis = radialaxis[rho];
+            }
+            if ((mode == RADIAL) || (mode == TANGENTIAL))
+                maxaxis = radii[rho];
+
+            for (locX = (x0 - lim); locX <= (x0 + lim); locX += step)
+                for (locY = (y0 - lim); locY <= (y0 + lim); locY += step) {
+                    intx = (int) (locX + width_ / 2);
+                    inty = (int) (locY + height_ / 2);
+
+                    locRad =
+                        sqrt ((locX - F0x) * (locX - F0x) +
+                              (locY - F0y) * (locY - F0y));
+                    locRad +=
+                        sqrt ((locX - F1x) * (locX - F1x) +
+                              (locY - F1y) * (locY - F1y));
+
+                    if (locRad < 2 * maxaxis)
+                        if ((inty + vOffset < height_) && (inty + vOffset >= 0))
+                            if ((intx + hOffset < width_) && (intx + hOffset >= 0)) {
+                                found = false;
+
+                                for (j = 0; j < partCtr[(inty + vOffset) * width_ + intx + hOffset]; j++) {
+                                    if (table [(inty + vOffset) * width_ + intx + hOffset].position[j] == 3 * (rho * nang_ + theta)) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!found) {
+                                    table[(inty + vOffset) * width_ + intx + hOffset].position[table [(inty + vOffset) * width_ + intx + hOffset].iweight] = 3 * (rho * nang_ + theta);
+                                    table[(inty + vOffset) * width_ + intx + hOffset].iweight++;
+                                }
+                            }
+                }
+        }
+    }
+    
+    if (tangaxis) delete[] tangaxis;
+    if (radialaxis) delete[] radialaxis;
+    if (focus) delete[] focus;
+    if (radii2) delete[] radii2;
+    if (currRad) delete[] currRad;
+    if (nextRad) delete[] nextRad;
+    if (sintable) delete[] sintable;
+    if (costable) delete[] costable;
+    if (partCtr) delete [] partCtr;
+    return 0;
+
+L2CAllocError:
+    if (tangaxis) delete[] tangaxis;
+    if (radialaxis) delete[] radialaxis;
+    if (focus) delete[] focus;
+    if (radii2) delete[] radii2;
+    if (currRad) delete[] currRad;
+    if (nextRad) delete[] nextRad;
+    if (sintable) delete[] sintable;
+    if (costable) delete[] costable;
+    if (partCtr) delete [] partCtr;
+    return 2;
 }
 
 
-void
-RCreconstructColor (unsigned char *color, unsigned char *grey, int width,
-                    int height)
+//
+// leftovers beyond this point
+// LATER: remove!
+//
+#if 0
+void RCreconstructColor (unsigned char *color, unsigned char *grey, int width, int height)
 {
     int x, y;
 
@@ -1113,23 +1449,10 @@ RCreconstructColor (unsigned char *color, unsigned char *grey, int width,
                     color[3 * (y * width + x) + 0] = 255;
             }
         }
-
-//          color[3*(y*width+x)+0] = 0;
-//          color[3*(y*width+x)+2] = color[3*(y*width+x)+1]*(E1*())/();
-
-
-
-//          red[y*width+x] = grey[y*width+x];
-//          blu[y*width+x] = (grey[(y-1)*width+x-1]+grey[(y-1)*width+x+1]+grey[(y+1)*width+x-1]+grey[(y+1)*width+x+1])/4.0;
-//          gre[y*width+x] = (grey[(y-1)*width+x]+grey[(y+1)*width+x]+grey[y*width+x-1]+grey[y*width+x+1])/4.0;
-
 #endif
 }
 
-
-int
-RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap,
-                    double scaleFact, int mode, char *path)
+int RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap, double scaleFact, int mode, char *path)
 {
     if (overlap <= -1.0)
         return 1;
@@ -1182,11 +1505,11 @@ RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap,
     currRad = new double[nEcc];
     nextRad = new double[nEcc];
 
-    if ((tangaxis == NULL) || (radialaxis == NULL) || (focus == NULL)
-        || (radii2 == NULL))
+    if ((tangaxis == 0) || (radialaxis == 0) || (focus == 0)
+        || (radii2 == 0))
         return 2;
 
-    if ((currRad == NULL) || (nextRad == NULL))
+    if ((currRad == 0) || (nextRad == 0))
         return 2;
 
     /************************
@@ -1272,7 +1595,7 @@ RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap,
     sintable = new double[nAng];
     costable = new double[nAng];
 
-    if ((sintable == NULL) || (costable == NULL))
+    if ((sintable == 0) || (costable == 0))
         return 2;
 
     for (j = 0; j < nAng; j++)
@@ -1291,7 +1614,7 @@ RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap,
         if ((mode == RADIAL) || (mode == TANGENTIAL))
             lim = (int) (radii[rho] + 1.5);
         else
-            lim = (int) (__max (tangaxis[rho], radialaxis[rho]) + 1.5);
+            lim = (int) (__max64f (tangaxis[rho], radialaxis[rho]) + 1.5);
 
         step = lim / precision;
 
@@ -1304,8 +1627,8 @@ RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap,
         weight = new float[mapsize];
         c2LpMap.iweight = new int[mapsize];
 
-        if ((c2LpMap.position == NULL) || (weight == NULL)
-            || (c2LpMap.iweight == NULL))
+        if ((c2LpMap.position == 0) || (weight == 0)
+            || (c2LpMap.iweight == 0))
             return 2;
 
         for (theta = 0; theta < nAng; theta++)
@@ -1504,392 +1827,6 @@ RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap,
 
 }
 
-void
-RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg,
-            cart2LpPixel * Table, int sizeLp, bool bayerImg)
-{
-    int i, j;
-    int r[3];
-    int t = 0;
+#endif
 
-    const int z = (!bayerImg)?3:1;
-    if (bayerImg) {
-        const int sz = sizeLp;
-        unsigned char *img = lpImg;
-        for (j = 0; j < sz; j++, img++) {
-            r[0] = 0;
-            t = 0;
 
-            const int div = Table[j].divisor;
-            int *pos = Table[j].position;
-            int *w = Table[j].iweight;
-            for (i = 0; i < div; i++, pos++, w++)
-            {
-                r[0] += cartImg[*pos] * *w;
-                t += *w;
-            }
-
-            *img = (unsigned char)(r[0]/t);
-        }
-    }
-    else {
-        const int sz = sizeLp;
-        unsigned char *img = lpImg;
-        for (j = 0; j < sz; j++, img+=3) {
-            r[0] = r[1] = r[2] = 0;
-            t = 0;
-
-            const int div = Table[j].divisor;
-            int *pos = Table[j].position;
-            int *w = Table[j].iweight;
-            for (i = 0; i < div; i++, pos++, w++) {
-                r[0] += cartImg[*pos] * *w;
-                r[1] += cartImg[(*pos)+1] * *w;
-                r[2] += cartImg[(*pos)+2] * *w;
-                t += *w;
-            }
-
-            img[0] = (unsigned char)(r[0] / t);
-            img[1] = (unsigned char)(r[1] / t);
-            img[2] = (unsigned char)(r[2] / t);
-        }
-    }
-}
-
-void
-RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg,
-              lp2CartPixel * Table, int cartSize)
-{
-    int i, j, k;
-    int tempPixel[3];
-
-    for (j = 0; j < cartSize; j++)
-    {
-        for (k = 0; k < 3; k++)
-            tempPixel[k] = 0;
-
-        if (Table[j].iweight != 0)
-        {
-            for (i = 0; i < Table[j].iweight; i++)
-                for (k = 0; k < 3; k++)
-                {
-                    tempPixel[k] += lpImg[Table[j].position[i] + k];
-                }
-            for (k = 0; k < 3; k++)
-                cartImg[3 * j + k] = tempPixel[k] / Table[j].iweight;
-        }
-    }
-}
-
-int
-RCbuildL2CMap (int nEcc, int nAng, int xSize, int ySize, double overlap,
-               double scaleFact, int hOffset, int vOffset, int mode,
-               char *path)
-{
-    if (overlap <= -1.0)
-        return 1;
-
-	int cSize = xSize;
-	
-	if (xSize > ySize)
-		cSize = ySize;
-
-    double angle = (2.0 * PI / nAng);   // Angular size of one pixel
-    double sinus = sin (angle / 2.0);
-    double tangent = sinus / cos (angle / 2.0);
-
-    int fov;                    // Number of rings in fovea
-    int lim;
-
-    double lambda;              // Log Index
-    double firstRing;           // Diameter of the receptive fields in the first ring when overlap is 0
-    double *currRad;            // Distance of the center of the current ring RF's from the center of the mapping
-    double *nextRad;            // Distance of the center of the next ring's RF's from the center of the mapping
-    double r0;                  // lower limit of RF0 in the "pure" log polar mapping
-
-    double x0, y0;              // Cartesian Coordinates
-    double locX, locY, locRad;
-    double *radii;
-    double *tangaxis;
-    double *radialaxis;
-    double *focus;
-    double *radii2;
-    double A;
-    double L;
-    int *partCtr;
-    double step;
-    double F0x, F0y, F1x, F1y;
-    double maxaxis;
-
-    int rho, theta, j;
-
-    lp2CartPixel *Lp2CMap = new lp2CartPixel[xSize * ySize];
-
-    partCtr = new int[xSize * ySize];
-    memset (partCtr, 0, xSize * ySize * sizeof (int));
-
-    lambda = (1.0 + sinus) / (1.0 - sinus);
-    fov = (int) (lambda / (lambda - 1));
-    firstRing = (1.0 / (lambda - 1)) - (int) (1.0 / (lambda - 1));
-    r0 = 1.0 / (pow (lambda, fov) * (lambda - 1));
-
-    tangaxis = new double[nEcc];
-    radialaxis = new double[nEcc];
-    focus = new double[nEcc];
-    radii2 = new double[nEcc];
-
-    currRad = new double[nEcc];
-    nextRad = new double[nEcc];
-
-    if ((tangaxis == NULL) || (radialaxis == NULL) || (focus == NULL)
-        || (radii2 == NULL))
-        return 2;
-
-    if ((currRad == NULL) || (nextRad == NULL))
-        return 2;
-
-    /************************
-     * RF's size Computation *
-     ************************/
-
-    for (rho = 0; rho < nEcc; rho++)
-    {
-        if (rho < fov)
-            if (rho == 0)
-            {
-                currRad[rho] = firstRing * 0.5;
-                nextRad[rho] = firstRing;
-            }
-            else
-            {
-                currRad[rho] = rho + firstRing - 0.5;
-                nextRad[rho] = currRad[rho] + 1.0;
-            }
-        else
-        {
-            currRad[rho] = pow (lambda, rho) * (r0 + 0.5 / pow (lambda, fov));
-            nextRad[rho] = lambda * currRad[rho];
-        }
-        tangaxis[rho] =
-            scaleFact * 2.0 * currRad[rho] * sinus * (overlap + 1.0) / (2.0);
-
-        radialaxis[rho] =
-            scaleFact * (nextRad[rho] - currRad[rho]) * (overlap + 1.0);
-
-        if (rho < fov)
-            radialaxis[rho] /= 2.0;
-        else
-            radialaxis[rho] /= (1.0 + lambda);
-
-        if ((rho < fov) && (mode == ELLIPTICAL))
-        {
-            A = radialaxis[rho] * radialaxis[rho];
-            L = scaleFact * currRad[rho] * (overlap + 1.0);
-            L = L * L;
-            tangaxis[rho] = tangent * sqrt (L - A);
-        }
-    }
-
-    radialaxis[0] = 0.5 * scaleFact * (firstRing) * (overlap + 1.0);
-
-    if (mode == RADIAL)
-        radii = radialaxis;
-    else
-        radii = tangaxis;
-
-    for (rho = 0; rho < nEcc; rho++)
-    {
-        if (mode != ELLIPTICAL)
-            focus[rho] = 0;
-        else
-        {
-            focus[rho] =
-                -sqrt (fabs (radialaxis[rho] * radialaxis[rho] -
-                             tangaxis[rho] * tangaxis[rho]));
-        }
-        if (tangaxis[rho] >= radialaxis[rho])
-            focus[rho] = -focus[rho];
-
-        radii2[rho] = radii[rho] * radii[rho];
-    }
-    
-    int totalcounter = 0; // Table Size
-
-    FILE *fout;
-    char filename[256];
-
-    sprintf (filename, "%sLP2C.gio", path);
-    fout = fopen (filename, "wb");
-
-    double *sintable;
-    double *costable;
-
-    int intx, inty;
-
-    sintable = new double[nAng];
-    costable = new double[nAng];
-
-    if ((sintable == NULL) || (costable == NULL))
-        return 2;
-
-    for (j = 0; j < nAng; j++)
-    {
-        sintable[j] = sin (angle * (j + 0.5));  // Angular positions of the centers of the RF's
-        costable[j] = cos (angle * (j + 0.5));
-    }
-
-    bool found;
-    double precision = 10.0;
-
-    for (rho = 0; rho < nEcc; rho++)
-    {
-        if ((mode == RADIAL) || (mode == TANGENTIAL))
-            lim = (int) (radii[rho] + 1.5);
-        else
-            lim = (int) (__max (tangaxis[rho], radialaxis[rho]) + 1.5);
-
-        step = lim / precision;
-
-        if (step > 1)
-            step = 1;
-
-        for (theta = 0; theta < nAng; theta++)
-        {
-            x0 = scaleFact * currRad[rho] * costable[theta];
-            y0 = scaleFact * currRad[rho] * sintable[theta];
-
-            if (focus[rho] >= 0)
-            {
-                F0x = x0 - focus[rho] * sintable[theta];
-                F1x = x0 + focus[rho] * sintable[theta];
-                F0y = y0 + focus[rho] * costable[theta];
-                F1y = y0 - focus[rho] * costable[theta];
-                maxaxis = tangaxis[rho];
-            }
-            else
-            {
-                F0x = x0 - focus[rho] * costable[theta];
-                F1x = x0 + focus[rho] * costable[theta];
-                F0y = y0 - focus[rho] * sintable[theta];
-                F1y = y0 + focus[rho] * sintable[theta];
-                maxaxis = radialaxis[rho];
-            }
-            if ((mode == RADIAL) || (mode == TANGENTIAL))
-                maxaxis = radii[rho];
-
-            for (locX = (x0 - lim); locX <= (x0 + lim); locX += step)
-                for (locY = (y0 - lim); locY <= (y0 + lim); locY += step)
-                {
-                    intx = (int) (locX + xSize / 2);
-                    inty = (int) (locY + ySize / 2);
-
-                    locRad =
-                        sqrt ((locX - F0x) * (locX - F0x) +
-                              (locY - F0y) * (locY - F0y));
-                    locRad +=
-                        sqrt ((locX - F1x) * (locX - F1x) +
-                              (locY - F1y) * (locY - F1y));
-
-                    if (locRad < 2 * maxaxis)
-                        if ((inty + vOffset < ySize) && (inty + vOffset >= 0))
-                            if ((intx + hOffset < xSize)
-                                && (intx + hOffset >= 0))
-                                partCtr[(inty + vOffset) * xSize + intx + hOffset]++;
-                }
-        }
-    }
-
-    for (j = 0; j < xSize * ySize; j++)
-    {
-        Lp2CMap[j].position = new int[partCtr[j]];
-        memset (Lp2CMap[j].position, -1, sizeof (int) * partCtr[j]);
-        Lp2CMap[j].iweight = 0;
-    }
-
-    for (rho = 0; rho < nEcc; rho++)
-    {
-        if ((mode == RADIAL) || (mode == TANGENTIAL))
-            lim = (int) (radii[rho] + 1.5);
-        else
-            lim = (int) (__max (tangaxis[rho], radialaxis[rho]) + 1.5);
-
-        step = lim / precision;
-
-        if (step > 1)
-            step = 1;
-
-        for (theta = 0; theta < nAng; theta++)
-        {
-            x0 = scaleFact * currRad[rho] * costable[theta];
-            y0 = scaleFact * currRad[rho] * sintable[theta];
-
-            if (focus[rho] >= 0)
-            {
-                F0x = x0 - focus[rho] * sintable[theta];
-                F0y = y0 + focus[rho] * costable[theta];
-                F1x = x0 + focus[rho] * sintable[theta];
-                F1y = y0 - focus[rho] * costable[theta];
-                maxaxis = tangaxis[rho];
-            }
-            else
-            {
-                F0x = x0 - focus[rho] * costable[theta];
-                F0y = y0 - focus[rho] * sintable[theta];
-                F1x = x0 + focus[rho] * costable[theta];
-                F1y = y0 + focus[rho] * sintable[theta];
-                maxaxis = radialaxis[rho];
-            }
-            if ((mode == RADIAL) || (mode == TANGENTIAL))
-                maxaxis = radii[rho];
-
-            for (locX = (x0 - lim); locX <= (x0 + lim); locX += step)
-                for (locY = (y0 - lim); locY <= (y0 + lim); locY += step)
-                {
-                    intx = (int) (locX + xSize / 2);
-                    inty = (int) (locY + ySize / 2);
-
-                    locRad =
-                        sqrt ((locX - F0x) * (locX - F0x) +
-                              (locY - F0y) * (locY - F0y));
-                    locRad +=
-                        sqrt ((locX - F1x) * (locX - F1x) +
-                              (locY - F1y) * (locY - F1y));
-
-                    if (locRad < 2 * maxaxis)
-                        if ((inty + vOffset < ySize) && (inty + vOffset >= 0))
-                            if ((intx + hOffset < xSize) && (intx + hOffset >= 0))
-                            {
-                                found = false;
-                                for (j = 0; j < partCtr[(inty + vOffset) * xSize + intx + hOffset]; j++)
-                                {
-                                    if (Lp2CMap [(inty + vOffset) * xSize + intx + hOffset].position[j] == 3 * (rho * nAng + theta))
-                                    {
-                                        found = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!found)
-                                {
-                                    Lp2CMap[(inty + vOffset) * xSize + intx + hOffset].position[Lp2CMap [(inty + vOffset) * xSize + intx + hOffset].iweight] = 3 * (rho * nAng + theta);
-                                    Lp2CMap[(inty + vOffset) * xSize + intx + hOffset].iweight++;
-                                }
-                            }
-                }
-        }
-    }
-    
-    fwrite (&totalcounter, sizeof (int), 1, fout);
-    for (j = 0; j < xSize * ySize; j++)
-    {
-        fwrite (&Lp2CMap[j].iweight, sizeof (int), 1, fout);
-        fwrite (Lp2CMap[j].position, sizeof (int), Lp2CMap[j].iweight, fout);
-        totalcounter += Lp2CMap[j].iweight;
-    }
-    fseek (fout, 0, SEEK_SET);
-    fwrite (&totalcounter, sizeof (int), 1, fout);
-    fclose (fout);
-
-    delete[] partCtr;
-    return 0;
-}

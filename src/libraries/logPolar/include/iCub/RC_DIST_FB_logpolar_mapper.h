@@ -1,9 +1,10 @@
 /*
- *  logpolar mapper library. subsamples rectangular images into logpolar.
+ *  logpolar mapper library. subsamples rectangular images into logpolar and vice-versa.
  *
- *  Copyright (C) 2005 Fabio Berton, LIRA-Lab
+ *  Copyright (C) 2005-2010 The RobotCub Consortium
+ *  Authors: Fabio Berton, Giorgio Metta
  *  RobotCub Consortium, European Commission FP6 Project IST-004370
- *  email:   fberton@dist.unige.it
+ *  email:   fberton@dist.unige.it, giorgio.metta@iit.it
  *  website: www.robotcub.org
  *
  *  Permission is granted to copy, distribute, and/or modify this program 
@@ -15,11 +16,13 @@
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
  *  PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- *  $Id: RC_DIST_FB_logpolar_mapper.h,v 1.8 2006/07/25 16:51:05 fberton Exp $
  */
 
 #ifndef RC_DIST_FB_logpolar_mapper_h
 #define RC_DIST_FB_logpolar_mapper_h
+
+#include <yarp/sig/Image.h>
+#include <iCub/LogpolarInterfaces.h>
 
 /**
  * \file rc_dist_fb_logpolar_mapper.h \brief The Log Polar library contains all the needed functions
@@ -27,236 +30,291 @@
  * the trasformations between cartesian and log polar images.
  */
 
-/**
- * \def RADIAL Each receptive field in fovea will be tangent to a receptive field in the previous ring and one in the next ring.
+namespace iCub {
+    namespace logpolar {
+        class logpolarTransform;
+
+        const double PI = 3.1415926535897932384626433832795;
+
+        enum {
+            RADIAL = 0, /** \def RADIAL Each receptive field in fovea will be tangent to a receptive field in the previous ring and one in the next ring */
+            TANGENTIAL = 1, /** \def TANGENTIAL Each receptive field in fovea will be tangent to the previous and the next receptive fields on the same ring. */
+            ELLIPTICAL = 2 /** \def ELLIPTICAL Each receptive field in fovea will be tangent to all its neighbors, having then an elliptical shape. */
+        };
+
+        /**
+         * \struct cart2LpPixel 
+         * \brief It contains the look-up table for the creation of a log polar image. 
+         *
+         */
+        struct cart2LpPixel
+        {
+            int divisor;    /**< Number of cartesian pixels corresponding to the current log polar one.*/
+            int *iweight;   /**< Array containing the weight of each cartesian pixel.*/
+            int *position;  /**< Array containing the position of each cartesian pixel. \n
+                                 Note that the plane information is included in this field 
+                                 (i.e. when only one plane is present it contains
+                                 the value  (\p y*xSize+x), while in case of three planes, 
+                                 the value will be \p 3*(\p y*xize+x) ).*/
+        };
+
+        /**
+         * \struct lp2CartPixel 
+         * \brief It contains the look-up table for the remapping of a log polar image into a cartesian one. 
+         *
+         */
+        struct lp2CartPixel
+        {
+            int iweight;    /**< Array containing the weight of the log polar pixel 
+                                 corresponding to the current cartesian one. */
+            int *position;  /**< Array containing the cartesian position of each log 
+                                 polar pixel. \n
+                                 Note that the plane information is included in this 
+                                 field (i.e. the value will be \p 3*(\p y*xize+x) ).*/
+        };
+
+    } // end namespace logpolar
+} // end namespace iCub
+
+
+/** 
+ * a simple collection of logpolar mapping functions, methods, tables, etc.
  */
+class iCub::logpolar::logpolarTransform : public yarp::dev::ILogpolarAPI {
+private:
+    cart2LpPixel *c2lTable;
+    lp2CartPixel *l2cTable;
+    int necc_;
+    int nang_;
+    int width_;
+    int height_;
 
-/**
- * \def TANGENTIAL Each receptive field in fovea will be tangent to the previous and the next receptive fields on the same ring.
- */
+    /*
+    * \arg \b 0 All the RF's are tangent each other. 
+    * \arg \b -1 All their sizes are 1 pixel
+    * \arg \b 1 The edges of the RF's pass through the centers of neighboring RF's
+    * Allowed values: float numbers between -1 and +infinity
+    */
+    double overlap_;
 
-/**
- * \def ELLIPTICAL Each receptive field in fovea will be tangent to all its neighbors, having then an elliptical shape.
- */
+    // forbid copies.
+    logpolarTransform(const logpolarTransform& x);
+    void operator=(const logpolarTransform& x);
 
-#define RADIAL  0
-#define TANGENTIAL 1
-#define ELLIPTICAL 2
+    /**
+    * \brief Frees the memory from the look-up table.
+    */
+    void RCdeAllocateC2LTable ();
 
-#ifndef PI
-#define PI 3.1415926535897932384626433832795
-#endif
+    /**
+    * \brief Frees the memory from the look-up table. 
+    */
+    void RCdeAllocateL2CTable ();
 
-/**
- * \struct cart2LpPixel 
- * \brief It contains the look-up table for the creation of a log polar image. 
- *
- */
-struct cart2LpPixel
-{
-    int divisor;    /**< Number of cartesian pixels corresponding to the current log polar one.*/
-    int *iweight;   /**< Array containing the weight of each cartesian pixel.*/
-    int *position;  /**< Array containing the position of each cartesian pixel. \n
-                         Note that the plane information is included in this field 
-                         (i.e. when only one plane is present it contains
-                         the value  (\p y*xSize+x), while in case of three planes, 
-                         the value will be \p 3*(\p y*xize+x) ).*/
+    /**
+    * \brief Generates the look-up table for the transformation from a cartesian image to a log polar one, both images are color images
+    * @param nEcc is number of rings
+    * @param nAng is the number of pixels per ring 
+    * @param xSize is the width of the cartesian image
+    * @param ySize is the height of the cartesian image
+    * @param overlap is the overlap amount between receptive fields.
+    * @param scaleFact the ratio between the size of the smallest logpolar pixel and the cartesian ones
+    * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
+    * @return 0 when there are no errors
+    * @return 1 in case of wrong parameters
+    * @return 2 in case of allocation problems
+    */
+    int RCbuildC2LMap (double scaleFact, int mode);
+
+    /**
+    * \brief Generates the look-up table for the transformation from a log polar image to a cartesian one.
+    * @param scaleFact the ratio between the size of the smallest logpolar pixel and the cartesian ones
+    * @param hOffset is the horizontal shift in pixels
+    * @param vOffset is the vertical shift in pixels
+    * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
+    * @return 0 when there are no errors
+    * @return 1 in case of wrong parameters
+    * @return 2 in case of allocation problems
+    */
+    int RCbuildL2CMap (double scaleFact, int hOffset, int vOffset, int mode);
+
+    /**
+    * \brief Generates a log polar image from a cartesian one
+    * @param lpImg is the output LogPolar image
+    * @param cartImg is the input Cartesian image
+    * @param Table is the LUT used for the transformation
+    * @param lpSize is the size of the log polar image
+    * @param bayerImg when true a bayer pattern image is generated, a color image 
+    is generated otherways
+    */
+    void RCgetLpImg (unsigned char *lpImg,
+                     unsigned char *cartImg,
+                     cart2LpPixel * Table, int lpSize, bool bayerImg);
+
+    /**
+    * \brief Remaps a log polar image to a cartesian one
+    * @param cartImg is the output Cartesian image
+    * @param lpImg is the input LogPolar image
+    * @param Table is the LUT used for the transformation
+    * @param cartSize is the size of the log polar image
+    */
+    void RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg, lp2CartPixel * Table, int cartSize);
+
+    /**
+    * \brief Computes the logarithm index
+    * @param nAng is the number of pixels per ring 
+    * @return the logarithm index.
+    */
+    double RCgetLogIndex ();
+
+    /**
+    * \brief Computes the ratio between the size of the smallest logpolar pixel and the cartesian ones
+    * @return the scale factor.
+    */
+    double RCcomputeScaleFactor ();
+
+public:
+    /**
+     * default constructor.
+     */
+    logpolarTransform() {
+        c2lTable = 0;
+        l2cTable = 0;
+        necc_ = 0;
+        nang_ = 0;
+        width_ = 0;
+        height_ = 0;
+        overlap_ = 0.;
+    }
+
+    /** destructor */
+    virtual ~logpolarTransform() {
+        freeLookupTables();
+    }
+
+    /** 
+     * check whether the LUT have been previously allocated.
+     * @return true iff one or both LUTs are different from zero.
+     */
+    virtual const bool allocated() const {
+        if (c2lTable != 0 || l2cTable != 0)
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * alloc the lookup tables and stores them in memory.
+     * @param necc is the number of eccentricities of the logpolar image.
+     * @param nang is the number of angles of the logpolar image.
+     * @param w is the width of the original rectangular image.
+     * @param h is the height of the original rectangular image.
+     * @param overlap is the degree of overlap of the receptive fields (>0.).
+     * @return true iff successful.
+     */
+    virtual bool allocLookupTables(int necc = 152, int nang = 252, int w = 640, int h = 480, double overlap = 1.);
+
+    /**
+    * free the lookup tables from memory.
+    * @return true iff successful.
+    */
+    virtual bool freeLookupTables();
+
+    /**
+     * converts an image from rectangular to logpolar.
+     * @param lp is the logpolar image (destination).
+     * @param cart is the cartesian image (source data).
+     * @return true iff successful. Beware that tables must be
+     * allocated in advance.
+     */
+    virtual bool cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp, 
+                                const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart);
+
+    /**
+     * converts an image from logpolar to cartesian (rectangular).
+     * @param cart is the cartesian image (destination).
+     * @param lp is the logpolar image (source).
+     * @return true iff successful. Beware that tables must be
+     * allocated in advance.
+     */
+    virtual bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,
+                                const yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp);
+
+    /**
+     * check the number of eccentricities (rings).
+     * @return the number of rings in the logpolar mapping (default 152).
+     */
+    int necc(void) const { return necc_; }
+
+    /**
+     * check the number of angles (radii).
+     * @return the number of radii in the logpolar mapping (default 252).
+     */
+    int nang(void) const { return nang_; }
+
+    /**
+     * check the width of the original or remapped cartesian image.
+     * @return the width of the cartesian image (defualt = 640).
+     */
+    int width(void) const { return width_; }
+
+    /**
+     * check the height of the original or remapped cartesian image.
+     * @return the height of the cartesian image (default = 480).
+     */
+    int height(void) const { return height_; }
+
+    /**
+     * return the desired overlap btw receptive fields.
+     * @return the desired overlap (default = 1.0).
+     */
+    double overlap(void) const { return overlap_; }
+
 };
 
-/**
- * \struct lp2CartPixel 
- * \brief It contains the look-up table for the remapping of a log polar image into a cartesian one. 
- *
- */
-struct lp2CartPixel
-{
-    int iweight;    /**< Array containing the weight of the log polar pixel 
-                         corresponding to the current cartesian one. */
-    int *position;  /**< Array containing the cartesian position of each log 
-                         polar pixel. \n
-                         Note that the plane information is included in this 
-                         field (i.e. the value will be \p 3*(\p y*xize+x) ).*/
-};
+//
+// leftovers beyond this point.
+// LATER: remove
+//
 
-/**
- * \brief Allocates the memory for the look-up table for the transformation from 
-   a cartesian image to a log polar one 
- * and loads it.
- * @param Table is a pointer to the LUT
- * @param nEcc is the number of rings
- * @param nAng is the number of pixels per ring 
- * @param bayerImg when \a true a bayer pattern image is generated, 
-   a color image is generated otherways
- * @param path is the path where the table will be loaded from
- * @return 0 if succeed, 1 if the function can't read the table data, 
-   2 if allocation fails
- */
-int RCallocateC2LTable (cart2LpPixel *
-                        Table, int nEcc, int nAng, bool bayerImg, char *path);
+    /**
+    * \brief Reconstructs the color information from a Bayer pattern image. 
+    * @param color is a pointer to a color image
+    * @param grey is a pointer to Bayer pattern image
+    * @param width is the horizontal size of the image
+    * @param height is the vertical size of the image
+    */
+    //void RCreconstructColor (unsigned char *color, unsigned char *grey, int width, int height);
 
-/**
- * \brief Allocates the memory for the look-up table \
-   for the transformation from a log polar image to a cartesian one 
- * and loads it.
- * @param Table is a pointer to the LUT
- * @param xSize is the horizontal size of the image
- * @param ySize is the vertical size of the image
- * @param path is the path where the table will be loaded from
- * @return 0 if succeed, 1 if the function can't read the table data, 
-   2 if allocation fails
- */
-int RCallocateL2CTable (lp2CartPixel * Table, int xSize, int ySize,
-                        char *path);
+    /**
+    * \brief Generates the look-up table for the transformation from a cartesian 
+    image to a log polar one, both images have 
+    * a Bayer Pattern structure
+    * @param nEcc is number of rings
+    * @param nAng is the number of pixels per ring 
+    * @param xSize is the width of the cartesian image
+    * @param ySize is the height of the cartesian image
+    * @param overlap is the overlap amount between receptive fields.
+    * \arg \b 0 All the RF's are tangent each other. 
+    * \arg \b -1 All their sizes are 1 pixel
+    * \arg \b 1 The edges of the RF's pass through the centers of neighboring RF's
+    * Allowed values: float numbers between -1 and +infinity
+    * @param scaleFact the ratio between the size of the smallest logpolar pixel 
+    and the cartesian ones
+    * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
+    * @param path is the path where the table will be stored
+    * @return 0 when there are no errors
+    * @return 1 in case of wrong parameters
+    * @return 2 in case of allocation problems
+    * @return 3 in case of file problems
+    */
+    //int RCbuildC2LMapBayer (int nEcc,
+    //                        int nAng,
+	//				        int xSize,
+	//				        int ySize,
+    //                        double overlap, double scaleFact, int mode,
+    //                       char *path);
 
-/**
- * \brief Frees the memory from the look-up table.
- * @param Table is a pointer to the LUT
- */
-void RCdeAllocateC2LTable (cart2LpPixel * Table);
-
-/**
- * \brief Frees the memory from the look-up table. 
- * @param Table is a pointer to the LUT
- */
-void RCdeAllocateL2CTable (lp2CartPixel * Table);
-
-/**
- * \brief Reconstructs the color information from a Bayer pattern image. 
- * @param color is a pointer to a color image
- * @param grey is a pointer to Bayer pattern image
- * @param width is the horizontal size of the image
- * @param height is the vertical size of the image
- */
-void RCreconstructColor (unsigned char
-                         *color, unsigned char *grey, int width, int height);
-
-/**
- * \brief Generates the look-up table for the transformation from a cartesian 
-   image to a log polar one, both images have 
- * a Bayer Pattern structure
- * @param nEcc is number of rings
- * @param nAng is the number of pixels per ring 
- * @param xSize is the width of the cartesian image
- * @param ySize is the height of the cartesian image
- * @param overlap is the overlap amount between receptive fields.
- * \arg \b 0 All the RF's are tangent each other. 
- * \arg \b -1 All their sizes are 1 pixel
- * \arg \b 1 The edges of the RF's pass through the centers of neighboring RF's
- * Allowed values: float numbers between -1 and +infinity
- * @param scaleFact the ratio between the size of the smallest logpolar pixel 
-   and the cartesian ones
- * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
- * @param path is the path where the table will be stored
- * @return 0 when there are no errors
- * @return 1 in case of wrong parameters
- * @return 2 in case of allocation problems
- * @return 3 in case of file problems
- */
-int RCbuildC2LMapBayer (int nEcc,
-                        int nAng,
-					    int xSize,
-					    int ySize,
-                        double overlap, double scaleFact, int mode,
-                        char *path);
-
-/**
- * \brief Generates the look-up table for the transformation from a cartesian 
-   image to a log polar one, both images are 
- * color images
- * @param nEcc is number of rings
- * @param nAng is the number of pixels per ring 
- * @param xSize is the width of the cartesian image
- * @param ySize is the height of the cartesian image
- * @param overlap is the overlap amount between receptive fields.
- * \arg \b 0 All the RF's are tangent each other. 
- * \arg \b -1 All their sizes are 1 pixel
- * \arg \b 1 The edges of the RF's pass through the centers of neighboring RF's
- * Allowed values: float numbers between -1 and +infinity
- * @param scaleFact the ratio between the size of the smallest logpolar pixel 
-   and the cartesian ones
- * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
- * @param path is the path where the table will be stored
- * @return 0 when there are no errors
- * @return 1 in case of wrong parameters
- * @return 2 in case of allocation problems
- * @return 3 in case of file problems
- */
-int RCbuildC2LMap (int nEcc, int nAng,
-                   int xSize,
-                   int ySize,
-                   double overlap, double scaleFact, int mode, char *path);
-
-/**
- * \brief Generates the look-up table for the transformation from a log polar 
-   image to a cartesian one.
- * @param nEcc is number of rings
- * @param nAng is the number of pixels per ring 
- * @param xSize is the width of the cartesian image
- * @param ySize is the height of the cartesian image
- * @param overlap is the overlap amount between receptive fields.
- * \arg \b 0 All the RF's are tangent each other. 
- * \arg \b -1 All their sizes are 1 pixel
- * \arg \b 1 The edges of the RF's pass through the centers of neighboring RF's
- * Allowed values: float numbers between -1 and +infinity
- * @param scaleFact the ratio between the size of the smallest logpolar pixel and 
-   the cartesian ones
- * @param hOffset is the horizontal shift in pixels
- * @param vOffset is the vertical shift in pixels
- * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
- * @param path is the path where the table will be stored
- * @return 0 when there are no errors
- * @return 1 in case of wrong parameters
- * @return 2 in case of allocation problems
- * @return 3 in case of file problems
- */
-int RCbuildL2CMap (int nEcc, int nAng,
-                   int xSize,
-                   int ySize,
-                   double overlap,
-                   double scaleFact,
-                   int hOffset, int vOffset, int mode, char *path);
-
-/**
- * \brief Generates a log polar image from a cartesian one
- * @param lpImg is the output LogPolar image
- * @param cartImg is the input Cartesian image
- * @param Table is the LUT used for the transformation
- * @param lpSize is the size of the log polar image
- * @param bayerImg when true a bayer pattern image is generated, a color image 
-   is generated otherways
- */
-void RCgetLpImg (unsigned char *lpImg,
-                 unsigned char *cartImg,
-                 cart2LpPixel * Table, int lpSize, bool bayerImg);
-
-/**
- * \brief Remaps a log polar image to a cartesian one
- * @param cartImg is the output Cartesian image
- * @param lpImg is the input LogPolar image
- * @param Table is the LUT used for the transformation
- * @param cartSize is the size of the log polar image
- */
-void RCgetCartImg (unsigned char
-                   *cartImg,
-                   unsigned char *lpImg, lp2CartPixel * Table, int cartSize);
-
-/**
- * \brief Computes the logarithm index
- * @param nAng is the number of pixels per ring 
- * @return the logarithm index.
- */
-double RCgetLogIndex (int nAng);
-
-/**
- * \brief Computes the ratio between the size of the smallest logpolar pixel and 
-   the cartesian ones
- * @param nEcc is number of rings
- * @param nAng is the number of pixels per ring 
- * @param xSize is the width of the cartesian image
- * @param ySize is the height of the cartesian image
- * @param overlap is the overlapping amount between pixels (0 = tangent pixels, 1 = ???)
- * @return the scale factor.
- */
-double RCcomputeScaleFactor (int nEcc, int nAng, int xSize, int ySize, double overlap);
 
 #endif
+
