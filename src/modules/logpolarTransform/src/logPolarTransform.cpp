@@ -47,7 +47,7 @@ bool LogPolarTransform::configure(yarp::os::ResourceFinder &rf)
    /* get the module name which will form the stem of all module port names */
 
    moduleName            = rf.check("name", 
-                           Value("logPolarTransform"), 
+                           Value("logpolarTransform"), 
                            "module name (string)").asString();
 
    /*
