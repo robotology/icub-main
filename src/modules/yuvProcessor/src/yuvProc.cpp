@@ -265,9 +265,10 @@ void YUVThread::run() {
             // extend logpolar input image
             extender( img, KERNSIZEMAX );
             //create our own YUV image ( from RBG eg... with alpha channel and separate Y U and V channel )
-            ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
+            //ippiCopy_8u_C3R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), orig, img_psb, srcsize );
+            ippiCopy_8u_C3AC4R( inputExtImage->getRawImage(), inputExtImage->getRowSize(), colour, psb4, srcsize );
             //convert to RGBA:
-            ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
+            //ippiCopy_8u_C3AC4R( orig, img_psb, colour, psb4, srcsize );
             //convert to Y,U,V image channels:
             ippiRGBToYUV_8u_AC4R( colour, psb4, yuva_orig, psb4, srcsize);
             //extract Y, U, V Images
