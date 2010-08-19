@@ -1,3 +1,8 @@
+2010-08-19 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* iCub/main/src/libraries/icubmod/dragonfly2/*
+
+	Added image offset control to dragonfly2 library.
+
 2010-06-10 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	* iCub/main/src/libraries/iCubVis added (vision library)
 	* iCub/main/src/modules/salience added (links iCubVis)
