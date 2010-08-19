@@ -363,8 +363,8 @@ public:
    		m_xdim.set_value(xdim);
    		m_ydim.set_value(ydim);
 
-        int xoffMax=xmax-xdim;
-        int yoffMax=ymax-ydim;
+        int xoffMax=(xmax-xdim)/2;
+        int yoffMax=(ymax-ydim)/2;
 
    		m_xoff.set_range(-xoffMax,xoffMax);
    		m_yoff.set_range(-yoffMax,yoffMax);
@@ -506,8 +506,8 @@ protected:
 		m_xdim.set_value(xdim);
 		m_ydim.set_value(ydim);
 
-        int xoffMax=xmax-xdim;
-        int yoffMax=ymax-ydim;
+        int xoffMax=(xmax-xdim)/2;
+        int yoffMax=(ymax-ydim)/2;
 
    		m_xoff.set_range(-xoffMax,xoffMax);
    		m_yoff.set_range(-yoffMax,yoffMax);
