@@ -395,8 +395,7 @@ void YUVThread::deallocate( )
     img_V = NULL;
     pyuva = NULL;
     centerSurr = NULL;
-    //cs_tot_32f = NULL;
-    //orig = NULL;
+    cs_tot_32f = NULL;
     colour = NULL;
     yuva_orig = NULL;
     first_plane = NULL; 
