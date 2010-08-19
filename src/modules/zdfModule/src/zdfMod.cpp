@@ -21,6 +21,10 @@
 #include <cmath>
 #include <cassert>
 
+using namespace std;
+using namespace yarp::os; 
+using namespace yarp::sig;
+
 bool zdfMod::configure(yarp::os::ResourceFinder &rf)
 {    
     /* Process all parameters from both command-line and .ini file */
@@ -489,6 +493,11 @@ void ZDFThread::run()
 }
 
 void ZDFThread::threadRelease() 
+{
+    
+}
+
+void ZDFThread::onStop()
 {
     cout << "closing ports.." << endl;
     imageInLeft.close();

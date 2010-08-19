@@ -18,6 +18,7 @@
   
 
 #include "iCub/zdfMod.h" 
+using namespace yarp::os;
 
 int main(int argc, char * argv[])
 {

@@ -179,34 +179,30 @@
 #define RANKSIZE 9  //9 or 25: 9
 
 #define NDTEQ    0 //0
-
-using namespace std;
-using namespace yarp::os; 
-using namespace yarp::sig;
   
-class ZDFThread : public Thread
+class ZDFThread : public yarp::os::Thread
 {
 private:
 
     /*port name strings*/
-    string inputNameLeft;           //string containing input port name left
-	string inputNameRight;          //string containing input port name right
-    string outputNameProb;          //string containing the probability output port name
-	string outputNameSeg;           //string containing the segmentation output port name
-	string outputNameDog;           //string containing the difference of gaussian output port name
-    string outputNameTemp;          //string containing the segmented template output port name
+    std::string inputNameLeft;           //string containing input port name left
+	std::string inputNameRight;          //string containing input port name right
+    std::string outputNameProb;          //string containing the probability output port name
+	std::string outputNameSeg;           //string containing the segmentation output port name
+	std::string outputNameDog;           //string containing the difference of gaussian output port name
+    std::string outputNameTemp;          //string containing the segmented template output port name
 
-    ImageOf<PixelMono> *img_out_prob;   //probability image
-	ImageOf<PixelMono> *img_out_seg;    //segmentation image
-	ImageOf<PixelMono> *img_out_dog;    //difference of gaussian image
-    ImageOf<PixelBgr> *img_out_temp;    //template image
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *img_out_prob;   //probability image
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *img_out_seg;    //segmentation image
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *img_out_dog;    //difference of gaussian image
+    yarp::sig::ImageOf<yarp::sig::PixelBgr> *img_out_temp;    //template image
 
-    BufferedPort<ImageOf<PixelBgr> >  imageInLeft;      //input port cartesian image left
-	BufferedPort<ImageOf<PixelBgr> >  imageInRight;     //input port cartesian image right
-    BufferedPort<ImageOf<PixelMono> >  imageOutProb;    //output port probability image
-	BufferedPort<ImageOf<PixelMono> >  imageOutSeg;     //output port segmented image
-	BufferedPort<ImageOf<PixelMono> >  imageOutDog;     //output port difference of gaussian image
-    BufferedPort<ImageOf<PixelBgr> >  imageOutTemp;     //output port template image
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> >  imageInLeft;      //input port cartesian image left
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> >  imageInRight;     //input port cartesian image right
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> >  imageOutProb;    //output port probability image
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> >  imageOutSeg;     //output port segmented image
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> >  imageOutDog;     //output port difference of gaussian image
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> >  imageOutTemp;     //output port template image
 
 	bool allocated; // flag to check if the variables have been already allocated
 	int psb_in, t_lock_lr, t_lock_ud;
@@ -263,7 +259,7 @@ private:
     int BufferSize;
     
     //string containing module name
-    string moduleName;
+    std::string moduleName;
 
 public:
 
@@ -279,27 +275,28 @@ public:
     /**
      * allocate all memory and variables
      */    
-    void allocate(ImageOf<PixelBgr> *img);
+    void allocate(yarp::sig::ImageOf<yarp::sig::PixelBgr> *img);
     void deallocate();
     bool threadInit();     
     void threadRelease();
-    void run(); 
+    void run();
+    void onStop();
 	
 	void get_rank(Coord c,Ipp8u *im, int w, int*list);
 	double cmp_rank(int*l1, int*l2);
 	void get_ndt(Coord c,Ipp8u *im, int w, int*list);
 	double cmp_ndt(int*l1, int*l2);
 	void getAreaCoGSpread(Ipp8u*im, int p,IppiSize s, int*parea,double*pdx,double*pdy,double*pspread);
-    void setName(string module);
+    void setName(std::string module);
 };
 
-class zdfMod:public RFModule
+class zdfMod:public yarp::os::RFModule
 {
     /* module parameters */
-    string moduleName; 
-    string handlerName;
+    std::string moduleName; 
+    std::string handlerName;
 	
-    Port handlerPort;      //a port to handle messages 
+    yarp::os::Port handlerPort;      //a port to handle messages 
     
     struct MultiClass::Parameters parameters; // multi class parameters passed to the thread
     /* pointer to a new thread to be created and started in configure() and stopped in close() */
@@ -310,7 +307,7 @@ public:
     bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
     bool interruptModule();                       // interrupt, e.g., the ports 
     bool close();                                 // close and shut down the module
-    bool respond(const Bottle& command, Bottle& reply);
+    bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
     double getPeriod(); 
     bool updateModule();
 };
