@@ -29,6 +29,19 @@
 #include <sstream>
 
 
+#define COMMAND_VOCAB_SET VOCAB3('s','e','t')
+#define COMMAND_VOCAB_GET VOCAB3('g','e','t')
+#define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
+#define COMMAND_VOCAB_KTD VOCAB3('k','t','d') //weight of top-down algorithm
+#define COMMAND_VOCAB_RIN VOCAB3('r','i','n') //red intensity value
+#define COMMAND_VOCAB_GIN VOCAB3('g','i','n') //green intensity value
+#define COMMAND_VOCAB_BIN VOCAB3('b','i','n') //blue intensity value
+#define COMMAND_VOCAB_K1 VOCAB2('k','1')
+#define COMMAND_VOCAB_K2 VOCAB2('k','2')
+#define COMMAND_VOCAB_K3 VOCAB2('k','3')
+#define COMMAND_VOCAB_K4 VOCAB2('k','4')
+#define COMMAND_VOCAB_K5 VOCAB2('k','5')
+#define COMMAND_VOCAB_K6 VOCAB2('k','6')
 
 using namespace yarp::os;
 using namespace std;
@@ -122,15 +135,12 @@ static void callback( GtkWidget *widget,gpointer   data ){
 //-------------------------------------------------
 static void cb_digits_scale( GtkAdjustment *adj ) {
     /* Set the number of decimal places to which adj->value is rounded */
-    //selectiveAttentionModule->processor1->cannyOperator->setThresholdU((double)adj->value);
-    //printf("k1: %f \n",(double) adj->value);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set k1 %2.2f",adj->value);
-    command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(command->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_K1);
+        bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
@@ -140,13 +150,12 @@ static void cb_digits_scale2( GtkAdjustment *adj ) {
     /* Set the number of decimal places to which adj->value is rounded */
     //selectiveAttentionModule->processor1->cannyOperator->setThresholdL((double)adj->value);
     //printf("k2: %f \n",(double) adj->value);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set k2 %2.2f",adj->value);
-    command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(command->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_K2);
+        bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
@@ -156,13 +165,12 @@ static void cb_digits_scale3( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskSeed=adj->value;
     //printf("k3: %f \n",(double) adj->value);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set k3 %2.2f",adj->value);
-    command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(command->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_K3);
+        bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
@@ -172,13 +180,12 @@ static void cb_digits_scale4( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     //printf("k4: %f \n",(double) adj->value);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set k4 %2.2f",adj->value);
-    command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(command->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_K4);
+        bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
@@ -188,13 +195,12 @@ static void cb_digits_scale5( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     //printf("k5: %f \n",(double) adj->value);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set k5 %2.2f",adj->value);
-    command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(command->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_K5);
+        bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
@@ -203,14 +209,12 @@ static void cb_digits_scale5( GtkAdjustment *adj ) {
 static void cb_digits_scale6( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
-    printf("k6: %f \n",(double) adj->value);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set k6 %2.2f",adj->value);
-    command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(command->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_K6);
+        bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
