@@ -13,8 +13,8 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
-#include <ace/Log_Msg.h>
-#include <ace/OS.h>
+//#include <ace/Log_Msg.h>
+//#include <ace/OS.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -28,7 +28,7 @@ inline CFWCamera_DR2_2* RES(void *res) { return (CFWCamera_DR2_2*)res; }
 DragonflyDeviceDriver2::DragonflyDeviceDriver2(void)
 {
 	system_resources=(void*)new CFWCamera_DR2_2;
-	ACE_ASSERT(system_resources!=NULL);
+	//ACE_ASSERT(system_resources!=NULL);
 }
 
 DragonflyDeviceDriver2::~DragonflyDeviceDriver2()
@@ -288,17 +288,17 @@ bool DragonflyDeviceDriver2::getWhiteBalanceDC1394(double &b, double &r)
 {
 	return RES(system_resources)->getWhiteBalanceDC1394(b,r);
 }
-bool DragonflyDeviceDriver2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep)
+bool DragonflyDeviceDriver2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep)
 {
-	return RES(system_resources)->getFormat7MaxWindowDC1394(xdim,ydim,xstep,ystep);
+	return RES(system_resources)->getFormat7MaxWindowDC1394(xdim,ydim,xstep,ystep,xoffstep,yoffstep);
 }
-bool DragonflyDeviceDriver2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim)
+bool DragonflyDeviceDriver2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0)
 {
-	return RES(system_resources)->setFormat7WindowDC1394(xdim,ydim);
+	return RES(system_resources)->setFormat7WindowDC1394(xdim,ydim,x0,y0);
 }
-bool DragonflyDeviceDriver2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim)
+bool DragonflyDeviceDriver2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0)
 {
-	return RES(system_resources)->getFormat7WindowDC1394(xdim,ydim);
+	return RES(system_resources)->getFormat7WindowDC1394(xdim,ydim,x0,y0);
 }
 bool DragonflyDeviceDriver2::setOperationModeDC1394(bool b1394b)
 {

@@ -551,24 +551,30 @@ public:
     * @param ydim maximum height
     * @param xstep width granularity
     * @param ystep height granularity
+    * @param xoffstep horizontal offset granularity
+    * @param yoffstep vertical offset granularity
     * @return true/false upon success/failure
     */
-    virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep);
+    virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
 
     /** 
     * Get image dimensions in Format 7 mode.
     * @param xdim image width
     * @param ydim image height
+    * @param x0 horizontal image offset
+    * @param y0 vertical image offset
     * @return true/false upon success/failure
     */
-    virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim);
+    virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
     /** 
     * Set image dimensions in Format 7 mode.
     * @param xdim image width
     * @param ydim image height
+    * @param x0 horizontal image offset
+    * @param y0 vertical image offset
     * @return true/false upon success/failure
     */
-    virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim);
+    virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
 
     /**
     * Set Operation Mode.
