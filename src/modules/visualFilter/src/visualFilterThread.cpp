@@ -498,10 +498,7 @@ void visualFilterThread::edgesExtract() {
         }
 
         pedges += rowsize-width_orig;
-        /* throw a warning (at compile time) and besides it's not clear why it subtracts & sum maxKernelSize! */
-        for(int i = 0; i < (rowsize2 / sizeof(signed short)) - width_orig - maxKernelSize + maxKernelSize; i++) {
-            j++;
-        } 
+        j+=(rowsize2 / sizeof(signed short)) - width_orig;
     }
 }
 
