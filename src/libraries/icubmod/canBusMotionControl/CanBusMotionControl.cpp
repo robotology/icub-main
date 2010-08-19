@@ -177,17 +177,21 @@ public:
 
     // msg 4
     short _current;
-    short _position_error;
-	short _torque_error;   //@@@TODO create new msg slot, now is the same of _position_error
     double _update_c;
 
-    // msg 5
+	// msg 4b
+    short _position_error;
+	short _torque_error;   
+    double _update_r;
+
+    // msg 4c
     short _speed;
     short _accel;
     double _update_s;
 
-    short _torque;
-    double _update_t;
+	// msg 4d
+    //short _torque;
+    //double _update_t;
 	
 	// msg 6
 	unsigned int _canTxError;
@@ -258,11 +262,12 @@ public:
         _speed = 0;
         _accel = 0;
 
-        _torque=42;
+        //_torque=0;
 
         _update_v = .0;
         _update_e = .0;
         _update_c = .0;
+		_update_r = .0;
         _update_s = .0;
 
         _address=-1;
@@ -1095,6 +1100,9 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_PRINT);
     xtmp=p.findGroup("CAN").findGroup("broadcast_vel_acc");
     ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_VELOCITY);
+
+	xtmp=p.findGroup("CAN").findGroup("broadcast_pid_err");
+	setBroadCastMask(xtmp, CAN_BCAST_PID_ERROR); //@@@ not checking return value in order to keep this option not mandatory
 
     if (!ret)
         fprintf(stderr, "Invalid configuration file, check broadcast_* parameters\n");
@@ -2168,18 +2176,26 @@ void CanBusMotionControl::handleBroadcasts()
                 case CAN_BCAST_CURRENT:
                     // also receives the control values.
                     r._bcastRecvBuffer[j]._current = *((short *)(data));
-
-                    r._bcastRecvBuffer[j]._position_error = *((short *)(data+4));
-					r._bcastRecvBuffer[j]._torque_error = *((short *)(data+4)); //@@@TODO create new msg slot, now is the same of _position_error
                     r._bcastRecvBuffer[j]._update_c = before;
                     j++;
                     if (j < r.getJoints())
                     {
                         r._bcastRecvBuffer[j]._current = *((short *)(data+2));
-
-                        r._bcastRecvBuffer[j]._position_error = *((short *)(data+6));
-						r._bcastRecvBuffer[j]._torque_error = *((short *)(data+6)); //@@@TODO create new msg slot, now is the same of _position_error
                         r._bcastRecvBuffer[j]._update_c = before;
+                    }
+                    break;
+
+                case CAN_BCAST_PID_ERROR:
+                    // also receives the control values.
+                    r._bcastRecvBuffer[j]._position_error = *((short *)(data));
+                    r._bcastRecvBuffer[j]._torque_error =   *((short *)(data+4));
+                    r._bcastRecvBuffer[j]._update_r = before;
+                    j++;
+                    if (j < r.getJoints())
+                    {
+                        r._bcastRecvBuffer[j]._position_error = *((short *)(data+2));
+                        r._bcastRecvBuffer[j]._torque_error = *((short *)(data+6));
+                        r._bcastRecvBuffer[j]._update_r = before;
                     }
                     break;
 
