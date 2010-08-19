@@ -22,8 +22,8 @@
  * <li> broadcast_pos: if 1 enables getEncoders (joint position)
  * <li> broadcast_vel_acc: if 1 enables getEncoderSpeeds (joint velocity)
  *      and getEncoderAccelerations (joint acceleration)
- * <li> broadcast_pid: if 1 enables getErrors  (difference between 
- *      desired and actual position) and getOutputs (voltage give to the motor)
+ * <li> broadcast_pid: if 1 enables getOutputs (voltage give to the motor)
+ * <li> broadcast_pid_err: if 1 enables getPositionErrors and getTorqueErrors (pid tracking error)
  * <li> broadcast_current: if 1 enables getCurrents (current given to the motor)
  * </ul>
  *
@@ -73,8 +73,9 @@
  * <li> getEncoders (joint position)
  * <li> getEncoderSpeeds (joint velocity)
  * <li> getEncoderAccelerations (joint acceleration)
- * <li> getErrors  (difference between desired and actual position)
- * <li> getOutputs (voltage give to the motor)
+ * <li> getPositionErrors  (difference between desired and actual position)
+ * <li> getTorqueErrors    (difference between desired and measured torque, if available)
+ * <li> getOutputs  (voltage give to the motor)
  * <li> getCurrents (current given to the motor)
  * <li> getTorques  (joint torques, if available)
  * </ul>
@@ -126,7 +127,7 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Module.h>
 
-#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 7
+#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 8
 
 //
 void getRate(Property p, int &r)
@@ -227,10 +228,11 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     availableDataToDump[0] = ConstString("getEncoders");
     availableDataToDump[1] = ConstString("getEncoderSpeeds");
     availableDataToDump[2] = ConstString("getEncoderAccelerations");
-    availableDataToDump[3] = ConstString("getErrors");
+    availableDataToDump[3] = ConstString("getPositionErrors");
     availableDataToDump[4] = ConstString("getOutputs");
     availableDataToDump[5] = ConstString("getCurrents");
 	availableDataToDump[6] = ConstString("getTorques");
+	availableDataToDump[7] = ConstString("getTorqueErrors");
 
 
     if (!p.check("dataToDump"))
@@ -289,7 +291,7 @@ private:
     GetEncs myGetEncs;
     //pid
     IPidControl *pid;
-    GetErrs myGetErrs;
+    GetPosErrs myGetPosErrs;
     GetOuts myGetOuts;
     //amp
     IAmplifierControl *amp;
@@ -297,6 +299,7 @@ private:
 	//torques
 	ITorqueControl *trq;
 	GetTrqs myGetTrqs;
+	GetTrqErrs myGetTrqErrs;
 
 public:
     DumpModule() 
@@ -440,21 +443,21 @@ public:
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetAccs);
                         }
-                if (dataToDump[i] == "getErrors")
+                if (dataToDump[i] == "getPositionErrors")
                     if (dd.view(pid))
                         {
                             fprintf(stderr, "Initializing a getErrs thread\n");
                             myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetErrs.setInterface(pid);
+                            myGetPosErrs.setInterface(pid);
                             if (dd.view(stmp))
                                 {
-                                    fprintf(stderr, "getErrors::The time stamp initalization interfaces was successfull! \n");
-                                    myGetErrs.setStamp(stmp);
+                                    fprintf(stderr, "getPositionErrors::The time stamp initalization interfaces was successfull! \n");
+                                    myGetPosErrs.setStamp(stmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
-                            myDumper[i].setGetter(&myGetErrs);
+                            myDumper[i].setGetter(&myGetPosErrs);
                         }
                 if (dataToDump[i] == "getOutputs")
                     if (dd.view(pid))
@@ -505,6 +508,23 @@ public:
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
                             myDumper[i].setGetter(&myGetTrqs);
+                        }
+		        if (dataToDump[i] == "getTorqueErrors")
+                    if (dd.view(trq))
+                        {
+                            fprintf(stderr, "Initializing a getTorqueErrors thread\n");
+                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetTrqErrs.setInterface(trq);
+                            if (dd.view(stmp))
+                                {
+                                    fprintf(stderr, "getTorqueErrors::The time stamp initalization interfaces was successfull! \n");
+                                    myGetTrqErrs.setStamp(stmp);
+                                }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                               
+                            myDumper[i].setGetter(&myGetTrqErrs);
                         }
             }
         Time::delay(1);
@@ -566,7 +586,7 @@ int main(int argc, char *argv[])
     if (!p.check("dataToDump"))
         {
             Value v;
-            v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getErrors getOutputs getCurrents getTorques)");
+            v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors)");
             p.put("dataToDump", v);
         }
 

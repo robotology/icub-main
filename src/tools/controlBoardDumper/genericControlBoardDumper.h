@@ -45,7 +45,7 @@ public:
   IEncoders *iencs;
 };
 
-class GetErrs : public GetData
+class GetPosErrs : public GetData
 {
 public:
   void setInterface (IPidControl *);
@@ -73,6 +73,15 @@ public:
 };
 
 class GetTrqs : public GetData
+{
+public:
+  void setInterface (ITorqueControl *);
+  virtual bool getData(double *);
+
+  ITorqueControl *itrq;
+};
+
+class GetTrqErrs : public GetData
 {
 public:
   void setInterface (ITorqueControl *);

@@ -78,14 +78,14 @@ bool GetAccs::getData(double *e)
     return 0;
 }
 
-void GetErrs::setInterface(IPidControl *i)
+void GetPosErrs::setInterface(IPidControl *i)
 {
     ipid = i;
 }
 
-bool GetErrs::getData(double *e)
+bool GetPosErrs::getData(double *e)
 {
-  //fprintf(stderr, "Entering getErrs\n");
+  //fprintf(stderr, "Entering getPosErrs\n");
   if (ipid)
     {
       ipid->getErrors(e);
@@ -140,6 +140,23 @@ bool GetTrqs::getData(double *e)
   if (itrq)
     {
 	  itrq->getTorques(e);
+      return 1;
+    }
+  else
+    return 0;
+}
+
+void GetTrqErrs::setInterface(ITorqueControl *i)
+{
+    itrq = i;
+}
+
+bool GetTrqErrs::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqErrs\n");
+  if (itrq)
+    {
+	  itrq->getTorqueErrors(e);
       return 1;
     }
   else
