@@ -32,7 +32,7 @@ using namespace yarp::sig;
  * implementation of the ClientLogpolarFrameGrabber class.
  */
 
-ClientLogpolarFrameGrabber::ClientLogpolarFrameGrabber() : RemoteFrameGrabberDC1394(), nmutex(1) { ninstances = 0; }
+ClientLogpolarFrameGrabber::ClientLogpolarFrameGrabber() : RemoteFrameGrabberDC1394(), nmutex(1) {}
 
 bool ClientLogpolarFrameGrabber::open(yarp::os::Searchable& config) {
     nmutex.wait();
@@ -79,45 +79,8 @@ bool ClientLogpolarFrameGrabber::close() {
     nmutex.wait();
     portLogpolar.close();
     portFoveal.close();
- 
-    if (!ninstances)
-        trsf.freeLookupTables();
-
     nmutex.post();
     return RemoteFrameGrabberDC1394::close();
-}
-
-/*
- * implement the ILogpolarAPI interface.
- */
-bool ClientLogpolarFrameGrabber::allocLookupTables(int necc, int nang, int w, int h, double overlap) {
-    nmutex.wait();
-    const bool ok = trsf.allocLookupTables(necc, nang, w, h, overlap);
-    ninstances ++;
-    nmutex.post();
-    return ok;
-}
-
-bool ClientLogpolarFrameGrabber::freeLookupTables() {
-    nmutex.wait();
-    ninstances --;
-    const bool ok = trsf.freeLookupTables();
-    nmutex.post();
-    return ok;
-}
-
-bool ClientLogpolarFrameGrabber::cartToLogpolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelRgb>& cart) {
-    nmutex.wait();
-    const bool ok = trsf.cartToLogpolar(lp, cart);
-    nmutex.post();
-    return ok;
-}
-
-bool ClientLogpolarFrameGrabber::logpolarToCart(ImageOf<PixelRgb>& cart, const ImageOf<PixelRgb>& lp) {
-    nmutex.wait();
-    const bool ok = trsf.logpolarToCart(cart, lp);
-    nmutex.post();
-    return ok;
 }
 
 /**

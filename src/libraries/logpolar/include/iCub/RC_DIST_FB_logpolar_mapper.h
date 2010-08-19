@@ -22,7 +22,6 @@
 #define RC_DIST_FB_logpolar_mapper_h
 
 #include <yarp/sig/Image.h>
-#include <iCub/LogpolarInterfaces.h>
 
 /**
  * \file rc_dist_fb_logpolar_mapper.h \brief The Log Polar library contains all the needed functions
@@ -40,6 +39,12 @@ namespace iCub {
             RADIAL = 0, /** \def RADIAL Each receptive field in fovea will be tangent to a receptive field in the previous ring and one in the next ring */
             TANGENTIAL = 1, /** \def TANGENTIAL Each receptive field in fovea will be tangent to the previous and the next receptive fields on the same ring. */
             ELLIPTICAL = 2 /** \def ELLIPTICAL Each receptive field in fovea will be tangent to all its neighbors, having then an elliptical shape. */
+        };
+
+        enum {
+           C2L = 1,     // 2^0
+           L2C = 2,     // 2^1
+           BOTH = 3,    // 2^0 + 2^1
         };
 
         /**
@@ -80,7 +85,7 @@ namespace iCub {
 /** 
  * a simple collection of logpolar mapping functions, methods, tables, etc.
  */
-class iCub::logpolar::logpolarTransform : public yarp::dev::ILogpolarAPI {
+class iCub::logpolar::logpolarTransform {
 private:
     cart2LpPixel *c2lTable;
     lp2CartPixel *l2cTable;
@@ -88,6 +93,7 @@ private:
     int nang_;
     int width_;
     int height_;
+    int mode_;
 
     /*
     * \arg \b 0 All the RF's are tangent each other. 
@@ -185,6 +191,7 @@ public:
         width_ = 0;
         height_ = 0;
         overlap_ = 0.;
+        mode_ = BOTH;
     }
 
     /** destructor */
@@ -212,7 +219,7 @@ public:
      * @param overlap is the degree of overlap of the receptive fields (>0.).
      * @return true iff successful.
      */
-    virtual bool allocLookupTables(int necc = 152, int nang = 252, int w = 640, int h = 480, double overlap = 1.);
+    virtual bool allocLookupTables(int mode = BOTH, int necc = 152, int nang = 252, int w = 640, int h = 480, double overlap = 1.);
 
     /**
     * free the lookup tables from memory.
@@ -270,6 +277,11 @@ public:
      */
     double overlap(void) const { return overlap_; }
 
+    /**
+     * return the operating mode, one of BOTH, C2L, L2C.
+     * @return the value of mode (default = BOTH).
+     */
+    int mode(void) const { return mode_; }
 };
 
 //

@@ -51,7 +51,7 @@ int main (int argc, char *argv[])
     lp.resize(nAng, nEcc);
 
     //const int cartSize = (inputImg.width() < inputImg.height()) ? inputImg.width() : inputImg.height();
-    trsf.allocLookupTables(nEcc, nAng, inputImg.width(), inputImg.height(), overlap);
+    trsf.allocLookupTables(BOTH, nEcc, nAng, inputImg.width(), inputImg.height(), overlap);
 
     // assumes in & out are allocated and correctly sized.
     trsf.cartToLogpolar(lp, inputImg);

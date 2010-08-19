@@ -98,11 +98,13 @@ This file can be edited at src/logpolarRemapper/logpolarRemapper.cpp.
 #include <yarp/dev/PolyDriver.h>
 
 #include <iCub/LogpolarInterfaces.h>
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
+using namespace iCub::logpolar;
 
 // the default app name (to be used in port names, etc.).
 ConstString defaultname("remapper");
@@ -125,7 +127,6 @@ protected:
     string local;
     string carrier;
     string outname;
-    ILogpolarAPI *lpApi;
     ILogpolarFrameGrabberImage *lpImage;
     ImageOf<PixelRgb> lp;
     bool active;
@@ -133,6 +134,7 @@ protected:
     int height;
     Port out;
     PortWriterBuffer<ImageOf<PixelRgb> > writer;
+    logpolarTransform trsf;
 
 public:
     /*
@@ -193,11 +195,10 @@ public:
         p.put("remote", remote.c_str());
         poly.open(p);
         if (poly.isValid()) {
-            poly.view(lpApi);
             poly.view(lpImage);
             active = false;
 
-            if (lpApi != 0 && lpImage != 0) {
+            if (lpImage != 0) {
                 const int nang = lpImage->nang();
                 const int necc = lpImage->necc();
                 const int fovea = lpImage->fovea();
@@ -211,7 +212,7 @@ public:
                         overlap);
 
                     fprintf(stdout, "cartesian image of size %d %d\n", width, height);
-                    lpApi->allocLookupTables(necc, nang, width, height, overlap);
+                    trsf.allocLookupTables(L2C, necc, nang, width, height, overlap);
                     active = true;
 
                     lp.resize(nang, necc);
@@ -228,7 +229,7 @@ public:
      * called when closing the thread to clean up resources.
      */
     virtual void threadRelease() {
-        lpApi->freeLookupTables();
+        trsf.freeLookupTables();
         active = false;
     }
 
@@ -248,7 +249,7 @@ public:
                 datum.resize(width, height);
 
                 // then remap
-                lpApi->logpolarToCart(datum, lp);
+                trsf.logpolarToCart(datum, lp);
 
                 // then write to out port
                 writer.write(true);

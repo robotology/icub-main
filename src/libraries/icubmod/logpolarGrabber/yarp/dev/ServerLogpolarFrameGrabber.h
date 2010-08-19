@@ -313,7 +313,6 @@ class yarp::dev::ServerLogpolarFrameGrabber : public DeviceDriver,
                 public ILogpolarFrameGrabberImage,
                 public IFrameGrabberControls,
                 public IService,
-                public ILogpolarAPI,
                 public yarp::os::RateThread
 {
 private:
@@ -349,10 +348,6 @@ protected:
     int inang;
     int ifovea;
     double ioverlap;
-
-    // logpolar mapping class.
-    iCub::logpolar::logpolarTransform trsf;
-    int ninstances;
 
     bool canDrop;
     bool addStamp;
@@ -602,45 +597,6 @@ public:
      * @return true iff successful.
      */
     virtual bool getFovealImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
-
-    // implementation of the ILogpolarAPI interface.
-
-    /**
-     * Alloc the lookup tables and stores them in memory.
-     * @param necc is the number of eccentricities of the logpolar image.
-     * @param nang is the number of angles of the logpolar image.
-     * @param w is the width of the original rectangular image.
-     * @param h is the height of the original rectangular image.
-     * @param overlap is the degree of overlap of the receptive fields (>0.).
-     * @return true iff successful.
-     */
-    virtual bool allocLookupTables (int necc, int nang, int w, int h, double overlap);
-
-    /**
-     * Free the lookup tables from memory.
-     * @return true iff successful.
-     */
-    virtual bool freeLookupTables ();
-
-    /**
-     * Converts an image from rectangular to logpolar.
-     * @param lp is the logpolar image (destination).
-     * @param cart is the cartesian image (source data).
-     * @return true iff successful. Beware that tables must be
-     * allocated in advance.
-     */
-    virtual bool cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp, 
-                                const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart);
-
-    /**
-     * Converts an image from logpolar to cartesian (rectangular).
-     * @param cart is the cartesian image (destination).
-     * @param lp is the logpolar image (source).
-     * @return true iff successful. Beware that tables must be
-     * allocated in advance.
-     */
-    virtual bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,
-                                const yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp);
 };
 
 #endif /* __YARPSERVERLOGPOLARFRAMEGRABBER__ */

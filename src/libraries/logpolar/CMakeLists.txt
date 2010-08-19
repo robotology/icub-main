@@ -9,8 +9,7 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
-                    ${YARP_INCLUDE_DIRS}
-					${iCubDev_INCLUDE_DIRS})
+                    ${YARP_INCLUDE_DIRS})
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 

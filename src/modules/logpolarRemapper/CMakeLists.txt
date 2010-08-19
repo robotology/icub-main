@@ -9,11 +9,12 @@ source_group("Header Files" FILES ${header_files})
 
 #add local directory 
 include_directories(${iCubDev_INCLUDE_DIRS}
+					${logpolar_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 add_executable(${PROJECTNAME} ${folder_source} ${header_files})
 
 #add yarp if needed, no need to call FIND_PACAKGE()
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} iCubDev icubmod) 
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} logpolar iCubDev icubmod) 
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)

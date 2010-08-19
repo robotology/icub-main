@@ -37,11 +37,11 @@ using namespace yarp::sig;
 using namespace std;
 
 // implementation of the ILogpolarAPI interface.
-bool logpolarTransform::allocLookupTables(int necc, int nang, int w, int h, double overlap) {
+bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, int h, double overlap) {
     //
     if (allocated()) {
         // check, return false in case size has changed. need to manually free and recompute maps.
-        if (necc != necc_ || nang != nang_ || w != width_ || h != height_ || overlap != overlap_) {
+        if (mode != mode_ || necc != necc_ || nang != nang_ || w != width_ || h != height_ || overlap != overlap_) {
             cerr << "logpolarTransform: new size differ from previously allocated maps" << endl;
             return false;
         }
@@ -52,9 +52,10 @@ bool logpolarTransform::allocLookupTables(int necc, int nang, int w, int h, doub
     width_ = w;
     height_ = h;
     overlap_ = overlap;
+    mode_ = mode;
     const double scaleFact = RCcomputeScaleFactor ();    
     
-    if (c2lTable == 0) {
+    if (c2lTable == 0 && (mode & C2L)) {
         c2lTable = new cart2LpPixel[necc*nang];
         if (c2lTable == 0) {
             cerr << "logpolarTransform: can't allocate c2l lookup tables, wrong size?" << endl;
@@ -64,7 +65,7 @@ bool logpolarTransform::allocLookupTables(int necc, int nang, int w, int h, doub
         RCbuildC2LMap (scaleFact, ELLIPTICAL);
     }
 
-    if (l2cTable == 0) {
+    if (l2cTable == 0 && (mode & L2C)) {
         l2cTable = new lp2CartPixel[w*h];
         if (l2cTable == 0) {
             cerr << "logPolarLibrary: can't allocate l2c lookup tables, wrong size?" << endl;
@@ -91,6 +92,11 @@ bool logpolarTransform::freeLookupTables() {
 
 bool logpolarTransform::cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp, 
                             const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart) {
+    if (!(mode_ & C2L)) {
+        cerr << "logPolarLibrary: conversion to logpolar called with wrong mode set" << endl;
+        return false;
+    }
+
     // adjust padding.
     if (cart.getPadding() != 0) {
         const int byte = cart.width() * sizeof(PixelRgb);
@@ -122,6 +128,11 @@ bool logpolarTransform::cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& 
 
 bool logpolarTransform::logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,
                             const yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp) {
+    if (!(mode_ & L2C)) {
+        cerr << "logPolarLibrary: conversion to cartesian called with wrong mode set" << endl;
+        return false;
+    }
+
     // adjust padding.
     if (lp.getPadding() != 0) {
         int i;

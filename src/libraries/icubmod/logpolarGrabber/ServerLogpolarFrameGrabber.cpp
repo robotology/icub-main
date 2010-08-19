@@ -65,8 +65,6 @@ ServerLogpolarFrameGrabber::ServerLogpolarFrameGrabber() : RateThread(0), mutex(
     inecc = 0;
     ifovea = 0;
     ioverlap = 0.;
-
-    ninstances = 0;
 }
 
 /* 
@@ -162,13 +160,6 @@ bool ServerLogpolarFrameGrabber::open(yarp::os::Searchable& config) {
     ffov.open(namefov.c_str());
     ffov.initProcessingMode(canDrop, addStamp, fgTimed);
     ffov.setProcessingSize(ifovea, ifovea);
-    
-    // allocate logpolar library helper class.
-    fprintf (stderr, "ServerLogpolarFrameGrabber: starting logpolar table allocation, please wait...\n");
-    trsf.allocLookupTables(inecc, inang, baseWidth, baseHeight, ioverlap);
-    ninstances ++;
-    fprintf (stderr, "ServerLogpolarFrameGrabber: logpolar table allocation completed\n");
-
     active = true;
 
     // LATER: help information about the device driver (to be completed).
@@ -241,10 +232,6 @@ bool ServerLogpolarFrameGrabber::close() {
 
     active = false;
     RateThread::stop();
-
-    ninstances --;
-    if (!ninstances)
-        trsf.freeLookupTables();
 
     fstd.close();
     flogp.close();
@@ -882,39 +869,6 @@ bool ServerLogpolarFrameGrabber::getFovealImage(yarp::sig::ImageOf<yarp::sig::Pi
 }
 
 /*
- * implement the ILogpolarAPI interface.
- */
-bool ServerLogpolarFrameGrabber::allocLookupTables(int necc, int nang, int w, int h, double overlap) {
-    mutex.wait();
-    const bool ok = trsf.allocLookupTables(necc, nang, w, h, overlap);
-    ninstances ++;
-    mutex.post();
-    return ok;
-}
-
-bool ServerLogpolarFrameGrabber::freeLookupTables() {
-    mutex.wait();
-    ninstances --;
-    const bool ok = trsf.freeLookupTables();
-    mutex.post();
-    return ok;
-}
-
-bool ServerLogpolarFrameGrabber::cartToLogpolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelRgb>& cart) {
-    mutex.wait();
-    const bool ok = trsf.cartToLogpolar(lp, cart);
-    mutex.post();
-    return ok;
-}
-
-bool ServerLogpolarFrameGrabber::logpolarToCart(ImageOf<PixelRgb>& cart, const ImageOf<PixelRgb>& lp) {
-    mutex.wait();
-    const bool ok = trsf.logpolarToCart(cart, lp);
-    mutex.post();
-    return ok;
-}
-
-/*
  * implement the image formatters.
  */
 bool StdImageFormatter::format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& buffer, 
@@ -947,7 +901,7 @@ bool StdImageFormatter::format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& bu
 }
 
 LogpolarImageFormatter::LogpolarImageFormatter() {
-    trsf.allocLookupTables(nEcc, nAng, baseWidth, baseHeight, baseOverlap);
+    trsf.allocLookupTables(iCub::logpolar::C2L, nEcc, nAng, baseWidth, baseHeight, baseOverlap);
 }
 
 LogpolarImageFormatter::~LogpolarImageFormatter() {

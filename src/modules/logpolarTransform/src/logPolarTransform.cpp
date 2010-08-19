@@ -320,7 +320,10 @@ void LogPolarTransformThread::threadRelease() {
 
 bool LogPolarTransformThread::allocLookupTables(int which, int necc, int nang, int w, int h, double overlap) {
     //
-    trsf.allocLookupTables(necc, nang, w, h, overlap);
+    if (which == CARTESIAN2LOGPOLAR)
+        trsf.allocLookupTables(C2L, necc, nang, w, h, overlap);
+    else
+        trsf.allocLookupTables(L2C, necc, nang, w, h, overlap);
     return true;
 }
 
@@ -328,7 +331,6 @@ bool LogPolarTransformThread::freeLookupTables() {
     trsf.freeLookupTables();
     return true;
 }
-
 
 
 // LATER: add OnStop for proper module/thread termination.
