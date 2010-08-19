@@ -312,7 +312,7 @@ gint timeout_update_CB(gpointer data) {
     //portFpsData.getStats(av, min, max);
     //portFpsData.reset();
     gchar *msg;
-    gdk_threads_enter();
+    //gdk_threads_enter();
 
     msg=g_strdup_printf("selectiveAttentionInterface");
     updateStatusbar(fpsStatusBar, msg);
@@ -327,14 +327,14 @@ gint timeout_update_CB(gpointer data) {
     //updateStatusbar(fpsStatusBar2, msg);
     //g_free(msg);
 
-    gdk_threads_leave();
+    //gdk_threads_leave();
 
     return TRUE;
 }
 
 gint timeout_CB (gpointer data) {
-    gdk_threads_enter();
-    gdk_threads_leave();
+    //gdk_threads_enter();
+    //gdk_threads_leave();
     return TRUE;
 }
 
@@ -1097,9 +1097,9 @@ int myMain(int argc, char* argv[]) {
 
     //initialize threads in gtk, copied almost verbatim from
     // http://library.gnome.org/devel/gdk/unstable/gdk-Threads.htm
-    g_thread_init (NULL);
-    gdk_threads_init ();
-    gdk_threads_enter ();
+    //g_thread_init (NULL);
+    //gdk_threads_init ();
+    //gdk_threads_enter ();
     
     createObjects();
     _frameN = 0;
@@ -1161,7 +1161,7 @@ int myMain(int argc, char* argv[]) {
 exitRoutine:
     // leave critical section here. From example
     // http://library.gnome.org/devel/gdk/unstable/gdk-Threads.htm
-    gdk_threads_leave ();
+    //gdk_threads_leave ();
 
     closePorts();
     deleteObjects();
