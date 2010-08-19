@@ -27,8 +27,8 @@
 
 #include <string>
 #include <sstream>
-#include <cstring>
-#include <stdio.h>
+
+
 
 using namespace yarp::os;
 using namespace std;
@@ -125,7 +125,7 @@ static void cb_digits_scale( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->cannyOperator->setThresholdU((double)adj->value);
     //printf("k1: %f \n",(double) adj->value);
     std::string str("");
-    sprintf_s((char *)str.c_str(),15,"set k1 %2.2f",adj->value);
+    sprintf((char *)str.c_str(),"set k1 %2.2f",adj->value);
     command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
@@ -141,7 +141,7 @@ static void cb_digits_scale2( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->cannyOperator->setThresholdL((double)adj->value);
     //printf("k2: %f \n",(double) adj->value);
     std::string str("");
-    sprintf_s((char *)str.c_str(),15,"set k2 %2.2f",adj->value);
+    sprintf((char *)str.c_str(),"set k2 %2.2f",adj->value);
     command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
@@ -157,7 +157,7 @@ static void cb_digits_scale3( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->maskSeed=adj->value;
     //printf("k3: %f \n",(double) adj->value);
     std::string str("");
-    sprintf_s((char *)str.c_str(),15,"set k3 %2.2f",adj->value);
+    sprintf((char *)str.c_str(),"set k3 %2.2f",adj->value);
     command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
@@ -173,7 +173,7 @@ static void cb_digits_scale4( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     //printf("k4: %f \n",(double) adj->value);
     std::string str("");
-    sprintf_s((char *)str.c_str(),15,"set k4 %2.2f",adj->value);
+    sprintf((char *)str.c_str(),"set k4 %2.2f",adj->value);
     command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
@@ -189,7 +189,7 @@ static void cb_digits_scale5( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     //printf("k5: %f \n",(double) adj->value);
     std::string str("");
-    sprintf_s((char *)str.c_str(),15,"set k5 %2.2f",adj->value);
+    sprintf((char *)str.c_str(),"set k5 %2.2f",adj->value);
     command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
@@ -205,7 +205,7 @@ static void cb_digits_scale6( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     printf("k6: %f \n",(double) adj->value);
     std::string str("");
-    sprintf_s((char *)str.c_str(),15,"set k6 %2.2f",adj->value);
+    sprintf((char *)str.c_str(),"set k6 %2.2f",adj->value);
     command->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
@@ -774,8 +774,8 @@ int myMain(int argc, char* argv[]) {
     //initialize threads in gtk, copied almost verbatim from
     // http://library.gnome.org/devel/gdk/unstable/gdk-Threads.htm
     //g_thread_init (NULL);
-    gdk_threads_init ();
-    gdk_threads_enter ();
+    //gdk_threads_init ();
+    //gdk_threads_enter ();
     createObjects();
     _frameN = 0;
     timeout_ID = 0;
@@ -835,7 +835,7 @@ int myMain(int argc, char* argv[]) {
 exitRoutine:
     // leave critical section here. From example
     // http://library.gnome.org/devel/gdk/unstable/gdk-Threads.htm
-    gdk_threads_leave ();
+    //gdk_threads_leave ();
 
     closePorts();
     deleteObjects();
