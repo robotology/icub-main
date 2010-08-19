@@ -1,5 +1,6 @@
 2010-08-19 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	* iCub/main/src/libraries/icubmod/dragonfly2/*
+	* iCub/main/src/tools/frameGrabberGui2/include/FrameGrabberGUIControl2.h
 
 	Added image offset control to dragonfly2 library.
 
