@@ -741,9 +741,9 @@ void closePorts() {
     _pOutPort->close();
     bool ok = true;
     if  (ok)
-        printf("Port %s unregistration succeed!\n", _options.outPortName);
+        printf("Port unregistration succeed!\n");
     else 
-        printf("ERROR: Port %s unregistration failed.\n", _options.outPortName);
+        printf("ERROR: Port unregistration failed.\n");
     delete _pOutPort;
     _pOutPort = NULL;
 
