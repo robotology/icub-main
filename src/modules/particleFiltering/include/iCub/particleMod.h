@@ -201,37 +201,33 @@ Particle filtering is a Monte Carlo sampling approach to Bayesian filtering.The 
 #define pfot_B0  1.0000f
 /* distribution parameter */
 #define LAMBDA 20
- 
-using namespace std;
-using namespace yarp::os; 
-using namespace yarp::sig;
   
-class PARTICLEThread : public Thread {
+class PARTICLEThread : public yarp::os::Thread {
 private:
 
     /*port name strings*/
-    string inputPortNameTemp;
-    string inputPortNameLeft;
-    string inputPortNameRight;
+    std::string inputPortNameTemp;
+    std::string inputPortNameLeft;
+    std::string inputPortNameRight;
 
-    string outputPortNameLeft;  
-    string outputPortNameRight; 
-    string outputPortNameLeftBlob;  
-    string outputPortNameRightBlob;     
-    string outputPortNameTarget;
+    std::string outputPortNameLeft;  
+    std::string outputPortNameRight; 
+    std::string outputPortNameLeftBlob;  
+    std::string outputPortNameRightBlob;     
+    std::string outputPortNameTarget;
 
     /* thread parameters: they are pointers so that they refer to the original variables */
 
-    BufferedPort<ImageOf<PixelRgb> >  imageInTemp;
-    BufferedPort<ImageOf<PixelRgb> >  imageInLeft;
-    BufferedPort<ImageOf<PixelRgb> >  imageInRight;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageInTemp;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageInLeft;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageInRight;
 
-    BufferedPort<ImageOf<PixelBgr> > imageOutLeft;
-    BufferedPort<ImageOf<PixelBgr> > imageOutRight;  
-    BufferedPort<ImageOf<PixelMono> > imageOutLeftBlob;
-    BufferedPort<ImageOf<PixelMono> > imageOutRightBlob;  
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> > imageOutLeft;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> > imageOutRight;  
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imageOutLeftBlob;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imageOutRightBlob;  
 
-    BufferedPort < Vector >    target; //vector containing the tracked target 2D and its probability
+    yarp::os::BufferedPort < yarp::sig::Vector >    target; //vector containing the tracked target 2D and its probability
     
     CvPoint		minloc, maxloc;
 	double		minval, maxval;
@@ -240,8 +236,8 @@ private:
 
     bool init;
     bool getImageLeft, getImageRight, getTemplate, gotTemplate, sendTarget;
-    ImageOf<PixelRgb> *iCubleft, *iCubright;
-    ImageOf<PixelRgb> *tpl;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *iCubleft, *iCubright;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *tpl;
     IplImage *temp, *res_left, *res_right, *res;
 
     IplImage* left_frame, * right_frame, *left_frame_blob, * right_frame_blob;
@@ -259,7 +255,7 @@ private:
   	int i, j, k, w, h, x, y;
 	int num_particles;
     //string containing module name
-    string moduleName;
+    std::string moduleName;
 
 public:
 
@@ -302,7 +298,7 @@ public:
 	particle* particles_l, * new_particles_l;
     particle* particles_r, * new_particles_r;
 
-    void runAll(IplImage *left, IplImage *right, Vector& target);
+    void runAll(IplImage *left, IplImage *right, yarp::sig::Vector& target);
 
     void free_histos( histogram** histo, int n );
     void free_regions( CvRect** regions, int n);
@@ -321,25 +317,25 @@ public:
 	int get_regions( IplImage* frame, CvRect** regions );
     int get_regionsImage( IplImage* frame, CvRect** regions );
 	particle* resample( particle* particles, int n );
-	void display_particle( IplImage* img, particle p, CvScalar color, Vector& target );
-    void display_particleBlob( IplImage* img, particle p, Vector& target );
+	void display_particle( IplImage* img, particle p, CvScalar color, yarp::sig::Vector& target );
+    void display_particleBlob( IplImage* img, particle p, yarp::sig::Vector& target );
 	
 	void normalize_histogram( histogram* histo );
     void initAll();
     bool threadInit();     
     void threadRelease();
     void run(); 
-    //void onStop();
-    void setName(string module);
+    void onStop();
+    void setName(std::string module);
 };
 
-class particleMod:public RFModule {
+class particleMod:public yarp::os::RFModule {
 
     /* module parameters */
-    string moduleName;
-    string handlerPortName;
+    std::string moduleName;
+    std::string handlerPortName;
 
-    Port handlerPort;      //a port to handle messages 
+    yarp::os::Port handlerPort;      //a port to handle messages 
     
     /* pointer to a new thread to be created and started in configure() and stopped in close() */
     PARTICLEThread *particleThread;
@@ -349,7 +345,7 @@ public:
     bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
     bool interruptModule();                       // interrupt, e.g., the ports 
     bool close();                                 // close and shut down the module
-    bool respond(const Bottle& command, Bottle& reply);
+    bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
     double getPeriod(); 
     bool updateModule();
 };

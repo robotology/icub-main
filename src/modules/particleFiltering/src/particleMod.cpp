@@ -17,7 +17,11 @@
  */
 
 #include "iCub/particleMod.h"
-//#include "yarp/os/impl/NameClient.h"
+
+using namespace std;
+using namespace yarp::os; 
+using namespace yarp::sig;
+
 
 bool particleMod::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -289,6 +293,11 @@ void PARTICLEThread::run() {
 }
 
 void PARTICLEThread::threadRelease() 
+{
+    
+}
+
+void PARTICLEThread::onStop() 
 {
     cout << "cleaning up..." << endl;
     cout << "attempting to close ports" << endl;

@@ -19,6 +19,8 @@
 
 #include "iCub/particleMod.h" 
 
+using namespace yarp::os;
+
 int main(int argc, char * argv[])
 {
     /* initialize yarp network */ 
@@ -37,7 +39,6 @@ int main(int argc, char * argv[])
  
     /* run the module: runModule() calls configure first and, if successful, it then runs */
     module.runModule(rf);
-    cout << "now ending"<< endl;
     Network::fini();
 
     return 0;
