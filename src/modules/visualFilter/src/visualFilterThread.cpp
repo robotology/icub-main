@@ -473,17 +473,9 @@ void visualFilterThread::edgesExtract() {
             float byvd = (float)blueYellowV16s[j];
 
             // module of the vector
-            float a=sqrt(pow(rghd,2)+pow(rgvd,2));
-            float b=sqrt(pow(grhd,2)+pow(grvd,2));
-            float c=sqrt(pow(byhd,2)+pow(byvd,2));
-
-            // normalisation max module=179.60/181.01
-            if(maxa<a)
-                maxa=a;
-            if(maxb<b)
-                maxb=b;
-            if(maxc<c)
-                maxc=c;
+            float a=sqrt(rghd*rghd)+(rgvd*rgvd);
+            float b=sqrt(grhd*grhd)+(grvd*grvd));
+            float c=sqrt(byhd*byhd)+(byvd*byhd));
             
             float rgnorm = (255.0f/300.0f)*a;
             float grnorm = (255.0f/300.0f)*b;
