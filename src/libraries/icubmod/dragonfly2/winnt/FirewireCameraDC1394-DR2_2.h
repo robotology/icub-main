@@ -76,7 +76,7 @@ public:
 	const yarp::os::Stamp& getLastInputStamp(){ return m_Stamp; }
 
 	bool SetVideoMode(FlyCapture2::VideoMode video_mode);
-	bool SetF7(int mode,int xdim,int ydim,int pixel_format,int speed);
+	bool SetF7(int mode,int xdim,int ydim,int pixel_format,int speed,int x0,int y0);
 
     bool Create(yarp::os::Searchable& config);
 
@@ -266,13 +266,13 @@ public:
 	virtual bool setColorCodingDC1394(int coding);	
 
 	// 25
-	virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep);
+	virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
 
 	// 26
-	virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim);
+	virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
 
 	// 27
-	virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim);	
+	virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);	
 	
 	// 28
 	virtual bool setOperationModeDC1394(bool b1394b);

@@ -13,7 +13,10 @@
 //     WW WW   I   N  NN
 //     W   W   I   N   N
 
+#include <stdlib.h>
 #include "winnt/FirewireCameraDC1394-DR2_2.h"
+
+#define sgn(x) ((x)>0)-((x)<0)
 
 #define NOT_PRESENT -1
 int CFWCamera_DR2_2::DC2Fly(int feature)
@@ -136,6 +139,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     int size_x=checkInt(config,"width");   
     int size_y=checkInt(config,"height");
+    int off_x=checkInt(config,"xoff");
+    int off_y=checkInt(config,"yoff");
     int format=checkInt(config,"video_type");
     unsigned int idCamera=checkInt(config,"d");
     
@@ -227,7 +232,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     case DR_RGB_HALF_RES:
         if (!size_x) { size_x=320; }
         if (!size_y) { size_y=240; }
-        SetF7(FlyCapture2::MODE_1,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50);
+        SetF7(FlyCapture2::MODE_1,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50,off_x,off_y);
         break;
 
     case DR_RGB_FULL_RES:
@@ -240,14 +245,14 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         }
         else
         {
-            SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50);
+            SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50,off_x,off_y);
         }
         break;
 
     case DR_BAYER_FULL_RES:
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
-        SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RAW8,50);
+        SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RAW8,50,off_x,off_y);
         break;
 
     default:
@@ -426,8 +431,8 @@ bool CFWCamera_DR2_2::SetVideoMode(FlyCapture2::VideoMode video_mode)
     return false;
 }
 
-#define SKIP -1
-bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int speed)
+#define SKIP 0x80000000
+bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int speed,int x0,int y0)
 {
     if (!m_pCamera) return false;
 
@@ -487,11 +492,15 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
     {
         if (xdim==SKIP) xdim=(int)m_F7Info.maxWidth;
         if (ydim==SKIP) ydim=(int)m_F7Info.maxHeight;
+        if (x0==SKIP) x0=0;
+        if (y0==SKIP) y0=0;
     }
     else
     {
         if (xdim==SKIP) xdim=m_F7ImageSettings.width;
         if (ydim==SKIP) ydim=m_F7ImageSettings.height;
+        if (x0==SKIP) x0=m_F7ImageSettings.offsetX;
+        if (y0==SKIP) y0=m_F7ImageSettings.offsetY;
     }
 
     // adjust image size to allowed in this format
@@ -509,8 +518,15 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
     ydim=(ydim/m_F7Info.imageVStepSize)*m_F7Info.imageVStepSize;
 
     // calculate offset
-    int xoff=(m_F7Info.maxWidth -xdim)/2;
-    int yoff=(m_F7Info.maxHeight-ydim)/2;
+    int xoff=(m_F7Info.maxWidth -xdim)/2+x0;
+    int yoff=(m_F7Info.maxHeight-ydim)/2+y0;
+
+    if (xoff<0) xoff=0;
+    if (yoff<0) yoff=0;
+
+    if (xoff+xdim>(int)m_F7Info.maxWidth)  xoff=m_F7Info.maxWidth-xdim;
+    if (yoff+ydim>(int)m_F7Info.maxHeight) yoff=m_F7Info.maxHeight-ydim;
+
     xoff=(xoff/m_F7Info.offsetHStepSize)*m_F7Info.offsetHStepSize;
     yoff=(yoff/m_F7Info.offsetVStepSize)*m_F7Info.offsetVStepSize;
 
@@ -905,7 +921,7 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int video_mode)
     else
     {
         FlyCapture2::Mode mode=(FlyCapture2::Mode)((int)video_mode-1-(int)FlyCapture2::VIDEOMODE_FORMAT7);
-        if (!SetF7(mode,SKIP,SKIP,SKIP,SKIP))
+        if (!SetF7(mode,SKIP,SKIP,SKIP,SKIP,SKIP,SKIP))
         {
             m_AcqMutex.post();
             return false;
@@ -1074,7 +1090,7 @@ bool CFWCamera_DR2_2::setISOSpeedDC1394(int speed)
     }
     else
     {
-        if (!SetF7(SKIP,SKIP,SKIP,SKIP,SKIP))
+        if (!SetF7(SKIP,SKIP,SKIP,SKIP,SKIP,SKIP,SKIP))
         {
             m_AcqMutex.post();
             return false;
@@ -1201,7 +1217,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 
     FlyCapture2::PixelFormat pixel_format=(FlyCapture2::PixelFormat)(1<<(31-coding));
 
-    if (!SetF7(SKIP,SKIP,SKIP,pixel_format,SKIP))
+    if (!SetF7(SKIP,SKIP,SKIP,pixel_format,SKIP,SKIP,SKIP))
     {
         m_AcqMutex.post();
         return false;
@@ -1215,7 +1231,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 }	
 
 // 25
-bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep)
+bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep)
 {
     if (!m_pCamera) return false;
 
@@ -1249,12 +1265,15 @@ bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int 
     xstep=m_F7Info.imageHStepSize;
     ystep=m_F7Info.imageVStepSize;
 
+    xoffstep=m_F7Info.offsetHStepSize;
+    yoffstep=m_F7Info.offsetVStepSize;
+
     if (m_F7Info.mode==1) xstep*=2;
 
     return true;
 }
 // 26
-bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim)
+bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0)
 {
     m_AcqMutex.wait();
 
@@ -1271,7 +1290,7 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
     error=m_pCamera->StopCapture();
     if (manage(error,&m_AcqMutex)) return false;
 
-    if (!SetF7(SKIP,xdim,ydim,SKIP,SKIP))
+    if (!SetF7(SKIP,xdim,ydim,SKIP,SKIP,x0,y0))
     {
         m_AcqMutex.post();
         return false;
@@ -1284,7 +1303,7 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
     return true;
 }
 // 27
-bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim)
+bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0)
 {
     if (!m_pCamera) return false;
 
@@ -1304,6 +1323,8 @@ bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &yd
 
     xdim=m_F7ImageSettings.width;
     ydim=m_F7ImageSettings.height;
+    x0=m_F7ImageSettings.offsetX;
+    y0=m_F7ImageSettings.offsetY;
 
     return true;
 }	
@@ -1455,7 +1476,7 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bpp)
     error=m_pCamera->StopCapture();
     if (manage(error,&m_AcqMutex)) return false;
 
-    if (!SetF7(SKIP,SKIP,SKIP,SKIP,(int)bpp))
+    if (!SetF7(SKIP,SKIP,SKIP,SKIP,(int)bpp,SKIP,SKIP))
     {
         m_AcqMutex.post();
         return false;
