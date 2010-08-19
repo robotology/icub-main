@@ -17,11 +17,12 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 #SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${logPolar_INCLUDE_DIRS})
+include_directories(${logpolar_INCLUDE_DIRS})
 include_directories(${YARP_INCLUDE_DIRS})
+include_directories(${iCubDev_INCLUDE_DIRS})
 
 add_executable(${PROJECTNAME} ${folder_source} ${folder_header})
-target_link_libraries(${PROJECTNAME} logPolar ${YARP_LIBRARIES})
+target_link_libraries(${PROJECTNAME} logpolar ${YARP_LIBRARIES})
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 

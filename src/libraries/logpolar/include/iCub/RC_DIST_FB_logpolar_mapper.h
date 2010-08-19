@@ -149,7 +149,7 @@ private:
     */
     void RCgetLpImg (unsigned char *lpImg,
                      unsigned char *cartImg,
-                     cart2LpPixel * Table, int lpSize, bool bayerImg);
+                     cart2LpPixel * Table, int lpSize);
 
     /**
     * \brief Remaps a log polar image to a cartesian one

@@ -11,7 +11,7 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${ACE_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
 		            ${iKin_INCLUDE_DIRS}
-		            ${logPolar_INCLUDE_DIRS}			
+		            ${logpolar_INCLUDE_DIRS}			
 		    )
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
@@ -19,7 +19,7 @@ ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} 
                      iKin
                      ${YARP_LIBRARIES}
-     				 logPolar
+     				 logpolar
 				     ${ACE_LIBRARIES}
     				 )
 

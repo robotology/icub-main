@@ -24,6 +24,8 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Semaphore.h>
 
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
+
 namespace yarp{
     namespace dev {
         class ClientLogpolarFrameGrabber;
@@ -55,6 +57,9 @@ protected:
     yarp::os::PortReaderBuffer<yarp::sig::ImageOf<yarp::sig::PixelRgb> > readerLogpolar;
     yarp::os::PortReaderBuffer<yarp::sig::ImageOf<yarp::sig::PixelRgb> > readerFoveal;
     yarp::os::Semaphore nmutex;
+
+    iCub::logpolar::logpolarTransform trsf;
+    int ninstances;
 
 public:
     /**

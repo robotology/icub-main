@@ -11,7 +11,7 @@ INCLUDE_DIRECTORIES(
     ${ICUB_INCLUDE_DIRS}
     ${YARP_INCLUDE_DIRS}
     ${IPP_INCLUDE_DIRS}
-    ${logPolar_INCLUDE_DIRS}
+    ${logpolar_INCLUDE_DIRS}
 )
 
 
@@ -30,9 +30,9 @@ IF (folder_source)
     )
 
     TARGET_LINK_LIBRARIES( ${KEYWORD} 
-      			${YARP_LIBRARIES}
+      		${YARP_LIBRARIES}
 			${IPP_LIBRARIES}
-			logPolar
+			logpolar
     )
 
 ELSE (folder_source)

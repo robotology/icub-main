@@ -24,6 +24,7 @@
  * -----------
  * 20/09/09  Began development   DV
  * 18/08/10  Rewrite by GM, removed dependencies from unnecessary libraries.
+ * 19/08/10  Moved to the new logpolar library.
  */ 
 
 /**

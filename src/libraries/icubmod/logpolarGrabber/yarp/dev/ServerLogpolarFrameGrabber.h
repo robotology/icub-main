@@ -52,6 +52,9 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
 
+/* logpolar library */
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
+
 namespace yarp {
     namespace dev {
         class ServerLogpolarFrameGrabber;
@@ -108,12 +111,21 @@ public:
  */
 class yarp::dev::LogpolarImageFormatter : public yarp::dev::BaseFormatter<yarp::sig::ImageOf<yarp::sig::PixelRgb> > {
 protected:
+    iCub::logpolar::logpolarTransform* trsf;
+
 public:
+    /**
+     * Set a pointer to the logpolarTrasform class, not particularly elegant but saves reallocation of the logpolar tables.
+     * @param t is the pointer to a logpolarTransform class.
+     * @return true always.
+     */
+    virtual bool setTableInstance(iCub::logpolar::logpolarTransform *t) { trsf = t; return true;}
+
     /**
      * The format method takes a raw buffer image and formats according to the
      * code provided in the format method.
      *
-     * @param buffer is the raw input buffer, e.g. bayer pattern image.
+     * @param buffer is the raw input buffer, e.g. cartesian image.
      * @param formatted is the output image of type T.
      * @return true iff the call is successful.
      */
@@ -341,6 +353,10 @@ protected:
     int inang;
     int ifovea;
     double ioverlap;
+
+    // logpolar mapping class.
+    iCub::logpolar::logpolarTransform trsf;
+    int ninstances;
 
     bool canDrop;
     bool addStamp;

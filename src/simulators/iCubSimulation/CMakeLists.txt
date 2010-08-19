@@ -24,14 +24,14 @@ ADD_DEFINITIONS(-DUSE_GLUT)
 ADD_DEFINITIONS(-DEXPERIMENTAL_CONFIG_METHOD)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
-                    ${logPolar_INCLUDE_DIRS}
+                    ${logpolar_INCLUDE_DIRS}
 				    ${ODE_INCLUDE_DIRS}
 					${SDL_INCLUDE_DIR}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} logPolar
+TARGET_LINK_LIBRARIES(${PROJECTNAME} logpolar
                                      ${SDL_LIBRARY}
 			                         ${ODE_LIBRARIES}
                                      ${YARP_LIBRARIES})

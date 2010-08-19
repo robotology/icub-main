@@ -39,18 +39,29 @@ using namespace std;
 // implementation of the ILogpolarAPI interface.
 bool logpolarTransform::allocLookupTables(int necc, int nang, int w, int h, double overlap) {
     //
+    if (allocated()) {
+        // check, return false in case size has changed. need to manually free and recompute maps.
+        if (necc != necc_ || nang != nang_ || w != width_ || h != height_ || overlap != overlap_) {
+            cerr << "logpolarTransform: new size differ from previously allocated maps" << endl;
+            return false;
+        }
+    }
+
     necc_ = necc;
     nang_ = nang;
     width_ = w;
     height_ = h;
     overlap_ = overlap;
-
+    const double scaleFact = RCcomputeScaleFactor ();    
+    
     if (c2lTable == 0) {
         c2lTable = new cart2LpPixel[necc*nang];
         if (c2lTable == 0) {
             cerr << "logpolarTransform: can't allocate c2l lookup tables, wrong size?" << endl;
             return false;
         }
+
+        RCbuildC2LMap (scaleFact, ELLIPTICAL);
     }
 
     if (l2cTable == 0) {
@@ -62,12 +73,11 @@ bool logpolarTransform::allocLookupTables(int necc, int nang, int w, int h, doub
             c2lTable = 0;
             return false;
         }
+
+        RCbuildL2CMap (scaleFact, 0, 0, ELLIPTICAL);
     }
 
-    const double scaleFact = RCcomputeScaleFactor ();    
-    RCbuildC2LMap (scaleFact, ELLIPTICAL);
-    RCbuildL2CMap (scaleFact, 0, 0, ELLIPTICAL);
-
+    // don't recompute if the map is already allocated.
     return true;
 }
 
@@ -94,7 +104,7 @@ bool logpolarTransform::cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& 
     }
 
     // LATER: assert whether lp & cart are effectively nang * necc as the c2lTable requires.
-    RCgetLpImg (lp.getRawImage(), (unsigned char *)cart.getRawImage(), c2lTable, lp.height()*lp.width(), 0);
+    RCgetLpImg (lp.getRawImage(), (unsigned char *)cart.getRawImage(), c2lTable, lp.height()*lp.width());
 
     // adjust padding.
     if (lp.getPadding() != 0) {
@@ -149,11 +159,7 @@ inline double __max64f (double x, double y) {
 void logpolarTransform::RCdeAllocateC2LTable ()
 {
     if (c2lTable) {
-        const int sz = necc_ * nang_;
-        for (int i = 0; i < sz; i++) {
-            delete[] c2lTable[i].position;
-            delete[] c2lTable[i].iweight;
-        }
+        delete[] c2lTable[0].position; // iweight is contiguous to position.
         delete[] c2lTable;
     }
     c2lTable = 0;
@@ -162,10 +168,7 @@ void logpolarTransform::RCdeAllocateC2LTable ()
 void logpolarTransform::RCdeAllocateL2CTable ()
 {
     if (l2cTable) {
-        const int sz = width_ * height_;
-        for (int i = 0; i < sz; i++) {
-            delete[] l2cTable[i].position;
-        }
+        delete[] l2cTable[0].position;
         delete[] l2cTable;
     }
     l2cTable = 0;
@@ -248,13 +251,12 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
 
     int rho, theta, j;
 
-    cart2LpPixel c2LpMap;
-
     lambda = (1.0 + sinus) / (1.0 - sinus);
     fov = (int) (lambda / (lambda - 1));
     firstRing = (1.0 / (lambda - 1)) - (int) (1.0 / (lambda - 1));
     r0 = 1.0 / (pow (lambda, fov) * (lambda - 1));
 
+    // temporary.
     tangaxis = new double[necc_];
     radialaxis = new double[necc_];
     focus = new double[necc_];
@@ -347,6 +349,26 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
     // the main table pointer.
     cart2LpPixel *table = c2lTable;
 
+    // compute overall table size for contiguous allocation (position & weigth).
+    int sz = 0;
+    for (rho = 0; rho < necc_; rho++) {
+        if ((mode == RADIAL) || (mode == TANGENTIAL))
+            lim = (int) (radii[rho] + 1.5);
+        else
+            lim = (int) (__max64f (tangaxis[rho], radialaxis[rho]) + 1.5);
+
+        step = lim / precision;
+        if (step > 1) step = 1;
+
+        mapsize = (int) (precision * lim * precision * lim + 1);
+        sz += (mapsize * nang_);
+    }
+
+    table->position = new int[sz * 2];
+    if (table->position == 0)
+        goto C2LAllocError;
+    table->iweight = table->position + sz;
+
     for (rho = 0; rho < necc_; rho++) {
         if ((mode == RADIAL) || (mode == TANGENTIAL))
             lim = (int) (radii[rho] + 1.5);
@@ -359,17 +381,13 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
             step = 1;
 
         mapsize = (int) (precision * lim * precision * lim + 1);
-
-        c2LpMap.position = new int[mapsize];
         weight = new float[mapsize];
-        c2LpMap.iweight = new int[mapsize];
-
-        if ((c2LpMap.position == 0) || (weight == 0) || (c2LpMap.iweight == 0))
+        if (weight == 0)
             goto C2LAllocError;
 
         for (theta = 0; theta < nang_; theta++) {
             //
-            memset (c2LpMap.position, 0, mapsize);
+            memset (table->position, 0, mapsize);
             memset (weight, 0, mapsize);
 
             x0 = scaleFact * currRad[rho] * costable[theta];
@@ -411,9 +429,9 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
                             if ((intx < width_) && (intx >= 0)) {
                                 found = false;
                                 j = 0;
-                                while ((j < mapsize) && (c2LpMap.position[j] != 0)) {
+                                while ((j < mapsize) && (table->position[j] != 0)) {
                                     //
-                                    if (c2LpMap.position[j] == 3 * (inty * width_ + intx)) {
+                                    if (table->position[j] == 3 * (inty * width_ + intx)) {
                                         weight[j]++;
                                         found = true;
                                         j = mapsize;
@@ -423,8 +441,8 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
 
                                 if (!found)
                                     for (j = 0; j < mapsize; j++) {
-                                        if (c2LpMap.position[j] == 0) {
-                                            c2LpMap.position[j] = 3 * (inty * width_ + intx);
+                                        if (table->position[j] == 0) {
+                                            table->position[j] = 3 * (inty * width_ + intx);
                                             weight[j]++;
                                             break;
                                         }
@@ -438,8 +456,7 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
                 if (weight[j] == 0)
                     break;
 
-            c2LpMap.divisor = j;
-            //totalcounter += c2LpMap.divisor;
+            table->divisor = j;
 
             float sum = 0.0;
             int k;
@@ -448,11 +465,17 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
 
             for (k = 0; k < j; k++) {
                 weight[k] = weight[k] / sum;
-                c2LpMap.iweight[k] = (int) (weight[k] * 65536.0);
+                table->iweight[k] = (int) (weight[k] * 65536.0);
             } 
-	
-            *table++ = c2LpMap;
+
+            if (theta != nang_-1 || rho != necc_-1) {
+                table[1].position = table->position + mapsize;
+                table[1].iweight = table->iweight + mapsize;
+            }
+            table++;
         }
+
+        delete[] weight;    // :(
     }
 
     // clean up temporaries.
@@ -479,57 +502,34 @@ C2LAllocError:
     return 2;
 }
 
-void RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg, cart2LpPixel * Table, int sizeLp, bool bayerImg)
+void logpolarTransform::RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg, cart2LpPixel * Table, int sizeLp)
 {
-    int i, j;
     int r[3];
     int t = 0;
 
-    const int z = (!bayerImg)?3:1;
-    if (bayerImg) {
-        const int sz = sizeLp;
-        unsigned char *img = lpImg;
-        for (j = 0; j < sz; j++, img++) {
-            r[0] = 0;
-            t = 0;
+    const int sz = sizeLp;
+    unsigned char *img = lpImg;
+    for (int j = 0; j < sz; j++, img+=3) {
+        r[0] = r[1] = r[2] = 0;
+        t = 0;
 
-            const int div = Table[j].divisor;
-            int *pos = Table[j].position;
-            int *w = Table[j].iweight;
-            for (i = 0; i < div; i++, pos++, w++)
-            {
-                r[0] += cartImg[*pos] * *w;
-                t += *w;
-            }
-
-            *img = (unsigned char)(r[0]/t);
+        const int div = Table[j].divisor;
+        int *pos = Table[j].position;
+        int *w = Table[j].iweight;
+        for (int i = 0; i < div; i++, pos++, w++) {
+            r[0] += cartImg[*pos] * *w;
+            r[1] += cartImg[(*pos)+1] * *w;
+            r[2] += cartImg[(*pos)+2] * *w;
+            t += *w;
         }
-    }
-    else {
-        const int sz = sizeLp;
-        unsigned char *img = lpImg;
-        for (j = 0; j < sz; j++, img+=3) {
-            r[0] = r[1] = r[2] = 0;
-            t = 0;
 
-            const int div = Table[j].divisor;
-            int *pos = Table[j].position;
-            int *w = Table[j].iweight;
-            for (i = 0; i < div; i++, pos++, w++) {
-                r[0] += cartImg[*pos] * *w;
-                r[1] += cartImg[(*pos)+1] * *w;
-                r[2] += cartImg[(*pos)+2] * *w;
-                t += *w;
-            }
-
-            img[0] = (unsigned char)(r[0] / t);
-            img[1] = (unsigned char)(r[1] / t);
-            img[2] = (unsigned char)(r[2] / t);
-        }
+        img[0] = (unsigned char)(r[0] / t);
+        img[1] = (unsigned char)(r[1] / t);
+        img[2] = (unsigned char)(r[2] / t);
     }
 }
 
-void RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg, lp2CartPixel * Table, int cartSize)
+void logpolarTransform::RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg, lp2CartPixel * Table, int cartSize)
 {
     int i, j, k;
     int tempPixel[3];
@@ -593,10 +593,13 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
 
     int rho, theta, j;
 
-    //lp2CartPixel *Lp2CMap = new lp2CartPixel[xSize * ySize];
-
+    // temporary.
     partCtr = new int[width_ * height_];
+    if (partCtr == 0)
+        goto L2CAllocError;
+
     memset (partCtr, 0, width_ * height_ * sizeof (int));
+
     lambda = (1.0 + sinus) / (1.0 - sinus);
     fov = (int) (lambda / (lambda - 1));
     firstRing = (1.0 / (lambda - 1)) - (int) (1.0 / (lambda - 1));
@@ -688,6 +691,7 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
 
     bool found;
     double precision = 10.0;
+    int memSize = 0;
 
     for (rho = 0; rho < necc_; rho++) {
         //
@@ -739,15 +743,22 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
                     if (locRad < 2 * maxaxis)
                         if ((inty + vOffset < height_) && (inty + vOffset >= 0))
                             if ((intx + hOffset < width_)
-                                && (intx + hOffset >= 0))
+                                && (intx + hOffset >= 0)) {
+                                //
                                 partCtr[(inty + vOffset) * width_ + intx + hOffset]++;
+                                memSize ++;
+                            }
                 }
         }
     }
 
     lp2CartPixel *table = l2cTable;
-    for (j = 0; j < width_ * height_; j++) {
-        table[j].position = new int[partCtr[j]];
+    table->position = new int[memSize]; // contiguous allocation.
+    if (table->position == 0)
+        goto L2CAllocError;
+
+    for (j = 1; j < width_ * height_; j++) {
+        table[j].position = table[j-1].position + partCtr[j-1];
         memset (table[j].position, -1, sizeof (int) * partCtr[j]);
         table[j].iweight = 0;
     }

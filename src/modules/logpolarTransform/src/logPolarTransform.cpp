@@ -38,6 +38,8 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
 
+using namespace iCub::logpolar;
+
 bool LogPolarTransform::configure(yarp::os::ResourceFinder &rf)
 {    
    /* Process all parameters from both command-line and .ini file */
@@ -238,8 +240,6 @@ LogPolarTransformThread::LogPolarTransformThread(BufferedPort<FlexImage> *imageI
     anglesValue        = angles;
     ringsValue         = rings;
     overlapValue       = overlap;
-    c2lTable = 0;
-    l2cTable = 0;
     inputImage = 0;
 }
 
@@ -291,67 +291,20 @@ void LogPolarTransformThread::run() {
             inputImage->copy(*image);
 
             if (*directionValue == CARTESIAN2LOGPOLAR) {
-                // adjust padding.
-                if (inputImage->getPadding() != 0) {
-                    const int byte = inputImage->width() * sizeof(PixelRgb);
-                    unsigned char *d = (unsigned char *)inputImage->getRawImage() + byte;
-                    int i;
-                    for (i = 1; i < inputImage->height(); i++) {
-                        unsigned char *s = (unsigned char *)inputImage->getRow(i);
-                        memmove(d, s, byte);
-                        d += byte; 
-                    }
-                }
-
+                //
                 ImageOf<PixelRgb> &outputImage = imagePortOut->prepare();
                 outputImage.resize(*anglesValue,*ringsValue);
 
-                // LATER: assert whether lp & cart are effectively nang * necc as the c2lTable requires.
-                RCgetLpImg (outputImage.getRawImage(), (unsigned char *)inputImage->getRawImage(), c2lTable, *anglesValue * *ringsValue, 0);
-
-                // adjust padding.
-                if (outputImage.getPadding() != 0) {
-                    const int byte = outputImage.width() * sizeof(PixelRgb);
-                    int i;
-                    for (i = outputImage.height()-1; i >= 1; i--) {
-                        unsigned char *d = outputImage.getRow(i);
-                        unsigned char *s = outputImage.getRawImage() + i*byte;
-                        memmove(d, s, byte);
-                    }
-                }
+                trsf.cartToLogpolar(outputImage, *inputImage);
 
                 imagePortOut->write();
             }
             else {
-                // adjust padding.
-                if (inputImage->getPadding() != 0) {
-                    int i;
-                    const int byte = inputImage->width() * sizeof(PixelRgb);
-                    unsigned char *d = inputImage->getRawImage() + byte;
-                    for (i = 1; i < inputImage->height(); i ++) {
-                        unsigned char *s = (unsigned char *)inputImage->getRow(i);
-                        memmove(d, s, byte);
-                        d += byte;
-                    }
-                }
-
                 ImageOf<PixelRgb> &outputImage = imagePortOut->prepare();
                 outputImage.resize(*xSizeValue,*ySizeValue);
                 outputImage.zero(); // this requires a fix into the library.
 
-                // LATER: assert whether lp & cart are effectively of the correct size.
-                RCgetCartImg (outputImage.getRawImage(), inputImage->getRawImage(), l2cTable, *xSizeValue * * ySizeValue);
-
-                // adjust padding.
-                if (outputImage.getPadding() != 0) {
-                    const int byte = outputImage.width() * sizeof(PixelRgb);
-                    int i;
-                    for (i = outputImage.height()-1; i >= 1; i--) {
-                        unsigned char *d = outputImage.getRow(i);
-                        unsigned char *s = outputImage.getRawImage() + i*byte;
-                        memmove(d, s, byte);
-                    }
-                }
+                trsf.logpolarToCart(outputImage, *inputImage);
 
                 imagePortOut->write();
             }
@@ -366,51 +319,13 @@ void LogPolarTransformThread::threadRelease() {
 }
 
 bool LogPolarTransformThread::allocLookupTables(int which, int necc, int nang, int w, int h, double overlap) {
-
-    if (which == CARTESIAN2LOGPOLAR) {
-        if (c2lTable == 0) {
-            c2lTable = new cart2LpPixel[necc*nang];
-            if (c2lTable == 0) {
-                cerr << "||| can't allocate c2l lookup tables, wrong size?" << endl;
-                return false;
-            }
-
-            const double scaleFact = RCcomputeScaleFactor (necc, nang, w, h, overlap);    
-            // LATER: remove the dependency on the file.
-            // saves the table to file.
-            RCbuildC2LMap (necc, nang, w, h, overlap, scaleFact, ELLIPTICAL, "./");
-            // reloads the table from file. :(
-            RCallocateC2LTable (c2lTable, necc, nang, 0, "./");
-        }
-    }
-    else {
-        if (l2cTable == 0) {
-            l2cTable = new lp2CartPixel[w*h];
-            if (l2cTable == 0) {
-                cerr << "||| can't allocate l2c lookup tables, wrong size?" << endl;
-                if (c2lTable) 
-                    delete[] c2lTable;
-                c2lTable = 0;
-                return false;
-            }
-        }
-
-        const double scaleFact = RCcomputeScaleFactor (necc, nang, w, h, overlap);    
-        // saves the table to file.
-        RCbuildL2CMap (necc, nang, w, h, overlap, scaleFact, 0, 0, ELLIPTICAL, "./");
-        RCallocateL2CTable (l2cTable, w, h, "./");
-    }
-
+    //
+    trsf.allocLookupTables(necc, nang, w, h, overlap);
     return true;
 }
 
 bool LogPolarTransformThread::freeLookupTables() {
-    if (c2lTable)
-        RCdeAllocateC2LTable (c2lTable);
-    c2lTable = 0;
-    if (l2cTable)
-        RCdeAllocateL2CTable (l2cTable);
-    l2cTable = 0;
+    trsf.freeLookupTables();
     return true;
 }
 

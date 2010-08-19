@@ -46,161 +46,6 @@ const int nAng = 252;   // number of columns (same as above).
 const int nFovea = 128; // size of the fovea.
 const double baseOverlap = 1.0;
 
-namespace yarp {
-    namespace dev {
-        class logPolarLibrary;
-        static logPolarLibrary *lpLibrary = 0;
-    }
-}
-
-/*
- * provide access to the logpolar library.
- * LATER: add a proper class directly in the library.
- * LATER: make this thread safe.
- */
-class yarp::dev::logPolarLibrary : public ILogpolarAPI {
-protected:
-    cart2LpPixel *c2lTable;
-    lp2CartPixel *l2cTable;
-    int count;
-
-public:
-    logPolarLibrary() {
-        c2lTable = 0;
-        l2cTable = 0;
-        count = 0;
-    }
-
-    virtual ~logPolarLibrary() {
-        freeLookupTables();
-    }
-
-    virtual const bool allocated() const {
-        if (c2lTable != 0 || l2cTable != 0)
-            return true;
-        else
-            return false;
-    }
-
-    virtual int addInstance() {
-        count ++;
-        return count;
-    }
-
-    virtual int removeInstance() {
-        count --;
-        return count;
-    }
-
-    virtual bool allocLookupTables(int necc, int nang, int w, int h, double overlap) {
-        if (c2lTable == 0) {
-            c2lTable = new cart2LpPixel[necc*nang];
-            if (c2lTable == 0) {
-                fprintf(stderr, "logPolarLibrary: can't allocate c2l lookup tables, wrong size?\n");
-                return false;
-            }
-        }
-
-        if (l2cTable == 0) {
-            l2cTable = new lp2CartPixel[w*h];
-            if (l2cTable == 0) {
-                fprintf(stderr, "logPolarLibrary: can't allocate l2c lookup tables, wrong size?\n");
-                if (c2lTable) 
-                    delete[] c2lTable;
-                c2lTable = 0;
-                return false;
-            }
-        }
-
-        const double scaleFact = RCcomputeScaleFactor (necc, nang, w, h, overlap);    
-        // LATER: remove the dependency on the file.
-        // saves the table to file.
-        RCbuildC2LMap (necc, nang, w, h, overlap, scaleFact, ELLIPTICAL, "./");
-        // reloads the table from file. :(
-        RCallocateC2LTable (c2lTable, necc, nang, 0, "./");
-
-        // saves the table to file.
-        RCbuildL2CMap (necc, nang, w, h, overlap, scaleFact, 0, 0, ELLIPTICAL, "./");
-        RCallocateL2CTable (l2cTable, w, h, "./");
-
-        return true;
-    }
-
-    virtual bool freeLookupTables() {
-        if (c2lTable)
-            RCdeAllocateC2LTable (c2lTable);
-        c2lTable = 0;
-        if (l2cTable)
-            RCdeAllocateL2CTable (l2cTable);
-        l2cTable = 0;
-        return true;
-    }
-
-    virtual bool cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp, 
-                                const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart) {
-        // adjust padding.
-        if (cart.getPadding() != 0) {
-            const int byte = cart.width() * sizeof(PixelRgb);
-            unsigned char *d = (unsigned char *)cart.getRawImage() + byte;
-            int i;
-            for (i = 1; i < cart.height(); i++) {
-                unsigned char *s = (unsigned char *)cart.getRow(i);
-                memmove(d, s, byte);
-                d += byte; 
-            }
-        }
-
-        // LATER: assert whether lp & cart are effectively nang * necc as the c2lTable requires.
-        RCgetLpImg (lp.getRawImage(), (unsigned char *)cart.getRawImage(), c2lTable, lp.height()*lp.width(), 0);
-
-        // adjust padding.
-        if (lp.getPadding() != 0) {
-            const int byte = lp.width() * sizeof(PixelRgb);
-            int i;
-            for (i = lp.height()-1; i >= 1; i--) {
-                unsigned char *d = lp.getRow(i);
-                unsigned char *s = lp.getRawImage() + i*byte;
-                memmove(d, s, byte);
-            }
-        }
-
-        return true;
-    }
-
-    virtual bool logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart,
-                                const yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp) {
-        // adjust padding.
-        if (lp.getPadding() != 0) {
-            int i;
-            const int byte = lp.width() * sizeof(PixelRgb);
-            unsigned char *d = lp.getRawImage() + byte;
-            for (i = 1; i < lp.height(); i ++) {
-                unsigned char *s = (unsigned char *)lp.getRow(i);
-                memmove(d, s, byte);
-                d += byte;
-            }
-        }
-
-        // LATER: assert whether lp & cart are effectively of the correct size.
-        RCgetCartImg (cart.getRawImage(), lp.getRawImage(), l2cTable, cart.width() * cart.height());
-
-        // adjust padding.
-        if (cart.getPadding() != 0) {
-            const int byte = cart.width() * sizeof(PixelRgb);
-            int i;
-            for (i = cart.height()-1; i >= 1; i--) {
-                unsigned char *d = cart.getRow(i);
-                unsigned char *s = cart.getRawImage() + i*byte;
-                memmove(d, s, byte);
-            }
-        }
-        return true;
-    }
-};
-
-// logpolar details and maps, pointer to access the lp library.
-#define HELPER(x) (*((logPolarLibrary*)(x)))
-
 /* 
  * Constructor. 
  */ 
@@ -220,6 +65,8 @@ ServerLogpolarFrameGrabber::ServerLogpolarFrameGrabber() : RateThread(0), mutex(
     inecc = 0;
     ifovea = 0;
     ioverlap = 0.;
+
+    ninstances = 0;
 }
 
 /* 
@@ -317,14 +164,18 @@ bool ServerLogpolarFrameGrabber::open(yarp::os::Searchable& config) {
     ffov.setProcessingSize(ifovea, ifovea);
     
     // allocate logpolar library helper class.
-    if (lpLibrary == 0) {
-        fprintf (stderr, "ServerLogpolarFrameGrabber: starting logpolar table allocation, please wait...\n");
-        lpLibrary = new logPolarLibrary;
-        lpLibrary->allocLookupTables(inecc, inang, baseWidth, baseHeight, ioverlap);
-        fprintf (stderr, "ServerLogpolarFrameGrabber: logpolar table allocation completed\n");
-    }
+    fprintf (stderr, "ServerLogpolarFrameGrabber: starting logpolar table allocation, please wait...\n");
+    trsf.allocLookupTables(inecc, inang, baseWidth, baseHeight, ioverlap);
+    ninstances ++;
 
-    lpLibrary->addInstance();
+    // also pass the class to the logpolar formatter.
+    LogpolarImageFormatter* t = dynamic_cast<LogpolarImageFormatter *> (&flogp);
+    if (t) 
+        t->setTableInstance(&trsf);
+    else
+        fprintf (stderr, "ServerLogpolarFrameGrabber: can't upcast to logpolar formatter (should never happen)\n");
+
+    fprintf (stderr, "ServerLogpolarFrameGrabber: logpolar table allocation completed\n");
 
     active = true;
 
@@ -399,11 +250,9 @@ bool ServerLogpolarFrameGrabber::close() {
     active = false;
     RateThread::stop();
 
-    if (lpLibrary->removeInstance() == 0) {
-        lpLibrary->freeLookupTables();
-        delete lpLibrary;
-        lpLibrary = 0;
-    }
+    ninstances --;
+    if (!ninstances)
+        trsf.freeLookupTables();
 
     fstd.close();
     flogp.close();
@@ -634,7 +483,7 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				response.addInt(int(fgCtrlDC1394->hasOnOffDC1394(cmd.get(1).asInt())));
 				return true;
 			case VOCAB_DRSETACT: // VOCAB_DRSETACT 04
-				return fgCtrlDC1394->setActiveDC1394(cmd.get(1).asInt(),bool(cmd.get(2).asInt()));
+				return fgCtrlDC1394->setActiveDC1394(cmd.get(1).asInt(), (cmd.get(2).asInt())?true:false );
 			case VOCAB_DRGETACT: // VOCAB_DRGETACT 05
 				response.addInt(int(fgCtrlDC1394->getActiveDC1394(cmd.get(1).asInt())));
 				return true;
@@ -649,7 +498,7 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				response.addInt(int(fgCtrlDC1394->hasOnePushDC1394(cmd.get(1).asInt())));
 				return true;
 			case VOCAB_DRSETMOD: // VOCAB_DRSETMOD 09
-				return fgCtrlDC1394->setModeDC1394(cmd.get(1).asInt(),bool(cmd.get(2).asInt()));
+				return fgCtrlDC1394->setModeDC1394(cmd.get(1).asInt(), (cmd.get(2).asInt())?true:false);
 			case VOCAB_DRGETMOD: // VOCAB_DRGETMOD 10
 				response.addInt(int(fgCtrlDC1394->getModeDC1394(cmd.get(1).asInt())));
 				return true;
@@ -723,14 +572,14 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 				return fgCtrlDC1394->setFormat7WindowDC1394(cmd.get(1).asInt(),cmd.get(2).asInt());
 
 			case VOCAB_DRSETOPM: // VOCAB_DRSETOPM 28
-				return fgCtrlDC1394->setOperationModeDC1394(bool(cmd.get(1).asInt()));
+				return fgCtrlDC1394->setOperationModeDC1394((cmd.get(1).asInt())?true:false);
 
 			case VOCAB_DRGETOPM: // VOCAB_DRGETOPM 29
 				response.addInt(fgCtrlDC1394->getOperationModeDC1394());
 				return true;
 
 			case VOCAB_DRSETTXM: // VOCAB_DRSETTXM 30
-				return fgCtrlDC1394->setTransmissionDC1394(bool(cmd.get(1).asInt()));
+				return fgCtrlDC1394->setTransmissionDC1394((cmd.get(1).asInt())?true:false);
 
 			case VOCAB_DRGETTXM: // VOCAB_DRGETTXM 31
 				response.addInt(fgCtrlDC1394->getTransmissionDC1394());
@@ -744,16 +593,16 @@ bool ServerLogpolarFrameGrabber::respond(const yarp::os::Bottle& cmd,
 			return true;
 			*/
 			case VOCAB_DRSETBCS: // VOCAB_DRSETBCS 34
-				return fgCtrlDC1394->setBroadcastDC1394(bool(cmd.get(1).asInt()));
+				return fgCtrlDC1394->setBroadcastDC1394((cmd.get(1).asInt())?true:false);
 			case VOCAB_DRSETDEF: // VOCAB_DRSETDEF 35
 				return fgCtrlDC1394->setDefaultsDC1394();
 			case VOCAB_DRSETRST: // VOCAB_DRSETRST 36
 				return fgCtrlDC1394->setResetDC1394();
 			case VOCAB_DRSETPWR: // VOCAB_DRSETPWR 37
-				return fgCtrlDC1394->setPowerDC1394(bool(cmd.get(1).asInt()));
+				return fgCtrlDC1394->setPowerDC1394((cmd.get(1).asInt())?true:false);
 
 			case VOCAB_DRSETCAP: // VOCAB_DRSETCAP 38
-				return fgCtrlDC1394->setCaptureDC1394(bool(cmd.get(1).asInt()));
+				return fgCtrlDC1394->setCaptureDC1394((cmd.get(1).asInt())?true:false);
 
 			case VOCAB_DRSETBPP: // VOCAB_DRSETCAP 39
 				return fgCtrlDC1394->setBytesPerPacketDC1394(cmd.get(1).asInt());	
@@ -1045,28 +894,30 @@ bool ServerLogpolarFrameGrabber::getFovealImage(yarp::sig::ImageOf<yarp::sig::Pi
  */
 bool ServerLogpolarFrameGrabber::allocLookupTables(int necc, int nang, int w, int h, double overlap) {
     mutex.wait();
-    const bool ok = HELPER(lpLibrary).allocLookupTables(necc, nang, w, h, overlap);
+    const bool ok = trsf.allocLookupTables(necc, nang, w, h, overlap);
+    ninstances ++;
     mutex.post();
     return ok;
 }
 
 bool ServerLogpolarFrameGrabber::freeLookupTables() {
     mutex.wait();
-    const bool ok = HELPER(lpLibrary).freeLookupTables();
+    ninstances --;
+    const bool ok = trsf.freeLookupTables();
     mutex.post();
     return ok;
 }
 
 bool ServerLogpolarFrameGrabber::cartToLogpolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelRgb>& cart) {
     mutex.wait();
-    const bool ok = HELPER(lpLibrary).cartToLogpolar(lp, cart);
+    const bool ok = trsf.cartToLogpolar(lp, cart);
     mutex.post();
     return ok;
 }
 
 bool ServerLogpolarFrameGrabber::logpolarToCart(ImageOf<PixelRgb>& cart, const ImageOf<PixelRgb>& lp) {
     mutex.wait();
-    const bool ok = HELPER(lpLibrary).logpolarToCart(cart, lp);
+    const bool ok = trsf.logpolarToCart(cart, lp);
     mutex.post();
     return ok;
 }
@@ -1105,7 +956,7 @@ bool StdImageFormatter::format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& bu
 
 bool LogpolarImageFormatter::format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& buffer, 
                                     yarp::sig::ImageOf<yarp::sig::PixelRgb>& formatted) {
-    HELPER(lpLibrary).cartToLogpolar(formatted, (ImageOf<PixelRgb>&)buffer);
+    trsf->cartToLogpolar(formatted, (ImageOf<PixelRgb>&)buffer);
     return true;
 }
 

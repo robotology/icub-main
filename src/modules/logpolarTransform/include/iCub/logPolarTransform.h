@@ -185,7 +185,7 @@
  
 
 /* Log-Polar includes */
-#include "iCub/RC_DIST_FB_logpolar_mapper.h"
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
 
 class LogPolarTransformThread : public yarp::os::Thread
@@ -203,8 +203,7 @@ private:
     int *ySizeValue;
     double *overlapValue;     
 
-    cart2LpPixel *c2lTable;
-    lp2CartPixel *l2cTable;
+    iCub::logpolar::logpolarTransform trsf;
 
 public:
     LogPolarTransformThread(yarp::os::BufferedPort<yarp::sig::FlexImage > *imageIn,  yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *imageOut, 
