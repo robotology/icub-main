@@ -70,6 +70,11 @@ YARP libraries and OpenCV
   value \e frames specifies the number of consecutive frames for
   which if a node gets active it is kept on.
  
+--numThreads \e threads
+- This parameter allows to control the maximum number of threads
+available. The default value is 1 but to achieve frame rate at least
+4 is required.
+ 
 --verbosity 
 - Enable the dump of log messages.
  
@@ -182,6 +187,7 @@ protected:
     int nodesNum;
     int nodesX;
     int nodesY;
+    int numThreads;
 
     ImageOf<PixelMono>  imgMonoIn;
     ImageOf<PixelMono>  imgMonoPrev;
@@ -240,6 +246,10 @@ public:
 
         recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
 
+        //set the number of threads avaliable to openCV
+        numThreads = rf.check("numThreads",Value(1)).asInt();
+        numThreads > 1? cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
+
         nodesPrev=NULL;
         nodesCurr=NULL;
         nodesPersistence=NULL;
@@ -272,6 +282,7 @@ public:
             fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
+            fprintf(stdout,"numThreads        = %d\n",numThreads);
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
             fprintf(stdout,"\n");
         }
@@ -611,6 +622,12 @@ public:
                 else if (subcmd=="framesPersistence")
                 {
                     framesPersistence=req.get(2).asInt();
+                    reply.addString("ack");
+                }
+                else if (subcmd=="numThreads")
+                {
+                    numThreads=req.get(2).asInt();
+                    numThreads > 1?cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
                     reply.addString("ack");
                 }
                 else if (subcmd=="verbosity")
