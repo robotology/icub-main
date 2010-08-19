@@ -178,6 +178,7 @@ public:
     // msg 4
     short _current;
     short _position_error;
+	short _torque_error;   //@@@TODO create new msg slot, now is the same of _position_error
     double _update_c;
 
     // msg 5
@@ -253,6 +254,7 @@ public:
 	    _boardStatus=0;
 		_controlmodeStatus=0;
         _position_error = 0;
+		_torque_error = 0;
         _speed = 0;
         _accel = 0;
 
@@ -2168,6 +2170,7 @@ void CanBusMotionControl::handleBroadcasts()
                     r._bcastRecvBuffer[j]._current = *((short *)(data));
 
                     r._bcastRecvBuffer[j]._position_error = *((short *)(data+4));
+					r._bcastRecvBuffer[j]._torque_error = *((short *)(data+4)); //@@@TODO create new msg slot, now is the same of _position_error
                     r._bcastRecvBuffer[j]._update_c = before;
                     j++;
                     if (j < r.getJoints())
@@ -2175,6 +2178,7 @@ void CanBusMotionControl::handleBroadcasts()
                         r._bcastRecvBuffer[j]._current = *((short *)(data+2));
 
                         r._bcastRecvBuffer[j]._position_error = *((short *)(data+6));
+						r._bcastRecvBuffer[j]._torque_error = *((short *)(data+6)); //@@@TODO create new msg slot, now is the same of _position_error
                         r._bcastRecvBuffer[j]._update_c = before;
                     }
                     break;
@@ -3205,12 +3209,26 @@ bool CanBusMotionControl::setTorqueErrorLimitsRaw(const double *limit)
 
 bool CanBusMotionControl::getTorqueErrorRaw(int axis, double *err)
 {
-	return NOT_YET_IMPLEMENTED("getErrorRaw");
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))
+        return false;
+    _mutex.wait();
+    *(err) = double(r._bcastRecvBuffer[axis]._torque_error);
+    _mutex.post();
+    return true;
 }
 
 bool CanBusMotionControl::getTorqueErrorsRaw(double *errs)
 {
-	return NOT_YET_IMPLEMENTED("getErrorsRaw");
+    CanBusResources& r = RES(system_resources);
+    int i;
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        errs[i] = double(r._bcastRecvBuffer[i]._torque_error);
+    }
+    _mutex.post();
+    return true;
 }
 
 bool CanBusMotionControl::getErrorRaw(int axis, double *err)
