@@ -4,13 +4,13 @@
 		<port>/icub/cam/left/logpolar</port> 
 	</dependencies>
 	<module>
-		<name>saliencyBlobFinderInterface</name>
+		<name>salBlobFinderInterface</name>
 		<parameters>--name /blobFinderInterface/icub/left_cam </parameters>
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
 		<node>/console</node>
 	</module>
 	<module>
-		<name>selectiveAttentionInterface</name>
+		<name>selAttentionInterface</name>
 		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
 		<tag>selectiveAttInterface</tag>
 		<node>/console</node>
