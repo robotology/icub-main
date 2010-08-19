@@ -84,6 +84,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     int size_x=checkInt(config,"width");   
     int size_y=checkInt(config,"height");
+    int off_x=checkInt(config,"xoff");
+    int off_y=checkInt(config,"yoff");
     int format=checkInt(config,"video_type");
     unsigned int idCamera=checkInt(config,"d");
     m_Framerate=checkInt(config,"framerate");
@@ -173,31 +175,31 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     case DR_RGB_HALF_RES:
         if (!size_x) { size_x=320; }
         if (!size_y) { size_y=240; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_1,size_x,size_y,DC1394_COLOR_CODING_RGB8,44);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_1,size_x,size_y,DC1394_COLOR_CODING_RGB8,44,off_x,off_y);
         break;
 
     case DR_RGB_FULL_RES:
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RGB8,44);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RGB8,44,off_x,off_y);
         break;
 
     case DR_BAYER_FULL_RES:
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW8,44);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW8,44,off_x,off_y);
         break;
 
     case DR_BAYER_RAW16_FULL_RES:
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW16,44);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW16,44,off_x,off_y);
         break;
 
     case DR_YUV422_FULL_RES:
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_YUV422,44);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_YUV422,44,off_x,off_y);
         break;
 
     default:
@@ -427,8 +429,8 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
     return true;
 }
 
-#define SKIP -1
-bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newBandPercent)
+#define SKIP 0x80000000
+bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newBandPercent,int x0,int y0)
 {
     if (!m_pCamera) return false;
 
@@ -525,15 +527,21 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     {
         if (newXdim==SKIP) newXdim=(int)maxWidth;
         if (newYdim==SKIP) newYdim=(int)maxHeight;
+        if (x0==SKIP) x0=0;
+        if (y0==SKIP) y0=0;
     }
     else
     {
-        unsigned int xdim,ydim;
+        unsigned int xdim,ydim,xpos,ypos;
         error=dc1394_format7_get_image_size(m_pCamera,actVideoMode,&xdim,&ydim);
+        if (manage(error)) return false;
+        error=dc1394_format7_get_image_position(m_pCamera,actVideoMode,&xpos,&ypos);
         if (manage(error)) return false;
         
         if (newXdim==SKIP) newXdim=xdim;
         if (newYdim==SKIP) newYdim=ydim;
+        if (x0==SKIP) x0=xpos;
+        if (y0==SKIP) y0=ypos;
     }
 
     // adjust image size to allowed in this format
@@ -544,10 +552,16 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     newYdim=(newYdim/hStep)*hStep;
 
     // calculate offset
-    int xOff=(maxWidth -newXdim)/2;
-    int yOff=(maxHeight-newYdim)/2;
+    int xOff=(maxWidth -newXdim)/2+x0;
+    int yOff=(maxHeight-newYdim)/2+y0;
     xOff=(xOff/xStep)*xStep;
     yOff=(yOff/yStep)*yStep;
+    
+    if (xOff<0) xOff=0;
+    if (yOff<0) yOff=0;
+
+    if (xOff+newXdim>maxWidth)  xOff=maxWidth -newXdim;
+    if (yOff+newYdim>maxHeight) yOff=maxHeight-newYdim;
 
     error=dc1394_video_set_mode(m_pCamera,(dc1394video_mode_t)newVideoMode);
     if (manage(error)) return false;
@@ -982,7 +996,7 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int newVideoMode)
 	else
 	{
 		fprintf(stderr,"Attempting to set format 7\n");
-		SetF7(videoModeToSet,SKIP,SKIP,SKIP,SKIP);
+		SetF7(videoModeToSet,SKIP,SKIP,SKIP,SKIP,SKIP,SKIP);
 	}
 
 	if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
@@ -1162,7 +1176,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 	dc1394_capture_stop(m_pCamera);
 
 	dc1394color_coding_t cc=(dc1394color_coding_t)((int)coding+DC1394_COLOR_CODING_MIN);
-	SetF7(SKIP,SKIP,SKIP,cc,SKIP);
+	SetF7(SKIP,SKIP,SKIP,cc,SKIP,SKIP,SKIP);
 
 	bool bRetVal=true;
 
@@ -1190,7 +1204,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 //experimental cleanup function, Lorenzo
 
 // 25
-bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep)
+bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep)
 {
 	if (!m_pCamera) return false;
 
@@ -1200,6 +1214,7 @@ bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int 
     {
         xdim=ydim=0;
         xstep=ystep=2;
+        xoffstep=yoffstep=2;
         return false;
     }
     
@@ -1207,18 +1222,22 @@ bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int 
 	{
 		xdim=m_XDim;
 		ydim=m_YDim;
-		xstep=ystep=2;
+		xoffstep=yoffstep=2;
 		return true;
 	}
 
-	bool ok=DC1394_SUCCESS==dc1394_format7_get_unit_size(m_pCamera,videoMode,&xstep,&ystep);
-	ok&=DC1394_SUCCESS==dc1394_format7_get_max_image_size(m_pCamera,videoMode,&xdim,&ydim);
+	error=dc1394_format7_get_unit_size(m_pCamera,videoMode,&xstep,&ystep);
+	if (manage(error)) return false;
+	error=dc1394_format7_get_max_image_size(m_pCamera,videoMode,&xdim,&ydim);
+	if (manage(error)) return false;
+	error=dc1394_format7_get_unit_position(m_pCamera,videoMode,&xoffstep,&yoffstep);
+	if (manage(error)) return false;
 
-	return ok;
+	return true;
 }
 
 // 26
-bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim)
+bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0)
 {
 	m_AcqMutex.wait();
 
@@ -1240,7 +1259,7 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
 	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
 	dc1394_capture_stop(m_pCamera);
 
-	SetF7(SKIP,xdim,ydim,SKIP,SKIP);
+	SetF7(SKIP,xdim,ydim,SKIP,SKIP,x0,y0);
 
 	bool bRetVal=true;
 
@@ -1266,14 +1285,32 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
 }
 
 // 27
-bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim)
+bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0)
 {
 	if (!m_pCamera) return false;
 
-	xdim=m_XDim;
-	ydim=m_YDim;
-
-	//bool ok=DC1394_SUCCESS==dc1394_format7_get_image_size(m_pCamera,m_video_mode,&xdim,&ydim);
+	//xdim=m_XDim;
+	//ydim=m_YDim;
+	
+	dc1394video_mode_t actVideoMode;
+    dc1394error_t error;
+    
+    error=dc1394_video_get_mode(m_pCamera,&actVideoMode);
+    if (manage(error)) return false;
+    
+    unsigned int xmaxdim,ymaxdim;
+    error=dc1394_format7_get_max_image_size(m_pCamera,actVideoMode,&xmaxdim,&ymaxdim);
+	if (manage(error)) return false;
+	
+	unsigned int xoff,yoff;
+    error=dc1394_format7_get_image_position(m_pCamera,actVideoMode,&xoff,&yoff);
+	if (manage(error)) return false;
+	
+	error=dc1394_format7_get_image_size(m_pCamera,actVideoMode,&xdim,&ydim);
+    if (manage(error)) return false;
+    
+    x0=(int)xoff-(xmaxdim-xdim)/2;
+    y0=(int)yoff-(ymaxdim-ydim)/2;
 
 	return true;
 }	
