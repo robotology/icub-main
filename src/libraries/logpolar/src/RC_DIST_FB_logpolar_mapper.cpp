@@ -27,7 +27,7 @@
 
 #include <iostream>
 #include <math.h>
-#include <memory>
+#include <string.h>
 
 //#define MODE1
 
@@ -218,11 +218,12 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
         return 1;
     }
 
-	int cSize = width_;
-	
-	if (width_ > height_)
-		cSize = height_;
+    int cSize = width_;
 
+    if (width_ > height_)
+        cSize = height_;
+
+    const double precision = 10.0;
     double angle = (2.0 * PI / nang_);   // Angular size of one pixel
     double sinus = sin (angle / 2.0);
     double tangent = sinus / cos (angle / 2.0);
@@ -249,19 +250,29 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
     double F0x, F0y, F1x, F1y;
     double maxaxis;
 
-    int rho, theta, j;
+    int rho, theta, j, sz;
 
+    double *sintable;
+    double *costable;
+    int intx, inty;
+    bool found;
+    int mapsize;
+    float *weight;
+
+    // intiialization starts more or less here.
     lambda = (1.0 + sinus) / (1.0 - sinus);
     fov = (int) (lambda / (lambda - 1));
     firstRing = (1.0 / (lambda - 1)) - (int) (1.0 / (lambda - 1));
     r0 = 1.0 / (pow (lambda, fov) * (lambda - 1));
+
+    // main table pointer (temporary).
+    cart2LpPixel *table = c2lTable;
 
     // temporary.
     tangaxis = new double[necc_];
     radialaxis = new double[necc_];
     focus = new double[necc_];
     radii2 = new double[necc_];
-
     currRad = new double[necc_];
     nextRad = new double[necc_];
 
@@ -326,10 +337,6 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
         radii2[rho] = radii[rho] * radii[rho];
     }
 
-    //int totalcounter = 0;
-    double *sintable;
-    double *costable;
-    int intx, inty;
     sintable = new double[nang_];
     costable = new double[nang_];
 
@@ -341,16 +348,8 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
         costable[j] = cos (angle * (j + 0.5));
     }
 
-    bool found;
-    int mapsize;
-    float *weight;
-    double precision = 10.0;
-
-    // the main table pointer.
-    cart2LpPixel *table = c2lTable;
-
     // compute overall table size for contiguous allocation (position & weigth).
-    int sz = 0;
+    sz = 0;
     for (rho = 0; rho < necc_; rho++) {
         if ((mode == RADIAL) || (mode == TANGENTIAL))
             lim = (int) (radii[rho] + 1.5);
@@ -591,9 +590,14 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
     double F0x, F0y, F1x, F1y;
     double maxaxis;
 
-    int rho, theta, j;
+    int rho, theta, j, memSize;
+    bool found;
+    const double precision = 10.0;
 
-    // temporary.
+    // main table pointer (temporary).
+    lp2CartPixel *table = l2cTable;
+
+    // temporary counter (per pixel).
     partCtr = new int[width_ * height_];
     if (partCtr == 0)
         goto L2CAllocError;
@@ -689,10 +693,8 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
         costable[j] = cos (angle * (j + 0.5));
     }
 
-    bool found;
-    double precision = 10.0;
-    int memSize = 0;
 
+    memSize = 0;
     for (rho = 0; rho < necc_; rho++) {
         //
         if ((mode == RADIAL) || (mode == TANGENTIAL))
@@ -752,7 +754,6 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
         }
     }
 
-    lp2CartPixel *table = l2cTable;
     table->position = new int[memSize]; // contiguous allocation.
     if (table->position == 0)
         goto L2CAllocError;
