@@ -772,7 +772,7 @@ int myMain(int argc, char* argv[]) {
     
     //initialize threads in gtk, copied almost verbatim from
     // http://library.gnome.org/devel/gdk/unstable/gdk-Threads.htm
-    g_thread_init (NULL);
+    //g_thread_init (NULL);
     gdk_threads_init ();
     gdk_threads_enter ();
     createObjects();
