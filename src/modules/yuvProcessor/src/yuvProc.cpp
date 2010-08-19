@@ -394,7 +394,7 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
     origsize.height = img->height();
 
     srcsize.width = origsize.width + 2 * KERNSIZEMAX;
-    srcsize.height = origsize.height + 2* KERNSIZEMAX;
+    srcsize.height = origsize.height + KERNSIZEMAX;
 
     cout << "Received input image dimensions: " << origsize.width << " " << origsize.height << endl;
     cout << "Will extend these to: " << srcsize.width << " " << srcsize.height << endl;
