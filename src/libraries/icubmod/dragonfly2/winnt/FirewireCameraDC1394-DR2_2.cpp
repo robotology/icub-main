@@ -13,10 +13,7 @@
 //     WW WW   I   N  NN
 //     W   W   I   N   N
 
-#include <stdlib.h>
 #include "winnt/FirewireCameraDC1394-DR2_2.h"
-
-#define sgn(x) ((x)>0)-((x)<0)
 
 #define NOT_PRESENT -1
 int CFWCamera_DR2_2::DC2Fly(int feature)
@@ -1323,8 +1320,8 @@ bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &yd
 
     xdim=m_F7ImageSettings.width;
     ydim=m_F7ImageSettings.height;
-    x0=m_F7ImageSettings.offsetX;
-    y0=m_F7ImageSettings.offsetY;
+    x0=m_F7ImageSettings.offsetX-(m_F7Info.maxWidth -xdim)/2;
+    y0=m_F7ImageSettings.offsetY-(m_F7Info.maxHeight-ydim)/2;
 
     return true;
 }	
