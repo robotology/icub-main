@@ -54,6 +54,8 @@ public:
       m_LabelMaxYDim("Max height"),  
 	  m_xdim(2.0,0),
 	  m_ydim(2.0,0),
+      m_xoff(2.0,0),
+	  m_yoff(2.0,0),
 	  m_bpp(1.0,0),
 	  m_power("Camera Power"),
       m_transmission("Transmission"),
@@ -207,15 +209,23 @@ public:
 
 		m_xdim.set_numeric();
 		m_ydim.set_numeric();
+        m_xoff.set_numeric();
+		m_yoff.set_numeric();
 	
 		m_xdim.set_update_policy(Gtk::UPDATE_IF_VALID);
 		m_ydim.set_update_policy(Gtk::UPDATE_IF_VALID);
+        m_xoff.set_update_policy(Gtk::UPDATE_IF_VALID);
+		m_yoff.set_update_policy(Gtk::UPDATE_IF_VALID);
 
 		pHBox=new Gtk::HBox();
 		pHBox->pack_start(*(new Gtk::Label("Width")),Gtk::PACK_EXPAND_WIDGET);
 		pHBox->pack_start(m_xdim,Gtk::PACK_EXPAND_WIDGET,8);
 		pHBox->pack_start(*(new Gtk::Label("Height")),Gtk::PACK_EXPAND_WIDGET);
 		pHBox->pack_start(m_ydim,Gtk::PACK_EXPAND_WIDGET,8);
+        pHBox->pack_start(*(new Gtk::Label("X off")),Gtk::PACK_EXPAND_WIDGET);
+		pHBox->pack_start(m_xoff,Gtk::PACK_EXPAND_WIDGET,8);
+		pHBox->pack_start(*(new Gtk::Label("Y off")),Gtk::PACK_EXPAND_WIDGET);
+		pHBox->pack_start(m_yoff,Gtk::PACK_EXPAND_WIDGET,8);
 		m_VBoxForm.pack_start(*(pHBox),Gtk::PACK_SHRINK,8);
 
 		m_bpp.set_numeric();
@@ -287,6 +297,8 @@ public:
         m_MenuColorCoding.signal_changed().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_color_coding_change));
         m_xdim.signal_value_changed().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_format7_window_change));
 		m_ydim.signal_value_changed().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_format7_window_change));
+        m_xoff.signal_value_changed().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_format7_window_change));
+		m_yoff.signal_value_changed().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_format7_window_change));
         m_bpp.signal_value_changed().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_bpp_change));
         m_power.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_power_onoff_change));
         m_transmission.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_transmission_onoff_change));
@@ -306,7 +318,7 @@ public:
 		close();
 	}
 	
-	    void Reload()
+	void Reload()
     {
 		printf("*** Reload() ***\n");
 
@@ -330,13 +342,16 @@ public:
             }		
         }
 
-    	unsigned int xmax,ymax,xstep,ystep;
-    	getFormat7MaxWindowDC1394(xmax,ymax,xstep,ystep);
+    	unsigned int xmax,ymax,xstep,ystep,xoffstep,yoffstep;
+    	getFormat7MaxWindowDC1394(xmax,ymax,xstep,ystep,xoffstep,yoffstep);
     	unsigned int xdim,ydim;
-    	getFormat7WindowDC1394(xdim,ydim);
+        int x0,y0;
+    	getFormat7WindowDC1394(xdim,ydim,x0,y0);
      
         m_xdim.set_sensitive(false);
         m_ydim.set_sensitive(false);
+        m_xoff.set_sensitive(false);
+        m_yoff.set_sensitive(false);
 
    		if (xstep<2) xstep=2;
    		if (ystep<2) ystep=2;
@@ -347,7 +362,17 @@ public:
    		m_ydim.set_increments(ystep,0);
    		m_xdim.set_value(xdim);
    		m_ydim.set_value(ydim);
-       
+
+        int xoffMax=xmax-xdim;
+        int yoffMax=ymax-ydim;
+
+   		m_xoff.set_range(-xoffMax,xoffMax);
+   		m_yoff.set_range(-yoffMax,yoffMax);
+   		m_xoff.set_increments(xoffstep,0);
+   		m_yoff.set_increments(yoffstep,0);
+   		m_xoff.set_value(x0);
+   		m_yoff.set_value(y0);
+
         char buff[16];
         sprintf(buff,"Max width %d",xmax);
         m_LabelMaxXDim.set_text(buff);
@@ -369,6 +394,8 @@ public:
 
             m_xdim.set_sensitive(true);
             m_ydim.set_sensitive(true); 
+            m_xoff.set_sensitive(true);
+            m_yoff.set_sensitive(true); 
         }
         else
         {
@@ -426,7 +453,7 @@ protected:
 	Gtk::CheckButton m_power;
 	Gtk::CheckButton m_transmission;
 
-	Gtk::SpinButton m_xdim,m_ydim;
+	Gtk::SpinButton m_xdim,m_ydim,m_xoff,m_yoff;
 	Gtk::SpinButton m_bpp;
  
 	Gtk::Notebook m_Notebook;
@@ -448,6 +475,8 @@ protected:
 		m_MenuColorCoding.set_sensitive(bFormat7);
 		m_xdim.set_sensitive(bFormat7);
 		m_ydim.set_sensitive(bFormat7);
+        m_xoff.set_sensitive(bFormat7);
+		m_yoff.set_sensitive(bFormat7);
        
 		m_MenuFPS.set_sensitive(!bFormat7);
 		if (!bFormat7)
@@ -460,11 +489,12 @@ protected:
 		m_MenuOpMode.set_active_text(getOperationModeDC1394()?"1394b":"LEGACY");
 		m_MenuColorCoding.set_active_text(color_coding_labels[getColorCodingDC1394()]);
 
-		unsigned int xmax,ymax,xstep,ystep;
-		getFormat7MaxWindowDC1394(xmax,ymax,xstep,ystep);
+		unsigned int xmax,ymax,xstep,ystep,xoffstep,yoffstep;
+		getFormat7MaxWindowDC1394(xmax,ymax,xstep,ystep,xoffstep,yoffstep);
 
 		unsigned int xdim,ydim;
-		getFormat7WindowDC1394(xdim,ydim);
+        int x0,y0;
+		getFormat7WindowDC1394(xdim,ydim,x0,y0);
 		
 		if (xstep<2) xstep=2;
 		if (ystep<2) ystep=2;
@@ -475,6 +505,16 @@ protected:
 		m_ydim.set_increments(ystep,0);
 		m_xdim.set_value(xdim);
 		m_ydim.set_value(ydim);
+
+        int xoffMax=xmax-xdim;
+        int yoffMax=ymax-ydim;
+
+   		m_xoff.set_range(-xoffMax,xoffMax);
+   		m_yoff.set_range(-yoffMax,yoffMax);
+   		m_xoff.set_increments(xoffstep,0);
+   		m_yoff.set_increments(yoffstep,0);
+   		m_xoff.set_value(x0);
+   		m_yoff.set_value(y0);
 
         char buff[16];
         sprintf(buff,"Max width %d",xmax);
@@ -603,14 +643,16 @@ protected:
 	}
 	virtual void on_format7_window_change()
 	{
-        if (!m_xdim.is_sensitive() || !m_ydim.is_sensitive()) return;
+        if (!m_xdim.is_sensitive() || !m_ydim.is_sensitive() || !m_xoff.is_sensitive() || !m_yoff.is_sensitive()) return;
 
 		printf("on_format7_window_change()\n");
 
 		unsigned int xdim=(unsigned)m_xdim.get_value_as_int();
 		unsigned int ydim=(unsigned)m_ydim.get_value_as_int();
+        int x0=(unsigned)m_xoff.get_value_as_int();
+		int y0=(unsigned)m_yoff.get_value_as_int();
 
-		setFormat7WindowDC1394(xdim,ydim);
+		setFormat7WindowDC1394(xdim,ydim,x0,y0);
 	}
 
 	virtual void on_power_onoff_change()
