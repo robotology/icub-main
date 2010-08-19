@@ -25,7 +25,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/ResourceFinder.h>
 
-#include <string>
+#include <string.h>
 #include <sstream>
 
 
@@ -220,7 +220,7 @@ gint timeout_update_CB(gpointer data) {
     //portFpsData.getStats(av, min, max);
     //portFpsData.reset();
     gchar *msg;
-    gdk_threads_enter();
+    //gdk_threads_enter();
     msg=g_strdup_printf("selectiveAttentionInterface");
     updateStatusbar(fpsStatusBar, msg);
     g_free(msg);
@@ -232,13 +232,11 @@ gint timeout_update_CB(gpointer data) {
     //msg=g_strdup_printf("Display: %.1f (min:%.1f max:%.1f) fps", avHz, minHz, maxHz);
     //updateStatusbar(fpsStatusBar2, msg);
     //g_free(msg);
-    gdk_threads_leave();
+    //gdk_threads_leave();
     return TRUE;
 }
 
 gint timeout_CB (gpointer data) {
-    gdk_threads_enter();
-    gdk_threads_leave();
     return TRUE;
 }
 
