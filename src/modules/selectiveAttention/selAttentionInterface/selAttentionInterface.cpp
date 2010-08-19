@@ -704,11 +704,8 @@ GtkWidget* createMainWindow(void) {
 void configure(yarp::os::ResourceFinder rf){
     /* Process all parameters from both command-line and .ini file */
     /* get the module name which will form the stem of all module port names */
-    _options.portName      = rf.check("portName", 
-                           Value("selAttentionInterface"), 
-                           "module name (string)").asString();
-    _options.outPortName      = rf.check("outPortName", 
-        Value("/selAttentionInterface/command:o"), 
+    _options.portName      = rf.check("name", 
+                           Value("/selAttentionInterface"), 
                            "module name (string)").asString();
 }
 
@@ -725,8 +722,8 @@ void setOptionsToDefault() {
 
 bool openPorts() {
     _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-    //g_print("Registering port %s on network %s...\n", _options.outPortName, "default");
-    bool ok = _pOutPort->open(_options.outPortName.c_str());
+    _options.portName+="/command:o";
+    bool ok = _pOutPort->open(_options.portName.c_str());
     if (ok) {
         g_print("Port registration succeed!\n");
     }
