@@ -178,14 +178,12 @@ static void cb_digits_scale3( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     maxBLOB=(int)floor(adj->value);
-    //printf("maxBLOB: %f",maxBLOB);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set Mdb %d",maxBLOB);
-    message->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(message->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_MAXDB);
+        bot.addInt(maxBLOB);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
@@ -195,14 +193,12 @@ static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     minBLOB=(int)floor(adj->value);
-    //printf("minBLOB: %d",minBLOB);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set mdb %d",minBLOB);
-    message->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(message->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_MINDB);
+        bot.addInt(minBLOB);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }
@@ -263,14 +259,12 @@ static void cb_digits_scalemin( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     minBoundingArea=adj->value;
-    //printf("minBoundingArea: %f",minBoundingArea);
-    std::string str("");
-    sprintf((char *)str.c_str(),"set mBA %2.2f",minBoundingArea);
-    message->assign(str.c_str());
     if (_pOutPort!=NULL) {
         yarp::os::Bottle& bot = _pOutPort->prepare();
         bot.clear();
-        bot.addString(message->c_str());
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_MBA);
+        bot.addDouble(minBoundingArea);
         //_pOutPort->Content() = _outBottle;
         _pOutPort->write();
     }

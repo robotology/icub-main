@@ -116,6 +116,18 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #include "viewerResources.h"
 #include <string>
 
+
+// general command vocab's
+#define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
+#define COMMAND_VOCAB_SET VOCAB3('s','e','t')
+#define COMMAND_VOCAB_GET VOCAB3('g','e','t')
+#define COMMAND_VOCAB_IS VOCAB2('i','s')
+#define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
+#define COMMAND_VOCAB_OK VOCAB2('o','k')
+#define COMMAND_VOCAB_MAXDB VOCAB3('M','d','b')         // maximum dimension of the blob drawn
+#define COMMAND_VOCAB_MINDB VOCAB3('m','d','b')         // minimum dimension of the blob drawn
+#define COMMAND_VOCAB_MBA VOCAB3('m','B','A')           // minimum dimension of the bounding area
+
 //-------------------------------------------------
 // Callbacks
 //-------------------------------------------------
