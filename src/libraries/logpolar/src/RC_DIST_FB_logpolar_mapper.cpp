@@ -65,7 +65,7 @@ bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, i
             return false;
         }
 
-        RCbuildC2LMap (scaleFact, ELLIPTICAL);
+        RCbuildC2LMap (scaleFact, ELLIPTICAL, PAD_BYTES(w*3, 8));
     }
 
     if (l2cTable == 0 && (mode & L2C)) {
@@ -91,38 +91,14 @@ bool logpolarTransform::freeLookupTables() {
 }
 
 bool logpolarTransform::cartToLogpolar(yarp::sig::ImageOf<yarp::sig::PixelRgb>& lp, 
-                            const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart) {
+                                       const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart) {
     if (!(mode_ & C2L)) {
         cerr << "logPolarLibrary: conversion to logpolar called with wrong mode set" << endl;
         return false;
     }
 
-    // adjust padding.
-    if (cart.getPadding() != 0) {
-        const int byte = cart.width() * sizeof(PixelRgb);
-        unsigned char *d = (unsigned char *)cart.getRawImage() + byte;
-        int i;
-        for (i = 1; i < cart.height(); i++) {
-            unsigned char *s = (unsigned char *)cart.getRow(i);
-            memmove(d, s, byte);
-            d += byte; 
-        }
-    }
-
     // LATER: assert whether lp & cart are effectively nang * necc as the c2lTable requires.
-    RCgetLpImg (lp.getRawImage(), (unsigned char *)cart.getRawImage(), c2lTable, lp.height()*lp.width());
-
-    // adjust padding.
-    if (lp.getPadding() != 0) {
-        const int byte = lp.width() * sizeof(PixelRgb);
-        int i;
-        for (i = lp.height()-1; i >= 1; i--) {
-            unsigned char *d = lp.getRow(i);
-            unsigned char *s = lp.getRawImage() + i*byte;
-            memmove(d, s, byte);
-        }
-    }
-
+    RCgetLpImg (lp.getRawImage(), (unsigned char *)cart.getRawImage(), c2lTable, lp.getPadding());
     return true;
 }
 
@@ -220,7 +196,7 @@ double logpolarTransform::RCcomputeScaleFactor ()
     return totalRadius;
 }
 
-int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
+int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode, int padding)
 {
     // store map in c2lTable which is supposedly already allocated (while the internal arrays are allocated on the fly).
 
@@ -488,6 +464,15 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode)
         delete[] weight;    // :(
     }
 
+    // postprocessing, add padding.
+    table = c2lTable;
+    for (rho = 0; rho < necc_; rho++)
+        for (theta = 0; theta < nang_; theta++, table++)
+            for (j = 0; j < table->divisor; j++) {
+                const int x = padding * rho;
+                table->position[j] += x;
+            }
+
     // clean up temporaries.
     if (tangaxis) delete[] tangaxis;
     if (radialaxis) delete[] radialaxis;
@@ -512,30 +497,35 @@ C2LAllocError:
     return 2;
 }
 
-void logpolarTransform::RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg, cart2LpPixel * Table, int sizeLp)
+void logpolarTransform::RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg, cart2LpPixel * Table, int padding)
 {
     int r[3];
     int t = 0;
 
-    const int sz = sizeLp;
     unsigned char *img = lpImg;
-    for (int j = 0; j < sz; j++, img+=3) {
-        r[0] = r[1] = r[2] = 0;
-        t = 0;
 
-        const int div = Table[j].divisor;
-        int *pos = Table[j].position;
-        int *w = Table[j].iweight;
-        for (int i = 0; i < div; i++, pos++, w++) {
-            r[0] += cartImg[*pos] * *w;
-            r[1] += cartImg[(*pos)+1] * *w;
-            r[2] += cartImg[(*pos)+2] * *w;
-            t += *w;
+    for (int i = 0; i < necc_; i++, img+=padding) {
+        for (int j = 0; j < nang_; j++, img+=3) {
+            r[0] = r[1] = r[2] = 0;
+            t = 0;
+
+            const int div = Table->divisor;
+            int *pos = Table->position;
+            int *w = Table->iweight;
+            for (int i = 0; i < div; i++, pos++, w++) {
+                unsigned char *in = &cartImg[*pos];
+                r[0] += *in++ * *w;
+                r[1] += *in++ * *w;
+                r[2] += *in * *w;
+                t += *w;
+            }
+
+            img[0] = (unsigned char)(r[0] / t);
+            img[1] = (unsigned char)(r[1] / t);
+            img[2] = (unsigned char)(r[2] / t);
+
+            Table++;
         }
-
-        img[0] = (unsigned char)(r[0] / t);
-        img[1] = (unsigned char)(r[1] / t);
-        img[2] = (unsigned char)(r[2] / t);
     }
 }
 

@@ -119,18 +119,14 @@ private:
 
     /**
     * \brief Generates the look-up table for the transformation from a cartesian image to a log polar one, both images are color images
-    * @param nEcc is number of rings
-    * @param nAng is the number of pixels per ring 
-    * @param xSize is the width of the cartesian image
-    * @param ySize is the height of the cartesian image
-    * @param overlap is the overlap amount between receptive fields.
     * @param scaleFact the ratio between the size of the smallest logpolar pixel and the cartesian ones
     * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
+    * @param padding is the input image row byte padding
     * @return 0 when there are no errors
     * @return 1 in case of wrong parameters
     * @return 2 in case of allocation problems
     */
-    int RCbuildC2LMap (double scaleFact, int mode);
+    int RCbuildC2LMap (double scaleFact, int mode, int padding);
 
     /**
     * \brief Generates the look-up table for the transformation from a log polar image to a cartesian one.
@@ -149,13 +145,13 @@ private:
     * @param lpImg is the output LogPolar image
     * @param cartImg is the input Cartesian image
     * @param Table is the LUT used for the transformation
-    * @param lpSize is the size of the log polar image
-    * @param bayerImg when true a bayer pattern image is generated, a color image 
+    * @param padding is the padding of the logpolar image (output)
     is generated otherways
     */
     void RCgetLpImg (unsigned char *lpImg,
                      unsigned char *cartImg,
-                     cart2LpPixel * Table, int lpSize);
+                     cart2LpPixel * Table, 
+                     int padding);
 
     /**
     * \brief Remaps a log polar image to a cartesian one
