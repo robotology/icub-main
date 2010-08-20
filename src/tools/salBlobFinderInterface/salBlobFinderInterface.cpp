@@ -176,7 +176,7 @@ static void cb_digits_scale2( GtkAdjustment *adj )
 static void cb_digits_scale3( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    maxBLOB=adj->value;
+    maxBLOB=abs(adj->value);
     //printf("maxBLOB: %f",maxBLOB);
     std::string str("");
     sprintf((char *)str.c_str(),"set Mdb %d",maxBLOB);
@@ -193,7 +193,7 @@ static void cb_digits_scale3( GtkAdjustment *adj )
 static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    minBLOB=adj->value;
+    minBLOB=abs(adj->value);
     //printf("minBLOB: %d",minBLOB);
     std::string str("");
     sprintf((char *)str.c_str(),"set mdb %d",minBLOB);
@@ -686,7 +686,7 @@ GtkWidget* createMainWindow(void)
     //creates the area as collection of port processes sequence
     box2 = gtk_vbox_new (FALSE, 0); // parameters (gboolean homogeneous_space, gint spacing);
     gtk_container_add (GTK_CONTAINER (window), box2);
-    GtkWidget *button,*button2,*buttonCheck;
+    GtkWidget *button,*button2;
     GtkWidget *boxButton,*boxButton2;
     GtkWidget *boxButtons;
     GtkWidget *boxSliders;
@@ -723,8 +723,6 @@ GtkWidget* createMainWindow(void)
     //-----main section
     GtkWidget *scrollbar;
     
-    
-    GtkWidget *scale;
     GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb,*adjmin, *adjtime;
     GtkWidget *hscale, *vscale;
 
@@ -749,7 +747,7 @@ GtkWidget* createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box2), boxA, TRUE, TRUE, 0);
     gtk_widget_show (boxA);
     
-    //---- vSeparator
+    //---- hSeparator
     separator = gtk_hseparator_new ();
     gtk_box_pack_start (GTK_BOX (boxA), separator, FALSE, TRUE, 3);
     gtk_widget_show (separator);
@@ -757,17 +755,16 @@ GtkWidget* createMainWindow(void)
     //--box3 section A
     box3 = gtk_hbox_new (FALSE, 0);
 
-    label = gtk_label_new ("Options:");
-    gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-
     scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
 
     box4 = gtk_vbox_new (FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (box4), 0);
 
-    label = gtk_label_new ("BOTTOM-UP:saliency linear combination Kcoeff.: isolated blobs are salient");
+    label = gtk_label_new ("SALIENCY PARAMETERS:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+    label = gtk_label_new ("BOTTOM-UP:linear combination Kcoeff.: isolated blobs are salient");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -797,6 +794,14 @@ GtkWidget* createMainWindow(void)
     gtk_widget_show (hscale);
     g_signal_connect (G_OBJECT (adj2), "value_changed",
                       G_CALLBACK (cb_digits_scale2), NULL);
+
+    separator = gtk_hseparator_new ();
+    gtk_box_pack_start (GTK_BOX (box4), separator, FALSE, TRUE, 5);
+    gtk_widget_show (separator);
+
+    label = gtk_label_new ("BLOB DIMENSION:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
     
     label = gtk_label_new ("MAXBLOB dimension: cut off bigger blobs");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
@@ -822,6 +827,26 @@ GtkWidget* createMainWindow(void)
     gtk_widget_show (hscale);
     g_signal_connect (G_OBJECT (adj4), "value_changed",
                       G_CALLBACK (cb_digits_scale4), NULL);
+
+    label = gtk_label_new ("minBounding area:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    adjmin = gtk_adjustment_new (225,100,1000,1,1,1);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjmin));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adjmin), "value_changed",
+                      G_CALLBACK (cb_digits_scalemin), NULL);
+
+    separator = gtk_hseparator_new ();
+    gtk_box_pack_start (GTK_BOX (box4), separator, FALSE, TRUE, 5);
+    gtk_widget_show (separator);
+
+    label = gtk_label_new ("TOP-DOWN TARGET:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
     
     label = gtk_label_new ("red intensity target:");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
@@ -859,18 +884,8 @@ GtkWidget* createMainWindow(void)
     g_signal_connect (G_OBJECT (adjb), "value_changed",
                       G_CALLBACK (cb_digits_scaleb), NULL);
 
-    label = gtk_label_new ("minBounding area:");
-    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-    adjmin = gtk_adjustment_new (225,100,1000,1,1,1);
-    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjmin));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);
-    g_signal_connect (G_OBJECT (adjmin), "value_changed",
-                      G_CALLBACK (cb_digits_scalemin), NULL);
     
+    /*
     label = gtk_label_new ("time decimal constant1 (x y z):");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
@@ -895,6 +910,7 @@ GtkWidget* createMainWindow(void)
     gtk_widget_show (hscale);
     g_signal_connect (G_OBJECT (adjtime), "value_changed",
                       G_CALLBACK (cb_digits_scaletime2), NULL);
+    */
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
@@ -923,6 +939,7 @@ GtkWidget* createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
+    /*
     //-----box4
     box4=  gtk_vbox_new (FALSE, 0);
 
@@ -995,6 +1012,7 @@ GtkWidget* createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
     //---box 4
+    */
 
 
     //------ HSEPARATOR ---------------
