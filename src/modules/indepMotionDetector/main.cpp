@@ -105,7 +105,7 @@ None.
  
 \section rpcProto_sec RPC protocol 
 The parameters <i> winSize, recogThres, adjNodesThres, 
-framesPersistence, verbosity </i> can be changed/retrieved 
+framesPersistence, numThreads, verbosity </i> can be changed/retrieved 
 through the commands set/get. Moreover the further switch \e 
 inhibition can be accessed in order to enable/disable the motion 
 detection at run-time. 
@@ -141,6 +141,12 @@ Linux and Windows.
 #include <string>
 #include <set>
 #include <deque>
+
+
+//check if OpenCV supports multi threading
+#if CV_MAJOR_VERSION > 0
+    #define _INDEP_MULTI_THREADING_
+#endif
 
 // in BGR format
 #define NODE_OFF    cvScalar(0,0,255)
@@ -187,7 +193,9 @@ protected:
     int nodesNum;
     int nodesX;
     int nodesY;
+
     int numThreads;
+    bool multiThreading;
 
     ImageOf<PixelMono>  imgMonoIn;
     ImageOf<PixelMono>  imgMonoPrev;
@@ -246,9 +254,11 @@ public:
 
         recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
 
-        //set the number of threads avaliable to openCV
-        numThreads = rf.check("numThreads",Value(1)).asInt();
-        numThreads > 1? cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
+        //if the OpenCV version supports multithreading, set the maximum number of threads avaliable to openCV
+        #ifdef _INDEP_MULTI_THREADING_
+            numThreads = rf.check("numThreads",Value(1)).asInt();
+            numThreads > 1? cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
+        #endif
 
         nodesPrev=NULL;
         nodesCurr=NULL;
@@ -282,7 +292,13 @@ public:
             fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
-            fprintf(stdout,"numThreads        = %d\n",numThreads);
+            
+            #ifdef _INDEP_MULTI_THREADING_
+                fprintf(stdout,"numThreads        = %d\n",numThreads);
+            #else
+                fprintf(stdout,"numThreads        = OpenCV version does not support multithreading");
+            #endif
+            
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
             fprintf(stdout,"\n");
         }
@@ -626,9 +642,13 @@ public:
                 }
                 else if (subcmd=="numThreads")
                 {
-                    numThreads=req.get(2).asInt();
-                    numThreads > 1?cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
-                    reply.addString("ack");
+                    #ifdef _INDEP_MULTI_THREADING_
+                        numThreads=req.get(2).asInt();
+                        numThreads > 1?cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
+                        reply.addString("ack");
+                    #else
+                        reply.addString("multi threading not supported");
+                    #endif
                 }
                 else if (subcmd=="verbosity")
                 {
@@ -660,6 +680,12 @@ public:
                     reply.addInt(blobMinSizeThres);
                 else if (subcmd=="framesPersistence")
                     reply.addInt(framesPersistence);
+                else if (subcmd=="numThreads")
+                    #ifdef _INDEP_MULTI_THREADING_
+                        reply.addInt(numThreads);
+                    #else
+                        reply.addString("multi threading not supported");
+                    #endif
                 else if (subcmd=="verbosity")
                     reply.addString(verbosity?"on":"off");
                 else if (subcmd=="inhibition")
