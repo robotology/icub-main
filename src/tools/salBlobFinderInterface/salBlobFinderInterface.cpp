@@ -28,6 +28,7 @@
 #include <string>
 #include <sstream>
 #include <cstring>
+#include <cmath>
 
 using namespace yarp::os;
 using namespace std;
@@ -176,7 +177,7 @@ static void cb_digits_scale2( GtkAdjustment *adj )
 static void cb_digits_scale3( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    maxBLOB=abs(adj->value);
+    maxBLOB=(int)floor(adj->value);
     //printf("maxBLOB: %f",maxBLOB);
     std::string str("");
     sprintf((char *)str.c_str(),"set Mdb %d",maxBLOB);
@@ -193,7 +194,7 @@ static void cb_digits_scale3( GtkAdjustment *adj )
 static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    minBLOB=abs(adj->value);
+    minBLOB=(int)floor(adj->value);
     //printf("minBLOB: %d",minBLOB);
     std::string str("");
     sprintf((char *)str.c_str(),"set mdb %d",minBLOB);
