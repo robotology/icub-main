@@ -32,7 +32,8 @@ INCLUDE_DIRECTORIES(
     ${ICUB_INCLUDE_DIRS}
     ${YARP_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}    	
-    ${IPP_INCLUDE_DIRS}	 
+    ${IPP_INCLUDE_DIRS}
+    ${GtkPlus_INCLUDE_DIRS}
 )
 
 
@@ -53,6 +54,7 @@ IF (folder_source)
       ${YARP_LIBRARIES}
       ${IPP_LIBRARIES}
       ${GTKPLUS_LINK_FLAGS}
+      ${GtkPlus_LIBRARIES}
     )	
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
