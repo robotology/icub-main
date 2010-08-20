@@ -368,8 +368,6 @@ GtkWidget* createSaveSingleDialog(void) {
 
 GtkWidget* createSaveSetDialog(void) {
     GtkWidget *dialog = NULL;
-    GtkWidget *saveButton;
-    GtkWidget *stopButton;
     GtkWidget *hbox;
     dialog = gtk_dialog_new ();
     gtk_window_set_title(GTK_WINDOW(dialog), "Save Image Set");
@@ -523,8 +521,6 @@ GtkWidget* createMainWindow(void) {
     //creates the area as collection of port processes sequence
     box2 = gtk_vbox_new (FALSE, 0); // parameters (gboolean homogeneous_space, gint spacing);
     gtk_container_add (GTK_CONTAINER (window), box2);
-    GtkWidget *button,*button2;
-    GtkWidget *boxButton,*boxButton2;
     GtkWidget *boxButtons;
     GtkWidget *boxSliders;
     boxButtons = gtk_vbox_new (FALSE, 0); // parameters (gboolean homogeneous_space, gint spacing);
