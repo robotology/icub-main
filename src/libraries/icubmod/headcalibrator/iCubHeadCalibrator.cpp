@@ -216,7 +216,7 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
 	for (k = 6; k < nj; k++) 
     {
 		//bll boards are joint 6 7 8 (9)
-		calibrateJoint(k);
+        calibrateJoint(k);
 	}
     
 	/////////////////////////////////////

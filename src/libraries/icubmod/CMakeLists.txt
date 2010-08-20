@@ -1,4 +1,4 @@
-PROJECT(iCubModules)
+#PROJECT(iCubModules)
 
 # Prepare a device library called "icubmod".
 # A test executable called "icubmoddev" will also be produced.
