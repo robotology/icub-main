@@ -69,9 +69,6 @@ bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, i
         l2cTable = new lp2CartPixel[w*h];
         if (l2cTable == 0) {
             cerr << "logPolarLibrary: can't allocate l2c lookup tables, wrong size?" << endl;
-            if (c2lTable) 
-                delete[] c2lTable;
-            c2lTable = 0;
             return false;
         }
 
@@ -704,7 +701,6 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
         costable[j] = cos (angle * (j + 0.5));
     }
 
-
     memSize = 0;
     for (rho = 0; rho < necc_; rho++) {
         //
@@ -714,7 +710,6 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
             lim = (int) (__max64f (tangaxis[rho], radialaxis[rho]) + 1.5);
 
         step = lim / precision;
-
         if (step > 1)
             step = 1;
 
@@ -766,12 +761,14 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
     }
 
     table->position = new int[memSize]; // contiguous allocation.
+    memset(table->position, -1, sizeof(int) * memSize);
+    table->iweight = 0;
+
     if (table->position == 0)
         goto L2CAllocError;
 
     for (j = 1; j < width_ * height_; j++) {
         table[j].position = table[j-1].position + partCtr[j-1];
-        memset (table[j].position, -1, sizeof (int) * partCtr[j]);
         table[j].iweight = 0;
     }
 

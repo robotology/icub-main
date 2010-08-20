@@ -103,7 +103,7 @@ bool LogPolarTransform::configure(yarp::os::ResourceFinder &rf)
    /* get the size of the X dimension */
 
    xSize                 = rf.check("xsize",
-                           Value(360),
+                           Value(320),
                            "Key value (int)").asInt();
 
    /* get the size of the Y dimension */
@@ -116,7 +116,7 @@ bool LogPolarTransform::configure(yarp::os::ResourceFinder &rf)
    /* get the overlap ratio */
 
    overlap               = rf.check("overlap",
-                           Value(0.5),
+                           Value(1.0),
                            "Key value (int)").asDouble();
 
 
@@ -322,8 +322,9 @@ bool LogPolarTransformThread::allocLookupTables(int which, int necc, int nang, i
     //
     if (which == CARTESIAN2LOGPOLAR)
         trsf.allocLookupTables(C2L, necc, nang, w, h, overlap);
-    else
+    else {
         trsf.allocLookupTables(L2C, necc, nang, w, h, overlap);
+    }
     return true;
 }
 
