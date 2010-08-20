@@ -538,23 +538,31 @@ void logpolarTransform::RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg
 
 void logpolarTransform::RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg, lp2CartPixel * Table, int cartSize)
 {
-    int i, j, k;
+    int i, j;
     int tempPixel[3];
 
-    for (j = 0; j < cartSize; j++)
-    {
-        for (k = 0; k < 3; k++)
-            tempPixel[k] = 0;
+    for (j = 0; j < cartSize; j++) {
+        tempPixel[0] = 0;
+        tempPixel[1] = 0;
+        tempPixel[2] = 0;
 
-        if (Table[j].iweight != 0)
-        {
-            for (i = 0; i < Table[j].iweight; i++)
-                for (k = 0; k < 3; k++)
-                {
-                    tempPixel[k] += lpImg[Table[j].position[i] + k];
-                }
-            for (k = 0; k < 3; k++)
-                cartImg[3 * j + k] = tempPixel[k] / Table[j].iweight;
+        if (Table[j].iweight != 0) {
+            for (i = 0; i < Table[j].iweight; i++) {
+                int *d = tempPixel;
+                unsigned char *lp = &lpImg[Table[j].position[i]];
+                *d++ += *lp++;
+                *d++ += *lp++;
+                *d++ += *lp++;
+            }
+
+            *cartImg++ = tempPixel[0] / Table[j].iweight;
+            *cartImg++ = tempPixel[1] / Table[j].iweight;
+            *cartImg++ = tempPixel[2] / Table[j].iweight;
+        }
+        else {
+            *cartImg++ = 0;
+            *cartImg++ = 0;
+            *cartImg++ = 0;
         }
     }
 }

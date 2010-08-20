@@ -9,7 +9,7 @@
  * The direction of the transform, from Cartesian to log-polar or vice versa, is specified by a flag in the configuration file.
  * The default direction is Cartesian to log-polar.
  * The parameters of the transform, i.e. the number of angles, the number of rings, and the overlap of the receptive fields are specified in the configuration file.
- * The default number of angles and rings is 252 and 152, respectively.  The default overlap is 0.5.
+ * The default number of angles and rings is 252 and 152, respectively.  The default overlap is 1.0.
  * 
  * \section lib_sec Libraries
  *
@@ -64,7 +64,7 @@
  *   specifies the number samples in the Y dimension; 
  *   required for LOGPOLAR2CARTESIAN transform direction
  *
- * - \c overlap \c 0.5     \n        
+ * - \c overlap \c 1.0     \n        
  *   specifies the relative overlap of each receptive field
  *
  * 
@@ -214,6 +214,13 @@ public:
 
     bool allocLookupTables(int which, int necc, int nang, int w, int h, double overlap);
     bool freeLookupTables();
+
+    virtual void onStop() {
+        imagePortIn->interrupt();
+        imagePortOut->interrupt();
+        imagePortIn->close();
+        imagePortOut->close();
+    }
 };
 
 enum {

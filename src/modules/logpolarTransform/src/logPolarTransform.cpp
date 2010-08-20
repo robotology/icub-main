@@ -171,8 +171,8 @@ bool LogPolarTransform::configure(yarp::os::ResourceFinder &rf)
 
 bool LogPolarTransform::interruptModule()
 {
-    imageIn.interrupt();
-    imageOut.interrupt();
+//    imageIn.interrupt();
+//    imageOut.interrupt();
     handlerPort.interrupt();
 
     return true;
@@ -181,8 +181,8 @@ bool LogPolarTransform::interruptModule()
 
 bool LogPolarTransform::close()
 {
-    imageIn.close();
-    imageOut.close();
+//    imageIn.close();
+//    imageOut.close();
     handlerPort.close();
 
     /* stop the thread */
@@ -302,7 +302,6 @@ void LogPolarTransformThread::run() {
             else {
                 ImageOf<PixelRgb> &outputImage = imagePortOut->prepare();
                 outputImage.resize(*xSizeValue,*ySizeValue);
-                outputImage.zero(); // this requires a fix into the library.
 
                 trsf.logpolarToCart(outputImage, *inputImage);
 

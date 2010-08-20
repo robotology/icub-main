@@ -61,7 +61,6 @@ int main (int argc, char *argv[])
         cerr << argv[0] << " : can't write logpolar output image" << endl;
     }
     
-    inputImg.zero();    // the mapping doesn't fill the borders.
     trsf.logpolarToCart(inputImg, lp);
 
     cout << "||| saving reconstructed image" << endl;
