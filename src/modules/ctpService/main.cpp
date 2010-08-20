@@ -1,5 +1,5 @@
 /** 
-\defgroup ctpService Constant Time Position Service
+\defgroup ctpService constantTimePositionService
  
 @ingroup icub_module 
  

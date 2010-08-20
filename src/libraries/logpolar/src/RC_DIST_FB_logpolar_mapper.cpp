@@ -45,6 +45,9 @@ bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, i
             cerr << "logpolarTransform: new size differ from previously allocated maps" << endl;
             return false;
         }
+
+        cerr << "logpolarTransform: tried a reallocation of already configured maps, not action taken" << endl;
+        return true;
     }
 
     necc_ = necc;
