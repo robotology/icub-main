@@ -450,9 +450,9 @@ void visualFilterThread::edgesExtract() {
             float b=sqrt((grhd*grhd)+(grvd*grvd));
             float c=sqrt((byhd*byhd)+(byvd*byhd));
             
-            float rgnorm = (255.0f/300.0f)*a;
-            float grnorm = (255.0f/300.0f)*b;
-            float bynorm = (255.0f/300.0f)*c;
+            float rgnorm = (255.0f/363.0f)*a;
+            float grnorm = (255.0f/363.0f)*b;
+            float bynorm = (255.0f/363.0f)*c;
             
             if (row<height_orig-2) {
                 float maxValue=floor(max(rgnorm,grnorm,bynorm));
