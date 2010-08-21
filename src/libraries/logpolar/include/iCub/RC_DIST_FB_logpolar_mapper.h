@@ -21,6 +21,9 @@
 #ifndef RC_DIST_FB_logpolar_mapper_h
 #define RC_DIST_FB_logpolar_mapper_h
 
+#include <iostream>
+#include <string.h>
+
 #include <yarp/sig/Image.h>
 
 /**
@@ -70,13 +73,21 @@ namespace iCub {
          */
         struct lp2CartPixel
         {
-            int iweight;    /**< Array containing the weight of the log polar pixel 
-                                 corresponding to the current cartesian one. */
+            int iweight;    /**< Number of pixels in the array of positions */
             int *position;  /**< Array containing the cartesian position of each log 
                                  polar pixel. \n
                                  Note that the plane information is included in this 
                                  field (i.e. the value will be \p 3*(\p y*xize+x) ).*/
         };
+
+        /**
+         * replicate borders on a logpolar image before filtering (similar in spirit to IPP or OpenCV replication).
+         * @param dest is the image with replicated borders of size w+2*maxkernelsize, h+maxkernelsize
+         * @param src is the input image
+         * @param maxkernelsize is half of the kernel size (i.e. ceil(kernel/2))
+         * @return true iff the replication is possible (images must be correctly sized and allocated)
+         */
+        bool ReplicateBorderLogpolar(yarp::sig::Image& dest, const yarp::sig::Image& src, int maxkernelsize);
 
     } // end namespace logpolar
 } // end namespace iCub
@@ -121,7 +132,7 @@ private:
     * \brief Generates the look-up table for the transformation from a cartesian image to a log polar one, both images are color images
     * @param scaleFact the ratio between the size of the smallest logpolar pixel and the cartesian ones
     * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
-    * @param padding is the input image row byte padding
+    * @param padding is the input image row byte padding (cartesian image paddind)
     * @return 0 when there are no errors
     * @return 1 in case of wrong parameters
     * @return 2 in case of allocation problems
@@ -134,11 +145,12 @@ private:
     * @param hOffset is the horizontal shift in pixels
     * @param vOffset is the vertical shift in pixels
     * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
+    * @param padding is the number of pad bytes of the input image (logpolar)
     * @return 0 when there are no errors
     * @return 1 in case of wrong parameters
     * @return 2 in case of allocation problems
     */
-    int RCbuildL2CMap (double scaleFact, int hOffset, int vOffset, int mode);
+    int RCbuildL2CMap (double scaleFact, int hOffset, int vOffset, int mode, int padding);
 
     /**
     * \brief Generates a log polar image from a cartesian one

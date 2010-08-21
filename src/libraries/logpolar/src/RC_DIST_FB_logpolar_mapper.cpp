@@ -24,17 +24,69 @@
  */
 
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
+#include <yarp/sig/IplImage.h>
 
 #include <iostream>
 #include <math.h>
 #include <string.h>
 
-//#define MODE1
-
 using namespace iCub::logpolar;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
+
+//
+bool iCub::logpolar::ReplicateBorderLogpolar(yarp::sig::Image& dest, const yarp::sig::Image& src, int maxkernelsize) {
+    //
+    if (src.width()+2*maxkernelsize != dest.width() || src.height()+maxkernelsize != dest.height()) {
+        std::cerr << "ReplicateBorderLogpolar: images aren't correctly sized for the operation" << std::endl;
+        return false;
+    }
+
+    if (src.width()%2) {
+        std::cerr << "ReplicateBorderLogpolar: image width must be an even number" << std::endl;
+        return false;
+    }
+
+    // copy of the image
+    const int pxsize = dest.getPixelSize();
+    unsigned char *d = dest.getPixelAddress (maxkernelsize, maxkernelsize);
+    unsigned char *s = src.getRawImage();
+    const int bytes = src.width() * pxsize;
+
+    for (int i = 0; i < src.height(); i++) {
+        memcpy(d, s, bytes);
+        d += dest.getRowSize();
+        s += src.getRowSize();
+    }
+
+    // memcpy of the horizontal fovea lines (rows) 
+    const int sizeBlock = src.width() / 2;
+    for(int i = 0; i < maxkernelsize; i++) {
+        memcpy(dest.getPixelAddress(sizeBlock+maxkernelsize, maxkernelsize-1-i),
+                dest.getPixelAddress(maxkernelsize, maxkernelsize+i),
+                sizeBlock * pxsize);
+        memcpy(dest.getPixelAddress(maxkernelsize, maxkernelsize-1-i),
+                dest.getPixelAddress(sizeBlock+maxkernelsize, maxkernelsize+i),
+                sizeBlock * pxsize);
+    }
+
+    // copy of the block adjacent angular positions (columns)
+    const int px = maxkernelsize * pxsize;
+    const int width = dest.width();
+
+    for (int row = 0; row < dest.height(); row++) {
+        memcpy (dest.getPixelAddress(width-maxkernelsize, row),
+                dest.getPixelAddress(maxkernelsize, row),
+                px);
+        memcpy (dest.getPixelAddress(0, row),
+                dest.getPixelAddress(width-maxkernelsize-maxkernelsize, row),
+                px);
+    }
+
+    return true;
+}
+
 
 // implementation of the ILogpolarAPI interface.
 bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, int h, double overlap) {
@@ -46,7 +98,7 @@ bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, i
             return false;
         }
 
-        cerr << "logpolarTransform: tried a reallocation of already configured maps, not action taken" << endl;
+        cerr << "logpolarTransform: tried a reallocation of already configured maps, no action taken" << endl;
         return true;
     }
 
@@ -65,7 +117,7 @@ bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, i
             return false;
         }
 
-        RCbuildC2LMap (scaleFact, ELLIPTICAL, PAD_BYTES(w*3, 8));
+        RCbuildC2LMap (scaleFact, ELLIPTICAL, PAD_BYTES(w*3, YARP_IMAGE_ALIGN));
     }
 
     if (l2cTable == 0 && (mode & L2C)) {
@@ -75,10 +127,8 @@ bool logpolarTransform::allocLookupTables(int mode, int necc, int nang, int w, i
             return false;
         }
 
-        RCbuildL2CMap (scaleFact, 0, 0, ELLIPTICAL);
+        RCbuildL2CMap (scaleFact, 0, 0, ELLIPTICAL, PAD_BYTES(nang*3, YARP_IMAGE_ALIGN));
     }
-
-    // don't recompute if the map is already allocated.
     return true;
 }
 
@@ -109,31 +159,9 @@ bool logpolarTransform::logpolarToCart(yarp::sig::ImageOf<yarp::sig::PixelRgb>& 
         return false;
     }
 
-    // adjust padding.
-    if (lp.getPadding() != 0) {
-        int i;
-        const int byte = lp.width() * sizeof(PixelRgb);
-        unsigned char *d = lp.getRawImage() + byte;
-        for (i = 1; i < lp.height(); i ++) {
-            unsigned char *s = (unsigned char *)lp.getRow(i);
-            memmove(d, s, byte);
-            d += byte;
-        }
-    }
-
     // LATER: assert whether lp & cart are effectively of the correct size.
-    RCgetCartImg (cart.getRawImage(), lp.getRawImage(), l2cTable, cart.width() * cart.height());
+    RCgetCartImg (cart.getRawImage(), lp.getRawImage(), l2cTable, cart.getPadding());
 
-    // adjust padding.
-    if (cart.getPadding() != 0) {
-        const int byte = cart.width() * sizeof(PixelRgb);
-        int i;
-        for (i = cart.height()-1; i >= 1; i--) {
-            unsigned char *d = cart.getRow(i);
-            unsigned char *s = cart.getRawImage() + i*byte;
-            memmove(d, s, byte);
-        }
-    }
     return true;
 }
 
@@ -417,7 +445,7 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode, int padding)
                                 j = 0;
                                 while ((j < mapsize) && (table->position[j] != 0)) {
                                     //
-                                    if (table->position[j] == 3 * (inty * width_ + intx)) {
+                                    if (table->position[j] == (3 * (inty * (width_ + padding) + intx))) {
                                         weight[j]++;
                                         found = true;
                                         j = mapsize;
@@ -428,7 +456,7 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode, int padding)
                                 if (!found)
                                     for (j = 0; j < mapsize; j++) {
                                         if (table->position[j] == 0) {
-                                            table->position[j] = 3 * (inty * width_ + intx);
+                                            table->position[j] = 3 * (inty * (width_ + padding) + intx);
                                             weight[j]++;
                                             break;
                                         }
@@ -464,15 +492,6 @@ int logpolarTransform::RCbuildC2LMap (double scaleFact, int mode, int padding)
         delete[] weight;    // :(
     }
 
-    // postprocessing, add padding.
-    table = c2lTable;
-    for (rho = 0; rho < necc_; rho++)
-        for (theta = 0; theta < nang_; theta++, table++)
-            for (j = 0; j < table->divisor; j++) {
-                const int x = padding * rho;
-                table->position[j] += x;
-            }
-
     // clean up temporaries.
     if (tangaxis) delete[] tangaxis;
     if (radialaxis) delete[] radialaxis;
@@ -505,7 +524,7 @@ void logpolarTransform::RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg
     unsigned char *img = lpImg;
 
     for (int i = 0; i < necc_; i++, img+=padding) {
-        for (int j = 0; j < nang_; j++, img+=3) {
+        for (int j = 0; j < nang_; j++) {
             r[0] = r[1] = r[2] = 0;
             t = 0;
 
@@ -513,55 +532,61 @@ void logpolarTransform::RCgetLpImg (unsigned char *lpImg, unsigned char *cartImg
             int *pos = Table->position;
             int *w = Table->iweight;
             for (int i = 0; i < div; i++, pos++, w++) {
+                int *d = r;
                 unsigned char *in = &cartImg[*pos];
-                r[0] += *in++ * *w;
-                r[1] += *in++ * *w;
-                r[2] += *in * *w;
+                *d++ += *in++ * *w;
+                *d++ += *in++ * *w;
+                *d += *in * *w;
                 t += *w;
             }
 
-            img[0] = (unsigned char)(r[0] / t);
-            img[1] = (unsigned char)(r[1] / t);
-            img[2] = (unsigned char)(r[2] / t);
+            *img++ = (unsigned char)(r[0] / t);
+            *img++ = (unsigned char)(r[1] / t);
+            *img++ = (unsigned char)(r[2] / t);
 
             Table++;
         }
     }
 }
 
-void logpolarTransform::RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg, lp2CartPixel * Table, int cartSize)
+void logpolarTransform::RCgetCartImg (unsigned char *cartImg, unsigned char *lpImg, lp2CartPixel * Table, int padding)
 {
-    int i, j;
+    int k, i, j;
     int tempPixel[3];
+    unsigned char *img = cartImg;
 
-    for (j = 0; j < cartSize; j++) {
-        tempPixel[0] = 0;
-        tempPixel[1] = 0;
-        tempPixel[2] = 0;
+    for (k = 0; k < height_; k++, img += padding) {
+        for (j = 0; j < width_; j++) {
+            tempPixel[0] = 0;
+            tempPixel[1] = 0;
+            tempPixel[2] = 0;
 
-        if (Table[j].iweight != 0) {
-            for (i = 0; i < Table[j].iweight; i++) {
-                int *d = tempPixel;
-                unsigned char *lp = &lpImg[Table[j].position[i]];
-                *d++ += *lp++;
-                *d++ += *lp++;
-                *d++ += *lp++;
+            if (Table->iweight != 0) {
+                for (i = 0; i < Table->iweight; i++) {
+                    int *d = tempPixel;
+                    unsigned char *lp = &lpImg[Table->position[i]];
+                    *d++ += *lp++;
+                    *d++ += *lp++;
+                    *d += *lp;
+                }
+
+                *img++ = tempPixel[0] / Table->iweight;
+                *img++ = tempPixel[1] / Table->iweight;
+                *img++ = tempPixel[2] / Table->iweight;
+            }
+            else {
+                *img++ = 0;
+                *img++ = 0;
+                *img++ = 0;
             }
 
-            *cartImg++ = tempPixel[0] / Table[j].iweight;
-            *cartImg++ = tempPixel[1] / Table[j].iweight;
-            *cartImg++ = tempPixel[2] / Table[j].iweight;
-        }
-        else {
-            *cartImg++ = 0;
-            *cartImg++ = 0;
-            *cartImg++ = 0;
+            Table++;
         }
     }
 }
 
 // inverse logpolar.
-int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset, int mode)
+int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset, int mode, int padding)
 {
     if (overlap_ <= -1.0) {
         cerr << "logpolarTransform: overlap must be greater than -1" << endl;
@@ -762,11 +787,10 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
     }
 
     table->position = new int[memSize]; // contiguous allocation.
-    memset(table->position, -1, sizeof(int) * memSize);
-    table->iweight = 0;
-
     if (table->position == 0)
         goto L2CAllocError;
+    memset(table->position, -1, sizeof(int) * memSize);
+    table->iweight = 0;
 
     for (j = 1; j < width_ * height_; j++) {
         table[j].position = table[j-1].position + partCtr[j-1];
@@ -824,21 +848,21 @@ int logpolarTransform::RCbuildL2CMap (double scaleFact, int hOffset, int vOffset
                                 found = false;
 
                                 for (j = 0; j < partCtr[(inty + vOffset) * width_ + intx + hOffset]; j++) {
-                                    if (table [(inty + vOffset) * width_ + intx + hOffset].position[j] == 3 * (rho * nang_ + theta)) {
+                                    if (table [(inty + vOffset) * width_ + intx + hOffset].position[j] == 3 * (rho * nang_ + theta) + (padding * rho)) {
                                         found = true;
                                         break;
                                     }
                                 }
 
                                 if (!found) {
-                                    table[(inty + vOffset) * width_ + intx + hOffset].position[table [(inty + vOffset) * width_ + intx + hOffset].iweight] = 3 * (rho * nang_ + theta);
+                                    table[(inty + vOffset) * width_ + intx + hOffset].position[table [(inty + vOffset) * width_ + intx + hOffset].iweight] = 3 * (rho * nang_ + theta) + (padding * rho);
                                     table[(inty + vOffset) * width_ + intx + hOffset].iweight++;
                                 }
                             }
                 }
         }
     }
-    
+
     if (tangaxis) delete[] tangaxis;
     if (radialaxis) delete[] radialaxis;
     if (focus) delete[] focus;
@@ -872,8 +896,6 @@ L2CAllocError:
 void RCreconstructColor (unsigned char *color, unsigned char *grey, int width, int height)
 {
     int x, y;
-
-#ifdef MODE1
 
     for (y = 1; y < height - 1; y += 2) //green1
         for (x = 2; x < width; x += 2)
@@ -1013,464 +1035,6 @@ void RCreconstructColor (unsigned char *color, unsigned char *grey, int width, i
     color[3 * (width - 1) + 0] = (grey[width - 2] + grey[0]) / 2;
     color[3 * (width - 1) + 1] = grey[width - 1];
     color[3 * (width - 1) + 2] = (grey[width + width - 1]);
-
-#endif
-
-#ifdef MODE2
-
-    double *luminance = (double *) malloc (width * height * sizeof (double));
-    double *Cb = (double *) malloc (width * height * sizeof (double));
-    double *Cr = (double *) malloc (width * height * sizeof (double));
-
-    double *avgRed = (double *) malloc (width * height * sizeof (double));
-    double *avgGre = (double *) malloc (width * height * sizeof (double));
-    double *avgBlu = (double *) malloc (width * height * sizeof (double));
-
-    double *avgCr = (double *) malloc (width * height * sizeof (double));
-    double *avgCg = (double *) malloc (width * height * sizeof (double));
-    double *avgCb = (double *) malloc (width * height * sizeof (double));
-    double *avgLum = (double *) malloc (width * height * sizeof (double));
-
-    for (y = 3; y < height - 3; y += 2) //red
-        for (x = 2; x < width - 3; x += 2)
-        {
-            avgBlu[y * width + x] =
-                (grey[(y) * width + x - 1] + grey[(y) * width + x + 1]) / 2.0;
-            avgRed[y * width + x] =
-                (grey[(y - 1) * width + x] + grey[(y + 1) * width + x]) / 2.0;
-            avgGre[y * width + x] =
-                (grey[y * width + x] + grey[(y - 2) * width + x] +
-                 grey[(y + 2) * width + x] + grey[y * width + x - 2] +
-                 grey[y * width + x + 2]);
-            avgGre[y * width + x] +=
-                (grey[(y - 1) * width + x - 1] +
-                 grey[(y - 1) * width + x + 1] + grey[(y + 1) * width + x -
-                                                      1] + grey[(y +
-                                                                 1) * width +
-                                                                x + 1]);
-            avgGre[y * width + x] = avgGre[y * width + x] / 9.0;
-            avgLum[y * width + x] =
-                0.2 * avgRed[y * width + x] + 0.7 * avgGre[y * width + x] +
-                0.1 * avgBlu[y * width + x];
-            avgCr[y * width + x] =
-                avgRed[y * width + x] - avgLum[y * width + x];
-            avgCg[y * width + x] =
-                avgGre[y * width + x] - avgLum[y * width + x];
-            avgCb[y * width + x] =
-                avgBlu[y * width + x] - avgLum[y * width + x];
-            luminance[y * width + x] =
-                grey[y * width + x] - avgCg[y * width + x];
-            if (luminance[y * width + x] + avgCr[y * width + x] < 256)
-                color[3 * (y * width + x) + 0] =
-                    (unsigned char) (luminance[y * width + x] +
-                                     avgCr[y * width + x]);
-            else
-                color[3 * (y * width + x) + 0] = 255;
-            color[3 * (y * width + x) + 1] =
-                (unsigned char) (luminance[y * width + x] +
-                                 avgCg[y * width + x]);
-            color[3 * (y * width + x) + 2] =
-                (unsigned char) (luminance[y * width + x] +
-                                 avgCb[y * width + x]);
-
-        }
-
-    for (y = 2; y < height - 3; y += 2) //red
-        for (x = 3; x < width - 3; x += 2)
-        {
-            avgRed[y * width + x] =
-                (grey[(y) * width + x - 1] + grey[(y) * width + x + 1]) / 2.0;
-            avgBlu[y * width + x] =
-                (grey[(y - 1) * width + x] + grey[(y + 1) * width + x]) / 2.0;
-            avgGre[y * width + x] =
-                (grey[y * width + x] + grey[(y - 2) * width + x] +
-                 grey[(y + 2) * width + x] + grey[y * width + x - 2] +
-                 grey[y * width + x + 2]);
-            avgGre[y * width + x] +=
-                (grey[(y - 1) * width + x - 1] +
-                 grey[(y - 1) * width + x + 1] + grey[(y + 1) * width + x -
-                                                      1] + grey[(y +
-                                                                 1) * width +
-                                                                x + 1]);
-            avgGre[y * width + x] = avgGre[y * width + x] / 9.0;
-            avgLum[y * width + x] =
-                0.2 * avgRed[y * width + x] + 0.7 * avgGre[y * width + x] +
-                0.1 * avgBlu[y * width + x];
-            avgCr[y * width + x] =
-                avgRed[y * width + x] - avgLum[y * width + x];
-            avgCg[y * width + x] =
-                avgGre[y * width + x] - avgLum[y * width + x];
-            avgCb[y * width + x] =
-                avgBlu[y * width + x] - avgLum[y * width + x];
-            luminance[y * width + x] =
-                grey[y * width + x] - avgCg[y * width + x];
-            if (luminance[y * width + x] + avgCr[y * width + x] < 256)
-                color[3 * (y * width + x) + 0] =
-                    (unsigned char) (luminance[y * width + x] +
-                                     avgCr[y * width + x]);
-            else
-                color[3 * (y * width + x) + 0] = 255;
-            color[3 * (y * width + x) + 1] =
-                (unsigned char) (luminance[y * width + x] +
-                                 avgCg[y * width + x]);
-            color[3 * (y * width + x) + 2] =
-                (unsigned char) (luminance[y * width + x] +
-                                 avgCb[y * width + x]);
-
-        }
-
-    for (y = 2; y < height - 3; y += 2) //red
-        for (x = 2; x < width - 3; x += 2)
-        {
-            avgBlu[y * width + x] =
-                (grey[(y - 1) * width + x - 1] +
-                 grey[(y - 1) * width + x + 1] + grey[(y + 1) * width + x -
-                                                      1] + grey[(y +
-                                                                 1) * width +
-                                                                x + 1]) / 4;
-            avgGre[y * width + x] =
-                (grey[(y - 1) * width + x] + grey[(y + 1) * width + x] +
-                 grey[y * width + x - 1] + grey[y * width + x + 1]) / 4;
-            avgRed[y * width + x] =
-                (grey[y * width + x] + grey[(y - 2) * width + x] +
-                 grey[(y + 2) * width + x] + grey[y * width + x - 2] +
-                 grey[y * width + x + 2]) / 5;
-            avgLum[y * width + x] =
-                0.2 * avgRed[y * width + x] + 0.7 * avgGre[y * width + x] +
-                0.1 * avgBlu[y * width + x];
-            avgCr[y * width + x] =
-                avgRed[y * width + x] - avgLum[y * width + x];
-            avgCg[y * width + x] =
-                avgGre[y * width + x] - avgLum[y * width + x];
-            avgCb[y * width + x] =
-                avgBlu[y * width + x] - avgLum[y * width + x];
-            luminance[y * width + x] =
-                grey[y * width + x] - avgCr[y * width + x];
-            if (luminance[y * width + x] + avgCr[y * width + x] < 256)
-                color[3 * (y * width + x) + 0] =
-                    (unsigned char) (luminance[y * width + x] +
-                                     avgCr[y * width + x]);
-            else
-                color[3 * (y * width + x) + 0] = 255;
-
-            color[3 * (y * width + x) + 1] =
-                (unsigned char) (luminance[y * width + x] +
-                                 avgCg[y * width + x]);
-            color[3 * (y * width + x) + 2] =
-                (unsigned char) (luminance[y * width + x] +
-                                 avgCb[y * width + x]);
-
-        }
-
-    for (y = 3; y < height - 4; y += 2) //blue
-        for (x = 3; x < width - 4; x += 2)
-        {
-            avgRed[y * width + x] =
-                (grey[(y - 1) * width + x - 1] +
-                 grey[(y - 1) * width + x + 1] + grey[(y + 1) * width + x -
-                                                      1] + grey[(y +
-                                                                 1) * width +
-                                                                x + 1]) / 4.0;
-            avgGre[y * width + x] =
-                (grey[(y - 1) * width + x] + grey[(y + 1) * width + x] +
-                 grey[y * width + x - 1] + grey[y * width + x + 1]) / 4.0;
-            avgBlu[y * width + x] =
-                (grey[y * width + x] + grey[(y - 2) * width + x] +
-                 grey[(y + 2) * width + x] + grey[y * width + x - 2] +
-                 grey[y * width + x + 2]) / 5.0;
-            avgLum[y * width + x] =
-                0.2 * avgRed[y * width + x] + 0.7 * avgGre[y * width + x] +
-                0.1 * avgBlu[y * width + x];
-            avgCr[y * width + x] =
-                avgRed[y * width + x] - avgLum[y * width + x];
-            avgCg[y * width + x] =
-                avgGre[y * width + x] - avgLum[y * width + x];
-            avgCb[y * width + x] =
-                avgBlu[y * width + x] - avgLum[y * width + x];
-            luminance[y * width + x] =
-                grey[y * width + x] - avgCb[y * width + x];
-            if (luminance[y * width + x] + avgCr[y * width + x] < 256)
-                color[3 * (y * width + x) + 0] =
-                    (unsigned char) (luminance[y * width + x] +
-                                     avgCr[y * width + x]);
-            else
-                color[3 * (y * width + x) + 0] = 255;
-            if (luminance[y * width + x] + avgCg[y * width + x] < 256)
-                color[3 * (y * width + x) + 1] =
-                    (unsigned char) (luminance[y * width + x] +
-                                     avgCg[y * width + x]);
-            else
-                color[3 * (y * width + x) + 1] = 255;
-            color[3 * (y * width + x) + 2] =
-                (unsigned char) (luminance[y * width + x] +
-                                 avgCb[y * width + x]);
-
-        }
-#endif
-
-#ifdef MODE3
-
-    double *red = (double *) malloc (width * height * sizeof (double));
-    double *gre = (double *) malloc (width * height * sizeof (double));
-    double *blu = (double *) malloc (width * height * sizeof (double));
-
-    for (y = 2; y < height; y += 2) //red
-        for (x = 2; x < width - 2; x += 2)
-        {
-            red[y * width + x] = grey[y * width + x];
-            blu[y * width + x] =
-                (grey[(y - 1) * width + x - 1] +
-                 grey[(y - 1) * width + x + 1] + grey[(y + 1) * width + x -
-                                                      1] + grey[(y +
-                                                                 1) * width +
-                                                                x + 1]) / 4.0;
-            gre[y * width + x] =
-                (grey[(y - 1) * width + x] + grey[(y + 1) * width + x] +
-                 grey[y * width + x - 1] + grey[y * width + x + 1]) / 4.0;
-        }
-
-    for (y = 1; y < height - 2; y += 2) //blue
-        for (x = 1; x < width; x += 2)
-        {
-            red[y * width + x] =
-                (grey[(y - 1) * width + x - 1] +
-                 grey[(y - 1) * width + x + 1] + grey[(y + 1) * width + x -
-                                                      1] + grey[(y +
-                                                                 1) * width +
-                                                                x + 1]) / 4.0;
-            blu[y * width + x] = grey[y * width + x];
-            gre[y * width + x] =
-                (grey[(y - 1) * width + x] + grey[(y + 1) * width + x] +
-                 grey[y * width + x - 1] + grey[y * width + x + 1]) / 4.0;
-        }
-
-    for (y = 1; y < height - 2; y += 2) //green1
-        for (x = 2; x < width - 2; x += 2)
-        {
-            red[y * width + x] =
-                (red[(y - 1) * width + x] + red[(y + 1) * width + x] +
-                 red[y * width + x - 1] + red[y * width + x + 1]) / 4.0;
-            gre[y * width + x] = grey[y * width + x];
-            blu[y * width + x] =
-                (blu[(y - 1) * width + x] + blu[(y + 1) * width + x] +
-                 blu[y * width + x - 1] + blu[y * width + x + 1]) / 4.0;
-        }
-
-    for (y = 2; y < height - 2; y += 2) //green2
-        for (x = 1; x < width - 2; x += 2)
-        {
-            red[y * width + x] =
-                (red[(y - 1) * width + x] + red[(y + 1) * width + x] +
-                 red[y * width + x - 1] + red[y * width + x + 1]) / 4.0;
-            gre[y * width + x] = grey[y * width + x];
-            blu[y * width + x] =
-                (blu[(y - 1) * width + x] + blu[(y + 1) * width + x] +
-                 blu[y * width + x - 1] + blu[y * width + x + 1]) / 4.0;
-        }
-
-    for (y = 1; y < height - 1; y++)
-        for (x = 2; x < width - 1; x++)
-        {
-            color[3 * (y * width + x) + 0] = red[y * width + x];
-            color[3 * (y * width + x) + 1] = gre[y * width + x];
-            color[3 * (y * width + x) + 2] = blu[y * width + x];
-        }
-#endif
-#ifdef MODE4
-
-    unsigned char G1, G2, G3, G4, G5, G6, G7, G8, G9;
-    unsigned char E1, E2, E3, E4, E5, E6, E7, E8, E9;
-    unsigned char B1, B2, B3, B4, B5, B6, B7, B8, B9;
-    double T = 1.5;
-
-    //Step1: Interpolation of Green
-
-    for (y = 1; y < height - 1; y++)
-        for (x = 1; x < width - 1; x++)
-        {
-            if ((x + y) % 2 == 0)   // interpolation on red and blue locations
-            {
-                G1 = grey[(y - 1) * width + (x - 1)];
-                G2 = grey[(y - 1) * width + (x + 0)];
-                G3 = grey[(y - 1) * width + (x + 1)];
-                G4 = grey[(y + 0) * width + (x - 1)];
-                G6 = grey[(y + 0) * width + (x + 1)];
-                G7 = grey[(y + 1) * width + (x - 1)];
-                G8 = grey[(y + 1) * width + (x + 0)];
-                G9 = grey[(y + 1) * width + (x + 1)];
-
-                if ((fabs (G4 - G6) < T) && (fabs (G2 - G8) > T))
-                {
-                    E2 = 0;
-                    E8 = 0;
-                    E4 = 1;
-                    E6 = 1;
-                }
-                else if ((fabs (G4 - G6) > T) && (fabs (G2 - G8) < T))
-                {
-                    E2 = 1;
-                    E8 = 1;
-                    E4 = 0;
-                    E6 = 0;
-                }
-                else
-                {
-                    E2 = 1;
-                    E8 = 1;
-                    E4 = 1;
-                    E6 = 1;
-                }
-
-                E1 = 1;
-                E3 = 1;
-                E7 = 1;
-                E9 = 1;
-
-                color[3 * (y * width + x) + 1] =
-                    (E2 * G2 + E4 * G4 + E6 * G6 + E8 * G8) / (E2 + E4 + E6 +
-                                                               E8);
-            }
-            else
-                color[3 * (y * width + x) + 1] = grey[y * width + x];
-
-        }
-
-    //Step2: Interpolation of Blue
-    for (y = 2; y < height - 2; y += 2) //red locations
-        for (x = 2; x < width - 2; x += 2)
-        {
-            G5 = color[3 * (y * width + x) + 1];
-            B1 = grey[(y - 1) * width + (x - 1)];
-            G1 = color[3 * ((y - 1) * width + (x - 1)) + 1];
-            B3 = grey[(y - 1) * width + (x + 1)];
-            G3 = color[3 * ((y - 1) * width + (x + 1)) + 1];
-            B7 = grey[(y + 1) * width + (x - 1)];
-            G7 = color[3 * ((y + 1) * width + (x - 1)) + 1];
-            B9 = grey[(y + 1) * width + (x + 1)];
-            G9 = color[3 * ((y + 1) * width + (x + 1)) + 1];
-            color[3 * (y * width + x) + 2] =
-                (unsigned char) (G5 *
-                                 (((float) B1 / G1) + ((float) B3 / G3) +
-                                  ((float) B7 / G7) +
-                                  ((float) B9 / G9)) / 4.0f);
-
-        }
-
-    for (y = 1; y < height - 1; y += 2) //blue locations
-        for (x = 1; x < width - 1; x += 2)
-            color[3 * (y * width + x) + 2] = grey[y * width + x];
-
-
-    for (y = 1; y < height - 1; y++)
-        for (x = 1; x < width - 1; x++)
-        {
-            if ((x + y) % 2 == 1)   // interpolation on green locations
-            {
-                G5 = color[3 * (y * width + x) + 1];
-                G2 = color[3 * ((y - 1) * width + (x + 0)) + 1];
-                B2 = color[3 * ((y - 1) * width + (x + 0)) + 2];
-                G4 = color[3 * ((y + 0) * width + (x - 1)) + 1];
-                B4 = color[3 * ((y + 0) * width + (x - 1)) + 2];
-                G6 = color[3 * ((y + 0) * width + (x + 1)) + 1];
-                B6 = color[3 * ((y + 0) * width + (x + 1)) + 2];
-                G8 = color[3 * ((y + 1) * width + (x + 0)) + 1];
-                B8 = color[3 * ((y + 1) * width + (x + 0)) + 2];
-
-                if ((x % 2 == 1) && (y % 2 == 0))
-                {
-                    E2 = 1;
-                    E8 = 1;
-                    E4 = 0;
-                    E6 = 0;
-                }
-                else
-                {
-                    E2 = 0;
-                    E8 = 0;
-                    E4 = 1;
-                    E6 = 1;
-                }
-
-                color[3 * (y * width + x) + 2] =
-                    (unsigned char) (G5 *
-                                     (E2 * ((float) B2 / G2) +
-                                      E4 * ((float) B4 / G4) +
-                                      E6 * ((float) B6 / G6) +
-                                      E8 * ((float) B8 / G8)) / (E2 + E4 +
-                                                                 E6 + E8));
-            }
-        }
-    double d;
-
-    //Step2: Interpolation of Red
-    for (y = 1; y < height - 2; y += 2) //blue locations
-        for (x = 1; x < width - 2; x += 2)
-        {
-            G5 = color[3 * (y * width + x) + 1];
-            B1 = grey[(y - 1) * width + (x - 1)];
-            G1 = color[3 * ((y - 1) * width + (x - 1)) + 1];
-            B3 = grey[(y - 1) * width + (x + 1)];
-            G3 = color[3 * ((y - 1) * width + (x + 1)) + 1];
-            B7 = grey[(y + 1) * width + (x - 1)];
-            G7 = color[3 * ((y + 1) * width + (x - 1)) + 1];
-            B9 = grey[(y + 1) * width + (x + 1)];
-            G9 = color[3 * ((y + 1) * width + (x + 1)) + 1];
-            d = (G5 *
-                 (((float) B1 / G1) + ((float) B3 / G3) + ((float) B7 / G7) +
-                  ((float) B9 / G9)) / 4.0f);
-            if (d < 256)
-                color[3 * (y * width + x) + 0] = (unsigned char) (d);
-            else
-                color[3 * (y * width + x) + 0] = 255;
-
-        }
-
-    for (y = 2; y < height - 1; y += 2) //red locations
-        for (x = 2; x < width - 1; x += 2)
-            color[3 * (y * width + x) + 0] = grey[y * width + x];
-
-    for (y = 1; y < height - 1; y++)
-        for (x = 1; x < width - 1; x++)
-        {
-            if ((x + y) % 2 == 1)   // interpolation on green locations
-            {
-                G5 = color[3 * (y * width + x) + 1];
-                G2 = color[3 * ((y - 1) * width + (x + 0)) + 1];
-                B2 = color[3 * ((y - 1) * width + (x + 0)) + 0];
-                G4 = color[3 * ((y + 0) * width + (x - 1)) + 1];
-                B4 = color[3 * ((y + 0) * width + (x - 1)) + 0];
-                G6 = color[3 * ((y + 0) * width + (x + 1)) + 1];
-                B6 = color[3 * ((y + 0) * width + (x + 1)) + 0];
-                G8 = color[3 * ((y + 1) * width + (x + 0)) + 1];
-                B8 = color[3 * ((y + 1) * width + (x + 0)) + 0];
-
-                if ((x % 2 == 0) && (y % 2 == 1))
-                {
-                    E2 = 1;
-                    E8 = 1;
-                    E4 = 0;
-                    E6 = 0;
-                }
-                else
-                {
-                    E2 = 0;
-                    E8 = 0;
-                    E4 = 1;
-                    E6 = 1;
-                }
-                d = (G5 *
-                     (E2 * ((float) B2 / G2) + E4 * ((float) B4 / G4) +
-                      E6 * ((float) B6 / G6) + E8 * ((float) B8 / G8)) / (E2 +
-                                                                          E4 +
-                                                                          E6 +
-                                                                          E8));
-                if (d < 256)
-                    color[3 * (y * width + x) + 0] = (unsigned char) (d);
-                else
-                    color[3 * (y * width + x) + 0] = 255;
-            }
-        }
-#endif
 }
 
 int RCbuildC2LMapBayer (int nEcc, int nAng, int xSize, int ySize, double overlap, double scaleFact, int mode, char *path)

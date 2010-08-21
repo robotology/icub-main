@@ -23,6 +23,7 @@
  * @brief Implementation of the visual filter thread (see visualFilterThread.h).
  */
 
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
 #include <iCub/visualFilterThread.h>
 #include <cstring>
 
@@ -281,35 +282,7 @@ void visualFilterThread::filterInputImage() {
 }
 
 ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImage, int maxSize) {
-    // copy of the image 
-    ippiCopy_8u_C3R(inputOrigImage->getRawImage(),
-                    inputOrigImage->getRowSize(),
-                    inputExtImage->getPixelAddress(maxSize,maxSize),
-                    inputExtImage->getRowSize(),
-                    originalSrcsize);
-
-    // memcpy of the horizontal fovea lines (rows) 
-    const int sizeBlock = width_orig / 2;
-    for(int i = 0; i < maxSize; i++) {
-        memcpy(inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize-1-i),
-               inputExtImage->getPixelAddress(maxSize,maxSize+i),
-               sizeBlock*sizeof(PixelRgb));
-        memcpy(inputExtImage->getPixelAddress(maxSize,maxSize-1-i),
-               inputExtImage->getPixelAddress(sizeBlock+maxSize,maxSize+i),
-               sizeBlock*sizeof(PixelRgb));
-    }
-
-    // copy of the block adjacent angular positions (columns)
-    const int px = maxSize * sizeof(PixelRgb);
-    for (int row = 0; row < height; row++) {
-        memcpy (inputExtImage->getPixelAddress(width-maxSize,row),
-                inputExtImage->getPixelAddress(maxSize,row),
-                px);
-        memcpy (inputExtImage->getPixelAddress(0,row),
-                inputExtImage->getPixelAddress(width-maxSize-maxSize,row),
-                px);
-    }
-
+    iCub::logpolar::ReplicateBorderLogpolar(*inputExtImage, *inputOrigImage, maxSize);
     return inputExtImage;
 }
 
