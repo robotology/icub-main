@@ -80,9 +80,6 @@ private:
     yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreen;             // colour opponency map (R+G-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRed;             // colour opponency map (G+R-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellow;           // colour opponency map (B+Y-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *redGreenAbs;          // colour opponency map (R+G-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *greenRedAbs;          // colour opponency map (G+R-)
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *blueYellowAbs;        // colour opponency map (B+Y-)
     yarp::sig::ImageOf<yarp::sig::PixelMono> *edges;                // edges of colour opponency maps 
 
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imagePortIn;       // input port
