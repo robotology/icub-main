@@ -272,7 +272,7 @@ void visualFilterThread::filterInputImage() {
 }
 
 ImageOf<PixelRgb>* visualFilterThread::extender(ImageOf<PixelRgb>* inputOrigImage, int maxSize) {
-    iCub::logpolar::ReplicateBorderLogpolar(*inputExtImage, *inputOrigImage, maxSize);
+    iCub::logpolar::replicateBorderLogpolar(*inputExtImage, *inputOrigImage, maxSize);
     return inputExtImage;
 }
 

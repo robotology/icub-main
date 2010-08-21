@@ -36,7 +36,28 @@ using namespace yarp::sig;
 using namespace std;
 
 //
-bool iCub::logpolar::ReplicateBorderLogpolar(yarp::sig::Image& dest, const yarp::sig::Image& src, int maxkernelsize) {
+bool iCub::logpolar::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src) {
+    //
+    if (dst.width()!=dst.height() || dst.width()>src.width() || dst.height()>src.height()) {
+        cerr << "subsampleFovea: can't perform the requested operation" << endl;
+        return false;
+    }
+
+    const int fov = dst.width();
+    const int offset = src.height()/2-fov/2;
+    const int col = src.width()/2-fov/2;
+    const int bytes = fov*sizeof(PixelRgb);
+
+    for (int i = 0; i < fov; i++) {
+        unsigned char *s = (unsigned char *)src.getRow(i+offset)+col*sizeof(PixelRgb);
+        unsigned char *d = dst.getRow(i);
+        memcpy(d, s, bytes);
+    }
+    return true;
+}
+
+//
+bool iCub::logpolar::replicateBorderLogpolar(yarp::sig::Image& dest, const yarp::sig::Image& src, int maxkernelsize) {
     //
     if (src.width()+2*maxkernelsize != dest.width() || src.height()+maxkernelsize != dest.height()) {
         std::cerr << "ReplicateBorderLogpolar: images aren't correctly sized for the operation" << std::endl;

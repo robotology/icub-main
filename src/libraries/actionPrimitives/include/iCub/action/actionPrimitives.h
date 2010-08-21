@@ -1,5 +1,5 @@
 /**
- * \defgroup ActionPrimitives ActionPrimitives
+ * \defgroup ActionPrimitives actionPrimitives
  *  
  * @ingroup icub_libraries 
  *  

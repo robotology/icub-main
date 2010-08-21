@@ -1,8 +1,31 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Giorgio Metta
+ * email: giorgio.metta@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file LogpolarInterfaces.h
+ * @brief A collection of interfaces that provide logpolar image sampling to iCub devices.
+ */
+
 /**
  * \defgroup icub_icubDev iCubDev
- * @ingroup icub_libraries
+ * \ingroup icub_libraries
  *
  * A library that collects device interfaces. This is similar to the 
  * libYARP_dev in YARP. To be populated.
@@ -14,11 +37,6 @@
 
 #ifndef __LOGPOLARINTERFACES__
 #define __LOGPOLARINTERFACES__
-
-/**
- * \defgroup icub_logpolargrabber ILogpolarFrameGrabberImage
- * @ingroup icub_icubDev
- */
 
 /* dev drivers */
 #include <yarp/dev/FrameGrabberInterfaces.h>
@@ -37,9 +55,10 @@ namespace yarp{
 #define VOCAB_FOVEA VOCAB3('f','o','v')
 #define VOCAB_OVERLAP VOCAB3('o','v','l')
 
-/*
- * @ingroup icub_icubDev
- * Logpolar frame grabber interfaces (specialized for the logpolar images).
+/**
+ * \ingroup icub_icubDev
+ *
+ * A logpolar grabber interface; it behaves like the standard grabber but with specialization for logpolar images.
  */
 class yarp::dev::ILogpolarFrameGrabberImage {
 public:

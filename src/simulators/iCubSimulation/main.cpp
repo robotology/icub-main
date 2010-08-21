@@ -130,7 +130,8 @@
 #include <yarp/sig/ImageDraw.h>
 #include <yarp/os/Os.h>
 
-#include "iCub/RC_DIST_FB_logpolar_mapper.h"
+// wouldn't be better to have this in conditional compilation?
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -144,6 +145,7 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
+using namespace iCub::logpolar;
 
 #include "iCub_Sim.h"
 
@@ -213,11 +215,12 @@ public:
     }
     
     string moduleName;
-    cart2LpPixel * c2ltable;
+    logpolarTransform trsf;
     bool firstpass;
 
     ImageOf<PixelRgb> buffer;
 
+    // wrapper to logpolarTransform, taking into account initialization
     bool cartToLogPolar(ImageOf<PixelRgb> &lp, const ImageOf<PixelRgb> &cart);
     bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
 
@@ -1278,7 +1281,6 @@ bool SimulatorModule::open() {
     // the main image buffer.
     buffer.resize( w, h);
 
-    c2ltable = NULL;
     firstpass = true;
 
     return true;
@@ -1438,63 +1440,22 @@ void SimulatorModule::sendImageLog(BufferedPort<ImageOf<PixelRgb> >& portLog) {
 
 
 bool SimulatorModule::cartToLogPolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelRgb>& cart) {
-    
-    static float scaleFactor;
-    static char   path[] = "./";
-    
-    if (firstpass){
-
-        if(c2ltable==NULL)
-            c2ltable = new cart2LpPixel[ lp.width()*lp.height() ];
-
-        scaleFactor = (float) RCcomputeScaleFactor ( lp.height(), lp.width(), cart.width(), cart.height(), 1.0 );
-        RCbuildC2LMap( lp.height(), lp.width(), cart.width(), cart.height(), 1.0, scaleFactor, ELLIPTICAL, path);
-        RCallocateC2LTable( c2ltable, lp.height(), lp.width(), 0, path );
+    //  
+    if (firstpass) {
+        if (!trsf.allocated())
+            trsf.allocLookupTables(C2L, lp.height(), lp.width(), cart.width(), cart.height(), 1.);
 
         firstpass = false;
     }
 
-    // adjust padding.
-    if (cart.getPadding() != 0) {
-        const int byte = cart.width() * sizeof(PixelRgb);
-        unsigned char *d = (unsigned char *)cart.getRawImage() + byte;
-        int i;
-        for (i = 1; i < cart.height(); i++) {
-            unsigned char *s = (unsigned char *)cart.getRow(i);
-            memmove(d, s, byte);
-            d += byte; 
-        }
-    }
-    
-    RCgetLpImg (lp.getRawImage(), (unsigned char *) cart.getRawImage(), c2ltable, lp.width() * lp.height() , false);   
-    
-    // adjust padding.
-    if (lp.getPadding() != 0) {
-        const int byte = lp.width() * sizeof( PixelRgb );
-        int i;
-        for (i = lp.height()-1; i >= 1; i--) {
-            unsigned char *d = lp.getRow(i);
-            unsigned char *s = lp.getRawImage() + i*byte;
-            memmove( d, s, byte );
-        }
-    }
-    return true;
+    return trsf.cartToLogpolar(lp, cart);
 }
 
 bool SimulatorModule::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
                                           const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src) {
+    //
     dst.resize (ifovea, ifovea);
-    const int fov = dst.width();
-    const int offset = baseHeight/2-fov/2;
-    const int col = baseWidth/2-fov/2;
-    const int bytes = fov*sizeof(PixelRgb);
-    int i;
-    for (i = 0; i < fov; i++) {
-        unsigned char *s = (unsigned char *)src.getRow(i+offset)+col*sizeof(PixelRgb);
-        unsigned char *d = dst.getRow(i);
-        memcpy(d, s, bytes);
-    }
-    return true;
+    return iCub::logpolar::subsampleFovea(dst, src);
 }
 
 class MyNetwork

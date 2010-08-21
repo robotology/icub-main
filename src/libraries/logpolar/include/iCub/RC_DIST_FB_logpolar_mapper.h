@@ -87,8 +87,15 @@ namespace iCub {
          * @param maxkernelsize is half of the kernel size (i.e. ceil(kernel/2))
          * @return true iff the replication is possible (images must be correctly sized and allocated)
          */
-        bool ReplicateBorderLogpolar(yarp::sig::Image& dest, const yarp::sig::Image& src, int maxkernelsize);
+        bool replicateBorderLogpolar(yarp::sig::Image& dest, const yarp::sig::Image& src, int maxkernelsize);
 
+        /**
+         * make an image of the fovea starting from the original cartesian image.
+         * @param dest is the foveal image (the size of the fovea is given by the destination image size
+         * @param src is the input image
+         * @return true iff the image sizes are compatible with the operation requested
+         */
+        bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
     } // end namespace logpolar
 } // end namespace iCub
 
