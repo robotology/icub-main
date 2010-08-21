@@ -15,6 +15,11 @@
 #ifndef __LOGPOLARINTERFACES__
 #define __LOGPOLARINTERFACES__
 
+/**
+ * \defgroup icub_logpolargrabber ILogpolarFrameGrabberImage
+ * @ingroup icub_icubDev
+ */
+
 /* dev drivers */
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/dev/ServerFrameGrabber.h>

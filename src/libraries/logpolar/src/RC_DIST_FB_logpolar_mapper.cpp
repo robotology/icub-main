@@ -513,6 +513,7 @@ C2LAllocError:
     if (nextRad) delete[] nextRad;
     if (sintable) delete[] sintable;
     if (costable) delete[] costable;
+    cerr << "logpolarTransform: memory allocation issue, no tables generated" << endl;
     return 2;
 }
 
@@ -884,6 +885,7 @@ L2CAllocError:
     if (sintable) delete[] sintable;
     if (costable) delete[] costable;
     if (partCtr) delete [] partCtr;
+    cerr << "logpolarTransform: memory allocation issue, no tables generated" << endl;
     return 2;
 }
 
