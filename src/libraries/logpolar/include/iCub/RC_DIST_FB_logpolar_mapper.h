@@ -18,6 +18,30 @@
  *
  */
 
+/**
+ * \defgroup logpolarLibrary logpolar
+ *  
+ * @ingroup icub_libraries 
+ *  
+ * A complete (more or less) logpolar sampling library. Somewhat inspired by
+ * the LIRA-Lab Giotto sensor, this library creates an optimized logpolar
+ * mapping and provides functionality to manipulate logpolar images.
+ *
+ * \author Giorgio Metta starting from code by Fabio Berton. 
+ *  
+ * Copyright (C) 2010 RobotCub Consortium
+ *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+ *
+ * \section intro_sec Description
+ *
+ * This library, put simply, takes images in cartesian format (regular)
+ * as from native cameras and transform them in logpolar format. The mapping 
+ * is implemented (bidirectionally) via lookup tables.
+ *  
+ * Examples modules can be found in \ref icub_logpolarTransform.
+ */ 
+
 #ifndef RC_DIST_FB_logpolar_mapper_h
 #define RC_DIST_FB_logpolar_mapper_h
 
@@ -27,12 +51,16 @@
 #include <yarp/sig/Image.h>
 
 /**
- * \file rc_dist_fb_logpolar_mapper.h \brief The Log Polar library contains all the needed functions
- * for both the color reconstruction starting from a Bayer pattern image and 
- * the trasformations between cartesian and log polar images.
+ * \file RC_DIST_FB_logpolar_mapper.h \brief The Log Polar library contains the functions
+ * for tranforming between cartesian and log polar images.
  */
 
 namespace iCub {
+    /**
+    * \ingroup logpolarLibrary
+    * \namespace logpolar
+    * The logpolar library namespace and some utility functions. 
+    */
     namespace logpolar {
         class logpolarTransform;
 
@@ -100,8 +128,10 @@ namespace iCub {
 } // end namespace iCub
 
 
-/** 
- * a simple collection of logpolar mapping functions, methods, tables, etc.
+/**
+ * \ingroup logpolarLibrary
+ *
+ * The logpolarTransform class; a simple collection of logpolar mapping functions, methods, tables, etc.
  */
 class iCub::logpolar::logpolarTransform {
 private:
@@ -298,50 +328,6 @@ public:
      */
     int mode(void) const { return mode_; }
 };
-
-//
-// leftovers beyond this point.
-// LATER: remove
-//
-
-    /**
-    * \brief Reconstructs the color information from a Bayer pattern image. 
-    * @param color is a pointer to a color image
-    * @param grey is a pointer to Bayer pattern image
-    * @param width is the horizontal size of the image
-    * @param height is the vertical size of the image
-    */
-    //void RCreconstructColor (unsigned char *color, unsigned char *grey, int width, int height);
-
-    /**
-    * \brief Generates the look-up table for the transformation from a cartesian 
-    image to a log polar one, both images have 
-    * a Bayer Pattern structure
-    * @param nEcc is number of rings
-    * @param nAng is the number of pixels per ring 
-    * @param xSize is the width of the cartesian image
-    * @param ySize is the height of the cartesian image
-    * @param overlap is the overlap amount between receptive fields.
-    * \arg \b 0 All the RF's are tangent each other. 
-    * \arg \b -1 All their sizes are 1 pixel
-    * \arg \b 1 The edges of the RF's pass through the centers of neighboring RF's
-    * Allowed values: float numbers between -1 and +infinity
-    * @param scaleFact the ratio between the size of the smallest logpolar pixel 
-    and the cartesian ones
-    * @param mode is one of the following : RADIAL, TANGENTIAL or ELLIPTICAL
-    * @param path is the path where the table will be stored
-    * @return 0 when there are no errors
-    * @return 1 in case of wrong parameters
-    * @return 2 in case of allocation problems
-    * @return 3 in case of file problems
-    */
-    //int RCbuildC2LMapBayer (int nEcc,
-    //                        int nAng,
-	//				        int xSize,
-	//				        int ySize,
-    //                        double overlap, double scaleFact, int mode,
-    //                       char *path);
-
 
 #endif
 
