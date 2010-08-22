@@ -259,7 +259,7 @@ bool LogPolarTransformThread::threadInit()
     // the logpolar mapping has always depth 3 (RGB) but we need to copy the input image in case it's monochrome.
     const int depth = 3; 
  
-    cout << "||| logPolarTransformThread: width = " << width << " height = " << height << endl;
+    cout << "||| logPolarTransformThread: width = " << *xSizeValue << " height = " << *ySizeValue << endl;
     cout << "||| logPolarTransformThread: angles = " << *anglesValue << " rings = " << *ringsValue << endl;
 
     /* create the input image of the correct resolution  */

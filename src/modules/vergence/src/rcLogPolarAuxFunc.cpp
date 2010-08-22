@@ -17,6 +17,8 @@
  * Public License for more details
  */
 #include <iCub/rcLogPolarAuxFunc.h>
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
+#include <math.h>
 
 bool isWithin(int v,int max, int min) {
 
@@ -89,10 +91,17 @@ Image_Data SetParam(int rho, int theta, int mode, double overlap, int xo, int yo
     par.Size_Img_Orig = xo*yo;
 
     //Computed Parameters
-    par.scale_Orig = RCcomputeScaleFactor(rho, theta, xo, yo, overlap);
-    par.scale_Remap = RCcomputeScaleFactor(rho, theta, xr, yr, overlap);
-    
-    double ang = PI/(double)theta;
+    // I'm misusing the logpolarTransform here but later the mapping (for pixels) will be
+    // accessible directly via the map class.
+    iCub::logpolar::logpolarTransform trsf;
+    trsf.allocLookupTables(iCub::logpolar::C2L, rho, theta, xo, yo, overlap);
+    par.scale_Orig = trsf.computeScaleFactor();
+    trsf.freeLookupTables();
+    trsf.allocLookupTables(iCub::logpolar::C2L, rho, theta, xr, yr, overlap);
+    par.scale_Remap = trsf.computeScaleFactor();
+    // need some serious rethinking.
+
+    double ang = iCub::logpolar::PI/(double)theta;
     double sinus = sin(ang);
     par.LogIndex = (1.0 + sinus)/(1.0 - sinus);
     par.firstRing = (1.0/(par.LogIndex - 1.0)) - (int)(1.0/(par.LogIndex - 1.0));
@@ -125,7 +134,7 @@ double getX(Image_Data par, int rho, int theta) {
     if (theta >= par.Size_Theta)
         theta %= par.Size_Theta;
     
-    angle = (2*PI*(double)theta)/(double)par.Size_Theta;
+    angle = (2*iCub::logpolar::PI*(double)theta)/(double)par.Size_Theta;
     
     x = par.scale_Orig*radius*cos(angle);
 
@@ -155,7 +164,7 @@ double getY(Image_Data par, int rho, int theta) {
     if (theta >= par.Size_Theta)
         theta %= par.Size_Theta;
 
-    angle = (2.0*PI*(double)theta)/(double)par.Size_Theta;
+    angle = (2.0*iCub::logpolar::PI*(double)theta)/(double)par.Size_Theta;
 
     y = par.scale_Orig*radius*sin(angle);
 
@@ -186,9 +195,9 @@ int getTheta(Image_Data par, double x, double y) {
 
     angle = atan2(y,x);
     if (angle < 0)
-        angle += 2*PI;
+        angle += 2*iCub::logpolar::PI;
     
-    t = (int)(angle*par.Size_Theta/(2.0*PI));
+    t = (int)(angle*par.Size_Theta/(2.0*iCub::logpolar::PI));
 
     return t;
 }
