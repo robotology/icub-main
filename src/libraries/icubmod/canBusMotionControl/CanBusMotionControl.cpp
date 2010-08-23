@@ -2154,7 +2154,7 @@ void CanBusMotionControl::handleBroadcasts()
 					if (r._bcastRecvBuffer[j].isCanRxOverrun()) printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
 					if (r._bcastRecvBuffer[j].isMainLoopOverflow()) 
 					{
-						r._bcastRecvBuffer[j].mainLoopOverflowCounter++;
+						r._bcastRecvBuffer[j]._mainLoopOverflowCounter++;
 						//printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
 					}
 					if (r._bcastRecvBuffer[j].isOverTempCh1()) printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
@@ -2359,7 +2359,7 @@ void CanBusMotionControl:: run()
 				if ( r._bcastRecvBuffer[j]._mainLoopOverflowCounter>0)
 					{
 						int addr=r._destinations[j/2];
-						printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), _networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
+						printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
 						r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
 					}
             for (j=0; j<r._njoints ;j+=2)
