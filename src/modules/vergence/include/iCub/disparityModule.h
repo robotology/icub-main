@@ -34,42 +34,42 @@ private:
     bool init_flag;
     Port cmdPort;
     
-    string moduleName, robotName, robotPortName;
-    string outputPortName; 
+    std::string moduleName, robotName, robotPortName;
+    std::string outputPortName; 
 
     //property to get encoders 
-    Property optionsHead, optionsTorso;
-    IEncoders *encHead, *encTorso;
+    yarp::os::Property optionsHead, optionsTorso;
+    yarp::dev::IEncoders *encHead, *encTorso;
 
-    PolyDriver *robotHead, *robotTorso;
+    yarp::dev::PolyDriver *robotHead, *robotTorso;
 
-    Vector fb, zl, pl, dl, ml;
+    yarp::sig::Vector fb, zl, pl, dl, ml;
 
-    Vector _q;
-    Vector _it;
-    Vector _o;
-    Vector _epx;
-    Vector _tmp;
-    Vector _tmpEl;
+    yarp::sig::Vector _q;
+    yarp::sig::Vector _it;
+    yarp::sig::Vector _o;
+    yarp::sig:: Vector _epx;
+    yarp::sig::Vector _tmp;
+    yarp::sig::Vector _tmpEl;
 
     int _nFrame;
 
     double leftMax, leftMin, rightMax, rightMin;
 
-    BufferedPort < ImageOf<PixelRgb > >    imageInLeft;  //left camera port
-    BufferedPort < ImageOf<PixelRgb > >    imageInRight; //right camera port
-    BufferedPort < ImageOf<PixelMono > >   histoOutPort; //output histogram
+    yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelRgb > >    imageInLeft;  //left camera port
+    yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelRgb > >    imageInRight; //right camera port
+    yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelMono > >   histoOutPort; //output histogram
 
     bool needLeft, needRight;
     int imgNumb;
     float ratio;
     FILE *fout;
 
-    ImageOf<PixelRgb> *imgInL;
-    ImageOf<PixelRgb> *imgInR;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *imgInL;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *imgInR;
 
-    ImageOf<PixelRgb> Limg;
-    ImageOf<PixelRgb> Rimg;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> Limg;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> Rimg;
 
     /**
     * processor in charge of measuring the disparity and creating the histogram

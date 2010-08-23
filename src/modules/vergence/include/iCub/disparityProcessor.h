@@ -30,13 +30,6 @@
 #include <iCub/iKin/iKinFwd.h>
 #include <yarp/math/Math.h>
 
-using namespace std;
-using namespace yarp;
-using namespace yarp::sig;
-using namespace yarp::os;
-using namespace yarp::dev;
-using namespace iCub::iKin;
-
 const double F = 4;						/// camera F length.
 const double PixScaleX = 120;			/// camera mm to pixel conversion factor.
 const double PixScaleY = 98;			/// same along the y coord.
@@ -52,34 +45,34 @@ const int CenterFoveaY = 128/2;
 const double _maxVerg = 50 * M_PI/180;
 const double _minVerg = 0 * M_PI/180;
 
-class disparityProcessor : public RateThread {
+class disparityProcessor : public yarp::os::RateThread {
 private:
 
-    BufferedPort < ImageOf<PixelRgb > > imageInLeft;  //left camera port
-    BufferedPort < ImageOf<PixelRgb > >  imageInRight; //right camera port
-    BufferedPort < ImageOf<PixelMono > >  histoOutPort; //output histogram
-    Port cmdOutput;
-	string outputPortName; 
-    Property optionsHead, optionsTorso;
-    IEncoders *encHead, *encTorso;
+    yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelRgb > > imageInLeft;  //left camera port
+    yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelRgb > >  imageInRight; //right camera port
+    yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelMono > >  histoOutPort; //output histogram
+    yarp::os::Port cmdOutput;
+	std::string outputPortName; 
+    yarp::os::Property optionsHead, optionsTorso;
+    yarp::dev::IEncoders *encHead, *encTorso;
 	
-    PolyDriver *robotHead, *robotTorso;
+    yarp::dev::PolyDriver *robotHead, *robotTorso;
 
-    iCubEye *leftEye, *rightEye;
+    iCub::iKin::iCubEye *leftEye, *rightEye;
 	
-	iKinLink *leftLink, *rightLink;
-	iKinChain *chainRightEye,  *chainLeftEye;
+	iCub::iKin::iKinLink *leftLink, *rightLink;
+	iCub::iKin::iKinChain *chainRightEye,  *chainLeftEye;
 
-	Matrix HL, HR ;
-	Vector fb, zl, pl, dl, ml;
+	yarp::sig::Matrix HL, HR ;
+	yarp::sig::Vector fb, zl, pl, dl, ml;
 
-	Matrix _Ti, _Ti0, _TB0;
+	yarp::sig::Matrix _Ti, _Ti0, _TB0;
 
-	Vector _q, _it, _o, _epx, _tmp, _tmpEl;
+	yarp::sig::Vector _q, _it, _o, _epx, _tmp, _tmpEl;
 
-	Vector _leftJoints, _rightJoints, _joints;
+	yarp::sig::Vector _leftJoints, _rightJoints, _joints;
 
-	Vector _fixationPoint, _fixationPolar;
+	yarp::sig::Vector _fixationPoint, _fixationPolar;
 	
 	int _nFrame;
 
@@ -88,16 +81,16 @@ private:
    	bool needLeft, needRight;
 	float ratio;
 
-    ImageOf<PixelRgb> Limg;
-    ImageOf<PixelRgb> Rimg;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> Limg;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> Rimg;
 
 	DisparityTool Disp;
 
 	shift_Struct maxes[4];
 
-    string moduleName, robotName; 
-    Vector tempV, tmpPos;
-    Vector _head, _torso;
+    std::string moduleName, robotName; 
+    yarp::sig::Vector tempV, tmpPos;
+    yarp::sig::Vector _head, _torso;
     bool dispInit;
     
 
@@ -119,6 +112,8 @@ public:
     *	releases the thread
     */
     void threadRelease();
+    void onStop();
+
     /**
     * function that computes the ray vector passing from x,y coordinates in image plane
     */
@@ -153,11 +148,11 @@ public:
         return true;
     }
 
-    ImageOf<PixelRgb> *imgInL; //reference to the left log polar image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *imgInL; //reference to the left log polar image
 
-    ImageOf<PixelRgb> *imgInR; //reference to the right log polar image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *imgInR; //reference to the right log polar image
 
-    ImageOf<PixelMono> histo; //image where the histogram is provided
+    yarp::sig::ImageOf<yarp::sig::PixelMono> histo; //image where the histogram is provided
 
     double angle;//angle displacement for zero disparity
 

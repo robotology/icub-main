@@ -18,6 +18,12 @@
  */
 #include <iCub/disparityProcessor.h>
 
+using namespace std;
+using namespace yarp;
+using namespace yarp::sig;
+using namespace yarp::os;
+using namespace yarp::dev;
+using namespace iCub::iKin;
 using namespace yarp::math;
 const int THREAD_RATE = 100;
 
@@ -152,15 +158,29 @@ bool disparityProcessor::threadInit(){
 }
 
 void disparityProcessor::threadRelease(){
-	
 	histoOutPort.close();
 	imageInLeft.close();
 	imageInRight.close();
     cmdOutput.close();
+    cout << "HEREEEEEEEEEE" << endl; 
     delete leftEye;
     delete rightEye;   
 	delete robotHead;
 	delete robotTorso;
+}
+
+void disparityProcessor::onStop() 
+{
+    histoOutPort.close();
+	imageInLeft.close();
+	imageInRight.close();
+    cmdOutput.close();
+    cout << "HEREEEEEEEEEE" << endl; 
+    delete leftEye;
+    delete rightEye;   
+	delete robotHead;
+	delete robotTorso;
+    
 }
 
 void disparityProcessor::run(){	
