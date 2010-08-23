@@ -213,184 +213,203 @@ std::string selectiveAttentionProcessor::getName(const char* p){
 /**
 * active loop of the thread
 */
-void selectiveAttentionProcessor::run(){
-
-
-        //synchronisation with the input image occuring
-        if(!interrupted){
+void selectiveAttentionProcessor::run() {
+    //synchronisation with the input image occuring
+    if(!interrupted) {
+        //--------read value from the preattentive level
+        if(feedbackPort.getOutputCount()) {
+            Bottle in,out;
+            out.clear();
+            out.addString("get");
+            out.addString("ktd");
+            feedbackPort.write(out,in);
+            name=in.pop().asString();
+            salienceTD=in.pop().asDouble();
+            out.clear();
+            in.clear();
             
-            //--------read value from the preattentive level
-            if(feedbackPort.getOutputCount()){
-                Bottle in,out;
-                out.clear();
-                out.addString("get");
-                out.addString("ktd");
-                feedbackPort.write(out,in);
-                name=in.pop().asString();
-                salienceTD=in.pop().asDouble();
-                out.clear();
-                in.clear();
-                
-                out.addString("get");
-                out.addString("kbu");
-                feedbackPort.write(out,in);
-                name=in.pop().asString();
-                salienceBU=in.pop().asDouble();
-                out.clear();
-                in.clear();
-                
-                out.addString("get");
-                out.addString("rin");
-                feedbackPort.write(out,in);
-                name=in.pop().asString();
-                targetRED=in.pop().asInt();
-                out.clear();
-                in.clear();
-                
-                out.addString("get");
-                out.addString("gin");
-                feedbackPort.write(out,in);
-                name=in.pop().asString();
-                targetGREEN=in.pop().asInt();
-                out.clear();
-                in.clear();
-                
-                out.addString("get");
-                out.addString("bin");
-                feedbackPort.write(out,in);
-                name=in.pop().asString();
-                targetBLUE=in.pop().asDouble();
-                out.clear();
-                in.clear();
-            }
-
-            //
-
-            //-------------read input maps
-            //if(map1Port.getInputCount()){
-            //    tmp=map1Port.read(false);
-            //}
-            //if(inImagePort.getInputCount()){
-                
-            tmp2=inImagePort.read(false);
+            out.addString("get");
+            out.addString("kbu");
+            feedbackPort.write(out,in);
+            name=in.pop().asString();
+            salienceBU=in.pop().asDouble();
+            out.clear();
+            in.clear();
             
-            if(tmp2==0){
-                return;
-            }
+            out.addString("get");
+            out.addString("rin");
+            feedbackPort.write(out,in);
+            name=in.pop().asString();
+            targetRED=in.pop().asInt();
+            out.clear();
+            in.clear();
             
-            if(!reinit_flag){
-                //srcsize.height=img->height();
-                //srcsize.width=img->width();
-                reinitialise(tmp2->width(), tmp2->height());
-                reinit_flag=true;
-                //currentProcessor=new selectiveAttentionProcessor();
-                //passes the temporary variable for the mode
-                //currentProcessor->resizeImages(tmp2->width(),tmp2->height());
-                //startselectiveAttentionProcessor();
-                //currentProcessor->setIdle(false);
-            }
+            out.addString("get");
+            out.addString("gin");
+            feedbackPort.write(out,in);
+            name=in.pop().asString();
+            targetGREEN=in.pop().asInt();
+            out.clear();
+            in.clear();
             
-            //currentProcessor->inImage=tmp2;
-            
-            if(map1Port.getInputCount()){    
-                tmp=map1Port.read(false);
-                if(tmp!=0) {
-                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),this->srcsize);
-                    idle=false;
-                }
-                
-            }
-            if(map2Port.getInputCount()){    
-                tmp=map2Port.read(false);
-                if(tmp!=0) {
-                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),this->srcsize);
-                    idle=false;
-                }
-            }
-            if(map3Port.getInputCount()){
-                tmp=map3Port.read(false);
-                if(tmp!=0) {
-                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),this->srcsize);
-                    idle=false;
-                }
-            }
-            if(map4Port.getInputCount()){
-                tmp=map4Port.read(false);
-                if(tmp!=0) {
-                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),this->srcsize);
-                    idle=false;
-                }
-            }
-            
-            if(map5Port.getInputCount()){
-                tmp=map5Port.read(false);
-                if(tmp!=0) {
-                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),this->srcsize);
-                    idle=false;
-                }
-            }
-            if(map6Port.getInputCount()){
-                tmp=map6Port.read(false);
-                if(tmp!=0) {
-                    ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),this->srcsize);
-                    idle=false;
-                }
-            }
+            out.addString("get");
+            out.addString("bin");
+            feedbackPort.write(out,in);
+            name=in.pop().asString();
+            targetBLUE=in.pop().asDouble();
+            out.clear();
+            in.clear();
+        }
 
-            //2. processing of the input images
-            int rowSize=map1_yarp->getRowSize();
-            unsigned char maxValue=0;
+        //
+        //-------------read input maps
+        //if(map1Port.getInputCount()){
+        //    tmp=map1Port.read(false);
+        //}
+        //if(inImagePort.getInputCount()){
             
-            if(!idle){
-                for(int y=0;y<height;y++){
-                    for(int x=0;x<width;x++){
-                        unsigned char value=0;
-                        if(map1_yarp!=0)
-                            value+=(unsigned char)map1_yarp->getRawImage()[x+y*rowSize]*k1;
-                        if(map2_yarp!=0)
-                            value+=(unsigned char)map2_yarp->getRawImage()[x+y*rowSize]*k2;
-                        if(map3_yarp!=0)
-                            value+=(unsigned char)map3_yarp->getRawImage()[x+y*rowSize]*k3;
-                        if(map4_yarp!=0)
-                            value+=(unsigned char)map4_yarp->getRawImage()[x+y*rowSize]*k4;
-                        if(map5_yarp!=0)
-                            value+=(unsigned char)map5_yarp->getRawImage()[x+y*rowSize]*k5;
-                        if(map6_yarp!=0)
-                            value+=(unsigned char)map6_yarp->getRawImage()[x+y*rowSize]*k6;
-                        if((map1_yarp==0)&&(map2_yarp==0)&&(map3_yarp==0)&&(map4_yarp==0)&&(map5_yarp==0)&&(map6_yarp==0))
-                            value=0;
-                        else
-                            linearCombinationImage->getRawImage()[x+y*rowSize]=value;
-                        if(maxValue<value)
-                            maxValue=value;
-                        linearCombinationImage->getRawImage()[x+y*rowSize]=value;
-                    }
-                }
-
-                for(int y=0;y<height;y++){
-                    for(int x=0;x<width;x++){
-                        if(maxValue==0)
-                            outputImage->getRawImage()[x+y*rowSize]=0;
-                        else if((linearCombinationImage->getRawImage()[x+y*rowSize]>=maxValue-10)&&((linearCombinationImage->getRawImage()[x+y*rowSize]<=maxValue+10))){
-                            outputImage->getRawImage()[x+y*rowSize]=255;
-                        }
-                        else{    
-                            outputImage->getRawImage()[x+y*rowSize]=0;
-                        }
-                    }   
-                }
-
-                ippiCopy_8u_C1R(outputImage->getRawImage(),outputImage->getRowSize(),outputImage2->getRawImage(),outputImage2->getRowSize(), srcsize);
-                //extractContour(outputImage2,inImage,centroid_x,centroid_y);
-                //printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
-
-                //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
-                //get the colour of the inputImage starting in the centroid_x and centroid_y position
-                //unsigned char* pColour=inImage->getPixelAddress(centroid_x,centroid_y);
-                //3. sending the output on the ports
-                outPorts();
+        tmp2=inImagePort.read(false);
+        
+        if(tmp2==0) {
+            return;
+        }
+        
+        if(!reinit_flag) {
+            //srcsize.height=img->height();
+            //srcsize.width=img->width();
+            reinitialise(tmp2->width(), tmp2->height());
+            reinit_flag=true;
+            //currentProcessor=new selectiveAttentionProcessor();
+            //passes the temporary variable for the mode
+            //currentProcessor->resizeImages(tmp2->width(),tmp2->height());
+            //startselectiveAttentionProcessor();
+            //currentProcessor->setIdle(false);
+        }
+        
+        //currentProcessor->inImage=tmp2;
+        if(map1Port.getInputCount()) {
+            tmp=map1Port.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),this->srcsize);
+                idle=false;
             }
         }
+        if(map2Port.getInputCount()) {
+            tmp=map2Port.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),this->srcsize);
+                idle=false;
+            }
+        }
+        if(map3Port.getInputCount()) {
+            tmp=map3Port.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),this->srcsize);
+                idle=false;
+            }
+        }
+        if(map4Port.getInputCount()) {
+            tmp=map4Port.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),this->srcsize);
+                idle=false;
+            }
+        }
+        
+        if(map5Port.getInputCount()) {
+            tmp=map5Port.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),this->srcsize);
+                idle=false;
+            }
+        }
+        if(map6Port.getInputCount()) {
+            tmp=map6Port.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),this->srcsize);
+                idle=false;
+            }
+        }
+
+        //2. processing of the input images
+        int rowSize=map1_yarp->getRowSize();
+        unsigned char maxValue=0;
+        unsigned char* pmap1= map1_yarp->getRawImage();
+        unsigned char* pmap2= map2_yarp->getRawImage();
+        unsigned char* pmap3= map3_yarp->getRawImage();
+        unsigned char* pmap4= map4_yarp->getRawImage();
+        unsigned char* pmap5= map5_yarp->getRawImage();
+        unsigned char* pmap6= map6_yarp->getRawImage();
+        unsigned char* plinear=linearCombinationImage->getRawImage();
+        int padding=map1_yarp->getPadding();
+        float sumK=k1+k2+k3+k4+k5+k6;
+        if(!idle){
+            for(int y=0;y<height;y++) {
+                for(int x=0;x<width;x++) {
+                    unsigned char value=0;
+                    if(*pmap1!=0)
+                        value+=(unsigned char)*pmap1++ *(k1/sumK);
+                    if(*pmap2!=0)
+                        value+=(unsigned char)*pmap2++ *(k2/sumK);
+                    if(*pmap3!=0)
+                        value+=(unsigned char)*pmap3++ *(k3/sumK);
+                    if(*pmap4!=0)
+                        value+=(unsigned char)*pmap4++ *(k4/sumK);
+                    if(*pmap5!=0)
+                        value+=(unsigned char)*pmap5++ *(k5/sumK);
+                    if(*pmap6!=0)
+                        value+=(unsigned char)*pmap6++ *(k6/sumK);
+
+                    if((*pmap1==0)&&(*pmap2==0)&&(*pmap3==0)&&(*pmap4==0)&&(*pmap5==0)&&(*pmap6==0)) {
+                        value=0;
+                    }
+                    *plinear=value;
+                    if(maxValue<value) {
+                        maxValue=value;
+                    }
+                } //end x
+                pmap1+=padding;
+                pmap2+=padding;
+                pmap3+=padding;
+                pmap4+=padding;
+                pmap5+=padding;
+                pmap6+=padding;
+                plinear+=padding;
+            } //end y
+
+            if(maxValue==0) {
+                outputImage->zero();
+            }
+            else {
+                unsigned char* pout=outputImage->getRawImage();
+                unsigned char* plinear=linearCombinationImage->getRawImage();
+                for(int y=0;y<height;y++) {
+                    for(int x=0;x<width;x++) {
+                        int linearValue=(int) *plinear++;
+                        if((linearValue>=maxValue-10)&&((linearValue<=maxValue+10))) {
+                            *pout=255;
+                        }
+                        else {
+                            *pout=0;
+                        }
+                        pout++;
+                    }
+                    pout+=padding;
+                    plinear+=padding;
+                }
+            }
+
+            //ippiCopy_8u_C1R(outputImage->getRawImage(),outputImage->getRowSize(),outputImage2->getRawImage(),outputImage2->getRowSize(), srcsize);
+            //extractContour(outputImage2,inImage,centroid_x,centroid_y);
+            //printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
+
+            //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
+            //get the colour of the inputImage starting in the centroid_x and centroid_y position
+            //unsigned char* pColour=inImage->getPixelAddress(centroid_x,centroid_y);
+            //3. sending the output on the ports
+            outPorts();
+        }
+    }
 }
 
 bool selectiveAttentionProcessor::outPorts(){
