@@ -2359,7 +2359,7 @@ void CanBusMotionControl:: run()
 				if ( r._bcastRecvBuffer[j]._mainLoopOverflowCounter>0)
 					{
 						int addr=r._destinations[j/2];
-						printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
+						sprintf (message,"%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
 						r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
 					}
             for (j=0; j<r._njoints ;j+=2)
