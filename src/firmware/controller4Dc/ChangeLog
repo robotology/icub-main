@@ -117,3 +117,9 @@ In the struct canmsg_tag I have changed the CAN_data[16] in CAN_data[8]. I do no
 
 2010-17-Ago Marco Randazzo <marco.randazzo@iit.it>
 * Current build 35. Added torque/impedance control for firmware version 0x0119 (forearm pronosupination) 
+
+2010-19-Aug  Marco Randazzo <marco.randazzo@iit.it>
+* torque error is now broadcasted separetly by position error.
+* A new broadcast message, CAN_BCAST_PID_ERROR, is introduced, that contains position error and torque error.
+* CAN_BCAST_CURRENT now contains only the current information, not the pid error.
+* Current build 36.
