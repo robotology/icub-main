@@ -767,7 +767,7 @@ GtkWidget* createMainWindow(void)
     double minAdj=1;
     double stepAdj=1;
     
-    adj1 = gtk_adjustment_new(50, minAdj,maxAdj,stepAdj, 1, 1);
+    adj1 = gtk_adjustment_new(100, minAdj,maxAdj,stepAdj, 1, 1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -781,7 +781,7 @@ GtkWidget* createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
-    adj2 = gtk_adjustment_new (50, minAdj,maxAdj,stepAdj, 1, 1);
+    adj2 = gtk_adjustment_new (0, minAdj,maxAdj,stepAdj, 1, 1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
