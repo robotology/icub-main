@@ -198,6 +198,9 @@ public:
 	// msg 7
     unsigned int _canRxError;
 
+	// Main Loop Overflow Counter
+	unsigned int _mainLoopOverflowCounter;
+
 	int _address;
 
     BCastBufferElement () { zero (); }
@@ -273,6 +276,7 @@ public:
         _address=-1;
         _canTxError=0;
         _canRxError=0;
+		_mainLoopOverflowCounter=0;
     }
 };
 
@@ -2148,7 +2152,11 @@ void CanBusMotionControl::handleBroadcasts()
 					if (r._bcastRecvBuffer[j].isCanRxError()) printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
 					if (r._bcastRecvBuffer[j].isCanRxWarning()) printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
 					if (r._bcastRecvBuffer[j].isCanRxOverrun()) printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isMainLoopOverflow()) printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isMainLoopOverflow()) 
+					{
+						r._bcastRecvBuffer[j].mainLoopOverflowCounter++;
+						//printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
+					}
 					if (r._bcastRecvBuffer[j].isOverTempCh1()) printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
 					if (r._bcastRecvBuffer[j].isOverTempCh2()) printf ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
 					if (r._bcastRecvBuffer[j].isTempErrorCh1()) printf ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
@@ -2345,8 +2353,15 @@ void CanBusMotionControl:: run()
             char tmp[255];
             char message[255];
             sprintf(message, "%s [%d] printing boards errors:\n", canDevName.c_str(), r._networkN);
-            
+
             bool errorF=false;
+			for (j=0; j<r._njoints ;j++)
+				if ( r._bcastRecvBuffer[j]._mainLoopOverflowCounter>0)
+					{
+						int addr=r._destinations[j/2];
+						printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), _networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
+						r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
+					}
             for (j=0; j<r._njoints ;j+=2)
                 {
                     int addr=r._destinations[j/2];
