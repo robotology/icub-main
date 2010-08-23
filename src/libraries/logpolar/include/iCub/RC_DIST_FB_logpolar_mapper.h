@@ -327,6 +327,16 @@ public:
      * @return the value of mode (default = BOTH).
      */
     int mode(void) const { return mode_; }
+
+    /**
+     * computes the ratio between the size of the smallest logpolar pixel and the cartesian one.
+     * WARNING: this method is deprecated and maintained only for compatibility with old code.
+     * @return the scale factor.
+     */
+    double computeScaleFactor(void) {
+        return RCcomputeScaleFactor();
+    }
+
 };
 
 #endif
