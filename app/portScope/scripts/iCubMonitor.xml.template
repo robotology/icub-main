@@ -10,15 +10,15 @@
     <module>
         <name>controlBoardDumper</name>
         <tag>iCubDumperRightArmCurrents</tag>
-        <parameters>--from icubRightArm.ini</parameters>
-        <node>node1</node>
+        <parameters>--from icubRightArmErrors.ini</parameters>
+        <node>icub_svr</node>
     </module>
 
     <module>
         <name>controlBoardDumper</name>
         <tag>iCubDumperLeftArmCurrents</tag>
-        <parameters>--from icubLeftArm.ini</parameters>
-        <node>node2</node>
+        <parameters>--from icubLeftArmErrors.ini</parameters>
+        <node>icub_svr</node>
     </module>
 
     <module>
@@ -56,4 +56,17 @@
         <node>console</node>
     </module>
 
+    <module>
+        <name>portScope</name>
+        <tag>iCubScopeArmPosErrors</tag>
+        <parameters>--from armPosErrs.ini</parameters>
+        <node>console</node>
+    </module>
+
+    <module>
+        <name>portScope</name>
+        <tag>iCubScopeArmTrqErrors</tag>
+        <parameters>--from armTrqErrs.ini</parameters>
+        <node>console</node>
+    </module>
 </application>
