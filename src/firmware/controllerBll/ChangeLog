@@ -141,3 +141,9 @@
 2010-02-Aug  Marco Randazzo <marco.randazzo@iit.it>
     * receiving a calibration command (_calibrated[i]==true) is now mandatory in order to turn PWM ON
 	* Current build 44
+
+2010-19-Aug  Marco Randazzo <marco.randazzo@iit.it>
+	* torque error is now broadcasted separetly by position error.
+	* A new broadcast message, CAN_BCAST_PID_ERROR, is introduced, that contains position error and torque error.
+	* CAN_BCAST_CURRENT now contains only the current information, not the pid error.
+	* Current build 46

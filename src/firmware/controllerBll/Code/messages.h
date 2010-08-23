@@ -780,8 +780,8 @@ else \
 { \
 	PREPARE_HEADER; \
 		CAN_LEN = 3; \
-		CAN_DATA[1] = BYTE_H(_error[axis]); \
-		CAN_DATA[2] = BYTE_L(_error[axis]); \
+		CAN_DATA[1] = BYTE_H(_error_position[axis]); \
+		CAN_DATA[2] = BYTE_L(_error_position[axis]); \
 		CAN1_send ( CAN_ID, CAN_FRAME_TYPE, CAN_LEN, CAN_DATA); \
 		_general_board_error = ERROR_NONE; \
 }

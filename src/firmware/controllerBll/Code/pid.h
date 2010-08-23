@@ -123,8 +123,8 @@ extern Int32 _desired_torque[JN] ;		// PID ref value for torque control
 
 
 // POSITION PID VARIABLES
-extern Int16  _error[JN] ;				// actual feedback error 
-extern Int16  _error_old[JN] ;			// error at t-1 
+extern Int16  _error_position[JN] ;		// actual feedback error 
+extern Int16  _error_position_old[JN] ;	// error at t-1 
 extern Int16  _absolute_error[JN] ;		// actual feedback error from absolute sensors
 extern Int16  _absolute_error_old[JN] ;	// error at t-1 
 extern Int16  _pid[JN] ;				// pid result 
@@ -161,7 +161,7 @@ extern Int16  _kr_torque[JN] ;				// scale factor (negative power of two)
 extern Int16  _ks_imp[JN] ;				// stiffness coeffficient
 extern Int16  _kd_imp[JN] ;				// damping coeffficient
 extern Int16  _ko_imp[JN] ;				// offset
-extern Int16  _error_impedance[JN]; 	// position error in impedance control
+
 								
 #if VERSION == 0x0156
 // CURRENT PID

@@ -108,7 +108,7 @@ dword BYTE_C(byte x4, byte x3, byte x2, byte x1);
     
 /* clrRegBit(CANRIER, RXFIE), setRegBit(CANRIER, RXFIE) */
 
-#define CAN_SYNCHRO_STEPS 5  //
+#define CAN_SYNCHRO_STEPS 4  //@@@RANDAZ: CAN_SYNCHRO_STEP reduced from 5 to 4 because of CAN_SET_ACTIVE_PID_HANDLER() 
 #define BOARDSTATUSTIME 5000 //the time in ms between a BCAST_STATUS message and another
 
 #endif

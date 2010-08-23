@@ -84,8 +84,8 @@ Int32 _desired_torque[JN] = INIT_ARRAY (0); 	// PID ref value, computed by the t
 
 
 // POSITION PID VARIABLES
-Int16  _error[JN] = INIT_ARRAY (0);				// actual feedback error 
-Int16  _error_old[JN] = INIT_ARRAY (0);			// error at t-1 
+Int16  _error_position[JN] = INIT_ARRAY (0);	// actual feedback error 
+Int16  _error_position_old[JN] = INIT_ARRAY (0);// error at t-1 
 Int16  _absolute_error[JN] = INIT_ARRAY (0);	// actual feedback error from absolute sensors
 Int16  _absolute_error_old[JN] = INIT_ARRAY (0);// error at t-1 
 Int16  _pid[JN] = INIT_ARRAY (0);				// pid result 
@@ -120,7 +120,7 @@ Int16  _kr_torque[JN] = INIT_ARRAY (10);		// scale factor (negative power of two
 Int16  _ks_imp[JN] = INIT_ARRAY (0);			// stiffness coefficient
 Int16  _kd_imp[JN] = INIT_ARRAY (0);			// damping coefficient
 Int16  _ko_imp[JN] = INIT_ARRAY (0);			// offset
-Int16  _error_impedance[JN] = INIT_ARRAY (0);   // position error in impedance control
+
 		
 #if VERSION == 0x0156
 // CURRENT PID
@@ -362,15 +362,15 @@ Int32 compute_pwm(byte j)
 		compute_desired(j);
 		ImpInputError = L_sub(_position[j], _desired[j]);				
 		if (ImpInputError > MAX_16)
-			_error_impedance[j] = MAX_16;
+			_error_position[j] = MAX_16;
 		else
 		if (ImpInputError < MIN_16) 
-			_error_impedance[j] = MIN_16;
+			_error_position[j] = MIN_16;
 		else
 		{
-			_error_impedance[j] = extract_l(ImpInputError);
+			_error_position[j] = extract_l(ImpInputError);
 		}		
-		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(_error_impedance[j]);
+		_desired_torque[j] = -(Int32) _ks_imp[j] * (Int32)(_error_position[j]);
 		_desired_torque[j] += (Int32)_ko_imp[j];
 		_desired_torque[j] += -(Int32)_kd_imp[j] * (Int32)_speed[j];
 		PWMoutput = compute_pid_torque(j, _strain_val[j]);
@@ -441,10 +441,6 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 	{
 		_error_torque[j] = extract_l(InputError);
 	}
-
-		
-	//BEWARE: @@@ THIS ovverrides the position error with the torque error
-	_error[j]=_error_torque[j];			
 			
 	/* Proportional */
 	ProportionalPortion = ((Int32) _error_torque[j]) * ((Int32)_kp_torque[j]);
@@ -543,22 +539,22 @@ Int32 compute_pid2(byte j)
 	
 	/* the error @ previous cycle */
 	
-	_error_old[j] = _error[j];
+	_error_position_old[j] = _error_position[j];
 
 	InputError = L_sub(_desired[j], _position[j]);
 		
 	if (InputError > MAX_16)
-		_error[j] = MAX_16;
+		_error_position[j] = MAX_16;
 	else
 	if (InputError < MIN_16) 
-		_error[j] = MIN_16;
+		_error_position[j] = MIN_16;
 	else
 	{
-		_error[j] = extract_l(InputError);
+		_error_position[j] = extract_l(InputError);
 	}
 			
 	/* Proportional */
-	ProportionalPortion = ((Int32) _error[j]) * ((Int32)_kp[j]);
+	ProportionalPortion = ((Int32) _error_position[j]) * ((Int32)_kp[j]);
 	
 	if (ProportionalPortion>=0)
 	{
@@ -570,7 +566,7 @@ Int32 compute_pid2(byte j)
 	}
 	
 	/* Derivative */	
-	DerivativePortion = ((Int32) (_error[j]-_error_old[j])) * ((Int32) _kd[j]);
+	DerivativePortion = ((Int32) (_error_position[j]-_error_position_old[j])) * ((Int32) _kd[j]);
 
 	if (DerivativePortion>=0)
 	{
@@ -596,7 +592,7 @@ Int32 compute_pid2(byte j)
 	DerivativePortion=DerivativePortion/Sum_Coeff;
 		
 	/* Integral */
-	IntegralError =  ( (Int32) _error[j]) * ((Int32) _ki[j]);
+	IntegralError =  ( (Int32) _error_position[j]) * ((Int32) _ki[j]);
 
 #if VERSION == 0x0156
 

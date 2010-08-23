@@ -503,8 +503,8 @@ void broadcast_strain_debug_info(void)
 				
 		_canmsg.CAN_data[4] = BYTE_H(_pid[1]);
 		_canmsg.CAN_data[5] = BYTE_L(_pid[1]);
-		_canmsg.CAN_data[6] = BYTE_H(_error[1]);
-		_canmsg.CAN_data[7] = BYTE_L(_error[1]);
+		_canmsg.CAN_data[6] = BYTE_H(_error_torque[1]);
+		_canmsg.CAN_data[7] = BYTE_L(_error_torque[1]);
 #endif		
 		_canmsg.CAN_messID = 0x100;
 		_canmsg.CAN_messID |= (_board_ID) << 4;
@@ -780,17 +780,40 @@ void can_send_broadcast(void)
 //		_canmsg.CAN_data[6] = BYTE_2(_filt_current[0]);
 //		_canmsg.CAN_data[7] = BYTE_1(_filt_current[0]);
 
-		_canmsg.CAN_data[4] = BYTE_H(_error[0]);
-		_canmsg.CAN_data[5] = BYTE_L(_error[0]);
-		_canmsg.CAN_data[6] = BYTE_H(_error[1]);
-		_canmsg.CAN_data[7] = BYTE_L(_error[1]);
+		_canmsg.CAN_data[4] = BYTE_H(0);
+		_canmsg.CAN_data[5] = BYTE_L(0);
+		_canmsg.CAN_data[6] = BYTE_H(0);
+		_canmsg.CAN_data[7] = BYTE_L(0);
 						
 		_canmsg.CAN_length = 8;
 		_canmsg.CAN_frameType = DATA_FRAME;
 		CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);	
 	}
-	
-	if ((broadcast_mask & (1<<(CAN_BCAST_VELOCITY-1))) && _counter == 4)
+
+	if ((broadcast_mask & (1<<(CAN_BCAST_PID_ERROR-1))) && _counter == 3) //same counter of CAN_BCAST_CURRENT
+	{
+		_canmsg.CAN_messID = 0x100;
+		_canmsg.CAN_messID |= (_board_ID) << 4;
+		_canmsg.CAN_messID |= CAN_BCAST_PID_ERROR;
+ 
+		_canmsg.CAN_data[0] = BYTE_H(_error_position[0]);
+		_canmsg.CAN_data[1] = BYTE_L(_error_position[0]);
+		_canmsg.CAN_data[2] = BYTE_H(_error_position[1]);
+		_canmsg.CAN_data[3] = BYTE_L(_error_position[1]);
+
+		_canmsg.CAN_data[4] = BYTE_H(_error_torque[0]);
+		_canmsg.CAN_data[5] = BYTE_L(_error_torque[0]);
+		_canmsg.CAN_data[6] = BYTE_H(_error_torque[1]);
+		_canmsg.CAN_data[7] = BYTE_L(_error_torque[1]);
+						
+		_canmsg.CAN_length = 8;
+		_canmsg.CAN_frameType = DATA_FRAME;
+		CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);	
+	}
+		
+//  @@@RANDAZ: important: CAN_SYNCHRO_STEP has been reduced from 5 to 4 because of CAN_SET_ACTIVE_PID_HANDLER()	
+//	if ((broadcast_mask & (1<<(CAN_BCAST_VELOCITY-1))) && _counter == 4) 
+	if ((broadcast_mask & (1<<(CAN_BCAST_VELOCITY-1))) && _counter == 3)
 	{
 		_canmsg.CAN_messID = 0x100;
 		_canmsg.CAN_messID |= (_board_ID) << 4;
