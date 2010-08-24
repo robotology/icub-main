@@ -53,6 +53,8 @@
 					_desired[2] = _position[2]; \
 					_integral[1] = 0; \
 					_integral[2] = 0; \
+					_ko_imp[1] = 0; \
+					_ko_imp[2] = 0; \
 					_set_point[1] = _position[1]; \
 					_set_point[2] = _position[2]; \
 					init_trajectory (1, _position[1], _position[1], 1); \
@@ -77,7 +79,9 @@
 				{\
 				_control_mode[axis] = MODE_POSITION; \
 				_desired[axis] = _position[axis]; \
+				_desired_vel[axis] = 0; \
 				_integral[axis] = 0; \
+				_ko_imp[axis] = 0; \
 				_set_point[axis] = _position[axis]; \
 				init_trajectory (axis, _position[axis], _position[axis], 1); \
 				_general_board_error = ERROR_NONE; \
@@ -103,6 +107,7 @@
 		_control_mode[axis] = MODE_POSITION; \
 		_desired[axis] = _position[axis]; \
 		_integral[axis] = 0; \
+		_ko_imp[axis] = 0; \
 		_set_point[axis] = _position[axis]; \
 		init_trajectory (axis, _position[axis], _position[axis], 1); \
 		_general_board_error = ERROR_NONE; \
@@ -230,6 +235,7 @@
 		_desired_torque[axis]=0; \
 		_desired[axis] = _position[axis]; \
 		_integral[axis] = 0; \
+		_ko_imp[axis] = 0; \
 		_set_point[axis] = _position[axis]; \
 		init_trajectory (axis, _position[axis], _position[axis], 1); \
 	} \
