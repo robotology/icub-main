@@ -401,7 +401,6 @@ void visualFilterThread::edgesExtract() {
             j++;
         }
 
-        // padding
         pedges += pad_edges;
         j += pad_16s;
     }
