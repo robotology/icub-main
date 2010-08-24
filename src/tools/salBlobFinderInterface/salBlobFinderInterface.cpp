@@ -718,7 +718,7 @@ GtkWidget* createMainWindow(void)
     //-----main section
     GtkWidget *scrollbar;
     
-    GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb,*adjmin, *adjtime;
+    GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb,*adjmin;
     GtkWidget *hscale, *vscale;
 
 
