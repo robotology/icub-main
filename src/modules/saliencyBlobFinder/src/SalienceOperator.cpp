@@ -37,9 +37,14 @@
 SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze( YMatrix(_dh_nrf, 5, DH_left[0]), YMatrix(_dh_nrf, 5, DH_right[0]), YMatrix(4, 4, TBaseline[0]) )
 {
     resize(width1, height1);
-    integralRG = new YARPIntegralImage(width1,height1);
+    //if the integral is performed on logPolar image, shouldn't it be 3 param inititialisation ?
+    /*integralRG = new YARPIntegralImage(width1,height1);
     integralGR = new YARPIntegralImage(width1,height1);
-    integralBY = new YARPIntegralImage(width1,height1);
+    integralBY = new YARPIntegralImage(width1,height1);*/
+
+    integralRG = new YARPIntegralImage(width1,height1,128);
+    integralGR = new YARPIntegralImage(width1,height1,128);
+    integralBY = new YARPIntegralImage(width1,height1,128);
 
     foveaBlob = new ImageOf<PixelMono>;
     foveaBlob->resize(width1,height1);
@@ -416,9 +421,16 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
     if (numBlob>imageSize) 
         numBlob=imageSize;
 
+    //shouldn't this compute over LogPolar images
+    /*
     integralRG->computeCartesian(rg);
     integralGR->computeCartesian(gr);
     integralBY->computeCartesian(by);
+    */
+    integralRG->computeLp(rg);
+    integralGR->computeLp(gr);
+    integralBY->computeLp(by);
+    int salienceBU_max=0;
 
     for (int i = 1; i < numBlob; i++) {
         // The salience should not change if a blob is eliminated because it is too small
@@ -452,7 +464,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             // as the absolute distance between the colour of the blob and
             // the colour of surrondings(rectangular window)
 
-            mlp=integralRG->getMeanLp(a,b,c,d);
+            /*mlp=integralRG->getMeanLp(a,b,c,d);
             tmp=255*height*width*(int)floor(mlp);
             t=tmp-m_boxes[i].meanRG;
             t_abs=abs(t);
@@ -468,14 +480,29 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             tmp=255*height*width*(int)floor(mlp);
             t=tmp-m_boxes[i].meanBY;
             t_abs=abs(t);
-            m_boxes[i].cBY=t_abs;
+            m_boxes[i].cBY=t_abs;*/
+
+            mlp=integralRG->getMeanLp(a,b,c,d);
+            tmp=255*height*width*(int)floor(mlp);
+            t=tmp-m_boxes[i].meanRG;
+            m_boxes[i].cRG=t;
+            mlp=integralGR->getMeanLp(a,b,c,d);
+            tmp=255*height*width*(int)floor(mlp);
+            t=tmp-m_boxes[i].meanGR;
+            m_boxes[i].cGR=t;
+            mlp=integralBY->getMeanLp(a,b,c,d);
+            tmp=255*height*width*(int)floor(mlp);
+            t=tmp-m_boxes[i].meanBY;
+            m_boxes[i].cBY=t;
             
 
             /*__OLD*/
             salienceBU=sqrt((double)m_boxes[i].cRG*m_boxes[i].cRG+
                             m_boxes[i].cGR*m_boxes[i].cGR+
                             m_boxes[i].cBY*m_boxes[i].cBY);
-            salienceBU=0+salienceBU/sqrt(3.0);
+            if(salienceBU>salienceBU_max)
+                salienceBU_max=salienceBU;
+            salienceBU=255/sqrt(3.0)-salienceBU/sqrt(3.0);
 
             // CALCULATE THE TOP-DOWN SALIENCY 
             // as the euclidian distance between the colour of the blob and the colour of the target
@@ -505,6 +532,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             
         }
     }
+
+    printf("salienceBU_max %d \n", salienceBU_max);
 
     if (maxSalienceBU!=minSalienceBU) {
         a1=254./(maxSalienceBU-minSalienceBU);

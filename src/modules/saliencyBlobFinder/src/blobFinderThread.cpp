@@ -296,20 +296,20 @@ void blobFinderThread::drawAllBlobs(bool stable)
     salience->ComputeSalienceAll(max_tag, max_tag);
 
     // extracts the PixelBgr color of tag=1. Assuming this is the fovea?
-    PixelBgr varFoveaBlob = salience->varBlob(*ptr_tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, 1 /* (*ptr_tagged)(0,0) */);
+    //PixelBgr varFoveaBlob = salience->varBlob(*ptr_tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, 1 /* (*ptr_tagged)(0,0) */);
 
     // draw the fovea blob into the blobFov image? Also assuming the tag=1.
     //salience->drawFoveaBlob(*blobFov, *tagged);
     
-    memset(blobList, 0, sizeof(char)*(max_tag+1));
+    //memset(blobList, 0, sizeof(char)*(max_tag+1));
 
     // finds all pixels that have != tags from the (0,0) which is the fovea but are connected according
     // to a certain geometric neighborhood relation. Returns a list of blobtags of the connected pixels.
-    wOperator->findNeighborhood(*ptr_tagged, 0, 0, blobList);
+    //wOperator->findNeighborhood(*ptr_tagged, 0, 0, blobList);
 
     // it uses the varFoveaBlob (color) to compare similar pixels and the list of blobs searched earlier.
     // sets all pixels that are fovea-like to tag=1.
-    salience->fuseFoveaBlob3(*ptr_tagged, blobList, varFoveaBlob, max_tag);
+    //salience->fuseFoveaBlob3(*ptr_tagged, blobList, varFoveaBlob, max_tag);
 
     // Comment the following line to disable the elimination of invalid blob
     // salience->RemoveNonValidNoRange(max_tag, BLOB_MAXSIZE, BLOB_MINSIZE);
