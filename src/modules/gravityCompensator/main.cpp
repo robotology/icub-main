@@ -619,11 +619,8 @@ public:
 					if(gravity_mode == GRAVITY_COMPENSATION_ON)
 					{
 						//fprintf(stderr,"compensating gravity\n");
-						double tmp = ampli[i]*G[i]+torque_offset[i];
-						iImp->setImpedanceOffset(i,tmp);
-						double tmp2=0;
-						iImp->getImpedanceOffset(i,&tmp2);
-						fprintf(stderr,"snt %+3.3f rec %+3.3f\n",tmp,tmp2);
+						double off = ampli[i]*G[i]+torque_offset[i];
+						iImp->setImpedanceOffset(i,off);
 						//iImp->getImpedance(i,&k,&d,&o);
 						//iImp->setImpedance(i,k,d,ampli[i]*G[i]+torque_offset[i]);
 					}
