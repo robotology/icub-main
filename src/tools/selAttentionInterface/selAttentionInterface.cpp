@@ -344,6 +344,7 @@ void setSynchroMode() {
 GtkWidget* createSaveSingleDialog(void) {
 
     GtkWidget *dialog = NULL;
+    GtkWidget *hbox;
     GtkWidget *button;
     dialog = gtk_dialog_new ();
     gtk_window_set_title(GTK_WINDOW(dialog), "Save Snapshot");
