@@ -51,6 +51,8 @@ extern char    _additional_info [32];
 				_desired[1] = _position[1]; \
 				_integral[0] = 0; \
 				_integral[1] = 0; \
+				_ko_imp[0] = 0; \
+				_ko_imp[1] = 0; \
 				_set_point[0] = _position[0]; \
 				_set_point[1] = _position[1]; \
 				init_trajectory (0, _position[0], _position[0], 1); \
@@ -77,6 +79,7 @@ extern char    _additional_info [32];
 				_control_mode[axis] = MODE_POSITION; \
 				_desired[axis] = _position[axis]; \
 				_integral[axis] = 0; \
+				_ko_imp[axis] = 0; \
 				_set_point[axis] = _position[axis]; \
 				init_trajectory (axis, _position[axis], _position[axis], 1); \
 				_general_board_error = ERROR_NONE; \
@@ -227,7 +230,9 @@ extern char    _additional_info [32];
 		_general_board_error = ERROR_NONE; \
 		_desired_torque[axis]=0; \
 		_desired[axis] = _position[axis]; \
+		_desired_vel[axis] = 0; \
 		_integral[axis] = 0; \
+		_ko_imp[axis] = 0; \
 		_set_point[axis] = _position[axis]; \
 		init_trajectory (axis, _position[axis], _position[axis], 1); \
 		clear_lpf_ord1_3hz  (axis); \
