@@ -388,22 +388,34 @@ void visualFilterThread::edgesExtract() {
     const int pad_16s = (psb16s / sizeof(signed short)) - width_orig;
 
     int j = maxKernelSize*(psb16s/sizeof(signed short))+maxKernelSize;
+    redGreenH16s+=j;redGreenV16s+=j;
+    greenRedH16s+=j;greenRedV16s+=j;
+    blueYellowH16s+=j;blueYellowV16s+=j;
     // edges extraction
     for (int row = 0; row < height_orig; row++) {
         for (int col = 0; col < width_orig; col++) {
-            double rg = redGreenH16s[j]*redGreenH16s[j]+redGreenV16s[j]*redGreenV16s[j];
-            double gr = greenRedH16s[j]*greenRedH16s[j]+greenRedV16s[j]*greenRedV16s[j];
-            double by = blueYellowH16s[j]*blueYellowH16s[j]+blueYellowV16s[j]*blueYellowV16s[j];
-            if (row < height_orig - 2)
+            double rg = *redGreenH16s * *redGreenH16s+*redGreenV16s * *redGreenV16s;
+            double gr = *greenRedH16s * *greenRedH16s+*greenRedV16s * *greenRedV16s;
+            double by = *blueYellowH16s * *blueYellowH16s+*blueYellowV16s * *blueYellowV16s;
+            if (row < height_orig - 2) {
                 *pedges++ = (unsigned char)(sqrt(max<double> (rg, gr, by)) * (255.0/1448.16));
+            }
             else
                 *pedges++ = 0;
-            j++;
+            redGreenH16s++;redGreenV16s++;
+            greenRedH16s++;greenRedV16s++;
+            blueYellowH16s++;blueYellowV16s++;
         }
-
+        // padding
         pedges += pad_edges;
-        j += pad_16s;
+        redGreenH16s+=pad_16s;redGreenV16s+=pad_16s;
+        greenRedH16s+=pad_16s;greenRedV16s+=pad_16s;
+        blueYellowH16s+=pad_16s;blueYellowV16s+=pad_16s;
     }
+    int r=height*(psb16s/sizeof(signed short))+maxKernelSize;
+    redGreenH16s-=r;redGreenV16s-=r;
+    greenRedH16s-=r;greenRedV16s-=r;
+    blueYellowH16s-=r;blueYellowV16s-=r;
 }
 
 void visualFilterThread::threadRelease() {
