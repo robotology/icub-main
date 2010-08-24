@@ -64,8 +64,7 @@ private:
     float _max;
 };
 
-inline void YARPIntegralImage::get(yarp::sig::ImageOf<yarp::sig::PixelMono> &out)
-{
+inline void YARPIntegralImage::get(yarp::sig::ImageOf<yarp::sig::PixelMono> &out) {
     int r,c;
     float *src;
     unsigned char *dst;
@@ -84,8 +83,7 @@ inline void YARPIntegralImage::get(yarp::sig::ImageOf<yarp::sig::PixelMono> &out
     }
 }
 
-inline double YARPIntegralImage::getMeanLp(int maxT, int minT, int maxR, int minR)
-{
+inline double YARPIntegralImage::getMeanLp(int maxT, int minT, int maxR, int minR) {
     double tmp1, tmp2, tmp3, tmp4;
     
     if (minR < 0)
@@ -131,8 +129,7 @@ inline double YARPIntegralImage::getMeanLp(int maxT, int minT, int maxR, int min
     return (tmp4 + tmp3 + tmp1 + tmp2)/((maxR-minR+1)*(maxT-minT+1));
 }
 
-inline double YARPIntegralImage::getSaliencyLp(int maxT, int minT, int maxR, int minR)
-{
+inline double YARPIntegralImage::getSaliencyLp(int maxT, int minT, int maxR, int minR) {
     double tmp1, tmp2, tmp3, tmp4; 
     
     if (minR < 0)
@@ -178,8 +175,7 @@ inline double YARPIntegralImage::getSaliencyLp(int maxT, int minT, int maxR, int
     return (tmp4 + tmp3 + tmp1 + tmp2);
 }
 
-inline double YARPIntegralImage::getMean(int maxX, int minX, int maxY, int minY)
-{
+inline double YARPIntegralImage::getMean(int maxX, int minX, int maxY, int minY) {
     double tmp1; 
     double tmp2; 
     double tmp3; 
@@ -202,8 +198,7 @@ inline double YARPIntegralImage::getMean(int maxX, int minX, int maxY, int minY)
     return (tmp4 + tmp1 - (tmp2+tmp3))/((maxX-minX+1)*(maxY-minY+1));
 }
 
-inline double YARPIntegralImage::getSaliency(int maxX, int minX, int maxY, int minY)
-{
+inline double YARPIntegralImage::getSaliency(int maxX, int minX, int maxY, int minY) {
     double tmp1; 
     double tmp2; 
     double tmp3; 
