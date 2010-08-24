@@ -432,7 +432,10 @@ public:
             printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
         }
-        readAndUpdate(false);
+        if (readAndUpdate(false) == false)
+		{
+			printf ("wholeBodyTorqueObserver lost connection with iCubInterface.\n");
+		}
 		setZeroJntAngVelAcc();
 		setUpperMeasure();
 		setLowerMeasure();
@@ -615,8 +618,9 @@ public:
 
 		//Time::delay(2.0);
 	}
-	void readAndUpdate(bool waitMeasure=false, bool _init=false)
+	bool readAndUpdate(bool waitMeasure=false, bool _init=false)
 	{
+		bool b = true;
 		//static double t0,t1,t2,t3,t4,t5;
         //t0 = Time::now();
         //debug print        
@@ -649,19 +653,19 @@ public:
 			dw0 = eval_domega(w0);
 		}
 		
-		getUpperEncodersSpeedAndAcceleration();
+		b &= getUpperEncodersSpeedAndAcceleration();
 		setUpperMeasure(_init);
-		getLowerEncodersSpeedAndAcceleration();
+		b &= getLowerEncodersSpeedAndAcceleration();
 		setLowerMeasure(_init);
-
+		return b;
 	}
 
-	void getLowerEncodersSpeedAndAcceleration()
+	bool getLowerEncodersSpeedAndAcceleration()
 		{
-			
-			iencs_leg_left->getEncoders(encoders_leg_left.data());
-			iencs_leg_right->getEncoders(encoders_leg_right.data());
-			iencs_torso->getEncoders(encoders_torso.data());
+			bool b = true;
+			b &= iencs_leg_left->getEncoders(encoders_leg_left.data());
+			b &= iencs_leg_right->getEncoders(encoders_leg_right.data());
+			b &= iencs_torso->getEncoders(encoders_torso.data());
 
 			for (int i=0;i<q_torso.length();i++)
 			{
@@ -695,15 +699,17 @@ public:
 				dq_rleg(i) = all_dq_low(i+q_torso.length()+q_lleg.length());
 				d2q_rleg(i) = all_d2q_low(i+q_torso.length()+q_lleg.length());
 			}
+
+			return b;
 		}
 
 
-	void getUpperEncodersSpeedAndAcceleration()
+	bool getUpperEncodersSpeedAndAcceleration()
 	{
-		iencs_arm_left->getEncoders(encoders_arm_left.data());
-		iencs_arm_right->getEncoders(encoders_arm_right.data());
-		iencs_head->getEncoders(encoders_head.data());
-		
+		bool b = true;
+		b &= iencs_arm_left->getEncoders(encoders_arm_left.data());
+		b &= iencs_arm_right->getEncoders(encoders_arm_right.data());
+		b &= iencs_head->getEncoders(encoders_head.data());		
 
 		for (int i=0;i<q_head.length();i++)
 		{
@@ -738,6 +744,8 @@ public:
 			dq_rarm(i) = all_dq_up(i+q_head.length()+q_larm.length());
 			d2q_rarm(i) = all_d2q_up(i+q_head.length()+q_larm.length());
 		}
+
+		return b;
 	}
 
 	void setLowerMeasure(bool _init=false)
