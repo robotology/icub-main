@@ -35,6 +35,8 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
                            Value("yuvProc"), 
                            "module name (string)").asString();
 
+    setName(moduleName.c_str());
+
     imageType            = rf.check("image", 
                            Value("yuv"), 
                            "image type (string)").asString();
@@ -53,6 +55,7 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
         cout << getName() << ": Unable to open port " << handlerPortName << endl;  
         return false;
     }
+    
 
     attach(handlerPort);    // attach to port
 
