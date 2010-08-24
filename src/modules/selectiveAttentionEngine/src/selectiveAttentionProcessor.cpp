@@ -73,11 +73,11 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     outputImage=new ImageOf<PixelMono>;
     outputImage2=new ImageOf<PixelMono>;
     linearCombinationImage=new ImageOf<PixelMono>;
-        
+
 }
 
 selectiveAttentionProcessor::~selectiveAttentionProcessor(){
-    printf("Destructor /n");
+    printf("Destructor \n");
     delete inImage;
    // delete portImage;
     delete edges_yarp;
@@ -213,11 +213,13 @@ std::string selectiveAttentionProcessor::getName(const char* p){
 /**
 * active loop of the thread
 */
-void selectiveAttentionProcessor::run() {
+void selectiveAttentionProcessor::run(){
     //synchronisation with the input image occuring
-    if(!interrupted) {
+    if(!interrupted){
+        
         //--------read value from the preattentive level
-        if(feedbackPort.getOutputCount()) {
+        if(feedbackPort.getOutputCount()){
+            /*
             Bottle in,out;
             out.clear();
             out.addString("get");
@@ -259,22 +261,23 @@ void selectiveAttentionProcessor::run() {
             targetBLUE=in.pop().asDouble();
             out.clear();
             in.clear();
+            */
         }
 
         //
+
         //-------------read input maps
         //if(map1Port.getInputCount()){
         //    tmp=map1Port.read(false);
         //}
         //if(inImagePort.getInputCount()){
-            
         tmp2=inImagePort.read(false);
         
-        if(tmp2==0) {
+        if(tmp2==0){
             return;
         }
         
-        if(!reinit_flag) {
+        if(!reinit_flag){
             //srcsize.height=img->height();
             //srcsize.width=img->width();
             reinitialise(tmp2->width(), tmp2->height());
@@ -287,12 +290,14 @@ void selectiveAttentionProcessor::run() {
         }
         
         //currentProcessor->inImage=tmp2;
+        
         if(map1Port.getInputCount()) {
             tmp=map1Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
+            
         }
         if(map2Port.getInputCount()) {
             tmp=map2Port.read(false);
@@ -332,8 +337,6 @@ void selectiveAttentionProcessor::run() {
         }
 
         //2. processing of the input images
-        int rowSize=map1_yarp->getRowSize();
-        unsigned char maxValue=0;
         unsigned char* pmap1= map1_yarp->getRawImage();
         unsigned char* pmap2= map2_yarp->getRawImage();
         unsigned char* pmap3= map3_yarp->getRawImage();
@@ -342,32 +345,34 @@ void selectiveAttentionProcessor::run() {
         unsigned char* pmap6= map6_yarp->getRawImage();
         unsigned char* plinear=linearCombinationImage->getRawImage();
         int padding=map1_yarp->getPadding();
-        float sumK=k1+k2+k3+k4+k5+k6;
+        int rowSize=map1_yarp->getRowSize();
+        unsigned char maxValue=0;
+        double sumK=k1+k2+k3+k4+k5+k6;
         if(!idle){
-            for(int y=0;y<height;y++) {
-                for(int x=0;x<width;x++) {
+            for(int y=0;y<height;y++){
+                for(int x=0;x<width;x++){
                     unsigned char value=0;
-                    if(*pmap1!=0)
-                        value+=(unsigned char)*pmap1++ *(k1/sumK);
-                    if(*pmap2!=0)
-                        value+=(unsigned char)*pmap2++ *(k2/sumK);
-                    if(*pmap3!=0)
-                        value+=(unsigned char)*pmap3++ *(k3/sumK);
-                    if(*pmap4!=0)
-                        value+=(unsigned char)*pmap4++ *(k4/sumK);
-                    if(*pmap5!=0)
-                        value+=(unsigned char)*pmap5++ *(k5/sumK);
-                    if(*pmap6!=0)
-                        value+=(unsigned char)*pmap6++ *(k6/sumK);
-
-                    if((*pmap1==0)&&(*pmap2==0)&&(*pmap3==0)&&(*pmap4==0)&&(*pmap5==0)&&(*pmap6==0)) {
+                    if(map1_yarp!=0)
+                        value+=(unsigned char)ceil((double)(*pmap1 * (k1/sumK)));
+                    if(map2_yarp!=0)
+                        value+=(unsigned char)ceil((double)(*pmap2 * (k2/sumK)));
+                    if(map3_yarp!=0)
+                        value+=(unsigned char)ceil((double)(*pmap3 * (k3/sumK)));
+                    if(map4_yarp!=0)
+                        value+=(unsigned char)ceil((double)(*pmap4 * (k4/sumK)));
+                    if(map5_yarp!=0)
+                        value+=(unsigned char)ceil((double)(*pmap5 * (k5/sumK)));
+                    if(map6_yarp!=0)
+                        value+=(unsigned char)ceil((double)(*pmap6 * (k6/sumK)));
+                    pmap1++;pmap2++;pmap3++;
+                    pmap4++;pmap5++;pmap6++;
+                    if((map1_yarp==0)&&(map2_yarp==0)&&(map3_yarp==0)&&(map4_yarp==0)&&(map5_yarp==0)&&(map6_yarp==0))
                         value=0;
-                    }
-                    *plinear=value;
-                    if(maxValue<value) {
+                    if(maxValue<value)
                         maxValue=value;
-                    }
-                } //end x
+                    *plinear=value;
+                    plinear++;
+                }
                 pmap1+=padding;
                 pmap2+=padding;
                 pmap3+=padding;
@@ -375,7 +380,7 @@ void selectiveAttentionProcessor::run() {
                 pmap5+=padding;
                 pmap6+=padding;
                 plinear+=padding;
-            } //end y
+            }
 
             if(maxValue==0) {
                 outputImage->zero();
@@ -385,28 +390,21 @@ void selectiveAttentionProcessor::run() {
                 unsigned char* plinear=linearCombinationImage->getRawImage();
                 for(int y=0;y<height;y++) {
                     for(int x=0;x<width;x++) {
-                        int linearValue=(int) *plinear++;
-                        if((linearValue>=maxValue-10)&&((linearValue<=maxValue+10))) {
+                        if(maxValue<10)
+                            *pout=0;
+                        else if((*plinear>=maxValue-10)&&((*plinear<=maxValue+10))){
                             *pout=255;
                         }
                         else {
                             *pout=0;
                         }
+                        plinear++;
                         pout++;
                     }
                     pout+=padding;
                     plinear+=padding;
                 }
             }
-
-            //ippiCopy_8u_C1R(outputImage->getRawImage(),outputImage->getRowSize(),outputImage2->getRawImage(),outputImage2->getRowSize(), srcsize);
-            //extractContour(outputImage2,inImage,centroid_x,centroid_y);
-            //printf("centroid_x %d, centroid_y %d", centroid_x, centroid_y);
-
-            //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
-            //get the colour of the inputImage starting in the centroid_x and centroid_y position
-            //unsigned char* pColour=inImage->getPixelAddress(centroid_x,centroid_y);
-            //3. sending the output on the ports
             outPorts();
         }
     }
@@ -655,10 +653,6 @@ void selectiveAttentionProcessor::setIdle(bool value){
     idle=value;
     mutex.post();
 }
-
-
-
-
 
 
 //----- end-of-file --- ( next line intentionally left blank ) ------------------
