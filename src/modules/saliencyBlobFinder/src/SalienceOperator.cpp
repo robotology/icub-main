@@ -502,7 +502,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                             m_boxes[i].cBY*m_boxes[i].cBY);
             if(salienceBU>salienceBU_max)
                 salienceBU_max=salienceBU;
-            salienceBU=255/sqrt(3.0)-salienceBU/sqrt(3.0);
+            salienceBU=0-salienceBU/sqrt(3.0);
 
             // CALCULATE THE TOP-DOWN SALIENCY 
             // as the euclidian distance between the colour of the blob and the colour of the target
