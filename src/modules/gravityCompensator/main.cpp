@@ -882,8 +882,16 @@ public:
 		  else if (command.get(1).asString()=="zfc")
 		  {
 			 gravity_mode = GRAVITY_COMPENSATION_OFF;
-			 reply.addString("assigned gravity compensation feed-forward term");
+			 reply.addString("gravity compensation off");
 		  }
+		  else
+		  {
+			  reply.addString("unknown command. type help.");
+		  }
+		}
+	    else
+		{
+		    reply.addString("unknown command. type help.");
 		}
 		
 		return true;
