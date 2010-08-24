@@ -218,39 +218,45 @@ void YUVThread::run()
         pyuva[3]= tmp; 
         ippiCopy_8u_C4P4R( yuva_orig, psb4, pyuva, psb, srcsize );
 
+        
         //performs centre-surround uniqueness analysis on first plane
-        centerSurr->proc_im_8u( first_plane , psb );
+        centerSurr->proc_im_8u( first_plane , f_psb );
         ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), ycs_out, ycs_psb , srcsize );
 
+        ippiSet_32f_C1R( 0.0, cs_tot_32f, psb_32f, srcsize );
+
         //performs centre-surround uniqueness analysis on second plane:
-        centerSurr->proc_im_8u( second_plane , psb );
-        if ( isYUV )
+        centerSurr->proc_im_8u( second_plane , s_psb );
+        if ( isYUV ){
             ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+        }
         else
             ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), scs_out, ycs_psb , srcsize ); 
 
         //Colour process V:performs centre-surround uniqueness analysis:
-        centerSurr->proc_im_8u( third_plane , psb );
-        if ( isYUV )
+        centerSurr->proc_im_8u( third_plane , t_psb );
+
+        if ( isYUV ){
             ippiAdd_32f_C1IR( centerSurr->get_centsur_32f(), centerSurr->get_psb_32f(), cs_tot_32f, psb_32f, srcsize );
+        }
         else
             ippiCopy_8u_C1R( centerSurr->get_centsur_norm8u(), centerSurr->get_psb_8u(), vcs_out, ycs_psb , srcsize ); 
 
         if ( isYUV ){
-            //get min max
+            //get min max   
             Ipp32f valueMin,valueMax;
-            valueMin = 0.0;
-            valueMax = 0.0;
+            valueMin = 0.0f;
+            valueMax = 0.0f;
             ippiMinMax_32f_C1R( cs_tot_32f, psb_32f, srcsize, &valueMin, &valueMax );
-            //if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f; }
-            ippiScale_32f8u_C1R( cs_tot_32f,psb_32f,colcs_out,col_psb,srcsize, valueMin, valueMax );
+            if ( valueMax == valueMin ){ valueMax = 255.0f; valueMin = 0.0f;}
+            ippiScale_32f8u_C1R( cs_tot_32f, psb_32f, colcs_out, col_psb, srcsize, valueMin, valueMax );
         }
   
         //revert to yarp images
         ippiCopy_8u_C1R( ycs_out, ycs_psb, img_Y->getRawImage(), img_Y->getRowSize(), srcsize );
         
         if ( isYUV ){
-            ippiCopy_8u_C1R( colcs_out,col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
+            ippiCopy_8u_C1R( colcs_out, col_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
         }else{
             ippiCopy_8u_C1R( scs_out, ycs_psb, img_UV->getRawImage(), img_UV->getRowSize(), srcsize );
             ippiCopy_8u_C1R( vcs_out, ycs_psb, img_V->getRawImage(), img_V->getRowSize(), srcsize );
@@ -261,6 +267,7 @@ void YUVThread::run()
         unsigned char* imgUV = img_UV->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
         unsigned char* imgV;
         unsigned char* imgVo;
+
         if (!isYUV){
            imgV = img_V->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );
            imgVo = img_out_V->getRawImage();
@@ -325,9 +332,9 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
     colour  = ippiMalloc_8u_C4( srcsize.width, srcsize.height, &psb4);
 
     yuva_orig = ippiMalloc_8u_C1( srcsize.width *4, srcsize.height, &psb4);
-    first_plane    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
-    second_plane    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
-    third_plane   = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb);
+    first_plane    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &f_psb);
+    second_plane    = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &s_psb);
+    third_plane   = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &t_psb);
     
     tmp     = ippiMalloc_8u_C1( srcsize.width, srcsize.height, &psb );// to separate alpha channel
     pyuva = (Ipp8u**) malloc(4*sizeof(Ipp8u*));
@@ -339,7 +346,6 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
     vcs_out     = ippiMalloc_8u_C1( srcsize.width, srcsize.height,  &ycs_psb );
 
     ncsscale = 4;
-
     centerSurr  = new CentSur( srcsize , ncsscale );
 
     inputExtImage = new ImageOf<PixelRgb>;
@@ -348,17 +354,17 @@ void YUVThread::allocate( ImageOf<PixelRgb> *img )
 	img_Y = new ImageOf<PixelMono>;
 	img_Y->resize( srcsize.width, srcsize.height );
 
-    img_V = new ImageOf<PixelMono>;
-	img_V->resize( srcsize.width, srcsize.height );
-
-	img_UV = new ImageOf<PixelMono>;
-	img_UV->resize( srcsize.width, srcsize.height );
-
     img_out_Y = new ImageOf<PixelMono>;
 	img_out_Y->resize( origsize.width, origsize.height );
 
-	img_out_UV = new ImageOf<PixelMono>;
+    img_UV = new ImageOf<PixelMono>;
+	img_UV->resize( srcsize.width, srcsize.height );
+
+    img_out_UV = new ImageOf<PixelMono>;
 	img_out_UV->resize( origsize.width, origsize.height );
+
+    img_V = new ImageOf<PixelMono>;
+	img_V->resize( srcsize.width, srcsize.height );
 
     img_out_V = new ImageOf<PixelMono>;
 	img_out_V->resize( origsize.width, origsize.height );

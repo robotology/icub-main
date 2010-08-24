@@ -220,8 +220,8 @@ private:
     Ipp8u *scs_out;     //final extended intensity center surround image
     Ipp8u *vcs_out;     //final extended intensity center surround image
     Ipp8u *colcs_out;   //final extended coulour center surround image
-    int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f; //images rowsizes
-
+    int img_psb, psb4, psb, ycs_psb, col_psb, psb_32f, f_psb, s_psb, t_psb; //images rowsizes
+    
     /**
     * function that extendes the original image of the desired value for future convolutions (in-place operation)
     * @param origImage originalImage

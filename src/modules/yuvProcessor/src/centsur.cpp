@@ -72,6 +72,7 @@ CentSur::CentSur(IppiSize ss_,int ngs, double sigma_)
     
     pBuffer = NULL;
     pBufferGauss = NULL;
+
 }
 
 CentSur::~CentSur() {
@@ -135,10 +136,11 @@ void CentSur::proc_im_32f(Ipp32f* im_32f, int psb_in_32f_)
   
   	//norm8u:
   	//conv_32f_to_8u(cs_tot_32f,psb_32f,cs_tot_8u,psb_8u,srcsize);
-  	Ipp32f min = 0.0f;
-    Ipp32f max = 0.0f;
+  	Ipp32f min, max;
+    min = 0.0f;
+    max = 0.0f;
   	ippiMinMax_32f_C1R(cs_tot_32f, psb_32f, srcsize, &min, &max);
-  	//if (max == min){max=255.0f;min=0.0f;}
+  	if (max == min){max=255.0f;min=0.0f;}
   	ippiScale_32f8u_C1R( cs_tot_32f, psb_32f, cs_tot_8u, psb_8u, srcsize, min,max);
 }
 
