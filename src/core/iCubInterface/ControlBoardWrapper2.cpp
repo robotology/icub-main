@@ -242,14 +242,24 @@ void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
 			switch (cmd.get(2).asVocab())
 				{
                 case VOCAB_IMP_PARAM:
-					Bottle& b = *(cmd.get(4).asList());
-					double stiff = b.get(0).asDouble();
-					double damp = b.get(1).asDouble();
-					double offs = b.get(2).asDouble();
-					*ok = iImpedance->setImpedance(cmd.get(3).asInt(),stiff,damp,offs);
+					{
+						Bottle& b = *(cmd.get(4).asList());
+						double stiff = b.get(0).asDouble();
+						double damp = b.get(1).asDouble();
+						double offs = b.get(2).asDouble();
+						*ok = iImpedance->setImpedance(cmd.get(3).asInt(),stiff,damp,offs);
+						*rec=true;
+					}
+					break;
+                case VOCAB_IMP_OFFSET:
+					{
+						Bottle& b = *(cmd.get(4).asList());
+						double offs = b.get(0).asDouble();
+						*ok = iImpedance->setImpedanceOffset(cmd.get(3).asInt(),offs);
+						*rec=true;
+					}
 					break;
 				}
-            *rec=true; //or false
         }
         break;
     case VOCAB_GET:
@@ -265,15 +275,22 @@ void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
 			switch (cmd.get(2).asVocab())
 				{
                 case VOCAB_IMP_PARAM:
-                    *ok = iImpedance->getImpedance(cmd.get(3).asInt(),&stiff, &damp, &offs);
-
-					Bottle& b = response.addList();
-					b.addDouble(stiff);       
-                    b.addDouble(damp);
-					b.addDouble(offs);
-
-                    *rec=true;
-
+					{
+						*ok = iImpedance->getImpedance(cmd.get(3).asInt(),&stiff, &damp, &offs);
+						Bottle& b = response.addList();
+						b.addDouble(stiff);       
+						b.addDouble(damp);
+						b.addDouble(offs);
+						*rec=true;
+					}
+					break;
+                case VOCAB_IMP_OFFSET:
+					{
+						*ok = iImpedance->getImpedanceOffset(cmd.get(3).asInt(),&offs);
+						Bottle& b = response.addList();
+						b.addDouble(offs);
+						*rec=true;
+					}
 					break;
 				}
         }
