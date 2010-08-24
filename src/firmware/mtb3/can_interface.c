@@ -68,6 +68,7 @@ void CAN_Init()
     //Interrupt configuration CAN1;
     // RX0IE    RX1IE    TX0IE 
     // 
+    DisableIntCAN1;
     ConfigIntCAN1(0x0007, CAN_INT_PRI_2 & CAN_INT_ENABLE);   
     canTxBufferIndex=-1;
     canRxBufferIndex=0;
@@ -164,10 +165,10 @@ unsigned char CAN1_send(unsigned int MessageID,unsigned char FrameType,unsigned 
         {
             while (!CAN1IsTXReady(0));
             C1INTFbits.TX0IF=1;
-            //	C1TX0CONbits.TXREQ=1;
+          //	C1TX0CONbits.TXREQ=1;
         }
 
-        EnableIntCAN1;  
+    EnableIntCAN1;  
         return 0;
     } else
     {
@@ -203,6 +204,14 @@ void CAN1_interruptTx (void)
 
         canTxBufferIndex--;
     }
+    else 
+    {
+//    	 CAN1SendMessage((CAN_TX_SID(0x200 | _board_ID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ,
+//                      (CAN_TX_EID(0)) & CAN_NOR_TX_REQ,
+//                      buffer,
+//                        1,
+//                        buffer);
+   }
 
 }
 

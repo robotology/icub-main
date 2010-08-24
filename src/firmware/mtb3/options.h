@@ -24,7 +24,7 @@
 
 
 #define _version  0x0200
-#define _build_number  11      //changed the I2C speed
+#define _build_number  12      //changed the I2C speed
 
 
 #endif

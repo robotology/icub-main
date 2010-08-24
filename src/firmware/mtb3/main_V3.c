@@ -206,6 +206,7 @@ int main(void)
     char init;
     unsigned char i,l;
     unsigned int counter;
+    unsigned int led_counter;
     unsigned int result;
 	unsigned int mean;
     unsigned int Channel, PinConfig, Scanselect;
@@ -327,6 +328,7 @@ int main(void)
 //
 //
 //
+		led_counter=0;
     for (;;)
     {
 
@@ -336,7 +338,12 @@ int main(void)
            	i = 0;
 			result=0;
 			mean=0;
-		
+			if (led_counter==20)
+			{
+				led0=~led0;
+				led_counter=0;
+			}	
+			led_counter++;
 /// ADC conversion
 		while(i<15)
         {
