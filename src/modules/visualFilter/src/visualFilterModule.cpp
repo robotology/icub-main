@@ -115,12 +115,6 @@ bool visualFilterModule::respond(const Bottle& command, Bottle& reply)
         cout << helpMessage;
         reply.addString("ok");
     }
-    else if (command.get(0).asString()=="set") {
-        if (command.get(1).asString()=="thr") {
-            thresholdValue = command.get(2).asInt(); // set parameter value
-            reply.addString("ok");
-        }
-    }
     return true;
 }
 
