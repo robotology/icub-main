@@ -85,8 +85,6 @@
  * 
  *  -  \c help \n
  *  -  \c quit \n
- *  -  \c set \c thr \c <n>   ... set the threshold for binary segmentation of the input RGB image 
- *    (where \c <n> is an integer number)
  *
  *    Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
