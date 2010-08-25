@@ -160,11 +160,6 @@ class visualFilterModule:public yarp::os::RFModule
    std::string outputPortName;  
    std::string handlerPortName;
    std::string cameraConfigFilename;
-   float  fxLeft,  fyLeft;          // focal length
-   float  fxRight, fyRight;         // focal length
-   float  cxLeft,  cyLeft;          // coordinates of the principal point
-   float  cxRight, cyRight;         // coordinates of the principal point
-   int thresholdValue;
 
    yarp::os::Port handlerPort;      // a port to handle messages 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */
