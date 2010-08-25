@@ -392,16 +392,20 @@ void visualFilterThread::edgesExtract() {
     greenRedH16s+=j;greenRedV16s+=j;
     blueYellowH16s+=j;blueYellowV16s+=j;
     // edges extraction
+    unsigned char edgesmax=0;
     for (int row = 0; row < height_orig; row++) {
         for (int col = 0; col < width_orig; col++) {
             double rg = *redGreenH16s * *redGreenH16s+*redGreenV16s * *redGreenV16s;
             double gr = *greenRedH16s * *greenRedH16s+*greenRedV16s * *greenRedV16s;
             double by = *blueYellowH16s * *blueYellowH16s+*blueYellowV16s * *blueYellowV16s;
             if (row < height_orig - 2) {
-                *pedges++ = (unsigned char)(sqrt(max<double> (rg, gr, by)) * (255.0/1448.16));
+                *pedges = (unsigned char)(sqrt(max<double> (rg, gr, by)));// * (255.0/1448.16)); //normalised with theoric max-response 
             }
             else
-                *pedges++ = 0;
+                *pedges = 0;
+            if(*pedges>edgesmax)
+                    edgesmax=*pedges;
+            pedges++;
             redGreenH16s++;redGreenV16s++;
             greenRedH16s++;greenRedV16s++;
             blueYellowH16s++;blueYellowV16s++;
@@ -416,6 +420,17 @@ void visualFilterThread::edgesExtract() {
     redGreenH16s-=r;redGreenV16s-=r;
     greenRedH16s-=r;greenRedV16s-=r;
     blueYellowH16s-=r;blueYellowV16s-=r;
+    //normalisation
+    for (int row = 0; row < height_orig; row++) {
+        for (int col = 0; col < width_orig; col++) {
+                *pedges++=*pedges * (255/edgesmax); //normalised with actual max-response
+        }
+        if(*pedges>edgesmax)
+            edgesmax=*pedges;
+        // padding
+        pedges += pad_edges;
+    }
+    printf("edgesmax %d \n", edgesmax);
 }
 
 void visualFilterThread::threadRelease() {
