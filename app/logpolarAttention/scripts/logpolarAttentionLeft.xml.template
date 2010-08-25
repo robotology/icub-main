@@ -16,6 +16,12 @@
 		<node>/powerNode1</node>
 	</module>
 	<module>
+		<name>yuvProcessor</name>
+		<parameters>--name hsvProc/icub/left_cam --image HSV</parameters>
+		<tag>yuvProcessorLeftHSV</tag>
+		<node>/powerNode1</node>
+	</module>
+	<module>
 		<name>saliencyBlobFinder</name>
 		<parameters>--from saliencyBlobFinderLeft.ini --context logpolarAttention/conf</parameters>
 		<tag>saliencyBlobFinderLeft</tag>
@@ -35,6 +41,11 @@
         <connection>
                 <from>/icub/cam/left/logpolar</from>
 		<to>/yuvProc/icub/left_cam/image:i</to>
+		<protocol>mcast</protocol>
+	</connection>
+	<connection>
+                <from>/icub/cam/left/logpolar</from>
+		<to>/hsvProc/icub/left_cam/image:i</to>
 		<protocol>mcast</protocol>
 	</connection>
 	<connection>
@@ -73,17 +84,17 @@
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-        	<from>/visualFilter/icub/left_cam/rg:o</from>
+        	<from>/hsvProc/icub/left_cam/H/image:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map2:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-        	<from>/visualFilter/icub/left_cam/gr:o</from>
+        	<from>/hsvProc/icub/left_cam/S/image:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map3:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-        	<from>/visualFilter/icub/left_cam/by:o</from>
+        	<from>/hsvProc/icub/left_cam/V/image:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/map4:i</to>
 		<protocol>shmem</protocol>
 	</connection>
