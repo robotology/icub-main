@@ -112,6 +112,9 @@ bool disparityProcessor::threadInit(){
     string outputCommand = moduleName+"/cmd:o";
     cmdOutput.open(outputCommand.c_str());
 
+    string shiftCommand = moduleName+"/shift:o";
+    shiftOutput.open(shiftCommand.c_str());
+
     rightEye = new iCubEye("right");
     leftEye = new iCubEye("left");
 	
@@ -162,7 +165,6 @@ void disparityProcessor::threadRelease(){
 	imageInLeft.close();
 	imageInRight.close();
     cmdOutput.close();
-    cout << "HEREEEEEEEEEE" << endl; 
     delete leftEye;
     delete rightEye;   
 	delete robotHead;
@@ -175,7 +177,6 @@ void disparityProcessor::onStop()
 	imageInLeft.close();
 	imageInRight.close();
     cmdOutput.close();
-    cout << "HEREEEEEEEEEE" << endl; 
     delete leftEye;
     delete rightEye;   
 	delete robotHead;
@@ -252,6 +253,10 @@ void disparityProcessor::run(){
             disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 4);
             //disparityVal = Disp.computeMono(*imgInR, *imgInL, 4.0);
 
+            hWidth = Disp.getShiftLevels();
+            hHeight = hWidth/2;
+            histo.resize(hWidth,hHeight);
+
             cout << "disparity Val " << disparityVal  << endl;
 
             if ( histoOutPort.getOutputCount() > 0 ) { 
@@ -266,6 +271,7 @@ void disparityProcessor::run(){
 
             cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
 
+            
             if ( cmdOutput.getOutputCount() > 0 ) { 
                 Bottle in,bot;
                 bot.clear();
@@ -276,6 +282,19 @@ void disparityProcessor::run(){
                 bot.addInt(5);
                 bot.addDouble(angle);
                 cmdOutput.write(bot,in);
+                bot.clear();
+            }
+            //send shifts on shift port
+            shift_Struct test;
+            test = Disp.getMax();
+            int pixels = 0;
+            pixels = (180 - test.index) * (252/180);
+
+            if (shiftOutput.getOutputCount()>0){
+                Bottle bot;
+                bot.clear();
+                bot.addInt(pixels);
+                shiftOutput.write(bot);
                 bot.clear();
             }
         }

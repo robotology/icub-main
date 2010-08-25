@@ -52,6 +52,7 @@ private:
     yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelRgb > >  imageInRight; //right camera port
     yarp::os::BufferedPort < yarp::sig::ImageOf<yarp::sig::PixelMono > >  histoOutPort; //output histogram
     yarp::os::Port cmdOutput;
+    yarp::os::Port shiftOutput;
 	std::string outputPortName; 
     yarp::os::Property optionsHead, optionsTorso;
     yarp::dev::IEncoders *encHead, *encTorso;

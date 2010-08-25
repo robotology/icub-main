@@ -154,18 +154,19 @@ void DisparityTool::makeHistogram(ImageOf<PixelMono>& hImg) {
     for (j = 0; j < height*width; j++)
         hist[j] = bgColor;
 
+    //design the area
     for (i = 0; i < _shiftLevels-1; i++) {
     
-        if ((i+offset >=0)&&(i+offset<width)) {
+        if ((i+offset >=_shiftMin)&&(i+offset< _shiftMax)) {
 
             for (j = height-(int)(height*_corrFunct[i]); j < height; j++)
                 hist[(j*width+i+offset)] = hColor;
         }
     }
-
+    //design the maxes
     for (i = 0; i < 3; i++) {
 
-        if ((_maxShifts[i].index+offset >=0)&&(_maxShifts[i].index+offset<width)) {
+        if ((_maxShifts[i].index+offset >=_shiftMin)&&(_maxShifts[i].index+offset<_shiftMax)) {
             for (j = height-(int)(height*_corrFunct[_maxShifts[i].index]); j < height; j++)
                 hist[(j*width+_maxShifts[i].index+offset)] = lineColor;
         }
@@ -177,15 +178,6 @@ void DisparityTool::makeHistogram(ImageOf<PixelMono>& hImg) {
     	    hist[((j+k)*width + _shiftLevels/2 + offset)] = lineColor;
         }
     }
-
-	//Drawing Limits (dark gray sides)
-/*	for (int y = 0; y < height; y++)
-	{
-		for (int x1 = 0; x1 < _shiftMin; x1++)
-			hist[(y*width+x1+offset)] = 120;
-		for (int x2 = width - 1; x2 > _shiftMax; x2--)
-			hist[(y*width+x2+offset)] = 120;
-	}/***/
 
     //Partially inverted color
     for (int y = 0; y < height; y++) {
