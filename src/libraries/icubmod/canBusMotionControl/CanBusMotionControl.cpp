@@ -414,6 +414,7 @@ void CanBackDoor::onRead(Bottle &b)
 
 	static double timePrev=Time::now();
 	static int    count_timeout=0;
+	static int    count_saturation_i[6]={0,0,0,0,0,0};
 	static int    count_saturation=0;
 	double timeNow=Time::now();
 	double diff = timeNow - timePrev;
@@ -448,24 +449,33 @@ void CanBackDoor::onRead(Bottle &b)
 			return;
 		break;
 	}
-    
+
     if (bus && ownerSensor)
     {
 	   int fakeId = 0;
 	   int boardId = ownerSensor->getId();
 	   short int val[6] = {0,0,0,0,0,0};
+	   static double curr_time = Time::now();
 	   for (i=0; i<6; i++)
 	   {
 		   double fullScale = ownerSensor->getScaleFactor()[i];
 		   if (dval[i] >  fullScale) 
 		   {
-			   fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
+			   if (Time::now() - curr_time > 2)
+					{
+						fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
+						curr_time = Time::now();
+					}
 			   dval[i] =  fullScale;
 			   count_saturation++;
 		   }
 		   else if (dval[i] < -fullScale)
 		   {
-			   fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
+			   if (Time::now() - curr_time > 2)
+					{
+						fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", this->getName().c_str(), i, dval[i], count_saturation);
+						curr_time = Time::now();
+					}
 			   dval[i] = -fullScale;
 			   count_saturation++;
 		   }
