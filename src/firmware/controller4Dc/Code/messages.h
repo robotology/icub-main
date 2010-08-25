@@ -841,12 +841,12 @@
 	{ \
 		_ks_imp[axis] = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 		_kd_imp[axis] = BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
-		_ko_imp[axis] = BYTE_W(CAN_DATA[5], CAN_DATA[6]); \
 		_general_board_error = ERROR_NONE; \
 	} \
 	else \
 		_general_board_error = ERROR_FMT; \
 }
+	//_ko_imp[axis] = BYTE_W(CAN_DATA[5], CAN_DATA[6]); \ //commented out for testing
 //-------------------------------------------------------------------
 #define CAN_GET_IMPEDANCE_PARAMS_HANDLER(x) \
 { \
