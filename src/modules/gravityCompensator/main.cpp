@@ -862,37 +862,31 @@ public:
 		Bottle position_bot;
 		string helpMessage =  string(getName().c_str()) + 
 							" commands are: \n" +  
-							"help        to display this message\n" + 
-							"set gcmp     to set the gravity compensation term \n" + 
-							"set zcmp     to set the zero torque reference \n";
+							"help       to display this message\n" + 
+							"on         to set the gravity compensation term \n" + 
+							"off        to set the zero torque reference \n";
 
 		  reply.clear(); 
 		if (command.get(0).asString()=="help")
 		{
-		  cout << helpMessage;
-		  reply.addString(helpMessage.c_str());
+			cout << helpMessage;
+			reply.addString(helpMessage.c_str());
 		}
-		else if (command.get(0).asString()=="set")
+		else if (command.get(0).asString()=="on" ||
+			     command.get(0).asString()=="ON" )
 		{
-		  //int jnt = command.get(2).asInt(); 
-		  if (command.get(1).asString()=="gcmp")
-		  {
-			 gravity_mode = GRAVITY_COMPENSATION_ON;
-			 reply.addString("assigned gravity compensation feed-forward term");
-		  }
-		  else if (command.get(1).asString()=="zfc")
-		  {
-			 gravity_mode = GRAVITY_COMPENSATION_OFF;
-			 reply.addString("gravity compensation off");
-		  }
-		  else
-		  {
-			  reply.addString("unknown command. type help.");
-		  }
-		}
+			gravity_mode = GRAVITY_COMPENSATION_ON;
+			reply.addString("assigned gravity compensation feed-forward term");
+	    }
+		else if (command.get(0).asString()=="off" ||
+			     command.get(0).asString()=="OFF" )
+	    {
+			gravity_mode = GRAVITY_COMPENSATION_OFF;
+			reply.addString("gravity compensation off");
+	    }
 	    else
 		{
-		    reply.addString("unknown command. type help.");
+			reply.addString("unknown command. type help.");
 		}
 		
 		return true;
