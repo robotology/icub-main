@@ -256,6 +256,7 @@ public:
     #ifdef _INDEP_MULTI_THREADING_
         numThreads=rf.check("numThreads",Value(0)).asInt();
         cvSetNumThreads(numThreads);
+        numThreads=cvGetNumThreads();
     #endif
 
         nodesPrev=NULL;
@@ -643,6 +644,7 @@ public:
                 #ifdef _INDEP_MULTI_THREADING_
                     numThreads=req.get(2).asInt();
                     cvSetNumThreads(numThreads);
+                    numThreads=cvGetNumThreads();
                     reply.addString("ack");
                 #else
                     reply.addString("multi-threading not supported");
