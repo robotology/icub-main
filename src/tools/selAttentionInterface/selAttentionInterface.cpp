@@ -368,7 +368,6 @@ GtkWidget* createSaveSingleDialog(void) {
 
 GtkWidget* createSaveSetDialog(void) {
     GtkWidget *dialog = NULL;
-    GtkWidget *hbox;
     dialog = gtk_dialog_new ();
     gtk_window_set_title(GTK_WINDOW(dialog), "Save Image Set");
     gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
