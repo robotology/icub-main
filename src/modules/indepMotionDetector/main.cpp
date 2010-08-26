@@ -72,8 +72,8 @@ YARP libraries and OpenCV
  
 --numThreads \e threads
 - This parameter allows to control the maximum number of threads
-available. The default value is 1 but to achieve frame rate at least
-4 is required.
+  available. The default value is 0 meaning that a number of
+  threads equal to the number of available cores will be used.
  
 --verbosity 
 - Enable the dump of log messages.
@@ -142,8 +142,7 @@ Linux and Windows.
 #include <set>
 #include <deque>
 
-
-//check if OpenCV supports multi threading
+// check if OpenCV supports multi-threading
 #if CV_MAJOR_VERSION > 0
     #define _INDEP_MULTI_THREADING_
 #endif
@@ -188,14 +187,12 @@ protected:
     int adjNodesThres;
     int blobMinSizeThres;
     int framesPersistence;
+    int numThreads;
     bool verbosity;
     bool inhibition;
     int nodesNum;
     int nodesX;
     int nodesY;
-
-    int numThreads;
-    bool multiThreading;
 
     ImageOf<PixelMono>  imgMonoIn;
     ImageOf<PixelMono>  imgMonoPrev;
@@ -254,11 +251,12 @@ public:
 
         recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
 
-        //if the OpenCV version supports multithreading, set the maximum number of threads avaliable to openCV
-        #ifdef _INDEP_MULTI_THREADING_
-            numThreads = rf.check("numThreads",Value(1)).asInt();
-            numThreads > 1? cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
-        #endif
+        // if the OpenCV version supports multi-threading,
+        // set the maximum number of threads available to OpenCV
+    #ifdef _INDEP_MULTI_THREADING_
+        numThreads=rf.check("numThreads",Value(0)).asInt();
+        cvSetNumThreads(numThreads);
+    #endif
 
         nodesPrev=NULL;
         nodesCurr=NULL;
@@ -293,11 +291,11 @@ public:
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
             
-            #ifdef _INDEP_MULTI_THREADING_
-                fprintf(stdout,"numThreads        = %d\n",numThreads);
-            #else
-                fprintf(stdout,"numThreads        = OpenCV version does not support multithreading");
-            #endif
+        #ifdef _INDEP_MULTI_THREADING_
+            fprintf(stdout,"numThreads        = %d\n",numThreads);
+        #else
+            fprintf(stdout,"numThreads        = OpenCV version does not support multi-threading");
+        #endif
             
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
             fprintf(stdout,"\n");
@@ -642,13 +640,13 @@ public:
                 }
                 else if (subcmd=="numThreads")
                 {
-                    #ifdef _INDEP_MULTI_THREADING_
-                        numThreads=req.get(2).asInt();
-                        numThreads > 1?cvSetNumThreads(numThreads-1):cvSetNumThreads(numThreads);
-                        reply.addString("ack");
-                    #else
-                        reply.addString("multi threading not supported");
-                    #endif
+                #ifdef _INDEP_MULTI_THREADING_
+                    numThreads=req.get(2).asInt();
+                    cvSetNumThreads(numThreads);
+                    reply.addString("ack");
+                #else
+                    reply.addString("multi-threading not supported");
+                #endif
                 }
                 else if (subcmd=="verbosity")
                 {
@@ -681,11 +679,11 @@ public:
                 else if (subcmd=="framesPersistence")
                     reply.addInt(framesPersistence);
                 else if (subcmd=="numThreads")
-                    #ifdef _INDEP_MULTI_THREADING_
-                        reply.addInt(numThreads);
-                    #else
-                        reply.addString("multi threading not supported");
-                    #endif
+                #ifdef _INDEP_MULTI_THREADING_
+                    reply.addInt(numThreads);
+                #else
+                    reply.addString("multi-threading not supported");
+                #endif
                 else if (subcmd=="verbosity")
                     reply.addString(verbosity?"on":"off");
                 else if (subcmd=="inhibition")
