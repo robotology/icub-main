@@ -660,7 +660,7 @@ void CAN1_interruptTx (void)
 void CAN1_interruptRx (void)
 {
 	canmsg_t *p;
-led1_on;
+
 	setReg (CAN_RFLG, CAN_RFLG_RXF_MASK);   /* Reset the reception complete flag */
 	SerFlag |= FULL_RX_BUF;              /* Set flag "full RX buffer" */
 	
@@ -691,7 +691,7 @@ led1_on;
 
 //	setReg (CAN_RFLG, CAN_RFLG_RXF_MASK);
 	CAN_EI;
-led1_off
+
 }
 
 /**
