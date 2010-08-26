@@ -15,6 +15,8 @@
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
+#include <yarp/dev/all.h>
+
 
 #include <string>
 #include <time.h>
@@ -26,8 +28,7 @@ const int THREAD_RATE=30;
  */
 
 
-class selectiveAttentionProcessor:public yarp::os::RateThread
-{
+class selectiveAttentionProcessor:public yarp::os::RateThread {
     private:
         int psb; //width step of 8u images
         int psb32; //width step of 32f images
@@ -54,145 +55,122 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         Ipp8u* map6_ippi; //ippi image of the 6th map
       
         //yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImagePlane; //temp variable for plane extraction;
-       
-        /**
-        * temp variable for plane extraction;
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *image_out;
-        /**
-        * temp variable for plane extraction;
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp;
-        /**
-        * value read from the blobFinder component (red intensity of the target)
-        */
-        int targetRED;
-        /**
-        * value read from the blobFinder component (green intensity of the target)
-        */
-        int targetGREEN;
-        /**
-        * value read from the blobFinder component (blue intensity of the target)
-        */
-        int targetBLUE;
-        /**
-        * value of the weight of top-down approach in the blobFinder
-        */
-        double salienceTD;
-        /**
-        * value of the weight of bottom-up approach in the blobFinder
-        */
-        double salienceBU;
-        /**
-        * colour information passed back for the reinforcement
-        */
-        unsigned char targetRed;
-        /**
-        * colour information passed back for the reinforcement
-        */
-        unsigned char targetGreen;
-        /**
-        * colour information passed back for the reinforcement
-        */
-        unsigned char targetBlue;
-        /**
-        * name of the module and rootname of the connection
-        */
-        std::string name;
-        /**
-        * flag that is set after the dimension of the images is defined
-        */
-        bool reinit_flag;
-        /**
-        * flag set when the interrputed function has already be called
-        */
-        bool interrupted;
-        /**
-        * width of the input image
-        */
-        int width; //
-        /**
-        * height of the input image
-        */
-        int height; //
-        /**
-        * flag for the idle state of the processor   
-        */
-        bool idle;
-        /**
-        * semaphore for the respond function
-        */
-        yarp::os::Semaphore mutex;
-        
+        int cLoop; //counter of the loop
+        int camSel;   //select the image plane: left or right ( 0: left, 1: right )
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *image_out; //temp variable for plane extraction;
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp; //temp variable for plane extraction;
+        int targetRED; //value read from the blobFinder component (red intensity of the target)
+        int targetGREEN; //value read from the blobFinder component (green intensity of the target)
+        int targetBLUE; //value read from the blobFinder component (blue intensity of the target)
+        int width; //width of the input image
+        int height; //height of the input image
+        double salienceTD; //value of the weight of top-down approach in the blobFinder
+        double salienceBU; //value of the weight of bottom-up approach in the blobFinder
+        unsigned char targetRed; //colour information passed back for the reinforcement
+        unsigned char targetGreen; //colour information passed back for the reinforcement
+        unsigned char targetBlue; //colour information passed back for the reinforcement
+        std::string name; //name of the module and rootname of the connection
+        bool reinit_flag; //flag that is set after the dimension of the images is defined
+        bool interrupted; //flag set when the interrputed function has already be called
+        bool idle; //flag for the idle state of the processor   
+        bool gazePerform; //flag that allows the processor to ask the gazeControl for saccadic movements
+        yarp::os::Semaphore mutex; //semaphore for the respond function
+
+        double xm, ym; //position of the most salient object in the combination
+        yarp::dev::IGazeControl *igaze; //Ikin controller of the gaze
+        yarp::dev::PolyDriver* clientGazeCtrl; //polydriver for the gaze controller
+
     public:
         /**
         * constructor
         */
         selectiveAttentionProcessor(int rateThread);//
+
         /**
         * default destructor
         */
         ~selectiveAttentionProcessor();//
+
         /**
-        * constructor
+        * constructor 
+        * @param inputImage image where the selectiveAttentionProcessor is started from
         */
         selectiveAttentionProcessor(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage );//
+
         /**
-        *	initialization of the thread 
+        *initialization of the thread 
         */
         bool threadInit();
+
         /**
         * active loop of the thread
         */
         void run();
+
         /**
-        *	releases the thread
+        * releases the thread
         */
         void threadRelease();
+
         /**
         * method that resize images once the processor knows the dimesions of the input
         * @param width width dimension the image is resized to
         * @param height height dimension the image is resized to
         */
         void resizeImages(int width, int height);
+
         /**
         * function called when the module is poked with an interrupt command
         */
         void interrupt();
+
         /**
         * function that reinitiases some attributes of the class
         */
         void reinitialise(int width, int height);
+
         /**
         * function that gives reference to the name of the module
         * @param name of the module
         */
         void setName(std::string name);
+
         /**
         * function that returns the name of the module
         * @param str string to be added
         * @return name of the module
         */
         std::string getName(const char* str);
+
         /**
         * opens all the ports necessary for the module
         * @return return whether the operation was successful
         */
         bool openPorts();
+
         /**
         * closes all the ports opened when the module started
         * @return return whether the operation was successful
         */
         bool closePorts();
+
         /**
         * streams out data on ports
         * @return return whether the operation was successful
         */
         bool outPorts();
+
         /**
         * set the flag idle locking the resource
         */
         void setIdle(bool value);
+        
+        /*
+        * function that sets which one the two attentive chain (left or right) drives the gaze
+        * @param value is the value of the cam selection ( 0: left, 1: right )
+        */
+        void setCamSelection(int value);
+
         /**
         * function that extract the contour and the center of gravity
         * @param inputImage input image where the contours are extracted from
@@ -202,6 +180,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         * @param y y position of the center of mass of the contours
         */
         void extractContour(yarp::sig::ImageOf<yarp::sig::PixelMono>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputColourImage ,int& x,int& y);
+
         /**
         * function that extracts the colour of a region around a pixel given the input image
         * @param inputColourImage input image where the region colour is read.
@@ -213,136 +192,39 @@ class selectiveAttentionProcessor:public yarp::os::RateThread
         */
         void getPixelColour(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputColourImage,int x ,int y, unsigned char &redIntensity, unsigned char &greenIntensity, unsigned char &blueIntensity);
 
-        //------------- PUBLIC ATTRIBUTES ------------
 
-        /**
-        * value with which the sobel mask is built
-        */
-        int maskSeed;
-        /**
-        * value of the top sobel mask
-        */
-        int maskTop;
-        /**
-        * input image  of the processing
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inImage; // 
-        /**
-        * input image  of the processing
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inColourImage; // 
-        /**
-        * saliency map coming from the 1st source
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* map1_yarp;
-        /**
-        * saliency map coming from the 2nd source
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* map2_yarp;
-        /**
-        * saliency map coming from the 3rd source
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* map3_yarp;
-        /**
-        * saliency map coming from the 4th source
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* map4_yarp;
-        /**
-        * saliency map coming from the 5th source
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* map5_yarp;
-        /**
-        * saliency map coming from the 6th source
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* map6_yarp;
-        /**
-        * yarp image of the composition of all the edges
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp;
-        /**
-        * coefficient for the linear combination of maps
-        */
-        double k1;
-        /**
-        * coefficient for the linear combination of maps
-        */
-        double k2;
-        /**
-        * coefficient for the linear combination of maps
-        */
-        double k3;
-        /**
-        * coefficient for the linear combination of maps
-        */
-        double k4;
-        /**
-        * coefficient for the linear combination of maps
-        */
-        double k5;
-        /**
-        * coefficient for the linear combination of maps
-        */
-        double k6;
-        /**
-        * tmp IPLImage necessary for edge detection 16 bit
-        */
-        IplImage *cvImage16; //
-        /**
-        * tmp IPLImage necessary for edge detection 16 bit
-        */
-        IplImage *cvImage8;
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inImage; //input image  of the processing
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inColourImage; // input image  of the processing
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map1_yarp; //saliency map coming from the 1st source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map2_yarp; //saliency map coming from the 2nd source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map3_yarp; //saliency map coming from the 3rd source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map4_yarp; //saliency map coming from the 4th source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map5_yarp; //saliency map coming from the 5th source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map6_yarp; //saliency map coming from the 6th source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp; //yarp image of the composition of all the edges
+        double k1; //coefficient for the linear combination of maps
+        double k2; //coefficient for the linear combination of maps
+        double k3; //coefficient for the linear combination of maps
+        double k4; //coefficient for the linear combination of maps
+        double k5; //coefficient for the linear combination of maps
+        double k6; //coefficient for the linear combination of maps
+        IplImage *cvImage16; // tmp IPLImage necessary for edge detection 16 bit
+        IplImage *cvImage8; //tmp IPLImage necessary for edge detection 16 bit
         Ipp8u* im_out;
-        
-        /**
-        * processor flag
-        */
-        int inputImage_flag;  //--- 
-        /**
-        * flage that indicates if the size of inputimage has been set
-        */
-        int resized_flag;
-        
-        /**
-        * parameter of the findEdges function
-        */
-        static const int CONVMAX_TH=100; //
-        /**
-        * parameter of the findEdges function
-        */
-        static const int CONVSEQ_TH=500; //
 
-        /**
-        * result of the selection
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage; //
-        /**
-        * result of the selection
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage2;
-        /**
-        * result of the combination
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* linearCombinationImage;
-        /**
-        * center of gravity of the selective attention (x position)
-        */
-        int centroid_x;
-        /**
-        * center of gravity of the selective attention (y position)
-        */
-        int centroid_y;
-        /**
-        * time variable
-        */
-        time_t start2;
-        /**
-        * time variable
-        */
-        time_t end2;
-        /**
-        * input image reference
-        */
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
+        int inputImage_flag;  //processor flag
+        
+        
+        static const int CONVMAX_TH=100; //parameter of the findEdges function
+        static const int CONVSEQ_TH=500; //parameter of the findEdges function
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage; // result of the selection
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage2; //result of the selection
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* linearCombinationImage; //result of the combination
+        int centroid_x; //center of gravity of the selective attention (x position)
+        int centroid_y; //center of gravity of the selective attention (y position)
+        time_t start2; //time variable
+        time_t end2; //time variable
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg; //input image reference
         
 };
 

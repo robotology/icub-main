@@ -2,6 +2,10 @@
 
 #include <yarp/os/all.h>
 #include <iCub/selectiveAttentionModule.h>
+#include <yarp/dev/Drivers.h>
+YARP_DECLARE_DEVICES(icubmod)
+
+
 
 #include <iostream>
 
@@ -14,6 +18,8 @@ int main(int argc, char *argv[]) {
     Network yarp;
     Time::turboBoost();
     selectiveAttentionModule module; 
+
+    YARP_REGISTER_DEVICES(icubmod)
 
     /* prepare and configure the resource finder */
 

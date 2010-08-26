@@ -52,6 +52,9 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
                            Value("/selectiveAttentionEngine/icub/left_cam"), 
                            "module name (string)").asString();
 
+
+
+
     /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
@@ -82,6 +85,18 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     currentProcessor->setName(this->getName().c_str());
     //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
     currentProcessor->start();
+
+    /* selects which one of the two camera drives the gaze */
+    camSelection            = rf.check("camSelection", 
+                           Value("left"), 
+                           "camera selection (string)").asString();
+    if(!strcmp(camSelection.c_str(),"left")) {
+        currentProcessor->setCamSelection(0);
+    }
+    else {
+        currentProcessor->setCamSelection(1);
+    }
+
 
     printf("\n waiting for connection of the input port \n");
     return true;

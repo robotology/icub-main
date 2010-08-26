@@ -59,14 +59,14 @@
 /**
 *
 @ingroup icub_module
-\defgroup icub_selectiveAttentionEngine selectiveAttentionEngine
+\defgroup icub_selAttentionEngine selAttentionEngine
 
 Module that combines the saliency map using winner-takes-all algorithm and selects the attentive region of interest.
 
 
 \section intro_sec Description
 Module that combines the saliency map using winner-takes-all algorithm and selected the attentive region of interest.
-Moreover it is in charge of closing the first loop of self-reingorcement. In other words, it sends back commands that are used
+It is in charge of closing the first loop of self-reingorcement. In other words, it sends back commands that are used
 in order to select the area of interest more precisely.
 
 
@@ -82,7 +82,6 @@ The module does:
 
 \section lib_sec Libraries
 YARP
-OPENCV
 IPP
 
 
@@ -151,12 +150,14 @@ private:
 
     yarp::os::Port cmdPort; //command port of the module
     int ct; //counter of the module
-    yarp::os::Property options;   // options of the connection
+    
     int width; //width of the input image
     int height; //height of the input image
     int rateThread; // rateThread of the processor Thread
     bool reinit_flag; //flag that indicates when the reinitiazation has already be done
+
     yarp::os::Semaphore mutex; //semaphore for the respond function
+
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg; //input image reference
     yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp; //temporary mono image
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2; //temporary rgb image
@@ -168,6 +169,10 @@ private:
     yarp::sig::ImageOf<yarp::sig::PixelMono> *map5Img; //input image of the 5th map
     yarp::sig::ImageOf<yarp::sig::PixelMono> *map6Img; //input image of the 6th map
     
+    selectiveAttentionProcessor *currentProcessor; //processor that controls the processing of the input image
+
+    std::string moduleName; //name of the module read from configuration 
+    std::string camSelection; //name of the attentive subsystem read from configuration (left/right)
 
     /**
     * function that resets all the mode flags
@@ -180,73 +185,88 @@ public:
     *@param config configuration of the module
     */
     bool open(yarp::os::Searchable& config); //
+
     /**
     * tryes to interrupt any communications or resource usage
     */
     bool interruptModule(); // 
+
     /**
     * closes the modules and all its components
     */
     bool close(); //
+
     /**
     * active control of the Module
     */
     bool updateModule(); //
+
     /**
     * function for initialization and configuration of the RFModule
     * @param rf resourceFinder reference
     */
     virtual bool configure(yarp::os::ResourceFinder &rf);
+
     /**
     * set the attribute options of class Property
     *@param options of the current module
     */
-    void setOptions(yarp::os::Property options); //
+    void setOptions(yarp::os::Property options); //ù
+
     /**
     * function to reainitialise the attributes of the class
     * @param weight size of the input image
     * @param height size of the input image
     */
     void reinitialise(int weight, int height);
+
     /**
     * respond to command coming from the command port
     * @param command command received
     * @param reply bottle used as a reply
     */
     bool respond(const yarp::os::Bottle &command,yarp::os::Bottle &reply);
+
     /**
     * creates some objects necessary for the window
     */
     void createObjects();
+
     /**
     * sets the adjustments in the window
     */
     void setAdjs();
+
     /**
     * opens all the ports necessary for the module
     */
     bool openPorts();
+
     /**
     * closes all the ports opened when the module started
     */
     bool closePorts();
+
     /**
     * streams out data on ports
     */
     bool outPorts();
+
     /**
     * sets the module up
     */
     void setUp();
+
     /**
     * function that starts the selectiveAttentionProcessor
     */
     bool startselectiveAttentionProcessor();
 
-    selectiveAttentionProcessor *currentProcessor; //processor that controls the processing of the input image
+
+    
     bool inputImage_flag; //flag that controls if the inputImage has been ever read
     bool init_flag; //check of the already happened initialisation
-    std::string moduleName; //name of the module read from configuration 
+    
 };
 
 #endif //_selectiveAttentionModule_H_
