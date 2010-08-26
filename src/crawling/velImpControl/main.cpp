@@ -1,129 +1,34 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-/**
-*
-@ingroup icub_module
-\defgroup icub_velocityControl velocityControl
-
-Perform position control using a velocity control loop.
-
-\section intro_sec Description
-This module performs joint space position control using a velocity loop. 
-It basically implements a pid control converting a position error into a 
-velocity signal that sent to the control board. It allows commanding 
-trajectories at fine temporal scale (~10-20ms).
-
-Note: for safey reasons the module initially starts with 0 gain and 
-0 max velocity, so you first have to set them to correct values.
-
-Use yarp rpc and type for example:
-\code
-gain 0 10
-svel 0 10
-\endcode
-
-This set gain and maximum velocity to 10 for the joint 0.
-
-There are maximum values for gain and velocity set in the code 
-(check velControlThread.cpp). At the moment they are set to 10 and 50 deg/sec respectively.
-
-\section lib_sec Libraries
-YARP
-
-\section parameters_sec Parameters
-
---robot: specifies the name of the robot. It will be used to form 
-the names of the ports created and accessed by module.
-
---part: part to control (e.g. head,arm_right, arm_left, lef_right...), it 
-will be used to form the names of the ports created and accessed by the 
-module.
-
---period: the periodicity of the velocity control loop, in milliseconds 
-(possible values are 20 or 10).
-
-\section portsa_sec Ports Accessed
-It assumes \ref icub_iCubInterface runs. It accesses velocity and 
-encoder ports created by iCubInterface.
-
-\section portsc_sec Ports Created
-The module instantiates a control_board device, which opens the
-usual ports. The pattern of the name is as follow:
-- /robot/vc/part/client/rpc:o
-- /robot/vc/part/client/command:o
-- /robot/vc/part/client/state:i
-
-where robot is the name of the robot as specified with --robot and 
-part is the required part as specified with --part (see below).
-
-- /robot/vc/part/input: input port of the module
-    -	[susp]: suspend the controller (command zero velocity)
-    -	[run]: resume the controller
-    -	[quit]: quit the module (exit)
-    -   [set] j p: move joint j to p (degrees)
-    -   [svel] j v: set maximum speed for joint j to v (deg/sec)
-    -   [gain] j k: set gain for joint j to k
-
-Note: commands to the module through /robot/vc/part/input are not
-fast, use /robot/vc/part/fastCommand or /robot/vc/part/command instead.
-
-- /robot/vc/part/fastCommand: accept a vector of positions as a bottle 
-of int-double pairs, in the form j,p (where j is the joint and p is the 
-requested position). Messages in this format are deprecated, 
-use /robot/vc/part/command instead.
-
-- /robot/vc/part/command: a a vector of positions which specifies the references
-for each joint.
-
-\section in_files_sec Input Data Files
-None.
-
-\section out_data_sec Output Data Files
-None.
-
-\section conf_file_sec Configuration Files
-None.
-
-\section tested_os_sec Tested OS
-Linux and Windows.
-
-\section example_sec Example Instantiation of the Module
-
-velocityControl --robot icub --part head --period 10
-
-Starts the velocityControl module using the robot icub to control
-the head. The period of the velocity control loop will be 10ms.
-
-\author Lorenzo Natale
-
-Copyright (C) 2008 RobotCub Consortium
- 
-CopyPolicy: Released under the terms of the GNU GPL v2.0.
-
-This file can be edited at src/velocityControl/main.cpp.
-**/
 
 #include <stdio.h>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Os.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/BufferedPort.h>
-#include "velControlThread.h"
+#include "velImpControlThread.h"
 #include "yarp/os/Module.h"
 #include <string.h>
+#include <string>
+#include <math.h>
+
+#include <iostream>
 
 /*default rate for the control loop*/
 const int CONTROL_RATE=20;
 
 using namespace yarp::os;
 using namespace yarp::dev;
+using namespace std;
 
 class VelControlModule: public Module {
 private:
     PolyDriver driver;
-    velControlThread *vc;
+    velImpControlThread *vc;
     char partName[255];
+    char robotName[255];
   
     //added by ludovic
     BufferedPort<Bottle> input_port;
@@ -230,6 +135,8 @@ public:
     virtual bool open(yarp::os::Searchable &s)
     {
         Property options(s.toString());
+        Property stiffnessOptions;
+
         char robotName[255];
         Time::turboBoost();    
         options.put("device", "remote_controlboard");
@@ -265,6 +172,8 @@ public:
                 fprintf(stderr, "Please specify part (e.g. --part head)\n");
                 return false;
             }
+            
+            
         ////end of the modif////////////
     
         if (!driver.open(options))
@@ -285,9 +194,157 @@ public:
         
         sprintf(partName, "%s", options.find("part").asString().c_str());
 
-        vc=new velControlThread(period);
-        vc->init(&driver, partName,
-                 robotName);
+        vc=new velImpControlThread(period);
+        
+        if(partName != "torso" || partName != "head")
+        {
+			if(options.check("file"))
+			{
+				stiffnessOptions.fromConfigFile(options.find("file").asString().c_str());
+			}
+			else
+			{
+				const char *cubPath;
+				cubPath = yarp::os::getenv("ICUB_DIR");
+				if(cubPath == NULL) 
+				{
+					printf("velImpControl::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
+					return false;
+				}
+				string cubPathStr(cubPath);
+				stiffnessOptions.fromConfigFile((cubPathStr + "/app/Crawling/config/" + partName + "StiffnessConfig.ini").c_str());
+			}
+			
+			if(stiffnessOptions.check("njoints"))
+			{
+				vc->njoints = stiffnessOptions.find("njoints").asInt();
+				printf("\nControlling %d dofs\n", vc->njoints);
+			}
+			else
+			{
+				printf("Please specify the number of joints in the config file");
+				return false;
+			}
+			
+			vc->impContr.resize(vc->njoints);
+			vc->swingStiff.resize(vc->njoints);
+			vc->stanceStiff.resize(vc->njoints);
+			vc->swingDamp.resize(vc->njoints);
+			vc->stanceDamp.resize(vc->njoints);
+			vc->Grav.resize(vc->njoints);
+			
+			if(stiffnessOptions.check("ImpJoints"))
+			{
+				printf("Joints controlled with impedance: ");
+				
+				Bottle& bot = stiffnessOptions.findGroup("ImpJoints");
+				for(int i=0; i<vc->njoints; i++)
+				{
+					vc->impContr[i] = bot.get(i+1).asDouble();
+					printf("%4.2f ", vc->impContr[i]);
+				}
+				printf("\n");
+			}
+			else
+			{
+				printf("Please specify which joints are controlled with impedance in the config file");
+				return false;
+			}
+			
+			if(stiffnessOptions.check("SwingStiff"))
+			{
+				printf("Stiffness swing : ");
+				Bottle& bot = stiffnessOptions.findGroup("SwingStiff");
+				for(int i=0; i<vc->njoints; i++)
+				{
+					vc->swingStiff[i] =  bot.get(i+1).asDouble();
+					printf("%4.2f ", vc->swingStiff[i]);
+				}
+				printf("\n");
+			}
+			else
+			{
+				printf("Please specify the stiffness for the swing in the config file\n");
+				return false;
+			}
+			
+			if(stiffnessOptions.check("StanceStiff"))
+			{
+				printf("Stiffness stance: ");
+				Bottle& bot = stiffnessOptions.findGroup("StanceStiff");
+				for(int i=0; i<vc->njoints; i++)
+				{
+					vc->stanceStiff[i] =  bot.get(i+1).asDouble();
+					printf("%4.2f ", vc->stanceStiff[i]);
+				}
+				printf("\n");
+			}
+			else
+			{
+				printf("Please specify the stiffness for the stance in the config file\n");
+				return false;
+			}
+			
+			if(stiffnessOptions.check("SwingDamp"))
+			{
+				printf("Damping swing ");
+				Bottle& bot = stiffnessOptions.findGroup("SwingDamp");
+				for(int i = 0; i < vc->njoints; i++)
+				{
+					vc->swingDamp[i] =  bot.get(i+1).asDouble();
+					printf("%4.2f ", vc->swingDamp[i]);
+				}
+				printf("\n");
+			}
+			else
+			{
+				printf("Please specify the damping for the swing in the config file\n");
+				return false;
+			}
+			
+			if(stiffnessOptions.check("StanceDamp"))
+			{
+				printf("Damping stance: ");
+				Bottle& bot = stiffnessOptions.findGroup("StanceDamp");
+				for(int i=0; i<vc->njoints; i++)
+				{
+					vc->stanceDamp[i] = bot.get(i+1).asDouble();
+					printf("%4.2f ", vc->stanceDamp[i]);
+				}
+				printf("\n");
+			}
+			else
+			{
+				printf("Please specify the Dampness for the stance in the config file\n");
+				return false;
+			}
+			
+			
+			if(stiffnessOptions.check("Grav"))
+			{
+				printf("Gravity compensation: ");
+				Bottle& bot = stiffnessOptions.findGroup("Grav");
+				for(int i=0; i<vc->njoints; i++)
+				{
+					vc->Grav[i] =  bot.get(i+1).asDouble();
+					printf("%4.2f ", vc->Grav[i]);
+				}
+				printf("\n");
+			}
+			else
+			{
+				printf("Please specify if gravity compensation in the config file\n");
+				return false;
+			}
+	
+		}
+		else
+		{
+			fprintf(stderr, "Config file for impedance control not define for torso and head\n");
+			return false;
+		}
+		
+        vc->init(&driver, partName, robotName);
 
         vc->start();
         return true;

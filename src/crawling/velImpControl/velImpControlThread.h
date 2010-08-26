@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-#ifndef __VELCONTROLTHREAD__
-#define __VELCONTROLTHREAD__
+#ifndef __velImpControlThread__
+#define __velImpControlThread__
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
@@ -13,10 +13,11 @@
 
 //class yarp::dev::PolyDriver;
 
-class velControlThread: public yarp::os::RateThread
+class velImpControlThread: public yarp::os::RateThread
 {
 private:
     char robotName[255];
+    yarp::os:: ConstString limbName;
     yarp::dev::IVelocityControl *ivel;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IImpedanceControl *iimp;
@@ -37,11 +38,8 @@ private:
     yarp::sig::Vector error;
     yarp::sig::Vector error_d;
 
-    yarp::sig::Vector maxVel; //added ludo
-
-	yarp::sig::Vector stiffness;
-	yarp::sig::Vector dampings;
-
+    yarp::sig::Vector maxVel; //added ludo    
+    
     bool suspended;
     int first_command;
 
@@ -50,6 +48,8 @@ private:
     yarp::os::Semaphore _mutex;
 
     int control_rate; //in ms
+    
+    int state;
 
     yarp::os::BufferedPort<yarp::os::Bottle> command_port; //deprecated
     yarp::os::BufferedPort<yarp::sig::Vector> command_port2; //new
@@ -57,16 +57,29 @@ private:
     double time_watch;
     double time_loop;
     int count;
-
+    double stiff;
+    
     FILE *currentSpeedFile;
     FILE *targetSpeedFile;
-
+	FILE *stiffFile;
 public:
-    velControlThread(int rate);
-    ~velControlThread();
+    velImpControlThread(int rate);
+    ~velImpControlThread();
 
     bool init(yarp::dev::PolyDriver *d, yarp::os::ConstString partName,
               yarp::os::ConstString robotName);
+     
+    //parameters for impedance control
+    int njoints;
+    yarp::sig::Vector impContr;
+    yarp::sig::Vector contrJoints; //numbers of joint controlled 
+    yarp::sig::Vector swingStiff; //stiffness for swing 
+    yarp::sig::Vector stanceStiff; //stiffness for stance
+    yarp::sig::Vector swingDamp; //damping
+    yarp::sig::Vector stanceDamp; //damping
+    yarp::sig::Vector Grav; //parameter for gravity compensation 
+             
+     
 
     void halt();
     void go();
@@ -74,6 +87,7 @@ public:
 
     void setVel(int i, double vel); //added ludovic to set max velocity
     void setGain(int i, double gain); //to set the Kp gains
+    void switchImp(double vel); // to switch between different stiffnesses  
 
     void run();
     bool threadInit();

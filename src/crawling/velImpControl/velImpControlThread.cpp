@@ -1,11 +1,16 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Note: this is a modified version of the basic velocity control module to combine it with impedance control
-#include "velControlThread.h"
+#include "velImpControlThread.h"
 #include <string.h>
 #include <string>
 #include <math.h>
 
 #include <iostream>
+
+#define SWING 1
+#define STANCE 0
+#define INIT -1
+
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -16,22 +21,26 @@ const double AVERAGE=50;
 const double ACCELERATIONS=1000000;
 const double MAX_GAIN = 10.0;
 
-const int DEFAULT_STIFFNESS = 20;
-const int DEFAULT_DAMPING = 5;
+//switch between stiffness
+const double V_SWITCH = 0.0; // velocity where to switch (absolute value)
+const double EPS_HYST = 0.5; //hysteresis parameter for the switch
 
 const int VELOCITY_INDEX_OFFSET=1000;
 
-velControlThread::velControlThread(int rate):
+
+
+velImpControlThread::velImpControlThread(int rate):
 				yarp::os::RateThread(rate)
 {
 	control_rate = rate;
 	first_command = 0;
+	
 }
 
-velControlThread::~velControlThread()
+velImpControlThread::~velImpControlThread()
 {}
 
-void velControlThread::run()
+void velImpControlThread::run()
 {
 	double t_start = yarp::os::Time::now();
 
@@ -55,9 +64,7 @@ void velControlThread::run()
 		//fprintf(stderr, "\n Receiving command: \t");
 		int size = bot->size()/2;
 		for(int i=0;i<size;i++)
-		{
-			ictrl->setImpedanceVelocityMode(i);	//we turn on the impedance control 
-			
+		{	
 			int ind = bot->get(2*i).asInt();
 			if(ind < VELOCITY_INDEX_OFFSET) 
 			{//this is a position command
@@ -76,6 +83,8 @@ void velControlThread::run()
             ffVelocities = 0.0;
         }
     }
+    
+    //switchImp(ffVelocities[0]); //change stiffness according to shoulder/hips velocities
 
 	//getting commands from the slow port
 	yarp::sig::Vector *vec = command_port2.read(false);
@@ -93,13 +102,13 @@ void velControlThread::run()
 	//ienc->getEncoderSpeeds(encoders_speed.data());
 	//fprintf(stderr, "printing to file \n");
 #if 0
-	for(int i=0;i<nJoints;i++)
-	{
-		//printf("%f ",encoders(i));
-		fprintf(currentSpeedFile,"%f ",encoders(i));
-	}
-	fprintf(currentSpeedFile,"%f\n",t_start-time_watch);
-	//printf("\n");
+	//~ for(int i=0;i<nJoints;i++)
+	//~ {
+		//~ //printf("%f ",encoders(i));
+		//~ fprintf(currentSpeedFile,"%f ",encoders(i));
+	//~ }
+	//~ fprintf(currentSpeedFile,"%f\n",t_start-time_watch);
+	//~ //printf("\n");
 #endif
 
 	Kd=0.0;
@@ -144,7 +153,7 @@ void velControlThread::run()
 
 }
 
-bool velControlThread::threadInit()
+bool velImpControlThread::threadInit()
 {
 	suspended=false;
 	ienc->getEncoders(encoders.data());
@@ -159,7 +168,7 @@ bool velControlThread::threadInit()
 	return true;
 }
 
-void velControlThread::threadRelease()
+void velImpControlThread::threadRelease()
 {
 	for(int k=0;k<nJoints;k++)
 	{
@@ -173,24 +182,29 @@ void velControlThread::threadRelease()
 	command_port.close();
 	command_port2.close();
 
+	fclose(stiffFile);
 #if 0
 	fclose(targetSpeedFile);
 	fclose(currentSpeedFile);
+
 #endif
 }
 
-bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString robotName)
+bool velImpControlThread::init(PolyDriver *d, ConstString partName, ConstString robotName)
 {
 	char tmp[255];
+	
+	limbName = partName;
 
 	yarp::os::Time::turboBoost();
 
     nb_void_loops = 0;
-
+    
 	///opening port for fast transfer of position command
 	sprintf(tmp,"/%s/vc/%s/fastCommand", robotName.c_str(), partName.c_str());
 	fprintf(stderr,"opening port for part %s\n",tmp);
 	command_port.open(tmp);
+	
 
 	std::string tmp2;
 	tmp2="/";
@@ -232,6 +246,17 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 	{
 		ictrl->setPositionMode(i);	//we set the position mode to be sure to have high stiffness
 	}
+	
+	for(int i=0;i<nJoints;i++)
+	{
+		if(impContr[i]==1)
+		{
+			ictrl->setImpedancePositionMode(i);	//we set the position mode to be sure to have high stiffness
+			iimp->setImpedance(i, stanceStiff[i], stanceDamp[i], Grav[i]); 
+		}
+	}
+
+
 
 	encoders.resize(nJoints);
 	encoders_speed.resize(nJoints);
@@ -249,28 +274,28 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 	error=0;
 	error_d.resize(nJoints);
 	error_d=0;
+	state = INIT;
 
 	maxVel.resize(nJoints);
 	maxVel = 0.0;
 	
-	stiffness.resize(nJoints);
-	dampings.resize(nJoints);
-	stiffness = DEFAULT_STIFFNESS;
-	dampings = DEFAULT_DAMPING;
-	
 
-#if 0
+	
+#if 0 
 	sprintf(tmp,"%s_target_speed.dat",partName.c_str());
 	targetSpeedFile = fopen(tmp,"w");
 	sprintf(tmp,"%s_current_speed.dat",partName.c_str());
 	currentSpeedFile = fopen(tmp,"w");
 #endif
 
+	char file_name[255];
+    sprintf(file_name, "%s_impedance.dat", partName.c_str());
+	stiffFile = fopen(file_name, "w");
 
 	return true;
 }
 
-void velControlThread::halt()
+void velImpControlThread::halt()
 {
 	suspended=true;
 	for(int k=0;k<nJoints;k++)
@@ -283,7 +308,7 @@ void velControlThread::halt()
 	ffVelocities = 0;
 }
 
-void velControlThread::go()
+void velImpControlThread::go()
 {
 	suspended=false;
 	fprintf(stderr, "Run\n");
@@ -291,7 +316,7 @@ void velControlThread::go()
 	ffVelocities = 0;
 }
 
-void velControlThread::setRef(int i, double pos)
+void velImpControlThread::setRef(int i, double pos)
 {
 	fprintf(stderr, "Setting new target %d to %lf\n", i, pos);
 
@@ -302,22 +327,22 @@ void velControlThread::setRef(int i, double pos)
 	_mutex.post();
 }
 
-void velControlThread::setVel(int i, double vel)
+void velImpControlThread::setVel(int i, double vel)
 {
 	_mutex.wait();
 
-	if((vel > 0.0) && (vel < MAX_SPEED) && (i>=0) && (i<nJoints))
+	if((vel >= 0.0) && (vel < MAX_SPEED) && (i>=0) && (i<nJoints))
 	{
 		maxVel(i) = vel;
 		fprintf(stderr,"setting max vel of joint %d to %f\n",i,maxVel(i));
 	}
 	else
-		fprintf(stderr,"impossible to set max vel higher than %f\n",MAX_SPEED);
+		fprintf(stderr,"impossible to set max vel higher than %f\n", MAX_SPEED);
 
 	_mutex.post();
 }
 
-void velControlThread::setGain(int i, double gain)
+void velImpControlThread::setGain(int i, double gain)
 {
 	_mutex.wait();
 
@@ -336,7 +361,7 @@ void velControlThread::setGain(int i, double gain)
 }
 
 
-void velControlThread::limitSpeed(Vector &v)
+void velImpControlThread::limitSpeed(Vector &v)
 {
 	for(int k=0; k<nJoints;k++)
 	{
@@ -354,3 +379,80 @@ void velControlThread::limitSpeed(Vector &v)
 		}
 	}
 }
+
+void velImpControlThread::switchImp(double vel)
+{
+	//we change the stiffness depending on whether the limb is in swing or stance
+	//arm shoulder: negative velocity => swing, positive velocity => stance
+	//leg hip: positive velocity => swing, negative velocity => stance
+	
+	if(limbName=="left_arm" || limbName=="right_arm")
+	{
+		if(state == STANCE || state ==INIT)
+		{
+			if(vel < -V_SWITCH - EPS_HYST )
+			{
+				state = SWING;
+				for(int i=0; i< nJoints; i++)
+				{
+					if(impContr[i]==1)
+					{
+						iimp->setImpedance(i,  swingStiff[i], swingDamp[i], Grav[i]); 
+					}
+				}
+			}
+		}
+		
+		if(state == SWING || state ==INIT)
+		{
+			if(vel > -V_SWITCH + EPS_HYST )
+			{
+				state = STANCE;
+			    for(int i=0; i< nJoints; i++)
+				{
+					if(impContr[i]==1)
+					{
+						iimp->setImpedance(i, stanceStiff[i], stanceDamp[i],Grav[i]); 
+					}
+				}
+			}
+		}
+	}
+		
+	if(limbName == "left_leg" || limbName == "right_leg")
+	{
+		if(state == STANCE || state ==INIT)
+		{
+			if(vel > V_SWITCH + EPS_HYST )
+			{
+				state = SWING;
+				for(int i=0; i< nJoints; i++)
+				{
+					if(impContr[i]==1)
+					{
+						iimp->setImpedance(i,  swingStiff[i], swingDamp[i],Grav[i]); 
+					}
+				}
+			}
+		}
+		
+		if(state == SWING || state ==INIT)
+		{
+			if(vel < V_SWITCH -EPS_HYST )
+			{
+				state = STANCE;
+				for(int i=0; i< nJoints; i++)
+				{
+					if(impContr[i]==1)
+					{
+						iimp->setImpedance(i, stanceStiff[i], stanceDamp[i],Grav[i]); 
+					}
+				}
+			}
+		}	
+	}	
+	
+	//fprintf(stiffFile, "%f %f %f \n",vel , stiff, Time::now());
+}
+	
+	    
