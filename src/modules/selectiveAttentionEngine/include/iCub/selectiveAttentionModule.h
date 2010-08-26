@@ -173,7 +173,7 @@ private:
 
     std::string moduleName; //name of the module read from configuration 
     std::string camSelection; //name of the attentive subsystem read from configuration (left/right)
-
+    std::string gazePerform; //flag for gazePerforming
     /**
     * function that resets all the mode flags
     */

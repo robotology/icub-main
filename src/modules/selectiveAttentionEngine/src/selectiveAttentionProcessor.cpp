@@ -726,7 +726,9 @@ void selectiveAttentionProcessor::run(){
     }
 }
 
-
+void selectiveAttentionProcessor::setGazePerform(bool value) {
+    gazePerform=value;
+}
 
 void selectiveAttentionProcessor::setCamSelection(int value) {
     camSel=value;

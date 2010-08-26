@@ -171,6 +171,12 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         */
         void setCamSelection(int value);
 
+        /*
+        * function that declare whether to perform saccadic movement with gazeControl
+        * @param value It is true when the saccadic movement is performed
+        */
+        void setGazePerform(bool value);
+
         /**
         * function that extract the contour and the center of gravity
         * @param inputImage input image where the contours are extracted from

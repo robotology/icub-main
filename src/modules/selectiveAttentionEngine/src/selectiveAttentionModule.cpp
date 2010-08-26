@@ -97,6 +97,17 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
         currentProcessor->setCamSelection(1);
     }
 
+    /* selects whether perform gaze or don't */
+    gazePerform            = rf.check("gazePerform", 
+                           Value("false"), 
+                           "gaze perform (string)").asString();
+    if(!strcmp(gazePerform.c_str(),"true")) {
+        currentProcessor->setGazePerform(true);
+    }
+    else {
+        currentProcessor->setGazePerform(false);
+    }
+
 
     printf("\n waiting for connection of the input port \n");
     return true;
