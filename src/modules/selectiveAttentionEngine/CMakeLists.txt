@@ -51,7 +51,8 @@ IF (folder_source)
     TARGET_LINK_LIBRARIES( ${KEYWORD}
       ${YARP_LIBRARIES} 
       ${OPENCV_LIBRARIES}  
-      ${IPP_LIBRARIES} 	
+      ${IPP_LIBRARIES}
+ 	  icubmod
      )	
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
