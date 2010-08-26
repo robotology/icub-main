@@ -72,8 +72,9 @@ YARP libraries and OpenCV
  
 --numThreads \e threads
 - This parameter allows to control the maximum number of threads
-  available. The default value is 0 meaning that a number of
-  threads equal to the number of available cores will be used.
+  allocated by parallelized OpenCV functions. The default value
+  is 0 meaning that a number of threads equal to the number of
+  available cores will be used.
  
 --verbosity 
 - Enable the dump of log messages.
