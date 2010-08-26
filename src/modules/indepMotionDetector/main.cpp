@@ -776,6 +776,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--adjNodesThres     <int>\n");
         fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
         fprintf(stdout,"\t--framesPersistence <int>\n");
+        fprintf(stdout,"\t--numThreads        <int>\n");
         fprintf(stdout,"\t--verbosity           -\n");
         
         return 0;
