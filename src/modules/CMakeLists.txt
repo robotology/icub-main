@@ -53,7 +53,7 @@ endif(ICUB_USE_IPOPT)
 if(ICUB_USE_IPP)
     # insert herein modules depending on IPP
     add_subdirectory(saliencyBlobFinder)
-    add_subdirectory(selectiveAttentionEngine)
+    #add_subdirectory(selectiveAttentionEngine)
     add_subdirectory(visualFilter)
     add_subdirectory(zdfModule)
     add_subdirectory(yuvProcessor)
