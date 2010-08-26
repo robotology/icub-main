@@ -12,9 +12,10 @@
 #include "can1.h"
 #include "asc.h"
 #include <stdarg.h>  
+#include "leds_interface.h"
 
 canmsg_t can_fifo[CAN_FIFO_LEN];
-Int16 write_p = 0;
+Int16 write_p = -1;
 Int16 read_p = -1;
 
 /// CAN TX BUFFER 
@@ -23,7 +24,7 @@ static canmsg_t canTxBuffer[CAN_TX_SOFTWARE_BUFFER_SIZE];
 static UInt8 TxError=0;
 static UInt8 RxError=0;
 static UInt8 BusOff=0;
-static byte status=0;
+static byte can_status=0;
 byte	can_board_id;
 
 bool print_enable = false;
@@ -386,11 +387,11 @@ byte getCanBusOffstatus()
 
 byte getCanStatus()
 {
-	return status;
+	return can_status;
 }
 byte setCanStatus(byte val)
 {
-	status=val;
+	can_status=val;
 	setCanTXstatus(val); //reset of the can tx status
 }
 
@@ -502,6 +503,7 @@ byte CAN1_sendFrame (byte BufferNo, dword MessageID,
  * @param Lemgth is a pointer to the length of the message.
  * @param Data is a pointer to the data buffer.
  */
+
 byte CAN1_readFrame (dword *MessageID,
 					 byte *FrameType,
 					 byte *FrameFormat,
@@ -509,26 +511,36 @@ byte CAN1_readFrame (dword *MessageID,
 					 byte *Data)
 {
 	byte i;
-	dword ID;
+//	dword ID;
 
 	if (!SerFlag & FULL_RX_BUF)
 		return ERR_RXEMPTY;
 	
-	ID = Idr2Id(GetRxBufferIdr());       /* Read the identification of the received message */
+//	ID = Idr2Id(GetRxBufferIdr());       /* Read the identification of the received message */
+#warning "this optimization does not work for extended frame ID"
 	
-	if (ID > EXTENDED_FRAME_ID)
-		*FrameType = (getReg(CAN_RB_IDR3) & 1)? REMOTE_FRAME : DATA_FRAME;
-	else
-		*FrameType = (getReg(CAN_RB_IDR1) & 16)? REMOTE_FRAME : DATA_FRAME;
-	
-	*MessageID = ID;
-	*FrameFormat = (getReg(CAN_RB_IDR1) & 8)? EXTENDED_FORMAT : STANDARD_FORMAT;
-	*Length = getReg(CAN_RB_DLR) & 15;
-	if (*FrameType == DATA_FRAME) 
-	{
+//	if (ID > EXTENDED_FRAME_ID)
+//		*FrameType = (getReg(CAN_RB_IDR3) & 1)? REMOTE_FRAME : DATA_FRAME;
+//	else
+//		*FrameType = (getReg(CAN_RB_IDR1) & 16)? REMOTE_FRAME : DATA_FRAME;
+//	*FrameFormat = (getReg(CAN_RB_IDR1) & 8)? EXTENDED_FORMAT : STANDARD_FORMAT;
+//	*MessageID = ID;
+
+	*FrameType =DATA_FRAME;
+	*FrameFormat=STANDARD_FORMAT;
+	*MessageID =GetRxBufferIdr()>>21;       /* Read the standard identification of the received message */
+	*Length = getReg(CAN_RB_DLR) & 0xF;
+
 		for (i = 0; i < *Length; i++) /* should be checking max len of the message */
+		{		
+			if (i<8) //this ckeck has been done because the CAN_RB_DLR can be bigger then 8 (we do not know why)                    
 			Data[i] = *((byte *)CAN_RB_DSR0 + i);
-	}
+			else 
+			{
+				
+			}
+		}
+
 	
 	SerFlag &= ~FULL_RX_BUF;             /* Clear flag "full RX buffer" */
 	
@@ -623,6 +635,8 @@ void CAN1_interruptTx (void)
 {
 	
 	byte buffer = getReg(CAN_TFLG) & 7;           /* Temporary variable */
+	
+
 	CAN_TX_DI;
 	if (canTxBufferIndex!=-1)
 	{
@@ -635,6 +649,7 @@ void CAN1_interruptTx (void)
 			CAN_TX_EI;
 	}
 
+
 }
 
 
@@ -645,22 +660,21 @@ void CAN1_interruptTx (void)
 void CAN1_interruptRx (void)
 {
 	canmsg_t *p;
-	
-	// setReg(CANRFLG, CANRFLG_RXF_MASK);   /* Reset the reception complete flag */
+led1_on;
+	setReg (CAN_RFLG, CAN_RFLG_RXF_MASK);   /* Reset the reception complete flag */
 	SerFlag |= FULL_RX_BUF;              /* Set flag "full RX buffer" */
 	
 	CAN_DI;
-	write_p ++;
-	if (write_p >= CAN_FIFO_LEN)
-		write_p = 0;
-
+	
+	if (write_p >= CAN_FIFO_LEN-1)  
+		write_p = -1;
+		
+	write_p++;
 	// check here for buffer full.
-	p = can_fifo + write_p;
-	CAN1_readFrame (&(p->CAN_messID), 
-				  &(p->CAN_frameType), 
-				  &(p->CAN_frameFormat), 
-				  &(p->CAN_length), 
-				  p->CAN_data);
+	p = can_fifo +write_p;
+	
+	CAN1_readFrame (&(p->CAN_messID), &(p->CAN_frameType), &(p->CAN_frameFormat), &(p->CAN_length),  p->CAN_data);
+		
 #if 0
 	if (read_p != -1)
 	{
@@ -675,8 +689,9 @@ void CAN1_interruptRx (void)
 	
 	}
 
-	setReg (CAN_RFLG, CAN_RFLG_RXF_MASK);
+//	setReg (CAN_RFLG, CAN_RFLG_RXF_MASK);
 	CAN_EI;
+led1_off
 }
 
 /**
@@ -699,14 +714,14 @@ void CAN1_interruptError (void)
 	{
 		BusOff=1;
 	}
-	status=0;
-	status=getCanTXstatus() & 0x01;
-	status|= ((BusOff>0)<<1); /* Bus-Off state */
-	status|= ((TxError>0)<<2); /* Transmitter error */
-    status|= ((RxError>0)<<3); /* Receiver error */
-	status|= ((getRegBits(CAN_RFLG, CAN_RFLG_TWRNIF_MASK) != 0)<<4); /* Transmitter warning */
-	status|= ((getRegBits(CAN_RFLG, CAN_RFLG_RWRNIF_MASK) != 0)<<5); /* Receiver warning */
-	status|= ((getRegBits(CAN_RFLG, CAN_RFLG_OVRIF_MASK)  != 0)<<6); /* Receiver overrun */
+	can_status=0;
+	can_status=bufferfull & 0x01;
+	can_status|= ((BusOff>0)<<1); /* Bus-Off state */
+	can_status|= ((TxError>0)<<2); /* Transmitter error */
+  	can_status|= ((RxError>0)<<3); /* Receiver error */
+	can_status|= ((getRegBits(CAN_RFLG, CAN_RFLG_TWRNIF_MASK) != 0)<<4); /* Transmitter warning */
+	can_status|= ((getRegBits(CAN_RFLG, CAN_RFLG_RWRNIF_MASK) != 0)<<5); /* Receiver warning */
+	can_status|= ((getRegBits(CAN_RFLG, CAN_RFLG_OVRIF_MASK)  != 0)<<6); /* Receiver overrun */
     setRegBits(CAN_RFLG,0xfe);
 
 	CAN_EI;
