@@ -100,7 +100,7 @@ void DisparityTool::AllocateVectors() {
         fin = fopen(File_Name,"rb");
     }
 
-    (void)fread(&n,sizeof(int),1,fin);
+    size_t discard=fread(&n,sizeof(int),1,fin);
     fclose(fin);
 
     _shiftFunction = new double[n];
