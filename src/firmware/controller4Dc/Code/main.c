@@ -45,7 +45,7 @@ UInt16  mais_init_request=0;
 #if ((VERSION==0x0120) || (VERSION==0x0121) || (VERSION==0x0128) || (VERSION==0x0130))
 
 byte _initMAIS[8];
-UInt16 msec;
+UInt16 msec=0;
 Int16 idtx=0;
 Int32 cur_enc_pos[JN]={0,0,0,0};
 Int32 cur_hall_pos[JN]={0,0,0,0};
@@ -325,7 +325,7 @@ void main(void)
 			{
 				_control_mode[i] = MODE_IDLE;
 			}
-			if (msec>=500) can_printf("MAIS is not broadcasting");	
+			if (msec==0) can_printf("MAIS error");	
 		}
 		else
 		    mais_counter++; //this variable is set to zero whenever a message from the MAIS is received
@@ -672,7 +672,7 @@ void main(void)
 				_pad_enabled[i] = false;
 				highcurrent[i]=true;
 				PWM_outputPadDisable(i);
-				can_printf("BIG CURR AXIS:%d ",i);
+				can_printf("BIG CURR J%d %f!",i,_filt_current[i]);
 			} 			
 			else
 			{
