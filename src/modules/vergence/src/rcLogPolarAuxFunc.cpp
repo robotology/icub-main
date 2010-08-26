@@ -266,10 +266,9 @@ int Load_Shift_Table(Image_Data par, int *shiftTab, double *stepList, char *path
         fin = fopen(File_Name,"rb");
     }
 
-    fread(&n,sizeof(int),1,fin);
-
-    fread(stepList,sizeof(double),n,fin);
-    fread(shiftTab,sizeof(int),n*par.Size_LP,fin);
+    (void)fread(&n,sizeof(int),1,fin);
+    (void)fread(stepList,sizeof(double),n,fin);
+    (void)fread(shiftTab,sizeof(int),n*par.Size_LP,fin);
     fclose(fin);
     return n;
 }
