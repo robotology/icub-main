@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Francesco Rea
  * email:   francesco.rea@iit.it
  * website: www.robotcub.org 

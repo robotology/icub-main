@@ -67,7 +67,7 @@ visualFilterThread::visualFilterThread() {
     redGreenV16s=0;
     greenRedV16s=0;
     blueYellowV16s=0;
-    lambda=0.5;
+    lambda=0.25;
 
     resized=false;
 }
