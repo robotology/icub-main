@@ -171,7 +171,7 @@ void iKin_NLP::computeQuantities(const Number *x)
         submatrix(J1,J_xyz,0,2,0,dim-1);
         submatrix(J1,J_ang,3,5,0,dim-1);
 
-        if (weight2ndTask)
+        if (weight2ndTask!=0.0)
         {
             yarp::sig::Matrix H_2nd=chain2ndTask.getH();
             e_2nd[0]=w_2nd[0]*(xd_2nd[0]-H_2nd(0,3));
@@ -188,7 +188,7 @@ void iKin_NLP::computeQuantities(const Number *x)
             }
         }
 
-        if (weight3rdTask)
+        if (weight3rdTask!=0.0)
             for (unsigned int i=0; i<dim; i++)
                 e_3rd[i]=w_3rd[i]*(qd_3rd[i]-q[i]);
 
@@ -284,10 +284,10 @@ bool iKin_NLP::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 
     obj_value=0.5*norm2(*e_1st);
 
-    if (weight2ndTask)
+    if (weight2ndTask!=0.0)
         obj_value+=weight2ndTask*0.5*norm2(e_2nd);
 
-    if (weight3rdTask)
+    if (weight3rdTask!=0.0)
         obj_value+=weight3rdTask*0.5*norm2(e_3rd);
 
     return true;
@@ -301,10 +301,10 @@ bool iKin_NLP::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 
     yarp::sig::Vector grad=-1.0*(J_1st->transposed() * *e_1st);
 
-    if (weight2ndTask)
+    if (weight2ndTask!=0.0)
         grad=grad-weight2ndTask*(J_2nd.transposed()*e_2nd);
 
-    if (weight3rdTask)
+    if (weight3rdTask!=0.0)
         grad=grad-weight3rdTask*(w_3rd*e_3rd);
 
     for (Index i=0; i<n; i++)
@@ -410,7 +410,7 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
 
         chain.prepareForHessian();
 
-        if (weight2ndTask)
+        if (weight2ndTask!=0.0)
             chain2ndTask.prepareForHessian();
 
         Index idx=0;
@@ -438,7 +438,7 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
                 if (m)
                     values[idx]+=lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz));
 
-                if (weight2ndTask && row<(int)dim_2nd && col<(int)dim_2nd)
+                if ((weight2ndTask!=0.0) && row<(int)dim_2nd && col<(int)dim_2nd)
                 {    
                     yarp::sig::Vector h2=chain2ndTask.fastHessian_ij(row,col);
                     yarp::sig::Vector h_2nd(3);
