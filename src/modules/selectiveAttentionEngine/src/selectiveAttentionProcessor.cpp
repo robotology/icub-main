@@ -53,7 +53,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     interrupted=false;
     gazePerform=true;
     xSizeValue=REMAP_DIM;
-    xSizeValue=REMAP_DIM;
+    ySizeValue=REMAP_DIM;
 
     cLoop=0;
     
@@ -474,20 +474,22 @@ void selectiveAttentionProcessor::run(){
                 printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
             }
             else {
-                printf("outOfRange \n");
+                printf("outOfRange cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
                 gazePerform=false;
             }
             if(gazePerform){
-                Vector px(2);
-                px[0]=floor(xm/countMaxes-REMAP_DIM/2+160);
-                px[1]=floor(ym/countMaxes-REMAP_DIM/2+120);
-                
-                //we still have one degree of freedom given by
-                //the distance of the object from the image plane
-                //if you do not have it, try to guess :)
-                double z=1.0;   // distance [m]
-                igaze->lookAtMonoPixel(camSel,px,z); 
-                cLoop=0;
+                if(cLoop>10) {
+                    Vector px(2);
+                    px[0]=floor(xm/countMaxes-REMAP_DIM/2+160);
+                    px[1]=floor(ym/countMaxes-REMAP_DIM/2+120);
+                    
+                    //we still have one degree of freedom given by
+                    //the distance of the object from the image plane
+                    //if you do not have it, try to guess :)
+                    double z=1.0;   // distance [m]
+                    igaze->lookAtMonoPixel(camSel,px,z); 
+                    cLoop=0;
+                }
             }
             outPorts();
         }

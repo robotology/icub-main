@@ -123,14 +123,14 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     /* get the size of the X dimension */
 
     xSize                 = rf.check("xsize",
-                           Value(320),
+                           Value(128),
                            "Key value (int)").asInt();
     currentProcessor->setXSize(xSize);
 
     /* get the size of the Y dimension */
 
     ySize                 = rf.check("ysize",
-                           Value(240),
+                           Value(128),
                            "Key value (int)").asInt();
     currentProcessor->setYSize(ySize);
 
@@ -154,7 +154,7 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
 
     /* selects whether perform gaze or don't */
     gazePerform            = rf.check("gazePerform", 
-                           Value("false"), 
+                           Value("true"), 
                            "gaze perform (string)").asString();
     if(!strcmp(gazePerform.c_str(),"true")) {
         currentProcessor->setGazePerform(true);
