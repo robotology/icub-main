@@ -50,7 +50,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     inputImage_flag=0;
     idle=true;
     interrupted=false;
-    gazePerform=false;
+    gazePerform=true;
     xSizeValue=320;
     xSizeValue=240;
 
@@ -433,36 +433,43 @@ void selectiveAttentionProcessor::run(){
                     *pImage=(unsigned char)*plinear;
                     pImage++;
                     plinear++;
-                    if(maxValue<*plinear) {
-                        maxValue=*plinear;
-                    }
+                    
                 }
                 pImage+=padding3C;
                 plinear+=padding;
             }
             trsf.logpolarToCart(outputCartImage,*inputLogImage);
             imageCartOut.write();
+            
+            //4.find the max in the cartesian image
+            maxValue=0;
             float xm=0,ym=0;
             int countMaxes=0;
-            //4.find the max in the cartesian image
-            if(maxValue==0) {
-                xm=320.0/2;
-                ym=240.0/2;
-            }
-            else {
-                pImage=outputCartImage.getRawImage();
-                for(int y=0;y<ySizeValue;y++) {
-                    for(int x=0;x<xSizeValue;x++) {
-                        if(*pImage=maxValue) {
-                            countMaxes++;
-                            xm+=x;
-                            ym+=y;
-                        }
+            pImage=outputCartImage.getRawImage();
+            for(int y=0;y<ySizeValue;y++) {
+                for(int x=0;x<xSizeValue;x++) {
+                    if(maxValue<*pImage) {
+                        maxValue=*pImage;
                     }
+                    pImage+=3;
                 }
+                pImage+=padding3C;
             }
+            pImage=outputCartImage.getRawImage();
+            for(int y=0;y<ySizeValue;y++) {
+                for(int x=0;x<xSizeValue;x++) {
+                    if(*pImage==maxValue) {
+                        countMaxes++;
+                        xm+=x;
+                        ym+=y;
+                    }
+                    pImage+=3;
+                }
+                pImage+=padding3C;
+            }
+            
             //5. controlling the heading of the robot
-            if((xm/countMaxes<320)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<240)) {
+            if((xm/countMaxes<320)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<240)&&(countMaxes!=0)) {
                 printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
             }
             else {
