@@ -415,7 +415,7 @@ void selectiveAttentionProcessor::run(){
                     plinear+=padding;
                 }
             }
-            //trasform the logpolar to cartesian
+            //3.trasform the logpolar to cartesian
             plinear=linearCombinationImage->getRawImage();
             ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();
             outputCartImage.resize(xSizeValue,ySizeValue);
@@ -442,22 +442,35 @@ void selectiveAttentionProcessor::run(){
             }
             trsf.logpolarToCart(outputCartImage,*inputLogImage);
             imageCartOut.write();
-            //find the max in the cartesian image
-            pImage=outputCartImage.getRawImage();
-            int countMaxes=0;
             float xm=0,ym=0;
-            for(int y=0;y<ySizeValue;y++) {
-                for(int x=0;x<xSizeValue;x++) {
-                    if(*pImage=maxValue) {
-                        xm+=x;
-                        ym+=y;
-                        countMaxes++;
+            int countMaxes=0;
+            //4.find the max in the cartesian image
+            if(maxValue==0) {
+                xm=320.0/2;
+                ym=240.0/2;
+            }
+            else {
+                pImage=outputCartImage.getRawImage();
+                for(int y=0;y<ySizeValue;y++) {
+                    for(int x=0;x<xSizeValue;x++) {
+                        if(*pImage=maxValue) {
+                            countMaxes++;
+                            xm+=x;
+                            ym+=y;
+                        }
                     }
                 }
             }
-            printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
+            //5. controlling the heading of the robot
+            if((xm/countMaxes<320)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<240)) {
+                printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
+            }
+            else {
+                printf("outOfRange \n");
+                gazePerform=false;
+            }
             if(gazePerform){
-                if(cLoop>=100) {
+                if(cLoop>10) {
                     Vector px(2);
                     px[0]=floor(xm/countMaxes);
                     px[1]=floor(ym/countMaxes);
