@@ -42,6 +42,7 @@ using namespace yarp::dev;
 using namespace std;
 using namespace iCub::logpolar;
 
+#define REMAP_DIM 128
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
 {
@@ -51,8 +52,8 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     idle=true;
     interrupted=false;
     gazePerform=true;
-    xSizeValue=320;
-    xSizeValue=240;
+    xSizeValue=REMAP_DIM;
+    xSizeValue=REMAP_DIM;
 
     cLoop=0;
     
@@ -469,7 +470,7 @@ void selectiveAttentionProcessor::run(){
             }
             
             //5. controlling the heading of the robot
-            if((xm/countMaxes<320)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<240)&&(countMaxes!=0)) {
+            if((xm/countMaxes<REMAP_DIM)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<REMAP_DIM)&&(countMaxes!=0)) {
                 printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
             }
             else {
@@ -477,18 +478,16 @@ void selectiveAttentionProcessor::run(){
                 gazePerform=false;
             }
             if(gazePerform){
-                if(cLoop>10) {
-                    Vector px(2);
-                    px[0]=floor(xm/countMaxes);
-                    px[1]=floor(ym/countMaxes);
-                    
-                    //we still have one degree of freedom given by
-                    //the distance of the object from the image plane
-                    //if you do not have it, try to guess :)
-                    double z=1.0;   // distance [m]
-                    igaze->lookAtMonoPixel(camSel,px,z); 
-                    cLoop=0;
-                }
+                Vector px(2);
+                px[0]=floor(xm/countMaxes-REMAP_DIM/2+160);
+                px[1]=floor(ym/countMaxes-REMAP_DIM/2+120);
+                
+                //we still have one degree of freedom given by
+                //the distance of the object from the image plane
+                //if you do not have it, try to guess :)
+                double z=1.0;   // distance [m]
+                igaze->lookAtMonoPixel(camSel,px,z); 
+                cLoop=0;
             }
             outPorts();
         }

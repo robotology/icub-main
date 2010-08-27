@@ -29,9 +29,6 @@
 //ipp include
 #include <ippi.h>
 
-//utils includes
-#include <iCub/convert_bitdepth.h>
-
 //openCV includes
 #include <cv.h>
 #include <cvaux.h>
