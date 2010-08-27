@@ -1,4 +1,28 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file selectiveAttentionProcessor.cpp
+ * @brief Implementation of the thread of selective attention module (see header file).
+ */
+
 #include <iCub/selectiveAttentionProcessor.h>
 
 
@@ -16,264 +40,7 @@ using namespace yarp::sig;
 using namespace yarp::sig::draw;
 using namespace yarp::dev;
 using namespace std;
-
-#define Giotto1 0
-#define Giotto2 1
-#define CUST 20
-#define FITIN   99
-#define FITOUT 101
-#define CODELENGHT 7
-
-namespace _logpolarParams {
-    const int _xsize = 320;     // const int _xsize = 256;
-    const int _ysize = 240;     // const int _ysize = 256;
-    const int _srho = 152;
-    const int _stheta = 240;    // const int _stheta = 252;
-    const int _sfovea = 42;
-    
-    const int _xsizefovea = 128;
-    const int _ysizefovea = 128;
-    // this is the ratio between the full size cartesian image and the actual one
-    const double _ratio = 0.25;		// 1/4
-    
-    // parameter of the transformation
-    const double _q = _stheta/(2*3.1415926535897932384626433832795);
-    const double _lambda = 1.02314422608633;
-    const double _logLambda = log(_lambda);
-    const double _k1 = (_sfovea - 0.5)+(_lambda)/(1-_lambda);
-    const double _k2 = _lambda/(pow(_lambda,_sfovea)*(_lambda-1));
-};
-
-struct Image_Data {
-    // Logarithm Index
-    double Log_Index;
-    bool Valid_Log_Index;
-
-    // Zoom Level of the Remapped Image
-    double Zoom_Level;
-
-    // Ratio between the diameter of the image and the size of the smallest pixel
-    int Resolution;
-    double dres;
-
-//	int Fovea_Display_Mode; //0 Sawtooth (Raw); 1 Triangular; 2 Complete
-
-    // Log Polar Metrics
-    int Size_Rho;
-    int Size_Theta;
-    int Size_Fovea;
-    int Size_LP;
-    int Fovea_Type; //0->3 Giotto 2.0; 4->7 Giotto 2.1 //0;4 Sawtooth (Raw); 1;5 Triangular; 2;6 Complete
-    int Pix_Numb;
-    int Fovea_Display_Mode;
-
-    // Remapped Cartesian Metrics
-    int Size_X_Remap;
-    int Size_Y_Remap;
-    int Size_Img_Remap;
-
-    // Original Cartesian Metrics
-    int Size_X_Orig;
-    int Size_Y_Orig;
-    int Size_Img_Orig;
-
-    // Color Depth of the Images
-    int Orig_Planes;
-    int Remap_Planes;
-    int LP_Planes;
-
-    // Orientation of the Cartesian Image
-    bool Orig_LandScape;
-    bool Remap_LandScape;
-
-    int padding;
-
-    float Ratio;  //Used just for naming purpose
-};
-
-/**
-* set paramenters of the saliency operator
-* @param SXO size along x axis of the original image
-* @param SYO size of the original image along y axis
-* @param SXR size of the reconstruted image along x axis
-* @param SYR size of the reconstructed image along y axis
-* @param rho rho of logPolar conversion
-* @param theta theta of the logPolar conversion
-* @param fovea fovea size
-* @param resolution resolution of the image
-* @param LPMode logPolar modality (GIOTTO1, GIOTTO2, CUST)
-* @param ZoomLevel level of the zoom
-*/
-Image_Data Set_Param(
-                     int SXO,  //
-                     int SYO,   //
-                     int SXR, //
-                     int SYR, //
-                     int rho, //
-                     int theta, //
-                     int fovea, //
-                     int resolution, //
-                     int LPMode,  //
-                     double ZoomLevel  //level of the zoom
-                     )
-{
-    int Color = 3;
-    bool Landscape = true;
-    Image_Data image;
-    image.padding = 1; //No Padding
-
-    switch (LPMode)
-    {
-    case Giotto1:
-
-        image.Size_Rho = 76;
-        image.Size_Theta = 128;
-        image.Size_Fovea = 20;
-        image.Resolution = 600;
-        break;
-
-    case Giotto2:
-
-        image.Size_Rho = 152;
-        image.Size_Theta = 252;
-        image.Size_Fovea = 64;
-        image.Resolution = 1090;
-        break;
-
-    case CUST:
-
-        image.Size_Rho = rho;
-        image.Size_Theta = theta;
-        image.Size_Fovea = fovea;
-        image.Resolution = resolution;
-        image.Size_X_Remap = SXR;
-        image.Size_Y_Remap = SYR;
-        break;
-    }
-    
-    image.Size_LP = image.Size_Rho * image.Size_Theta;
-    image.Size_X_Orig = SXO;
-    image.Size_Y_Orig = SYO;
-    image.Size_X_Remap= SXR;
-    image.Size_Y_Remap= SYR;
-    image.Size_Img_Orig = image.Size_X_Orig*image.Size_Y_Orig;
-    image.Size_Img_Remap = image.Size_X_Remap * image.Size_Y_Remap;
-    image.LP_Planes = Color;
-    image.Orig_Planes = Color;
-    image.Remap_Planes = Color;
-    image.Valid_Log_Index = false;
-    image.Log_Index = 1.0;
-
-    if (ZoomLevel == FITIN){
-        image.Zoom_Level = (double)(image.Size_Y_Remap);
-        image.Zoom_Level /= (double)(image.Resolution);
-    }
-    else if (ZoomLevel == FITOUT){
-        image.Zoom_Level = (double)(image.Size_Y_Remap*image.Size_Y_Remap);
-        image.Zoom_Level += (double)(image.Size_X_Remap*image.Size_X_Remap);
-        image.Zoom_Level = (double)sqrt(image.Zoom_Level);
-        image.Zoom_Level /= (double)(image.Resolution);
-    }
-    else image.Zoom_Level = ZoomLevel;
-    image.Orig_LandScape  = Landscape;
-    image.Remap_LandScape = Landscape;
-    image.Pix_Numb = 4;
-    image.Fovea_Type = 0;
-    image.Ratio = 1.00;
-    image.dres = (double) image.Resolution;
-    image.Fovea_Display_Mode = 0;
-
-    return image;
-}
-
-double Compute_Index(double Resolution, int Fovea, int SizeRho)
-{
-    double DValue,Value, Tempt, Dx, ADx;
-    double x1,x2;
-    double Tolerance = 0.0001;
-
-    int exp = SizeRho - Fovea;
-    int j;
-
-    x1 = 1.0;
-    x2 = 3.0;
-    Dx = 100;
-    ADx = 100;
-
-    j=0;
-    Tempt = (double)(x1+x2)/2;
-    while  (ADx>Tolerance) 
-    {
-        if (Dx>=0)
-            ADx = Dx;
-        else
-            ADx = -Dx;
-
-        Value = pow(Tempt,exp+1)-((Resolution/2)-Fovea+0.5)*(Tempt-1)-Tempt;
-        Value = ((Tempt*(pow(Tempt,exp)-1))/(Tempt-1)) -(Resolution/2)+Fovea-0.5;
-        DValue = (exp+1)*pow(Tempt,exp)-((Resolution/2)-Fovea+0.5)-1;
-        DValue = ((exp)*pow(Tempt,exp+1)-(exp+1)*pow(Tempt,exp)+1)/((Tempt-1)*(Tempt-1));
-        Dx = Value/DValue;
-        Tempt -= Dx;
-        j++;
-    }
-
-    return Tempt;
-}
-
-int Get_XY_Center(double *xx, double *yy, int rho, int theta, Image_Data *par, double *Ang_Shift) {
-    double scalefactor;
-    int Temp_Size_Theta;
-    double A,B;
-    double mod;
-    double rd, td;
-
-    if (rho != 0)
-    {
-        rd = rho+0.5;
-        td = theta+0.5;
-    }
-    else
-    {
-        rd = rho;
-        td = theta;
-    }
-
-    if (!par->Valid_Log_Index){
-        par->Log_Index = Compute_Index(par->Resolution,par->Size_Fovea,par->Size_Rho);
-        par->Valid_Log_Index = true;
-    }
-
-    scalefactor = par->Zoom_Level;
-    B = par->Log_Index/(par->Log_Index-1);
-    A = par->Size_Fovea - B - 0.5;
-
-    if (rho<par->Size_Fovea)
-    {
-        Temp_Size_Theta = par->Size_Theta;
-        mod = rd-0.5;
-        if (rho==0)
-        {
-            Temp_Size_Theta = 1;
-            mod = 0;
-        }
-        else if (par->Fovea_Display_Mode < 2)
-            Temp_Size_Theta = (par->Size_Theta/par->Size_Fovea) * rho;
-    }
-    else
-    {
-        Temp_Size_Theta = par->Size_Theta;
-        mod = A+B*pow(par->Log_Index,rd-par->Size_Fovea);
-    }
-        if (Temp_Size_Theta>par->Size_Theta)
-            Temp_Size_Theta = par->Size_Theta;
-
-    const double PI = 3.1415926535897932384626433832795;
-    *xx = mod * cos(Ang_Shift[rho]+td*PI/(Temp_Size_Theta/2.0)) * scalefactor;
-    *yy = mod * sin(Ang_Shift[rho]+td*PI/(Temp_Size_Theta/2.0)) * scalefactor;
-
-    return 0;
-}
+using namespace iCub::logpolar;
 
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
@@ -284,6 +51,8 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     idle=true;
     interrupted=false;
     gazePerform=false;
+    xSizeValue=320;
+    xSizeValue=240;
 
     cLoop=0;
     
@@ -354,10 +123,6 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE) {
     this->inImage=inputImage;
-    //this->portImage=portImage;
-
-    //edgesOutput=new ImageOf<PixelMono>;
-    //portImage=new ImageOf<PixelRgb>;
     tmp=new ImageOf<PixelMono>;
 }
 
@@ -393,14 +158,6 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
 void selectiveAttentionProcessor::resizeImages(int width,int height) {
 
     tmp->resize(width,height);
-    //portImage->resize(width,height);
-    /*map1_yarp->resize(width,height);
-    map2_yarp->resize(width,height);
-    map3_yarp->resize(width,height);
-    map4_yarp->resize(width,height);
-    map5_yarp->resize(width,height);
-    map6_yarp->resize(width,height);*/
-
     inImage->resize(width,height);
 
     if(map1_ippi ==0){
@@ -427,7 +184,7 @@ void selectiveAttentionProcessor::resizeImages(int width,int height) {
 */
 bool selectiveAttentionProcessor::threadInit(){
     printf("Thread initialization .... \n");
-    //input ports 
+    //opening ports
     inImagePort.open(getName("/image:i").c_str());
     map1Port.open(getName("/map1:i").c_str());
     map2Port.open(getName("/map2:i").c_str());
@@ -440,7 +197,19 @@ bool selectiveAttentionProcessor::threadInit(){
     linearCombinationPort.open(getName("/combination2:o").c_str());
     centroidPort.open(getName("/centroid:o").c_str());
     feedbackPort.open(getName("/feedback:o").c_str());
+    imageCartOut.open(getName("/cartesian:o").c_str());
 
+    //initializing logpolar mapping
+    cout << "||| initializing the logpolar mapping" << endl;
+
+    if (!trsf.allocLookupTables(L2C, numberOfRings, numberOfAngles, xSizeValue, ySizeValue, overlap)) {
+        cerr << "can't allocate lookup tables" << endl;
+        return false;
+    }
+    cout << "||| lookup table allocation done" << endl;
+
+
+    //initializing gazecontrollerclient
     Property option;
     option.put("device","gazecontrollerclient");
     option.put("remote","/iKinGazeCtrl");
@@ -475,7 +244,7 @@ void selectiveAttentionProcessor::run(){
     //synchronisation with the input image occuring
     if(!interrupted){
         
-        //--------read value from the preattentive level
+        //--read value from the preattentive level
         if(feedbackPort.getOutputCount()){
             /*
             Bottle in,out;
@@ -524,30 +293,15 @@ void selectiveAttentionProcessor::run(){
 
         //
 
-        //-------------read input maps
-        //if(map1Port.getInputCount()){
-        //    tmp=map1Port.read(false);
-        //}
-        //if(inImagePort.getInputCount()){
         tmp2=inImagePort.read(false);
-        
         if(tmp2==0){
             return;
         }
         
         if(!reinit_flag){
-            //srcsize.height=img->height();
-            //srcsize.width=img->width();
             reinitialise(tmp2->width(), tmp2->height());
             reinit_flag=true;
-            //currentProcessor=new selectiveAttentionProcessor();
-            //passes the temporary variable for the mode
-            //currentProcessor->resizeImages(tmp2->width(),tmp2->height());
-            //startselectiveAttentionProcessor();
-            //currentProcessor->setIdle(false);
         }
-        
-        //currentProcessor->inImage=tmp2;
         
         if(map1Port.getInputCount()) {
             tmp=map1Port.read(false);
@@ -639,23 +393,17 @@ void selectiveAttentionProcessor::run(){
                 pmap6+=padding;
                 plinear+=padding;
             }
-
+            unsigned char* pout=outputImage->getRawImage();
+            unsigned char* plinear=linearCombinationImage->getRawImage();
+            
             if(maxValue==0) {
                 outputImage->zero();
             }
             else {
-                unsigned char* pout=outputImage->getRawImage();
-                unsigned char* plinear=linearCombinationImage->getRawImage();
-                xm=0, ym=0;
-                int count=0;
-                float d=0;
                 for(int y=0;y<height;y++) {
                     for(int x=0;x<width;x++) {
                         if(*plinear==maxValue){
                             *pout=255;
-                            count++;
-                            xm+=x;
-                            ym+=y;
                         }
                         else {
                             *pout=0;
@@ -666,51 +414,53 @@ void selectiveAttentionProcessor::run(){
                     pout+=padding;
                     plinear+=padding;
                 }
-                xm=xm/count;
-                ym=ym/count;
             }
-            //specify the pixel where to look
-            Vector px(2);
-            //convert the logpolar coordinates to cartesian coordinates
-                
-            double xx = 0;
-            double yy = 0;
-            //double _xsize=2;
-            //double _ysize=2;
-
-            /**
-            * pointers to angleShift
-            */
-            double *_angShiftMap;
-            _angShiftMap = (double *) malloc (252 * sizeof(double));
-            for(int i=0;i<252;i++){
-                _angShiftMap[i]=0.0;
+            //trasform the logpolar to cartesian
+            plinear=linearCombinationImage->getRawImage();
+            ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();
+            outputCartImage.resize(xSizeValue,ySizeValue);
+            ImageOf<PixelRgb>* inputLogImage=new ImageOf<PixelRgb>;
+            inputLogImage->resize(width,height);
+            unsigned char* pImage=inputLogImage->getRawImage();
+            int padding3C=inputLogImage->getPadding();
+            maxValue=0;
+            for(int y=0;y<height;y++) {
+                for(int x=0;x<width;x++) {
+                    *pImage=(unsigned char)*plinear;
+                    pImage++;
+                    *pImage=(unsigned char)*plinear;
+                    pImage++;
+                    *pImage=(unsigned char)*plinear;
+                    pImage++;
+                    plinear++;
+                    if(maxValue<*plinear) {
+                        maxValue=*plinear;
+                    }
+                }
+                pImage+=padding3C;
+                plinear+=padding;
             }
-            /**
-            * feature of the input image
-            */
-            int _xsize=320;
-            int _ysize=240;
-            Image_Data _img;
-            _img = Set_Param(
-            _xsize, _ysize,
-            240,240, //256,256
-            252, 152, 64,
-            1090,
-            CUST,
-            252.0/1090.0);
-
-            Get_XY_Center(&xx, &yy, xm, ym, &_img, _angShiftMap);
-
-            using namespace _logpolarParams;
-            px[0] = int(xx + .5) + 240/2;
-            px[1] = 240/2 - int(yy + .5);
-
-            printf("******************************** \n");
-            printf("cartesian:%f,%f \n",px[0],px[1]);
+            trsf.logpolarToCart(outputCartImage,*inputLogImage);
+            imageCartOut.write();
+            //find the max in the cartesian image
+            pImage=outputCartImage.getRawImage();
+            int countMaxes=0;
+            float xm=0,ym=0;
+            for(int y=0;y<ySizeValue;y++) {
+                for(int x=0;x<xSizeValue;x++) {
+                    if(*pImage=maxValue) {
+                        xm+=x;
+                        ym+=y;
+                        countMaxes++;
+                    }
+                }
+            }
+            printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
             if(gazePerform){
-                
                 if(cLoop>=100) {
+                    Vector px(2);
+                    px[0]=floor(xm/countMaxes);
+                    px[1]=floor(ym/countMaxes);
                     
                     //we still have one degree of freedom given by
                     //the distance of the object from the image plane
@@ -720,7 +470,6 @@ void selectiveAttentionProcessor::run(){
                     cLoop=0;
                 }
             }
-            printf("logpolar:%f,%f \n",xm,ym);
             outPorts();
         }
     }
@@ -732,6 +481,26 @@ void selectiveAttentionProcessor::setGazePerform(bool value) {
 
 void selectiveAttentionProcessor::setCamSelection(int value) {
     camSel=value;
+}
+
+void selectiveAttentionProcessor::setXSize(int xSize) {
+    xSizeValue=xSize;
+}
+
+void selectiveAttentionProcessor::setYSize(int ySize) {
+    ySizeValue=ySize;
+}
+
+void selectiveAttentionProcessor::setOverlap(int _overlap) {
+    overlap=_overlap;
+}
+
+void selectiveAttentionProcessor::setNumberOfRings(int _numberOfRings) {
+    numberOfRings=_numberOfRings;
+}
+
+void selectiveAttentionProcessor::setNumberOfAngles(int _numberOfAngles) {
+    numberOfAngles=_numberOfAngles;
 }
 
 
@@ -955,6 +724,8 @@ void selectiveAttentionProcessor::interrupt(){
 *	releases the thread
 */
 void selectiveAttentionProcessor::threadRelease(){
+    trsf.freeLookupTables();
+
     printf("Thread realeasing .... \n");
     printf("Closing all the ports.. \n");
     //closing input ports
@@ -970,6 +741,8 @@ void selectiveAttentionProcessor::threadRelease(){
     linearCombinationPort.close();
     centroidPort.close();
     feedbackPort.close();
+    imageCartOut.close();
+
     
     clientGazeCtrl->close();
 }

@@ -1,4 +1,28 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file selectiveAttentionProcessor.cpp
+ * @brief Implementation of the thread which performs computation in the selectiveAttentionModule
+ */
+
 #ifndef _selectiveAttentionProcessor_H_
 #define _selectiveAttentionProcessor_H_
 
@@ -17,6 +41,8 @@
 #include <yarp/sig/all.h>
 #include <yarp/dev/all.h>
 
+/* Log-Polar includes */
+#include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
 #include <string>
 #include <time.h>
@@ -37,6 +63,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp; //temporary mono image
         yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2; //temporary rgb image
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //a port for the inputImage (colour)
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageCartOut; //cartesian image result of the remapping
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; // input port for the 1st saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; // input port for the 2nd saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; // input port for the 3rd saliency map
@@ -45,7 +72,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; //input port for the 6th saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; //output port that represent the linear combination of different maps
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > selectedAttentionPort; //output port that represent the selected attention output
-        yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;  //output port where the centroid coordinate is sent
+        yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;//output port where the centroid coordinate is sent
         yarp::os::Port feedbackPort; //port necessary to send back command to the preattentive processors
         Ipp8u* map1_ippi; //ippi image of the 1st map
         Ipp8u* map2_ippi; //ippi image of the 2nd map
@@ -64,6 +91,11 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         int targetBLUE; //value read from the blobFinder component (blue intensity of the target)
         int width; //width of the input image
         int height; //height of the input image
+        int xSizeValue; //x dimension of the remapped cartesian image
+        int ySizeValue; //y dimension of the remapped cartesian image
+        int overlap;     //overlap in the remapping
+        int numberOfRings;  //number of rings in the remapping
+        int numberOfAngles; //number of angles in the remapping
         double salienceTD; //value of the weight of top-down approach in the blobFinder
         double salienceBU; //value of the weight of bottom-up approach in the blobFinder
         unsigned char targetRed; //colour information passed back for the reinforcement
@@ -79,6 +111,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         double xm, ym; //position of the most salient object in the combination
         yarp::dev::IGazeControl *igaze; //Ikin controller of the gaze
         yarp::dev::PolyDriver* clientGazeCtrl; //polydriver for the gaze controller
+        iCub::logpolar::logpolarTransform trsf;
 
     public:
         /**
@@ -170,6 +203,36 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         * @param value is the value of the cam selection ( 0: left, 1: right )
         */
         void setCamSelection(int value);
+
+        /**
+        * function that set the dimension of the remapped cartesian image
+        * @param xSize dimension in x
+        */
+        void setXSize(int xSize);
+
+        /**
+        * function that set the dimension of the remapped cartesian image
+        * @param ySize dimension in y
+        */
+        void setYSize(int ySize);
+
+        /**
+        * function that declare the overlap needed in the reconstruction
+        * @param overlap value of the overlapping
+        */
+        void setOverlap(int overlap);
+
+        /**
+        * function that declares the number of rings of the image has to be remapped
+        * @param numberOfRings number of rings
+        */
+        void setNumberOfRings(int numberOfRings);
+
+        /**
+        * function that declares the number of angles of the image has to be remapped
+        * @param numberOfAngles number of angles
+        */
+        void setNumberOfAngles(int numberOfAngles);
 
         /*
         * function that declare whether to perform saccadic movement with gazeControl

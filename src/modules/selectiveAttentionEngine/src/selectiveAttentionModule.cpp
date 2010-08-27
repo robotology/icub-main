@@ -1,4 +1,29 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Francesco Rea
+ * email:   francesco.rea@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+/**
+ * @file selectiveAttentionModule.cpp
+ * @brief Implementation of the module for selective attention (see header file).
+ */
+
+
 #include <iCub/selectiveAttentionModule.h>
 #include <yarp/os/Network.h>
 
@@ -52,9 +77,6 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
                            Value("/selectiveAttentionEngine/icub/left_cam"), 
                            "module name (string)").asString();
 
-
-
-
     /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
@@ -75,16 +97,49 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
       cout << getName() << ": Unable to open port " << endl;  
       return false;
     }
-
     attach(cmdPort);                  // attach to port
 
     //initialization of the main thread
-    
     currentProcessor=new selectiveAttentionProcessor(rateThread);
-
     currentProcessor->setName(this->getName().c_str());
     //blobFinder->reinitialise(interThread->img->width(),interThread->img->height());
-    currentProcessor->start();
+    
+
+
+    /* get the number of angles */
+
+    numberOfAngles        = rf.check("angles",
+                           Value(252),
+                           "Key value (int)").asInt();
+    currentProcessor->setNumberOfAngles(numberOfAngles);
+
+    /* get the number of rings */
+
+    numberOfRings         = rf.check("rings",
+                           Value(152),
+                           "Key value (int)").asInt();
+    currentProcessor->setNumberOfRings(numberOfRings);
+
+    /* get the size of the X dimension */
+
+    xSize                 = rf.check("xsize",
+                           Value(320),
+                           "Key value (int)").asInt();
+    currentProcessor->setXSize(xSize);
+
+    /* get the size of the Y dimension */
+
+    ySize                 = rf.check("ysize",
+                           Value(240),
+                           "Key value (int)").asInt();
+    currentProcessor->setYSize(ySize);
+
+    /* get the overlap ratio */
+
+    overlap               = rf.check("overlap",
+                           Value(1.0),
+                           "Key value (int)").asDouble();
+    currentProcessor->setOverlap(overlap);
 
     /* selects which one of the two camera drives the gaze */
     camSelection            = rf.check("camSelection", 
@@ -107,7 +162,8 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     else {
         currentProcessor->setGazePerform(false);
     }
-
+    
+    currentProcessor->start();
 
     printf("\n waiting for connection of the input port \n");
     return true;
