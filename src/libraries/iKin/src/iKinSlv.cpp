@@ -33,7 +33,8 @@ class iCubShoulderConstr : public iKinLinIneqConstr
 {
 protected:    
     unsigned int numAxes2Shou;
-    double m, n;
+    double shou_m, shou_n;
+    double elb_m,  elb_n;
 
     iKinChain *chain;
 
@@ -44,10 +45,52 @@ protected:
         const iCubShoulderConstr *ptr=static_cast<const iCubShoulderConstr*>(obj);
 
         numAxes2Shou=ptr->numAxes2Shou;
-        m=ptr->m;
-        n=ptr->n;
+        shou_m=ptr->shou_m;
+        shou_n=ptr->shou_n;
+        elb_m=ptr->elb_m;
+        elb_n=ptr->elb_n;
         
         chain=ptr->chain;
+    }
+
+    void appendMatrixRow(Matrix &dest, const Vector &row)
+    {
+        Matrix tmp;
+
+        // if dest is already filled with something
+        if (dest.rows())
+        {   
+            // exit if lengths do not match     
+            if (row.length()!=dest.cols())
+                return;
+
+            tmp.resize(dest.rows()+1,dest.cols());
+
+            // copy the content of dest in temp
+            for (int i=0; i<dest.rows(); i++)
+                for (int j=0; j<dest.cols(); j++)
+                    tmp(i,j)=dest(i,j);
+
+            // reassign dest
+            dest=tmp;
+        }
+        else
+            dest.resize(1,row.length());
+
+        // append the last row
+        for (int i=0; i<dest.cols(); i++)
+            dest(dest.rows()-1,i)=row[i];
+    }
+
+    void appendVectorValue(Vector &dest, double val)
+    {
+        Vector tmp(dest.length()+1);
+
+        for (int i=0; i<dest.length(); i++)
+            tmp[i]=dest[i];
+
+        dest=tmp;
+        dest[dest.length()-1]=val;
     }
 
 public:
@@ -56,7 +99,7 @@ public:
         chain=_chain;
 
         // number of axes to reach shoulder's ones
-        // from root reference  
+        // from root reference
         numAxes2Shou=3;
 
         double joint1_0, joint1_1;
@@ -65,21 +108,36 @@ public:
         joint1_1= 15.0*CTRL_DEG2RAD;
         joint2_0=-33.0*CTRL_DEG2RAD;
         joint2_1= 60.0*CTRL_DEG2RAD;
+        shou_m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
+        shou_n=joint1_0-shou_m*joint2_0;
 
-        m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
-        n=joint1_0-m*joint2_0;
+        double joint3_0, joint3_1;
+        double joint4_0, joint4_1;
+        joint3_0= 90.0*CTRL_DEG2RAD;
+        joint3_1=105.0*CTRL_DEG2RAD;
+        joint4_0= 90.0*CTRL_DEG2RAD;
+        joint4_1= 50.0*CTRL_DEG2RAD;
+        elb_m=(joint4_1-joint4_0)/(joint3_1-joint3_0);
+        elb_n=joint4_0-elb_m*joint3_0;
 
         update(NULL);
     }
 
     virtual void update(void*)
     {
-        // if any of shoulder's axes is blocked, skip
-        if ((*chain)[numAxes2Shou].isBlocked()   ||
-            (*chain)[numAxes2Shou+1].isBlocked() ||
-            (*chain)[numAxes2Shou+2].isBlocked())
-            setActive(false);   // optimization won't use LinIneqConstr
-        else
+        // optimization won't use LinIneqConstr by default
+        setActive(false);
+
+        Matrix _C;
+        Vector _lB;
+        Vector _uB;
+
+        Vector row(chain->getDOF());
+
+        // if shoulder's axes are controlled, constraint them
+        if (!(*chain)[numAxes2Shou].isBlocked()   &&
+            !(*chain)[numAxes2Shou+1].isBlocked() &&
+            !(*chain)[numAxes2Shou+2].isBlocked())
         {
             // compute offset to shoulder's axes
             // given the blocked/release status of
@@ -89,26 +147,75 @@ public:
                 if (!(*chain)[i].isBlocked())
                     offs++;
 
-            // linear inequalities matrix
-            C.resize(5,chain->getDOF()); C.zero();
             // constraints on the cables length
-            C(0,offs)=1.71; C(0,offs+1)=-1.71;
-            C(1,offs)=1.71; C(1,offs+1)=-1.71; C(1,offs+2)=-1.71;
-                            C(2,offs+1)=1.0;   C(2,offs+2)=1.0;
+            row.zero();
+            row[offs]=1.71; row[offs+1]=-1.71;
+            appendMatrixRow(_C,row);
+            appendVectorValue(_lB,-347.00*CTRL_DEG2RAD);
+            appendVectorValue(_uB,upperBoundInf);
+
+            row.zero();
+            row[offs]=1.71; row[offs+1]=-1.71; row[offs+2]=-1.71;
+            appendMatrixRow(_C,row);
+            appendVectorValue(_lB,-366.57*CTRL_DEG2RAD);
+            appendVectorValue(_uB,112.42*CTRL_DEG2RAD);
+
+            row.zero();
+            row[offs+1]=1.0; row[offs+2]=1.0;
+            appendMatrixRow(_C,row);
+            appendVectorValue(_lB,-66.600*CTRL_DEG2RAD);
+            appendVectorValue(_uB,213.30*CTRL_DEG2RAD);
+
             // constraints to prevent arm from touching torso
-                            C(3,offs+1)=1.0;   C(3,offs+2)=-m;
+            row.zero();
+            row[offs+1]=1.0; row[offs+2]=-shou_m;
+            appendMatrixRow(_C,row);
+            appendVectorValue(_lB,shou_n);
+            appendVectorValue(_uB,upperBoundInf);
+
             // constraints to limit shoulder abduction
-                            C(4,offs+1)=1.0;
-    
-            // lower and upper bounds
-            lB.resize(5); uB.resize(5);
-            lB[0]=-347.00*CTRL_DEG2RAD; uB[0]=upperBoundInf;
-            lB[1]=-366.57*CTRL_DEG2RAD; uB[1]=112.42*CTRL_DEG2RAD;
-            lB[2]=-66.600*CTRL_DEG2RAD; uB[2]=213.30*CTRL_DEG2RAD;
-            lB[3]=n;                    uB[3]=upperBoundInf;
-            lB[4]=lowerBoundInf;        uB[4]=SHOULDER_MAXABDUCTION;
+            row.zero();
+            row[offs+1]=1.0;
+            appendMatrixRow(_C,row);
+            appendVectorValue(_lB,lowerBoundInf);
+            appendVectorValue(_uB,SHOULDER_MAXABDUCTION);
 
             // optimization will use LinIneqConstr
+            getC()=_C;
+            getlB()=_lB;
+            getuB()=_uB;
+            setActive(true);
+        }
+
+        // if elbow and pronosupination axes are controlled, constraint them
+        if (!(*chain)[numAxes2Shou+3].isBlocked() &&
+            !(*chain)[numAxes2Shou+4].isBlocked())
+        {
+            // compute offset to elbow's axis
+            // given the blocked/release status of
+            // previous link
+            unsigned int offs=0;
+            for (unsigned int i=0; i<numAxes2Shou+3; i++)
+                if (!(*chain)[i].isBlocked())
+                    offs++;
+
+            // constraints to prevent forearm from hitting the arm
+            row.zero();
+            row[offs]=-elb_m; row[offs+1]=1.0;
+            appendMatrixRow(_C,row);
+            appendVectorValue(_lB,lowerBoundInf);
+            appendVectorValue(_uB,elb_n);
+
+            row.zero();
+            row[offs]=elb_m; row[offs+1]=1.0;
+            appendMatrixRow(_C,row);
+            appendVectorValue(_lB,-elb_n);
+            appendVectorValue(_uB,upperBoundInf);
+
+            // optimization will use LinIneqConstr
+            getC()=_C;
+            getlB()=_lB;
+            getuB()=_uB;
             setActive(true);
         }
     }
