@@ -29,7 +29,8 @@ INCLUDE_DIRECTORIES(
     ${YARP_INCLUDE_DIRS}
     ${ICUB_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIR}    	
-    ${IPP_INCLUDE_DIRS}	 
+    ${IPP_INCLUDE_DIRS}	
+	${logpolar_INCLUDE_DIRS}
 )
 
 IF(NOT IPP_INCLUDE_DIRS)
@@ -53,6 +54,7 @@ IF (folder_source)
       ${OPENCV_LIBRARIES}  
       ${IPP_LIBRARIES}
  	  icubmod
+	  logpolar
      )	
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
