@@ -31,7 +31,6 @@
 
 //openCV includes
 #include <cv.h>
-//#include <cvaux.h>
 #include <highgui.h>
 
 #include <yarp/os/all.h>

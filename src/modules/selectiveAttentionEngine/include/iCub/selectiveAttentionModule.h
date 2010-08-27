@@ -35,7 +35,6 @@
 
 //openCV include
 #include <cv.h>
-#include <cvaux.h>
 #include <highgui.h>
 
 
