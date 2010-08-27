@@ -32,7 +32,6 @@ namespace iKin
 class iCubShoulderConstr : public iKinLinIneqConstr
 {
 protected:    
-    unsigned int numAxes2Shou;
     double shou_m, shou_n;
     double elb_m,  elb_n;
 
@@ -44,7 +43,6 @@ protected:
 
         const iCubShoulderConstr *ptr=static_cast<const iCubShoulderConstr*>(obj);
 
-        numAxes2Shou=ptr->numAxes2Shou;
         shou_m=ptr->shou_m;
         shou_n=ptr->shou_n;
         elb_m=ptr->elb_m;
@@ -98,10 +96,6 @@ public:
     {      
         chain=_chain;
 
-        // number of axes to reach shoulder's ones
-        // from root reference
-        numAxes2Shou=3;
-
         double joint1_0, joint1_1;
         double joint2_0, joint2_1;
         joint1_0= 10.0*CTRL_DEG2RAD;
@@ -135,15 +129,14 @@ public:
         Vector row(chain->getDOF());
 
         // if shoulder's axes are controlled, constraint them
-        if (!(*chain)[numAxes2Shou].isBlocked()   &&
-            !(*chain)[numAxes2Shou+1].isBlocked() &&
-            !(*chain)[numAxes2Shou+2].isBlocked())
+        if (!(*chain)[3].isBlocked() && !(*chain)[3+1].isBlocked() &&
+            !(*chain)[3+2].isBlocked())
         {
             // compute offset to shoulder's axes
             // given the blocked/release status of
             // previous link
             unsigned int offs=0;
-            for (unsigned int i=0; i<numAxes2Shou; i++)
+            for (unsigned int i=0; i<3; i++)
                 if (!(*chain)[i].isBlocked())
                     offs++;
 
@@ -188,18 +181,17 @@ public:
         }
 
         // if elbow and pronosupination axes are controlled, constraint them
-        if (!(*chain)[numAxes2Shou+3].isBlocked() &&
-            !(*chain)[numAxes2Shou+4].isBlocked())
+        if (!(*chain)[3+3].isBlocked() && !(*chain)[3+3+1].isBlocked())
         {
             // compute offset to elbow's axis
             // given the blocked/release status of
             // previous link
             unsigned int offs=0;
-            for (unsigned int i=0; i<numAxes2Shou+3; i++)
+            for (unsigned int i=0; i<(3+3); i++)
                 if (!(*chain)[i].isBlocked())
                     offs++;
 
-            // constraints to prevent forearm from hitting the arm
+            // constraints to prevent the forearm from hitting the arm
             row.zero();
             row[offs]=-elb_m; row[offs+1]=1.0;
             appendMatrixRow(_C,row);
