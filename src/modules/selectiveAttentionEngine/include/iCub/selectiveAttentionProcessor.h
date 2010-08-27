@@ -289,7 +289,6 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         int centroid_y; //center of gravity of the selective attention (y position)
         time_t start2; //time variable
         time_t end2; //time variable
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg; //input image reference
         
 };
 

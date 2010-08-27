@@ -42,7 +42,8 @@ using namespace yarp::dev;
 using namespace std;
 using namespace iCub::logpolar;
 
-#define REMAP_DIM 128
+#define XSIZE_DIM 640 //original mapping 
+#define YSIZE_DIM 480 //original mapping
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
 {
@@ -52,8 +53,8 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     idle=true;
     interrupted=false;
     gazePerform=true;
-    xSizeValue=REMAP_DIM;
-    ySizeValue=REMAP_DIM;
+    xSizeValue=XSIZE_DIM;
+    ySizeValue=YSIZE_DIM;
 
     cLoop=0;
     
@@ -133,8 +134,8 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     this->width=width;
     this->height=height;
 
-    inputImg=new ImageOf<PixelRgb>;
-    inputImg->resize(width,height);
+    inImage=new ImageOf<PixelRgb>;
+    inImage->resize(width,height);
 
     linearCombinationImage=new ImageOf<PixelMono>;
     linearCombinationImage->resize(width,height);
@@ -299,11 +300,11 @@ void selectiveAttentionProcessor::run(){
         if(tmp2==0){
             return;
         }
-        
         if(!reinit_flag){
             reinitialise(tmp2->width(), tmp2->height());
             reinit_flag=true;
         }
+        ippiCopy_8u_C3R(tmp2->getRawImage(),tmp2->getRowSize(),inImage->getRawImage(), inImage->getRowSize(),srcsize);
         
         if(map1Port.getInputCount()) {
             tmp=map1Port.read(false);
@@ -444,16 +445,18 @@ void selectiveAttentionProcessor::run(){
             imageCartOut.write();
             
             //4.find the max in the cartesian image
+           
             maxValue=0;
             float xm=0,ym=0;
             int countMaxes=0;
             pImage=outputCartImage.getRawImage();
+            int paddingInput=inImage->getPadding();
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
-                    if(maxValue<*pImage) {
-                        maxValue=*pImage;
-                    }
-                    pImage+=3;
+                        if(maxValue<*pImage) {
+                            maxValue=*pImage;
+                        }
+                        pImage+=3;
                 }
                 pImage+=padding3C;
             }
@@ -471,7 +474,7 @@ void selectiveAttentionProcessor::run(){
             }
             
             //5. controlling the heading of the robot
-            if((xm/countMaxes<REMAP_DIM)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<REMAP_DIM)&&(countMaxes!=0)) {
+            if((xm/countMaxes<XSIZE_DIM)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<YSIZE_DIM)&&(countMaxes!=0)) {
                 printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
             }
             else {
@@ -481,8 +484,8 @@ void selectiveAttentionProcessor::run(){
             printf("cLoop: %d \n", cLoop);
             if(cLoop>30) {
                 Vector px(2);
-                px[0]=floor(xm/countMaxes-REMAP_DIM/2+160);
-                px[1]=floor(ym/countMaxes-REMAP_DIM/2+120);
+                px[0]=floor(xm/countMaxes-XSIZE_DIM/2+160);
+                px[1]=floor(ym/countMaxes-YSIZE_DIM/2+120);
                 
                 //we still have one degree of freedom given by
                 //the distance of the object from the image plane
