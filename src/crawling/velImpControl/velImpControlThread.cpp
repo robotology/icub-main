@@ -11,6 +11,9 @@
 #define STANCE 0
 #define INIT -1
 
+//switching between swing and stance (according to the direction of the shoulder/hip pitch joints)
+#define SWITCH 1
+
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -83,8 +86,10 @@ void velImpControlThread::run()
             ffVelocities = 0.0;
         }
     }
-    
-    //switchImp(ffVelocities[0]); //change stiffness according to shoulder/hips velocities
+
+#if SWITCH    
+    switchImp(ffVelocities[0]); //change stiffness according to shoulder/hips velocities
+#endif
 
 	//getting commands from the slow port
 	yarp::sig::Vector *vec = command_port2.read(false);
@@ -257,7 +262,6 @@ bool velImpControlThread::init(PolyDriver *d, ConstString partName, ConstString 
 	}
 
 
-
 	encoders.resize(nJoints);
 	encoders_speed.resize(nJoints);
 	command.resize(nJoints);
@@ -383,8 +387,8 @@ void velImpControlThread::limitSpeed(Vector &v)
 void velImpControlThread::switchImp(double vel)
 {
 	//we change the stiffness depending on whether the limb is in swing or stance
-	//arm shoulder: negative velocity => swing, positive velocity => stance
-	//leg hip: positive velocity => swing, negative velocity => stance
+	//arm shoulder pitch: negative velocity => swing, positive velocity => stance
+	//leg hip pitch: positive velocity => swing, negative velocity => stance
 	
 	if(limbName=="left_arm" || limbName=="right_arm")
 	{
@@ -452,7 +456,7 @@ void velImpControlThread::switchImp(double vel)
 		}	
 	}	
 	
-	//fprintf(stiffFile, "%f %f %f \n",vel , stiff, Time::now());
+	//fprintf(stiffFile, "%f %d %f \n",vel , state, Time::now());
 }
 	
 	    

@@ -23,7 +23,7 @@ bool CrawlManagerModule::updateModule()
     cout << "(4) Slower" << endl;
     cout << "(5) Turn right" << endl;
     cout << "(6) Turn left" << endl;
-    cout <<"(9) EMERGENCY STOP" << endl;
+    cout <<"(9) Stop" << endl;
     
     return true;
 }
@@ -142,7 +142,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 }
             }
             
-            reply.addString("EMERGENCY STOP");
+            reply.addString("Closing... ");
             
             crawl_left_parameters[9][1]=0.0;
             
@@ -175,7 +175,7 @@ bool CrawlManagerModule::open(Searchable &s)
     		return false;
     	}
     	string cubPathStr(cubPath);
-    	options.fromConfigFile((cubPathStr + "/app/Crawling/config/managerConfig.ini").c_str());
+    	options.fromConfigFile((cubPathStr + "/app/crawling/config/managerConfig.ini").c_str());
 	}
     
     options.toString();
@@ -547,12 +547,12 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
 	if(desiredTurnAngle > MAX_TURN_ANGLE)
 	{
 		desiredTurnAngle = MAX_TURN_ANGLE;
-        printf("Already at MAX TURN ANGLE %d\n", MAX_TURN_ANGLE);  
+        printf("Already at MAX TURN ANGLE %4.2f\n", MAX_TURN_ANGLE);  
 	}
 	else if(desiredTurnAngle < -MAX_TURN_ANGLE)
 	{
 		desiredTurnAngle = -MAX_TURN_ANGLE;
-        printf("Already at MIN TURN ANGLE %d\n", -MAX_TURN_ANGLE);  
+        printf("Already at MIN TURN ANGLE %4.2f\n", -MAX_TURN_ANGLE);  
 
 	}
 

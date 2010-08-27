@@ -196,153 +196,146 @@ public:
 
         vc=new velImpControlThread(period);
         
-        if(partName != "torso" || partName != "head")
-        {
-			if(options.check("file"))
-			{
-				stiffnessOptions.fromConfigFile(options.find("file").asString().c_str());
-			}
-			else
-			{
-				const char *cubPath;
-				cubPath = yarp::os::getenv("ICUB_DIR");
-				if(cubPath == NULL) 
-				{
-					printf("velImpControl::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
-					return false;
-				}
-				string cubPathStr(cubPath);
-				stiffnessOptions.fromConfigFile((cubPathStr + "/app/Crawling/config/" + partName + "StiffnessConfig.ini").c_str());
-			}
-			
-			if(stiffnessOptions.check("njoints"))
-			{
-				vc->njoints = stiffnessOptions.find("njoints").asInt();
-				printf("\nControlling %d dofs\n", vc->njoints);
-			}
-			else
-			{
-				printf("Please specify the number of joints in the config file");
-				return false;
-			}
-			
-			vc->impContr.resize(vc->njoints);
-			vc->swingStiff.resize(vc->njoints);
-			vc->stanceStiff.resize(vc->njoints);
-			vc->swingDamp.resize(vc->njoints);
-			vc->stanceDamp.resize(vc->njoints);
-			vc->Grav.resize(vc->njoints);
-			
-			if(stiffnessOptions.check("ImpJoints"))
-			{
-				printf("Joints controlled with impedance: ");
-				
-				Bottle& bot = stiffnessOptions.findGroup("ImpJoints");
-				for(int i=0; i<vc->njoints; i++)
-				{
-					vc->impContr[i] = bot.get(i+1).asDouble();
-					printf("%4.2f ", vc->impContr[i]);
-				}
-				printf("\n");
-			}
-			else
-			{
-				printf("Please specify which joints are controlled with impedance in the config file");
-				return false;
-			}
-			
-			if(stiffnessOptions.check("SwingStiff"))
-			{
-				printf("Stiffness swing : ");
-				Bottle& bot = stiffnessOptions.findGroup("SwingStiff");
-				for(int i=0; i<vc->njoints; i++)
-				{
-					vc->swingStiff[i] =  bot.get(i+1).asDouble();
-					printf("%4.2f ", vc->swingStiff[i]);
-				}
-				printf("\n");
-			}
-			else
-			{
-				printf("Please specify the stiffness for the swing in the config file\n");
-				return false;
-			}
-			
-			if(stiffnessOptions.check("StanceStiff"))
-			{
-				printf("Stiffness stance: ");
-				Bottle& bot = stiffnessOptions.findGroup("StanceStiff");
-				for(int i=0; i<vc->njoints; i++)
-				{
-					vc->stanceStiff[i] =  bot.get(i+1).asDouble();
-					printf("%4.2f ", vc->stanceStiff[i]);
-				}
-				printf("\n");
-			}
-			else
-			{
-				printf("Please specify the stiffness for the stance in the config file\n");
-				return false;
-			}
-			
-			if(stiffnessOptions.check("SwingDamp"))
-			{
-				printf("Damping swing ");
-				Bottle& bot = stiffnessOptions.findGroup("SwingDamp");
-				for(int i = 0; i < vc->njoints; i++)
-				{
-					vc->swingDamp[i] =  bot.get(i+1).asDouble();
-					printf("%4.2f ", vc->swingDamp[i]);
-				}
-				printf("\n");
-			}
-			else
-			{
-				printf("Please specify the damping for the swing in the config file\n");
-				return false;
-			}
-			
-			if(stiffnessOptions.check("StanceDamp"))
-			{
-				printf("Damping stance: ");
-				Bottle& bot = stiffnessOptions.findGroup("StanceDamp");
-				for(int i=0; i<vc->njoints; i++)
-				{
-					vc->stanceDamp[i] = bot.get(i+1).asDouble();
-					printf("%4.2f ", vc->stanceDamp[i]);
-				}
-				printf("\n");
-			}
-			else
-			{
-				printf("Please specify the Dampness for the stance in the config file\n");
-				return false;
-			}
-			
-			
-			if(stiffnessOptions.check("Grav"))
-			{
-				printf("Gravity compensation: ");
-				Bottle& bot = stiffnessOptions.findGroup("Grav");
-				for(int i=0; i<vc->njoints; i++)
-				{
-					vc->Grav[i] =  bot.get(i+1).asDouble();
-					printf("%4.2f ", vc->Grav[i]);
-				}
-				printf("\n");
-			}
-			else
-			{
-				printf("Please specify if gravity compensation in the config file\n");
-				return false;
-			}
-	
+		if(options.check("file"))
+		{
+			stiffnessOptions.fromConfigFile(options.find("file").asString().c_str());
 		}
 		else
 		{
-			fprintf(stderr, "Config file for impedance control not define for torso and head\n");
+			const char *cubPath;
+			cubPath = yarp::os::getenv("ICUB_DIR");
+			if(cubPath == NULL) 
+			{
+				printf("velImpControl::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
+				return false;
+			}
+			string cubPathStr(cubPath);
+			stiffnessOptions.fromConfigFile((cubPathStr + "/app/crawling/config/" + partName + "StiffnessConfig.ini").c_str());
+		}
+		
+		if(stiffnessOptions.check("njoints"))
+		{
+			vc->njoints = stiffnessOptions.find("njoints").asInt();
+			printf("\nControlling %d dofs\n", vc->njoints);
+		}
+		else
+		{
+			printf("Please specify the number of joints in the config file");
 			return false;
 		}
+		
+		vc->impContr.resize(vc->njoints);
+		vc->swingStiff.resize(vc->njoints);
+		vc->stanceStiff.resize(vc->njoints);
+		vc->swingDamp.resize(vc->njoints);
+		vc->stanceDamp.resize(vc->njoints);
+		vc->Grav.resize(vc->njoints);
+		
+		if(stiffnessOptions.check("ImpJoints"))
+		{
+			printf("Joints controlled with impedance: ");
+			
+			Bottle& bot = stiffnessOptions.findGroup("ImpJoints");
+			for(int i=0; i<vc->njoints; i++)
+			{
+				vc->impContr[i] = bot.get(i+1).asDouble();
+				printf("%4.2f ", vc->impContr[i]);
+			}
+			printf("\n");
+		}
+		else
+		{
+			printf("Please specify which joints are controlled with impedance in the config file");
+			return false;
+		}
+		
+		if(stiffnessOptions.check("SwingStiff"))
+		{
+			printf("Stiffness swing : ");
+			Bottle& bot = stiffnessOptions.findGroup("SwingStiff");
+			for(int i=0; i<vc->njoints; i++)
+			{
+				vc->swingStiff[i] =  bot.get(i+1).asDouble();
+				printf("%4.2f ", vc->swingStiff[i]);
+			}
+			printf("\n");
+		}
+		else
+		{
+			printf("Please specify the stiffness for the swing in the config file\n");
+			return false;
+		}
+		
+		if(stiffnessOptions.check("StanceStiff"))
+		{
+			printf("Stiffness stance: ");
+			Bottle& bot = stiffnessOptions.findGroup("StanceStiff");
+			for(int i=0; i<vc->njoints; i++)
+			{
+				vc->stanceStiff[i] =  bot.get(i+1).asDouble();
+				printf("%4.2f ", vc->stanceStiff[i]);
+			}
+			printf("\n");
+		}
+		else
+		{
+			printf("Please specify the stiffness for the stance in the config file\n");
+			return false;
+		}
+		
+		if(stiffnessOptions.check("SwingDamp"))
+		{
+			printf("Damping swing ");
+			Bottle& bot = stiffnessOptions.findGroup("SwingDamp");
+			for(int i = 0; i < vc->njoints; i++)
+			{
+				vc->swingDamp[i] =  bot.get(i+1).asDouble();
+				printf("%4.2f ", vc->swingDamp[i]);
+			}
+			printf("\n");
+		}
+		else
+		{
+			printf("Please specify the damping for the swing in the config file\n");
+			return false;
+		}
+		
+		if(stiffnessOptions.check("StanceDamp"))
+		{
+			printf("Damping stance: ");
+			Bottle& bot = stiffnessOptions.findGroup("StanceDamp");
+			for(int i=0; i<vc->njoints; i++)
+			{
+				vc->stanceDamp[i] = bot.get(i+1).asDouble();
+				printf("%4.2f ", vc->stanceDamp[i]);
+			}
+			printf("\n");
+		}
+		else
+		{
+			printf("Please specify the Dampness for the stance in the config file\n");
+			return false;
+		}
+		
+		
+		if(stiffnessOptions.check("Grav"))
+		{
+			printf("Gravity compensation: ");
+			Bottle& bot = stiffnessOptions.findGroup("Grav");
+			for(int i=0; i<vc->njoints; i++)
+			{
+				vc->Grav[i] =  bot.get(i+1).asDouble();
+				printf("%4.2f ", vc->Grav[i]);
+			}
+			printf("\n");
+		}
+		else
+		{
+			printf("Please specify if gravity compensation in the config file\n");
+			return false;
+		}
+
+
 		
         vc->init(&driver, partName, robotName);
 

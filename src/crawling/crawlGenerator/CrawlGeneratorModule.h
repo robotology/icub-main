@@ -155,6 +155,7 @@ class GeneratorThread : public yarp::os::RateThread
     PolyDriver *ddPart; /**< The Polydriver of the controlled part */
     IEncoders *PartEncoders; /**< Missing Description */
     IKManager *myIK;/**< Missing Description */
+    ITorqueControl *PartTorques;
 
     BufferedPort<Bottle> vcControl_port; /**< Port of the velocity controller */
     BufferedPort<Bottle> vcFastCommand_port; /**< The velocity controller FastCommand port. MISSING */
@@ -175,6 +176,7 @@ class GeneratorThread : public yarp::os::RateThread
     FILE *encoder_file; /**< Missing Description */
     FILE *feedback_file; /**< Missing Description */
     FILE *velocity_file; /**< Missing Description */
+    FILE* torque_file;
 
 	ConstString robot;/**< Name of the robot (ex : iCub, iCubSim...) */
 
@@ -203,6 +205,8 @@ class GeneratorThread : public yarp::os::RateThread
     * @see GeneratorThread()
     */
     bool getEncoders();
+    
+    bool getTorque();
 
     /**
     * Gets the status of the other limbs.

@@ -91,6 +91,39 @@ bool GeneratorThread::getEncoders()
 	return true;
 }
 
+bool GeneratorThread::getTorque()
+{
+	int nj;
+	PartTorques->getAxes(&nj);
+	double *tmp_torques = new double[nj];
+	double *torques = new double[nj];
+
+	if(PartTorques->getTorques(tmp_torques))
+	{
+		fprintf(torque_file,"%f ",Time::now());
+		for(int i=0;i<nbDOFs;i++)
+		{
+			torques[i] = tmp_torques[jointMapping[i]];
+			fprintf(torque_file,"%f ",torques[i]);
+		}
+		fprintf(torque_file,"\n");
+		fflush(torque_file);
+	}
+	else
+	{
+		cout << "there was an error getting the torques" << endl;
+		printf("for part %s", partName.c_str());
+		
+		delete[] tmp_torques;
+		delete[] torques;
+		return false;
+	}
+	
+	delete[] tmp_torques;
+	delete[] torques;
+	return true;
+}
+
 /// sends the command the velocity controllers
 bool GeneratorThread::sendFastJointCommand()   
 {
@@ -296,6 +329,8 @@ void GeneratorThread::run()
 	{
 		printf("Error getting encoders positions\n");
 	}
+	
+	getTorque();
 #endif
 
 	//we get the states of the other limbs and send our current status
@@ -470,7 +505,8 @@ void GeneratorThread::threadRelease()
 	fclose(encoder_file);
 	fclose(feedback_file);
     fclose(velocity_file);
-
+    fclose(torque_file);
+    
 	fprintf(stderr, "%s thread released\n", partName.c_str());
 }
 
@@ -523,7 +559,7 @@ bool GeneratorThread::init(Searchable &s)
 			return false;
 		}
 		std::string cubPathStr(cubPath);
-		options.fromConfigFile((cubPathStr + "/app/Crawling/config/" + partName + "Config.ini").c_str());
+		options.fromConfigFile((cubPathStr + "/app/crawling/config/" + partName + "Config.ini").c_str());
 	}
 
 	if(options.check("robot"))
@@ -538,19 +574,21 @@ bool GeneratorThread::init(Searchable &s)
 
 	char tmp1[255],tmp2[255];
 	char targetPart[255], paramPart[255], encoderPart[255];
-	char velPart[255], feedPart[255];
+	char velPart[255], feedPart[255], torquePart[255];
 
 	sprintf(targetPart, "%s_target_position.dat", partName.c_str());
 	sprintf(paramPart, "%s_parameters.dat", partName.c_str());
 	sprintf(encoderPart, "%s_encoders.dat", partName.c_str());
 	sprintf(feedPart, "%s_feedback.dat", partName.c_str());
 	sprintf(velPart, "%s_velocity.dat", partName.c_str());
+	sprintf(velPart, "%s_torque.dat", partName.c_str());
 
 	target_file = fopen(targetPart, "w");
 	parameters_file = fopen(paramPart, "w");
 	encoder_file = fopen(encoderPart, "w");
 	feedback_file = fopen(feedPart, "w");
     velocity_file = fopen(velPart, "w");
+    torque_file = fopen(torquePart, "w");
 
 
 #if !DEBUG
@@ -579,10 +617,17 @@ bool GeneratorThread::init(Searchable &s)
 		return false;
 	}
 
-	///encoders interface
+	//encoders interface
 	if(!ddPart->view(PartEncoders))
 	{
 		printf("Cannot view the encoders interface of %s\n",partName.c_str());
+		return false;
+	}
+	
+	//torque interface
+	if(!ddPart->view(PartTorques))
+	{
+		printf("Cannot view the torque interface of %s\n",partName.c_str());
 		return false;
 	}
 

@@ -171,17 +171,18 @@ void Cpgs::integrate_step(double *y, double *at_states)
 		{
 			if(y[3]<0.0)//if the shoulder is swinging
 			{
-				//the swing is a composition of discrete movements for ab/ad should and elbow
-				g[3] -= 3.0*y[3];//do the swing
-				g[1] -= 2.0*y[3];//do the swing
+				//we lift the arm using the elbow and the hip roll
+				g[3] -= 4.0*y[3];
+				g[1] -= 2.0*y[3];
 			}
 		}
 
 		if(partName=="left_leg" || partName=="right_leg")
 		{
-			if(y[3]<0.0)
+			if(y[3]<0.0)//if the leg is swinging
 			{
-				g[1] -= 2.5*y[3];///TODO ??
+				//we lift the leg using the shoulder roll
+				g[1] -= 2.5*y[3];
 			}
 		}
 	}
@@ -202,7 +203,7 @@ void Cpgs::integrate_step(double *y, double *at_states)
 
 	//***********JOINTS***********************************
 	double omega = 2*M_PI*(om_swing/(1+exp(-c*y[3])) + om_stance/(1+exp(c*y[3])));
-
+	
 	////internal dynamics
 	for(int i =0;i<nbDOFs;i++)
 	{
