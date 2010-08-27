@@ -216,7 +216,8 @@ bool selectiveAttentionProcessor::threadInit(){
     option.put("remote","/iKinGazeCtrl");
     option.put("local","/client/gaze");
 
-    clientGazeCtrl=new PolyDriver(option);
+    clientGazeCtrl=new PolyDriver();
+    clientGazeCtrl->open(option);
     igaze=NULL;
 
     if (clientGazeCtrl->isValid()) {
@@ -477,20 +478,22 @@ void selectiveAttentionProcessor::run(){
                 printf("outOfRange cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
                 gazePerform=false;
             }
-            if(gazePerform){
-                if(cLoop>10) {
-                    Vector px(2);
-                    px[0]=floor(xm/countMaxes-REMAP_DIM/2+160);
-                    px[1]=floor(ym/countMaxes-REMAP_DIM/2+120);
-                    
-                    //we still have one degree of freedom given by
-                    //the distance of the object from the image plane
-                    //if you do not have it, try to guess :)
-                    double z=1.0;   // distance [m]
-                    igaze->lookAtMonoPixel(camSel,px,z); 
-                    cLoop=0;
+            printf("cLoop: %d \n", cLoop);
+            if(cLoop>30) {
+                Vector px(2);
+                px[0]=floor(xm/countMaxes-REMAP_DIM/2+160);
+                px[1]=floor(ym/countMaxes-REMAP_DIM/2+120);
+                
+                //we still have one degree of freedom given by
+                //the distance of the object from the image plane
+                //if you do not have it, try to guess :)
+                double z=1.0;   // distance [m]
+                if(gazePerform) {
+                    igaze->lookAtMonoPixel(camSel,px,z);
                 }
+                cLoop=0;
             }
+            
             outPorts();
         }
     }
@@ -765,7 +768,7 @@ void selectiveAttentionProcessor::threadRelease(){
     imageCartOut.close();
 
     
-    clientGazeCtrl->close();
+    delete clientGazeCtrl;
 }
 
 void selectiveAttentionProcessor::setIdle(bool value){
