@@ -32,11 +32,8 @@ namespace iKin
 class iCubShoulderConstr : public iKinLinIneqConstr
 {
 protected:    
-    double joint1_0, joint1_1;
-    double joint2_0, joint2_1;
-    double m, n;
-
     unsigned int numAxes2Shou;
+    double m, n;
 
     iKinChain *chain;
 
@@ -46,15 +43,10 @@ protected:
 
         const iCubShoulderConstr *ptr=static_cast<const iCubShoulderConstr*>(obj);
 
-        joint1_0=ptr->joint1_0;
-        joint1_1=ptr->joint1_1;
-        joint2_0=ptr->joint2_0;
-        joint2_1=ptr->joint2_1;
-
+        numAxes2Shou=ptr->numAxes2Shou;
         m=ptr->m;
         n=ptr->n;
-
-        numAxes2Shou=ptr->numAxes2Shou;
+        
         chain=ptr->chain;
     }
 
@@ -67,10 +59,13 @@ public:
         // from root reference  
         numAxes2Shou=3;
 
+        double joint1_0, joint1_1;
+        double joint2_0, joint2_1;
         joint1_0= 10.0*CTRL_DEG2RAD;
         joint1_1= 15.0*CTRL_DEG2RAD;
         joint2_0=-33.0*CTRL_DEG2RAD;
         joint2_1= 60.0*CTRL_DEG2RAD;
+
         m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
         n=joint1_0-m*joint2_0;
 
