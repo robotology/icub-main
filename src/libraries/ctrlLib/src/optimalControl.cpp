@@ -16,7 +16,6 @@
  * Public License for more details
 */
 
-
 #include <iostream>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
