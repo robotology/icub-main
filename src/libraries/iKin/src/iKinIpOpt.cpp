@@ -711,6 +711,23 @@ yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Ve
 
 
 /************************************************************************/
+yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Vector &xd,
+                                      double weight2ndTask, yarp::sig::Vector &xd_2nd, yarp::sig::Vector &w_2nd)
+{
+    yarp::sig::Vector dummy(1);
+    return solve(q0,xd,weight2ndTask,xd_2nd,w_2nd,0.0,dummy,dummy);
+}
+
+
+/************************************************************************/
+yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Vector &xd)
+{
+    yarp::sig::Vector dummy(1);
+    return solve(q0,xd,0.0,dummy,dummy,0.0,dummy,dummy);
+}
+
+
+/************************************************************************/
 ApplicationReturnStatus iKinIpOptMin::optimize(const SmartPtr<TNLP>& tnlp)
 {
     return App->OptimizeTNLP(tnlp);

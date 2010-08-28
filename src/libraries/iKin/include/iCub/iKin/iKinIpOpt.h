@@ -578,6 +578,31 @@ public:
                                     iKinIterateCallback *iterate=NULL);
 
     /**
+    * Executes the IpOpt algorithm trying to converge on target. 
+    * @param q0 is the vector of initial joint angles values. 
+    * @param xd is the End-Effector target Pose to be attained. 
+    * @param weight2ndTask weights the second task (disabled if 
+    *                      0.0).
+    * @param xd_2nd is the second target task traslational Pose to 
+    *             be attained (typically a particular elbow xyz
+    *             position).
+    * @param w_2nd weights each components of the distance vector 
+    *              xd_2nd-x_2nd. Hence, the follows holds as second
+    *              task: min 1/2*norm2(((xd_i-x_i)*w_i)_i)
+    * @return estimated joint angles.
+    */
+    virtual yarp::sig::Vector solve(const yarp::sig::Vector &q0, yarp::sig::Vector &xd,
+                                    double weight2ndTask, yarp::sig::Vector &xd_2nd, yarp::sig::Vector &w_2nd);
+
+    /**
+    * Executes the IpOpt algorithm trying to converge on target. 
+    * @param q0 is the vector of initial joint angles values. 
+    * @param xd is the End-Effector target Pose to be attained. 
+    * @return estimated joint angles.
+    */
+    virtual yarp::sig::Vector solve(const yarp::sig::Vector &q0, yarp::sig::Vector &xd);
+
+    /**
     * Default destructor.
     */
     virtual ~iKinIpOptMin();

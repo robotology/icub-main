@@ -167,8 +167,7 @@ int main()
     slv.setUserScaling(true,100.0,100.0,100.0);
 
     // solve for xf starting from current configuration q0
-    // 2nd and 3rd tasks are not treated
-    qhat=slv.solve(chain->getAng(),xf,0.0,dummy,dummy,0.0,dummy,dummy);
+    qhat=slv.solve(chain->getAng(),xf);
 
     // in general the solved qf is different from the initial qf
     // due to the redundancy
