@@ -38,7 +38,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 46;
+word    _build_number = 47;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -158,8 +158,8 @@ void main(void)
 	__ENIGROUP (17, 6);
 	
 	// enable ADCA/ADCB
-	__ENIGROUP (55, 4);
-	__ENIGROUP (54, 4);
+	__ENIGROUP (55, 6);
+	__ENIGROUP (54, 6);
 	
 	// enable timers
 	// TIMER_A
@@ -200,7 +200,7 @@ void main(void)
 	__DI();
    
 	init_leds  			  ();
-#if VERSION != 0x0155 	
+#if VERSION != 0x0155 && VERSION !=0x0158	
 	Init_Brushless_Comm	  (JN);
 #else 
     Init_Brushless_Comm	  (1); //only one axis
@@ -221,7 +221,7 @@ void main(void)
  
     init_faults           (true,true,true);	 
     
-#if VERSION ==0x0155  
+#if VERSION ==0x0155  || VERSION ==0x0158 
     init_position_encoder ();
 #endif
 
@@ -250,7 +250,7 @@ void main(void)
 	for (i=0; i<JN; i++) abort_trajectory (i, 0);
 	
 	
-#if VERSION !=0x0155	
+#if VERSION !=0x0155	&& VERSION !=0x0158
 	///////////////////////////////////////
 	// reset of the ABS_SSI
 	// this is needed because the AS5045 gives the first value wrong !!!
@@ -348,6 +348,11 @@ void main(void)
 		_position[0]=Filter_Bit (get_position_abs_ssi(0));
 		_position_old[1]=_position[1]; 
 		_position[1]=get_position_encoder(1);
+#elif VERSION ==0x0158
+		_position_old[0]=_position[0];
+		_position[0]=get_position_encoder(1);
+		_position_old[1]=_position[1]; 
+		_position[1]=Filter_Bit (get_position_abs_ssi(0));
 #else
 	 	for (i=0; i<JN; i++) 
 		{
@@ -359,7 +364,7 @@ void main(void)
 
 ///////////////////////////////////////////DEBUG////////////
 // ADDED VERSION !=0x0171
-#if (VERSION !=0x0154) && (VERSION !=0x0155) && (VERSION !=0x0171)
+#if (VERSION !=0x0154) && (VERSION !=0x0155) && (VERSION !=0x0171) && (VERSION !=0x0158)
 	    for (i=0; i<JN; i++) 
 		{		
 		   if (get_error_abs_ssi(i)==ERR_ABS_SSI)
@@ -375,7 +380,8 @@ void main(void)
 		}  
 #endif
 	
-#if (VERSION ==0x0154) || (VERSION ==0x0155)
+#warning "here we should put a control for 0x0158"	
+#if (VERSION ==0x0154) || (VERSION ==0x0155) 
 
 		   if (get_error_abs_ssi(0)==ERR_ABS_SSI)
 		   {
@@ -432,7 +438,7 @@ void main(void)
 		
 					
 		/* in position? */
-#if (VERSION != 0x0154) && (VERSION != 0x0155)
+#if (VERSION != 0x0154) && (VERSION != 0x0155) && (VERSION != 0x0158)
 		for (i=0; i<JN; i++) _in_position[i] = check_in_position(i); 
 #else
 		_in_position[0] = check_in_position(0);
@@ -591,14 +597,14 @@ void main(void)
 //	Check for the MAIN LOOP duration
  
 			
-		t1val= (UInt16) TI1_getCounter(); 	
+//		t1val= (UInt16) TI1_getCounter(); 	
 		if (	_count>0)
 		{	
 			mainLoopOVF=1;
 			_count=0;
 		}
-//		can_printf("V");
-//		can_print_dword(t1val);	
+
+
 		
 		/* tells that the control cycle is completed */
 		

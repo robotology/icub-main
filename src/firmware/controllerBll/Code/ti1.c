@@ -43,20 +43,19 @@ void TI1_init (void)
 void TI1_interrupt (void)
 {
 	byte i;
-	clrRegBit (TMRA3_SCR, TCF);            /* Reset interrupt request flag */
 	_count++;
 
 	_wait = false;
 		for (i=0; i<JN; i++) 
 		{
-			if ((_current[i]>=25000) || (-_current[i]>=25000))
+			if ((get_current(i)>=25000) || (get_current(i)<=-25000))
 			{
 				_control_mode[i] = MODE_IDLE;	
 				_pad_enabled[i] = false;
 				highcurrent[i]=true;
 				PWM_outputPadDisable(i);
 #ifdef DEBUG_CAN_MSG
-				can_printf("j%d curr %f",i,_current[i]);
+				can_printf("j%d curr %f",i,get_current(i));
 #endif
 			}
 			check_current(i, (_pid[i] > 0));		
@@ -72,7 +71,10 @@ void TI1_interrupt (void)
 #endif	
 			}			
 		}
-	
+		
+clrRegBit (TMRA3_SCR, TCF);            /* Reset interrupt request flag */
+
+	 
 }
 
 // The function get the counter value of Timer1

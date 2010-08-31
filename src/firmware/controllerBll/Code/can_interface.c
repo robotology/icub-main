@@ -123,15 +123,17 @@ byte can_interface (void)
 	dword IdTx;
 	byte  write_buffer = 0;
 	byte strain_num = 0;
-	
+
+	canmsg_t *p;
+		
 	CAN_DI;
 	if (read_p != -1)
 	{
 		CAN_EI;
 		while (!done)
 		{
-			canmsg_t *p;
-			CAN_DI;	
+		
+		CAN_DI;	
 			p = can_fifo + read_p;
 			
 			/* makes a private copy of the message */
@@ -149,8 +151,7 @@ byte can_interface (void)
 			_canmsg.CAN_ID_dst=(_canmsg.CAN_messID  & 0xf);
 			_canmsg.CAN_frameType = p->CAN_frameType;
 			_canmsg.CAN_frameFormat = p->CAN_frameFormat;
-			_canmsg.CAN_length = p->CAN_length;
-			
+			_canmsg.CAN_length = p->CAN_length;	
 			if (read_p == write_p)
 			{
 				read_p = -1;	/* empty */
@@ -163,7 +164,7 @@ byte can_interface (void)
 					read_p = 0;
 				//done = true;
 			}
-			CAN_EI;
+    	CAN_EI;
 			
 #ifdef DEBUG_CAN_MSG
 		if (_verbose)
@@ -554,10 +555,10 @@ void can_send_broadcast(void)
 		
 		_canmsg.CAN_length = 8;
 		_canmsg.CAN_frameType = DATA_FRAME;
-#if (VERSION !=0x0154 && VERSION !=0x0155) 
+#if (VERSION !=0x0154 && VERSION !=0x0155 && VERSION !=0x0158) 
 		if((get_error_abs_ssi(0)==ERR_OK) && (get_error_abs_ssi(1)==ERR_OK))
 			CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);
-#elif (VERSION ==0x0154 || VERSION ==0x0155)
+#elif (VERSION ==0x0154 || VERSION ==0x0155 || VERSION ==0x0158)
 		if((get_error_abs_ssi(0)==ERR_OK))
 			CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);
 #endif
@@ -665,7 +666,7 @@ void can_send_broadcast(void)
 		//undervoltage overload external fault axis 1 		
 		_canmsg.CAN_data[2]=((_fault[1]>>8) & 0x01)  | ((_fault[1]>>9) & 0x02) | ((_fault[1]>>10) & 0x04) | ((_fault[1]>>12) & 0x04); 				
 		//  --- HIGH CURRENT CH 1---
-		#if (VERSION !=0x0154) && (VERSION !=0x0155)
+		#if (VERSION !=0x0154) && (VERSION !=0x0155) && (VERSION !=0x0158)
 		if (highcurrent[1])
 		{
 			_canmsg.CAN_data[2] |=highcurrent[1]<<3;
@@ -764,21 +765,21 @@ void can_send_broadcast(void)
 			CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);
 		}
 	}	
-	if ((broadcast_mask & (1<<(CAN_BCAST_CURRENT-1))) && _counter == 3)
+	if ((broadcast_mask & (1<<(CAN_BCAST_CURRENT-1)))  && _counter == 3)
 	{
 		_canmsg.CAN_messID = 0x100;
 		_canmsg.CAN_messID |= (_board_ID) << 4;
 		_canmsg.CAN_messID |= CAN_BCAST_CURRENT;
  
-		_canmsg.CAN_data[0] = BYTE_H(_current[0]);
-		_canmsg.CAN_data[1] = BYTE_L(_current[0]);
-		_canmsg.CAN_data[2] = BYTE_H(_current[1]);
-		_canmsg.CAN_data[3] = BYTE_L(_current[1]);
+		_canmsg.CAN_data[0] = BYTE_H(get_current(0));
+		_canmsg.CAN_data[1] = BYTE_L(get_current(0));
+		_canmsg.CAN_data[2] = BYTE_H(get_current(1));
+		_canmsg.CAN_data[3] = BYTE_L(get_current(1));
 	
- //       _canmsg.CAN_data[4] = BYTE_4(_filt_current[0]);
-//		_canmsg.CAN_data[5] = BYTE_3(_filt_current[0]);
-//		_canmsg.CAN_data[6] = BYTE_2(_filt_current[0]);
-//		_canmsg.CAN_data[7] = BYTE_1(_filt_current[0]);
+       _canmsg.CAN_data[4] = BYTE_4(_filt_current[0]);
+		_canmsg.CAN_data[5] = BYTE_3(_filt_current[0]);
+		_canmsg.CAN_data[6] = BYTE_2(_filt_current[0]);
+		_canmsg.CAN_data[7] = BYTE_1(_filt_current[0]);
 
 		_canmsg.CAN_data[4] = BYTE_H(0);
 		_canmsg.CAN_data[5] = BYTE_L(0);
@@ -790,7 +791,7 @@ void can_send_broadcast(void)
 		CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);	
 	}
 
-	if ((broadcast_mask & (1<<(CAN_BCAST_PID_ERROR-1))) && _counter == 3) //same counter of CAN_BCAST_CURRENT
+	if ((broadcast_mask & (1<<(CAN_BCAST_PID_ERROR-1)))  && _counter == 3) //same counter of CAN_BCAST_CURRENT
 	{
 		_canmsg.CAN_messID = 0x100;
 		_canmsg.CAN_messID |= (_board_ID) << 4;
@@ -813,7 +814,7 @@ void can_send_broadcast(void)
 		
 //  @@@RANDAZ: important: CAN_SYNCHRO_STEP has been reduced from 5 to 4 because of CAN_SET_ACTIVE_PID_HANDLER()	
 //	if ((broadcast_mask & (1<<(CAN_BCAST_VELOCITY-1))) && _counter == 4) 
-	if ((broadcast_mask & (1<<(CAN_BCAST_VELOCITY-1))) && _counter == 3)
+	if ((broadcast_mask & (1<<(CAN_BCAST_VELOCITY-1)))  && _counter == 3)
 	{
 		_canmsg.CAN_messID = 0x100;
 		_canmsg.CAN_messID |= (_board_ID) << 4;

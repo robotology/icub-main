@@ -41,7 +41,7 @@ byte calibrate (byte channel, byte type, Int16 param1,Int16 param2, Int16 param3
 	if (type==CALIB_ABS_DIGITAL)
 	{
 
-#if (VERSION==0x0150 || VERSION==0x0151 || VERSION==0x0152 || VERSION==0x0154) 
+#if (VERSION==0x0150 || VERSION==0x0151 || VERSION==0x0152 || VERSION==0x0154 || VERSION==0x0155 ) 
 
 		AS1_printStringEx ("Calibration ABS_DIGITAL started \r\n");
 		if (param3 >=0 && param3 <=4095) set_max_position(channel, param3);	
@@ -63,6 +63,37 @@ byte calibrate (byte channel, byte type, Int16 param1,Int16 param2, Int16 param3
 	//		AS1_printStringEx ("Calibration ABS_DIGITAL aborted\r\n");
 	//		AS1_printStringEx ("Offset set\r\n");			
 		}
+#elif VERSION==0x0158
+		if (channel==0)
+		{
+				#warning "TO DO"
+				_calibrated[channel] = true;
+		}
+		else
+		{
+				if (param3 >=0 && param3 <=4095) set_max_position(channel, param3);	
+				if (param2>0)
+				{
+				    _position[channel] = get_position_abs_ssi(channel);
+					_set_point[channel] = param1;
+					init_trajectory (channel, _position[channel], _set_point[channel], param2);
+					_in_position[channel] = false;
+					_calibrated[channel] = true;
+			//		AS1_printStringEx ("Calibration ABS_DIGITAL terminated \r\n");
+				}
+				if (param2==0)
+				{
+					_control_mode[channel]=MODE_IDLE;	
+					_pad_enabled[channel] = false;
+					PWM_outputPadDisable(channel);
+					_calibrated[channel] = true; 
+			//		AS1_printStringEx ("Calibration ABS_DIGITAL aborted\r\n");
+			//		AS1_printStringEx ("Offset set\r\n");			
+				}
+					
+		}
+	
+	
 #elif VERSION==0x0153 || VERSION==0x0157 
 	//  	AS1_printStringEx ("Calibration ABS_DIGITAL started \r\n");
 		if (param3 >=0 && param3 <=4095) set_max_position(channel, param3);	

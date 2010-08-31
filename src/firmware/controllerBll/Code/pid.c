@@ -172,6 +172,8 @@ Int16 _version = 0x0155;
 Int16 _version = 0x0156;
 #elif VERSION == 0x0157
 Int16 _version = 0x0157;
+#elif VERSION == 0x0158
+Int16 _version = 0x0158;
 #elif VERSION == 0x0170
 Int16 _version = 0x0170;
 #elif VERSION == 0x0171
@@ -657,7 +659,7 @@ Int32 compute_current_pid(byte j)
 	/* the error @ previous cycle */
 	_error_current_old[j] = _error_current[j];
 
-	InputError = L_sub(_desired_current[j], _current[j]);
+	InputError = L_sub(_desired_current[j], get_current(j);
 		
 	if (InputError > MAX_16)
 		_error_current[j] = MAX_16;
