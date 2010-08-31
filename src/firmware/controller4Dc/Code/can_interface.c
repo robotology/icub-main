@@ -838,10 +838,10 @@ void can_send_broadcast(void)
 		_canmsg.CAN_messID |= (_board_ID) << 4;
 		_canmsg.CAN_messID |= CAN_BCAST_CURRENT;
 
-		_canmsg.CAN_data[0] = BYTE_H(_current[0]);
-		_canmsg.CAN_data[1] = BYTE_L(_current[0]);
-		_canmsg.CAN_data[2] = BYTE_H(_current[1]);
-		_canmsg.CAN_data[3] = BYTE_L(_current[1]);
+		_canmsg.CAN_data[0] = BYTE_H(get_current(0));
+		_canmsg.CAN_data[1] = BYTE_L(get_current(0));
+		_canmsg.CAN_data[2] = BYTE_H(get_current(1));
+		_canmsg.CAN_data[3] = BYTE_L(get_current(1));
 		
 		_canmsg.CAN_data[4] = BYTE_H(0);
 		_canmsg.CAN_data[5] = BYTE_L(0);
@@ -859,10 +859,10 @@ void can_send_broadcast(void)
 			_canmsg.CAN_messID |= (_board_ID+1) << 4;
 			_canmsg.CAN_messID |= CAN_BCAST_CURRENT;
 
-			_canmsg.CAN_data[0] = BYTE_H(_current[2]);
-			_canmsg.CAN_data[1] = BYTE_L(_current[2]);
-			_canmsg.CAN_data[2] = BYTE_H(_current[3]);
-			_canmsg.CAN_data[3] = BYTE_L(_current[3]);
+			_canmsg.CAN_data[0] = BYTE_H(get_current(2));
+			_canmsg.CAN_data[1] = BYTE_L(get_current(2));
+			_canmsg.CAN_data[2] = BYTE_H(get_current(3));
+			_canmsg.CAN_data[3] = BYTE_L(get_current(3));
 			
 			_canmsg.CAN_data[4] = BYTE_H(0);
 			_canmsg.CAN_data[5] = BYTE_L(0);

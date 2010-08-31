@@ -517,7 +517,7 @@ Int32 compute_current_pid(byte j)
 	/* the error @ previous cycle */
 	_error_current_old[j] = _error_current[j];
 
-	InputError = L_sub(_desired_current[j], _current[j]);
+	InputError = L_sub(_desired_current[j], get_current(j));
 		
 	if (InputError > MAX_16)
 		_error_current[j] = MAX_16;
@@ -561,7 +561,7 @@ Int32 compute_pid_abs(byte j)
 {
 	Int32 ProportionalPortion, DerivativePortion;
 	Int32 PIDoutput;
-	Int16 InputError;
+//	Int16 InputError;
 	Int16 Kp = 1;
 	Int16 Kd = 10;
 		
@@ -765,9 +765,10 @@ void check_desired_within_limits(byte i, Int32 previous_desired)
 	Int32 _min_position_coupled = 0;
  	Int32 _max_position_coupled = 0;
  	
- 	float tmp;
+ 	
  	
 #if VERSION == 0x0113
+float tmp;
 	if (i == 0 && _control_mode[i]!=MODE_CALIB_ABS_POS_SENS)
 	{		
 		tmp = (((float) _adjustment[0])*0.2683);
