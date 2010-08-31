@@ -23,11 +23,16 @@ void init_currents( void )
 	AD_enableIntTriggerB ();	
 }
 
+Int32 get_current(byte jnt)
+{
+	return _current[jnt];
+}
+
 /*************************************************************************** 
  * this function checks if the current consumption has exceeded a threshold
  * for more than 200 ms using a filtered verion of the current reading.
  ***************************************************************************/
-word check_current(byte jnt, bool sign)
+Int32 check_current(byte jnt, bool sign)
 {
 	word temp;
 	Int32 temporary;
@@ -45,7 +50,7 @@ word check_current(byte jnt, bool sign)
 	
 	_current_old[jnt] = _current[jnt];
 
-	_current[jnt] = temporary * _conversion_factor[jnt];
+	_current[jnt] = (Int32) (temporary * (float) _conversion_factor[jnt]);
 	return _current[jnt];
 }
 

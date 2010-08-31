@@ -123,7 +123,6 @@ void TD0_interrupt(void)
 	UInt16 hallstatus1=0;
 	UInt8 hallflag[2]={0,0};
 	
-//#ifdef DEBUG_CAN_MSG 
 	hallstatus0=(getReg(QD0_IMR) >> 5) &0x07;
 	if ((hallstatus0==0x00) || (hallstatus0==0x07)) 
 	{
@@ -164,7 +163,7 @@ void TD0_interrupt(void)
 		can_printf("hall1 mismatch");
 	#endif	
 	}		
-//#endif
+
 	
 	if (DutyCycleReq[0].Duty < MIN_DUTY)
 		DutyCycleReq[0].Duty=MIN_DUTY;

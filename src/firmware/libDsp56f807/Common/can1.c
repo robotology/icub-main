@@ -15,7 +15,7 @@
 #include "leds_interface.h"
 
 canmsg_t can_fifo[CAN_FIFO_LEN];
-Int16 write_p = -1;
+Int16 write_p = 0;
 Int16 read_p = -1;
 
 /// CAN TX BUFFER 
@@ -666,10 +666,11 @@ void CAN1_interruptRx (void)
 	
 	CAN_DI;
 	
-	if (write_p >= CAN_FIFO_LEN-1)  
-		write_p = -1;
+		write_p++;
+	if (write_p >= CAN_FIFO_LEN)  
+		write_p = 0;
 		
-	write_p++;
+
 	// check here for buffer full.
 	p = can_fifo +write_p;
 	

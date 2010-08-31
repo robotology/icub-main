@@ -3,14 +3,14 @@
 #include "ad.h"
 #include "pwm_interface.h"
 #include "brushless_comm.h"
-
-
+#include "leds_interface.h"
+#include "can1.h"
 Int32 MAX_CURRENT=7000;   //MAX current in milliAmpere
 Int32 MAX_I2T_CURRENT=2000000000;
 Int32 _current_limit_I2T=7000; //NOT USED, we are using max_allowed_current  value in mA 
-Int32 _current[4] =		 {0,0,0,0};					/* current through the transistors in mA*/
 Int32 _current_old[4] =  {0,0,0,0};					/* current at t-1*/
-Int16 _current_debug[4]={0,0,0,0};
+Int32 _current[4] =		 {0,0,0,0};					/* current through the transistors in mA*/
+//Int16 _current_debug[4]={0,0,0,0};
 Int32 _filt_current[4] = {0,0,0,0};     			/* filtered current through the transistors*/
 Int32 _max_allowed_current[4] = {7000,7000,7000,7000};	/* limit on the current in milli-ampere*/							
 float _conversion_factor[4] ={0.46,0.46,0.46,0.46};		/* limit on the current as set by the interface (later converted into the filter parameter) */
@@ -59,7 +59,13 @@ byte set_current_offset(byte jnt)
  * this function checks if the current consumption has exceeded a threshold
  * for more than 200 ms using a filtered verion of the current reading.
  ***************************************************************************/
-word check_current(byte jnt, bool sign)
+Int32 get_current(byte jnt)
+{
+	return _current[jnt];
+}
+
+
+Int32 check_current(byte jnt, bool sign)
 {
 //	#warning "_current now is Iss the Imot=Iss/deltaPWM;"
 	word temp;
@@ -91,17 +97,22 @@ word check_current(byte jnt, bool sign)
 	else  temporary = ((Int32)(temp))-_current_offset[jnt];
 	if (!sign)	temporary = -temporary;
 	_current_old[jnt] = _current[jnt];
-	
-	_current_debug[jnt]=temp;
-	if (DutyCycle[jnt].Duty<=(2*DEAD_TIME)+20)
+
+	if (DutyCycle[jnt].Duty<=(DEAD_TIME<<1)+20)
 	{
-		_current[jnt]=500;
+		if (!sign)
+		_current[jnt]=-250; //minimum value of the current
+		else
+		_current[jnt]=250;  //minimum value of the current
+		
 	}
 	else
 	{
- 		 _current[jnt]=  (temporary * (float) _conversion_factor[jnt])*((Int32)((PWMFREQ<<4)/((Int32)(DutyCycle[jnt].Duty-2*DEAD_TIME))))/16;//see BLP and BLL manual		
+
+ 		 _current[jnt]=  (temporary * (float) _conversion_factor[jnt])*(((Int32)((PWMFREQ<<5)/((Int32)(DutyCycle[jnt].Duty-(DEAD_TIME<<1)))))>>5);//see BLP and BLL manual		
 	}
-   																							   
+   																						   
+	
 	return _current[jnt];
 }
 

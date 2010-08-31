@@ -5,7 +5,7 @@
 /**
  *	Globals
  ***************************************************************************/ 
-UInt16 max_real_position[2] = {4095, 4095};
+UInt16 max_real_position[4] = {4095, 4095, 4095, 4095};
 
 /***************************************************************************/
 /**
@@ -90,7 +90,7 @@ UInt16 get_absolute_real_position_abs_ssi(byte jnt)
 	for(i=0;i<18;i++)
 	{
 		clrRegBits(GPIO_E_DR,GPIO_E4); //CLK
-		for (j=0;j<5;j++)
+		for (j=0;j<3;j++)
 		{
 		 asm
 		 {
@@ -98,7 +98,7 @@ UInt16 get_absolute_real_position_abs_ssi(byte jnt)
 		 }
 		}// delay
 		setRegBits(GPIO_E_DR,GPIO_E4); //CLK
-		for (j=0;j<5;j++)
+		for (j=0;j<3;j++)
 		{
 		 asm
 		 {

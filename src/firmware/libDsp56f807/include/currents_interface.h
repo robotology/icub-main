@@ -3,7 +3,7 @@
 
 #include "dsp56f807.h"
 
-extern Int32 _current [];				// current through the transistors
+//extern Int32 _current [];				// current through the transistors
 extern Int32 _current_old [] ;			// current at t-1
 extern Int32 _filt_current [] ;     	// filtered current through the transistors
 extern Int32 _max_allowed_current  [] ; // limit on the current in micro-ampere
@@ -20,9 +20,11 @@ extern Int32 MAX_I2T_CURRENT;   //MAX current for I2T
 
 void init_currents( void );
 void compute_filtcurr(byte jnt);
-word check_current(byte jnt, bool sign);
+Int32 check_current(byte jnt, bool sign);
 byte set_current_offset(byte jnt);
 void compute_i2t(byte jnt);
+Int32 get_current(byte jnt);
+
 
 
 #endif 

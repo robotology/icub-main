@@ -4,7 +4,7 @@
  */
 
 #include "ad.h"
-
+#include "leds_interface.h"
 #define IDLE            0              /* IDLE state           */
 #define MEASURE         1              /* MESURE state         */
 #define CONTINUOUS      2              /* CONTINUOUS state     */
@@ -34,27 +34,25 @@ void AD_interruptCCB(void);
  * on interrupt flags the output ready bit.
  *
  **************************************************************************************/
-#pragma interrupt 
+#pragma interrupt
 void AD_interruptCCA(void)
 {
 	_sample_A[0] = (getReg(ADCA_ADRSLT0));
 	_sample_A[1] = (getReg(ADCA_ADRSLT1));
 	_sample_A[2] = (getReg(ADCA_ADRSLT2));
-	_sample_A[3] = (getReg(ADCA_ADRSLT3));
+//	_sample_A[3] = (getReg(ADCA_ADRSLT3));
 	_sample_A[4] = (getReg(ADCA_ADRSLT4));
 	_sample_A[5] = (getReg(ADCA_ADRSLT5));
 	_sample_A[6] = (getReg(ADCA_ADRSLT6));
 	_sample_A[7] = (getReg(ADCA_ADRSLT7));
 		
-	setReg(ADCA_ADSTAT, 0x0800);            /* Clear EOSI flag */
-	
+	setReg(ADCA_ADSTAT, 0x0800);            /* Clear EOSI flag */	
 	OutFlgA = TRUE;                       	/* Measured values are available */
 	if (!(getRegBit(ADCA_ADCR1, SMODE2))) 
 	{
 		/* Not running in trigger mode? */
 		ad_ModeFlgA = IDLE;                	/* Set the bean to the idle mode */
 	}
-
 }
 
 /**************************************************************************************/
@@ -68,11 +66,11 @@ void AD_interruptCCB(void)
 	_sample_B[0] = (getReg(ADCB_ADRSLT0));
 	_sample_B[1] = (getReg(ADCB_ADRSLT1));
 	_sample_B[2] = (getReg(ADCB_ADRSLT2));
-	_sample_B[3] = (getReg(ADCB_ADRSLT3));
+//	_sample_B[3] = (getReg(ADCB_ADRSLT3));
 	_sample_B[4] = (getReg(ADCB_ADRSLT4));
 	_sample_B[5] = (getReg(ADCB_ADRSLT5));
-	_sample_B[6] = (getReg(ADCB_ADRSLT6));
-	_sample_B[7] = (getReg(ADCB_ADRSLT7));
+//	_sample_B[6] = (getReg(ADCB_ADRSLT6));
+//	_sample_B[7] = (getReg(ADCB_ADRSLT7));
 		
 	setReg(ADCB_ADSTAT, 0x0800);            /* Clear EOSI flag */
 	
@@ -228,6 +226,7 @@ byte AD_enableIntTriggerA(void)
  **************************************************************************************/
 byte AD_enableIntTriggerB(void)
 {
+led1_on;
 	if (ad_ModeFlgB != IDLE)             /* Is the device in running mode? */
 		return ERR_BUSY;
 		
@@ -237,8 +236,9 @@ byte AD_enableIntTriggerB(void)
 //	clrRegBits (ADCB_ADCR1, 0x03);
 	
 	ad_ModeFlgB = MEASURE;               /* Set state of device to the measure mode */
-	
+
 	HWEnDiB();
+		led1_off;
 	return ERR_OK;
 }
 
@@ -325,12 +325,12 @@ void AD_init (void)
 	setReg(ADCA_ADLLMT7, 0);              /* Set low limit reg. 1 */
 	setReg(ADCA_ADZCSTAT, 0xffff);          /* Clear zero crossing status flags */
 	setReg(ADCA_ADLSTAT, 0xffff);         /* Clear high and low limit status */
-	setReg(ADCA_ADSTAT, 0x800);           /* Clear EOSI flag */
+	setReg(ADCA_ADSTAT, 0x0800);           /* Clear EOSI flag */
 	setReg(ADCA_ADSDIS, 0x0);            /* Enable/disable of samples */
 //	setReg(ADCA_ADLST1, 0x12816);           /* Set ADC channel list reg. */
 //	setReg(ADCA_ADLST1, 0x30292);           /* Set ADC channel list reg. */
 	setReg(ADCA_ADZCC, 0);                /* Set zero crossing control reg. */
-	setReg(ADCA_ADCR2, 0xf);              /* Set prescaler */
+	setReg(ADCA_ADCR2, 0x3);              /* Set prescaler */
 
 	_sample_A[0] = 15;
 	_sample_A[1] = 15;
@@ -373,12 +373,12 @@ setReg(ADCB_ADCR1, 0x4800);           /* Set control register 1 */
 	setReg(ADCB_ADLLMT7, 0);              /* Set low limit reg. 1 */
 	setReg(ADCB_ADZCSTAT, 0xffff);          /* Clear zero crossing status flags */
 	setReg(ADCB_ADLSTAT, 0xffff);         /* Clear high and low limit status */
-	setReg(ADCB_ADSTAT, 0x800);           /* Clear EOSI flag */
+	setReg(ADCB_ADSTAT, 0x0800);           /* Clear EOSI flag */
 	setReg(ADCB_ADSDIS, 0x0);            /* Enable/disable of samples */
 //	setReg(ADCB_ADLST1, 0x12816);           /* Set ADC channel list reg. */
 //	setReg(ADCB_ADLST1, 0x30292);           /* Set ADC channel list reg. */
 	setReg(ADCB_ADZCC, 0);                /* Set zero crossing control reg. */
-	setReg(ADCB_ADCR2, 0xf);              /* Set prescaler */
+	setReg(ADCB_ADCR2, 0x3);              /* Set prescaler */
 
 
 	_sample_B[0] = 15;
@@ -398,20 +398,25 @@ setReg(ADCB_ADCR1, 0x4800);           /* Set control register 1 */
  */
 void TIC_init (void)
 {
-	setReg (TMRC2_CMP1, 16);           /* Set the Compare register 1 */ 
+	setReg (TMRC2_CTRL, 0x20);           /* Stop all functions of the timer */
+	setReg (TMRC2_CMP1, 0);             /* Set the Compare register 1 */ 
 	setReg (TMRC2_CMP2, 0);             /* Set the Compare register 2 */ 
 	setReg (TMRC2_LOAD, 0);             /* Set the Load register */ 
 	setReg (TMRC2_CNTR, 0);             /* Set the Counter register */ 
 	
-	setReg (TMRC2_SCR, 0);              /* Set the Status and control register */ 
-	setReg (TMRC2_CTRL, 0x2423);        /* Set the Control register */ 
+	setReg (TMRC2_SCR, 0x0);              /* Set the Status and control register */ 
+//	setReg (TMRC2_CTRL, 0x2423);        /* Set the Control register */ 
+	setReg (TMRC2_CTRL, 0xD135);        /* Set the Control register */ 
 	
-	setReg (TMRC3_CMP1, 16);           /* Set the Compare register 1 */ 
+	setReg (TMRC3_CTRL, 0x20);           /* Stop all functions of the timer */
+	setReg (TMRC3_CMP1, 0);           /* Set the Compare register 1 */ 
 	setReg (TMRC3_CMP2, 0);             /* Set the Compare register 2 */ 
 	setReg (TMRC3_LOAD, 0);             /* Set the Load register */ 
 	setReg (TMRC3_CNTR, 0);             /* Set the Counter register */ 
 	
-	setReg (TMRC3_SCR, 0);              /* Set the Status and control register */ 
-	setReg (TMRC3_CTRL, 0x2623);        /* Set the Control register */ 
+	setReg (TMRC3_SCR, 0x0);              /* Set the Status and control register */ 
+//	setReg (TMRC3_CTRL, 0x2623);        /* Set the Control register */ 
+	setReg (TMRC3_CTRL, 0xD1B5);        /* Set the Control register */ 
+
 } 
 
