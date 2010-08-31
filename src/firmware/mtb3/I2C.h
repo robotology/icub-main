@@ -22,7 +22,7 @@
 #define DE3           TRISDbits.TRISD3 // SDA3 Input/Output	
 #define DE4           TRISDbits.TRISD1 // SDA4 Input/Output	
 
-#warning "change to 0x0f" 
+//#warning "change to 0x0f" 
 #define DO_0on        PORTD=0x0f; //DO1=1; DO4=1; DO2=1; DO3=1; 
 #define DO_0off       PORTD=0x00; //DO1=0; DO4=0; DO2=0; DO3=0; 
 #define DE_0input     DE1=1; DE2=1; DE3=1; DE4=1; 

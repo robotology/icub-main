@@ -32,8 +32,17 @@
 //
 //  Rev 2.0.11 del 29/07/2010
 //  ConfigBuffer[STAGE_CAL_EN]=0x0FFF;
+//  MPLAB 8.46
 //
+//  Rev 2.0.12 del 12/08/2010
+//  Check if there is an error in the I2C communication and if the pad is broken.
+//	MPLAB 8.46
+
+//  Rev 2.0.13 del 31/08/2010
+//  Removed the message with CANID=100 for debug. It can be enabled by uncomment a line below
+//  MPLAB 8.56
 //
+
 #include<p30f4011.h>
 #include"can_interface.h"
 #include "AD7147RegMap.h"
@@ -45,6 +54,12 @@
 #include <timer.h>
 #include <libpic30.h>
 #include<adc10.h>
+
+
+#warning "if you want to run the debug version uncomment the line below"
+
+// #define DEBUG
+
 // inizializzazione bit di configurazione (p30f4013.h)
 _FOSC(CSW_FSCM_OFF & EC_PLL8); 
   // Clock switching disabled Fail safe Clock Monitor disabled
@@ -344,6 +359,8 @@ int main(void)
 				led_counter=0;
 			}	
 			led_counter++;
+			
+#ifdef DEBUG 			
 /// ADC conversion
 		while(i<15)
         {
@@ -362,8 +379,9 @@ int main(void)
 	        status[5]=((ERROR_COUNTER &0xFF00) >>0x8); // ERRORS in reading the I2C
 	        status[4]=(ERROR_COUNTER & 0xFF);
 	        counter++;
+ 	        
  		    CAN1_send(0x100,1,8,status);		
- 
+#endif  
  
  ////////////////////////////////////////////////////////				
             //debug
@@ -514,58 +532,8 @@ int main(void)
     }//for(;;)
 }//main
 
-void FillCanMessages16bit(unsigned char Channel,unsigned char triangleN)
-{
-	unsigned char data[8];
-	unsigned int i,val,l;
-	PMsgID=0x300;
-    PMsgID |= (triangleN*3+TRIANGLE_OFFSET);
-	l=0;
-	 for (i=0;i<8;i=i+2)
-  	 {
-        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
-        	data[i]= val & 0x00FF;  ; //16bit
-        	data[i+1]=(val>>8) & 0x00FF; //16bit
-        	l=l+1;
-    	 } 
-	 CAN1_send(PMsgID,1,8,data);	
-	 PMsgID=0x300;
-	 PMsgID |= (triangleN*3+TRIANGLE_OFFSET)+1;
-	 for (i=0;i<8;i=i+2)
-  	 {
-        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
-        	data[i]= val & 0x00FF;  ; //16bit
-        	data[i+1]=(val>>8) & 0x00FF; //16bit
-        	l=l+1;
-    	 } 
-	 CAN1_send(PMsgID,1,8,data);
-	  PMsgID=0x300;
-	  PMsgID |= (triangleN*3+TRIANGLE_OFFSET)+2;
-	  for (i=0;i<8;i=i+2)
-  	 {
-        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
-        	data[i]= val & 0x00FF;  ; //16bit
-        	data[i+1]=(val>>8) & 0x00FF; //16bit
-        	l=l+1;
-    	 } 
-	 CAN1_send(PMsgID,1,8,data);	
-	  	
-}
-void FillCanMessages16bit_all(unsigned char Channel,unsigned char triangleN)
-{
-	unsigned char data[8];
-	unsigned int i,val,l;
-	PMsgID=0x300+triangleN; 
-	l=0;
-	 for (i=0;i<8;i=i+2)
-  	 {
-        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
-        	data[i]= val & 0x00FF;  ; //16bit
-        	data[i+1]=(val>>8) & 0x00FF; //16bit
-        	l=l+1;
-    	 } 
-	 CAN1_send(PMsgID,1,6,data);		  	
-}
+
+
 void ServiceAD7147Isr(unsigned char Channel)
 {
     unsigned int i=0;
@@ -729,8 +697,10 @@ void FillCanMessages8bit(unsigned char Channel,unsigned char triangleN)
     unsigned char data[8];
     unsigned int i,j,val,error;
     unsigned int txdata[12];
+	unsigned int offset;
 	
 		error=0;
+		offset=256<<SHIFT;
 	    for (i=0;i<12;i++)
 	    {
 		    if (((_pCapOffset[triangleN][i]!=0) && ((AD7147Registers[triangleN][ADCRESULT_S0+i]==0))))
@@ -739,12 +709,10 @@ void FillCanMessages8bit(unsigned char Channel,unsigned char triangleN)
 			    ERROR_COUNTER++;
 			}
 			    
-		    if ((_pCapOffset[triangleN][i]>=(AD7147Registers[triangleN][ADCRESULT_S0+i]+1024)) || //1024 is 256<<2
-		    	(_pCapOffset[triangleN][i]<=(AD7147Registers[triangleN][ADCRESULT_S0+i]-1024)))
+		    if ((_pCapOffset[triangleN][i]>=(AD7147Registers[triangleN][ADCRESULT_S0+i]+offset)) || //1024 is 256<<2
+		    	(_pCapOffset[triangleN][i]<=(AD7147Registers[triangleN][ADCRESULT_S0+i]-offset)))
 		    {
-			  txdata[i]=244; //244 is no contact  	  
-		//	  error=1;
-			  // 	board_MODE=CALIB;	
+			  txdata[i]=244; //When the value is different from 244 is no contact  	  
 		    }
 		    else
 		    {	
@@ -853,4 +821,58 @@ void FillCanMessages8bit_three(unsigned char Channel,unsigned char triangleN)
 		    data[i]    = (unsigned char)   (txdata[i-1] & 0xFF); 
 	 	}  	
 	    CAN1_send(PMsgID,1,4,data); 
+}
+
+void FillCanMessages16bit(unsigned char Channel,unsigned char triangleN)
+
+{
+	unsigned char data[8];
+	unsigned int i,val,l;
+	PMsgID=0x300;
+    PMsgID |= (triangleN*3+TRIANGLE_OFFSET);
+	l=0;
+	 for (i=0;i<8;i=i+2)
+  	 {
+        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
+        	data[i]= val & 0x00FF;  ; //16bit
+        	data[i+1]=(val>>8) & 0x00FF; //16bit
+        	l=l+1;
+    	 } 
+	 CAN1_send(PMsgID,1,8,data);	
+	 PMsgID=0x300;
+	 PMsgID |= (triangleN*3+TRIANGLE_OFFSET)+1;
+	 for (i=0;i<8;i=i+2)
+  	 {
+        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
+        	data[i]= val & 0x00FF;  ; //16bit
+        	data[i+1]=(val>>8) & 0x00FF; //16bit
+        	l=l+1;
+    	 } 
+	 CAN1_send(PMsgID,1,8,data);
+	  PMsgID=0x300;
+	  PMsgID |= (triangleN*3+TRIANGLE_OFFSET)+2;
+	  for (i=0;i<8;i=i+2)
+  	 {
+        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
+        	data[i]= val & 0x00FF;  ; //16bit
+        	data[i+1]=(val>>8) & 0x00FF; //16bit
+        	l=l+1;
+    	 } 
+	 CAN1_send(PMsgID,1,8,data);	
+	  	
+}
+void FillCanMessages16bit_all(unsigned char Channel,unsigned char triangleN)
+{
+	unsigned char data[8];
+	unsigned int i,val,l;
+	PMsgID=0x300+triangleN; 
+	l=0;
+	 for (i=0;i<8;i=i+2)
+  	 {
+        	val=AD7147Registers[triangleN][ADCRESULT_S0+l];
+        	data[i]= val & 0x00FF;  ; //16bit
+        	data[i+1]=(val>>8) & 0x00FF; //16bit
+        	l=l+1;
+    	 } 
+	 CAN1_send(PMsgID,1,6,data);		  	
 }

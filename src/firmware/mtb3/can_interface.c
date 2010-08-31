@@ -62,7 +62,8 @@ void SetBoardCanFilter()
 }
 void CAN_Init()
 {
-    char FilterNo = 0, tx_rx_no = 0;
+    char  tx_rx_no = 0;
+    //char FilterNo = 0;
     unsigned int i=0;
     unsigned int k=0;
     //Interrupt configuration CAN1;

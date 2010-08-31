@@ -477,7 +477,7 @@ unsigned char SendByteI2CMaster(unsigned char Channel,unsigned char ByteToSend)
 	//	if  ((DO1+DO2+DO3+DO4)<4) noack=0;
 	//	else noack=1;
 
-#warning DEBUG 
+//#warning "DEBUG" 
 		//noack=0;  
 	    //noack =(unsigned char) ((DO1 | DO2<<1 | DO3<<2 | DO4<<3) & 0xFF)?1:0);//(unsigned char) (PORTDbits.RD0 );//& PORTDbits.RD1 & PORTDbits.RD2 & PORTDbits.RD3);//PORTDbits.RD0; // 
 	    DO_0off;
@@ -490,44 +490,7 @@ unsigned char SendByteI2CMaster(unsigned char Channel,unsigned char ByteToSend)
 	break;
 	case CH1:
 	{
-	    DE_1output  //SDAs as output
-	    for (i=8; i>0; i--)
-	    {
-	        MCO_1 = 0;                //Reset SCL		
-	        if (ByteToSend >> 7)
-	        {
-	            DO_1on;
-	        } 
-			else
-	        {
-	            DO_1off;
-	        }	
-	         Wait(I2Cbit);//Wait(I2Cbit);
-	        MCO_1 = 1;                //Set SCL
-	         Wait(I2Cbit);//Wait(I2Cbit);
-	        MCO_1 = 0;                //Reset SCL
-	         Wait(I2Cbit);//Wait(I2Cbit);
-	        ByteToSend<<=1;         //Rotate data
-	    }
-	    DO_1off
-	    DE_1input                //SDA becomes an input
-	    MCO_1 = 0;                //Reset SCL
-	
-	     Wait(I2Cbit);//Wait(I2Cbit);
-	    MCO_1 = 1;                //Set SCL
-#warning "no chech for the ack"
 
-//		if  ((DO5+DO6+DO7+DO8)<4) noack=0;
-//		else noack=1;
-		noack=1;
-		
-		
-	    //noack =(unsigned char) ((DO5+DO6+DO7+DO8)<4)?0:1);//(PORTDbits.RD0 );//& PORTDbits.RD1 & PORTDbits.RD2 & PORTDbits.RD3);//PORTDbits.RD0; // 
-	    DO_1off;
-	
-	     Wait(I2Cbit);//Wait(I2Cbit);
-	    MCO_1 = 0;
-	    DE_1output   //SDA becomes an output
 	}
 	break;
 	}
