@@ -123,3 +123,11 @@ In the struct canmsg_tag I have changed the CAN_data[16] in CAN_data[8]. I do no
 * A new broadcast message, CAN_BCAST_PID_ERROR, is introduced, that contains position error and torque error.
 * CAN_BCAST_CURRENT now contains only the current information, not the pid error.
 * Current build 36.
+
+2010-31-Aug  Maggiali Marco <marco.maggiali@iit.t>
+* fix the error in the CAN_read (there is a check in the LENGHT of the packet if it is <8)
+* changed the AD setup. Now it is sync with the PWM.
+* added the function get_current(jnt)
+* Current build 37.
+   
+
