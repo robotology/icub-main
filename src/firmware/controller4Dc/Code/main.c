@@ -20,7 +20,7 @@
 #include "currents_interface.h"
 #include "flash_interface.h"
 #include "pwm_interface.h"
-#include "faults_interface.h"
+#include "faults_interface.h" 
 
 #include "encoders_interface.h"
 #include "eeprom_interface.h"
@@ -68,6 +68,7 @@ void check_encoder_hall_drift(byte jnt);
 /*
  * version specific global variables.
  */
+
 #if   VERSION == 0x0111
 Int16 _version = 0x0111;
 #elif VERSION == 0x0112
@@ -81,7 +82,7 @@ Int16 _version = 0x0115;
 #elif VERSION == 0x0116
 Int16 _version = 0x0116;
 #elif VERSION == 0x0117
-Int16 _version = 0x0117;
+Int16 _version = 0x0117;   
 #elif VERSION == 0x0118
 Int16 _version = 0x0118;
 #elif VERSION == 0x0119
@@ -184,7 +185,7 @@ void main(void)
 	__ENIGROUP (31, 7);
 	__ENIGROUP (30, 7);
 
-	__EI();
+	__EI();  
 	
 	flash_interface_init  (JN);			
 	readFromFlash (_flash_addr);  
