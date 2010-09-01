@@ -14,8 +14,8 @@
 //#define VERSION 0x0121                /* Encoders in M0, M1, M2 MAISEncoder in M3 (HES11+HES12+HES13)*/
 //#define VERSION 0x0125                /* Force sensor*/
 //#define VERSION 0x0128                /* Analog encoder in M0 MAISEncoder in M1 (HES0), M2 (HES1+HES2), M3 (HES3) 
+//#define VERSION 0x0129                /* AEA encoders in the wrist  
 //#define VERSION 0x0130                /* MAISEncoder in M0 (HES4+HES5), M1 (HES6), M2 (HES7+HES8), M3 (HES11+HES12+HES13) 
-//#define VERSION 0x0201                /* AEA encoders in the wrist  
 
 //#define SERIAL_MENU_OPTION    1       /* if on, enables serial menu interface */
 
