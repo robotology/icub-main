@@ -51,7 +51,7 @@ typedef struct canmsg_tag
 #define CAN_BCAST_PRINT				6
 #define CAN_TX_SOFTWARE_BUFFER_SIZE  10     //Number of messages that can be
 									        // stored in a LIFO buffer
-#define CAN_FIFO_LEN 10					/* length of the fifo buffer */
+#define CAN_FIFO_LEN 30					/* length of the fifo buffer */
 
 /* User constants */
 

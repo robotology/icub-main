@@ -510,7 +510,7 @@ byte CAN1_readFrame (dword *MessageID,
 					 byte *Length,
 					 byte *Data)
 {
-	byte i;
+	byte i,j;
 //	dword ID;
 
 	if (!SerFlag & FULL_RX_BUF)
@@ -518,7 +518,20 @@ byte CAN1_readFrame (dword *MessageID,
 	
 //	ID = Idr2Id(GetRxBufferIdr());       /* Read the identification of the received message */
 #warning "this optimization does not work for extended frame ID"
-	
+/*
+         __             _,-"~^"-.
+       _// )      _,-"~`         `.
+     ." ( /`"-,-"`                 ;
+    / 6                             ;
+   /           ,             ,-"     ;
+  (,__.--.      \           /        ;
+   //'   /`-.\   |          |        `._________
+     _.-'_/`  )  )--...,,,___\     \-----------,)
+   ((("~` _.-'.-'           __`-.   )         //
+         ((("`             (((---~"`         //
+                                            ((________________
+                                            `----""""~~~~^^^```	
+*/
 //	if (ID > EXTENDED_FRAME_ID)
 //		*FrameType = (getReg(CAN_RB_IDR3) & 1)? REMOTE_FRAME : DATA_FRAME;
 //	else
@@ -529,16 +542,11 @@ byte CAN1_readFrame (dword *MessageID,
 	*FrameType =DATA_FRAME;
 	*FrameFormat=STANDARD_FORMAT;
 	*MessageID =GetRxBufferIdr()>>21;       /* Read the standard identification of the received message */
-	*Length = getReg(CAN_RB_DLR) & 0xF;
+	*Length = ((getReg(CAN_RB_DLR) & 0xF)<=8 ? (getReg(CAN_RB_DLR) & 0xF) : 8);
 
 		for (i = 0; i < *Length; i++) /* should be checking max len of the message */
 		{		
-			if (i<8) //this ckeck has been done because the CAN_RB_DLR can be bigger then 8 (we do not know why)                    
 			Data[i] = *((byte *)CAN_RB_DSR0 + i);
-			else 
-			{
-				
-			}
 		}
 
 	
