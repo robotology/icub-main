@@ -445,12 +445,11 @@ void selectiveAttentionProcessor::run(){
             imageCartOut.write();
             
             //4.find the max in the cartesian image
-           
             maxValue=0;
             float xm=0,ym=0;
             int countMaxes=0;
             pImage=outputCartImage.getRawImage();
-            int paddingInput=inImage->getPadding();
+            int paddingInput=outputCartImage.getPadding();
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
                         if(maxValue<*pImage) {
@@ -458,7 +457,7 @@ void selectiveAttentionProcessor::run(){
                         }
                         pImage+=3;
                 }
-                pImage+=padding3C;
+                pImage+=paddingInput;
             }
             pImage=outputCartImage.getRawImage();
             for(int y=0;y<ySizeValue;y++) {
@@ -470,22 +469,21 @@ void selectiveAttentionProcessor::run(){
                     }
                     pImage+=3;
                 }
-                pImage+=padding3C;
+                pImage+=paddingInput;
             }
             
             //5. controlling the heading of the robot
             if((xm/countMaxes<XSIZE_DIM)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<YSIZE_DIM)&&(countMaxes!=0)) {
-                printf("cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
+                printf("cartesian: %f,%f \n", (xm/countMaxes)/2,(ym/countMaxes)/2);
             }
             else {
                 printf("outOfRange cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
                 gazePerform=false;
             }
-            printf("cLoop: %d \n", cLoop);
             if(cLoop>30) {
                 Vector px(2);
-                px[0]=floor(xm/countMaxes-XSIZE_DIM/2+160);
-                px[1]=floor(ym/countMaxes-YSIZE_DIM/2+120);
+                px[0]=floor((xm/countMaxes)/2);
+                px[1]=floor((ym/countMaxes)/2);
                 
                 //we still have one degree of freedom given by
                 //the distance of the object from the image plane
@@ -553,7 +551,7 @@ bool selectiveAttentionProcessor::outPorts(){
         centroidPort.write();
     }
 
-    if(feedbackPort.getOutputCount()){  
+    if(feedbackPort.getOutputCount()){
         //Bottle& commandBottle=feedbackPort.prepare();
         Bottle in,commandBottle;
         commandBottle.clear();

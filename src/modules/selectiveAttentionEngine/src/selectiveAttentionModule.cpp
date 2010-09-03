@@ -123,14 +123,14 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     /* get the size of the X dimension */
 
     xSize                 = rf.check("xsize",
-                           Value(128),
+                           Value(640),
                            "Key value (int)").asInt();
     currentProcessor->setXSize(xSize);
 
     /* get the size of the Y dimension */
 
     ySize                 = rf.check("ysize",
-                           Value(128),
+                           Value(480),
                            "Key value (int)").asInt();
     currentProcessor->setYSize(ySize);
 
