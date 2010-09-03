@@ -429,14 +429,10 @@ void selectiveAttentionProcessor::run(){
             maxValue=0;
             for(int y=0;y<height;y++) {
                 for(int x=0;x<width;x++) {
-                    *pImage=(unsigned char)*plinear;
-                    pImage++;
-                    *pImage=(unsigned char)*plinear;
-                    pImage++;
-                    *pImage=(unsigned char)*plinear;
-                    pImage++;
+                    *pImage++=(unsigned char)*plinear;
+                    *pImage++=(unsigned char)*plinear;
+                    *pImage++=(unsigned char)*plinear;
                     plinear++;
-                    
                 }
                 pImage+=padding3C;
                 plinear+=padding;
@@ -478,9 +474,8 @@ void selectiveAttentionProcessor::run(){
             }
             else {
                 printf("outOfRange cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
-                gazePerform=false;
             }
-            if(cLoop>30) {
+            if(cLoop>100) {
                 Vector px(2);
                 px[0]=floor((xm/countMaxes)/2);
                 px[1]=floor((ym/countMaxes)/2);
