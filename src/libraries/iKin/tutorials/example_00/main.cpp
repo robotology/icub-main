@@ -114,16 +114,16 @@ int main()
 
         // last joint set to 1° higher than the bound
         if (i==chain->getDOF()-1)
-            qf[i]=max+1.0*(M_PI/180.0);
+            qf[i]=max+1.0*CTRL_DEG2RAD;
 
-        cout << "joint " << i << " in [" << (180.0/M_PI)*min << "," << (180.0/M_PI)*max
-             << "] set to " << (180.0/M_PI)*qf[i] << endl;
+        cout << "joint " << i << " in [" << CTRL_RAD2DEG*min << "," << CTRL_RAD2DEG*max
+             << "] set to " << CTRL_RAD2DEG*qf[i] << endl;
     }
 
     // it is not allowed to overcome the bounds...
     // ...see the result
     qf=chain->setAng(qf);
-    cout << "Actual joints set to " << ((180.0/M_PI)*qf).toString() << endl;
+    cout << "Actual joints set to " << (CTRL_RAD2DEG*qf).toString() << endl;
     // anyway user can disable the constraints checking by calling
     // the chain method setAllConstraints(false)
 
@@ -131,7 +131,7 @@ int main()
     // DOF set since they are blocked. User can access them through [] operators
     cout << "Torso blocked links at:" << endl;
     for (unsigned int i=0; i<chain->getN()-chain->getDOF(); i++)
-        cout << (180.0/M_PI)*(*chain)[i].getAng() << " ";
+        cout << CTRL_RAD2DEG*(*chain)[i].getAng() << " ";
     cout << endl;
 
     // user can unblock blocked links augumenting the number of DOF
@@ -171,7 +171,7 @@ int main()
 
     // in general the solved qf is different from the initial qf
     // due to the redundancy
-    cout << "qhat: " << ((180.0/M_PI)*qhat).toString() << endl;
+    cout << "qhat: " << (CTRL_RAD2DEG*qhat).toString() << endl;
 
     // check how much we achieve our goal
     // note that the chain has been manipulated by the solver,
