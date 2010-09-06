@@ -515,7 +515,7 @@ void selectiveAttentionProcessor::run(){
                 //we still have one degree of freedom given by
                 //the distance of the object from the image plane
                 //if you do not have it, try to guess :)
-                double z=1.0;   // distance [m]
+                double z=0.5;   // distance [m]
                 if(gazePerform) {
                     igaze->lookAtMonoPixel(camSel,px,z);
                 }
