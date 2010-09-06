@@ -419,7 +419,7 @@ void selectiveAttentionProcessor::run(){
                     plinear+=padding;
                 }
             }
-            //3.trasform the logpolar to cartesian
+            //trasform the logpolar to cartesian
             plinear=linearCombinationImage->getRawImage();
             ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();
             outputCartImage.resize(xSizeValue,ySizeValue);
@@ -441,7 +441,7 @@ void selectiveAttentionProcessor::run(){
             trsf.logpolarToCart(outputCartImage,*inputLogImage);
             
             
-            //4.find the max in the cartesian image
+            //find the max in the cartesian image
             maxValue=0;
             float xm=0,ym=0;
             int countMaxes=0;
@@ -483,13 +483,11 @@ void selectiveAttentionProcessor::run(){
                 pImage+=paddingInput;
             }
             xm=xm/countMaxes; ym=ym/countMaxes;
+            //representation of red lines where the WTA point is
             pImage=outputCartImage.getRawImage();
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
-                    if(y==ym) {
-                        *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
-                    }
-                    if(x==floor(xm)) {
+                    if((y==floor(ym))||(x==floor(xm))) {
                         *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                     }
                     pImage+=3;
@@ -497,12 +495,12 @@ void selectiveAttentionProcessor::run(){
                 pImage+=paddingInput;
             }
             imageCartOut.write();
-            //5. controlling the heading of the robot
+            //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
-                printf("cartesian: %f,%f \n", (xm/countMaxes)/2,(ym/countMaxes)/2);
+                printf("cartesian: %f,%f \n", xm/2,ym/2);
                 Vector px(2);
-                px[0]=floor((xm/countMaxes)/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                px[1]=floor((ym/countMaxes)/2);
+                px[0]=floor(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                px[1]=floor(ym/2);
                 
                 //we still have one degree of freedom given by
                 //the distance of the object from the image plane
