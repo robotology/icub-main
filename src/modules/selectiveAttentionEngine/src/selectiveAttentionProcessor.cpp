@@ -463,6 +463,9 @@ void selectiveAttentionProcessor::run(){
                         countMaxes++;
                         xm+=x;
                         ym+=y;
+                        if((x==xm)||(y==ym)) {
+                            *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
+                        }
                     }
                     pImage+=3;
                 }
