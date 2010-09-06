@@ -2,57 +2,38 @@
 <name>Demo Force Control</name>
 	<dependencies>
 	        <port>/icub/left_arm/state:o</port>
+	        <port>/filtered/inertial:o</port>
         </dependencies>
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--context demoForceControl/conf --from leftArmFT.ini</parameters>
-			<node>pc104</node>
+      		<parameters>--robot icub --part left_arm</parameters>
+			<node>matt</node>
 			<tag>left_arm_dfc</tag>
-			<stdio>console</stdio>
+			<stdio>matt</stdio>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--context demoForceControl/conf --from rightArmFT.ini</parameters>
-			<node>pc104</node>
+      		<parameters>--robot icub --part right_arm</parameters>
+			<node>matt</node>
 			<tag>right_arm_dfc</tag>
-			<stdio>console</stdio>
+			<stdio>matt</stdio>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--context demoForceControl/conf --from leftLegFT.ini</parameters>
-			<node>pc104</node>
+      		<parameters>--robot icub --part left_leg</parameters>
+			<node>matt</node>
 			<tag>left_leg_dfc</tag>
-			<stdio>console</stdio>
+			<stdio>matt</stdio>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--context demoForceControl/conf --from rightLegFT.ini</parameters>
-			<node>pc104</node>
+      		<parameters>--robot icub --part right_leg</parameters>
+			<node>matt</node>
 			<tag>right_leg_dfc</tag>
-			<stdio>console</stdio>
+			<stdio>matt</stdio>
    	</module>
 
-        <connection>
-                <from>/icub/left_arm/analog:o</from>
-                <to>/imp/left_arm/FT:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/right_arm/analog:o</from>
-                <to>/imp/right_arm/FT:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/left_leg/analog:o</from>
-                <to>/imp/left_leg/FT:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/right_leg/analog:o</from>
-                <to>/imp/right_leg/FT:i</to>
-                <protocol>udp</protocol>
-        </connection>
 </application>
