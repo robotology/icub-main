@@ -9,37 +9,65 @@ A module for interacting with the robot.
 
 The zeroForce application opens one module for each limb, achieving active compliance (impedance or zero force) using a 6-axis F/T sensor.
 
-Each module control one limb. When connected, the offset of the sensor is cancelled. If the module is in modality "zfc", if moved from the starting position, 
-the limb drifts. If the module is in modality "imp", the limb behave like a spring around that position.
+Each module control one limb. If the module is in modality "cmt", if moved from the starting position, 
+the limb drifts. If the module is in modality "cmip", the limb behave like a spring around that position.
 
 The modality can be changed by writing on the shell:
-- set imp (for impedance control)
-- set zfc (for zero force control)
+- [set] [cmip] (for impedance control) [joint]
+- [set] [cmt] (for zero force control) [joint]
 
 \section dep_sec Dependencies
-The modules depends on iDyn and iKin.
+The modules depends on:
+- iDyn and iKin.
+
+- wholeBodyTorqueObserver (this should be running before starting the demoForceControl application)
 
 \section parameters_sec Parameters
 
 The parameters which are required to the module are:
-- context: no default context is set
-- from: no default config file is set.
 
-\section config_sec Configuration Files
+--robot
+- The parameter \e robot identifies the robot that is used. This parameter defines the
+  prefix of the ports of the device. As default \e icub is used.
 
-Configuration files are located in the ICUB_DIR/app/demoForceControl/conf folder. 
-
-The files of type partLimbFT.ini (i.e. leftArmFT.ini) contain the information about the different limbs: robot, part, initPosition, joint limits, and others. 
-
-
+--part  
+- The parameter \e part identifies the part of the robot which is used. All the opened 
+  ports will deal with the part which is defined. the default value is \e left_arm
 
 \section example_sec How to run the application
 
-
-
 To run the application, please do the following :
+By launching for example the following command: 
+\code 
+demoForceControl --robot icub --part left_arm
+\endcode 
+left arm joints can be controlled.
 
-- manager.py $ICUB_DIR/app/demoForceControl/scripts/zdemoForceControl.xml  
+By typing:
+\code 
+yarp rpc /demoForceControl/left_arm/rpc:i
+\endcode 
+on an opened shell, it is possible to send commands to the module
+
+\section command_sec RPC commands
+Commands on the rpc port are
+
+1 - set/get
+
+2 - cmod/pos/iimp/pid (control mode, position, impedance, pid)
+
+3 - specifies the joint, while commands from 4 to end define the values;
+
+4 and more - depend on the previous commands:
+- cmp/cmip/cmt if command 1 is cmod (to set the control mode: cmp for position, cmip for impedance position, and cmt for torque mode)
+e.g. set cmod 3 cmt (sets the modality of jnt 3 to "torque").
+- value1 and value2 if command 2 is iimp. this command sets the stiffness and damping of the joint
+e.g. set iimp 3 0.16 0.08
+- value1 if command 2 is pos; this command sets the reference position for the specified joint
+e.g. set pos 3 45
+- value1 value2 value3 (+value4 value5 value6 value7) set respectively the kp, kd and ki of the torque regulator.
+value4->value7 are the same of a normal pid for iCub position control.
+\section intro_sec Description
 
 \author Matteo Fumagalli
 
