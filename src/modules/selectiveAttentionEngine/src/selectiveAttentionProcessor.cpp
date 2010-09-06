@@ -438,7 +438,7 @@ void selectiveAttentionProcessor::run(){
                 plinear+=padding;
             }
             trsf.logpolarToCart(outputCartImage,*inputLogImage);
-            imageCartOut.write();
+            
             
             //4.find the max in the cartesian image
             maxValue=0;
@@ -459,6 +459,7 @@ void selectiveAttentionProcessor::run(){
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
                     if(*pImage==maxValue) {
+                        *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                         countMaxes++;
                         xm+=x;
                         ym+=y;
@@ -467,7 +468,7 @@ void selectiveAttentionProcessor::run(){
                 }
                 pImage+=paddingInput;
             }
-            
+            imageCartOut.write();
             //5. controlling the heading of the robot
             if((xm/countMaxes<XSIZE_DIM)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<YSIZE_DIM)&&(countMaxes!=0)) {
                 printf("cartesian: %f,%f \n", (xm/countMaxes)/2,(ym/countMaxes)/2);
