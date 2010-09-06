@@ -486,6 +486,7 @@ void selectiveAttentionProcessor::run(){
                                 xm+=x;
                                 ym+=y;
                             }
+                            else break;
                         }
                     }
                     pImage+=3;
@@ -494,6 +495,7 @@ void selectiveAttentionProcessor::run(){
             }
             xm=xm/countMaxes; ym=ym/countMaxes;
             //representation of red lines where the WTA point is
+            // it must be improved, takes too much time for 2 lines!!!!!
             /*pImage=outputCartImage.getRawImage();
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
@@ -507,10 +509,10 @@ void selectiveAttentionProcessor::run(){
             imageCartOut.write();
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
-                printf("cartesian: %f,%f \n", xm/2,ym/2);
+                //printf("cartesian: %f,%f \n", xm/2,ym/2);
                 Vector px(2);
-                px[0]=round(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                px[1]=round(ym/2);
+                px[0]=floor(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                px[1]=floor(ym/2);
                 
                 //we still have one degree of freedom given by
                 //the distance of the object from the image plane
