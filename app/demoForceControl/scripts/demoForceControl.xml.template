@@ -7,33 +7,33 @@
 	<module>
       		<name>demoForceControl</name>
       		<parameters>--robot icub --part left_arm</parameters>
-			<node>matt</node>
+			<node>console</node>
 			<tag>left_arm_dfc</tag>
-			<stdio>matt</stdio>
+			<stdio>console</stdio>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
       		<parameters>--robot icub --part right_arm</parameters>
-			<node>matt</node>
+			<node>console</node>
 			<tag>right_arm_dfc</tag>
-			<stdio>matt</stdio>
+			<stdio>console</stdio>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
       		<parameters>--robot icub --part left_leg</parameters>
-			<node>matt</node>
+			<node>console</node>
 			<tag>left_leg_dfc</tag>
-			<stdio>matt</stdio>
+			<stdio>console</stdio>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
       		<parameters>--robot icub --part right_leg</parameters>
-			<node>matt</node>
+			<node>console</node>
 			<tag>right_leg_dfc</tag>
-			<stdio>matt</stdio>
+			<stdio>console</stdio>
    	</module>
 
 </application>
