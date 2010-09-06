@@ -89,7 +89,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         int height; //height of the input image
         int xSizeValue; //x dimension of the remapped cartesian image
         int ySizeValue; //y dimension of the remapped cartesian image
-        int overlap;     //overlap in the remapping
+        double overlap;     //overlap in the remapping
         int numberOfRings;  //number of rings in the remapping
         int numberOfAngles; //number of angles in the remapping
         double salienceTD; //value of the weight of top-down approach in the blobFinder
@@ -216,7 +216,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         * function that declare the overlap needed in the reconstruction
         * @param overlap value of the overlapping
         */
-        void setOverlap(int overlap);
+        void setOverlap(double overlap);
 
         /**
         * function that declares the number of rings of the image has to be remapped

@@ -177,7 +177,8 @@ private:
     int width; //width of the input image
     int height; //height of the input image
     int rateThread; // rateThread of the processor Thread
-    int xSize,ySize,overlap, numberOfRings,numberOfAngles; //parameters of the configuration file
+    int xSize,ySize, numberOfRings,numberOfAngles; //parameters of the configuration file
+    double overlap; //value of the overlap
     bool reinit_flag; //flag that indicates when the reinitiazation has already be done
 
     yarp::os::Semaphore mutex; //semaphore for the respond function

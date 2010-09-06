@@ -240,6 +240,16 @@ std::string selectiveAttentionProcessor::getName(const char* p){
     return str;
 }
 
+template<class T>
+inline int round(T a) {
+    int ceilValue=(int)ceil(a);
+    int floorValue=(int)floor(a);
+    if(a-floorValue<=0.5)
+        return floorValue;
+    else
+        return ceilValue;
+}
+
 /**
 * active loop of the thread
 */
@@ -465,7 +475,7 @@ void selectiveAttentionProcessor::run(){
                         if(!foundmax) {
                             *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                             countMaxes++;
-                            xm=x;ym=y;
+                            xm=(float)x;ym=(float)y;
                             foundmax=true;
                         }
                         else {
@@ -487,7 +497,7 @@ void selectiveAttentionProcessor::run(){
             pImage=outputCartImage.getRawImage();
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
-                    if((y==floor(ym))||(x==floor(xm))) {
+                    if((y==round(ym))||(x==round(xm))) {
                         *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                     }
                     pImage+=3;
@@ -499,8 +509,8 @@ void selectiveAttentionProcessor::run(){
             if(cLoop>TIME_CONST) {
                 printf("cartesian: %f,%f \n", xm/2,ym/2);
                 Vector px(2);
-                px[0]=floor(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                px[1]=floor(ym/2);
+                px[0]=round(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                px[1]=round(ym/2);
                 
                 //we still have one degree of freedom given by
                 //the distance of the object from the image plane
@@ -533,7 +543,7 @@ void selectiveAttentionProcessor::setYSize(int ySize) {
     ySizeValue=ySize;
 }
 
-void selectiveAttentionProcessor::setOverlap(int _overlap) {
+void selectiveAttentionProcessor::setOverlap(double _overlap) {
     overlap=_overlap;
 }
 
