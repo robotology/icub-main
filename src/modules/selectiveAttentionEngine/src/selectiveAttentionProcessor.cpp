@@ -457,14 +457,17 @@ void selectiveAttentionProcessor::run(){
                 pImage+=paddingInput;
             }
             pImage=outputCartImage.getRawImage();
+            float distance=0;
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
                     if(*pImage==maxValue) {
-                        *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
-                        countMaxes++;
-                        xm+=x;
-                        ym+=y;
-                        
+                        distance=sqrt((x-xm)*(x-xm)+(y-ym)*(y-ym));
+                        if(distance<3) {
+                            *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
+                            countMaxes++;
+                            xm+=x;
+                            ym+=y;
+                        }
                     }
                     else {
                         if((x==xm)||(y==ym)) {
