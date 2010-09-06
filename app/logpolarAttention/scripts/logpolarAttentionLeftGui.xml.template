@@ -35,6 +35,12 @@
 	</module>
 	<module>
 		<name>yarpview</name>
+		<parameters>--name /icub/left_cam/attentionCartesian --x 600 --y 100 --synch</parameters>
+		<tag>attCart</tag>
+		<node>/console</node>
+	</module>
+	<module>
+		<name>yarpview</name>
 		<parameters>--name /icub/left_cam/combinationView --x 900 --y 600 --synch</parameters>
 		<tag>combView</tag>
 		<node>/console</node>
@@ -69,6 +75,11 @@
 	<connection>
         	<from>/selectiveAttentionEngine/icub/left_cam/attention:o</from>
 		<to>/icub/left_cam/attentionView</to>
+		<protocol>udp</protocol>
+	</connection>
+		<connection>
+        	<from>/selectiveAttentionEngine/icub/left_cam/cartesian:o</from>
+		<to>/icub/left_cam/attentionCartesian</to>
 		<protocol>udp</protocol>
 	</connection>
 	<connection>
