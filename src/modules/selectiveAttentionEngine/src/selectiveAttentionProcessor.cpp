@@ -44,6 +44,7 @@ using namespace iCub::logpolar;
 
 #define XSIZE_DIM 640 //original mapping 
 #define YSIZE_DIM 480 //original mapping
+#define TIME_CONST 100 //number of times period rateThread to send motion command
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
 {
@@ -463,6 +464,9 @@ void selectiveAttentionProcessor::run(){
                         countMaxes++;
                         xm+=x;
                         ym+=y;
+                        
+                    }
+                    else {
                         if((x==xm)||(y==ym)) {
                             *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                         }
@@ -473,15 +477,10 @@ void selectiveAttentionProcessor::run(){
             }
             imageCartOut.write();
             //5. controlling the heading of the robot
-            if((xm/countMaxes<XSIZE_DIM)&&(xm/countMaxes>=0)&&(ym/countMaxes>=0)&&(xm/countMaxes<YSIZE_DIM)&&(countMaxes!=0)) {
+            if(cLoop>TIME_CONST) {
                 printf("cartesian: %f,%f \n", (xm/countMaxes)/2,(ym/countMaxes)/2);
-            }
-            else {
-                printf("outOfRange cartesian: %f,%f \n", xm/countMaxes,ym/countMaxes);
-            }
-            if(cLoop>100) {
                 Vector px(2);
-                px[0]=floor((xm/countMaxes)/2);
+                px[0]=floor((xm/countMaxes)/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
                 px[1]=floor((ym/countMaxes)/2);
                 
                 //we still have one degree of freedom given by
