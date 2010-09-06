@@ -446,7 +446,7 @@ void selectiveAttentionProcessor::run(){
             float xm=0,ym=0;
             int countMaxes=0;
             pImage=outputCartImage.getRawImage();
-            int paddingInput=outputCartImage.getPadding();
+            int paddingInput=outputCartImage.getPadding(); //padding of the colour image (640,480)
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
                         if(maxValue<*pImage) {
@@ -458,21 +458,39 @@ void selectiveAttentionProcessor::run(){
             }
             pImage=outputCartImage.getRawImage();
             float distance=0;
+            bool foundmax=false;
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
                     if(*pImage==maxValue) {
-                        distance=sqrt((x-xm)*(x-xm)+(y-ym)*(y-ym));
-                        if(distance<3) {
+                        if(!foundmax) {
                             *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                             countMaxes++;
-                            xm+=x;
-                            ym+=y;
+                            xm=x;ym=y;
+                            foundmax=true;
+                        }
+                        else {
+                            distance=sqrt((x-xm)*(x-xm)+(y-ym)*(y-ym));
+                            if(distance<10) {
+                                *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
+                                countMaxes++;
+                                xm+=x;
+                                ym+=y;
+                            }
                         }
                     }
-                    else {
-                        if((x==xm)||(y==ym)) {
-                            *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
-                        }
+                    pImage+=3;
+                }
+                pImage+=paddingInput;
+            }
+            xm=xm/countMaxes; ym=ym/countMaxes;
+            pImage=outputCartImage.getRawImage();
+            for(int y=0;y<ySizeValue;y++) {
+                for(int x=0;x<xSizeValue;x++) {
+                    if(y==ym) {
+                        *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
+                    }
+                    if(x==floor(xm)) {
+                        *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                     }
                     pImage+=3;
                 }
@@ -768,7 +786,6 @@ void selectiveAttentionProcessor::threadRelease(){
     centroidPort.close();
     feedbackPort.close();
     imageCartOut.close();
-
     
     delete clientGazeCtrl;
 }
