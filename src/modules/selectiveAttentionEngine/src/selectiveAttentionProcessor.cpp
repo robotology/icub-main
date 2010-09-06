@@ -494,7 +494,7 @@ void selectiveAttentionProcessor::run(){
             }
             xm=xm/countMaxes; ym=ym/countMaxes;
             //representation of red lines where the WTA point is
-            pImage=outputCartImage.getRawImage();
+            /*pImage=outputCartImage.getRawImage();
             for(int y=0;y<ySizeValue;y++) {
                 for(int x=0;x<xSizeValue;x++) {
                     if((y==round(ym))||(x==round(xm))) {
@@ -503,7 +503,7 @@ void selectiveAttentionProcessor::run(){
                     pImage+=3;
                 }
                 pImage+=paddingInput;
-            }
+            }*/
             imageCartOut.write();
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
