@@ -33,6 +33,8 @@ processTime     = end of run() – current measure, i.e. the time required to proc
 measureRate     = current measure - last valid measure, i.e. and indication of the time intercurring
                   between two incoming FT measures (if receivedMeasure==1; if ==0, it is a delay measure)
 
+To collect data from these ports, one can use the DataDumper module.
+
 Note: being the same module of WholeBodyTorqueObserver, it is important not to run this test module
 concurrently with the original one!
 
