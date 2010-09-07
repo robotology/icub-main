@@ -29,7 +29,7 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /icub/left_cam/attentionCartesian --x 600 --y 100 --synch</parameters>
+		<parameters>--name /icub/left_cam/attentionCartesian --x 600 --y 600 --synch</parameters>
 		<tag>attCart</tag>
 		<node>/console</node>
 	</module>
