@@ -102,7 +102,7 @@ void printMatrix(string s, const Matrix &m)
 	}
 }
 // print a vector nicely
-void printVector(string s, Vector &v)
+void printVector(string s, const Vector &v)
 {
 	cout<<s<<endl;
 	for(int j=0;j<v.length();j++)
