@@ -19,12 +19,14 @@ of the iCub limbs, using icub joint torque and impedance interface. Joint torque
 are estimated using dynamic model of the icub body (by the module "wholeBodyTorqueObserver" which is required
 for torque control) exploiting 6-axis FT sensors.
 The intrinsic offsets of the sensors are defined by the first FT data. 
+<b>NOTE 1: before launching the demo (or before using any kind of force control interface), be sure that the firmware 
+of the boards is greater (or equal) to the version 1.48 for BLL boards and 1.38 for MC4 boards</b>
+<b>NOTE 2: before launching the application (or before using any kind of force control interface), be sure that the configuration
+files of your robot support force control. To see whether your robot is properly configured, send an email to the rkhackers mailing list (robotcub-hackers@lists.sourceforge.net)</b>
+
 
 \section lib_sec Libraries 
-- YARP libraries. 
-- ctrlLib library. 
-- iKin library.
-- iDyn library.  
+None.
 
 \section dep_sec Dependencies
 - wholeBodyTorqueObserver
@@ -38,6 +40,10 @@ The intrinsic offsets of the sensors are defined by the first FT data.
 --part  
 - The parameter \e part identifies the part of the robot which is used. All the opened 
   ports will deal with the part which is defined. the default value is \e left_arm
+
+--name
+- The parameter \e name identifies the name of the ports which are opened. All the opened 
+  ports will deal with the name which is defined. the default value is \e demoForceControl
 
 \section portsa_sec Ports Accessed
 The port the service is listening to.
