@@ -67,7 +67,6 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; //input port for the 5th saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; //input port for the 6th saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; //output port that represent the linear combination of different maps
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > selectedAttentionPort; //output port that represent the selected attention output
         yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;//output port where the centroid coordinate is sent
         yarp::os::Port feedbackPort; //port necessary to send back command to the preattentive processors
         Ipp8u* map1_ippi; //ippi image of the 1st map
@@ -280,12 +279,11 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
 
         int inputImage_flag;  //processor flag
         
-        
         static const int CONVMAX_TH=100; //parameter of the findEdges function
         static const int CONVSEQ_TH=500; //parameter of the findEdges function
         yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage; // result of the selection
         yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage2; //result of the selection
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* linearCombinationImage; //result of the combination
+        yarp::sig::ImageOf<yarp::sig::PixelMono> linearCombinationImage; //result of the combination
         int centroid_x; //center of gravity of the selective attention (x position)
         int centroid_y; //center of gravity of the selective attention (y position)
         time_t start2; //time variable

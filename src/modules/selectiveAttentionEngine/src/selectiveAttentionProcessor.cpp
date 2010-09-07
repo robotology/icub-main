@@ -92,7 +92,6 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     image_tmp=new ImageOf<PixelMono>;
     outputImage=new ImageOf<PixelMono>;
     outputImage2=new ImageOf<PixelMono>;
-    linearCombinationImage=new ImageOf<PixelMono>;
 
 }
 
@@ -140,9 +139,6 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     inImage=new ImageOf<PixelRgb>;
     inImage->resize(width,height);
 
-    linearCombinationImage=new ImageOf<PixelMono>;
-    linearCombinationImage->resize(width,height);
-
     outputImage=new ImageOf<PixelMono>;
     outputImage->resize(width,height);
     map1_yarp=new ImageOf<PixelMono>;
@@ -179,7 +175,6 @@ void selectiveAttentionProcessor::resizeImages(int width,int height) {
     image_tmp->resize(width,height);
     outputImage->resize(width,height);
     outputImage2->resize(width,height);
-    linearCombinationImage->resize(width,height);
 
     cvImage16= cvCreateImage(cvSize(width,height),IPL_DEPTH_16S,1);
     cvImage8= cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
@@ -199,8 +194,7 @@ bool selectiveAttentionProcessor::threadInit(){
     map5Port.open(getName("/map5:i").c_str());
     map6Port.open(getName("/map6:i").c_str());
 
-    selectedAttentionPort.open(getName("/attention:o").c_str());
-    linearCombinationPort.open(getName("/combination2:o").c_str());
+    linearCombinationPort.open(getName("/combination:o").c_str());
     centroidPort.open(getName("/centroid:o").c_str());
     feedbackPort.open(getName("/feedback:o").c_str());
     imageCartOut.open(getName("/cartesian:o").c_str());
@@ -372,7 +366,9 @@ void selectiveAttentionProcessor::run(){
         unsigned char* pmap4= map4_yarp->getRawImage();
         unsigned char* pmap5= map5_yarp->getRawImage();
         unsigned char* pmap6= map6_yarp->getRawImage();
-        unsigned char* plinear=linearCombinationImage->getRawImage();
+        ImageOf<PixelMono>& linearCombinationImage=linearCombinationPort.prepare();
+        linearCombinationImage.resize(width,height);
+        unsigned char* plinear=linearCombinationImage.getRawImage();
         int padding=map1_yarp->getPadding();
         int rowSize=map1_yarp->getRowSize();
         unsigned char maxValue=0;
@@ -411,31 +407,8 @@ void selectiveAttentionProcessor::run(){
                 pmap6+=padding;
                 plinear+=padding;
             }
-            // creating the maximum point in the logpolar saliency map
-            /*
-            unsigned char* pout=outputImage->getRawImage();
-            if(maxValue==0) {
-                outputImage->zero();
-            }
-            else {
-                for(int y=0;y<height;y++) {
-                    for(int x=0;x<width;x++) {
-                        if(*plinear==maxValue){
-                            *pout=255;
-                        }
-                        else {
-                            *pout=0;
-                        }
-                        plinear++;
-                        pout++;
-                    }
-                    pout+=padding;
-                    plinear+=padding;
-                }
-            }
-            */
             //trasform the logpolar to cartesian (the logpolar image has to be 3channel image)
-            unsigned char* plinear=linearCombinationImage->getRawImage();
+            plinear=linearCombinationImage.getRawImage();
             unsigned char* pImage=inputLogImage->getRawImage();
             int padding3C=inputLogImage->getPadding();
             maxValue=0;
@@ -449,7 +422,7 @@ void selectiveAttentionProcessor::run(){
                 pImage+=padding3C;
                 plinear+=padding;
             }
-            ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();
+            ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();  //preparing the cartesian output
             outputCartImage.resize(xSizeValue,ySizeValue);
             trsf.logpolarToCart(outputCartImage,*inputLogImage);
             //find the max in the cartesian image
@@ -487,7 +460,6 @@ void selectiveAttentionProcessor::run(){
                                 xm+=x;
                                 ym+=y;
                             }
-                            else break;
                         }
                     }
                     pImage+=3;
@@ -509,7 +481,7 @@ void selectiveAttentionProcessor::run(){
             for(int i=0;i<xSizeValue;i++) {
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
             }
-            imageCartOut.write();
+            
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
                 printf("cartesian: %f,%f \n", xm/2,ym/2);
@@ -562,14 +534,11 @@ void selectiveAttentionProcessor::setNumberOfAngles(int _numberOfAngles) {
 
 bool selectiveAttentionProcessor::outPorts(){
     bool ret = false;
-    if((0!=linearCombinationImage)&&(linearCombinationPort.getOutputCount())){
-        linearCombinationPort.prepare() = *(linearCombinationImage);
+    if(linearCombinationPort.getOutputCount()){
         linearCombinationPort.write();
     }
-    
-    if((0!=outputImage)&&(selectedAttentionPort.getOutputCount())){
-        selectedAttentionPort.prepare() = *(outputImage);
-        selectedAttentionPort.write();
+    if(imageCartOut.getOutputCount()){
+        imageCartOut.write();
     }
 
     if(centroidPort.getOutputCount()){  
@@ -767,7 +736,6 @@ void selectiveAttentionProcessor::interrupt(){
     map5Port.interrupt();
     map6Port.interrupt();
     
-    selectedAttentionPort.interrupt();
     linearCombinationPort.interrupt();
     centroidPort.interrupt();
     feedbackPort.interrupt();
@@ -793,7 +761,6 @@ void selectiveAttentionProcessor::threadRelease(){
     map5Port.close();
     map6Port.close();
 
-    selectedAttentionPort.close();
     linearCombinationPort.close();
     centroidPort.close();
     feedbackPort.close();
