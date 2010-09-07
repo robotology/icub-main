@@ -9,7 +9,6 @@
       		<parameters>--robot icub --part left_arm</parameters>
 			<node>console</node>
 			<tag>left_arm_dfc</tag>
-			<stdio>console</stdio>
    	</module>
 
 	<module>
@@ -17,7 +16,6 @@
       		<parameters>--robot icub --part right_arm</parameters>
 			<node>console</node>
 			<tag>right_arm_dfc</tag>
-			<stdio>console</stdio>
    	</module>
 
 	<module>
@@ -25,7 +23,6 @@
       		<parameters>--robot icub --part left_leg</parameters>
 			<node>console</node>
 			<tag>left_leg_dfc</tag>
-			<stdio>console</stdio>
    	</module>
 
 	<module>
@@ -33,6 +30,38 @@
       		<parameters>--robot icub --part right_leg</parameters>
 			<node>console</node>
 			<tag>right_leg_dfc</tag>
+   	</module>
+
+
+	<module>
+      		<name>yarp rpc</name>
+			<parameter>--client /demoForceControl/left_arm/rpc:i</parameter>
+			<node display="true">console</node>
+			<tag>left_arm_rpc</tag>
+			<stdio>console</stdio>
+   	</module>
+
+	
+	<module>
+      		<name>yarp rpc</name>
+			<parameter>--client /demoForceControl/right_arm/rpc:i</parameter>
+			<node display="true">console</node>
+			<tag>right_arm_rpc</tag>
+			<stdio>console</stdio>
+   	</module>
+
+	<module>
+      		<name>yarp rpc /demoForceControl/left_leg/rpc:i</name>
+			<node display="true">console</node>
+			<tag>left_leg_rpc</tag>
+			<stdio>console</stdio>
+   	</module>
+
+	
+	<module>
+      		<name>yarp rpc /demoForceControl/right_leg/rpc:i</name>
+			<node display="true">console</node>
+			<tag>right_leg_rpc</tag>
 			<stdio>console</stdio>
    	</module>
 
