@@ -7,7 +7,13 @@ A module for interacting with the robot.
 
 \section intro_sec Description
 
-The zeroForce application opens one module for each limb, achieving active compliance (impedance or zero force) using a 6-axis F/T sensor.
+The demoForceControl application opens one module for each limb, achieving active compliance (impedance or zero force) using a 6-axis F/T sensor.
+
+<b>NOTE 1: before launching the demo (or before using any kind of force control interface), be sure that the firmware 
+of the boards is greater (or equal) to the version 1.48 for BLL boards and 1.38 for MC4 boards</b>
+
+<b>NOTE 2: before launching the application (or before using any kind of force control interface), be sure that the configuration
+files of your robot support force control. To see whether your robot is properly configured, send an email to the rkhackers mailing list (robotcub-hackers@lists.sourceforge.net)</b>
 
 Each module control one limb. If the module is in modality "cmt", if moved from the starting position, 
 the limb drifts. If the module is in modality "cmip", the limb behave like a spring around that position.
