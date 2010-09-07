@@ -48,6 +48,12 @@
 //
 //  After SVN installation there was a mass in the code and there is no way to go back
 //
+//  Revision 2.1: Marco Maggiali 08/09/10
+//
+//  There is a strange behaviour of the can filters reported in ERRATA of the dspic30f4013     
+//
+
+
 
 #include <p30f4013.h>
 #include <timer.h>
@@ -91,7 +97,7 @@
 #define MAIS_RELEASE       0x00
 
 
-#define MAIS_BUILD         0x00
+#define MAIS_BUILD         0x01
 
 
 #ifdef MAIS 
@@ -364,15 +370,15 @@ int main(void)
   unsigned short Chn = 0;
   unsigned flag=0;
   // Test CAN vars
-  unsigned char datalen;
-  unsigned char Txdata[8] = {0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88}; 
-  canmsg_t CAN_Msg;
-  char FilterNo,tx_rx_no;
+//  unsigned char datalen;
+ // unsigned char Txdata[8] = {0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88}; 
+//  canmsg_t CAN_Msg;
+  //char FilterNo,tx_rx_no;
   // #define  DATAARRAY 0x1820
   // unsigned char *datareceived = (unsigned char *) DATAARRAY;  
-  unsigned char Rxdata[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}; 
+//  unsigned char Rxdata[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}; 
   // EEDATA Access vars
-  _prog_addressT EE_addr;
+  //_prog_addressT EE_addr;
   
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                               init code

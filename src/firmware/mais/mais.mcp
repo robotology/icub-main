@@ -105,7 +105,7 @@ file_014=D:\icub\src\firmware\libDspic30f4013\include\ext_mux.h
 file_015=D:\icub\src\firmware\libDspic30f4013\include\can_interface.h
 file_016=C:\Program Files\Microchip\MPLAB C30\support\dsPIC30F\h\p30f4013.h
 file_017=D:\icub\src\firmware\libDspic30f4013\mais\utils.h
-file_018=C:\Program Files\Microchip\MPLAB C30\lib\dsPIC30F\libp30F4013-coff.a
+file_018=libp30F4013-coff.a
 file_019=linker\p30f4013.gld
 [SUITE_INFO]
 suite_guid={479DDE59-4D56-455E-855E-FFF59A3DB57E}
