@@ -35,8 +35,13 @@
 		<protocol>mcast</protocol>
 	</connection>
 	<connection>
+				<from>/vergence/icub/cmd:o</from>
+		<to>/stereoAtt/icub/vergence:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
       	        <from>/vergence/icub/shift:o</from>
-		<to>/stereoAtt/icub/vergence:o</to>
+		<to>/stereoAtt/icub/shift:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
