@@ -14,8 +14,6 @@ Copyright (C) 2010 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-\section intro_sec Description
-
 This module starts torqueControl and joint impedance position control 
 of the iCub limbs, using icub joint torque and impedance interface. Joint torques 
 are estimated using dynamic model of the icub body (by the module "wholeBodyTorqueObserver" which is required
@@ -61,47 +59,37 @@ None.
 Linux and Windows.
 
 \section example_sec Example
-By launching the following command: 
+By launching for example the following command: 
 \code 
 demoForceControl --robot icub --part left_arm
 \endcode 
-left arm joints can be controlled
+left arm joints can be controlled.
+
 By typing:
 \code 
-yarp rpc /demoForceControl/<part>/rpc:i
+yarp rpc /demoForceControl/left_arm/rpc:i
 \endcode 
 on an opened shell, it is possible to send commands to the module
 
-commands on the rpc port are:
-(command 1)
-\code 
-set/get
-\endcode
-to set or get:
-(command 2)
-\code 
-cmod/pos/iimp/pid
-\endcode
-control mode, position, impedance, pid...
-(command3) specifies the joint, while commands from 4 to end define the values;
+\section command_sec RPC commands
+Commands on the rpc port are
 
-command 4 for control mode can be:
-\code 
-cmp/cmip/cmt
-\endcode
-(for position/impedance position/and torque mode respectively)
+1 - set/get
+
+2 - cmod/pos/iimp/pid (control mode, position, impedance, pid)
+
+3 - specifies the joint, while commands from 4 to end define the values;
+
+4 and more - depend on the previous commands:
+- cmp/cmip/cmt if command 1 is cmod (to set the control mode: cmp for position, cmip for impedance position, and cmt for torque mode)
 e.g. set cmod 3 cmt (sets the modality of jnt 3 to "torque").
-command 4 for impedance mode are:
-\code 
-stiffness and damping
-\endcode
+- value1 and value2 if command 2 is iimp. this command sets the stiffness and damping of the joint
 e.g. set iimp 3 0.16 0.08
-
-command 4 for position is:
-\code 
-joint position value
-\endcode
+- value1 if command 2 is pos; this command sets the reference position for the specified joint
 e.g. set pos 3 45
+- value1 value2 value3 (+value4 value5 value6 value7) set respectively the kp, kd and ki of the torque regulator.
+value4->value7 are the same of a normal pid for iCub position control.
+\section intro_sec Description
 
 
 \author Matteo Fumagalli
@@ -592,6 +580,7 @@ public:
 		string robot;
 		string fwdSlash = "/";
 		PortName = fwdSlash;
+		string rpcPortName = fwdSlash;
 
 		ConstString robotName=rf.find("robot").asString();
 		if (rf.check("robot"))
@@ -612,14 +601,16 @@ public:
         else
 		{
 			fprintf(stderr,"Device not found\n");
-			PortName += "forceControlClient/";
-		}
+			PortName += "demoForceControl/";
+			rpcPortName += "demoForceControl/";
+		} 
 				
 		ConstString partName=rf.find("part").asString();
 		if (rf.check("part"))
 		{
-			PortName+=rf.find("part").asString().c_str();
 			part = rf.find("part").asString().c_str();
+			PortName+=part;
+			rpcPortName+=part;
 		}
         else
 		{
@@ -630,14 +621,12 @@ public:
 		}
 		
 		// Create the rpc port
-		string rpcPortName = "/demoForceControl/";
-		rpcPortName += part;
 		rpcPortName += "/rpc:i";
 		rpcPort.open(rpcPortName.c_str());
 		attach(rpcPort);                  // attach to port
 		//attachTerminal();                     // attach to terminal
 
-		string localPort = handlerPortName;
+		string localPort = PortName;
 		localPort += "/client";
 
 		string remotePort = "/";
