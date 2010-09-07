@@ -34,8 +34,7 @@
 
 
 	<module>
-      		<name>yarp rpc</name>
-			<parameter>--client /demoForceControl/left_arm/rpc:i</parameter>
+      		<name>yarp rpc /demoForceControl/left_arm/rpc:i</name>
 			<node display="true">console</node>
 			<tag>left_arm_rpc</tag>
 			<stdio>console</stdio>
@@ -43,8 +42,7 @@
 
 	
 	<module>
-      		<name>yarp rpc</name>
-			<parameter>--client /demoForceControl/right_arm/rpc:i</parameter>
+      		<name>yarp rpc /demoForceControl/right_arm/rpc:i</name>
 			<node display="true">console</node>
 			<tag>right_arm_rpc</tag>
 			<stdio>console</stdio>
