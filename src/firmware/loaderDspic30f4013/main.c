@@ -33,7 +33,11 @@
 **
 **1.3   21 Apr 2009  Changed the port F4 with the port F5       M.Maggiali 
 **					 in the board detection section. Now 
-**				     the led for the mais is F4                      
+**				     the led for the mais is F4           
+**      
+**1.4   09 Sep 2010  Changed the BOOTLDR_ADDR  0x6D40. 	        M.Maggiali 
+**					 Added the check in CMD_BOARD if the ID is the correct board id. 
+**				                    
 **-------------------------------------------------------------------------
 **
 **
@@ -53,14 +57,14 @@
 
 
 #define VERSION   1
-#define BUILD     3
+#define BUILD     4
 
 #define CONFIG_WORD_WRITE  0x4008
 
 #define BOARD_TYPE_STRAIN  0x06
 #define BOARD_TYPE_MAIS    0x07
 
-#define BOOTLDR_ADDR  0x6D80      //First row address for bootloader
+#define BOOTLDR_ADDR  0x6D40      //First row address for bootloader
 #define BOOTWAIT     5            //Waiting time (in sec.) to start the application                            
 
 // todo: inizializzazione a varie velocità
@@ -784,7 +788,7 @@ unsigned int ParseCommand(canmsg_t *msg) //, unsigned int SID)
   switch (Cmd)
   {
     case CMD_BOARD:
-      if(msg->CAN_DLC >= FIELDLEN_BOARD)
+      if((msg->CAN_DLC >= FIELDLEN_BOARD) && (msg->CAN_Msg_Dest==BoardConfig.EE_CAN_BoardAddress))
       {
         UpdateEE = msg->CAN_Msg_PayLoad[1];
         comACK (msg->CAN_Msg_Source, Cmd);
