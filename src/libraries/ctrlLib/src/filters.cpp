@@ -79,7 +79,7 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
 /***************************************************************************/
 void Filter::adjustCoeffs(const Vector &num, const Vector &den)
 {
-    if (num.size()==b.size() && den.size()==a.size())
+    if ((num.size()==b.size()) && (den.size()==a.size()))
     {
         b=num;
         a=den;
