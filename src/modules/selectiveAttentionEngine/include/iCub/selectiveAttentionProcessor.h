@@ -267,6 +267,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::sig::ImageOf<yarp::sig::PixelMono>* map5_yarp; //saliency map coming from the 5th source
         yarp::sig::ImageOf<yarp::sig::PixelMono>* map6_yarp; //saliency map coming from the 6th source
         yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp; //yarp image of the composition of all the edges
+        yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputLogImage; //3channel image representing the saliencymap in logpolar
         double k1; //coefficient for the linear combination of maps
         double k2; //coefficient for the linear combination of maps
         double k3; //coefficient for the linear combination of maps

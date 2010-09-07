@@ -108,6 +108,8 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
     delete map4_yarp;
     delete map5_yarp;
     delete map6_yarp;
+    delete inputLogImage;
+
     
     ippiFree(map1_ippi );
     ippiFree(map2_ippi );
@@ -155,7 +157,8 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     map5_yarp->resize(width,height);
     map6_yarp=new ImageOf<PixelMono>;
     map6_yarp->resize(width,height);
-    
+    inputLogImage=new ImageOf<PixelRgb>;
+    inputLogImage->resize(width,height);
 }
 
 void selectiveAttentionProcessor::resizeImages(int width,int height) {
@@ -374,6 +377,7 @@ void selectiveAttentionProcessor::run(){
         int rowSize=map1_yarp->getRowSize();
         unsigned char maxValue=0;
         double sumK=k1+k2+k3+k4+k5+k6;
+        // combination of all the saliency maps
         if(!idle){
             for(int y=0;y<height;y++){
                 for(int x=0;x<width;x++){
@@ -407,9 +411,9 @@ void selectiveAttentionProcessor::run(){
                 pmap6+=padding;
                 plinear+=padding;
             }
+            // creating the maximum point in the logpolar saliency map
+            /*
             unsigned char* pout=outputImage->getRawImage();
-            unsigned char* plinear=linearCombinationImage->getRawImage();
-            
             if(maxValue==0) {
                 outputImage->zero();
             }
@@ -429,12 +433,9 @@ void selectiveAttentionProcessor::run(){
                     plinear+=padding;
                 }
             }
-            //trasform the logpolar to cartesian
-            plinear=linearCombinationImage->getRawImage();
-            ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();
-            outputCartImage.resize(xSizeValue,ySizeValue);
-            ImageOf<PixelRgb>* inputLogImage=new ImageOf<PixelRgb>;
-            inputLogImage->resize(width,height);
+            */
+            //trasform the logpolar to cartesian (the logpolar image has to be 3channel image)
+            unsigned char* plinear=linearCombinationImage->getRawImage();
             unsigned char* pImage=inputLogImage->getRawImage();
             int padding3C=inputLogImage->getPadding();
             maxValue=0;
@@ -448,9 +449,9 @@ void selectiveAttentionProcessor::run(){
                 pImage+=padding3C;
                 plinear+=padding;
             }
+            ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();
+            outputCartImage.resize(xSizeValue,ySizeValue);
             trsf.logpolarToCart(outputCartImage,*inputLogImage);
-            
-            
             //find the max in the cartesian image
             maxValue=0;
             float xm=0,ym=0;
@@ -495,25 +496,26 @@ void selectiveAttentionProcessor::run(){
             }
             xm=xm/countMaxes; ym=ym/countMaxes;
             //representation of red lines where the WTA point is
-            // it must be improved, takes too much time for 2 lines!!!!!
-            /*pImage=outputCartImage.getRawImage();
-            for(int y=0;y<ySizeValue;y++) {
-                for(int x=0;x<xSizeValue;x++) {
-                    if((y==round(ym))||(x==round(xm))) {
-                        *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
-                    }
-                    pImage+=3;
-                }
-                pImage+=paddingInput;
-            }*/
+            //representation of the vertical line
+            pImage=outputCartImage.getRawImage();
+            pImage+=round(xm)*3;
+            for(int i=0;i<ySizeValue;i++) {
+                *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
+                pImage+=(xSizeValue-1)*3+paddingInput;
+            }
+            //representation of the horizontal line
+            pImage=outputCartImage.getRawImage();
+            pImage+=round(ym)*(3*xSizeValue+paddingInput);
+            for(int i=0;i<xSizeValue;i++) {
+                *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
+            }
             imageCartOut.write();
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
-                //printf("cartesian: %f,%f \n", xm/2,ym/2);
+                printf("cartesian: %f,%f \n", xm/2,ym/2);
                 Vector px(2);
-                px[0]=floor(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                px[1]=floor(ym/2);
-                
+                px[0]=round(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                px[1]=round(ym/2);
                 //we still have one degree of freedom given by
                 //the distance of the object from the image plane
                 //if you do not have it, try to guess :)
