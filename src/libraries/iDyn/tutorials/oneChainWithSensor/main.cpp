@@ -19,7 +19,7 @@ using namespace iCub::iDyn;
 
 // useful print functions
 // print a matrix nicely
-void printMatrix(string s, Matrix &m)
+void printMatrix(string s, const Matrix &m)
 {
 	cout<<s<<endl;
 	for(int i=0;i<m.rows();i++)
@@ -30,7 +30,7 @@ void printMatrix(string s, Matrix &m)
 	}
 }
 // print a vector nicely
-void printVector(string s, Vector &v)
+void printVector(string s, const Vector &v)
 {
 	cout<<s<<endl;
 	for(int j=0;j<v.length();j++)
