@@ -69,6 +69,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; //output port that represent the linear combination of different maps
         yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;//output port where the centroid coordinate is sent
         yarp::os::Port feedbackPort; //port necessary to send back command to the preattentive processors
+        
         Ipp8u* map1_ippi; //ippi image of the 1st map
         Ipp8u* map2_ippi; //ippi image of the 2nd map
         Ipp8u* map3_ippi; //ippi image of the 3rd map

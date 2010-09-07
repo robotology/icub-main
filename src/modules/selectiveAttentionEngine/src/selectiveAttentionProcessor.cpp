@@ -208,7 +208,6 @@ bool selectiveAttentionProcessor::threadInit(){
     }
     cout << "||| lookup table allocation done" << endl;
 
-
     //initializing gazecontrollerclient
     Property option;
     option.put("device","gazecontrollerclient");
@@ -497,7 +496,6 @@ void selectiveAttentionProcessor::run(){
                 }
                 cLoop=0;
             }
-            
             outPorts();
         }
     }
