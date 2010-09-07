@@ -589,7 +589,7 @@ public:
 		}
         else
 		{
-			fprintf(stderr,"Device not found\n");
+			fprintf(stderr,"robot not fount...using icub as default\n");
 			robot = "icub";
 		}
 		
@@ -600,7 +600,7 @@ public:
 		}
         else
 		{
-			fprintf(stderr,"Device not found\n");
+			fprintf(stderr,"Name not found...using demoForceControl as port name.\n");
 			PortName += "demoForceControl/";
 			rpcPortName += "demoForceControl/";
 		} 
@@ -624,7 +624,6 @@ public:
 		rpcPortName += "/rpc:i";
 		rpcPort.open(rpcPortName.c_str());
 		attach(rpcPort);                  // attach to port
-		//attachTerminal();                     // attach to terminal
 
 		string localPort = PortName;
 		localPort += "/client";
