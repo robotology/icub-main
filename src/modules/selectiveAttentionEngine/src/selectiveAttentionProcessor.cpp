@@ -59,12 +59,13 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
 
     cLoop=0;
     
-    k1=0.5;
-    k2=0.0;
-    k3=0.0;
-    k4=0.0;
-    k5=0;
-    k6=0;
+    //default values of the coefficients
+    k1=1.0;
+    k2=0.1;
+    k3=0.5;
+    k4=0.1;
+    k5=0.1;
+    k6=0.5;
 
     // images
     edges_yarp=new ImageOf<PixelMono>;
