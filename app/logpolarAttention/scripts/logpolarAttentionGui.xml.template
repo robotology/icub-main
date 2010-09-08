@@ -5,15 +5,15 @@
 		<port>/icub/cam/right/logpolar</port> 
 	</dependencies>
 	<module>
-		<name>salBlobFinderInterface</name>
-		<parameters>--name /blobFinderInterface/icub/left_cam </parameters>
-		<tag>saliencyBlobFinderInterfaceLeft</tag>
+		<name>selAttentionInterface</name>
+		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
+		<tag>selectiveAttInterfaceLeft</tag>
 		<node>/console</node>
 	</module>
 	<module>
 		<name>selAttentionInterface</name>
-		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
-		<tag>selectiveAttInterface</tag>
+		<parameters>--name /selectiveAttentionInterface/icub/right_cam</parameters>
+		<tag>selectiveAttInterfaceRight</tag>
 		<node>/console</node>
 	</module>
 	<module>
