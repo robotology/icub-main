@@ -95,22 +95,6 @@ enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 int gravity_mode = GRAVITY_COMPENSATION_ON;
 
-double lpf_ord1_3hz(double input, int j)
-{ 
-	if (j<0 || j>= MAX_JN)
-	{
-		cout<<"Received an invalid joint index to filter"<<endl;
-		return 0;
-	}
-
-	static double xv[MAX_FILTER_ORDER][MAX_JN];
-	static double yv[MAX_FILTER_ORDER][MAX_JN];
-	xv[0][j] = xv[1][j] ; 
-    xv[1][j] = input / 1.870043440e+01;
-    yv[0][j] = yv[1][j] ; 
-    yv[1][j] =   (xv[0][j]  + xv[1][j] ) + (  0.8930506128 * yv[0][j] );
-    return (yv[1][j]);
-}
 // class inverseDynamics: class for reading from Vrow and providing FT on an output port
 class gravityCompensator: public RateThread
 {
@@ -118,6 +102,10 @@ private:
 
 	BufferedPort<Vector> *port_inertial;
 	BufferedPort<Vector> *additional_offset;
+	BufferedPort<Vector> *left_arm_torques;
+	BufferedPort<Vector> *right_arm_torques;
+	BufferedPort<Vector> *left_leg_torques;
+	BufferedPort<Vector> *right_leg_torques;
 
 	PolyDriver *ddLA;
     PolyDriver *ddRA;
@@ -354,6 +342,16 @@ public:
 		
 		additional_offset=new BufferedPort<Vector>;
 		additional_offset->open("/wholebody_gComp/ctrlOffset:i");
+
+		
+		left_arm_torques = new BufferedPort<Vector>;
+		left_arm_torques->open("/gravityCompensation/left_arm_torques:o");
+		right_arm_torques = new BufferedPort<Vector>;
+		right_arm_torques->open("/gravityCompensation/right_arm_torques:o");
+		left_leg_torques = new BufferedPort<Vector>;
+		left_leg_torques->open("/gravityCompensation/left_leg_torques:o");
+		right_leg_torques = new BufferedPort<Vector>;
+		right_leg_torques->open("/gravityCompensation/right_leg_torques:o");
 		//*offset_input = 0.0;
 
 		ddLA->view(iencs_arm_left);
@@ -664,6 +662,16 @@ public:
 		
 		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
 		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
+
+		left_arm_torques->prepare()  =  torques_LA;
+		left_arm_torques->write();
+		right_arm_torques->prepare() =  torques_RA;
+		right_arm_torques->write();
+		right_leg_torques->prepare() =  torques_RL;
+		right_leg_torques->write();
+		left_leg_torques->prepare()  =  torques_LL;
+		left_leg_torques->write();
+
     }
     void threadRelease()
     {
