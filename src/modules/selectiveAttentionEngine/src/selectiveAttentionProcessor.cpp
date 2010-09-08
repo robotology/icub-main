@@ -212,7 +212,9 @@ bool selectiveAttentionProcessor::threadInit(){
     Property option;
     option.put("device","gazecontrollerclient");
     option.put("remote","/iKinGazeCtrl");
-    option.put("local","/client/gaze");
+    ConstString localCon("/gazeclient");
+    localCon=getName("").c_str()+localCon;
+    option.put("local",localCon);
 
     clientGazeCtrl=new PolyDriver();
     clientGazeCtrl->open(option);
