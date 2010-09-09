@@ -2266,6 +2266,8 @@ void iDynSensor::computeFromSensorNewtonEuler()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynSensor::computeWrenchFromSensorNewtonEuler()
 {
+    // this must be done
+    sens->ForwardAttachToLink(chain->refLink(lSens));
 	//propagate forces and moments
 	//from sensor to lSens
 	sens->ForwardForcesMomentsToLink(chain->refLink(lSens));
