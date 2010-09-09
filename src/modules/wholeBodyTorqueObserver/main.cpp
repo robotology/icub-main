@@ -138,6 +138,7 @@ using namespace std;
 
 #define MAX_JN 12
 #define MAX_FILTER_ORDER 6
+enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 
 double lpf_ord1_3hz(double input, int j)
 { 
@@ -192,7 +193,7 @@ private:
     BufferedPort<Vector> *port_ft_leg_left;
     BufferedPort<Vector> *port_ft_leg_right;
     bool first;
-	enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED} thread_status; 
+	thread_status_enum thread_status;
 
     AWLinEstimator  *InertialEst;
     AWLinEstimator  *linEstUp;
@@ -480,12 +481,12 @@ public:
             printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
         }
+		thread_status = STATUS_OK;
         if(readAndUpdate(false) == false)
 		{
-			printf ("wholeBodyTorqueObserver lost connection with iCubInterface.\n");
+			printf ("inverseDynamics thread lost connection with iCubInterface.\n");
 			thread_status = STATUS_DISCONNECTED;
 		}
-		thread_status = STATUS_OK;
 		setZeroJntAngVelAcc();
 		setUpperMeasure();
 		setLowerMeasure();
@@ -1254,7 +1255,7 @@ public:
 			port_inertial_input=0;
 		}
 
-		fprintf(stderr,"WholeBodyTorqueObserver module was closed successfully! \n");     
+		fprintf(stderr,"wholeBodyTorqueObserver module was closed successfully! \n");     
         return true;
     }
 
@@ -1264,11 +1265,30 @@ public:
 	}
     bool updateModule() 
 	{
-		if (inv_dyn==0) return false;
-		if (inv_dyn->getThreadStatus())
-			return true;
-		else 
+	    static unsigned long int alive_counter = 0;
+        static double curr_time = Time::now();
+        if (Time::now() - curr_time > 60)
+        {
+            printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
+            curr_time = Time::now();
+        }
+
+		if (inv_dyn==0) 
 			return false;
+		thread_status_enum thread_status = inv_dyn->getThreadStatus();
+		if (thread_status==STATUS_OK)
+			return true;
+		else if (thread_status==STATUS_DISCONNECTED)
+		{
+			printf ("wholeBodyTorqueObserver module lost connection with iCubInterface, now closing...\n");
+			return false;
+		}
+		else
+		{
+			fprintf(stderr,"wholeObserver module was closed successfully! \n");    
+			return true;
+		}
+			
 	}
 };
 
