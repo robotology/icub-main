@@ -352,7 +352,9 @@ public:
                 disposeMem();
 
                 // init internal variables
-                nodesNum=(int)((coverXratio*imgMonoIn.width())*(coverYratio*imgMonoIn.height())/(nodesStep*nodesStep));
+                int nodesRow = ceil((coverXratio*imgMonoIn.width())/nodesStep);
+                int nodesCol = ceil((coverYratio*imgMonoIn.height())/nodesStep);
+                nodesNum=nodesRow*nodesCol;
 
                 nodesPrev=new CvPoint2D32f[nodesNum];
                 nodesCurr=new CvPoint2D32f[nodesNum];
