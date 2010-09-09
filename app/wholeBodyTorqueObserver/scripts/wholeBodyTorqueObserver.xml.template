@@ -5,7 +5,7 @@
         </dependencies>
 	<module>
       		<name>wholeBodyTorqueObserver</name>
-      		<parameters>--context wholeBodyTorqueObserver/conf --from wholeBodyTorqueObserver.ini</parameters>
+      		<parameters>--rate 10</parameters>
 			<node>console</node>
 			<tag>wholeBody_tqObs</tag>
    	</module>
@@ -18,7 +18,7 @@
    	</module>
         <connection>
                 <from>/filtered/inertial:o</from>
-                <to>/wholebody/inertial:i</to>
+                <to>/wholeBodyTorqueObserver/inertial:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
@@ -29,46 +29,44 @@
 
         <connection>
                 <from>/icub/left_arm/analog:o</from>
-                <to>/wholebody/left_arm/FT:i</to>
+                <to>/wholeBodyTorqueObserver/left_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_arm/analog:o</from>
-                <to>/wholebody/right_arm/FT:i</to>
+                <to>/wholeBodyTorqueObserver/right_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/left_leg/analog:o</from>
-                <to>/wholebody/left_leg/FT:i</to>
+                <to>/wholeBodyTorqueObserver/left_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/right_leg/analog:o</from>
-                <to>/wholebody/right_leg/FT:i</to>
+                <to>/wholeBodyTorqueObserver/right_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
 		
 		
         <connection>
-                <from>/wholebody/left_arm/Torques:o</from>
+                <from>/wholeBodyTorqueObserver/left_arm/Torques:o</from>
                 <to>/icub/joint_vsens/left_arm:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/wholebody/right_arm/Torques:o</from>
+                <from>/wholeBodyTorqueObserver/right_arm/Torques:o</from>
                 <to>/icub/joint_vsens/right_arm:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/wholebody/left_leg/Torques:o</from>
+                <from>/wholeBodyTorqueObserver/left_leg/Torques:o</from>
                 <to>/icub/joint_vsens/left_leg:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/wholebody/right_leg/Torques:o</from>
+                <from>/wholeBodyTorqueObserver/right_leg/Torques:o</from>
                 <to>/icub/joint_vsens/right_leg:i</to>
                 <protocol>udp</protocol>
         </connection>
-		
-<!-- <connection>             <from>/icub/left_arm/FT:o</from>                <to>/icub/left_arm/FT:i</to>                 <protocol>udp</protocol>        </connection> -->
 </application>
