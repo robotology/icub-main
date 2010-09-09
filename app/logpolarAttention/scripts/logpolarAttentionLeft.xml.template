@@ -35,8 +35,8 @@
 	</module>
 	<module>
 		<name>indepMotionDetector</name>
-		<parameters>--name /indepMotionDetector/icub/left_cam--coverXratio 0.9 --coverYratio 0.8 -nodesStep 5</parameters>
-		<tag>indepLogMotionLeft</tag>
+		<parameters>--name indepMotionDetector/icub/left_cam --coverXratio 0.95 --coverYratio 0.95 --nodesStep 5 --recogThres 0.008</parameters>
+		<tag>indepMotionDetectorLeft</tag>
 		<node>/powerNode1</node>
 	</module>
 	<module>
@@ -81,13 +81,13 @@
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-            <from>/icub/cam/left/icub/left_cam/logpolar</from>
+            <from>/icub/cam/left/logpolar</from>
 		<to>/indepLogMotion/icub/left_cam/image:i</to>
 		<protocol>mcast</protocol>
 	</connection>
 	<connection>
              <from>/indepLogMotion/icub/left_cam/interm:o</from>
-		<to>/indepMotionDetector/icub/left_cam/image:i</to>
+		<to>/indepMotionDetector/icub/left_cam/img:i</to>
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>

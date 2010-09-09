@@ -35,7 +35,7 @@
 	</module>
 	<module>
 		<name>indepMotionDetector</name>
-		<parameters>--name /indepMotionDetector/icub/right_cam --coverXratio 0.9 --coverYratio 0.8 --nodesStep 5 </parameters>
+		<parameters>--name indepMotionDetector/icub/right_cam --coverXratio 0.9 --coverYratio 0.8 --nodesStep 5 --recogThres 0.008 </parameters>
 		<tag>indepMotionDetectorRight</tag>
 		<node>/powerNode1</node>
 	</module>
