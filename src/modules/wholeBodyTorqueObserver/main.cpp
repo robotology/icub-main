@@ -83,7 +83,7 @@ Linux and Windows.
 By launching the following command: 
  
 \code 
-wrenchObserver --name ftObs --robot icub --part right_arm --rate 50  
+wholeBodyTorqueObserver --name ftObs --robot icub --part right_arm --rate 50  
 \endcode 
  
 the module will create the listening port /ftObs/right_arm/FT:i for 
@@ -100,7 +100,7 @@ yarp connect /icub/right_arm/analog:o /ftObs/right_arm/FT:i
  
 \author Matteo Fumagalli
 
-This file can be edited at \in src/wrenchObserver/main.cpp.
+This file can be edited at \in src/wholeBodyTorqueObserver/main.cpp.
 */ 
 
 #include <yarp/os/BufferedPort.h>
@@ -188,6 +188,7 @@ private:
     BufferedPort<Vector> *port_ft_leg_left;
     BufferedPort<Vector> *port_ft_leg_right;
     bool first;
+	enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED} thread_status; 
 
     AWLinEstimator  *InertialEst;
     AWLinEstimator  *linEstUp;
@@ -419,9 +420,15 @@ public:
     {   
         datas = fopen("datas_all.txt","w+");
 		calibrateOffset(10);
+		thread_status = STATUS_OK;
 		//Time::delay(3.0);
         return true;
     }
+
+	inline thread_status_enum getThreadStatus() 
+	{
+		return thread_status;
+	}
 
     void run()
     {   
@@ -435,7 +442,9 @@ public:
         if (readAndUpdate(false) == false)
 		{
 			printf ("wholeBodyTorqueObserver lost connection with iCubInterface.\n");
+			thread_status = STATUS_DISCONNECTED;
 		}
+		thread_status = STATUS_OK;
 		setZeroJntAngVelAcc();
 		setUpperMeasure();
 		setLowerMeasure();
@@ -876,7 +885,7 @@ public:
 };
 
 
-class wrenchObserver: public RFModule
+class wholeBodyTorqueObserver: public RFModule
 {
 private:
     Property OptionsLeftArm;
@@ -900,7 +909,7 @@ private:
     PolyDriver *dd_torso;
 
 public:
-    wrenchObserver()
+    wholeBodyTorqueObserver()
     {
         inv_dyn=0;
         dd_left_arm=0;
@@ -1122,12 +1131,22 @@ public:
 	    port_inertial_input=0;
 	  }
 
-	fprintf(stderr,"Wrench observer module was closed successfully! \n");     
+	fprintf(stderr,"WholeBodyTorqueObserver module was closed successfully! \n");     
         return true;
     }
 
-    double getPeriod()  { return 1.0;  }
-    bool updateModule() { return true; }
+    double getPeriod()
+	{
+		return 1.0;
+	}
+    bool updateModule() 
+	{
+		if (inv_dyn==0) return false;
+		if (inv_dyn->getThreadStatus())
+			return true;
+		else 
+			return false;
+	}
 };
 
 
@@ -1151,7 +1170,7 @@ int main(int argc, char * argv[])
     if (!yarp.checkNetwork())
         return -1;
 
-    wrenchObserver obs;
+    wholeBodyTorqueObserver obs;
 
     return obs.runModule(rf);
 }
