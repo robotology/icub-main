@@ -28,6 +28,18 @@
 		<node>/powerNode1</node>
 	</module>
 	<module>
+		<name>indepLogMotion</name>
+		<parameters></parameters>
+		<tag>indepLogMotionLeft</tag>
+		<node>/powerNode1</node>
+	</module>
+	<module>
+		<name>indepMotionDetector</name>
+		<parameters>--coverXratio 0.9 --coverYratio 0.8 -nodesStep 5</parameters>
+		<tag>indepLogMotionLeft</tag>
+		<node>/powerNode1</node>
+	</module>
+	<module>
 		<name>selectiveAttentionEngine</name>
 		<parameters>--from selectiveAttentionLeft.ini --context logpolarAttention/conf </parameters>
 		<tag>selectiveAttLeft</tag>
