@@ -29,13 +29,13 @@
 	</module>
 	<module>
 		<name>indepLogMotion</name>
-		<parameters>--coverXratio 0.9 --coverYratio 0.8 --nodesStep 5</parameters>
+		<parameters>--name /indepLogMotion/icub/right_cam </parameters>
 		<tag>indepLogMotionRight</tag>
 		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>indepMotionDetector</name>
-		<parameters></parameters>
+		<parameters>--name /indepMotionDetector/icub/right_cam --coverXratio 0.9 --coverYratio 0.8 --nodesStep 5 </parameters>
 		<tag>indepMotionDetectorRight</tag>
 		<node>/powerNode1</node>
 	</module>
@@ -82,6 +82,21 @@
 	</connection>
 	<connection>
         <from>/icub/cam/right/logpolar</from>
+		<to>/indepLogMotion/icub/right_cam/image:i</to>
+		<protocol>mcast</protocol>
+	</connection>
+	<connection>
+        <from>/indepLogMotion/icub/right_cam/interm:o</from>
+		<to>/indepMotionDetector/icub/right_cam/image:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        <from>/indepMotionDetector/icub/right_cam/opt:o</from>
+		<to>/indepLogMotion/icub/right_cam/interm:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+        <from>/icub/cam/right/logpolar</from>
 		<to>/blobFinder/icub/right_cam/image:i</to>
 		<protocol>mcast</protocol>
 	</connection>
@@ -111,7 +126,7 @@
 		<protocol>shmem</protocol>
 	</connection>
 	<connection>
-        <from>/yuvProc/icub/right_cam/Y/image:o</from>
+        <from>/indepLogMotion/icub/right_cam/image:o</from>
 		<to>/selectiveAttentionEngine/icub/right_cam/map5:i</to>
 		<protocol>shmem</protocol>
 	</connection>
