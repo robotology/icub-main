@@ -130,7 +130,11 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-//FILE* datas = fopen("datas_all.txt","w+");
+//performance test 
+//--------------------------------------
+#define VOCAB_TEST VOCAB4('t','e','s','t')
+#define VOCAB_COMP VOCAB4('c','o','m','p')
+//--------------------------------------
 
 #define MAX_JN 12
 #define MAX_FILTER_ORDER 6
@@ -199,7 +203,7 @@ private:
     int ctrlJnt;
 	int allJnt;
 	iCubWholeBody icub;
-	iCubWholeBody icub_init;
+	iCubWholeBody icub_sens;
 
     Vector encoders_arm_left;
     Vector encoders_arm_right;
@@ -225,7 +229,24 @@ private:
 	Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
 	Vector inertial_measurements;
 
-    FILE* datas;
+	int test;
+    double startRun;
+    double endRun;
+    double startCompute;
+    double endCompute;
+    double ftRead;
+    double ftCur;
+    int ftNew;
+    //ports for sending information
+    BufferedPort<Bottle> *port_perf_test;
+    BufferedPort<Bottle> *port_perf_test_ftRead;
+    Bottle infoTest;
+
+    // icub model
+	int comp;
+    Matrix FM_sens_up,FM_sens_low;
+    BufferedPort<Bottle> *port_compare_test;
+    Bottle compareTest;
 
     Vector evalVelUp(const Vector &x)
     {
@@ -309,6 +330,7 @@ private:
 		all_dq_up.resize(allJnt,0.0);
 		all_d2q_up.resize(allJnt,0.0);
 		F_sens_up.zero(); 
+        FM_sens_up.resize(6,2); FM_sens_up.zero();
 	}	
 	void init_lower()
 	{
@@ -352,36 +374,37 @@ private:
 		all_d2q_low.resize(allJnt,0.0);
 
 		F_sens_low.zero();
+        FM_sens_low.resize(6,2); FM_sens_low.zero();
 	}
 
 public:
     inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT)
     {        
         first = true;
+		test = 0;
+		comp = 0;
         //---------------------PORT--------------------------//
 		
 		port_inertial_thread=new BufferedPort<Vector>;
-		port_inertial_thread->open("/wholebody/inertial:i");
-
         port_ft_arm_left=new BufferedPort<Vector>;
-		port_ft_arm_left->open("/wholebody/left_arm/FT:i");
         port_ft_arm_right=new BufferedPort<Vector>;
-		port_ft_arm_right->open("/wholebody/right_arm/FT:i");
-
         port_ft_leg_left=new BufferedPort<Vector>;
-		port_ft_leg_left->open("/wholebody/left_leg/FT:i");
         port_ft_leg_right=new BufferedPort<Vector>;
-		port_ft_leg_right->open("/wholebody/right_leg/FT:i");
-
-		
 		port_RATorques = new BufferedPort<Bottle>;
-		port_RATorques->open("/wholebody/right_arm/Torques:o");
 		port_LATorques = new BufferedPort<Bottle>;
-		port_LATorques->open("/wholebody/left_arm/Torques:o");
 		port_RLTorques = new BufferedPort<Bottle>;
-		port_RLTorques->open("/wholebody/right_leg/Torques:o");
 		port_LLTorques = new BufferedPort<Bottle>;
-		port_LLTorques->open("/wholebody/left_leg/Torques:o");
+		
+        port_inertial_thread->open("/wholeBodyTorqueObserver/inertial:i");
+		port_ft_arm_left->open("/wholeBodyTorqueObserver/left_arm/FT:i");
+		port_ft_arm_right->open("/wholeBodyTorqueObserver/right_arm/FT:i");
+		port_ft_leg_left->open("/wholeBodyTorqueObserver/left_leg/FT:i");
+		port_ft_leg_right->open("/wholeBodyTorqueObserver/right_leg/FT:i");
+		port_RATorques->open("/wholeBodyTorqueObserver/right_arm/Torques:o");
+		port_LATorques->open("/wholeBodyTorqueObserver/left_arm/Torques:o");
+		port_RLTorques->open("/wholeBodyTorqueObserver/right_leg/Torques:o");
+		port_LLTorques->open("/wholeBodyTorqueObserver/left_leg/Torques:o");
+
 
 		//---------------------DEVICES--------------------------//
         ddAL->view(iencs_arm_left);
@@ -413,15 +436,28 @@ public:
 		F_ext_low = 0.0;
 		inertial_measurements.resize(12);
 		inertial_measurements.zero();
+  
+		//--------------TEST VARIABLES----------------//
+        startRun=0.0;
+        endRun=0.0;
+        startCompute=0.0;
+        endCompute=0.0;
+        ftRead=0.0;
+
+        port_perf_test = new BufferedPort<Bottle>;
+        port_perf_test_ftRead = new BufferedPort<Bottle>;
+        port_compare_test = new BufferedPort<Bottle>;  
+        port_perf_test->open("/wholeBodyTorqueObserver/performance/times:o");
+        port_perf_test_ftRead->open("/wholeBodyTorqueObserver/performance/ftread:o");
+		port_compare_test->open("/wholeBodyTorqueObserver/performance/fterr:o");
+
 
     }
 
     bool threadInit()
     {   
-        datas = fopen("datas_all.txt","w+");
 		calibrateOffset(10);
 		thread_status = STATUS_OK;
-		//Time::delay(3.0);
         return true;
     }
 
@@ -432,6 +468,11 @@ public:
 
     void run()
     {   
+		if(test==VOCAB_TEST)
+		{
+			startRun = Time::now();
+			ftNew = 0;
+		}
         static unsigned long int alive_counter = 0;
         static double curr_time = Time::now();
         if (Time::now() - curr_time > 60)
@@ -439,7 +480,7 @@ public:
             printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
         }
-        if (readAndUpdate(false) == false)
+        if(readAndUpdate(false) == false)
 		{
 			printf ("wholeBodyTorqueObserver lost connection with iCubInterface.\n");
 			thread_status = STATUS_DISCONNECTED;
@@ -449,18 +490,22 @@ public:
 		setUpperMeasure();
 		setLowerMeasure();
 
-        if (ft_arm_left!=0)  F_LArm = -1.0 * (*ft_arm_left-Offset_LArm);
-        if (ft_arm_right!=0) F_RArm = -1.0 * (*ft_arm_right-Offset_RArm);
-        if (ft_leg_left!=0)  F_LLeg = -1.0 * (*ft_leg_left-Offset_LLeg);
-        if (ft_leg_right!=0) F_RLeg = -1.0 * (*ft_leg_right-Offset_RLeg);
+        if(ft_arm_left!=0)  F_LArm = -1.0 * (*ft_arm_left-Offset_LArm);
+        if(ft_arm_right!=0) F_RArm = -1.0 * (*ft_arm_right-Offset_RArm);
+        if(ft_leg_left!=0)  F_LLeg = -1.0 * (*ft_leg_left-Offset_LLeg);
+        if(ft_leg_right!=0) F_RLeg = -1.0 * (*ft_leg_right-Offset_RLeg);
 
 		Vector F_up(6);
 		F_up=0.0;
+		if(test==VOCAB_TEST)
+			startCompute = Time::now();
 		icub.upperTorso->update(w0,dw0,d2p0,F_RArm,F_LArm,F_up);
 		icub.lowerTorso->update(icub.upperTorso->getTorsoAngVel(), 
 								icub.upperTorso->getTorsoAngAcc(),
 								icub.upperTorso->getTorsoLinAcc(),
 								F_RLeg,F_LLeg,F_up);
+		if(test==VOCAB_TEST)
+			endCompute = Time::now();
 
 		Vector LATorques = icub.upperTorso->getTorques("left_arm");
 		Vector RATorques = icub.upperTorso->getTorques("right_arm");
@@ -476,59 +521,127 @@ public:
 		writeTorque(LATorques, 1, port_LATorques);
 
 		
-		
-	
+		if(test==VOCAB_TEST)
+		{		
+			endRun = Time::now();
+			//now we send everything to a specific port
+			infoTest.clear();
+			infoTest.addInt(ftNew); // if there's a new ft value or not
+			infoTest.addDouble(startRun);
+			infoTest.addDouble(endRun-startRun);
+			infoTest.addDouble(endCompute-startCompute);
+			port_perf_test->prepare() = infoTest;
+			port_perf_test->write();
+
+			infoTest.clear();
+			infoTest.addInt(ftNew);
+			infoTest.addDouble(startRun);
+			infoTest.addDouble(endRun-ftCur);
+			infoTest.addDouble(ftCur-ftRead);
+			port_perf_test_ftRead->prepare() = infoTest;
+			port_perf_test_ftRead->write();
+		}
+		if(comp==VOCAB_COMP)
+		{
+			// computations are performed here: because they are extra computations which must not be included in 
+			// the count of thread rate and computation time (that part is only for whole body torque observer)
+		    
+			icub_sens.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+			FM_sens_up = icub_sens.upperTorso->estimateSensorsWrench(F_ext_up,false);
+			icub_sens.lowerTorso->setInertialMeasure(icub_sens.upperTorso->getTorsoAngVel(),icub_sens.upperTorso->getTorsoAngAcc(),icub_sens.upperTorso->getTorsoLinAcc());
+			FM_sens_low = icub_sens.lowerTorso->estimateSensorsWrench(F_ext_low,false);
+
+			// send sensor measures, estimation etc to port
+			compareTest.clear();
+			compareTest.addInt(ftNew);
+			compareTest.addDouble(startRun);
+			//the FT sensor wrench estimated by the model: note the -1.0 before is necessary!
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(-(FM_sens_up.getCol(0))[i]); //RA
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(-(FM_sens_up.getCol(1))[i]); //LA
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(-(FM_sens_low.getCol(0))[i]); //RL
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(-(FM_sens_low.getCol(1))[i]); //LL
+			//the real FT sensor wrench (measured)
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(F_RArm[i]);
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(F_LArm[i]);
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(F_RLeg[i]);
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(F_LLeg[i]);
+
+			port_compare_test->prepare() = compareTest;
+			port_compare_test->write();
+		}
     }
 
     void threadRelease()
     {
-      fprintf(stderr, "Closing the datas\n");
-      if(datas) fclose(datas);
+		fprintf(stderr, "Closing the linest\n");
+		if(linEstUp)
+		{
+			delete linEstUp;
+			linEstUp = 0;
+		}
+		if(linEstLow)
+		{
+			delete linEstLow;
+			linEstLow = 0;
+		}
+		fprintf(stderr, "Closing the quadEst\n");
+		if(quadEstUp)
+		{
+			delete quadEstUp;
+			quadEstUp = 0;
+		}
+		if(quadEstLow)
+		{
+			delete quadEstLow;
+			quadEstLow = 0;
+		}
+		fprintf(stderr, "Closing the InertialEest\n");
+		if(InertialEst)
+		{
+			delete InertialEst;
+			InertialEst = 0;
+		}
 
-      fprintf(stderr, "Closing the linest\n");
-      if (linEstUp)
-      {
-		  delete linEstUp;
-		  linEstUp = 0;
-      }
-      if (linEstLow)
-      {
-		  delete linEstLow;
-		  linEstLow = 0;
-      }
-      fprintf(stderr, "Closing the quadEst\n");
-      if (quadEstUp)
-	  {
-            delete quadEstUp;
-            quadEstUp = 0;
-	  }
-      if (quadEstLow)
-	  {
-            delete quadEstLow;
-            quadEstLow = 0;
-	  }
-      fprintf(stderr, "Closing the InertialEest\n");
-      if (InertialEst)
-        {
-	  delete InertialEst;
-	  InertialEst = 0;
-        }
+		fprintf(stderr, "Closing the RATorques\n");
+		closePort(port_RATorques);
+		fprintf(stderr, "Closing the LATorques\n");
+		closePort(port_LATorques);
+		fprintf(stderr, "Closing the RLTorques\n");
+		closePort(port_RLTorques);
+		fprintf(stderr, "Closing the LLTorques\n");
+		closePort(port_LLTorques);
 
-      fprintf(stderr, "Closing the RATorques\n");
-      closePort(port_RATorques);
-      fprintf(stderr, "Closing the LATorques\n");
-      closePort(port_LATorques);
-      fprintf(stderr, "Closing the RLTorques\n");
-      closePort(port_RLTorques);
-      fprintf(stderr, "Closing the LLTorques\n");
-      closePort(port_LLTorques);
-      
-      fprintf(stderr, "Closing the inertial\n");
-      closePort(port_inertial_thread);
-      fprintf(stderr, "Closing the ft_arm_right\n");
-      closePort(port_ft_arm_right);
-      fprintf(stderr, "Closing the ft_arm_left\n");
-      closePort(port_ft_arm_left);
+		fprintf(stderr, "Closing the inertial\n");
+		closePort(port_inertial_thread);
+		fprintf(stderr, "Closing the ft_arm_right\n");
+		closePort(port_ft_arm_right);
+		fprintf(stderr, "Closing the ft_arm_left\n");
+		closePort(port_ft_arm_left);
+
+	  
+//#if PERFORMANCE_TEST
+	  
+		fprintf(stderr, "Closing the performance test port - times\n");
+		closePort(port_perf_test);
+		fprintf(stderr, "Closing the performance test port - ftread\n");
+		closePort(port_perf_test_ftRead);
+	
+//#endif
+
+//#if COMPARE_TEST
+	 
+		fprintf(stderr, "Closing the compare test port - fterr\n");
+		closePort(port_compare_test);
+	  
+//#endif
     }   
 
 	void closePort(Contactable *_port)
@@ -542,17 +655,6 @@ public:
             _port = 0;
         }
 	}
-	//void closePort(BufferedPort<Bottle> *_port)
-	//{
-	//	if (_port)
- //       {
- //           _port->interrupt();
- //           _port->close();
-
- //           delete _port;
- //           _port = 0;
- //       }
-	//}
 
 	void writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port)
 	{
@@ -586,15 +688,15 @@ public:
 			setLowerMeasure(true);
 			*/
 
-            icub_init.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-			Matrix F_sens_up = icub_init.upperTorso->estimateSensorsWrench(F_ext_up,false);
-			icub_init.lowerTorso->setInertialMeasure(icub_init.upperTorso->getTorsoAngVel(),icub_init.upperTorso->getTorsoAngAcc(),icub_init.upperTorso->getTorsoLinAcc());
-			Matrix F_sens_low = icub_init.lowerTorso->estimateSensorsWrench(F_ext_low,false);
+            icub_sens.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+			Matrix F_sensor_up = icub_sens.upperTorso->estimateSensorsWrench(F_ext_up,false);
+			icub_sens.lowerTorso->setInertialMeasure(icub_sens.upperTorso->getTorsoAngVel(),icub_sens.upperTorso->getTorsoAngAcc(),icub_sens.upperTorso->getTorsoLinAcc());
+			Matrix F_sensor_low = icub_sens.lowerTorso->estimateSensorsWrench(F_ext_low,false);
 		
-			F_iDyn_LArm  = -1.0 * F_sens_up.getCol(1);
-			F_iDyn_RArm = -1.0 * F_sens_up.getCol(0);
-			F_iDyn_LLeg  = -1.0 * F_sens_low.getCol(1);
-			F_iDyn_RLeg = -1.0 * F_sens_low.getCol(0);
+			F_iDyn_LArm  = -1.0 * F_sensor_up.getCol(1);
+			F_iDyn_RArm = -1.0 * F_sensor_up.getCol(0);
+			F_iDyn_LLeg  = -1.0 * F_sensor_low.getCol(1);
+			F_iDyn_RLeg = -1.0 * F_sensor_low.getCol(0);
 
 			F_RArm = *ft_arm_right;
 			F_LArm = *ft_arm_left;
@@ -630,22 +732,24 @@ public:
 	bool readAndUpdate(bool waitMeasure=false, bool _init=false)
 	{
 		bool b = true;
-		//static double t0,t1,t2,t3,t4,t5;
-        //t0 = Time::now();
-        //debug print        
-        //fprintf (stderr, "%f %6.4f ",this->getRate(),t5-t0);
+		
 		ft_arm_left  = port_ft_arm_left->read(waitMeasure);
-        //t1 = Time::now();        
         ft_arm_right = port_ft_arm_right->read(waitMeasure);
-        //t2 = Time::now();
         ft_leg_left  = port_ft_leg_left->read(waitMeasure);
-        //t3 = Time::now();        
         ft_leg_right = port_ft_leg_right->read(waitMeasure);
-        //t4 = Time::now();
 		inertial = port_inertial_thread->read(waitMeasure);
-        //t5 = Time::now();		
-        //debug print
-        //fprintf (stderr, "%6.4f %6.4f %6.4f %6.4f %6.4f \n",t1-t0,t2-t1,t3-t2,t4-t3,t5-t4);
+		
+		if(test==VOCAB_TEST)
+		{
+			ftCur=Time::now();
+			if((ft_arm_left!=NULL)&&(ft_arm_right!=NULL)&&(ft_leg_left!=NULL)&&(ft_leg_right!=NULL))
+			{
+				ftNew=1;
+				ftRead=ftCur;
+			}
+			else
+				ftNew=0;
+		}
 
 		int sz = 0;
 		if(inertial!=0)
@@ -758,37 +862,49 @@ public:
 	}
 
 	void setLowerMeasure(bool _init=false)
+	{
+		if(!_init)
 		{
-			if(!_init)
+			icub.lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
+			icub.lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
+			icub.lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
+
+			icub.lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
+			icub.lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
+			icub.lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
+
+			icub.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
+			icub.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
+			icub.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
+
+			if(test==VOCAB_COMP)
 			{
-				icub.lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
-				icub.lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
-				icub.lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
-
-				icub.lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
-				icub.lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
-				icub.lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
-
-				icub.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
-				icub.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
-				icub.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
-			}
-			else
-			{
-				icub_init.lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
-				icub_init.lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
-				icub_init.lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
-
-				icub_init.lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
-				icub_init.lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
-				icub_init.lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
-
-				icub_init.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
-				icub_init.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
-				icub_init.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
-				//fprintf(stderr,"updating lower body kinematic variables for initialization\n");
+				icub_sens.lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
+				icub_sens.lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
+				icub_sens.lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
+				icub_sens.lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
+				icub_sens.lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
+				icub_sens.lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
+				icub_sens.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
+				icub_sens.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
+				icub_sens.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
 			}
 		}
+		else
+		{
+			icub_sens.lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
+			icub_sens.lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
+			icub_sens.lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
+
+			icub_sens.lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
+			icub_sens.lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
+			icub_sens.lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
+
+			icub_sens.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
+			icub_sens.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
+			icub_sens.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
+		}
+	}
 
 	void setUpperMeasure(bool _init=false)
 	{
@@ -804,22 +920,36 @@ public:
 			icub.upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
 			icub.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
 			icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+
+			if(test==VOCAB_COMP)
+			{
+				icub_sens.upperTorso->setAng("head",CTRL_DEG2RAD * q_head);
+				icub_sens.upperTorso->setAng("left_arm",CTRL_DEG2RAD * q_larm);
+				icub_sens.upperTorso->setAng("right_arm",CTRL_DEG2RAD * q_rarm);
+				icub_sens.upperTorso->setDAng("head",CTRL_DEG2RAD * dq_head);
+				icub_sens.upperTorso->setDAng("left_arm",CTRL_DEG2RAD * dq_larm);
+				icub_sens.upperTorso->setDAng("right_arm",CTRL_DEG2RAD * dq_rarm);
+				icub_sens.upperTorso->setD2Ang("head",CTRL_DEG2RAD * d2q_head);
+				icub_sens.upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
+				icub_sens.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
+				icub_sens.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+			}
 		}
 		else
 		{
-			icub_init.upperTorso->setAng("head",CTRL_DEG2RAD * q_head);
-			icub_init.upperTorso->setAng("left_arm",CTRL_DEG2RAD * q_larm);
-			icub_init.upperTorso->setAng("right_arm",CTRL_DEG2RAD * q_rarm);
-			icub_init.upperTorso->setDAng("head",CTRL_DEG2RAD * dq_head);
-			icub_init.upperTorso->setDAng("left_arm",CTRL_DEG2RAD * dq_larm);
-			icub_init.upperTorso->setDAng("right_arm",CTRL_DEG2RAD * dq_rarm);
-			icub_init.upperTorso->setD2Ang("head",CTRL_DEG2RAD * d2q_head);
-			icub_init.upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
-			icub_init.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
-			icub_init.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-			//fprintf(stderr,"updating upper body kinematic variables for initialization\n");
+			icub_sens.upperTorso->setAng("head",CTRL_DEG2RAD * q_head);
+			icub_sens.upperTorso->setAng("left_arm",CTRL_DEG2RAD * q_larm);
+			icub_sens.upperTorso->setAng("right_arm",CTRL_DEG2RAD * q_rarm);
+			icub_sens.upperTorso->setDAng("head",CTRL_DEG2RAD * dq_head);
+			icub_sens.upperTorso->setDAng("left_arm",CTRL_DEG2RAD * dq_larm);
+			icub_sens.upperTorso->setDAng("right_arm",CTRL_DEG2RAD * dq_rarm);
+			icub_sens.upperTorso->setD2Ang("head",CTRL_DEG2RAD * d2q_head);
+			icub_sens.upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
+			icub_sens.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
+			icub_sens.upperTorso->setInertialMeasure(w0,dw0,d2p0);
 		}
 	}
+
 	void setZeroJntAngVelAcc()
 	{
 		dq_head = 0.0;
@@ -873,15 +1003,15 @@ private:
 	}
 public:
 	dataFilter(BufferedPort<Vector> &_port_filtered, ResourceFinder &rf):	
-	  port_filtered(_port_filtered)
-	  {
-		  /*Vector num(3);
-		  Vector den(3);
-		  num[0]=0.0030; num[1]=0.0059; num[2]=0.0030;
-		  den[0]=1.0000;den[1]=-1.8404;den[2]=0.8522;*/
-//		  filter = new Filter(num,den,0.0);
-		  g.resize(6);
-	  }
+	port_filtered(_port_filtered)
+	{
+		/*Vector num(3);
+		Vector den(3);
+		num[0]=0.0030; num[1]=0.0059; num[2]=0.0030;
+		den[0]=1.0000;den[1]=-1.8404;den[2]=0.8522;*/
+		//		  filter = new Filter(num,den,0.0);
+		g.resize(6);
+	}
 };
 
 
@@ -944,7 +1074,6 @@ public:
 
     bool configure(ResourceFinder &rf)
     {
-		
 		port_filtered.open("/filtered/inertial:o");
 		port_inertial_input = new dataFilter(port_filtered, rf);
 		port_inertial_input->useCallback();
@@ -953,32 +1082,32 @@ public:
 		Network::connect("/icub/inertial","/unfiltered/inertial:i");
 
 
-        string fwdSlash = "/";
-        Bottle tmp;
-        int rate = 100;
-        tmp=0;
+		string fwdSlash = "/";
+		Bottle tmp;
+		int rate = 100;
+		tmp=0;
 
-        string name;
-        if (rf.check("name"))
-            name = rf.find("name").asString();
-        else name = "wholeBD";
-
-        
-        //---------------------RATE-----------------------------//
-        if (rf.check("rate"))
-        {
-            rate = rf.find("rate").asInt();
-            fprintf(stderr,"rateThread working at %d ms\n", rate);
-        }
-        else
-        {
-            fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
-            rate = 100;
-        }
+		string name;
+		if (rf.check("name"))
+			name = rf.find("name").asString();
+		else name = "wholeBodyTorqueObserver";
 
 
-        //---------------------DEVICES--------------------------//
-        
+		//---------------------RATE-----------------------------//
+		if (rf.check("rate"))
+		{
+			rate = rf.find("rate").asInt();
+			fprintf(stderr,"rateThread working at %d ms\n", rate);
+		}
+		else
+		{
+			fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
+			rate = 100;
+		}
+
+
+		//---------------------DEVICES--------------------------//
+
 		OptionsHead.put("device","remote_controlboard");
 		OptionsHead.put("local",(fwdSlash+name+"/head/client").c_str());
 		OptionsHead.put("remote","/icub/head");
@@ -991,49 +1120,47 @@ public:
 		}
 		else
 			fprintf(stderr,"device driver created\n");
-        
 
-        OptionsLeftArm.put("device","remote_controlboard");
-        OptionsLeftArm.put("local",(fwdSlash+name+"/left_arm/client").c_str());
-        OptionsLeftArm.put("remote","/icub/left_arm");
-        dd_left_arm = new PolyDriver(OptionsLeftArm);
-        if (!createDriver(dd_left_arm))
-        {
-            fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
-            return false;
-        }
+		OptionsLeftArm.put("device","remote_controlboard");
+		OptionsLeftArm.put("local",(fwdSlash+name+"/left_arm/client").c_str());
+		OptionsLeftArm.put("remote","/icub/left_arm");
+		dd_left_arm = new PolyDriver(OptionsLeftArm);
+		if (!createDriver(dd_left_arm))
+		{
+			fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
+			return false;
+		}
 
-        OptionsRightArm.put("device","remote_controlboard");
-        OptionsRightArm.put("local",(fwdSlash+name+"/right_arm/client").c_str());
-        OptionsRightArm.put("remote","/icub/right_arm");
-        dd_right_arm = new PolyDriver(OptionsRightArm);
-        if (!createDriver(dd_right_arm))
-        {
-            fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
-            return false;
-        }
+		OptionsRightArm.put("device","remote_controlboard");
+		OptionsRightArm.put("local",(fwdSlash+name+"/right_arm/client").c_str());
+		OptionsRightArm.put("remote","/icub/right_arm");
+		dd_right_arm = new PolyDriver(OptionsRightArm);
+		if (!createDriver(dd_right_arm))
+		{
+			fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
+			return false;
+		}
 
-		
-        OptionsLeftLeg.put("device","remote_controlboard");
-        OptionsLeftLeg.put("local",(fwdSlash+name+"/left_leg/client").c_str());
-        OptionsLeftLeg.put("remote","/icub/left_leg");
-        dd_left_leg = new PolyDriver(OptionsLeftLeg);
-        if (!createDriver(dd_left_leg))
-        {
-            fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
-            return false;
-        }
+		OptionsLeftLeg.put("device","remote_controlboard");
+		OptionsLeftLeg.put("local",(fwdSlash+name+"/left_leg/client").c_str());
+		OptionsLeftLeg.put("remote","/icub/left_leg");
+		dd_left_leg = new PolyDriver(OptionsLeftLeg);
+		if (!createDriver(dd_left_leg))
+		{
+			fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
+			return false;
+		}
 
-        OptionsRightLeg.put("device","remote_controlboard");
-        OptionsRightLeg.put("local",(fwdSlash+name+"/right_leg/client").c_str());
-        OptionsRightLeg.put("remote","/icub/right_leg");
-        dd_right_leg = new PolyDriver(OptionsRightLeg);
-        if (!createDriver(dd_right_leg))
-        {
-            fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
-            return false;
-        }
-		
+		OptionsRightLeg.put("device","remote_controlboard");
+		OptionsRightLeg.put("local",(fwdSlash+name+"/right_leg/client").c_str());
+		OptionsRightLeg.put("remote","/icub/right_leg");
+		dd_right_leg = new PolyDriver(OptionsRightLeg);
+		if (!createDriver(dd_right_leg))
+		{
+			fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
+			return false;
+		}
+
 		OptionsTorso.put("device","remote_controlboard");
 		OptionsTorso.put("local",(fwdSlash+name+"/torso/client").c_str());
 		OptionsTorso.put("remote","/icub/torso");
@@ -1046,92 +1173,88 @@ public:
 		}
 		else
 			fprintf(stderr,"device driver created\n");
-        
 
-        //--------------------------THREAD--------------------------
-        
-            inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso);
-            fprintf(stderr,"ft thread istantiated...\n");
-            inv_dyn->start();
-            fprintf(stderr,"thread started\n");
-        
-        
+		//--------------------------THREAD--------------------------
+		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso);
+		fprintf(stderr,"ft thread istantiated...\n");
+		inv_dyn->start();
+		fprintf(stderr,"thread started\n");
 
-        return true;
+		return true;
     }
 
     bool close()
     {
         fprintf(stderr,"closing... \n");     
 
-	if (inv_dyn)
-	  {
-	    fprintf(stderr,"Stopping the inv_dyn module...");     
-	    inv_dyn->stop();
-	    fprintf(stderr,"inv_dyn module stopped\n");     
-	    delete inv_dyn;
-	    inv_dyn=0;
-	  }
+		if (inv_dyn)
+		  {
+			fprintf(stderr,"Stopping the inv_dyn module...");     
+			inv_dyn->stop();
+			fprintf(stderr,"inv_dyn module stopped\n");     
+			delete inv_dyn;
+			inv_dyn=0;
+		  }
 
-	fprintf(stderr,"interrupting the filtered port \n");     
-	port_filtered.interrupt();
-	fprintf(stderr,"closing the filtered port \n");     
-	port_filtered.close();
+		fprintf(stderr,"interrupting the filtered port \n");     
+		port_filtered.interrupt();
+		fprintf(stderr,"closing the filtered port \n");     
+		port_filtered.close();
 
-        if (dd_left_arm)
-	  {
-	    fprintf(stderr,"Closing dd_left_arm \n");     
-	    dd_left_arm->close();
-            delete dd_left_arm;
-            dd_left_arm=0;
-	  }
-        if (dd_right_arm)
-	  {
-	    fprintf(stderr,"Closing dd_right_arm \n");     
-	    dd_right_arm->close();
-            delete dd_right_arm;
-            dd_right_arm=0;
-	  }
-        if (dd_head)
-	  {
-	    fprintf(stderr,"Closing dd_head \n");     
-	    dd_head->close();
-            delete dd_head;
-            dd_head=0;
-	  }
-	
-	if (dd_left_leg)
-	  {
-	    fprintf(stderr,"Closing dd_left_leg \n");     
-	    dd_left_leg->close();
-            delete dd_left_leg;
-            dd_left_leg=0;
-	  }
-        if (dd_right_leg)
-	  {
-	    fprintf(stderr,"Closing dd_right_leg \n");     
-	    dd_right_leg->close();
-            delete dd_right_leg;
-            dd_right_leg=0;
-	  }
-        if (dd_torso)
-	  {
-	    fprintf(stderr,"Closing dd_torso \n");     
-	    dd_torso->close();
-            delete dd_torso;
-            dd_torso=0;
-	  }
+		if (dd_left_arm)
+		{
+			fprintf(stderr,"Closing dd_left_arm \n");     
+			dd_left_arm->close();
+			delete dd_left_arm;
+			dd_left_arm=0;
+		}
+		if (dd_right_arm)
+		{
+			fprintf(stderr,"Closing dd_right_arm \n");     
+			dd_right_arm->close();
+			delete dd_right_arm;
+			dd_right_arm=0;
+		}
+		if (dd_head)
+		{
+			fprintf(stderr,"Closing dd_head \n");     
+			dd_head->close();
+			delete dd_head;
+			dd_head=0;
+		}
 
-	if(port_inertial_input)
-	  {
-	    fprintf(stderr,"interrupting the inertial input port \n");     
-	    port_inertial_input->interrupt();
-	    port_inertial_input->close();
-	    delete port_inertial_input;
-	    port_inertial_input=0;
-	  }
+		if (dd_left_leg)
+		{
+			fprintf(stderr,"Closing dd_left_leg \n");     
+			dd_left_leg->close();
+			delete dd_left_leg;
+			dd_left_leg=0;
+		}
+		if (dd_right_leg)
+		{
+			fprintf(stderr,"Closing dd_right_leg \n");     
+			dd_right_leg->close();
+			delete dd_right_leg;
+			dd_right_leg=0;
+		}
+		if (dd_torso)
+		{
+			fprintf(stderr,"Closing dd_torso \n");     
+			dd_torso->close();
+			delete dd_torso;
+			dd_torso=0;
+		}
 
-	fprintf(stderr,"WholeBodyTorqueObserver module was closed successfully! \n");     
+		if(port_inertial_input)
+		{
+			fprintf(stderr,"interrupting the inertial input port \n");     
+			port_inertial_input->interrupt();
+			port_inertial_input->close();
+			delete port_inertial_input;
+			port_inertial_input=0;
+		}
+
+		fprintf(stderr,"WholeBodyTorqueObserver module was closed successfully! \n");     
         return true;
     }
 
