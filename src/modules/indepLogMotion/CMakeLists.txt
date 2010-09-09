@@ -10,8 +10,7 @@ PROJECT(${KEYWORD})
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
     ${logpolar_INCLUDE_DIRS}
-    ${YARP_INCLUDE_DIRS} 	
-    ${IPP_INCLUDE_DIRS}	
+    ${YARP_INCLUDE_DIRS}
 )
 
 # Search for source code.
@@ -27,9 +26,7 @@ IF (folder_source)
         ${folder_header}
     )
 
-    TARGET_LINK_LIBRARIES(${KEYWORD} ${IPP_LIBRARIES}
-				     
-				     logpolar	  	
+    TARGET_LINK_LIBRARIES(${KEYWORD}
                                      ${YARP_LIBRARIES})	
 
     INSTALL_TARGETS(/bin ${KEYWORD})

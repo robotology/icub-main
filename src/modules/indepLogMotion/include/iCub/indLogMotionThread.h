@@ -32,9 +32,6 @@
 #include <yarp/os/all.h>
 #include <iostream>
 
-// outside project includes
-#include <ipp.h>
-
 class indLogMotionThread : public yarp::os::Thread {
 private:
     int psb;
