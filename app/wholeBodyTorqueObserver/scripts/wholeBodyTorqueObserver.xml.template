@@ -11,10 +11,9 @@
    	</module>
 	<module>
       		<name>gravityCompensator</name>
-      		<!--parameters></parameters-->
 			<node>console</node>
 			<stdio>console</stdio>
-			<tag>gComp</tag>
+			<tag>gravityCompensator</tag>
    	</module>
         <connection>
                 <from>/filtered/inertial:o</from>
@@ -23,7 +22,7 @@
         </connection>
         <connection>
                 <from>/filtered/inertial:o</from>
-                <to>/wholebody_gComp/inertial:i</to>
+                <to>/gravityCompensator/inertial:i</to>
                 <protocol>udp</protocol>
         </connection>
 
