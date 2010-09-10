@@ -5,7 +5,7 @@
         </dependencies>
 	<module>
       		<name>wholeBodyTorqueObserver</name>
-      		<parameters>--rate 10</parameters>
+      		<parameters>--context wholeBodyTorqueObserver/conf --from wholeBodyTorqueObserver.ini</parameters>
 			<node>console</node>
 			<tag>wholeBody_tqObs</tag>
    	</module>
