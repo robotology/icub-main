@@ -145,8 +145,8 @@ if (ICUB_EXPERIMENTAL_APP_INSTALL)
 	## add custom targets
 	icub_get_property(applications GLOBAL PROPERTY ICUB_APPLICATIONS)
 	message(STATUS "Exporting applications: ${applications}")
-	add_custom_target(INSTALL_APPLICATIONS)
-	add_dependencies(INSTALL_APPLICATIONS ${applications})
+	add_custom_target(install_applications)
+	add_dependencies(install_applications ${applications})
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
 # export the build tree
