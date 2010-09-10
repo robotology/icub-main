@@ -336,22 +336,22 @@ public:
     gravityCompensator(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
     {   
 		port_inertial=new BufferedPort<Vector>;
-		port_inertial->open("/wholebody_gComp/inertial:i");
-		Network::connect("/filtered/inertial:o","/wholebody_gComp/inertial:i");
+		port_inertial->open("/gravityCompensator/inertial:i");
+		Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
 
 		
 		additional_offset=new BufferedPort<Vector>;
-		additional_offset->open("/wholebody_gComp/ctrlOffset:i");
+		additional_offset->open("/gravityCompensator/ctrlOffset:i");
 
 		
 		left_arm_torques = new BufferedPort<Vector>;
-		left_arm_torques->open("/gravityCompensation/left_arm_torques:o");
+		left_arm_torques->open("/gravityCompensator/left_arm_torques:o");
 		right_arm_torques = new BufferedPort<Vector>;
-		right_arm_torques->open("/gravityCompensation/right_arm_torques:o");
+		right_arm_torques->open("/gravityCompensator/right_arm_torques:o");
 		left_leg_torques = new BufferedPort<Vector>;
-		left_leg_torques->open("/gravityCompensation/left_leg_torques:o");
+		left_leg_torques->open("/gravityCompensator/left_leg_torques:o");
 		right_leg_torques = new BufferedPort<Vector>;
-		right_leg_torques->open("/gravityCompensation/right_leg_torques:o");
+		right_leg_torques->open("/gravityCompensator/right_leg_torques:o");
 		//*offset_input = 0.0;
 
 		ddLA->view(iencs_arm_left);
@@ -492,9 +492,10 @@ public:
 				q_rleg(i) = encoders_leg_right(i);
 				all_q_low(q_torso.length()+q_lleg.length()+i) = q_rleg(i);
 			}
-			all_dq_low = evalVelLow(all_q_low);
-			all_d2q_low = evalAccLow(all_q_low);
-			for (int i=0;i<q_torso.length();i++)
+            setZeroJntAngVelAcc();
+			//all_dq_low = evalVelLow(all_q_low);
+			//all_d2q_low = evalAccLow(all_q_low);
+			/*for (int i=0;i<q_torso.length();i++)
 			{
 				dq_torso(i) = all_dq_low(i);
 				d2q_torso(i) = all_d2q_low(i);
@@ -508,7 +509,7 @@ public:
 			{
 				dq_rleg(i) = all_dq_low(i+q_torso.length()+q_lleg.length());
 				d2q_rleg(i) = all_d2q_low(i+q_torso.length()+q_lleg.length());
-			}
+			}*/
 		}
 
 
@@ -534,6 +535,9 @@ public:
 			q_rarm(i) = encoders_arm_right(i);
 			all_q_up(q_head.length()+q_larm.length()+i) = q_rarm(i);
 		}
+
+        setZeroJntAngVelAcc();
+/*
 		all_dq_up = evalVelUp(all_q_up);
 		all_d2q_up = evalAccUp(all_q_up);
 		
@@ -551,7 +555,7 @@ public:
 		{
 			dq_rarm(i) = all_dq_up(i+q_head.length()+q_larm.length());
 			d2q_rarm(i) = all_d2q_up(i+q_head.length()+q_larm.length());
-		}
+		}*/
 	}
 
 
@@ -580,22 +584,15 @@ public:
 											icub.upperTorso->getTorsoLinAcc());
 		Matrix F_sens_low = icub.lowerTorso->estimateSensorsWrench(F_ext_low,false);
 		evalTorques();
+        Vector LATorques = icub.upperTorso->getTorques("left_arm");
+        printf("encoders: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", encoders_arm_left(0), encoders_arm_left(1), encoders_arm_left(2), encoders_arm_left(3), encoders_arm_left(4), encoders_arm_left(5), encoders_arm_left(6)); 
+        printf("torques: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", LATorques(0), LATorques(1), LATorques(2), LATorques(3), LATorques(4), LATorques(5), LATorques(6)); 
+        printf("inertial: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
+ 
 		return true;
     }
 	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false)
 	{
-		
-		//double k,d,o;
-		/*int f,l;
-		if(part=="arm")
-		{
-			f = 3;
-			l = 10;
-		}else 
-		{
-			f = 0;
-			l = 5;
-		}*/
 		int ctrl_mode = 0;
 		for(int i=0;i<ctrlJnt;i++)
 		{
@@ -677,13 +674,16 @@ public:
     {
 		Vector Z(10);Z=0.0;
 		
-		//feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
-		//feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
+		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
+		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
 		
 		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
 		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
         Time::delay(1.0);
-
+        if(left_arm_torques) {delete left_arm_torques; left_arm_torques = 0;}
+        if(right_arm_torques) {delete right_arm_torques; right_arm_torques = 0;}
+        if(left_leg_torques) {delete left_leg_torques; left_leg_torques = 0;}
+        if(right_leg_torques) {delete right_leg_torques; right_leg_torques = 0;}
 		
 		if(linEstUp) {delete linEstUp; linEstUp = 0;}
 		if(quadEstUp) {delete quadEstUp; quadEstUp = 0;}
@@ -767,18 +767,12 @@ public:
 		string fwdSlash = "/";
 
         string name;
-        if (rf.check("name"))
-            name = rf.find("name").asString();
-        else name = "GravityCompensator";		
+        name = "gravityCompensator";	
         
         int rate;
         if (rf.check("rate"))
             rate = rf.find("rate").asInt();
         else rate = 20;
-
-		//string remote = fwdSlash;
-		//remote += "icub/";
-		//remote += part;
 
 		attachTerminal();                     // attach to terminal
 
@@ -787,7 +781,7 @@ public:
         //---------------------DEVICES--------------------------//
         
 		OptionsHead.put("device","remote_controlboard");
-		OptionsHead.put("local",(fwdSlash+name+"/head/client").c_str());
+		OptionsHead.put("local","/gravityCompensator/head/client");
 		OptionsHead.put("remote","/icub/head");
 
 		dd_head = new PolyDriver(OptionsHead);
@@ -801,7 +795,7 @@ public:
         
 
         OptionsLeftArm.put("device","remote_controlboard");
-        OptionsLeftArm.put("local",(fwdSlash+name+"/left_arm/client").c_str());
+        OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
         OptionsLeftArm.put("remote","/icub/left_arm");
         dd_left_arm = new PolyDriver(OptionsLeftArm);
         if (!createDriver(dd_left_arm))
@@ -811,7 +805,7 @@ public:
         }
 
         OptionsRightArm.put("device","remote_controlboard");
-        OptionsRightArm.put("local",(fwdSlash+name+"/right_arm/client").c_str());
+        OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
         OptionsRightArm.put("remote","/icub/right_arm");
         dd_right_arm = new PolyDriver(OptionsRightArm);
         if (!createDriver(dd_right_arm))
@@ -822,7 +816,7 @@ public:
 
 		
         OptionsLeftLeg.put("device","remote_controlboard");
-        OptionsLeftLeg.put("local",(fwdSlash+name+"/left_leg/client").c_str());
+        OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
         OptionsLeftLeg.put("remote","/icub/left_leg");
         dd_left_leg = new PolyDriver(OptionsLeftLeg);
         if (!createDriver(dd_left_leg))
@@ -832,7 +826,7 @@ public:
         }
 
         OptionsRightLeg.put("device","remote_controlboard");
-        OptionsRightLeg.put("local",(fwdSlash+name+"/right_leg/client").c_str());
+        OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
         OptionsRightLeg.put("remote","/icub/right_leg");
         dd_right_leg = new PolyDriver(OptionsRightLeg);
         if (!createDriver(dd_right_leg))
@@ -842,7 +836,7 @@ public:
         }
 		
 		OptionsTorso.put("device","remote_controlboard");
-		OptionsTorso.put("local",(fwdSlash+name+"/torso/client").c_str());
+		OptionsTorso.put("local","/gravityCompensator/torso/client");
 		OptionsTorso.put("remote","/icub/torso");
 
 		dd_torso = new PolyDriver(OptionsTorso);
