@@ -28,7 +28,8 @@
 
 #include <ipp.h>
 #include <ipps.h>
-//#include <qimage.h>
+#include <ippcore.h>
+
 #include <math.h>
 #include <iostream>
 #include <stdlib.h>
@@ -60,11 +61,11 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     cLoop=0;
     
     //default values of the coefficients
-    k1=1.0;
+    k1=0.5;
     k2=0.1;
     k3=0.5;
     k4=0.1;
-    k5=0.1;
+    k5=0.5;
     k6=0.5;
 
     // images
@@ -91,9 +92,6 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     
     image_out=new ImageOf<PixelRgb>;
     image_tmp=new ImageOf<PixelMono>;
-    outputImage=new ImageOf<PixelMono>;
-    outputImage2=new ImageOf<PixelMono>;
-
 }
 
 selectiveAttentionProcessor::~selectiveAttentionProcessor(){
@@ -121,9 +119,7 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
     delete tmp;
     delete image_out;
     delete image_tmp;
-    delete outputImage;
-    delete outputImage2;
-    
+    delete intermCartOut;
 }
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE) {
@@ -140,8 +136,6 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     inImage=new ImageOf<PixelRgb>;
     inImage->resize(width,height);
 
-    outputImage=new ImageOf<PixelMono>;
-    outputImage->resize(width,height);
     map1_yarp=new ImageOf<PixelMono>;
     map1_yarp->resize(width,height);
     map2_yarp=new ImageOf<PixelMono>;
@@ -156,6 +150,10 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     map6_yarp->resize(width,height);
     inputLogImage=new ImageOf<PixelRgb>;
     inputLogImage->resize(width,height);
+
+    //fixed resize 640,480
+    intermCartOut=new ImageOf<PixelRgb>;
+    intermCartOut->resize(xSizeValue,ySizeValue);
 }
 
 void selectiveAttentionProcessor::resizeImages(int width,int height) {
@@ -174,8 +172,6 @@ void selectiveAttentionProcessor::resizeImages(int width,int height) {
     tmp->resize(width,height);
     image_out->resize(width,height);
     image_tmp->resize(width,height);
-    outputImage->resize(width,height);
-    outputImage2->resize(width,height);
 
     cvImage16= cvCreateImage(cvSize(width,height),IPL_DEPTH_16S,1);
     cvImage8= cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
@@ -304,8 +300,6 @@ void selectiveAttentionProcessor::run(){
             */
         }
 
-        //
-
         tmp2=inImagePort.read(false);
         if(tmp2==0){
             return;
@@ -379,34 +373,14 @@ void selectiveAttentionProcessor::run(){
         if(!idle){
             for(int y=0;y<height;y++){
                 for(int x=0;x<width;x++){
-                    unsigned char value=0;
-                    if(map1_yarp!=0)
-                        value+=(unsigned char)ceil((double)(*pmap1 * (k1/sumK)));
-                    if(map2_yarp!=0)
-                        value+=(unsigned char)ceil((double)(*pmap2 * (k2/sumK)));
-                    if(map3_yarp!=0)
-                        value+=(unsigned char)ceil((double)(*pmap3 * (k3/sumK)));
-                    if(map4_yarp!=0)
-                        value+=(unsigned char)ceil((double)(*pmap4 * (k4/sumK)));
-                    if(map5_yarp!=0)
-                        value+=(unsigned char)ceil((double)(*pmap5 * (k5/sumK)));
-                    if(map6_yarp!=0)
-                        value+=(unsigned char)ceil((double)(*pmap6 * (k6/sumK)));
+                    unsigned char value=(unsigned char)ceil((double)(*pmap1 * (k1/sumK) + *pmap2 * (k2/sumK) + *pmap3 * (k3/sumK) + *pmap4 * (k4/sumK) + *pmap5 * (k5/sumK) + *pmap6 * (k6/sumK)));
                     pmap1++;pmap2++;pmap3++;
                     pmap4++;pmap5++;pmap6++;
-                    if((map1_yarp==0)&&(map2_yarp==0)&&(map3_yarp==0)&&(map4_yarp==0)&&(map5_yarp==0)&&(map6_yarp==0))
-                        value=0;
-                    if(maxValue<value)
-                        maxValue=value;
                     *plinear=value;
                     plinear++;
                 }
-                pmap1+=padding;
-                pmap2+=padding;
-                pmap3+=padding;
-                pmap4+=padding;
-                pmap5+=padding;
-                pmap6+=padding;
+                pmap1+=padding;pmap2+=padding;pmap3+=padding;
+                pmap4+=padding;pmap5+=padding;pmap6+=padding;
                 plinear+=padding;
             }
             //trasform the logpolar to cartesian (the logpolar image has to be 3channel image)
@@ -425,28 +399,49 @@ void selectiveAttentionProcessor::run(){
                 plinear+=padding;
             }
             ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();  //preparing the cartesian output
-            outputCartImage.resize(xSizeValue,ySizeValue);
-            trsf.logpolarToCart(outputCartImage,*inputLogImage);
-            //find the max in the cartesian image
+            int outputXSize=(int)floor((double)xSizeValue/2);
+            int outputYSize=(int) floor((double)ySizeValue/2);
+            outputCartImage.resize(outputXSize,outputYSize);
+            trsf.logpolarToCart(*intermCartOut,*inputLogImage);
+            //find the max in the cartesian image and downsample
             maxValue=0;
             float xm=0,ym=0;
             int countMaxes=0;
             pImage=outputCartImage.getRawImage();
-            int paddingInput=outputCartImage.getPadding(); //padding of the colour image (640,480)
+            unsigned char* pInter=intermCartOut->getRawImage();
+            int paddingInterm=intermCartOut->getPadding(); //padding of the colour image (640,480)
+            int rowSizeInterm=intermCartOut->getRowSize();
+            int paddingOutput=outputCartImage.getPadding();
             for(int y=0;y<ySizeValue;y++) {
-                for(int x=0;x<xSizeValue;x++) {
-                        if(maxValue<*pImage) {
-                            maxValue=*pImage;
+                if(y%2==0) {
+                    for(int x=0;x<xSizeValue;x++) {
+                        if(x%2==0) {
+                            *pImage=*pInter;
+                            if(maxValue<*pImage) {
+                                maxValue=*pImage;
+                            }
+                            pImage++;pInter++;
+                            *pImage=*pInter;
+                            pImage++;pInter++;
+                            *pImage=*pInter;
+                            pImage++;pInter++;
                         }
-                        pImage+=3;
+                        else {
+                            pInter+=3;
+                        }
+                    }
+                    pImage+=paddingOutput;
+                    pInter+=paddingInterm;
                 }
-                pImage+=paddingInput;
+                else {
+                    pInter+=paddingInterm+rowSizeInterm;
+                }
             }
             pImage=outputCartImage.getRawImage();
             float distance=0;
             bool foundmax=false;
-            for(int y=0;y<ySizeValue;y++) {
-                for(int x=0;x<xSizeValue;x++) {
+            for(int y=0;y<ySizeValue/2;y++) {
+                for(int x=0;x<xSizeValue/2;x++) {
                     if(*pImage==maxValue) {
                         if(!foundmax) {
                             *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
@@ -466,35 +461,36 @@ void selectiveAttentionProcessor::run(){
                     }
                     pImage+=3;
                 }
-                pImage+=paddingInput;
+                pImage+=paddingOutput;
             }
             xm=xm/countMaxes; ym=ym/countMaxes;
             //representation of red lines where the WTA point is
             //representation of the vertical line
+            /*
             pImage=outputCartImage.getRawImage();
             pImage+=round(xm)*3;
-            for(int i=0;i<ySizeValue;i++) {
+            for(int i=0;i<ySizeValue/2;i++) {
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
-                pImage+=(xSizeValue-1)*3+paddingInput;
+                pImage+=(xSizeValue/2-1)*3+paddingOutput;
             }
             //representation of the horizontal line
             pImage=outputCartImage.getRawImage();
-            pImage+=round(ym)*(3*xSizeValue+paddingInput);
-            for(int i=0;i<xSizeValue;i++) {
+            pImage+=round(ym) * (3 * (xSizeValue/2) + paddingOutput);
+            for(int i=0;i<xSizeValue/2;i++) {
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
             }
-            
+            */
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
                 printf("cartesian: %f,%f \n", xm/2,ym/2);
-                Vector px(2);
-                px[0]=round(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                px[1]=round(ym/2);
-                //we still have one degree of freedom given by
-                //the distance of the object from the image plane
-                //if you do not have it, try to guess :)
-                double z=0.5;   // distance [m]
                 if(gazePerform) {
+                    Vector px(2);
+                    px[0]=round(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                    px[1]=round(ym/2);
+                    //we still have one degree of freedom given by
+                    //the distance of the object from the image plane
+                    //if you do not have it, try to guess :)
+                    double z=0.5;   // distance [m]
                     igaze->lookAtMonoPixel(camSel,px,z);
                 }
                 cLoop=0;
@@ -628,85 +624,6 @@ bool selectiveAttentionProcessor::outPorts(){
 
 
 void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelRgb>* inputColourImage,int& x,int& y){
-    
-    CvMemStorage* stor=cvCreateMemStorage(0);
-    CvBox2D box;
-    CvSeq* cont = cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvSeq), sizeof(CvPoint) , stor);
-    cvFindContours(inputImage->getIplImage(), stor, &cont, sizeof(CvContour),
-                CV_RETR_LIST, CV_CHAIN_APPROX_NONE, cvPoint(0,0));
-    IplImage* dst = cvCreateImage( cvGetSize(outputImage->getIplImage()), 8, 3 );
-    cvZero(dst);   
-    double numObj = 0;
-    float line[4];
-    CvPoint center;
-    CvPoint pt1;
-    CvPoint pt2;
-
-    for(;cont;cont = cont->h_next){
-        numObj ++;
-        //  int count = cont->total; // This is number point in contour
-        box = cvMinAreaRect2(cont, stor);
-        center.x = cvRound(box.center.x);
-        center.y = cvRound(box.center.y);
-        x=center.x;
-        y=center.y;
-        float v = box.size.width;
-        float v1 = box.size.height;
-
-        /*
-        //unsigned char targetRed=0, targetGreen=0, targetBlue=0;
-        unsigned char tmpRed=0, tmpGreen=0, tmpBlue=0;
-        getPixelColour(inImage, x,y,targetRed,targetGreen,targetBlue);
-        getPixelColour(inImage, x+1,y,tmpRed,tmpGreen, tmpBlue);
-        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
-        getPixelColour(inImage, x-1,y,tmpRed,tmpGreen, tmpBlue);
-        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
-        getPixelColour(inImage, x,y+1,tmpRed,tmpGreen, tmpBlue);
-        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
-        getPixelColour(inImage, x,y-1,tmpRed,tmpGreen, tmpBlue);
-        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
-        */
-        
-           
-        cvDrawContours(dst,cont,CV_RGB(targetBlue,targetGreen,targetRed),CV_RGB(0,0,0),0,1,8);
-        cvCircle (dst, center, 1, CV_RGB(targetBlue,targetGreen,targetRed));
-           
-        cvFitLine(cont, CV_DIST_L2, 1, 0.01, 0.01, line);
-        float t = (v + v1)/2;
-        pt1.x = cvRound(line[2] - line[0] *t );
-        pt1.y = cvRound(line[3] - line[1] *t );
-        pt2.x = cvRound(line[2] + line[0] *t );
-        pt2.y = cvRound(line[3] + line[1] *t );
-
-        //cvCircle(dst, pt1, 1, CV_RGB(targetRed,targetGreen,targetBlue));
-        //cvCircle(dst, pt2, 1, CV_RGB(targetBlue,targetGreen,targetRed));
-       
-        /*
-        //cvLine(dst, pt1, pt2, CV_RGB(targetRed,targetGreen,targetBlue), 3, CV_AA, 0);
-        double theta = 0;
-        // double theta = 180 / M_PI * atan2( (pt2.y - pt1.y) , (pt2.x - pt1.x) );
-        CvFont font;
-        double hScale=0.3;
-        double vScale=0.3;
-        int    lineWidth=1;
-
-        cvInitFont(&font,CV_FONT_HERSHEY_SIMPLEX|CV_FONT_ITALIC, hScale,vScale,0,lineWidth);
-        char* Angles=new char;
-
-        sprintf(Angles, "%d,%d,%d",(int)targetRed,(int)targetGreen,(int)targetBlue);
-        cvPutText ( dst , Angles, cvPoint( 10, 10), &font, cvScalar(255,0,0) );
-        */
-
-    }
-    //cvCopy(dst,outputImage->getIplImage());
-    //ippiCopy_8u_C1R((const Ipp8u *)dst->imageData,dst->widthStep, outputImage->getRawImage(), outputImage->getRowSize(),srcsize);
-    cvReleaseMemStorage(&stor);
-    cvReleaseImage(&dst);
-    //cvReleaseMemStorage(&storage);
 }
 
 

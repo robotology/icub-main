@@ -26,6 +26,8 @@
 #include <yarp/os/all.h>
 #include <iCub/selectiveAttentionModule.h>
 #include <yarp/dev/Drivers.h>
+#include <ippcore.h>
+
 YARP_DECLARE_DEVICES(icubmod)
 
 
@@ -37,6 +39,9 @@ using namespace yarp::os;
 
 
 int main(int argc, char *argv[]) {
+    /* important, this effectively disables the OMP library parallelization in the IPP */
+    ippSetNumThreads(1);
+
     //initialise Yarp Network
     Network yarp;
     Time::turboBoost();

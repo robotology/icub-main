@@ -58,8 +58,9 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         IppiSize srcsize; //IppiSize reference to the dimension of the input image
         yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp; //temporary mono image
         yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2; //temporary rgb image
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *intermCartOut; //temporary rgb image
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //a port for the inputImage (colour)
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageCartOut; //cartesian image result of the remapping
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageCartOut; //port for sending cartesian image result
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; // input port for the 1st saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; // input port for the 2nd saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; // input port for the 3rd saliency map
@@ -282,8 +283,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         
         static const int CONVMAX_TH=100; //parameter of the findEdges function
         static const int CONVSEQ_TH=500; //parameter of the findEdges function
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage; // result of the selection
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage2; //result of the selection
+        
         yarp::sig::ImageOf<yarp::sig::PixelMono> linearCombinationImage; //result of the combination
         int centroid_x; //center of gravity of the selective attention (x position)
         int centroid_y; //center of gravity of the selective attention (y position)
