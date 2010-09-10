@@ -878,7 +878,7 @@ public:
 			icub.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
 			icub.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
 
-			if(test==VOCAB_COMP)
+			if(comp==VOCAB_COMP)
 			{
 				icub_sens.lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
 				icub_sens.lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
@@ -922,7 +922,7 @@ public:
 			icub.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
 			icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
 
-			if(test==VOCAB_COMP)
+			if(comp==VOCAB_COMP)
 			{
 				icub_sens.upperTorso->setAng("head",CTRL_DEG2RAD * q_head);
 				icub_sens.upperTorso->setAng("left_arm",CTRL_DEG2RAD * q_larm);
@@ -967,6 +967,16 @@ public:
 		dq_torso=0.0;
 		d2q_torso=0.0;
 	}
+
+    void setPerformanceTest(int _test)
+    {
+        test = _test;
+    }
+
+    void setModelTest(int _comp)
+    {
+        comp = _comp;
+    }
 };
 // class dataCollector: class for reading from Vrow and providing for FT values on an output port
 
@@ -1106,6 +1116,29 @@ public:
 			rate = 100;
 		}
 
+        //--------------------PERFORMANCE----------------------//
+
+        int performance = 0;
+		if (rf.check("performance"))
+		{
+            if(rf.find("performance").asInt()==1)
+                performance = VOCAB_TEST;
+            inv_dyn->setPerformanceTest(performance);
+
+			fprintf(stderr,"performance evaluation during cycles...\n", rate);
+		}
+
+        //--------------------COMPARISON----------------------//
+
+        int comparison = 0;
+		if (rf.check("comparison"))
+		{
+            if(rf.find("comparison").asInt()==1)
+                comparison = VOCAB_COMP;
+            inv_dyn->setModelTest(comparison);
+
+			fprintf(stderr,"model evaluation during cycles...\n", rate);
+		}
 
 		//---------------------DEVICES--------------------------//
 
