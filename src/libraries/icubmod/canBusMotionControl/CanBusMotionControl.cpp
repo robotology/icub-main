@@ -434,7 +434,7 @@ void CanBackDoor::onRead(Bottle &b)
 			dval[2] = b.get(3).asDouble(); //shoulder 3 yaw
 			dval[3] = b.get(4).asDouble(); //elbow
 			dval[4] = b.get(5).asDouble(); //wrist pronosupination
-			dval[5] = 0; //RANDAZ_TODO
+			dval[5] = 0; 
 		break;
 		case 2: //legs torque message
 			dval[0] = b.get(1).asDouble(); //hip pitch
@@ -443,6 +443,14 @@ void CanBackDoor::onRead(Bottle &b)
 			dval[3] = b.get(4).asDouble(); //knee
 			dval[4] = b.get(5).asDouble(); //ankle pitch
 			dval[5] = b.get(6).asDouble(); //ankle roll
+		break;
+		case 3:
+			dval[0] = b.get(6).asDouble(); //wrist yaw
+			dval[1] = b.get(7).asDouble(); //wrist pitch
+			dval[2] = 0;
+			dval[3] = 0;
+			dval[4] = 0;
+			dval[5] = 0; 
 		break;
 		default:
 			fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName().c_str());
@@ -3138,18 +3146,18 @@ bool CanBusMotionControl::setReferencesRaw (const double *refs)
 }
 
 /// cmd is a SingleAxis poitner with 1 double arg
-bool CanBusMotionControl::setRefTorqueRaw (int j, double ref)
+bool CanBusMotionControl::setRefTorqueRaw (int j, double ref_trq)
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
 	//I'm sending a DWORD but the value MUST be clamped to S_16. Do not change.
-    return _writeDWord (CAN_SET_DESIRED_TORQUE, axis, S_16(ref));
+    return _writeDWord (CAN_SET_DESIRED_TORQUE, axis, S_16(ref_trq));
 }
 
 /// cmd is a SingleAxis pointer with 1 double arg
-bool CanBusMotionControl::getTorqueRaw (int j, double *t)
+bool CanBusMotionControl::getTorqueRaw (int j, double *trq)
 {
     CanBusResources& r = RES(system_resources);
     const int axis = j;
@@ -3159,7 +3167,7 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
     _mutex.wait();
     // *** This method is implementented reading data directly from an IAnalogSensor and
 	// not sending/receiving data from the Canbus ***
-	*t=0; //set output to zero (default value)
+	*trq=0; //set output to zero (default value)
 	int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
 
     std::list<AnalogSensor *>::iterator it=analogSensors.begin();
@@ -3171,7 +3179,7 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
 			int cfgId   = _axisTorqueHelper->getTorqueSensorId(k);
 			if (cfgId == 0) 
 			{
-				*t=0;
+				*trq=0;
 				break;
 			}
 			else if (cfgId==id)
@@ -3181,11 +3189,11 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
 				int ret=(*it)->read(data);
                 if (ret==yarp::dev::IAnalogSensor::AS_OK)
 				{
-					*t=data[cfgChan];
+					*trq=data[cfgChan];
 				}
 				else
 				{
-					*t=0;
+					*trq=0;
 				}
 				break;
 			}
@@ -3198,7 +3206,7 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *t)
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::setRefTorquesRaw (const double *refs)
+bool CanBusMotionControl::setRefTorquesRaw (const double *ref_trqs)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -3206,7 +3214,7 @@ bool CanBusMotionControl::setRefTorquesRaw (const double *refs)
     for (i = 0; i < r.getJoints(); i++)
     {
 		//I'm sending a DWORD but the value MUST be clamped to S_16. Do not change.
-        if (_writeDWord (CAN_SET_DESIRED_TORQUE, i, S_16(refs[i])) != true)
+        if (_writeDWord (CAN_SET_DESIRED_TORQUE, i, S_16(ref_trqs[i])) != true)
             return false;
     }
 
@@ -3214,9 +3222,19 @@ bool CanBusMotionControl::setRefTorquesRaw (const double *refs)
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTorquesRaw (double *t)
+bool CanBusMotionControl::getTorquesRaw (double *trqs)
 {
 	return NOT_YET_IMPLEMENTED("getTorquesRaw");
+}
+
+bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
+{
+	return NOT_YET_IMPLEMENTED("getTorqueRangeRaw");
+}
+
+bool CanBusMotionControl::getTorqueRangesRaw (double *min, double *max)
+{
+	return NOT_YET_IMPLEMENTED("getTorqueRangesRaw");
 }
 
 bool CanBusMotionControl::disableTorquePidRaw(int j)
@@ -3771,7 +3789,7 @@ bool CanBusMotionControl::getRefAccelerationRaw (int axis, double *accs)
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getRefTorquesRaw (double *t)
+bool CanBusMotionControl::getRefTorquesRaw (double *ref_trqs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -3780,7 +3798,7 @@ bool CanBusMotionControl::getRefTorquesRaw (double *t)
     for(i = 0; i < r.getJoints(); i++)
     {
         if (_readWord16 (CAN_GET_DESIRED_TORQUE, i, value) == true) {
-            _ref_torques[i] = t[i] = double (value);
+            _ref_torques[i] = ref_trqs[i] = double (value);
         }
         else
             return false;
@@ -3790,7 +3808,7 @@ bool CanBusMotionControl::getRefTorquesRaw (double *t)
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getRefTorqueRaw (int axis, double *t)
+bool CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
@@ -3800,7 +3818,7 @@ bool CanBusMotionControl::getRefTorqueRaw (int axis, double *t)
     if (_readWord16 (CAN_GET_DESIRED_TORQUE, axis, value))
     {
         _ref_torques[axis] = double (value);
-		*t = double (value);
+		*ref_trq = double (value);
     }
     else
         return false;

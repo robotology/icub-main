@@ -456,12 +456,14 @@ public:
 	//
     /// TORQUE CONTROL INTERFACE RAW
 //    virtual bool getAxes(int *ax);
-    virtual bool getRefTorqueRaw(int j, double *t);
-    virtual bool getRefTorquesRaw(double *t);
-    virtual bool setRefTorquesRaw(const double *t);
-    virtual bool setRefTorqueRaw(int j, double t);
-    virtual bool getTorqueRaw(int j, double *t);
-    virtual bool getTorquesRaw(double *t);
+    virtual bool getRefTorqueRaw(int j, double *ref_trq);
+    virtual bool getRefTorquesRaw(double *ref_trqs);
+    virtual bool setRefTorqueRaw(int j, double ref_trq);
+    virtual bool setRefTorquesRaw(const double *ref_trqs);
+    virtual bool getTorqueRaw(int j, double *trq);
+    virtual bool getTorquesRaw(double *trqs);
+    virtual bool getTorqueRangeRaw(int j, double *min, double *max);
+    virtual bool getTorqueRangesRaw(double *min, double *max);
 
     virtual bool setTorquePidRaw(int j, const Pid &pid);
     virtual bool setTorquePidsRaw( const Pid *pid);
