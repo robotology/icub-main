@@ -185,8 +185,10 @@ private:
 
 	BufferedPort<Bottle> *port_RATorques;
 	BufferedPort<Bottle> *port_RLTorques;
+	BufferedPort<Bottle> *port_RWTorques;
 	BufferedPort<Bottle> *port_LATorques;
 	BufferedPort<Bottle> *port_LLTorques;
+	BufferedPort<Bottle> *port_LWTorques;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;
@@ -395,7 +397,9 @@ public:
 		port_LATorques = new BufferedPort<Bottle>;
 		port_RLTorques = new BufferedPort<Bottle>;
 		port_LLTorques = new BufferedPort<Bottle>;
-		
+		port_RWTorques = new BufferedPort<Bottle>;
+		port_LWTorques = new BufferedPort<Bottle>;
+
         port_inertial_thread->open("/wholeBodyTorqueObserver/inertial:i");
 		port_ft_arm_left->open("/wholeBodyTorqueObserver/left_arm/FT:i");
 		port_ft_arm_right->open("/wholeBodyTorqueObserver/right_arm/FT:i");
@@ -405,6 +409,8 @@ public:
 		port_LATorques->open("/wholeBodyTorqueObserver/left_arm/Torques:o");
 		port_RLTorques->open("/wholeBodyTorqueObserver/right_leg/Torques:o");
 		port_LLTorques->open("/wholeBodyTorqueObserver/left_leg/Torques:o");
+		port_RWTorques->open("/wholeBodyTorqueObserver/right_wrist/Torques:o");
+		port_LWTorques->open("/wholeBodyTorqueObserver/left_wrist/Torques:o");
 
 
 		//---------------------DEVICES--------------------------//
@@ -518,6 +524,8 @@ public:
 				
 		writeTorque(RLTorques, 2, port_RLTorques);
 		writeTorque(LLTorques, 2, port_LLTorques);
+		writeTorque(RLTorques, 3, port_RWTorques);
+		writeTorque(LLTorques, 3, port_LWTorques);
 		writeTorque(RATorques, 1, port_RATorques);
 		writeTorque(LATorques, 1, port_LATorques);
 
@@ -619,6 +627,10 @@ public:
 		closePort(port_RLTorques);
 		fprintf(stderr, "Closing the LLTorques\n");
 		closePort(port_LLTorques);
+		fprintf(stderr, "Closing the RWTorques\n");
+		closePort(port_RWTorques);
+		fprintf(stderr, "Closing the LWTorques\n");
+		closePort(port_LWTorques);
 
 		fprintf(stderr, "Closing the inertial\n");
 		closePort(port_inertial_thread);
