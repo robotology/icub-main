@@ -521,14 +521,13 @@ public:
 		Vector LLTorques = icub.lowerTorso->getTorques("left_leg");
 		Vector RLTorques = icub.lowerTorso->getTorques("right_leg");
 		Vector TSTorques = icub.lowerTorso->getTorques("torso");
-				
-		writeTorque(RLTorques, 2, port_RLTorques);
-		writeTorque(LLTorques, 2, port_LLTorques);
-		writeTorque(RLTorques, 3, port_RWTorques);
-		writeTorque(LLTorques, 3, port_LWTorques);
-		writeTorque(RATorques, 1, port_RATorques);
-		writeTorque(LATorques, 1, port_LATorques);
 
+		writeTorque(RATorques, 1, port_RATorques); //arm
+		writeTorque(LATorques, 1, port_LATorques); //arm
+		writeTorque(RLTorques, 2, port_RLTorques); //leg
+		writeTorque(LLTorques, 2, port_LLTorques); //leg
+		writeTorque(RATorques, 3, port_RWTorques); //wrist
+		writeTorque(LATorques, 3, port_LWTorques); //wrist
 		
 		if(test==VOCAB_TEST)
 		{		
