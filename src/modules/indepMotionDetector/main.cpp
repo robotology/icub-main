@@ -104,21 +104,25 @@ None.
 - <i> /<stemName>/img:i </i> accepts the incoming images. 
  
 - <i> /<stemName>/img:o </i> outputs the input images with the 
-  grid layer on top.
+  grid layer on top. This port propagates the time-stamp carried
+  by the input image.
  
 - <i> /<stemName>/nodes:o </i> outputs the x-y location of the 
   currently active nodes in this format: (nodesStep <val>)
-  (<n0.x> <n0.y>) (<n1.x> <n1.y>) ...
+  (<n0.x> <n0.y>) (<n1.x> <n1.y>) ... . This port propagates the
+  time-stamp carried by the input image.
  
 - <i> /<stemName>/blobs:o </i> outputs the x-y location of blobs
   centroids along with their size in this format: (<b0.cx>
   <b0.cy> <b0.size>) (<b1.cx> <b1.cy> <b1.size>) ... The output
   blobs list is sorted according to their size (decreasing
-  order).
+  order). This port propagates the time-stamp carried
+  by the input image.
  
 - <i> /<stemName>/opt:o </i> outputs monochrome images 
   containing just the grid nodes signalling independent
-  movements.
+  movements. This port propagates the time-stamp carried
+  by the input image.
  
 - <i> /<stemName>/rpc </i> for RPC communication. 
  
@@ -149,6 +153,7 @@ Linux and Windows.
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/sig/Image.h>
 
 #include <cv.h>
@@ -336,6 +341,10 @@ public:
             // acquire new image
             ImageOf<PixelBgr> *pImgBgrIn=inPort.read(true);
 
+            // get the envelope from the image
+            Stamp stamp;
+            inPort.getEnvelope(stamp);
+
             if (isStopping() || pImgBgrIn==NULL)
                 break;
 
@@ -516,16 +525,25 @@ public:
             }
             dt2=Time::now()-latch_t;
 
-            // send out images
+            // send out images, propagating the time-stamp
+            outPort.setEnvelope(stamp);
             outPort.write();
+
+            optPort.setEnvelope(stamp);
             optPort.write();
 
-            // send out data bottles
+            // send out data bottles, propagating the time-stamp
             if (nodesBottle.size()>1)
+            {
+                nodesPort.setEnvelope(stamp);
                 nodesPort.write(nodesBottle);
+            }
 
             if (blobsBottle.size())
+            {
+                blobsPort.setEnvelope(stamp);
                 blobsPort.write(blobsBottle);
+            }
 
             // save data for next cycle
             imgMonoPrev=imgMonoIn;
