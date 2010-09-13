@@ -3229,7 +3229,42 @@ bool CanBusMotionControl::getTorquesRaw (double *trqs)
 
 bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
 {
-	return NOT_YET_IMPLEMENTED("getTorqueRangeRaw");
+    CanBusResources& r = RES(system_resources);
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    _mutex.wait();
+    // *** This method is implementented reading data without sending/receiving data from the Canbus ***
+	*min=0; //set output to zero (default value)
+	*max=0; //set output to zero (default value)
+	int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
+
+    std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+    while(it!=analogSensors.end())
+    {
+        if (*it)
+        {
+			int id = (*it)->getId();
+			int cfgId   = _axisTorqueHelper->getTorqueSensorId(k);
+			if (cfgId == 0) 
+			{
+				*min=0;
+				*max=0;
+				break;
+			}
+			else if (cfgId==id)
+			{
+				*min=-_axisTorqueHelper->getMaximumTorque(k);
+				*max=+_axisTorqueHelper->getMaximumTorque(k);
+				break;
+			}
+        }
+        it++;
+    }
+    _mutex.post();
+
+    return true;
 }
 
 bool CanBusMotionControl::getTorqueRangesRaw (double *min, double *max)
