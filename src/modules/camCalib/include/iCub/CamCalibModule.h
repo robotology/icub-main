@@ -17,6 +17,7 @@
 
 // yarp
 #include <yarp/os/all.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/sig/all.h>
 
 // iCub

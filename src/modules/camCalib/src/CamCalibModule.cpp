@@ -115,7 +115,13 @@ bool CamCalibModule::updateModule(){
 		_semaphore.wait();
 		yarp::sig::ImageOf<PixelRgb>& yrpImgOut = _prtImgOut.prepare();
 		_calibTool->apply(*yrpImgIn, yrpImgOut);
-		_prtImgOut.write();
+		
+        //timestamp propagation
+        yarp::os::Stamp stamp;
+        _prtImgIn.getEnvelope(stamp);
+        _prtImgOut.setEnvelope(stamp);
+
+        _prtImgOut.write();
 		_semaphore.post();  
 	}	
     return true;
