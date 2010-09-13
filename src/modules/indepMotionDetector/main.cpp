@@ -90,9 +90,9 @@ YARP libraries and OpenCV
  
 --numThreads \e threads
 - This parameter allows to control the maximum number of threads
-  allocated by parallelized OpenCV functions. The default value
-  is 0 meaning that a number of threads equal to the number of
-  available cores will be used.
+  allocated by parallelized OpenCV functions (if supported). The
+  default value is 0 meaning that a number of threads equal to
+  the number of available cores will be used.
  
 --verbosity 
 - Enable the dump of log messages.
@@ -205,13 +205,16 @@ protected:
     double recogThresAbs;
     int adjNodesThres;
     int blobMinSizeThres;
-    int framesPersistence;
-    int numThreads;
+    int framesPersistence;    
     bool verbosity;
     bool inhibition;
     int nodesNum;
     int nodesX;
     int nodesY;
+
+#ifdef _INDEP_MULTI_THREADING_
+    int numThreads;
+#endif
 
     ImageOf<PixelMono>  imgMonoIn;
     ImageOf<PixelMono>  imgMonoPrev;
@@ -796,7 +799,9 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--adjNodesThres     <int>\n");
         fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
         fprintf(stdout,"\t--framesPersistence <int>\n");
+    #ifdef _INDEP_MULTI_THREADING_
         fprintf(stdout,"\t--numThreads        <int>\n");
+    #endif
         fprintf(stdout,"\t--verbosity           -\n");
         
         return 0;
