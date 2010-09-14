@@ -22,8 +22,8 @@ This file can be edited at src/canBusSniffer/main.cpp.
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/RateThread.h>
-#include "fft.h"
-#include "hist.h"
+//#include "fft.h"
+//#include "hist.h"
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -140,10 +140,10 @@ class SnifferThread: public RateThread
 	signed short commut[2];
 	unsigned short unsigned_gaugeData[6];
 	signed short signed_gaugeData[6];
-	fft_samples   samples;
-	fft_cyclic_sample_buffer csamples;
-	fft_performer fft;
-	hist_performer hist;
+//	fft_samples   samples;
+//	fft_cyclic_sample_buffer csamples;
+//	fft_performer fft;
+//	hist_performer hist;
 
 	unsigned char cycleIndex;
 	signed short filterCoefficients[6];
@@ -290,13 +290,14 @@ public:
 				//FFT
 				//if (samples.add_sample(torque[0])) fft.do_fft(samples);
 				//if (samples.add_sample(dutyCycle[0])) fft.do_fft(samples);
-				if (csamples.add_sample(torque[0])) fft.do_fft(csamples);
+/*				if (csamples.add_sample(torque[0])) fft.do_fft(csamples);
 
 				if (kp[0]==30 && log_start==false) log_start=true;
 
 				log_start=true;
 				
-				if(log_start) fprintf(fp,"%d %d %d %d %d\n",cnt,kp[0],pid[0],dutyCycle[0],torque[0]);
+				if(log_start) fprintf(fp,"%d %d %d %d %d\n",cnt,kp[0],pid[0],dutyCycle[0],torque[0]);*/
+
 				cnt++;
 			}
 		}
