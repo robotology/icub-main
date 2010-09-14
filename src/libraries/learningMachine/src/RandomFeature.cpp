@@ -62,8 +62,8 @@ void RandomFeature::reset() {
     this->IFixedSizeTransformer::reset();
 
     // create pseudo random number generators
-    yarp::math::impl::RandnScalar prng_normal;
-    yarp::math::impl::RandScalar prng_uniform;
+    yarp::math::RandnScalar prng_normal;
+    yarp::math::RandScalar prng_uniform;
 
     // create new projection matrix
     this->W.resize(this->getCoDomainSize(), this->getDomainSize());
