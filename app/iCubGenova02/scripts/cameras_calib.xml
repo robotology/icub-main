@@ -2,13 +2,13 @@
 <name>Calibrated Cameras</name>
 <module>
       <name>icubmoddev</name>
-      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.525 0.672 --gain 0.543 --shutter 0.703 --name /icub/cam/left  --brightness 0.662 --DR2 --stamp --d 0 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.271 --framerate 30</parameters>
+      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.525 0.672 --gain 0.240 --shutter 0.800 --name /icub/cam/left  --brightness 0.662 --DR2 --stamp --d 0 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.260 --framerate 30</parameters>
 	    <node>pc104</node>
 	<tag>camera_left</tag>
    </module>
    <module>
       <name>icubmoddev</name>
-      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.525 0.672 --gain 0.543 --shutter 0.703 --name /icub/cam/right  --brightness 0.662 --DR2 --stamp --d 1 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.271 --framerate 30</parameters>
+      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.525 0.672 --gain 0.240 --shutter 0.800 --name /icub/cam/right  --brightness 0.662 --DR2 --stamp --d 1 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.260 --framerate 30</parameters>
       <node>pc104</node>
 	<tag>camera_right</tag>
    </module>
