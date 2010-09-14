@@ -1272,6 +1272,24 @@ public:
         return ret;
     }
 
+    virtual bool getTorqueRange(int j, double *min, double *max)
+    {
+        if (torque)
+            return torque->getTorqueRange(j+base, min, max);
+        return false;
+    }
+
+    virtual bool getTorqueRanges(double *min, double *max)
+    {
+        bool ret=false;
+        if (torque) {
+            ret=true;
+            for(int j=0;j<controlledJoints;j++)
+                ret=ret&&torque->getTorqueRange(j+base, min+j, max+j);
+        }
+        return ret;
+    }
+
     virtual bool setTorquePids(const Pid *pids)
     {
         bool ret=false;
