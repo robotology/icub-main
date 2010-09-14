@@ -19,7 +19,7 @@ else(ICUB_USE_GtkPlus)
 endif(ICUB_USE_GtkPlus)
 
 if(ICUB_USE_GtkMM)
-	#add_subdirectory(frameGrabberGui2)
+	add_subdirectory(frameGrabberGui2)
 else(ICUB_USE_GtkMM)
 	message(STATUS "GtkMM not selected, skipping frameGrabberGui2")
 endif(ICUB_USE_GtkMM)
