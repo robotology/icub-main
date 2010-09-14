@@ -21,7 +21,7 @@
     <module>
         <name>camCalib</name>
         <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
-        <node>icub-b14</node>
+        <node>icub-b15</node>
         <tag>camcalib_right</tag> 
     </module> 
    <module>
