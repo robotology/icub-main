@@ -4,6 +4,7 @@
     <dependencies>
       <port>/icub/camcalib/right/out</port>
       <port>/icub/right_arm/state:o</port> 
+      <port>/iKinGazeCtrl/head/angles:o</port>
     </dependencies> 
 
     <module>
@@ -25,12 +26,6 @@
       <node>pwrNode3</node>
 	  <parameters>--robot icub --kalman --from icubEyes.ini</parameters>
       <tag>ikinhead</tag> 
-    </module>
-
-    <module>
-      <name>iKinGazeCtrl</name>
-      <node>pwrNode4</node>
-      <tag>gazeCtrl</tag> 
     </module>
 
 	<module>
