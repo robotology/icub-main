@@ -15,18 +15,18 @@
     </module> 
 
     <module>
-      <name>iKinArmCtrl</name>
-      <parameters>--onlyXYZ --DOF8</parameters> 
-      <node>pwrNode2</node>
-      <tag>armCtrl</tag>
-    </module> 
-
-    <module>
       <name>iKinHead</name>
-      <node>pwrNode3</node>
+      <node>pwrNode2</node>
 	  <parameters>--robot icub --kalman --from icubEyes.ini</parameters>
       <tag>ikinhead</tag> 
     </module>
+
+    <module>
+      <name>iKinArmCtrl</name>
+      <parameters>--onlyXYZ --DOF8</parameters> 
+      <node>pwrNode3</node>
+      <tag>armCtrl</tag>
+    </module> 
 
 	<module>
       <name>yarpview</name>
