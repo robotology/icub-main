@@ -210,11 +210,11 @@ public:
 			fprintf(stderr, "Error setting baud rate\n");
 
 		/* add the id of can messages to be read */
-		iCanBus->canIdAdd(0x35a);
-	    iCanBus->canIdAdd(0x35b);
+		iCanBus->canIdAdd(0x3Da);
+	    iCanBus->canIdAdd(0x3Db);
 //		iCanBus->canIdAdd(0x171);
 //		iCanBus->canIdAdd(0x172);
-		iCanBus->canIdAdd(0x177);
+//		iCanBus->canIdAdd(0x177);
 
         messageBuffer=iBufferFactory->createBuffer(localBufferSize);
 
@@ -248,7 +248,7 @@ public:
 		/* cycle from zero to the number of read messages */   
 		for(int i=0; i<readMessages; i++)
 		{
-			if (messageBuffer[i].getId() == 0x35a)
+			if (messageBuffer[i].getId() == 0x3Da)
 			{
 				unsigned_gaugeData[0] = (messageBuffer[i].getData()[1]<<8)|messageBuffer[i].getData()[0];
 				unsigned_gaugeData[1] = (messageBuffer[i].getData()[3]<<8)|messageBuffer[i].getData()[2];
@@ -259,7 +259,7 @@ public:
 				//if (csamples.add_sample(signed_gaugeData[0])) fft.do_fft(csamples);
 				//if (hist.add_sample(unsigned_gaugeData[0])) hist.do_hist();
 			}
-			if (messageBuffer[i].getId() == 0x35b)
+			if (messageBuffer[i].getId() == 0x3Db)
 			{
 				unsigned_gaugeData[3] = (messageBuffer[i].getData()[1]<<8)|messageBuffer[i].getData()[0];
 				unsigned_gaugeData[4] = (messageBuffer[i].getData()[3]<<8)|messageBuffer[i].getData()[2];
@@ -290,13 +290,21 @@ public:
 				//FFT
 				//if (samples.add_sample(torque[0])) fft.do_fft(samples);
 				//if (samples.add_sample(dutyCycle[0])) fft.do_fft(samples);
-				if (csamples.add_sample(torque[0])) fft.do_fft(csamples);
+			/*	if (csamples.add_sample(torque[0])) fft.do_fft(csamples);
 
 				if (kp[0]==30 && log_start==false) log_start=true;
 
 				log_start=true;
 				
-				if(log_start) fprintf(fp,"%d %d %d %d %d\n",cnt,kp[0],pid[0],dutyCycle[0],torque[0]);
+				if(log_start) fprintf(fp,"%d %d %d %d %d\n",cnt,kp[0],pid[0],dutyCycle[0],torque[0]);*/
+
+				fprintf(fp,"%d %d %d %d %d %d %d\n",cnt,
+				signed_gaugeData[0],
+				signed_gaugeData[1],
+				signed_gaugeData[2],
+				signed_gaugeData[3],
+				signed_gaugeData[4],
+				signed_gaugeData[5]);
 				cnt++;
 			}
 		}
