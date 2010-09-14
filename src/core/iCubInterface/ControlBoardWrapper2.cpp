@@ -552,7 +552,8 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 				if (caller->verbose())
 					printf("get command received\n");
 				int tmp = 0;
-				double dtmp = 0.0;
+				double dtmp  = 0.0;
+				double dtmp2 = 0.0;
 				response.addVocab(VOCAB_IS);
 				response.add(cmd.get(1));
 
@@ -573,15 +574,40 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 						}
                         break;
 
+					case VOCAB_RANGE:
+						{
+							*ok = torque->getTorqueRange(cmd.get(3).asInt(), &dtmp, &dtmp2);
+							response.addDouble(dtmp);
+							response.addDouble(dtmp2);
+						}
+                        break;
+
 					case VOCAB_TRQS:
 						{
+							int i=0;
 							double *p = new double[controlledJoints];
 							*ok = torque->getTorques(p);
 							Bottle& b = response.addList();
-							int i;
 							for (i = 0; i < controlledJoints; i++)
 								b.addDouble(p[i]);
 							delete[] p;
+						}
+                        break;
+
+					case VOCAB_RANGES:
+						{
+							double *p1 = new double[controlledJoints];
+							double *p2 = new double[controlledJoints];
+							*ok = torque->getTorqueRanges(p1,p2);
+							Bottle& b1 = response.addList();
+							int i;
+							for (i = 0; i < controlledJoints; i++)
+								b1.addDouble(p1[i]);
+							Bottle& b2 = response.addList();
+							for (i = 0; i < controlledJoints; i++)
+								b2.addDouble(p2[i]);
+							delete[] p1;
+							delete[] p2;
 						}
                         break;
 

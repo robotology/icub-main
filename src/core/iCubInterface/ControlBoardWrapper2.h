@@ -2092,6 +2092,46 @@ public:
         return ret;
      }
 
+    virtual bool getTorqueRange(int j, double *min, double *max)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->getTorqueRange(off+base, min, max);
+        }        
+
+        return false;
+    }
+
+    virtual bool getTorqueRanges(double *min, double *max)
+    {
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->getTorqueRange(off+base, min+l, max+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
+     }
+
     virtual bool setTorquePids(const Pid *pids)
     {
         bool ret=true;
