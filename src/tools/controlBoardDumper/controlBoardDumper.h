@@ -44,3 +44,4 @@ private:
   int    *dataMap;  
 
 };
+
