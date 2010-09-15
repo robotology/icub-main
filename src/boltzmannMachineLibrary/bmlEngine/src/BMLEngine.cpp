@@ -342,11 +342,6 @@ bool BMLEngine::updateModule() {
             }
             printf("Calling the interconnectLayers function \n");
             mb->interconnectLayers(iterE1->second,iterE2->second);
-
-            
-
-    
-
         }
         else if(!strcmp(command.c_str(),"Stop")){
             printf("ExecuteStop \n");
@@ -417,9 +412,10 @@ bool BMLEngine::updateModule() {
                             }
                         }
                         double mean=sum/(rectDimX*rectDimY);
-                        printf("mean of the unit %f ----> ",mean);
                         sample[r*totUnits+c]=mean/255;
+                        printf(" %f ",mean/255);
                     }
+                    printf("\n");
                 }
                 mb->addSample(sample);
             }

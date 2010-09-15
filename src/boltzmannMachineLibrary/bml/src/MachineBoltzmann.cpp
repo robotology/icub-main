@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/MachineBoltzmann.h>
+
+
+//openCV include
+#include <cv.h>
+#include <cvaux.h>
+#include <highgui.h>
+
 #include <vector>
 
 using namespace yarp::sig;
@@ -1127,6 +1134,7 @@ void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matr
 
 void MachineBoltzmann::reinitData(int size){
     dataMat=new Matrix(10,100);
+    dataSet=new vector<Matrix>;
     double* point=dataMat->data();
     for(int r=0;r<dataMat->rows();r++){
         for(int c=0;c<dataMat->cols();c++){
@@ -1137,21 +1145,27 @@ void MachineBoltzmann::reinitData(int size){
 }
 
 void MachineBoltzmann::addSample(Vector sample){
+    
     //Vector sampleVector(sample.cols()*sample.rows());
-    //dataMat: matrxi containg all the sample acquired till now
+    //dataSet: vector matrices containg all the sample acquired till now
+    printf("%s \n",sample.toString().c_str());
+    //move within the dataMat matrix to add the new sample
     double* pointer=dataMat->data();
     int count=0;
     for(int j=0;j<countSample;j++){
         for(int k=0;k<sample.length();k++){
-            pointer++;
             count++;
+            pointer++;
         }
     }
+    
     printf("count:%d sampleLength: %d \n", count,sample.length());
     for(int i=0;i<sample.length();i++){
         *pointer=sample[i];
+        printf("%f ",sample[i]);
         pointer++;
     }
+    
     /*for(int r=0;r<sample.rows();r++){
         for(int c=0;c<sample.cols();c++){
             //data[countSample][r+c*sample.cols()];
@@ -1162,20 +1176,76 @@ void MachineBoltzmann::addSample(Vector sample){
     printf("data>rows:%d cols:%d \n",dataMat->rows(),dataMat->cols());
     printf("\n");
 
-    pointer=dataMat->data();
+    
+    /*pointer=dataMat->data();
     for(int r=0;r<10;r++){
+        printf("||| \n");
         for(int c=0;c<sample.length();c++){
-            pointer++;//data[countSample][r+c*sample.cols()];
             printf("%f ", *pointer);
+            pointer++;//data[countSample][r+c*sample.cols()];
+            
         }
-    }
+    }*/
+    
 
     countSample++;
+    //check wether the countSample correspond to the numdim
+    // if it is true add the matrix to the vector and reset the state 
+    if(0==(countSample+1)%10){
+        printf("new matrix added into the dataSet .....\n");
+        dataSet->push_back(*dataMat);
+        dataMat=new Matrix(10,100);
+        countSample=0;
+    }
 }
 
 void MachineBoltzmann::makeBatches(){
+    /*
+    int width=ptr_inputImage->width();
+    int height=ptr_inputImage->height();
+    
+    cvCvtColor(ptr_inputImage->getIplImage(),im_tmp_ipl,CV_RGB2GRAY);
+                
+    //2.Extract the necessary information
+    int dim=100;
+    int totRows=10;
+    int totUnits=10;
+
+    printf("state vector dimension %d \n",dim);
+    printf("layer number cols %d \n",totUnits);
+    printf("layer number rows %d \n",totRows);
+
+
+    //3.maps the intensity on to the layer
+    int rectDimX=width/totUnits;
+    int rectDimY=height/totRows;
+    int sum=0;
+    uchar* data=(uchar*)(im_tmp_ipl->imageData);
+    int step       = im_tmp_ipl->widthStep/sizeof(uchar);
+    //printf("step of the gray image as input %d",step);
+
+    for(int r=0;r<totRows;r++){
+        for(int c=0;c<totUnits;c++){
+            sum=0;
+            for(int y=0;y<rectDimY;y++){
+                for(int x=0;x<rectDimX;x++){
+                    sum+=data[r*rectDimY*width+c*rectDimX+width*y+x];
+                    //sum+=im_tmp_ipl[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
+                }
+            }
+            double mean=sum/(rectDimX*rectDimY);
+            printf("mean of the unit %f ----> ",mean);
+            sample[r*totUnits+c]=mean/255;
+        }
+    }
+    this->addSample(sample);
+    */
+
+    
+
     //decompose the dataMat into a vector of matrices batchdata.
     //every matrix has the dimension of the input and the number of cases (NUMCASES); batchdataSingle
+    
     Matrix single(10,100);
     for(int r=0;r<128*128;r++){
         for(int c=0;c<10;c++){}}
@@ -1207,37 +1277,53 @@ void MachineBoltzmann::training(){
     gen2layersSingle;
 
 
+    
+
+    
+
+
     %%%%%% Training 3rd layer %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     numpen = 16;numdims=576;maxepoch=10;
     fprintf(1,'\nPretraining Layer 3 with RBM: %d-%d \n',numhid,numpen);
     rbm_l33_nolab;*/
+
+    //Matrix* batchdataSingle=new Matrix(*dataSet->at(k));
+    for(int k=0;k<dataSet->size();k++){
+        Matrix* batchdataSingle=new Matrix(dataSet->at(k));
+        printf("batchdataSingle: \n %s \n\n",batchdataSingle->toString().c_str());
+        printf("batchdataSingle: \n %s \n\n",(dataSet->at(k)).toString().c_str());
+    }
     
     Matrix* poshidstates=new Matrix();
     Matrix* vishid=new Matrix();
-    Matrix* batchdataSingle=new Matrix(*dataMat);
-    //batchdataSingle=batchdataSingleVisible;
-    printf("number of elements %d \n",this->getCountElements());
-    for (int i=0;i<getCountElements()-1;i++){
-        printf("-----Layer %d --------------------------------- dimension %d \n",i,getLayer(i)->getNumUnits());
-        Layer* pvis=getLayer(i);
-        Layer* phid=getLayer(i+1);
-        rbm(batchdataSingle,pvis,phid->getNumUnits(),poshidstates,vishid);
-        printf("%d %d",poshidstates->cols(), poshidstates->rows());
+    //Matrix* batchdataSingle=new Matrix(*dataMat);
+    for(int k=0;k<dataSet->size();k++){
+        Matrix* batchdataSingle=new Matrix(dataSet->at(k));
         
-        //p=phid->stateVector->data();
-        double* phid_data=phid->stateVector->data();
-        for(int j=0;j<phid->getCol()*phid->getRow();j++){
-            *phid_data=poshidstates->operator ()(9,j);
-            phid_data++;
-        }
-        double* pvishid_weights=pvis->vishid->data();
-        for(int c=0;c<pvis->vishid->cols();c++){
-            for(int r=0; r<pvis->vishid->rows();r++){
-                *pvishid_weights=vishid->operator ()(r,c);
-                pvishid_weights++;
+        //batchdataSingle=batchdataSingleVisible;
+        printf("number of elements %d \n",this->getCountElements());
+        for (int i=0;i<getCountElements()-1;i++){
+            printf("-----Layer %d --------------------------------- dimension %d \n",i,getLayer(i)->getNumUnits());
+            Layer* pvis=getLayer(i);
+            Layer* phid=getLayer(i+1);
+            rbm(batchdataSingle,pvis,phid->getNumUnits(),poshidstates,vishid);
+            printf("%d %d",poshidstates->cols(), poshidstates->rows());
+            
+            //p=phid->stateVector->data();
+            double* phid_data=phid->stateVector->data();
+            for(int j=0;j<phid->getCol()*phid->getRow();j++){
+                *phid_data=poshidstates->operator ()(6,j);
+                phid_data++;
             }
+            double* pvishid_weights=pvis->vishid->data();
+            for(int c=0;c<pvis->vishid->cols();c++){
+                for(int r=0; r<pvis->vishid->rows();r++){
+                    *pvishid_weights=vishid->operator ()(r,c);
+                    pvishid_weights++;
+                }
+            }
+            batchdataSingle=poshidstates; 
         }
-        batchdataSingle=poshidstates; 
     }
 }
 
