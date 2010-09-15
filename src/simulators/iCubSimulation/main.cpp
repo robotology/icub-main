@@ -780,7 +780,7 @@ public:
 							odeinit._wrld->trimesh[a] = dLoadMeshFromX(model);
 							if (!odeinit._wrld->trimesh[a]){
 								cout << "Check spelling/location of file" << endl;
-								// Del Prete: I think here there should be a call to odeinit.mutex.post()!
+								odeinit.mutex.post();
 							}else{
 								dGeomTriMeshDataBuildSingle(odeinit._wrld->TriData[a], odeinit._wrld->trimesh[a]->Vertices, 3 * sizeof(float), odeinit._wrld->trimesh[a]->VertexCount, odeinit._wrld->trimesh[a]->Indices, odeinit._wrld->trimesh[a]->IndexCount, 3 * sizeof(int));
 								odeinit._wrld->ThreeD_obj[a].body = dBodyCreate (odeinit.world);
@@ -801,9 +801,8 @@ public:
 								}
 								odeinit.mutexTexture.wait();
 								odeinit._wrld->WAITLOADING = true;	
+								odeinit.mutexTexture.post();
 							}
-							odeinit.mutexTexture.post();
-                            
 						}
 						if (setBody==9){
 
@@ -823,7 +822,7 @@ public:
 							odeinit._wrld->s_trimesh[b] = dLoadMeshFromX(model);
 							if (!odeinit._wrld->s_trimesh[b]){
 								cout << "Check spelling/location of file" << endl;
-								// Del Prete: I think here there should be a call to odeinit.mutex.post()!
+								odeinit.mutex.post();
 							}else{
 								dGeomTriMeshDataBuildSingle(odeinit._wrld->s_TriData[b], odeinit._wrld->s_trimesh[b]->Vertices, 3 * sizeof(float), odeinit._wrld->s_trimesh[b]->VertexCount, odeinit._wrld->s_trimesh[b]->Indices, odeinit._wrld->s_trimesh[b]->IndexCount, 3 * sizeof(int));
 								odeinit._wrld->s_ThreeD_obj[b].geom = dCreateTriMesh(odeinit.space, odeinit._wrld->s_TriData[b], 0, 0, 0);
@@ -839,10 +838,8 @@ public:
 								odeinit.mutexTexture.wait();
 								odeinit._wrld->static_model = true;
 								odeinit._wrld->WAITLOADING = true;	
-								
+								odeinit.mutexTexture.post();
 							}
-							odeinit.mutexTexture.post();
-
 						}
                         if (setBody==11){
                             //sphere with gravity
