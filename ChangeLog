@@ -1,3 +1,8 @@
+2010-09-15 Lorenzo Natale <lorenzo.natale@iit.it>
+        * general cleanup, moved old build (mostly everything in src to 
+	backup/oldBuild, including some cmake files that were in the 
+	root.
+	
 2010-08-19 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	* iCub/main/src/libraries/icubmod/dragonfly2/*
 	* iCub/main/src/tools/frameGrabberGui2/include/FrameGrabberGUIControl2.h
