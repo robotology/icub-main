@@ -1,4 +1,0 @@
-PROJECT(canLoaderAll)
-
-#ADD_SUBDIRECTORY(canLoader1.2)
-ADD_SUBDIRECTORY(canLoader2.0)

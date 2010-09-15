@@ -1,8 +1,0 @@
-<cluster name="localCluster" user="lasa-user">
-
-<nameserver namespace="/root" node="lasalap7"> </nameserver>
-
-<node display="true">lasalap7</node>
-
-</cluster>
-
