@@ -1835,7 +1835,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 		LAjoints[x] = dJointCreateHinge(world, 0);
 		RAjoints[x] = dJointCreateHinge(world, 0);
 	}
-	for(int x = 0; x <8; x++) {Hjoints[x] = dJointCreateHinge(world, 0);}
+	for(int x = 0; x <6; x++) {Hjoints[x] = dJointCreateHinge(world, 0);}
 	if (actLegs == "off" && actTorso == "on"){
 
 		dJointAttach (LLegjoints[0], legs, torso[0]);

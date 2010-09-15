@@ -109,67 +109,51 @@ void worldSim::draw(){
 
 	}
 	
-	/*if (OBJNUM != waitOBJ){
-		Time::delay(0.1); waitOBJ++;}*/
-	//else{
-		for (int i=0; i<OBJNUM; i++) {
-			glColor3d(color[i][0],color[i][1],color[i][2]);
-			glPushMatrix();LDEsetM(dBodyGetPosition(obj[i].boxbody),dBodyGetRotation(obj[i].boxbody));
-			DrawBox(obj[i].size[0],obj[i].size[1],obj[i].size[2],false,textured,2);glPopMatrix();
-		}
-	//}
+	for (int i=0; i<OBJNUM; i++) {
+		glColor3d(color[i][0],color[i][1],color[i][2]);
+		glPushMatrix();LDEsetM(dBodyGetPosition(obj[i].boxbody),dBodyGetRotation(obj[i].boxbody));
+		DrawBox(obj[i].size[0],obj[i].size[1],obj[i].size[2],false,textured,2);glPopMatrix();
+	}
 	for (int i=0; i<S_OBJNUM; i++) {
 		glColor3d(s_color[i][0],s_color[i][1],s_color[i][2]);
 		glPushMatrix();LDEsetM(dGeomGetPosition(s_obj[i].geom[0]),dGeomGetRotation(s_obj[i].geom[0]));
 		DrawBox(s_obj[i].size[0],s_obj[i].size[1],s_obj[i].size[2],false,textured,2);glPopMatrix();
 	}
 	
-	/*if (cylOBJNUM != waitOBJ1){
-		Time::delay(0.1); waitOBJ1++;}
-	else{*/
-		for (int i=0; i<cylOBJNUM; i++) {
-			glColor3d(color1[i][0],color1[i][1],color1[i][2]);
-			glPushMatrix();LDEsetM(dBodyGetPosition(cyl_obj[i].cylbody),dBodyGetRotation(cyl_obj[i].cylbody));
-			DrawCylinder(cyl_obj[i].radius,cyl_obj[i].lenght,false,textured,2);glPopMatrix();
-		}
-	//}
+	for (int i=0; i<cylOBJNUM; i++) {
+		glColor3d(color1[i][0],color1[i][1],color1[i][2]);
+		glPushMatrix();LDEsetM(dBodyGetPosition(cyl_obj[i].cylbody),dBodyGetRotation(cyl_obj[i].cylbody));
+		DrawCylinder(cyl_obj[i].radius,cyl_obj[i].lenght,false,textured,2);glPopMatrix();
+	}
+
 	for (int i=0; i<S_cylOBJNUM; i++) {
 		glColor3d(s_color1[i][0],s_color1[i][1],s_color1[i][2]);
 		glPushMatrix();LDEsetM(dGeomGetPosition(s_cyl_obj[i].cylgeom[0]),dGeomGetRotation(s_cyl_obj[i].cylgeom[0]));
 		DrawCylinder(s_cyl_obj[i].radius,s_cyl_obj[i].lenght,false,textured,2);glPopMatrix();
 	}
 	
-	/*if (MODEL_NUM != waitMOD){
-		Time::delay(0.1); waitMOD++;}
-	else{*/
-
-		for (int i=0; i<MODEL_NUM; i++){
-			glColor3d(1.0,1.0,1.0);
-			glPushMatrix();LDEsetM(dGeomGetPosition(ThreeD_obj[i].geom),dGeomGetRotation(ThreeD_obj[i].geom));     //DRAW THE MODEL
-	        DrawX( trimesh[i], modelTexture[i]);
-			glPopMatrix();
-		}
-		for (int i=0; i<s_MODEL_NUM; i++){
-			glColor3d(1.0,1.0,1.0);
-			glPushMatrix();LDEsetM(dGeomGetPosition(s_ThreeD_obj[i].geom),dGeomGetRotation(s_ThreeD_obj[i].geom));     //DRAW THE MODEL
-	        DrawX( s_trimesh[i], s_modelTexture[i]);
-			glPopMatrix();
-		}
-	//}
- //   if (SPHNUM != waitSPH){
-	//	Time::delay(0.1); waitSPH++;}
-	//else{
-		for (int i=0; i<SPHNUM; i++) {
-			glColor3d(color2[i][0],color2[i][1],color2[i][2]);
-			glPushMatrix();LDEsetM(dBodyGetPosition(sph[i].sphbody),dBodyGetRotation(sph[i].sphbody));
-			DrawSphere(sph[i].radius,false,textured,2);glPopMatrix();
-		}
-	//}
-	    for (int i=0; i<S_SPHNUM; i++) {
-			glColor3d(s_color2[i][0],s_color2[i][1],s_color2[i][2]);
-			glPushMatrix();LDEsetM(dGeomGetPosition(s_sph[i].sphgeom[0]),dGeomGetRotation(s_sph[i].sphgeom[0]));
-			DrawSphere(s_sph[i].radius,false,textured,2);glPopMatrix();
-		}
+	for (int i=0; i<MODEL_NUM; i++){
+		glColor3d(1.0,1.0,1.0);
+		glPushMatrix();LDEsetM(dGeomGetPosition(ThreeD_obj[i].geom),dGeomGetRotation(ThreeD_obj[i].geom));     //DRAW THE MODEL
+        DrawX( trimesh[i], modelTexture[i]);
+		glPopMatrix();
+	}
+	for (int i=0; i<s_MODEL_NUM; i++){
+		glColor3d(1.0,1.0,1.0);
+		glPushMatrix();LDEsetM(dGeomGetPosition(s_ThreeD_obj[i].geom),dGeomGetRotation(s_ThreeD_obj[i].geom));     //DRAW THE MODEL
+        DrawX( s_trimesh[i], s_modelTexture[i]);
+		glPopMatrix();
+	}
+	for (int i=0; i<SPHNUM; i++) {
+		glColor3d(color2[i][0],color2[i][1],color2[i][2]);
+		glPushMatrix();LDEsetM(dBodyGetPosition(sph[i].sphbody),dBodyGetRotation(sph[i].sphbody));
+		DrawSphere(sph[i].radius,false,textured,2);glPopMatrix();
+	}	
+    for (int i=0; i<S_SPHNUM; i++) {
+		glColor3d(s_color2[i][0],s_color2[i][1],s_color2[i][2]);
+		glPushMatrix();LDEsetM(dGeomGetPosition(s_sph[i].sphgeom[0]),dGeomGetRotation(s_sph[i].sphgeom[0]));
+		DrawSphere(s_sph[i].radius,false,textured,2);glPopMatrix();
+	}
 }
 
 void worldSim::loadTexture(ConstString texture, int numTexture){
