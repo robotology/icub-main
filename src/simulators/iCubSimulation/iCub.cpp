@@ -595,8 +595,8 @@ void ICubSim::draw(){
 	if (actCover == "on"){
 		glPushMatrix(); LDEsetM(dGeomGetPosition(head1_geom),dGeomGetRotation(head1_geom));
 		DrawBox(0.104, 0.002,0.052,false,textured,2);glTranslatef(0,0.05,0);
-		glTranslatef(0,-0.002,0.007);
-		glScalef(0.95,1,1);
+		glTranslatef(0,-0.05,0.007);
+		glScalef(0.95,0.8,1);
 		iCubHeadModel->draw(false,8); 
 		if (!eyeLids){
             eyeLids = new EyeLids;
@@ -1671,39 +1671,39 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 
 	head1_geom = dCreateBox (iCub,0.104, 0.002,0.052);dMassSetBoxTotal (&m2,0.1562,0.104,0.002,0.052);
 	dGeomSetBody (head1_geom,head);
-	dGeomSetOffsetPosition(head1_geom,-m2.c[0], -0.011-m2.c[0], -0.0125-m2.c[0]);
+	dGeomSetOffsetPosition(head1_geom,-m2.c[0], /*-0.011-*/m2.c[0], -0.0125-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	head2_geom = dCreateBox (iCub,0.002, 0.093,0.052);dMassSetBoxTotal (&m2,0.1562,0.002, 0.093,0.052);
 	dGeomSetBody (head2_geom,head);
-	dGeomSetOffsetPosition(head2_geom,0.052-m2.c[0], 0.0355-m2.c[0], -0.0125-m2.c[0]);
+	dGeomSetOffsetPosition(head2_geom,0.052-m2.c[0], /*0.0355-*/m2.c[0], -0.0125-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	head3_geom = dCreateBox (iCub,0.002, 0.093,0.052);dMassSetBoxTotal (&m2,0.1562,0.002, 0.093,0.032);
 	dGeomSetBody (head3_geom,head);
-	dGeomSetOffsetPosition(head3_geom,-0.052-m2.c[0], 0.0355-m2.c[0], -0.0125-m2.c[0]);
+	dGeomSetOffsetPosition(head3_geom,-0.052-m2.c[0], /*0.0355-*/m2.c[0], -0.0125-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	head4_geom = dCreateBox (iCub, 0.104, 0.002,0.032);dMassSetBoxTotal (&m2,0.01,0.104, 0.002,0.032);
 	dGeomSetBody (head4_geom,head);
-	dGeomSetOffsetPosition(head4_geom,-m2.c[0], 0.0355-m2.c[0], -0.0125-m2.c[0]);
+	dGeomSetOffsetPosition(head4_geom,-m2.c[0], /*0.0355-*/m2.c[0], -0.0125-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	head5_geom = dCreateBox (iCub, 0.011, 0.026, 0.025);dMassSetBoxTotal (&m2,0.0278,0.011, 0.026,0.025);
 	dGeomSetBody (head5_geom,head);
-	dGeomSetOffsetPosition(head5_geom,-m2.c[0], -0.01-m2.c[0], 0.0275-m2.c[0]);
+	dGeomSetOffsetPosition(head5_geom,-m2.c[0], /*-0.01-*/m2.c[0], 0.0275-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	head6_geom = dCreateBox (iCub, 0.011, 0.051, 0.012);dMassSetBoxTotal (&m2,0.0278,0.011, 0.051,0.012);
 	dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.2);
 	dGeomSetBody (head6_geom,head);
 	dGeomSetOffsetRotation(head6_geom,Rtx);
-	dGeomSetOffsetPosition(head6_geom,-m2.c[0], 0.001-m2.c[0], 0.05-m2.c[0]);
+	dGeomSetOffsetPosition(head6_geom,-m2.c[0], /*0.001-*/m2.c[0], 0.05-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	head7_geom = dCreateBox (iCub, 0.02, 0.022, 0.012);dMassSetBox (&m2,0.0278,0.02, 0.022,0.012);
 	dGeomSetBody (head7_geom,head);
-	dGeomSetOffsetPosition(head7_geom,-m2.c[0], 0.028-m2.c[0], 0.064-m2.c[0]);
+	dGeomSetOffsetPosition(head7_geom,-m2.c[0], /*0.028-*/m2.c[0], 0.064-m2.c[0]);
 	dMassAdd (&m, &m2);
 	
 	dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(head,&m);
@@ -1725,35 +1725,35 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 	dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
 	dGeomSetBody (eye1_geom,select[0]);
 	dGeomSetOffsetRotation(eye1_geom,Rtx);
-	dGeomSetOffsetPosition(eye1_geom,-m2.c[0], 0.037-m2.c[0], 0.064-m2.c[0]);
+	dGeomSetOffsetPosition(eye1_geom,-m2.c[0], /*0.037-*/m2.c[0], 0.064-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	eye2_geom = dCreateCylinder (iCub,0.006,0.030);dMassSetCylinderTotal (&m2,0.11,3,0.006,0.030);
 	//dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
 	dGeomSetBody (eye2_geom,select[0]);
 	//dGeomSetOffsetRotation(eye2_geom,Rtx);
-	dGeomSetOffsetPosition(eye2_geom,0.034-m2.c[0], 0.037-m2.c[0], 0.049-m2.c[0]);
+	dGeomSetOffsetPosition(eye2_geom,0.034-m2.c[0], /*0.037-*/m2.c[0], 0.049-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	eye3_geom = dCreateCylinder (iCub,0.006,0.05);dMassSetCylinderTotal (&m2,0.0387,3,0.006,0.05);
 	dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
 	dGeomSetBody (eye3_geom,select[0]);
 	dGeomSetOffsetRotation(eye3_geom,Rtx);
-	dGeomSetOffsetPosition(eye3_geom,0.034-m2.c[0], 0.037-m2.c[0], 0.034-m2.c[0]);
+	dGeomSetOffsetPosition(eye3_geom,0.034-m2.c[0], /*0.037-*/m2.c[0], 0.034-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	eye4_geom = dCreateCylinder (iCub,0.006,0.030);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.030);
 	//dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
 	dGeomSetBody (eye4_geom,select[0]);
 	//dGeomSetOffsetRotation(eye4_geom,Rtx);
-	dGeomSetOffsetPosition(eye4_geom,-0.034-m2.c[0], 0.037-m2.c[0], 0.049-m2.c[0]);
+	dGeomSetOffsetPosition(eye4_geom,-0.034-m2.c[0], /*0.037-*/m2.c[0], 0.049-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	eye5_geom = dCreateCylinder (iCub,0.006,0.05);dMassSetCylinderTotal (&m2,0.0387,3,0.006,0.05);
 	dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
 	dGeomSetBody (eye5_geom,select[0]);
 	dGeomSetOffsetRotation(eye5_geom,Rtx);
-	dGeomSetOffsetPosition(eye5_geom,-0.034-m2.c[0], 0.037-m2.c[0], 0.034-m2.c[0]);
+	dGeomSetOffsetPosition(eye5_geom,-0.034-m2.c[0], /*0.037-*/m2.c[0], 0.034-m2.c[0]);
 	dMassAdd (&m, &m2);
 	dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
 	
@@ -1773,7 +1773,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 
 	Leye1_geom = dCreateCylinder (iCub,0.006,0.011);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.011);
 	dGeomSetBody (Leye1_geom,select[1]);
-	dGeomSetOffsetPosition(Leye1_geom,0.034-m2.c[0], 0.037-m2.c[0], 0.0695-m2.c[0]);
+	dGeomSetOffsetPosition(Leye1_geom,0.034-m2.c[0], /*0.037-*/m2.c[0], 0.0695-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
@@ -1786,7 +1786,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 
 	Reye1_geom = dCreateCylinder (iCub,0.006,0.011);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.011);
 	dGeomSetBody (Reye1_geom,select[2]);
-	dGeomSetOffsetPosition(Reye1_geom,-0.034-m2.c[0], 0.037-m2.c[0], 0.0695-m2.c[0]);
+	dGeomSetOffsetPosition(Reye1_geom,-0.034-m2.c[0], /*0.037-*/m2.c[0], 0.0695-m2.c[0]);
 	dMassAdd (&m, &m2);
 
 	dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
@@ -2292,17 +2292,17 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 		dJointSetHingeParam(Hjoints[2],  dParamLoStop, -2.7925);dJointSetHingeParam(Hjoints[2],  dParamHiStop, 2.7925);
 
 		dJointAttach (Hjoints[3],head, eye);
-		dJointSetHingeAnchor(Hjoints[3], 0.0 ,elev +0.927, 0.038);
+		dJointSetHingeAnchor(Hjoints[3], 0.0 ,elev +0.89, 0.038);
 		dJointSetHingeAxis(Hjoints[3],  1, 0, 0); 
 		dJointSetHingeParam(Hjoints[3],  dParamLoStop, -2.7925); dJointSetHingeParam(Hjoints[3],  dParamHiStop, 2.7925);
 
 		dJointAttach (Hjoints[4], eye, leye);
-		dJointSetHingeAnchor(Hjoints[4], 0.034 ,elev +0.927, 0.038);
+		dJointSetHingeAnchor(Hjoints[4], 0.034 ,elev +0.89, 0.038);
 		dJointSetHingeAxis(Hjoints[4],  0, 1, 0); 
 		dJointSetHingeParam(Hjoints[4],  dParamLoStop, -2.7925); dJointSetHingeParam(Hjoints[4],  dParamHiStop, 2.7925);
 
 		dJointAttach (Hjoints[5], eye, reye);
-		dJointSetHingeAnchor(Hjoints[5], -0.034 ,elev +0.927, 0.038);
+		dJointSetHingeAnchor(Hjoints[5], -0.034 ,elev +0.89, 0.038);
 		dJointSetHingeAxis(Hjoints[5],  0, 1, 0); 
 		dJointSetHingeParam(Hjoints[5],  dParamLoStop, -2.7925); dJointSetHingeParam(Hjoints[5],  dParamHiStop, 2.7925);
 
