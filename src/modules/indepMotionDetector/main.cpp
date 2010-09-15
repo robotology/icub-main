@@ -378,8 +378,8 @@ public:
                 memset(nodesPersistence,0,nodesNum*sizeof(int));
 
                 // populate grid
-                int min_x= ceil(((1.0-coverXratio)/2.0)*imgMonoIn.width());
-                int min_y= ceil(((1.0-coverYratio)/2.0)*imgMonoIn.height());
+                int min_x= (int) ceil(((1.0-coverXratio)/2.0)*imgMonoIn.width());
+                int min_y= (int) ceil(((1.0-coverYratio)/2.0)*imgMonoIn.height());
                 int cnt=0;
                 
                 for (int y=min_y; y<imgMonoIn.height()-min_y; y+=nodesStep)
