@@ -14,6 +14,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <vector>
 #include <string>
 
 #include <yarp/sig/all.h>
@@ -133,6 +134,10 @@ private:
     * matrix containing the actual state of the sensorial acquisition in time
     */
     yarp::sig::Matrix* dataMat;
+    /**
+    * vector of matrices where the whole dataset is stored
+    */
+    std::vector<yarp::sig::Matrix>* dataSet;
 public:
 	//-------- methods
 	/**
