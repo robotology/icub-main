@@ -319,8 +319,8 @@ assert(o1);
     contact[i].surface.mu2 = 0;
     contact[i].surface.bounce = 0.1;
     contact[i].surface.bounce_vel = 0.1;
-    contact[i].surface.slip1 = (dReal)0.0006;
-	contact[i].surface.slip2 = (dReal)0.0006;
+    contact[i].surface.slip1 = (dReal)0.000001;
+	contact[i].surface.slip2 = (dReal)0.000001;
 	contact[i].surface.soft_cfm = 0.0001;
   }
   if (int numc = dCollide (o1,o2,MAX_CONTACTS,&contact[0].geom,

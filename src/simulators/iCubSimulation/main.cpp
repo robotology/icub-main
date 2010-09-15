@@ -640,14 +640,13 @@ public:
 						}
 						//reply.fromString("ok");
 					}
-					if (subcmd=="mk"){ //this allows the user to create some boxes around the world		
+					if (subcmd=="mk"){ //this allows the user to create some objects around the world		
 
 						if (setBody==2){
-						
+							// box with gravity
 							if (num < MAXNUM){
-							i = odeinit._wrld->OBJNUM;
-							odeinit._wrld->OBJNUM++;
-						}
+								i = odeinit._wrld->OBJNUM;								
+							}
 						    odeinit._wrld->obj[i].size[0] = command.get(3).asDouble();
 							odeinit._wrld->obj[i].size[1] = command.get(4).asDouble();
 							odeinit._wrld->obj[i].size[2] = command.get(5).asDouble();   
@@ -671,16 +670,16 @@ public:
 							odeinit._wrld->color[i][0] = R;
 							odeinit._wrld->color[i][1] = G;
 							odeinit._wrld->color[i][2] = B;
-							
+							odeinit._wrld->OBJNUM++;
+
 							odeinit.mutex.post();
 
 						}
 						if (setBody==5){
-
+							// static box (without gravity)
 							if (num < MAXNUM){
-							i = odeinit._wrld->S_OBJNUM;
-							odeinit._wrld->S_OBJNUM++;
-						}
+								i = odeinit._wrld->S_OBJNUM;
+							}
 							odeinit._wrld->s_obj[i].size[0] = command.get(3).asDouble();
 							odeinit._wrld->s_obj[i].size[1] = command.get(4).asDouble();
 							odeinit._wrld->s_obj[i].size[2] = command.get(5).asDouble();   
@@ -690,19 +689,23 @@ public:
 							double R = command.get(9).asDouble();
 							double G = command.get(10).asDouble();
 							double B = command.get(11).asDouble();
+
 							odeinit.mutex.wait();
+
 							odeinit._wrld->s_obj[i].geom[0] = dCreateBox (odeinit.space,odeinit._wrld->s_obj[i].size[0],odeinit._wrld->s_obj[i].size[1],odeinit._wrld->s_obj[i].size[2]);
 							dGeomSetPosition(odeinit._wrld->s_obj[i].geom[0],x,y,z);
 							odeinit._wrld->s_color[i][0] = R;
 							odeinit._wrld->s_color[i][1] = G;
 							odeinit._wrld->s_color[i][2] = B;
+							odeinit._wrld->S_OBJNUM++;
+
 							odeinit.mutex.post();
 						}
 						if (setBody==6){
 							//cyl with gravity
 							if (num < MAXNUM){
 								i = odeinit._wrld->cylOBJNUM;
-								odeinit._wrld->cylOBJNUM++;
+								
 							}
 							odeinit._wrld->cyl_obj[i].radius = command.get(3).asDouble();//radius
 							odeinit._wrld->cyl_obj[i].lenght = command.get(4).asDouble();//lenght
@@ -726,13 +729,14 @@ public:
 							odeinit._wrld->color1[i][0] = R;
 							odeinit._wrld->color1[i][1] = G;
 							odeinit._wrld->color1[i][2] = B;
-							
+							odeinit._wrld->cylOBJNUM++;
+
 							odeinit.mutex.post();
 						}
 						if (setBody==7){
+							// static cylinder (without gravity)
 							if (num < MAXNUM){
-								i = odeinit._wrld->S_cylOBJNUM;
-								odeinit._wrld->S_cylOBJNUM++;
+								i = odeinit._wrld->S_cylOBJNUM;								
 							}
 							odeinit._wrld->s_cyl_obj[i].radius = command.get(3).asDouble();//radius
 							odeinit._wrld->s_cyl_obj[i].lenght = command.get(4).asDouble();//lenght
@@ -742,12 +746,16 @@ public:
 							double R = command.get(8).asDouble(); // colour R
 							double G = command.get(9).asDouble();// colour G
 							double B = command.get(10).asDouble();// colour B
+
 							odeinit.mutex.wait();
+
 							odeinit._wrld->s_cyl_obj[i].cylgeom[0] = dCreateCylinder (odeinit.space,odeinit._wrld->s_cyl_obj[i].radius,odeinit._wrld->s_cyl_obj[i].lenght);
 							dGeomSetPosition(odeinit._wrld->s_cyl_obj[i].cylgeom[0],x,y,z);
 							odeinit._wrld->s_color1[i][0] = R;
 							odeinit._wrld->s_color1[i][1] = G;
 							odeinit._wrld->s_color1[i][2] = B;
+							odeinit._wrld->S_cylOBJNUM++;
+
 							odeinit.mutex.post();
 						}
 						// 3D model
@@ -772,6 +780,7 @@ public:
 							odeinit._wrld->trimesh[a] = dLoadMeshFromX(model);
 							if (!odeinit._wrld->trimesh[a]){
 								cout << "Check spelling/location of file" << endl;
+								// Del Prete: I think here there should be a call to odeinit.mutex.post()!
 							}else{
 								dGeomTriMeshDataBuildSingle(odeinit._wrld->TriData[a], odeinit._wrld->trimesh[a]->Vertices, 3 * sizeof(float), odeinit._wrld->trimesh[a]->VertexCount, odeinit._wrld->trimesh[a]->Indices, odeinit._wrld->trimesh[a]->IndexCount, 3 * sizeof(int));
 								odeinit._wrld->ThreeD_obj[a].body = dBodyCreate (odeinit.world);
@@ -793,7 +802,7 @@ public:
 								odeinit.mutexTexture.wait();
 								odeinit._wrld->WAITLOADING = true;	
 							}
-								odeinit.mutexTexture.post();
+							odeinit.mutexTexture.post();
                             
 						}
 						if (setBody==9){
@@ -814,6 +823,7 @@ public:
 							odeinit._wrld->s_trimesh[b] = dLoadMeshFromX(model);
 							if (!odeinit._wrld->s_trimesh[b]){
 								cout << "Check spelling/location of file" << endl;
+								// Del Prete: I think here there should be a call to odeinit.mutex.post()!
 							}else{
 								dGeomTriMeshDataBuildSingle(odeinit._wrld->s_TriData[b], odeinit._wrld->s_trimesh[b]->Vertices, 3 * sizeof(float), odeinit._wrld->s_trimesh[b]->VertexCount, odeinit._wrld->s_trimesh[b]->Indices, odeinit._wrld->s_trimesh[b]->IndexCount, 3 * sizeof(int));
 								odeinit._wrld->s_ThreeD_obj[b].geom = dCreateTriMesh(odeinit.space, odeinit._wrld->s_TriData[b], 0, 0, 0);
@@ -835,10 +845,9 @@ public:
 
 						}
                         if (setBody==11){
-                            //sph
+                            //sphere with gravity
                             if (num < MAXNUM){
-							    i = odeinit._wrld->SPHNUM;
-							    odeinit._wrld->SPHNUM++;
+							    i = odeinit._wrld->SPHNUM;							    
 						    }
 						    odeinit._wrld->sph[i].radius = command.get(3).asDouble();
 							double x = command.get(4).asDouble(); // x position 
@@ -861,14 +870,14 @@ public:
 							odeinit._wrld->color2[i][0] = R;
 							odeinit._wrld->color2[i][1] = G;
 							odeinit._wrld->color2[i][2] = B;
+							odeinit._wrld->SPHNUM++;
 							
 							odeinit.mutex.post();
                         }
                         if (setBody==12){
-                            //s_sph
+                            //static sphere (without gravity)
                             if (num < MAXNUM){
-							    i = odeinit._wrld->S_SPHNUM;
-							    odeinit._wrld->S_SPHNUM++;
+							    i = odeinit._wrld->S_SPHNUM;							    
 						    }
 						    odeinit._wrld->s_sph[i].radius = command.get(3).asDouble();
 							double x = command.get(4).asDouble(); // x position 
@@ -885,11 +894,12 @@ public:
 							odeinit._wrld->s_color2[i][0] = R;
 							odeinit._wrld->s_color2[i][1] = G;
 							odeinit._wrld->s_color2[i][2] = B;
+							odeinit._wrld->S_SPHNUM++;
 							
 							odeinit.mutex.post();
                         }
 
-							reply.fromString("ok");
+						reply.fromString("ok");
 					}
 					if (subcmd=="rot"){
 						if ( setBody == 0 || setBody == 1 ){
