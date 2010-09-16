@@ -61,10 +61,15 @@ the module add offset values which are assigned to the IImpedanceControl interfa
 This file can be edited at \in src/gravityCompensator/main.cpp.
 */ 
 
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
-#include <yarp/dev/all.h>
-
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/os/Time.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/RateThread.h>
+#include <yarp/os/Stamp.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
 #include <iCub/ctrl/ctrlMath.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
@@ -83,10 +88,9 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-//#define DEBUG_PORTS_SERE
+
 #define MAX_JN 12
 #define MAX_FILTER_ORDER 6
-
 enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 int gravity_mode = GRAVITY_COMPENSATION_ON;
@@ -102,33 +106,6 @@ private:
 	BufferedPort<Vector> *right_arm_torques;
 	BufferedPort<Vector> *left_leg_torques;
 	BufferedPort<Vector> *right_leg_torques;
-
-#ifdef DEBUG_PORTS_SERE
-    Vector *LA_torques_real;
-    Vector *RA_torques_real;
-    Vector *LL_torques_real;
-    Vector *RL_torques_real;
-
-    Vector LA_tot;
-    Vector RA_tot;
-    Vector LL_tot;
-    Vector RL_tot;
-
-	BufferedPort<Vector> *left_arm_gravity_torques;
-	BufferedPort<Vector> *right_arm_gravity_torques;
-	BufferedPort<Vector> *left_leg_gravity_torques;
-	BufferedPort<Vector> *right_leg_gravity_torques;
-
-	BufferedPort<Vector> *left_arm_real_torques;
-	BufferedPort<Vector> *right_arm_real_torques;
-	BufferedPort<Vector> *left_leg_real_torques;
-	BufferedPort<Vector> *right_leg_real_torques;
-
-	BufferedPort<Vector> *left_arm_real_torques_i;
-	BufferedPort<Vector> *right_arm_real_torques_i;
-	BufferedPort<Vector> *left_leg_real_torques_i;
-	BufferedPort<Vector> *right_leg_real_torques_i;
-#endif
 
 	PolyDriver *ddLA;
     PolyDriver *ddRA;
@@ -177,7 +154,6 @@ private:
 	int allJnt;
 
 	iCubWholeBody icub;
-    bool firstTime;
 
 	Vector q_head, dq_head, d2q_head;
 	Vector q_larm, dq_larm, d2q_larm;
@@ -198,9 +174,6 @@ private:
 
 	Vector torques_LA,torques_RA,torques_LL,torques_RL;
 	Vector ampli_larm, ampli_rarm, ampli_lleg, ampli_rleg;
-
-
-
 	
     Vector evalVelUp(const Vector &x)
     {
@@ -364,56 +337,21 @@ public:
     {   
 		port_inertial=new BufferedPort<Vector>;
 		port_inertial->open("/gravityCompensator/inertial:i");
-        bool connectok=Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
-        if(connectok)
-            fprintf(stderr,"port /filtered/inertial:o connected to the module\n");
-        else
-            fprintf(stderr,"ERROR: port /filtered/inertial:o NOT connected to the module\n");
+		Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
 
 		
 		additional_offset=new BufferedPort<Vector>;
 		additional_offset->open("/gravityCompensator/ctrlOffset:i");
 
-        firstTime=true;
-
 		
-#ifdef DEBUG_PORTS_SERE
-
-
-        LA_tot.resize(14); LA_tot.zero();
-        RA_tot.resize(14); RA_tot.zero();
-        LL_tot.resize(12); LL_tot.zero();
-        RL_tot.resize(12); RL_tot.zero();
-
-		left_arm_gravity_torques = new BufferedPort<Vector>;
-		left_arm_gravity_torques->open("/gravityCompensator/gravity/left_arm_torques:o");
-		right_arm_gravity_torques = new BufferedPort<Vector>;
-		right_arm_gravity_torques->open("/gravityCompensator/gravity/right_arm_torques:o");
-		left_leg_gravity_torques = new BufferedPort<Vector>;
-		left_leg_gravity_torques->open("/gravityCompensator/gravity/left_leg_torques:o");
-		right_leg_gravity_torques = new BufferedPort<Vector>;
-		right_leg_gravity_torques->open("/gravityCompensator/gravity/right_leg_torques:o");
-
-		left_arm_real_torques = new BufferedPort<Vector>;
-		left_arm_real_torques->open("/gravityCompensator/real/left_arm_torques:o");
-		right_arm_real_torques = new BufferedPort<Vector>;
-		right_arm_real_torques->open("/gravityCompensator/real/right_arm_torques:o");
-		left_leg_real_torques = new BufferedPort<Vector>;
-		left_leg_real_torques->open("/gravityCompensator/real/left_leg_torques:o");
-		right_leg_real_torques = new BufferedPort<Vector>;
-		right_leg_real_torques->open("/gravityCompensator/real/right_leg_torques:o");
-
-		left_arm_real_torques_i = new BufferedPort<Vector>;
-		left_arm_real_torques_i->open("/gravityCompensator/real/left_arm_torques:i");
-		right_arm_real_torques_i = new BufferedPort<Vector>;
-		right_arm_real_torques_i->open("/gravityCompensator/real/right_arm_torques:i");
-		left_leg_real_torques_i = new BufferedPort<Vector>;
-		left_leg_real_torques_i->open("/gravityCompensator/real/left_leg_torques:i");
-		right_leg_real_torques_i = new BufferedPort<Vector>;
-		right_leg_real_torques_i->open("/gravityCompensator/real/right_leg_torques:i");
-#endif
-
-
+		left_arm_torques = new BufferedPort<Vector>;
+		left_arm_torques->open("/gravityCompensator/left_arm_torques:o");
+		right_arm_torques = new BufferedPort<Vector>;
+		right_arm_torques->open("/gravityCompensator/right_arm_torques:o");
+		left_leg_torques = new BufferedPort<Vector>;
+		left_leg_torques->open("/gravityCompensator/left_leg_torques:o");
+		right_leg_torques = new BufferedPort<Vector>;
+		right_leg_torques->open("/gravityCompensator/right_leg_torques:o");
 		//*offset_input = 0.0;
 
 		ddLA->view(iencs_arm_left);
@@ -651,7 +589,6 @@ public:
         printf("torques: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", LATorques(0), LATorques(1), LATorques(2), LATorques(3), LATorques(4), LATorques(5), LATorques(6)); 
         printf("inertial: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
  
-
 		return true;
     }
 	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false)
@@ -705,18 +642,7 @@ public:
 		setUpperMeasure();
 		setLowerMeasure();
 
-        if(firstTime)
-        {
-           fprintf(stderr,"Waiting for measure...\n");
-           readAndUpdate(true); 
-           firstTime=false;
-        }
-        else
-        {
-            readAndUpdate(false);
-        }
-		////readAndUpdate(true); NON VA BENE
-        //readAndUpdate(false); // ok
+		readAndUpdate(true);
 
 		Vector F_up(6);
 		F_up=0.0;
@@ -734,58 +660,14 @@ public:
 		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
 		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
 
-#ifdef DEBUG_PORTS_SERE
-            LA_torques_real = (left_arm_real_torques_i->read(false));
-		    RA_torques_real = (right_arm_real_torques_i->read(false));
-		    LL_torques_real = (right_leg_real_torques_i->read(false));
-		    RL_torques_real = (left_leg_real_torques_i->read(false));
-
-		    left_arm_gravity_torques->prepare()  =  torques_LA;
-		    left_arm_gravity_torques->write();
-		    right_arm_gravity_torques->prepare() =  torques_RA;
-		    right_arm_gravity_torques->write();
-		    right_leg_gravity_torques->prepare() =  torques_RL;
-		    right_leg_gravity_torques->write();
-		    left_leg_gravity_torques->prepare()  =  torques_LL;
-		    left_leg_gravity_torques->write();
-
-		    if(LA_torques_real)
-            { 
-                for(int i=0;i<7;i++)
-                { LA_tot[i]=torques_LA[i]; LA_tot[i+7]=(*LA_torques_real)[i]; }
-                
-                left_arm_real_torques->prepare()  = LA_tot;            
-                //left_arm_real_torques->prepare()  = *LA_torques_real;
-		        left_arm_real_torques->write();
-            }
-		    if(RA_torques_real)
-            {
-                for(int i=0;i<7;i++)
-                { RA_tot[i]=torques_RA[i]; RA_tot[i+7]=(*RA_torques_real)[i];}
-                
-                right_arm_real_torques->prepare() =  RA_tot;
-                //right_arm_real_torques->prepare() =  *RA_torques_real;
-		        right_arm_real_torques->write();
-            }
-		    if(RL_torques_real)
-            {
-                for(int i=0;i<6;i++)
-                {RL_tot[i]=torques_RL[i]; RL_tot[i+6]=(*RL_torques_real)[i];}
-                
-                right_leg_real_torques->prepare() =  RL_tot;                
-                //right_leg_real_torques->prepare() =  *RL_torques_real;
-		        right_leg_real_torques->write();
-            }
-		    if(LL_torques_real)
-            {
-                for(int i=0;i<6;i++)
-                { LL_tot[i]=torques_LL[i]; LL_tot[i+6]=(*LL_torques_real)[i];}
-                
-                left_leg_real_torques->prepare()  =  LL_tot;
-                //left_leg_real_torques->prepare()  =  *LL_torques_real;
-		        left_leg_real_torques->write();
-            }
-#endif
+		left_arm_torques->prepare()  =  torques_LA;
+		left_arm_torques->write();
+		right_arm_torques->prepare() =  torques_RA;
+		right_arm_torques->write();
+		right_leg_torques->prepare() =  torques_RL;
+		right_leg_torques->write();
+		left_leg_torques->prepare()  =  torques_LL;
+		left_leg_torques->write();
 
     }
     void threadRelease()
@@ -808,24 +690,6 @@ public:
 		if(linEstLow) {delete linEstLow; linEstLow = 0;}
 		if(quadEstLow) {delete quadEstLow; quadEstLow = 0;}
 		if(port_inertial) {delete port_inertial; port_inertial = 0;}
-
-#ifdef DEBUG_PORTS_SERE
-            if(left_arm_real_torques) {delete left_arm_real_torques; left_arm_real_torques = 0;}
-            if(right_arm_real_torques) {delete right_arm_real_torques; right_arm_real_torques = 0;}
-            if(left_leg_real_torques) {delete left_leg_real_torques; left_leg_real_torques = 0;}
-            if(right_leg_real_torques) {delete right_leg_real_torques; right_leg_real_torques = 0;}
-
-            if(left_arm_gravity_torques) {delete left_arm_gravity_torques; left_arm_gravity_torques = 0;}
-            if(right_arm_gravity_torques) {delete right_arm_gravity_torques; right_arm_gravity_torques = 0;}
-            if(left_leg_gravity_torques) {delete left_leg_gravity_torques; left_leg_gravity_torques = 0;}
-            if(right_leg_gravity_torques) {delete right_leg_gravity_torques; right_leg_gravity_torques = 0;}
-
-            if(left_arm_real_torques_i) {delete left_arm_real_torques_i; left_arm_real_torques_i = 0;}
-            if(right_arm_real_torques_i) {delete right_arm_real_torques_i; right_arm_real_torques_i = 0;}
-            if(left_leg_real_torques_i) {delete left_leg_real_torques_i; left_leg_real_torques_i = 0;}
-            if(right_leg_real_torques_i) {delete right_leg_real_torques_i; right_leg_real_torques_i = 0;}
-
-#endif
     }   
 	void closePort(Contactable *_port)
 	{
