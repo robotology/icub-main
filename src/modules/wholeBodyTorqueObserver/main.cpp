@@ -103,15 +103,9 @@ yarp connect /icub/right_arm/analog:o /ftObs/right_arm/FT:i
 This file can be edited at \in src/wholeBodyTorqueObserver/main.cpp.
 */ 
 
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/dev/all.h>
 #include <iCub/ctrl/ctrlMath.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
@@ -493,9 +487,9 @@ public:
 			printf ("inverseDynamics thread lost connection with iCubInterface.\n");
 			thread_status = STATUS_DISCONNECTED;
 		}
-		setZeroJntAngVelAcc();
-		setUpperMeasure();
-		setLowerMeasure();
+		//setZeroJntAngVelAcc();
+		//setUpperMeasure();
+		//setLowerMeasure();
 
         if(ft_arm_left!=0)  F_LArm = -1.0 * (*ft_arm_left-Offset_LArm);
         if(ft_arm_right!=0) F_RArm = -1.0 * (*ft_arm_right-Offset_RArm);
@@ -530,7 +524,7 @@ public:
 		writeTorque(LATorques, 3, port_LWTorques); //wrist
 		
 		if(test==VOCAB_TEST)
-		{		
+		{	
 			endRun = Time::now();
 			//now we send everything to a specific port
 			infoTest.clear();
@@ -1109,11 +1103,11 @@ public:
 		int rate = 100;
 		tmp=0;
 
-		string name;
+		/*string name;
 		if (rf.check("name"))
 			name = rf.find("name").asString();
 		else name = "wholeBodyTorqueObserver";
-
+*/
 
 		//---------------------RATE-----------------------------//
 		if (rf.check("rate"))
@@ -1127,34 +1121,10 @@ public:
 			rate = 100;
 		}
 
-        //--------------------PERFORMANCE----------------------//
-
-        int performance = 0;
-		if (rf.check("performance"))
-		{
-            if(rf.find("performance").asInt()==1)
-                performance = VOCAB_TEST;
-            inv_dyn->setPerformanceTest(performance);
-
-			fprintf(stderr,"performance evaluation during cycles...\n", rate);
-		}
-
-        //--------------------COMPARISON----------------------//
-
-        int comparison = 0;
-		if (rf.check("comparison"))
-		{
-            if(rf.find("comparison").asInt()==1)
-                comparison = VOCAB_COMP;
-            inv_dyn->setModelTest(comparison);
-
-			fprintf(stderr,"model evaluation during cycles...\n", rate);
-		}
-
 		//---------------------DEVICES--------------------------//
 
 		OptionsHead.put("device","remote_controlboard");
-		OptionsHead.put("local",(fwdSlash+name+"/head/client").c_str());
+		OptionsHead.put("local","/wholeBodyTorqueObserver/head/client");
 		OptionsHead.put("remote","/icub/head");
 
 		dd_head = new PolyDriver(OptionsHead);
@@ -1167,7 +1137,7 @@ public:
 			fprintf(stderr,"device driver created\n");
 
 		OptionsLeftArm.put("device","remote_controlboard");
-		OptionsLeftArm.put("local",(fwdSlash+name+"/left_arm/client").c_str());
+		OptionsLeftArm.put("local","/wholeBodyTorqueObserver/left_arm/client");
 		OptionsLeftArm.put("remote","/icub/left_arm");
 		dd_left_arm = new PolyDriver(OptionsLeftArm);
 		if (!createDriver(dd_left_arm))
@@ -1177,7 +1147,7 @@ public:
 		}
 
 		OptionsRightArm.put("device","remote_controlboard");
-		OptionsRightArm.put("local",(fwdSlash+name+"/right_arm/client").c_str());
+		OptionsRightArm.put("local","/wholeBodyTorqueObserver/right_arm/client");
 		OptionsRightArm.put("remote","/icub/right_arm");
 		dd_right_arm = new PolyDriver(OptionsRightArm);
 		if (!createDriver(dd_right_arm))
@@ -1187,7 +1157,7 @@ public:
 		}
 
 		OptionsLeftLeg.put("device","remote_controlboard");
-		OptionsLeftLeg.put("local",(fwdSlash+name+"/left_leg/client").c_str());
+		OptionsLeftLeg.put("local","/wholeBodyTorqueObserver/left_leg/client");
 		OptionsLeftLeg.put("remote","/icub/left_leg");
 		dd_left_leg = new PolyDriver(OptionsLeftLeg);
 		if (!createDriver(dd_left_leg))
@@ -1197,7 +1167,7 @@ public:
 		}
 
 		OptionsRightLeg.put("device","remote_controlboard");
-		OptionsRightLeg.put("local",(fwdSlash+name+"/right_leg/client").c_str());
+		OptionsRightLeg.put("local","/wholeBodyTorqueObserver/right_leg/client");
 		OptionsRightLeg.put("remote","/icub/right_leg");
 		dd_right_leg = new PolyDriver(OptionsRightLeg);
 		if (!createDriver(dd_right_leg))
@@ -1207,7 +1177,7 @@ public:
 		}
 
 		OptionsTorso.put("device","remote_controlboard");
-		OptionsTorso.put("local",(fwdSlash+name+"/torso/client").c_str());
+		OptionsTorso.put("local","/wholeBodyTorqueObserver/torso/client");
 		OptionsTorso.put("remote","/icub/torso");
 
 		dd_torso = new PolyDriver(OptionsTorso);
@@ -1222,6 +1192,38 @@ public:
 		//--------------------------THREAD--------------------------
 		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso);
 		fprintf(stderr,"ft thread istantiated...\n");
+        Time::delay(5.0);
+
+        //--------------------PERFORMANCE----------------------//
+
+        int performance = 0;
+		if (rf.check("performance"))
+		{
+            if(rf.find("performance").asInt()==1)
+            {
+                performance = VOCAB_TEST;
+                fprintf(stderr,"performance = VOCAB_TEST...\n");
+            }
+            inv_dyn->setPerformanceTest(performance);
+			fprintf(stderr,"performance evaluation during cycles...\n");
+		}
+
+        //--------------------COMPARISON----------------------//
+
+        int comparison = 0;
+		if (rf.check("comparison"))
+		{
+            if(rf.find("comparison").asInt()==1)
+            {
+                comparison = VOCAB_COMP;
+                fprintf(stderr,"comparison = VOCAB_COMP...\n");
+            }
+            inv_dyn->setModelTest(comparison);
+
+			fprintf(stderr,"model evaluation during cycles...\n", rate);
+		}
+
+
 		inv_dyn->start();
 		fprintf(stderr,"thread started\n");
 
