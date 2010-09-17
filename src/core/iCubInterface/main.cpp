@@ -3,7 +3,7 @@
 /** 
 @ingroup icub_tools
 
-\defgroup icub_iCubInterface iCubInterface2
+\defgroup icub_iCubInterface iCubInterface
 
 Interface application to the robot.
 

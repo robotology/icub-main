@@ -7,7 +7,7 @@
 *
 * CopyPolicy: Released under the terms of the GNU GPL v2.0.
 *
-* This file can be edited at src/iCubInterface2/main.cpp.
+* This file can be edited at src/iCubInterface/main.cpp.
 */ 
 
 #include "IRobotInterface.h"
