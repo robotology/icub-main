@@ -466,7 +466,6 @@ void selectiveAttentionProcessor::run(){
             xm=xm/countMaxes; ym=ym/countMaxes;
             //representation of red lines where the WTA point is
             //representation of the vertical line
-            /*
             pImage=outputCartImage.getRawImage();
             pImage+=round(xm)*3;
             for(int i=0;i<ySizeValue/2;i++) {
@@ -479,7 +478,6 @@ void selectiveAttentionProcessor::run(){
             for(int i=0;i<xSizeValue/2;i++) {
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
             }
-            */
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
                 printf("cartesian: %f,%f \n", xm/2,ym/2);
