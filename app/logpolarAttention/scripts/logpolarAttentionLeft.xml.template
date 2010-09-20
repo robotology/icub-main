@@ -4,6 +4,12 @@
 		<port>/icub/cam/left/logpolar</port> 
 	</dependencies>
 	<module>
+                <name>iKinGazeCtrl</name>
+                <parameters>--context logpolarAttention/conf --config icubEyes.ini --eyeTiltMin -7.5 --eyeTiltMax 15.0 --ping_robot_tmo 40.0</parameters>
+                <node>/powerNode1</node>
+                <tag>gazeController</tag>
+      </module>
+	<module>
 		<name>visualFilter</name>
 		<parameters>--name /visualFilter/icub/left_cam</parameters>
 		<tag>vFilter</tag>
