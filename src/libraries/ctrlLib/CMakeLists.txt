@@ -9,7 +9,8 @@ SET(folder_source src/ctrlMath.cpp
                   src/adaptWinPolyEstimator.cpp
                   src/minJerkCtrl.cpp
                   src/functionEncoder.cpp
-                  src/optimalControl.cpp)
+                  src/optimalControl.cpp
+                  src/neuralNetworks.cpp)
 
 SET(folder_header include/iCub/ctrl/ctrlMath.h
                   include/iCub/ctrl/filters.h
@@ -18,7 +19,8 @@ SET(folder_header include/iCub/ctrl/ctrlMath.h
                   include/iCub/ctrl/adaptWinPolyEstimator.h
                   include/iCub/ctrl/minJerkCtrl.h
                   include/iCub/ctrl/functionEncoder.h
-                  include/iCub/ctrl/optimalControl.h)
+                  include/iCub/ctrl/optimalControl.h
+                  include/iCub/ctrl/neuralNetworks.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})

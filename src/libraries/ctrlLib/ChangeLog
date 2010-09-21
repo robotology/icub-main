@@ -1,4 +1,7 @@
 
+2010-09-21 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * added neuralNetworks module
+
 2010-06-01 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * Ported to iCub/main
 
