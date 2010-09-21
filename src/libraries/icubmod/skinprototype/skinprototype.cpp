@@ -126,6 +126,53 @@ int SkinPrototype::getChannels()
 
 bool SkinPrototype::calibrate(int ch, double v)
 {
+//#if SKIN_DEBUG
+	printf("SkinPrototype:: calibrating...\n");
+//#endif 
+
+CanMessage &msg=outBuffer[0];
+
+    unsigned int id=(0x020f);//|cardId;
+    msg.setId(id);
+    msg.getData()[0]=0x4C; // message type
+    msg.getData()[1]=0x01; 
+    msg.getData()[2]=0x01; 
+    msg.getData()[3]=0x01;
+    msg.getData()[4]=0;
+    msg.getData()[5]=0x22;
+    msg.getData()[6]=0;
+    msg.getData()[7]=0;
+    msg.setLen(8);
+    unsigned int canMessages=0;
+    pCanBus->canWrite(outBuffer, 1, &canMessages);
+    
+id=(0x020e);//|cardId;
+    msg.setId(id);
+    msg.getData()[0]=0x4C; // message type
+    msg.getData()[1]=0x01; 
+    msg.getData()[2]=0x01; 
+    msg.getData()[3]=0x01;
+    msg.getData()[4]=0;
+    msg.getData()[5]=0x22;
+    msg.getData()[6]=0;
+    msg.getData()[7]=0;
+    msg.setLen(8);
+    canMessages=0;
+    pCanBus->canWrite(outBuffer, 1, &canMessages);
+id=(0x020c);//|cardId;
+    msg.setId(id);
+    msg.getData()[0]=0x4C; // message type
+    msg.getData()[1]=0x01; 
+    msg.getData()[2]=0x01; 
+    msg.getData()[3]=0x01;
+    msg.getData()[4]=0;
+    msg.getData()[5]=0x22;
+    msg.getData()[6]=0;
+    msg.getData()[7]=0;
+    msg.setLen(8);
+    canMessages=0;
+    pCanBus->canWrite(outBuffer, 1, &canMessages);
+
     return true;
 }
 
