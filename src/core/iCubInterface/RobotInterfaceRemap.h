@@ -377,6 +377,7 @@ public:
 
     bool open(yarp::os::Property &deviceP, yarp::os::Property &partP);
     void close();
+	void calibrate();
 
     void setId(const std::string &i)
     { id=i; }

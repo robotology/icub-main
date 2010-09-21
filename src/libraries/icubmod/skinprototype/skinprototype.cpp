@@ -124,7 +124,7 @@ int SkinPrototype::getChannels()
     return sensorsNum;
 }
 
-bool SkinPrototype::calibrate(int ch, double v)
+int SkinPrototype::calibrateSensor()
 {
 //#if SKIN_DEBUG
 	printf("SkinPrototype:: calibrating...\n");
@@ -173,9 +173,14 @@ id=(0x020c);//|cardId;
     canMessages=0;
     pCanBus->canWrite(outBuffer, 1, &canMessages);
 
-    return true;
+    return AS_OK;
 }
 
+int SkinPrototype::calibrateChannel(int ch, double v)
+{
+	//NOT YET IMPLEMENTED
+	return calibrateSensor();
+}
 
 bool SkinPrototype::threadInit()
 {

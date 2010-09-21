@@ -679,9 +679,14 @@ int AnalogSensor::read(yarp::sig::Vector &out)
     return status;
 }
  
-bool AnalogSensor::calibrate(int ch, double v)
+int AnalogSensor::calibrateChannel(int ch, double v)
 {
-    return true;
+    return AS_OK;
+}
+
+int AnalogSensor::calibrateSensor()
+{
+    return AS_OK;
 }
 
 bool AnalogSensor::decode16(const unsigned char *msg, int id, double *data)

@@ -268,7 +268,8 @@ public:
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
     virtual int getChannels();
-    virtual bool calibrate(int ch, double v);
+    virtual int calibrateChannel(int ch, double v);
+	virtual int calibrateSensor();
     /////////////////////////////////
 };
 

@@ -98,6 +98,14 @@ SkinPartEntry::~SkinPartEntry()
 
 }
 
+void SkinPartEntry::calibrate()
+{
+	if (analog)
+	{
+		analog->calibrateSensor();
+	}
+}
+
 bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP){
     bool correct=true;
     correct=correct&&partP.check("device");
