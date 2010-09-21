@@ -19,6 +19,8 @@
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/neuralNetworks.h>
 
+#include <stdio.h>
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
