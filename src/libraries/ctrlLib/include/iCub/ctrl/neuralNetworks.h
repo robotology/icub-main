@@ -129,7 +129,7 @@ public:
     *    element.
     * @b outMinMaxX_<j> (<min> <max>) : range where to remap back 
     *    the jth output element.
-    * @return true/false on success/failed
+    * @return true/false on success/failed.
     */ 
     virtual bool configure(yarp::os::Property &options);
 
