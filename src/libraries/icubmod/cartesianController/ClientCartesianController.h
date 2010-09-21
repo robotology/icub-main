@@ -41,10 +41,12 @@
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/PreciselyTimed.h>
 #include <yarp/dev/CartesianControl.h>
 
 
 class ClientCartesianController : public yarp::dev::DeviceDriver,
+                                  public yarp::dev::IPreciselyTimed,
                                   public yarp::dev::ICartesianControl
 {
 protected:
@@ -55,6 +57,7 @@ protected:
     double lastPoseMsgArrivalTime;
 
     yarp::sig::Vector pose;
+    yarp::os::Stamp   rxInfo;
 
     yarp::os::BufferedPort<yarp::os::Bottle>  *portCmd;
     yarp::os::BufferedPort<yarp::sig::Vector> *portState;
@@ -91,6 +94,8 @@ public:
     virtual bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
     virtual bool checkMotionDone(bool *f);
     virtual bool stopControl();
+
+    virtual yarp::os::Stamp getLastInputStamp();
 
     virtual ~ClientCartesianController();
 };

@@ -2008,6 +2008,13 @@ bool ServerCartesianController::stopControl()
 
 
 /************************************************************************/
+Stamp ServerCartesianController::getLastInputStamp()
+{
+    return txInfo;
+}
+
+
+/************************************************************************/
 ServerCartesianController::~ServerCartesianController()
 {
     close();

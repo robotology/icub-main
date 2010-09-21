@@ -47,6 +47,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/Wrapper.h>
+#include <yarp/dev/PreciselyTimed.h>
 #include <yarp/dev/CartesianControl.h>
 
 #include <iCub/iKin/iKinFwd.h>
@@ -95,6 +96,7 @@ public:
 class ServerCartesianController : public yarp::dev::DeviceDriver,
                                   public yarp::dev::IMultipleWrapper,
                                   public yarp::dev::ICartesianControl,
+                                  public yarp::dev::IPreciselyTimed,
                                   public yarp::os::RateThread
 {
 protected:
@@ -210,6 +212,8 @@ public:
     virtual bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
     virtual bool checkMotionDone(bool *f);
     virtual bool stopControl();
+
+    virtual yarp::os::Stamp getLastInputStamp();
 
     virtual ~ServerCartesianController();
 };
