@@ -2010,7 +2010,13 @@ bool ServerCartesianController::stopControl()
 /************************************************************************/
 Stamp ServerCartesianController::getLastInputStamp()
 {
-    return txInfo;
+    Stamp stamp;
+
+    mutex.wait();
+    stamp=txInfo;
+    mutex.post();
+
+    return stamp;
 }
 
 

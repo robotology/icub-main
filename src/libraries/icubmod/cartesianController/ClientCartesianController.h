@@ -38,6 +38,7 @@
 #define __CLIENTCARTESIANCONTROLLER_H__
 
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/PolyDriver.h>
@@ -56,8 +57,9 @@ protected:
     double timeout;
     double lastPoseMsgArrivalTime;
 
-    yarp::sig::Vector pose;
-    yarp::os::Stamp   rxInfo;
+    yarp::sig::Vector   pose;
+    yarp::os::Stamp     rxInfo;
+    yarp::os::Semaphore mutex;
 
     yarp::os::BufferedPort<yarp::os::Bottle>  *portCmd;
     yarp::os::BufferedPort<yarp::sig::Vector> *portState;
