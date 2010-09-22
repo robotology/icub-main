@@ -1,0 +1,55 @@
+<application>
+   <name>Grasping Demo Left</name>
+   <dependencies>
+   </dependencies>
+
+   <module>
+      <name>skinDriftCompensation</name>
+      <parameters>--from SkinDriftCompensationLeft.ini --context graspingDemo/conf</parameters>
+	    <node>adp_pc</node>
+	    <tag>drifComp</tag>
+   </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from OpenLeft.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>openHand</tag>
+  </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from CalibrateLeft.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>calibrate</tag>
+  </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from ToughGraspLeft.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>toughGrasp</tag>
+  </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from SoftGraspLeft.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>softGrasp</tag>
+  </module>
+   
+    
+  <!--Connections between DataPicker and Saliences-->
+  <connection>
+    <from>/vipSim/cam/right:o</from>
+    <to>/vipSim/Rsal/view</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/vipSim/cam/left:o</from>
+    <to>/vipSim/Lsal/view</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+</application>
+
