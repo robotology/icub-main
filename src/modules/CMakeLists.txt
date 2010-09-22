@@ -19,6 +19,7 @@ add_subdirectory(gravityCompensator)
 add_subdirectory(wrenchObserver)
 add_subdirectory(eye2world)
 add_subdirectory(vergence)
+add_subdirectory(skinDriftCompensation)
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(blobTracker)
