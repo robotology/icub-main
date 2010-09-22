@@ -106,31 +106,45 @@ public:
     /**
     * Configure/reconfigure the network.
     * @param options contains the parameters to configure the 
-    *                network according to the following convention
-    *                (taken from MATLAB):
-    * @b numInput <int> : input dimension.
+    *                network according to the convention derived
+    *                from MATLAB.
+    * @return true/false on success/fail. 
+    *  
+    * @note Available options are: 
+    *  
+    * @b numInput <int> : input dimension. 
+    *  
     * @b numHiddenNodes <int> : number of nodes of the first layer 
     *    (hidden).
+    *  
     * @b numOutputNodes <int> : number of nodes of the second layer 
     *    (output).
+    *  
     * @b IW_<j> (<double> <double> ...) : jth weights vector of the 
     *    hidden layer.
+    *  
     * @b LW_<j> (<double> <double> ...) : jth weights vector of the 
     *    output layer.
+    *  
     * @b b1 (<double> <double> ...) : bias vector of the hidden 
     *    layer.
+    *  
     * @b b2 (<double> <double> ...) : bias vector of the output 
     *    layer.
+    *  
     * @b inMinMaxX_<j> (<min> <max>) : range of the jth input 
     *    element.
+    *  
     * @b inMinMaxY_<j> (<min> <max>) : range where to map the jth 
     *    input element.
+    *  
     * @b outMinMaxY_<j> (<min> <max>) : range of the jth output 
     *    element.
+    *  
     * @b outMinMaxX_<j> (<min> <max>) : range where to remap back 
     *    the jth output element.
+    *  
     * @note all indexes are 0-based. 
-    * @return true/false on success/failed.
     */ 
     virtual bool configure(yarp::os::Property &options);
 

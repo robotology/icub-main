@@ -274,6 +274,7 @@ public:
     * Configure the object.
     * @param opt the Property used to configure the object after its
     *            creation.
+    * @return true/false on success/fail.
     *  
     * @note To be called after object creation. 
     *  
