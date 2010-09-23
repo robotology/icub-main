@@ -10,10 +10,9 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 
-MyThread::MyThread(BufferedPort<Bottle>* rawTactileDataPort, BufferedPort<Bottle>* compensatedTactileDataPort, string robotName,
-				   float* minBaseline, bool *calibrationAllowed, bool *forceCalibration, bool *zeroUpRawData, bool* rightHand)
+MyThread::MyThread(BufferedPort<Vector>* compensatedTactileDataPort, string robotName, float* minBaseline, 
+				   bool *calibrationAllowed, bool *forceCalibration, bool *zeroUpRawData, bool* rightHand)
 {
-   this->rawTactileDataPort				= rawTactileDataPort;
    this->compensatedTactileDataPort		= compensatedTactileDataPort;
    this->robotName						= robotName;
    this->minBaseline					= minBaseline;
@@ -98,7 +97,8 @@ void MyThread::runCalibration(){
 	// send a command to the microcontroller for calibrating the skin sensors
 	tactileSensor->calibrateSensor();
 
-	Bottle *input = rawTactileDataPort->read();
+	Vector input;
+	tactileSensor->read(input);
 
 	//collect skin data for some time, and compute the 95% percentile
 	float start_sum[SKIN_DIM];
@@ -111,15 +111,14 @@ void MyThread::runCalibration(){
     }
 	//collect data
 	for (int i=0; i<CAL_TIME*FREQUENCY; i++) {
-		input = rawTactileDataPort->read();
-		if (input!=NULL) {
+		if (tactileSensor->read(input)==0) {
 			Vector skin_values;
 			skin_values.resize(SKIN_DIM);
 			for (int j=0; j<SKIN_DIM; j++) {
 				if(*zeroUpRawData)
-					skin_values[j] = input->get(j).asDouble();
+					skin_values[j] = input(j);
 				else
-					skin_values[j] = MAX_SKIN - input->get(j).asDouble();
+					skin_values[j] = MAX_SKIN - input(j);
 				skin_empty[j][int(skin_values[j])]++;
                 start_sum[j] += int(skin_values[j]);
 			}
@@ -156,17 +155,17 @@ void MyThread::runCalibration(){
 }
 
 void MyThread::readRawAndWriteCompensatedData(){
-	rawData = rawTactileDataPort->read();
+	tactileSensor->read(rawData);
 	compensatedData = compensatedTactileDataPort->prepare();
 	
 	float d;
 	for(int i=0; i<SKIN_DIM; i++){		
 		if(! *zeroUpRawData){
-			d = MAX_SKIN - rawData->get(i).asInt() - touchThresholds[i];
+			d = MAX_SKIN - rawData(i) - touchThresholds[i];
 		}else{
-			d = rawData->get(i).asInt() - touchThresholds[i];
+			d = rawData(i) - touchThresholds[i];
 		}
-		compensatedData.addDouble(d);
+		compensatedData.push_back(d);
 
 		if(d>0)
 			touchDetected[i] = true;
@@ -185,7 +184,7 @@ void MyThread::updateBaselineAndThreshold(){
     for(int j=0; j<SKIN_DIM; j++) {
         if(!touchDetected[j]){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
-			d = compensatedData.get(j).asDouble();
+			d = compensatedData(j);
 
 			if(d > 0.5) {
 				baselines[j]		-= CHANGE_PER_TIMESTEP;

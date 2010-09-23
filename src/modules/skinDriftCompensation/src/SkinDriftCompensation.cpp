@@ -13,23 +13,16 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	setName(moduleName.c_str());
 
 	bool rightHand;
-	string hand				= rf.check("hand", Value("right"), "Hand to take as reference (string)").asString();
+	string hand				= rf.check("hand", Value("right"), "Hand to take as reference (string)").asString().c_str();
 	if(hand.compare("right")==0){
 		rightHand = true;
-		rawTactileDataPortName				= "/"+ moduleName+ "/skin/righthand";
 		compensatedTactileDataPortName		= "/"+ robotName+ "/skin/righthandcomp";
-		Network::connect(("/"+robotName+"/skin/righthand").c_str(), rawTactileDataPortName.c_str());
 	}else if(hand.compare("left")==0){
 		rightHand = false;
-		rawTactileDataPortName				= "/"+ moduleName+ "/skin/lefthand";
 		compensatedTactileDataPortName		= "/"+ robotName+ "/skin/lefthandcomp";
-		Network::connect(("/"+robotName+"/skin/lefthand").c_str(), rawTactileDataPortName.c_str());
 	}else{
 		return false;
-		/*rawTactileDataPortName				= "/";
-		compensatedTactileDataPortName		= "/";
-		rawTactileDataPortName				+= getName( rf.check("rawTactileDataPort", Value(("/"+ robotName+ "/skin/lefthand").c_str()),
-		   "Raw tactile data input port (string)").asString());
+		/*compensatedTactileDataPortName		= "/";
 		compensatedTactileDataPortName		+= getName( rf.check("compensatedTactileDataPort", 
 			Value(("/"+ robotName+ "/skin/lefthandcomp").c_str()), "Compensated tactile data output port (string)").asString());*/
 	}
@@ -40,7 +33,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	
 	bool zeroUpRawData = true;
 	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value("true"), 
-	   "if true the raw data are considered from zero up, otherwise from 255 down (string)").asString();
+	   "if true the raw data are considered from zero up, otherwise from 255 down (string)").asString().c_str();
 	if(zeroUpRawDataStr.compare("true")==0){
 		zeroUpRawData = true;
 	}else if(zeroUpRawDataStr.compare("false")==0){
@@ -48,10 +41,6 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	}
 	 
 	/* open ports  */        
-	if (!rawTactileDataPort.open(rawTactileDataPortName.c_str())) {
-		cout << getName() << ": unable to open port " << rawTactileDataPortName << endl;
-		return false;  // unable to open; let RFModule know so that it won't run
-	}
 	if (!compensatedTactileDataPort.open(compensatedTactileDataPortName.c_str())) {
 		cout << getName() << ": unable to open port " << compensatedTactileDataPortName << endl;
 		return false;  // unable to open; let RFModule know so that it won't run
@@ -75,8 +64,8 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 
 	/* create the thread and pass pointers to the module parameters */
-	myThread = new MyThread(&rawTactileDataPort, &compensatedTactileDataPort, robotName, &minBaseline, &calibrationAllowed, 
-		&forceCalibration, &zeroUpRawData, &rightHand);
+	myThread = new MyThread(&compensatedTactileDataPort, robotName, &minBaseline, &calibrationAllowed, &forceCalibration, 
+		&zeroUpRawData, &rightHand);
 	/* now start the thread to do the work */
 	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
@@ -87,7 +76,6 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 bool SkinDriftCompensation::interruptModule()
 {
-   rawTactileDataPort.interrupt();
    compensatedTactileDataPort.interrupt();
    handlerPort.interrupt();
 
@@ -97,7 +85,6 @@ bool SkinDriftCompensation::interruptModule()
 
 bool SkinDriftCompensation::close()
 {
-   rawTactileDataPort.close();
    compensatedTactileDataPort.close();
    handlerPort.close();
 
@@ -110,7 +97,8 @@ bool SkinDriftCompensation::close()
 
 bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply) 
 {
-	string helpMessage =  string(getName().c_str()) + " commands are: \n" +  "help \n" + "quit";
+	string helpMessage =  string(getName().c_str()) + " commands are: \n" +  "help \n" + "quit\n" + "forbid calibration\n" + 
+		"allow calibration\n" + "force calibration";
 	reply.clear(); 
 
 	if (command.get(0).asString()=="quit") {
@@ -118,8 +106,8 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 	   return false;
 	}
 	else if (command.get(0).asString()=="help") {
-	  cout << helpMessage;
-	  reply.addString("ok");
+		cout << helpMessage;
+		reply.addString("ok");
 	}
 	else if (command.get(0).asString()=="forbid") {
 		if (command.get(1).asString()=="calibration") {
