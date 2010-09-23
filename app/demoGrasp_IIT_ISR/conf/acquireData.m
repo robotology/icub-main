@@ -1,4 +1,4 @@
-function [in,out]=acquireData(dataLogFileLeft,dataLogFileRight)
+function [in,out,in_f,out_f]=acquireData(dataLogFileLeft,dataLogFileRight)
 % This function returns the formatted data to learn the network upon
 %#ok<*FNDSB>
 
@@ -53,4 +53,32 @@ for i=1:L
     in(i,2)=dataR(j,5);
     in(i,3)=mean([dataL(i,6),dataR(j,6)]);
 end
+
+% filter out ripple
+h=fdesign.lowpass('Fp,Fst,Ap,Ast',0.2,0.3,1,40);
+d=design(h,'butter');
+d=convert(d,'df1');
+
+in_ofs=in;
+in_ofs(:,1)=in(1,1);
+in_ofs(:,2)=in(1,2);
+in_ofs(:,3)=in(1,3);
+
+out_ofs=out;
+out_ofs(:,1)=out(1,1);
+out_ofs(:,2)=out(1,2);
+out_ofs(:,3)=out(1,3);
+
+in_f=filtfilt(d.Numerator,d.Denominator,in-in_ofs)+in_ofs;
+out_f=filtfilt(d.Numerator,d.Denominator,out-out_ofs)+out_ofs;
+
+figure;
+subplot(321),stairs([in(:,1),in_f(:,1)]),title('ul');
+subplot(323),stairs([in(:,2),in_f(:,2)]),title('ur');
+subplot(325),stairs([in(:,3),in_f(:,3)]),title('v');
+
+subplot(322),stairs([out(:,1),out_f(:,1)]),title('eye-x');
+subplot(324),stairs([out(:,2),out_f(:,2)]),title('eye-y');
+subplot(326),stairs([out(:,3),out_f(:,3)]),title('eye-z');
+
 
