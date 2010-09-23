@@ -1,5 +1,6 @@
 function [in,out,in_f,out_f]=acquireData(dataLogFileLeft,dataLogFileRight)
-% This function returns the formatted data to learn the network upon
+% This function returns the formatted data to learn the network upon.
+% The two input files are the ones logged through the dataDumper module.
 %#ok<*FNDSB>
 
 % import raw data from log files
