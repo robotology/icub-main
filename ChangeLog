@@ -1,3 +1,7 @@
+2010-09-23 Lorenzo Natale <lorenzo.natale@iit.it>
+		./main/src/libraries/icubmod/CMakeLists.txt:
+		inclusion of YarpPlugin.cmake, does not work with installed yarp
+	
 2010-09-15 Lorenzo Natale <lorenzo.natale@iit.it>
         * general cleanup, moved old build (mostly everything in src to 
 	backup/oldBuild, including some cmake files that were in the 
