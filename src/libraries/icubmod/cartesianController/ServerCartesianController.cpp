@@ -1034,7 +1034,9 @@ void ServerCartesianController::run()
 void ServerCartesianController::threadRelease()
 {
     fprintf(stdout,"Stopping %s\n",ctrlName.c_str());
-    stopLimbVel();
+
+    if (connected)
+        stopLimbVel();
 }
 
 
