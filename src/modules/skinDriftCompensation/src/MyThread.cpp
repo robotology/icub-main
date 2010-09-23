@@ -37,11 +37,11 @@ bool MyThread::threadInit()
 	options.put("robot",  "icub");
 	if(*rightHand){
 		options.put("part",   "righthand");         //skin part that you want to control
-		options.put("local",  "skinComp/right");
+		options.put("local",  "/skinComp/right");
 		options.put("remote",  ("/"+robotName+"/skin/righthand").c_str());
 	}else{
 		options.put("part",   "lefthand");          //skin part that you want to control
-		options.put("local",  "skinComp/left");
+		options.put("local",  "/skinComp/left");
 		options.put("remote",  ("/"+robotName+"/skin/lefthand").c_str());
 	}
 	options.put("device", "analogsensorclient");	//important! It’s different from remote_controlboard that you use to control motors!
@@ -99,6 +99,11 @@ void MyThread::runCalibration(){
 
 	Vector input;
 	tactileSensor->read(input);
+    fprintf(stderr,"First Input:\n");
+    for (int i=0; i<SKIN_DIM; i++) {
+    	fprintf(stderr,"%f ", input[i]);
+    }
+
 
 	//collect skin data for some time, and compute the 95% percentile
 	float start_sum[SKIN_DIM];
@@ -111,7 +116,13 @@ void MyThread::runCalibration(){
     }
 	//collect data
 	for (int i=0; i<CAL_TIME*FREQUENCY; i++) {
-		if (tactileSensor->read(input)==0) {
+        int retV = tactileSensor->read(input);
+    	fprintf(stderr,"Return value: %d\t", retV);
+		if (true || retV==0) {
+            fprintf(stderr,"Input:\n");
+            for (int i=0; i<SKIN_DIM; i++) {
+            	fprintf(stderr,"%f ", input[i]);
+            }
 			Vector skin_values;
 			skin_values.resize(SKIN_DIM);
 			for (int j=0; j<SKIN_DIM; j++) {
@@ -123,7 +134,7 @@ void MyThread::runCalibration(){
                 start_sum[j] += int(skin_values[j]);
 			}
 		}
-		Time::delay((float)1/FREQUENCY);	// this doesn't work without a cast to floating point!!!
+		Time::delay((float)1/FREQUENCY);
 	}
 
 	//get percentile
@@ -132,22 +143,23 @@ void MyThread::runCalibration(){
 		baselines[i] = start_sum[i]/(CAL_TIME*FREQUENCY);
 		
 		//cumulative values
-		for (int j=(MAX_SKIN-1); j>=0; j--) {
-			skin_empty[i][j] += skin_empty[i][j+1] ;
+		for (int j=1; j<=MAX_SKIN; j++) {
+			skin_empty[i][j] += skin_empty[i][j-1] ;
 		}
 		//when do we cross the treshhold?
-    	for (int j=MAX_SKIN; j>=0; j--) {
+    	for (int j=0; j<=MAX_SKIN; j++) {
 			if (skin_empty[i][j] > (CAL_TIME*FREQUENCY*0.95)) {
-				touchThresholds[i] = baselines[i] - j;
-				j = 0;
+				touchThresholds[i] = j;
+				j = MAX_SKIN;
 			}
     	}
     }
 	//printf
+    fprintf(stderr, "\nBaselines:\n");
 	for (int i=0; i<SKIN_DIM; i++) {
     	fprintf(stderr,"%f ", baselines[i]);
     }
-    fprintf(stderr,"\n");
+    fprintf(stderr,"\nThresholds:\n");
 	for (int i=0; i<SKIN_DIM; i++) {
     	fprintf(stderr,"%f ", touchThresholds[i]);
     }
