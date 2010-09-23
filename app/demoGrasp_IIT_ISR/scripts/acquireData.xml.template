@@ -23,28 +23,28 @@
 
         <module>
                 <name>dataDumper</name>
-                <parameters>--name /log/left</parameters>
+                <parameters>--name /log/left --rxTime</parameters>
                 <node>console</node>
                 <tag>loggerLeft</tag>
         </module>
 
         <module>
                 <name>dataDumper</name>
-                <parameters>--name /log/right</parameters>
+                <parameters>--name /log/right --rxTime</parameters>
                 <node>console</node>
                 <tag>loggerRight</tag>
         </module>
 
         <module>
                 <name>yarpview</name>
-                <parameters>--name /PF3DTracker_viewerLeft --x 320 --y 0 --synch</parameters>
+                <parameters>--name /PF3DTracker_viewerLeft --x 0 --y 0 --synch</parameters>
                 <node>console</node>
                 <tag>PF3DTracker_viewerLeft</tag>
         </module>
   
         <module>
                 <name>yarpview</name>
-                <parameters>--name /PF3DTracker_viewerRight --x 320 --y 250 --synch</parameters>
+                <parameters>--name /PF3DTracker_viewerRight --x 320 --y 0 --synch</parameters>
                 <node>console</node>
                 <tag>PF3DTracker_viewerRight</tag>
         </module>
