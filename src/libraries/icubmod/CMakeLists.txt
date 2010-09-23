@@ -3,7 +3,7 @@
 # Prepare a device library called "icubmod".
 # A test executable called "icubmoddev" will also be produced.
 
-include(${YARP_DIR}/conf/YarpPlugin.cmake)
+include(${YARP_MODULE_PATH}/YarpPlugin.cmake)
 
 project(icubmod)
 
