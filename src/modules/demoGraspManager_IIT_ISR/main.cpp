@@ -39,7 +39,14 @@ It relies on the YARP ICartesianControl interface to control
 both arms and on the YARP IGazeControl interface to control the 
 gaze. 
  
+Furthermore, there exists a second modality that enables to 
+estimate the 3-d object position using stereo vision that needs 
+to be calibrated in advance relying on a feed-forward neural 
+network. 
+ 
 \section lib_sec Libraries 
+- ctrlLib. 
+- iKin.  
 - YARP libraries. 
 
 \section parameters_sec Parameters
@@ -53,6 +60,14 @@ interface implemented) and \ref iKinGazeCtrl are running.
  
 - \e /demoGraspManager_IIT_ISR/trackTarget:i receives the 3-d 
   position to track.
+ 
+- \e /demoGraspManager_IIT_ISR/imdTargetLeft:i receives the 
+  blobs list as produced by the \ref indepMotionDetector module
+  for the left eye.
+ 
+- \e /demoGraspManager_IIT_ISR/imdTargetRight:i receives the 
+  blobs list as produced by the \ref indepMotionDetector module
+  for the right eye.
  
 - \e /demoGraspManager_IIT_ISR/cmdFace:o sends out commands to 
   the face expression high level interface in order to give an
@@ -86,6 +101,10 @@ right_arm       on
 traj_time       2.0 
 // homes limbs if target detection timeout expires [s]
 idle_tmo        5.0 
+// enable the use of stereo vision calibrated by NN 
+use_network off 
+// NN configuration file 
+network         network.ini 
 
 [torso] 
 // joint switch (min **) (max **) [deg]; 'min', 'max' optional 
@@ -156,6 +175,8 @@ Windows, Linux
 
 #include <gsl/gsl_math.h>
 #include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/neuralNetworks.h>
+#include <iCub/iKin/iKinFwd.h>
 
 #include <string>
 
@@ -183,7 +204,7 @@ Windows, Linux
 #define STATE_WAIT          3
 
 YARP_DECLARE_DEVICES(icubmod)
-                                                             
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -191,6 +212,71 @@ using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
 using namespace iCub::ctrl;
+using namespace iCub::iKin;
+
+
+class Predictor
+{
+protected:
+    ff2LayNN_tansig_purelin net;
+    iCubEye *eye;
+
+public:
+    Predictor() : eye(NULL) { }
+
+    bool configure(Property &options)
+    {
+        eye=new iCubEye("left");
+        eye->releaseLink(0);
+        eye->releaseLink(1);
+        eye->releaseLink(2);
+
+        return net.configure(options);
+    }
+
+    Vector predict(const Vector &torso, const Vector &head,
+                   Bottle *imdLeft, Bottle *imdRight)
+    {
+        Bottle *firstBlobLeft=imdLeft->get(0).asList();
+        Bottle *firstBlobRight=imdRight->get(0).asList();
+
+        Vector in(3);
+        in[0]=firstBlobLeft->get(0).asDouble();         // ul
+        in[1]=firstBlobRight->get(0).asDouble();        // ur
+        in[2]=(firstBlobLeft->get(1).asDouble()+
+               firstBlobRight->get(1).asDouble())/2.0;  // v
+
+        Vector out=net.predict(in);
+        Vector homOut(4);
+        homOut[0]=out[0];
+        homOut[1]=out[1];
+        homOut[2]=out[2];
+        homOut[3]=1.0;
+
+        Vector dof(eye->getDOF());
+        dof[0]=CTRL_DEG2RAD*torso[2];
+        dof[1]=CTRL_DEG2RAD*torso[1];
+        dof[2]=CTRL_DEG2RAD*torso[0];
+        dof[3]=CTRL_DEG2RAD*head[0];
+        dof[4]=CTRL_DEG2RAD*head[1];
+        dof[5]=CTRL_DEG2RAD*head[2];
+        dof[6]=CTRL_DEG2RAD*head[3];
+        dof[7]=CTRL_DEG2RAD*(head[4]+head[5]/2.0);
+
+        homOut=eye->getH(dof)*homOut;
+        out[0]=homOut[0];
+        out[1]=homOut[1];
+        out[2]=homOut[2];
+
+        return out;
+    }
+
+    ~Predictor()
+    {
+        if (eye!=NULL)
+            delete eye;
+    }
+};
 
 
 class managerThread : public RateThread
@@ -205,19 +291,22 @@ protected:
     bool useRightArm;
     int  armSel;
 
-    PolyDriver *drvTorso, *drvLeftArm, *drvRightArm;
+    PolyDriver *drvTorso, *drvHead, *drvLeftArm, *drvRightArm;
     PolyDriver *drvCartLeftArm, *drvCartRightArm;
     PolyDriver *drvGazeCtrl;
 
     IEncoders         *encTorso;
+    IEncoders         *encHead;
     IPositionControl  *posTorso;
     IEncoders         *encArm;
     IPositionControl  *posArm;
     ICartesianControl *cartArm;
-    IGazeControl      *gazeCtrl;
+    IGazeControl      *gazeCtrl;    
 
-    BufferedPort<Vector> *inportTrackTarget;
-    Port *outportCmdFace;
+    BufferedPort<Vector> inportTrackTarget;
+    BufferedPort<Bottle> inportIMDTargetLeft;
+    BufferedPort<Bottle> inportIMDTargetRight;
+    Port outportCmdFace;
 
     Vector leftArmReachOffs;
     Vector leftArmGraspOffs;
@@ -236,6 +325,9 @@ protected:
 
     Vector homePoss, homeVels;
 
+    Predictor pred;
+    bool useNetwork;
+
     double trajTime;
     double idleTimer, idleTmo;
     double hystThres;
@@ -250,6 +342,7 @@ protected:
 
     Vector targetPos;
     Vector torso;
+    Vector head;
 
     Matrix R,Rx,Ry,Rz;
 
@@ -441,12 +534,32 @@ protected:
 
     void getSensorData()
     {
+        bool newTarget=false;
+
         if (encTorso->getEncoders(torso.data()))
             R=rotx(torso[1])*roty(-torso[2])*rotz(-torso[0]);
 
-        if (Vector *targetPosNew=inportTrackTarget->read(false))
-        {    
+        encHead->getEncoders(head.data());
+
+        if (useNetwork)
+        {            
+            Bottle *imdTargetLeft=inportIMDTargetLeft.read(false);
+            Bottle *imdTargetRight=inportIMDTargetRight.read(false);
+
+            if ((imdTargetLeft!=NULL) && (imdTargetRight!=NULL))
+            {
+                targetPos=pred.predict(torso,head,imdTargetLeft,imdTargetRight);
+                newTarget=true;
+            }
+        }
+        else if (Vector *targetPosNew=inportTrackTarget.read(false))
+        {
             targetPos=*targetPosNew;
+            newTarget=true;
+        }
+
+        if (newTarget)
+        {    
             idleTimer=Time::now();
 
             if (state==STATE_IDLE)
@@ -786,21 +899,21 @@ protected:
         out.addVocab(Vocab::encode("set"));
         out.addVocab(Vocab::encode("mou"));
         out.addVocab(Vocab::encode(type.c_str()));
-        outportCmdFace->write(out,in);
+        outportCmdFace.write(out,in);
 
         out.clear();
 
         out.addVocab(Vocab::encode("set"));
         out.addVocab(Vocab::encode("leb"));
         out.addVocab(Vocab::encode(type.c_str()));
-        outportCmdFace->write(out,in);
+        outportCmdFace.write(out,in);
 
         out.clear();
 
         out.addVocab(Vocab::encode("set"));
         out.addVocab(Vocab::encode("reb"));
         out.addVocab(Vocab::encode(type.c_str()));
-        outportCmdFace->write(out,in);
+        outportCmdFace.write(out,in);
     }
 
     void limitRange(Vector &x)
@@ -852,6 +965,9 @@ protected:
         if (drvTorso)
             delete drvTorso;
 
+        if (drvHead)
+            delete drvHead;
+
         if (drvLeftArm)
             delete drvLeftArm;
 
@@ -867,31 +983,26 @@ protected:
         if (drvGazeCtrl)
             delete drvGazeCtrl;
 
-        if (inportTrackTarget)
-        {
-            inportTrackTarget->interrupt();
-            inportTrackTarget->close();
-            delete inportTrackTarget;
-        }
+        inportTrackTarget.interrupt();
+        inportTrackTarget.close();
 
-        if (outportCmdFace)
-        {
-            outportCmdFace->interrupt();
-            outportCmdFace->close();
-            delete outportCmdFace;
-        }
+        inportIMDTargetLeft.interrupt();
+        inportIMDTargetLeft.close();
+
+        inportIMDTargetRight.interrupt();
+        inportIMDTargetRight.close();
+
+        outportCmdFace.interrupt();
+        outportCmdFace.close();
     }
 
 public:
     managerThread(const string &_name, ResourceFinder &_rf) : 
                   RateThread(DEFAULT_THR_PER), name(_name), rf(_rf)
     {        
-        drvTorso=drvLeftArm=drvRightArm=NULL;
+        drvTorso=drvHead=drvLeftArm=drvRightArm=NULL;
         drvCartLeftArm=drvCartRightArm=NULL;
         drvGazeCtrl=NULL;
-
-        inportTrackTarget=NULL;
-        outportCmdFace=NULL;
     }
 
     virtual bool threadInit()
@@ -902,8 +1013,9 @@ public:
         robot=bGeneral.check("robot",Value("icub"),"Getting robot name").asString().c_str();
         useLeftArm=bGeneral.check("left_arm",Value("on"),"Getting left arm use flag").asString()=="on"?true:false;
         useRightArm=bGeneral.check("right_arm",Value("on"),"Getting right arm use flag").asString()=="on"?true:false;
+        useNetwork=bGeneral.check("use_network",Value("off"),"Getting network enable").asString()=="on"?true:false;
         trajTime=bGeneral.check("traj_time",Value(2.0),"Getting trajectory time").asDouble();
-        idleTmo=bGeneral.check("idle_tmo",Value(1e10),"Getting idle timeout").asDouble();
+        idleTmo=bGeneral.check("idle_tmo",Value(1e10),"Getting idle timeout").asDouble();        
         setRate(bGeneral.check("thread_period",Value(DEFAULT_THR_PER),"Getting thread period [ms]").asInt());
 
         // torso part
@@ -960,15 +1072,36 @@ public:
 
         getGraspOptions(bGrasp,openHandPoss,closeHandPoss,handVels);
 
+        // init network
+        if (useNetwork)
+        {
+            Property options;
+            options.fromConfigFile(rf.findFile(bGeneral.check("network",Value("network.ini"),
+                                                              "Getting network data").asString().c_str()));
+
+            if (!pred.configure(options))
+                return false;
+        }
+
+        // open ports
+        inportTrackTarget.open((name+"/trackTarget:i").c_str());
+        inportIMDTargetLeft.open((name+"/imdTargetLeft:i").c_str());
+        inportIMDTargetRight.open((name+"/imdTargetRight:i").c_str());
+        outportCmdFace.open((name+"/cmdFace:rpc").c_str());
+
         string fwslash="/";
 
         // open remote_controlboard drivers
         Property optTorso("(device remote_controlboard)");
+        Property optHead("(device remote_controlboard)");
         Property optLeftArm("(device remote_controlboard)");
         Property optRightArm("(device remote_controlboard)");
 
         optTorso.put("remote",(fwslash+robot+"/torso").c_str());
         optTorso.put("local",(name+"/torso").c_str());
+
+        optHead.put("remote",(fwslash+robot+"/head").c_str());
+        optHead.put("local",(name+"/head").c_str());
 
         optLeftArm.put("remote",(fwslash+robot+"/left_arm").c_str());
         optLeftArm.put("local",(name+"/left_arm").c_str());
@@ -978,6 +1111,13 @@ public:
 
         drvTorso=new PolyDriver;
         if (!drvTorso->open(optTorso))
+        {
+            close();
+            return false;
+        }
+
+        drvHead=new PolyDriver;
+        if (!drvHead->open(optHead))
         {
             close();
             return false;
@@ -1047,6 +1187,7 @@ public:
         // open views
         drvTorso->view(encTorso);
         drvTorso->view(posTorso);
+        drvHead->view(encHead);
         drvGazeCtrl->view(gazeCtrl);
 
         if (useLeftArm)
@@ -1083,17 +1224,14 @@ public:
             armSel=NOARM;
         }
 
-        // open ports
-        inportTrackTarget=new BufferedPort<Vector>;
-        outportCmdFace   =new Port;
-
-        inportTrackTarget->open((name+"/trackTarget:i").c_str());
-        outportCmdFace->open((name+"/cmdFace:rpc").c_str());
-
         // init
         int torsoAxes;
         encTorso->getAxes(&torsoAxes);
         torso.resize(torsoAxes,0.0);
+
+        int headAxes;
+        encHead->getAxes(&headAxes);
+        head.resize(headAxes,0.0);
 
         targetPos.resize(3,0.0);
         R=Rx=Ry=Rz=eye(3,3);
