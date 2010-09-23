@@ -154,6 +154,11 @@ public:
     * @return the predicted output.
     */ 
     virtual yarp::sig::Vector predict(const yarp::sig::Vector &x);
+
+    /**
+    * Dump the network structure on the screen.
+    */ 
+    virtual void printStructure();
 };
 
 

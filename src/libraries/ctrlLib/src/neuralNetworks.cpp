@@ -226,6 +226,37 @@ Vector ff2LayNN::predict(const Vector &x)
 
 
 /***************************************************************************/
+void ff2LayNN::printStructure()
+{
+    fprintf(stdout,"***** Input Layer Range *****\n");
+    for (unsigned int i=0; i<inMinMaxX.size(); i++)
+        fprintf(stdout,"%d: X [%g,%g]; Y [%g,%g]\n",i,
+                inMinMaxX[i].min,inMinMaxX[i].max,
+                inMinMaxY[i].min,inMinMaxY[i].max);
+
+    fprintf(stdout,"***** Hidden Layer Weights *****\n");
+    for (unsigned int i=0; i<IW.size(); i++)
+        fprintf(stdout,"IW_%d: %s\n",i,IW[i].toString().c_str());
+
+    fprintf(stdout,"***** Hidden Layer Bias *****\n");
+    fprintf(stdout,"b1: %s\n",b1.toString().c_str());
+
+    fprintf(stdout,"***** Output Layer Weights *****\n");
+    for (unsigned int i=0; i<LW.size(); i++)
+        fprintf(stdout,"LW_%d: %s\n",i,LW[i].toString().c_str());
+
+    fprintf(stdout,"***** Output Layer Bias *****\n");
+    fprintf(stdout,"b2: %s\n",b2.toString().c_str());
+
+    fprintf(stdout,"***** Output Layer Range *****\n");
+    for (unsigned int i=0; i<outMinMaxX.size(); i++)
+        fprintf(stdout,"%d: Y [%g,%g]; X [%g,%g]\n",i,
+                inMinMaxY[i].min,inMinMaxY[i].max,
+                inMinMaxX[i].min,inMinMaxX[i].max);
+}
+
+
+/***************************************************************************/
 ff2LayNN_tansig_purelin::ff2LayNN_tansig_purelin() :
                          ff2LayNN()
 {

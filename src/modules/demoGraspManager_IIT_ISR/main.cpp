@@ -231,7 +231,13 @@ public:
         eye->releaseLink(1);
         eye->releaseLink(2);
 
-        return net.configure(options);
+        if (net.configure(options))
+        {
+            net.printStructure();
+            return true;
+        }
+        else
+            return false;
     }
 
     Vector predict(const Vector &torso, const Vector &head,
@@ -1080,7 +1086,7 @@ public:
                                                               "Getting network data").asString().c_str()));
 
             if (!pred.configure(options))
-                return false;
+                return false;            
         }
 
         // open ports
