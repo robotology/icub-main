@@ -10,7 +10,7 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 
-MyThread::MyThread(BufferedPort<Vector>* compensatedTactileDataPort, string robotName, float* minBaseline, 
+MyThread::MyThread(BufferedPort<Bottle>* compensatedTactileDataPort, string robotName, float* minBaseline, 
 				   bool *calibrationAllowed, bool *forceCalibration, bool *zeroUpRawData, bool* rightHand)
 {
    this->compensatedTactileDataPort		= compensatedTactileDataPort;
@@ -24,9 +24,12 @@ MyThread::MyThread(BufferedPort<Vector>* compensatedTactileDataPort, string robo
 
 bool MyThread::threadInit() 
 {
+    fprintf(stderr, "THREAD INIT\n\n");
+
    /* initialize variables and create data-structures if needed */
 	MAX_DRIFT = 0.1;								// the maximal drift that is being compensated every second
 	CHANGE_PER_TIMESTEP = MAX_DRIFT/FREQUENCY;
+    *forceCalibration = false;
 
 	
 	//This is the tricky part: you should already have something like the following code this in your module
@@ -59,9 +62,11 @@ bool MyThread::threadInit()
 		printf("Problems acquiring interfaces\n");
 		return false;
 	}
+
 	// temporary
+    rawTactileDataPort = new BufferedPort<Vector>();
 	if(*rightHand){
-		rawTactileDataPort->open(("/"+ robotName+ "/skin/righthand:i").c_str());
+        rawTactileDataPort->open(("/"+ robotName+ "/skin/righthand:i").c_str());
 		Network::connect(("/"+robotName+"/skin/righthand").c_str(), rawTactileDataPort->getName().c_str());
 	}
 	else{
@@ -99,10 +104,12 @@ void MyThread::run(){
 			runCalibration();
 			*forceCalibration = false;
 		}
+        //Time::delay(5);
 	}
 }
 
 void MyThread::runCalibration(){
+    fprintf(stderr, "CALIBRATING.......................");
 	// send a command to the microcontroller for calibrating the skin sensors
 	tactileSensor->calibrateSensor();
 
@@ -130,10 +137,10 @@ void MyThread::runCalibration(){
     	fprintf(stderr,"Return value: %d\t", retV);*/
 		input = *rawTactileDataPort->read();
 		if (true) {
-            fprintf(stderr,"Input:\n");
-            for (int i=0; i<SKIN_DIM; i++) {
-            	fprintf(stderr,"%f ", input[i]);
-            }
+            //fprintf(stderr,"Input:\n");
+            //for (int i=0; i<SKIN_DIM; i++) {
+            	//fprintf(stderr,"%f ", input[i]);
+            //}
 			Vector skin_values;
 			skin_values.resize(SKIN_DIM);
 			for (int j=0; j<SKIN_DIM; j++) {
@@ -180,7 +187,8 @@ void MyThread::runCalibration(){
 void MyThread::readRawAndWriteCompensatedData(){
 	//tactileSensor->read(rawData);
 	rawData = *rawTactileDataPort->read();
-	compensatedData = compensatedTactileDataPort->prepare();
+	Bottle& compensatedData2 = compensatedTactileDataPort->prepare();
+    compensatedData2.clear();
 	
 	float d;
 	for(int i=0; i<SKIN_DIM; i++){		
@@ -189,7 +197,10 @@ void MyThread::readRawAndWriteCompensatedData(){
 		}else{
 			d = rawData(i) - touchThresholds[i];
 		}
-		compensatedData.push_back(d);
+        if(d<0) d=0;
+
+		//compensatedData.push_back(d);
+        compensatedData2.addInt(d);
 
 		if(d>0)
 			touchDetected[i] = true;
@@ -198,6 +209,7 @@ void MyThread::readRawAndWriteCompensatedData(){
 	}
 
 	compensatedTactileDataPort->write();
+    compensatedData = compensatedData2;
 }
 
 void MyThread::updateBaselineAndThreshold(){
@@ -208,7 +220,8 @@ void MyThread::updateBaselineAndThreshold(){
     for(int j=0; j<SKIN_DIM; j++) {
         if(!touchDetected[j]){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
-			d = compensatedData(j);
+			//d = compensatedData(j);
+            d = compensatedData.get(j).asInt();
 
 			if(d > 0.5) {
 				baselines[j]		-= CHANGE_PER_TIMESTEP;
@@ -235,8 +248,10 @@ void MyThread::updateBaselineAndThreshold(){
 
 bool MyThread::doesBaselineExceed(){
 	for(int i=0; i<SKIN_DIM; i++){
-		if(baselines[i]<*minBaseline || baselines[i]>MAX_SKIN-(*minBaseline))
+		if(baselines[i]<*minBaseline || baselines[i]>MAX_SKIN-(*minBaseline)){
+            fprintf(stderr, "Baseline %d exceeds!!!!\n", i);
 			return true;
+        }
 	}
 	return false;
 }

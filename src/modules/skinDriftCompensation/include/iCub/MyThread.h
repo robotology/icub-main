@@ -18,7 +18,7 @@ class MyThread : public Thread
 {
 private:
 	/* class constants */
-	static const int SKIN_DIM = 48;				// number of taxels in one hand (192)
+	static const int SKIN_DIM = 192;			// number of taxels in one hand (192)
 	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
 	static const int FREQUENCY = 50;			// how many measurements every second?
 	static const int CAL_TIME = 5;				// calibration time in sec	
@@ -31,7 +31,7 @@ private:
     float baselines[SKIN_DIM];					// mean of the raw tactile data 
 												// (considering only the samples read when no touch is detected)
 	Vector rawData;								// raw tactile data
-	Vector compensatedData;						// compensated tactile data (that is rawData-touchThreshold)
+	Bottle compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
 	IAnalogSensor *tactileSensor;				// interface for executing the tactile sensor calibration
 	PolyDriver* tactileSensorDevice;
 
@@ -46,7 +46,7 @@ private:
 
 	/* ports */
 	BufferedPort<Vector>* rawTactileDataPort;
-	BufferedPort<Vector>* compensatedTactileDataPort;
+	BufferedPort<Bottle>* compensatedTactileDataPort;
 
 	/* class private methods */
 	void log(string s, bool endLine=true);
@@ -60,7 +60,7 @@ public:
 
 	/* class methods */
 
-	MyThread(BufferedPort<Vector>* compensatedTactileDataPort, string robotName, 
+	MyThread(BufferedPort<Bottle>* compensatedTactileDataPort, string robotName, 
 		float* minBaseline, bool *calibrationAllowed, bool *forceCalibration, bool *zeroUpRawData, bool *rightHand);
 	bool threadInit();     
 	void threadRelease();

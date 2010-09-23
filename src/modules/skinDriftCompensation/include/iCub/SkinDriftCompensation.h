@@ -25,7 +25,7 @@ class SkinDriftCompensation:public RFModule
    string handlerPortName;
 
    /* class variables */
-   BufferedPort<Vector> compensatedTactileDataPort;	
+   BufferedPort<Bottle> compensatedTactileDataPort;	
    Port handlerPort;									// a port to handle messages
 
    bool calibrationAllowed;								// if false the thread is not allowed to run the calibration
