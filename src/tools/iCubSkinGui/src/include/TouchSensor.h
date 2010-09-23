@@ -133,20 +133,23 @@ public:
     {
         for (int i=0; i<7; ++i)
         {
-            activation[i]=data[i+1]<=244?double(244-data[i+1]):0.0;
+            //activation[i]=data[i+1]<=244?double(244-data[i+1]):0.0;
+            activation[i]=data[i+1];
         }
     }
     void setActivationLast5(unsigned char* data)
     {
         for (int i=1; i<=5; ++i)
         {
-            activation[i+6]=data[i]<=244?double(244-data[i]):0.0;
+            //activation[i+6]=data[i]<=244?double(244-data[i]):0.0;
+            activation[i+6]=data[i];
         }
     }
 
 	void setActivationFromPortData(double val, int id)
     {
-        activation[id]=val<=244?double(244-val):0.0;;
+        //activation[id]=val<=244?double(244-val):0.0;;
+        activation[id]=val;
     }
 
     void draw(unsigned char *image)

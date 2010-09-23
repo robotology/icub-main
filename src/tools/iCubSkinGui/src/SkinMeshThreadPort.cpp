@@ -19,18 +19,20 @@ void SkinMeshThreadPort::run()
 {	
     mutex.wait();
 
-	Bottle *input = skin_port.read();
+	Bottle *input;
+    input = skin_port.read();
+
 	yarp::sig::Vector skin_value;
 	int sensorId =0;
 	skin_value.resize(input->size());
-		for (int i=0; i<input->size(); i++)
-		{
-			skin_value[i] = input->get(i).asDouble();
+	for (int i=0; i<input->size(); i++)
+	{
+		skin_value[i] = input->get(i).asDouble();
 
-			sensorId=i/12;
-			if (sensorId<16 && sensor[sensorId])
-				sensor[sensorId]->setActivationFromPortData(skin_value[i],i%12);
-		}
+		sensorId=i/12;
+		if (sensorId<16 && sensor[sensorId])
+			sensor[sensorId]->setActivationFromPortData(skin_value[i],i%12);
+	}
 
     mutex.post();
 }
