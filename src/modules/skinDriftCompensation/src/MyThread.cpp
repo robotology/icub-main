@@ -59,7 +59,16 @@ bool MyThread::threadInit()
 		printf("Problems acquiring interfaces\n");
 		return false;
 	}
-	
+	// temporary
+	if(*rightHand){
+		rawTactileDataPort->open(("/"+ robotName+ "/skin/righthand:i").c_str());
+		Network::connect(("/"+robotName+"/skin/righthand").c_str(), rawTactileDataPort->getName().c_str());
+	}
+	else{
+		rawTactileDataPort->open(("/"+ robotName+ "/skin/lefthand:i").c_str());
+		Network::connect(("/"+robotName+"/skin/lefthand").c_str(), rawTactileDataPort->getName().c_str());
+	}
+
 	return true;
 }
 
@@ -98,7 +107,8 @@ void MyThread::runCalibration(){
 	tactileSensor->calibrateSensor();
 
 	Vector input;
-	tactileSensor->read(input);
+	//tactileSensor->read(input);
+	input = *rawTactileDataPort->read();
     fprintf(stderr,"First Input:\n");
     for (int i=0; i<SKIN_DIM; i++) {
     	fprintf(stderr,"%f ", input[i]);
@@ -116,9 +126,10 @@ void MyThread::runCalibration(){
     }
 	//collect data
 	for (int i=0; i<CAL_TIME*FREQUENCY; i++) {
-        int retV = tactileSensor->read(input);
-    	fprintf(stderr,"Return value: %d\t", retV);
-		if (true || retV==0) {
+        /*int retV = tactileSensor->read(input);
+    	fprintf(stderr,"Return value: %d\t", retV);*/
+		input = *rawTactileDataPort->read();
+		if (true) {
             fprintf(stderr,"Input:\n");
             for (int i=0; i<SKIN_DIM; i++) {
             	fprintf(stderr,"%f ", input[i]);
@@ -167,7 +178,8 @@ void MyThread::runCalibration(){
 }
 
 void MyThread::readRawAndWriteCompensatedData(){
-	tactileSensor->read(rawData);
+	//tactileSensor->read(rawData);
+	rawData = *rawTactileDataPort->read();
 	compensatedData = compensatedTactileDataPort->prepare();
 	
 	float d;

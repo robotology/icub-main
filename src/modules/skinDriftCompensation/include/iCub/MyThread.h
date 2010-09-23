@@ -7,6 +7,8 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 
+#include <yarp/os/Network.h>	//temporary
+
 using namespace std;
 using namespace yarp::os; 
 using namespace yarp::sig;
@@ -43,7 +45,7 @@ private:
 	bool *rightHand;				// if true then calibrate the right hand, otherwise the left hand
 
 	/* ports */
-	//BufferedPort<Bottle>* rawTactileDataPort;
+	BufferedPort<Vector>* rawTactileDataPort;
 	BufferedPort<Vector>* compensatedTactileDataPort;
 
 	/* class private methods */
