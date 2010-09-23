@@ -251,8 +251,8 @@ void ff2LayNN::printStructure()
     fprintf(stdout,"***** Output Layer Range *****\n");
     for (unsigned int i=0; i<outMinMaxX.size(); i++)
         fprintf(stdout,"%d: Y [%g,%g]; X [%g,%g]\n",i,
-                inMinMaxY[i].min,inMinMaxY[i].max,
-                inMinMaxX[i].min,inMinMaxX[i].max);
+                outMinMaxY[i].min,outMinMaxY[i].max,
+                outMinMaxX[i].min,outMinMaxX[i].max);
 }
 
 
