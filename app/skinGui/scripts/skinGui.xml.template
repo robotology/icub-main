@@ -3,13 +3,13 @@
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from lefthand.ini</parameters>
-	  <node>console</node>
+	  <node>icub14</node>
 	<tag>skinGuiLeftHand</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from righthand.ini</parameters>
-	  <node>console</node>
+	  <node>icub14</node>
 	<tag>skinGuiRightHand</tag>
    </module>
 <connection>
