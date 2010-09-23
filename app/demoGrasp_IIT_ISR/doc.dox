@@ -10,6 +10,9 @@ the 3-d position of a target within the image plane applying the particle filter
 algorithm along with the controllers to move the head accordingly and both arms to
 reach for the object and eventually grasp it.
 
+A second mode is also available that allows to track a moving target relying on stereo
+vision which needs to be calibrated in advance using a feed-forward neural network.
+
 \section dep_sec Dependencies
 Assumes that \ref icub_iCubInterface (with ICartesianControl 
 interface implemented) and \ref iKinGazeCtrl are running.
@@ -19,17 +22,21 @@ interface implemented) and \ref iKinGazeCtrl are running.
 
 - \ref eye2RootFrameTransformer "eye2RootFrameTransformer"
 
+- \ref indepMotionDetector "indepMotionDetector"
+
 - \ref demoGraspManager_IIT_ISR "demoGraspManager_IIT_ISR"
 
 \section config_sec Configuration Files
 The file ./conf/config.ini contains the initialization parameters for the 
 demoGraspManager_IIT_ISR module.
+The file ./conf/network.ini contains the network weights.
 
 \section howto_sec How to run the Application
 Customize the file ./scripts/*.template for your specific platform
 before launching them.
 
-- ./scripts/demoGrasp_IIT_ISR.xml.template
+- ./scripts/demoGrasp_IIT_ISR.xml.template: detection done via particle filter.
+- ./scripts/demoGrasp_Stereo.xml.template: detection done with stero.
 
 \note To enable/disable arms refer to the options available within the config.ini file.
 
