@@ -1,0 +1,91 @@
+<application>
+<name>Grasping Demo with Stereo Vision</name>
+
+        <dependencies>
+                <port>/icub/camcalib/left/out</port>
+                <port>/icub/camcalib/right/out</port>
+                <port>/iKinGazeCtrl/head/rpc</port>
+                <port>/icub/cartesianController/right_arm/state:o</port>
+                <port>/icub/cartesianController/left_arm/state:o</port>
+        </dependencies>
+      
+        <module>
+            <name>indepMotionDetector</name>
+            <parameters>--name indepMotionDetector/left --recogThres 0.002</parameters>
+            <node>pwrNode1</node>
+            <tag>motionDetectorLeft</tag>
+        </module>
+   
+        <module>
+            <name>indepMotionDetector</name>
+            <parameters>--name indepMotionDetector/right --recogThres 0.002</parameters>
+            <node>pwrNode2</node>
+            <tag>motionDetectorRight</tag>
+        </module>
+
+        <module>
+                <name>demoGraspManager_IIT_ISR</name>
+                <node>pwrNode3</node>
+                <tag>manager</tag>
+        </module>
+  
+        <module>
+                <name>yarpview</name>
+                <parameters>--name /motionViewerLeft --x 0 --y 0 --synch</parameters>
+                <node>console</node>
+                <tag>motionDetectorViewerLeft</tag>
+        </module>
+  
+        <module>
+                <name>yarpview</name>
+                <parameters>--name /motionViewerRight --x 320 --y 0 --synch</parameters>
+                <node>console</node>
+                <tag>motionDetectorViewerRight</tag>
+        </module>
+
+        <connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/indepMotionDetector/left/img:i</to>
+                <protocol>udp</protocol>
+        </connection>
+
+        <connection>
+                <from>/icub/camcalib/right/out</from>
+                <to>/indepMotionDetector/right/img:i</to>
+                <protocol>udp</protocol>
+        </connection>
+
+
+        <connection>
+                <from>/indepMotionDetector/left/blobs:o</from>
+                <to>/demoGraspManager_IIT_ISR/imdTargetLeft:i</to>
+                <protocol>udp</protocol>
+        </connection>
+
+        <connection>
+                <from>/indepMotionDetector/right/blobs:o</from>
+                <to>/demoGraspManager_IIT_ISR/imdTargetRight:i</to>
+                <protocol>udp</protocol>
+        </connection>
+
+
+        <connection>
+                <from>/indepMotionDetector/left/img:o</from>
+                <to>/motionViewerLeft</to>
+                <protocol>udp</protocol>
+        </connection>
+
+        <connection>
+                <from>/indepMotionDetector/right/img:o</from>
+                <to>/motionViewerRight</to>
+                <protocol>udp</protocol>
+        </connection>
+
+
+        <connection>
+                <from>/demoGraspManager_IIT_ISR/cmdFace:rpc</from>
+                <to>/icub/face/emotions/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+
+</application>
