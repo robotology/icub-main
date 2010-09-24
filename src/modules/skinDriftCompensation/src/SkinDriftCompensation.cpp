@@ -28,7 +28,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	}
 
 	/* get some other values from the configuration file */
-	float minBaseline			= rf.check("minBaseline", Value(3), 
+	float minBaseline			= (float)rf.check("minBaseline", Value(3), 
 	   "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
 	
 	bool zeroUpRawData = true;

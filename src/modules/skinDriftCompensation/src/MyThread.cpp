@@ -28,7 +28,7 @@ bool MyThread::threadInit()
     fprintf(stderr, "THREAD INIT\n\n");
 
    /* initialize variables and create data-structures if needed */
-	MAX_DRIFT = 0.1;								// the maximal drift that is being compensated every second
+	MAX_DRIFT = 0.1f;								// the maximal drift that is being compensated every second
 	CHANGE_PER_TIMESTEP = MAX_DRIFT/FREQUENCY;
     *forceCalibration = false;
 
@@ -42,11 +42,11 @@ bool MyThread::threadInit()
 	if(*rightHand){
 		options.put("part",   "righthand");         //skin part that you want to control
 		options.put("local",  "/skinComp/right");
-		options.put("remote",  ("/"+robotName+"/skin/righthand").c_str());
+		options.put("remote",  ("/"+robotName+"/skin/right_hand").c_str());
 	}else{
 		options.put("part",   "lefthand");          //skin part that you want to control
 		options.put("local",  "/skinComp/left");
-		options.put("remote",  ("/"+robotName+"/skin/lefthand").c_str());
+		options.put("remote",  ("/"+robotName+"/skin/left_hand").c_str());
 	}
 	options.put("device", "analogsensorclient");	//important! It’s different from remote_controlboard that you use to control motors!
 	 
@@ -67,12 +67,12 @@ bool MyThread::threadInit()
 	// temporary
     rawTactileDataPort = new BufferedPort<Vector>();
 	if(*rightHand){
-        rawTactileDataPort->open(("/"+ robotName+ "/skin/righthand:i").c_str());
-		Network::connect(("/"+robotName+"/skin/righthand").c_str(), rawTactileDataPort->getName().c_str());
+        rawTactileDataPort->open(("/"+ robotName+ "/skin_comp/right_hand:i").c_str());
+		Network::connect(("/"+robotName+"/skin/right_hand").c_str(), rawTactileDataPort->getName().c_str());
 	}
 	else{
-		rawTactileDataPort->open(("/"+ robotName+ "/skin/lefthand:i").c_str());
-		Network::connect(("/"+robotName+"/skin/lefthand").c_str(), rawTactileDataPort->getName().c_str());
+		rawTactileDataPort->open(("/"+ robotName+ "/skin_comp/left_hand:i").c_str());
+		Network::connect(("/"+robotName+"/skin/left_hand").c_str(), rawTactileDataPort->getName().c_str());
 	}
 
 	return true;
@@ -170,7 +170,7 @@ void MyThread::runCalibration(){
 		//when do we cross the treshhold?
     	for (int j=0; j<=MAX_SKIN; j++) {
 			if (skin_empty[i][j] > (CAL_TIME*FREQUENCY*0.95)) {
-				touchThresholds[i] = j;
+				touchThresholds[i] = (float)j;
 				j = MAX_SKIN;
 			}
     	}
@@ -199,14 +199,14 @@ void MyThread::readRawAndWriteCompensatedData(){
 	float d;
 	for(int i=0; i<SKIN_DIM; i++){		
 		if( (*zeroUpRawData)==false){
-			d = MAX_SKIN - rawData(i) - touchThresholds[i];
+			d = (float)( MAX_SKIN - rawData(i) - touchThresholds[i]);
 		}else{
-			d = rawData(i) - touchThresholds[i];
+			d = (float)(rawData(i) - touchThresholds[i]);
 		}
         if(d<0) d=0;
 
 		//compensatedData.push_back(d);
-        compensatedData2.addInt(d);
+        compensatedData2.addInt((int)d);
 
 		if(d>0)
 			touchDetected[i] = true;
@@ -225,13 +225,13 @@ void MyThread::readRawAndWriteCompensatedData(){
 void MyThread::updateBaselineAndThreshold(){
 	float mean_change = 0;
     int non_touching_taxels = 0;
-	float d;
+	double d;
 
     for(int j=0; j<SKIN_DIM; j++) {
         if(!touchDetected[j]){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
 			//d = compensatedData(j);
-            d = compensatedData.get(j).asInt();
+            d = compensatedData.get(j).asDouble();
 
 			if(d > 0.5) {
 				baselines[j]		-= CHANGE_PER_TIMESTEP;
