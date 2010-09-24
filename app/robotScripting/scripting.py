@@ -93,7 +93,7 @@ class App:
         f=open(os.path.join(directory, script),'r')
         for line in f:
             line=line.rstrip('\r\n')
-            print line
+            #print line
             #ret=subprocess.Popen('cmd -c', line);
             os.system(line)
         f.close()
@@ -109,6 +109,8 @@ def searchScripts(scriptDir):
     for c in all:
         if (not os.path.isdir(c)):
             ret.append(c)
+
+    ret.sort();
     return ret
 
 class EditWindow:
