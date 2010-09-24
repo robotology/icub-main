@@ -1,4 +1,9 @@
 2010-09-24 Lorenzo Natale <>
+	src/core/iCubInterface/RobotInterfaceRemap.cpp:
+	config file now accepts no parts
+
+
+2010-09-24 Lorenzo Natale <>
 		./main/src/core/iCubInterface:
 		./main/src/libraries/skinprototype:
 		modified to handle rpc for IAnalog interface.
