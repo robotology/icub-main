@@ -138,6 +138,7 @@ private:
 	ITorqueControl *itqs;
 	IImpedanceControl *iimp;
 	IPidControl *ipid;
+	string part;
 
 	int ctrlJnt;
 	int allJnt;
@@ -145,7 +146,7 @@ public:
 	ftCommand(PolyDriver *_dd, string _part)
 	{
 		dd = _dd;
-		string part = _part;
+		part = _part;
 		if( (part=="left_arm") || (part == "right_arm")) 
 			ctrlJnt = 5;
 		else 
@@ -164,11 +165,13 @@ public:
 		ienc->getAxes(&allJnt);
 		for(int i=0; i<ctrlJnt; i++)
 			mode->setPositionMode(i);
+		initRobotDemo();
 	}
 
 	//init and closing functions:
 	~ftCommand()
 	{
+		stopRobotDemo();
 		fprintf(stderr,"here...");
 		Bottle p;
 		p.addVocab(VOCAB_QUIT);
@@ -177,14 +180,18 @@ public:
 	
 	bool initRobotDemo()
 	{
+		if( (part=="left_arm") || (part == "right_arm")) 
+			ipos->positionMove(3,50.0);
+		fprintf(stderr,"moving to start position...\n");
+		Time::delay(3.0);
 		for(int i=0; i<ctrlJnt; i++)
 		{
 			Bottle p;
 			p.addVocab(VOCAB_SET);
 			p.addVocab(VOCAB_IMPEDANCE);
 			p.addInt(i);
-			p.addDouble(0.16);
 			p.addDouble(0.08);
+			p.addDouble(0.02);
 			command(p);
 		}
 		for(int i=0; i<ctrlJnt; i++)
@@ -526,7 +533,7 @@ private:
 	Property Options;
 	PolyDriver *dd;
 	ftCommand *ft_control;
-	string handlerPortName;
+	//string handlerPortName;
     Port rpcPort;      //a port to handle messages 
 	
 public:
@@ -656,7 +663,7 @@ public:
 		fprintf(stderr,"input port opened...\n");
 		ft_control = new ftCommand(dd,part);
 		fprintf(stderr,"ft client istantiated...\n");
-		ft_control->initRobotDemo();
+		//ft_control->initRobotDemo();
 		return true;
 	}
 	double getPeriod()	{ return 1; }
@@ -669,6 +676,7 @@ public:
 		fprintf(stderr,"closing...don't know why :S \n");
 		rpcPort.close();
 		//if (ft_control) {delete ft_control; ft_control=0;}
+		Time::delay(3.0);
 		if (dd) {delete dd; dd=0;}
 		return true;
 	}
