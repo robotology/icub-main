@@ -77,7 +77,7 @@ bool ff2LayNN::configure(Property &options)
     configured=false;
 
     // acquire options
-    if (!options.check("numInputs")      ||
+    if (!options.check("numInputNodes")  ||
         !options.check("numHiddenNodes") || 
         !options.check("numOutputNodes"))
         return false;
@@ -118,9 +118,9 @@ bool ff2LayNN::configure(Property &options)
     if (!getItem(options,"b2",b2))
         return false;
 
-    int numInputs=options.find("numInputs").asInt();    
+    int numInputNodes=options.find("numInputNodes").asInt();    
 
-    for (int i=0; i<numInputs; i++)
+    for (int i=0; i<numInputNodes; i++)
     {
         char tagX[255], tagY[255];
         Vector itemX, itemY;

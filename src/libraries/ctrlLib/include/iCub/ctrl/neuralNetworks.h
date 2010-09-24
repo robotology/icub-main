@@ -112,7 +112,7 @@ public:
     *  
     * @note Available options are: 
     *  
-    * @b numInputs <int> : input dimension. 
+    * @b numInputNodes <int> : input dimension. 
     *  
     * @b numHiddenNodes <int> : number of nodes of the first layer 
     *    (hidden).
