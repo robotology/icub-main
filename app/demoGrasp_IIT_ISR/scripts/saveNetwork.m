@@ -11,7 +11,7 @@ fprintf(fid,'\n');
 fprintf(fid,'numInputNodes\t\t%d\n',uint8(szIW(2)));
 fprintf(fid,'numHiddenNodes\t\t%d\n',uint8(szIW(1)));
 fprintf(fid,'numOutputNodes\t\t%d\n',uint8(szLW(1)));
-fprintf(fid,'\n\n');
+fprintf(fid,'\n');
 
 fprintf(fid,'// hidden layer neurons\n');
 for i=1:szIW(1)
