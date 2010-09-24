@@ -7,7 +7,10 @@ cd $SOURCE_TMP_DIR
 svn co $URL
 
 echo "Clean svn files"
-find ./ -iname .svn -exec rm -rf {} \;
+echo "Clean svn files"
+find ./ -type d -iname .svn -exec rm -rf {} \;
+echo "Fix eol for dos"
+find ./ -type f -name '*.txt' -o -name *.ini -o -name *.cpp -o -name *.c -o -name *.cc -o -name *.cmake -o -name *.cmake -exec unix2dos {} \;
 
 versionFile=$MODULE/VERSION
 echo "iCub snapshot version $REL" > $versionFile
