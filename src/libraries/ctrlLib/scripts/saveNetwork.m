@@ -60,10 +60,10 @@ fprintf(fid,'\n');
 fprintf(fid,'// output preprocessing\n');
 params=net.outputs{2}.processSettings{2};
 for i=1:szLW(1)
-    fprintf(fid,'inMinMaxY_%d\t\t( %.15f %.15f )\n',uint8(i-1),params.ymin,params.ymax);
+    fprintf(fid,'outMinMaxY_%d\t\t( %.15f %.15f )\n',uint8(i-1),params.ymin,params.ymax);
 end
 for i=1:szLW(1)
-    fprintf(fid,'inMinMaxX_%d\t\t( %.15f %.15f )\n',uint8(i-1),params.xmin(i),params.xmax(i));
+    fprintf(fid,'outMinMaxX_%d\t\t( %.15f %.15f )\n',uint8(i-1),params.xmin(i),params.xmax(i));
 end
 fprintf(fid,'\n');
 
