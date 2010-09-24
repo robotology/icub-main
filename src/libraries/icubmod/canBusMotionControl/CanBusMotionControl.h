@@ -270,7 +270,7 @@ public:
     virtual int getChannels();
     virtual int calibrateChannel(int ch, double v);
 	virtual int calibrateSensor();
-    virtual int calibrateSensor(const double *v)
+    virtual int calibrateSensor(const yarp::sig::Vector& value)
     {
         return calibrateSensor();
     }
