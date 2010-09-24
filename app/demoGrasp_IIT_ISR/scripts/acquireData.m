@@ -56,7 +56,7 @@ for i=1:L
 end
 
 % filter out ripple
-h=fdesign.lowpass('Fp,Fst,Ap,Ast',0.2,0.3,1,40);
+h=fdesign.lowpass('Fp,Fst,Ap,Ast',0.1,0.15,1,40);
 d=design(h,'butter');
 d=convert(d,'df1');
 
