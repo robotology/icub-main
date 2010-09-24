@@ -134,7 +134,7 @@ public:
     {
         // open rpc port
         std::string rpcPortName=name;
-        rpcPortName+="/rpc";
+		rpcPortName+="/rpc:i";
         rpcPort.open(rpcPortName.c_str());
 
         if (port.open(name.c_str()))
