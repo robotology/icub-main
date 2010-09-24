@@ -25,7 +25,7 @@ private:
 	float MAX_DRIFT;							// the maximal drift that is being compensated every second
 	float CHANGE_PER_TIMESTEP;					// the maximal drift that is being compensated every cycle
 
-   /* class variables */
+	/* class variables */
 	bool touchDetected[SKIN_DIM];				// true if touch has been detected in the last read of the taxel
 	float touchThresholds[SKIN_DIM];			// threshold for discriminating between "touch" and "no touch"
     float baselines[SKIN_DIM];					// mean of the raw tactile data 
