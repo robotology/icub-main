@@ -182,7 +182,7 @@ int SkinPrototype::calibrateChannel(int ch, double v)
 	return calibrateSensor();
 }
 
-int SkinPrototype::calibrateSensor(const double *value)
+int SkinPrototype::calibrateSensor(const yarp::sig::Vector& v)
 {
     return 0;
 }
