@@ -6,6 +6,8 @@
 #include <yarp/dev/CanBusInterface.h>
 #define MAX_STRINGS 4
 
+#include <ace/OS.h>
+
 class can_string_generic
 {
 private:

@@ -16,7 +16,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/String.h>
 #include <ace/config.h>
 #include <ace/Log_Msg.h>
 
@@ -1606,7 +1605,7 @@ bool CanBusMotionControl::open (Searchable &config)
         return false;
     }
 
-    String str=config.toString().c_str();
+    std::string str=config.toString().c_str();
     Property prop;
     prop.fromString(str.c_str());
     canDevName=config.find("canbusdevice").asString();
@@ -1754,7 +1753,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 			bool   canEchoEnabled = analogConfig.find("CanEcho").asInt();
 			analogSensor->backDoor = new CanBackDoor();
 			analogSensor->backDoor->setUp(&res, &_mutex, canEchoEnabled, analogSensor);
-			String rn("/");
+            std::string rn("/");
 			rn += config.find("robotName").asString().c_str();
 			//rn+=String("/");
 			rn+=virtualPortName;
