@@ -53,6 +53,9 @@ public:
 	virtual int calibrateSensor();
     virtual int calibrateChannel(int ch, double v);
 
+    virtual int calibrateSensor(const double *value);
+    virtual int calibrateChannel(int ch);
+
 	virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();

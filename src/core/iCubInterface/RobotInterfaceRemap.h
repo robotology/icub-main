@@ -34,11 +34,13 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Stamp.h>
+#include <yarp/os/BufferedPort.h>
 
-class AnalogServer: public yarp::os::RateThread
+class AnalogServer: public yarp::os::RateThread, public yarp::os::PortReader
 {
     yarp::dev::IAnalogSensor *is;
     yarp::os::BufferedPort<yarp::sig::Vector> port;
+    yarp::os::Port rpcPort;
     std::string name;
 	yarp::os::Stamp lastStateStamp;
 
@@ -47,6 +49,7 @@ public:
     {
         is=0;
         name=std::string(n);
+        rpcPort.setReader(*this);
     }
 
     ~AnalogServer()
@@ -60,8 +63,80 @@ public:
         is=s;
     }
 
-    bool threadInit()
+    bool _handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply)
     {
+        if (is==0)
+            return false;
+
+        int msgsize=cmd.size();
+
+        int code=cmd.get(1).asVocab();
+        switch (code)
+        {
+        case VOCAB_CALIBRATE:
+            if (msgsize==2)
+                is->calibrateSensor();
+            else
+            {
+                //read Vector of values and pass to is->calibrate();
+            }
+            return true;
+            break;
+        case VOCAB_CALIBRATE_CHANNEL:
+            if (msgsize==3)
+            {
+                int ch=cmd.get(2).asInt();
+                is->calibrateChannel(ch);
+            }
+            if (msgsize==4)
+            {
+                int ch=cmd.get(2).asInt();
+                double v=cmd.get(3).asDouble();
+                is->calibrateChannel(ch, v);
+            }
+
+            return true;
+            break;
+        default:
+            return false;
+        }
+    }
+
+    virtual bool read(yarp::os::ConnectionReader& connection) {
+        yarp::os::Bottle in;
+        yarp::os::Bottle out;
+        bool ok=in.read(connection);
+        if (!ok) return false;
+
+        // parse in, prepare out
+        int code = in.get(0).asVocab();
+        bool ret=false;
+        if (code==VOCAB_IANALOG)
+        {
+            ret=_handleIAnalog(in, out);
+        }
+
+        if (!ret)
+        {
+            out.clear();
+            out.addVocab(VOCAB_FAILED);
+        }
+
+        yarp::os::ConnectionWriter *returnToSender = connection.getWriter();
+        if (returnToSender!=NULL) {
+            out.write(*returnToSender);
+        }
+        return true;
+    }
+
+
+     bool threadInit()
+    {
+        // open rpc port
+        std::string rpcPortName=name;
+        rpcPortName+="/rpc";
+        rpcPort.open(rpcPortName.c_str());
+
         if (port.open(name.c_str()))
             return true;
         else
@@ -70,6 +145,7 @@ public:
 
     void threadRelease()
     {
+        rpcPort.close();
         port.close();
     }
 

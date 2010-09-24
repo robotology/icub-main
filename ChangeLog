@@ -1,3 +1,8 @@
+2010-09-24 Lorenzo Natale <>
+		./main/src/core/iCubInterface:
+		./main/src/libraries/skinprototype:
+		modified to handle rpc for IAnalog interface.
+
 2010-09-23 Lorenzo Natale <lorenzo.natale@iit.it>
 		./main/src/libraries/icubmod/CMakeLists.txt:
 		inclusion of YarpPlugin.cmake, does not work with installed yarp

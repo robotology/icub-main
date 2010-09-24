@@ -182,6 +182,17 @@ int SkinPrototype::calibrateChannel(int ch, double v)
 	return calibrateSensor();
 }
 
+int SkinPrototype::calibrateSensor(const double *value)
+{
+    return 0;
+}
+
+int SkinPrototype::calibrateChannel(int ch)
+{
+    return 0;
+}
+
+
 bool SkinPrototype::threadInit()
 {
 #if SKIN_DEBUG

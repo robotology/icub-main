@@ -270,6 +270,15 @@ public:
     virtual int getChannels();
     virtual int calibrateChannel(int ch, double v);
 	virtual int calibrateSensor();
+    virtual int calibrateSensor(const double *v)
+    {
+        return calibrateSensor();
+    }
+
+    virtual int calibrateChannel(int ch)
+    {
+        return calibrateChannel(ch, 0);
+    }
     /////////////////////////////////
 };
 
