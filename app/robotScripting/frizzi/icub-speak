@@ -6,7 +6,13 @@ espeak -v it -s 150 -p 110 "$testo" &
 sp_pid=$!
 
 WAIT_DT=1
-WAIT_TIME=$2
+
+if [ $2 ];
+   then
+	WAIT_TIME=$2
+   else
+	WAIT_TIME=1
+fi
 
 echo "set mou sur" | yarp rpc /icub/face/emotions/in
 
