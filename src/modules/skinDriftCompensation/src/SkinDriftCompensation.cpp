@@ -123,6 +123,7 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 	}
 	else if (command.get(0).asString()=="force") {
 		if (command.get(1).asString()=="calibration") {
+            fprintf(stderr, "force calibration message received\n");
 			forceCalibration = true; // set parameter value
 			reply.addString("ok");
 		}

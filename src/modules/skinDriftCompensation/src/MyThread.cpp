@@ -10,7 +10,7 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 
-MyThread::MyThread(BufferedPort<Bottle>* compensatedTactileDataPort, string robotName, float* minBaseline, 
+MyThread::MyThread(BufferedPort<Vector>* compensatedTactileDataPort, string robotName, float* minBaseline, 
 				   bool *calibrationAllowed, bool *forceCalibration, bool *zeroUpRawData, bool* rightHand)
 {
    this->compensatedTactileDataPort		= compensatedTactileDataPort;
@@ -98,10 +98,10 @@ void MyThread::run(){
 		}
 
 		//If calibration is allowed AND at least one baseline is less than minBaseline (or greater than 255-minBaseline)
-		if(*calibrationAllowed && doesBaselineExceed()){
+		if( (*calibrationAllowed)==true && doesBaselineExceed()){
 			// then the big and small calibrations are executed
 			runCalibration();
-		}else if(*forceCalibration){
+		}else if( (*forceCalibration) == true){
 			runCalibration();
 			*forceCalibration = false;
 		}
@@ -193,7 +193,7 @@ void MyThread::readRawAndWriteCompensatedData(){
 	if(rawData.size() != SKIN_DIM){
 		fprintf(stderr, "Unexpected size of the input array (raw tactile data): %d\n", rawData.size());
 	}
-	Bottle& compensatedData2 = compensatedTactileDataPort->prepare();
+	Vector& compensatedData2 = compensatedTactileDataPort->prepare();
     compensatedData2.clear();
 	
 	float d;
@@ -205,8 +205,8 @@ void MyThread::readRawAndWriteCompensatedData(){
 		}
         if(d<0) d=0;
 
-		//compensatedData.push_back(d);
-        compensatedData2.addInt((int)d);
+		compensatedData2.push_back((int)d);
+        //compensatedData2.addInt((int)d);
 
 		if(d>0)
 			touchDetected[i] = true;
@@ -230,8 +230,8 @@ void MyThread::updateBaselineAndThreshold(){
     for(int j=0; j<SKIN_DIM; j++) {
         if(!touchDetected[j]){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
-			//d = compensatedData(j);
-            d = compensatedData.get(j).asDouble();
+			d = compensatedData(j);
+            //d = compensatedData.get(j).asDouble();
 
 			if(d > 0.5) {
 				baselines[j]		-= CHANGE_PER_TIMESTEP;

@@ -31,7 +31,7 @@ private:
     float baselines[SKIN_DIM];					// mean of the raw tactile data 
 												// (considering only the samples read when no touch is detected)
 	Vector rawData;								// raw tactile data
-	Bottle compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
+	Vector compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
 	IAnalogSensor *tactileSensor;				// interface for executing the tactile sensor calibration
 	PolyDriver* tactileSensorDevice;
 
@@ -46,7 +46,7 @@ private:
 
 	/* ports */
 	BufferedPort<Vector>* rawTactileDataPort;
-	BufferedPort<Bottle>* compensatedTactileDataPort;
+	BufferedPort<Vector>* compensatedTactileDataPort;
 
 	/* class private methods */
 	void log(string s, bool endLine=true);
@@ -60,7 +60,7 @@ public:
 
 	/* class methods */
 
-	MyThread(BufferedPort<Bottle>* compensatedTactileDataPort, string robotName, 
+	MyThread(BufferedPort<Vector>* compensatedTactileDataPort, string robotName, 
 		float* minBaseline, bool *calibrationAllowed, bool *forceCalibration, bool *zeroUpRawData, bool *rightHand);
 	bool threadInit();     
 	void threadRelease();
