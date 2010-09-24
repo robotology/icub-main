@@ -64,7 +64,6 @@
 //#include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
-#include <yarp/IOException.h>
 
 
 using namespace yarp::os;
@@ -750,13 +749,8 @@ protected:
      * @throw a runtime error if unregistering the port fails
      */
     void unregisterAllPorts() {
-        try {
-            this->sourceList.close();
-            this->output.close();
-        } catch (yarp::IOException e) {
-            std::string msg("Failed to unregister ports: ");
-            throw std::runtime_error(msg + e.toString().c_str());
-        }
+        this->sourceList.close();
+        this->output.close();
     }
 
 

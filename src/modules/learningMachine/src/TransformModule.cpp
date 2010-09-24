@@ -20,7 +20,6 @@
 #include <stdexcept>
 #include <cassert>
 
-#include <yarp/IOException.h>
 #include <yarp/os/Network.h>
 
 #include "iCub/learningMachine/TransformModule.h"

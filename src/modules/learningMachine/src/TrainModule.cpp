@@ -20,8 +20,6 @@
 #include <stdexcept>
 #include <cassert>
 
-#include <yarp/IOException.h>
-
 #include "iCub/learningMachine/TrainModule.h"
 #include "iCub/learningMachine/EventDispatcher.h"
 #include "iCub/learningMachine/TrainEvent.h"

@@ -21,7 +21,6 @@
 #include <cassert>
 
 #include <yarp/os/Network.h>
-#include <yarp/IOException.h>
 
 #include "iCub/learningMachine/PredictModule.h"
 #include "iCub/learningMachine/EventDispatcher.h"

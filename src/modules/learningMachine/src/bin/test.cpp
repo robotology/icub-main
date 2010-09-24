@@ -33,7 +33,6 @@
 #include <yarp/os/Port.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
-#include <yarp/IOException.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -225,13 +224,8 @@ private:
     }
 
     void unregisterAllPorts() {
-        try {
-            this->train_out.close();
-            this->predict_inout.close();
-        } catch(yarp::IOException e) {
-            printf("Exception happened while unregistering ports\n");
-            printf("Message: %s\n", e.toString().c_str());
-        }
+        this->train_out.close();
+        this->predict_inout.close();
     }
 
 public:
