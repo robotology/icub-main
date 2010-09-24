@@ -6,49 +6,49 @@
    <module>
       <name>skinDriftCompensation</name>
       <parameters>--from SkinDriftCompensationLeft.ini --context graspingDemo/conf</parameters>
-	    <node>adp_pc</node>
+	    <node>icub15</node>
 	    <tag>drifComp</tag>
    </module>
 
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from lefthand.ini</parameters>
-    <node>adp_pc</node>
+    <node>icub15</node>
     <tag>skinGui</tag>
   </module>  
 
   <module>
     <name>tactileGrasp</name>
-    <parameters>--from OpenLeft.ini --context graspingDemo/conf</parameters>
-    <node>adp_pc</node>
+    <parameters>--from OpenHandLeft.ini --context graspingDemo/conf</parameters>
+	    <node>icub15</node>
     <tag>openHand</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from CalibrateLeft.ini --context graspingDemo/conf</parameters>
-    <node>adp_pc</node>
+	    <node>icub15</node>
     <tag>calibrate</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from ToughGraspLeft.ini --context graspingDemo/conf</parameters>
-    <node>adp_pc</node>
+	    <node>icub15</node>
     <tag>toughGrasp</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from SoftGraspLeft.ini --context graspingDemo/conf</parameters>
-    <node>adp_pc</node>
+	    <node>icub15</node>
     <tag>softGrasp</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from CompliantGraspLeft.ini --context graspingDemo/conf</parameters>
-    <node>adp_pc</node>
+	    <node>icub15</node>
     <tag>compliantGrasp</tag>
   </module>
    
