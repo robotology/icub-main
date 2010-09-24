@@ -1,0 +1,64 @@
+<application>
+   <name>Grasping Demo Right</name>
+   <dependencies>
+   </dependencies>
+
+   <module>
+      <name>skinDriftCompensation</name>
+      <parameters>--from SkinDriftCompensationRight.ini --context graspingDemo/conf</parameters>
+	    <node>adp_pc</node>
+	    <tag>drifComp</tag>
+   </module>
+
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from righthand.ini</parameters>
+    <node>adp_pc</node>
+    <tag>skinGui</tag>
+  </module>  
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from OpenRight.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>openHand</tag>
+  </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from CalibrateRight.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>calibrate</tag>
+  </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from ToughGraspRight.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>toughGrasp</tag>
+  </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from SoftGraspRight.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>softGrasp</tag>
+  </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from CompliantGraspRight.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>compliantGrasp</tag>
+  </module>
+   
+    
+  <!--Connections between SkinDriftCompensation module and the SkinGui-->
+  <connection>
+    <from>/icub/skin/righthandcomp</from>
+    <to>/skinGui/right_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+
+</application>
+

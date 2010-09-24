@@ -11,6 +11,13 @@
    </module>
 
   <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from lefthand.ini</parameters>
+    <node>adp_pc</node>
+    <tag>skinGui</tag>
+  </module>  
+
+  <module>
     <name>tactileGrasp</name>
     <parameters>--from OpenLeft.ini --context graspingDemo/conf</parameters>
     <node>adp_pc</node>
@@ -37,19 +44,21 @@
     <node>adp_pc</node>
     <tag>softGrasp</tag>
   </module>
+
+  <module>
+    <name>tactileGrasp</name>
+    <parameters>--from CompliantGraspLeft.ini --context graspingDemo/conf</parameters>
+    <node>adp_pc</node>
+    <tag>compliantGrasp</tag>
+  </module>
    
     
-  <!--Connections between DataPicker and Saliences-->
+  <!--Connections between SkinDriftCompensation module and the SkinGui-->
   <connection>
-    <from>/vipSim/cam/right:o</from>
-    <to>/vipSim/Rsal/view</to>
+    <from>/icub/skin/lefthandcomp</from>
+    <to>/skinGui/left_hand:i</to>
     <protocol>tcp</protocol>
   </connection>
-  <connection>
-    <from>/vipSim/cam/left:o</from>
-    <to>/vipSim/Lsal/view</to>
-    <protocol>tcp</protocol>
-  </connection>
-  
+
 </application>
 
