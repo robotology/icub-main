@@ -568,14 +568,10 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
     robotName=robotOptions.findGroup("GENERAL").find("name").asString().c_str();
     Bottle *reqParts=robotOptions.findGroup("GENERAL").find("parts").asList();
-    if (reqParts==0)
-    {
-        // This is to maintain compatibility with old ini files
-        std::cerr<<"Warning parsing " << inifile << " could not find a \"parts\" description\n";
-        return false;
-    }
-
-    int nparts=reqParts->size();
+    int nparts=0;
+    if (reqParts!=0)
+        nparts=reqParts->size();
+   
     std::cout<<"Found " << nparts <<" parts"<<endl;
 
     //std::cout<<robotOptions.toString()<<endl;
