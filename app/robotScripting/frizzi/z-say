@@ -1,0 +1,5 @@
+./frizzi/icub-speak "Forse ci siamo dimenticati qualcosa di importante!" 13
+
+#echo "ctpn time 3 off 0 pos (47 0 0)" | yarp rpc /ctpservice/torso/rpc
+
+
