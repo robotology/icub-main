@@ -149,6 +149,12 @@ public:
     virtual bool configure(yarp::os::Property &options);
 
     /**
+    * Return the internal status after a configuration.
+    * @return true/false on success/fail.
+    */ 
+    virtual bool isValid();
+
+    /**
     * Predict the output given a certain input to the network.
     * @param x is the actual input to the network.
     * @return the predicted output.

@@ -44,6 +44,13 @@ ff2LayNN::ff2LayNN(Property &options)
 
 
 /***************************************************************************/
+bool ff2LayNN::isValid()
+{
+    return configured;
+}
+
+
+/***************************************************************************/
 bool ff2LayNN::getItem(Property &options, const char *tag, Vector &item)
 {
     Bottle *b=options.find(tag).asList();
