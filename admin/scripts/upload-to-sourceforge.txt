@@ -1,0 +1,2 @@
+ scp FILE USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/linux
+ 
