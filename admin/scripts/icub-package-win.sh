@@ -2,7 +2,7 @@
 
 export SOURCE_TMP_DIR=./package-tmp
 export MODULE=iCub
-export REL=2.0
+export REL=1.1.0
 export ARCHFILE=$MODULE-src-$REL.zip
 export DEPFILE=$MODULE-dep-$REL.txt
 export URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
