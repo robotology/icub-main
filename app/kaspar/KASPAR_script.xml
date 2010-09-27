@@ -1,0 +1,27 @@
+<application>
+<name>KASPAR_SKIN</name>
+<module>
+      <name>iCubSkinGui</name>
+      <parameters>--from KASPAR_lefthand_top.ini</parameters>
+	  <node>icubsrv</node>
+	<tag>LeftHand_top</tag>
+ </module>
+
+<connection>
+  <from>/icub/skin/lefthand_top</from>
+  <to>/skinGui/lefthand_top:i</to>
+  <protocol>tcp</protocol>
+</connection>
+<module>
+      <name>iCubSkinGui</name>
+      <parameters>--from KASPAR_lefthand_bottom.ini</parameters>
+	  <node>icubsrv</node>
+	<tag>LeftHand_bottom</tag>
+ </module>
+
+<connection>
+  <from>/icub/skin/lefthand_bottom</from>
+  <to>/skinGui/lefthand_bottom:i</to>
+  <protocol>tcp</protocol>
+</connection>
+</application>
