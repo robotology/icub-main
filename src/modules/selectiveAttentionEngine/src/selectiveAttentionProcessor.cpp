@@ -45,7 +45,7 @@ using namespace iCub::logpolar;
 
 #define XSIZE_DIM 640 //original mapping 
 #define YSIZE_DIM 480 //original mapping
-#define TIME_CONST 100 //number of times period rateThread to send motion command
+#define TIME_CONST 50 //number of times period rateThread to send motion command
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
 {
