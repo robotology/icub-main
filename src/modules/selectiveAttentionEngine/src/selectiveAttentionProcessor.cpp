@@ -220,6 +220,8 @@ bool selectiveAttentionProcessor::threadInit(){
     if (clientGazeCtrl->isValid()) {
        clientGazeCtrl->view(igaze);
     }
+    else
+        return false;
     return true;
 }
 
@@ -480,11 +482,11 @@ void selectiveAttentionProcessor::run(){
             }
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
-                printf("cartesian: %f,%f \n", xm/2,ym/2);
+                printf("cartesian: %f,%f \n", xm,ym);
                 if(gazePerform) {
                     Vector px(2);
-                    px[0]=round(xm/2);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                    px[1]=round(ym/2);
+                    px[0]=round(xm);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                    px[1]=round(ym);
                     //we still have one degree of freedom given by
                     //the distance of the object from the image plane
                     //if you do not have it, try to guess :)
