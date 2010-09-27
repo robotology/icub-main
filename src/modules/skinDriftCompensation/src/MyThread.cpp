@@ -38,7 +38,7 @@ bool MyThread::threadInit()
 	//a new Polydriver that use these new options. I’m not sure if the following three options are
 	//enough or you need additional parameters. Try to compare it with the code that opens the motor interface in your code.
 	Property options;
-	options.put("robot",  "icub");
+	options.put("robot",  robotName.c_str());
 	if(*rightHand){
 		options.put("part",   "righthand");         //skin part that you want to control
 		options.put("local",  "/skinComp/right");
@@ -189,7 +189,7 @@ void MyThread::runCalibration(){
 
 void MyThread::readRawAndWriteCompensatedData(){
 	//tactileSensor->read(rawData);
-	rawData = *rawTactileDataPort->read();
+	rawData = *(rawTactileDataPort->read());
 	if(rawData.size() != SKIN_DIM){
 		fprintf(stderr, "Unexpected size of the input array (raw tactile data): %d\n", rawData.size());
 	}
