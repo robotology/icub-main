@@ -26,7 +26,7 @@
 
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from righthand.ini</parameters>
+    <parameters>--from righthand.ini --useCalibration</parameters>
 	    <node>adp_pc</node>
     <tag>skinGui</tag>
   </module>  

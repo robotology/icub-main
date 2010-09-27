@@ -12,7 +12,7 @@
 
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from lefthand.ini</parameters>
+    <parameters>--from lefthand.ini --useCalibration</parameters>
     <node>icub15</node>
     <tag>skinGui</tag>
   </module>  
