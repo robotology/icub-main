@@ -1,0 +1,48 @@
+V4
+XYDISABLED
+ADVANCED
+1000
+1
+Interface 0
+Esd USB-CAN driver:Device 0, Baudrate 1000, ID len 11, 0x0 -> 0xfff
+ROLL
+10000000 66182 -43107
+1
+10000
+0
+2
+C 0
+Interface 0
+0x 05 00 00 02 07 00 
+1
+C 1
+Interface 0
+0x 05 00 00 02 07 01 
+0
+Blue 0 2 0xffff 0x111 4 0xffffffff S32LE 0 1  pos_0
+Y 1
+Interface 0
+Orange 0 2 0xffff 0x111 8 0xffffffff S32LE 0 1  pos_1
+Y 1
+Interface 0
+Green 0 2 0xffff 0x121 4 0xffffffff S32LE 0 1  pos_2
+Y 1
+Interface 0
+Red 0 2 0xffff 0x114 4 0xffff S16LE 0 1  cur_0
+Y 1
+Interface 0
+Red 0 2 0xffff 0x114 6 0xffff S16LE 0 1  cur_1
+Y 1
+Interface 0
+Cyan 0 2 0xffff 0x124 4 0xffff S16LE 0 1  cur_2
+Y 1
+Interface 0
+Cyan 0 2 0xffff 0x124 6 0xffff S16LE 0 1  cur_3
+Y 1
+Interface 0
+Green 0 2 0xffff 0x134 4 0xffff S16LE 0 1  cur_4
+Y 1
+Interface 0
+Green 0 2 0xffff 0x134 6 0xffff S16LE 0 1  cur_5
+Y 1
+Interface 0
