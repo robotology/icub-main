@@ -56,7 +56,7 @@ bool MyThread::threadInit()
 		printf("Device not available.  Here are the known devices:\n");
 		printf("%s", Drivers::factory().toString().c_str());
 		return false;
-	}	 
+	}
 	// open the sensor interface	
 	bool ok = tactileSensorDevice->view(tactileSensor);
 	if (!ok) {
@@ -270,7 +270,14 @@ bool MyThread::doesBaselineExceed(){
 
 void MyThread::threadRelease() 
 {
-   /* for example, delete dynamically created data-structures */
+	/* close device driver and port */
+	if(tactileSensorDevice)
+		tactileSensorDevice->close();
+
+	if(rawTactileDataPort){
+		rawTactileDataPort->interrupt();
+		rawTactileDataPort->close();
+	}
 }
 
 

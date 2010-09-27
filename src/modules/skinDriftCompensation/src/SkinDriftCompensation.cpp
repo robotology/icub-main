@@ -64,6 +64,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 
 	/* create the thread and pass pointers to the module parameters */
+	calibrationAllowed = false;		// default -> calibration is not allowed!
 	myThread = new MyThread(&compensatedTactileDataPort, robotName, &minBaseline, &calibrationAllowed, &forceCalibration, 
 		&zeroUpRawData, &rightHand);
 	/* now start the thread to do the work */
@@ -76,22 +77,23 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 bool SkinDriftCompensation::interruptModule()
 {
-   compensatedTactileDataPort.interrupt();
-   handlerPort.interrupt();
+	compensatedTactileDataPort.interrupt();
+	handlerPort.interrupt();
 
-   return true;
+	return true;
 }
 
 
 bool SkinDriftCompensation::close()
 {
-   compensatedTactileDataPort.close();
-   handlerPort.close();
+	/* stop the thread */
+	if(myThread)
+		myThread->stop();
 
-   /* stop the thread */
-   myThread->stop();
+	compensatedTactileDataPort.close();
+	handlerPort.close();   
 
-   return true;
+	return true;
 }
 
 
