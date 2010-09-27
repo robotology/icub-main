@@ -15,8 +15,9 @@
 </connection>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_lefthand_bottom.ini</parameters>
+      <parameters>--from KASPAR_lefthand_bottom.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>LeftHand_bottom</tag>
  </module>
 
@@ -27,8 +28,9 @@
 </connection>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_righthand_top.ini</parameters>
+      <parameters>--from KASPAR_righthand_top.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>RightHand_top</tag>
  </module>
 
@@ -39,8 +41,9 @@
 </connection>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_righthand_bottom.ini</parameters>
+      <parameters>--from KASPAR_righthand_bottom.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>RightHand_bottom</tag>
  </module>
 
@@ -51,33 +54,36 @@
 </connection>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_leftarm.ini</parameters>
+      <parameters>--from KASPAR_leftarm.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>Leftarm</tag>
  </module>
 
 <connection>
   <from>/icub/skin/leftarm</from>
-  <to>/skinGui/leftarm:i</to>
+  <to>/skinGui/left_arm:i</to>
   <protocol>tcp</protocol>
 </connection>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_rightarm.ini</parameters>
+      <parameters>--from KASPAR_rightarm.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>rightarm</tag>
  </module>
 
 <connection>
   <from>/icub/skin/rightarm</from>
-  <to>/skinGui/rightarm:i</to>
+  <to>/skinGui/right_arm:i</to>
   <protocol>tcp</protocol>
 </connection>
 
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_cheeks.ini</parameters>
+      <parameters>--from KASPAR_cheeks.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>cheeks</tag>
  </module>
 
@@ -89,8 +95,9 @@
 
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_torso.ini</parameters>
+      <parameters>--from KASPAR_torso.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>torso</tag>
  </module>
 
@@ -102,9 +109,10 @@
 
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_leftfoot.ini</parameters>
+      <parameters>--from KASPAR_leftfoot.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
-	<tag>leftfoot</tag>
+	  <stdio>icubsrv</stdio>
+	  <tag>leftfoot</tag>
  </module>
 
 <connection>
@@ -115,8 +123,9 @@
 
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_rightfoot.ini</parameters>
+      <parameters>--from KASPAR_rightfoot.ini --context kaspar</parameters>
 	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
 	<tag>rightfoot</tag>
  </module>
 
