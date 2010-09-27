@@ -10,7 +10,15 @@
 
 class TouchSensor
 {
+	bool calibrated_skin;
+
 public:
+
+	void setCalibrationFlag (bool use_calibrated_skin)
+	{
+		calibrated_skin=use_calibrated_skin;
+	}
+
     void resize(int width,int height,int margin)
     {
         if (3*margin>=width || 3*margin>=height) margin=0;
@@ -133,23 +141,27 @@ public:
     {
         for (int i=0; i<7; ++i)
         {
-            //activation[i]=data[i+1]<=244?double(244-data[i+1]):0.0;
-            activation[i]=data[i+1];
+            activation[i]=data[i+1]<=244?double(244-data[i+1]):0.0;
         }
     }
     void setActivationLast5(unsigned char* data)
     {
         for (int i=1; i<=5; ++i)
         {
-            //activation[i+6]=data[i]<=244?double(244-data[i]):0.0;
-            activation[i+6]=data[i];
+            activation[i+6]=data[i]<=244?double(244-data[i]):0.0;
         }
     }
 
 	void setActivationFromPortData(double val, int id)
     {
-        //activation[id]=val<=244?double(244-val):0.0;;
-        activation[id]=val;
+        if (calibrated_skin)
+		{
+			activation[id]=val;
+		}
+		else
+		{
+			activation[id]=val<=244?double(244-val):0.0;
+		}
     }
 
     void draw(unsigned char *image)

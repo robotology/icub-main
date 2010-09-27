@@ -45,6 +45,15 @@ public:
 		skin_port.open(part.c_str());
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
+		bool useCalibration = config.check("useCalibration");
+		if (useCalibration==true) 
+		{
+			printf("Using calibrated skin values (0-255)\n");
+		}
+		else
+		{
+			printf("Using raw skin values (255-0)\n");
+		}
 
         yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
@@ -76,10 +85,12 @@ public:
                         if (type=="triangle")
                         {
                             sensor[id]=new Triangle(xc,yc,th,gain,layoutNum,lrMirror);
+							sensor[id]->setCalibrationFlag(useCalibration);
                         }
                         else
                         {
                             sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
+							sensor[id]->setCalibrationFlag(useCalibration);
                         }
                         ++sensorsNum;
                     }

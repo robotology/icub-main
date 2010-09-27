@@ -54,6 +54,16 @@ public:
 		part.append(":i");
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
+		bool useCalibration = config.check("useCalibration");
+		if (useCalibration==true) 
+		{
+			printf("Reading datadirectly from CAN! Calibration unsupported\n");
+			useCalibration = false;
+		}
+		else
+		{
+			printf("Using raw skin values (255-0)\n");
+		}
 
         yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
