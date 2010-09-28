@@ -8,7 +8,7 @@
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 
-//#define DEBUG 1
+#define SKIN_DEBUG 0
 
 using namespace std;
 
@@ -79,7 +79,8 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
 
     for (int id=0; id<16; ++id)
     {
-        pCanBus->canIdAdd(cardId+id);
+        pCanBus->canIdAdd(0x200+cardId);
+		pCanBus->canIdAdd(0x300+(cardId<<4)+id);
     }
 
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
@@ -126,41 +127,15 @@ int SkinPrototype::getChannels()
 
 int SkinPrototype::calibrateSensor()
 {
-//#if SKIN_DEBUG
-	printf("SkinPrototype:: calibrating...\n");
-//#endif 
+#if SKIN_DEBUG
+	printf("SkinPrototype:: calibrating boardId: %d\n",cardId);
+#endif 
 
-CanMessage &msg=outBuffer[0];
-
-    unsigned int id=(0x020f);//|cardId;
-    msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0x22;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
-    unsigned int canMessages=0;
-    pCanBus->canWrite(outBuffer, 1, &canMessages);
-    
-id=(0x020e);//|cardId;
-    msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0x22;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
-    canMessages=0;
-    pCanBus->canWrite(outBuffer, 1, &canMessages);
-id=(0x020c);//|cardId;
-    msg.setId(id);
+   	unsigned int canMessages=0;
+	unsigned id = 0x200 + cardId;
+   
+	CanMessage &msg=outBuffer[0];
+	msg.setId(id);
     msg.getData()[0]=0x4C; // message type
     msg.getData()[1]=0x01; 
     msg.getData()[2]=0x01; 
@@ -196,41 +171,15 @@ int SkinPrototype::calibrateChannel(int ch)
 bool SkinPrototype::threadInit()
 {
 #if SKIN_DEBUG
-	printf("SkinPrototype:: thread initialising...\n");
+	printf("SkinPrototype:: thread initialising boardId:%d\n",cardId);
     printf("... done!\n");
 #endif 
 
-    CanMessage &msg=outBuffer[0];
-
-    unsigned int id=(0x020f);//|cardId;
-    msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0x22;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
-    unsigned int canMessages=0;
-    pCanBus->canWrite(outBuffer, 1, &canMessages);
-    
-id=(0x020e);//|cardId;
-    msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0x22;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
-    canMessages=0;
-    pCanBus->canWrite(outBuffer, 1, &canMessages);
-id=(0x020c);//|cardId;
-    msg.setId(id);
+   	unsigned int canMessages=0;
+	unsigned id = 0x200 + cardId;
+   
+	CanMessage &msg=outBuffer[0];
+	msg.setId(id);
     msg.getData()[0]=0x4C; // message type
     msg.getData()[1]=0x01; 
     msg.getData()[2]=0x01; 
