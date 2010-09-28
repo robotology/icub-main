@@ -20,7 +20,11 @@
 	  <stdio>icubsrv</stdio>
 	  <tag>LeftHand_out</tag>
  </module>
-
+<connection>
+  <from>/icub/skin/lefthand_out</from>
+  <to>/skinGui/lefthand_out:i</to>
+  <protocol>tcp</protocol>
+</connection>
  <module>
       <name>iCubSkinGui</name>
       <parameters>--from NAO_righthand_in.ini --context nao/conf </parameters>
@@ -49,6 +53,31 @@
   <protocol>tcp</protocol>
 </connection>
 
+<module>
+      <name>iCubSkinGui</name>
+      <parameters>--from NAO_right_arm.ini --context nao/conf </parameters>
+	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
+	  <tag>right_arm</tag>
+ </module>
 
+<connection>
+  <from>/icub/skin/right_arm</from>
+  <to>/skinGui/right_arm:i</to>
+  <protocol>tcp</protocol>
+</connection>
+<module>
+      <name>iCubSkinGui</name>
+      <parameters>--from NAO_left_arm.ini --context nao/conf </parameters>
+	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>
+	  <tag>left_arm</tag>
+ </module>
+
+<connection>
+  <from>/icub/skin/left_arm</from>
+  <to>/skinGui/left_arm:i</to>
+  <protocol>tcp</protocol>
+</connection>
 
 </application>
