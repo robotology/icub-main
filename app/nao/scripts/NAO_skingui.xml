@@ -1,141 +1,53 @@
 <application>
-<name>KASPAR_SKIN</name>
+<name>NAO_SKIN</name>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_lefthand_top.ini --context kaspar </parameters>
+      <parameters>--from NAO_lefthand_in.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
 	  <stdio>icubsrv</stdio>
-	  <tag>LeftHand_top</tag>
+	  <tag>LeftHand_in</tag>
  </module>
 
 <connection>
-  <from>/icub/skin/lefthand_top</from>
-  <to>/skinGui/lefthand_top:i</to>
+  <from>/icub/skin/lefthand_in</from>
+  <to>/skinGui/lefthand_in:i</to>
   <protocol>tcp</protocol>
 </connection>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_lefthand_bottom.ini --context kaspar</parameters>
+      <parameters>--from NAO_lefthand_out.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
 	  <stdio>icubsrv</stdio>
-	<tag>LeftHand_bottom</tag>
+	  <tag>LeftHand_out</tag>
  </module>
 
-<connection>
-  <from>/icub/skin/lefthand_bottom</from>
-  <to>/skinGui/lefthand_bottom:i</to>
-  <protocol>tcp</protocol>
-</connection>
-<module>
+ <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_righthand_top.ini --context kaspar</parameters>
+      <parameters>--from NAO_righthand_in.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
 	  <stdio>icubsrv</stdio>
-	<tag>RightHand_top</tag>
+	  <tag>rightHand_in</tag>
  </module>
 
 <connection>
-  <from>/icub/skin/righthand_top</from>
-  <to>/skinGui/righthand_top:i</to>
-  <protocol>tcp</protocol>
-</connection>
-<module>
-      <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_righthand_bottom.ini --context kaspar</parameters>
-	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
-	<tag>RightHand_bottom</tag>
- </module>
-
-<connection>
-  <from>/icub/skin/righthand_bottom</from>
-  <to>/skinGui/righthand_bottom:i</to>
-  <protocol>tcp</protocol>
-</connection>
-<module>
-      <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_leftarm.ini --context kaspar</parameters>
-	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
-	<tag>Leftarm</tag>
- </module>
-
-<connection>
-  <from>/icub/skin/leftarm</from>
-  <to>/skinGui/left_arm:i</to>
-  <protocol>tcp</protocol>
-</connection>
-<module>
-      <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_rightarm.ini --context kaspar</parameters>
-	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
-	<tag>rightarm</tag>
- </module>
-
-<connection>
-  <from>/icub/skin/rightarm</from>
-  <to>/skinGui/right_arm:i</to>
+  <from>/icub/skin/righthand_in</from>
+  <to>/skinGui/righthand_in:i</to>
   <protocol>tcp</protocol>
 </connection>
 
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_cheeks.ini --context kaspar</parameters>
+      <parameters>--from NAO_righthand_out.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
 	  <stdio>icubsrv</stdio>
-	<tag>cheeks</tag>
+	  <tag>rightHand_out</tag>
  </module>
 
 <connection>
-  <from>/icub/skin/cheeks</from>
-  <to>/skinGui/cheeks:i</to>
+  <from>/icub/skin/righthand_out</from>
+  <to>/skinGui/righthand_out:i</to>
   <protocol>tcp</protocol>
 </connection>
-
-<module>
-      <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_torso.ini --context kaspar</parameters>
-	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
-	<tag>torso</tag>
- </module>
-
-<connection>
-  <from>/icub/skin/torso</from>
-  <to>/skinGui/torso:i</to>
-  <protocol>tcp</protocol>
-</connection>
-
-<module>
-      <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_leftfoot.ini --context kaspar</parameters>
-	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
-	  <tag>leftfoot</tag>
- </module>
-
-<connection>
-  <from>/icub/skin/leftfoot</from>
-  <to>/skinGui/leftfoot:i</to>
-  <protocol>tcp</protocol>
-</connection>
-
-<module>
-      <name>iCubSkinGui</name>
-      <parameters>--from KASPAR_rightfoot.ini --context kaspar</parameters>
-	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
-	<tag>rightfoot</tag>
- </module>
-
-<connection>
-  <from>/icub/skin/rightfoot</from>
-  <to>/skinGui/rightfoot:i</to>
-  <protocol>tcp</protocol>
-</connection>
-
-
 
 
 
