@@ -4,7 +4,7 @@
       <name>iCubSkinGui</name>
       <parameters>--from NAO_lefthand_in.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
+	 
 	  <tag>LeftHand_in</tag>
  </module>
 
@@ -17,7 +17,7 @@
       <name>iCubSkinGui</name>
       <parameters>--from NAO_lefthand_out.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
+	 
 	  <tag>LeftHand_out</tag>
  </module>
 <connection>
@@ -29,7 +29,7 @@
       <name>iCubSkinGui</name>
       <parameters>--from NAO_righthand_in.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
+	 
 	  <tag>rightHand_in</tag>
  </module>
 
@@ -43,7 +43,7 @@
       <name>iCubSkinGui</name>
       <parameters>--from NAO_righthand_out.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
+	 
 	  <tag>rightHand_out</tag>
  </module>
 
@@ -57,7 +57,7 @@
       <name>iCubSkinGui</name>
       <parameters>--from NAO_right_arm.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
+	 
 	  <tag>right_arm</tag>
  </module>
 
@@ -70,7 +70,7 @@
       <name>iCubSkinGui</name>
       <parameters>--from NAO_left_arm.ini --context nao/conf </parameters>
 	  <node>icubsrv</node>
-	  <stdio>icubsrv</stdio>
+	 
 	  <tag>left_arm</tag>
  </module>
 
