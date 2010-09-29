@@ -22,13 +22,15 @@
     <name>tactileGrasp</name>
     <parameters>--from OpenHandRight.ini --context graspingDemo/conf</parameters>
 	  <node>icub15</node>
+    <stdio>icub15</stdio>
     <tag>openHand</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from CalibrateRight.ini --context graspingDemo/conf</parameters>
-	  <node>icub15</node>
+    <node>icub15</node>
+    <stdio>icub15</stdio>
     <tag>calibrate</tag>
   </module>
 
@@ -36,13 +38,15 @@
     <name>tactileGrasp</name>
     <parameters>--from ToughGraspRight.ini --context graspingDemo/conf</parameters>
 	  <node>icub15</node>
+    <stdio>icub15</stdio>
     <tag>toughGrasp</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from SoftGraspRight.ini --context graspingDemo/conf</parameters>
-	  <node>icub15</node>
+    <node>icub15</node>
+    <stdio>icub15</stdio>
     <tag>softGrasp</tag>
   </module>
 
@@ -50,6 +54,7 @@
     <name>tactileGrasp</name>
     <parameters>--from CompliantGraspRight.ini --context graspingDemo/conf</parameters>
 	  <node>icub15</node>
+    <stdio>icub15</stdio>
     <tag>compliantGrasp</tag>
   </module>
    

@@ -38,12 +38,12 @@
     <tag>openHand</tag>
   </module>
 
-  <!--<module>
+  <module>
     <name>tactileGrasp</name>
-    <parameters>-from CalibrateRightSim.ini -context graspingDemo/conf</parameters>
+    <parameters>--from CalibrateRightSim.ini --context graspingDemo/conf</parameters>
 	    <node>adp_pc</node>
     <tag>calibrate</tag>
-  </module>-->
+  </module>
 
   <module>
     <name>tactileGraspoo</name>
