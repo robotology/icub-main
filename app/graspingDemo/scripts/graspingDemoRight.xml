@@ -8,14 +8,14 @@
       <parameters>--from SkinDriftCompensationRight.ini --context graspingDemo/conf</parameters>
 	    <node>icub15</node>
       <stdio>icub15</stdio>
-	    <tag>drifComp</tag>
+	    <tag>drifCompR</tag>
    </module>
 
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from righthand.ini --useCalibration</parameters>
     <node>icub15</node>
-    <tag>skinGui</tag>
+    <tag>skinGuiR</tag>
   </module>  
 
   <module>
@@ -23,7 +23,7 @@
     <parameters>--from OpenHandRight.ini --context graspingDemo/conf</parameters>
 	  <node>icub15</node>
     <stdio>icub15</stdio>
-    <tag>openHand</tag>
+    <tag>openHandR</tag>
   </module>
 
   <module>
@@ -31,7 +31,7 @@
     <parameters>--from CalibrateRight.ini --context graspingDemo/conf</parameters>
     <node>icub15</node>
     <stdio>icub15</stdio>
-    <tag>calibrate</tag>
+    <tag>calibrateR</tag>
   </module>
 
   <module>
@@ -39,7 +39,7 @@
     <parameters>--from ToughGraspRight.ini --context graspingDemo/conf</parameters>
 	  <node>icub15</node>
     <stdio>icub15</stdio>
-    <tag>toughGrasp</tag>
+    <tag>toughGraspR</tag>
   </module>
 
   <module>
@@ -47,7 +47,7 @@
     <parameters>--from SoftGraspRight.ini --context graspingDemo/conf</parameters>
     <node>icub15</node>
     <stdio>icub15</stdio>
-    <tag>softGrasp</tag>
+    <tag>softGraspR</tag>
   </module>
 
   <module>
@@ -55,7 +55,7 @@
     <parameters>--from CompliantGraspRight.ini --context graspingDemo/conf</parameters>
 	  <node>icub15</node>
     <stdio>icub15</stdio>
-    <tag>compliantGrasp</tag>
+    <tag>compliantGraspR</tag>
   </module>
    
     
