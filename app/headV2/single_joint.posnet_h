@@ -1,0 +1,48 @@
+[POSITION0] 
+jointPositions -1.36 1.54 0.04 0.66 -0.12 -0.15 
+jointVelocities 60.00 60.00 51.00 100.00 100.00 100.00 
+timing 0.50 
+[POSITION1] 
+jointPositions -38.29 0.40 0.04 0.48 -0.15 -0.02 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 0.70 
+[POSITION2] 
+jointPositions 33.89 0.31 0.04 0.48 -0.15 -0.02 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 1.00 
+[POSITION3] 
+jointPositions 1.36 0.31 0.04 0.40 -0.09 0.01 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 0.70 
+[POSITION4] 
+jointPositions -0.13 -35.47 0.04 0.40 -0.09 0.00 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 1.00 
+[POSITION5] 
+jointPositions 0.40 36.35 0.04 0.31 -0.09 0.00 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 1.00 
+[POSITION6] 
+jointPositions 0.22 1.54 0.04 0.31 -0.09 0.00 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 1.00 
+[POSITION7] 
+jointPositions 0.31 1.10 -43.03 0.40 -0.06 0.06 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 0.60 
+[POSITION8] 
+jointPositions 0.22 0.57 44.97 0.48 -0.06 0.06 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 1.00 
+[POSITION9] 
+jointPositions 0.13 1.27 0.04 0.31 -0.09 0.00 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 0.50 
+[POSITION10] 
+jointPositions 0.13 1.27 0.04 -29.58 0.03 39.85 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 0.50 
+[POSITION11] 
+jointPositions 0.13 1.27 0.04 39.87 -0.02 -39.82 
+jointVelocities 49.00 50.00 51.00 100.00 100.00 100.00 
+timing 0.50 
