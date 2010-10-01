@@ -34,24 +34,24 @@ target_link_libraries(${PROJECTNAME} sharksWithLasers ${YARP_LIBRARIES})
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
-if (ICUB_EXPERIMENTAL_APP_INSTALL)
-	set(appname takeOverTheWorld)
-	icub_app(${appname})
-	
-	file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/*.ini)
+################### application code
+set(appname takeOverTheWorld)
+icub_app(${appname})
 
-	icub_app_install(${appname} 
-					FILES ${conf}
-					DESTINATION conf/example1)
-					
-	file(GLOB res ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/resources/*.jpg)
+file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/*.ini)
 
-	icub_app_install(${appname} 
-					FILES ${res}
-					DESTINATION conf/example1/resources)
-					
-	icub_add_target(${appname})
-endif(ICUB_EXPERIMENTAL_APP_INSTALL)
+icub_app_install(${appname} 
+				FILES ${conf}
+				DESTINATION conf/example1)
+				
+file(GLOB res ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/resources/*.jpg)
+
+icub_app_install(${appname} 
+				FILES ${res}
+				DESTINATION conf/example1/resources)
+				
+icub_add_target(${appname})
+
 
 
 

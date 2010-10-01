@@ -1,3 +1,6 @@
+2010-10-01 Lorenzo Natale <>
+	code for applications, default is now true, removed guards added iCubGenova01
+
 2010-09-24 Lorenzo Natale <>
 	src/core/iCubInterface/RobotInterfaceRemap.cpp:
 	config file now accepts no parts

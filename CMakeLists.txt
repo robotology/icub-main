@@ -128,8 +128,7 @@ set_property(GLOBAL PROPERTY ICUB_TARGETS)
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 
-set(ICUB_EXPERIMENTAL_APP_INSTALL FALSE CACHE BOOL "Turn on app install experimental feature")
-
+set(ICUB_EXPERIMENTAL_APP_INSTALL TRUE CACHE BOOL "Turn on app install experimental feature")
 SET(ICUB_DESTINATION_APP "$ENV{ICUB_ROOT}" CACHE TYPE PATH)
 
 ########### populate applications
