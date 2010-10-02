@@ -19,6 +19,8 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <yarp/os/Thread.h>
+#include <yarp/os/Event.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
@@ -46,30 +48,33 @@ using namespace iCub::iKin;
 // 
 // Since it accepts a bottle, it is possible to 
 // issue the command "yarp read /sender /ctrlName/xd:i"
-// and type the target pose manually.
-class xdPort : public BufferedPort<Bottle>
+// and type the target position manually.
+//
+// Moreover, the possibility to delay the received
+// target is handled as well.
+class xdPort : public BufferedPort<Bottle>,
+               public Thread
 {
 protected:
+    void  *slv;
+
+    Event  syncEvent;
     Vector xd;
+    Vector xdDelayed;
     bool   isNew;
+    bool   closing;
 
     virtual void onRead(Bottle &b);
+    virtual void run();
 
 public:
-    xdPort(const Vector &xd0)
-    { 
-        xd=xd0;
-        isNew=false;
-    }
+    xdPort(const Vector &xd0, void *_slv);
+    void set_xd(const Vector &_xd);
+    ~xdPort();
 
-    bool   &get_new() { return isNew; }
-    Vector &get_xd()  { return xd;    }
-
-    void set_xd(const Vector &_xd)
-    {
-        xd=_xd;
-        isNew=true;
-    }
+    bool   &get_new()        { return isNew;     }
+    Vector &get_xd()         { return xd;        }
+    Vector &get_xdDelayed()  { return xdDelayed; }
 };
 
 

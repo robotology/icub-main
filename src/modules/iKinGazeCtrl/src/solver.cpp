@@ -560,7 +560,7 @@ bool Solver::threadInit()
     commData->get_compv().resize(3,0.0);
     commData->get_fpFrame()=chainNeck->getH();
 
-    port_xd=new xdPort(fp);
+    port_xd=new xdPort(fp,this);
     port_xd->useCallback();
     string n=localName+"/xd:i";
     port_xd->open(n.c_str());
@@ -592,7 +592,7 @@ void Solver::afterStart(bool s)
 void Solver::run()
 {
     // get the current target
-    Vector &xd=port_xd->get_xd();
+    Vector &xd=port_xd->get_xdDelayed();
 
     if (Robotable)
     {
@@ -614,14 +614,13 @@ void Solver::run()
     Vector theta=neckTargetRotAngles(xd);
 
     // call the solver for neck
-    if (theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD ||
-        theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD)
+    if ((theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD) ||
+        (theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD))
     {
         //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
         neckPos=invNeck->solve(neckPos,xd);
 
         // update neck pitch,yaw
-        commData->get_xd()=xd;
         commData->get_qd()[0]=neckPos[0];
         commData->get_qd()[2]=neckPos[1];
     }

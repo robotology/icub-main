@@ -17,6 +17,32 @@
 */
 
 #include <iCub/utils.hpp>
+#include <iCub/solver.hpp>
+
+
+/************************************************************************/
+xdPort::xdPort(const Vector &xd0, void *_slv)
+{   
+    xdDelayed=xd=xd0;
+    isNew=false;
+    closing=false;
+
+    slv=_slv;
+
+    if (slv!=NULL)
+        start();
+}
+
+
+/************************************************************************/
+xdPort::~xdPort()
+{
+    closing=true;
+    syncEvent.signal();
+
+    if (slv!=NULL)
+        stop();
+}
 
 
 /************************************************************************/
@@ -30,6 +56,40 @@ void xdPort::onRead(Bottle &b)
         xd[i]=b.get(i).asDouble();
 
     isNew=true;
+
+    syncEvent.signal();
+}
+
+
+/************************************************************************/
+void xdPort::set_xd(const Vector &_xd)
+{
+    xd=_xd;
+    isNew=true;
+
+    syncEvent.signal();
+}
+
+
+/************************************************************************/
+void xdPort::run()
+{
+    while (!isStopping() && !closing)
+    {
+        syncEvent.reset();
+        syncEvent.wait();
+
+        Vector theta=static_cast<Solver*>(slv)->neckTargetRotAngles(xd);
+        double timeDelay=0.0;
+
+        if ((theta[0]<NECKSOLVER_RESTORINGANGLE_TRA*CTRL_DEG2RAD) &&
+            (theta[1]<NECKSOLVER_RESTORINGANGLE_SAG*CTRL_DEG2RAD))
+            timeDelay=1.0;
+
+        Time::delay(timeDelay);
+
+        xdDelayed=xd;
+    }
 }
 
 
