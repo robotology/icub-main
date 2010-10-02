@@ -621,6 +621,7 @@ void Solver::run()
         neckPos=invNeck->solve(neckPos,xd);
 
         // update neck pitch,yaw
+        commData->get_xd()=xd;
         commData->get_qd()[0]=neckPos[0];
         commData->get_qd()[2]=neckPos[1];
     }
