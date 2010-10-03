@@ -6,13 +6,16 @@ The Cartesian Solvers Launcher.
 
 \section intro_sec Description
 This application allows the user to launch instances of the iKinCartesianSolver
-on a specific machine belonging to the cluster.
+on a specific machine belonging to the cluster. Moreover the iCubInterface and
+the server part of the gaze controller interface are launched as well.
 
 \section dep_sec Dependencies
-Assumes \ref icub_iCubInterface is running.
+None.
 
 \section int_sec Instantiated Modules
+- \ref icub_iCubInterface "iCubInterface"
 - \ref iKinCartesianSolver "iKinCartesianSolver"
+- \ref iKinGazeCtrl "iKinGazeCtrl
 
 \section config_sec Configuration Files
 The file ./conf/cartesianSolver.ini contains the solvers initialization parameters.
@@ -23,14 +26,13 @@ before launching them.
 
 - ./scripts/cartesianSolver.xml.template
   launches solvers for the following parts: <i>right_arm, left_arm, right_leg, left_leg.</i>
+  as well as the iCubInterface and the iKinGazeCtrl.
 
 \author Ugo Pattacini
 
 Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
-
-This file can be edited at app/faceTrackerDemo/doc.dox
 **/
 
 
