@@ -23,6 +23,7 @@ add_custom_command(OUTPUT ${dummy}
 add_subdirectory(default)
 add_subdirectory(actionPrimitivesExample)
 add_subdirectory(demoGrasp_IIT_ISR)
+add_subdirectory(iKinView)
 add_subdirectory(signalScope)
 add_subdirectory(simCartesianControl)
 
