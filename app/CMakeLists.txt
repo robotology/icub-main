@@ -22,6 +22,7 @@ add_custom_command(OUTPUT ${dummy}
 					
 add_subdirectory(default)
 add_subdirectory(actionPrimitivesExample)
+add_subdirectory(demoGrasp_IIT_ISR)
 
 IF ("${ROBOT_NAME}" STREQUAL "")
   MESSAGE(STATUS "No robot name")
