@@ -472,6 +472,29 @@ bool ClientGazeController::setEyesTrajTime(const double t)
 
 
 /************************************************************************/
+bool ClientGazeController::bindNeckPitch(const double min, const double max)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("bind");
+    command.addString("pitch");
+    command.addDouble(min);
+    command.addDouble(max);
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+    
+    return true;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::blockNeckPitch(const double val)
 {
     if (!connected)
@@ -479,8 +502,9 @@ bool ClientGazeController::blockNeckPitch(const double val)
 
     Bottle command, reply;
 
-    command.addString("block");
+    command.addString("bind");
     command.addString("pitch");
+    command.addDouble(val);
     command.addDouble(val);
 
     if (!portRpc->write(command,reply))
@@ -503,9 +527,33 @@ bool ClientGazeController::blockNeckPitch()
 
     Vector *val=portStateHead->read(true);
 
-    command.addString("block");
+    command.addString("bind");
     command.addString("pitch");
     command.addDouble((*val)[3]);
+    command.addDouble((*val)[3]);
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+    
+    return true;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::bindNeckYaw(const double min, const double max)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("bind");
+    command.addString("yaw");
+    command.addDouble(min);
+    command.addDouble(max);
 
     if (!portRpc->write(command,reply))
     {
@@ -525,8 +573,9 @@ bool ClientGazeController::blockNeckYaw(const double val)
 
     Bottle command, reply;
 
-    command.addString("block");
+    command.addString("bind");
     command.addString("yaw");
+    command.addDouble(val);
     command.addDouble(val);
 
     if (!portRpc->write(command,reply))
@@ -549,8 +598,9 @@ bool ClientGazeController::blockNeckYaw()
 
     Vector *val=portStateHead->read(true);
 
-    command.addString("block");
+    command.addString("bind");
     command.addString("yaw");
+    command.addDouble((*val)[5]);
     command.addDouble((*val)[5]);
 
     if (!portRpc->write(command,reply))

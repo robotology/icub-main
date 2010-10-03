@@ -166,8 +166,8 @@ public:
     void   updateAngles();
     Vector neckTargetRotAngles(const Vector &xd);
 
-    void blockNeckPitch(const double val_deg);
-    void blockNeckYaw(const double val_deg);
+    void bindNeckPitch(const double min_deg, const double max_deg);
+    void bindNeckYaw(const double min_deg, const double max_deg);
     void clearNeckPitch();
     void clearNeckYaw();
 

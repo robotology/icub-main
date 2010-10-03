@@ -230,9 +230,10 @@ following ports:
     - [susp]: suspend the module.
     - [run]: resume the module.
     - [stop]: stop the motion immediately.
-    - [block] [pitch] <val>: block the neck pitch at <val>
-     degrees.
-    - [block] [yaw] <val>: block the neck yaw at <val> degrees.
+    - [bind] [pitch] <min> <max>: bind the neck pitch within a
+      range given in degrees.
+    - [bind] [yaw] <min> <max>: bind the neck yaw within a range
+      given in degrees.
     - [clear] [pitch]: restore the neck pitch range.
     - [clear] [yaw]: restore the neck yaw range.
     - [get] [Tneck]: returns the neck movements execution time.
@@ -568,17 +569,18 @@ public:
                     return true;
                 }
 
-                case VOCAB4('b','l','o','c'):
+                case VOCAB4('b','i','n','d'):
                 {
                     if (command.size()>2)
                     {
                         int joint=command.get(1).asVocab();
-                        double val=command.get(2).asDouble();
+                        double min=command.get(2).asDouble();
+                        double max=command.get(3).asDouble();
 
                         if (joint==VOCAB4('p','i','t','c'))
-                            slv->blockNeckPitch(val);
+                            slv->bindNeckPitch(min,max);
                         else if (joint==VOCAB3('y','a','w'))
-                            slv->blockNeckYaw(val);
+                            slv->bindNeckYaw(min,max);
                         else
                         {
                             reply.addVocab(nack);

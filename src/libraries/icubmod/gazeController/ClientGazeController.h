@@ -89,8 +89,10 @@ public:
     virtual bool getEyesTrajTime(double *t);
     virtual bool setNeckTrajTime(const double t);
     virtual bool setEyesTrajTime(const double t);
+    virtual bool bindNeckPitch(const double min, const double max);
     virtual bool blockNeckPitch(const double val);
     virtual bool blockNeckPitch();
+    virtual bool bindNeckYaw(const double min, const double max);
     virtual bool blockNeckYaw(const double val);
     virtual bool blockNeckYaw();
     virtual bool clearNeckPitch();
