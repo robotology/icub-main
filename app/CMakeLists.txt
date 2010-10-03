@@ -21,6 +21,7 @@ add_custom_command(OUTPUT ${dummy}
 					)
 					
 add_subdirectory(default)
+add_subdirectory(actionPrimitivesExample)
 
 IF ("${ROBOT_NAME}" STREQUAL "")
   MESSAGE(STATUS "No robot name")
