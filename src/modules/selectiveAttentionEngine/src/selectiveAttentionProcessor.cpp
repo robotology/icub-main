@@ -191,6 +191,10 @@ bool selectiveAttentionProcessor::threadInit(){
     map5Port.open(getName("/map5:i").c_str());
     map6Port.open(getName("/map6:i").c_str());
 
+    cart1Port.open(getName("/cart:i").c_str());
+
+    motionPort.open(getName("/motion:i").c_str());
+
     linearCombinationPort.open(getName("/combination:o").c_str());
     centroidPort.open(getName("/centroid:o").c_str());
     feedbackPort.open(getName("/feedback:o").c_str());
@@ -411,22 +415,29 @@ void selectiveAttentionProcessor::run(){
             int countMaxes=0;
             pImage=outputCartImage.getRawImage();
             unsigned char* pInter=intermCartOut->getRawImage();
+            unsigned char* pcart1= cart1_yarp->getRawImage();
+            unsigned char* pmotion= motion_yarp->getRawImage();
             int paddingInterm=intermCartOut->getPadding(); //padding of the colour image (640,480)
             int rowSizeInterm=intermCartOut->getRowSize();
+            double sumCart=0.5 + kmotion + kc1;
+            int paddingCartesian=cart1_yarp->getPadding();
             int paddingOutput=outputCartImage.getPadding();
             for(int y=0;y<ySizeValue;y++) {
                 if(y%2==0) {
                     for(int x=0;x<xSizeValue;x++) {
                         if(x%2==0) {
-                            *pImage=*pInter;
+                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * (0.5/sumCart) + *pmotion * (kmotion/sumCart)));
+                            *pImage=value;
                             if(maxValue<*pImage) {
                                 maxValue=*pImage;
                             }
                             pImage++;pInter++;
-                            *pImage=*pInter;
+                            *pImage=value;
                             pImage++;pInter++;
-                            *pImage=*pInter;
+                            *pImage=value;
                             pImage++;pInter++;
+                            pcart1++;
+                            pmotion++;
                         }
                         else {
                             pInter+=3;
@@ -434,6 +445,8 @@ void selectiveAttentionProcessor::run(){
                     }
                     pImage+=paddingOutput;
                     pInter+=paddingInterm;
+                    pcart1+=paddingCartesian;
+                    pmotion+=paddingCartesian;
                 }
                 else {
                     pInter+=paddingInterm+rowSizeInterm;
@@ -649,10 +662,13 @@ void selectiveAttentionProcessor::interrupt(){
     map1Port.interrupt();
     map2Port.interrupt();
     map3Port.interrupt();
-    
     map4Port.interrupt();
     map5Port.interrupt();
     map6Port.interrupt();
+
+    cart1Port.interrupt();
+
+    motionPort.interrupt();
     
     linearCombinationPort.interrupt();
     centroidPort.interrupt();
@@ -678,6 +694,10 @@ void selectiveAttentionProcessor::threadRelease(){
     map4Port.close();
     map5Port.close();
     map6Port.close();
+
+    cart1Port.close();
+
+    motionPort.close();
 
     linearCombinationPort.close();
     centroidPort.close();

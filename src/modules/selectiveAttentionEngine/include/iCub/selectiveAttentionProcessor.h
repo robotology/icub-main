@@ -67,6 +67,9 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port; //input port for the 4th saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; //input port for the 5th saliency map
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; //input port for the 6th saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > motionPort; //input port for the flow motion
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > cart1Port; //input port for the 1st cartesian saliency map
+
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; //output port that represent the linear combination of different maps
         yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;//output port where the centroid coordinate is sent
         yarp::os::Port feedbackPort; //port necessary to send back command to the preattentive processors
@@ -267,14 +270,18 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::sig::ImageOf<yarp::sig::PixelMono>* map4_yarp; //saliency map coming from the 4th source
         yarp::sig::ImageOf<yarp::sig::PixelMono>* map5_yarp; //saliency map coming from the 5th source
         yarp::sig::ImageOf<yarp::sig::PixelMono>* map6_yarp; //saliency map coming from the 6th source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* motion_yarp; //saliency map coming from the 6th source
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* cart1_yarp; //saliency map coming from the 6th source
         yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp; //yarp image of the composition of all the edges
         yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputLogImage; //3channel image representing the saliencymap in logpolar
-        double k1; //coefficient for the linear combination of maps
-        double k2; //coefficient for the linear combination of maps
-        double k3; //coefficient for the linear combination of maps
-        double k4; //coefficient for the linear combination of maps
-        double k5; //coefficient for the linear combination of maps
-        double k6; //coefficient for the linear combination of maps
+        double k1;          //coefficient for the linear combination of log-polar maps
+        double k2;          //coefficient for the linear combination of log-polar maps
+        double k3;          //coefficient for the linear combination of log-polar maps
+        double k4;          //coefficient for the linear combination of log-polar maps
+        double k5;          //coefficient for the linear combination of log-polar maps
+        double k6;          //coefficient for the linear combination of log-polar maps
+        double kmotion;     //coefficient of the linear combination of the motion
+        double kc1;         //coeffiencient for the linear combination of the cartesian maps
         IplImage *cvImage16; // tmp IPLImage necessary for edge detection 16 bit
         IplImage *cvImage8; //tmp IPLImage necessary for edge detection 16 bit
         Ipp8u* im_out;
@@ -291,6 +298,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         time_t end2; //time variable
         
 };
+
 
 #endif // _selectiveAttentionModule_H_
 
