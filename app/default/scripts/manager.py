@@ -57,6 +57,11 @@ class EntryModule:
 
         self.entryIoNode=Entry(frame)
         self.entryIoNode.insert(END, ioNode)
+        
+        self.hold = IntVar()
+        self.checkHold=Checkbutton(frame, variable=self.hold)
+        self.checkHold.var = self.hold
+
 
         self.runningFlag=False
         self.update()
@@ -305,6 +310,7 @@ class App:
         Label(tmpFrame, text="On node:").grid(row=r, column=1, sticky=W)
         Label(tmpFrame, text="Stdio:").grid(row=r, column=2, sticky=W)
         Label(tmpFrame, text="Tag:").grid(row=r, column=3, sticky=W)
+        Label(tmpFrame, text="Hold:").grid(row=r, column=4, sticky=W)
         
         r=r+1
 
@@ -327,17 +333,19 @@ class App:
 
             tmpModule.entryTag.grid(row=r, column=3, sticky=W)
             tmpModule.entryTag.config(width=12)
+            
+            tmpModule.checkHold.grid(row=r, column=4, sticky=W)
 
             tmp=Button(tmpFrame, text="Run", command=lambda i=tmpModule:self.runModule(i));
-            tmp.grid(row=r, column=4, sticky=W)
-            tmp=Button(tmpFrame, text="Ctrl-c", command=lambda i=tmpModule:self.quitModule(i));
             tmp.grid(row=r, column=5, sticky=W)
-            tmp=Button(tmpFrame, text="Kill", command=lambda i=tmpModule:self.killModule(i));
+            tmp=Button(tmpFrame, text="Ctrl-c", command=lambda i=tmpModule:self.quitModule(i));
             tmp.grid(row=r, column=6, sticky=W)
-            tmp=Button(tmpFrame, text="Check", command=lambda i=tmpModule:self.checkModule(i));
+            tmp=Button(tmpFrame, text="Kill", command=lambda i=tmpModule:self.killModule(i));
             tmp.grid(row=r, column=7, sticky=W)
-            tmp=Button(tmpFrame, text="Params", command=lambda i=tmpModule:self.dispParameters(i));
+            tmp=Button(tmpFrame, text="Check", command=lambda i=tmpModule:self.checkModule(i));
             tmp.grid(row=r, column=8, sticky=W)
+            tmp=Button(tmpFrame, text="Params", command=lambda i=tmpModule:self.dispParameters(i));
+            tmp.grid(row=r, column=9, sticky=W)
             
             r=r+1
 
@@ -399,14 +407,15 @@ class App:
             time.sleep(PROCESS_POLL_INTERVAL)
                
         if (fin_time < time.time()):
-            self.logfile.writelines("Command timed out, now killing "+str(cmd)+"\n")
-            print "--> Command timed out",
+            self.logfile.writelines("Process timed out killing "+str(cmd)+"\n")
+            print "--> Error process timed out",
             print "you can try increasing the timeout time",
             print "however this is probably due to a problem to your",
             print "yarp network (address conflict?)"
-            print "See log file "+ self.application.getLogFilename()
+            print "See log file /tmp/"+self.application.getName()+".log"
             print "I'll now kill ", cmd, ""
-            os.kill(p.pid, signal.SIGKILL)
+            #os.kill(p.pid, signal.SIGKILL)
+            p.terminate()
 
         ret = p.returncode
         return ret
@@ -505,6 +514,9 @@ class App:
         node=mod.entryNode.get()
         parameters=mod.parameters
         name=mod.entryName.get()
+        hold = ""
+        if (mod.hold.get()):
+            hold = "--hold"
         workdir=mod.workdir
         
         if (stdioNode == "none"):
@@ -514,9 +526,9 @@ class App:
                 cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--workdir',workdir]
         else:
             if(workdir == ""):
-                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode]
+                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode, hold]
             else:
-                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode, '--workdir',workdir]
+                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode, hold, '--workdir',workdir]
 
         ret=self.spawnProcess(cmd)
 
@@ -621,7 +633,6 @@ def fileExists(f):
         return 1
 
 if __name__ == '__main__':
-   
     #first check arguments
     argc = len(sys.argv)
 
@@ -740,11 +751,11 @@ if __name__ == '__main__':
                 napp.pushConnection(output, input, "tcp")
 
         # getting temp directory
-        tempDirectory  = os.getenv("TMP");
-	if (tempDirectory==None):
-		tempDirectory="/tmp"
+        tmpPath  = os.getenv("TMP");
+	if (tmpPath==None):
+		tmpPath="/tmp"
         
-        logfilename=tempDirectory+"/"+napp.getName()+".log"
+        logfilename=tmpPath+"/"+napp.getName()+".log"
         napp.setLogFilename(logfilename)
         applicationList.append(napp)
 
