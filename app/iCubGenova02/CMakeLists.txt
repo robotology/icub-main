@@ -2,7 +2,7 @@ set(appname iCubGenova02)
 
 icub_app(${appname})
 
-file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template)
+file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml)
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 
 icub_app_install(${appname} 
