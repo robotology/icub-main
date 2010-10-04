@@ -440,6 +440,8 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     chainEyeL->setAng(eyePos);
     eyePos[1]=gazePos[1]-gazePos[2]/2.0;
     chainEyeR->setAng(eyePos);
+
+    xdOld.resize(3,0.0);
 }
 
 
@@ -600,6 +602,9 @@ void Solver::run()
     // get the current target
     Vector &xd=port_xd->get_xdDelayed();
 
+    // update the target straightaway 
+    commData->get_xd()=xd;
+
     if (Robotable)
     {
         // read encoders
@@ -619,18 +624,27 @@ void Solver::run()
 
     Vector theta=neckTargetRotAngles(xd);
 
+    bool doSolve=(theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD) ||
+                 (theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD);
+
+    // skip solving iff not in tracking mode and the controller is inactive
+    if (commData->get_canCtrlBeDisabled() && !commData->get_isCtrlActive() &&
+        doSolve && (xd==xdOld))
+        return;
+
     // call the solver for neck
-    if ((theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD) ||
-        (theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD))
+    if (doSolve)
     {
         //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
         neckPos=invNeck->solve(neckPos,xd);
 
-        // update neck pitch,yaw
-        commData->get_xd()=xd;
+        // update neck pitch,yaw        
         commData->get_qd()[0]=neckPos[0];
         commData->get_qd()[2]=neckPos[1];
     }
+
+    // latch the target
+    xdOld=xd;
 }
 
 

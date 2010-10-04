@@ -150,6 +150,7 @@ protected:
     Vector fbHead;
     Vector neckPos;
     Vector gazePos;
+    Vector xdOld;
 
     double neckPitchMin;
     double neckPitchMax;

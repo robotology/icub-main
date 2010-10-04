@@ -209,7 +209,7 @@ void Controller::run()
     else if (!swOffCond)
     {
         // switch-on condition
-        isCtrlActive=(canCtrlBeDisabled ? (port_xd->get_new() || (commData->get_qd()[0]!=qd[0]) || (commData->get_qd()[2]!=qd[2])) :
+        isCtrlActive=(canCtrlBeDisabled ? (port_xd->get_new() || (commData->get_qd()[0]!=qd[0]) || (commData->get_qd()[1]!=qd[1]) || (commData->get_qd()[2]!=qd[2])) :
                                           (norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES));
 
         commData->get_isCtrlActive()=isCtrlActive;
