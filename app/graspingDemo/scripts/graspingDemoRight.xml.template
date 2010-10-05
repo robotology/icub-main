@@ -6,55 +6,55 @@
    <module>
       <name>skinDriftCompensation</name>
       <parameters>--from SkinDriftCompensationRight.ini --context graspingDemo/conf</parameters>
-	    <node>icub15</node>
-      <stdio>icub15</stdio>
+	    <node>console</node>
+      <stdio>console</stdio>
 	    <tag>drifCompR</tag>
    </module>
 
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from righthand.ini --useCalibration</parameters>
-    <node>icub15</node>
+    <node>console</node>
     <tag>skinGuiR</tag>
   </module>  
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from OpenHandRight.ini --context graspingDemo/conf</parameters>
-	  <node>icub15</node>
-    <stdio>icub15</stdio>
+	  <node>console</node>
+    <stdio>console</stdio>
     <tag>openHandR</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from CalibrateRight.ini --context graspingDemo/conf</parameters>
-    <node>icub15</node>
-    <stdio>icub15</stdio>
+    <node>console</node>
+    <stdio>console</stdio>
     <tag>calibrateR</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from ToughGraspRight.ini --context graspingDemo/conf</parameters>
-	  <node>icub15</node>
-    <stdio>icub15</stdio>
+	  <node>console</node>
+    <stdio>console</stdio>
     <tag>toughGraspR</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from SoftGraspRight.ini --context graspingDemo/conf</parameters>
-    <node>icub15</node>
-    <stdio>icub15</stdio>
+    <node>console</node>
+    <stdio>console</stdio>
     <tag>softGraspR</tag>
   </module>
 
   <module>
     <name>tactileGrasp</name>
     <parameters>--from CompliantGraspRight.ini --context graspingDemo/conf</parameters>
-	  <node>icub15</node>
-    <stdio>icub15</stdio>
+	  <node>console</node>
+    <stdio>console</stdio>
     <tag>compliantGraspR</tag>
   </module>
    
