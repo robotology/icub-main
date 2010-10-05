@@ -27,6 +27,7 @@ add_subdirectory(cartesianSolver)
 add_subdirectory(demoGrasp_IIT_ISR)
 add_subdirectory(iKinView)
 add_subdirectory(faceExpressions)
+add_subdirectory(faceTrackerDemo)
 add_subdirectory(signalScope)
 add_subdirectory(simCartesianControl)
 
