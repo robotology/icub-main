@@ -124,21 +124,21 @@ Shifts 8 8 8 8 8 8 8 8 8 8
 --simulation
 - simulate the presence of the robot. 
  
--- ping_robot_tmo \e tmo
+--ping_robot_tmo \e tmo
 - The parameter \e tmo is the timeout (in seconds) to allow to
   start-up the robot before connecting to it.
  
--- eyeTiltMin \e min
+--eyeTiltMin \e min
 - The parameter \e min specifies the minimum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving.
  
--- eyeTiltMax \e max
+--eyeTiltMax \e max
 - The parameter \e max specifies the maximum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving.
  
--- minAbsVel \e min
+--minAbsVel \e min
 - The parameter \e min specifies the minimum absolute velocity 
   that can be achieved by the robot [deg/s] due to the
   approximation performed while delivering data over the
