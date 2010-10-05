@@ -28,6 +28,7 @@ add_subdirectory(demoGrasp_IIT_ISR)
 add_subdirectory(iKinView)
 add_subdirectory(faceExpressions)
 add_subdirectory(faceTrackerDemo)
+add_subdirectory(graspDetector)
 add_subdirectory(signalScope)
 add_subdirectory(simCartesianControl)
 
