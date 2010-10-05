@@ -29,6 +29,7 @@ add_subdirectory(iKinView)
 add_subdirectory(faceExpressions)
 add_subdirectory(faceTrackerDemo)
 add_subdirectory(graspDetector)
+add_subdirectory(pf3dTracker)
 add_subdirectory(signalScope)
 add_subdirectory(simCartesianControl)
 
