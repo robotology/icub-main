@@ -1,22 +1,20 @@
-SET(appdir ${CMAKE_CURRENT_SOURCE_DIR})
-SET(dapp ${ICUB_APP})
+set(appname faceExpressions)
 
-INSTALL(CODE "MESSAGE(\"Parsing ${appdir}\")")
+icub_app(${appname})
 
-INSTALL(DIRECTORY
-  ${appdir}
-  DESTINATION ${dapp}
-  USE_SOURCE_PERMISSIONS
-  PATTERN "CVS" EXCLUDE
-  PATTERN
-  "CMakeLists.txt" EXCLUDE
-  PATTERN
-  "CMakeLists.txt~" EXCLUDE
-  PATTERN
-  "CMakeFiles" EXCLUDE
-  PATTERN
-  "Makefile" EXCLUDE
-  PATTERN
-  "cmake_install.cmake" EXCLUDE)
+file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template
+                   ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.sh)
+file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
+
+icub_app_install(${appname} 
+				FILES ${scripts}
+				DESTINATION scripts)
+
+icub_app_install(${appname} 
+				FILES ${conf}
+				DESTINATION conf)			
+				
+icub_add_target(${appname})
+
 
 
