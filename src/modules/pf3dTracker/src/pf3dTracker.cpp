@@ -198,7 +198,7 @@ bool PF3DTracker::open(Searchable& config)
                                       "Initialization file (string)").asString();
     
     ConstString context = initialBottle.check("context",
-                                       Value("pf3dTracker"),
+                                       Value("pf3dTracker/conf"),
                                       "Context (string)").asString();
 
     //create and initialize the resource finder
