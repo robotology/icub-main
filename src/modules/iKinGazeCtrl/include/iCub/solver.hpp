@@ -38,8 +38,8 @@
 #define EYEPINVREFGEN_GAIN                  12.5
 #define NECKSOLVER_ACTIVATIONANGLE_TRA      2.5
 #define NECKSOLVER_ACTIVATIONANGLE_SAG      2.5
-#define NECKSOLVER_RESTORINGANGLE_TRA       10.0
-#define NECKSOLVER_RESTORINGANGLE_SAG       10.0
+#define NECKSOLVER_RESTORINGANGLE_TRA       5.0
+#define NECKSOLVER_RESTORINGANGLE_SAG       5.0
 
 using namespace std;
 using namespace yarp;
