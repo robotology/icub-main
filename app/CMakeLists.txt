@@ -43,7 +43,7 @@ ELSE ("${ROBOT_NAME}" STREQUAL "")
 ENDIF ("${ROBOT_NAME}" STREQUAL "")
 
 
-add_custom_target(app ALL DEPENDS ${dummy})
+add_custom_target(app DEPENDS ${dummy})
 
 icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS app)
 icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS_FILES ${dummy})

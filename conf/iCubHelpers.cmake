@@ -241,7 +241,7 @@ endmacro(icub_app_install)
 macro(icub_add_target target)
 	message(STATUS "adding target ${target}")
 	set(dummy ${CMAKE_BINARY_DIR}/f-${target})
-	add_custom_target(app-${target} ALL DEPENDS ${dummy})
+	add_custom_target(app-${target} DEPENDS ${dummy})
 	
 	icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS app-${target})
 	icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS_FILES ${dummy})
