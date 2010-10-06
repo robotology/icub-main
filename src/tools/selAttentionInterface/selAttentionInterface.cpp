@@ -220,6 +220,63 @@ static void cb_digits_scale6( GtkAdjustment *adj ) {
     }
 }
 
+static void cb_digits_scale11( GtkAdjustment *adj ) {
+    /* Set the number of maskSeed */
+    //selectiveAttentionModule->processor1->maskTop=adj->value;
+    if (_pOutPort!=NULL) {
+        
+    }
+}
+
+static void cb_digits_scale12( GtkAdjustment *adj ) {
+    /* Set the number of maskSeed */
+    //selectiveAttentionModule->processor1->maskTop=adj->value;
+    if (_pOutPort!=NULL) {
+        
+    }
+}
+
+static void cb_digits_scale13( GtkAdjustment *adj ) {
+    /* Set the number of maskSeed */
+    //selectiveAttentionModule->processor1->maskTop=adj->value;
+    if (_pOutPort!=NULL) {
+        
+    }
+}
+
+static void cb_digits_scale14( GtkAdjustment *adj ) {
+    /* Set the number of maskSeed */
+    //selectiveAttentionModule->processor1->maskTop=adj->value;
+    if (_pOutPort!=NULL) {
+        
+    }
+}
+
+static void cb_digits_scale15( GtkAdjustment *adj ) {
+    /* Set the number of maskSeed */
+    //selectiveAttentionModule->processor1->maskTop=adj->value;
+    if (_pOutPort!=NULL) {
+        
+    }
+}
+
+static void cb_digits_scale16( GtkAdjustment *adj ) {
+    /* Set the number of maskSeed */
+    //selectiveAttentionModule->processor1->maskTop=adj->value;
+    if (_pOutPort!=NULL) {
+        
+    }
+}
+
+
+static void cb_digits_scaleMotion( GtkAdjustment *adj ) {
+    /* Set the number of maskSeed */
+    //selectiveAttentionModule->processor1->maskTop=adj->value;
+    if (_pOutPort!=NULL) {
+        
+    }
+}
+
 gint timeout_update_CB(gpointer data) {
     //portFpsData.getStats(av, min, max);
     //portFpsData.reset();
@@ -497,7 +554,7 @@ GtkWidget* createMainWindow(void) {
     //g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (delete_event), NULL);
     // Box for main window
     GtkWidget *box;
-    GtkWidget *box2,*box3,*box4,*box5;
+    GtkWidget *box2, *box3, *box4, *box5, *box6;
     box = gtk_vbox_new (FALSE, 0); // parameters (gboolean homogeneous_space, gint spacing);
     gtk_container_add (GTK_CONTAINER (window), box);
     // MenuBar for main window
@@ -533,6 +590,8 @@ GtkWidget* createMainWindow(void) {
     GtkWidget *label;
     //GtkWidget *scale;
     GtkObject *adj1, *adj2,*adj3, *adj4,*adj5, *adj6;
+    GtkObject *adj11, *adj12,*adj13, *adj14,*adj15, *adj16;
+    GtkObject *adjMotion;
     GtkWidget *hscale, *vscale;
 
     // value, lower, upper, step_increment, page_increment, page_size 
@@ -554,10 +613,15 @@ GtkWidget* createMainWindow(void) {
     gtk_box_pack_start (GTK_BOX (box2), box3, FALSE, FALSE, 0);
     gtk_widget_show (box3);
 
+    //----------BOX5 SUBSECTION:1
     box5 = gtk_vbox_new (FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (box5), 0);
 
-    label = gtk_label_new ("coefficient map1 k1:");
+    label = gtk_label_new ("LOGPOLAR MAP COEFFICIENT");
+    gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+    label = gtk_label_new ("map1 k1:");
     gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     
@@ -571,7 +635,7 @@ GtkWidget* createMainWindow(void) {
                       G_CALLBACK (cb_digits_scale), NULL);
 
 
-    label = gtk_label_new ("coefficient map2 k2:");
+    label = gtk_label_new ("map2 k2:");
     gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -584,7 +648,7 @@ GtkWidget* createMainWindow(void) {
     g_signal_connect (G_OBJECT (adj2), "value_changed",
                       G_CALLBACK (cb_digits_scale2), NULL);
 
-    label = gtk_label_new ("coefficient map3: k3");
+    label = gtk_label_new ("map3: k3");
     gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     
@@ -598,7 +662,7 @@ GtkWidget* createMainWindow(void) {
                       G_CALLBACK (cb_digits_scale3), NULL);
 
 
-    label = gtk_label_new ("coefficient map4: k4");
+    label = gtk_label_new ("map4: k4");
     gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     
@@ -611,7 +675,7 @@ GtkWidget* createMainWindow(void) {
     g_signal_connect (G_OBJECT (adj4), "value_changed",
                       G_CALLBACK (cb_digits_scale4), NULL);
 
-    label = gtk_label_new ("coefficient map5: k5");
+    label = gtk_label_new ("map5: k5");
     gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     
@@ -624,7 +688,7 @@ GtkWidget* createMainWindow(void) {
     g_signal_connect (G_OBJECT (adj5), "value_changed",
                       G_CALLBACK (cb_digits_scale5), NULL);
 
-    label = gtk_label_new ("coefficient map6: k6");
+    label = gtk_label_new ("map6: k6");
     gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     
@@ -639,6 +703,102 @@ GtkWidget* createMainWindow(void) {
 
     gtk_box_pack_start (GTK_BOX (box3), box5, FALSE, FALSE, 0);
     gtk_widget_show (box5);
+
+    separator = gtk_vseparator_new ();
+    gtk_box_pack_start (GTK_BOX (box3), separator, FALSE, TRUE, 10);
+    gtk_widget_show (separator);
+
+    //----------BOX6 SUBSECTION:2
+    box6 = gtk_vbox_new (FALSE, 0);
+    gtk_container_set_border_width (GTK_CONTAINER (box6), 0);
+
+    label = gtk_label_new ("CARTESIAN MAP COEFFICIENT:");
+    gtk_box_pack_start (GTK_BOX (box6), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+    label = gtk_label_new ("map1 k1:");
+    gtk_box_pack_start (GTK_BOX (box6), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    
+    adj11 = gtk_adjustment_new (1.0, 0.0,1.0,0.01, 0.0, 0.0);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj11));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box6), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adj11), "value_changed",
+                      G_CALLBACK (cb_digits_scale11), NULL);
+
+    /*
+    label = gtk_label_new ("map2 k2:");
+    gtk_box_pack_start (GTK_BOX (box6), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+    adj12 = gtk_adjustment_new (0.1, 0.0,1.0,0.01, 0.0, 0.0);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj12));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box6), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adj12), "value_changed",
+                      G_CALLBACK (cb_digits_scale12), NULL);
+
+    label = gtk_label_new ("map3: k3");
+    gtk_box_pack_start (GTK_BOX (box6), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    
+    adj13 = gtk_adjustment_new (0.5, 0.0,1.0,0.01, 0.0, 0.0);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj13));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box6), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adj13), "value_changed",
+                      G_CALLBACK (cb_digits_scale13), NULL);
+
+
+    label = gtk_label_new ("map4: k4");
+    gtk_box_pack_start (GTK_BOX (box6), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    
+    adj14 = gtk_adjustment_new (0.1, 0.0,1.0,0.01, 0.0, 0.0);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj14));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box6), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adj14), "value_changed",
+                      G_CALLBACK (cb_digits_scale14), NULL);
+
+    label = gtk_label_new ("map5: k5");
+    gtk_box_pack_start (GTK_BOX (box6), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    
+    adj15 = gtk_adjustment_new (0.1, 0.0,1.0,0.01, 0.0, 0.0);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj15));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box6), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adj15), "value_changed",
+                      G_CALLBACK (cb_digits_scale15), NULL);
+
+    label = gtk_label_new ("map6: k6");
+    gtk_box_pack_start (GTK_BOX (box6), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    
+    adj16 = gtk_adjustment_new (0.5, 0.0,1.0,0.01, 0.0, 0.0);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj16));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box6), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adj16), "value_changed",
+                      G_CALLBACK (cb_digits_scale16), NULL);
+    */
+
+    gtk_box_pack_start (GTK_BOX (box3), box6, FALSE, FALSE, 0);
+    gtk_widget_show (box6);
 
     /*
     label = gtk_label_new ("Processing Options:");
@@ -658,27 +818,36 @@ GtkWidget* createMainWindow(void) {
     //-----Check Buttons
     box4=  gtk_vbox_new (FALSE, 0);
     
-
-
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
     //-----box4
     box4=  gtk_vbox_new (FALSE, 0);
-
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
     //---box 4
 
 
     separator = gtk_hseparator_new ();
-    gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 10);
     gtk_widget_show (separator);
 
 
-    //------ SEPARATOR
+    label = gtk_label_new ("coefficient motion");
+    gtk_box_pack_start (GTK_BOX (box2), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    
+    adjMotion = gtk_adjustment_new (0.5, 0.0,1.0,0.01, 0.0, 0.0);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjMotion));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box2), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adjMotion), "value_changed",
+                      G_CALLBACK (cb_digits_scaleMotion), NULL);
+    
     separator = gtk_hseparator_new ();
-    gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 10);
     gtk_widget_show (separator);
 
 
