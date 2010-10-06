@@ -78,7 +78,8 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     map4_yarp=new ImageOf<PixelMono>;
     map5_yarp=new ImageOf<PixelMono>;
     map6_yarp=new ImageOf<PixelMono>;
-    
+    motion_yarp=new ImageOf<PixelMono>;
+    cart1_yarp=new ImageOf<PixelMono>;
 
     map1_ippi = 0;
     map2_ippi = 0;
@@ -107,7 +108,8 @@ selectiveAttentionProcessor::~selectiveAttentionProcessor(){
     delete map5_yarp;
     delete map6_yarp;
     delete inputLogImage;
-
+    delete motion_yarp;
+    delete cart1_yarp;
     
     ippiFree(map1_ippi );
     ippiFree(map2_ippi );
@@ -154,6 +156,10 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     //fixed resize 640,480
     intermCartOut=new ImageOf<PixelRgb>;
     intermCartOut->resize(xSizeValue,ySizeValue);
+    motion_yarp=new ImageOf<PixelMono>;
+    motion_yarp->resize(xSizeValue/2,ySizeValue/2);
+    cart1_yarp=new ImageOf<PixelMono>;
+    cart1_yarp->resize(xSizeValue/2,ySizeValue/2);
 }
 
 void selectiveAttentionProcessor::resizeImages(int width,int height) {
@@ -439,7 +445,8 @@ void selectiveAttentionProcessor::run(){
                 if(y%2==0) {
                     for(int x=0;x<xSizeValue;x++) {
                         if(x%2==0) {
-                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * (0.5/sumCart) + *pmotion * (kmotion/sumCart)));
+                            //unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * (0.5/sumCart) + *pmotion * (kmotion/sumCart)));
+                            unsigned char value=*pInter;
                             *pImage=value;
                             if(maxValue<*pImage) {
                                 maxValue=*pImage;
