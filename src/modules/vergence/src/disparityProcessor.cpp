@@ -65,6 +65,22 @@ void disparityProcessor::setName(string name, string robotName) {
 
 bool disparityProcessor::threadInit(){
 
+
+    Property optGaze("(device gazecontrollerclient)");
+    optGaze.put("remote","/iKinGazeCtrl");
+    optGaze.put("local","/gaze_client");
+
+    clientGaze=new PolyDriver;
+    if (!clientGaze->open(optGaze))
+    {
+        delete clientGaze;    
+        return false;
+    }
+
+    // open the view
+    clientGaze->view(igaze);
+
+
     string torsoPort, headPort;
   
     torsoPort = "/" + robotName + "/torso";
@@ -72,7 +88,7 @@ bool disparityProcessor::threadInit(){
 
 	optionsTorso.put("device", "remote_controlboard");
    	optionsTorso.put("local", "/localTorso");
-   	optionsTorso.put("remote", torsoPort.c_str() ); // CHANGE FOR THE ROBOT
+   	optionsTorso.put("remote", torsoPort.c_str() );
 
    	robotTorso = new PolyDriver(optionsTorso);
 
@@ -151,8 +167,9 @@ bool disparityProcessor::threadInit(){
      
     _nFrame = chainRightEye->getN(); //HL.rows();
     _joints.resize( _nFrame );
-    _head.resize(6), 
+    _head.resize(6); 
     _torso.resize(3);
+    gazeVect.resize(3);
     tmpPos.resize(9);
     tempV.zero();
     tempV.resize(3);
@@ -169,6 +186,7 @@ void disparityProcessor::threadRelease(){
     delete rightEye;   
 	delete robotHead;
 	delete robotTorso;
+    delete clientGaze;
 }
 
 void disparityProcessor::onStop() 
@@ -181,7 +199,7 @@ void disparityProcessor::onStop()
     delete rightEye;   
 	delete robotHead;
 	delete robotTorso;
-    
+    delete clientGaze;
 }
 
 void disparityProcessor::run(){	
@@ -257,7 +275,7 @@ void disparityProcessor::run(){
             hHeight = hWidth/2;
             histo.resize(hWidth,hHeight);
 
-            cout << "disparity Val " << disparityVal  << endl;
+           // cout << "disparity Val " << disparityVal  << endl;
 
             if ( histoOutPort.getOutputCount() > 0 ) { 
                 Disp.makeHistogram(histo);
@@ -265,14 +283,16 @@ void disparityProcessor::run(){
                 histoOutPort.write();
             }
 
-            angle=fb[8]-(180/M_PI)*atan(disparityVal/(2*206.026));
+           angle = fb[8]-(180/M_PI)*atan(disparityVal/(2*206.026));
             if(angle<0)
                 angle=0;		
 
-            cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << endl;
+           encHead->getEncoders( _head.data() );
+           double relangle = fabs(_head[5] - angle);
 
-            
-            if ( cmdOutput.getOutputCount() > 0 ) { 
+          // cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << " " << relangle << endl;
+
+           if ( cmdOutput.getOutputCount() > 0 ) { 
                 Bottle in,bot;
                 bot.clear();
                 char verg[100];
@@ -284,6 +304,15 @@ void disparityProcessor::run(){
                 cmdOutput.write(bot,in);
                 bot.clear();
             }
+            
+            gazeVect[0] = 0.0;
+            gazeVect[1] = 0.0;
+            gazeVect[2] = relangle;
+            igaze->lookAtRelAngles(gazeVect);
+
+            //if (relangle < 0.01)
+              //  suspend();
+            
             //send shifts on shift port
             shift_Struct test;
             test = Disp.getMax();
@@ -300,6 +329,24 @@ void disparityProcessor::run(){
         }
     }
 } 	
+
+void disparityProcessor::suspend(){
+
+    cout << endl;
+    cout << "Vergence has been suspended!" << endl;
+    cout << endl;
+
+    RateThread::suspend();
+}
+
+void disparityProcessor::release(){
+
+    cout << endl;
+    cout << "Vergence has been resumed!" << endl;
+    cout << endl;
+
+    RateThread::resume();
+}
 
 void disparityProcessor::computeRay(__kinType k, Vector& v, int x, int y){
 	if (k == KIN_LEFT)
@@ -536,7 +583,6 @@ void disparityProcessor::computeFixation (const Matrix &T1, const Matrix &T2) {
 	_fixationPoint(1) = T1(1,3) + T1(1,0) * u;
 	_fixationPoint(2) = T1(2,3) + T1(2,0) * u;
 
-	_cartesianToPolar(_fixationPoint, _fixationPolar);
-	
+	_cartesianToPolar(_fixationPoint, _fixationPolar);	
 }
-
+//left blank
