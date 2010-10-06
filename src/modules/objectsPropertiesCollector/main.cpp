@@ -42,6 +42,13 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 Notation: [.] is a Vocab, {.} is a string, <.> is a Value (i.e. 
 string, double, int). 
  
+Reserved properties tag: 
+--id used to specify the unique integer identifier assigned to 
+  each stored item.
+--lifeTimer specify the forgetting factor given in seconds, 
+  meaning that after <lifeTimer> seconds since its creation, the
+  item is removed automatically from the server.
+ 
 The commands sent as bottles to the module port /<modName>/rpc
 are the following: 
  
@@ -76,7 +83,7 @@ items along their properties.
  
 <b>ASK</b> 
 Format: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) ...) 
-Reply: [nack]; [ack] (id0 id1 ...)
+Reply: [nack]; [ack] (id (id0 id1 ...))
 Action: query the database to find all the items whose 
 properties match the conditions given in the command. You can 
 compose multiple conditions using the boolean operators such as 
@@ -113,26 +120,26 @@ None.
 \section tested_os_sec Tested OS
 Linux and Windows.
 
-\section example_sec Example
-By launching the following command: 
+\section example_sec Example 
+ 
+Several examples of the requests you may forward to the 
+database: 
  
 \code 
-velocityObserver --name /jointVel --lenVel 20 --thrVel 2.0 
-\endcode 
+command: [add] ((prop0 0) (prop1 1)) 
+reply: [ack] (id 0) 
  
-the module will create the listening port /jointVel/pos:i for 
-the acquisition of data vector coming for instance from one of 
-the icub ports. At the same time it will provide the estimated 
-derivatives to /jointVel/vel:o /jointVel/acc:o ports. Here a 
-value of 20 samples is chosen for the velocity maximum window's 
-length and the velocity maximum permitted tolerance is 2.0; for 
-the acceleration default values are used (use --help option to 
-see). 
+command: [add] ((prop0 1) (prop2 2)) 
+reply: [ack] (id 1) 
  
-Try now the following: 
+command: [set] ((id 1) (prop2 3)) 
+reply: [ack] 
  
-\code 
-yarp connect /icub/right_arm/state:o /jointVel/pos:i
+command: [get] ((id 1)) 
+reply: [ack] ((id 1) (prop0 1) (prop2 3))
+ 
+command: [ask] ((prop0 < 10) && (prop1 == 1)) 
+reply: [ack] (id (0)) 
 \endcode 
  
 \author Ugo Pattacini
@@ -645,7 +652,10 @@ public:
                 if (ask(content,items))
                 {
                     reply.addVocab(REP_ACK);
-                    reply.addList()=items;
+                    Bottle &b1=reply.addList();
+                    b1.addString("id");
+                    Bottle &b2=b1.addList();
+                    b2.addList()=items;
                 }
                 else
                     reply.addVocab(REP_NACK);
