@@ -245,9 +245,10 @@ bool RpcProcessor::read(ConnectionReader &connection)
         if (!cmd.read(connection))
             return false;
     
-        if (slv->respond(cmd,reply))
-            if (ConnectionWriter *writer=connection.getWriter())
-                reply.write(*writer);
+        slv->respond(cmd,reply);
+
+        if (ConnectionWriter *writer=connection.getWriter())
+            reply.write(*writer);
     
         return true;
     }
@@ -713,7 +714,7 @@ void CartesianSolver::fillDOFInfo(Bottle &reply)
 
 
 /************************************************************************/
-bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
+void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 {
     if (command.size())
     {
@@ -1038,8 +1039,6 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
     }
     else
         reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-
-    return true;
 }
 
 

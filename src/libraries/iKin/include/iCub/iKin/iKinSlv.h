@@ -378,7 +378,7 @@ protected:
                      const double t);    
 
     virtual void prepareJointsRestTask();
-    virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
+    virtual void respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     virtual bool threadInit();
     virtual void afterStart(bool);
     virtual void run();
