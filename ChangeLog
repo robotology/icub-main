@@ -1,15 +1,21 @@
-2010-10-6 Lorenzo Natale <>
+2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
+	app/default/scripts/manager.py
+	main/app/default/scripts/manager.py
+	bug fixes on timeout, basic handling of linux/windows
+	differences, minor version on windows is 2.6
+
+2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
 	applications no longer in the ALL group
 
-2010-10-01 Lorenzo Natale <>
+2010-10-01 Lorenzo Natale <lorenzo.natale@iit.it>
 	code for applications, default is now true, removed guards added iCubGenova01
 
-2010-09-24 Lorenzo Natale <>
+2010-09-24 Lorenzo Natale <lorenzo.natale@iit.it>
 	src/core/iCubInterface/RobotInterfaceRemap.cpp:
 	config file now accepts no parts
 
 
-2010-09-24 Lorenzo Natale <>
+2010-09-24 Lorenzo Natale <lorenzo.natale@iit.it>
 		./main/src/core/iCubInterface:
 		./main/src/libraries/skinprototype:
 		modified to handle rpc for IAnalog interface.
