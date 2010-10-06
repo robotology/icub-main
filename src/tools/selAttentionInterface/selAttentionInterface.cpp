@@ -42,6 +42,13 @@
 #define COMMAND_VOCAB_K4 VOCAB2('k','4')
 #define COMMAND_VOCAB_K5 VOCAB2('k','5')
 #define COMMAND_VOCAB_K6 VOCAB2('k','6')
+#define COMMAND_VOCAB_KC1 VOCAB3('k','c','1')
+#define COMMAND_VOCAB_KC2 VOCAB3('k','c','2')
+#define COMMAND_VOCAB_KC3 VOCAB3('k','c','3')
+#define COMMAND_VOCAB_KC4 VOCAB3('k','c','4')
+#define COMMAND_VOCAB_KC5 VOCAB3('k','c','5')
+#define COMMAND_VOCAB_KC6 VOCAB3('k','c','6')
+#define COMMAND_VOCAB_KMOT VOCAB4('k','m','o','t')
 
 using namespace yarp::os;
 using namespace std;
@@ -224,7 +231,13 @@ static void cb_digits_scale11( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        
+        yarp::os::Bottle& bot = _pOutPort->prepare();
+        bot.clear();
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_KC1);
+        bot.addDouble((double) adj->value);
+        //_pOutPort->Content() = _outBottle;
+        _pOutPort->write();
     }
 }
 
@@ -232,7 +245,13 @@ static void cb_digits_scale12( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        
+        yarp::os::Bottle& bot = _pOutPort->prepare();
+        bot.clear();
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_KC2);
+        bot.addDouble((double) adj->value);
+        //_pOutPort->Content() = _outBottle;
+        _pOutPort->write();
     }
 }
 
@@ -240,7 +259,13 @@ static void cb_digits_scale13( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        
+        yarp::os::Bottle& bot = _pOutPort->prepare();
+        bot.clear();
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_KC3);
+        bot.addDouble((double) adj->value);
+        //_pOutPort->Content() = _outBottle;
+        _pOutPort->write();
     }
 }
 
@@ -248,7 +273,13 @@ static void cb_digits_scale14( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        
+        yarp::os::Bottle& bot = _pOutPort->prepare();
+        bot.clear();
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_KC4);
+        bot.addDouble((double) adj->value);
+        //_pOutPort->Content() = _outBottle;
+        _pOutPort->write();
     }
 }
 
@@ -256,7 +287,13 @@ static void cb_digits_scale15( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        
+        yarp::os::Bottle& bot = _pOutPort->prepare();
+        bot.clear();
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_KC5);
+        bot.addDouble((double) adj->value);
+        //_pOutPort->Content() = _outBottle;
+        _pOutPort->write();
     }
 }
 
@@ -264,7 +301,13 @@ static void cb_digits_scale16( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        
+        yarp::os::Bottle& bot = _pOutPort->prepare();
+        bot.clear();
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_KC6);
+        bot.addDouble((double) adj->value);
+        //_pOutPort->Content() = _outBottle;
+        _pOutPort->write();
     }
 }
 
@@ -273,7 +316,13 @@ static void cb_digits_scaleMotion( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        
+        yarp::os::Bottle& bot = _pOutPort->prepare();
+        bot.clear();
+        bot.addVocab(COMMAND_VOCAB_SET);
+        bot.addVocab(COMMAND_VOCAB_KMOT);
+        bot.addDouble((double) adj->value);
+        //_pOutPort->Content() = _outBottle;
+        _pOutPort->write();
     }
 }
 
