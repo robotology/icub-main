@@ -40,7 +40,7 @@
 #define NECKSOLVER_ACTIVATIONANGLE_SAG      2.5     // [deg]
 #define NECKSOLVER_RESTORINGANGLE_TRA       5.0     // [deg]
 #define NECKSOLVER_RESTORINGANGLE_SAG       5.0     // [deg]
-#define MINALLOWED_VERGENCE                 1.0     // [deg]
+#define MINALLOWED_VERGENCE                 0.5     // [deg]
 
 using namespace std;
 using namespace yarp;

@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <iCub/solver.hpp>
 #include <iCub/controller.hpp>
 
 
@@ -62,7 +63,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
                               eyeTiltMin,eyeTiltMax);
 
         // reinforce vergence min bound
-        lim(nJointsHead-1,0)=0.0;
+        lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
         // read starting position
         fbTorso.resize(nJointsTorso);
@@ -79,9 +80,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         nJointsTorso=3;
         nJointsHead =6;
         
-        fbTorso.resize(nJointsTorso,0.0);
-        fbHead.resize(nJointsHead,0.0);
-
         // create bounds matrix for integrators
         lim.resize(nJointsHead,2);
         for (int i=0; i<nJointsHead-1; i++)
@@ -91,8 +89,14 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         }
 
         // vergence
-        lim(nJointsHead-1,0)=0.0;
+        lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
         lim(nJointsHead-1,1)=lim(nJointsHead-2,1);
+
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
+
+        // impose starting vergence != 0.0
+        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
     }    
 
     fbNeck.resize(3); fbEyes.resize(3);
