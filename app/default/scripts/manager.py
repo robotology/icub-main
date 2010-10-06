@@ -19,6 +19,8 @@
 
 ## Added timeout for process termination.
 ## Added log in temp, cleaned up debug messages to terminal.
+## 10/06/2010. Added minimal version and os check. In windows to use the
+## popen.terminate() call we need > 2.6. In Linux 2.5 is good enough.
 
 import sys
 import time
@@ -415,7 +417,10 @@ class App:
             print "See log file /tmp/"+self.application.getName()+".log"
             print "I'll now kill ", str(cmd), ""
             #os.kill(p.pid, signal.SIGKILL)
-            p.terminate()
+            if os.name == 'posix':
+                os.kill(p.pid, signal.SIGKILL)
+            elif os.name == 'nt':
+                p.terminate()
             ret = 1
         else:
             ret = p.returncode
@@ -635,6 +640,14 @@ def fileExists(f):
         return 1
 
 if __name__ == '__main__':
+
+    ## Check appropriate versions. This is only
+    ## used for termination (see calls to terminate() or kill)    
+    if os.name == 'nt':
+        if sys.version_info < (2, 6):
+            raise "In windows must use python 2.6 or greater"
+            sys.exit(1)
+  
     #first check arguments
     argc = len(sys.argv)
 
