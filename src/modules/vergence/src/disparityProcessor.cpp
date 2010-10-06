@@ -288,7 +288,8 @@ void disparityProcessor::run(){
                 angle=0;		
 
            encHead->getEncoders( _head.data() );
-           double relangle = fabs(_head[5] - angle);
+           double relangle = 0;
+           relangle = angle - _head[5];
 
           // cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << " " << relangle << endl;
 
@@ -310,8 +311,10 @@ void disparityProcessor::run(){
             gazeVect[2] = relangle;
             igaze->lookAtRelAngles(gazeVect);
 
+            //cout << "relangle " << relangle << endl;
+
             //if (relangle < 0.01)
-              //  suspend();
+            //suspend();
             
             //send shifts on shift port
             shift_Struct test;
