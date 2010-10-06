@@ -191,8 +191,7 @@ bool selectiveAttentionProcessor::threadInit(){
     map5Port.open(getName("/map5:i").c_str());
     map6Port.open(getName("/map6:i").c_str());
 
-    cart1Port.open(getName("/cart:i").c_str());
-
+    cart1Port.open(getName("/cart1:i").c_str());
     motionPort.open(getName("/motion:i").c_str());
 
     linearCombinationPort.open(getName("/combination:o").c_str());
@@ -357,6 +356,20 @@ void selectiveAttentionProcessor::run(){
             tmp=map6Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),this->srcsize);
+                idle=false;
+            }
+        }
+        if(motionPort.getInputCount()) {
+            tmp=motionPort.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),motion_yarp->getRawImage(),motion_yarp->getRowSize(),this->srcsize);
+                idle=false;
+            }
+        }
+        if(cart1Port.getInputCount()) {
+            tmp=cart1Port.read(false);
+            if(tmp!=0) {
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),cart1_yarp->getRawImage(),cart1_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
         }
