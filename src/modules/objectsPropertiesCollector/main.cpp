@@ -49,14 +49,12 @@ string, double, int).
  
 Reserved properties tags: 
  
-- \e id 
-used to specify the unique integer identifier assigned to 
-ach stored item. 
+- \e id is used to specify the unique integer identifier 
+assigned to ach stored item. 
  
-- \e lifeTimer 
-specifies the forgetting factor given in seconds, meaning that 
-after \e lifeTimer seconds since its creation, the item is 
-removed automatically from the database. 
+- \e lifeTimer specifies the forgetting factor given in seconds, 
+meaning that after \e lifeTimer seconds since its creation, the 
+item is removed automatically from the database. 
  
 The commands sent as bottles to the module port 
 /<moduleName>/rpc are the following: 
