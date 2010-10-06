@@ -231,7 +231,7 @@ macro(icub_app_install target)
     set(command2 ${CMAKE_COMMAND} -E copy ${f} ${dapp})
     add_custom_command(OUTPUT ${dummy}
       COMMAND ${command2}
-      COMMENT "Copy to ${f} to ${dapp}"
+      COMMENT "Copy ${f} to ${dapp}"
       APPEND)		
   endforeach(f ${files})					
 

@@ -133,7 +133,7 @@ SET(ICUB_DESTINATION_APP "$ENV{ICUB_ROOT}" CACHE TYPE PATH)
 
 ########### populate applications
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
-	add_subdirectory(app)
+    add_subdirectory(app)
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
 # Create everything needed to build our executable.
@@ -141,17 +141,32 @@ add_subdirectory(src)
 
 ############ generate custom target that exports all applications
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
-	## add custom targets
-	icub_get_property(applications GLOBAL PROPERTY ICUB_APPLICATIONS)
-	message(STATUS "Exporting applications: ${applications}")
-	add_custom_target(install_applications)
-	add_dependencies(install_applications ${applications})
+    ## add custom targets
+    icub_get_property(applications GLOBAL PROPERTY ICUB_APPLICATIONS)
+    message(STATUS "Exporting applications: ${applications}")
+    add_custom_target(install_applications)
+    add_dependencies(install_applications ${applications})
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
 # export the build tree
 message(STATUS "Now exporting build tree")
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 
+################ copying python scripts
+message(STATUS "Installing manager.py")
+install(FILES  app/default/scripts/manager.py COMPONENT scripts 
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+
+# add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
+# so we need to use ${CMAKE_CFG_INTDIR}
+add_custom_command(OUTPUT python-scripts
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/manager.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMENT "Copying manager.py to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
+add_custom_target(python-scripts ALL DEPENDS python-scripts)
+add_dependencies(install_applications python-scripts)
+###############################
+    
 # export the installed project 
 message(STATUS "Now exporting for install")
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
@@ -160,22 +175,22 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
 message(STATUS "Installing cmake scripts")
 set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindCFW2CANAPI.cmake
-						FindESDCANAPI.cmake
-						FindGtkMM.cmake
-						FindGtkMMUnix.cmake
-						FindGtkMMWin32.cmake
-						FindIPOPT.cmake
-						FindODE.cmake
-						FindIPP.cmake
-						FindQt3.cmake
-						FindGLUT.cmake
-						FindOpenGL.cmake)
+                        FindESDCANAPI.cmake
+                        FindGtkMM.cmake
+                        FindGtkMMUnix.cmake
+                        FindGtkMMWin32.cmake
+                        FindIPOPT.cmake
+                        FindODE.cmake
+                        FindIPP.cmake
+                        FindQt3.cmake
+                        FindGLUT.cmake
+                        FindOpenGL.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
   install(FILES  conf/${conf} COMPONENT scripts 
-	  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/${conf})
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/${conf})
 endforeach(conf)
 
 ## add the "uninstall" target

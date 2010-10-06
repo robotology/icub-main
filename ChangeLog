@@ -1,4 +1,8 @@
 2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
+	add rules to install manager.py, added target python-scripts
+    that manually copies manager.py to the build directory
+    
+2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
 	app/default/scripts/manager.py
 	main/app/default/scripts/manager.py
 	bug fixes on timeout, basic handling of linux/windows
