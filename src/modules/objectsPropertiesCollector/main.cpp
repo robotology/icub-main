@@ -89,7 +89,7 @@ properties match the conditions given in the command. You can
 compose multiple conditions using the boolean operators such as 
 ''||' for 'or' and '&&' for 'and' and each condition has to be 
 expressed giving the property name, the value to compare with 
-and the correpsonding relational operator (e.g. >, <=, ==, ...).
+and the corresponding relational operator (e.g. >, <=, ==, ...).
  
 \section lib_sec Libraries 
 - YARP libraries. 
