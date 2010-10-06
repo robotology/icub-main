@@ -305,13 +305,8 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
 
             reply.addString("\n");
             reply.addString("get fn \t: general get command \n");
-            
-
             reply.addString("\n");
-            
-
             reply.addString("\n");
-            
 
             reply.addString("\n");
             reply.addString("set k1 <double> \t: setting of linear combination coefficient (map1) \n");
@@ -322,8 +317,6 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set k6 <double> \t: setting of linear combination coefficient (map6) \n");
 
             reply.addString("\n");
-            
-            
             reply.addString("\n");
 
 

@@ -52,13 +52,14 @@ const int THREAD_RATE=30;
 
 class selectiveAttentionProcessor:public yarp::os::RateThread {
     private:
-        int psb; //width step of 8u images
-        int psb32; //width step of 32f images
-        int psb_border; //width step of the image with border for 3x3 operator convolution
-        IppiSize srcsize; //IppiSize reference to the dimension of the input image
-        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp; //temporary mono image
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2; //temporary rgb image
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *intermCartOut; //temporary rgb image
+        int psb;                        //width step of 8u images
+        int psb32;                      //width step of 32f images
+        int psb_border;                 //width step of the image with border for 3x3 operator convolution
+        IppiSize srcsize;               //IppiSize reference to the dimension of the input image
+        IppiSize srcsizeCart;           //IppiSize reference to the dimension of the input image cartesian
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;              //temporary mono image
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;              //temporary rgb image
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *intermCartOut;     //temporary rgb image
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //a port for the inputImage (colour)
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageCartOut; //port for sending cartesian image result
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; // input port for the 1st saliency map

@@ -67,6 +67,8 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     k4=0.1;
     k5=0.5;
     k6=0.5;
+    kmotion=0.0;
+    kc1=0.2;
 
     // images
     edges_yarp=new ImageOf<PixelMono>;
@@ -130,8 +132,8 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(ImageOf<PixelRgb>* inpu
 }
 
 void selectiveAttentionProcessor::reinitialise(int width, int height){
-    this->srcsize.width=width;
-    this->srcsize.height=height;
+    srcsize.width=width;
+    srcsize.height=height;
     this->width=width;
     this->height=height;
 
@@ -156,6 +158,8 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     //fixed resize 640,480
     intermCartOut=new ImageOf<PixelRgb>;
     intermCartOut->resize(xSizeValue,ySizeValue);
+    srcsizeCart.width=xSizeValue/2;
+    srcsizeCart.height=ySizeValue/2;
     motion_yarp=new ImageOf<PixelMono>;
     motion_yarp->resize(xSizeValue/2,ySizeValue/2);
     cart1_yarp=new ImageOf<PixelMono>;
@@ -368,14 +372,14 @@ void selectiveAttentionProcessor::run(){
         if(motionPort.getInputCount()) {
             tmp=motionPort.read(false);
             if(tmp!=0) {
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),motion_yarp->getRawImage(),motion_yarp->getRowSize(),this->srcsize);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),motion_yarp->getRawImage(),motion_yarp->getRowSize(),srcsizeCart);
                 idle=false;
             }
         }
         if(cart1Port.getInputCount()) {
             tmp=cart1Port.read(false);
             if(tmp!=0) {
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),cart1_yarp->getRawImage(),cart1_yarp->getRowSize(),this->srcsize);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),cart1_yarp->getRawImage(),cart1_yarp->getRowSize(),srcsizeCart);
                 idle=false;
             }
         }
@@ -445,8 +449,8 @@ void selectiveAttentionProcessor::run(){
                 if(y%2==0) {
                     for(int x=0;x<xSizeValue;x++) {
                         if(x%2==0) {
-                            //unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * (0.5/sumCart) + *pmotion * (kmotion/sumCart)));
-                            unsigned char value=*pInter;
+                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * (0.5/sumCart) + *pmotion * (kmotion/sumCart)));
+                            //unsigned char value=*pInter;
                             *pImage=value;
                             if(maxValue<*pImage) {
                                 maxValue=*pImage;
@@ -472,11 +476,13 @@ void selectiveAttentionProcessor::run(){
                     pInter+=paddingInterm+rowSizeInterm;
                 }
             }
+            
             pImage=outputCartImage.getRawImage();
             float distance=0;
             bool foundmax=false;
             for(int y=0;y<ySizeValue/2;y++) {
                 for(int x=0;x<xSizeValue/2;x++) {
+                    //*pImage=value;
                     if(*pImage==maxValue) {
                         if(!foundmax) {
                             *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
