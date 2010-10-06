@@ -126,20 +126,20 @@ Several examples of the requests you may forward to the
 database: 
  
 \code 
-command: [add] ((prop0 0) (prop1 1)) 
+command: [add] ((color red) (x 1)) 
 reply: [ack] (id 0) 
  
-command: [add] ((prop0 1) (prop2 2)) 
+command: [add] ((color blue) (x 2)) 
 reply: [ack] (id 1) 
  
-command: [set] ((id 1) (prop2 3)) 
+command: [set] ((id 1) (x 3)) 
 reply: [ack] 
  
 command: [get] ((id 1)) 
-reply: [ack] ((id 1) (prop0 1) (prop2 3))
+reply: [ack] ((id 1) (color blue) (x 3))
  
-command: [ask] ((prop0 < 10) && (prop1 == 1)) 
-reply: [ack] (id (0)) 
+command: [ask] ((x < 10) && (color == blue)) 
+reply: [ack] (id (1))
 \endcode 
  
 \author Ugo Pattacini
