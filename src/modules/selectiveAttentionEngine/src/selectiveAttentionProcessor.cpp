@@ -67,7 +67,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     k4=0.1;
     k5=0.5;
     k6=0.5;
-    kmotion=0.0;
+    kmotion=0.5;
     kc1=0.2;
 
     // images
