@@ -1,6 +1,10 @@
 2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
+	main/conf/iCubHelpers.cmake icub_app_install support case 
+	in which no DESTINATION is given.
+
+2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
 	add rules to install manager.py, added target python-scripts
-    that manually copies manager.py to the build directory
+	that manually copies manager.py to the build directory
     
 2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
 	app/default/scripts/manager.py
