@@ -45,7 +45,7 @@ string, double, int).
 Reserved properties tags: 
 --id used to specify the unique integer identifier assigned to
   each stored item.
---lifeTimer specify the forgetting factor given in seconds, 
+--lifeTimer specifies the forgetting factor given in seconds, 
   meaning that after <lifeTimer> seconds since its creation, the
   item is removed automatically from the server.
  
