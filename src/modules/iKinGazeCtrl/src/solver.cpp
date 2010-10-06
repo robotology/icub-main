@@ -127,8 +127,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         fbHead.resize(nJointsHead,0.0);
 
         // impose starting vergence != 0.0
-        if (fbHead[5]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
-            fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
     }
 
     // Instantiate integrator
@@ -206,8 +205,8 @@ void EyePinvRefGen::run()
         Vector &xd=port_xd->get_xd();
 
         // beware of too small vergence
-        if (qd[2]<0.5*CTRL_DEG2RAD)
-            qd[2]=0.5*CTRL_DEG2RAD;
+        if (qd[2]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
+            qd[2]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
         // update neck chain
         chainNeck->setAng(nJointsTorso+0,fbHead[0]);
@@ -405,6 +404,9 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
+
+        // impose starting vergence != 0.0
+        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
     }
 
     // store neck pitch/yaw bounds
@@ -415,10 +417,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
     // neck roll disabled
     fbHead[1]=0.0;
-
-    // impose starting vergence != 0.0
-    if (fbHead[5]<0.5*CTRL_DEG2RAD)
-        fbHead[5]=0.5*CTRL_DEG2RAD;
 
     neckPos.resize(2);
     gazePos.resize(3);
