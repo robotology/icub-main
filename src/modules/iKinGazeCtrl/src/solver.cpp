@@ -92,7 +92,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         copyJointsBounds(chainEyeL,chainEyeR);
 
         // reinforce vergence min bound
-        lim(nJointsHead-1,0)=0.0;
+        lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
         // just eye part is required
         lim=lim.submatrix(3,5,0,1);
@@ -106,9 +106,6 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     {
         nJointsTorso=3;
         nJointsHead =6;
-        
-        fbTorso.resize(nJointsTorso,0.0);
-        fbHead.resize(nJointsHead,0.0);
 
         // create bounds matrix for integrators
         // just for eye part
@@ -123,13 +120,16 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         lim(1,1)=(*chainEyeL)[nJointsTorso+4].getMax();
 
         // vergence
-        lim(2,0)=0.0;
+        lim(2,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
         lim(2,1)=lim(1,1);
-    }
 
-    // impose starting vergence != 0.0
-    if (fbHead[5]<0.5*CTRL_DEG2RAD)
-        fbHead[5]=0.5*CTRL_DEG2RAD;
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
+
+        // impose starting vergence != 0.0
+        if (fbHead[5]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
+            fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+    }
 
     // Instantiate integrator
     qd.resize(3);
@@ -195,7 +195,7 @@ void EyePinvRefGen::run()
             updateTorsoBlockedJoints(chainEyeR,fbTorso);
         }
         else
-            fbHead=commData->get_q();        
+            fbHead=commData->get_q();
 
         // read gyro data
         if (port_inertial)

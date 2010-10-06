@@ -294,6 +294,10 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
     else
         ret=false;
 
+    // impose vergence != 0.0
+    if (fbHead[5]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
+        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+
     return ret;
 }
 
