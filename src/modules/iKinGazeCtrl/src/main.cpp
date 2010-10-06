@@ -72,6 +72,10 @@ your robot setup; you should find something similar to:
 [VELOCITY] 
 Shifts 8 8 8 8 8 8 8 8 8 8 
 \endcode 
+ 
+Read more on <a 
+href="http://eris.liralab.it/wiki/ControlBoard_configuration_file#Shifts">Shifts 
+Factors</a>. 
 
 \note A video on iCub gazing at a target can be seen <a 
       href="http://eris.liralab.it/misc/icubvideos/gazing_IIT_ISR.wmv">here</a>.
