@@ -228,8 +228,8 @@ bool equal(Value &a, Value& b)
         return (a.asInt()==b.asInt());
     else if (a.isString() && b.isString())
     {
-        string aStr=a.asString();
-        string bStr=b.asString();
+        string aStr=a.asString().c_str();
+        string bStr=b.asString().c_str();
 
         return (aStr==bStr);
     }
