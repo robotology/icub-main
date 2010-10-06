@@ -22,6 +22,7 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/GazeControl.h>
 #include <yarp/sig/Image.h>
 // std
 #include <stdio.h>
@@ -57,7 +58,8 @@ private:
     yarp::os::Property optionsHead, optionsTorso;
     yarp::dev::IEncoders *encHead, *encTorso;
 	
-    yarp::dev::PolyDriver *robotHead, *robotTorso;
+    yarp::dev::PolyDriver *robotHead, *robotTorso, *clientGaze;
+    yarp::dev::IGazeControl *igaze;
 
     iCub::iKin::iCubEye *leftEye, *rightEye;
 	
@@ -69,7 +71,7 @@ private:
 
 	yarp::sig::Matrix _Ti, _Ti0, _TB0;
 
-	yarp::sig::Vector _q, _it, _o, _epx, _tmp, _tmpEl;
+	yarp::sig::Vector _q, _it, _o, _epx, _tmp, _tmpEl, gazeVect;
 
 	yarp::sig::Vector _leftJoints, _rightJoints, _joints;
 
@@ -114,6 +116,8 @@ public:
     */
     void threadRelease();
     void onStop();
+    void suspend();
+    void release();
 
     /**
     * function that computes the ray vector passing from x,y coordinates in image plane
@@ -134,20 +138,6 @@ public:
     }
 
     virtual double getPeriod() {return 0.05;}
-	
-    bool respond(const Bottle& command, Bottle& reply) {
-    if (command.get(0).asString() == "quit")
-	    return false;     
-        else if (command.get(0).asString() == "help"){
-            cout << " \nWell quite simple....\n" << endl;
-            cout << " quit    - quits the program ....hhhmmm difficult this one" << endl;
-        }
-        else
-        {
-            cout << "command not known - type help for more info" << endl;
-        }
-        return true;
-    }
 
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *imgInL; //reference to the left log polar image
 
@@ -158,4 +148,3 @@ public:
     double angle;//angle displacement for zero disparity
 
 };
-

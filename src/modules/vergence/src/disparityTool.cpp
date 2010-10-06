@@ -452,7 +452,7 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
     ret = filterMaxes();
 
     //cout << "Final time: " << (Time::now() - TimeStart) << endl;
-    cout << "index " << ret.index << " corr " << ret.corr << " disp " << ret.disp << endl; 
+    //cout << "index " << ret.index << " corr " << ret.corr << " disp " << ret.disp << endl; 
     return (int)ret.disp;
 }
 

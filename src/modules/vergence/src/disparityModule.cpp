@@ -18,7 +18,6 @@
  */
 
 #include <iCub/disparityModule.h>
-#include "yarp/os/impl/NameClient.h"
 // std
 #include <stdio.h>
 #include <iostream>
@@ -35,7 +34,6 @@ disparityModule::disparityModule() {
 
 disparityModule::~disparityModule() {
    cmdPort.close();
-   yarp::os::impl::NameClient::removeNameClient();
 } 
 
 bool disparityModule::configure( ResourceFinder &rf ) {
@@ -90,4 +88,3 @@ bool disparityModule::updateModule() {
 	return true;
 }
 //make gcc happy
-

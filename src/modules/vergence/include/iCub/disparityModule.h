@@ -107,6 +107,14 @@ public:
             cout << helpMessage;
             reply.addString( "ok" ); 
         }
+        else if (command.get(0).asString() == "sus"){
+            cout << " sending suspend signal" << endl;
+            currentProcessor->suspend();
+        }
+        else if (command.get(0).asString() == "res"){
+            cout << "sending resume signal" << endl;
+            currentProcessor->resume();
+        }
         else {
             cout << "command not known - type help for more info" << endl;
         }

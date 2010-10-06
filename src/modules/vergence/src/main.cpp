@@ -25,10 +25,14 @@
 using namespace yarp::os;
 using namespace std;
 
+YARP_DECLARE_DEVICES(icubmod)
+
 int main(int argc, char *argv[]) 
 {
     /* initialize yarp network */ 
     Network yarp;
+
+    YARP_REGISTER_DEVICES(icubmod)
     /* create the module */
     disparityModule module; 
 

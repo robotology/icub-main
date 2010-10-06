@@ -20,6 +20,7 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME}
                      iKin
                      ${YARP_LIBRARIES}
      				 logpolar
+                     icubmod
 				     ${ACE_LIBRARIES}
     				 )
 
