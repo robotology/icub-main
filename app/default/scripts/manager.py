@@ -416,8 +416,10 @@ class App:
             print "I'll now kill ", str(cmd), ""
             #os.kill(p.pid, signal.SIGKILL)
             p.terminate()
-
-        ret = p.returncode
+            ret = 1
+        else:
+            ret = p.returncode
+            
         return ret
 
     def checkModules(self):
