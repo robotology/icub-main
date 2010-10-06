@@ -42,8 +42,8 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 Notation: [.] is a Vocab, {.} is a string, <.> is a Value (i.e. 
 string, double, int). 
  
-Reserved properties tag: 
---id used to specify the unique integer identifier assigned to 
+Reserved properties tags: 
+--id used to specify the unique integer identifier assigned to
   each stored item.
 --lifeTimer specify the forgetting factor given in seconds, 
   meaning that after <lifeTimer> seconds since its creation, the
