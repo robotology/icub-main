@@ -657,10 +657,9 @@ public:
                 if (ask(content,items))
                 {
                     reply.addVocab(REP_ACK);
-                    Bottle &b1=reply.addList();
-                    b1.addString("id");
-                    Bottle &b2=b1.addList();
-                    b2.addList()=items;
+                    Bottle &b=reply.addList();
+                    b.addString("id");
+                    b.addList()=items;
                 }
                 else
                     reply.addVocab(REP_NACK);
