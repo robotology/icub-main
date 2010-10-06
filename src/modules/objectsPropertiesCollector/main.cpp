@@ -92,11 +92,11 @@ stored items along with their properties.
  
 <b>ask</b> \n
 Format: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) ...) \n
-Reply: [nack]; [ack] (id (id0 id1 ...)) \n 
+Reply: [nack]; [ack] (id (<num0> <num1> ...)) \n 
 Action: query the database to find all the items whose 
 properties match the conditions given in the command. You can 
 compose multiple conditions using the boolean operators such as 
-''||' for \e or and '&&' for \e and and each condition has to be
+''||' for \e or and '&&' for \e and and each condition has to be 
 expressed giving the property name, the value to compare with 
 and the corresponding relational operator (e.g. >, <=, ==, ...).
  
