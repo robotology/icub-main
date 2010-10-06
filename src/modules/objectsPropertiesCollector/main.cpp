@@ -80,7 +80,7 @@ Reply: [nack]; [ack] (({prop0} <val0>) ({prop1} <val1>) ...) \n
 Action: return all the properties assigned to the stored item.
  
 <b>set</b> \n
-Format: [get] ((id <num>) ({prop2} <val2>) ...) \n 
+Format: [set] ((id <num>) ({prop2} <val2>) ...) \n 
 Reply: [nack]; [ack] \n 
 Action: add/modify properties of the stored item.
  
