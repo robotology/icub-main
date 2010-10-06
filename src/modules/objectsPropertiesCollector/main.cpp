@@ -66,7 +66,7 @@ Format: [add] (({prop0} <val0>) ({prop1} <val1>) ...) \n
 Reply: [nack]; [ack] (id <num>) \n 
 Action: a new item is added to the database with the given 
 properties. A unique identifier is returned that is used to 
-access to the item later on. 
+access the item. 
 
 <b>delete</b> \n
 Format: [del] ((id <num>)) \n 
