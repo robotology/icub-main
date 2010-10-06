@@ -21,13 +21,8 @@
 
 \defgroup objectsPropertiesCollector objectsPropertiesCollector
  
-Provides a on-line database to collect properties such as 
-positions, colors, shapes, grasping points and so on about 
-objects that are interesting for your specific application, i.e.
-normally real objects that the robot can play with but ideally 
-any kind of objects you can think of. 
-The user can set, get, add, delete items and even make queries 
-to the database. 
+Provides a on-line database to collect properties of objects 
+that are interesting for your specific application.
  
 Copyright (C) 2010 RobotCub Consortium
  
@@ -35,7 +30,17 @@ Author: Ugo Pattacini
  
 Date: first release 06/10/2010
 
-CopyPolicy: Released under the terms of the GNU GPL v2.0.
+CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+ 
+\section intro_sec Description 
+ 
+Provides a on-line database to collect properties such as 
+positions, colors, shapes, grasping points and so on about 
+objects that are interesting for your specific application, i.e.
+normally real objects that the robot can play with but ideally 
+any kind of objects you can think of. 
+The user can set, get, add, delete items and even make queries 
+to the database. 
 
 \section proto_sec Protocol
  
@@ -43,47 +48,51 @@ Notation: [.] is a Vocab, {.} is a string, <.> is a Value (i.e.
 string, double, int). 
  
 Reserved properties tags: 
---id used to specify the unique integer identifier assigned to
-  each stored item.
---lifeTimer specifies the forgetting factor given in seconds, 
-  meaning that after <lifeTimer> seconds since its creation, the
-  item is removed automatically from the server.
+ 
+- id 
+used to specify the unique integer identifier assigned to 
+ach stored item. 
+ 
+- lifeTimer 
+specifies the forgetting factor given in seconds, meaning that 
+after <lifeTimer> seconds since its creation, the item is 
+removed automatically from the server. 
  
 The commands sent as bottles to the module port /<modName>/rpc
 are the following: 
  
-<b>ADD</b> 
-Format: [add] (({prop0} <val0>) ({prop1} <val1>) ...) 
-Reply: [nack]; [ack] (id <num>) 
+<b>add</b> \n
+Format: [add] (({prop0} <val0>) ({prop1} <val1>) ...) \n
+Reply: [nack]; [ack] (id <num>) \n 
 Action: a new item is added to the database with the given 
 properties. A unique identifier is returned that is used to 
 access to the item later on. 
 
-<b>DELETE</b> 
-Format: [del] ((id <num>)) 
-Reply: [nack]; [ack] 
+<b>delete</b> \n
+Format: [del] ((id <num>)) \n 
+Reply: [nack]; [ack] \n 
 Action: remove from the database an item specified with the 
 given identifier. 
  
-<b>GET</b> 
-Format: [get] ((id <num>)) 
-Reply: [nack]; [ack] (({prop0} <val0>) ({prop1} <val1>) ...) 
+<b>get</b> \n
+Format: [get] ((id <num>)) \n
+Reply: [nack]; [ack] (({prop0} <val0>) ({prop1} <val1>) ...) \n
 Action: return all the properties assigned to the stored item.
  
-<b>SET</b> 
-Format: [get] ((id <num>) ({prop2} <val2>) ...) 
-Reply: [nack]; [ack] 
+<b>set</b> \n
+Format: [get] ((id <num>) ({prop2} <val2>) ...) \n 
+Reply: [nack]; [ack] \n 
 Action: add/modify properties of the stored item.
  
-<b>DUMP</b> 
-Format: [dump] 
-Reply: [ack] 
+<b>dump</b> \n 
+Format: [dump] \n 
+Reply: [ack] \n 
 Action: ask the database to dump on the screen all the stored 
 items along their properties. 
  
-<b>ASK</b> 
-Format: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) ...) 
-Reply: [nack]; [ack] (id (id0 id1 ...))
+<b>ask</b> \n
+Format: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) ...) \n
+Reply: [nack]; [ack] (id (id0 id1 ...)) \n 
 Action: query the database to find all the items whose 
 properties match the conditions given in the command. You can 
 compose multiple conditions using the boolean operators such as 
