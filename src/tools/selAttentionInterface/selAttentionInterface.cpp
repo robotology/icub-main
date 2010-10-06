@@ -795,7 +795,7 @@ GtkWidget* createMainWindow(void) {
     gtk_widget_show (hscale);
     g_signal_connect (G_OBJECT (adj16), "value_changed",
                       G_CALLBACK (cb_digits_scale16), NULL);
-    */
+    */  
 
     gtk_box_pack_start (GTK_BOX (box3), box6, FALSE, FALSE, 0);
     gtk_widget_show (box6);
@@ -875,6 +875,13 @@ void configure(yarp::os::ResourceFinder rf){
     _options.portName      = rf.check("name", 
                            Value("/selectiveAttentionInterface"), 
                            "module name (string)").asString();
+    _options.posX      = rf.check("x", 
+                           Value(100), 
+                           "module pos x (int)").asInt();
+    _options.posY      = rf.check("y", 
+                           Value(100), 
+                           "module pos y (int)").asInt();
+
 }
 
 void setOptionsToDefault() {
