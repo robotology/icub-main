@@ -126,17 +126,17 @@ Several examples of the requests you may forward to the
 database: 
  
 \code 
-command: [add] ((color red) (x 1)) 
+command: [add] ((name ball) (color red) (x 1)) 
 reply: [ack] (id 0) 
  
-command: [add] ((color blue) (x 2)) 
+command: [add] ((name octopus) (color blue) (x 2)) 
 reply: [ack] (id 1) 
  
 command: [set] ((id 1) (x 3)) 
 reply: [ack] 
  
 command: [get] ((id 1)) 
-reply: [ack] ((id 1) (color blue) (x 3))
+reply: [ack] ((id 1) (name octopus) (color blue) (x 3))
  
 command: [ask] ((x < 10) && (color == blue)) 
 reply: [ack] (id (1))
