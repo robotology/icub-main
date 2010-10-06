@@ -431,7 +431,7 @@ protected:
                 condition.compare=&equal;
             else
             {
-                fprintf(stdout,"unknown relational operator '%s'!\n",operation);
+                fprintf(stdout,"unknown relational operator '%s'!\n",operation.c_str());
                 return false;
             }
 
@@ -442,7 +442,7 @@ protected:
                 operation=content->get(i+1).asString().c_str();
                 if ((operation!="||") && (operation!="&&"))
                 {
-                    fprintf(stdout,"unknown boolean operator '%s'!\n",operation);
+                    fprintf(stdout,"unknown boolean operator '%s'!\n",operation.c_str());
                     return false;
                 }
                 else
