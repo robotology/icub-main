@@ -22,7 +22,7 @@
 \defgroup objectsPropertiesCollector objectsPropertiesCollector
  
 Provides a on-line database to collect properties of objects 
-that are interesting for your specific application.
+that are of interest for your specific application.
  
 Copyright (C) 2010 RobotCub Consortium
  
@@ -36,7 +36,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
  
 Provides a on-line database to collect properties such as 
 positions, colors, shapes, grasping points and so on about 
-objects that are interesting for your specific application, i.e.
+objects that are of interest for your specific application, i.e.
 normally real objects that the robot can play with but ideally 
 any kind of objects you can think of. 
 The user can set, get, add, delete items and even make queries 
@@ -49,17 +49,17 @@ string, double, int).
  
 Reserved properties tags: 
  
-- id 
+- \e id 
 used to specify the unique integer identifier assigned to 
 ach stored item. 
  
-- lifeTimer 
+- \e lifeTimer 
 specifies the forgetting factor given in seconds, meaning that 
 after <lifeTimer> seconds since its creation, the item is 
 removed automatically from the database. 
  
-The commands sent as bottles to the module port /<modName>/rpc
-are the following: 
+The commands sent as bottles to the module port 
+/<moduleName>/rpc are the following: 
  
 <b>add</b> \n
 Format: [add] (({prop0} <val0>) ({prop1} <val1>) ...) \n
@@ -87,8 +87,8 @@ Action: add/modify properties of the stored item.
 <b>dump</b> \n 
 Format: [dump] \n 
 Reply: [ack] \n 
-Action: ask the database to dump on the screen all the stored 
-items along their properties. 
+Action: ask the database handler to dump on the screen all the 
+stored items along with their properties. 
  
 <b>ask</b> \n
 Format: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) ...) \n
@@ -104,18 +104,18 @@ and the corresponding relational operator (e.g. >, <=, ==, ...).
 - YARP libraries. 
 
 \section parameters_sec Parameters
---name \e name 
-- The parameter \e name identifies the module's name; all the 
-  open ports will be tagged with the prefix /<name>/. If not
-  specified \e objectsPropertiesCollector is assumed.
+--name \e moduleName 
+- The parameter \e moduleName identifies the module's name; all 
+  the open ports will be tagged with the prefix /<moduleName>/.
+  If not specified \e objectsPropertiesCollector is assumed.
  
 \section portsa_sec Ports Accessed
 None.
 
 \section portsc_sec Ports Created
  
-- \e <name>/rpc the remote procedure call port used to send 
-  command to the database and receive replies.
+- \e /<moduleName>/rpc the remote procedure call port used to 
+  send command to the database and receive replies.
 
 \section in_files_sec Input Data Files
 None.
@@ -129,7 +129,7 @@ None.
 \section tested_os_sec Tested OS
 Linux and Windows.
 
-\section example_sec Example 
+\section reqexample_sec Examples 
  
 Several examples of the requests you may forward to the 
 database: 
