@@ -56,7 +56,7 @@ ach stored item.
 - lifeTimer 
 specifies the forgetting factor given in seconds, meaning that 
 after <lifeTimer> seconds since its creation, the item is 
-removed automatically from the server. 
+removed automatically from the database. 
  
 The commands sent as bottles to the module port /<modName>/rpc
 are the following: 
