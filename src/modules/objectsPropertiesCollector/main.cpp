@@ -171,6 +171,9 @@ using namespace std;
 #define REP_UNKNOWN     VOCAB4('u','n','k','n')
 
 
+namespace relationalOperators
+{
+
 /************************************************************************/
 bool greater(Value &a, Value& b)
 {
@@ -235,6 +238,8 @@ bool equal(Value &a, Value& b)
     }
     else
         return false;
+}
+
 }
 
 
@@ -420,15 +425,15 @@ protected:
 
             operation=b->get(1).asString().c_str();
             if (operation==">")
-                condition.compare=&greater;
+                condition.compare=&relationalOperators::greater;
             else if (operation==">=")
-                condition.compare=&greaterEqual;
+                condition.compare=&relationalOperators::greaterEqual;
             else if (operation=="<")
-                condition.compare=&lower;
+                condition.compare=&relationalOperators::lower;
             else if (operation=="<=")
-                condition.compare=&lowerEqual;
+                condition.compare=&relationalOperators::lowerEqual;
             else if (operation=="==")
-                condition.compare=&equal;
+                condition.compare=&relationalOperators::equal;
             else
             {
                 fprintf(stdout,"unknown relational operator '%s'!\n",operation.c_str());
