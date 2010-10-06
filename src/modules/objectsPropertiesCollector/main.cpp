@@ -113,7 +113,7 @@ None.
 \section portsc_sec Ports Created
  
 - \e /<moduleName>/rpc the remote procedure call port used to 
-  send command to the database and receive replies.
+  send requests to the database and receive replies.
 
 \section in_files_sec Input Data Files
 None.
