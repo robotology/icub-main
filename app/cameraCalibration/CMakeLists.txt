@@ -10,6 +10,9 @@ icub_app_install(${appname}
 				DESTINATION scripts)
 
 icub_app_install(${appname} 
+				FILES ${CMAKE_CURRENT_SOURCE_DIR}/README)
+
+icub_app_install(${appname} 
 				FILES ${conf}
 				DESTINATION conf)
 

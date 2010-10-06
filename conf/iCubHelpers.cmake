@@ -218,14 +218,20 @@ macro(icub_app_install target)
   set(files ${${target}_FILES})
   set(destination ${${target}_DESTINATION})
   
-  set(dapp "${ICUB_DESTINATION_APP}/app/${target}/${destination}")
+  if (${destination})
+	  set(dapp "${ICUB_DESTINATION_APP}/app/${target}/${destination}")
+    
+      add_custom_command(OUTPUT ${dummy}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
+		COMMENT "Creating directory ${dapp}"
+		APPEND)
 
+  else (${destination})
+	  set(dapp "${ICUB_DESTINATION_APP}/app/${target}")
+  endif(${destination})
+  
   #message(STATUS "${CMAKE_COMMAND} -E make_directory ${dapp}/${destination}")
 
-  add_custom_command(OUTPUT ${dummy}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
-    COMMENT "Creating directories ${dapp}"
-    APPEND)
 
   foreach(f ${files})
     set(command2 ${CMAKE_COMMAND} -E copy ${f} ${dapp})
