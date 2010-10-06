@@ -413,7 +413,7 @@ class App:
             print "however this is probably due to a problem to your",
             print "yarp network (address conflict?)"
             print "See log file /tmp/"+self.application.getName()+".log"
-            print "I'll now kill ", cmd, ""
+            print "I'll now kill ", str(cmd), ""
             #os.kill(p.pid, signal.SIGKILL)
             p.terminate()
 
