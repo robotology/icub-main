@@ -354,6 +354,8 @@ public:
     {
         mutex.wait();
 
+        fprintf(stdout,"loading database from %s ...\n",dbFileName.c_str());
+
         clearMap();
         idCnt=0;
 
@@ -396,7 +398,7 @@ public:
                 idCnt=id+1;
         }
 
-        fprintf(stdout,"database loaded from %s\n",dbFileName.c_str());
+        fprintf(stdout,"database loaded\n");
 
         mutex.post();
     }
@@ -406,11 +408,13 @@ public:
     {
         mutex.wait();
 
+        fprintf(stdout,"saving database in %s ...\n",dbFileName.c_str());
+
         FILE *fout=fopen(dbFileName.c_str(),"w");
         write(fout);
         fclose(fout);
 
-        fprintf(stdout,"database stored in %s\n",dbFileName.c_str());
+        fprintf(stdout,"database stored\n");
 
         mutex.post();
     }
