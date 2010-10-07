@@ -88,14 +88,17 @@ bool openPorts();
 void closePorts();
 bool setUp();
 void cleanExit();
-
 void printHelp();
 
 //-------------------------------------------------
 // Global Variables
 //-------------------------------------------------
 // main window 
-
+GtkObject *adj1, *adj2,*adj3, *adj4,*adj5, *adj6;
+GtkObject *adj11, *adj12,*adj13, *adj14,*adj15, *adj16;
+GtkObject *adjMotion;
+yarp::os::Semaphore mutex;
+int c=0;
 
 //-------------------------------------------------
 // Program Options 

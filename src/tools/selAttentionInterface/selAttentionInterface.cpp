@@ -64,7 +64,8 @@ std::string* command;   //reference to the string refering to the last command t
 int _frameN;            //Frame Number
 bool _savingSet;        //Save Set of Images mode
 // 
-yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort=0; //Output Point Port
+//yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort=0; //Output Point Port
+Port* _pOutPort=0;
 yarp::os::Bottle _outBottle;//Output Bottle Container
 pgmOptions _options; //option set by the config file
 
@@ -143,13 +144,14 @@ static void callback( GtkWidget *widget,gpointer   data ){
 static void cb_digits_scale( GtkAdjustment *adj ) {
     /* Set the number of decimal places to which adj->value is rounded */
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        Bottle in;
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_K1);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -158,13 +160,14 @@ static void cb_digits_scale2( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->cannyOperator->setThresholdL((double)adj->value);
     //printf("k2: %f \n",(double) adj->value);
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_K2);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -173,13 +176,14 @@ static void cb_digits_scale3( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->maskSeed=adj->value;
     //printf("k3: %f \n",(double) adj->value);
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_K3);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -188,13 +192,14 @@ static void cb_digits_scale4( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     //printf("k4: %f \n",(double) adj->value);
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_K4);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -203,13 +208,14 @@ static void cb_digits_scale5( GtkAdjustment *adj ) {
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     //printf("k5: %f \n",(double) adj->value);
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_K5);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -217,13 +223,14 @@ static void cb_digits_scale6( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_K6);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -231,13 +238,14 @@ static void cb_digits_scale11( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_KC1);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -245,13 +253,14 @@ static void cb_digits_scale12( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_KC2);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -259,13 +268,14 @@ static void cb_digits_scale13( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_KC3);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -273,13 +283,14 @@ static void cb_digits_scale14( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_KC4);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -287,13 +298,14 @@ static void cb_digits_scale15( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_KC5);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -301,13 +313,14 @@ static void cb_digits_scale16( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_KC6);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
 }
 
@@ -315,15 +328,18 @@ static void cb_digits_scale16( GtkAdjustment *adj ) {
 static void cb_digits_scaleMotion( GtkAdjustment *adj ) {
     /* Set the number of maskSeed */
     //selectiveAttentionModule->processor1->maskTop=adj->value;
+    mutex.wait();
     if (_pOutPort!=NULL) {
-        yarp::os::Bottle& bot = _pOutPort->prepare();
+        yarp::os::Bottle bot; //= _pOutPort->prepare();
         bot.clear();
         bot.addVocab(COMMAND_VOCAB_SET);
         bot.addVocab(COMMAND_VOCAB_KMOT);
         bot.addDouble((double) adj->value);
         //_pOutPort->Content() = _outBottle;
-        _pOutPort->write();
+        Bottle in;
+        _pOutPort->write(bot,in);
     }
+    mutex.post();
 }
 
 gint timeout_update_CB(gpointer data) {
@@ -347,6 +363,182 @@ gint timeout_update_CB(gpointer data) {
 }
 
 gint timeout_CB (gpointer data) {
+    c++;
+    switch(c) {
+        case 0: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_KMOT);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adjMotion),value);
+                    mutex.post();
+                }
+                break;
+        case 1: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_K1);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj1),value);
+                    mutex.post();
+                }
+        case 2: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_K2);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj2),value);
+                    mutex.post();
+                }
+        case 3: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_K3);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj3),value);
+                    mutex.post();
+                }
+        case 4: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_K4);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj4),value);
+                    mutex.post();
+                }
+        case 5: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_K5);
+                    //_pOutPort->Content() = _out5Bottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj5),value);
+                    mutex.post();
+                }
+        case 6: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_K6);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj6),value);
+                    mutex.post();
+                }
+        case 7: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_KC1);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj11),value);
+                    mutex.post();
+                }
+        case 8: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_KC2);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj12),value);
+                    mutex.post();
+                }
+        case 9: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_KC3);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj13),value);
+                    mutex.post();
+                }
+        case 10: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_KC4);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj14),value);
+                    mutex.post();
+                }
+        case 11: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_KC5);
+                    //_pOutPort->Content() = _out5Bottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj15),value);
+                    mutex.post();
+                }
+        case 12: {
+                    yarp::os::Bottle bot; //= _pOutPort->prepare();
+                    bot.clear();
+                    bot.addVocab(COMMAND_VOCAB_GET);
+                    bot.addVocab(COMMAND_VOCAB_KC6);
+                    //_pOutPort->Content() = _outBottle;
+                    Bottle in;
+                    _pOutPort->write(bot,in);
+                    double value=in.get(2).asDouble();
+                    mutex.wait();
+                    gtk_adjustment_set_value(GTK_ADJUSTMENT (adj16),value);
+                    mutex.post();
+                }
+        default: {
+                    c=0;
+                 }
+    }
     return TRUE;
 }
 
@@ -638,9 +830,8 @@ GtkWidget* createMainWindow(void) {
     GtkWidget *separator;
     GtkWidget *label;
     //GtkWidget *scale;
-    GtkObject *adj1, *adj2,*adj3, *adj4,*adj5, *adj6;
-    GtkObject *adj11, *adj12,*adj13, *adj14,*adj15, *adj16;
-    GtkObject *adjMotion;
+    
+    
     GtkWidget *hscale, *vscale;
 
     // value, lower, upper, step_increment, page_increment, page_size 
@@ -682,6 +873,7 @@ GtkWidget* createMainWindow(void) {
     gtk_widget_show (hscale);
     g_signal_connect (G_OBJECT (adj1), "value_changed",
                       G_CALLBACK (cb_digits_scale), NULL);
+    
 
 
     label = gtk_label_new ("map2 k2:");
@@ -945,7 +1137,8 @@ void setOptionsToDefault() {
 }
 
 bool openPorts() {
-    _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+    //_pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+    _pOutPort=new Port;
     _options.portName+="/command:o";
     bool ok = _pOutPort->open(_options.portName.c_str());
     if (ok) {
