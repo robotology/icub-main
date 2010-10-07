@@ -45,7 +45,8 @@ to the database.
 \section proto_sec Protocol
  
 Notation: [.] is a Vocab, {.} is a string, <.> is a Value (i.e. 
-string, double, int). 
+string, double, int) or a List (so that also blobs and images 
+can be attached as property). 
  
 Reserved properties tags: 
  
