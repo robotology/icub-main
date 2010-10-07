@@ -11,11 +11,13 @@ file(GLOB models ${CMAKE_CURRENT_SOURCE_DIR}/conf/models/*.bmp
 
 icub_app_install(${appname} 
 				FILES ${conf}
-				DESTINATION conf)
+				DESTINATION conf
+				)
 				
 icub_app_install(${appname} 
 				FILES ${models}
-				DESTINATION conf/models)
+				DESTINATION conf/models
+				)
 
 icub_add_target(${appname})
 

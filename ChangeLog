@@ -1,3 +1,7 @@
+2010-10-7 Lorenzo Natale <lorenzo.natale@iit.it>
+	main/conf/iCubHelpers.cmake icub_app_install(FILES...) now skip directories
+	bug fix: wrong behavior with cmake 2.6.0 about creation of directories
+
 2010-10-6 Lorenzo Natale <lorenzo.natale@iit.it>
 	main/conf/iCubHelpers.cmake icub_app_install support case 
 	in which no DESTINATION is given.

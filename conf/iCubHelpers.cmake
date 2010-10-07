@@ -198,6 +198,10 @@ macro(icub_app target)
 					COMMENT "Creating directory ${target}")
 endmacro(icub_app)
 
+##
+# Add rule to copy a list of files.
+# FILES need to be a list of files, for ease of usage we skip directories.
+#
 macro(icub_app_install target)
   PARSE_ARGUMENTS(${target}
     "FILES;DESTINATION"
@@ -233,11 +237,13 @@ macro(icub_app_install target)
 
 
   foreach(f ${files})
-    set(command2 ${CMAKE_COMMAND} -E copy ${f} ${dapp})
-    add_custom_command(OUTPUT ${dummy}
-      COMMAND ${command2}
-      COMMENT "Copy ${f} to ${dapp}"
-      APPEND)		
+    if (NOT IS_DIRECTORY ${f})
+      set(command2 ${CMAKE_COMMAND} -E copy ${f} ${dapp})
+      add_custom_command(OUTPUT ${dummy}
+	COMMAND ${command2}
+	COMMENT "Copy ${f} to ${dapp}"
+	APPEND)		
+    endif()
   endforeach(f ${files})					
 
 
