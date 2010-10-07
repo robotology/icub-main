@@ -504,6 +504,86 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                     reply.addDouble(0.0);
             }
                 break;
+            case COMMAND_VOCAB_KMOT:{
+                double w = currentProcessor->kmotion;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K1:{
+                double w = currentProcessor->k1;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K2:{
+                double w = currentProcessor->k2;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K3:{
+                double w = currentProcessor->k3;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K4:{
+                double w = currentProcessor->k4;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K5:{
+                double w = currentProcessor->k5;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K6:{
+                double w = currentProcessor->k6;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_KC1:{
+                double w = currentProcessor->kc1;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            /*
+            case COMMAND_VOCAB_KC2:{
+                double w = currentProcessor->kc2;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_KC3:{
+                double w = currentProcessor->kc3;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_KC4:{
+                double w = currentProcessor->kc4;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_KC5:{
+                double w = currentProcessor->kc5;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_KC6:{
+                double w = currentProcessor->kc6;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            */
             default:
                 cout << "received an unknown request after a GET COMMAND" << endl;
                 break;
