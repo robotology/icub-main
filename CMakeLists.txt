@@ -159,12 +159,12 @@ install(FILES  app/default/scripts/manager.py COMPONENT scripts
 
 # add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
 # so we need to use ${CMAKE_CFG_INTDIR}
-add_custom_command(OUTPUT python-scripts-cmd
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/manager.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
-      COMMENT "Copying manager.py to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
-add_custom_target(python-scripts ALL DEPENDS python-scripts-cmd)
-add_dependencies(install_applications python-scripts)
+#add_custom_command(OUTPUT python-scripts-cmd
+#      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+#      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/manager.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+#      COMMENT "Copying manager.py to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
+#add_custom_target(python-scripts ALL DEPENDS python-scripts-cmd)
+#add_dependencies(install_applications python-scripts)
 ###############################
     
 # export the installed project 
