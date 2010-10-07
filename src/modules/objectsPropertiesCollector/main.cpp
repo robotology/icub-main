@@ -103,8 +103,11 @@ and the corresponding relational operator (e.g. >, <=, ==,
 ...).\n 
 The special command "[ask] (all)" returns the whole set of ids 
 present within the database. \n 
-Currently nested conditions of the form 
-(cond1)&&((cond2)||(cond3)) are not handled. 
+Currently nested conditions such as (cond1) && ((cond2) || 
+(cond3)) are not handled; by the way, this is not a real 
+limitation since nested conditions can be properly expanded: 
+indeed, the previous condition can be cast back to 
+(cond1)&&(cond2) || (cond1)&&(cond3). 
  
 \section lib_sec Libraries 
 - YARP libraries. 
