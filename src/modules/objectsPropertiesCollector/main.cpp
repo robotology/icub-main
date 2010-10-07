@@ -100,7 +100,9 @@ compose multiple conditions using the boolean operators such as
 expressed giving the property name, the value to compare with 
 and the corresponding relational operator (e.g. >, <=, ==, ...). 
 The special command "[ask] (all)" returns the whole set of ids 
-currently present within the database. 
+present within the database. 
+Currently nested conditions of the form 
+(cond1)&&((cond2)||(cond3)) are not handled. 
  
 \section lib_sec Libraries 
 - YARP libraries. 
