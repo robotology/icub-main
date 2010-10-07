@@ -1015,7 +1015,7 @@ public:
 * and LowerTorso is not handled here: it is simply supposed that a Torso Node receives correct 
 * kinematic and wrench input from outside.
 */
-class iDynSensorTorsoNode : protected iDynSensorNode
+class iDynSensorTorsoNode : public iDynSensorNode
 {
 protected:
 
