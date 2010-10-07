@@ -13,7 +13,6 @@ icub_app_install(${appname}
   FILES ${scripts}
   DESTINATION scripts)
 
-message(${hannover_left})
 icub_app_install(${appname}
   FILES ${hannover_left}
   DESTINATION hannover/left)
