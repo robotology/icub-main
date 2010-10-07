@@ -384,9 +384,7 @@ public:
             }
 
             int id=idProp.find("id").asInt();
-
-            Property *item=new Property(b.get(1).asList()->toString().c_str());
-            itemsMap[id]=item;
+            itemsMap[id]=new Property(b.get(1).asList()->toString().c_str());
 
             if (idCnt<id)
                 idCnt=id+1;
