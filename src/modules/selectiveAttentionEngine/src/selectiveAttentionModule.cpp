@@ -158,9 +158,11 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
                            "gaze perform (string)").asString();
     if(!strcmp(gazePerform.c_str(),"true")) {
         currentProcessor->setGazePerform(true);
+        printf("gazing behaviour active \n");
     }
     else {
         currentProcessor->setGazePerform(false);
+        printf("gazing behaviour not active \n");
     }
     
     currentProcessor->start();
