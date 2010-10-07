@@ -70,7 +70,7 @@ access the item.
 Format: [del] ((id <num>)) \n 
 Reply: [nack]; [ack] \n 
 Action: remove from the database an item specified with the 
-given identifier. 
+given identifier. \n
 The special command "[del] (all)" clears the current content of 
 the database. 
  
@@ -98,9 +98,10 @@ properties match the conditions given in the command. You can
 compose multiple conditions using the boolean operators such as 
 ''||' for \e or and '&&' for \e and and each condition has to be 
 expressed giving the property name, the value to compare with 
-and the corresponding relational operator (e.g. >, <=, ==, ...). 
+and the corresponding relational operator (e.g. >, <=, ==, 
+...).\n 
 The special command "[ask] (all)" returns the whole set of ids 
-present within the database. 
+present within the database. \n 
 Currently nested conditions of the form 
 (cond1)&&((cond2)||(cond3)) are not handled. 
  
