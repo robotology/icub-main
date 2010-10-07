@@ -169,6 +169,7 @@ reply: [ack] (id (1))
 
 #include <stdio.h>
 #include <string>
+#include <map>
 #include <deque>
 
 using namespace yarp::os;
@@ -264,7 +265,7 @@ bool equal(Value &a, Value& b)
 class DataBase
 {
 protected:
-    deque<Property> itemsList;
+    map<int,Property> itemsMap;
     Semaphore mutex;
     int idCnt;
 
@@ -283,8 +284,9 @@ protected:
     {
         mutex.wait();
 
-        for (unsigned int i=0; i<itemsList.size(); i++)
-            fprintf(fout,"item_%d: %s\n",i,itemsList[i].toString().c_str());
+        int i=0;
+        for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+            fprintf(fout,"item_%d (id %d) (%s)\n",i++,it->first,it->second.toString().c_str());
 
         mutex.post();
     }
@@ -315,7 +317,7 @@ public:
     {
         mutex.wait();
 
-        itemsList.clear();
+        itemsMap.clear();
         idCnt=0;
 
         Property finProperty;
@@ -326,21 +328,31 @@ public:
         for (int i=0; i<finBottle.size(); i++)
         {
             sprintf(tag,"item_%d",i);
-            Bottle *b=finBottle.find(tag).asList();
+            Bottle &b=finBottle.findGroup(tag);
 
-            if (b!=NULL)
+            if (b.isNull())
+                continue;
+
+            if (b.size()<2)
             {
-                Property item(b->toString().c_str());
-                
-                if (item.check("id"))
-                {
-                    int id=item.find("id").asInt();
-                    itemsList.push_back(item);
-
-                    if (idCnt<id)
-                        idCnt=id+1;
-                }
+                fprintf(stdout,"error while loading %s!\n",tag);
+                continue;
             }
+
+            Property idProp(b.get(0).asString().c_str());
+            if (!idProp.check("id"))
+            {
+                fprintf(stdout,"%s does not have any id!\n",tag);
+                continue;
+            }
+
+            int id=idProp.find("id").asInt();
+
+            Property item(b.get(1).asList()->toString().c_str());
+            itemsMap[id]=item;
+
+            if (idCnt<id)
+                idCnt=id+1;
         }
 
         mutex.post();
@@ -359,7 +371,7 @@ public:
     {
         fprintf(stdout,"dumping database content ... \n");
 
-        if (itemsList.size()==0)
+        if (itemsMap.size()==0)
             fprintf(stdout,"empty\n");
         else
             write(stdout);
@@ -369,9 +381,7 @@ public:
     void add(Bottle *content)
     {
         Property item(content->toString().c_str());
-        item.unput("id");
-        item.put("id",idCnt);
-        itemsList.push_back(item);
+        itemsMap[idCnt]=item;
 
         fprintf(stdout,"added item %s\n",item.toString().c_str());
     }
@@ -383,7 +393,7 @@ public:
             if (content->get(0).isVocab() || content->get(0).isString())
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
-                    itemsList.clear();
+                    itemsMap.clear();
                     fprintf(stdout,"database cleared\n");
                     return true;
                 }
@@ -397,19 +407,16 @@ public:
         }
         
         int id=request.find("id").asInt();
-
         fprintf(stdout,"removing item %d ... ",id);
 
-        for (deque<Property>::iterator it=itemsList.begin(); it!=itemsList.end(); it++)
+        map<int,Property>::iterator it=itemsMap.find(id);
+        if (it!=itemsMap.end())
         {
-            if (it->find("id").asInt()==id)
-            {
-                fprintf(stdout,"successfully\n");
-                itemsList.erase(it);
-                return true;
-            }
+            itemsMap.erase(it);
+            fprintf(stdout,"successfully\n");
+            return true;
         }
-
+        
         fprintf(stdout,"not present!\n");
 
         return false;
@@ -427,18 +434,15 @@ public:
         }
 
         int id=request.find("id").asInt();
-
         fprintf(stdout,"getting item %d ... ",id);
 
-        for (deque<Property>::iterator it=itemsList.begin(); it!=itemsList.end(); it++)
+        map<int,Property>::iterator it=itemsMap.find(id);
+        if (it!=itemsMap.end())
         {
-            if (it->find("id").asInt()==id)
-            {
-                item.clear();
-                item.fromString(it->toString().c_str());
-                fprintf(stdout,"%s\n",item.toString().c_str());
-                return true;
-            }
+            item.clear();
+            item.fromString(it->second.toString().c_str());
+            fprintf(stdout,"%s\n",item.toString().c_str());
+            return true;
         }
 
         fprintf(stdout,"not present!\n");
@@ -458,37 +462,34 @@ public:
         }
 
         int id=request.find("id").asInt();
-
         fprintf(stdout,"setting item %d ... ",id);
 
-        for (deque<Property>::iterator it=itemsList.begin(); it!=itemsList.end(); it++)
+        map<int,Property>::iterator it=itemsMap.find(id);
+        if (it!=itemsMap.end())
         {
-            if (it->find("id").asInt()==id)
+            request.unput("id");
+            Bottle b(request.toString().c_str());
+
+            fprintf(stdout,"%s\n",b.toString().c_str());
+
+            for (int i=0; i<b.size(); i++)
             {
-                request.unput("id");
-                Bottle b(request.toString().c_str());
+                Bottle *option=b.get(i).asList();
 
-                fprintf(stdout,"%s\n",b.toString().c_str());
-
-                for (int i=0; i<b.size(); i++)
+                if (option->size()<2)
                 {
-                    Bottle *option=b.get(i).asList();
-
-                    if (option->size()<2)
-                    {
-                        fprintf(stdout,"invalid property!\n");
-                        continue;
-                    }
-
-                    string prop=option->get(0).asString().c_str();
-                    Value  val=option->get(1);
-
-                    it->unput(prop.c_str());
-                    it->put(prop.c_str(),val);
+                    fprintf(stdout,"invalid property!\n");
+                    continue;
                 }
 
-                return true;
+                string prop=option->get(0).asString().c_str();
+                Value  val=option->get(1);
+
+                it->second.unput(prop.c_str());
+                it->second.put(prop.c_str(),val);
             }
+
+            return true;
         }
 
         fprintf(stdout,"not present!\n");
@@ -505,8 +506,8 @@ public:
                 {
                     items.clear();
 
-                    for (unsigned int i=0; i<itemsList.size(); i++)
-                        items.addInt(itemsList[i].find("id").asInt());
+                    for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+                        items.addInt(it->first);
 
                     return true;
                 }
@@ -573,15 +574,15 @@ public:
         items.clear();
 
         // apply the conditions to each item
-        for (unsigned int i=0; i<itemsList.size(); i++)
+        for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
             // there must be at least one condition to process
             string &prop=condList[0].prop;
             bool finalRes;
 
-            if (itemsList[i].check(prop.c_str()))
+            if (it->second.check(prop.c_str()))
             {
-                Value &val=itemsList[i].find(prop.c_str());
+                Value &val=it->second.find(prop.c_str());
                 finalRes=(*condList[0].compare)(val,condList[0].val);
             }
             else
@@ -596,9 +597,9 @@ public:
                 string &prop=condList[k].prop;
                 bool currentRes;
 
-                if (itemsList[i].check(prop.c_str()))
+                if (it->second.check(prop.c_str()))
                 {
-                    Value &val=itemsList[i].find(prop.c_str());
+                    Value &val=it->second.find(prop.c_str());
                     currentRes=(*condList[k].compare)(val,condList[k].val);
                 }
                 else
@@ -612,7 +613,7 @@ public:
 
             // keep only the item that satisfies the whole list of conditions
             if (finalRes)
-                items.addInt(itemsList[i].find("id").asInt());
+                items.addInt(it->first);
         }
 
         return true;
@@ -623,16 +624,16 @@ public:
     {
         mutex.wait();
 
-        for (deque<Property>::iterator it=itemsList.begin(); it!=itemsList.end(); it++)
+        for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
-            if (it->check("lifeTimer"))
+            if (it->second.check("lifeTimer"))
             {
-                double lifeTimer=it->find("lifeTimer").asDouble()-dt;
+                double lifeTimer=it->second.find("lifeTimer").asDouble()-dt;
 
                 if (lifeTimer<0.0)
                 {
-                    fprintf(stdout,"item %d expired\n",it->find("id").asInt());
-                    itemsList.erase(it);
+                    fprintf(stdout,"item with id=%d expired\n",it->first);
+                    itemsMap.erase(it);
 
                     // bug ?? a run-time error occurs if we don't break here;
                     // never mind: at the next call we keep on checking
@@ -640,8 +641,8 @@ public:
                 }
                 else
                 {
-                    it->unput("lifeTimer");
-                    it->put("lifeTimer",lifeTimer);
+                    it->second.unput("lifeTimer");
+                    it->second.put("lifeTimer",lifeTimer);
                 }
             }
         }
