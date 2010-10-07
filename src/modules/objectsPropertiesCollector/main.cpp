@@ -716,7 +716,7 @@ public:
 
                 if (lifeTimer<0.0)
                 {
-                    fprintf(stdout,"item with id=%d expired\n",it->first);
+                    fprintf(stdout,"item with id==%d expired\n",it->first);
                     eraseItem(it);
                     break;
                 }
