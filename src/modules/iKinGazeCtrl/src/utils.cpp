@@ -84,7 +84,7 @@ void xdPort::run()
 
         if ((theta[0]<NECKSOLVER_RESTORINGANGLE_TRA*CTRL_DEG2RAD) &&
             (theta[1]<NECKSOLVER_RESTORINGANGLE_SAG*CTRL_DEG2RAD))
-            timeDelay=0.5;
+            timeDelay=NECKSOLVER_ACTIVATIONDELAY;
 
         Time::delay(timeDelay);
 
