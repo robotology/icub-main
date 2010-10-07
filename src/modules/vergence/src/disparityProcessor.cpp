@@ -178,6 +178,7 @@ bool disparityProcessor::threadInit(){
 }
 
 void disparityProcessor::threadRelease(){
+    igaze->stopControl();
 	histoOutPort.close();
 	imageInLeft.close();
 	imageInRight.close();
@@ -187,10 +188,12 @@ void disparityProcessor::threadRelease(){
 	delete robotHead;
 	delete robotTorso;
     delete clientGaze;
+   
 }
 
 void disparityProcessor::onStop() 
 {
+    igaze->stopControl();
     histoOutPort.close();
 	imageInLeft.close();
 	imageInRight.close();
