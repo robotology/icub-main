@@ -75,7 +75,7 @@ MACRO(icub_export_library target)
         
   #important wrap ${dependencies} with "" to allows storing a list of dependencies
   set_target_properties(${target} PROPERTIES DEPENDS "${dependencies}") 
-		
+        
   ##### Handle include directories        
   # Parsing dependencies
   if (dependencies)           
@@ -89,13 +89,13 @@ MACRO(icub_export_library target)
             message(STATUS "${ext_dirs}")
         endif()
         
-		if (in_dirs)
-			set(internal_includes ${internal_includes} ${in_dirs})
-		endif (in_dirs)
-		
-		if (ext_dirs)
-			set(external_includes ${external_includes} ${ext_dirs})
-		endif(ext_dirs)
+        if (in_dirs)
+            set(internal_includes ${internal_includes} ${in_dirs})
+        endif (in_dirs)
+        
+        if (ext_dirs)
+            set(external_includes ${external_includes} ${ext_dirs})
+        endif(ext_dirs)
     endforeach(d)
   endif(dependencies)
   ############################
@@ -179,9 +179,9 @@ MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
       SET(loption_names ${option_names})    
       LIST(FIND loption_names "${arg}" is_option)            
       IF (is_option GREATER -1)
-	     SET(${prefix}_${arg} TRUE)
+         SET(${prefix}_${arg} TRUE)
       ELSE (is_option GREATER -1)
-	     SET(current_arg_list ${current_arg_list} ${arg})
+         SET(current_arg_list ${current_arg_list} ${arg})
       ENDIF (is_option GREATER -1)
     ENDIF (is_arg_name GREATER -1)
   ENDFOREACH(arg)
@@ -190,12 +190,11 @@ ENDMACRO(PARSE_ARGUMENTS)
 
 
 macro(icub_app target)
-	message(STATUS "declare target ${target}")
-	set(dummy ${CMAKE_BINARY_DIR}/f-${target})
+    set(dummy ${CMAKE_BINARY_DIR}/f-${target})
     set(dapp ${ICUB_DESTINATION_APP}/app/${target})
-	add_custom_command(OUTPUT ${dummy}
-					COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
-					COMMENT "Creating directory ${target}")
+    add_custom_command(OUTPUT ${dummy}
+                    COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
+                    COMMENT "Creating directory ${target}")
 endmacro(icub_app)
 
 ##
@@ -208,7 +207,7 @@ macro(icub_app_install target)
     "VERBOSE"
     ${ARGN}
     )
-	
+    
   set(dummy ${CMAKE_BINARY_DIR}/f-${target})
  
   set(VERBOSE ${${target}_VERBOSE})
@@ -223,14 +222,14 @@ macro(icub_app_install target)
   set(destination ${${target}_DESTINATION})
   
   if (destination)
-	  set(dapp "${ICUB_DESTINATION_APP}/app/${target}/${destination}")
+      set(dapp "${ICUB_DESTINATION_APP}/app/${target}/${destination}")
     
       add_custom_command(OUTPUT ${dummy}
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
-		COMMENT "Creating directory ${dapp}"
-		APPEND)
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
+        COMMENT "Creating directory ${dapp}"
+        APPEND)
   else (destination)
-	  set(dapp "${ICUB_DESTINATION_APP}/app/${target}")
+      set(dapp "${ICUB_DESTINATION_APP}/app/${target}")
   endif(destination)
   
   #message(STATUS "${CMAKE_COMMAND} -E make_directory ${dapp}/${destination}")
@@ -240,9 +239,9 @@ macro(icub_app_install target)
     if (NOT IS_DIRECTORY ${f})
       set(command2 ${CMAKE_COMMAND} -E copy ${f} ${dapp})
       add_custom_command(OUTPUT ${dummy}
-	COMMAND ${command2}
-	COMMENT "Copy ${f} to ${dapp}"
-	APPEND)		
+    COMMAND ${command2}
+    COMMENT "Copy ${f} to ${dapp}"
+    APPEND)		
     endif()
   endforeach(f ${files})					
 
@@ -250,12 +249,11 @@ macro(icub_app_install target)
 endmacro(icub_app_install)
 
 macro(icub_add_target target)
-	message(STATUS "adding target ${target}")
-	set(dummy ${CMAKE_BINARY_DIR}/f-${target})
-	add_custom_target(app-${target} DEPENDS ${dummy})
-	
-	icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS app-${target})
-	icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS_FILES ${dummy})
+    set(dummy ${CMAKE_BINARY_DIR}/f-${target})
+    add_custom_target(app-${target} DEPENDS ${dummy})
+    
+    icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS app-${target})
+    icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS_FILES ${dummy})
 endmacro(icub_add_target)
 
 ### From yarp.
