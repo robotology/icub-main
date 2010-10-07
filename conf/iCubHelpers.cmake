@@ -194,7 +194,7 @@ macro(icub_app target)
 	set(dummy ${CMAKE_BINARY_DIR}/f-${target})
     set(dapp ${ICUB_DESTINATION_APP}/app/${target})
 	add_custom_command(OUTPUT ${dummy}
-					COMMAND ${CMAKE_COMMAND} -E make_directory ${target}
+					COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
 					COMMENT "Creating directory ${target}")
 endmacro(icub_app)
 
@@ -218,17 +218,16 @@ macro(icub_app_install target)
   set(files ${${target}_FILES})
   set(destination ${${target}_DESTINATION})
   
-  if (${destination})
+  if (destination)
 	  set(dapp "${ICUB_DESTINATION_APP}/app/${target}/${destination}")
     
       add_custom_command(OUTPUT ${dummy}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
 		COMMENT "Creating directory ${dapp}"
 		APPEND)
-
-  else (${destination})
+  else (destination)
 	  set(dapp "${ICUB_DESTINATION_APP}/app/${target}")
-  endif(${destination})
+  endif(destination)
   
   #message(STATUS "${CMAKE_COMMAND} -E make_directory ${dapp}/${destination}")
 
