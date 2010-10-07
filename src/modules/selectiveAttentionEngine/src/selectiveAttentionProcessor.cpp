@@ -67,7 +67,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     k4=0.1;
     k5=0.5;
     k6=0.5;
-    kmotion=0.5;
+    kmotion=0.2;
     kc1=0.2;
 
     // images
@@ -521,7 +521,7 @@ void selectiveAttentionProcessor::run(){
             }
             //controlling the heading of the robot
             if(cLoop>TIME_CONST) {
-                printf("cartesian: %f,%f \n", xm,ym);
+                //printf("cartesian: %f,%f \n", xm,ym);
                 if(gazePerform) {
                     Vector px(2);
                     px[0]=round(xm);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240

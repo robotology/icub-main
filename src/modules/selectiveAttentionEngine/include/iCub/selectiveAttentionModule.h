@@ -78,6 +78,11 @@
 #define COMMAND_VOCAB_K4 VOCAB2('k','4')
 #define COMMAND_VOCAB_K5 VOCAB2('k','5')
 #define COMMAND_VOCAB_K6 VOCAB2('k','6')
+#define COMMAND_VOCAB_KC1 VOCAB3('k','c','1')
+#define COMMAND_VOCAB_KMOT VOCAB4('k','m','o','t')
+
+
+
 
 /**
 *
@@ -142,6 +147,8 @@ Possible commands that this module is responsive to are:
 - set k4: coefficient for the linear combination of map4
 - set k5: coefficient for the linear combination of map5
 - set k5: coefficient for the linear combination of map6
+- set kmot: coefficient for the linear combination of motion detection
+- set kc1: coefficient for linear combination of cartesian images
 
 
 \section in_files_sec Input Data Files

@@ -406,6 +406,20 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                 ok = true;
             }
             break;
+            case COMMAND_VOCAB_KC1:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->kc1=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_KMOT:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->kmotion=w;
+                ok = true;
+            }
+            break;
             case COMMAND_VOCAB_CHILD_NAME:{
                 int j = command.get(2).asInt();
                 string s(command.get(3).asString().c_str());
