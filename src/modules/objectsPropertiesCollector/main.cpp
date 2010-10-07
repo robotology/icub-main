@@ -390,6 +390,8 @@ public:
                 idCnt=id+1;
         }
 
+        fprintf(stdout,"database loaded from %s\n",dbFileName.c_str());
+
         mutex.post();
     }
 
@@ -403,6 +405,8 @@ public:
         FILE *fout=fopen(dbFileName.c_str(),"w");
         write(fout);
         fclose(fout);
+
+        fprintf(stdout,"database stored in %s\n",dbFileName.c_str());
 
         mutex.post();
     }
@@ -691,6 +695,8 @@ public:
             if (finalRes)
                 items.addInt(it->first);
         }
+
+        fprintf(stdout,"found items matching received conditions (%s)\n",items.toString().c_str());
 
         mutex.post();
 
