@@ -39,7 +39,7 @@ positions, colors, shapes, grasping points and so on about
 objects that are of interest for your specific application, i.e.
 normally real objects that the robot can play with but ideally 
 any kind of objects you can think of. 
-The user can set, get, add, delete items and even make queries 
+The user can set, get, add, remove items and even make queries 
 to the database. 
 
 \section proto_sec Protocol
@@ -66,11 +66,13 @@ Action: a new item is added to the database with the given
 properties. A unique identifier is returned that is used to 
 access the item. 
 
-<b>delete</b> \n
+<b>remove</b> \n
 Format: [del] ((id <num>)) \n 
 Reply: [nack]; [ack] \n 
 Action: remove from the database an item specified with the 
 given identifier. 
+The special command "[del] (all)" clears the current content of 
+the database. 
  
 <b>get</b> \n
 Format: [get] ((id <num>)) \n
@@ -96,7 +98,9 @@ properties match the conditions given in the command. You can
 compose multiple conditions using the boolean operators such as 
 ''||' for \e or and '&&' for \e and and each condition has to be 
 expressed giving the property name, the value to compare with 
-and the corresponding relational operator (e.g. >, <=, ==, ...).
+and the corresponding relational operator (e.g. >, <=, ==, ...). 
+The special command "[ask] (all)" returns the whole set of ids 
+currently present within the database. 
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -106,6 +110,10 @@ and the corresponding relational operator (e.g. >, <=, ==, ...).
 - The parameter \e moduleName identifies the module's name; all 
   the open ports will be tagged with the prefix /<moduleName>/.
   If not specified \e objectsPropertiesCollector is assumed.
+ 
+--db \e dbFileName 
+- The parameter \e dbFileName specifies the name of the database 
+  to load at startup (if already existing) and save at shutdown.
  
 \section portsa_sec Ports Accessed
 None.
@@ -176,6 +184,8 @@ using namespace std;
 #define REP_ACK         VOCAB3('a','c','k')
 #define REP_NACK        VOCAB4('n','a','c','k')
 #define REP_UNKNOWN     VOCAB4('u','n','k','n')
+
+#define OPT_ALL         VOCAB3('a','l','l')
 
 
 namespace relationalOperators
@@ -258,6 +268,8 @@ protected:
     Semaphore mutex;
     int idCnt;
 
+    string dbFileName;
+
     /************************************************************************/
     struct Condition
     {
@@ -265,6 +277,93 @@ protected:
         bool (*compare)(Value&,Value&);
         Value val;
     };
+
+    /************************************************************************/
+    void write(FILE *fout)
+    {
+        mutex.wait();
+
+        for (unsigned int i=0; i<itemsList.size(); i++)
+            fprintf(fout,"item_%d: %s\n",i,itemsList[i].toString().c_str());
+
+        mutex.post();
+    }
+
+public:
+    /************************************************************************/
+    ~DataBase()
+    {
+        save();
+    }
+
+    /************************************************************************/
+    void init(ResourceFinder &rf)
+    {
+        dbFileName=rf.findFile(rf.find("db").asString().c_str()).c_str();
+        idCnt=0;
+
+        if (rf.check("db"))
+            load();
+
+        dump();
+
+        fprintf(stdout,"database ready ...\n");
+    }
+
+    /************************************************************************/
+    void load()
+    {
+        mutex.wait();
+
+        itemsList.clear();
+        idCnt=0;
+
+        Property finProperty;
+        finProperty.fromConfigFile(dbFileName.c_str());
+        Bottle finBottle(finProperty.toString().c_str());
+
+        char tag[255];
+        for (int i=0; i<finBottle.size(); i++)
+        {
+            sprintf(tag,"item_%d",i);
+            Bottle *b=finBottle.find(tag).asList();
+
+            if (b!=NULL)
+            {
+                Property item(b->toString().c_str());
+                
+                if (item.check("id"))
+                {
+                    int id=item.find("id").asInt();
+                    itemsList.push_back(item);
+
+                    if (idCnt<id)
+                        idCnt=id+1;
+                }
+            }
+        }
+
+        mutex.post();
+    }
+
+    /************************************************************************/
+    void save()
+    {
+        FILE *fout=fopen(dbFileName.c_str(),"w");
+        write(fout);
+        fclose(fout);
+    }
+
+    /************************************************************************/
+    void dump()
+    {
+        fprintf(stdout,"dumping database content ... \n");
+
+        if (itemsList.size()==0)
+            fprintf(stdout,"empty\n");
+        else
+            write(stdout);
+    }
 
     /************************************************************************/
     void add(Bottle *content)
@@ -280,6 +379,15 @@ protected:
     /************************************************************************/
     bool remove(Bottle *content)
     {
+        if (content->size()==1)
+            if (content->get(0).isVocab() || content->get(0).isString())
+                if (content->get(0).asVocab()==OPT_ALL)
+                {
+                    itemsList.clear();
+                    fprintf(stdout,"database cleared\n");
+                    return true;
+                }
+
         Property request(content->toString().c_str());
 
         if (!request.check("id"))
@@ -389,20 +497,20 @@ protected:
     }
 
     /************************************************************************/
-    void dump()
-    {
-        fprintf(stdout,"dumping database content ... \n");
-
-        if (itemsList.size()==0)
-            fprintf(stdout,"empty\n");
-
-        for (unsigned int i=0; i<itemsList.size(); i++)
-            fprintf(stdout,"object %d: %s\n",i,itemsList[i].toString().c_str());
-    }
-
-    /************************************************************************/
     bool ask(Bottle *content, Bottle &items)
     {
+        if (content->size()==1)
+            if (content->get(0).isVocab() || content->get(0).isString())
+                if (content->get(0).asVocab()==OPT_ALL)
+                {
+                    items.clear();
+
+                    for (unsigned int i=0; i<itemsList.size(); i++)
+                        items.addInt(itemsList[i].find("id").asInt());
+
+                    return true;
+                }
+
         deque<Condition> condList;
         deque<string>    opList;
 
@@ -508,13 +616,6 @@ protected:
         }
 
         return true;
-    }
-
-public:
-    /************************************************************************/
-    DataBase() : idCnt(0)
-    {
-        fprintf(stdout,"database ready ...\n");
     }
 
     /************************************************************************/
@@ -725,17 +826,22 @@ private:
     RpcProcessor rpcProcessor;
     Port         rpcPort;
 
+    int cnt;
+
 public:
     /************************************************************************/
     virtual bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
 
-        string name=rf.check("name",Value("objectsPropertiesCollector")).asString().c_str();
+        dataBase.init(rf);
 
+        string name=rf.check("name",Value("objectsPropertiesCollector")).asString().c_str();
         rpcProcessor.setDataBase(dataBase);
         rpcPort.setReader(rpcProcessor);
         rpcPort.open(("/"+name+"/rpc").c_str());
+
+        cnt=0;
 
         return true;
     }
@@ -753,6 +859,14 @@ public:
     virtual bool updateModule()
     {        
         dataBase.periodicHandler(getPeriod());
+
+        // back-up straightaway the database each 15 minutes
+        if ((++cnt)*getPeriod()>(15.0*60.0))
+        {
+            dataBase.save();
+            cnt=0;
+        }
+
         return true;
     }
 
@@ -769,11 +883,16 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
+    rf.setDefaultContext("objectsPropertiesCollector/conf");
+    rf.setDefault("db","dataBase.ini");
+    rf.configure("ICUB_ROOT",argc,argv);
 
     if (rf.check("help"))
     {
         fprintf(stdout,"Options\n\n");
-        fprintf(stdout,"\t--name <name>: collector name (default: objectsPropertiesCollector)\n");
+        fprintf(stdout,"\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
+        fprintf(stdout,"\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
+        fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector/conf)\n");
         fprintf(stdout,"\n");
 
         return 0;
