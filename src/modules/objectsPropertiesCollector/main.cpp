@@ -718,9 +718,6 @@ public:
                 {
                     fprintf(stdout,"item with id=%d expired\n",it->first);
                     eraseItem(it);
-
-                    // bug ?? a run-time error occurs if we don't break here;
-                    // never mind: at the next call we keep on checking
                     break;
                 }
                 else
