@@ -118,9 +118,8 @@ Currently nested conditions of the form
 - The parameter \e dbFileName specifies the name of the database 
   to load at startup (if already existing) and save at shutdown.
  
---new
-- If this option is given the existing database stored on the 
-  disk is purged and the new database starts up empty.
+--empty
+- If this options is given then an empty database is started.
  
 \section portsa_sec Ports Accessed
 None.
@@ -272,9 +271,10 @@ bool equal(Value &a, Value& b)
 class DataBase
 {
 protected:
-    map<int,Property> itemsMap;
+    map<int,Property*> itemsMap;
     Semaphore mutex;
     int idCnt;
+    bool initialized;
 
     string dbFileName;
 
@@ -287,34 +287,62 @@ protected:
     };
 
     /************************************************************************/
-    void write(FILE *fout)
+    void clearMap()
     {
-        mutex.wait();
+        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+            delete it->second;
 
+        itemsMap.clear();
+    }
+
+    /************************************************************************/
+    void eraseItem(map<int,Property*>::iterator &it)
+    {
+        delete it->second;
+        itemsMap.erase(it);
+    }
+
+    /************************************************************************/
+    void write(FILE *stream)
+    {
         int i=0;
-        for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
-            fprintf(fout,"item_%d (id %d) (%s)\n",i++,it->first,it->second.toString().c_str());
-
-        mutex.post();
+        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+            fprintf(stream,"item_%d (id %d) (%s)\n",i++,it->first,it->second->toString().c_str());
     }
 
 public:
     /************************************************************************/
+    DataBase()
+    {
+        initialized=false;
+        idCnt=0;
+    }
+
+    /************************************************************************/
     ~DataBase()
     {
         save();
+        clearMap();
     }
 
     /************************************************************************/
     void init(ResourceFinder &rf)
     {
-        dbFileName=rf.findFile(rf.find("db").asString().c_str()).c_str();
-        idCnt=0;
+        if (initialized)
+        {
+            fprintf(stdout,"database already initialized ...\n");
+            return;
+        }
 
-        if (!rf.check("new"))
+        dbFileName=rf.findPath().c_str();
+        dbFileName+=rf.find("db").asString().c_str();        
+
+        if (!rf.check("empty"))
             load();
 
         dump();
+
+        initialized=true;
 
         fprintf(stdout,"database ready ...\n");
     }
@@ -322,9 +350,11 @@ public:
     /************************************************************************/
     void load()
     {
+        return; // debug
+
         mutex.wait();
 
-        itemsMap.clear();
+        clearMap();
         idCnt=0;
 
         Property finProperty;
@@ -355,7 +385,7 @@ public:
 
             int id=idProp.find("id").asInt();
 
-            Property item(b.get(1).asList()->toString().c_str());
+            Property *item=new Property(b.get(1).asList()->toString().c_str());
             itemsMap[id]=item;
 
             if (idCnt<id)
@@ -368,40 +398,57 @@ public:
     /************************************************************************/
     void save()
     {
+        return; // debug
+
+        mutex.wait();
+
         FILE *fout=fopen(dbFileName.c_str(),"w");
         write(fout);
         fclose(fout);
+
+        mutex.post();
     }
 
     /************************************************************************/
     void dump()
     {
-        fprintf(stdout,"dumping database content ... \n");
+        mutex.wait();
+
+        fprintf(stdout,"dumping database content ... \n");        
 
         if (itemsMap.size()==0)
             fprintf(stdout,"empty\n");
         else
             write(stdout);
+
+        mutex.post();
     }
 
     /************************************************************************/
     void add(Bottle *content)
     {
-        Property item(content->toString().c_str());
+        mutex.wait();
+
+        Property *item=new Property(content->toString().c_str());
         itemsMap[idCnt]=item;
 
-        fprintf(stdout,"added item %s\n",item.toString().c_str());
+        fprintf(stdout,"added item %s\n",item->toString().c_str());
+
+        mutex.post();
     }
 
     /************************************************************************/
     bool remove(Bottle *content)
     {
+        mutex.wait();
+
         if (content->size()==1)
             if (content->get(0).isVocab() || content->get(0).isString())
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
-                    itemsMap.clear();
+                    clearMap();
                     fprintf(stdout,"database cleared\n");
+                    mutex.post();
                     return true;
                 }
 
@@ -410,21 +457,25 @@ public:
         if (!request.check("id"))
         {
             fprintf(stdout,"id field not present within the request!\n");
+            mutex.post();
             return false;
         }
         
         int id=request.find("id").asInt();
         fprintf(stdout,"removing item %d ... ",id);
 
-        map<int,Property>::iterator it=itemsMap.find(id);
+        map<int,Property*>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
-            itemsMap.erase(it);
+            eraseItem(it);
             fprintf(stdout,"successfully\n");
+            mutex.post();
             return true;
         }
         
         fprintf(stdout,"not present!\n");
+
+        mutex.post();
 
         return false;
     }
@@ -432,27 +483,33 @@ public:
     /************************************************************************/
     bool get(Bottle *content, Bottle &item)
     {
+        mutex.wait();
+
         Property request(content->toString().c_str());
 
         if (!request.check("id"))
         {
             fprintf(stdout,"id field not present within the request!\n");
+            mutex.post();
             return false;
         }
 
         int id=request.find("id").asInt();
         fprintf(stdout,"getting item %d ... ",id);
 
-        map<int,Property>::iterator it=itemsMap.find(id);
+        map<int,Property*>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
             item.clear();
-            item.fromString(it->second.toString().c_str());
+            item.fromString(it->second->toString().c_str());
             fprintf(stdout,"%s\n",item.toString().c_str());
+            mutex.post();
             return true;
         }
 
         fprintf(stdout,"not present!\n");
+
+        mutex.post();
 
         return false;
     }
@@ -460,18 +517,21 @@ public:
     /************************************************************************/
     bool set(Bottle *content)
     {
+        mutex.wait();
+
         Property request(content->toString().c_str());
 
         if (!request.check("id"))
         {
             fprintf(stdout,"id field not present within the request!\n");
+            mutex.post();
             return false;
         }
 
         int id=request.find("id").asInt();
         fprintf(stdout,"setting item %d ... ",id);
 
-        map<int,Property>::iterator it=itemsMap.find(id);
+        map<int,Property*>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
             request.unput("id");
@@ -492,14 +552,18 @@ public:
                 string prop=option->get(0).asString().c_str();
                 Value  val=option->get(1);
 
-                it->second.unput(prop.c_str());
-                it->second.put(prop.c_str(),val);
+                it->second->unput(prop.c_str());
+                it->second->put(prop.c_str(),val);
             }
+
+            mutex.post();
 
             return true;
         }
 
         fprintf(stdout,"not present!\n");
+
+        mutex.post();
 
         return false;
     }
@@ -507,15 +571,18 @@ public:
     /************************************************************************/
     bool ask(Bottle *content, Bottle &items)
     {
+        mutex.wait();
+
         if (content->size()==1)
             if (content->get(0).isVocab() || content->get(0).isString())
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
                     items.clear();
 
-                    for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+                    for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
                         items.addInt(it->first);
 
+                    mutex.post();
                     return true;
                 }
 
@@ -527,6 +594,7 @@ public:
         if (!(content->size()&0x01))
         {
             fprintf(stdout,"uncorrect conditions received!\n");
+            mutex.post();
             return false;
         }
 
@@ -540,6 +608,7 @@ public:
             if (b->size()<3)
             {
                 fprintf(stdout,"condition given with less than 3 elements!\n");
+                mutex.post();
                 return false;
             }
             
@@ -560,6 +629,7 @@ public:
             else
             {
                 fprintf(stdout,"unknown relational operator '%s'!\n",operation.c_str());
+                mutex.post();
                 return false;
             }
 
@@ -571,6 +641,7 @@ public:
                 if ((operation!="||") && (operation!="&&"))
                 {
                     fprintf(stdout,"unknown boolean operator '%s'!\n",operation.c_str());
+                    mutex.post();
                     return false;
                 }
                 else
@@ -581,15 +652,15 @@ public:
         items.clear();
 
         // apply the conditions to each item
-        for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
             // there must be at least one condition to process
             string &prop=condList[0].prop;
             bool finalRes;
 
-            if (it->second.check(prop.c_str()))
+            if (it->second->check(prop.c_str()))
             {
-                Value &val=it->second.find(prop.c_str());
+                Value &val=it->second->find(prop.c_str());
                 finalRes=(*condList[0].compare)(val,condList[0].val);
             }
             else
@@ -604,9 +675,9 @@ public:
                 string &prop=condList[k].prop;
                 bool currentRes;
 
-                if (it->second.check(prop.c_str()))
+                if (it->second->check(prop.c_str()))
                 {
-                    Value &val=it->second.find(prop.c_str());
+                    Value &val=it->second->find(prop.c_str());
                     currentRes=(*condList[k].compare)(val,condList[k].val);
                 }
                 else
@@ -623,6 +694,8 @@ public:
                 items.addInt(it->first);
         }
 
+        mutex.post();
+
         return true;
     }
 
@@ -631,16 +704,16 @@ public:
     {
         mutex.wait();
 
-        for (map<int,Property>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
-            if (it->second.check("lifeTimer"))
+            if (it->second->check("lifeTimer"))
             {
-                double lifeTimer=it->second.find("lifeTimer").asDouble()-dt;
+                double lifeTimer=it->second->find("lifeTimer").asDouble()-dt;
 
                 if (lifeTimer<0.0)
                 {
                     fprintf(stdout,"item with id=%d expired\n",it->first);
-                    itemsMap.erase(it);
+                    eraseItem(it);
 
                     // bug ?? a run-time error occurs if we don't break here;
                     // never mind: at the next call we keep on checking
@@ -648,8 +721,8 @@ public:
                 }
                 else
                 {
-                    it->second.unput("lifeTimer");
-                    it->second.put("lifeTimer",lifeTimer);
+                    it->second->unput("lifeTimer");
+                    it->second->put("lifeTimer",lifeTimer);
                 }
             }
         }
@@ -669,8 +742,6 @@ public:
         reply.clear();
 
         int cmd=command.get(0).asVocab();
-
-        mutex.wait();
 
         switch(cmd)
         {
@@ -789,8 +860,6 @@ public:
                 reply.addVocab(REP_UNKNOWN);
             }
         }
-
-        mutex.post();
     }
 };
 
@@ -901,7 +970,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
         fprintf(stdout,"\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
         fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector/conf)\n");
-        fprintf(stdout,"\t--new               : purge the existing database and startup with an empty one\n");
+        fprintf(stdout,"\t--empty             : start an empty database\n");
         fprintf(stdout,"\n");
 
         return 0;
