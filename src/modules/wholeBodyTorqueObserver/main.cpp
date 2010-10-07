@@ -500,11 +500,27 @@ public:
 		F_up=0.0;
 		if(test==VOCAB_TEST)
 			startCompute = Time::now();
-		icub.upperTorso->update(w0,dw0,d2p0,F_RArm,F_LArm,F_up);
+		///////////////////////////////////////////////////////
+		// TO CHECK
+		////////////////////////////////////////////////////////
+		/*icub.upperTorso->update(w0,dw0,d2p0,F_RArm,F_LArm,F_up);
 		icub.lowerTorso->update(icub.upperTorso->getTorsoAngVel(), 
 								icub.upperTorso->getTorsoAngAcc(),
 								icub.upperTorso->getTorsoLinAcc(),
-								F_RLeg,F_LLeg,F_up);
+								F_RLeg,F_LLeg,F_up);*/
+		icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+		icub.upperTorso->setSensorMeasurement(F_RArm,F_LArm,F_up);
+		icub.upperTorso->solveKinematics();
+		icub.upperTorso->solveWrench();
+		icub.lowerTorso->setInertialMeasure(icub.upperTorso->getTorsoAngVel(), 
+											icub.upperTorso->getTorsoAngAcc(),
+											icub.upperTorso->getTorsoLinAcc());
+		icub.lowerTorso->setSensorMeasurement(F_RLeg,F_LLeg,F_up);
+		icub.lowerTorso->solveKinematics();
+		icub.lowerTorso->solveWrench();
+
+
+
 		if(test==VOCAB_TEST)
 			endCompute = Time::now();
 
