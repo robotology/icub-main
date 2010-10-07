@@ -335,8 +335,9 @@ public:
             return;
         }
 
-        dbFileName=rf.findPath().c_str();
-        dbFileName+=rf.find("db").asString().c_str();        
+        dbFileName=rf.getContextPath().c_str();
+        dbFileName+="/";
+        dbFileName+=rf.find("db").asString().c_str();
 
         if (!rf.check("empty"))
             load();
@@ -351,8 +352,6 @@ public:
     /************************************************************************/
     void load()
     {
-        return; // debug
-
         mutex.wait();
 
         clearMap();
@@ -366,26 +365,32 @@ public:
         for (int i=0; i<finBottle.size(); i++)
         {
             sprintf(tag,"item_%d",i);
-            Bottle &b=finBottle.findGroup(tag);
+            Bottle &b1=finBottle.findGroup(tag);
 
-            if (b.isNull())
+            if (b1.isNull())
                 continue;
 
-            if (b.size()<2)
+            if (b1.size()<3)
             {
                 fprintf(stdout,"error while loading %s!\n",tag);
                 continue;
             }
 
-            Property idProp(b.get(0).asString().c_str());
-            if (!idProp.check("id"))
+            Bottle *b2=b1.get(1).asList();
+            if (b2==NULL)
             {
-                fprintf(stdout,"%s does not have any id!\n",tag);
+                fprintf(stdout,"error while loading %s!\n",tag);
                 continue;
             }
 
-            int id=idProp.find("id").asInt();
-            itemsMap[id]=new Property(b.get(1).asList()->toString().c_str());
+            if (b2->size()<2)
+            {
+                fprintf(stdout,"error while loading %s!\n",tag);
+                continue;
+            }
+
+            int id=b2->get(1).asInt();
+            itemsMap[id]=new Property(b1.get(2).asList()->toString().c_str());
 
             if (idCnt<id)
                 idCnt=id+1;
@@ -399,8 +404,6 @@ public:
     /************************************************************************/
     void save()
     {
-        return; // debug
-
         mutex.wait();
 
         FILE *fout=fopen(dbFileName.c_str(),"w");
