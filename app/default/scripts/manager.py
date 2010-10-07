@@ -19,8 +19,8 @@
 
 ## Added timeout for process termination.
 ## Added log in temp, cleaned up debug messages to terminal.
-## 10/06/2010. Added minimal version and os check. In windows to use the
-## popen.terminate() call we need > 2.6. In Linux 2.5 is good enough.
+## 10/06/2010. Added portableKill() function to ensure we have a portable
+## way to terminate a process with windows+python < 2.6
 
 import sys
 import time
@@ -31,9 +31,25 @@ import signal
 import datetime
 from Tkinter import *
 
+# see portableKill function
+import ctypes
+
 # a couple of constants
 PROCESS_TIMEOUT=5         #seconds
 PROCESS_POLL_INTERVAL=0.05 #seconds
+
+## ensure portable way to kill a process
+## this works on python < 2.6 (which does not implement
+## kill() nor terminate()).
+def portableKill(theprocess):
+    if os.name == 'posix':
+        os.kill(theprocess.pid, signal.SIGKILL)
+    elif os.name == 'nt':                
+        PROCESS_TERMINATE = 1
+        handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, theprocess.pid)
+        ctypes.windll.kernel32.TerminateProcess(handle, -1)
+        ctypes.windll.kernel32.CloseHandle(handle)
+
 
 class ModuleData:
     def __init__(self, name, arguments, node, tag, workdir, ioNode):
@@ -417,10 +433,8 @@ class App:
             print "See log file /tmp/"+self.application.getName()+".log"
             print "I'll now kill ", str(cmd), ""
             #os.kill(p.pid, signal.SIGKILL)
-            if os.name == 'posix':
-                os.kill(p.pid, signal.SIGKILL)
-            elif os.name == 'nt':
-                p.terminate()
+            portableKill(p)
+            
             ret = 1
         else:
             ret = p.returncode
@@ -437,23 +451,26 @@ class App:
 #            ret=subprocess.Popen(cmd).wait()
             ret=self.spawnProcess(cmd)
             connectionFlag=True
-            if ret:
+            if ret!=0:
                 port.outFlag.set(0)
             else:
                 port.outFlag.set(1)
 
             cmd=['yarp', 'exists', port.inEntry.get()]
             ret=self.spawnProcess(cmd)
-            if ret:
+
+            if ret!=0:
                 port.inFlag.set(0)
             else:
                 port.inFlag.set(1)
 
+            ret=1
             if port.inFlag.get() and port.outFlag.get():
                 cmd=['yarp', 'exists', port.outEntry.get(), port.inEntry.get()]
                 print cmd
                 ret=self.spawnProcess(cmd)
-            if ret:
+    
+            if ret!=0:
                 port.connFlag.set(0)
             else:
                 port.connFlag.set(1)
@@ -640,13 +657,6 @@ def fileExists(f):
         return 1
 
 if __name__ == '__main__':
-
-    ## Check appropriate versions. This is only
-    ## used for termination (see calls to terminate() or kill)    
-    if os.name == 'nt':
-        if sys.version_info < (2, 6):
-            raise "In windows must use python 2.6 or greater"
-            sys.exit(1)
   
     #first check arguments
     argc = len(sys.argv)
