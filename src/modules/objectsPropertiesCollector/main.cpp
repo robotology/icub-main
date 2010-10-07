@@ -118,6 +118,10 @@ Currently nested conditions of the form
 - The parameter \e dbFileName specifies the name of the database 
   to load at startup (if already existing) and save at shutdown.
  
+--new
+- If this option is given the existing database stored on the 
+  disk is purged and the new database starts up empty.
+ 
 \section portsa_sec Ports Accessed
 None.
 
@@ -307,7 +311,7 @@ public:
         dbFileName=rf.findFile(rf.find("db").asString().c_str()).c_str();
         idCnt=0;
 
-        if (rf.check("db"))
+        if (!rf.check("new"))
             load();
 
         dump();
@@ -897,6 +901,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
         fprintf(stdout,"\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
         fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector/conf)\n");
+        fprintf(stdout,"\t--new               : purge the existing database and startup with an empty one\n");
         fprintf(stdout,"\n");
 
         return 0;
