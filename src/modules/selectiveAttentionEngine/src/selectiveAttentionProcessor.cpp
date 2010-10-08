@@ -531,32 +531,35 @@ void selectiveAttentionProcessor::run(){
                     //the distance of the object from the image plane
                     //if you do not have it, try to guess :)
                     double z=0.5;   // distance [m]
-                    Bottle command,response;
+                    Bottle response;
                     if(vergencePort.getOutputCount()) {
                         //suspending any vergence control
+                        Bottle& command=vergencePort.prepare();
                         command.clear();
                         command.addString("sus");
-                        vergencePort.write(command,response);
+                        vergencePort.write();
                         printf("%s \n", response.toString().c_str());
                         //waiting for the ack from vergence
                         bool flag=false;
-                        igaze->checkMotionDone(&flag);
-                        while(!flag){
+                        while(!igaze->checkMotionDone(&flag)){
                             printf("waiting vergence \n");
                         }
                     }
                     igaze->lookAtMonoPixel(camSel,px,z);
                     //waiting for the end of the saccadic event
                     bool flag=false;
-                    while(!flag) {
-                        igaze->checkMotionDone(&flag);
+                    while(!igaze->checkMotionDone(&flag)) {
                         printf("waiting saccade \n");
                     }
-                    //resuming vergence
-                    command.clear(); response.clear();
-                    command.addString("res");
-                    vergencePort.write(command,response);
-                    printf("%s \n", response.toString().c_str());
+                    if(vergencePort.getOutputCount()) {
+                        //suspending any vergence control
+                        Bottle& command=vergencePort.prepare();
+                        //resuming vergence
+                        command.clear(); response.clear();
+                        command.addString("res");
+                        vergencePort.write();
+                        printf("%s \n", response.toString().c_str());
+                    }
                 }
                 cLoop=0;
             }
