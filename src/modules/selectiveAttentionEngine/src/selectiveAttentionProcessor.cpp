@@ -536,29 +536,34 @@ void selectiveAttentionProcessor::run(){
                         //suspending any vergence control
                         Bottle& command=vergencePort.prepare();
                         command.clear();
+                        printf("suspending vergence \n");
                         command.addString("sus");
                         vergencePort.write();
-                        printf("%s \n", response.toString().c_str());
+                        //printf("%s \n", response.toString().c_str());
                         //waiting for the ack from vergence
                         bool flag=false;
-                        while(!igaze->checkMotionDone(&flag)){
+                        /*while(igaze->checkMotionDone(&flag)){
                             printf("waiting vergence \n");
                         }
+                        */
                     }
                     igaze->lookAtMonoPixel(camSel,px,z);
                     //waiting for the end of the saccadic event
-                    bool flag=false;
-                    while(!igaze->checkMotionDone(&flag)) {
-                        printf("waiting saccade \n");
+                    bool flag=true;
+                    bool res=false;
+                    while(!res) {
+                        res=igaze->checkMotionDone(&flag);
+                        printf("waiting saccade %d \n",res);
                     }
                     if(vergencePort.getOutputCount()) {
                         //suspending any vergence control
                         Bottle& command=vergencePort.prepare();
                         //resuming vergence
                         command.clear(); response.clear();
+                        printf("resuming vergence \n");
                         command.addString("res");
                         vergencePort.write();
-                        printf("%s \n", response.toString().c_str());
+                        //printf("%s \n", response.toString().c_str());
                     }
                 }
                 cLoop=0;
