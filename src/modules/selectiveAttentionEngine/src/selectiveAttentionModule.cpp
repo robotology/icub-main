@@ -303,23 +303,27 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
     case COMMAND_VOCAB_HELP:
         rec = true;
         {
+            reply.addString("many");
             reply.addString("help");
 
-            reply.addString("\n");
-            reply.addString("get fn \t: general get command \n");
-            reply.addString("\n");
-            reply.addString("\n");
+            reply.addString("");
+            reply.addString("get fn \t: general get command ");
+            reply.addString("");
+            reply.addString("");
 
-            reply.addString("\n");
-            reply.addString("set k1 <double> \t: setting of linear combination coefficient (map1) \n");
-            reply.addString("set k2 <double> \t: setting of linear combination coefficient (map2) \n");
-            reply.addString("set k3 <double> \t: setting of linear combination coefficient (map3) \n");
-            reply.addString("set k4 <double> \t: setting of linear combination coefficient (map4) \n");
-            reply.addString("set k5 <double> \t: setting of linear combination coefficient (map5) \n");
-            reply.addString("set k6 <double> \t: setting of linear combination coefficient (map6) \n");
+            reply.addString("");
+            reply.addString("set k1 <double> \t: setting of linear combination coefficient (map1) ");
+            reply.addString("set k2 <double> \t: setting of linear combination coefficient (map2) ");
+            reply.addString("set k3 <double> \t: setting of linear combination coefficient (map3) ");
+            reply.addString("set k4 <double> \t: setting of linear combination coefficient (map4)  ");
+            reply.addString("set k5 <double> \t: setting of linear combination coefficient (map5)  ");
+            reply.addString("set k6 <double> \t: setting of linear combination coefficient (map6)  ");
+            reply.addString("set kc1 <double> \t: setting of linear combination coefficient (mapc1)  ");
+            reply.addString("set kmot <double> \t: setting of linear combination coefficient (flow motion)  ");
+            
 
-            reply.addString("\n");
-            reply.addString("\n");
+            reply.addString(" ");
+            reply.addString(" ");
 
 
             ok = true;
@@ -442,8 +446,8 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                     weights.addDouble(command.get(i).asDouble());
             }
                 break;
-            default:
-                cout << "received an unknown request after a SET COMMAND" << endl;
+            default: {
+            }
                 break;
             }
         }
@@ -586,8 +590,8 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             }
             break;
             */
-            default:
-                cout << "received an unknown request after a GET COMMAND" << endl;
+            default: {
+            }
                 break;
             }
         }
