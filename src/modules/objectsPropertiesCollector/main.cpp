@@ -46,8 +46,8 @@ to the database.
  
 Notation used hereafter to explain available commands: [.] is a 
 Vocab, {.} is a string, <.> is a Value (i.e. string, double, 
-int) or a List (so that also blobs and images can be attached as 
-property). 
+int) or a List (so that also complex properties such as images 
+can be attached to the objects). 
  
 Reserved properties tags: 
  
@@ -645,7 +645,7 @@ public:
                 mutex.post();
                 return false;
             }
-            
+
             condition.prop=b->get(0).asString().c_str();
             condition.val=b->get(2);
 
