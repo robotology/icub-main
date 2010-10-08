@@ -539,20 +539,22 @@ void selectiveAttentionProcessor::run(){
                         vergencePort.write(command,response);
                         printf("%s \n", response.toString().c_str());
                         //waiting for the ack from vergence
-                        bool flag;
-                        while(!igaze->checkMotionDone(&flag)){
+                        bool flag=false;
+                        igaze->checkMotionDone(&flag);
+                        while(!flag){
                             printf("waiting vergence \n");
                         }
                     }
                     igaze->lookAtMonoPixel(camSel,px,z);
                     //waiting for the end of the saccadic event
-                    bool flag;
-                    while(!igaze->checkMotionDone(&flag)) {
+                    bool flag=false;
+                    while(!flag) {
+                        igaze->checkMotionDone(&flag);
                         printf("waiting saccade \n");
                     }
                     //resuming vergence
                     command.clear(); response.clear();
-                    command.addString("sus");
+                    command.addString("res");
                     vergencePort.write(command,response);
                     printf("%s \n", response.toString().c_str());
                 }
