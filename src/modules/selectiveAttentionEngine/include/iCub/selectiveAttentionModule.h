@@ -52,6 +52,8 @@
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
 #define COMMAND_VOCAB_GET VOCAB3('g','e','t')
 #define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
+#define COMMAND_VOCAB_SUSPEND VOCAB3('s','u','s')
+#define COMMAND_VOCAB_RESUME VOCAB3('r','e','s')
 #define COMMAND_VOCAB_IS VOCAB2('i','s')
 #define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
 #define COMMAND_VOCAB_OK VOCAB2('o','k')
@@ -63,6 +65,12 @@
 #define COMMAND_VOCAB_CHILD_NAME VOCAB2('c','n')
 #define COMMAND_VOCAB_SALIENCE_THRESHOLD VOCAB2('t','h')
 #define COMMAND_VOCAB_NUM_BLUR_PASSES VOCAB2('s','2')
+
+#define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
+#define COMMAND_VOCAB_KTD VOCAB3('k','t','d') //weight of top-down algorithm
+#define COMMAND_VOCAB_RIN VOCAB3('r','i','n') //red intensity value
+#define COMMAND_VOCAB_GIN VOCAB3('g','i','n') //green intensity value
+#define COMMAND_VOCAB_BIN VOCAB3('b','i','n') //blue intensity value
 
 // directional saliency filter vocab's
 #define COMMAND_VOCAB_DIRECTIONAL_NUM_DIRECTIONS VOCAB3('d','n','d')
@@ -80,9 +88,7 @@
 #define COMMAND_VOCAB_K6 VOCAB2('k','6')
 #define COMMAND_VOCAB_KC1 VOCAB3('k','c','1')
 #define COMMAND_VOCAB_KMOT VOCAB4('k','m','o','t')
-
-
-
+#define COMMAND_VOCAB_MOT VOCAB3('m','o','t')
 
 /**
 *

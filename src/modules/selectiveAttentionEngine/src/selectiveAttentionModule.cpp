@@ -36,13 +36,7 @@ using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
 
-#define COMMAND_VOCAB_SET VOCAB3('s','e','t')
-#define COMMAND_VOCAB_GET VOCAB3('g','e','t')
-#define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
-#define COMMAND_VOCAB_KTD VOCAB3('k','t','d') //weight of top-down algorithm
-#define COMMAND_VOCAB_RIN VOCAB3('r','i','n') //red intensity value
-#define COMMAND_VOCAB_GIN VOCAB3('g','i','n') //green intensity value
-#define COMMAND_VOCAB_BIN VOCAB3('b','i','n') //blue intensity value
+
 
 // Image Receiver
 //static YARPImgRecv *ptr_imgRecv;
@@ -329,6 +323,20 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             ok = true;
         }
         break;
+    case COMMAND_VOCAB_SUSPEND:
+    rec = true;
+        {
+          
+            ok = true;
+        }
+        break;
+    case COMMAND_VOCAB_RESUME:
+    rec = true;
+        {
+          
+            ok = true;
+        }
+        break;
     case COMMAND_VOCAB_NAME:
         rec = true;
         {
@@ -423,6 +431,20 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
                     currentProcessor->kmotion=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_MOT:{
+                if(currentProcessor!=0) {
+                    currentProcessor->kmotion=1.0;
+                    currentProcessor->k1=0.0;
+                    currentProcessor->k2=0.0;
+                    currentProcessor->k3=0.0;
+                    currentProcessor->k4=0.0;
+                    currentProcessor->k5=0.0;
+                    currentProcessor->k6=0.0;
+                    currentProcessor->kc1=0.0;
+                }
                 ok = true;
             }
             break;
