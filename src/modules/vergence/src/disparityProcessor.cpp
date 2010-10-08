@@ -341,7 +341,7 @@ void disparityProcessor::suspend(){
     cout << endl;
     cout << "Vergence has been suspended!" << endl;
     cout << endl;
-
+    igaze->stopControl();
     RateThread::suspend();
 }
 
@@ -350,7 +350,7 @@ void disparityProcessor::release(){
     cout << endl;
     cout << "Vergence has been resumed!" << endl;
     cout << endl;
-
+    
     RateThread::resume();
 }
 
