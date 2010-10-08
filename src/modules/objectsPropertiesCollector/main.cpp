@@ -68,7 +68,7 @@ Action: a new item is added to the database with the given
 properties. A unique identifier is returned that is used to 
 access the item. 
 
-<b>remove</b> \n
+<b>del</b> \n
 Format: [del] ((id <num>)) \n 
 Reply: [nack]; [ack] \n 
 Action: remove from the database an item specified with the 
