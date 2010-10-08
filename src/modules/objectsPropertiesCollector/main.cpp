@@ -162,7 +162,7 @@ command: [set] ((id 1) (x 3))
 reply: [ack] 
  
 command: [get] ((id 1)) 
-reply: [ack] ((id 1) (name octopus) (color blue) (x 3))
+reply: [ack] ((name octopus) (color blue) (x 3))
  
 command: [ask] ((x < 10) && (color == blue)) 
 reply: [ack] (id (1))
