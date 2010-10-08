@@ -60,6 +60,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;              //temporary mono image
         yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;              //temporary rgb image
         yarp::sig::ImageOf<yarp::sig::PixelRgb> *intermCartOut;     //temporary rgb image
+        yarp::os::Port vergencePort;                                //port dedicated to the communication with the vergence
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //a port for the inputImage (colour)
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageCartOut; //port for sending cartesian image result
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; // input port for the 1st saliency map

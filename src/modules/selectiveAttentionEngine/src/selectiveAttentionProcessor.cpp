@@ -192,7 +192,8 @@ void selectiveAttentionProcessor::resizeImages(int width,int height) {
 */
 bool selectiveAttentionProcessor::threadInit(){
     printf("Thread initialization .... \n");
-    //opening ports
+    //opening ports"
+    vergencePort.open(getName("/vergence:o").c_str());
     inImagePort.open(getName("/image:i").c_str());
     map1Port.open(getName("/map1:i").c_str());
     map2Port.open(getName("/map2:i").c_str());
@@ -530,7 +531,30 @@ void selectiveAttentionProcessor::run(){
                     //the distance of the object from the image plane
                     //if you do not have it, try to guess :)
                     double z=0.5;   // distance [m]
+                    Bottle command,response;
+                    if(vergencePort.getOutputCount()) {
+                        //suspending any vergence control
+                        command.clear();
+                        command.addString("sus");
+                        vergencePort.write(command,response);
+                        printf("%s \n", response.toString().c_str());
+                        //waiting for the ack from vergence
+                        bool flag;
+                        while(!igaze->checkMotionDone(&flag)){
+                            printf("waiting vergence \n");
+                        }
+                    }
                     igaze->lookAtMonoPixel(camSel,px,z);
+                    //waiting for the end of the saccadic event
+                    bool flag;
+                    while(!igaze->checkMotionDone(&flag)) {
+                        printf("waiting saccade \n");
+                    }
+                    //resuming vergence
+                    command.clear(); response.clear();
+                    command.addString("sus");
+                    vergencePort.write(command,response);
+                    printf("%s \n", response.toString().c_str());
                 }
                 cLoop=0;
             }
@@ -685,6 +709,7 @@ void selectiveAttentionProcessor::getPixelColour(ImageOf<PixelRgb>* inputColourI
 void selectiveAttentionProcessor::interrupt(){
     interrupted=true;
     printf("interrupting the module.. \n");
+    vergencePort.interrupt();
     map1Port.interrupt();
     map2Port.interrupt();
     map3Port.interrupt();
@@ -713,6 +738,7 @@ void selectiveAttentionProcessor::threadRelease(){
     printf("Thread realeasing .... \n");
     printf("Closing all the ports.. \n");
     //closing input ports
+    vergencePort.close();
     inImagePort.close();
     map1Port.close();
     map2Port.close();
