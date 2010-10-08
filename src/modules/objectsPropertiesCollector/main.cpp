@@ -269,6 +269,25 @@ bool equal(Value &a, Value& b)
         return false;
 }
 
+/************************************************************************/
+bool notEqual(Value &a, Value& b)
+{
+    if (a.isDouble() && b.isDouble())
+        return (a.asDouble()!=b.asDouble());
+    else if (a.isInt() && b.isInt())
+        return (a.asInt()!=b.asInt());
+    else if (a.isString() && b.isString())
+    {
+        string aStr=a.asString().c_str();
+        string bStr=b.asString().c_str();
+
+        return (aStr!=bStr);
+    }
+    else
+        return false;
+}
+
+
 }
 
 
@@ -640,6 +659,8 @@ public:
                 condition.compare=&relationalOperators::lowerEqual;
             else if (operation=="==")
                 condition.compare=&relationalOperators::equal;
+            else if (operation=="!=")
+                condition.compare=&relationalOperators::notEqual;
             else
             {
                 fprintf(stdout,"unknown relational operator '%s'!\n",operation.c_str());
