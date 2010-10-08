@@ -7,7 +7,7 @@ PROJECT (iCub)
 SET(ROBOT_NAME "$ENV{ICUB_ROBOTNAME}" CACHE PATH
 	"Name of your robot")
 
-SET(ROBOT_DIR "$ENV{ICUB_ROOT}/app/${ROBOT_NAME}")
+SET(ROBOT_DIR "${CMAKE_SOURCE_DIR}/app/${ROBOT_NAME}")
 
 
 set(dummy ${CMAKE_BINARY_DIR}/f-app-main)
@@ -37,14 +37,14 @@ add_subdirectory(demoy3)
 add_subdirectory(robotScripting)
 add_subdirectory(iCubGui)
 
-IF ("${ROBOT_NAME}" STREQUAL "")
-  MESSAGE(STATUS "No robot name")
-ELSE ("${ROBOT_NAME}" STREQUAL "")
-  IF (EXISTS ${ROBOT_DIR})
-	# MESSAGE(STATUS "Setting up install for ${ROBOT_NAME}")
-	add_subdirectory(${ROBOT_NAME})
-  ENDIF(EXISTS ${ROBOT_DIR})
-ENDIF ("${ROBOT_NAME}" STREQUAL "")
+#IF ("${ROBOT_NAME}" STREQUAL "")
+#  MESSAGE(STATUS "No robot name")
+#ELSE ("${ROBOT_NAME}" STREQUAL "")
+#  IF (EXISTS ${ROBOT_DIR})
+#    MESSAGE(STATUS "Setting up install for ${ROBOT_NAME}")
+#        add_subdirectory(${ROBOT_NAME})
+#    ENDIF(EXISTS ${ROBOT_DIR})
+#ENDIF ("${ROBOT_NAME}" STREQUAL "")
 
 
 add_custom_target(app DEPENDS ${dummy})
