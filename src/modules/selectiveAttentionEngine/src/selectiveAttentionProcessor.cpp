@@ -549,11 +549,12 @@ void selectiveAttentionProcessor::run(){
                     }
                     igaze->lookAtMonoPixel(camSel,px,z);
                     //waiting for the end of the saccadic event
-                    bool flag=true;
+                    bool flag=false;
                     bool res=false;
-                    while(!res) {
+                    while(flag) {
                         res=igaze->checkMotionDone(&flag);
-                        printf("waiting saccade %d \n",res);
+                        printf("waiting saccade %d \n",flag);
+                        Time::delay(0.010);
                     }
                     if(vergencePort.getOutputCount()) {
                         //suspending any vergence control
