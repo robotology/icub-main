@@ -44,9 +44,6 @@
 //#include <iCub/YARPImgRecv.h>
 //#include <iCub/YarpImage2Pixbuf.h>
 
-
-
-
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
@@ -184,15 +181,15 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 class selectiveAttentionModule : public yarp::os::RFModule {
 private:
 
-    yarp::os::Port cmdPort; //command port of the module
-    int ct; //counter of the module
+    yarp::os::Port cmdPort;     //command port of the module
+    int ct;                     //counter of the module
     
-    int width; //width of the input image
-    int height; //height of the input image
-    int rateThread; // rateThread of the processor Thread
-    int xSize,ySize, numberOfRings,numberOfAngles; //parameters of the configuration file
-    double overlap; //value of the overlap
-    bool reinit_flag; //flag that indicates when the reinitiazation has already be done
+    int width;                  //width of the input image
+    int height;                 //height of the input image
+    int rateThread;             // rateThread of the processor Thread
+    int xSize,ySize, numberOfRings,numberOfAngles;  //parameters of the configuration file
+    double overlap;                                 //value of the overlap
+    bool reinit_flag;                               //flag that indicates when the reinitiazation has already be done
 
     yarp::os::Semaphore mutex; //semaphore for the respond function
 
@@ -222,22 +219,22 @@ public:
     *open the ports of the module
     *@param config configuration of the module
     */
-    bool open(yarp::os::Searchable& config); //
+    bool open(yarp::os::Searchable& config);
 
     /**
     * tryes to interrupt any communications or resource usage
     */
-    bool interruptModule(); // 
+    bool interruptModule();
 
     /**
     * closes the modules and all its components
     */
-    bool close(); //
+    bool close();
 
     /**
     * active control of the Module
     */
-    bool updateModule(); //
+    bool updateModule();
 
     /**
     * function for initialization and configuration of the RFModule
@@ -249,7 +246,7 @@ public:
     * set the attribute options of class Property
     *@param options of the current module
     */
-    void setOptions(yarp::os::Property options); //ù
+    void setOptions(yarp::os::Property options);
 
     /**
     * function to reainitialise the attributes of the class
@@ -300,11 +297,8 @@ public:
     */
     bool startselectiveAttentionProcessor();
 
-
-    
     bool inputImage_flag; //flag that controls if the inputImage has been ever read
     bool init_flag; //check of the already happened initialisation
-    
 };
 
 #endif //_selectiveAttentionModule_H_

@@ -148,6 +148,17 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         void threadRelease();
 
         /**
+        * function that suspends the processing thread
+        */
+        void suspend();
+
+        /**
+        * resumes the processing thread previously suspended
+        */
+        void resume();
+
+
+        /**
         * method that resize images once the processor knows the dimesions of the input
         * @param width width dimension the image is resized to
         * @param height height dimension the image is resized to

@@ -770,11 +770,26 @@ void selectiveAttentionProcessor::threadRelease(){
     delete clientGazeCtrl;
 }
 
+void selectiveAttentionProcessor::suspend() {
+    printf("suspending processor....after stopping control \n");
+    if(igaze!=0) {
+        igaze->stopControl();
+    }
+    RateThread::suspend();
+}
+
+void selectiveAttentionProcessor::resume() {
+    printf("resuming processor...");
+    resume();
+    RateThread::resume();
+}
+
 void selectiveAttentionProcessor::setIdle(bool value){
     mutex.wait();
     idle=value;
     mutex.post();
 }
+
 
 
 //----- end-of-file --- ( next line intentionally left blank ) ------------------

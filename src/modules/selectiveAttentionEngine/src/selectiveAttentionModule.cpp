@@ -326,14 +326,14 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
     case COMMAND_VOCAB_SUSPEND:
     rec = true;
         {
-          
+            currentProcessor->suspend();
             ok = true;
         }
         break;
     case COMMAND_VOCAB_RESUME:
     rec = true;
         {
-          
+            currentProcessor->resume();
             ok = true;
         }
         break;
