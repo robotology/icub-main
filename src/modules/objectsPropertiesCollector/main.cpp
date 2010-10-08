@@ -269,6 +269,7 @@ bool equal(Value &a, Value& b)
         return false;
 }
 
+
 /************************************************************************/
 bool notEqual(Value &a, Value& b)
 {
