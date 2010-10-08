@@ -164,7 +164,9 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/python-scripts-cmd
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/manager.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMENT "Copying manager.py to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
 add_custom_target(python-scripts ALL DEPENDS ${CMAKE_BINARY_DIR}/python-scripts-cmd)
-add_dependencies(install_applications python-scripts)
+if (ICUB_EXPERIMENTAL_APP_INSTALL)
+	add_dependencies(install_applications python-scripts)
+endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 ###############################
     
 # export the installed project 
