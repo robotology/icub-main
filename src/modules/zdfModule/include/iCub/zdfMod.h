@@ -179,6 +179,17 @@
 #define RANKSIZE 9  //9 or 25: 9
 
 #define NDTEQ    0 //0
+
+#define COMMAND_VOCAB_IS VOCAB2('i','s')
+#define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
+#define COMMAND_VOCAB_SET VOCAB3('s','e','t')
+#define COMMAND_VOCAB_GET VOCAB3('g','e','t')
+#define COMMAND_VOCAB_K1 VOCAB2('k','1') //data penalty
+#define COMMAND_VOCAB_K2 VOCAB2('k','2') //smoothness penalty base
+#define COMMAND_VOCAB_K3 VOCAB2('k','3') //smoothness penalty
+#define COMMAND_VOCAB_K4 VOCAB2('k','4') //radial penalty
+#define COMMAND_VOCAB_K5 VOCAB2('k','5') //smoothness 3sigmaon2
+#define COMMAND_VOCAB_K6 VOCAB2('k','6') //bland dog thresh
   
 class ZDFThread : public yarp::os::Thread
 {
@@ -236,9 +247,7 @@ private:
 	//Difference of Gaussian:
 	DoG * dl;
   	DoG * dr;
-	//Multiclass
-    struct MultiClass::Parameters *params;
-	MultiClass * m;
+	
 
 	int tl_x, tl_y;
   	int tr_x, tr_y;
@@ -275,6 +284,9 @@ public:
     /**
      * allocate all memory and variables
      */    
+    //Multiclass
+    struct MultiClass::Parameters *params;
+	MultiClass * m;
     void allocate(yarp::sig::ImageOf<yarp::sig::PixelBgr> *img);
     void deallocate();
     bool threadInit();     

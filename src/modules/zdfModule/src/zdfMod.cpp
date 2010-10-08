@@ -110,24 +110,127 @@ double zdfMod::getPeriod()
 
 bool zdfMod::respond(const Bottle& command, Bottle& reply) 
 {
-    string helpMessage =  string(getName().c_str()) + 
+
+    bool ok = false;
+    bool rec = false; // is the command recognized?
+
+   // mutex.wait();
+    switch (command.get(0).asVocab()) {
+    case COMMAND_VOCAB_HELP:
+        rec = true;
+        {
+
+        string helpMessage =  string(getName().c_str()) + 
                         " commands are: \n" +  
                         "help \n" + 
                         "quit \n";
 
-    reply.clear(); 
+        reply.clear();
+        ok = true;
+    } 
+    break;
 
-    if (command.get(0).asString()=="quit") {
-        reply.addString("quitting");
-        return false;     
+/*  cvNamedWindow( "Settings", 0) ; 
+    cvCreateTrackbar( "DATA_PENALTY", "Settings", &params->data_penalty, 255, 0 );
+    cvCreateTrackbar( "SMOOTHNESS_PENALTY_BASE", "Settings", &params->smoothness_penalty_base, 255, 0 );
+    cvCreateTrackbar( "SMOOTHNESS_PENALTY", "Settings", &params->smoothness_penalty, 1000, 0 );
+    cvCreateTrackbar( "RADIAL_PENALTY", "Settings", &params->radial_penalty, 255, 0 );
+    cvCreateTrackbar( "SMOOTHNESS_3SIGMAON2", "Settings", &params->smoothness_3sigmaon2, 255, 0 );
+    cvCreateTrackbar( "BLAND_DOG_THRESH", "Settings", &params->bland_dog_thresh, 255, 0 );*/
+
+    case COMMAND_VOCAB_SET:
+        rec = true;
+        {
+        switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_K1:{
+                double w = command.get(2).asDouble();
+                zdfThread->params->data_penalty = w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K2:{
+                double w = command.get(2).asDouble();
+                zdfThread->params->smoothness_penalty_base = w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K3:{
+                double w = command.get(2).asDouble();
+                zdfThread->params->smoothness_penalty = w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K4:{
+                double w = command.get(2).asDouble();
+                zdfThread->params->radial_penalty = w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K5:{
+                double w = command.get(2).asDouble();
+                zdfThread->params->smoothness_3sigmaon2 = w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K6:{
+                double w = command.get(2).asDouble();
+                zdfThread->params->bland_dog_thresh = w;
+                ok = true;
+            }
+            break;
+        }
+    case COMMAND_VOCAB_GET:
+        rec = true;
+        {
+        reply.addVocab(COMMAND_VOCAB_IS);
+        reply.add(command.get(1));
+        switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_K1:{
+                double w = zdfThread->params->data_penalty;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K2:{
+                double w = zdfThread->params->smoothness_penalty_base;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K3:{
+                double w = zdfThread->params->smoothness_penalty;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K4:{
+                double w = zdfThread->params->radial_penalty;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K5:{
+                double w = zdfThread->params->smoothness_3sigmaon2;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K6:{
+                double w = zdfThread->params->bland_dog_thresh;
+                reply.addDouble(w);
+                ok = true;
+            }
+            break;
+        
+        default: {
+            }
+                break;
+        }
+        
     }
-    else if (command.get(0).asString()=="help") {
-        cout << helpMessage;
-        reply.addString("ok");
+    break;
     }
-    else{
-			cout << "command not known - type help for more info" << endl;
-	}
+    }
     return true;
 }
 
