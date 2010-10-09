@@ -1,0 +1,29 @@
+logpolarTransformExample.xml.template
+
+This application demonstates the use of the logpolarTransform module. 
+ 
+The application computes the forward Cartesian-to-log-polar transform 
+and then performs the inverse log-polar-to-Cartesian transform.  
+The transform  is performed on images read from /icub/cam/left so ensure that this
+port exists and is streaming images.
+
+Edit the xml.template file to suit your own platform.  The only change that should be 
+necessary is to replace the node name (icub1 in the template).
+
+Note that the application launches two instatiations of logpolarTransform.
+The first, implementing the forward transform, uses the default parameters.
+However, the second, implementing the inverse transform, needs to rename
+the module in order to avoid port name conflicts.  Since both modules 
+read the same configuration file, logpolarTransform.ini, in /conf,
+the second module also has a command-line parameter to specify the 
+(inverse) direction of the transform (the default value is the forward direction).
+
+Please refer to the logpolarTransform module documentation for details on the
+various module parameters:
+
+http://eris.liralab.it/iCub/main/dox/html/group__icub__logpolarTransform.html
+
+David Vernon
+9/10/2010
+
+
