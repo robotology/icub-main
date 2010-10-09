@@ -110,10 +110,14 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         bool gazePerform; //flag that allows the processor to ask the gazeControl for saccadic movements
         yarp::os::Semaphore mutex; //semaphore for the respond function
 
-        double xm, ym; //position of the most salient object in the combination
-        yarp::dev::IGazeControl *igaze; //Ikin controller of the gaze
-        yarp::dev::PolyDriver* clientGazeCtrl; //polydriver for the gaze controller
-        iCub::logpolar::logpolarTransform trsf;
+        double xm, ym;                          //position of the most salient object in the combination
+        yarp::dev::IGazeControl *igaze;         //Ikin controller of the gaze
+        yarp::dev::PolyDriver* clientGazeCtrl;  //polydriver for the gaze controller
+        iCub::logpolar::logpolarTransform trsf; //reference to the converter for logpolar transform
+        double startInt;                           //time variable for saccade activation
+        double endInt;                             //time variable for saccade activation
+        double saccadeInterv;                   //time costant between two different saccades (milliseconds)
+        time_t start2, end2;
 
     public:
         /**
@@ -307,8 +311,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::sig::ImageOf<yarp::sig::PixelMono> linearCombinationImage; //result of the combination
         int centroid_x; //center of gravity of the selective attention (x position)
         int centroid_y; //center of gravity of the selective attention (y position)
-        time_t start2; //time variable
-        time_t end2; //time variable
+        
         
 };
 

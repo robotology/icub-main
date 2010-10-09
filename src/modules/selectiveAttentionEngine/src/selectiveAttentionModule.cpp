@@ -264,16 +264,6 @@ void selectiveAttentionModule::reinitialise(int width, int height){
 
 
 bool selectiveAttentionModule::updateModule() {
-    //-----------check for any possible command
-    /*Bottle* command=0;//=cmdPort.read(false);
-    if(command!=0){
-        Bottle* tmpBottle=cmdPort.read(false);
-        ConstString str= command->toString();
-        printf("command received: %s \n", str.c_str());
-        Bottle* reply=new Bottle();
-        respond(*command,*reply);
-        command->clear();
-    }*/
     return true;
 }
 

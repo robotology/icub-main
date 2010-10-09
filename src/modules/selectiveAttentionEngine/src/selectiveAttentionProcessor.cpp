@@ -59,6 +59,9 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     ySizeValue=YSIZE_DIM;
 
     cLoop=0;
+    endInt=0;
+    startInt=Time::now();
+    saccadeInterv=300;
     
     //default values of the coefficients
     k1=0.5;
@@ -325,14 +328,12 @@ void selectiveAttentionProcessor::run(){
             reinit_flag=true;
         }
         ippiCopy_8u_C3R(tmp2->getRawImage(),tmp2->getRowSize(),inImage->getRawImage(), inImage->getRowSize(),srcsize);
-        
         if(map1Port.getInputCount()) {
             tmp=map1Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
-            
         }
         if(map2Port.getInputCount()) {
             tmp=map2Port.read(false);
@@ -355,7 +356,6 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
-        
         if(map5Port.getInputCount()) {
             tmp=map5Port.read(false);
             if(tmp!=0) {
@@ -384,7 +384,6 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
-
         //2. processing of the input images
         unsigned char* pmap1= map1_yarp->getRawImage();
         unsigned char* pmap2= map2_yarp->getRawImage();
@@ -477,7 +476,6 @@ void selectiveAttentionProcessor::run(){
                     pInter+=paddingInterm+rowSizeInterm;
                 }
             }
-            
             pImage=outputCartImage.getRawImage();
             float distance=0;
             bool foundmax=false;
@@ -493,7 +491,7 @@ void selectiveAttentionProcessor::run(){
                         }
                         else {
                             distance=sqrt((x-xm)*(x-xm)+(y-ym)*(y-ym));
-                            if(distance<10) {
+                            if(distance < 10) {
                                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                                 countMaxes++;
                                 xm+=x;
@@ -512,7 +510,7 @@ void selectiveAttentionProcessor::run(){
             pImage+=round(xm)*3;
             for(int i=0;i<ySizeValue/2;i++) {
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
-                pImage+=(xSizeValue/2-1)*3+paddingOutput;
+                pImage += (xSizeValue/2-1) * 3 + paddingOutput;
             }
             //representation of the horizontal line
             pImage=outputCartImage.getRawImage();
@@ -521,7 +519,9 @@ void selectiveAttentionProcessor::run(){
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
             }
             //controlling the heading of the robot
-            if(cLoop>TIME_CONST) {
+            endInt=Time::now();
+            double diff=endInt - startInt;
+            if(diff * 1000 > saccadeInterv) {
                 //printf("cartesian: %f,%f \n", xm,ym);
                 if(gazePerform) {
                     Vector px(2);
@@ -531,7 +531,6 @@ void selectiveAttentionProcessor::run(){
                     //the distance of the object from the image plane
                     //if you do not have it, try to guess :)
                     double z=0.5;   // distance [m]
-                    Bottle response;
                     if(vergencePort.getOutputCount()) {
                         //suspending any vergence control
                         Bottle& command=vergencePort.prepare();
@@ -547,6 +546,7 @@ void selectiveAttentionProcessor::run(){
                         }
                         */
                     }
+                    
                     igaze->lookAtMonoPixel(camSel,px,z);
                     //waiting for the end of the saccadic event
                     bool flag=false;
@@ -560,14 +560,23 @@ void selectiveAttentionProcessor::run(){
                         //suspending any vergence control
                         Bottle& command=vergencePort.prepare();
                         //resuming vergence
-                        command.clear(); response.clear();
+                        command.clear();
                         printf("resuming vergence \n");
                         command.addString("res");
                         vergencePort.write();
                         //printf("%s \n", response.toString().c_str());
                     }
+                    //adding the element to the DB
+                    /*if(databasePort.getOutputCount()) {
+                        //suspending any vergence control
+                        Bottle& command=databasePort.prepare();
+                        command.clear();
+                        command.addInt(xm);
+                        command.addInt(ym);
+                        databasePort.write();
+                    }*/
                 }
-                cLoop=0;
+                startInt=Time::now();
             }
             outPorts();
         }
