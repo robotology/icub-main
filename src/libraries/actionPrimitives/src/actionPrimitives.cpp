@@ -161,7 +161,6 @@ void ActionPrimitives::init()
     polyHand=polyCart=NULL;
 
     armWaver=NULL;
-    mutex=NULL;
     actionClb=NULL;
 
     armMoveDone =latchArmMoveDone =true;
@@ -430,8 +429,6 @@ bool ActionPrimitives::open(Property &opt)
     fingers2JntsMap.insert(pair<int,int>(3,15));
     fingers2JntsMap.insert(pair<int,int>(4,15));
 
-    mutex=new Semaphore(1);
-
     // start the thread with the specified period
     Time::turboBoost();
     setRate(period);
@@ -491,9 +488,6 @@ void ActionPrimitives::close()
         graspDetectionPort.interrupt();
         graspDetectionPort.close();
     }
-
-    if (mutex!=NULL)
-        delete mutex;
 
     closed=true;
 }
@@ -580,9 +574,9 @@ bool ActionPrimitives::clearActionsQueue()
 {
     if (configured)
     {
-        mutex->wait();
+        mutex.wait();
         actionsQueue.clear();
-        mutex->post();
+        mutex.post();
 
         return true;
     }
@@ -599,7 +593,7 @@ bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Ve
 {
     if (configured)
     {
-        mutex->wait();
+        mutex.wait();
         Action action;
     
         action.waitState=false;
@@ -614,7 +608,7 @@ bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Ve
         action.clb=clb;
 
         actionsQueue.push_back(action);
-        mutex->post();
+        mutex.post();
 
         return true;
     }
@@ -767,7 +761,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
 {
     if (configured)
     {
-        mutex->wait();
+        mutex.wait();
         Action action;
 
         action.waitState=true;
@@ -778,7 +772,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
         action.clb=clb;
 
         actionsQueue.push_back(action);
-        mutex->post();
+        mutex.post();
 
         return true;
     }
@@ -850,14 +844,14 @@ bool ActionPrimitives::execQueuedAction()
     bool exec=false;
     Action action;
 
-    mutex->wait();
+    mutex.wait();
     if (actionsQueue.size())
     {
         action=actionsQueue.front();
         actionsQueue.pop_front();
         exec=true;
     }
-    mutex->post();
+    mutex.post();
 
     if (exec)
     {
@@ -883,7 +877,7 @@ bool ActionPrimitives::execPendingHandSequences()
     bool exec=false;
     Action action;
 
-    mutex->wait();
+    mutex.wait();
     if (actionsQueue.size())
     {
         // polling on the first action in the queue
@@ -897,7 +891,7 @@ bool ActionPrimitives::execPendingHandSequences()
             exec=true;
         }
     }
-    mutex->post();
+    mutex.post();
 
     return exec;
 }

@@ -147,7 +147,7 @@ protected:
     yarp::os::BufferedPort<yarp::os::Bottle> graspDetectionPort;
 
     yarp::os::RateThread *armWaver;
-    yarp::os::Semaphore  *mutex;
+    yarp::os::Semaphore   mutex;
     yarp::os::Event       motionStartEvent;
     yarp::os::Event       motionDoneEvent;
 
