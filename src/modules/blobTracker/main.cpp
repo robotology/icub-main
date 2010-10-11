@@ -1,8 +1,8 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-      
 /**
-@ingroup icub_tools
+@ingroup icub_module
+\defgroup icub_blobTracker blobTracker
 
-\defgroup blobTracker blobTracker
  
 Detects independent moving points of a grid used to sample the 
 input images. 
