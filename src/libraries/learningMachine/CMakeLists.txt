@@ -13,6 +13,7 @@ SET(LM_HEADER
     include/iCub/learningMachine/IMachineLearner.h
     include/iCub/learningMachine/IScaler.h
     include/iCub/learningMachine/ITransformer.h
+    include/iCub/learningMachine/LinearScaler.h
     include/iCub/learningMachine/LSSVMLearner.h
     include/iCub/learningMachine/MachineCatalogue.h
     include/iCub/learningMachine/MachinePortable.h
@@ -36,6 +37,7 @@ SET(LM_TRANSFORMER_SRC
     src/FixedRangeScaler.cpp
     src/IFixedSizeTransformer.cpp
     src/IScaler.cpp
+    src/LinearScaler.cpp
     src/Normalizer.cpp
     src/RandomFeature.cpp
     src/ScaleTransformer.cpp

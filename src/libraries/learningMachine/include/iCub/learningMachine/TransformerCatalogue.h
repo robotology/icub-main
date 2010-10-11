@@ -22,6 +22,7 @@
 #include "iCub/learningMachine/ITransformer.h"
 #include "iCub/learningMachine/IScaler.h"
 #include "iCub/learningMachine/ScaleTransformer.h"
+#include "iCub/learningMachine/LinearScaler.h"
 #include "iCub/learningMachine/Standardizer.h"
 #include "iCub/learningMachine/Normalizer.h"
 #include "iCub/learningMachine/FixedRangeScaler.h"
@@ -34,6 +35,7 @@ namespace learningmachine {
 void registerTransformers() {
     // register scalers
     FactoryT<std::string, IScaler>::instance().registerPrototype(new NullScaler());
+    FactoryT<std::string, IScaler>::instance().registerPrototype(new LinearScaler());
     FactoryT<std::string, IScaler>::instance().registerPrototype(new Standardizer());
     FactoryT<std::string, IScaler>::instance().registerPrototype(new Normalizer());
     FactoryT<std::string, IScaler>::instance().registerPrototype(new FixedRangeScaler());
