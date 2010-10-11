@@ -27,9 +27,11 @@ The intrinsic offsets of the sensors, which are due to the stresses
 generated during mounting, are defined by the first FT data. In the 
 future it will also be given the possibility to set the offsets of 
 the sensors.
-The model of the sensor measurements consider a fixed base, with z-axis 
+The model of the sensor measurements considers a fixed base, with z-axis 
 pointing upwards. The estimation of the external wrench applied at the 
 end-effector of the limb has the same orientation of the fixed base frame.
+For further information about the use of this module and of the iCub force control interface, please refer to the force control page:
+http://eris.liralab.it/wiki/Force_Control
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -100,7 +102,7 @@ yarp connect /icub/right_arm/analog:o /ftObs/right_arm/FT:i
  
 \author Matteo Fumagalli
 
-This file can be edited at \in src/wholeBodyTorqueObserver/main.cpp.
+This file can be edited at src/wholeBodyTorqueObserver/main.cpp.
 */ 
 
 #include <yarp/os/all.h>
