@@ -100,6 +100,10 @@ void HarmonicFunction::init() {
 void HarmonicFunction::loadMap(string map) {
     IplImage *img = cvLoadImage(map.c_str());
 
+    if(img==NULL) {
+        cout << "HarmonicFunction::loadMap("<<map.c_str()<<") -- could not load..." << endl;
+        return;
+    }
     // scale to internal range at this point
     cvResize(img, worldImage, CV_INTER_NN);
     cvReleaseImage(&img);
