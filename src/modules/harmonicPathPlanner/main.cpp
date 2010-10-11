@@ -22,31 +22,21 @@ YARP libraries
 OPENCV libraries
 
 \section parameters_sec Parameters
---name \e stemName 
-
---map \e fileName loads the map from a file with the specified name
-
---nodisplay turns off the display port and corresponding image processing that is need
-
---trace turns on a red trace of the robot's position on the map
-
---sor will use SOR relaxation technique for computing Harmonic function.  If not used, uses Gauss-Seidel by default
-
---threshold \e thresh sets the convergence relaxation threshold
-
---max \e max_iter sets the max number of iterations to compute if convergence is not met.
-
---omega \e omega parameter for relaxtion.
-
---plotScaleFactor \e sf sets the factor to amplify the gradient in the map display (has no effect on actual gradient)
-
---range \e (x_min y_max) the range of the grid.
-
---resolution \e (x_res y_res) the resolution of the grid.
-
---goal \e ((x_goal_1 y_goal_1) ... (x_goal_N y_goal_N)) a list of goal positions
-
---obstacle \e ((x_obs_1 y_obs_1 radius_1) ... (x_obs_N y_obs_N radius_N)) a list of obstacles and sizes
+<ul>
+<li> --name \e stemName 
+<li> --map \e fileName loads the map from a file with the specified name
+<li> --nodisplay turns off the display port and corresponding image processing that is need
+<li> --trace turns on a red trace of the robot's position on the map
+<li> --sor will use SOR relaxation technique for computing Harmonic function.  If not used, uses Gauss-Seidel by default
+<li> --threshold \e thresh sets the convergence relaxation threshold
+<li> --max \e max_iter sets the max number of iterations to compute if convergence is not met.
+<li> --omega \e omega parameter for relaxtion.
+<li> --plotScaleFactor \e sf sets the factor to amplify the gradient in the map display (has no effect on actual gradient)
+<li> --range \e (x_min y_max) the range of the grid.
+<li> --resolution \e (x_res y_res) the resolution of the grid.
+<li> --goal \e ((x_goal_1 y_goal_1) ... (x_goal_N y_goal_N)) a list of goal positions
+<li> --obstacle \e ((x_obs_1 y_obs_1 radius_1) ... (x_obs_N y_obs_N radius_N)) a list of obstacles and sizes
+</ul>
 
 \section portsa_sec Ports Accessed
 
