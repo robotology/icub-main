@@ -282,6 +282,40 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
     bool ok = false;
     bool rec = false; // is the command recognized?
 
+    string str=command.get(0).asString();
+    if(!strcmp(str.c_str(),"sus")) {
+        currentProcessor->suspend();
+    }
+    else if(!strcmp(str.c_str(),"res")) {
+        currentProcessor->resume();
+    }
+    else if(!strcmp(str.c_str(),"set")) {
+        string str2=command.get(0).asString();
+        if(!strcmp(str2.c_str(),"def")) {
+            if(currentProcessor!=0) {
+                currentProcessor->kmotion=0.2;
+                currentProcessor->k1=0.5;
+                currentProcessor->k2=0.1;
+                currentProcessor->k3=0.5;
+                currentProcessor->k4=0.1;
+                currentProcessor->k5=0.5;
+                currentProcessor->k6=0.5;
+                currentProcessor->kc1=0.2;
+            }
+            else if(!strcmp(str2.c_str(),"mot")) {
+                currentProcessor->kmotion=1.0;
+                currentProcessor->k1=0.0;
+                currentProcessor->k2=0.0;
+                currentProcessor->k3=0.0;
+                currentProcessor->k4=0.0;
+                currentProcessor->k5=0.0;
+                currentProcessor->k6=0.0;
+                currentProcessor->kc1=0.0;
+            }
+        }
+    }
+
+
     mutex.wait();
     switch (command.get(0).asVocab()) {
     case COMMAND_VOCAB_HELP:
@@ -618,6 +652,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             break;
             */
             default: {
+                
             }
                 break;
             }
