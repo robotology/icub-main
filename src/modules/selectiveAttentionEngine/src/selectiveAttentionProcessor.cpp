@@ -402,7 +402,13 @@ void selectiveAttentionProcessor::run(){
         if(!idle){
             for(int y=0;y<height;y++){
                 for(int x=0;x<width;x++){
-                    unsigned char value=(unsigned char)ceil((double)(*pmap1 * (k1/sumK) + *pmap2 * (k2/sumK) + *pmap3 * (k3/sumK) + *pmap4 * (k4/sumK) + *pmap5 * (k5/sumK) + *pmap6 * (k6/sumK)));
+                    unsigned char value;
+                    if(sumK==0) {
+                        value=0;
+                    }
+                    else {
+                        value=(unsigned char)ceil((double)(*pmap1 * (k1/sumK) + *pmap2 * (k2/sumK) + *pmap3 * (k3/sumK) + *pmap4 * (k4/sumK) + *pmap5 * (k5/sumK) + *pmap6 * (k6/sumK)));
+                    }
                     pmap1++;pmap2++;pmap3++;
                     pmap4++;pmap5++;pmap6++;
                     *plinear=value;
