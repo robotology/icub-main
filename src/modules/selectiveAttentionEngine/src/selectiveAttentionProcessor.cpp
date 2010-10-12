@@ -795,7 +795,6 @@ void selectiveAttentionProcessor::suspend() {
 
 void selectiveAttentionProcessor::resume() {
     printf("resuming processor...");
-    resume();
     RateThread::resume();
 }
 
