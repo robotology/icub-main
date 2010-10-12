@@ -285,36 +285,39 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
     string str=command.get(0).asString();
     if(!strcmp(str.c_str(),"sus")) {
         currentProcessor->suspend();
+        return true;
     }
     else if(!strcmp(str.c_str(),"res")) {
         currentProcessor->resume();
+        return true;
     }
     else if(!strcmp(str.c_str(),"set")) {
         string str2=command.get(0).asString();
         if(!strcmp(str2.c_str(),"def")) {
             if(currentProcessor!=0) {
-                currentProcessor->kmotion=0.2;
-                currentProcessor->k1=0.5;
-                currentProcessor->k2=0.1;
-                currentProcessor->k3=0.5;
-                currentProcessor->k4=0.1;
-                currentProcessor->k5=0.5;
-                currentProcessor->k6=0.5;
-                currentProcessor->kc1=0.2;
+                currentProcessor->setKMotion(0.2);
+                currentProcessor->setK1(0.5);
+                currentProcessor->setK2(0.1);
+                currentProcessor->setK3(0.5);
+                currentProcessor->setK4(0.1);
+                currentProcessor->setK5(0.5);
+                currentProcessor->setK6(0.5);
+                currentProcessor->setKC1(0.2);
+                return true;
             }
             else if(!strcmp(str2.c_str(),"mot")) {
-                currentProcessor->kmotion=1.0;
-                currentProcessor->k1=0.0;
-                currentProcessor->k2=0.0;
-                currentProcessor->k3=0.0;
-                currentProcessor->k4=0.0;
-                currentProcessor->k5=0.0;
-                currentProcessor->k6=0.0;
-                currentProcessor->kc1=0.0;
+                currentProcessor->setKMotion(1.0);
+                currentProcessor->setK1(0.0);
+                currentProcessor->setK2(0.0);
+                currentProcessor->setK3(0.0);
+                currentProcessor->setK4(0.0);
+                currentProcessor->setK5(0.0);
+                currentProcessor->setK6(0.0);
+                currentProcessor->setKC1(0.0);
+                return true;
             }
         }
     }
-
 
     mutex.wait();
     switch (command.get(0).asVocab()) {
@@ -325,7 +328,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("help");
 
             reply.addString("");
-            reply.addString("get fn \t: general get command ");
+            reply.addString("set fn \t: general set command ");
             reply.addString("");
             reply.addString("");
 
@@ -339,7 +342,19 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set k6 <double> \t: setting of linear combination coefficient (map6)  ");
             reply.addString("set kc1 <double> \t: setting of linear combination coefficient (mapc1)  ");
             reply.addString("set kmot <double> \t: setting of linear combination coefficient (flow motion)  ");
-            
+            reply.addString("");
+            reply.addString("get fn \t: general get command ");
+            reply.addString("");
+            reply.addString("");
+            reply.addString("get k1 <double> \t: getting the coefficients to the default value ");
+            reply.addString("get k1 <double> \t: getting of linear combination coefficient (map1) ");
+            reply.addString("get k2 <double> \t: getting of linear combination coefficient (map2) ");
+            reply.addString("get k3 <double> \t: getting of linear combination coefficient (map3) ");
+            reply.addString("get k4 <double> \t: getting of linear combination coefficient (map4)  ");
+            reply.addString("get k5 <double> \t: getting of linear combination coefficient (map5)  ");
+            reply.addString("get k6 <double> \t: getting of linear combination coefficient (map6)  ");
+            reply.addString("get kc1 <double> \t: getting of linear combination coefficient (mapc1)  ");
+            reply.addString("get kmot <double> \t: getting of linear combination coefficient (flow motion)  ");
 
             reply.addString(" ");
             reply.addString(" ");
@@ -406,62 +421,62 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_K1:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->k1=w;
+                    currentProcessor->setK1(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K2:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->k2=w;
+                    currentProcessor->setK2(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K3:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->k3=w;
+                    currentProcessor->setK3(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K4:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->k4=w;
+                    currentProcessor->setK4(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K5:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->k5=w;
+                    currentProcessor->setK5(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K6:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->k6=w;
+                    currentProcessor->setK6(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_KC1:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->kc1=w;
+                    currentProcessor->setKC1(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_DEF:{
                 if(currentProcessor!=0) {
-                    currentProcessor->kmotion=0.2;
-                    currentProcessor->k1=0.5;
-                    currentProcessor->k2=0.1;
-                    currentProcessor->k3=0.5;
-                    currentProcessor->k4=0.1;
-                    currentProcessor->k5=0.5;
-                    currentProcessor->k6=0.5;
-                    currentProcessor->kc1=0.2;
+                    currentProcessor->setKMotion(0.2);
+                    currentProcessor->setK1(0.5);
+                    currentProcessor->setK2(0.1);
+                    currentProcessor->setK3(0.5);
+                    currentProcessor->setK4(0.1);
+                    currentProcessor->setK5(0.5);
+                    currentProcessor->setK6(0.5);
+                    currentProcessor->setKC1(0.2);
                 }
                 ok = true;
             }
@@ -469,20 +484,20 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_KMOT:{
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
-                    currentProcessor->kmotion=w;
+                    currentProcessor->setKMotion(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_MOT:{
                 if(currentProcessor!=0) {
-                    currentProcessor->kmotion=1.0;
-                    currentProcessor->k1=0.0;
-                    currentProcessor->k2=0.0;
-                    currentProcessor->k3=0.0;
-                    currentProcessor->k4=0.0;
-                    currentProcessor->k5=0.0;
-                    currentProcessor->k6=0.0;
-                    currentProcessor->kc1=0.0;
+                    currentProcessor->setKMotion(1.0);
+                    currentProcessor->setK1(0.0);
+                    currentProcessor->setK2(0.0);
+                    currentProcessor->setK3(0.0);
+                    currentProcessor->setK4(0.0);
+                    currentProcessor->setK5(0.0);
+                    currentProcessor->setK6(0.0);
+                    currentProcessor->setKC1(0.0);
                 }
                 ok = true;
             }
@@ -572,49 +587,49 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             }
                 break;
             case COMMAND_VOCAB_KMOT:{
-                double w = currentProcessor->kmotion;
+                double w = currentProcessor->getKMotion();
                 reply.addDouble(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K1:{
-                double w = currentProcessor->k1;
+                double w = currentProcessor->getK1();
                 reply.addDouble(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K2:{
-                double w = currentProcessor->k2;
+                double w = currentProcessor->getK2();
                 reply.addDouble(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K3:{
-                double w = currentProcessor->k3;
+                double w = currentProcessor->getK3();
                 reply.addDouble(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K4:{
-                double w = currentProcessor->k4;
+                double w = currentProcessor->getK4();
                 reply.addDouble(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K5:{
-                double w = currentProcessor->k5;
+                double w = currentProcessor->getK5();
                 reply.addDouble(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_K6:{
-                double w = currentProcessor->k6;
+                double w = currentProcessor->getK6();
                 reply.addDouble(w);
                 ok = true;
             }
             break;
             case COMMAND_VOCAB_KC1:{
-                double w = currentProcessor->kc1;
+                double w = currentProcessor->getKC1();
                 reply.addDouble(w);
                 ok = true;
             }

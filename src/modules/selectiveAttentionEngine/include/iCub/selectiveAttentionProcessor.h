@@ -119,6 +119,15 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         double saccadeInterv;                   //time costant between two different saccades (milliseconds)
         time_t start2, end2;
 
+        double k1;          //coefficient for the linear combination of log-polar maps
+        double k2;          //coefficient for the linear combination of log-polar maps
+        double k3;          //coefficient for the linear combination of log-polar maps
+        double k4;          //coefficient for the linear combination of log-polar maps
+        double k5;          //coefficient for the linear combination of log-polar maps
+        double k6;          //coefficient for the linear combination of log-polar maps
+        double kmotion;     //coefficient of the linear combination of the motion
+        double kc1;         //coeffiencient for the linear combination of the cartesian maps
+
     public:
         /**
         * constructor
@@ -160,7 +169,6 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         * resumes the processing thread previously suspended
         */
         void resume();
-
 
         /**
         * method that resize images once the processor knows the dimesions of the input
@@ -258,6 +266,86 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         void setGazePerform(bool value);
 
         /**
+        * function that returns the value of the parameter k1
+        */
+        double getK1() { return k1; };
+
+        /**
+        * function that returns the value of the parameter k2
+        */
+        double getK2() { return k2; };
+
+        /**
+        * function that returns the value of the parameter k3
+        */
+        double getK3() { return k3; };
+
+        /**
+        * function that returns the value of the parameter k4
+        */
+        double getK4() { return k4; };
+
+        /**
+        * function that returns the value of the parameter k5
+        */
+        double getK5() { return k5; };
+
+        /**
+        * function that returns the value of the parameter k6
+        */
+        double getK6() { return k6; };
+
+        /**
+        * function that returns the value of the parameter kc1
+        */
+        double getKC1() { return kc1; };
+
+        /**
+        * function that returns the value of the parameter kmotion
+        */
+        double getKMotion() { return kmotion; };
+
+        /**
+        * function that sets the value of the parameter k1
+        */
+        void setK1(double p) { k1=p; };
+
+        /**
+        * function that sets the value of the parameter k2
+        */
+        void setK2(double p) { k2=p; };
+
+        /**
+        * function that sets the value of the parameter k3
+        */
+        void setK3(double p) { k3=p; };
+
+        /**
+        * function that sets the value of the parameter k4
+        */
+        void setK4(double p) { k4=p; };
+
+        /**
+        * function that sets the value of the parameter k5
+        */
+        void setK5(double p) { k5=p; };
+
+        /**
+        * function that sets the value of the parameter k6
+        */
+        void setK6(double p) { k6=p; };
+
+        /**
+        * function that sets the value of the parameter kc1
+        */
+        void setKC1(double p) { kc1=p; };
+
+        /**
+        * function that sets the value of the parameter kMotion
+        */
+        void setKMotion(double p) { kmotion=p; };
+
+        /**
         * function that extract the contour and the center of gravity
         * @param inputImage input image where the contours are extracted from
         * @param outImage representation of the contours
@@ -291,14 +379,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::sig::ImageOf<yarp::sig::PixelMono>* cart1_yarp; //saliency map coming from the 6th source
         yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp; //yarp image of the composition of all the edges
         yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputLogImage; //3channel image representing the saliencymap in logpolar
-        double k1;          //coefficient for the linear combination of log-polar maps
-        double k2;          //coefficient for the linear combination of log-polar maps
-        double k3;          //coefficient for the linear combination of log-polar maps
-        double k4;          //coefficient for the linear combination of log-polar maps
-        double k5;          //coefficient for the linear combination of log-polar maps
-        double k6;          //coefficient for the linear combination of log-polar maps
-        double kmotion;     //coefficient of the linear combination of the motion
-        double kc1;         //coeffiencient for the linear combination of the cartesian maps
+        
         IplImage *cvImage16; // tmp IPLImage necessary for edge detection 16 bit
         IplImage *cvImage8; //tmp IPLImage necessary for edge detection 16 bit
         Ipp8u* im_out;
