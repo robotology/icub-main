@@ -363,8 +363,7 @@ gint timeout_update_CB(gpointer data) {
 }
 
 gint timeout_CB (gpointer data) {
-    c++;
-    switch(c) {
+    switch(c++) {
         case 0: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -392,6 +391,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj1),value);
                     mutex.post();
                 }
+                break;
         case 2: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -405,6 +405,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj2),value);
                     mutex.post();
                 }
+                break;
         case 3: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -418,6 +419,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj3),value);
                     mutex.post();
                 }
+                break;
         case 4: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -431,6 +433,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj4),value);
                     mutex.post();
                 }
+                break;
         case 5: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -444,6 +447,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj5),value);
                     mutex.post();
                 }
+                break;
         case 6: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -457,6 +461,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj6),value);
                     mutex.post();
                 }
+                break;
         case 7: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -470,6 +475,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj11),value);
                     mutex.post();
                 }
+                break;
         case 8: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -483,6 +489,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj12),value);
                     mutex.post();
                 }
+                break;
         case 9: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -496,6 +503,7 @@ gint timeout_CB (gpointer data) {
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj13),value);
                     mutex.post();
                 }
+                break;
         case 10: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -508,7 +516,8 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj14),value);
                     mutex.post();
-                }
+                 }
+                 break;
         case 11: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -521,7 +530,8 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj15),value);
                     mutex.post();
-                }
+                 }
+                 break;
         case 12: {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
@@ -534,9 +544,10 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj16),value);
                     mutex.post();
-                }
+                 }
+                 break;
         default: {
-                    c=0;
+                    c=-1;
                  }
     }
     return TRUE;
