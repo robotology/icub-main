@@ -324,13 +324,13 @@ bool eyeTriangulation::qlGet(Vector q)
 void eyeTriangulation::run()
 {
       if (!xConstant)
-		  {
-			  if (Bottle *xlrBottle=xlrPort.read(false))
-				  {
-					xCheckBottleFormat(xlrBottle,xl,xr);
-					kalTimer=0.0;
-				  }
-		  }
+	  {
+		  if (Bottle *xlrBottle=xlrPort.read(false))
+			  {
+				xCheckBottleFormat(xlrBottle,xl,xr);
+				kalTimer=0.0;
+			  }
+	  }
 	  else
 		  kalTimer=0.0;
 
