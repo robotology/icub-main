@@ -85,6 +85,7 @@
 #define COMMAND_VOCAB_K6 VOCAB2('k','6')
 #define COMMAND_VOCAB_KC1 VOCAB3('k','c','1')
 #define COMMAND_VOCAB_KMOT VOCAB4('k','m','o','t')
+#define COMMAND_VOCAB_DEF VOCAB3('d','e','f')
 #define COMMAND_VOCAB_MOT VOCAB3('m','o','t')
 
 /**
@@ -144,6 +145,7 @@ InOut ports:
 -<name>/cmd
 
 Possible commands that this module is responsive to are:
+- set def: set the coefficient to the default value
 - set k1: coefficient for the linear combination of map1
 - set k2: coefficient for the linear combination of map2
 - set k3: coefficient for the linear combination of map3

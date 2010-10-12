@@ -296,6 +296,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("");
 
             reply.addString("");
+            reply.addString("set k1 <double> \t: setting the coefficients to the default value ");
             reply.addString("set k1 <double> \t: setting of linear combination coefficient (map1) ");
             reply.addString("set k2 <double> \t: setting of linear combination coefficient (map2) ");
             reply.addString("set k3 <double> \t: setting of linear combination coefficient (map3) ");
@@ -414,6 +415,20 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                 double w = command.get(2).asDouble();
                 if(currentProcessor!=0)
                     currentProcessor->kc1=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_DEF:{
+                if(currentProcessor!=0) {
+                    currentProcessor->kmotion=0.2;
+                    currentProcessor->k1=0.5;
+                    currentProcessor->k2=0.1;
+                    currentProcessor->k3=0.5;
+                    currentProcessor->k4=0.1;
+                    currentProcessor->k5=0.5;
+                    currentProcessor->k6=0.5;
+                    currentProcessor->kc1=0.2;
+                }
                 ok = true;
             }
             break;
