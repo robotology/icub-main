@@ -451,6 +451,7 @@ void selectiveAttentionProcessor::run(){
             double sumCart=0.5 + kmotion + kc1;
             int paddingCartesian=cart1_yarp->getPadding();
             int paddingOutput=outputCartImage.getPadding();
+            //adding cartesian and finding the max value
             for(int y=0;y<ySizeValue;y++) {
                 if(y%2==0) {
                     for(int x=0;x<xSizeValue;x++) {
@@ -485,6 +486,7 @@ void selectiveAttentionProcessor::run(){
             pImage=outputCartImage.getRawImage();
             float distance=0;
             bool foundmax=false;
+            //looking for the max value 
             for(int y=0;y<ySizeValue/2;y++) {
                 for(int x=0;x<xSizeValue/2;x++) {
                     //*pImage=value;
@@ -502,6 +504,9 @@ void selectiveAttentionProcessor::run(){
                                 countMaxes++;
                                 xm+=x;
                                 ym+=y;
+                            }
+                            else {
+                                break;
                             }
                         }
                     }
@@ -528,7 +533,6 @@ void selectiveAttentionProcessor::run(){
             endInt=Time::now();
             double diff=endInt - startInt;
             if(diff * 1000 > saccadeInterv) {
-                //printf("cartesian: %f,%f \n", xm,ym);
                 if(gazePerform) {
                     Vector px(2);
                     px[0]=round(xm);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
@@ -541,16 +545,11 @@ void selectiveAttentionProcessor::run(){
                         //suspending any vergence control
                         Bottle& command=vergencePort.prepare();
                         command.clear();
-                        printf("suspending vergence \n");
                         command.addString("sus");
                         vergencePort.write();
                         //printf("%s \n", response.toString().c_str());
                         //waiting for the ack from vergence
                         bool flag=false;
-                        /*while(igaze->checkMotionDone(&flag)){
-                            printf("waiting vergence \n");
-                        }
-                        */
                     }
                     
                     igaze->lookAtMonoPixel(camSel,px,z);
@@ -559,18 +558,14 @@ void selectiveAttentionProcessor::run(){
                     bool res=false;
                     while(flag) {
                         res=igaze->checkMotionDone(&flag);
-                        printf("waiting saccade %d \n",flag);
-                        Time::delay(0.010);
                     }
                     if(vergencePort.getOutputCount()) {
                         //suspending any vergence control
                         Bottle& command=vergencePort.prepare();
                         //resuming vergence
                         command.clear();
-                        printf("resuming vergence \n");
                         command.addString("res");
                         vergencePort.write();
-                        //printf("%s \n", response.toString().c_str());
                     }
                     //adding the element to the DB
                     /*if(databasePort.getOutputCount()) {
