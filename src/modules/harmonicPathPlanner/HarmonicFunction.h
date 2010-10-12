@@ -5,6 +5,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
+#include <vector>
 #include <cv.h>
 
 #include <map>

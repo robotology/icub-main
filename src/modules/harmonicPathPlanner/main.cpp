@@ -90,7 +90,7 @@ Linux.
 
 #include <highgui.h>
 #include <cv.h>
-
+#include <vector>
 #include "HarmonicFunction.h"
 
 using namespace yarp;
@@ -117,9 +117,9 @@ private:
     bool drawPath;
 
     BufferedPort< ImageOf<PixelBgr> >  potentialMapPort;
+    
     vector<Vector *> goalList;
     vector<Vector *> obstacleList;
-    
     vector<Vector *> positionList;
 
     yarp::os::Semaphore mutex;
