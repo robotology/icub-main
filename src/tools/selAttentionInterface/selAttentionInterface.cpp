@@ -375,9 +375,9 @@ gint timeout_CB (gpointer data) {
                     Bottle in;
                     _pOutPort->write(bot,in);
                     double value=in.get(2).asDouble();
-                    mutex.wait();
+                    //mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adjMotion),value);
-                    mutex.post();
+                    //mutex.post();
             }
         }
         break;
