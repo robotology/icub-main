@@ -363,8 +363,10 @@ gint timeout_update_CB(gpointer data) {
 }
 
 gint timeout_CB (gpointer data) {
-    switch(c++) {
+    c++;
+    switch(c) {
         case 0: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -376,9 +378,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adjMotion),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 1: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -390,9 +394,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj1),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 2: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -404,9 +410,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj2),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 3: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -418,9 +426,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj3),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 4: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -432,9 +442,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj4),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 5: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -446,9 +458,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj5),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 6: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -460,9 +474,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj6),value);
                     mutex.post();
-                }
-                break;
+           }
+        }
+        break;
         case 7: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -474,9 +490,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj11),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 8: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -488,9 +506,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj12),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 9: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -502,9 +522,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj13),value);
                     mutex.post();
-                }
-                break;
+            }
+        }
+        break;
         case 10: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -516,9 +538,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj14),value);
                     mutex.post();
-                 }
-                 break;
+            }
+        }
+        break;
         case 11: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -530,9 +554,11 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj15),value);
                     mutex.post();
-                 }
-                 break;
+            }
+        }
+        break;
         case 12: {
+            if(_pOutPort->getOutputCount()) {
                     yarp::os::Bottle bot; //= _pOutPort->prepare();
                     bot.clear();
                     bot.addVocab(COMMAND_VOCAB_GET);
@@ -544,8 +570,9 @@ gint timeout_CB (gpointer data) {
                     mutex.wait();
                     gtk_adjustment_set_value(GTK_ADJUSTMENT (adj16),value);
                     mutex.post();
-                 }
-                 break;
+            }
+        }
+        break;
         default: {
                     c=-1;
                  }
