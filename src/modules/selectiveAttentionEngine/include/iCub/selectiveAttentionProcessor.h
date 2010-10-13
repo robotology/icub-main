@@ -98,6 +98,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         double overlap;     //overlap in the remapping
         int numberOfRings;  //number of rings in the remapping
         int numberOfAngles; //number of angles in the remapping
+        int saccadicInterval; //time interval between two different saccadic event
         double salienceTD; //value of the weight of top-down approach in the blobFinder
         double salienceBU; //value of the weight of bottom-up approach in the blobFinder
         unsigned char targetRed; //colour information passed back for the reinforcement

@@ -159,6 +159,12 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
         printf("gazing behaviour not active \n");
     }
     
+    /* selects which one of the two camera drives the gaze */
+    saccadicInterval       = rf.check("saccadicInterval", 
+                           Value(3000), 
+                           "saccadic intervall in ms (int)").asInt();
+    currentProcessor->setSaccadicInterval(saccadicInterval);
+    
     currentProcessor->start();
 
     printf("\n waiting for connection of the input port \n");
@@ -282,7 +288,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
     bool ok = false;
     bool rec = false; // is the command recognized?
 
-    string str=command.get(0).asString();
+    ConstString str=command.get(0).asString();
     if(!strcmp(str.c_str(),"sus")) {
         currentProcessor->suspend();
         return true;
@@ -292,7 +298,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
         return true;
     }
     else if(!strcmp(str.c_str(),"set")) {
-        string str2=command.get(0).asString();
+        ConstString str2=command.get(0).asString();
         if(!strcmp(str2.c_str(),"def")) {
             if(currentProcessor!=0) {
                 currentProcessor->setKMotion(0.2);

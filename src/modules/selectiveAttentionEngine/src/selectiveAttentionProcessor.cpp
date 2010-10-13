@@ -61,7 +61,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     cLoop=0;
     endInt=0;
     startInt=Time::now();
-    saccadeInterv=300;
+    saccadeInterv=3000; //milliseconds
     
     //default values of the coefficients
     k1=0.5;
@@ -327,6 +327,7 @@ void selectiveAttentionProcessor::run(){
             reinitialise(tmp2->width(), tmp2->height());
             reinit_flag=true;
         }
+        //blobFinder
         ippiCopy_8u_C3R(tmp2->getRawImage(),tmp2->getRowSize(),inImage->getRawImage(), inImage->getRowSize(),srcsize);
         if(map1Port.getInputCount()) {
             tmp=map1Port.read(false);
@@ -335,6 +336,7 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
+        //Hue
         if(map2Port.getInputCount()) {
             tmp=map2Port.read(false);
             if(tmp!=0) {
@@ -342,6 +344,7 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
+        //Saturation
         if(map3Port.getInputCount()) {
             tmp=map3Port.read(false);
             if(tmp!=0) {
@@ -349,6 +352,7 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
+        //Value = Luminance
         if(map4Port.getInputCount()) {
             tmp=map4Port.read(false);
             if(tmp!=0) {
@@ -356,6 +360,8 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
+        //Luminance
+        /*
         if(map5Port.getInputCount()) {
             tmp=map5Port.read(false);
             if(tmp!=0) {
@@ -363,6 +369,8 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
+        */
+        //chrominance
         if(map6Port.getInputCount()) {
             tmp=map6Port.read(false);
             if(tmp!=0) {
@@ -370,6 +378,7 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
+        //motion
         if(motionPort.getInputCount()) {
             tmp=motionPort.read(false);
             if(tmp!=0) {
@@ -377,6 +386,7 @@ void selectiveAttentionProcessor::run(){
                 idle=false;
             }
         }
+        //colourSaliency
         if(cart1Port.getInputCount()) {
             tmp=cart1Port.read(false);
             if(tmp!=0) {
@@ -389,7 +399,7 @@ void selectiveAttentionProcessor::run(){
         unsigned char* pmap2= map2_yarp->getRawImage();
         unsigned char* pmap3= map3_yarp->getRawImage();
         unsigned char* pmap4= map4_yarp->getRawImage();
-        unsigned char* pmap5= map5_yarp->getRawImage();
+        //unsigned char* pmap5= map5_yarp->getRawImage();
         unsigned char* pmap6= map6_yarp->getRawImage();
         ImageOf<PixelMono>& linearCombinationImage=linearCombinationPort.prepare();
         linearCombinationImage.resize(width,height);
@@ -397,7 +407,7 @@ void selectiveAttentionProcessor::run(){
         int padding=map1_yarp->getPadding();
         int rowSize=map1_yarp->getRowSize();
         unsigned char maxValue=0;
-        double sumK=k1+k2+k3+k4+k5+k6;
+        double sumK=k1+k2+k3+k4+k6; 
         // combination of all the saliency maps
         if(!idle){
             for(int y=0;y<height;y++){
@@ -407,15 +417,15 @@ void selectiveAttentionProcessor::run(){
                         value=0;
                     }
                     else {
-                        value=(unsigned char)ceil((double)(*pmap1 * (k1/sumK) + *pmap2 * (k2/sumK) + *pmap3 * (k3/sumK) + *pmap4 * (k4/sumK) + *pmap5 * (k5/sumK) + *pmap6 * (k6/sumK)));
+                        value=(unsigned char)ceil((double)(*pmap1 * (k1/sumK) + *pmap2 * (k2/sumK) + *pmap3 * (k3/sumK) + *pmap4 * (k4/sumK) + *pmap6 * (k6/sumK)));
                     }
                     pmap1++;pmap2++;pmap3++;
-                    pmap4++;pmap5++;pmap6++;
+                    pmap4++;pmap6++;
                     *plinear=value;
                     plinear++;
                 }
                 pmap1+=padding;pmap2+=padding;pmap3+=padding;
-                pmap4+=padding;pmap5+=padding;pmap6+=padding;
+                pmap4+=padding;pmap6+=padding;
                 plinear+=padding;
             }
             //trasform the logpolar to cartesian (the logpolar image has to be 3channel image)
