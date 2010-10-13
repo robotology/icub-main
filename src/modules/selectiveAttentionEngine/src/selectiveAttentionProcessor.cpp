@@ -552,31 +552,47 @@ void selectiveAttentionProcessor::run(){
                     //if you do not have it, try to guess :)
                     double z=0.5;   // distance [m]
                     if(vergencePort.getOutputCount()) {
-                        //suspending any vergence control
+                        //suspending any vergence control;
+                        
                         Bottle& command=vergencePort.prepare();
                         command.clear();
                         command.addString("sus");
+                        printf("suspending vergerce \n");
                         vergencePort.write();
-                        //printf("%s \n", response.toString().c_str());
                         //waiting for the ack from vergence
                         bool flag=false;
+                    }
+
+                    for(int k=0;k<10;k++){ 
+                        Time::delay(0.050);
+                        printf("*");
                     }
                     
                     igaze->lookAtMonoPixel(camSel,px,z);
                     //waiting for the end of the saccadic event
                     bool flag=false;
                     bool res=false;
-                    while(flag) {
-                        res=igaze->checkMotionDone(&flag);
+                    printf("1saccadic event performing %d .... \n",flag);
+                    while(!flag) {                       
+                        igaze->checkMotionDone(&flag);
+                        printf("2saccadic event performing %d .... \n",flag);                   
+                        Time::delay(0.010);
                     }
-                    if(vergencePort.getOutputCount()) {
-                        //suspending any vergence control
-                        Bottle& command=vergencePort.prepare();
-                        //resuming vergence
-                        command.clear();
-                        command.addString("res");
-                        vergencePort.write();
+                    printf("3saccadic event performing %d .... \n",flag);
+                    for(int k=0;k<10;k++){ 
+                        Time::delay(0.050);
+                        printf("*");
                     }
+                    if(vergencePort.getOutputCount()) {            
+                                //suspending any vergence control
+                                Bottle& command=vergencePort.prepare();
+                                //resuming vergence
+                                command.clear();
+                                command.addString("res");
+                                printf("resuming vergence \n");
+                                vergencePort.write();
+                    }
+
                     //adding the element to the DB
                     /*if(databasePort.getOutputCount()) {
                         //suspending any vergence control
@@ -586,6 +602,7 @@ void selectiveAttentionProcessor::run(){
                         command.addInt(ym);
                         databasePort.write();
                     }*/
+                   
                 }
                 startInt=Time::now();
             }
