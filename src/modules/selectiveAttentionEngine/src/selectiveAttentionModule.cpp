@@ -166,7 +166,6 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
     currentProcessor->setSaccadicInterval(saccadicInterval);
     
     currentProcessor->start();
-
     printf("\n waiting for connection of the input port \n");
     return true;
 }

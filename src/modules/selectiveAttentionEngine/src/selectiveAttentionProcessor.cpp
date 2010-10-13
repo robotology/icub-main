@@ -610,6 +610,10 @@ void selectiveAttentionProcessor::setYSize(int ySize) {
     ySizeValue=ySize;
 }
 
+void selectiveAttentionProcessor::setSaccadicInterval(int interval) {
+    this->saccadeInterv=interval;
+}
+
 void selectiveAttentionProcessor::setOverlap(double _overlap) {
     overlap=_overlap;
 }

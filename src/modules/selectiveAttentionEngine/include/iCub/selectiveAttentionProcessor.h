@@ -260,6 +260,12 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         */
         void setNumberOfAngles(int numberOfAngles);
 
+        /**
+        * function that sets the time interval between two different saccadic events
+        * @param interval milliseconds between two different saccadic events
+        */
+        void setSaccadicInterval(int interval);
+
         /*
         * function that declare whether to perform saccadic movement with gazeControl
         * @param value It is true when the saccadic movement is performed

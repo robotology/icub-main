@@ -186,25 +186,26 @@ private:
     yarp::os::Port cmdPort;     //command port of the module
     int ct;                     //counter of the module
     
-    int width;                  //width of the input image
-    int height;                 //height of the input image
-    int rateThread;             // rateThread of the processor Thread
+    int width;                                      //width of the input image
+    int height;                                     //height of the input image
+    int rateThread;                                 // rateThread of the processor Thread
     int xSize,ySize, numberOfRings,numberOfAngles;  //parameters of the configuration file
+    int saccadicInterval;                           //time interval between saccades
     double overlap;                                 //value of the overlap
     bool reinit_flag;                               //flag that indicates when the reinitiazation has already be done
 
-    yarp::os::Semaphore mutex; //semaphore for the respond function
+    yarp::os::Semaphore mutex;                      //semaphore for the respond function
 
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg; //input image reference
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp; //temporary mono image
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2; //temporary rgb image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;      //input image reference
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;          //temporary mono image
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;          //temporary rgb image
     
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map1Img; //input image of the 1st map
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map2Img; //input image of the 2nd map
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map3Img; //input image of the 3rd map
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map4Img; //input image of the 4th map
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map5Img; //input image of the 5th map
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *map6Img; //input image of the 6th map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map1Img;      //input image of the 1st map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map2Img;      //input image of the 2nd map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map3Img;      //input image of the 3rd map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map4Img;      //input image of the 4th map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map5Img;      //input image of the 5th map
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map6Img;      //input image of the 6th map
     
     selectiveAttentionProcessor *currentProcessor; //processor that controls the processing of the input image
 
