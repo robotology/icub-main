@@ -515,6 +515,33 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        case IKINCARTCTRL_VOCAB_OPT_POSE:
+                        {               
+                            if (command.size()>2)
+                            {
+                                int axis=command.get(2).asInt();
+                                Vector x,o;
+
+                                if (getPose(axis,x,o))
+                                {
+                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    Bottle &posePart=reply.addList();
+
+                                    for (int i=0; i<x.length(); i++)
+                                        posePart.addDouble(x[i]);
+
+                                    for (int i=0; i<o.length(); i++)
+                                        posePart.addDouble(o[i]);
+                                }
+                                else
+                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
                         default:
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
@@ -1540,7 +1567,7 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o)
         Vector pose=chain->EndEffPose();
     
         x.resize(3);
-        o.resize(pose.length()-3);
+        o.resize(pose.length()-x.length());
     
         for (int i=0; i<x.length(); i++)
             x[i]=pose[i];
@@ -1549,6 +1576,32 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o)
             o[i]=pose[x.length()+i];
     
         return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getPose(const int axis, Vector &x, Vector &o)
+{
+    if (attached)
+    {
+        if (axis<(int)chain->getN())
+        {
+            Matrix H=chain->getH(axis);
+    
+            x.resize(3);
+    
+            for (int i=0; i<x.length(); i++)
+                x[i]=H(i,3);
+    
+            o=dcm2axis(H);
+    
+            return true;
+        }
+        else
+            return false;
     }
     else
         return false;
@@ -1824,7 +1877,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
 
 
 /************************************************************************/
-bool ServerCartesianController::getLimits(int axis, double *min, double *max)
+bool ServerCartesianController::getLimits(const int axis, double *min, double *max)
 {
     if (connected)
     {
@@ -1844,7 +1897,7 @@ bool ServerCartesianController::getLimits(int axis, double *min, double *max)
 
 
 /************************************************************************/
-bool ServerCartesianController::setLimits(int axis, const double min, const double max)
+bool ServerCartesianController::setLimits(const int axis, const double min, const double max)
 {
     if (connected)
     {

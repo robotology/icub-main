@@ -254,15 +254,58 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
     }
 
     x.resize(3);
-    o.resize(pose.length()-3);
+    o.resize(pose.length()-x.length());
 
-    for (int i=0; i<3; i++)
+    for (int i=0; i<x.length(); i++)
         x[i]=pose[i];
 
-    for (int i=0; i<pose.length(); i++)
-        o[i]=pose[3+i];
+    for (int i=0; i<o.length(); i++)
+        o[i]=pose[x.length()+i];
 
     return (now-lastPoseMsgArrivalTime<timeout);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_POSE);
+    command.addInt(axis);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (Bottle *posePart=reply.get(1).asList())
+        {
+            x.resize(3);
+            o.resize(posePart->size()-x.length());
+
+            for (int i=0; i<x.length(); i++)
+                x[i]=posePart->get(i).asDouble();
+
+            for (int i=0; i<o.length(); i++)
+                o[i]=posePart->get(x.length()+i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
 }
 
 
@@ -681,7 +724,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
 
 
 /************************************************************************/
-bool ClientCartesianController::getLimits(int axis, double *min, double *max)
+bool ClientCartesianController::getLimits(const int axis, double *min, double *max)
 {
     if (!connected)
         return false;
@@ -718,7 +761,7 @@ bool ClientCartesianController::getLimits(int axis, double *min, double *max)
 
 
 /************************************************************************/
-bool ClientCartesianController::setLimits(int axis, const double min, const double max)
+bool ClientCartesianController::setLimits(const int axis, const double min, const double max)
 {
     if (!connected)
         return false;

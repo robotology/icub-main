@@ -191,6 +191,7 @@ public:
     virtual bool setTrackingMode(const bool f);
     virtual bool getTrackingMode(bool *f);
     virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o);
     virtual bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
     virtual bool goToPosition(const yarp::sig::Vector &xd, const double t=0.0);
     virtual bool goToPoseSync(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
@@ -202,8 +203,8 @@ public:
     virtual bool setRestPos(const yarp::sig::Vector &newRestPos, yarp::sig::Vector &curRestPos);
     virtual bool getRestWeights(yarp::sig::Vector &curRestWeights);
     virtual bool setRestWeights(const yarp::sig::Vector &newRestWeights, yarp::sig::Vector &curRestWeights);
-    virtual bool getLimits(int axis, double *min, double *max);
-    virtual bool setLimits(int axis, const double min, const double max);
+    virtual bool getLimits(const int axis, double *min, double *max);
+    virtual bool setLimits(const int axis, const double min, const double max);
     virtual bool getTrajTime(double *t);
     virtual bool setTrajTime(const double t);
     virtual bool getInTargetTol(double *tol);
