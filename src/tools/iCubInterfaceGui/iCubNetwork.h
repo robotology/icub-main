@@ -99,7 +99,43 @@ public:
         else
         {
             bot.addInt(ONLY_DATA_FLAG);
+        }        
+
+        /////////////////////////////////////
+
+        yarp::os::Bottle& netBot=bot.addList();
+
+        double d;
+        for (int i=0; i<(int)DOUBLE_NUM; ++i)
+        {
+            if (mDoubleData.read(i,d))
+            {
+                netBot.addInt(i);
+                netBot.addDouble(d);
+            }
         }
+
+        bool b;
+        for (int i=0; i<(int)BOOL_NUM; ++i)
+        {
+            if (mBoolData.read(i,b))
+            {
+                netBot.addInt(i);
+                netBot.addVocab(b?'T':'F');
+            }
+        }
+
+        int k;
+        for (int i=0; i<(int)INT_NUM; ++i)
+        {
+            if (mIntData.read(i,k))
+            {
+                netBot.addInt(i);
+                netBot.addInt(k);
+            }
+        }
+
+        /////////////////////////////////////////
 
         for (int i=0; i<(int)mBoards.size(); ++i)
         {
@@ -123,7 +159,32 @@ public:
             mThreadRate=bot.get(5).asInt();
         }
 
-        for (int i=i0; i<(int)bot.size(); ++i)
+        //////////////////////////////////////////////
+
+        yarp::os::Bottle* netBot=bot.get(i0).asList();
+
+        for (int i=0; i<netBot->size(); i+=2)
+        {
+            int index=netBot->get(i).asInt();
+            yarp::os::Value data=netBot->get(i+1);
+
+            if (data.isDouble())
+            {
+                mDoubleData.write(index,data.asDouble());
+            }
+            else if (data.isVocab())
+            {
+                mBoolData.write(index,data.asVocab()=='T');
+            }
+            else if (data.isInt())
+            {
+                mIntData.write(index,data.asInt());
+            }
+        }
+
+        ////////////////////////////////////////
+
+        for (int i=i0+1; i<(int)bot.size(); ++i)
         {
             mBoards[i-i0]->fromBottle(*(bot.get(i).asList()));
         }
