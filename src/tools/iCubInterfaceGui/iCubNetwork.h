@@ -67,30 +67,7 @@ public:
         mBoards.push_back(board);
     }
 
-    bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)
-    {
-        int index=addr.find(",");
-
-        if (index<0) return false;
-
-        std::string name=addr.substr(0,index);
-
-        if (name!=mName) return false;
-
-        ++index;
-
-        addr=addr.substr(index,addr.length()-index);
-
-        for (int i=0; i<mBoards.size(); ++i)
-        {
-            if (mBoards[i]->findAndWrite(addr,dataDouble,dataBool,dataInt)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
 
     std::string mName;
     std::string mFile;
@@ -100,6 +77,10 @@ public:
 
 protected:
     std::vector<iCubBoard*> mBoards;
+
+    RawData<double,DOUBLE_NUM> mDoubleData;
+    RawData<bool,BOOL_NUM> mBoolData;
+    RawData<int,INT_NUM> mIntData;
 };
 
 #endif
