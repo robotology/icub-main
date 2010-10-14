@@ -1,0 +1,14 @@
+SET(ROBOT_NAME "$ENV{ICUB_ROBOTNAME}" CACHE PATH
+    "Name of your robot")
+
+SET(ROBOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/app/robots/${ROBOT_NAME}")
+
+IF ("${ROBOT_NAME}" STREQUAL "")
+  MESSAGE(STATUS "No robot name")
+ELSE ("${ROBOT_NAME}" STREQUAL "")
+  IF (EXISTS ${ROBOT_DIR})
+    MESSAGE(STATUS "Setting up install for ${ROBOT_NAME}")
+        add_subdirectory(${ROBOT_NAME})
+    ENDIF(EXISTS ${ROBOT_DIR})
+ENDIF ("${ROBOT_NAME}" STREQUAL "")
+
