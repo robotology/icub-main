@@ -16,6 +16,9 @@
 
 ////////////////////////////////////
 
+#define ONLY_DATA_FLAG 0
+#define CONFIG_FLAG    1
+
 template<class T,int N> class RawData
 {
 public:
@@ -77,11 +80,11 @@ public:
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)=0;
 
-    virtual yarp::os::Bottle toBottle()=0;
+    virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
 
 protected:
-    const int mChannel;
+    int mChannel;
 };
 
 class iCubBLLChannel : public iCubBoardChannel
@@ -149,13 +152,13 @@ public:
         MODE_OPENLOOP               // receiving PWM values via canbus
     };
 
-    virtual yarp::os::Bottle toBottle();
+    virtual yarp::os::Bottle toBottle(bool bConfig=false);
     virtual void fromBottle(yarp::os::Bottle& bot);
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
 
 protected:
-    const int mJoint; // Corresponding joint (for readability)
+    int mJoint; // Corresponding joint (for readability)
 
     RawData<double,DOUBLE_NUM> mDoubleData;
     RawData<bool,BOOL_NUM> mBoolData;

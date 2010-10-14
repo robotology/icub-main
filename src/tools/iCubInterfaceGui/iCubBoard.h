@@ -32,9 +32,11 @@ public:
     }
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)=0;
+    virtual yarp::os::Bottle toBottle()=0;
+    virtual void fromBottle(yarp::os::Bottle& bot)=0;
 
 protected:
-    const int mID;
+    int mID;
 };
 
 class iCubBLLBoard : iCubBoard
@@ -50,6 +52,42 @@ public:
     {
         delete mChannel[0];
         delete mChannel[1];
+    }
+
+    yarp::os::Bottle toBottle(bool bConfig)
+    {
+        yarp::os::Bottle bot;
+
+        if (bConfig)
+        {
+            bot.addInt(CONFIG_FLAG);
+            bot.addString("BLL");
+            bot.addInt(mID);
+        }
+        else
+        {
+            bot.addInt(ONLY_DATA_FLAG);
+        }
+
+        yarp::os::Bottle& chan0=bot.addList();
+        chan0=mChannel[0]->toBottle();
+        yarp::os::Bottle& chan1=bot.addList();
+        chan1=mChannel[1]->toBottle();
+
+        return bot;
+    }
+
+    void fromBottle(yarp::os::Bottle& bot)
+    {
+        int i=1;
+        if (bot.get(0).asInt()==CONFIG_FLAG)
+        {
+            i=3;
+            mID=bot.get(2).asInt();
+        }
+
+        mChannel[0]->fromBottle(*(bot.get(i  ).asList()));
+        mChannel[1]->fromBottle(*(bot.get(i+1).asList()));
     }
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);

@@ -83,6 +83,52 @@ public:
 
     bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
 
+    yarp::os::Bottle toBottle(bool bConfig=false)
+    {
+        yarp::os::Bottle bot;
+
+        if (bConfig)
+        {
+            bot.addInt(CONFIG_FLAG);
+            bot.addString(mName.c_str());
+            bot.addString(mFile.c_str());
+            bot.addString(mDevice.c_str());
+            bot.addString(mCanBusDevice.c_str());
+            bot.addInt(mThreadRate);
+        }
+        else
+        {
+            bot.addInt(ONLY_DATA_FLAG);
+        }
+
+        for (int i=0; i<(int)mBoards.size(); ++i)
+        {
+            yarp::os::Bottle& board=bot.addList();
+            board=mBoards[i]->toBottle();
+        }
+
+        return bot;
+    }
+
+    void fromBottle(yarp::os::Bottle &bot)
+    {
+        int i0=1;
+        if (bot.get(0).asInt()==CONFIG_FLAG)
+        {
+            i0=6;
+            mName=bot.get(1).asString().c_str();
+            mFile=bot.get(2).asString().c_str();;
+            mDevice=bot.get(3).asString().c_str();;
+            mCanBusDevice=bot.get(4).asString().c_str();
+            mThreadRate=bot.get(5).asInt();
+        }
+
+        for (int i=i0; i<(int)bot.size(); ++i)
+        {
+            mBoards[i-i0]->fromBottle(*(bot.get(i).asList()));
+        }
+    }
+
     std::string mName;
     std::string mFile;
     std::string mDevice;

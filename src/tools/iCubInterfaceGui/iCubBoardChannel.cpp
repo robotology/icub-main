@@ -8,12 +8,20 @@
 
 #include "iCubBoardChannel.h"
 
-yarp::os::Bottle iCubBLLChannel::toBottle()
+yarp::os::Bottle iCubBLLChannel::toBottle(bool bConfig)
 {
     yarp::os::Bottle bot;
 
-    bot.addInt(mChannel);
-    bot.addInt(mJoint);
+    if (bConfig)
+    {
+        bot.addInt(CONFIG_FLAG);
+        bot.addInt(mChannel);
+        bot.addInt(mJoint);
+    }
+    else
+    {
+        bot.addInt(ONLY_DATA_FLAG);
+    }
 
     double d;
     for (int i=0; i<(int)DOUBLE_NUM; ++i)
@@ -50,7 +58,16 @@ yarp::os::Bottle iCubBLLChannel::toBottle()
 
 void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)
 {
-    for (int i=2; i<bot.size(); i+=2)
+    int i=1;
+
+    if (bot.get(0).asInt()==CONFIG_FLAG)
+    {
+        i=3;
+        mChannel=bot.get(1).asInt();
+        mJoint=bot.get(2).asInt();
+    }
+
+    for (; i<bot.size(); i+=2)
     {
         int index=bot.get(i).asInt();
         yarp::os::Value data=bot.get(i+1);
