@@ -28,17 +28,17 @@ bool iCubNetwork::findAndWrite(std::string addr,double* dataDouble,bool* dataBoo
         // for the network
         for (int i=0; i<(int)DOUBLE_NUM; ++i)
         {
-            write(i,dataDouble[i]);
+            mDoubleData.write(i,dataDouble[i]);
         }
 
         for (int i=0; i<(int)BOOL_NUM; ++i)
         {
-            write(i,dataBool[i]);
+            mBoolData.write(i,dataBool[i]);
         }
 
         for (int i=0; i<(int)INT_NUM; ++i)
         {
-            write(i,dataInt[i]);
+            mIntData.write(i,dataInt[i]);
         }
 
         return true;
