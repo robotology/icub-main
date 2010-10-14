@@ -15,14 +15,11 @@
 bool iCubBLLBoard::findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)
 {
     int index=addr.find(",");
+    std::string sID=index<0?addr:addr.substr(0,index);
 
-    if (index<0) return false;
+    if (sID.length()==0) return false; //should never happen
 
-    std::string sID=addr.substr(0,index);
-
-    int ID=atoi(sID.c_str());
-
-    if (ID!=mID) return false;
+    if (ID!=mID!=atoi(sID.c_str())) return false;
 
     ++index;
 

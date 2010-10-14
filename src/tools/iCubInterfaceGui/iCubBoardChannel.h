@@ -16,6 +16,59 @@
 
 ////////////////////////////////////
 
+template<class T,int N> class RawData
+{
+public:
+    RawData()
+    {
+        for (int i=0; i<N; ++i)
+        {
+            mFlag[i]=true;
+        }
+    }
+
+    ~RawData()
+    {
+    }
+
+    for (int i=0; i<(int)INT_NUM; ++i)
+    {
+        mIntFlag[i]=true;
+    }
+    
+    bool read(int index,T& d,bool rst=true)
+    {
+        if (index<0 || index>=N) return false;
+
+        d=mData[index];
+
+        bool tmp=mFlag[index];
+
+        if (rst) mFlag[index]=false;
+
+        return tmp;
+    }
+
+    bool write(int index,T d)
+    {
+        if (index<0 || index>=N) return false;
+
+        if (mData[index]!=d)
+        {
+            mData[index]=d;
+            mFlag[index]=true;
+        }
+
+        return true;
+    }
+
+protected:
+    T mData[N];
+    bool mFlag[N];
+};
+
+////////////////////////////////////
+
 class iCubBoardChannel
 {
 public:
@@ -26,14 +79,6 @@ public:
     virtual ~iCubBoardChannel()
     {
     }
-
-    virtual bool write(int index,double d)=0;
-    virtual bool write(int index,bool d)=0;
-    virtual bool write(int index,int d)=0;
-
-    virtual bool read(int index,double& d,bool rst=true)=0;
-    virtual bool read(int index,bool& d,bool rst=true)=0;
-    virtual bool read(int index,int& d,bool rst=true)=0;
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)=0;
 
@@ -47,9 +92,11 @@ protected:
 class iCubBLLChannel : public iCubBoardChannel
 {
 public:
-    iCubBLLChannel(int ch,int j);
+    iCubBLLChannel(int ch,int j) : iCubBoardChannel(ch),mJoint(j)
+    {
+    }
 
-    virtual ~iCubBLL()
+    virtual ~iCubBLLChannel()
     {
     }    
 
@@ -107,14 +154,6 @@ public:
         MODE_OPENLOOP               // receiving PWM values via canbus
     };
 
-    virtual bool write(int index,double d);
-    virtual bool write(int index,bool b);
-    virtual bool write(int index,int d);
-
-    virtual bool read(int index,double& d,bool rst=true);
-    virtual bool read(int index,bool& d,bool rst=true);
-    virtual bool read(int index,int& d,bool rst=true);
-
     virtual yarp::os::Bottle toBottle();
     virtual void fromBottle(yarp::os:Bottle& bot);
 
@@ -123,14 +162,9 @@ public:
 protected:
     const int mJoint; // Corresponding joint (for readability)
 
-    double mDoubleData[DOUBLE_NUM];
-    bool mDoubleFlag[DOUBLE_NUM];
-
-    bool mBoolData[BOOL_NUM];
-    bool mBoolFlag[BOOL_NUM];
-
-    int mIntData[INT_NUM];
-    bool mIntFlag[INT_NUM];
+    RawData<double,DOUBLE_NUM> mDoubleData;
+    RawData<bool,BOOL_NUM> mBoolData;
+    RawData<int,INT_NUM> mIntData;
 };
 
-#endif __GTKMM_ICUB_BOARD_CHANNEL_H__
+#endif

@@ -16,11 +16,35 @@ bool iCubNetwork::findAndWrite(std::string addr,double* dataDouble,bool* dataBoo
 {
     int index=addr.find(",");
 
-    if (index<0) return false;
+    std::string name=index<0?addr:addr.substr(0,index);
 
-    std::string name=addr.substr(0,index);
+    if (name.length()==0) return false; // should never happen
 
     if (name!=mName) return false;
+
+    // is the message for the network or for a board channel?
+    if (index<0)
+    {
+        // for the network
+        for (int i=0; i<(int)DOUBLE_NUM; ++i)
+        {
+            write(i,dataDouble[i]);
+        }
+
+        for (int i=0; i<(int)BOOL_NUM; ++i)
+        {
+            write(i,dataBool[i]);
+        }
+
+        for (int i=0; i<(int)INT_NUM; ++i)
+        {
+            write(i,dataInt[i]);
+        }
+
+        return true;
+    }
+
+    // for a board channel
 
     ++index;
 
@@ -111,4 +135,3 @@ protected:
     }
 };
 
-#endif //__GTKMM_ICUB_INTERFACE_GUI_H__

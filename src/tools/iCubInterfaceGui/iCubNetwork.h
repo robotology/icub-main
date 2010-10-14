@@ -45,6 +45,18 @@ public:
         }
     }
 
+    enum
+    {
+    };
+
+    enum
+    {
+    };
+
+    enum
+    {
+    };
+
     inline bool operator==(iCubNetwork& n)
     {
         return name==n.mName;
@@ -90,81 +102,4 @@ protected:
     std::vector<iCubBoard*> mBoards;
 };
 
-#endif __GTKMM_ICUB_INTERFACE_GUI_H__
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class iCubInterfaceGui : public Gtk::Window, public yarp::os::Thread
-{
-public:
-    iCubInterfaceGui(yarp::os::Property &robot);
-    virtual ~iCubInterfaceGui();
-
-    void run()
-    {
-
-        // ask for configuration
-        while (true)
-        {
-        } 
-    }
-
-    yarp::os::Bottle toBottle();
-    void fromBottle(yarp::os::Bottle &bot);
-
-protected:
-    ModelColumns g_columns;
-    //Signal handlers:
-    void on_treeview_row_activated(const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* column);
-
-    //Child widgets:
-    Gtk::VBox m_VBox;
-
-    Gtk::ScrolledWindow m_scrolledWindow;
-    Gtk::TreeView m_treeView;
-    Glib::RefPtr<Gtk::TreeStore> m_refTreeModel;
-
-    std::vector<iCubNetwork*> m_networks;
-
-    void addNetwork(iCubNetwork* net)
-    {
-        for (unsigned int i=0; i<m_networks.size(); ++i)
-        {
-            if (*m_networks[i]==*net)
-            {
-                if (m_networks[i]->threadRate>net->threadRate)
-                {
-                    m_networks[i]->threadRate=net->threadRate;
-                }
-
-                delete net;
-
-                return;
-            }
-        }
-
-        m_networks.push_back(net);
-    }
-};
-
-#endif //__GTKMM_ICUB_INTERFACE_GUI_H__
+#endif

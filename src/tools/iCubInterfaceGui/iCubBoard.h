@@ -58,4 +58,4 @@ protected:
     iCubBLLChannel *mChannel[2];
 };
 
-#endif //__GTKMM_ICUB_BOARD_H__
+#endif
