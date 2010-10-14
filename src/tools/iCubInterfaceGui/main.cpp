@@ -27,6 +27,15 @@
  *
  */
 
+#include "iCubNetwork.h"
+
+int main(int argc, char *argv[])
+{
+    return 0;
+}
+
+#ifdef notdef
+
 #include <gtkmm.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
@@ -70,6 +79,7 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+#endif
 
 #ifdef notdef
 

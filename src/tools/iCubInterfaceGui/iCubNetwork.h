@@ -10,6 +10,7 @@
 #define __GTKMM_ICUB_NETWORK_H__
 
 #include <string>
+#include <vector>
 #include <yarp/os/Property.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Bottle.h>
@@ -39,7 +40,7 @@ public:
 
     ~iCubNetwork()
     {
-        for (int i=0; i<mBoards.size(); ++i)
+        for (int i=0; i<(int)mBoards.size(); ++i)
         {
             delete mBoards[i];
         }
@@ -72,7 +73,7 @@ public:
 
     inline bool operator==(iCubNetwork& n)
     {
-        return name==n.mName;
+        return mName==n.mName;
     }
 
     void addBoard(iCubBoard *board)

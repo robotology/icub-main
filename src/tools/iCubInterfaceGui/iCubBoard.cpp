@@ -19,7 +19,7 @@ bool iCubBLLBoard::findAndWrite(std::string addr,double* dataDouble,bool* dataBo
 
     if (sID.length()==0) return false; //should never happen
 
-    if (ID!=mID!=atoi(sID.c_str())) return false;
+    if (mID!=atoi(sID.c_str())) return false;
 
     ++index;
 

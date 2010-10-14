@@ -40,13 +40,13 @@ protected:
 class iCubBLLBoard : iCubBoard
 {
 public:
-    iCubBLLBoard(int ID) : iCubBoard(ID)
+    iCubBLLBoard(int ID,int j0,int j1) : iCubBoard(ID)
     {
-        mChannel[0]=new iCubBLLChannel(0);
-        mChannel[1]=new iCubBLLChannel(1);
+        mChannel[0]=new iCubBLLChannel(0,j0);
+        mChannel[1]=new iCubBLLChannel(1,j1);
     }
 
-    virtual ~iCubBoard()
+    virtual ~iCubBLLBoard()
     {
         delete mChannel[0];
         delete mChannel[1];

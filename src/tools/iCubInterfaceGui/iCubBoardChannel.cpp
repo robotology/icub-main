@@ -25,34 +25,35 @@ yarp::os::Bottle iCubBLLChannel::toBottle()
         }
     }
 
-    bool d;
+    bool b;
     for (int i=0; i<(int)BOOL_NUM; ++i)
     {
-        if (mBoolData.read(i,d))
+        if (mBoolData.read(i,b))
         {
             bot.addInt(i);
-            bot.addVocab(d?'T':'F');
+            bot.addVocab(b?'T':'F');
         }
     }
 
-    int d;
+    int k;
     for (int i=0; i<(int)INT_NUM; ++i)
     {
-        if (mBoolData.read(i,d))
+        if (mIntData.read(i,k))
         {
             bot.addInt(i);
-            bot.addInt(d);
+            bot.addInt(k);
         }
     }
+
+    return bot;
 }
 
-void iCubBLLChannel::fromBottle(yarp::os:Bottle& bot)
+void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)
 {
-    double d;
     for (int i=2; i<bot.size(); i+=2)
     {
         int index=bot.get(i).asInt();
-        yarp::os:Value data=bot.get(i+1);
+        yarp::os::Value data=bot.get(i+1);
 
         if (data.isDouble())
         {
@@ -93,4 +94,6 @@ bool iCubBLLChannel::findAndWrite(std::string addr,double* dataDouble,bool* data
     {
         mIntData.write(i,dataInt[i]);
     }
+
+    return true;
 }

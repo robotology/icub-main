@@ -50,9 +50,9 @@ bool iCubNetwork::findAndWrite(std::string addr,double* dataDouble,bool* dataBoo
 
     addr=addr.substr(index,addr.length()-index);
 
-    for (int i=0; i<mBoards.size(); ++i)
+    for (int i=0; i<(int)mBoards.size(); ++i)
     {
-        if (mBoards[i]->findAndWrite(addr,dataDouble,dataBool,dataInt)
+        if (mBoards[i]->findAndWrite(addr,dataDouble,dataBool,dataInt))
         {
             return true;
         }

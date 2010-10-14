@@ -106,8 +106,8 @@ public:
     enum BoolIndex
     {
         // interface generated
-        BOOL_Status_messages_latency_timeout; // If status messages latency > threshold (5s) raise an error
-        BOOL_Encoder_latency_timeout;         // If encoder latency > threshold (5s) raise an error
+        BOOL_Status_messages_latency_timeout, // If status messages latency > threshold (5s) raise an error
+        BOOL_Encoder_latency_timeout,         // If encoder latency > threshold (5s) raise an error
 
         // device generated
         BOOL_Is_Fault_Ok,               // Status of the fault pin, general error
@@ -150,7 +150,7 @@ public:
     };
 
     virtual yarp::os::Bottle toBottle();
-    virtual void fromBottle(yarp::os:Bottle& bot);
+    virtual void fromBottle(yarp::os::Bottle& bot);
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
 
