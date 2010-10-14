@@ -30,11 +30,6 @@ public:
     ~RawData()
     {
     }
-
-    for (int i=0; i<(int)INT_NUM; ++i)
-    {
-        mIntFlag[i]=true;
-    }
     
     bool read(int index,T& d,bool rst=true)
     {
