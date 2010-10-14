@@ -596,8 +596,7 @@ void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampli
    int number_of_maxima = 2;
    int non_maxima_suppression_radius = 1;
    maxima_data_type maxima[10]; 
-
-		     
+	     
 
    /* set debug flags */
 
@@ -1506,7 +1505,8 @@ void erosion (DVimage *input_image, int radius, DVimage *output_image)
 }
 
 
-
+//#define ORIGINAL_LOGPOLAR
+#ifdef ORIGINAL_LOGPOLAR
 /****************************************************************
 * 
 *  Routine Name: log_polar_transform - compute the Log-Polar transform
@@ -1751,8 +1751,9 @@ void log_polar_transform  (DVimage *input_image, DVimage *output_image, int dire
    
 }
 
+#endif
 
-
+ 
 
 
 /************************************************************************************************
