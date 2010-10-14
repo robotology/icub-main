@@ -55,7 +55,8 @@ Audit Trail
 // Log-Polar includes
 // ------------------------------------------------------------------------
 
-#include <iCub/vis/RC_DIST_FB_logpolar_mapper.h>
+// this should be taken from logpolar library 
+//#include <iCub/vis/RC_DIST_FB_logpolar_mapper.h>
 
 
 // Migrate _ftime function and _timeb structure to portable equivalents
