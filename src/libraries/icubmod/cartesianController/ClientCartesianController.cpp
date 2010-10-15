@@ -507,7 +507,7 @@ bool ClientCartesianController::getDOF(Vector &curDof)
         {
             curDof.resize(dofPart->size());
             
-            for (int i=0; i<dofPart->size(); i++)
+            for (int i=0; i<curDof.length(); i++)
                 curDof[i]=dofPart->get(i).asDouble();
 
             return true;
@@ -549,7 +549,7 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         {                        
             curDof.resize(dofPart->size());
 
-            for (int i=0; i<dofPart->size(); i++)
+            for (int i=0; i<curDof.length(); i++)
                 curDof[i]=dofPart->get(i).asDouble();
 
             return true;
@@ -587,7 +587,7 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
         {
             curRestPos.resize(restPart->size());
             
-            for (int i=0; i<restPart->size(); i++)
+            for (int i=0; i<curRestPos.length(); i++)
                 curRestPos[i]=restPart->get(i).asDouble();
 
             return true;
@@ -629,7 +629,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
         {                        
             curRestPos.resize(restPart->size());
 
-            for (int i=0; i<restPart->size(); i++)
+            for (int i=0; i<curRestPos.length(); i++)
                 curRestPos[i]=restPart->get(i).asDouble();
 
             return true;
@@ -667,7 +667,7 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
         {
             curRestWeights.resize(restPart->size());
             
-            for (int i=0; i<restPart->size(); i++)
+            for (int i=0; i<curRestWeights.length(); i++)
                 curRestWeights[i]=restPart->get(i).asDouble();
 
             return true;
@@ -710,7 +710,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         {                        
             curRestWeights.resize(restPart->size());
 
-            for (int i=0; i<restPart->size(); i++)
+            for (int i=0; i<curRestWeights.length(); i++)
                 curRestWeights[i]=restPart->get(i).asDouble();
 
             return true;
@@ -938,7 +938,7 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
         {
             qdot.resize(qdotPart->size());
 
-            for (int i=0; i<qdotPart->size(); i++)
+            for (int i=0; i<qdot.length(); i++)
                 qdot[i]=qdotPart->get(i).asDouble();
 
             return true;
@@ -975,13 +975,13 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         if (Bottle *xdotPart=reply.get(1).asList())
         {
             xdot.resize(3);
-            odot.resize(xdotPart->size()-3);
+            odot.resize(xdotPart->size()-xdot.length());
 
-            for (int i=0; i<3; i++)
+            for (int i=0; i<xdot.length(); i++)
                 xdot[i]=xdotPart->get(i).asDouble();
 
-            for (int i=0; i<xdotPart->size(); i++)
-                odot[i]=xdotPart->get(3+i).asDouble();
+            for (int i=0; i<odot.length(); i++)
+                odot[i]=xdotPart->get(xdot.length()+i).asDouble();
 
             return true;
         }
