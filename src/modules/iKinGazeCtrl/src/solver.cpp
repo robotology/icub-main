@@ -31,7 +31,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              inertialName(_inertialName), configFile(_configFile), period(_period),
                              eyeTiltMin(_eyeTiltMin),     eyeTiltMax(_eyeTiltMax), Ts(_period/1000.0)
 {
-    Robotable=drvTorso&&drvHead;
+    Robotable=(drvHead!=NULL);
 
     // Instantiate objects
     neck=new iCubHeadCenter();
@@ -72,9 +72,19 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     if (Robotable)
     {
         // create interfaces
-        bool ok;
-        ok =drvTorso->view(limTorso);
-        ok&=drvTorso->view(encTorso);
+        bool ok=true;
+
+        if (drvTorso!=NULL)
+        {
+            ok&=drvTorso->view(limTorso);
+            ok&=drvTorso->view(encTorso);
+        }
+        else
+        {
+            limTorso=NULL;
+            encTorso=NULL;
+        }
+
         ok&=drvHead->view(limHead);
         ok&=drvHead->view(encHead);
 
@@ -82,7 +92,11 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
             cout << "Problems acquiring interfaces!" << endl;
 
         // read number of joints
-        encTorso->getAxes(&nJointsTorso);
+        if (encTorso!=NULL)
+            encTorso->getAxes(&nJointsTorso);
+        else
+            nJointsTorso=3;
+
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
@@ -333,7 +347,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
                eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), period(_period),
                Ts(_period/1000.0)
 {
-    Robotable=drvTorso&&drvHead;
+    Robotable=(drvHead!=NULL);
 
     // Instantiate objects
     neck=new iCubHeadCenter();
@@ -374,16 +388,30 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     if (Robotable)
     {
         // create interfaces
-        bool ok;
-        ok =drvTorso->view(limTorso);
-        ok&=drvTorso->view(encTorso);
+        bool ok=true;
+
+        if (drvTorso!=NULL)
+        {
+            ok&=drvTorso->view(limTorso);
+            ok&=drvTorso->view(encTorso);
+        }
+        else
+        {
+            limTorso=NULL;
+            encTorso=NULL;
+        }
+
         ok&=drvHead->view(limHead);
         ok&=drvHead->view(encHead);
 
         if (!ok)
             cout << "Problems acquiring interfaces!" << endl;
 
-        encTorso->getAxes(&nJointsTorso);
+        if (encTorso!=NULL)
+            encTorso->getAxes(&nJointsTorso);
+        else
+            nJointsTorso=3;
+
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment

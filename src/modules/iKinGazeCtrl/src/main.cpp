@@ -56,6 +56,12 @@ Control Interface</a>. For a tutorial on how to use the
 interface, please go <a 
 href="http://eris.liralab.it/iCub/main/dox/html/icub_gaze_interface.html">here</a>. 
  
+\note If the torso is not detected alive then the module will 
+      try to keep on working with just the head part.
+ 
+\note If you're going to use this controller for your work, 
+      please quote it.
+ 
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
 factors settings within your low-level configuration file of the 
@@ -493,9 +499,10 @@ public:
             if (!drvTorso->isValid())
             {
                 cout << "Torso device driver not available!" << endl;
+                cout << "Perhaps only the head is running; trying to continue ..." << endl;
 
                 delete drvTorso;
-                return false;
+                drvTorso=NULL;
             }
 
             waitPart(optHead,ping_robot_tmo);
@@ -515,13 +522,13 @@ public:
         // create and start threads
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
                             localHeadName,neckTime,eyesTime,
-                            eyeTiltMin,eyeTiltMax,minAbsVel,10);        
+                            eyeTiltMin,eyeTiltMax,minAbsVel,10);
 
         loc=new Localizer(&commData,localHeadName,configFile,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
                                      localHeadName,inertialName,configFile,
-                                     eyeTiltMin,eyeTiltMax,20);        
+                                     eyeTiltMin,eyeTiltMax,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
                        localHeadName,configFile,eyeTiltMin,eyeTiltMax,20);

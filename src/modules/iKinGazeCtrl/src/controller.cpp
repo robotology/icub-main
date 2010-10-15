@@ -31,7 +31,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
                        eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel), period(_period),
                        Ts(_period/1000.0),      printAccTime(0.0)
 {
-    Robotable=drvTorso&&drvHead;
+    Robotable=(drvHead!=NULL);
 
     // Instantiate eye object for getting limits
     eyeLim=new iCubEye();
@@ -44,9 +44,19 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     if (Robotable)
     {
         // create interfaces
-        bool ok;
-        ok =drvTorso->view(limTorso);
-        ok&=drvTorso->view(encTorso);
+        bool ok=true;
+
+        if (drvTorso!=NULL)
+        {
+            ok&=drvTorso->view(limTorso);
+            ok&=drvTorso->view(encTorso);
+        }
+        else
+        {
+            limTorso=NULL;
+            encTorso=NULL;
+        }
+
         ok&=drvHead->view(limHead);
         ok&=drvHead->view(encHead);
         ok&=drvHead->view(velHead);
@@ -55,7 +65,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
             cout << "Problems acquiring interfaces!" << endl;
 
         // read number of joints
-        encTorso->getAxes(&nJointsTorso);
+        if (encTorso!=NULL)
+            encTorso->getAxes(&nJointsTorso);
+        else
+            nJointsTorso=3;
+
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
@@ -66,8 +80,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
         // read starting position
-        fbTorso.resize(nJointsTorso);
-        fbHead.resize(nJointsHead);
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
         getFeedback(fbTorso,fbHead,encTorso,encHead);
 
         // exclude acceleration constraints by fixing

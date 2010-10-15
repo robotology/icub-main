@@ -207,12 +207,15 @@ Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLim
 {
     double min, max;
 
-    for (int i=0; i<3; i++)
-    {   
-        limTorso->getLimits(i,&min,&max);
-
-        (*chain)[2-i].setMin(CTRL_DEG2RAD*min);
-        (*chain)[2-i].setMax(CTRL_DEG2RAD*max);
+    if (limTorso!=NULL)
+    {
+        for (int i=0; i<3; i++)
+        {   
+            limTorso->getLimits(i,&min,&max);
+        
+            (*chain)[2-i].setMin(CTRL_DEG2RAD*min);
+            (*chain)[2-i].setMax(CTRL_DEG2RAD*max);
+        }
     }
 
     Matrix lim(6,2);
@@ -283,11 +286,16 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
     Vector fb(6);
     bool ret=true;
     
-    if (encTorso->getEncoders(fb.data()))
-        for (int i=0; i<3; i++)
-            fbTorso[i]=CTRL_DEG2RAD*fb[2-i];    // reversed order
+    if (encTorso!=NULL)
+    {
+        if (encTorso->getEncoders(fb.data()))
+            for (int i=0; i<3; i++)
+                fbTorso[i]=CTRL_DEG2RAD*fb[2-i];    // reversed order
+        else
+            ret=false;
+    }
     else
-        ret=false;
+        fbTorso=0.0;
 
     if (encHead->getEncoders(fb.data()))
         fbHead=CTRL_DEG2RAD*fb;
