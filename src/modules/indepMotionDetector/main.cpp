@@ -39,7 +39,7 @@ nodes. The algorithm is designed in such a way that it works
 also with moving cameras. 
  
 \note If you're going to use this detector for your work, please
-      quote it.
+      quote it within any resulting publication.
  
 \section lib_sec Libraries 
 YARP libraries and OpenCV

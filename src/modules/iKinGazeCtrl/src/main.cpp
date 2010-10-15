@@ -60,7 +60,7 @@ href="http://eris.liralab.it/iCub/main/dox/html/icub_gaze_interface.html">here</
       try to keep on working with just the head part.
  
 \note If you're going to use this controller for your work, 
-      please quote it.
+      please quote it within any resulting publication.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
