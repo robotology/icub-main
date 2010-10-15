@@ -4,7 +4,7 @@
  * @ingroup icub_hardware_modules 
  * \defgroup cfw2can cfw2can
  *
- * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html"> ICanBus interface <\a> for a cfw2 can bus device (cfw2 pc104 card). This is the cfw2can module
+ * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a cfw2 can bus device (cfw2 pc104 card). This is the cfw2can module
  * device.
  *
  * Copyright (C) 2010 RobotCub Consortium.
