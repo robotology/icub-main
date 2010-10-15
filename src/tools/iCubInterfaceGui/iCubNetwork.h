@@ -34,7 +34,8 @@ public:
             mFile(file),
             mDevice(device),
             mCanBusDevice(canBusDevice),
-            mThreadRate(threadRate) 
+            mThreadRate(threadRate),
+            mID(-1)
     {
     }
 
@@ -76,7 +77,7 @@ public:
         return mName==n.mName;
     }
 
-    void addBoard(iCubBoard *board)
+    void addBoard(iCubBoard* board)
     {
         mBoards.push_back(board);
     }
@@ -153,8 +154,8 @@ public:
         {
             i0=6;
             mName=bot.get(1).asString().c_str();
-            mFile=bot.get(2).asString().c_str();;
-            mDevice=bot.get(3).asString().c_str();;
+            mFile=bot.get(2).asString().c_str();
+            mDevice=bot.get(3).asString().c_str();
             mCanBusDevice=bot.get(4).asString().c_str();
             mThreadRate=bot.get(5).asInt();
         }
@@ -195,6 +196,7 @@ public:
     std::string mDevice;
     std::string mCanBusDevice;
     int mThreadRate;
+    int mID;
 
 protected:
     std::vector<iCubBoard*> mBoards;

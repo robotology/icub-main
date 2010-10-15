@@ -28,6 +28,7 @@
  */
 
 #include "iCubNetwork.h"
+#include "iCubInterfaceGuiServer.h"
 
 int main(int argc, char *argv[])
 {

@@ -9,16 +9,49 @@
 #ifndef __GTKMM_ICUB_INTERFACE_GUI_SERVER_H__
 #define __GTKMM_ICUB_INTERFACE_GUI_SERVER_H__
 
-#include <yarp/os/Property.h>
-#include <yarp/os/Thread.h>
+#include "iCubNetwork.h"
 #include <yarp/os/Port.h>
 #include <yarp/os/Semaphore.h>
 
-class iCubInterfaceGuiServer : public yarp::os::Thread, public iCubInterfaceGui
+class JointRemapper
+{
+public:
+    JointRemapper(){}
+    ~JointRemapper(){}
+
+    void push(int d0,int d1,int j0)
+    {
+        mapD0.push_back(d0);
+        mapD1.push_back(d1);
+        mapJ0.push_back(j0);
+    }
+    
+    int getJoint(int pos)
+    {
+        pos*=2;
+
+        for (int i=0; i<(int)mapD0.size(); ++i)
+        {
+            if (pos>=mapD0[i] && pos<=mapD1[i])
+            {
+                return mapJ0[i]+pos-mapD0[i];
+            }
+        }
+
+        return -1;
+    }
+
+protected:
+    std::vector<int> mapD0,mapD1,mapJ0;
+};
+
+class iCubInterfaceGuiServer : public yarp::os::Thread
 {
 public:
     iCubInterfaceGuiServer(yarp::os::Property &robot)
     {
+        std::vector<JointRemapper> jointRmp;
+
         yarp::os::ConstString robotName=robot.find("name").asString();
 
         yarp::os::Bottle general=robot.findGroup("GENERAL");
@@ -33,44 +66,95 @@ public:
 
             for (int n=0; n<networks->size(); ++n)
             {
-                yarp::os::ConstString netName=networks->get(n).asString();
+                std::string netName(networks->get(n).asString().c_str());
+
+                yarp::os::Bottle jMap=part.findGroup(netName.c_str());
+
+                int j0=jMap.get(1).asInt();
+                int d0=jMap.get(3).asInt();
+                int d1=jMap.get(4).asInt();
+
                 yarp::os::Bottle net=robot.findGroup(netName.c_str());
 
-                addNetwork(new iCubNetwork(std::string(netName.c_str()),
-                                   std::string(net.find("file").asString().c_str()),
-                                   std::string(net.find("device").asString().c_str()),
-                                   std::string(net.find("canbusdevice").asString().c_str()),
-                                   part.find("threadrate").asInt()));
+                /*
+                addNetwork(std::string(netName.c_str()),
+                           std::string(net.find("file").asString().c_str()),
+                           std::string(net.find("device").asString().c_str()),
+                           std::string(net.find("canbusdevice").asString().c_str()),
+                           part.find("threadrate").asInt());
+                */
+
+                bool bExists=false;
+
+                for (unsigned int i=0; i<mNetworks.size(); ++i)
+                {
+                    if (mNetworks[i]->mName==netName)
+                    {
+                        jointRmp[i].push(d0,d1,j0);
+                        bExists=true;
+                        break;
+                    }
+                }
+
+                if (!bExists)
+                {
+                    mNetworks.push_back(new iCubNetwork(netName,
+                                                        std::string(net.find("file").asString().c_str()),
+                                                        std::string(net.find("device").asString().c_str()),
+                                                        std::string(net.find("canbusdevice").asString().c_str()),
+                                                        part.find("threadrate").asInt()));
+
+                    jointRmp.push_back(JointRemapper());
+                    jointRmp.back().push(d0,d1,j0);
+                }
             }
         }
 
         // we have now the networks list
 
-        for (unsigned int n=0; n<m_networks.size(); ++n)
+        for (unsigned int n=0; n<mNetworks.size(); ++n)
         {
             yarp::os::Property netConf;
-            netConf.fromConfigFile(m_networks[n]->file.c_str());
+            netConf.fromConfigFile(mNetworks[n]->mFile.c_str());
             yarp::os::Bottle canConf=netConf.findGroup("CAN");
 
-            m_networks[n]->config(canConf.find("CanDeviceNum").asInt());
+            mNetworks[n]->mID=canConf.find("CanDeviceNum").asInt();
         
             yarp::os::Bottle devices=canConf.findGroup("CanAddresses");
             
             for (int d=1; d<devices.size(); ++d)
             {
-                m_networks[n]->addBoard(new iCubBLL(devices.get(d).asInt()));
+                int joint=jointRmp[n].getJoint(d-1);
+                iCubBoard *bll=new iCubBLLBoard(devices.get(d).asInt(),joint,joint+1);
+                mNetworks[n]->addBoard(bll);
             }
         }
 
-        m_port.open((robotName+"/gui").c_str());
+        mPort.open((robotName+"/gui").c_str());
     }
 
-    virtual ~iCubInterfaceGui()
+    virtual ~iCubInterfaceGuiServer()
     {
+    }
+
+    void addNetwork(iCubNetwork* net)
+    {
+        for (unsigned int i=0; i<mNetworks.size(); ++i)
+        {
+            if (*mNetworks[i]==*net)
+            {
+                delete net;
+                return;
+            }
+        }
+
+        mNetworks.push_back(net);
     }
 
     void run()
     {
+    }
+    /*
         yarp::os::Bottle msg;
         yarp::os::Bottle rpl;
 
@@ -122,10 +206,12 @@ public:
         m_mutex.post();
         return false;
     }
+    */
 
 protected:
-    yarp::os::Port m_port;
-    yarp::os::Semaphore m_mutex;
+    yarp::os::Port mPort;
+    yarp::os::Semaphore mMutex;
+    std::vector<iCubNetwork*> mNetworks;
 };
 
 #endif //__GTKMM_ICUB_INTERFACE_GUI_H__

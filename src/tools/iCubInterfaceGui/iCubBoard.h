@@ -32,14 +32,19 @@ public:
     }
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)=0;
-    virtual yarp::os::Bottle toBottle()=0;
+    virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
+
+    int getID()
+    {
+        return mID;
+    }
 
 protected:
     int mID;
 };
 
-class iCubBLLBoard : iCubBoard
+class iCubBLLBoard : public iCubBoard
 {
 public:
     iCubBLLBoard(int ID,int j0,int j1) : iCubBoard(ID)
