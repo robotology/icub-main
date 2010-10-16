@@ -173,7 +173,7 @@
 *
 * \defgroup icub_applications Applications
 *
-* $ICUB_ROOT/app/ stores directories which group
+* The app directory stores directories which group
 * sets of configuration files and scripts to run
 * a certain group of modules together. Each one 
 * of them is what we call an application. In other
