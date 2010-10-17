@@ -790,21 +790,27 @@ void ServerCartesianController::getFeedback(Vector &_fb)
     int _fbCnt=0;
 
     for (int i=0; i<numDrv; i++)
+    {
         if (lEnc[i]->getEncoders(fbTmp.data()))
+        {
             for (int j=0; j<lJnt[i]; j++)
             {
                 double tmp=CTRL_DEG2RAD*fbTmp[lRmp[i][j]];
-
+            
                 if ((*chain)[chainCnt].isBlocked())
                     chain->setBlockingValue(chainCnt,tmp);
                 else
                     _fb[_fbCnt++]=tmp;
-
+            
                 chainCnt++;
             }
+        }
         else for (int j=0; j<lJnt[i]; j++)
+        {
             if (!(*chain)[chainCnt++].isBlocked())
                 _fbCnt++;
+        }
+    }
 }
 
 
@@ -904,6 +910,7 @@ bool ServerCartesianController::getNewTarget()
             {    
                 fprintf(stdout,"%s warning: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)\n",
                         ctrlName.c_str(),_qdes.length(),ctrl->get_dim());
+
                 return false;
             }
             else if (!(_qdes==qdes))
@@ -1101,7 +1108,7 @@ bool ServerCartesianController::open(Searchable &config)
 
         if (kinPart!="arm" && kinPart!="leg")
         {
-            fprintf(stdout,"Try to instantiate an unknown kinematic part\n");
+            fprintf(stdout,"Attempt to instantiate an unknown kinematic part\n");
             fprintf(stdout,"Available parts are: arm, leg\n");
             close();
 
@@ -1122,7 +1129,7 @@ bool ServerCartesianController::open(Searchable &config)
 
         if (kinType!="left" && kinType!="right")
         {
-            fprintf(stdout,"Try to instantiate an unknown kinematic type\n");
+            fprintf(stdout,"Attempt to instantiate an unknown kinematic type\n");
             fprintf(stdout,"Available types are: left, right\n");
             close();
 
@@ -1208,7 +1215,7 @@ bool ServerCartesianController::open(Searchable &config)
                 desc.jointsDirectOrder=false;
             else
             {
-                fprintf(stdout,"Try to select an unknown mapping order\n");
+                fprintf(stdout,"Attempt to select an unknown mapping order\n");
                 fprintf(stdout,"Available orders are: direct, reversed\n");
                 close();
 
@@ -1351,7 +1358,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             int *rmpTmp=new int[joints];
             for (int k=0; k<joints; k++)
-                rmpTmp[k]=lDsc[i].jointsDirectOrder ? k : joints-k-1;
+                rmpTmp[k]=lDsc[i].jointsDirectOrder ? k : (joints-k-1);
 
             // prepare references for minimum achievable absolute velocities
             if (lDsc[i].useDefaultMinAbsVel)
