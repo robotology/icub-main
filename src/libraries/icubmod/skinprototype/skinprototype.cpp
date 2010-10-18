@@ -37,14 +37,16 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
 
     if (ids.size()>1)
     {
-        cerr<<"Error: SkinPrototype id list contains more than one entry, this at the moment is unsupported"<<endl;
-        return false;
+		cerr<<"Warning: SkinPrototype id list contains more than one entry -> devices will be merged. "<<endl;
     }
-    cardId=ids.get(0).asInt();
-
-#if SKIN_DEBUG
-    fprintf(stderr, "Id reading from %d\n", cardId);
-#endif 
+	for (int i=0; i<ids.size(); i++)
+	{
+		int id = ids.get(i).asInt();
+		cardId.push_back (id);
+		#if SKIN_DEBUG
+			fprintf(stderr, "Id reading from %d\n", id);
+		#endif
+	}
 
     Property prop;
 
@@ -77,17 +79,17 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-    for (int id=0; id<16; ++id)
-    {
-        pCanBus->canIdAdd(0x200+cardId);
-		pCanBus->canIdAdd(0x300+(cardId<<4)+id);
-    }
+	for (int i=0; i<cardId.size(); i++)
+		for (int id=0; id<16; ++id)
+		{
+			pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
+		}
 
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
     inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
 
     //elements are:
-    sensorsNum=16*12;
+    sensorsNum=16*12*cardId.size();
     data.resize(sensorsNum);
 
     RateThread::start();
@@ -127,26 +129,29 @@ int SkinPrototype::getChannels()
 
 int SkinPrototype::calibrateSensor()
 {
-#if SKIN_DEBUG
-	printf("SkinPrototype:: calibrating boardId: %d\n",cardId);
-#endif 
+	for (int i=0; i<cardId.size(); i++)
+	{
+		#if SKIN_DEBUG
+			printf("SkinPrototype:: calibrating boardId: %d\n",cardId[i]);
+		#endif 
 
-   	unsigned int canMessages=0;
-	unsigned id = 0x200 + cardId;
-   
-	CanMessage &msg=outBuffer[0];
-	msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0x22;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
-    canMessages=0;
-    pCanBus->canWrite(outBuffer, 1, &canMessages);
+   		unsigned int canMessages=0;
+		unsigned id = 0x200 + cardId[i];
+	   
+		CanMessage &msg=outBuffer[0];
+		msg.setId(id);
+		msg.getData()[0]=0x4C; // message type
+		msg.getData()[1]=0x01; 
+		msg.getData()[2]=0x01; 
+		msg.getData()[3]=0x01;
+		msg.getData()[4]=0;
+		msg.getData()[5]=0x22;
+		msg.getData()[6]=0;
+		msg.getData()[7]=0;
+		msg.setLen(8);
+		canMessages=0;
+		pCanBus->canWrite(outBuffer, 1, &canMessages);
+	}
 
     return AS_OK;
 }
@@ -170,27 +175,29 @@ int SkinPrototype::calibrateChannel(int ch)
 
 bool SkinPrototype::threadInit()
 {
-#if SKIN_DEBUG
-	printf("SkinPrototype:: thread initialising boardId:%d\n",cardId);
-    printf("... done!\n");
-#endif 
+	for (int i=0; i<cardId.size(); i++)
+	{
+		#if SKIN_DEBUG
+			printf("SkinPrototype:: thread initialising boardId:%d\n",cardId[i]);
+		#endif 
 
-   	unsigned int canMessages=0;
-	unsigned id = 0x200 + cardId;
-   
-	CanMessage &msg=outBuffer[0];
-	msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0x22;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
-    canMessages=0;
-    pCanBus->canWrite(outBuffer, 1, &canMessages);
+   		unsigned int canMessages=0;
+		unsigned id = 0x200 + cardId[i];
+	   
+		CanMessage &msg=outBuffer[0];
+		msg.setId(id);
+		msg.getData()[0]=0x4C; // message type
+		msg.getData()[1]=0x01; 
+		msg.getData()[2]=0x01; 
+		msg.getData()[3]=0x01;
+		msg.getData()[4]=0;
+		msg.getData()[5]=0x22;
+		msg.getData()[6]=0;
+		msg.getData()[7]=0;
+		msg.setLen(8);
+		canMessages=0;
+		pCanBus->canWrite(outBuffer, 1, &canMessages);
+	}
 
     return true;
 }
@@ -220,7 +227,9 @@ void SkinPrototype::run()
         unsigned int type=msg.getData()[0]&0x80;
         int len=msg.getLen();
 
-        if (id==cardId)
+		for (int i=0; i<cardId.size(); i++)
+		{
+			if (id==cardId[i])
             {
                 int index=sensorId*12;
                 
@@ -234,12 +243,12 @@ void SkinPrototype::run()
                         for(int k=0;k<7;k++)
                             data[index+k]=msg.getData()[k+1];
                     }
-                //                else
-                //                    {
-                //                        std::cerr<<"Error: skin received malformed message\n";
-                //                    }
+          //    else
+          //        {
+          //            std::cerr<<"Error: skin received malformed message\n";
+          //        }
             }
-
+		}
     }
 
     mutex.post();

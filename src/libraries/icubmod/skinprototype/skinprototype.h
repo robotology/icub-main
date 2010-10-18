@@ -28,7 +28,7 @@ protected:
    
     yarp::os::Semaphore mutex;
 
-    int cardId;
+    yarp::sig::VectorOf<int> cardId;
     int sensorsNum;
 
     yarp::sig::Vector data;
