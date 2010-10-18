@@ -18,6 +18,18 @@ else(ICUB_USE_GtkPlus)
         message(STATUS "GtkPlus not selected, skipping robotMotorGui")
 endif(ICUB_USE_GtkPlus)
 
+if(ICUB_USE_OpenCV)
+	add_subdirectory(laserScannerGui)
+else(ICUB_USE_OpenCV)
+	message(STATUS "OpenCV not selected, skipping laserScannerGui")
+endif(ICUB_USE_OpenCV)
+
+if(ICUB_USE_SDL)
+	add_subdirectory(joystickCtrl)
+else(ICUB_USE_SDL)
+	message(STATUS "SDL not selected, skipping joystickCtrl")
+endif(ICUB_USE_SDL)
+
 if(ICUB_USE_GtkMM)
 	add_subdirectory(frameGrabberGui2)
 else(ICUB_USE_GtkMM)
@@ -40,3 +52,5 @@ else(BUILD_MATLAB_BASED_TOOLS)
 	message(STATUS "skipping iKinGazeView")
 	message(STATUS "skipping signalScope")
 endif(BUILD_MATLAB_BASED_TOOLS)
+
+
