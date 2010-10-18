@@ -1,4 +1,0 @@
-#include "SpatialInertia.h"
-
-
-

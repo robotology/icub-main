@@ -1,8 +1,0 @@
-#the number of patterns to be recognized
-1
-
-#pattern 1
-cube
-i:/icub/src/artksingletracker/conf/patt.kanji 
-40.0
-

@@ -1,1 +1,0 @@
-start "ControlGaze2" cmd /c  controlGaze2 --configCamera icubEyes.ini --name /chica/controlGaze2 --file %ICUB_DIR%/app/attention_objects/conf/icubControlGaze2.ini --appPath %ICUB_DIR%/app/attention_objects --motorboard /controlboard | rdin --name /chica/controlGaze2
