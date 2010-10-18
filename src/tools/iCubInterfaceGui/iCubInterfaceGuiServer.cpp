@@ -1,8 +1,51 @@
-#include <iostream>
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/*
+* Copyright (C) 2007 Robotcub Consortium
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*
+*/
+
 #include "iCubInterfaceGuiServer.h"
 
-iCubInterfaceGui::iCubInterfaceGui(yarp::os::Property &robot)
+class JointRemapper
 {
+public:
+    JointRemapper(){}
+    ~JointRemapper(){}
+
+    void push(int d0,int d1,int j0)
+    {
+        mapD0.push_back(d0);
+        mapD1.push_back(d1);
+        mapJ0.push_back(j0);
+    }
+
+    int getJoint(int pos)
+    {
+        pos*=2;
+
+        for (int i=0; i<(int)mapD0.size(); ++i)
+        {
+            if (pos>=mapD0[i] && pos<=mapD1[i])
+            {
+                return mapJ0[i]+pos-mapD0[i];
+            }
+        }
+
+        return -1;
+    }
+
+protected:
+    std::vector<int> mapD0,mapD1,mapJ0;
+};
+
+void iCubInterfaceGuiServer::config(yarp::os::Property &robot)
+{
+    std::vector<JointRemapper> jointRmp;
+
+    yarp::os::ConstString robotName=robot.find("name").asString();
+
     yarp::os::Bottle general=robot.findGroup("GENERAL");
     yarp::os::Bottle *parts=general.find("parts").asList();
 
@@ -10,96 +53,135 @@ iCubInterfaceGui::iCubInterfaceGui(yarp::os::Property &robot)
     {
         yarp::os::ConstString partName=parts->get(t).asString();
         yarp::os::Bottle part=robot.findGroup(partName.c_str());
-            
+
         yarp::os::Bottle *networks=part.find("networks").asList();
 
         for (int n=0; n<networks->size(); ++n)
         {
-            yarp::os::ConstString netName=networks->get(n).asString();
+            std::string netName(networks->get(n).asString().c_str());
+
+            yarp::os::Bottle jMap=part.findGroup(netName.c_str());
+
+            int j0=jMap.get(1).asInt();
+            int d0=jMap.get(3).asInt();
+            int d1=jMap.get(4).asInt();
+
             yarp::os::Bottle net=robot.findGroup(netName.c_str());
 
-            addNetwork(new iCubNetwork(std::string(netName.c_str()),
-                                   std::string(net.find("file").asString().c_str()),
-                                   std::string(net.find("device").asString().c_str()),
-                                   std::string(net.find("canbusdevice").asString().c_str()),
-                                   part.find("threadrate").asInt()));
+            bool bExists=false;
+
+            for (unsigned int i=0; i<mNetworks.size(); ++i)
+            {
+                if (mNetworks[i]->mName==netName)
+                {
+                    jointRmp[i].push(d0,d1,j0);
+                    bExists=true;
+                    break;
+                }
+            }
+
+            if (!bExists)
+            {
+                mNetworks.push_back(new iCubNetwork(netName,
+                    std::string(net.find("file").asString().c_str()),
+                    std::string(net.find("device").asString().c_str()),
+                    std::string(net.find("canbusdevice").asString().c_str()),
+                    part.find("threadrate").asInt()));
+
+                jointRmp.push_back(JointRemapper());
+                jointRmp.back().push(d0,d1,j0);
+            }
         }
     }
 
     // we have now the networks list
 
-    set_title((yarp::os::ConstString("iCubInterface GUI - ")+robot.find("name").asString()).c_str());
-    set_border_width(5);
-    set_default_size(600,400);
-
-    add(m_VBox);
-    
-    //Add the TreeView, inside a ScrolledWindow, with the button underneath:
-    m_scrolledWindow.add(m_treeView);
-    //Only show the scrollbars when they are necessary:
-    m_scrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-
-    m_VBox.pack_start(m_scrolledWindow);
-
-    //Create the Tree model:
-    m_treeView.set_model(m_refTreeModel=Gtk::TreeStore::create(g_columns));
-    //All the items to be reordered with drag-and-drop:
-    m_treeView.set_reorderable();
-
-    Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
-    
-    ///////////////////////////////////////////////////////////////////////////
-
-    int cols_count=m_treeView.append_column("Status",*cell);
-    Gtk::TreeViewColumn* pColumn=m_treeView.get_column(cols_count-1);
-    pColumn->add_attribute(cell->property_pixbuf(),g_columns.m_colStatus);
-
-	//Add the TreeView's view columns:
-    m_treeView.append_column("Name",g_columns.m_colName);
-    m_treeView.append_column("ID",g_columns.m_colValue);
-    //m_treeView.append_column("Status",g_columns.m_colStatus);
-
-    //Fill the TreeView's model
-    Gtk::TreeModel::Row rowLev0;
-    rowLev0=*(m_refTreeModel->append());
-    rowLev0[g_columns.m_colName]="Networks"; //partName.c_str();
-    rowLev0[g_columns.m_colValue]=""; //partName.c_str();
-    //rowLev0[m_Columns.m_colStatus]=Gdk::Pixbuf::create_from_file("delete.png");
-
-    for (unsigned int n=0; n<m_networks.size(); ++n)
+    for (unsigned int n=0; n<mNetworks.size(); ++n)
     {
         yarp::os::Property netConf;
-        netConf.fromConfigFile(m_networks[n]->file.c_str());
+        netConf.fromConfigFile(mNetworks[n]->mFile.c_str());
         yarp::os::Bottle canConf=netConf.findGroup("CAN");
 
-        m_networks[n]->configGui(m_refTreeModel,rowLev0,canConf.find("CanDeviceNum").asInt());
+        mNetworks[n]->mID=canConf.find("CanDeviceNum").asInt();
 
-        /////////////////////////////////////////////////////////////
-        
         yarp::os::Bottle devices=canConf.findGroup("CanAddresses");
+
         for (int d=1; d<devices.size(); ++d)
         {
-            m_networks[n]->addBoard(devices.get(d).asInt());
+            int joint=jointRmp[n].getJoint(d-1);
+            iCubBoard *bll=new iCubBLLBoard(devices.get(d).asInt(),joint,joint+1);
+            mNetworks[n]->addBoard(bll);
         }
     }
 
-    //Connect signal:
-    m_treeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGui::on_treeview_row_activated) );
-
-    show_all_children();
+    mPort.open((robotName+"/gui").c_str());
 }
 
-iCubInterfaceGui::~iCubInterfaceGui()
-{
-}
 
-void iCubInterfaceGui::on_treeview_row_activated(const Gtk::TreeModel::Path& path,Gtk::TreeViewColumn* /* column */)
+void iCubInterfaceGuiServer::run()
 {
-    Gtk::TreeModel::iterator iter = m_refTreeModel->get_iter(path);
-    if(iter)
+    yarp::os::Bottle msg;
+    yarp::os::Bottle rpl;
+
+    while (!isStopping())
     {
-        Gtk::TreeModel::Row row = *iter;
-        std::cout << "Row activated: ID=" << row[g_columns.m_colValue] << ", Name=" << row[g_columns.m_colName] << std::endl;
-    }
+        mPort.read(msg,true);
+        yarp::os::ConstString cmd=msg.get(0).asString();
+
+        if (cmd=="get_conf")
+        {
+            mMutex.wait();
+            rpl=toBottle(true);
+            mMutex.post();
+
+            mPort.reply(rpl);
+        }
+        else if (cmd=="get_data")
+        {
+            mMutex.wait();
+            rpl=toBottle();
+            mMutex.post();
+
+            mPort.reply(rpl);
+        }
+    } 
 }
-#endif
+
+bool iCubInterfaceGuiServer::findAndWrite(std::string address,double* doubleData,bool* boolData,int* intData)
+{
+    mMutex.wait();
+    for (unsigned int n=0; n<(int)mNetworks.size(); ++n)
+    {
+        if (mNetworks[n]->findAndWrite(address,doubleData,boolData,intData))
+        {
+            mMutex.post();
+            return true;
+        }
+    }
+    mMutex.post();
+    return false;
+}
+
+yarp::os::Bottle iCubInterfaceGuiServer::toBottle(bool bConfig)
+{
+    yarp::os::Bottle bot;
+
+    if (bConfig)
+    {
+        bot.addInt(CONFIG_FLAG);
+    }
+    else
+    {
+        bot.addInt(ONLY_DATA_FLAG);
+    }
+
+    for (int n=0; n<(int)mNetworks.size(); ++n)
+    {   
+        yarp::os::Bottle& netBot=bot.addList();
+
+        netBot=mNetworks[n]->toBottle(bConfig);
+    }
+
+    return bot;
+}
+
