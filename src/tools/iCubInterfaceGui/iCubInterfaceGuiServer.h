@@ -48,7 +48,15 @@ protected:
 class iCubInterfaceGuiServer : public yarp::os::Thread
 {
 public:
-    iCubInterfaceGuiServer(yarp::os::Property &robot)
+    iCubInterfaceGuiServer()
+    {
+    }
+    
+    virtual ~iCubInterfaceGuiServer()
+    {
+    }
+
+    void config(yarp::os::Property &robot)
     {
         std::vector<JointRemapper> jointRmp;
 
@@ -75,14 +83,6 @@ public:
                 int d1=jMap.get(4).asInt();
 
                 yarp::os::Bottle net=robot.findGroup(netName.c_str());
-
-                /*
-                addNetwork(std::string(netName.c_str()),
-                           std::string(net.find("file").asString().c_str()),
-                           std::string(net.find("device").asString().c_str()),
-                           std::string(net.find("canbusdevice").asString().c_str()),
-                           part.find("threadrate").asInt());
-                */
 
                 bool bExists=false;
 
@@ -133,65 +133,37 @@ public:
         mPort.open((robotName+"/gui").c_str());
     }
 
-    virtual ~iCubInterfaceGuiServer()
-    {
-    }
-
-    void addNetwork(iCubNetwork* net)
-    {
-        for (unsigned int i=0; i<mNetworks.size(); ++i)
-        {
-            if (*mNetworks[i]==*net)
-            {
-                delete net;
-                return;
-            }
-        }
-
-        mNetworks.push_back(net);
-    }
 
     void run()
     {
-    }
-    /*
         yarp::os::Bottle msg;
         yarp::os::Bottle rpl;
 
         while (!isStopping())
         {
-            m_port.read(msg,true);
+            mPort.read(msg,true);
             yarp::os::ConstString cmd=msg.get(0).asString();
 
             if (cmd=="get_conf")
             {
-                rpl.clear();
-                m_mutex.wait();
-                for (unsigned int n=0; n<m_networks.size(); ++n)
-                {
-                    // ...
-                    // tutto cambiato
-                    // ...
-                }    
-                m_mutex.post();
+                mMutex.wait();
+                rpl=toBottle(true);
+                mMutex.post();
 
-                m_port.reply(rpl);
+                mPort.reply(rpl);
             }
             else if (cmd=="get_data")
             {
-                m_mutex.wait();
-                
-                // ...
-                // tutto cambiato
-                // ...
+                mMutex.wait();
+                rpl=toBottle();
+                mMutex.post();
 
-                m_mutex.post();
+                mPort.reply(rpl);
             }
         } 
     }
 
-    yarp::os::Bottle toBottle();
-
+    /*
     bool write(std::string& address,std::string& data)
     {
         m_mutex.wait();
@@ -212,6 +184,29 @@ protected:
     yarp::os::Port mPort;
     yarp::os::Semaphore mMutex;
     std::vector<iCubNetwork*> mNetworks;
+
+    yarp::os::Bottle toBottle(bool bConfig=false)
+    {
+        yarp::os::Bottle bot;
+        
+        if (bConfig)
+        {
+            bot.addInt(CONFIG_FLAG);
+        }
+        else
+        {
+            bot.addInt(ONLY_DATA_FLAG);
+        }
+
+        for (int n=0; n<(int)mNetworks.size(); ++n)
+        {   
+            yarp::os::Bottle& netBot=bot.addList();
+
+            netBot=mNetworks[n]->toBottle(bConfig);
+        }
+
+        return bot;
+    }
 };
 
 #endif //__GTKMM_ICUB_INTERFACE_GUI_H__

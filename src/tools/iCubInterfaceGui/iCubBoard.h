@@ -75,9 +75,9 @@ public:
         }
 
         yarp::os::Bottle& chan0=bot.addList();
-        chan0=mChannel[0]->toBottle();
+        chan0=mChannel[0]->toBottle(bConfig);
         yarp::os::Bottle& chan1=bot.addList();
-        chan1=mChannel[1]->toBottle();
+        chan1=mChannel[1]->toBottle(bConfig);
 
         return bot;
     }

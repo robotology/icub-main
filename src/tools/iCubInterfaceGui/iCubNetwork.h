@@ -141,7 +141,7 @@ public:
         for (int i=0; i<(int)mBoards.size(); ++i)
         {
             yarp::os::Bottle& board=bot.addList();
-            board=mBoards[i]->toBottle();
+            board=mBoards[i]->toBottle(bConfig);
         }
 
         return bot;
