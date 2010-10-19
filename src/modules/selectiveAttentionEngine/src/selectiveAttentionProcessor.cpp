@@ -69,7 +69,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     k3=0.5;
     k4=0.1;
     k5=0.5;
-    k6=0.5;
+    k6=1.0;
     kmotion=0.2;
     kc1=0.2;
 
@@ -569,28 +569,25 @@ void selectiveAttentionProcessor::run(){
                     }
                     
                     igaze->lookAtMonoPixel(camSel,px,z);
-                    //waiting for the end of the saccadic event
-                    bool flag=false;
-                    bool res=false;
-                    printf("1saccadic event performing %d .... \n",flag);
-                    while(!flag) {                       
-                        igaze->checkMotionDone(&flag);
-                        printf("2saccadic event performing %d .... \n",flag);                   
-                        Time::delay(0.010);
-                    }
-                    printf("3saccadic event performing %d .... \n",flag);
-                    for(int k=0;k<10;k++){ 
-                        Time::delay(0.050);
-                        printf("*");
-                    }
-                    if(vergencePort.getOutputCount()) {            
-                                //suspending any vergence control
-                                Bottle& command=vergencePort.prepare();
-                                //resuming vergence
-                                command.clear();
-                                command.addString("res");
-                                printf("resuming vergence \n");
-                                vergencePort.write();
+                    
+                    if(vergencePort.getOutputCount()) { 
+                        //waiting for the end of the saccadic event
+                        bool flag=false;
+                        bool res=false;
+                        while(!flag) {                       
+                            igaze->checkMotionDone(&flag);                  
+                            Time::delay(0.010);
+                        }
+                        for(int k=0;k<10;k++){ 
+                            Time::delay(0.050);
+                        } 
+                        //suspending any vergence control
+                        Bottle& command=vergencePort.prepare();
+                        //resuming vergence
+                        command.clear();
+                        command.addString("res");
+                        printf("resuming vergence \n");
+                        vergencePort.write();
                     }
 
                     //adding the element to the DB
