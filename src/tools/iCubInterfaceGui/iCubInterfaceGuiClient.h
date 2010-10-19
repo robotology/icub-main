@@ -72,12 +72,12 @@ public:
         for (int i=1; i<NNAMES; ++i)
         {
             mRows[i]=*(mRefTreeModel->append(mRows[0].children()));
-            mRows[i][gColumns.mColName]=rowNames[i];
-            mRows[i][gColumns.mColValue]="";
+            mRows[i][mColumns.mColName]=rowNames[i];
+            mRows[i][mColumns.mColValue]="";
         }
     }
 
-    ~iCubBoardChannelGui()
+    virtual ~iCubBoardChannelGui()
     {
         delete [] mRows;
     }
@@ -90,7 +90,49 @@ protected:
 
 class iCubBLLChannelGui : public iCubBLLChannel, public iCubBoardChannelGui
 {
+public:
+    iCubBLLChannelGui() : iCubBLLChannel(-1,-1)
+    {
+        createRows(iCubBLLChannel::mRowNames);
+        mRows=new Gtk::TreeModel::Row[(int)DOUBLE_NUM+(int)BOOL_NUM+(int)INT_NUM];
+    }
 
+    virtual ~iCubBLLChannelGui()
+    {
+        delete [] mRows;
+    }
+
+    void fromBottle(yarp::os::Bottle &bot)
+    {
+        iCubBllChannel::fromBottle(bot);
+
+        double d;
+        for (int i=0; i<(int)DOUBLE_NUM; ++i)
+        {
+            if (iCubBllChannel::mDoubleData.read(i,d))
+            {
+                mRows[i][mColumns.mColValue]=toString(d);
+            }
+        }
+
+        bool b;
+        for (int i=0; i<(int)BOOL_NUM; ++i)
+        {
+            if (iCubBllChannel::mBoolData.read(i,b))
+            {
+                mRows[i+(int)DOUBLE_NUM][mColumns.mColValue]=toString(b);
+            }
+        }
+
+        int k;
+        for (int i=0; i<(int)INT_NUM; ++i)
+        {
+            if (iCubBllChannel::mBoolData.read(i,k))
+            {
+                mRows[i+(int)DOUBLE_NUM+(int)BOOL_NUM][mColumns.mColValue]=toString(k);
+            }
+        }
+    }
 };
 
 
