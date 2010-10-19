@@ -77,6 +77,7 @@
 #define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAMES VOCAB4('d','a','n','s')
 #define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAME VOCAB3('d','a','n')
 //option for the set command
+#define COMMAND_VOCAB_TIME VOCAB4('t','i','m','e')
 #define COMMAND_VOCAB_K1 VOCAB2('k','1')
 #define COMMAND_VOCAB_K2 VOCAB2('k','2')
 #define COMMAND_VOCAB_K3 VOCAB2('k','3')
@@ -134,6 +135,9 @@ Input ports:
 - map4:i : image coming from the 4th saliency map
 - map5:i : image coming from the 5th saliency map
 - map6:i : image coming from the 6th saliency map
+- motion:i : cartesian input image of the flow motion
+- cart:i : cartesian input image in the saliency
+
 
 Outports:
 - attention:o : graphical output of the selected region of interest (winner-take-all)
@@ -146,6 +150,7 @@ InOut ports:
 
 Possible commands that this module is responsive to are:
 - set def: set the coefficient to the default value
+- set time: set the timing costant between different saccades (default 3000- correspond to the conf file saccadic event)
 - set k1: coefficient for the linear combination of map1
 - set k2: coefficient for the linear combination of map2
 - set k3: coefficient for the linear combination of map3

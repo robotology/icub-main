@@ -273,6 +273,11 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         void setGazePerform(bool value);
 
         /**
+        * function that returns the value of the saccadicInterval
+        */
+        double getSaccadicEvent() { return saccadicInterval; };
+
+        /**
         * function that returns the value of the parameter k1
         */
         double getK1() { return k1; };

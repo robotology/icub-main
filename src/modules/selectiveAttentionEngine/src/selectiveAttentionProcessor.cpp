@@ -71,7 +71,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     k5=0.5;
     k6=1.0;
     kmotion=0.2;
-    kc1=0.2;
+    kc1=0.0;
 
     // images
     edges_yarp=new ImageOf<PixelMono>;

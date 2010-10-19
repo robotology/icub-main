@@ -306,8 +306,8 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                 currentProcessor->setK3(0.5);
                 currentProcessor->setK4(0.1);
                 currentProcessor->setK5(0.5);
-                currentProcessor->setK6(0.5);
-                currentProcessor->setKC1(0.2);
+                currentProcessor->setK6(1.0);
+                currentProcessor->setKC1(0.0);
                 return true;
             }
             else if(!strcmp(str2.c_str(),"mot")) {
@@ -338,6 +338,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("");
 
             reply.addString("");
+            reply.addString("set time <int> \t: setting the costant time between saccadic events (default 3000) ");
             reply.addString("set k1 <double> \t: setting the coefficients to the default value ");
             reply.addString("set k1 <double> \t: setting of linear combination coefficient (map1) ");
             reply.addString("set k2 <double> \t: setting of linear combination coefficient (map2) ");
@@ -351,6 +352,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("get fn \t: general get command ");
             reply.addString("");
             reply.addString("");
+            reply.addString("get time <int> \t: getting the timing between saccadic events ");
             reply.addString("get k1 <double> \t: getting the coefficients to the default value ");
             reply.addString("get k1 <double> \t: getting of linear combination coefficient (map1) ");
             reply.addString("get k2 <double> \t: getting of linear combination coefficient (map2) ");
@@ -421,6 +423,13 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                 //reply.addString("connection 2");
               
                 ok=true;
+            }
+            break;
+            case COMMAND_VOCAB_TIME:{
+                int w = command.get(2).asInt();
+                if(currentProcessor!=0)
+                    currentProcessor->setSaccadicInterval(w);
+                ok = true;
             }
             break;
             case COMMAND_VOCAB_K1:{
@@ -590,7 +599,13 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                 for (int k = 0; k < weights.size(); k++)
                     reply.addDouble(0.0);
             }
-                break;
+            break;
+            case COMMAND_VOCAB_TIME:{
+                int w = currentProcessor->getSaccadicEvent();
+                reply.addInt(w);
+                ok = true;
+            }
+            break;
             case COMMAND_VOCAB_KMOT:{
                 double w = currentProcessor->getKMotion();
                 reply.addDouble(w);
