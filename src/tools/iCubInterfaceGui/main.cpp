@@ -27,34 +27,22 @@
  *
  */
 
-#include "iCubNetwork.h"
+#include <yarp/os/Network.h>
+#include <yarp/os/ResourceFinder.h>
 #include "iCubInterfaceGuiServer.h"
 
 int main(int argc, char *argv[])
 {
-    return 0;
-}
-
-#ifdef notdef
-
-#include <gtkmm.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/Property.h>
-#include <yarp/os/ResourceFinder.h>
-#include "iCubInterfaceGui.h"
-
-int main(int argc, char *argv[])
-{
 	yarp::os::Network yarp; //initialize network, this goes before everything
-	Gtk::Main kit(argc,argv);
 
 	yarp::os::ResourceFinder rf;
 	rf.setVerbose();
 	rf.setDefaultConfigFile("iCubInterface.ini");
 	rf.configure("ICUB_ROOT",argc,argv);
 	yarp::os::ConstString configFile=rf.findFile("config");
-	yarp::os::ConstString cartRightArmFile=rf.findFile("cartRightArm");
-	yarp::os::ConstString cartLeftArmFile=rf.findFile("cartLeftArm");
+
+	//yarp::os::ConstString cartRightArmFile=rf.findFile("cartRightArm");
+	//yarp::os::ConstString cartLeftArmFile=rf.findFile("cartLeftArm");
 
 	if (configFile=="")
 	{
@@ -74,13 +62,14 @@ int main(int argc, char *argv[])
 
     //printf("%s\n%s\n",configFile.c_str(),robot.toString().c_str());
 
-	iCubInterfaceGui window(robot);
-	
-	Gtk::Main::run(window);
+	iCubInterfaceGuiServer server;
+
+    server.config(robot);
+
+    getchar();
 
 	return 0;
 }
-#endif
 
 #ifdef notdef
 

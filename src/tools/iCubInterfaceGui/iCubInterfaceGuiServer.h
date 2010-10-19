@@ -22,6 +22,12 @@ public:
     
     virtual ~iCubInterfaceGuiServer()
     {
+        mPort.close();
+
+        for (int i=0; i<(int)mNetworks.size(); ++i)
+        {
+            if (mNetworks[i]!=NULL) delete mNetworks[i];
+        }
     }
 
     void config(yarp::os::Property &robot);
