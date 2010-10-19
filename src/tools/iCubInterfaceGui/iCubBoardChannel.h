@@ -79,7 +79,6 @@ public:
     }
 
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)=0;
-
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
 
@@ -154,7 +153,6 @@ public:
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false);
     virtual void fromBottle(yarp::os::Bottle& bot);
-
     virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
 
 protected:
@@ -163,6 +161,8 @@ protected:
     RawData<double,DOUBLE_NUM> mDoubleData;
     RawData<bool,BOOL_NUM> mBoolData;
     RawData<int,INT_NUM> mIntData;
+
+    static char *mRowNames[];
 };
 
 #endif

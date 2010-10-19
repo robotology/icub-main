@@ -10,10 +10,7 @@
 #define __GTKMM_ICUB_INTERFACE_GUI_CLIENT_H__
 
 #include <gtkmm.h>
-#include <yarp/os/Property.h>
-#include <yarp/os/Thread.h>
-
-#include <iCubInterfaceGui.h>
+#include <iCubInterfaceGuiServer.h>
 
 inline std::string toString(int i)
 {
@@ -45,49 +42,57 @@ class ModelColumns : public Gtk::TreeModel::ColumnRecord
 public:
     ModelColumns()
     {
-        add(m_colName);
-        add(m_colValue);
-        add(m_colStatus);
+        add(mColName);
+        add(mColValue);
+        add(mColStatus);
     }
 
-    Gtk::TreeModelColumn<Glib::ustring> m_colName;
-    Gtk::TreeModelColumn<Glib::ustring> m_colValue;
-    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > m_colStatus;
+    Gtk::TreeModelColumn<Glib::ustring> mColName;
+    Gtk::TreeModelColumn<Glib::ustring> mColValue;
+    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColStatus;
 };
 
-//static ModelColumns g_columns;
+///////////////////////////////////////////////////
 
-class iCubChannelGui : public iCubChannel
+class iCubBoardChannelGui
 {
 public:
-    iCubChannelGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,int channel)
+    iCubBoardChannelGui()
     {
-        m_refTreeModel=refTreeModel;
+    }
 
-        m_aRows=new Gtk::TreeModel::Row[21];
+    void createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames)
+    {
+        mRefTreeModel=refTreeModel;
 
-        m_aRows[0]=*(m_refTreeModel->append(parent.children()));
-        m_aRows[0][g_columns.m_colName]="Channel";
-        m_aRows[0][g_columns.m_colValue]=toString(channel).c_str();
+        mRows[0]=*(mRefTreeModel->append(parent.children()));
+        maRows[0][mColumns.mColName]=rowNames[0];
+        mRows[0][mColumns.mColValue]="";
 
         for (int i=1; i<NNAMES; ++i)
         {
-            m_aRows[i]=*(m_refTreeModel->append(m_aRows[0].children()));
-            m_aRows[i][g_columns.m_colName]=m_rowNames[i];
-            m_aRows[i][g_columns.m_colValue]="";
+            mRows[i]=*(mRefTreeModel->append(mRows[0].children()));
+            mRows[i][gColumns.mColName]=rowNames[i];
+            mRows[i][gColumns.mColValue]="";
         }
     }
 
-    ~iCubChannelGui()
+    ~iCubBoardChannelGui()
     {
-        delete [] m_aRows;
+        delete [] mRows;
     }
 
 protected:
-    Glib::RefPtr<Gtk::TreeStore> m_refTreeModel;
-    Gtk::TreeModel::Row *m_aRows;
-    ModelColumns g_columns;
+    Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
+    Gtk::TreeModel::Row *mRows;
+    ModelColumns mColumns;
 };
+
+class iCubBLLChannelGui : public iCubBLLChannel, public iCubBoardChannelGui
+{
+
+};
+
 
 class iCubBoardGui : public iCubBoard
 {
