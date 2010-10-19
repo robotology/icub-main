@@ -246,7 +246,7 @@ public:
 				return false;
 			}
 		}
-		string s = b.toString();
+		//string s = b.toString(); //this causes compilation issues under linux
 
 		// open the output port
 		port_command.open("/joystickCtrl:o");
