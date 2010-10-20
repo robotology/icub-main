@@ -151,10 +151,10 @@ bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
                 return true;
             }
             else
-                cerr << warning << endl;
+                fprintf(stdout,"%s\n",warning.c_str());
         }
         else
-            cerr << warning << endl;
+            fprintf(stdout,"%s\n",warning.c_str());
     }
 
     return false;
@@ -191,10 +191,10 @@ bool getAlignLinks(const string &configFile, const string &type,
                 return true;
             }
             else
-                cerr << warning << endl;
+                fprintf(stdout,"%s\n",warning.c_str());
         }
         else
-            cerr << warning << endl;
+            fprintf(stdout,"%s\n",warning.c_str());
     }
 
     return false;

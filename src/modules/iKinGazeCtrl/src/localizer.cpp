@@ -17,11 +17,9 @@
 */
 
 #include <yarp/math/SVD.h>
-
-#include <iostream>
-#include <iomanip>
-
 #include <iCub/localizer.hpp>
+
+#include <stdio.h>
 
 
 /************************************************************************/
@@ -90,11 +88,6 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
         cx=cxr;
         cy=cyr;
     }
-    else // default values if no configFile is given
-    {
-        cx=160;
-        cy=120;
-    }
 
     Vector Kp(3), Ki(3), Kd(3);
     Vector Wp(3), Wi(3), Wd(3);
@@ -145,7 +138,7 @@ bool Localizer::threadInit()
     string n4=localName+"/angles:o";
     port_anglesOut->open(n4.c_str());
 
-    cout << "Starting Localizer at " << period << " ms" << endl;
+    fprintf(stdout,"Starting Localizer at %d ms\n",period);
 
     return true;
 }
@@ -155,9 +148,9 @@ bool Localizer::threadInit()
 void Localizer::afterStart(bool s)
 {
     if (s)
-        cout << "Localizer started successfully" << endl;
+        fprintf(stdout,"Localizer started successfully\n");
     else
-        cout << "Localizer did not start" << endl;
+        fprintf(stdout,"Localizer did not start\n");
 }
 
 
@@ -165,23 +158,24 @@ void Localizer::afterStart(bool s)
 void Localizer::handleMonocularInput()
 {
     if (Bottle *mono=port_mono->read(false))
+    {
         if (mono->size()>=4)
         {
             string type=mono->get(0).asString().c_str();
             double u=mono->get(1).asDouble();
             double v=mono->get(2).asDouble();
             double z=mono->get(3).asDouble();
-
+        
             bool isLeft=(type=="left");
-
+        
             Matrix  *invPrj=(isLeft?invPrjL:invPrjR);
             iCubEye *eye=(isLeft?eyeL:eyeR);
-
+        
             if (invPrj)
             {
                 Vector &torso=commData->get_torso();
                 Vector &head=commData->get_q();
-
+        
                 Vector q(8);
                 q[0]=torso[0];
                 q[1]=torso[1];
@@ -190,42 +184,43 @@ void Localizer::handleMonocularInput()
                 q[4]=head[1];
                 q[5]=head[2];
                 q[6]=head[3];
-
+        
                 if (isLeft)
                     q[7]=head[4]+head[5]/2.0;
                 else
                     q[7]=head[4]-head[5]/2.0;
-
+        
                 Vector x(3);
                 x[0]=z*u;
                 x[1]=z*v;
                 x[2]=z;
-
+        
                 // find the 3D position from the 2D projection,
                 // knowing the guessed distance z from the camera
                 Vector Xe=*invPrj*x;
                 Xe[3]=1.0;  // impose homogeneous coordinates                
-
+        
                 // update position wrt the root frame
                 Vector Xo=eye->getH(q)*Xe;
-
+        
                 if (port_xd)
                 {
                     Vector xd(3);
                     xd[0]=Xo[0];
                     xd[1]=Xo[1];
                     xd[2]=Xo[2];
-
+        
                     port_xd->set_xd(xd);
                 }
                 else
-                    cerr << "Internal error occured!" << endl;
+                    fprintf(stdout,"Internal error occured!\n");
             }
             else
-                cerr << "Unspecified projection matrix for " << type << " camera!" << endl;
+                fprintf(stdout,"Unspecified projection matrix for %s camera!\n",type.c_str());
         }
         else
-            cerr << "Got wrong mono information!" << endl;
+            fprintf(stdout,"Got wrong mono information!\n");
+    }
 }
 
 
@@ -233,68 +228,75 @@ void Localizer::handleMonocularInput()
 void Localizer::handleStereoInput()
 {
     if (Bottle *stereo=port_stereo->read(false))
-        if (stereo->size()>=4)
+    {
+        if ((PrjL!=NULL) || (PrjR!=NULL))
         {
-            double ul=stereo->get(0).asDouble();
-            double vl=stereo->get(1).asDouble();
-            double ur=stereo->get(2).asDouble();
-            double vr=stereo->get(3).asDouble();
-            double um=(ul+ur)/2.0;
-            double vm=(vl+vr)/2.0;
-
-            // consider a reference frame attached to the current
-            // fixation point aligned with the normalized sum
-            // of the left eye axis and right eye axis
-            Vector ref(3), fb(3);
-
-            // along x
-            ref[0]=cx; fb[0]=um;
-
-            // along y
-            ref[1]=cy; fb[1]=vm;
-
-            // along z
-            double el=um-ul;
-            double er=um-ur;
-            ref[2]=0.0; fb[2]=(fabs(el)+fabs(er))/2.0;
-            if (el<0.0 || er>0.0)
-                fb[2]=-fb[2];   // go towards increasing direction of z
-
-            // predict next position relative to the
-            // fixation point frame
-            Vector u=pid->compute(ref,fb);
-            Vector dx(4);
-            dx[0]=-u[0];
-            dx[1]=-u[1];
-            dx[2]=-u[2];
-            dx[3]=1.0;  // impose homogeneous coordinates
-
-            // get the head-centered frame
-            // do not use reference since we're gonna modify it
-            // and we don't want to keep the changes
-            Matrix fpFrame=commData->get_fpFrame();
-
-            // set-up translational part
-            for (unsigned int i=0; i<3; i++)
-                fpFrame(i,3)=commData->get_x()[i];
-
-            // update position wrt the root frame
-            Vector xdO=fpFrame*dx;
-
-            if (port_xd)
+            if (stereo->size()>=4)
             {
-                Vector xd(3);
-                xd[0]=xdO[0];
-                xd[1]=xdO[1];
-                xd[2]=xdO[2];
-
-                port_xd->set_xd(xd);
+                double ul=stereo->get(0).asDouble();
+                double vl=stereo->get(1).asDouble();
+                double ur=stereo->get(2).asDouble();
+                double vr=stereo->get(3).asDouble();
+                double um=(ul+ur)/2.0;
+                double vm=(vl+vr)/2.0;
+            
+                // consider a reference frame attached to the current
+                // fixation point aligned with the normalized sum
+                // of the left eye axis and right eye axis
+                Vector ref(3), fb(3);
+            
+                // along x
+                ref[0]=cx; fb[0]=um;
+            
+                // along y
+                ref[1]=cy; fb[1]=vm;
+            
+                // along z
+                double el=um-ul;
+                double er=um-ur;
+                ref[2]=0.0; fb[2]=(fabs(el)+fabs(er))/2.0;
+                if (el<0.0 || er>0.0)
+                    fb[2]=-fb[2];   // go towards increasing direction of z
+            
+                // predict next position relative to the
+                // fixation point frame
+                Vector u=pid->compute(ref,fb);
+                Vector dx(4);
+                dx[0]=-u[0];
+                dx[1]=-u[1];
+                dx[2]=-u[2];
+                dx[3]=1.0;  // impose homogeneous coordinates
+            
+                // get the head-centered frame
+                // do not use reference since we're gonna modify it
+                // and we don't want to keep the changes
+                Matrix fpFrame=commData->get_fpFrame();
+            
+                // set-up translational part
+                for (unsigned int i=0; i<3; i++)
+                    fpFrame(i,3)=commData->get_x()[i];
+            
+                // update position wrt the root frame
+                Vector xdO=fpFrame*dx;
+            
+                if (port_xd)
+                {
+                    Vector xd(3);
+                    xd[0]=xdO[0];
+                    xd[1]=xdO[1];
+                    xd[2]=xdO[2];
+            
+                    port_xd->set_xd(xd);
+                }
+                else
+                    fprintf(stdout,"Internal error occured!\n");
             }
             else
-                cerr << "Internal error occured!" << endl;
+                fprintf(stdout,"Got wrong stereo information!\n");
         }
         else
-            cerr << "Got wrong stereo information!" << endl;
+            fprintf(stdout,"Unspecified projection matrix!\n");
+    }
 }
 
 
@@ -343,7 +345,7 @@ void Localizer::handleAnglesInput()
                 fp[1]=commData->get_x()[1];
                 fp[2]=commData->get_x()[2];
 
-                cerr << "Vergence error occured!" << endl;
+                fprintf(stdout,"Vergence error occured!\n");
             }
 
             // compute rotational matrix
@@ -391,10 +393,10 @@ void Localizer::handleAnglesInput()
                 port_xd->set_xd(xd);
             }
             else
-                cerr << "Internal error occured!" << endl;
+                fprintf(stdout,"Internal error occured!\n");
         }
         else
-            cerr << "Got wrong angles information!" << endl;
+            fprintf(stdout,"Got wrong angles information!\n");
 }
 
 

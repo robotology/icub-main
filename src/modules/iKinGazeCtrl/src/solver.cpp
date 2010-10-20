@@ -89,7 +89,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         ok&=drvHead->view(encHead);
 
         if (!ok)
-            cout << "Problems acquiring interfaces!" << endl;
+            fprintf(stdout,"Problems acquiring interfaces!\n");
 
         // read number of joints
         if (encTorso!=NULL)
@@ -179,7 +179,7 @@ bool EyePinvRefGen::threadInit()
     else
         port_inertial=NULL;
 
-    cout << "Starting Pseudoinverse Reference Generator at " << period << " ms" << endl;
+    fprintf(stdout,"Starting Pseudoinverse Reference Generator at %d ms\n",period);
 
     return true;
 }
@@ -189,9 +189,9 @@ bool EyePinvRefGen::threadInit()
 void EyePinvRefGen::afterStart(bool s)
 {
     if (s)
-        cout << "Pseudoinverse Reference Generator started successfully" << endl;
+        fprintf(stdout,"Pseudoinverse Reference Generator started successfully\n");
     else
-        cout << "Pseudoinverse Reference Generator did not start" << endl;
+        fprintf(stdout,"Pseudoinverse Reference Generator did not start\n");
 }
 
 
@@ -310,10 +310,7 @@ void EyePinvRefGen::threadRelease()
 /************************************************************************/
 void EyePinvRefGen::suspend()
 {
-    cout << endl;
-    cout << "Pseudoinverse Reference Generator has been suspended!" << endl;
-    cout << endl;
-
+    fprintf(stdout,"\nPseudoinverse Reference Generator has been suspended!\n\n");
     RateThread::suspend();
 }
 
@@ -321,10 +318,7 @@ void EyePinvRefGen::suspend()
 /************************************************************************/
 void EyePinvRefGen::resume()
 {
-    cout << endl;
-    cout << "Pseudoinverse Reference Generator has been resumed!" << endl;
-    cout << endl;
-
+    fprintf(stdout,"\nPseudoinverse Reference Generator has been resumed!\n\n");
     RateThread::resume();
 }
 
@@ -405,7 +399,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         ok&=drvHead->view(encHead);
 
         if (!ok)
-            cout << "Problems acquiring interfaces!" << endl;
+            fprintf(stdout,"Problems acquiring interfaces!\n");
 
         if (encTorso!=NULL)
             encTorso->getAxes(&nJointsTorso);
@@ -483,9 +477,7 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     (*chainNeck)[3].setMin(min_rad);
     (*chainNeck)[3].setMax(max_rad);
 
-    cout << endl;
-    cout << "neck pitch constrained in [" << min_deg << "," << max_deg << "] deg" << endl;
-    cout << endl;
+    fprintf(stdout,"\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
 
 
@@ -501,9 +493,7 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     (*chainNeck)[5].setMin(min_rad);
     (*chainNeck)[5].setMax(max_rad);
 
-    cout << endl;
-    cout << "neck yaw constrained in [" << min_deg << "," << max_deg << "] deg" << endl;
-    cout << endl;
+    fprintf(stdout,"\nneck yaw constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
 
 
@@ -513,9 +503,7 @@ void Solver::clearNeckPitch()
     (*chainNeck)[3].setMin(neckPitchMin);
     (*chainNeck)[3].setMax(neckPitchMax);
 
-    cout << endl;
-    cout << "neck pitch cleared" << endl;
-    cout << endl;
+    fprintf(stdout,"\nneck pitch cleared\n\n");
 }
 
 
@@ -525,9 +513,7 @@ void Solver::clearNeckYaw()
     (*chainNeck)[5].setMin(neckYawMin);
     (*chainNeck)[5].setMax(neckYawMax);
 
-    cout << endl;
-    cout << "neck yaw cleared" << endl;
-    cout << endl;
+    fprintf(stdout,"\nneck yaw cleared\n\n");
 }
 
 
@@ -606,7 +592,7 @@ bool Solver::threadInit()
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
 
-    cout << "Starting Solver at " << period << " ms" << endl;
+    fprintf(stdout,"Starting Solver at %d ms\n",period);
 
     return true;
 }
@@ -616,9 +602,9 @@ bool Solver::threadInit()
 void Solver::afterStart(bool s)
 {
     if (s)
-        cout << "Solver started successfully" << endl;
+        fprintf(stdout,"Solver started successfully\n");
     else
-        cout << "Solver did not start" << endl;
+        fprintf(stdout,"Solver did not start\n");
 }
 
 
@@ -708,10 +694,7 @@ void Solver::threadRelease()
 /************************************************************************/
 void Solver::suspend()
 {
-    cout << endl;
-    cout << "Solver has been suspended!" << endl;
-    cout << endl;
-
+    fprintf(stdout,"\nSolver has been suspended!\n\n");
     RateThread::suspend();
 }
 
@@ -750,9 +733,7 @@ void Solver::resume()
     // update input port
     port_xd->set_xd(fp);
 
-    cout << endl;
-    cout << "Solver has been resumed!" << endl;
-    cout << endl;
+    fprintf(stdout,"\nSolver has been resumed!\n\n");
 
     RateThread::resume();
 }

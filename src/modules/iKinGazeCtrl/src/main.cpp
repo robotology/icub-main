@@ -40,10 +40,10 @@ provided at time being but can be easily implemented.
 The controller can be seen as cartesian gaze controller since it
 receives as input a 3D position in the task space. Nonetheless, 
 further command modalities are available, listed in order of 
-implementation: 1) the relative position of the target in the 
-two image planes can be converted in relative displacement in 3D
-task space with respect to the actual fixation point; 2) in case
-only a monocular vision is exploited, the coordinates (u,v) of
+implementation: 1) the position of the target within the two 
+image planes can be converted in relative displacement in 3D 
+task space with respect to the actual fixation point; 2) in case 
+only a monocular vision is exploited, the coordinates (u,v) of 
 just one pixel in the image plane along with a guessed distance 
 z wrt the eye's reference frame can be given to the module; 3) 
 the head-centered azimuth and elevation angles along with the 
@@ -169,16 +169,16 @@ point:
  
 - by sending the absolute 3D position to gaze at in the task 
   space through /<ctrlName>/xd:i port.
-- by localizing the target in the two image planes and thus 
-  sending its relative coordinates to the /<ctrlName>/stereo:i
-  port. There's no need here to know the intrinsic cameras
-  parameters but it's required to feed continuosly the port with
-  new feedback while converging to the target.
 - by localizing the target in just one image plane and then 
-  sending its relative coordinates together with a guessed
+  sending its coordinates together with a guessed
   distance z from the eye's frame to the /<ctrlName>/mono:i
-  port. <b> In this mode the intrinsic cameras parameters are
-  required </b>.
+  port. <b> In this mode the intrinsic cameras parameters
+  (fx,fy,cx,cy) are required </b>.
+- by localizing the target in the two image planes and thus 
+  sending its coordinates to the /<ctrlName>/stereo:i port.
+  Notice that t's required to feed continuosly the port with new
+  feedback while converging to the target. <b> In this mode the
+  intrinsic cameras parameters (cx,cy) are required </b>
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
@@ -192,16 +192,16 @@ following ports:
 - \e /<ctrlName>/<part>/xd:i receives the target fixation point. 
   It accepts 3 double (also as a Bottle object) for xyz
   coordinates.
- 
-- \e /<ctrlName>/<part>/stereo:i receives the current target 
-  position expressed in image planes. It accepts 4 double (also
-  as a Bottle object) in this order: [ul vl ur vr].
- 
+
 - \e /<ctrlName>/<part>/mono:i receives the current target 
   position expressed in one image plane. The input data format
   is the Bottle [type u v z], where \e type can be left or
   right, <i> (u,v) </i> is the pixel coordinates and \e z is the
   guessed distance relative to the eye's reference frame.
+ 
+- \e /<ctrlName>/<part>/stereo:i receives the current target 
+  position expressed in image planes. It accepts 4 double (also
+  as a Bottle object) in this order: [ul vl ur vr].
  
 - \e /<ctrlName>/<part>/angles:i receives the current target 
   position expressed as azimuth/elevation/vergence triplet in
@@ -329,10 +329,6 @@ background. Just connect the ports with the viewer and play.
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-
 #include <iCub/localizer.hpp>
 #include <iCub/solver.hpp>
 #include <iCub/controller.hpp>
@@ -367,11 +363,9 @@ public:
     
         while (Time::now()-t0<ping_robot_tmo)
         {   
-            cout << "Checking if " << portName << " port is active ... ";
-
+            fprintf(stdout,"Checking if %s port is active ... ",portName.c_str());
             bool ok=Network::exists(portName.c_str(),true);
-
-            cout << (ok?"ok":"not yet") << endl;
+            fprintf(stdout,"%s\n",ok?"ok":"not yet");
     
             if (ok)
                 return;
@@ -498,8 +492,8 @@ public:
 
             if (!drvTorso->isValid())
             {
-                cout << "Torso device driver not available!" << endl;
-                cout << "Perhaps only the head is running; trying to continue ..." << endl;
+                fprintf(stdout,"Torso device driver not available!\n");
+                fprintf(stdout,"Perhaps only the head is running; trying to continue ...\n");
 
                 delete drvTorso;
                 drvTorso=NULL;
@@ -510,7 +504,7 @@ public:
 
             if (!drvHead->isValid())
             {
-                cout << "Head device driver not available!" << endl;
+                fprintf(stdout,"Head device driver not available!\n");
 
                 delete drvHead;
                 return false;
@@ -750,21 +744,21 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        cout << "Options:" << endl << endl;
-        cout << "\t--ctrlName      name: controller name (default iKinGazeCtrl)"                               << endl;
-        cout << "\t--robot         name: robot name to connect to (default: icub)"                             << endl;
-        cout << "\t--part          name: robot head port name, (default: head)"                                << endl;
-        cout << "\t--torso         name: robot torso port name (default: torso)"                               << endl;
-        cout << "\t--inertial      name: robot inertial port name (default: inertial)"                         << endl;
-        cout << "\t--Tneck         time: specify the neck movements time in seconds (default: 0.70)"           << endl;
-        cout << "\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)"           << endl;
-        cout << "\t--config        file: file name for kinematics and cameras parameters"                      << endl;
-        cout << "\t--context        dir: resource finder searching dir for config file"                        << endl;
-        cout << "\t--simulation        : simulate the presence of the robot"                                   << endl;
-        cout << "\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot"                         << endl;
-        cout << "\t--eyeTiltMin     min: minimum eye tilt angle [deg]"                                         << endl;
-        cout << "\t--eyeTiltMax     max: maximum eye tilt angle [deg]"                                         << endl;
-        cout << "\t--minAbsVel      min: minimum absolute velocity that can be achieved [deg/s] (default 0.0)" << endl;
+        fprintf(stdout,"Options:\n\n");
+        fprintf(stdout,"\t--ctrlName      name: controller name (default iKinGazeCtrl)\n");
+        fprintf(stdout,"\t--robot         name: robot name to connect to (default: icub)\n");
+        fprintf(stdout,"\t--part          name: robot head port name, (default: head)\n");
+        fprintf(stdout,"\t--torso         name: robot torso port name (default: torso)\n");
+        fprintf(stdout,"\t--inertial      name: robot inertial port name (default: inertial)\n");
+        fprintf(stdout,"\t--Tneck         time: specify the neck movements time in seconds (default: 0.70)\n");
+        fprintf(stdout,"\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)\n");
+        fprintf(stdout,"\t--config        file: file name for kinematics and cameras parameters\n");
+        fprintf(stdout,"\t--context        dir: resource finder searching dir for config file\n");
+        fprintf(stdout,"\t--simulation        : simulate the presence of the robot\n");
+        fprintf(stdout,"\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot\n");
+        fprintf(stdout,"\t--eyeTiltMin     min: minimum eye tilt angle [deg]\n");
+        fprintf(stdout,"\t--eyeTiltMax     max: maximum eye tilt angle [deg]\n");
+        fprintf(stdout,"\t--minAbsVel      min: minimum absolute velocity that can be achieved [deg/s] (default 0.0)\n");
 
         return 0;
     }

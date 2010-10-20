@@ -62,7 +62,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         ok&=drvHead->view(velHead);
 
         if (!ok)
-            cout << "Problems acquiring interfaces!" << endl;
+            fprintf(stdout,"Problems acquiring interfaces!\n");
 
         // read number of joints
         if (encTorso!=NULL)
@@ -160,14 +160,14 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
     {
         printAccTime=0.0;
 
-        cout << endl;
-        cout << "norm(e)           = " << norm(xd-fp)   << endl;
-        cout << "Target fix. point = " << xd.toString() << endl;
-        cout << "Actual fix. point = " << fp.toString() << endl;
-        cout << "Target Joints     = " << qd.toString() << endl;
-        cout << "Actual Joints     = " << q.toString()  << endl;
-        cout << "Velocity          = " << v.toString()  << endl;
-        cout << endl;
+        fprintf(stdout,"\n");
+        fprintf(stdout,"norm(e)           = %g\n",norm(xd-fp));
+        fprintf(stdout,"Target fix. point = %s\n",xd.toString().c_str());
+        fprintf(stdout,"Actual fix. point = %s\n",fp.toString().c_str());
+        fprintf(stdout,"Target Joints     = %s\n",qd.toString().c_str());
+        fprintf(stdout,"Actual Joints     = %s\n",q.toString().c_str());
+        fprintf(stdout,"Velocity          = %s\n",v.toString().c_str());
+        fprintf(stdout,"\n");
     }
 }
 
@@ -191,7 +191,7 @@ bool Controller::threadInit()
     string n4=localName+"/v:o";
     port_v->open(n4.c_str());
 
-    cout << "Starting Controller at " << period << " ms" << endl;
+    fprintf(stdout,"Starting Controller at %d ms\n",period);
 
     return true;
 }
@@ -201,9 +201,9 @@ bool Controller::threadInit()
 void Controller::afterStart(bool s)
 {
     if (s)
-        cout << "Controller started successfully" << endl;
+        fprintf(stdout,"Controller started successfully\n");
     else
-        cout << "Controller did not start" << endl;
+        fprintf(stdout,"Controller did not start\n");
 }
 
 
@@ -243,10 +243,7 @@ void Controller::run()
     {
         if (!getFeedback(fbTorso,fbHead,encTorso,encHead))
         {
-            cout << endl;
-            cout << "Communication timeout detected!" << endl;
-            cout << endl;
-
+            fprintf(stdout,"\nCommunication timeout detected!\n\n");
             suspend();
 
             return;
@@ -383,9 +380,7 @@ void Controller::suspend()
 {
     stopLimbsVel();
 
-    cout << endl;
-    cout << "Controller has been suspended!" << endl;
-    cout << endl;
+    fprintf(stdout,"\nController has been suspended!\n\n");
 
     RateThread::suspend();
 }
@@ -405,9 +400,7 @@ void Controller::resume()
         }
     }
 
-    cout << endl;
-    cout << "Controller has been resumed!" << endl;
-    cout << endl;
+    fprintf(stdout,"\nController has been resumed!\n\n");
 
     RateThread::resume();
 }
@@ -433,8 +426,8 @@ void Controller::setTneck(const double execTime)
     double lowerThresNeck=eyesTime+0.2;
     if (execTime<lowerThresNeck)
     {        
-        cout << "Warning: neck execution time is under the lower bound!"           << endl;
-        cout << "A new neck execution time of " << lowerThresNeck << "s is chosen" << endl;        
+        fprintf(stdout,"Warning: neck execution time is under the lower bound!\n");
+        fprintf(stdout,"A new neck execution time of %g s is chosen\n",lowerThresNeck);
 
         neckTime=lowerThresNeck;
     }
@@ -449,8 +442,8 @@ void Controller::setTeyes(const double execTime)
     double lowerThresEyes=10.0*Ts;
     if (execTime<lowerThresEyes)
     {        
-        cout << "Warning: eyes execution time is under the lower bound!"           << endl;
-        cout << "A new eyes execution time of " << lowerThresEyes << "s is chosen" << endl;        
+        fprintf(stdout,"Warning: eyes execution time is under the lower bound!\n");
+        fprintf(stdout,"A new eyes execution time of %g s is chosen\n",lowerThresEyes);
 
         eyesTime=lowerThresEyes;
     }
