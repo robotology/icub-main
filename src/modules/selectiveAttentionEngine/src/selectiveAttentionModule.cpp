@@ -489,8 +489,8 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
                     currentProcessor->setK3(0.5);
                     currentProcessor->setK4(0.1);
                     currentProcessor->setK5(0.5);
-                    currentProcessor->setK6(0.5);
-                    currentProcessor->setKC1(0.2);
+                    currentProcessor->setK6(0.1);
+                    currentProcessor->setKC1(0.0);
                 }
                 ok = true;
             }
@@ -601,7 +601,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             }
             break;
             case COMMAND_VOCAB_TIME:{
-                int w = currentProcessor->getSaccadicEvent();
+                int w = currentProcessor->getSaccadicInterval();
                 reply.addInt(w);
                 ok = true;
             }
