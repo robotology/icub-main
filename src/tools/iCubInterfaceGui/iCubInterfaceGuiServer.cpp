@@ -128,7 +128,7 @@ void iCubInterfaceGuiServer::run()
         mPort.read(msg,true);
         yarp::os::ConstString cmd=msg.get(0).asString();
 
-        if (cmd=="get_conf")
+        if (cmd=="GET_CONF")
         {
             mMutex.wait();
             rpl=toBottle(true);
@@ -136,7 +136,7 @@ void iCubInterfaceGuiServer::run()
 
             mPort.reply(rpl);
         }
-        else if (cmd=="get_data")
+        else if (cmd=="GET_DATA")
         {
             mMutex.wait();
             rpl=toBottle();

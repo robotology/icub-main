@@ -1,6 +1,7 @@
 #include <iostream>
 #include "iCubInterfaceGuiClient.h"
 
+/*
 char* iCubBLLBoardChannel::mRowNames[]=
 {
     "Channel",
@@ -25,6 +26,7 @@ char* iCubBLLBoardChannel::mRowNames[]=
     "Temp. sensor error",
     "Control mode"
 };
+*/
 
 #ifdef notdef
 iCubInterfaceGui::iCubInterfaceGui(yarp::os::Property &robot)

@@ -24,6 +24,8 @@
 class iCubNetwork
 {
 public:
+    iCubNetwork(){}
+
     iCubNetwork(std::string &name,
               std::string &file,
               std::string &device,
