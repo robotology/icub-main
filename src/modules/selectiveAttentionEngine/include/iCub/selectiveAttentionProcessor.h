@@ -275,7 +275,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         /**
         * function that returns the value of the saccadicInterval
         */
-        double getSaccadicInterval() { return saccadicInterval; };
+        int getSaccadicInterval() { return saccadicInterval; };
 
         /**
         * function that returns the value of the parameter k1

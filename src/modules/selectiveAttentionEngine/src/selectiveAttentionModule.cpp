@@ -601,7 +601,7 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             }
             break;
             case COMMAND_VOCAB_TIME:{
-                int w = currentProcessor->getSaccadicInterval();
+                int w = currentProcessor->getSaccadicInterval();               
                 reply.addInt(w);
                 ok = true;
             }
