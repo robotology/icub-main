@@ -11,135 +11,8 @@
 
 #include <gtkmm.h>
 #include <yarp/os/RateThread.h>
-#include "iCubBoardChannel.h"
+#include "iCubNetworkGui.h"
 #include "iCubInterfaceGuiServer.h"
-
-inline std::string toString(int i)
-{
-    char buff[16];
-    sprintf(buff,"%d",i);
-    return std::string(buff);
-}
-
-inline std::string toString(bool b)
-{
-    return b ? std::string("true") : std::string("false");
-}
-
-inline std::string toString(double d)
-{
-    char buff[64];
-    sprintf(buff,"%f",d);
-    return std::string(buff);
-}
-
-inline std::string toString(char *s)
-{
-    return std::string(s);
-}
-
-//Tree model columns
-class ModelColumns : public Gtk::TreeModel::ColumnRecord
-{
-public:
-    ModelColumns()
-    {
-        add(mColName);
-        add(mColValue);
-        add(mColStatus);
-    }
-
-    Gtk::TreeModelColumn<Glib::ustring> mColName;
-    Gtk::TreeModelColumn<Glib::ustring> mColValue;
-    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColStatus;
-};
-
-///////////////////////////////////////////////////
-
-class iCubInterfaceGuiRows
-{
-public:
-    iCubInterfaceGuiRows()
-    {
-        mRows=NULL;
-    }
-
-    void createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames[],int numRows)
-    {
-        mRows=new Gtk::TreeModel::Row[numRows=mNumRows];
-
-        mRows[0]=*(refTreeModel->append(parent.children()));
-        mRows[0][mColumns.mColName]=rowNames[0];
-        mRows[0][mColumns.mColValue]="";
-
-        for (int i=1; i<numRows; ++i)
-        {
-            mRows[i]=*(refTreeModel->append(mRows[0].children()));
-            mRows[i][mColumns.mColName]=rowNames[i];
-            mRows[i][mColumns.mColValue]="";
-        }
-    }
-
-    virtual ~iCubInterfaceGuiRows()
-    {
-        if (mRows!=NULL) delete [] mRows;
-    }
-
-protected:
-    int mNumRows;
-    Gtk::TreeModel::Row *mRows;
-    ModelColumns mColumns;
-};
-
-class iCubBLLChannelGui : public iCubBLLChannel, public iCubInterfaceGuiRows
-{
-public:
-    iCubBLLChannelGui() : iCubBLLChannel(-1,-1)
-    {
-        int numRows=(int)iCubBLLChannel::DOUBLE_NUM+(int)iCubBLLChannel::BOOL_NUM+(int)iCubBLLChannel::INT_NUM;
-        //createRows(mRefTreeModel,NULL,iCubBLLChannel::mRowNames,numRows);
-    }
-
-    virtual ~iCubBLLChannelGui()
-    {
-        delete [] mRows;
-    }
-
-    void fromBottle(yarp::os::Bottle &bot)
-    {
-        iCubBLLChannel::fromBottle(bot);
-
-        double d;
-        for (int i=0; i<(int)DOUBLE_NUM; ++i)
-        {
-            if (iCubBLLChannel::mDoubleData.read(i,d))
-            {
-                mRows[i][mColumns.mColValue]=toString(d);
-            }
-        }
-
-        bool b;
-        for (int i=0; i<(int)BOOL_NUM; ++i)
-        {
-            if (iCubBLLChannel::mBoolData.read(i,b))
-            {
-                mRows[i+(int)DOUBLE_NUM][mColumns.mColValue]=toString(b);
-            }
-        }
-
-        int k;
-        for (int i=0; i<(int)INT_NUM; ++i)
-        {
-            if (iCubBLLChannel::mIntData.read(i,k))
-            {
-                mRows[i+(int)DOUBLE_NUM+(int)BOOL_NUM][mColumns.mColValue]=toString(k);
-            }
-        }
-    }
-
-protected:
-    Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
-};
 
 class iCubInterfaceGuiClient : public Gtk::Window, public yarp::os::RateThread
 {
@@ -175,10 +48,9 @@ public:
         //mTreeView.append_column("Status",mColumns.mColStatus);
 
         //Fill the TreeView's model
-        Gtk::TreeModel::Row rowLev0;
-        rowLev0=*(mRefTreeModel->append());
-        rowLev0[mColumns.mColName]="Networks"; //partName.c_str();
-        rowLev0[mColumns.mColValue]=""; //partName.c_str();
+        mRowLev0=*(mRefTreeModel->append());
+        mRowLev0[mColumns.mColName]="Networks"; //partName.c_str();
+        mRowLev0[mColumns.mColValue]=""; //partName.c_str();
         //rowLev0[m_Columns.m_colStatus]=Gdk::Pixbuf::create_from_file("delete.png");
 
         mPort.open("/icubinterfacegui");
@@ -190,13 +62,19 @@ public:
 
         fromBottle(rep);
 
+        /////////////////////////////////////////////////////////////////////////////
 
+        mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
 
-        //mNetworks[n]->configGui(mRefTreeModel,rowLev0,canConf.find("CanDeviceNum").asInt());
+        show_all_children();
     }
 
     ~iCubInterfaceGuiClient()
     {
+        for (int i=0; i<(int)mNetworks.size(); ++i)
+        {
+            delete mNetworks[i];
+        }
     }
 
     void fromBottle(yarp::os::Bottle &bot)
@@ -209,24 +87,37 @@ public:
         {
             if (bConfig)
             {
-                mNetworks.push_back(new iCubNetwork());
+                mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0));
+                mNetworks.back()->fromBottle(*(bot.get(i).asList()));
             }
-            
-            yarp::os::Bottle *netBot=bot.get(i).asList();
-
-            mNetworks.back()->fromBottle(*netBot);
+            else
+            {
+                mNetworks[i]->fromBottle(*(bot.get(i).asList()));
+            }
         }
     }
 
 protected:
     Gtk::VBox mVBox;
     Gtk::TreeView mTreeView;
+    Gtk::TreeModel::Row mRowLev0;
     Gtk::ScrolledWindow mScrolledWindow;
     Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
     ModelColumns mColumns;
 
     yarp::os::Port mPort;
     std::vector<iCubNetwork*> mNetworks;
+
+    void onTreeViewRowActivated(const Gtk::TreeModel::Path& path,Gtk::TreeViewColumn* /* column */)
+    {
+        Gtk::TreeModel::iterator iter=mRefTreeModel->get_iter(path);
+        
+        if (iter)
+        {
+            Gtk::TreeModel::Row row=*iter;
+            //std::cout << "Row activated: ID=" << row[gColumns.mColValue] << ", Name=" << row[g_columns.m_colName] << std::endl;
+        }
+    }
 };
 
-#endif //__GTKMM_ICUB_INTERFACE_GUI_H__
+#endif

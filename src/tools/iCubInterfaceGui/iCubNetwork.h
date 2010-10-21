@@ -203,6 +203,8 @@ public:
 protected:
     std::vector<iCubBoard*> mBoards;
 
+    static char* mRowNames[];
+
     RawData<double,DOUBLE_NUM> mDoubleData;
     RawData<bool,BOOL_NUM> mBoolData;
     RawData<int,INT_NUM> mIntData;
