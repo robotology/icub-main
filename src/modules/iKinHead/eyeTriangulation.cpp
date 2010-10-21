@@ -250,7 +250,7 @@ bool eyeTriangulation::getAlignLinks(const ResourceFinder &rf, const string &typ
         Bottle offset=parType.findGroup("offset");
         Bottle twist=parType.findGroup("twist");
 
-        if (length.size()>=2 && offset.size()>=2 && twist.size()>=2)
+        if ((length.size()>=3) && (offset.size()>=3) && (twist.size()>=3))
         {
             *link1=new iKinLink(length.get(1).asDouble(),offset.get(1).asDouble(),
                                 twist.get(1).asDouble(),0.0,0.0,0.0);

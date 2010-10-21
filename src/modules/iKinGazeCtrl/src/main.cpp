@@ -306,14 +306,14 @@ cx 174.742
 cy 102.874
  
 [ALIGN_KIN_LEFT]
-length 4.15777e-007 -4.44085e-007   // [m]
-offset 1.11013e-006 -1.84301e-007   // [m]
-twist  0.163382 -0.12788            // [rad] 
+length 0.0 0.0   // [m]
+offset 0.0 0.0   // [m]
+twist  0.0 0.0   // [rad] 
 
 [ALIGN_KIN_RIGHT]
-length 0.000100176 -0.000105106     // [m]
-offset 0.000103259 -9.96225e-005    // [m]
-twist  0.296114 -0.194269           // [rad] 
+length 0.0 0.0   // [m]
+offset 0.0 0.0   // [m]
+twist  0.0 0.0   // [rad] 
 \endcode 
  
 \section tested_os_sec Tested OS
