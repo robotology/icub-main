@@ -181,6 +181,10 @@ bool getAlignLinks(const string &configFile, const string &type,
             Bottle offset=parType.findGroup("offset");
             Bottle twist=parType.findGroup("twist");
 
+            fprintf(stdout,"%s: got %s\n",type.c_str(),length.toString().c_str());
+            fprintf(stdout,"%s: got %s\n",type.c_str(),offset.toString().c_str());
+            fprintf(stdout,"%s: got %s\n",type.c_str(),twist.toString().c_str());
+
             if ((length.size()>=3) && (offset.size()>=3) && (twist.size()>=3))
             {
                 *link1=new iKinLink(length.get(1).asDouble(),offset.get(1).asDouble(),
