@@ -258,7 +258,7 @@ following ports:
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
  
-@note When the tracking mode is active and the controller has 
+\note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
       head in order to compensate for any movements induced by
       the torso. If tracking mode is switched off, the
@@ -284,6 +284,11 @@ along with the virtual links (given in terms of
 lenght,offset,twist parameters) which are appended to the eye 
 kinematic in order to achieve the alignment with the optical 
 axes compensating for possible unknown offsets. 
+ 
+\note The virtual links are meaningful only as result of the 
+calibration of the extrinsic camera parameters. In case the 
+calibration has not been carried out then remove the relative 
+groups from within the configuration file. 
  
 Example: 
  
