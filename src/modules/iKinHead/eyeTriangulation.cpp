@@ -250,9 +250,9 @@ bool eyeTriangulation::getAlignLinks(const ResourceFinder &rf, const string &typ
         Bottle offset=parType.findGroup("offset");
         Bottle twist=parType.findGroup("twist");
 
-        fprintf(stderr,"%s: got %s\n",type.c_str(),length.toString().c_str());
-        fprintf(stderr,"%s: got %s\n",type.c_str(),offset.toString().c_str());
-        fprintf(stderr,"%s: got %s\n",type.c_str(),twist.toString().c_str());
+        fprintf(stderr,"%s: %s\n",type.c_str(),length.toString().c_str());
+        fprintf(stderr,"%s: %s\n",type.c_str(),offset.toString().c_str());
+        fprintf(stderr,"%s: %s\n",type.c_str(),twist.toString().c_str());
 
         if ((length.size()>=3) && (offset.size()>=3) && (twist.size()>=3))
         {
