@@ -31,7 +31,13 @@ Author: Ugo Pattacini
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-\section intro_sec Description
+\section intro_sec Description 
+ 
+\note This module is deprecated on iCub, but can be still be 
+      useful as baseline for other robots. You are invited to
+      use the <a
+      href="http://eris.liralab.it/iCub/main/dox/html/icub_cartesian_interface.html">Cartesian
+      Interface</a>.
 
 This module provides a minimum-jerk controller for the iCub arm 
 which implements the multi-referential approach based on [1]: 
@@ -180,8 +186,9 @@ background. Just connect the ports with the viewer and play.
 \section references_sec References 
 [1] U. Pattacini, F. Nori, L. Natale, G. Metta, G. Sandini, "An 
 Experimental Evaluation of a Novel Minimum-Jerk Cartesian 
-Controller for Humanoid Robots", <i>IEEE International 
-Conference on Intelligent Robots and Systems</i>, 2010. 
+Controller for Humanoid Robots", <i>IEEE/RSJ International 
+Conference on Intelligent Robots and Systems</i>, Taipei, 
+Taiwan, 2010. 
 
 \author Ugo Pattacini
 */ 
