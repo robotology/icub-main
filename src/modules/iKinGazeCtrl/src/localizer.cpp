@@ -329,6 +329,10 @@ void Localizer::handleAnglesInput()
             if (isRel)
                 ver+=head[5];
 
+            // impose vergence != 0.0
+            if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
+                ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+
             q[7]=head[4]+ver/2.0;
             eyeL->setAng(q);
 
@@ -339,7 +343,7 @@ void Localizer::handleAnglesInput()
             fp[3]=1.0;  // impose homogeneous coordinates
 
             // compute new fp due to changed vergence
-            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) || ver<(MINALLOWED_VERGENCE*CTRL_DEG2RAD))
+            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp))
             {
                 // keep the old fp if some errors occur
                 fp[0]=commData->get_x()[0];
