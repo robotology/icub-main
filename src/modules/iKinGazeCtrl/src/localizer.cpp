@@ -18,6 +18,7 @@
 
 #include <yarp/math/SVD.h>
 #include <iCub/localizer.hpp>
+#include <iCub/solver.hpp>
 
 #include <stdio.h>
 
@@ -338,7 +339,7 @@ void Localizer::handleAnglesInput()
             fp[3]=1.0;  // impose homogeneous coordinates
 
             // compute new fp due to changed vergence
-            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) || ver<1.0*CTRL_DEG2RAD)
+            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) || ver<(MINALLOWED_VERGENCE*CTRL_DEG2RAD))
             {
                 // keep the old fp if some errors occur
                 fp[0]=commData->get_x()[0];
