@@ -184,12 +184,14 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
+/************************************************************************/
 class Blob
 {
 public:
     CvPoint centroid;
     int     size;
 
+    /************************************************************************/
     Blob()
     {
         centroid.x=0;
@@ -199,6 +201,7 @@ public:
 };
 
 
+/************************************************************************/
 class ProcessThread : public Thread
 {
 protected:
@@ -244,6 +247,7 @@ protected:
     Port nodesPort;
     Port blobsPort;
 
+    /************************************************************************/
     void disposeMem()
     {
         if (nodesPrev)
@@ -263,8 +267,10 @@ protected:
     }
 
 public:
+    /************************************************************************/
     ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
 
+    /************************************************************************/
     virtual bool threadInit()
     {
         name=rf.check("name",Value("indepMotionDetector")).asString().c_str();
@@ -304,6 +310,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     void afterStart(bool s)
     {
         if (s)
@@ -335,6 +342,7 @@ public:
             fprintf(stdout,"Process did not start\n");
     }
 
+    /************************************************************************/
     virtual void run()
     {
         double latch_t, dt0, dt1, dt2;
@@ -561,6 +569,7 @@ public:
         }
     }
 
+    /************************************************************************/
     virtual void onStop()
     {
         inPort.interrupt();
@@ -570,6 +579,7 @@ public:
         blobsPort.interrupt();
     }
 
+    /************************************************************************/
     virtual void threadRelease()
     {
         disposeMem();
@@ -581,11 +591,13 @@ public:
         blobsPort.close();
     }
 
+    /************************************************************************/
     string getName()
     {
         return name;
     }
 
+    /************************************************************************/
     void findBlobs()
     {
         // iterate until the set is empty
@@ -607,6 +619,7 @@ public:
         }
     }
 
+    /************************************************************************/
     void floodFill(const int i, Blob *pBlob)
     {
         set<int>::iterator el=activeNodesIndexSet.find(i);
@@ -628,6 +641,7 @@ public:
         }
     }
 
+    /************************************************************************/
     void insertBlob(const Blob &blob)
     {
         // insert the blob keeping the decreasing order of the list wrt the size attribute
@@ -645,6 +659,7 @@ public:
         blobSortedList.push_back(blob);
     }
 
+    /************************************************************************/
     bool execReq(const Bottle &req, Bottle &reply)
     {
         if (req.size())
@@ -749,6 +764,7 @@ public:
 };
 
 
+/************************************************************************/
 class ProcessModule: public RFModule
 {
 private:
@@ -756,8 +772,10 @@ private:
     Port           rpcPort;
 
 public:
+    /************************************************************************/
     ProcessModule() : thr(NULL) { }
 
+    /************************************************************************/
     virtual bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
@@ -775,6 +793,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     virtual bool respond(const Bottle &command, Bottle &reply)
     {
         if (thr->execReq(command,reply))
@@ -783,6 +802,7 @@ public:
             return RFModule::respond(command,reply);
     }
 
+    /************************************************************************/
     virtual bool close()
     {
         if (thr)
@@ -797,11 +817,21 @@ public:
         return true;
     }
 
-    virtual double getPeriod()    { return 1.0;  }
-    virtual bool   updateModule() { return true; }
+    /************************************************************************/
+    virtual double getPeriod()
+    {
+        return 1.0;
+    }
+
+    /************************************************************************/
+    virtual bool updateModule()
+    {
+        return true;
+    }
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;
