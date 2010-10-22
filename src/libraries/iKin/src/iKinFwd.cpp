@@ -439,7 +439,7 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
 {
     if (i<N)
     {
-        if (allList[i]->isBlocked())
+        if (allList[i]->isBlocked() && (Ang!=allList[i]->getAng()))
         {
             allList[i]->blocked=false; // remove the block temporarly
             allList[i]->block(Ang);    // update the blocked link
