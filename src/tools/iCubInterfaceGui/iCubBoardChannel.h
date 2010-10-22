@@ -10,6 +10,7 @@
 #define __GTKMM_ICUB_BOARD_CHANNEL_H__
 
 #include <string>
+#include <vector>
 #include <yarp/os/Property.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Bottle.h>
@@ -19,26 +20,40 @@
 #define ONLY_DATA_FLAG 0
 #define CONFIG_FLAG    1
 
-template<class T,int N> class RawData
+class RawData
 {
 public:
     RawData()
     {
-        for (int i=0; i<N; ++i)
-        {
-            mFlag[i]=true;
-        }
     }
 
     ~RawData()
     {
     }
-    
-    bool read(int index,T& d,bool rst=true)
-    {
-        if (index<0 || index>=N) return false;
 
-        d=mData[index];
+    //int size(){ return mData.size(); }
+
+    yarp::os::Bottle toBottle()
+    {
+        yarp::os::Bottle bot;
+
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            bot.add(mData[i]);
+        }
+
+        return bot;
+    }
+
+    void fromBottle(yarp::os::Bottle &bot)
+    {
+    }
+    
+    bool read(int index,double& data,bool rst=true)
+    {
+        if (index<0 || index>=(int)mData.size()) return false;
+
+        data=mData[index].asDouble();
 
         bool tmp=mFlag[index];
 
@@ -47,13 +62,94 @@ public:
         return tmp;
     }
 
-    bool write(int index,T d)
+    bool read(int index,bool& data,bool rst=true)
     {
-        if (index<0 || index>=N) return false;
+        if (index<0 || index>=(int)mData.size()) return false;
 
-        if (mData[index]!=d)
+        data=mData[index].asVocab()=='T';
+
+        bool tmp=mFlag[index];
+
+        if (rst) mFlag[index]=false;
+
+        return tmp;
+    }
+
+    bool read(int index,int& data,bool rst=true)
+    {
+        if (index<0 || index>=(int)mData.size()) return false;
+
+        data=mData[index].asInt();
+
+        bool tmp=mFlag[index];
+
+        if (rst) mFlag[index]=false;
+
+        return tmp;
+    }
+
+    bool write(int index,double data)
+    {
+        if (index<0) return false;
+        
+        if (index>=(int)mData.size())
         {
-            mData[index]=d;
+            int oldSize=mData.size();
+            mFlag.resize(index+1);
+            for (int i=oldSize; i<index; ++i) mFlag[i]=false;
+
+            mData.resize(index+1);
+        }
+
+        if (mData[index].asDouble()!=data)
+        {
+            mData[index]=yarp::os::Value(data);
+            mFlag[index]=true;
+        }
+
+        return true;
+    }
+
+    bool write(int index,bool data)
+    {
+        if (index<0) return false;
+        
+        if (index>=(int)mData.size())
+        {
+            int oldSize=mData.size();
+            mFlag.resize(index+1);
+            for (int i=oldSize; i<index; ++i) mFlag[i]=false;
+
+            mData.resize(index+1);
+        }
+
+        int vData=data?'T':'F';
+
+        if (mData[index].asVocab()!=vData)
+        {
+            mData[index]=yarp::os::Value(vData,true);
+            mFlag[index]=true;
+        }
+
+        return true;
+    }
+
+    bool write(int index,int data)
+    {
+        if (index<0) return false;
+        
+        if (index>=(int)mData.size())
+        {
+            int oldSize=mData.size();
+            mFlag.resize(index+1);
+            for (int i=oldSize; i<index; ++i) mFlag[i]=false;
+
+            mData.resize(index+1);
+        }
+
+        if (mData[index].asInt()!=data)
+        {
+            mData[index]=yarp::os::Value(data);
             mFlag[index]=true;
         }
 
@@ -61,8 +157,8 @@ public:
     }
 
 protected:
-    T mData[N];
-    bool mFlag[N];
+    std::vector<yarp::os::Value> mData;
+    std::vector<bool> mFlag;
 };
 
 ////////////////////////////////////
@@ -158,9 +254,7 @@ public:
 protected:
     int mJoint; // Corresponding joint (for readability)
 
-    RawData<double,DOUBLE_NUM> mDoubleData;
-    RawData<bool,BOOL_NUM> mBoolData;
-    RawData<int,INT_NUM> mIntData;
+    RawData mData;
 
     static char *mRowNames[];
 };
