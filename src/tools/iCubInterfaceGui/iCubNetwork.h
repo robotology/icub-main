@@ -49,7 +49,7 @@ public:
         }
     }
     
-    enum
+    enum Index
     {
         INT_Network_id,	    // Usually a number for each device, from 0 to … n
         INT_Driver_Rx_ovf,	// Rx buffer overflow in device driver (# messages)
@@ -57,21 +57,12 @@ public:
         INT_Rx_Can_errors,	// Rx errors (can device)
         INT_Tx_Can_errors,	// Tx errors  (can device)
         INT_Rx_buffer_ovf, 	// Overflow Rx buffer (can device)
-        INT_NUM
-    }; 
-
-    enum
-    {
+        
         BOOL_Bus_off, //Bus off flag
-        BOOL_NUM
-    };
-    
-    enum
-    {
+ 
         DOUBLE_Requested_rate,         //Requested rate for the associated thread [ms]
         DOUBLE_Estimated_average_rate, // Estimated rate for the associated thread [ms]
-        DOUBLE_Estimated_std_rate,	   // Same as before, standard deviation, ms
-        DOUBLE_NUM
+        DOUBLE_Estimated_std_rate	   // Same as before, standard deviation, ms
     };
 
     inline bool operator==(iCubNetwork& n)

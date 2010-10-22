@@ -12,30 +12,6 @@
 #include <gtkmm.h>
 #include "iCubBoardChannel.h"
 
-inline std::string toString(int i)
-{
-    char buff[16];
-    sprintf(buff,"%d",i);
-    return std::string(buff);
-}
-
-inline std::string toString(bool b)
-{
-    return b ? std::string("true") : std::string("false");
-}
-
-inline std::string toString(double d)
-{
-    char buff[64];
-    sprintf(buff,"%f",d);
-    return std::string(buff);
-}
-
-inline std::string toString(char *s)
-{
-    return std::string(s);
-}
-
 //Tree model columns
 class ModelColumns : public Gtk::TreeModel::ColumnRecord
 {
@@ -62,9 +38,16 @@ public:
         mRows=NULL;
     }
 
-    void createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames[],int numRows)
+    void createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames[])
     {
-        mRows=new Gtk::TreeModel::Row[numRows=mNumRows];
+        int numRows=0;
+
+        for (char *pName=rowNames[0]; pName; ++pName)
+        {
+            ++numRows;
+        }
+
+        mRows=new Gtk::TreeModel::Row[numRows];
 
         mRows[0]=*(refTreeModel->append(parent.children()));
         mRows[0][mColumns.mColName]=rowNames[0];
@@ -94,13 +77,10 @@ class iCubBLLChannelGui : public iCubBLLChannel, public iCubInterfaceGuiRows
 public:
     iCubBLLChannelGui() : iCubBLLChannel(-1,-1)
     {
-        int numRows=(int)iCubBLLChannel::DOUBLE_NUM+(int)iCubBLLChannel::BOOL_NUM+(int)iCubBLLChannel::INT_NUM;
-        //createRows(mRefTreeModel,NULL,iCubBLLChannel::mRowNames,numRows);
     }
 
     virtual ~iCubBLLChannelGui()
     {
-        delete [] mRows;
     }
 
     void fromBottle(yarp::os::Bottle &bot)

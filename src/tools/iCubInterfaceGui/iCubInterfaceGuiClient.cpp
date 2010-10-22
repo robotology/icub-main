@@ -1,32 +1,5 @@
 #include "iCubInterfaceGuiClient.h"
 
-/*
-char* iCubBLLBoardChannel::mRowNames[]=
-{
-    "Channel",
-    "Joint",
-    "Msg latency",
-    "Mgs lat Tout",
-    "Enc latency",
-    "Is Fault Ok",
-    "Fault undervoltage",
-    "Fault overload",
-    "Fault overcurrent",
-    "Fault external",
-    "Hall sensor error",
-    "Absolute encoder error",
-    "BusOff",
-    "Can Tx Error counter",
-    "Can Rx Error counter",
-    "CanTx Overflow",
-    "Can Rx Overrun",
-    "Main loop overflow",
-    "Over temperature",
-    "Temp. sensor error",
-    "Control mode"
-};
-*/
-
 #ifdef notdef
 iCubInterfaceGui::iCubInterfaceGui(yarp::os::Property &robot)
 {

@@ -8,6 +8,38 @@
 
 #include "iCubBoardChannel.h"
 
+char* iCubBLLChannel::mRowNames[]=
+{
+    // interface generated
+    "Status messages latency",       // Keep track of the time the last status message has been received (seconds)
+    "Encoder latency",               // Keep track of the time the last encoder reading has been received
+
+    // interface generated
+    "Status messages latency timeout", // If status messages latency > threshold (5s) raise an error
+    "Encoder latency timeout",         // If encoder latency > threshold (5s) raise an error
+
+    // device generated
+    "Is Fault Ok",               // Status of the fault pin, general error
+    "Fault undervoltage",        // Power supply voltage is below minimum
+    "Fault overload",            // Hardware fault triggered by the operational amplifier
+    "Fault overcurrent",	        // Current exceeds maximum value
+    "Fault external",            // External fault button is pressed
+    "Hall sensor error",	        // Brushless hall effect sensor error
+    "Absolute encoder error",    // Read error in absolute position sensor
+    "BusOff",		
+    "CanTx Overflow",	        // Canbus Tx Buffer overflow (firmware)
+    "Can Rx Overrun",            // Canbus Rx buffer overflow (firmware)
+    "Main loop overflow",        // Main loop exceeded requested period (>1ms, typically)
+    "Over temperature",	
+    "Temp sensor error",         // Read error in temperature sensor
+
+    // device denerated
+    "Can Tx Error counter",	
+    "Can Rx Error counter",
+    "Control mode",               // Status of the controller.
+    NULL
+};
+
 yarp::os::Bottle iCubBLLChannel::toBottle(bool bConfig)
 {
     yarp::os::Bottle bot;

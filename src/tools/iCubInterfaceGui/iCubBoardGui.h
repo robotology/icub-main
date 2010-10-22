@@ -10,14 +10,14 @@
 #define __GTKMM_ICUB_BOARD_GUI_H__
 
 #include <gtkmm.h>
-#include <yarp/os/RateThread.h>
 #include "iCubBoard.h"
 #include "iCubBoardChannelGui.h"
 
 class iCubBLLBoardGui : public iCubBLLBoard, public iCubInterfaceGuiRows
 {
 public:
-    iCubBLLBoardGui() : iCubBLLBoard(-1,-1,-1)
+    iCubBLLBoardGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot) 
+        : iCubBLLBoard(-1,-1,-1),iCubInterfaceGuiRows()
     {
     }
 

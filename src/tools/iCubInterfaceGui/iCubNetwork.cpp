@@ -12,7 +12,22 @@
 
 ////////////////////////////////////
 
-
+char* iCubNetwork::mRowNames[]=
+{
+        "Network id",	    // Usually a number for each device, from 0 to … n
+        "Driver Rx ovf",	// Rx buffer overflow in device driver (# messages)
+        "Driver Tx ovf",	// Tx buffer overflow in device driver (# messages)
+        "Rx Can errors",	// Rx errors (can device)
+        "Tx Can errors",	// Tx errors  (can device)
+        "Rx buffer ovf", 	// Overflow Rx buffer (can device)
+        
+        "Bus off", //Bus off flag
+ 
+        "Requested rate",         //Requested rate for the associated thread [ms]
+        "Estimated average rate", // Estimated rate for the associated thread [ms]
+        "Estimated std rate",	     // Same as before, standard deviation, ms
+        NULL
+};
 
 bool iCubNetwork::findAndWrite(std::string addr,yarp::os::Value* data)
 {

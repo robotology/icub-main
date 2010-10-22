@@ -113,115 +113,6 @@ public:
         return true;
     }
 
-    /*
-    bool read(int index,double& data,bool rst=true)
-    {
-        if (index<0 || index>=(int)mData.size()) return false;
-
-        data=mData[index].asDouble();
-
-        bool tmp=mFlag[index];
-
-        if (rst) mFlag[index]=false;
-
-        return tmp;
-    }
-
-    bool read(int index,bool& data,bool rst=true)
-    {
-        if (index<0 || index>=(int)mData.size()) return false;
-
-        data=mData[index].asVocab()=='T';
-
-        bool tmp=mFlag[index];
-
-        if (rst) mFlag[index]=false;
-
-        return tmp;
-    }
-
-    bool read(int index,int& data,bool rst=true)
-    {
-        if (index<0 || index>=(int)mData.size()) return false;
-
-        data=mData[index].asInt();
-
-        bool tmp=mFlag[index];
-
-        if (rst) mFlag[index]=false;
-
-        return tmp;
-    }
-
-    bool write(int index,double data)
-    {
-        if (index<0) return false;
-        
-        if (index>=(int)mData.size())
-        {
-            int oldSize=mData.size();
-            mFlag.resize(index+1);
-            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
-
-            mData.resize(index+1);
-        }
-
-        if (mData[index].asDouble()!=data)
-        {
-            mData[index]=yarp::os::Value(data);
-            mFlag[index]=true;
-        }
-
-        return true;
-    }
-
-    bool write(int index,bool data)
-    {
-        if (index<0) return false;
-        
-        if (index>=(int)mData.size())
-        {
-            int oldSize=mData.size();
-            mFlag.resize(index+1);
-            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
-
-            mData.resize(index+1);
-        }
-
-        int vData=data?'T':'F';
-
-        if (mData[index].asVocab()!=vData)
-        {
-            mData[index]=yarp::os::Value(vData,true);
-            mFlag[index]=true;
-        }
-
-        return true;
-    }
-
-    bool write(int index,int data)
-    {
-        if (index<0) return false;
-        
-        if (index>=(int)mData.size())
-        {
-            int oldSize=mData.size();
-            mFlag.resize(index+1);
-            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
-
-            mData.resize(index+1);
-        }
-
-        if (mData[index].asInt()!=data)
-        {
-            mData[index]=yarp::os::Value(data);
-            mFlag[index]=true;
-        }
-
-        return true;
-    }
-    */
-
 protected:
     std::vector<yarp::os::Value> mData;
     std::vector<bool> mFlag;
@@ -259,16 +150,12 @@ public:
     {
     }    
 
-    enum DoubleIndex
+    enum Index
     {
         // interface generated
         DOUBLE_Status_messages_latency,       // Keep track of the time the last status message has been received (seconds)
         DOUBLE_Encoder_latency,               // Keep track of the time the last encoder reading has been received
-        DOUBLE_NUM
-    };
 
-    enum BoolIndex
-    {
         // interface generated
         BOOL_Status_messages_latency_timeout, // If status messages latency > threshold (5s) raise an error
         BOOL_Encoder_latency_timeout,         // If encoder latency > threshold (5s) raise an error
@@ -287,16 +174,11 @@ public:
         BOOL_Main_loop_overflow,        // Main loop exceeded requested period (>1ms, typically)
         BOOL_Over_temperature,	
         BOOL_Temp_sensor_error,         // Read error in temperature sensor
-        BOOL_NUM
-    };
-
-    enum IntIndex
-    {
+     
         // device denerated
         INT_Can_Tx_Error_counter,	
         INT_Can_Rx_Error_counter,
-        INT_Control_mode,               // Status of the controller. This enumeration is illustrated below.
-        INT_NUM
+        INT_Control_mode               // Status of the controller. This enumeration is illustrated below.
     };
 
     enum ControlMode

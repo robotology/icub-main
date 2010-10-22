@@ -17,11 +17,18 @@
 class iCubNetworkGui : public iCubNetwork, public iCubInterfaceGuiRows
 {
 public:
-    iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent)
+    iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
         : iCubNetwork(),iCubInterfaceGuiRows()
     {
-        int numRows=(int)DOUBLE_NUM+(int)BOOL_NUM+(int)INT_NUM;
-        createRows(mRefTreeModel,parent,mRowNames,numRows);
+        createRows(mRefTreeModel,parent,mRowNames);
+
+        yarp::os::Bottle *boardBot=bot.get(6).asList();
+
+        this->addBoard(new iCubBLLBoardGui(mRefTreeModel,parent,*boardBot));
+
+        ////////////////////////////////////////////////////////////////
+
+        fromBottle(bot);
     }
 
     virtual ~iCubNetworkGui()

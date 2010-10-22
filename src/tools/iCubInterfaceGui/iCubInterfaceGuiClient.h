@@ -45,26 +45,35 @@ public:
 	    //Add the TreeView's view columns:
         mTreeView.append_column("Name",mColumns.mColName);
         mTreeView.append_column("ID",mColumns.mColValue);
-        //mTreeView.append_column("Status",mColumns.mColStatus);
+        mTreeView.append_column("Status",mColumns.mColStatus);
 
         //Fill the TreeView's model
         mRowLev0=*(mRefTreeModel->append());
         mRowLev0[mColumns.mColName]="Networks"; //partName.c_str();
         mRowLev0[mColumns.mColValue]=""; //partName.c_str();
-        //rowLev0[m_Columns.m_colStatus]=Gdk::Pixbuf::create_from_file("delete.png");
+        mRowLev0[mColumns.mColStatus]=Gdk::Pixbuf::create_from_file("warning_icon.png");
 
         mPort.open("/icubinterfacegui");
+        // need connection
 
         yarp::os::Bottle bot;
         yarp::os::Bottle rep;
         bot.addString("GET_CONF");
         mPort.write(bot,rep);
 
-        fromBottle(rep);
+        int bConfig=bot.get(0).asInt();
+
+        bot=bot.tail();
+
+        for (int i=0; i<(int)bot.size(); ++i)
+        {
+            mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(bot.get(i).asList())));
+            mNetworks.back()->fromBottle(*(bot.get(i).asList()));
+        }
 
         /////////////////////////////////////////////////////////////////////////////
 
-        mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
+        //mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
 
         show_all_children();
     }
@@ -85,15 +94,7 @@ public:
 
         for (int i=0; i<(int)bot.size(); ++i)
         {
-            if (bConfig)
-            {
-                mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0));
-                mNetworks.back()->fromBottle(*(bot.get(i).asList()));
-            }
-            else
-            {
-                mNetworks[i]->fromBottle(*(bot.get(i).asList()));
-            }
+            mNetworks[i]->fromBottle(*(bot.get(i).asList()));
         }
     }
 
