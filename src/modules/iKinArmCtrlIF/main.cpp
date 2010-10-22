@@ -97,8 +97,8 @@ the robot (through interfaces) and the following ports:
   pose. It accepts 7 double (also as a Bottle object): 3 for xyz
   and 4 for orientation in axis/angle mode.
 
-- \e /<ctrlName>/<part>/rpc remote procedure call. 
-    Recognized remote commands:
+- \e /<ctrlName>/<part>/rpc remote procedure call. \n
+    Recognized remote commands: \n
     -'quit' quit the module
 
 \section in_files_sec Input Data Files
