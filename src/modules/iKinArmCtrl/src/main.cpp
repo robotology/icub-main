@@ -184,9 +184,10 @@ interactively the iCub arm configuration launching MATLAB in
 background. Just connect the ports with the viewer and play. 
  
 \section references_sec References 
-[\link CartesianControllersEvaluation.pdf {1}] U. Pattacini, F. 
-Nori, L. Natale, G. Metta, G. Sandini, "An Experimental 
-Evaluation of a Novel Minimum-Jerk Cartesian 
+[<a 
+href="http://eris.liralab.it/viki/images/c/cf/CartesianControllersEvaluation.pdf">1</a>] 
+U. Pattacini, F. Nori, L. Natale, G. Metta, G. Sandini, "An 
+Experimental Evaluation of a Novel Minimum-Jerk Cartesian 
 Controller for Humanoid Robots", <i>IEEE/RSJ International 
 Conference on Intelligent Robots and Systems</i>, Taipei, 
 Taiwan, 2010. 
