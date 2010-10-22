@@ -631,7 +631,7 @@ public:
     void insertBlob(const Blob &blob)
     {
         // insert the blob keeping the decreasing order of the list wrt the size attribute
-        for (deque<Blob>::iterator el=blobSortedList.begin(); el<blobSortedList.end(); el++)
+        for (deque<Blob>::iterator el=blobSortedList.begin(); el!=blobSortedList.end(); el++)
         {
             if (el->size<blob.size)
             {
