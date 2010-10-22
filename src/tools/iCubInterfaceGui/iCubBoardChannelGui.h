@@ -107,30 +107,11 @@ public:
     {
         iCubBLLChannel::fromBottle(bot);
 
-        double d;
-        for (int i=0; i<(int)DOUBLE_NUM; ++i)
+        for (int i=0; i<mData.size(); ++i)
         {
-            if (iCubBLLChannel::mDoubleData.read(i,d))
+            if (mData.test(i))
             {
-                mRows[i][mColumns.mColValue]=toString(d);
-            }
-        }
-
-        bool b;
-        for (int i=0; i<(int)BOOL_NUM; ++i)
-        {
-            if (iCubBLLChannel::mBoolData.read(i,b))
-            {
-                mRows[i+(int)DOUBLE_NUM][mColumns.mColValue]=toString(b);
-            }
-        }
-
-        int k;
-        for (int i=0; i<(int)INT_NUM; ++i)
-        {
-            if (iCubBLLChannel::mIntData.read(i,k))
-            {
-                mRows[i+(int)DOUBLE_NUM+(int)BOOL_NUM][mColumns.mColValue]=toString(k);
+                mRows[i][mColumns.mColValue]=mData.toString(i);
             }
         }
     }

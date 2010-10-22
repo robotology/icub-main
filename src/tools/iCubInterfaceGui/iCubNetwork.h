@@ -84,7 +84,7 @@ public:
         mBoards.push_back(board);
     }
 
-    bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
+    bool findAndWrite(std::string addr,yarp::os::Value* data);
 
     yarp::os::Bottle toBottle(bool bConfig=false)
     {
@@ -108,35 +108,7 @@ public:
 
         yarp::os::Bottle& netBot=bot.addList();
 
-        double d;
-        for (int i=0; i<(int)DOUBLE_NUM; ++i)
-        {
-            if (mDoubleData.read(i,d))
-            {
-                netBot.addInt(i);
-                netBot.addDouble(d);
-            }
-        }
-
-        bool b;
-        for (int i=0; i<(int)BOOL_NUM; ++i)
-        {
-            if (mBoolData.read(i,b))
-            {
-                netBot.addInt(i);
-                netBot.addVocab(b?'T':'F');
-            }
-        }
-
-        int k;
-        for (int i=0; i<(int)INT_NUM; ++i)
-        {
-            if (mIntData.read(i,k))
-            {
-                netBot.addInt(i);
-                netBot.addInt(k);
-            }
-        }
+        netBot.append(mData.toBottle());
 
         /////////////////////////////////////////
 
@@ -166,24 +138,7 @@ public:
 
         yarp::os::Bottle* netBot=bot.get(i0).asList();
 
-        for (int i=0; i<netBot->size(); i+=2)
-        {
-            int index=netBot->get(i).asInt();
-            yarp::os::Value data=netBot->get(i+1);
-
-            if (data.isDouble())
-            {
-                mDoubleData.write(index,data.asDouble());
-            }
-            else if (data.isVocab())
-            {
-                mBoolData.write(index,data.asVocab()=='T');
-            }
-            else if (data.isInt())
-            {
-                mIntData.write(index,data.asInt());
-            }
-        }
+        mData.fromBottle(*netBot);
 
         ////////////////////////////////////////
 
@@ -205,9 +160,7 @@ protected:
 
     static char* mRowNames[];
 
-    RawData<double,DOUBLE_NUM> mDoubleData;
-    RawData<bool,BOOL_NUM> mBoolData;
-    RawData<int,INT_NUM> mIntData;
+    RawData mData;
 };
 
 #endif

@@ -12,7 +12,9 @@
 
 ////////////////////////////////////
 
-bool iCubNetwork::findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)
+
+
+bool iCubNetwork::findAndWrite(std::string addr,yarp::os::Value* data)
 {
     int index=addr.find(",");
 
@@ -26,19 +28,9 @@ bool iCubNetwork::findAndWrite(std::string addr,double* dataDouble,bool* dataBoo
     if (index<0)
     {
         // for the network
-        for (int i=0; i<(int)DOUBLE_NUM; ++i)
+        for (int i=0; i<(int)mData.size(); ++i)
         {
-            mDoubleData.write(i,dataDouble[i]);
-        }
-
-        for (int i=0; i<(int)BOOL_NUM; ++i)
-        {
-            mBoolData.write(i,dataBool[i]);
-        }
-
-        for (int i=0; i<(int)INT_NUM; ++i)
-        {
-            mIntData.write(i,dataInt[i]);
+            mData.write(i,data[i]);
         }
 
         return true;
@@ -52,7 +44,7 @@ bool iCubNetwork::findAndWrite(std::string addr,double* dataDouble,bool* dataBoo
 
     for (int i=0; i<(int)mBoards.size(); ++i)
     {
-        if (mBoards[i]->findAndWrite(addr,dataDouble,dataBool,dataInt))
+        if (mBoards[i]->findAndWrite(addr,data))
         {
             return true;
         }

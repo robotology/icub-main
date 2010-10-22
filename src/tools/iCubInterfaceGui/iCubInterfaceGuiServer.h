@@ -32,7 +32,7 @@ public:
 
     void config(yarp::os::Property &robot);
     void run();
-    bool findAndWrite(std::string address,double* doubleData,bool* boolData,int* intData);
+    bool findAndWrite(std::string address,yarp::os::Value* data);
     yarp::os::Bottle toBottle(bool bConfig=false);
 
 protected:

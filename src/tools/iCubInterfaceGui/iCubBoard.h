@@ -31,7 +31,7 @@ public:
     {
     }
 
-    virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)=0;
+    virtual bool findAndWrite(std::string addr,yarp::os::Value* data)=0;
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
 
@@ -95,7 +95,7 @@ public:
         mChannel[1]->fromBottle(*(bot.get(i+1).asList()));
     }
 
-    virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
+    virtual bool findAndWrite(std::string addr,yarp::os::Value* data);
 
 protected:
     iCubBLLChannel *mChannel[2];

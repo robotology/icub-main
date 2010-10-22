@@ -31,7 +31,7 @@ public:
     {
     }
 
-    //int size(){ return mData.size(); }
+    int size(){ return mData.size(); }
 
     yarp::os::Bottle toBottle()
     {
@@ -39,7 +39,12 @@ public:
 
         for (int i=0; i<(int)mData.size(); ++i)
         {
-            bot.add(mData[i]);
+            if (mFlag[i])
+            {
+                mFlag[i]=false;
+                bot.addInt(i);
+                bot.add(mData[i]);
+            }
         }
 
         return bot;
@@ -47,8 +52,68 @@ public:
 
     void fromBottle(yarp::os::Bottle &bot)
     {
+        for (int i=0; i<bot.size(); i+=2)
+        {
+            int index=bot.get(i).asInt();
+            mData[index]=bot.get(i+1);
+            mFlag[index]=true;
+        }
     }
-    
+
+    bool test(int index,bool reset=true)
+    {
+        if (index<0 || index>=(int)mData.size()) return false;
+
+        bool tmp=mFlag[index];
+
+        if (reset) mFlag[index]=false;
+
+        return tmp;
+    }
+
+    std::string toString(int index)
+    {
+        if (index<0 || index>=(int)mData.size()) return std::string();
+
+        return std::string(mData[index].toString().c_str());
+    }
+
+    bool read(int index,yarp::os::Value& data,bool rst=true)
+    {
+        if (index<0 || index>=(int)mData.size()) return false;
+
+        data=mData[index];
+
+        bool tmp=mFlag[index];
+
+        if (rst) mFlag[index]=false;
+
+        return tmp;
+    }
+
+    bool write(int index,yarp::os::Value& data)
+    {
+        if (index<0) return false;
+        
+        if (index>=(int)mData.size())
+        {
+            int oldSize=mData.size();
+            mFlag.resize(index+1);
+            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
+
+            mData.resize(index+1);
+        }
+
+        if (mData[index]!=data)
+        {
+            mData[index]=data;
+            mFlag[index]=true;
+        }
+
+        return true;
+    }
+
+    /*
     bool read(int index,double& data,bool rst=true)
     {
         if (index<0 || index>=(int)mData.size()) return false;
@@ -96,7 +161,7 @@ public:
         {
             int oldSize=mData.size();
             mFlag.resize(index+1);
-            for (int i=oldSize; i<index; ++i) mFlag[i]=false;
+            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
 
             mData.resize(index+1);
         }
@@ -118,7 +183,7 @@ public:
         {
             int oldSize=mData.size();
             mFlag.resize(index+1);
-            for (int i=oldSize; i<index; ++i) mFlag[i]=false;
+            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
 
             mData.resize(index+1);
         }
@@ -142,7 +207,7 @@ public:
         {
             int oldSize=mData.size();
             mFlag.resize(index+1);
-            for (int i=oldSize; i<index; ++i) mFlag[i]=false;
+            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
 
             mData.resize(index+1);
         }
@@ -155,6 +220,7 @@ public:
 
         return true;
     }
+    */
 
 protected:
     std::vector<yarp::os::Value> mData;
@@ -174,7 +240,7 @@ public:
     {
     }
 
-    virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)=0;
+    virtual bool findAndWrite(std::string addr,yarp::os::Value* data)=0;
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
 
@@ -249,7 +315,7 @@ public:
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false);
     virtual void fromBottle(yarp::os::Bottle& bot);
-    virtual bool findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt);
+    virtual bool findAndWrite(std::string addr,yarp::os::Value* data);
 
 protected:
     int mJoint; // Corresponding joint (for readability)

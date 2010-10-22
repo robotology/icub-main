@@ -32,30 +32,11 @@ public:
     {
         iCubNetwork::fromBottle(bot);
 
-        double d;
-        for (int i=0; i<(int)DOUBLE_NUM; ++i)
+        for (int i=0; i<(int)mData.size(); ++i)
         {
-            if (iCubNetwork::mDoubleData.read(i,d))
+            if (mData.test(i))
             {
-                mRows[i][mColumns.mColValue]=toString(d);
-            }
-        }
-
-        bool b;
-        for (int i=0; i<(int)BOOL_NUM; ++i)
-        {
-            if (iCubNetwork::mBoolData.read(i,b))
-            {
-                mRows[i+(int)DOUBLE_NUM][mColumns.mColValue]=toString(b);
-            }
-        }
-
-        int k;
-        for (int i=0; i<(int)INT_NUM; ++i)
-        {
-            if (iCubNetwork::mIntData.read(i,k))
-            {
-                mRows[i+(int)DOUBLE_NUM+(int)BOOL_NUM][mColumns.mColValue]=toString(k);
+                mRows[i][mColumns.mColValue]=mData.toString(i);
             }
         }
     }

@@ -23,33 +23,13 @@ yarp::os::Bottle iCubBLLChannel::toBottle(bool bConfig)
         bot.addInt(ONLY_DATA_FLAG);
     }
 
-    double d;
-    for (int i=0; i<(int)DOUBLE_NUM; ++i)
+    yarp::os::Value data;
+    for (int i=0; i<(int)mData.size(); ++i)
     {
-        if (mDoubleData.read(i,d))
+        if (mData.read(i,data))
         {
             bot.addInt(i);
-            bot.addDouble(d);
-        }
-    }
-
-    bool b;
-    for (int i=0; i<(int)BOOL_NUM; ++i)
-    {
-        if (mBoolData.read(i,b))
-        {
-            bot.addInt(i);
-            bot.addVocab(b?'T':'F');
-        }
-    }
-
-    int k;
-    for (int i=0; i<(int)INT_NUM; ++i)
-    {
-        if (mIntData.read(i,k))
-        {
-            bot.addInt(i);
-            bot.addInt(k);
+            bot.add(data);
         }
     }
 
@@ -72,22 +52,11 @@ void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)
         int index=bot.get(i).asInt();
         yarp::os::Value data=bot.get(i+1);
 
-        if (data.isDouble())
-        {
-            mDoubleData.write(index,data.asDouble());
-        }
-        else if (data.isVocab())
-        {
-            mBoolData.write(index,data.asVocab()=='T');
-        }
-        else if (data.isInt())
-        {
-            mIntData.write(index,data.asInt());
-        }
+        mData.write(index,data);
     }
 }
 
-bool iCubBLLChannel::findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)
+bool iCubBLLChannel::findAndWrite(std::string addr,yarp::os::Value* data)
 {
     int index=addr.find(",");
 
@@ -97,19 +66,9 @@ bool iCubBLLChannel::findAndWrite(std::string addr,double* dataDouble,bool* data
 
     if (mChannel!=atoi(sCh.c_str())) return false;
 
-    for (int i=0; i<(int)DOUBLE_NUM; ++i)
+    for (int i=0; i<(int)mData.size(); ++i)
     {
-        mDoubleData.write(i,dataDouble[i]);
-    }
-
-    for (int i=0; i<(int)BOOL_NUM; ++i)
-    {
-        mBoolData.write(i,dataBool[i]);
-    }
-
-    for (int i=0; i<(int)INT_NUM; ++i)
-    {
-        mIntData.write(i,dataInt[i]);
+        mData.write(i,data[i]);
     }
 
     return true;

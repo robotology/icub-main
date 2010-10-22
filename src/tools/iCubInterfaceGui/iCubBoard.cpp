@@ -12,7 +12,7 @@
 
 ////////////////////////////////////
 
-bool iCubBLLBoard::findAndWrite(std::string addr,double* dataDouble,bool* dataBool,int* dataInt)
+bool iCubBLLBoard::findAndWrite(std::string addr,yarp::os::Value* data)
 {
     int index=addr.find(",");
     std::string sID=index<0?addr:addr.substr(0,index);
@@ -27,7 +27,7 @@ bool iCubBLLBoard::findAndWrite(std::string addr,double* dataDouble,bool* dataBo
 
     for (int i=0; i<2; ++i)
     {
-        if (mChannel[i]->findAndWrite(addr,dataDouble,dataBool,dataInt))
+        if (mChannel[i]->findAndWrite(addr,data))
         {
             return true;
         }
