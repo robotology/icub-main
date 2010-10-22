@@ -31,9 +31,11 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
  
-This module relies on the YARP ICartesianControl interface to 
-implement the same functionalities of iKinArmCtrl module. 
-Please refer to \ref iKinArmCtrl for a detailed description.
+This module relies on the <a 
+href="http://eris.liralab.it/iCub/main/dox/html/icub_cartesian_interface.html">Cartesian 
+Interface</a> to implement the same functionalities of 
+iKinArmCtrl module. Please refer to 
+\ref iKinArmCtrl for a detailed description. 
  
 The main differences with respect to \ref iKinArmCtrl are: 
 -# \ref iKinArmCtrlIF controls joint by joint individually, 
