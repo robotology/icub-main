@@ -358,8 +358,6 @@ protected:
     Port           rpcPort;
 
 public:
-    CtrlModule() { }
-
     void waitPart(const Property &partOpt, const double ping_robot_tmo)
     {
         string portName=const_cast<Property&>(partOpt).find("remote").asString().c_str();

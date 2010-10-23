@@ -371,8 +371,6 @@ protected:
     Port        rpcPort;
 
 public:
-    CtrlModule() { }
-
     virtual bool configure(ResourceFinder &rf)
     {
         string slash="/";
