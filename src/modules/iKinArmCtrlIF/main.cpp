@@ -385,9 +385,9 @@ public:
         Time::turboBoost();
 
         // get params from the RF
-        ctrlName=rf.check("ctrlName",Value("iKinArmCtrlIF")).asString();
-        robotName=rf.check("robot",Value("icub")).asString();
-        partName=rf.check("part",Value("right_arm")).asString();
+        ctrlName=rf.check("ctrlName",Value("iKinArmCtrlIF")).asString().c_str();
+        robotName=rf.check("robot",Value("icub")).asString().c_str();
+        partName=rf.check("part",Value("right_arm")).asString().c_str();
 
         remoteName=slash+robotName+"/cartesianController/"+partName;
         localName=slash+ctrlName+slash+partName;

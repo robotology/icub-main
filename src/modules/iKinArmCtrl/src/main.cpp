@@ -245,22 +245,22 @@ public:
         Time::turboBoost();
 
         if (rf.check("ctrlName"))
-            ctrlName=rf.find("ctrlName").asString();
+            ctrlName=rf.find("ctrlName").asString().c_str();
         else
             ctrlName="iKinArmCtrl";
 
         if (rf.check("robot"))
-            robotName=rf.find("robot").asString();
+            robotName=rf.find("robot").asString().c_str();
         else
             robotName="icub";
 
         if (rf.check("part"))
-            partName=rf.find("part").asString();
+            partName=rf.find("part").asString().c_str();
         else
             partName="right_arm";
 
         if (rf.check("torso"))
-            torsoName=rf.find("torso").asString();
+            torsoName=rf.find("torso").asString().c_str();
         else
             torsoName="torso";
 
