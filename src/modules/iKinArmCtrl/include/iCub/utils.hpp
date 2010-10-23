@@ -72,8 +72,6 @@ protected:
     Vector q;
 
 public:
-    exchangeData() {  }
-
     void   setDesired(const Vector &_xd, const Vector &_qd);
     void   getDesired(Vector &_xd, Vector &_qd);
     void   set_q(const Vector &_q);
