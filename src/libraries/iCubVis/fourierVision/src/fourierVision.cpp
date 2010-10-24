@@ -26,7 +26,7 @@ Audit Trail
 -----------
 
 17/07/07  Created library file fourierVision at VVV '07
-
+22/10/10  Fixed bug in rectify: force computation of transformation matrix upon first call  DV
 
 *************************************************************************************************/
  
@@ -5492,8 +5492,8 @@ void rectify(DVimage *input_image_left, DVimage *input_image_right,
    float x_frac, y_frac;
 
 
-   static float theta_y_left_radians = 0;
-   static float theta_y_right_radians = 0;
+   static float theta_y_left_radians = 999;  // initial values are non-realizable angles to force the computation 
+   static float theta_y_right_radians = 999; // of the transformation matrix upon the first call to this funtion.
 
    float tx_left = -10;   // arbitrary camera translation parameters 
    float ty_left = 0;
