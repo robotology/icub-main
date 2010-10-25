@@ -24,7 +24,7 @@ public:
 
         yarp::os::Bottle *boardBot=bot.get(6).asList();
 
-        this->addBoard(new iCubBLLBoardGui(mRefTreeModel,parent,*boardBot));
+        this->addBoard(new iCubBLLBoardGui(mRefTreeModel,mRows[0],*boardBot));
 
         ////////////////////////////////////////////////////////////////
 

@@ -7,3 +7,9 @@
 */
 
 #include "iCubBoardGui.h"
+
+char* iCubBLLBoardGui::mRowNames[]=
+{
+    "Device type",
+    "ID"
+};

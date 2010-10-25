@@ -66,6 +66,8 @@ public:
         if (mRows!=NULL) delete [] mRows;
     }
 
+    //Gtk::TreeModel::Row* getBase(){ return &mRows[0]; }
+
 protected:
     int mNumRows;
     Gtk::TreeModel::Row *mRows;
@@ -75,8 +77,9 @@ protected:
 class iCubBLLChannelGui : public iCubBLLChannel, public iCubInterfaceGuiRows
 {
 public:
-    iCubBLLChannelGui() : iCubBLLChannel(-1,-1)
+    iCubBLLChannelGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot) : iCubBLLChannel(-1,-1)
     {
+        createRows(refTreeModel,parent,mRowNames);
     }
 
     virtual ~iCubBLLChannelGui()
