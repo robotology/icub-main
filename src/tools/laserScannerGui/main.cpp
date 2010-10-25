@@ -77,6 +77,7 @@ Windows, Linux
 #include <yarp/os/Network.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 
@@ -87,6 +88,9 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 
+double scale =0.1; //global scale factor 
+int robot_radius = 715/2; //mm
+int laser_position = 245; //mm
 
 void drawGrid(IplImage *img)
 {
@@ -97,7 +101,7 @@ const CvScalar color_black = cvScalar(0,0,0);
 	cvLine(img,cvPoint(img->width,0),cvPoint(0,img->height),color_black);
 	cvLine(img,cvPoint(img->width/2,0),cvPoint(img->width/2,img->height),color_black);
 	cvLine(img,cvPoint(0,img->height/2),cvPoint(img->width,img->height/2),color_black);
-	const int step =40;
+	const int step = 500 * scale; //mm
 /*
 	for (int xi=0; xi<img->width; xi+=step)
 		cvLine(img,cvPoint(xi,0),cvPoint(xi,img->height),color_black);
@@ -113,34 +117,38 @@ const CvScalar color_black = cvScalar(0,0,0);
 
 void drawRobot (IplImage *img)
 {
-	int robot_radius = 20;
-	int laser_position = 10; 
+
 	const CvScalar color_black = cvScalar(0,0,0);
 	const CvScalar color_gray  = cvScalar(100,100,100);
 
 	//draw a circle
-	cvCircle(img,cvPoint(img->width/2,img->height/2+laser_position),robot_radius,color_gray,CV_FILLED);
+	cvCircle(img,cvPoint(img->width/2,img->height/2),robot_radius*scale,color_gray,CV_FILLED);
 }
 
 void drawLaser(const Vector *v, IplImage *img)
 {
+	if (!v) return;
 const CvScalar color_white = cvScalar(255,255,255);
 const CvScalar color_black = cvScalar(0,0,0);
     cvZero(img);
 	cvRectangle(img,cvPoint(0,0),cvPoint(img->width,img->height),cvScalar(255,0,0),-1);
 	CvPoint center;
 	center.x = img->width/2;
-	center.y = img->height/2;
+	center.y = img->height/2-laser_position*scale;
 
 	double angle =0;
 	double lenght=0;
-	double scale =0.05;
+	static double old_time=0;
 
-	fprintf(stderr,"received vector size:%d \n",v->size());
-	for (int i=0; i<681; i++)
+	double curr_time=yarp::os::Time::now();
+	//fprintf(stderr,"received vector size:%d",v->size());
+	fprintf(stderr,"time:%f\n",curr_time-old_time);
+	old_time = curr_time;
+
+	for (int i=0; i<1080; i++)
 	{
 		lenght=(*v)[i];
-		angle=i/681.0*240.0-(90-(360-240)/2);
+		angle=i/1080.0*270.0-(90-(360-270)/2);
 //			angle=i;
 //			lenght=i;
 		double x = lenght*scale*cos(angle/180*3.14);
@@ -168,30 +176,30 @@ int main(int argc, char *argv[])
     if(argc > 1) name = argv[1];
     else name = "/laserScannerGui:i";
 
-    int width = 400;
-    int height = 400;
+    int width = 600;
+    int height = 600;
 
 	BufferedPort<yarp::sig::Vector> inPort;
     inPort.open(name.c_str());
 
-    IplImage *img = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,3);
+    IplImage *img  = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,3);
+	IplImage *img2 = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,3);
     cvNamedWindow("Laser Scanner GUI",CV_WINDOW_AUTOSIZE);
 
     bool exit = false;
     while(!exit)
     {
-        yarp::sig::Vector *v = inPort.read(false);
-        if(v)
+        yarp::sig::Vector *v = inPort.read(true);
         {
             //your drawing func.
             drawLaser(v,img);
-			drawRobot(img);
+			drawRobot(img2);
 			drawGrid(img);
-            
+            cvAddWeighted(img, 0.7, img2, 0.3, 0.0, img);
             cvShowImage("Laser Scanner GUI",img);
         }
         //if ESC is pressed, exit.
-        if(cvWaitKey(33) == 27) exit = true;
+        if(cvWaitKey(1) == 27) exit = true;
     }
 
     inPort.close();
