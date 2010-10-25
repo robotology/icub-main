@@ -376,13 +376,13 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
                 if (iR > 0) {
                     average_Lr += lPtr[iL];
                     average_Rr += rPtr[iR];
-                    average_Lg += lPtr[iL+1];
-                    average_Rg += rPtr[iR+1];
-                    average_Lb += lPtr[iL+2];
-                    average_Rb += rPtr[iR+2];
+                    //average_Lg += lPtr[iL+1];
+                    //average_Rg += rPtr[iR+1];
+                    //average_Lb += lPtr[iL+2];
+                    //average_Rb += rPtr[iR+2];
                 }
             }
-        }
+        }*/
 
         if (_count[k] != 0) {
             average_Lr /= _count[k];
@@ -391,7 +391,7 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
             average_Rg /= _count[k];
             average_Lb /= _count[k];
             average_Rb /= _count[k];
-        }*/
+        }
      //   cout << "Loop1 time: " << (Time::now() - TimeStart) << endl;
 
         numr   = 0;
@@ -413,20 +413,20 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
 
                 if (iR > 0) {
                    //Red
-                    pixelL = lPtr[iL];// - average_Lr;
-                    pixelR = rPtr[iR];// - average_Rr;
+                    pixelL = lPtr[iL] - average_Lr;
+                    pixelR = rPtr[iR] - average_Rr;
                     numr   += (pixelL * pixelR);
                     den_Lr += (pixelL * pixelL);
                     den_Rr += (pixelR * pixelR);
                     //Green
-                    pixelL = lPtr[iL+1];// - average_Lg;
-                    pixelR = rPtr[iR+1];// - average_Rg;
+                    pixelL = lPtr[iL+1] - average_Lg;
+                    pixelR = rPtr[iR+1] - average_Rg;
                     numg   += (pixelL * pixelR);
                     den_Lg += (pixelL * pixelL);
                     den_Rg += (pixelR * pixelR);
                     //Blue
-                    pixelL = lPtr[iL+2];// - average_Lb;
-                    pixelR = rPtr[iR+2];// - average_Rb;
+                    pixelL = lPtr[iL+2] - average_Lb;
+                    pixelR = rPtr[iR+2] - average_Rb;
                     numb   += (pixelL * pixelR);
                     den_Lb += (pixelL * pixelL);
                     den_Rb += (pixelR * pixelR);
@@ -453,6 +453,7 @@ int DisparityTool::computeDisparityCorrRGBsum(ImageOf<PixelRgb> & inRImg, ImageO
     //cout << "Final time: " << (Time::now() - TimeStart) << endl;
     //cout << "index " << ret.index << " corr " << ret.corr << " disp " << ret.disp << endl; 
     return (int)ret.disp;
+
 }
 
 int DisparityTool::computeMono (ImageOf<PixelRgb> & inRImg, ImageOf<PixelRgb> & inLImg, double value) {

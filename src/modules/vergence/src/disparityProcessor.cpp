@@ -25,7 +25,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace iCub::iKin;
 using namespace yarp::math;
-const int THREAD_RATE = 10;
+const int THREAD_RATE = 150;
 
 disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
     cout<< "initialisation process "<<endl;
@@ -284,7 +284,7 @@ void disparityProcessor::run(){
             startTime = clock() ;
             printf("\rFPS: %lf ", fps);
 		    
-            disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 10);
+            disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 25);
             //disparityVal = Disp.computeMono(*imgInR, *imgInL, 4.0);
             //disparityVal = 1;
 
