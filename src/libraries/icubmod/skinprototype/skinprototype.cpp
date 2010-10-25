@@ -231,7 +231,7 @@ void SkinPrototype::run()
 		{
 			if (id==cardId[i])
             {
-                int index=sensorId*12;
+                int index=16*12*i + sensorId*12;
                 
                 if (type)
                     {
