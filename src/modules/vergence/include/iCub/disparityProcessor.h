@@ -95,6 +95,10 @@ private:
     yarp::sig::Vector tempV, tmpPos;
     yarp::sig::Vector _head, _torso;
     bool dispInit;
+    clock_t startTime, finishTime;
+    double duration, fps;
+    int frames;
+    
     
 
 public:
@@ -137,7 +141,7 @@ public:
 	    polar(2) = sqrt(cartesian(0)*cartesian(0) + cartesian(1)*cartesian(1)+cartesian(2)*cartesian(2));// distance
     }
 
-    virtual double getPeriod() {return 0.05;}
+    virtual double getPeriod() {return 1;} 
 
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *imgInL; //reference to the left log polar image
 

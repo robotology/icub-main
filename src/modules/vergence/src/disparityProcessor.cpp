@@ -173,6 +173,11 @@ bool disparityProcessor::threadInit(){
     tmpPos.resize(9);
     tempV.zero();
     tempV.resize(3);
+    finishTime = 0;
+    startTime = 0;
+    frames = 0;
+    fps = 0;
+    
 	
 	return true;
 }
@@ -262,17 +267,26 @@ void disparityProcessor::run(){
 
     if( needLeft + needRight > 1 ) {
 
-        imgInL = imageInLeft.read(false);
-		imgInR = imageInRight.read(false);
-
+        imgInL = imageInLeft.read(true);
+		imgInR = imageInRight.read(true);
+        
+        
         if( ( imgInL != NULL ) && ( imgInR != NULL ) ) {
 
             if( !dispInit ) {
                 Disp.setSize( imgInR );
                 dispInit = true;            
             }
-            disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 4);
+            finishTime = clock() ;
+            duration += (double)(finishTime - startTime) / CLOCKS_PER_SEC ;
+            frames ++ ;
+            fps = frames / duration ;
+            startTime = clock() ;
+            printf("\rFPS: %lf ", fps);
+		    
+            disparityVal = Disp.computeDisparityCorrRGBsum(*imgInR, *imgInL, 10);
             //disparityVal = Disp.computeMono(*imgInR, *imgInL, 4.0);
+            //disparityVal = 1;
 
             hWidth = Disp.getShiftLevels();
             hHeight = hWidth/2;
@@ -295,29 +309,11 @@ void disparityProcessor::run(){
            relangle = angle - _head[5];
 
           // cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << " " << relangle << endl;
-
-           if ( cmdOutput.getOutputCount() > 0 ) { 
-                Bottle in,bot;
-                bot.clear();
-                char verg[100];
-                sprintf(verg, "set pos 5 %f", angle);
-                bot.addString("set");
-                bot.addString("pos");		
-                bot.addInt(5);
-                bot.addDouble(angle);
-                cmdOutput.write(bot,in);
-                bot.clear();
-            }
             
             gazeVect[0] = 0.0;
             gazeVect[1] = 0.0;
             gazeVect[2] = relangle;
             igaze->lookAtRelAngles(gazeVect);
-
-            //cout << "relangle " << relangle << endl;
-
-            //if (relangle < 0.01)
-            //suspend();
             
             //send shifts on shift port
             shift_Struct test;
@@ -332,6 +328,7 @@ void disparityProcessor::run(){
                 shiftOutput.write(bot);
                 bot.clear();
             }
+            
         }
     }
 } 	
