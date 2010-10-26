@@ -1,3 +1,8 @@
+2010-10-25 Lorenzo Natale <lorenzo.natale@iit.it>
+	main/conf/iCubHelpers.cmake added checks so that locally modified files are preserved,
+	this required deep revision of install mechanism which now uses locally generated cmake
+	scripts instead of cmake commands.
+	
 2010-10-7 Lorenzo Natale <lorenzo.natale@iit.it>
 	main/conf/iCubHelpers.cmake icub_app_install(FILES...) now skip directories
 	bug fix: wrong behavior with cmake 2.6.0 about creation of directories
