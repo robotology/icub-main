@@ -807,7 +807,7 @@ public:
     * Creates a new Limb from a list of properties wherein links 
     * parameters are specified. 
     * @param option is the list of links properties. 
-    * @see fromProperty
+    * @see fromLinksProperties
     */
     iKinLimb(const yarp::os::Property &option);
 
