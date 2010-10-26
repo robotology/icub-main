@@ -18,6 +18,9 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 This module estimates the gravitational term acting on joints due to links weight.
 The estimation is perfomed relying on rigid body dynamics using CAD 
 parameters. 
+For further information about the use of this module and of the iCub force control interface, please refer to the force control page:
+http://eris.liralab.it/wiki/Force_Control
+
 \section lib_sec Libraries 
 - YARP libraries. 
 - iDyn library.  
