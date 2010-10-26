@@ -1,4 +1,7 @@
 
+2010-10-26 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iostream replaced by fprintf()
+
 2010-09-21 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * added neuralNetworks module
 
