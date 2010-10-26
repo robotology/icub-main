@@ -129,7 +129,8 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 
 set(ICUB_EXPERIMENTAL_APP_INSTALL TRUE CACHE BOOL "Turn on app install experimental feature")
-SET(ICUB_DESTINATION_APP "$ENV{ICUB_ROOT}" CACHE TYPE PATH)
+file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
+SET(ICUB_DESTINATION_APP ${env_icub_root} CACHE TYPE PATH)
 
 ########### populate applications
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
