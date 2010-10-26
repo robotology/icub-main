@@ -25,8 +25,9 @@ of the boards is greater (or equal) to the version 1.50 for BLL boards and 1.38 
 to update the firmware of your robot in the page: http://eris.liralab.it/wiki/Firmware
 </b>
 
-<b>NOTE 2: before launching the application (or before using any kind of force control interface), be sure that the configuration
-files of your robot support force control. To see whether your robot is properly configured, send an email to the rkhackers mailing list (robotcub-hackers@lists.sourceforge.net)</b>
+<b>NOTE 2: before launching the application, be sure that the configuration files of your robot support force control. 
+For further information about the use of this module and of the iCub force control interface, please refer to the force control page:
+http://eris.liralab.it/wiki/Force_Control</b>
 
 
 \section lib_sec Libraries 
