@@ -16,9 +16,6 @@
  * Public License for more details
 */
 
-#include <iostream>
-#include <iomanip>
-
 #include <iCub/iKin/iKinIpOpt.h>
 
 #define IKINIPOPT_DEFAULT_TRANSTOL      1e-6

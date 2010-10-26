@@ -19,9 +19,8 @@
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/ctrlMath.h>
 
-#include <iostream>
-#include <iomanip>
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 using namespace yarp;
@@ -56,7 +55,7 @@ Vector iCub::ctrl::cross(const Vector &a, const Vector &b, unsigned int verbose)
         v[2]=a[0]*b[1]-a[1]*b[0];
     }
     else if (verbose)
-        cerr << "cross() failed: not 3x1 input vectors" << endl;
+        fprintf(stderr,"cross() failed: not 3x1 input vectors\n");
 
     return v;
 }
@@ -75,7 +74,7 @@ Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
         v[2]=A(0,colA)*B(1,colB)-A(1,colA)*B(0,colB);
     }
     else if (verbose)
-        cerr << "cross() failed: not 3xn input matrixes" << endl;
+        fprintf(stderr,"cross() failed: not 3xn input matrixes\n");
 
     return v;
 }
@@ -94,7 +93,7 @@ Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
         Dv[2]=Da[0]*b[1]+a[0]*Db[1]-Da[1]*b[0]-a[1]*Db[0];
     }
     else if (verbose)
-        cerr << "Dcross() failed: not 3x1 input vectors" << endl;
+        fprintf(stderr,"Dcross() failed: not 3x1 input vectors\n");
 
     return Dv;
 }
@@ -114,7 +113,7 @@ Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
         Dv[2]=DA(0,colA)*B(1,colB)+A(0,colA)*DB(1,colB)-DA(1,colA)*B(0,colB)-A(1,colA)*DB(0,colB);
     }
     else if (verbose)
-        cerr << "Dcross() failed: not 3xn input matrixes" << endl;
+        fprintf(stderr,"Dcross() failed: not 3xn input matrixes\n");
 
     return Dv;
 }
@@ -126,7 +125,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
     if (R.rows()<3 || R.cols()<3)
     {
         if (verbose)
-            cerr << "dcm2axis() failed" << endl;
+            fprintf(stderr,"dcm2axis() failed\n");
 
         return Vector(0);
     }
@@ -175,7 +174,7 @@ Matrix iCub::ctrl::axis2dcm(const Vector &v, unsigned int verbose)
     if (v.length()<4)
     {
         if (verbose)
-            cerr << "axis2dcm() failed" << endl;
+            fprintf(stderr,"axis2dcm() failed\n");
     
         return Matrix(0,0);
     }
@@ -221,7 +220,7 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     if (R.rows()<3 || R.cols()<3)
     {
         if (verbose)
-            cerr << "dcm2euler() failed" << endl;
+            fprintf(stderr,"dcm2euler() failed\n");
 
         return Vector(0);
     }
@@ -237,7 +236,7 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     else
     {
         if (verbose)
-            cerr << "dcm2euler() in singularity: choosing one solution among multiple" << endl;
+            fprintf(stderr,"dcm2euler() in singularity: choosing one solution among multiple\n");
 
         v[1]=0;
 	    v[0]=atan2(R(1,0), R(0,0));
@@ -254,7 +253,7 @@ Matrix iCub::ctrl::euler2dcm(const Vector &v, unsigned int verbose)
     if (v.length()<3)
     {
         if (verbose)
-            cerr << "euler2dcm() failed" << endl;
+            fprintf(stderr,"euler2dcm() failed\n");
     
         return Matrix(0,0);
     }
@@ -278,7 +277,7 @@ Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
     if (H.rows()<4 || H.cols()<4)
     {
         if (verbose)
-            cerr << "SE3inv() failed" << endl;
+            fprintf(stderr,"SE3inv() failed\n");
 
         return Matrix(0,0);
     }
@@ -323,8 +322,10 @@ Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)
 {
     if((H.rows()!=4) || (H.cols()!=4))
     {
-        if (verbose) cerr<<"CtrlLib: error, Adj() failed due to wrong sized roto-translational matrix, sized " 
-                         <<H.rows()<<"x"<<H.cols()<<" instead of 4x4"<<endl;
+        if (verbose)
+            fprintf(stderr,"CtrlLib: error, adjoint() failed due to wrong sized roto-translational matrix, sized %dx%d instead of 4x4\n",
+                    H.rows(),H.cols());
+
         return Matrix(0,0);
     }
 
@@ -358,8 +359,10 @@ Matrix iCub::ctrl::adjointInv(const Matrix &H, unsigned int verbose)
 {
     if((H.rows()!=4) || (H.cols()!=4))
     {
-        if (verbose) cerr<<"CtrlLib: error, Adj() failed due to wrong sized roto-translational matrix, sized " 
-                         <<H.rows()<<"x"<<H.cols()<<" instead of 4x4"<<endl;
+        if (verbose)
+            fprintf(stderr,"CtrlLib: error, adjointInv() failed due to wrong sized roto-translational matrix, sized %dx%d instead of 4x4\n",
+                    H.rows(),H.cols());
+
         return Matrix(0,0);
     }
     

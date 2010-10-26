@@ -18,10 +18,9 @@
 
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
-#include <iCub/iKin/iKinInv.h>
+#include <stdio.h>
 
-#include <iostream>
-#include <iomanip>
+#include <iCub/iKin/iKinInv.h>
 
 using namespace std;
 using namespace yarp;
@@ -403,22 +402,23 @@ void SteepCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        cout << "iter #"     << iter                        << endl;
-        cout << "State   = " << strState[State]             << endl;
-        cout << "norm(e) = " << dist()                      << endl;
-        cout << "q       = " << (CTRL_RAD2DEG*q).toString() << endl;
-        cout << "x       = " << x.toString()                << endl;
+        fprintf(stdout,"iter #%d\n",iter);
+        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"norm(e) = %g\n",dist());
+        fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        fprintf(stdout,"x       = %s\n",x.toString().c_str());
 
         if (_verbose>1)
         {
-            cout << "grad    = " << grad.toString()                << endl;
-            cout << "qdot    = " << (CTRL_RAD2DEG*qdot).toString() << endl;
+
+            fprintf(stdout,"grad    = %s\n",grad.toString().c_str());
+            fprintf(stdout,"qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
         }
 
         if (_verbose>2)
-            cout << "Kp      = " << Kp << endl;
+            fprintf(stdout,"Kp      = %g\n",Kp);
 
-        cout << endl << endl;
+        fprintf(stdout,"\n\n");
     }
 }
 
@@ -671,19 +671,19 @@ void LMCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        cout << "iter #"     << iter                        << endl;
-        cout << "State   = " << strState[State]             << endl;
-        cout << "norm(e) = " << dist()                      << endl;
-        cout << "q       = " << (CTRL_RAD2DEG*q).toString() << endl;
-        cout << "x       = " << x.toString()                << endl;
+        fprintf(stdout,"iter #%d\n",iter);
+        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"norm(e) = %g\n",dist());
+        fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        fprintf(stdout,"x       = %s\n",x.toString().c_str());
 
         if (_verbose>1)
-            cout << "grad    = " << grad.toString() << endl;
+            fprintf(stdout,"grad    = %s\n",grad.toString().c_str());
 
         if (_verbose>2)
-            cout << "mu      = " << mu << endl;
+            fprintf(stdout,"mu      = %g\n",mu);
 
-        cout << endl << endl;
+        fprintf(stdout,"\n\n");
     }
 }
 
@@ -1008,19 +1008,19 @@ void GSLMinCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        cout << "iter #"     << iter                        << endl;
-        cout << "state   = " << strState[State]             << endl;
-        cout << "norm(e) = " << dist()                      << endl;
-        cout << "q       = " << (CTRL_RAD2DEG*q).toString() << endl;
-        cout << "x       = " << x.toString()                << endl;
+        fprintf(stdout,"iter #%d\n",iter);
+        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"norm(e) = %g\n",dist());
+        fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        fprintf(stdout,"x       = %s\n",x.toString().c_str());
 
         if (_verbose>1)
             if (fdfOn)
-                cout << "grad    = " << grad.toString() << endl;
+                fprintf(stdout,"grad    = %s\n",grad.toString().c_str());
             else
-                cout << "size    = " << gsl_multimin_fminimizer_size(s2) << endl;
+                fprintf(stdout,"size    = %g\n",gsl_multimin_fminimizer_size(s2));
 
-        cout << endl << endl;
+        fprintf(stdout,"\n\n");
     }
 }
 
@@ -1292,20 +1292,20 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        cout << "State   = " << strState[State]                 << endl;
-        cout << "norm(e) = " << dist()                          << endl;
-        cout << "xd      = " << x_set.toString()                << endl;
-        cout << "x       = " << x.toString()                    << endl;
-        cout << "qd      = " << (CTRL_RAD2DEG*q_set).toString() << endl;
-        cout << "q       = " << (CTRL_RAD2DEG*q).toString()     << endl;
+        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"norm(e) = %g\n",dist());
+        fprintf(stdout,"xd      = %s\n",x_set.toString().c_str());
+        fprintf(stdout,"x       = %s\n",x.toString().c_str());
+        fprintf(stdout,"qd      = %s\n",(CTRL_RAD2DEG*q_set).toString().c_str());
+        fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
 
         if (_verbose>1)
         {
-            cout << "qdot    = " << (CTRL_RAD2DEG*qdot).toString() << endl;
-            cout << "xdot    = " << xdot.toString()                << endl;
+            fprintf(stdout,"qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
+            fprintf(stdout,"xdot    = %s\n",xdot.toString().c_str());
         }
 
-        cout << endl << endl;
+        fprintf(stdout,"\n\n");
     }
 }
 
@@ -1326,8 +1326,7 @@ double MultiRefMinJerkCtrl::set_execTime(const double _execTime, const bool warn
     execTime=_execTime>lowerThres ? _execTime : lowerThres;
 
     if (warn && execTime!=_execTime)
-        cerr << "Warning: task execution time limited to the lower bound "
-             << lowerThres << endl;
+        fprintf(stderr,"Warning: task execution time limited to the lower bound %g\n",lowerThres);
 
     return execTime;
 }

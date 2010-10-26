@@ -16,11 +16,9 @@
  * Public License for more details
 */
 
-#include <iCub/iKin/iKinFwd.h>
-
 #include <stdio.h>
-#include <iostream>
-#include <iomanip>
+
+#include <iCub/iKin/iKinFwd.h>
 
 using namespace std;
 using namespace yarp;
@@ -36,7 +34,7 @@ using namespace iCub::iKin;
 void iCub::iKin::notImplemented(const unsigned int verbose)
 {
     if (verbose)
-        cout<<"iKin: not implemented"<<endl;
+        fprintf(stderr,"iKin: not implemented\n");
 }
 
 
@@ -164,7 +162,7 @@ double iKinLink::setAng(double _Ang)
             Ang=_Ang;
     }
     else if (verbose)
-        cerr << "Attempt to set joint angle to " << _Ang << " while blocked" << endl;
+        fprintf(stderr,"Attempt to set joint angle to %g while blocked\n",_Ang);
 
     return Ang;
 }
@@ -326,10 +324,7 @@ bool iKinChain::addLink(const unsigned int i, iKinLink &l)
     else
     {
         if (verbose)
-        {
-            cerr << "addLink() failed due to out of range index: ";
-            cerr << i << ">" << N << endl;
-        }
+            fprintf(stderr,"addLink() failed due to out of range index: %d>%d\n",i,N);
 
         return false;
     }
@@ -351,10 +346,7 @@ bool iKinChain::rmLink(const unsigned int i)
     else
     {
         if (verbose)
-        {
-            cerr << "rmLink() failed due to out of range index: ";
-            cerr << i << ">=" << N << endl;
-        }
+            fprintf(stderr,"rmLink() failed due to out of range index: %d>=%d\n",i,N);
 
         return false;
     }
@@ -424,10 +416,7 @@ bool iKinChain::blockLink(const unsigned int i, double Ang)
     else
     {
         if (verbose)
-        {
-            cerr << "blockLink() failed due to out of range index: ";
-            cerr << i << ">=" << N << endl;
-        }
+            fprintf(stderr,"blockLink() failed due to out of range index: %d>=%d\n",i,N);
 
         return false;
     }
@@ -468,10 +457,7 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
         else
         {
             if (verbose)
-            {    
-                cerr << "setBlockingValue() failed since the ";
-                cerr << i << "th link was not already blocked" << endl;
-            }
+                fprintf(stderr,"setBlockingValue() failed since the %dth link was not already blocked\n",i);
 
             return false;
         }
@@ -479,10 +465,7 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
     else
     {
         if (verbose)
-        {
-            cerr << "setBlockingValue() failed due to out of range index: ";
-            cerr << i << ">=" << N << endl;
-        }
+            fprintf(stderr,"setBlockingValue() failed due to out of range index: %d>=%d\n",i,N);
 
         return false;
     }
@@ -502,10 +485,7 @@ bool iKinChain::releaseLink(const unsigned int i)
     else
     {    
         if (verbose)
-        {
-            cerr << "releaseLink() failed due to out of range index: ";
-            cerr << i << ">=" << N << endl;
-        }
+            fprintf(stderr,"releaseLink() failed due to out of range index: %d>=%d\n",i,N);
 
         return false;
     }
@@ -520,10 +500,7 @@ bool iKinChain::isLinkBlocked(const unsigned int i)
     else
     {    
         if (verbose)
-        {
-            cerr << "isLinkBlocked() failed due to out of range index: ";
-            cerr << i << ">=" << N << endl;
-        }
+            fprintf(stderr,"isLinkBlocked() failed due to out of range index: %d>=%d\n",i,N);
 
         return false;
     }
@@ -604,7 +581,7 @@ void iKinChain::setH0(const Matrix &_H0)
         H0=eye(4,4);
 
         if (verbose)
-            cerr << "Attempt to create a chain with wrong matrix H0 (not 4x4)" << endl;
+            fprintf(stderr,"Attempt to create a chain with wrong matrix H0 (not 4x4)\n");
     }
 }
 
@@ -621,7 +598,7 @@ Vector iKinChain::setAng(const Vector &q)
         for (unsigned int i=0; i<DOF; i++)
             curr_q[i]=quickList[hash_dof[i]]->setAng(q[i]);
     else if (verbose)
-        cerr << "setAng() failed: " << DOF << " joint angles needed" << endl;
+        fprintf(stderr,"setAng() failed: %d joint angles needed\n",DOF);
 
     return curr_q;
 }
@@ -650,10 +627,7 @@ double iKinChain::setAng(const unsigned int i, double _Ang)
     if (i<N)
         res=allList[i]->setAng(_Ang);
     else if (verbose)
-    {
-        cerr << "setAng() failed due to out of range index: ";
-        cerr << i << ">=" << N << endl;
-    }
+        fprintf(stderr,"setAng() failed due to out of range index: %d>=%d\n",i,N);
 
     return res;
 }
@@ -667,10 +641,7 @@ double iKinChain::getAng(const unsigned int i)
     if (i<N)
         res=allList[i]->getAng();
     else if (verbose)
-    {
-        cerr << "getAng() failed due to out of range index: ";
-        cerr << i << ">=" << N << endl;
-    }
+        fprintf(stderr,"getAng() failed due to out of range index: %d>=%d\n",i,N);
 
     return res;
 }
@@ -781,10 +752,7 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
         for (unsigned int j=0; j<=_i; j++)
             H=H*((*l)[j]->getH(c_override));
     else if (verbose)
-    {
-        cerr << "getH() failed due to out of range index: ";
-        cerr << i << ">=" << n << endl;
-    }
+        fprintf(stderr,"getH() failed due to out of range index: %d>=%d\n",i,n);
 
     return H;
 }
@@ -815,7 +783,7 @@ Matrix iKinChain::getH(const Vector &q)
         return getH();
     }
     else if (verbose)
-        cerr << "getH() failed: " << DOF << " joint angles needed" << endl;
+        fprintf(stderr,"getH() failed: %d joint angles needed\n",DOF);
 
     return Matrix(0,0);
 }
@@ -854,10 +822,7 @@ Vector iKinChain::Pose(const unsigned int i, const bool axisRep)
         }
     }
     else if (verbose)
-    {
-        cerr << "Pose() failed due to out of range index: ";
-        cerr << i << ">=" << N << endl;
-    }
+        fprintf(stderr,"Pose() failed due to out of range index: %d>=%d\n",i,N);
 
     return v;
 }
@@ -907,7 +872,7 @@ Vector iKinChain::EndEffPose(const Vector &q, const bool axisRep)
         return EndEffPose(axisRep);
     }
     else if (verbose)
-        cerr << "EndEffPose() failed: " << DOF << " joint angles needed" << endl;
+        fprintf(stderr,"EndEffPose() failed: %d joint angles needed\n",DOF);
 
     return Vector(0);
 }
@@ -918,9 +883,7 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
 {
     if (i>=N)
     {
-        cerr << "AnaJacobian() failed due to out of range index: ";
-        cerr << i << ">=" << N << endl;
-
+        fprintf(stderr,"AnaJacobian() failed due to out of range index: %d>=%d\n",i,N);
         return Matrix(0,0);
     }
 
@@ -964,8 +927,7 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
 {
     if (!DOF)
     {
-        cerr << "AnaJacobian() failed since DOF==0" << endl;
-
+        fprintf(stderr,"AnaJacobian() failed since DOF==0\n");
         return Matrix(0,0);
     }
 
@@ -1017,7 +979,7 @@ Matrix iKinChain::AnaJacobian(const Vector &q, unsigned int col)
         return AnaJacobian(col);
     }
     else if (verbose)
-        cerr << "AnaJacobian() failed: " << DOF << " joint angles needed" << endl;
+        fprintf(stderr,"AnaJacobian() failed: %d joint angles needed\n",DOF);
 
     return Matrix(0,0);
 }
@@ -1028,9 +990,7 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
 {
     if (i>=N)
     {
-        cerr << "GeoJacobian() failed due to out of range index: ";
-        cerr << i << ">=" << N << endl;
-
+        fprintf(stderr,"GeoJacobian() failed due to out of range index: %d>=%d\n",i,N);
         return Matrix(0,0);
     }
 
@@ -1068,8 +1028,7 @@ Matrix iKinChain::GeoJacobian()
 {
     if (!DOF)
     {
-        cerr << "GeoJacobian() failed since DOF==0" << endl;
-
+        fprintf(stderr,"GeoJacobian() failed since DOF==0\n");
         return Matrix(0,0);
     }
 
@@ -1114,7 +1073,7 @@ Matrix iKinChain::GeoJacobian(const Vector &q)
         return GeoJacobian();
     }
     else if (verbose)
-        cerr << "GeoJacobian() failed: " << DOF << " joint angles needed" << endl;
+        fprintf(stderr,"GeoJacobian() failed: %d joint angles needed\n",DOF);
 
     return Matrix(0,0);
 }
@@ -1125,15 +1084,13 @@ Vector iKinChain::Hessian_ij(const unsigned int i, const unsigned int j)
 {
     if (!DOF)
     {
-        cerr << "Hessian_ij() failed since DOF==0" << endl;
-
+        fprintf(stderr,"Hessian_ij() failed since DOF==0\n");
         return Vector(0);
     }
 
     if (i>=DOF || j>=DOF)
     {
-        cerr << "Hessian_ij() failed due to out of range index" << endl;
-
+        fprintf(stderr,"Hessian_ij() failed due to out of range index\n");
         return Vector(0);
     }
 
@@ -1175,8 +1132,7 @@ void iKinChain::prepareForHessian()
 {
     if (!DOF)
     {
-        cerr << "prepareForHessian() failed since DOF==0" << endl;
-
+        fprintf(stderr,"prepareForHessian() failed since DOF==0\n");
         return;
     }
 
@@ -1209,15 +1165,13 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 {
     if (!DOF)
     {
-        cerr << "fastHessian_ij() failed since DOF==0" << endl;
-
+        fprintf(stderr,"fastHessian_ij() failed since DOF==0\n");
         return Vector(0);
     }
 
     if (i>=DOF || j>=DOF)
     {
-        cerr << "fastHessian_ij() failed due to out of range index" << endl;
-
+        fprintf(stderr,"fastHessian_ij() failed due to out of range index\n");
         return Vector(0);
     }
 
@@ -1298,7 +1252,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
     type=opt.check("type",Value("right")).asString().c_str();
     if (type!="right" && type!="left")
     {
-        cerr << "Error: invalid handedness type specified!" << endl;
+        fprintf(stderr,"Error: invalid handedness type specified!\n");
         return false;
     }
 
@@ -1324,7 +1278,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
     int numLinks=opt.check("numLinks",Value(0)).asInt();
     if (numLinks==0)
     {
-        cerr << "Error: invalid number of links specified!" << endl;
+        fprintf(stderr,"Error: invalid number of links specified!\n");
 
         type="right";
         H0.eye();
@@ -1342,7 +1296,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
         Bottle &bLink=opt.findGroup(link);
         if (bLink.isNull())
         {
-            cerr << "Error: " << link << " is missing!" << endl;
+            fprintf(stderr,"Error: %s is missing!\n",link);
 
             type="right";
             H0.eye();
