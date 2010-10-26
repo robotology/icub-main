@@ -20,64 +20,32 @@
 
   <module>
     <name>tactileGrasp</name>
-    <parameters>--from OpenHandLeft.ini --context graspingDemo/conf</parameters>
+    <parameters>--from TactileGraspLeft.ini --context graspingDemo/conf</parameters>
     <node>console</node>
     <stdio>console</stdio>
     <tag>openHandL</tag>
-  </module>
-
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from CalibrateLeft.ini --context graspingDemo/conf</parameters>
-    <node>console</node>
-    <stdio>console</stdio>
-    <tag>calibrateL</tag>
-  </module>
-
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from ToughGraspLeft.ini --context graspingDemo/conf</parameters>
-    <node>console</node>
-    <stdio>console</stdio>
-    <tag>toughGraspL</tag>
-  </module>
-
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from SoftGraspLeft.ini --context graspingDemo/conf</parameters>
-    <node>console</node>
-    <stdio>console</stdio>
-    <tag>softGraspL</tag>
-  </module>
-
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from CompliantGraspLeft.ini --context graspingDemo/conf</parameters>
-    <node>console</node>
-    <stdio>console</stdio>
-    <tag>compliantGraspL</tag>
-  </module>
+  </module> 
    
     
   <!--Connections between SkinDriftCompensation module and the SkinGui-->
   <connection>
-    <from>/icub/skin/lefthandcomp</from>
+    <from>/icub/skin/left_hand_comp</from>
     <to>/skinGui/left_hand:i</to>
     <protocol>tcp</protocol>
   </connection>
 
   <!--Connections between tactileGrasp and skinDriftCompensation module (rpc)-->
   <connection>
-    <from>/tactGraspCalibrateLeft/calibrationRpcPort:o</from>
-    <to>/rightHandSkinDriftComp/rpc</to>
+    <from>/tactGraspLeft/calibrationRpcPort:o</from>
+    <to>/leftHandSkinDriftComp/rpc</to>
     <protocol>tcp</protocol>
   </connection>
 
   <!--Connections between skinDriftCompensation module and tactileGrasp-->
   <connection>
-    <from>/icub/skin/righthandcomp</from>
+    <from>/icub/skin/left_hand_comp</from>
     <to>/tactGraspLeft/compTactData:i</to>
-    <protocol>rpc</protocol>
+    <protocol>tcp</protocol>
   </connection>
 
 </application>

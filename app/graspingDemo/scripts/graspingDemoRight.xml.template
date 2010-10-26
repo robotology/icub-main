@@ -20,49 +20,31 @@
 
   <module>
     <name>tactileGrasp</name>
-    <parameters>--from OpenHandRight.ini --context graspingDemo/conf</parameters>
+    <parameters>--from TactileGraspRight.ini --context graspingDemo/conf</parameters>
 	  <node>console</node>
     <stdio>console</stdio>
-    <tag>openHandR</tag>
+    <tag>tactGraspR</tag>
   </module>
 
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from CalibrateRight.ini --context graspingDemo/conf</parameters>
-    <node>console</node>
-    <stdio>console</stdio>
-    <tag>calibrateR</tag>
-  </module>
-
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from ToughGraspRight.ini --context graspingDemo/conf</parameters>
-	  <node>console</node>
-    <stdio>console</stdio>
-    <tag>toughGraspR</tag>
-  </module>
-
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from SoftGraspRight.ini --context graspingDemo/conf</parameters>
-    <node>console</node>
-    <stdio>console</stdio>
-    <tag>softGraspR</tag>
-  </module>
-
-  <module>
-    <name>tactileGrasp</name>
-    <parameters>--from CompliantGraspRight.ini --context graspingDemo/conf</parameters>
-	  <node>console</node>
-    <stdio>console</stdio>
-    <tag>compliantGraspR</tag>
-  </module>
-   
-    
+     
   <!--Connections between SkinDriftCompensation module and the SkinGui-->
   <connection>
-    <from>/icub/skin/righthandcomp</from>
+    <from>/icub/skin/right_hand_comp</from>
     <to>/skinGui/right_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+
+  <!--Connections between tactileGrasp and skinDriftCompensation module (rpc)-->
+  <connection>
+    <from>/tactGraspRight/calibrationRpcPort:o</from>
+    <to>/rightHandSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+
+  <!--Connections between skinDriftCompensation module and tactileGrasp-->
+  <connection>
+    <from>/icub/skin/right_hand_comp</from>
+    <to>/tactGraspRight/compTactData:i</to>
     <protocol>tcp</protocol>
   </connection>
 
