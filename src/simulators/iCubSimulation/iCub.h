@@ -43,7 +43,7 @@ class ICubSim : public ICubData {
 public:
     EyeLids *eyeLids;
     static const bool textured = true;
-	ConstString actElevation, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actCover, actWorld;
+	ConstString actElevation, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actCover, actWorld, actPressure;
     double elev;
 	
 //    dGeomID screenGeom;
@@ -192,6 +192,8 @@ public:
 	//void syncAngles();
 	bool checkTouchSensor(int bodyToCheck);
 	bool checkTouchSensor(dBodyID id);
+    double checkTouchSensor_continuousValued(int bodyToCheck);
+    double checkTouchSensor_continuousValued(dBodyID id);
 	void draw();
     void setPosition(dReal agentX, dReal agentY, dReal agentZ );
 	void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z);

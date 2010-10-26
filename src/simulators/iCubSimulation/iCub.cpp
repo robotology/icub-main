@@ -34,6 +34,66 @@ Model *bottomEyeLidModel;
 ICubData::ICubData() {
 }
 
+// The maximum force that the simulated touch sensor can sense.
+// Upper limit for the touch sensor is currently set as 100N. It can safely be changed.
+#define TOUCH_SENSOR_MAX_FORCE 100.0
+
+// This function returns the touch sensor value in the range 0-1.
+// Input fb is the feedback structure of the contactJoint on a touch sensitive body. 
+double getTouchSensorValue (dJointFeedback* fb) {
+
+		double forceOnBody = sqrt(fb->f1[0]*fb->f1[0] + fb->f1[1]*fb->f1[1] + fb->f1[2]*fb->f1[2]);
+
+		// If the force on the touch sensor is more than it can sense, set the force to the maximum value.
+		if (forceOnBody > TOUCH_SENSOR_MAX_FORCE) {
+			forceOnBody = TOUCH_SENSOR_MAX_FORCE;
+		}
+		// normalize the touch sensor output to the range 0-1.
+		forceOnBody = forceOnBody / TOUCH_SENSOR_MAX_FORCE;
+
+		return forceOnBody;
+}
+
+//function to check the activation of the sensor on the selected body...
+double ICubSim::checkTouchSensor_continuousValued(dBodyID id){
+	dJointID j;
+	double result = 0;
+	j  = dBodyGetJoint(id, 0); 
+
+	if(dJointGetType(j) == dJointTypeContact) {
+		// get the feedback from the joint.
+		dJointFeedback * fb = dJointGetFeedback (j);
+		// get the sensor value.
+		result = getTouchSensorValue(fb);
+	}
+
+	return result;
+}
+
+double ICubSim::checkTouchSensor_continuousValued(int bodyToCheck) {
+	dJointID j;
+	double result = 0;
+
+	if (bodyToCheck == 26 || bodyToCheck == 27 || bodyToCheck == 45 || bodyToCheck == 46)
+	{
+		if (bodyToCheck == 26 || bodyToCheck == 27){ 
+			j  = dBodyGetJoint(lhandfingers3, 0);
+		} else { 
+			j  = dBodyGetJoint(rhandfingers3, 0); 
+		}
+	} else {
+		j  = dBodyGetJoint(body[bodyToCheck], 0);
+	}
+	if(dJointGetType(j) == dJointTypeContact) {
+		// get the feedback from the joint.
+		dJointFeedback * fb = dJointGetFeedback (j);
+		// get the sensor value.
+		result = getTouchSensorValue(fb);
+	}
+
+	return result;
+}
+
 //function to check the activation of the sensor on the selected body...
 bool ICubSim::checkTouchSensor(dBodyID id){
 	dJointID j;
@@ -802,6 +862,8 @@ void ICubSim::activateiCubParts() {
 	actHead = options.findGroup("PARTS").check("head",Value(1),"what did the user select?").asString();
 	actfixedHip = options.findGroup("PARTS").check("fixed_hip",Value(1),"what did the user select?").asString();
 	actVision = options.findGroup("VISION").check("cam",Value(1),"What did the user select?").asString();
+    
+    actPressure = options.findGroup("SENSORS").check("pressure",Value(1),"What did the user select?").asString();
 
 	actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
 	actCover = options.findGroup("RENDER").check("cover",Value(1),"What did the user select?").asString();
@@ -814,8 +876,9 @@ void ICubSim::activateiCubParts() {
 		"Left hand : " << actLHand << endl <<
 		"Right arm : " << actRArm << endl <<
 		"Right hand : " << actRHand << endl <<
-		"Head : " << actHead << endl << endl <<
-		"Fixed Hip : " << actfixedHip << endl <<
+		"Head : " << actHead << endl <<
+		"Fixed Hip : " << actfixedHip << endl << endl << 
+        "Pressure sensors: " << actPressure << endl <<
 		"Cameras :" << actVision << endl  <<
 		"Objects : " << actWorld << endl <<
 		"Cover : " << actCover << endl << endl;

@@ -100,6 +100,14 @@ extern void sendVision();
 static bool eyeCams;
 const GLfloat light_position[] = { 0.0f, 5.0f, 5.0f, 0.0f };
 
+// # of touch sensors
+#define N_TOUCH_SENSORS 12
+// allocate feedback structs as a static array. We don't allocate feedback structs 
+// at every simulationstep since memory allocation at every step would degrade simulation performance.
+dJointFeedback touchSensorFeedbacks[MAX_CONTACTS * N_TOUCH_SENSORS];
+
+int nFeedbackStructs=0;
+
 class Simulation{
     static VideoTexture *video;
 
@@ -331,6 +339,15 @@ assert(o1);
       dJointID c = dJointCreateContact (odeinit.world,odeinit.contactgroup,contact+i);
       dJointAttach (c,b1,b2);
      // if (show_contacts) dsDrawBox (contact[i].geom.pos,RI,ss);
+        // check if the bodies are touch sensitive.
+				bool b1isTouchSensitive = isBodyTouchSensitive (b1);
+				bool b2isTouchSensitive = isBodyTouchSensitive (b2); 
+				// if any of the bodies are touch sensitive...
+				if (b1isTouchSensitive || b2isTouchSensitive) {
+					// ... add a feedback structure to the contact joint.
+					dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs])); 
+					nFeedbackStructs++;
+				}
     }
   }
 }
@@ -372,6 +389,156 @@ assert(o1);
 		}
 	}
 */
+
+// returns true if the body with the bodyID is a touch-sensitive body, returns false otherwise.
+static bool isBodyTouchSensitive (dBodyID bodyID) {
+
+	// check the smaller hand parts if the left hand is active.
+	if (odeinit._iCub->actLHand == "on") {	
+		if (bodyID == odeinit._iCub->body[10]) {
+			return true;
+		} else if (bodyID == odeinit._iCub->body[30]) {
+			return true;
+		} else if (bodyID == odeinit._iCub->body[24]) {
+			return true;
+		} else if	(bodyID == odeinit._iCub->body[25]) {
+			return true;
+		} else if	(bodyID == odeinit._iCub->lhandfingers3) {
+			return true;
+		}
+	} else { // check the whole left hand body if the hand is not active.
+		if (bodyID == odeinit._iCub->l_hand) {
+			return true;
+		}
+	}
+
+	// check the smaller hand parts if the right hand is active.
+	if (odeinit._iCub->actRHand == "on") {	
+		if (bodyID == odeinit._iCub->body[11]) {
+			return true;
+		} else if (bodyID == odeinit._iCub->body[49]) {
+			return true;
+		} else if (bodyID == odeinit._iCub->body[43]) {
+			return true;
+		} else if	(bodyID == odeinit._iCub->body[44]) {
+			return true;
+		} else if	(bodyID == odeinit._iCub->rhandfingers3) {
+			return true;
+		}
+	} else { // check the whole right hand body if the hand is not active.
+		if (bodyID == odeinit._iCub->r_hand) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static void inspectBodyTouch_continuousValued(Bottle& report){
+	report.clear();
+	if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
+		const char *names[] = {
+			"lpam","rpam",
+			"lind","lmid","lrng","llit","lthm",
+			"rind","rmid","rrng","rlit","rthm",
+			NULL
+		};
+		int nameIndex = 0;
+		for (int x = 0; x<50; x++){
+			//selected body parts for touch sensor left and right arm
+			if (x == 10 || x == 11 || x == 30 || x == 24 || x == 25 || x == 26 || x == 27 || x == 49 || x == 43 || x == 44 || x == 45 || x ==  46){
+				double result = odeinit._iCub->checkTouchSensor_continuousValued(x);
+				const char *name = names[nameIndex];
+				nameIndex++;
+				if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
+				report.addVocab(Vocab::encode(name));
+				report.addDouble(result);
+			}
+		}
+	}
+	else if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "off" ){
+		const char *names[] = {
+			"lpam",
+			"lind","lmid","lrng","llit","lthm",
+			"rhand",
+			NULL
+		};
+		int nameIndex = 0;
+		for (int i = 0; i<2; i++){
+			if (i == 0){
+				for (int x = 0; x<31; x++){
+					if (x == 10 || x == 30 || x == 24 || x == 25 || x == 26 || x == 27){
+						double result = odeinit._iCub->checkTouchSensor_continuousValued(x);
+						const char *name = names[nameIndex];
+						nameIndex++;
+						if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
+						report.addVocab(Vocab::encode(name));
+						report.addDouble(result);
+					}
+				}
+			}else{
+				double result = odeinit._iCub->checkTouchSensor_continuousValued(odeinit._iCub->r_hand);
+				const char *name = names[nameIndex];nameIndex++;
+				if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
+				report.addVocab(Vocab::encode(name));
+				report.addDouble(result);
+			}
+		}
+	}
+	else if (odeinit._iCub->actRHand == "on" && odeinit._iCub->actLHand == "off"  ){
+		const char *names[] = {
+			"rpam",
+			"rind","rmid","rrng","rlit","rthm",
+			"lhand",
+			NULL
+		};
+		int nameIndex = 0;
+		for (int i = 0; i<2; i++){
+			if (i == 0){
+				for (int x = 0; x<50; x++){
+					if (x == 11 || x == 49 || x == 43 || x == 44 || x == 45 || x ==  46){
+						double result = odeinit._iCub->checkTouchSensor_continuousValued(x);
+						const char *name = names[nameIndex];
+						nameIndex++;
+						if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
+						report.addVocab(Vocab::encode(name));
+						report.addDouble(result);
+					}
+				}
+			}else{
+				double result = odeinit._iCub->checkTouchSensor_continuousValued(odeinit._iCub->l_hand);
+				const char *name = names[nameIndex];
+				nameIndex++;
+				if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
+				report.addVocab(Vocab::encode(name));
+				report.addDouble(result);
+			}
+		}
+	}
+	else{ //both off
+			const char *names[] = {
+			"lhand","rhand",
+			NULL
+		};
+		int nameIndex = 0;
+		for (int i = 0; i<2; i++){
+			if (i == 0){
+				double result = odeinit._iCub->checkTouchSensor_continuousValued(odeinit._iCub->l_hand);
+				const char *name = names[nameIndex];nameIndex++;
+				if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
+				report.addVocab(Vocab::encode(name));
+				report.addDouble(result);
+			}
+			else{
+				double result = odeinit._iCub->checkTouchSensor_continuousValued(odeinit._iCub->r_hand);
+				const char *name = names[nameIndex];nameIndex++;
+				if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
+				report.addVocab(Vocab::encode(name));
+				report.addDouble(result);
+			}
+		}
+	}
+}
 	static void inspectBodyTouch(Bottle& report){
 		report.clear();
 		if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
@@ -686,6 +853,7 @@ assert(o1);
 		//startTimeODE = clock();
 		
 		odeinit.mutex.wait();
+        nFeedbackStructs=0;
 		dSpaceCollide(odeinit.space,0,&nearCallback);
 		dWorldStep(odeinit.world, 0.01); // TIMESTEP
         odeinit.sync = true;
@@ -693,7 +861,10 @@ assert(o1);
 
 		if (shouldSendTouch()) {
 			Bottle report;
-			inspectBodyTouch(report);
+            if (odeinit._iCub->actPressure == "on")
+                inspectBodyTouch_continuousValued(report);
+            else
+			    inspectBodyTouch(report);
 			sendTouch(report);
 		}
 
