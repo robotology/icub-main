@@ -1,4 +1,7 @@
 
+2010-10-26 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iostream replaced by fprintf()
+
 2010-07-09 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinFwd.h,.cpp: added alignJointsBounds methods
 
