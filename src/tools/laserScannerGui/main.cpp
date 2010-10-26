@@ -101,7 +101,7 @@ const CvScalar color_black = cvScalar(0,0,0);
 	cvLine(img,cvPoint(img->width,0),cvPoint(0,img->height),color_black);
 	cvLine(img,cvPoint(img->width/2,0),cvPoint(img->width/2,img->height),color_black);
 	cvLine(img,cvPoint(0,img->height/2),cvPoint(img->width,img->height/2),color_black);
-	const int step = 500 * scale; //mm
+	const int step = (int)(500.0 * scale); //mm
 /*
 	for (int xi=0; xi<img->width; xi+=step)
 		cvLine(img,cvPoint(xi,0),cvPoint(xi,img->height),color_black);
@@ -122,7 +122,7 @@ void drawRobot (IplImage *img)
 	const CvScalar color_gray  = cvScalar(100,100,100);
 
 	//draw a circle
-	cvCircle(img,cvPoint(img->width/2,img->height/2),robot_radius*scale,color_gray,CV_FILLED);
+	cvCircle(img,cvPoint(img->width/2,img->height/2),(int)(robot_radius*scale),color_gray,CV_FILLED);
 }
 
 void drawLaser(const Vector *v, IplImage *img)
@@ -134,7 +134,7 @@ const CvScalar color_black = cvScalar(0,0,0);
 	cvRectangle(img,cvPoint(0,0),cvPoint(img->width,img->height),cvScalar(255,0,0),-1);
 	CvPoint center;
 	center.x = img->width/2;
-	center.y = img->height/2-laser_position*scale;
+	center.y = img->height/2-(int)(laser_position*scale);
 
 	double angle =0;
 	double lenght=0;
