@@ -289,27 +289,27 @@ public:
     bool interruptModule() {
         stopped = true;//odeinit.stop = true;
 
-        if (iCubLArm!=NULL) {
+        if (iCubLArm!=NULL && odeinit._iCub->actLArm == "on"|| odeinit._iCub->actRHand == "on") {
             delete iCubLArm;
             iCubLArm = NULL;
         }
-        if (iCubRArm!=NULL) {
+        if (iCubRArm!=NULL && odeinit._iCub->actRArm == "on" || odeinit._iCub->actRHand == "on") {
             delete iCubRArm;
             iCubRArm = NULL;
         }
-        if (iCubHead!=NULL) {
+        if (iCubHead!=NULL && odeinit._iCub->actHead == "on") {
             delete iCubHead;
             iCubHead = NULL;
         }
-		if (iCubLLeg!=NULL) {
+		if (iCubLLeg!=NULL && odeinit._iCub->actLegs == "on") {
             delete iCubLLeg;
             iCubLLeg = NULL;
         }
-		if (iCubRLeg!=NULL) {
+		if (iCubRLeg!=NULL && odeinit._iCub->actLegs == "on") {
             delete iCubRLeg;
             iCubRLeg = NULL;
         }
-		if (iCubTorso!=NULL) {
+		if (iCubTorso!=NULL && odeinit._iCub->actTorso == "on") {
             delete iCubTorso;
             iCubTorso = NULL;
         }
@@ -1144,64 +1144,117 @@ static void displayStep(int pause) {
 void SimulatorModule::init()
 {
 	Property options;
-  	//start left arm device driver
-	ConstString left_arm = finder.find("left_arm");
-	options.fromConfigFile(left_arm.c_str());
-    ConstString leftArmPort = options.check("name",Value(1),"what did the user select?").asString();
-    string leftArm = moduleName + leftArmPort.c_str();
-    options.put("name", leftArm.c_str() );
-  	iCubLArm = new PolyDriver(options);
+    if (odeinit._iCub->actLArm == "on" || odeinit._iCub->actLHand == "on"){
+      	//start left arm device driver
+	    ConstString left_arm = finder.find("left_arm");
+	    options.fromConfigFile(left_arm.c_str());
+        ConstString leftArmPort = options.check("name",Value(1),"what did the user select?").asString();
+        string leftArm = moduleName + leftArmPort.c_str();
+        options.put("name", leftArm.c_str() );
+      	iCubLArm = new PolyDriver(options);
 
-  	//start right arm device driver
-  	ConstString right_arm = finder.find("right_arm");
-	options.fromConfigFile(right_arm.c_str());
-    ConstString rightArmPort = options.check("name",Value(1),"what did the user select?").asString();
-    string rightArm = moduleName + rightArmPort.c_str();
-    options.put("name", rightArm.c_str() );
-  	iCubRArm = new PolyDriver(options);
+        if (!iCubLArm->isValid()){
+            printf("Device not available. Here are the known devices:\n");
+	        printf("%s", Drivers::factory().toString().c_str());
+            Network::fini();
+            yarp::os::exit(1);
+        }
+    }
 
-  	//start head device driver
-  	ConstString head = finder.find("head");
-	options.fromConfigFile(head.c_str());
-    ConstString headPort = options.check("name",Value(1),"what did the user select?").asString();
-    string headStr = moduleName + headPort.c_str();
-    options.put("name", headStr.c_str() );
-  	iCubHead = new PolyDriver(options);
+    if (odeinit._iCub->actRArm == "on" || odeinit._iCub->actRHand == "on"){
+      	//start right arm device driver
+      	ConstString right_arm = finder.find("right_arm");
+	    options.fromConfigFile(right_arm.c_str());
+        ConstString rightArmPort = options.check("name",Value(1),"what did the user select?").asString();
+        string rightArm = moduleName + rightArmPort.c_str();
+        options.put("name", rightArm.c_str() );
+      	iCubRArm = new PolyDriver(options);
 
-  	//start left leg device driver
- 	ConstString left_leg = finder.find("left_leg");
-	options.fromConfigFile(left_leg.c_str());
-    ConstString leftLegPort = options.check("name",Value(1),"what did the user select?").asString();
-    string leftLeg = moduleName + leftLegPort.c_str();
-    options.put("name", leftLeg.c_str() );
-  	iCubLLeg = new PolyDriver(options);
+        if (!iCubRArm->isValid()){
+            printf("Device not available. Here are the known devices:\n");
+	        printf("%s", Drivers::factory().toString().c_str());
+            Network::fini();
+            yarp::os::exit(1);
+        }
+    }
 
-   	//start right leg device driver
- 	ConstString right_leg = finder.find("right_leg");
-	options.fromConfigFile(right_leg.c_str());
-    ConstString rightLegPort = options.check("name",Value(1),"what did the user select?").asString();
-    string rightLeg = moduleName + rightLegPort.c_str();
-    options.put("name", rightLeg.c_str() );
-  	iCubRLeg = new PolyDriver(options);
+    if (odeinit._iCub->actHead == "on"){
+      	//start head device driver
+      	ConstString head = finder.find("head");
+	    options.fromConfigFile(head.c_str());
+        ConstString headPort = options.check("name",Value(1),"what did the user select?").asString();
+        string headStr = moduleName + headPort.c_str();
+        options.put("name", headStr.c_str() );
+      	iCubHead = new PolyDriver(options);
 
-    //start torso device driver
-  	ConstString torso = finder.find("torso");
-	options.fromConfigFile(torso.c_str());
-    ConstString torsoPort = options.check("name",Value(1),"what did the user select?").asString();
-    string torsoStr = moduleName + torsoPort.c_str();
-    options.put("name", torsoStr.c_str() );
-  	iCubTorso = new PolyDriver(options);
+        if (!iCubHead->isValid()){
+            printf("Device not available. Here are the known devices:\n");
+	        printf("%s", Drivers::factory().toString().c_str());
+            Network::fini();
+            yarp::os::exit(1);
+        }
+    }
+
+    if (odeinit._iCub->actLegs == "on"){
+      	//start left leg device driver
+     	ConstString left_leg = finder.find("left_leg");
+	    options.fromConfigFile(left_leg.c_str());
+        ConstString leftLegPort = options.check("name",Value(1),"what did the user select?").asString();
+        string leftLeg = moduleName + leftLegPort.c_str();
+        options.put("name", leftLeg.c_str() );
+      	iCubLLeg = new PolyDriver(options);
+
+        if (!iCubLLeg->isValid()){
+            printf("Device not available. Here are the known devices:\n");
+	        printf("%s", Drivers::factory().toString().c_str());
+            Network::fini();
+            yarp::os::exit(1);
+        }
+    }
+
+    if (odeinit._iCub->actLegs == "on"){
+       	//start right leg device driver
+     	ConstString right_leg = finder.find("right_leg");
+	    options.fromConfigFile(right_leg.c_str());
+        ConstString rightLegPort = options.check("name",Value(1),"what did the user select?").asString();
+        string rightLeg = moduleName + rightLegPort.c_str();
+        options.put("name", rightLeg.c_str() );
+      	iCubRLeg = new PolyDriver(options);
+
+        if (!iCubRLeg->isValid()){
+            printf("Device not available. Here are the known devices:\n");
+	        printf("%s", Drivers::factory().toString().c_str());
+            Network::fini();
+            yarp::os::exit(1);
+        }
+    }
+    if (odeinit._iCub->actTorso == "on"){
+        //start torso device driver
+      	ConstString torso = finder.find("torso");
+	    options.fromConfigFile(torso.c_str());
+        ConstString torsoPort = options.check("name",Value(1),"what did the user select?").asString();
+        string torsoStr = moduleName + torsoPort.c_str();
+        options.put("name", torsoStr.c_str() );
+      	iCubTorso = new PolyDriver(options);
+        
+        if (!iCubTorso->isValid()){
+            printf("Device not available. Here are the known devices:\n");
+	        printf("%s", Drivers::factory().toString().c_str());
+            Network::fini();
+            yarp::os::exit(1);
+        }
+    }
 
 	//odeinit._wrld->model_DIR = finder.findPath("model_path_default").asString();
 	odeinit._wrld->model_DIR = finder.findPath("model_path_default");//findPath("model_path_default");
 	
-  if(!iCubLArm->isValid() || !iCubRArm->isValid() || !iCubHead->isValid() || !iCubLLeg->isValid() || !iCubRLeg->isValid() || !iCubTorso->isValid())
+ /* if(!iCubLArm->isValid() && odeinit._iCub->actLArm == "on" || !iCubRArm->isValid() || !iCubHead->isValid() || !iCubLLeg->isValid() || !iCubRLeg->isValid() || !iCubTorso->isValid())
     {
       printf("Device not available. Here are the known devices:\n");
 	  printf("%s", Drivers::factory().toString().c_str());
       Network::fini();
       yarp::os::exit(1);
-    }
+    }*/
 
 }
 
