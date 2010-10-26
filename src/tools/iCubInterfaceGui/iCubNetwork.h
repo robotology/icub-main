@@ -24,34 +24,39 @@
 class iCubNetwork
 {
 public:
-    iCubNetwork(){}
-
-    iCubNetwork(std::string &name,
-              std::string &file,
-              std::string &device,
-              std::string &canBusDevice,
-              int threadRate)
-        : 
-            mName(name),
-            mFile(file),
-            mDevice(device),
-            mCanBusDevice(canBusDevice),
-            mThreadRate(threadRate),
-            mID(-1)
+    iCubNetwork()
     {
+        mName="";
+        mFile="";
+        mDevice="";
+    }
+
+    iCubNetwork(std::string &name,std::string &file,std::string &device) 
+        : mName(name),mFile(file),mDevice(device)
+    {
+        mData.write(STRING_Name,yarp::os::Value(name.c_str()));
+        mData.write(STRING_Device_identifier,yarp::os::Value(device.c_str()));
     }
 
     ~iCubNetwork()
     {
         for (int i=0; i<(int)mBoards.size(); ++i)
         {
-            delete mBoards[i];
+            if (mBoards[i]!=NULL) delete mBoards[i];
         }
     }
-    
+
+    void setID(int ID)
+    {
+        mData.write(INT_Network_id,yarp::os::Value(ID));
+    }
+
     enum Index
     {
+        STRING_Name,
+        STRING_Device_identifier, // Name of the yarp can device: pcan/cfw2
         INT_Network_id,	    // Usually a number for each device, from 0 to … n
+
         INT_Driver_Rx_ovf,	// Rx buffer overflow in device driver (# messages)
         INT_Driver_Tx_ovf,	// Tx buffer overflow in device driver (# messages)
         INT_Rx_Can_errors,	// Rx errors (can device)
@@ -65,10 +70,12 @@ public:
         DOUBLE_Estimated_std_rate	   // Same as before, standard deviation, ms
     };
 
+    /*
     inline bool operator==(iCubNetwork& n)
     {
         return mName==n.mName;
     }
+    */
 
     void addBoard(iCubBoard* board)
     {
@@ -81,32 +88,11 @@ public:
     {
         yarp::os::Bottle bot;
 
-        if (bConfig)
-        {
-            bot.addInt(CONFIG_FLAG);
-            bot.addString(mName.c_str());
-            bot.addString(mFile.c_str());
-            bot.addString(mDevice.c_str());
-            bot.addString(mCanBusDevice.c_str());
-            bot.addInt(mThreadRate);
-        }
-        else
-        {
-            bot.addInt(ONLY_DATA_FLAG);
-        }        
-
-        /////////////////////////////////////
-
-        yarp::os::Bottle& netBot=bot.addList();
-
-        netBot.append(mData.toBottle());
-
-        /////////////////////////////////////////
+        bot.addList()=mData.toBottle(bConfig);
 
         for (int i=0; i<(int)mBoards.size(); ++i)
         {
-            yarp::os::Bottle& board=bot.addList();
-            board=mBoards[i]->toBottle(bConfig);
+            bot.addList()=mBoards[i]->toBottle(bConfig);
         }
 
         return bot;
@@ -114,44 +100,21 @@ public:
 
     void fromBottle(yarp::os::Bottle &bot)
     {
-        int i0=1;
-        if (bot.get(0).asInt()==CONFIG_FLAG)
+        mData.fromBottle(*(bot.get(0).asList()));
+        
+        for (int i=0; i<(int)mBoards.size(); ++i)
         {
-            i0=6;
-            mName=bot.get(1).asString().c_str();
-            mFile=bot.get(2).asString().c_str();
-            mDevice=bot.get(3).asString().c_str();
-            mCanBusDevice=bot.get(4).asString().c_str();
-            mThreadRate=bot.get(5).asInt();
-        }
-
-        //////////////////////////////////////////////
-
-        yarp::os::Bottle* netBot=bot.get(i0).asList();
-
-        mData.fromBottle(*netBot);
-
-        ////////////////////////////////////////
-
-        for (int i=i0+1; i<(int)bot.size(); ++i)
-        {
-            mBoards[i-i0]->fromBottle(*(bot.get(i).asList()));
+            mBoards[i]->fromBottle(*(bot.get(i+1).asList()));
         }
     }
 
-    std::string mName;
-    std::string mFile;
-    std::string mDevice;
-    std::string mCanBusDevice;
-    int mThreadRate;
-    int mID;
+    std::string mName,mFile,mDevice;
 
 protected:
     std::vector<iCubBoard*> mBoards;
 
-    static char* mRowNames[];
-
     RawData mData;
+    static char* mRowNames[];
 };
 
 #endif

@@ -33,13 +33,13 @@ public:
 
     int size(){ return mData.size(); }
 
-    yarp::os::Bottle toBottle()
+    yarp::os::Bottle toBottle(bool bConfig=false)
     {
         yarp::os::Bottle bot;
 
         for (int i=0; i<(int)mData.size(); ++i)
         {
-            if (mFlag[i])
+            if (bConfig || mFlag[i])
             {
                 mFlag[i]=false;
                 bot.addInt(i);
@@ -123,7 +123,7 @@ protected:
 class iCubBoardChannel
 {
 public:
-    iCubBoardChannel(int ch) : mChannel(ch)
+    iCubBoardChannel()
     {
     }
 
@@ -134,30 +134,35 @@ public:
     virtual bool findAndWrite(std::string addr,yarp::os::Value* data)=0;
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
-
-protected:
-    int mChannel;
 };
+
+#define UNASSIGNED -1
 
 class iCubBLLChannel : public iCubBoardChannel
 {
 public:
-    iCubBLLChannel(int ch,int j) : iCubBoardChannel(ch),mJoint(j)
+    iCubBLLChannel(int channel=UNASSIGNED,int joint=UNASSIGNED) : iCubBoardChannel(),mData(),mChannel(channel)
     {
+        mData.write(INT_Channel,yarp::os::Value(channel));
+        mData.write(INT_Joint,yarp::os::Value(joint));
     }
 
     virtual ~iCubBLLChannel()
     {
-    }    
+    }
 
     enum Index
     {
         // interface generated
+        //STRING_Device_identifier,	// Name of the yarp can device: pcan/cfw2
+        //INT_Board_ID,	            // The id with which the board is identified on the canbus
+        
+        INT_Channel,	            // The channel (boards can have up to 2 channels)
+        INT_Joint,	                // Corresponding joint (for readability)
+        
         DOUBLE_Status_messages_latency,       // Keep track of the time the last status message has been received (seconds)
-        DOUBLE_Encoder_latency,               // Keep track of the time the last encoder reading has been received
-
-        // interface generated
         BOOL_Status_messages_latency_timeout, // If status messages latency > threshold (5s) raise an error
+        DOUBLE_Encoder_latency,               // Keep track of the time the last encoder reading has been received        
         BOOL_Encoder_latency_timeout,         // If encoder latency > threshold (5s) raise an error
 
         // device generated
@@ -168,16 +173,14 @@ public:
         BOOL_Fault_external,            // External fault button is pressed
         BOOL_Hall_sensor_error,	        // Brushless hall effect sensor error
         BOOL_Absolute_encoder_error,    // Read error in absolute position sensor
-        BOOL_BusOff,		
-        BOOL_CanTx_Overflow,	        // Canbus Tx Buffer overflow (firmware)
+        BOOL_BusOff,
+        INT_Can_Tx_Error_counter,	
+        INT_Can_Rx_Error_counter,
+        BOOL_Can_Tx_Overflow,	        // Canbus Tx Buffer overflow (firmware)
         BOOL_Can_Rx_Overrun,            // Canbus Rx buffer overflow (firmware)
         BOOL_Main_loop_overflow,        // Main loop exceeded requested period (>1ms, typically)
         BOOL_Over_temperature,	
         BOOL_Temp_sensor_error,         // Read error in temperature sensor
-     
-        // device denerated
-        INT_Can_Tx_Error_counter,	
-        INT_Can_Rx_Error_counter,
         INT_Control_mode               // Status of the controller. This enumeration is illustrated below.
     };
 
@@ -200,10 +203,8 @@ public:
     virtual bool findAndWrite(std::string addr,yarp::os::Value* data);
 
 protected:
-    int mJoint; // Corresponding joint (for readability)
-
+    int mChannel;
     RawData mData;
-
     static char *mRowNames[];
 };
 

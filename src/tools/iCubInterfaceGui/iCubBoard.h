@@ -23,7 +23,7 @@
 class iCubBoard
 {
 public:
-    iCubBoard(int ID) : mID(ID)
+    iCubBoard()
     {
     }
 
@@ -34,71 +34,62 @@ public:
     virtual bool findAndWrite(std::string addr,yarp::os::Value* data)=0;
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
-
-    int getID()
-    {
-        return mID;
-    }
-
-protected:
-    int mID;
 };
 
 class iCubBLLBoard : public iCubBoard
 {
 public:
-    iCubBLLBoard(int ID,int j0,int j1) : iCubBoard(ID)
+    iCubBLLBoard() : iCubBoard()
+    {
+    }
+
+    iCubBLLBoard(int ID,int j0,int j1) : iCubBoard(),mID(ID)
     {
         mChannel[0]=new iCubBLLChannel(0,j0);
         mChannel[1]=new iCubBLLChannel(1,j1);
+
+        mData.write(STRING_Board_Type,yarp::os::Value("BLL"));
+        mData.write(INT_Board_ID,yarp::os::Value(ID));
     }
 
     virtual ~iCubBLLBoard()
     {
-        delete mChannel[0];
-        delete mChannel[1];
+        if (mChannel[0]!=NULL) delete mChannel[0];
+        if (mChannel[1]!=NULL) delete mChannel[1];
     }
 
-    yarp::os::Bottle toBottle(bool bConfig)
+    enum Index
+    {
+        STRING_Board_Type,  // ="BLL"
+        INT_Board_ID        //The id with which the board is identified on the canbus
+    };
+
+    virtual yarp::os::Bottle toBottle(bool bConfig)
     {
         yarp::os::Bottle bot;
 
-        if (bConfig)
-        {
-            bot.addInt(CONFIG_FLAG);
-            bot.addString("BLL");
-            bot.addInt(mID);
-        }
-        else
-        {
-            bot.addInt(ONLY_DATA_FLAG);
-        }
-
-        yarp::os::Bottle& chan0=bot.addList();
-        chan0=mChannel[0]->toBottle(bConfig);
-        yarp::os::Bottle& chan1=bot.addList();
-        chan1=mChannel[1]->toBottle(bConfig);
+        bot.addList()=mData.toBottle(bConfig);
+        bot.addList()=mChannel[0]->toBottle(bConfig);
+        bot.addList()=mChannel[1]->toBottle(bConfig);
 
         return bot;
     }
 
-    void fromBottle(yarp::os::Bottle& bot)
+    virtual void fromBottle(yarp::os::Bottle& bot)
     {
-        int i=1;
-        if (bot.get(0).asInt()==CONFIG_FLAG)
-        {
-            i=3;
-            mID=bot.get(2).asInt();
-        }
-
-        mChannel[0]->fromBottle(*(bot.get(i  ).asList()));
-        mChannel[1]->fromBottle(*(bot.get(i+1).asList()));
+        mData.fromBottle(*(bot.get(0).asList()));
+        mChannel[0]->fromBottle(*(bot.get(1).asList()));
+        mChannel[1]->fromBottle(*(bot.get(2).asList()));
     }
 
     virtual bool findAndWrite(std::string addr,yarp::os::Value* data);
 
 protected:
     iCubBLLChannel *mChannel[2];
+    
+    int mID;
+    RawData mData;
+    static char *mRawNames[];
 };
 
 #endif

@@ -11,81 +11,44 @@
 char* iCubBLLChannel::mRowNames[]=
 {
     // interface generated
-    "Status messages latency",       // Keep track of the time the last status message has been received (seconds)
-    "Encoder latency",               // Keep track of the time the last encoder reading has been received
+    //"Device identifier",	// Name of the yarp can device: pcan/cfw2
+    //"Board ID",	            // The id with which the board is identified on the canbus
+    "Channel",	            // The channel (boards can have up to 2 channels)
+    "Joint",	            // Corresponding joint (for readability)
 
-    // interface generated
-    "Status messages latency timeout", // If status messages latency > threshold (5s) raise an error
-    "Encoder latency timeout",         // If encoder latency > threshold (5s) raise an error
+    "Status_messages_latency",         // Keep track of the time the last status message has been received (seconds)
+    "Status_messages_latency_timeout", // If status messages latency > threshold (5s) raise an error
+    "Encoder_latency",                 // Keep track of the time the last encoder reading has been received        
+    "Encoder_latency_timeout",         // If encoder latency > threshold (5s) raise an error
 
     // device generated
-    "Is Fault Ok",               // Status of the fault pin, general error
-    "Fault undervoltage",        // Power supply voltage is below minimum
-    "Fault overload",            // Hardware fault triggered by the operational amplifier
-    "Fault overcurrent",	        // Current exceeds maximum value
-    "Fault external",            // External fault button is pressed
-    "Hall sensor error",	        // Brushless hall effect sensor error
-    "Absolute encoder error",    // Read error in absolute position sensor
-    "BusOff",		
-    "CanTx Overflow",	        // Canbus Tx Buffer overflow (firmware)
-    "Can Rx Overrun",            // Canbus Rx buffer overflow (firmware)
-    "Main loop overflow",        // Main loop exceeded requested period (>1ms, typically)
-    "Over temperature",	
-    "Temp sensor error",         // Read error in temperature sensor
-
-    // device denerated
-    "Can Tx Error counter",	
-    "Can Rx Error counter",
-    "Control mode",               // Status of the controller.
+    "Is_Fault_Ok",               // Status of the fault pin, general error
+    "Fault_undervoltage",        // Power supply voltage is below minimum
+    "Fault_overload",            // Hardware fault triggered by the operational amplifier
+    "Fault_overcurrent",	     // Current exceeds maximum value
+    "Fault_external",            // External fault button is pressed
+    "Hall_sensor_error",	     // Brushless hall effect sensor error
+    "Absolute_encoder_error",    // Read error in absolute position sensor
+    "BusOff",
+    "Can_Tx_Error_counter",	
+    "Can_Rx_Error_counter",
+    "Can_Tx_Overflow",	         // Canbus Tx Buffer overflow (firmware)
+    "Can_Rx_Overrun",            // Canbus Rx buffer overflow (firmware)
+    "Main_loop_overflow",        // Main loop exceeded requested period (>1ms, typically)
+    "Over_temperature",	
+    "Temp_sensor_error",         // Read error in temperature sensor
+    "Control_mode",              // Status of the controller. This enumeration is illustrated below.
     NULL
 };
 
 yarp::os::Bottle iCubBLLChannel::toBottle(bool bConfig)
 {
-    yarp::os::Bottle bot;
-
-    if (bConfig)
-    {
-        bot.addInt(CONFIG_FLAG);
-        bot.addInt(mChannel);
-        bot.addInt(mJoint);
-    }
-    else
-    {
-        bot.addInt(ONLY_DATA_FLAG);
-    }
-
-    yarp::os::Value data;
-    for (int i=0; i<(int)mData.size(); ++i)
-    {
-        if (mData.read(i,data))
-        {
-            bot.addInt(i);
-            bot.add(data);
-        }
-    }
-
-    return bot;
+    return mData.toBottle();
 }
 
 void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)
 {
-    int i=1;
-
-    if (bot.get(0).asInt()==CONFIG_FLAG)
-    {
-        i=3;
-        mChannel=bot.get(1).asInt();
-        mJoint=bot.get(2).asInt();
-    }
-
-    for (; i<bot.size(); i+=2)
-    {
-        int index=bot.get(i).asInt();
-        yarp::os::Value data=bot.get(i+1);
-
-        mData.write(index,data);
-    }
+    mData.fromBottle(bot);
 }
 
 bool iCubBLLChannel::findAndWrite(std::string addr,yarp::os::Value* data)

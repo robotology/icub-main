@@ -83,10 +83,8 @@ void iCubInterfaceGuiServer::config(yarp::os::Property &robot)
             if (!bExists)
             {
                 mNetworks.push_back(new iCubNetwork(netName,
-                    std::string(net.find("file").asString().c_str()),
-                    std::string(net.find("device").asString().c_str()),
-                    std::string(net.find("canbusdevice").asString().c_str()),
-                    part.find("threadrate").asInt()));
+                                                    std::string(net.find("file").asString().c_str()),
+                                                    std::string(net.find("canbusdevice").asString().c_str())));
 
                 jointRmp.push_back(JointRemapper());
                 jointRmp.back().push(d0,d1,j0);
@@ -101,16 +99,16 @@ void iCubInterfaceGuiServer::config(yarp::os::Property &robot)
         yarp::os::Property netConf;
         netConf.fromConfigFile(mNetworks[n]->mFile.c_str());
         yarp::os::Bottle canConf=netConf.findGroup("CAN");
-
-        mNetworks[n]->mID=canConf.find("CanDeviceNum").asInt();
-
+    
+        mNetworks[n]->setID(canConf.find("CanDeviceNum").asInt());
+    
         yarp::os::Bottle devices=canConf.findGroup("CanAddresses");
-
-        for (int d=1; d<devices.size(); ++d)
+        devices=devices.tail();
+    
+        for (int d=0; d<devices.size(); ++d)
         {
-            int joint=jointRmp[n].getJoint(d-1);
-            iCubBoard *bll=new iCubBLLBoard(devices.get(d).asInt(),joint,joint+1);
-            mNetworks[n]->addBoard(bll);
+            int joint=jointRmp[n].getJoint(d);
+            mNetworks[n]->addBoard(new iCubBLLBoard(devices.get(d).asInt(),joint,joint+1));
         }
     }
 
@@ -166,20 +164,9 @@ yarp::os::Bottle iCubInterfaceGuiServer::toBottle(bool bConfig)
 {
     yarp::os::Bottle bot;
 
-    if (bConfig)
-    {
-        bot.addInt(CONFIG_FLAG);
-    }
-    else
-    {
-        bot.addInt(ONLY_DATA_FLAG);
-    }
-
     for (int n=0; n<(int)mNetworks.size(); ++n)
     {   
-        yarp::os::Bottle& netBot=bot.addList();
-
-        netBot=mNetworks[n]->toBottle(bConfig);
+        bot.addList()=mNetworks[n]->toBottle(bConfig);
     }
 
     return bot;

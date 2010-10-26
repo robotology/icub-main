@@ -12,6 +12,13 @@
 
 ////////////////////////////////////
 
+char *mRowNames[]=
+{
+    "Board Type",    // ="BLL"
+    "Board ID",      //The id with which the board is identified on the canbus
+    NULL
+};
+
 bool iCubBLLBoard::findAndWrite(std::string addr,yarp::os::Value* data)
 {
     int index=addr.find(",");

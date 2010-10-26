@@ -9,10 +9,10 @@
 #ifndef __GTKMM_ICUB_INTERFACE_GUI_CLIENT_H__
 #define __GTKMM_ICUB_INTERFACE_GUI_CLIENT_H__
 
-#include <gtkmm.h>
+//#include <gtkmm.h>
 #include <yarp/os/RateThread.h>
 #include "iCubNetworkGui.h"
-#include "iCubInterfaceGuiServer.h"
+//#include "iCubInterfaceGuiServer.h"
 
 class iCubInterfaceGuiClient : public Gtk::Window, public yarp::os::RateThread
 {
@@ -61,14 +61,9 @@ public:
         bot.addString("GET_CONF");
         mPort.write(bot,rep);
 
-        int bConfig=bot.get(0).asInt();
-
-        bot=bot.tail();
-
         for (int i=0; i<(int)bot.size(); ++i)
         {
             mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(bot.get(i).asList())));
-            mNetworks.back()->fromBottle(*(bot.get(i).asList()));
         }
 
         /////////////////////////////////////////////////////////////////////////////
@@ -88,13 +83,12 @@ public:
 
     void fromBottle(yarp::os::Bottle &bot)
     {
-        int bConfig=bot.get(0).asInt();
+        int i=0;
+        int bConfig=bot.get(i++).asInt();
 
-        bot=bot.tail();
-
-        for (int i=0; i<(int)bot.size(); ++i)
+        for (int j=0; i<(int)bot.size(); ++j)
         {
-            mNetworks[i]->fromBottle(*(bot.get(i).asList()));
+            mNetworks[j]->fromBottle(*(bot.get(i++).asList()));
         }
     }
 

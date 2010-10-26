@@ -14,6 +14,8 @@
 
 char* iCubNetwork::mRowNames[]=
 {
+        "Name",
+        "Device identifier",// Name of the yarp can device: pcan/cfw2
         "Network id",	    // Usually a number for each device, from 0 to … n
         "Driver Rx ovf",	// Rx buffer overflow in device driver (# messages)
         "Driver Tx ovf",	// Tx buffer overflow in device driver (# messages)
@@ -25,7 +27,7 @@ char* iCubNetwork::mRowNames[]=
  
         "Requested rate",         //Requested rate for the associated thread [ms]
         "Estimated average rate", // Estimated rate for the associated thread [ms]
-        "Estimated std rate",	     // Same as before, standard deviation, ms
+        "Estimated std rate",	  // Same as before, standard deviation, ms
         NULL
 };
 

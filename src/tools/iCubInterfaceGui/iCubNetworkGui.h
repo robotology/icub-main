@@ -20,15 +20,25 @@ public:
     iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
         : iCubNetwork(),iCubInterfaceGuiRows()
     {
-        createRows(mRefTreeModel,parent,mRowNames);
+        Gtk::TreeModel::Row* baseRow=createRows(mRefTreeModel,parent,mRowNames);
 
-        yarp::os::Bottle *boardBot=bot.get(6).asList();
+        fromBottle(*(bot.get(0).asList()));
 
-        this->addBoard(new iCubBLLBoardGui(mRefTreeModel,mRows[0],*boardBot));
+        for (int i=1; i<(int)bot.size(); ++i)
+        {
+            yarp::os::Bottle *netBot=bot.get(i).asList();
 
-        ////////////////////////////////////////////////////////////////
-
-        fromBottle(bot);
+            if (netBot->get(0).asString()=="BLL")
+            {
+                mBoards.push_back(new iCubBLLBoardGui(refTreeModel,*baseRow,*netBot));
+            }
+            /*
+            else
+            {
+                will deal with other board models
+            }
+            */
+        }
     }
 
     virtual ~iCubNetworkGui()

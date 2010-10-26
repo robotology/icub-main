@@ -38,7 +38,7 @@ public:
         mRows=NULL;
     }
 
-    void createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames[])
+    Gtk::TreeModel::Row* createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames[])
     {
         int numRows=0;
 
@@ -59,6 +59,8 @@ public:
             mRows[i][mColumns.mColName]=rowNames[i];
             mRows[i][mColumns.mColValue]="";
         }
+
+        return &mRows[0];
     }
 
     virtual ~iCubInterfaceGuiRows()
@@ -77,16 +79,18 @@ protected:
 class iCubBLLChannelGui : public iCubBLLChannel, public iCubInterfaceGuiRows
 {
 public:
-    iCubBLLChannelGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot) : iCubBLLChannel(-1,-1)
+    iCubBLLChannelGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
+        : iCubBLLChannel(),iCubInterfaceGuiRows()
     {
-        createRows(refTreeModel,parent,mRowNames);
+        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
+        fromBottle(*(bot.get(0).asList()));
     }
 
     virtual ~iCubBLLChannelGui()
     {
     }
 
-    void fromBottle(yarp::os::Bottle &bot)
+    virtual void fromBottle(yarp::os::Bottle &bot)
     {
         iCubBLLChannel::fromBottle(bot);
 
@@ -100,7 +104,7 @@ public:
     }
 
 protected:
-    Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
+    //Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
 };
 
 #endif

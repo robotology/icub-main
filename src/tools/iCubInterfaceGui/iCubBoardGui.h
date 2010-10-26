@@ -17,27 +17,26 @@ class iCubBLLBoardGui : public iCubBLLBoard, public iCubInterfaceGuiRows
 {
 public:
     iCubBLLBoardGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot) 
-        : iCubBLLBoard(-1,-1,-1),iCubInterfaceGuiRows()
+        : iCubBLLBoard(),iCubInterfaceGuiRows()
     {
-        createRows(refTreeModel,parent,mRowNames);
+        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
 
-        yarp::os::Bottle *chanBot0=bot.get(3).asList();
-        mChannel[0]->fromBottle(*chanBot0);
-        yarp::os::Bottle *chanBot1=bot.get(4).asList();
-        mChannel[1]->fromBottle(*chanBot1);
+        fromBottle(*(bot.get(0).asList()));
 
-        fromBottle(bot);
+        mChannel[0]=new iCubBLLChannelGui(refTreeModel,*baseRow,*(bot.get(1).asList()));
+        mChannel[1]=new iCubBLLChannelGui(refTreeModel,*baseRow,*(bot.get(2).asList()));
     }
 
-    void fromBottle(yarp::os::Bottle& bot)
+    virtual void fromBottle(yarp::os::Bottle& bot)
     {
         iCubBLLBoard::fromBottle(bot);
-        
-        if (bot.get(0).asInt()==CONFIG_FLAG)
+
+        for (int i=0; i<(int)mData.size(); ++i)
         {
-            mID=bot.get(2).asInt();
-            mRows[0][mColumns.mColValue]=bot.get(1).asString().c_str();
-            mRows[1][mColumns.mColValue]=bot.get(2).toString().c_str();
+            if (mData.test(i))
+            {
+                mRows[i][mColumns.mColValue]=mData.toString(i);
+            }
         }
     }
 
