@@ -1,5 +1,41 @@
-#include "iCub/SkinDriftCompensation.h"
 
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Andrea Del Prete, Alexander Schmitz
+ * email:   andrea.delprete@iit.it, alexander.schmitz@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+#include <sstream>			// string stream
+#include "iCub/skinDriftCompensation/SkinDriftCompensation.h"
+
+using namespace iCub::skinDriftCompensation;
+
+
+// the order of the command in this list MUST correspond to the order of the enum SkinDriftCompensation::SkinDriftCompCommand
+const string SkinDriftCompensation::COMMAND_LIST[]  = {
+	"forbid calibration",	"allow calibration",	"force calibration", 
+	"get percentile",		"help",					"quit"};
+
+// the order in COMMAND_DESC must correspond to the order in COMMAND_LIST
+const string SkinDriftCompensation::COMMAND_DESC[]  = {
+	"forbid the automatic calibration (by default it is already forbidden)", 
+	"allow the automatic calibration", 
+	"force the calibration (for 5 sec no touch should happens)", 
+	"get the 95 percentile of the tactile data", 
+	"get this list", 
+	"quit the module"};
 
 bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 {    
@@ -13,18 +49,13 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	setName(moduleName.c_str());
 
 	bool rightHand;
-	string hand				= rf.check("hand", Value("right"), "Hand to take as reference (string)").asString().c_str();
+	string hand			= rf.check("hand", Value("right"), "Hand to take as reference (string)").asString().c_str();
 	if(hand.compare("right")==0){
 		rightHand = true;
-		compensatedTactileDataPortName		= "/"+ robotName+ "/skin/righthandcomp";
 	}else if(hand.compare("left")==0){
 		rightHand = false;
-		compensatedTactileDataPortName		= "/"+ robotName+ "/skin/lefthandcomp";
 	}else{
 		return false;
-		/*compensatedTactileDataPortName		= "/";
-		compensatedTactileDataPortName		+= getName( rf.check("compensatedTactileDataPort", 
-			Value(("/"+ robotName+ "/skin/lefthandcomp").c_str()), "Compensated tactile data output port (string)").asString());*/
 	}
 
 	/* get some other values from the configuration file */
@@ -38,35 +69,25 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 		zeroUpRawData = true;
 	}else if(zeroUpRawDataStr.compare("false")==0){
 		zeroUpRawData = false;
-	}
-	 
-	/* open ports  */        
-	if (!compensatedTactileDataPort.open(compensatedTactileDataPortName.c_str())) {
-		cout << getName() << ": unable to open port " << compensatedTactileDataPortName << endl;
-		return false;  // unable to open; let RFModule know so that it won't run
-	}
+	}	 	
 
 	/*
 	* attach a port of the same name as the module (prefixed with a /) to the module
 	* so that messages received from the port are redirected to the respond method
 	*/
 	handlerPortName = "/";
-	string emptyStr = "";
 	handlerPortName += getName(rf.check("handlerPort", Value("/rpc")).asString());
 	if (!handlerPort.open(handlerPortName.c_str())) {
 		cout << getName() << ": Unable to open port " << handlerPortName << endl;  
 		return false;
 	}
-
-	attach(handlerPort);                  // attach to port
-	//attachTerminal();                     // attach to terminal
-	
+	attach(handlerPort);                  // attach to port	
 
 
 	/* create the thread and pass pointers to the module parameters */
 	calibrationAllowed = false;		// default -> calibration is not allowed!
-	myThread = new MyThread(&compensatedTactileDataPort, robotName, &minBaseline, &calibrationAllowed, &forceCalibration, 
-		&zeroUpRawData, &rightHand);
+	myThread = new CompensationThread(&rf, robotName, &minBaseline, &calibrationAllowed, 
+		&forceCalibration, zeroUpRawData, rightHand);
 	/* now start the thread to do the work */
 	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
@@ -77,7 +98,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 bool SkinDriftCompensation::interruptModule()
 {
-	compensatedTactileDataPort.interrupt();
+	//compensatedTactileDataPort.interrupt();
 	handlerPort.interrupt();
 
 	return true;
@@ -90,7 +111,7 @@ bool SkinDriftCompensation::close()
 	if(myThread)
 		myThread->stop();
 
-	compensatedTactileDataPort.close();
+	//compensatedTactileDataPort.close();
 	handlerPort.close();   
 
 	return true;
@@ -99,38 +120,84 @@ bool SkinDriftCompensation::close()
 
 bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply) 
 {
-	string helpMessage =  string(getName().c_str()) + " commands are: \n" +  "help \n" + "quit\n" + "forbid calibration\n" + 
-		"allow calibration\n" + "force calibration";
-	reply.clear(); 
+	stringstream temp;
+	string helpMessage =  string(getName().c_str()) + " commands are: ";
+	reply.clear();
 
-	if (command.get(0).asString()=="quit") {
-	   reply.addString("quitting");
-	   return false;
+	SkinDriftCompCommand com;
+	if(!identifyCommand(command, com)){
+		reply.addString("Unknown command. Input 'help' to get a list of the available commands.");
+		return true;
 	}
-	else if (command.get(0).asString()=="help") {
-		cout << helpMessage;
-		reply.addString("ok");
+
+	switch( com ){
+		case quit:
+			reply.addString("quitting");
+			return false;
+
+		case help:
+			reply.addString("many");				// print every string added to the bottle on a new line
+			reply.addString(helpMessage.c_str());
+			for(unsigned int i=0; i< COMMANDS_COUNT; i++){
+				reply.addString( ("- "+COMMAND_LIST[i]+": "+COMMAND_DESC[i]).c_str() );
+			}
+			return true;
+
+		case forbid_calibration:
+			calibrationAllowed = false;
+			break;
+
+		case allow_calibration:
+			calibrationAllowed = true;
+			break;
+
+		case force_calibration:
+			forceCalibration = true;
+			break;
+
+		case get_percentile:
+			{
+			VectorOf<float> touchThreshold = myThread->getTouchThreshold();
+			for(int i=0; i< touchThreshold.size(); i++) 
+				reply.addDouble(touchThreshold[i]);
+			return true;
+			}
+
+		default:
+			reply.addString("ERROR: This command is known but it is not managed in the code.");
+			return true;
 	}
-	else if (command.get(0).asString()=="forbid") {
-		if (command.get(1).asString()=="calibration") {
-			calibrationAllowed = false; // set parameter value
-			reply.addString("ok");
+
+	reply.addString( (COMMAND_LIST[com]+" command received.").c_str());
+
+	return true;	
+}
+
+
+/**
+  * Identify the command in the bottle and return the correspondent enum value.
+  */
+bool SkinDriftCompensation::identifyCommand(Bottle commandBot, SkinDriftCompensation::SkinDriftCompCommand &com){
+	for(unsigned int i=0; i<COMMANDS_COUNT; i++){
+		stringstream stream(COMMAND_LIST[i]);
+		string word;
+		int j=0;
+		bool found = true;
+
+		while(stream>>word){
+			if (commandBot.get(j).asString() != word.c_str()){
+				found=false;
+				break;
+			}
+			j++;
+		}
+		if(found){
+			com = (SkinDriftCompCommand)i;
+			return true;
 		}
 	}
-	else if (command.get(0).asString()=="allow") {
-		if (command.get(1).asString()=="calibration") {
-			calibrationAllowed = true; // set parameter value
-			reply.addString("ok");
-		}
-	}
-	else if (command.get(0).asString()=="force") {
-		if (command.get(1).asString()=="calibration") {
-            fprintf(stderr, "force calibration message received\n");
-			forceCalibration = true; // set parameter value
-			reply.addString("ok");
-		}
-	}
-	return true;
+
+	return false;
 }
 
 bool SkinDriftCompensation::updateModule(){ return true;}
