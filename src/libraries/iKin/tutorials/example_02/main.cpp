@@ -167,19 +167,26 @@ public:
         // get the chain object attached to the limb
         chain=limb->asChain();
 
-        // Pose initialization with the current joints position.
+        // pose initialization with the current joints position.
         // Remind that the representation used is the axis/angle,
         // the default one.
         xd_old=chain->EndEffPose();
         commData->setDesired(xd_old,chain->getAng());
 
-        // Instantiate the optimizer with the passed chain, the ctrlPose control
-        // mode, the tolerance and a maximum number of iteration.
+        // instantiate the optimizer with the passed chain, the ctrlPose control
+        // mode, the tolerance and a maximum number of iteration
         slv=new iKinIpOptMin(*chain,ctrlPose,1e-3,200);
 
-        // In order to speed up the process, a scaling for the problem 
+        // when the complete pose is to be achieved, we have
+        // a dedicated tolerance for the translational part
+        // which is by default equal to 1e-6
+        // note that the tolerance is applied to the squared norm
+        if (ctrlPose==IKINCTRL_POSE_FULL)
+            slv->setTranslationalTol(1e-8);
+
+        // in order to speed up the process, a scaling for the problem 
         // is usually required (a good scaling holds each element of the jacobian
-        // of constraints and the hessian of lagrangian in norm between 0.1 and 10.0).
+        // of constraints and the hessian of lagrangian in norm between 0.1 and 10.0)
         slv->setUserScaling(true,100.0,100.0,100.0);
 
         port_xd.open(("/"+name+"/xd:i").c_str());
