@@ -112,7 +112,7 @@ int main()
         double max=(*chain)(i).getMax();
         qf[i]=(min+max)/2.0;
 
-        // last joint set to 1° higher than the bound
+        // last joint set to 1 deg higher than the bound
         if (i==chain->getDOF()-1)
             qf[i]=max+1.0*CTRL_DEG2RAD;
 
