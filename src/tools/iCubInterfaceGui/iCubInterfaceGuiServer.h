@@ -16,7 +16,7 @@
 class iCubInterfaceGuiServer : public yarp::os::Thread
 {
 public:
-    iCubInterfaceGuiServer()
+    iCubInterfaceGuiServer() : mMutex(1)
     {
     }
     

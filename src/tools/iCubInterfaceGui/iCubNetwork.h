@@ -34,8 +34,10 @@ public:
     iCubNetwork(std::string &name,std::string &file,std::string &device) 
         : mName(name),mFile(file),mDevice(device)
     {
-        mData.write(STRING_Name,yarp::os::Value(name.c_str()));
-        mData.write(STRING_Device_identifier,yarp::os::Value(device.c_str()));
+        yarp::os::Value valName(name.c_str());
+        yarp::os::Value identif(device.c_str());
+        mData.write(STRING_Name,valName);
+        mData.write(STRING_Device_identifier,identif);
     }
 
     ~iCubNetwork()

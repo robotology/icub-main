@@ -93,22 +93,24 @@ public:
 
     bool write(int index,yarp::os::Value& data)
     {
+        //printf("%d %d\n",index,mData.size());
+        //fflush(stdout);
+
         if (index<0) return false;
         
         if (index>=(int)mData.size())
         {
-            int oldSize=mData.size();
-            mFlag.resize(index+1);
-            for (int i=oldSize; i<index; ++i) mFlag[i]=true;
+            for (int i=(int)mData.size(); i<=index; ++i)
+            {
+                mFlag.push_back(true);
+                mData.push_back(data);
+            }
 
-            mData.resize(index+1);
+            return true;
         }
 
-        if (mData[index]!=data)
-        {
-            mData[index]=data;
-            mFlag[index]=true;
-        }
+        mData[index]=data;
+        mFlag[index]=true;
 
         return true;
     }

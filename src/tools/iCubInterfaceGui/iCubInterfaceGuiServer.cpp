@@ -6,6 +6,7 @@
 *
 */
 
+#include <yarp/os/Time.h>
 #include "iCubInterfaceGuiServer.h"
 
 class JointRemapper
@@ -112,9 +113,8 @@ void iCubInterfaceGuiServer::config(yarp::os::Property &robot)
         }
     }
 
-    mPort.open((robotName+"/gui").c_str());
+    mPort.open("/icubinterfacegui/server");
 }
-
 
 void iCubInterfaceGuiServer::run()
 {
@@ -123,24 +123,32 @@ void iCubInterfaceGuiServer::run()
 
     while (!isStopping())
     {
-        mPort.read(msg,true);
-        yarp::os::ConstString cmd=msg.get(0).asString();
-
-        if (cmd=="GET_CONF")
+        printf("*\n");
+        
+        if (mPort.read(msg,true))
         {
-            mMutex.wait();
-            rpl=toBottle(true);
-            mMutex.post();
+            yarp::os::ConstString cmd=msg.get(0).asString();
 
-            mPort.reply(rpl);
+            if (cmd=="GET_CONF")
+            {
+                mMutex.wait();
+                rpl=toBottle(true);
+                mMutex.post();
+
+                mPort.reply(rpl);
+            }
+            else if (cmd=="GET_DATA")
+            {
+                mMutex.wait();
+                rpl=toBottle();
+                mMutex.post();
+
+                mPort.reply(rpl);
+            }
         }
-        else if (cmd=="GET_DATA")
+        else
         {
-            mMutex.wait();
-            rpl=toBottle();
-            mMutex.post();
-
-            mPort.reply(rpl);
+            yarp::os::Time::delay(1.0);
         }
     } 
 }

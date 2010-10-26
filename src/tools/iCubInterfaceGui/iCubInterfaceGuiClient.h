@@ -9,10 +9,12 @@
 #ifndef __GTKMM_ICUB_INTERFACE_GUI_CLIENT_H__
 #define __GTKMM_ICUB_INTERFACE_GUI_CLIENT_H__
 
-//#include <gtkmm.h>
+#include <gtkmm.h>
 #include <yarp/os/RateThread.h>
+#include <yarp/os/Port.h>
+#include <yarp/os/Time.h>
+#include <yarp/os/Network.h>
 #include "iCubNetworkGui.h"
-//#include "iCubInterfaceGuiServer.h"
 
 class iCubInterfaceGuiClient : public Gtk::Window, public yarp::os::RateThread
 {
@@ -51,10 +53,16 @@ public:
         mRowLev0=*(mRefTreeModel->append());
         mRowLev0[mColumns.mColName]="Networks"; //partName.c_str();
         mRowLev0[mColumns.mColValue]=""; //partName.c_str();
-        mRowLev0[mColumns.mColStatus]=Gdk::Pixbuf::create_from_file("warning_icon.png");
+        //mRowLev0[mColumns.mColStatus]=Gdk::Pixbuf::create_from_file("warning_icon.png");
 
-        mPort.open("/icubinterfacegui");
+        
+        mPort.open("/icubinterfacegui/client");
         // need connection
+        for (int i=0; i<20; ++i)
+		{
+            if (yarp::os::NetworkBase::connect("/icubinterfacegui/client","/icubinterfacegui/server")) break;
+			yarp::os::Time::delay(1.0);
+		}
 
         yarp::os::Bottle bot;
         yarp::os::Bottle rep;
@@ -65,13 +73,15 @@ public:
         {
             mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(bot.get(i).asList())));
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
 
         //mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
 
         show_all_children();
     }
+
+    void run(){}
 
     ~iCubInterfaceGuiClient()
     {

@@ -30,7 +30,6 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/ResourceFinder.h>
 #include "iCubInterfaceGuiServer.h"
-#include "iCubInterfaceGuiClient.h"
 
 int main(int argc, char *argv[])
 {
@@ -67,7 +66,11 @@ int main(int argc, char *argv[])
 
     server.config(robot);
 
+    server.run();
+
     getchar();
+
+    server.stop();
 
 	return 0;
 }
