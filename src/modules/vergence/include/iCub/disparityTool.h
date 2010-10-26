@@ -20,6 +20,7 @@
 #if !defined(AFX_DISPARITY_H__E3019D2A_4BC3_4AD0_8355_AAA601391249__INCLUDED_)
 #define AFX_DISPARITY_H__E3019D2A_4BC3_4AD0_8355_AAA601391249__INCLUDED_
 
+#include <time.h>
 #include <yarp/sig/Image.h>
 // std
 #include <stdio.h>
