@@ -37,12 +37,12 @@ public:
 
         ////////////////////////////
 
-        Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
+        //Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
 
-        int colsNum=mTreeView.append_column("Status",*cell);
+        //int colsNum=mTreeView.append_column("Status",*cell);
 
-        Gtk::TreeViewColumn* pColumn=mTreeView.get_column(colsNum-1);
-        pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColStatus);
+        //Gtk::TreeViewColumn* pColumn=mTreeView.get_column(colsNum-1);
+        //pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColStatus);
 
 	    //Add the TreeView's view columns:
         mTreeView.append_column("Name",mColumns.mColName);
@@ -68,11 +68,17 @@ public:
         bot.addString("GET_CONF");
         mPort.write(bot,rep);
 
-        for (int i=0; i<(int)rep.size(); ++i)
+        printf("%s\n",rep.toString().c_str());
+        fflush(stdout);
+
+        for (int i=1; i<(int)rep.size(); ++i)
         {
-            //printf("%s\n\n",rep.get(i).toString().c_str());
-            //fflush(stdout);
-            mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(rep.get(i).asList())));
+            yarp::os::Bottle *list=rep.get(i).asList();
+
+            if (list)
+            {
+                mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mColumns,mRowLev0,*(rep.get(i).asList())));
+            }
         }
         
         /////////////////////////////////////////////////////////////////////////////
@@ -80,9 +86,32 @@ public:
         //mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
 
         show_all_children();
+
+        yarp::os::Time::delay(2.0);
+        
+        start();
     }
 
-    void run(){}
+    void run()
+    {
+        printf("#\n");
+
+        yarp::os::Bottle bot;
+        yarp::os::Bottle rep;
+        bot.addString("GET_DATA");
+        
+        if (mPort.write(bot,rep))
+        {
+            printf("%s\n",rep.toString().c_str());
+            fflush(stdout);
+
+            if (rep.size()>1)
+            {
+                fromBottle(rep);
+                mTreeView.queue_draw();
+            }
+        }
+    }
 
     ~iCubInterfaceGuiClient()
     {
@@ -94,14 +123,19 @@ public:
 
     void fromBottle(yarp::os::Bottle &bot)
     {
-        int i=0;
-        int bConfig=bot.get(i++).asInt();
-
-        for (int j=0; i<(int)bot.size(); ++j)
+        for (int i=1; i<(int)bot.size(); ++i)
         {
-            mNetworks[j]->fromBottle(*(bot.get(i++).asList()));
+            yarp::os::Bottle *net=bot.get(i).asList();
+            mNetworks[net->get(0).asInt()]->fromBottle(*net);
         }
     }
+
+    /*
+    Gtk::Window& getWindow()
+    {
+        return mWindow;
+    }
+    */
 
 protected:
     Gtk::VBox mVBox;
@@ -113,6 +147,7 @@ protected:
 
     yarp::os::Port mPort;
     std::vector<iCubNetwork*> mNetworks;
+    //Gtk::Window mWindow;
 
     void onTreeViewRowActivated(const Gtk::TreeModel::Path& path,Gtk::TreeViewColumn* /* column */)
     {

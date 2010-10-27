@@ -135,15 +135,22 @@ void iCubInterfaceGuiServer::run()
                 rpl=toBottle(true);
                 mMutex.post();
 
+                printf("%s\n",rpl.toString().c_str());
+                fflush(stdout);
+
                 mPort.reply(rpl);
             }
             else if (cmd=="GET_DATA")
             {
                 mMutex.wait();
+
                 rpl=toBottle();
-                mMutex.post();
+
+                //printf("%s\n",rpl.toString().c_str());
 
                 mPort.reply(rpl);
+
+                mMutex.post();
             }
         }
         else
@@ -172,9 +179,18 @@ yarp::os::Bottle iCubInterfaceGuiServer::toBottle(bool bConfig)
 {
     yarp::os::Bottle bot;
 
+    bot.addString("DATA");
+
     for (int n=0; n<(int)mNetworks.size(); ++n)
     {   
-        bot.addList()=mNetworks[n]->toBottle(bConfig);
+        yarp::os::Bottle net=mNetworks[n]->toBottle(bConfig);
+
+        if (net.size())
+        {
+            yarp::os::Bottle &addList=bot.addList();
+            addList.addInt(n);
+            addList.append(net);
+        }
     }
 
     return bot;

@@ -9,11 +9,16 @@ int main(int argc, char *argv[])
 
     Gtk::Main kit(argc, argv);
 
-	iCubInterfaceGuiClient window;
+	iCubInterfaceGuiClient client;
 
-	window.set_size_request(320,480);
-	window.move(64,64);
-	Gtk::Main::run(window);
+    client.set_size_request(320,480);
+	client.move(64,64);
+
+    //window.start();
+
+	Gtk::Main::run(client);
+
+    //window.stop();
 
     return 0;
 }

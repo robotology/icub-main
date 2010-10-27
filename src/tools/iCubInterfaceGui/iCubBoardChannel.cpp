@@ -43,7 +43,7 @@ char* iCubBLLChannel::mRowNames[]=
 
 yarp::os::Bottle iCubBLLChannel::toBottle(bool bConfig)
 {
-    return mData.toBottle();
+    return mData.toBottle(bConfig);
 }
 
 void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)

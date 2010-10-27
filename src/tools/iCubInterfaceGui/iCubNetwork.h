@@ -93,11 +93,23 @@ public:
     {
         yarp::os::Bottle bot;
 
-        bot.addList()=mData.toBottle(bConfig);
+        yarp::os::Bottle data=mData.toBottle(bConfig);
+        if (data.size())
+        {
+            yarp::os::Bottle &addList=bot.addList();
+            addList.addInt(-1);
+            addList.append(data);
+        }
 
         for (int i=0; i<(int)mBoards.size(); ++i)
         {
-            bot.addList()=mBoards[i]->toBottle(bConfig);
+            yarp::os::Bottle board=mBoards[i]->toBottle(bConfig);
+            if (board.size())
+            {
+                yarp::os::Bottle &addList=bot.addList();
+                addList.addInt(i);
+                addList.append(board);
+            }
         }
 
         return bot;
@@ -105,14 +117,18 @@ public:
 
     void fromBottle(yarp::os::Bottle &bot)
     {
-        printf("\n%d %d\n\n",mBoards.size(),bot.size());
-        fflush(stdout);
-
-        mData.fromBottle(*(bot.get(0).asList()));
-        
-        for (int i=0; i<(int)mBoards.size(); ++i)
+        for (int i=1; i<(int)bot.size(); ++i)
         {
-            mBoards[i]->fromBottle(*(bot.get(i+1).asList()));
+            yarp::os::Bottle *list=bot.get(i).asList();
+
+            if (list->get(0).asInt()==-1)
+            {
+                mData.fromBottle(*list);
+            }
+            else
+            {
+                mBoards[list->get(0).asInt()]->fromBottle(*list);
+            }
         }
     }
 

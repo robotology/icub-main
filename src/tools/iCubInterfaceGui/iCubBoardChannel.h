@@ -52,14 +52,9 @@ public:
 
     void fromBottle(yarp::os::Bottle &bot)
     {
-        for (int i=0; i<bot.size(); i+=2)
+        for (int i=1; i<bot.size(); i+=2)
         {
-            //int index=bot.get(i).asInt();
-
             write(bot.get(i).asInt(),bot.get(i+1));
-
-            //mData[index]=bot.get(i+1);
-            //mFlag[index]=true;
         }
     }
 
@@ -96,9 +91,6 @@ public:
 
     bool write(int index,yarp::os::Value& data)
     {
-        //printf("%d %d\n",index,mData.size());
-        //fflush(stdout);
-
         if (index<0) return false;
         
         if (index>=(int)mData.size())
@@ -112,8 +104,11 @@ public:
             return true;
         }
 
-        mData[index]=data;
-        mFlag[index]=true;
+        if (mData[index]!=data)
+        {
+            mData[index]=yarp::os::Value(data);
+            mFlag[index]=true;
+        }
 
         return true;
     }

@@ -68,18 +68,51 @@ public:
     {
         yarp::os::Bottle bot;
 
-        bot.addList()=mData.toBottle(bConfig);
-        bot.addList()=mChannel[0]->toBottle(bConfig);
-        bot.addList()=mChannel[1]->toBottle(bConfig);
+        yarp::os::Bottle data=mData.toBottle(bConfig);
+        if (data.size())
+        {
+            yarp::os::Bottle &addList=bot.addList();
+            addList.addInt(-1);
+            addList.append(data);
+        }
+
+        for (int c=0; c<2; ++c)
+        {
+            yarp::os::Bottle chan=mChannel[c]->toBottle(bConfig);
+            if (chan.size())
+            {
+                yarp::os::Bottle &addList=bot.addList();
+                addList.addInt(c);
+                addList.append(chan);
+            }
+        }
+
+        //bot.addList()=mData.toBottle(bConfig);
+        //bot.addList()=mChannel[0]->toBottle(bConfig);        
+        //bot.addList()=mChannel[1]->toBottle(bConfig);
 
         return bot;
     }
 
     virtual void fromBottle(yarp::os::Bottle& bot)
     {
-        mData.fromBottle(*(bot.get(0).asList()));
-        mChannel[0]->fromBottle(*(bot.get(1).asList()));
-        mChannel[1]->fromBottle(*(bot.get(2).asList()));
+        for (int i=1; i<(int)bot.size(); ++i)
+        {
+            yarp::os::Bottle *list=bot.get(i).asList();
+
+            if (list->get(0).asInt()==-1)
+            {
+                mData.fromBottle(*list);
+            }
+            else
+            {
+                mChannel[list->get(0).asInt()]->fromBottle(*list);
+            }
+        }
+
+        //mData.fromBottle(*(bot.get(0).asList()));
+        //mChannel[0]->fromBottle(*(bot.get(1).asList()));
+        //mChannel[1]->fromBottle(*(bot.get(2).asList()));
     }
 
     virtual bool findAndWrite(std::string addr,yarp::os::Value* data);

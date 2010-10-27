@@ -18,6 +18,7 @@ class iCubInterfaceGuiServer : public yarp::os::Thread
 public:
     iCubInterfaceGuiServer() : mMutex(1)
     {
+        
     }
     
     virtual ~iCubInterfaceGuiServer()

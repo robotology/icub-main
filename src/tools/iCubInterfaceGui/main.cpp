@@ -28,8 +28,39 @@
  */
 
 #include <yarp/os/Network.h>
+#include <yarp/os/RateThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include "iCubInterfaceGuiServer.h"
+
+class FakeDriver : public yarp::os::RateThread
+{
+public:
+    FakeDriver(iCubInterfaceGuiServer *server) 
+        : yarp::os::RateThread(1400) // period is greater than client period:
+                                     // some packets will be empty
+    {
+        pServer=server;
+
+        for (int i=0; i<22; ++i) mValues[i]=yarp::os::Value(0);
+    }
+
+    virtual ~FakeDriver()
+    {
+    }
+
+    void run()
+    {
+        static int counter=0;
+
+        mValues[14]=yarp::os::Value(++counter);
+
+        pServer->findAndWrite("net_rarm,2,0",mValues);
+    }
+
+protected:
+    iCubInterfaceGuiServer *pServer;
+    yarp::os::Value mValues[22];
+};
 
 int main(int argc, char *argv[])
 {
@@ -66,10 +97,15 @@ int main(int argc, char *argv[])
 
     server.config(robot);
 
-    server.run();
+    server.start();
+
+    FakeDriver fakeDriver(&server);
+
+    fakeDriver.start();
 
     getchar();
 
+    fakeDriver.stop();
     server.stop();
 
 	return 0;

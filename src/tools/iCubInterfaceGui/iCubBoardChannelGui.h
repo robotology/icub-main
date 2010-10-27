@@ -20,12 +20,12 @@ public:
     {
         add(mColName);
         add(mColValue);
-        add(mColStatus);
+        //add(mColStatus);
     }
 
     Gtk::TreeModelColumn<Glib::ustring> mColName;
     Gtk::TreeModelColumn<Glib::ustring> mColValue;
-    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColStatus;
+    //Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColStatus;
 };
 
 ///////////////////////////////////////////////////
@@ -38,7 +38,7 @@ public:
         mRows=NULL;
     }
 
-    Gtk::TreeModel::Row* createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames[])
+    Gtk::TreeModel::Row* createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,ModelColumns &modelColumns,Gtk::TreeModel::Row& parent,char *rowNames[])
     {
         int numRows=0;
 
@@ -49,14 +49,14 @@ public:
         mRows=new Gtk::TreeModel::Row[numRows];
 
         mRows[0]=*(refTreeModel->append(parent.children()));
-        mRows[0][mColumns.mColName]=rowNames[0];
-        mRows[0][mColumns.mColValue]="";
+        mRows[0][modelColumns.mColName]=rowNames[0];
+        mRows[0][modelColumns.mColValue]="";
 
         for (int i=1; i<numRows; ++i)
         {
             mRows[i]=*(refTreeModel->append(mRows[0].children()));
-            mRows[i][mColumns.mColName]=rowNames[i];
-            mRows[i][mColumns.mColValue]="";
+            mRows[i][modelColumns.mColName]=rowNames[i];
+            mRows[i][modelColumns.mColValue]="";
         }
 
         return &mRows[0];
@@ -72,22 +72,24 @@ public:
 protected:
     int mNumRows;
     Gtk::TreeModel::Row *mRows;
-    ModelColumns mColumns;
 };
 
 class iCubBLLChannelGui : public iCubBLLChannel, public iCubInterfaceGuiRows
 {
 public:
-    iCubBLLChannelGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
+    iCubBLLChannelGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,ModelColumns &modelColumns,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
         : iCubBLLChannel(),iCubInterfaceGuiRows()
     {
-        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
+        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,modelColumns,parent,mRowNames);
+
+        mColumns=&modelColumns;
+
         mData.fromBottle(bot);
+        
         for (int i=0; i<(int)mData.size(); ++i)
         {
-            mRows[i][mColumns.mColValue]=mData.toString(i);
+            mRows[i][mColumns->mColValue]=mData.toString(i);
         }
-        //fromBottle(*(bot.get(0).asList()));
     }
 
     virtual ~iCubBLLChannelGui()
@@ -102,13 +104,14 @@ public:
         {
             if (mData.test(i))
             {
-                mRows[i][mColumns.mColValue]=mData.toString(i);
+                mRows[i][mColumns->mColValue]=mData.toString(i);
             }
         }
     }
 
 protected:
     //Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
+    ModelColumns *mColumns;
 };
 
 #endif
