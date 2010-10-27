@@ -34,10 +34,13 @@ public:
     iCubNetwork(std::string &name,std::string &file,std::string &device) 
         : mName(name),mFile(file),mDevice(device)
     {
-        yarp::os::Value valName(name.c_str());
-        yarp::os::Value identif(device.c_str());
-        mData.write(STRING_Name,valName);
-        mData.write(STRING_Device_identifier,identif);
+        mData.write(STRING_Name,yarp::os::Value(name.c_str()));
+        mData.write(STRING_Device_identifier,yarp::os::Value(device.c_str()));
+
+        for (int i=INT_Network_id; i<=(int)DOUBLE_Estimated_std_rate; ++i)
+        {
+            mData.write(i,yarp::os::Value(0));
+        }
     }
 
     ~iCubNetwork()
@@ -102,6 +105,9 @@ public:
 
     void fromBottle(yarp::os::Bottle &bot)
     {
+        printf("\n%d %d\n\n",mBoards.size(),bot.size());
+        fflush(stdout);
+
         mData.fromBottle(*(bot.get(0).asList()));
         
         for (int i=0; i<(int)mBoards.size(); ++i)

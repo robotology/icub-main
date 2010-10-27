@@ -47,7 +47,7 @@ public:
 	    //Add the TreeView's view columns:
         mTreeView.append_column("Name",mColumns.mColName);
         mTreeView.append_column("ID",mColumns.mColValue);
-        mTreeView.append_column("Status",mColumns.mColStatus);
+        //mTreeView.append_column("Status",mColumns.mColStatus);
 
         //Fill the TreeView's model
         mRowLev0=*(mRefTreeModel->append());
@@ -55,7 +55,6 @@ public:
         mRowLev0[mColumns.mColValue]=""; //partName.c_str();
         //mRowLev0[mColumns.mColStatus]=Gdk::Pixbuf::create_from_file("warning_icon.png");
 
-        
         mPort.open("/icubinterfacegui/client");
         // need connection
         for (int i=0; i<20; ++i)
@@ -69,9 +68,11 @@ public:
         bot.addString("GET_CONF");
         mPort.write(bot,rep);
 
-        for (int i=0; i<(int)bot.size(); ++i)
+        for (int i=0; i<(int)rep.size(); ++i)
         {
-            mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(bot.get(i).asList())));
+            //printf("%s\n\n",rep.get(i).toString().c_str());
+            //fflush(stdout);
+            mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(rep.get(i).asList())));
         }
         
         /////////////////////////////////////////////////////////////////////////////

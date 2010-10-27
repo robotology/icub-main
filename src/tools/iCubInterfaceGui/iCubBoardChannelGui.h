@@ -42,9 +42,8 @@ public:
     {
         int numRows=0;
 
-        for (char *pName=rowNames[0]; pName; ++pName)
+        for (; rowNames[numRows]; ++numRows)
         {
-            ++numRows;
         }
 
         mRows=new Gtk::TreeModel::Row[numRows];
@@ -83,7 +82,12 @@ public:
         : iCubBLLChannel(),iCubInterfaceGuiRows()
     {
         Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
-        fromBottle(*(bot.get(0).asList()));
+        mData.fromBottle(bot);
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            mRows[i][mColumns.mColValue]=mData.toString(i);
+        }
+        //fromBottle(*(bot.get(0).asList()));
     }
 
     virtual ~iCubBLLChannelGui()

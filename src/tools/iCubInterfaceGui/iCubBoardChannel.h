@@ -54,9 +54,12 @@ public:
     {
         for (int i=0; i<bot.size(); i+=2)
         {
-            int index=bot.get(i).asInt();
-            mData[index]=bot.get(i+1);
-            mFlag[index]=true;
+            //int index=bot.get(i).asInt();
+
+            write(bot.get(i).asInt(),bot.get(i+1));
+
+            //mData[index]=bot.get(i+1);
+            //mFlag[index]=true;
         }
     }
 
@@ -138,15 +141,22 @@ public:
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
 };
 
-#define UNASSIGNED -1
-
 class iCubBLLChannel : public iCubBoardChannel
 {
 public:
-    iCubBLLChannel(int channel=UNASSIGNED,int joint=UNASSIGNED) : iCubBoardChannel(),mData(),mChannel(channel)
+    iCubBLLChannel() : iCubBoardChannel(),mData(),mChannel(-1)
+    {
+    }
+
+    iCubBLLChannel(int channel,int joint) : iCubBoardChannel(),mData(),mChannel(channel)
     {
         mData.write(INT_Channel,yarp::os::Value(channel));
         mData.write(INT_Joint,yarp::os::Value(joint));
+
+        for (int i=DOUBLE_Status_messages_latency; i<=(int)INT_Control_mode; ++i)
+        {
+            mData.write(i,yarp::os::Value(0));
+        }
     }
 
     virtual ~iCubBLLChannel()

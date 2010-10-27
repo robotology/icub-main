@@ -21,10 +21,15 @@ public:
     {
         Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
 
-        fromBottle(*(bot.get(0).asList()));
-
         mChannel[0]=new iCubBLLChannelGui(refTreeModel,*baseRow,*(bot.get(1).asList()));
         mChannel[1]=new iCubBLLChannelGui(refTreeModel,*baseRow,*(bot.get(2).asList()));
+
+        mData.fromBottle(*(bot.get(0).asList()));
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            mRows[i][mColumns.mColValue]=mData.toString(i);
+        }
+        //fromBottle(*(bot.get(0).asList()));
     }
 
     virtual void fromBottle(yarp::os::Bottle& bot)

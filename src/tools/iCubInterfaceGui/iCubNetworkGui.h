@@ -20,15 +20,13 @@ public:
     iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
         : iCubNetwork(),iCubInterfaceGuiRows()
     {
-        Gtk::TreeModel::Row* baseRow=createRows(mRefTreeModel,parent,mRowNames);
-
-        fromBottle(*(bot.get(0).asList()));
+        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
 
         for (int i=1; i<(int)bot.size(); ++i)
         {
             yarp::os::Bottle *netBot=bot.get(i).asList();
 
-            if (netBot->get(0).asString()=="BLL")
+            //if (netBot->get(1).asString()=="BLL")
             {
                 mBoards.push_back(new iCubBLLBoardGui(refTreeModel,*baseRow,*netBot));
             }
@@ -38,6 +36,12 @@ public:
                 will deal with other board models
             }
             */
+        }
+
+        mData.fromBottle(*(bot.get(0).asList()));
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            mRows[i][mColumns.mColValue]=mData.toString(i);
         }
     }
 
@@ -59,8 +63,8 @@ public:
     }
 
 protected:
-    Gtk::ScrolledWindow mScrolledWindow;
-    Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
+    //Gtk::ScrolledWindow mScrolledWindow;
+    //Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
     ModelColumns mColumns;
 };
 
