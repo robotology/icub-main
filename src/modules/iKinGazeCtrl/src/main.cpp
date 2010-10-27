@@ -59,8 +59,8 @@ href="http://eris.liralab.it/iCub/main/dox/html/icub_gaze_interface.html">here</
 \note If the torso is not detected alive then the module will 
       try to keep on working with just the head part.
  
-\note If you're going to use this controller for your work, 
-      please quote it within any resulting publication.
+\note <b>If you're going to use this controller for your work, 
+      please quote it within any resulting publication</b>.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
