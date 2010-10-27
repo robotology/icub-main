@@ -33,7 +33,10 @@
  *   href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>.
  *  
  * \note Tutorials are available under 
- *       <i> $ICUB_ROOT/src/iKin/tutorials </i>
+ *       <i> $ICUB_ROOT/main/src/libraries/iKin/tutorials </i>
+ *  
+ * \note If you're going to use iKin for your work, please quote
+ *       it within any resulting publication.
  *  
  * \author Ugo Pattacini 
  *  
