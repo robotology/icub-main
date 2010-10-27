@@ -178,7 +178,7 @@ point:
   sending its coordinates to the /<ctrlName>/stereo:i port.
   Notice that t's required to feed continuosly the port with new
   feedback while converging to the target. <b> In this mode the
-  intrinsic cameras parameters (cx,cy) are required </b>
+  intrinsic cameras parameters (cx,cy) are required </b>.
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
