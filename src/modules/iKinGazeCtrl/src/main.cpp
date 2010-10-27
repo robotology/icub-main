@@ -69,8 +69,8 @@ head part: they should be properly tuned. Usually a value of 8
 is enough. 
  
 Rule: a lower shift factor allows to yield an higher joint speed
-and at the same time it reduces the minimum speed that can be 
-achieved. 
+and at the same time it increases the value of minimum speed
+that can be executed. 
  
 Example: look in the file <i>icub_head_torso_safe.ini</i> of 
 your robot setup; you should find something similar to: 
