@@ -76,7 +76,7 @@ Example: look in the file <i>icub_head_torso_safe.ini</i> of
 your robot setup; you should find something similar to: 
 \code 
 [VELOCITY] 
-Shifts 8 8 8 8 8 8 8 8 8 8 
+Shifts 8 8 8 8 8 8 ...
 \endcode 
  
 Read more on <a 
