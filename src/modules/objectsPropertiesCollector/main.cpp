@@ -52,7 +52,7 @@ can be attached to the objects).
 Reserved properties tags: 
  
 - \e id is used to specify the unique integer identifier 
-assigned to ach stored item. 
+assigned to each stored item. 
  
 - \e lifeTimer specifies the forgetting factor given in seconds, 
 meaning that after \e lifeTimer seconds since its creation, the 
