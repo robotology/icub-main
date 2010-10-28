@@ -44,7 +44,7 @@
 
 // defines for balancing the arm when in home position
 #define ACTIONPRIM_BALANCEARM_PERIOD                2.0     // [s]
-#define ACTIONPRIM_BALANCEARM_LENGTH                0.03    // [m]
+#define ACTIONPRIM_BALANCEARM_LENGTH                0.04    // [m]
 
 using namespace std;
 using namespace yarp;
