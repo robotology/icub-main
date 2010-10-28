@@ -353,7 +353,8 @@ void Localizer::handleAnglesInput()
                 fprintf(stdout,"Vergence error occured!\n");
             }
 
-            // compute rotational matrix
+            // compute rotational matrix to
+            // account for elevation and azimuth
             Vector x(4);
             x[0]=1.0;
             x[1]=0.0;
@@ -367,26 +368,22 @@ void Localizer::handleAnglesInput()
             y[3]=azi;
             
             Matrix R=axis2dcm(y)*axis2dcm(x);
-            Vector fpe;
 
-            // get the head-centered frame
-            Matrix &frame=(isRel?commData->get_fpFrame():eyeCAbsFrame);
-
-            // get fp wrt head-centered frame
+            Vector fph, xdO;
             if (isRel)
-                fpe=SE3inv(frame)*fp;
+            {
+                Matrix &frame=commData->get_fpFrame();
+                fph=SE3inv(frame)*fp;                   // get fp wrt relative head-centered frame
+                xdO=frame*(R*fph);                      // apply rotation and retrieve fp wrt root frame
+            }
             else
-                fpe=invEyeCAbsFrame*fp;
-
-            // remove the 4th component to compute the norm
-            fpe[3]=0.0;
-
-            // get the rotated z-axis, properly scaled
-            Vector z=norm(fpe)*R.getCol(2);
-            z[3]=1.0;  // impose homogeneous coordinates
-
-            // get fp wrt root frame
-            Vector xdO=frame*z;
+            {
+                fph=invEyeCAbsFrame*fp;                 // get fp wrt absolute head-centered frame
+                fph[3]=0.0;                             // remove the last coordinate to compute the vector norm
+                Vector z=norm(fph)*R.getCol(2);         // take the rotated z-axis at the proper distance
+                z[3]=1.0;                               // impose homogeneous coordinates again
+                xdO=eyeCAbsFrame*z;                     // retrieve fp wrt root frame
+            }
 
             if (port_xd)
             {
@@ -415,13 +412,13 @@ void Localizer::handleAnglesOutput()
     fp[3]=1.0;  // impose homogeneous coordinates
 
     // get fp wrt head-centered system
-    Vector fpe=invEyeCAbsFrame*fp;
+    Vector fph=invEyeCAbsFrame*fp;
 
     Vector &angles=port_anglesOut->prepare();
     angles.resize(3);
 
-    angles[0]=CTRL_RAD2DEG*atan2(fpe[0],fpe[2]);
-    angles[1]=-CTRL_RAD2DEG*atan2(fpe[1],fpe[2]);
+    angles[0]=CTRL_RAD2DEG*atan2(fph[0],fph[2]);
+    angles[1]=-CTRL_RAD2DEG*atan2(fph[1],fph[2]);
     angles[2]=CTRL_RAD2DEG*commData->get_q()[5];
 
     port_anglesOut->write();
