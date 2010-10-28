@@ -42,7 +42,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	/* Process all parameters from both command-line and .ini file */
 
 	/* get the module name which will form the stem of all module port names */
-	moduleName			= rf.check("name", Value("SkinDriftCompensation"), "module name (string)").asString();
+	moduleName			= rf.check("name", Value("skinDriftCompensation"), "module name (string)").asString();
 	robotName			= rf.check("robot", Value("icub"), "name of the robot (string)").asString();
 	/* before continuing, set the module name before getting any other parameters, 
 	* specifically the port names which are dependent on the module name*/
@@ -63,7 +63,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	   "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
 	
 	bool zeroUpRawData = true;
-	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value("true"), 
+	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value("false"), 
 	   "if true the raw data are considered from zero up, otherwise from 255 down (string)").asString().c_str();
 	if(zeroUpRawDataStr.compare("true")==0){
 		zeroUpRawData = true;
