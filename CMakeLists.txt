@@ -11,7 +11,6 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-
 project(iCub)
 
 ##### options
@@ -130,7 +129,7 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 
 set(ICUB_EXPERIMENTAL_APP_INSTALL TRUE CACHE BOOL "Turn on app install experimental feature")
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
-SET(ICUB_DESTINATION_APP ${env_icub_root} CACHE TYPE PATH)
+SET(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE TYPE PATH)
 
 ########### populate applications
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
@@ -142,11 +141,7 @@ add_subdirectory(src)
 
 ############ generate custom target that exports all applications
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
-    ## add custom targets
-    icub_get_property(applications GLOBAL PROPERTY ICUB_APPLICATIONS)
-    message(STATUS "Exporting applications: ${applications}")
-    add_custom_target(install_applications)
-    add_dependencies(install_applications ${applications})
+    icub_app_all()
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
 # export the build tree
@@ -187,7 +182,8 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindIPP.cmake
                         FindQt3.cmake
                         FindGLUT.cmake
-                        FindOpenGL.cmake)
+                        FindOpenGL.cmake
+						iCubHelpers.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}

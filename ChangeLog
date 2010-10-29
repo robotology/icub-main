@@ -1,3 +1,8 @@
+2010-10-29 Lorenzo Natale <lorenzo.natale@iit.it>
+	main/conf/iCubHelpers.cmake modified icub_app functions, grouped code 
+	that was spread in different places in single functions to be used
+	in contrib.
+	
 2010-10-25 Lorenzo Natale <lorenzo.natale@iit.it>
 	main/conf/iCubHelpers.cmake added checks so that locally modified files are preserved,
 	this required deep revision of install mechanism which now uses locally generated cmake

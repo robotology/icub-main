@@ -5,16 +5,20 @@ PROJECT (iCub)
 # Only a few demo projects are included so far.
 
 
-set(dummy ${CMAKE_BINARY_DIR}/f-app-main)
-add_custom_command(OUTPUT ${dummy}
-					COMMAND ${CMAKE_COMMAND} -E make_directory ${ICUB_DESTINATION_APP}
-					COMMAND ${CMAKE_COMMAND} -E make_directory ${ICUB_DESTINATION_APP}/app
-					COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini ${ICUB_DESTINATION_APP}
-					COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py ${ICUB_DESTINATION_APP}/app/
-					COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template ${ICUB_DESTINATION_APP}/app/
-					COMMENT "Setting up application directory"
-					)
-					
+####
+# Setup app directory, this is a target called "app" that is added to the main build.
+# first set up some files in the application directory
+icub_app(app)
+set(app-files "${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini;${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py;${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template")
+			  
+icub_app_install(app
+				ROOT
+				FILES ${app-files})
+
+#################################
+
+### Go through single applications
+
 add_subdirectory(default)
 add_subdirectory(actionPrimitivesExample)
 add_subdirectory(cameraCalibration)
@@ -33,8 +37,4 @@ add_subdirectory(robotScripting)
 add_subdirectory(iCubGui)
 add_subdirectory(robots)
 
-add_custom_target(app DEPENDS ${dummy})
-
-icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS app)
-icub_set_property(GLOBAL APPEND PROPERTY ICUB_APPLICATIONS_FILES ${dummy})
 

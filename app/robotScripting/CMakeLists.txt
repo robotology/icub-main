@@ -20,8 +20,7 @@ icub_app_install(${appname}
 icub_app_install(${appname}
   FILES ${hannover_right}
   DESTINATION hannover/right)
-				
-icub_add_target(${appname})
+
 
 
 
