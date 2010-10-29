@@ -268,20 +268,9 @@ macro(icub_app_install target)
 
   if (destination)
 		set(dapp ${dapp}/${destination})
-		
-
-		#     add_custom_command(OUTPUT ${dummy}
-		#       COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
-		#       COMMENT "Creating directory ${dapp}"
-		#       APPEND)
-		#file(APPEND ${cmakefile} "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E make_directory ${dapp})\n")
-		
   endif (destination)
 
   file(APPEND ${cmakefile} "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E make_directory ${dapp})\n")
-
-  
-  #message(STATUS "${CMAKE_COMMAND} -E make_directory ${dapp}/${destination}")
 
   file(APPEND ${cmakefile} "\nset(files ${files})\n")
   file(APPEND ${cmakefile} "foreach(f \${files})\n")
@@ -299,20 +288,11 @@ macro(icub_app_install target)
   file(APPEND ${cmakefile} "\t\tendif()\n")
   file(APPEND ${cmakefile} "\tendif()\n")
   file(APPEND ${cmakefile} "endforeach(f \${files})\n\n")
-  
-#  foreach(f ${files})
-#    if (NOT IS_DIRECTORY ${f})
-#      set(command2 ${CMAKE_COMMAND} -E copy ${f} ${dapp})
-#      add_custom_command(OUTPUT ${dummy}
-#    COMMAND ${command2}
-#    COMMENT "Copy ${f} to ${dapp}"
-#    APPEND)		
-#    endif()
-#  endforeach(f ${files})					
-
-
 endmacro(icub_app_install)
 
+##
+# This function is now obsolete.
+# Leaving it empty for backward compatibility.
 macro(icub_add_target target)
 ## obsolete...
 endmacro(icub_add_target)
@@ -326,7 +306,7 @@ macro(icub_app_all)
     message(STATUS "Exporting applications: ${applications}")
     add_custom_target(install_applications)
     add_dependencies(install_applications ${applications})
-endmacro(icub_declare_applications)
+endmacro(icub_app_all)
 
 ### From yarp.
 # Helper macro to work around a bug in set_property in cmake 2.6.0
