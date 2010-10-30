@@ -152,8 +152,8 @@
  * \b xd request: example [ask] ([xd] (x y z ax ay az theta))
  *    ([pose] [xyz]) ([q] (...)). Ask to solve for the target
  *    xd. User can specifies a different starting joint
- *    configuration q and the pose mode. The reply will be
- *    something like [ack] ([q] (...)) ([x] (...)) where the
+ *    configuration q and the pose mode. The reply will contain
+ *    something like [ack] ([q] (...)) ([x] (...)), where the
  *    found configuration q is returned as well as the final
  *    attained pose x.
  *  
@@ -168,7 +168,7 @@
  *  
  * Commands concerning the solver configuration: 
  *  
- * \b cfg request: example [cfg] (robot icub) (type left) (pose 
+ * \b cfg request: example [cfg] (robot icub) (type left) (pose
  *    full) (tol 1e-3) (maxIter 150) ... Once instantiated the
  *    solver is not automatically configured. To do that user
  *    can call the open() method locally or can configure the

@@ -1016,103 +1016,94 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
             case IKINSLV_VOCAB_CMD_ASK:
             {
-                if (command.size()>1)
-                {    
-                    Property options(command.get(1).asList()->toString().c_str());
+                Property options(command.toString().c_str());
 
-                    Bottle *b_xd=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList();
-                    Bottle *b_q=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_Q)).asList();
+                Bottle *b_xd=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList();
+                Bottle *b_q=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_Q)).asList();
 
-                    // some integrity checks
-                    if (b_xd==NULL)
-                    {
-                        reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                        break;
-                    }
-                    else if (b_xd->size()<3)    // at least the positional part must be given 
-                    {
-                        reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                        break;
-                    }
+                // some integrity checks
+                if (b_xd==NULL)
+                {
+                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                    break;
+                }
+                else if (b_xd->size()<3)    // at least the positional part must be given 
+                {
+                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                    break;
+                }
 
-                    lock();
+                lock();
 
-                    // get the target
-                    Vector xd(b_xd->size());
-                    for (int i=0; i<xd.length(); i++)
-                        xd[i]=b_xd->get(i).asDouble();
+                // get the target
+                Vector xd(b_xd->size());
+                for (int i=0; i<xd.length(); i++)
+                    xd[i]=b_xd->get(i).asDouble();
 
-                    // accounts for the starting joints configuration
-                    // if different from the actual one
-                    if (b_q!=NULL)
-                    {
-                        int len=b_q->size()<(int)prt->chn->getDOF()?b_q->size():prt->chn->getDOF();
-                        for (int i=0; i<len; i++)
-                            (*prt->chn)(i).setAng(CTRL_DEG2RAD*b_q->get(i).asDouble());
-                    }
-                    else
-                        getFeedback();  // otherwise get the current configuration
-
-                    // account for the pose 
-                    if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
-                    {
-                        int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
-                        slv->set_ctrlPose((pose==IKINSLV_VOCAB_VAL_POSE_XYZ)?IKINCTRL_POSE_XYZ:IKINCTRL_POSE_FULL);
-                    }
-                    else
-                        slv->set_ctrlPose(IKINCTRL_POSE_FULL);  // the full pose is default
-
-                    // set things for the 3rd task
-                    for (unsigned int i=0; i<prt->chn->getDOF(); i++)
-                        if (idx_3rdTask[i])
-                            qd_3rdTask[i]=(*prt->chn)(i).getAng();
-
-                    // call the solver to converge
-                    double t0=Time::now();
-                    Vector q=solve(xd);
-                    double t1=Time::now();
-
-                    Vector x=prt->chn->EndEffPose(q);
-
-                    // change to degrees
-                    q=CTRL_RAD2DEG*q;
-
-                    // dump on screen
-                    if (verbosity)
-                        printInfo(xd,x,q,t1-t0);
-
-                    unlock();
-
-                    // fill the reply accordingly
-                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-
-                    Bottle xhat=reply.addList();
-                    xhat.addVocab(IKINSLV_VOCAB_OPT_X);
-                    for (int i=0; i<x.length(); i++)
-                        xhat.addDouble(x[i]);
-
-                    Bottle qhat=reply.addList();
-                    xhat.addVocab(IKINSLV_VOCAB_OPT_Q);
-                    for (int i=0; i<q.length(); i++)
-                        qhat.addDouble(q[i]);
+                // accounts for the starting joints configuration
+                // if different from the actual one
+                if (b_q!=NULL)
+                {
+                    int len=b_q->size()<(int)prt->chn->getDOF()?b_q->size():prt->chn->getDOF();
+                    for (int i=0; i<len; i++)
+                        (*prt->chn)(i).setAng(CTRL_DEG2RAD*b_q->get(i).asDouble());
                 }
                 else
-                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                    getFeedback();  // otherwise get the current configuration
+
+                // account for the pose 
+                if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
+                {
+                    int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
+                    slv->set_ctrlPose((pose==IKINSLV_VOCAB_VAL_POSE_XYZ)?IKINCTRL_POSE_XYZ:IKINCTRL_POSE_FULL);
+                }
+                else
+                    slv->set_ctrlPose(IKINCTRL_POSE_FULL);  // the full pose is default
+
+                // set things for the 3rd task
+                for (unsigned int i=0; i<prt->chn->getDOF(); i++)
+                    if (idx_3rdTask[i])
+                        qd_3rdTask[i]=(*prt->chn)(i).getAng();
+
+                // call the solver to converge
+                double t0=Time::now();
+                Vector q=solve(xd);
+                double t1=Time::now();
+
+                Vector x=prt->chn->EndEffPose(q);
+
+                // change to degrees
+                q=CTRL_RAD2DEG*q;
+
+                // dump on screen
+                if (verbosity)
+                    printInfo(xd,x,q,t1-t0);
+
+                unlock();
+
+                // augment q with the complete
+                // joints configuration
+                Vector _q(prt->chn->getN());
+                int cnt=0;
+
+                for (unsigned int i=0; i<prt->chn->getN(); i++)
+                    if ((*prt->chn)[i].isBlocked())
+                        _q[i]=CTRL_RAD2DEG*prt->chn->getAng(i);
+                    else
+                        _q[i]=q[cnt++];
+
+                // fill the reply accordingly
+                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                addVectorOption(reply,IKINSLV_VOCAB_OPT_X,x);
+                addVectorOption(reply,IKINSLV_VOCAB_OPT_Q,_q);
 
                 break;
             }
 
             case IKINSLV_VOCAB_CMD_CFG:
             {
-                Property options;
-
-                if (command.size()>1)
-                {    
-                    options.fromString(command.get(1).asList()->toString().c_str());
-                    fprintf(stdout,"Configuring with options: %s\n",options.toString().c_str());
-                }
-                else
-                    fprintf(stdout,"Configuring with default options\n");
+                Property options(command.toString().c_str());
+                fprintf(stdout,"Configuring with options: %s\n",options.toString().c_str());
 
                 if (open(options))
                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);

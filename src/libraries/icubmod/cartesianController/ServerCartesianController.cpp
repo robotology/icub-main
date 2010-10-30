@@ -288,12 +288,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             {
                 // just behave as a relay
                 Bottle slvCommand=command;
-                
+
                 if (!portSlvRpc->write(slvCommand,reply))
                 {
                     fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
-                    break;
                 }
 
                 break;
@@ -463,29 +462,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_DES:
                         {
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-							Bottle &body=reply.addList();
 
-                            // xdhat part
-                            Bottle &xPart=body.addList();
-                            xPart.addVocab(IKINCARTCTRL_VOCAB_OPT_X);
-                            Bottle &xData=xPart.addList();
-
-                            // populate xdhat list
-                            for (int i=0; i<xdes.length(); i++)
-                                xData.addDouble(xdes[i]);
-    
-                            // qdhat part
-                            Bottle &qPart=body.addList();
-                            qPart.addVocab(IKINCARTCTRL_VOCAB_OPT_Q);
-                            Bottle &qData=qPart.addList();
-
-                            // populate qdhat list
+                            Vector q(chain->getN());
                             int cnt=0;
+
                             for (unsigned int i=0; i<chain->getN(); i++)
                                 if ((*chain)[i].isBlocked())
-                                    qData.addDouble(CTRL_RAD2DEG*chain->getAng(i));
+                                    q[i]=CTRL_RAD2DEG*chain->getAng(i);
                                 else
-                                    qData.addDouble(CTRL_RAD2DEG*qdes[cnt++]);
+                                    q[i]=CTRL_RAD2DEG*qdes[cnt++];
+
+                            addVectorOption(reply,IKINCARTCTRL_VOCAB_OPT_X,xdes);
+                            addVectorOption(reply,IKINCARTCTRL_VOCAB_OPT_Q,q);
 
                             break;
                         }
@@ -1722,7 +1710,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
     if (!portSlvRpc->write(command,reply))
@@ -1756,7 +1744,7 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
     if (!portSlvRpc->write(command,reply))
@@ -1781,7 +1769,7 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
     if (!portSlvRpc->write(command,reply))
@@ -1807,7 +1795,7 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
     if (!portSlvRpc->write(command,reply))

@@ -23,6 +23,8 @@
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 
+#include <iCub/iKin/iKinInv.h>
+
 #include <stdio.h>
 
 #include "CommonCartesianController.h"
@@ -463,7 +465,7 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
     
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))
@@ -497,7 +499,7 @@ bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))
@@ -522,7 +524,7 @@ bool ClientCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))
@@ -548,7 +550,7 @@ bool ClientCartesianController::askForPosition(const Vector &q0, const Vector &x
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
-    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))
