@@ -1040,7 +1040,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 for (int i=0; i<xd.length(); i++)
                     xd[i]=b_xd->get(i).asDouble();
 
-                // accounts for the starting joints configuration
+                // accounts for the starting DOF
                 // if different from the actual one
                 if (b_q!=NULL)
                 {
