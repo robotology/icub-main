@@ -12,9 +12,8 @@ icub_app_install(${appname}
 
 icub_app_install(${appname} 
 				FILES ${conf}
-				DESTINATION conf)			
+				DESTINATION conf)
 				
-icub_add_target(${appname})
 
 
 

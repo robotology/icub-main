@@ -19,5 +19,3 @@ icub_app_install(${appname}
 				DESTINATION conf/models
 				)
 
-icub_add_target(${appname})
-

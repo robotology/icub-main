@@ -8,7 +8,3 @@ icub_app_install(${appname}
 				FILES ${scripts}
 				DESTINATION scripts)	
 				
-icub_add_target(${appname})
-
-
-
