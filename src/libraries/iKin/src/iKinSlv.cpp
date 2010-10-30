@@ -1016,10 +1016,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
             case IKINSLV_VOCAB_CMD_ASK:
             {
-                Property options(command.toString().c_str());
+                Bottle &options=const_cast<Bottle&>(command);
 
-                Bottle *b_xd=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList();
-                Bottle *b_q=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_Q)).asList();
+                Bottle *b_xd=getTargetOption(options);
+                Bottle *b_q=getJointsOption(options);
 
                 // some integrity checks
                 if (b_xd==NULL)
