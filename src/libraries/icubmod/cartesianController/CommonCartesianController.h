@@ -26,6 +26,7 @@
 
 #define IKINCARTCTRL_VOCAB_CMD_GET          VOCAB3('g','e','t')
 #define IKINCARTCTRL_VOCAB_CMD_SET          VOCAB3('s','e','t')
+#define IKINCARTCTRL_VOCAB_CMD_ASK          VOCAB3('a','s','k')
 #define IKINCARTCTRL_VOCAB_CMD_GO           VOCAB2('g','o')
 #define IKINCARTCTRL_VOCAB_CMD_STOP         VOCAB4('s','t','o','p')
 #define IKINCARTCTRL_VOCAB_OPT_MODE         VOCAB4('m','o','d','e')
@@ -36,6 +37,7 @@
 #define IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS VOCAB4('r','e','s','w')
 #define IKINCARTCTRL_VOCAB_OPT_DES          VOCAB3('d','e','s')
 #define IKINCARTCTRL_VOCAB_OPT_LIM          VOCAB3('l','i','m')
+#define IKINCARTCTRL_VOCAB_OPT_XD           VOCAB2('x','d')
 #define IKINCARTCTRL_VOCAB_OPT_X            VOCAB1('x')
 #define IKINCARTCTRL_VOCAB_OPT_Q            VOCAB1('q')
 #define IKINCARTCTRL_VOCAB_OPT_XDOT         VOCAB4('x','d','o','t')

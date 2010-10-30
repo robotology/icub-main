@@ -440,45 +440,124 @@ bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-	{
-		if (Bottle *body=reply.get(1).asList())
-		{
-			// xdhat and odhat part
-			if (body->check(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_X)))
-            {
-                Bottle *xData=body->find(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_X)).asList();
-                xdhat.resize(3);
-                odhat.resize(4);
-            
-                for (int i=0; i<xdhat.length(); i++)
-                    xdhat[i]=xData->get(i).asDouble();
-            
-                for (int i=0; i<odhat.length(); i++)
-                    odhat[i]=xData->get(xdhat.length()+i).asDouble();
-            }
-            else
-                return false;
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
+}
 
-			// qdhat part
-            if (body->check(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_Q)))
-            {
-                Bottle *qData=body->find(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_Q)).asList();
-                qdhat.resize(qData->size());
 
-                for (int i=0; i<qdhat.length(); i++)
-                    qdhat[i]=qData->get(i).asDouble();
-            }
-            else
-                return false;
-
-			return true;
-		}
-		else
-			return false;
-	}
-    else
+/************************************************************************/
+bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
+                                           Vector &xdhat, Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
         return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    Vector tg(xd.length()+od.length());
+    for (int i=0; i<xd.length(); i++)
+        tg[i]=xd[i];
+
+    for (int i=0; i<od.length(); i++)
+        tg[xd.length()+i]=od[i];
+    
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
+                                           const Vector &od, Vector &xdhat,
+                                           Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    Vector tg(xd.length()+od.length());
+    for (int i=0; i<xd.length(); i++)
+        tg[i]=xd[i];
+
+    for (int i=0; i<od.length(); i++)
+        tg[xd.length()+i]=od[i];
+
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
+                                               Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::askForPosition(const Vector &q0, const Vector &xd,
+                                               Vector &xdhat, Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
 }
 
 
@@ -1069,4 +1148,5 @@ Stamp ClientCartesianController::getLastInputStamp()
 
     return stamp;
 }
+
 

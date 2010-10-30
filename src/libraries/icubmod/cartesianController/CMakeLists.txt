@@ -29,11 +29,13 @@ IF (NOT SKIP_cartesiancontrollerclient)
    SET(client_header CommonCartesianController.h
                      ClientCartesianController.h)
 
-   INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
+   INCLUDE_DIRECTORIES(${iKin_INCLUDE_DIRS}
+                       ${YARP_INCLUDE_DIRS})
 
    ADD_LIBRARY(cartesiancontrollerclient ${client_source} ${client_header})
 
-   TARGET_LINK_LIBRARIES(cartesiancontrollerclient ${YARP_LIBRARIES})
+   TARGET_LINK_LIBRARIES(cartesiancontrollerclient iKin
+                                                   ${YARP_LIBRARIES})
 
    icub_export_library(cartesiancontrollerclient)
 ENDIF (NOT SKIP_cartesiancontrollerclient)

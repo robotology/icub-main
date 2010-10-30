@@ -52,6 +52,8 @@ class CartesianHelper
 {
 protected:
     static void addVectorOption(yarp::os::Bottle &b, const int vcb, const yarp::sig::Vector &v);
+    static bool getDesiredOption(yarp::os::Bottle &reply, yarp::sig::Vector &xdhat,
+                                 yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
 
 public:
     /**

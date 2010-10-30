@@ -45,10 +45,13 @@
 #include <yarp/dev/PreciselyTimed.h>
 #include <yarp/dev/CartesianControl.h>
 
+#include <iCub/iKin/iKinHlp.h>
+
 
 class ClientCartesianController : public yarp::dev::DeviceDriver,
                                   public yarp::dev::IPreciselyTimed,
-                                  public yarp::dev::ICartesianControl
+                                  public yarp::dev::ICartesianControl,
+                                  public iCub::iKin::CartesianHelper
 {
 protected:
     bool connected;
@@ -81,6 +84,14 @@ public:
     virtual bool goToPoseSync(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
     virtual bool goToPositionSync(const yarp::sig::Vector &xd, const double t=0.0);
     virtual bool getDesired(yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat,yarp::sig::Vector &qdhat);
+    virtual bool askForPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, yarp::sig::Vector &xdhat,
+                            yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
+    virtual bool askForPose(const yarp::sig::Vector &q0, const yarp::sig::Vector &xd, const yarp::sig::Vector &od,
+                            yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
+    virtual bool askForPosition(const yarp::sig::Vector &xd, yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat,
+                                yarp::sig::Vector &qdhat);
+    virtual bool askForPosition(const yarp::sig::Vector &q0, const yarp::sig::Vector &xd, yarp::sig::Vector &xdhat,
+                                yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
     virtual bool getDOF(yarp::sig::Vector &curDof);
     virtual bool setDOF(const yarp::sig::Vector &newDof, yarp::sig::Vector &curDof);
     virtual bool getRestPos(yarp::sig::Vector &curRestPos);

@@ -39,6 +39,55 @@ void CartesianHelper::addVectorOption(Bottle &b, const int vcb, const Vector &v)
 
 
 /************************************************************************/
+bool CartesianHelper::getDesiredOption(Bottle &reply, Vector &xdhat,
+                                       Vector &odhat, Vector &qdhat)
+{
+    if (reply.size()==0)
+        return false;
+
+    if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
+    {
+        if (Bottle *body=reply.get(1).asList())
+        {
+            // xdhat and odhat part
+            if (body->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
+            {
+                Bottle *xData=body->find(Vocab::decode(IKINSLV_VOCAB_OPT_X)).asList();
+                xdhat.resize(3);
+                odhat.resize(4);
+
+                for (int i=0; i<xdhat.length(); i++)
+                    xdhat[i]=xData->get(i).asDouble();
+
+                for (int i=0; i<odhat.length(); i++)
+                    odhat[i]=xData->get(xdhat.length()+i).asDouble();
+            }
+            else
+                return false;
+
+            // qdhat part
+            if (body->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
+            {
+                Bottle *qData=body->find(Vocab::decode(IKINSLV_VOCAB_OPT_Q)).asList();
+                qdhat.resize(qData->size());
+
+                for (int i=0; i<qdhat.length(); i++)
+                    qdhat[i]=qData->get(i).asDouble();
+            }
+            else
+                return false;
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 void CartesianHelper::addTargetOption(Bottle &b, const Vector &xd)
 {
     addVectorOption(b,IKINSLV_VOCAB_OPT_XD,xd);

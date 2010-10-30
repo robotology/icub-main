@@ -22,10 +22,9 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 
-#include <stdio.h>
-
 #include <iCub/iKin/iKinVocabs.h>
-#include <iCub/iKin/iKinHlp.h>
+
+#include <stdio.h>
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
@@ -1686,6 +1685,123 @@ bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
+                                           Vector &xdhat, Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    Vector tg(xd.length()+od.length());
+    for (int i=0; i<xd.length(); i++)
+        tg[i]=xd[i];
+
+    for (int i=0; i<od.length(); i++)
+        tg[xd.length()+i]=od[i];
+    
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+
+    // send command and wait for reply
+    if (!portSlvRpc->write(command,reply))
+    {
+        fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
+                                           const Vector &od, Vector &xdhat,
+                                           Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    Vector tg(xd.length()+od.length());
+    for (int i=0; i<xd.length(); i++)
+        tg[i]=xd[i];
+
+    for (int i=0; i<od.length(); i++)
+        tg[xd.length()+i]=od[i];
+
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+
+    // send command and wait for reply
+    if (!portSlvRpc->write(command,reply))
+    {
+        fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
+                                               Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+
+    // send command and wait for reply
+    if (!portSlvRpc->write(command,reply))
+    {
+        fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &xd,
+                                               Vector &xdhat, Vector &odhat, Vector &qdhat)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
+    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    addPoseOption(command,IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+
+    // send command and wait for reply
+    if (!portSlvRpc->write(command,reply))
+    {
+        fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+        return false;
+    }
+
+    return getDesiredOption(reply,xdhat,odhat,qdhat);
 }
 
 
