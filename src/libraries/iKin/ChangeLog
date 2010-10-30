@@ -1,4 +1,7 @@
 
+2010-10-30 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.h,.cpp: added the [ask] rpc command
+
 2010-10-26 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iostream replaced by fprintf()
 
