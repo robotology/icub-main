@@ -147,6 +147,16 @@
  *    will contain the weights as result of a saturation over
  *    zero.
  *  
+ * Commands issued through the [ask] vocab: 
+ *  
+ * \b xd request: example [ask] ([xd] (x y z ax ay az theta))
+ *    ([pose] [xyz]) ([q] (...)). Ask to solve for the target
+ *    xd. User can specifies a different starting joint
+ *    configuration q and the pose mode. The reply will be
+ *    something like [ack] ([q] (...)) ([x] (...)) where the
+ *    found configuration q is returned as well as the final
+ *    attained pose x.
+ *  
  * Commands concerning the thread status: 
  *  
  * \b susp request: example [susp], suspend the thread. 

@@ -27,6 +27,7 @@
 #define IKINSLV_VOCAB_CMD_CFG           VOCAB3('c','f','g')
 #define IKINSLV_VOCAB_CMD_GET           VOCAB3('g','e','t')
 #define IKINSLV_VOCAB_CMD_SET           VOCAB3('s','e','t')
+#define IKINSLV_VOCAB_CMD_ASK           VOCAB3('a','s','k')
 #define IKINSLV_VOCAB_CMD_QUIT          VOCAB4('q','u','i','t')
 #define IKINSLV_VOCAB_OPT_MODE          VOCAB4('m','o','d','e')
 #define IKINSLV_VOCAB_OPT_POSE          VOCAB4('p','o','s','e')
