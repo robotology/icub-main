@@ -284,6 +284,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            case IKINCARTCTRL_VOCAB_CMD_ASK:
+            {
+                // just behave as a relay
+                Bottle slvCommand=command;
+                
+                if (!portSlvRpc->write(slvCommand,reply))
+                {
+                    fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    break;
+                }
+
+                break;
+            }
+
             case IKINSLV_VOCAB_CMD_GET:
             {
                 if (command.size()>1)
