@@ -1062,7 +1062,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
                 // set things for the 3rd task
                 for (unsigned int i=0; i<prt->chn->getDOF(); i++)
-                    if (idx_3rdTask[i])
+                    if (idx_3rdTask[i]!=0.0)
                         qd_3rdTask[i]=(*prt->chn)(i).getAng();
 
                 // call the solver to converge
@@ -1522,7 +1522,7 @@ void CartesianSolver::prepareJointsRestTask()
         {            
             qd_3rdTask[offs]=restJntPos[i];
             w_3rdTask[offs]=(restWeights[i]!=0.0)?restWeights[i]:1.0;
-            idx_3rdTask[offs]=(restWeights[i]!=0.0)?0:1;
+            idx_3rdTask[offs]=(restWeights[i]!=0.0)?0.0:1.0;
 
             offs++;
         }
@@ -1677,7 +1677,7 @@ void CartesianSolver::run()
 
         // set things for the 3rd task
         for (unsigned int i=0; i<prt->chn->getDOF(); i++)
-            if (idx_3rdTask[i])
+            if (idx_3rdTask[i]!=0.0)
                 qd_3rdTask[i]=(*prt->chn)(i).getAng();
 
         // update optimizer's options
