@@ -22,6 +22,10 @@
 
 #include <iCub/iKin/iKinInv.h>
 
+#define IKINCTRL_INTARGET_TOL       5e-3
+#define IKINCTRL_WATCHDOG_TOL       1e-4
+#define IKINCTRL_WATCHDOG_MAXITER   200
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -32,25 +36,17 @@ using namespace iCub::iKin;
 
 
 /************************************************************************/
-iKinCtrl::iKinCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0) : chain(c)
+iKinCtrl::iKinCtrl(iKinChain &c, unsigned int _ctrlPose) : chain(c)
 {
     dim=chain.getDOF();
 
-    Vector _q0(dim);  _q0 =0.0;
     grad.resize(dim,0.0);
 
-    size_t n=q0.length();
-    n=n>dim ? dim : n;
+    q_old=q=chain.getAng();
 
-    for (unsigned int i=0; i<n; i++)
-        _q0[i]=q0[i];
-
-    q    =_q0;
-    q_old=q;
-
-    inTargetTol    =5e-3;
-    watchDogTol    =1e-4;
-    watchDogMaxIter=200;
+    inTargetTol    =IKINCTRL_INTARGET_TOL;
+    watchDogTol    =IKINCTRL_WATCHDOG_TOL;
+    watchDogMaxIter=IKINCTRL_WATCHDOG_MAXITER;
 
     iter=0;
 
@@ -286,8 +282,8 @@ Vector iKinCtrl::solve(Vector &xd, const double tol_size, const int max_iter,
 
 
 /************************************************************************/
-SteepCtrl::SteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, const Vector &q0,
-                     double _Ts, double _Kp) : iKinCtrl(c,_ctrlPose,q0)
+SteepCtrl::SteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose,
+                     double _Ts, double _Kp) : iKinCtrl(c,_ctrlPose)
 {
     type=_type;
     constrained=true;
@@ -302,7 +298,7 @@ SteepCtrl::SteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, c
     }
 
     Ts=_Ts;
-    I=new Integrator(Ts,q0,lim);
+    I=new Integrator(Ts,chain.getAng(),lim);
 
     Kp=_Kp;
 }
@@ -431,9 +427,9 @@ SteepCtrl::~SteepCtrl()
 
 
 /************************************************************************/
-VarKpSteepCtrl::VarKpSteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, const Vector &q0,
-                               double _Ts, double _Kp0, double _Kp_inc, double _Kp_dec, double _Kp_max,
-                               double _max_perf_inc) : SteepCtrl(c,_ctrlPose,_type,q0,_Ts,_Kp0)
+VarKpSteepCtrl::VarKpSteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, double _Ts,
+                               double _Kp0, double _Kp_inc, double _Kp_dec, double _Kp_max,
+                               double _max_perf_inc) : SteepCtrl(c,_ctrlPose,_type,_Ts,_Kp0)
 {
     Kp_inc      =_Kp_inc;
     Kp_dec      =_Kp_dec;
@@ -484,9 +480,9 @@ Vector VarKpSteepCtrl::update_qdot()
 
 
 /************************************************************************/
-LMCtrl::LMCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, double _Ts, double _mu0,
-               double _mu_inc, double _mu_dec, double _mu_min, double _mu_max, double _sv_thres) : 
-               iKinCtrl(c,_ctrlPose,q0)
+LMCtrl::LMCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts, double _mu0,
+               double _mu_inc, double _mu_dec, double _mu_min, double _mu_max,
+               double _sv_thres) : iKinCtrl(c,_ctrlPose)
 {
     constrained=true;
 
@@ -500,7 +496,7 @@ LMCtrl::LMCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, double _T
     }
 
     Ts=_Ts;
-    I=new Integrator(Ts,q0,lim);
+    I=new Integrator(Ts,chain.getAng(),lim);
 
     mu    =_mu0;
     mu0   =_mu0;
@@ -696,10 +692,10 @@ LMCtrl::~LMCtrl()
 
 
 /************************************************************************/
-LMCtrl_GPM::LMCtrl_GPM(iKinChain &c, unsigned int _ctrlPose, const Vector &q0,
-                       double _Ts, double _mu0, double _mu_inc, double _mu_dec,
+LMCtrl_GPM::LMCtrl_GPM(iKinChain &c, unsigned int _ctrlPose, double _Ts,
+                       double _mu0, double _mu_inc, double _mu_dec,
                        double _mu_min, double _mu_max, double _sv_thres) : 
-                       LMCtrl(c,_ctrlPose,q0,_Ts,_mu0,_mu_inc,_mu_dec,_mu_min,_mu_max,_sv_thres)
+                       LMCtrl(c,_ctrlPose,_Ts,_mu0,_mu_inc,_mu_dec,_mu_min,_mu_max,_sv_thres)
 {
     span.resize(dim);
     alpha_min.resize(dim);
@@ -815,9 +811,9 @@ namespace iKin
 
 
 /************************************************************************/
-GSLMinCtrl::GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, const unsigned int _algo_type,
+GSLMinCtrl::GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const unsigned int _algo_type,
                        double _step_size, double _tol) : algo_type(_algo_type), step_size(_step_size),
-                       tol(_tol), iKinCtrl(c,_ctrlPose,q0)
+                       tol(_tol), iKinCtrl(c,_ctrlPose)
 {  
     q_set.resize(dim,0.0);
     q_set_len=0;
@@ -868,7 +864,7 @@ GSLMinCtrl::GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, c
         des1.fdf   =&_fdf;
         des1.params=(void*)this;
 
-        gsl_multimin_fdfminimizer_set(s1,&des1,(const gsl_vector*)q0.getGslVector(),step_size,tol);
+        gsl_multimin_fdfminimizer_set(s1,&des1,(const gsl_vector*)chain.getAng().getGslVector(),step_size,tol);
     }
     else
     {
@@ -881,7 +877,8 @@ GSLMinCtrl::GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, c
         Vector size(dim);
         size=step_size;
 
-        gsl_multimin_fminimizer_set(s2,&des2,(const gsl_vector*)q0.getGslVector(),(const gsl_vector*)size.getGslVector());
+        gsl_multimin_fminimizer_set(s2,&des2,(const gsl_vector*)chain.getAng().getGslVector(),
+                                    (const gsl_vector*)size.getGslVector());
     }
 }
 
@@ -1112,9 +1109,8 @@ GSLMinCtrl::~GSLMinCtrl()
 
 
 /************************************************************************/
-MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose,
-                                         const Vector &q0,  double _Ts) : 
-                                         iKinCtrl(c,_ctrlPose,q0), Ts(_Ts)
+MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts) : 
+                                         iKinCtrl(c,_ctrlPose), Ts(_Ts)
 {
     q_set.resize(dim,0.0);
     qdot.resize(dim,0.0);

@@ -188,9 +188,8 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param q0 is the vector of initial joint angles values.
     */
-    iKinCtrl(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &q0);
+    iKinCtrl(iKinChain &c, unsigned int _ctrlPose);
 
     /**
     * Enables/Disables joint angles constraints.
@@ -462,12 +461,11 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param q0 is the vector of initial joint angles values. 
     * @param _Ts is the controller sample time.
     * @param _Kp is constant gain.
     */
     SteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose,
-              const yarp::sig::Vector &q0, double _Ts, double _Kp);
+              double _Ts, double _Kp);
 
     /**
     * Returns the further contribution to the qdot=pinvJ*xdot 
@@ -561,7 +559,6 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param q0 is the vector of initial joint angles values. 
     * @param _Ts is the controller sample time.
     * @param _Kp0 is the initial gain. 
     * @param _Kp_inc is the increasing factor.
@@ -569,7 +566,7 @@ public:
     * @param _Kp_max is the maximum value for Kp.
     * @param _max_perf_inc is the threshold value to decreas Kp. 
                                                                 */
-    VarKpSteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, const yarp::sig::Vector &q0, double _Ts,
+    VarKpSteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, double _Ts,
                    double _Kp0, double _Kp_inc, double _Kp_dec, double _Kp_max, double _max_perf_inc);
 
     virtual void restart(const yarp::sig::Vector &q0) { SteepCtrl::restart(q0); reset_Kp(); }
@@ -638,7 +635,6 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param q0 is the vector of initial joint angles values. 
     * @param _Ts is the controller sample time. 
     * @param _mu0 is the initial value for weighting factor mu.
     * @param _mu_inc is the increasing factor.
@@ -648,9 +644,8 @@ public:
     * @param _sv_thres is the minimum singular value under which the
     *                mu is constantly kept equal to _mu_max.
     */
-    LMCtrl(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &q0, double _Ts,
-           double _mu0, double _mu_inc, double _mu_dec, double _mu_min, double _mu_max,
-           double _sv_thres=1e-6);
+    LMCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts, double _mu0, double _mu_inc,
+           double _mu_dec, double _mu_min, double _mu_max, double _sv_thres=1e-6);
 
     /**
     * Returns the further contribution to the qdot=pinvJ*xdot 
@@ -735,9 +730,8 @@ public:
     /**
     * Constructor.
     */
-    LMCtrl_GPM(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &q0, double _Ts,
-               double _mu0, double _mu_inc, double _mu_dec, double _mu_min, double _mu_max,
-               double _sv_thres=1e-6);
+    LMCtrl_GPM(iKinChain &c, unsigned int _ctrlPose, double _Ts, double _mu0, double _mu_inc,
+               double _mu_dec, double _mu_min, double _mu_max, double _sv_thres=1e-6);
 
     virtual yarp::sig::Vector computeGPM();
 
@@ -833,7 +827,6 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param q0 is the vector of initial joint angles values. 
     * @param _algo_type is algorithm type; it can be one of: 
     *   GSLALGOTYPE_STEEPEST
     *   GSLALGOTYPE_CONJ_FR
@@ -846,8 +839,8 @@ public:
     *            where p is the line direction and g is the
     *            gradient.
     */
-    GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &q0,
-               const unsigned int _algo_type, double _step_size, double _tol);
+    GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const unsigned int _algo_type,
+               double _step_size, double _tol);
 
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
     virtual void restart(const yarp::sig::Vector &q0) { iKinCtrl::restart(q0); reset(q0); }
@@ -948,11 +941,9 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param q0 is the vector of initial joint angles values. 
     * @param _Ts is the nominal controller sample time. 
     */
-    MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose,
-                        const yarp::sig::Vector &q0, double _Ts);
+    MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts);
 
     /**
     * Executes one iteration of the control algorithm 

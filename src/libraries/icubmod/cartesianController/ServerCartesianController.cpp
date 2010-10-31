@@ -838,7 +838,7 @@ void ServerCartesianController::newController()
     qdes=chain->getAng();
 
     // instantiate new controller
-    ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,chain->getAng(),getRate()/1000.0);
+    ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,getRate()/1000.0);
 
     // set tolerance
     ctrl->setInTargetTol(targetTol);

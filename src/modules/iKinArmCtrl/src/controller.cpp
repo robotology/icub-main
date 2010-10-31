@@ -125,7 +125,7 @@ bool Controller::threadInit()
     }
 
     // Instantiate controller
-    ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,chain->getAng(),Ts);
+    ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,Ts);
 
     // Set the task execution time
     execTime=ctrl->set_execTime(execTime,true);

@@ -308,7 +308,7 @@ public:
         chain=limb->asChain();
 
         // instantiate controller
-        ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,chain->getAng(),getRate()/1000.0);
+        ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,getRate()/1000.0);
 
         // set the task execution time
         ctrl->set_execTime(rf.check("T",Value(2.0)).asDouble(),true);

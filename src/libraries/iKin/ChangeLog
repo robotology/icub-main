@@ -1,6 +1,7 @@
 
 2010-10-31 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * tutorials: names turned in something meaningful
+           * iKinInv.cpp,.h: removed the q0 parameter
 
 2010-10-30 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinSlv.h,.cpp: added the [ask] rpc command
