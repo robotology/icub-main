@@ -1710,7 +1710,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
-    addPoseOption(command,IKINCTRL_POSE_XYZ);
+    addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
     if (!portSlvRpc->write(command,reply))

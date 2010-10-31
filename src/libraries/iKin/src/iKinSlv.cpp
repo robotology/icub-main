@@ -1055,10 +1055,12 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
                 {
                     int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
-                    slv->set_ctrlPose((pose==IKINSLV_VOCAB_VAL_POSE_XYZ)?IKINCTRL_POSE_XYZ:IKINCTRL_POSE_FULL);
+
+                    if (pose==IKINSLV_VOCAB_VAL_POSE_FULL)
+                        slv->set_ctrlPose(IKINCTRL_POSE_FULL);
+                    else if (pose==IKINSLV_VOCAB_VAL_POSE_XYZ)
+                        slv->set_ctrlPose(IKINCTRL_POSE_XYZ);
                 }
-                else
-                    slv->set_ctrlPose(IKINCTRL_POSE_FULL);  // the full pose is default
 
                 // set things for the 3rd task
                 for (unsigned int i=0; i<prt->chn->getDOF(); i++)
