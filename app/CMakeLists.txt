@@ -20,7 +20,6 @@ icub_app_install(app
 ### Go through single applications
 
 add_subdirectory(default)
-add_subdirectory(actionPrimitivesExample)
 add_subdirectory(cameraCalibration)
 add_subdirectory(cartesianSolver)
 add_subdirectory(demoGrasp_IIT_ISR)
