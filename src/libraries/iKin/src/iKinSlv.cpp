@@ -1085,16 +1085,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
                 unlock();
 
-                // augment q with the complete
-                // joints configuration
+                // prepare the complete joints configuration
                 Vector _q(prt->chn->getN());
-                int cnt=0;
-
                 for (unsigned int i=0; i<prt->chn->getN(); i++)
-                    if ((*prt->chn)[i].isBlocked())
-                        _q[i]=CTRL_RAD2DEG*prt->chn->getAng(i);
-                    else
-                        _q[i]=q[cnt++];
+                    _q[i]=CTRL_RAD2DEG*prt->chn->getAng(i);
 
                 // fill the reply accordingly
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
