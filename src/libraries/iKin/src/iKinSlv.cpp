@@ -492,14 +492,14 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
 
 
 /************************************************************************/
-void CartesianSolver::waitPart(const Property &partOpt)
+bool CartesianSolver::waitPart(const Property &partOpt)
 {
     string robotName=const_cast<Property&>(partOpt).find("robot").asString().c_str();
     string partName=const_cast<Property&>(partOpt).find("part").asString().c_str();
     string portName="/"+robotName+"/"+partName+"/state:o";
     double t0=Time::now();
 
-    while (Time::now()-t0<ping_robot_tmo)
+    while ((Time::now()-t0)<ping_robot_tmo)
     {   
         fprintf(stdout,"%s: Checking if %s port is active ... ",
                 slvName.c_str(),portName.c_str());
@@ -509,13 +509,15 @@ void CartesianSolver::waitPart(const Property &partOpt)
         fprintf(stdout,"%s\n",ok?"ok":"not yet");
 
         if (ok)
-            return;
+            return true;
         else
         {
             double t1=Time::now();
-            while (Time::now()-t1<CARTSLV_DEFAULT_TMO/1000.0);
+            while ((Time::now()-t1)<CARTSLV_DEFAULT_TMO/1000.0);
         }
     }
+
+    return false;
 }
 
 

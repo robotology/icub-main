@@ -368,7 +368,7 @@ protected:
     bool   isNewDOF(const yarp::sig::Vector &_dof);
     bool   changeDOF(const yarp::sig::Vector &_dof);
 
-    void   waitPart(const yarp::os::Property &partOpt);
+    bool   waitPart(const yarp::os::Property &partOpt);
     void   alignJointsBounds();
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
