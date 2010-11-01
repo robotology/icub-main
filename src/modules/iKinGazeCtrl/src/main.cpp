@@ -358,26 +358,28 @@ protected:
     Port           rpcPort;
 
 public:
-    void waitPart(const Property &partOpt, const double ping_robot_tmo)
+    bool waitPart(const Property &partOpt, const double ping_robot_tmo)
     {
         string portName=const_cast<Property&>(partOpt).find("remote").asString().c_str();
         portName+="/state:o";
         double t0=Time::now();
     
-        while (Time::now()-t0<ping_robot_tmo)
+        while ((Time::now()-t0)<ping_robot_tmo)
         {   
             fprintf(stdout,"Checking if %s port is active ... ",portName.c_str());
             bool ok=Network::exists(portName.c_str(),true);
             fprintf(stdout,"%s\n",ok?"ok":"not yet");
     
             if (ok)
-                return;
+                return true;
             else
             {
                 double t1=Time::now();
-                while (Time::now()-t1<1.0);
+                while ((Time::now()-t1)<1.0);
             }
         }
+
+        return false;
     }
 
     virtual bool configure(ResourceFinder &rf)
