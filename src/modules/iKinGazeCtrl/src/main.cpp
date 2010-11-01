@@ -398,72 +398,28 @@ public:
 
         Time::turboBoost();
 
-        if (rf.check("ctrlName"))
-            ctrlName=rf.find("ctrlName").asString().c_str();
-        else
-            ctrlName="iKinGazeCtrl";
+        // get params from the command-line
+        ctrlName=rf.check("ctrlName",Value("iKinGazeCtrl")).asString().c_str();
+        robotName=rf.check("robot",Value("icub")).asString().c_str();
+        partName=rf.check("part",Value("head")).asString().c_str();
+        torsoName=rf.check("torso",Value("torso")).asString().c_str();
+        inertialName=rf.check("inertial",Value("inertial")).asString().c_str();
+        neckTime=rf.check("Tneck",Value(0.7)).asDouble();
+        eyesTime=rf.check("Teyes",Value(0.2)).asDouble();
+        eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
+        eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
+        minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
+        ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
 
-        if (rf.check("robot"))
-            robotName=rf.find("robot").asString().c_str();
-        else
-            robotName="icub";
-
-        if (rf.check("part"))
-            partName=rf.find("part").asString().c_str();
-        else
-            partName="head";
-
-        if (rf.check("torso"))
-            torsoName=rf.find("torso").asString().c_str();
-        else
-            torsoName="torso";
-
-        if (rf.check("inertial"))
-            inertialName=rf.find("inertial").asString().c_str();
-        else
-            inertialName="inertial";
-
-        if (rf.check("Tneck"))
-            neckTime=rf.find("Tneck").asDouble();
-        else
-            neckTime=0.70;
-
-        if (rf.check("Teyes"))
-            eyesTime=rf.find("Teyes").asDouble();
-        else
-            eyesTime=0.20;
-
-        if (rf.check("eyeTiltMin"))
-            eyeTiltMin=rf.find("eyeTiltMin").asDouble();
-        else
-            eyeTiltMin=-1e9;
-
-        if (rf.check("eyeTiltMax"))
-            eyeTiltMax=rf.find("eyeTiltMax").asDouble();
-        else
-            eyeTiltMax=1e9;
-
-        if (rf.check("minAbsVel"))
-        {
-            minAbsVel=CTRL_DEG2RAD*rf.find("minAbsVel").asDouble();
-
-            // minAbsVel is given in absolute form
-            // hence it must be positive
-            if (minAbsVel<0.0)
-                minAbsVel=-minAbsVel;
-        }
-        else
-            minAbsVel=0.0;
+        // minAbsVel is given in absolute form
+        // hence it must be positive
+        if (minAbsVel<0.0)
+            minAbsVel=-minAbsVel;
 
         if (rf.check("simulation"))
             Robotable=false;
         else
             Robotable=true;
-
-        if (rf.check("ping_robot_tmo"))
-            ping_robot_tmo=rf.find("ping_robot_tmo").asDouble();
-        else
-            ping_robot_tmo=0.0;
 
         if (rf.check("config"))
         {    
