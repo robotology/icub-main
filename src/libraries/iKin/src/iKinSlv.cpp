@@ -1650,8 +1650,8 @@ void CartesianSolver::run()
         // are detected and mode==continuous
         doSolve|=inPort->get_contMode() && (distExtMoves>CARTSLV_UNCTRLEDJNTS_THRES);
         if (doSolve && verbosity)
-            fprintf(stdout,"%s: detected movements on uncontrolled joints (norm=%g deg)\n",
-                    slvName.c_str(),distExtMoves);
+            fprintf(stdout,"%s: detected movements on uncontrolled joints (norm=%g>%g deg)\n",
+                    slvName.c_str(),distExtMoves,CARTSLV_UNCTRLEDJNTS_THRES);
     }
 
     // run the solver if any input is received
