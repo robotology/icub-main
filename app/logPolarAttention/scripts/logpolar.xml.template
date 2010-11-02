@@ -1,0 +1,40 @@
+<application>
+<name>Display logpolar images</name>
+<dependencies>
+      <port>/pc104</port>
+</dependencies>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/logp/left --x 0 --y 50 --synch</parameters>
+      <node>icub15</node>
+      <tag>icublogpleft</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/logp/right --x 320 --y 50 --synch</parameters>
+      <node>icub15</node>
+      <tag>icublogpright</tag>
+   </module>
+   <module>
+      <name>logpolarRemapper</name>
+      <parameters>--remote /icub/cam/left --width 480 --height 480</parameters>
+      <node>icub15</node>
+      <tag>remapperleft</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view/left/rec --x 640 --y 50 --synch</parameters>
+      <node>icub15</node>
+      <tag>viewremapperleft</tag>
+   </module>
+<connection>
+  <output>/icub/cam/left/logpolar</output>
+  <input>/icub/logp/left</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right/logpolar</output>
+  <input>/icub/logp/right</input>
+  <protocol>mcast</protocol>
+</connection>
+</application>

@@ -1,0 +1,51 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_logPolarAttention logPolarAttention
+
+The Log-Polar Attention Launcher.
+
+\section intro_sec Description
+This application runs the visual attention based on log-polar images.
+The attention extracts salient subparts of the portion of world in the field of view.
+At the same time object-based and space-based visual attention give a feedback to the attentive system which decide where the winner-take-all point is located.
+The object space is given by protoObject which are regions likely to be bound into objects whereas the space-based is the result of pixelwise computation of saliency.
+The different saliency maps that every element produces are combined together through a weighted linear combination.
+
+\section dep_sec Dependencies
+None.
+
+\section int_sec Instantiated Modules
+- \ref visualFilter "visualFilter"
+- \ref yuvProcessor "yuvProcessor"
+- \ref saliencyBlobFinder "saliencyBlobFinder"
+- \ref selAttentionEngine "selectiveAttentionEngine"
+- \ref selAttentionInterface "selAttentionInterface"
+- \ref blobFinderInterface "blobFinderInterface"
+
+\section config_sec Configuration Files
+The file ./conf/icubEyes.ini contains the parameter of the cameras
+The file ./conf/saliencyBlobFinderLeft.ini contains the configuration parameter of the saliencyBlobFinder (left)
+The file ./conf/saliencyBlobFinderRight.ini contains the configuration parameter of the saliencyBlobFinder (right)
+The file ./conf/vergence.ini contains the parameter to run vergence 
+The file ./conf/icubEyes.ini contains the parameter of the cameras
+The file ./conf/selectiveAttentionLeft.ini contains the configuration parameter of the selectiveAttention (left channel)
+The file ./conf/selectiveAttentionRight.ini contains the configuration parameter of the selectiveAttention (right channel)
+
+
+
+
+\section howto How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
+
+- ./scripts/logPolarAttentionLeft.xml.template
+  launches the whole attention system taking as input what the left camera acquires
+
+\author Rea Francesco
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+**/
+
+

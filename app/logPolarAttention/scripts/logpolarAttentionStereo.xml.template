@@ -1,0 +1,62 @@
+<application>
+	<name>AttentionMechanism Stereo </name>
+ 	<dependencies>
+		<port>/icub/cam/left/logpolar</port>
+		<port>/icub/cam/right/logpolar</port>
+		<port>/selectiveAttentionEngine/icub/left_cam/cartesian:o</port>
+		<port>/selectiveAttentionEngine/icub/right_cam/cartesian:o</port> 
+	</dependencies>
+	<module>
+		<name>vergence</name>
+		<parameters>--name /vergence/icub</parameters>
+		<tag>vergence</tag>
+		<node>/powerNode1</node>
+	</module>
+	<module>
+		<name>stereoAtt</name>
+		<parameters>--name stereoAtt/icub/</parameters>
+		<tag>stereoAttention</tag>
+		<node>/powerNode1</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /icub/fusionImage --sync --x 300 --y 400</parameters>
+		<tag>fusion</tag>
+		<node>/console</node>
+	</module>
+	<connection>
+                <from>icub/cam/left/logpolar</from>
+		<to>/vergence/icub/left:i</to>
+		<protocol>mcast</protocol>
+	</connection>
+        <connection>
+                <from>/icub/cam/right/logpolar</from>
+		<to>/vergence/icub/right:i</to>
+		<protocol>mcast</protocol>
+	</connection>
+	<connection>
+				<from>/vergence/icub/cmd:o</from>
+		<to>/stereoAtt/icub/vergence:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+      	        <from>/vergence/icub/shift:o</from>
+		<to>/stereoAtt/icub/shift:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+                <from>/selectiveAttentionEngine/icub/left_cam/cartesian:o</from>
+		<to>/stereoAtt/icub/left:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+                <from>/selectiveAttentionEngine/icub/right_cam/cartesian:o</from>
+		<to>/stereoAtt/icub/right:i</to>
+		<protocol>shmem</protocol>
+	</connection>
+	<connection>
+                <from>/stereoAtt/icub/image:o</from>
+		<to>/icub/fusionImage</to>
+		<protocol>shmem</protocol>
+	</connection>	
+</application>
