@@ -1642,15 +1642,15 @@ void CartesianSolver::run()
         Vector unctrlJoints;
         latchUncontrolledJoints(unctrlJoints);
     
-        // detect movements of uncontrolled links
+        // detect movements of uncontrolled joints
         double distExtMoves=norm(CTRL_RAD2DEG*(unctrlJoints-unctrlJointsOld));
         unctrlJointsOld=unctrlJoints;
     
-        // run the solver if movements of uncontrolled links 
+        // run the solver if movements of uncontrolled joints
         // are detected and mode==continuous
         doSolve|=inPort->get_contMode() && (distExtMoves>CARTSLV_UNCTRLEDJNTS_THRES);
         if (doSolve && verbosity)
-            fprintf(stdout,"%s: detected movements on uncontrolled links (norm=%g deg)\n",
+            fprintf(stdout,"%s: detected movements on uncontrolled joints (norm=%g deg)\n",
                     slvName.c_str(),distExtMoves);
     }
 
