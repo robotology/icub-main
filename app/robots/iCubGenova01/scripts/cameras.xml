@@ -42,12 +42,12 @@
 <connection>
   <output>/icub/cam/left</output>
   <input>/icub/view/left</input>
-  <protocol>udp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/cam/right</output>
   <input>/icub/view/right</input>
-  <protocol>udp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 </application>
 

@@ -64,12 +64,12 @@
 <connection>
   <output>/icub/camcalib/left/out</output>
   <input>/icub/view/left</input>
-  <protocol>udp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/camcalib/right/out</output>
   <input>/icub/view/right</input>
-  <protocol>udp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 </application>
 
