@@ -46,7 +46,7 @@
         <connection>
                 <from>/icub/camcalib/left/out</from>
                 <to>/indepMotionDetector/left/img:i</to>
-                <protocol>udp</protocol>
+                <protocol>mcast</protocol>
         </connection>
 
         <connection>

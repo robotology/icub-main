@@ -38,7 +38,7 @@
         <connection>
                 <from>/icub/camcalib/left/out</from>
                 <to>/icub/PF3DTracker_L/videoIn</to>
-                <protocol>udp</protocol>
+                <protocol>mcast</protocol>
         </connection>
         <connection>
                 <from>/icub/head/state:o</from>
