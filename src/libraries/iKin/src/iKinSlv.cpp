@@ -24,11 +24,12 @@
 #include <iCub/iKin/iKinVocabs.h>
 #include <iCub/iKin/iKinSlv.h>
 
-#define SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
-#define CARTSLV_DEFAULT_PER         20      // [ms]
-#define CARTSLV_DEFAULT_TMO         1000    // [ms]
-#define CARTSLV_WEIGHT_2ND_TASK     0.01
-#define CARTSLV_WEIGHT_3RD_TASK     0.01
+#define CARTSLV_SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
+#define CARTSLV_DEFAULT_PER                 20      // [ms]
+#define CARTSLV_DEFAULT_TMO                 1000    // [ms]
+#define CARTSLV_WEIGHT_2ND_TASK             0.01
+#define CARTSLV_WEIGHT_3RD_TASK             0.01
+#define CARTSLV_UNCTRLEDJNTS_THRES          0.1     // [deg]
 
 using namespace std;
 using namespace yarp;
@@ -188,7 +189,7 @@ public:
             row[offs+1]=1.0;
             appendMatrixRow(_C,row);
             appendVectorValue(_lB,lowerBoundInf);
-            appendVectorValue(_uB,SHOULDER_MAXABDUCTION);
+            appendVectorValue(_uB,CARTSLV_SHOULDER_MAXABDUCTION);
 
             // optimization will use LinIneqConstr
             getC()=_C;
@@ -1647,7 +1648,7 @@ void CartesianSolver::run()
     
         // run the solver if movements of uncontrolled links 
         // are detected and mode==continuous
-        doSolve|=inPort->get_contMode() && distExtMoves>0.1;
+        doSolve|=inPort->get_contMode() && (distExtMoves>CARTSLV_UNCTRLEDJNTS_THRES);
         if (doSolve && verbosity)
             fprintf(stdout,"%s: detected movements on uncontrolled links (norm=%g deg)\n",
                     slvName.c_str(),distExtMoves);
