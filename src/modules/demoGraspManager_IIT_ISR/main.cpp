@@ -333,6 +333,7 @@ protected:
 
     Predictor pred;
     bool useNetwork;
+    bool wentHome;
 
     double trajTime;
     double idleTimer, idleTmo;
@@ -573,10 +574,13 @@ protected:
                 resetTargetBall();
 
                 fprintf(stdout,"--- Got target => REACHING\n");
+                
+                wentHome=false;
                 state=STATE_REACH;
             }
         }
-        else if (state==STATE_REACH && Time::now()-idleTimer>idleTmo)
+        else if (((state==STATE_IDLE) || (state==STATE_REACH)) && 
+                 ((Time::now()-idleTimer)>idleTmo) && !wentHome)
         {    
             fprintf(stdout,"--- Target timeout => IDLE\n");
 
@@ -586,6 +590,7 @@ protected:
             steerArmToHome(LEFTARM);
             steerArmToHome(RIGHTARM);
 
+            wentHome=true;
             state=STATE_IDLE;
         }
     }
@@ -815,7 +820,7 @@ protected:
         {
             if (state==STATE_RELEASE)
             {
-                if (Time::now()-latchTimer>releaseTmo)
+                if ((Time::now()-latchTimer)>releaseTmo)
                 {
                     fprintf(stdout,"--- Timeout elapsed => RELEASING\n");
 
@@ -834,7 +839,7 @@ protected:
         {
             if (state==STATE_WAIT)
             {
-                if (Time::now()-latchTimer>idleTmo)
+                if ((Time::now()-latchTimer)>idleTmo)
                 {
                     fprintf(stdout,"--- Timeout elapsed => IDLING\n");
                     state=STATE_IDLE;
@@ -1008,7 +1013,7 @@ public:
     {        
         drvTorso=drvHead=drvLeftArm=drvRightArm=NULL;
         drvCartLeftArm=drvCartRightArm=NULL;
-        drvGazeCtrl=NULL;
+        drvGazeCtrl=NULL;        
     }
 
     virtual bool threadInit()
@@ -1255,6 +1260,7 @@ public:
         idleTimer=Time::now();
         Random::seed((int)idleTimer);
 
+        wentHome=false;
         state=STATE_IDLE;
 
         return true;
