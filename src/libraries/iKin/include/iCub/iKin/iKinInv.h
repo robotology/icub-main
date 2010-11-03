@@ -888,7 +888,7 @@ public:
 *
 * A class derived from iKinCtrl implementing the 
 * multi-referential approach (<a 
-* href="http://infoscience.epfl.ch/record/114045">PDF</a>). 
+* href="http://eris.liralab.it/viki/images/c/cf/CartesianControllersEvaluation.pdf">pdf</a>). 
 * \note Minimum-Jerk time-based generators in Task Space and 
 *       Joint Space are used instead of VITE coupled
 *       controllers.
