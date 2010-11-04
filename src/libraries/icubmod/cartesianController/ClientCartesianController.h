@@ -107,6 +107,7 @@ public:
     virtual bool getJointsVelocities(yarp::sig::Vector &qdot);
     virtual bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
     virtual bool checkMotionDone(bool *f);
+    virtual bool waitMotionDone(const double period=0.1, const double timeout=0.0);
     virtual bool stopControl();
 
     virtual yarp::os::Stamp getLastInputStamp();

@@ -2168,6 +2168,24 @@ bool ServerCartesianController::checkMotionDone(bool *f)
 
 
 /************************************************************************/
+bool ServerCartesianController::waitMotionDone(const double period, const double timeout)
+{
+    bool f=false;
+    double t0=Time::now();
+
+    while (!f)
+    {
+        if (!checkMotionDone(&f) || (timeout>0.0) && ((Time::now()-t0)>timeout))
+            return false;
+
+        Time::delay(period);
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::stopControl()
 {
     if (connected)

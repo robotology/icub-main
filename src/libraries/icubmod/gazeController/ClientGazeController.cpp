@@ -680,6 +680,24 @@ bool ClientGazeController::checkMotionDone(bool *f)
 
 
 /************************************************************************/
+bool ClientGazeController::waitMotionDone(const double period, const double timeout)
+{
+    bool f=false;
+    double t0=Time::now();
+
+    while (!f)
+    {
+        if (!checkMotionDone(&f) || (timeout>0.0) && ((Time::now()-t0)>timeout))
+            return false;
+
+        Time::delay(period);
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::stopControl()
 {
     if (!connected)
