@@ -31,7 +31,7 @@
     <module>
         <name>portScope</name>
         <tag>iCubScopeTorqueErrors</tag>
-        <parameters>--from legTrqErrsRight.ini</parameters>
+        <parameters>--from legTrqErrs.ini</parameters>
         <node>icub15</node>
     </module>
 
