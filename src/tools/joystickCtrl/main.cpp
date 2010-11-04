@@ -84,7 +84,7 @@ Windows, Linux
 #include <iomanip>
 #include <string>
 #include <math.h>
-#include "SDL.h"
+#include <SDL.h>
 
 using namespace std;
 using namespace yarp;
@@ -361,7 +361,7 @@ public:
 		// Reading joystick data (axes/buttons...)
 		for ( int i=0; i < numButtons; ++i )
 		{
-			rawButtons[i] = SDL_JoystickGetButton ( joy1, i );
+//			rawButtons[i] = SDL_JoystickGetButton ( joy1, i );
 		}
 
 		for ( int i=0; i < numAxes; ++i )
