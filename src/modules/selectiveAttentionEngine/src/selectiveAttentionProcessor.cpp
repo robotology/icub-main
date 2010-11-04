@@ -327,7 +327,6 @@ void selectiveAttentionProcessor::run(){
             reinitialise(tmp2->width(), tmp2->height());
             reinit_flag=true;
         }
-        //blobFinder
         ippiCopy_8u_C3R(tmp2->getRawImage(),tmp2->getRowSize(),inImage->getRawImage(), inImage->getRowSize(),srcsize);
         if(map1Port.getInputCount()) {
             tmp=map1Port.read(false);
@@ -335,55 +334,69 @@ void selectiveAttentionProcessor::run(){
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
+            else {
+                map1_yarp->zero();
+            }
         }
-        //Hue
         if(map2Port.getInputCount()) {
             tmp=map2Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
+            else {
+                map2_yarp->zero();
+            }
         }
-        //Saturation
         if(map3Port.getInputCount()) {
             tmp=map3Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
+            else {
+                map3_yarp->zero();
+            }
         }
-        //Value = Luminance
         if(map4Port.getInputCount()) {
             tmp=map4Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
+            else {
+                map4_yarp->zero();
+            }
         }
-        //Luminance
-        /*
         if(map5Port.getInputCount()) {
             tmp=map5Port.read(false);
             if(tmp!=0) {
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),this->srcsize);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),srcsize);
                 idle=false;
             }
+            else {
+                map5_yarp->zero();
+            }
+
         }
-        */
-        //chrominance
         if(map6Port.getInputCount()) {
             tmp=map6Port.read(false);
             if(tmp!=0) {
-                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),this->srcsize);
+                ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),srcsize);
                 idle=false;
             }
+            else {
+                map6_yarp->zero();
+            }
         }
-        //motion
         if(motionPort.getInputCount()) {
             tmp=motionPort.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),motion_yarp->getRawImage(),motion_yarp->getRowSize(),srcsizeCart);
                 idle=false;
+            }
+            else {
+                motion_yarp->zero();
             }
         }
         //colourSaliency
@@ -392,6 +405,9 @@ void selectiveAttentionProcessor::run(){
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),cart1_yarp->getRawImage(),cart1_yarp->getRowSize(),srcsizeCart);
                 idle=false;
+            }
+            else {
+                cart1_yarp->zero();
             }
         }
         //2. processing of the input images
@@ -407,7 +423,7 @@ void selectiveAttentionProcessor::run(){
         int padding=map1_yarp->getPadding();
         int rowSize=map1_yarp->getRowSize();
         unsigned char maxValue=0;
-        double sumK=k1+k2+k3+k4+k6; 
+        double sumK=k1+k2+k3+k4+k5+k6; 
         // combination of all the saliency maps
         if(!idle){
             for(int y=0;y<height;y++){
@@ -458,7 +474,7 @@ void selectiveAttentionProcessor::run(){
             unsigned char* pmotion= motion_yarp->getRawImage();
             int paddingInterm=intermCartOut->getPadding(); //padding of the colour image (640,480)
             int rowSizeInterm=intermCartOut->getRowSize();
-            double sumCart=0.5 + kmotion + kc1;
+            double sumCart=2 - kc1 - kmotion + kmotion + kc1;
             int paddingCartesian=cart1_yarp->getPadding();
             int paddingOutput=outputCartImage.getPadding();
             //adding cartesian and finding the max value
@@ -466,7 +482,7 @@ void selectiveAttentionProcessor::run(){
                 if(y%2==0) {
                     for(int x=0;x<xSizeValue;x++) {
                         if(x%2==0) {
-                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * (0.5/sumCart) + *pmotion * (kmotion/sumCart)));
+                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * ((2 - kc1 - kmotion)/sumCart) + *pmotion * (kmotion/sumCart)));
                             //unsigned char value=*pInter;
                             *pImage=value;
                             if(maxValue<*pImage) {
@@ -567,9 +583,7 @@ void selectiveAttentionProcessor::run(){
                         Time::delay(0.050);
                         printf("*");
                     }
-                    
                     igaze->lookAtMonoPixel(camSel,px,z);
-                    
                     if(vergencePort.getOutputCount()) { 
                         //waiting for the end of the saccadic event
                         bool flag=false;

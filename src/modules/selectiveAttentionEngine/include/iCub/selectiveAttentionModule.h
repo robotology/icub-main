@@ -26,9 +26,6 @@
 #ifndef _selectiveAttentionModule_H_
 #define _selectiveAttentionModule_H_
 
-
-
-
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
