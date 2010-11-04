@@ -900,7 +900,10 @@ protected:
     void stopControl()
     {
         if (useLeftArm || useRightArm)
+        {
+            cartArm->waitMotionDone();
             cartArm->stopControl();
+        }
     }
 
     void setFace(const string &type)
