@@ -22,6 +22,7 @@ icub_app_install(app
 add_subdirectory(default)
 add_subdirectory(cameraCalibration)
 add_subdirectory(cartesianSolver)
+add_subdirectory(demoForceControl)
 add_subdirectory(demoGrasp_IIT_ISR)
 add_subdirectory(iKinView)
 add_subdirectory(faceExpressions)
@@ -33,7 +34,8 @@ add_subdirectory(signalScope)
 add_subdirectory(simCartesianControl)
 add_subdirectory(demoy3)
 add_subdirectory(robotScripting)
+add_subdirectory(torqueObserver)
+add_subdirectory(wholeBodyTorqueObserver)
 add_subdirectory(iCubGui)
 add_subdirectory(robots)
-
 
