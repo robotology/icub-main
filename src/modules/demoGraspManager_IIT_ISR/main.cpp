@@ -198,10 +198,11 @@ Windows, Linux
 #define FACE_CUNNING        ("cun")
 #define FACE_SURPRISED      ("sur")
 
-#define STATE_IDLE          0
-#define STATE_REACH         1
-#define STATE_RELEASE       2
-#define STATE_WAIT          3
+#define STATE_IDLE              0
+#define STATE_REACH             1
+#define STATE_CHECKMOTIONDONE   2
+#define STATE_RELEASE           3
+#define STATE_WAIT              4
 
 YARP_DECLARE_DEVICES(icubmod)
 
@@ -729,42 +730,57 @@ protected:
 
     void selectArm()
     {
-        // handle the hysteresis thresholds
-        if (useLeftArm && useRightArm && (state==STATE_REACH))
-        {    
-            if ((armSel==LEFTARM) && (targetPos[1]>hystThres) ||
-                (armSel==RIGHTARM) && (targetPos[1]<-hystThres))
+        if (useLeftArm && useRightArm)
+        {
+            if (state==STATE_REACH)
+            {    
+                // handle the hysteresis thresholds
+                if ((armSel==LEFTARM) && (targetPos[1]>hystThres) ||
+                    (armSel==RIGHTARM) && (targetPos[1]<-hystThres))
+                {
+                    fprintf(stdout,"*** Change arm event triggered\n");
+                    state=STATE_CHECKMOTIONDONE;
+                }
+            }
+            else if (state==STATE_CHECKMOTIONDONE)
             {
-                stopControl();
-                steerArmToHome();
-            
-                // swap interfaces
-                if (armSel==RIGHTARM)
+                bool done=false;
+                cartArm->checkMotionDone(&done);
+
+                if (done)
                 {
-                    armSel=LEFTARM;
+                    stopControl();
+                    steerArmToHome();
 
-                    drvLeftArm->view(encArm);
-                    drvLeftArm->view(posArm);
-                    drvCartLeftArm->view(cartArm);
-                    armReachOffs=&leftArmReachOffs;
-                    armGraspOffs=&leftArmGraspOffs;
-                    armGraspSigma=&leftArmGraspSigma;
-                    armHandOrien=&leftArmHandOrien;
+                    // swap interfaces
+                    if (armSel==RIGHTARM)
+                    {
+                        armSel=LEFTARM;
+
+                        drvLeftArm->view(encArm);
+                        drvLeftArm->view(posArm);
+                        drvCartLeftArm->view(cartArm);
+                        armReachOffs=&leftArmReachOffs;
+                        armGraspOffs=&leftArmGraspOffs;
+                        armGraspSigma=&leftArmGraspSigma;
+                        armHandOrien=&leftArmHandOrien;
+                    }
+                    else
+                    {
+                        armSel=RIGHTARM;
+
+                        drvRightArm->view(encArm);
+                        drvRightArm->view(posArm);
+                        drvCartRightArm->view(cartArm);
+                        armReachOffs=&rightArmReachOffs;
+                        armGraspOffs=&rightArmGraspOffs;
+                        armGraspSigma=&rightArmGraspSigma;
+                        armHandOrien=&rightArmHandOrien;
+                    }
+
+                    fprintf(stdout,"*** Using %s\n",armSel==LEFTARM?"left_arm":"right_arm");
+                    state=STATE_REACH;
                 }
-                else
-                {
-                    armSel=RIGHTARM;
-
-                    drvRightArm->view(encArm);
-                    drvRightArm->view(posArm);
-                    drvCartRightArm->view(cartArm);
-                    armReachOffs=&rightArmReachOffs;
-                    armGraspOffs=&rightArmGraspOffs;
-                    armGraspSigma=&rightArmGraspSigma;
-                    armHandOrien=&rightArmHandOrien;
-                }
-
-                fprintf(stdout,"*** Using %s\n",armSel==LEFTARM?"left_arm":"right_arm");
             }
         }
     }
@@ -899,10 +915,7 @@ protected:
     void stopControl()
     {
         if (useLeftArm || useRightArm)
-        {
-            cartArm->waitMotionDone();
             cartArm->stopControl();
-        }
     }
 
     void setFace(const string &type)
