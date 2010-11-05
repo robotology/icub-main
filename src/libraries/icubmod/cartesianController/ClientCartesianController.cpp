@@ -1117,12 +1117,12 @@ bool ClientCartesianController::checkMotionDone(bool *f)
 /************************************************************************/
 bool ClientCartesianController::waitMotionDone(const double period, const double timeout)
 {
-    bool f=false;
+    bool done=false;
     double t0=Time::now();
 
-    while (!f)
+    while (!done)
     {
-        if (!checkMotionDone(&f) || (timeout>0.0) && ((Time::now()-t0)>timeout))
+        if (!checkMotionDone(&done) || (timeout>0.0) && ((Time::now()-t0)>timeout))
             return false;
 
         Time::delay(period);
