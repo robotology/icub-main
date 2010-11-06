@@ -48,10 +48,10 @@
 #include <iCub/iKin/iKinHlp.h>
 
 
-class ClientCartesianController : public yarp::dev::DeviceDriver,
-                                  public yarp::dev::IPreciselyTimed,
-                                  public yarp::dev::ICartesianControl,
-                                  public iCub::iKin::CartesianHelper
+class ClientCartesianController : public    yarp::dev::DeviceDriver,
+                                  public    yarp::dev::IPreciselyTimed,
+                                  public    yarp::dev::ICartesianControl,
+                                  protected iCub::iKin::CartesianHelper
 {
 protected:
     bool connected;

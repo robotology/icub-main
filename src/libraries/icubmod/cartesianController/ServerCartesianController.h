@@ -94,12 +94,12 @@ public:
 };
 
 
-class ServerCartesianController : public yarp::dev::DeviceDriver,
-                                  public yarp::dev::IMultipleWrapper,
-                                  public yarp::dev::ICartesianControl,
-                                  public yarp::dev::IPreciselyTimed,
-                                  public yarp::os::RateThread,
-                                  public iCub::iKin::CartesianHelper
+class ServerCartesianController : public    yarp::dev::DeviceDriver,
+                                  public    yarp::dev::IMultipleWrapper,
+                                  public    yarp::dev::ICartesianControl,
+                                  public    yarp::dev::IPreciselyTimed,
+                                  public    yarp::os::RateThread,
+                                  protected iCub::iKin::CartesianHelper
 {
 protected:
     yarp::dev::PolyDriverList drivers;

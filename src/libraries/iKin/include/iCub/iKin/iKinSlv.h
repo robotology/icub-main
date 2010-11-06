@@ -305,8 +305,8 @@ struct PartDescriptor
 *
 * Abstract class defining the core of on-line solvers.
 */
-class CartesianSolver : public yarp::os::RateThread,
-                        public CartesianHelper
+class CartesianSolver : public    yarp::os::RateThread,
+                        protected CartesianHelper
 {
 protected:
     PartDescriptor                        *prt;

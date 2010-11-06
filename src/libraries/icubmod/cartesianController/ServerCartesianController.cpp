@@ -853,7 +853,7 @@ bool ServerCartesianController::getNewTarget()
 {
     if (Bottle *b1=portSlvIn->read(false))
     {
-        bool tokened=CartesianHelper::getTokenOption(*b1,&rxToken);
+        bool tokened=getTokenOption(*b1,&rxToken);
 
         // token shall be not greater than the trasmitted one
         if (tokened && (rxToken>txToken))
@@ -884,7 +884,7 @@ bool ServerCartesianController::getNewTarget()
 
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
         {
-            Bottle *b2=CartesianHelper::getEndEffectorPoseOption(*b1);
+            Bottle *b2=getEndEffectorPoseOption(*b1);
             int l1=b2->size();
             int l2=7;
             int len=l1<l2 ? l1 : l2;
@@ -899,7 +899,7 @@ bool ServerCartesianController::getNewTarget()
 
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
         {
-            Bottle *b2=CartesianHelper::getJointsOption(*b1);
+            Bottle *b2=getJointsOption(*b1);
             int l1=b2->size();
             int l2=chain->getDOF();
             int len=l1<l2 ? l1 : l2;
@@ -1493,18 +1493,18 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
         b.clear();
     
         // xd part
-        CartesianHelper::addTargetOption(b,xd);
+        addTargetOption(b,xd);
         // pose part
-        CartesianHelper::addPoseOption(b,ctrlPose);
+        addPoseOption(b,ctrlPose);
         // always put solver in continuous mode
         // before commanding a new desired pose
         // in order to compensate for movements
         // of uncontrolled joints
         // correct solver status will be reinstated
         // accordingly at the end of trajectory
-        CartesianHelper::addModeOption(b,true);
+        addModeOption(b,true);
         // token part
-        CartesianHelper::addTokenOption(b,txToken=Time::now());
+        addTokenOption(b,txToken=Time::now());
 
         skipSlvRes=false;
 
