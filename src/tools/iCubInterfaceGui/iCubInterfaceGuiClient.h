@@ -16,10 +16,25 @@
 #include <yarp/os/Network.h>
 #include "iCubNetworkGui.h"
 
-class iCubInterfaceGuiClient : public Gtk::Window, public yarp::os::RateThread
+class iCubInterfaceGuiThread : public yarp::os::RateThread
 {
 public:
-    iCubInterfaceGuiClient() : RateThread(1000)
+    iCubInterfaceGuiThread() : RateThread(1000)
+    {
+    }
+
+    void run()
+    {
+        mSigWindow();
+    }
+
+    Glib::Dispatcher mSigWindow;
+};
+
+class iCubInterfaceGuiWindow : public Gtk::Window
+{
+public:
+    iCubInterfaceGuiWindow()
     {
         set_title("iCubInterface GUI");
         set_border_width(5);
@@ -33,43 +48,66 @@ public:
         mRefTreeModel=Gtk::TreeStore::create(mColumns);
         mTreeView.set_model(mRefTreeModel);
 
-        mTreeView.set_reorderable();
+        //mTreeView.set_reorderable();
+        //mTreeView.set_double_buffered(false);
 
         ////////////////////////////
 
+	    //Add the TreeView's view columns:
+        
+        mColumns.mColNameID=mTreeView.append_column("Name",mColumns.mColName);
+        mColumns.mColValueID=mTreeView.append_column("Value",mColumns.mColValue);
+        
         //Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
-
         //int colsNum=mTreeView.append_column("Status",*cell);
-
         //Gtk::TreeViewColumn* pColumn=mTreeView.get_column(colsNum-1);
         //pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColStatus);
-
-	    //Add the TreeView's view columns:
-        mTreeView.append_column("Name",mColumns.mColName);
-        mTreeView.append_column("ID",mColumns.mColValue);
-        //mTreeView.append_column("Status",mColumns.mColStatus);
+        
 
         //Fill the TreeView's model
         mRowLev0=*(mRefTreeModel->append());
         mRowLev0[mColumns.mColName]="Networks"; //partName.c_str();
         mRowLev0[mColumns.mColValue]=""; //partName.c_str();
         //mRowLev0[mColumns.mColStatus]=Gdk::Pixbuf::create_from_file("warning_icon.png");
+        
+        /////////////////////////////////////////////////////////////////////////////
+
+        //mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
+
+        //show_all_children();
+        show_all();
+
+        yarp::os::Time::delay(1.0);
 
         mPort.open("/icubinterfacegui/client");
+        
+        int att;
+        const int MAX_ATT=10;
+
         // need connection
-        for (int i=0; i<20; ++i)
+        for (att=0; att<MAX_ATT; ++att)
 		{
-            if (yarp::os::NetworkBase::connect("/icubinterfacegui/client","/icubinterfacegui/server")) break;
-			yarp::os::Time::delay(1.0);
+            if (yarp::os::NetworkBase::connect("/icubinterfacegui/client","/icubinterfacegui/server")) 
+            {            
+                break;
+            }
+
+            yarp::os::Time::delay(1.0);
 		}
+
+        if (att==MAX_ATT)
+        {
+            printf("ERROR: no connection\n");
+            return;
+        }
 
         yarp::os::Bottle bot;
         yarp::os::Bottle rep;
         bot.addString("GET_CONF");
         mPort.write(bot,rep);
 
-        printf("%s\n",rep.toString().c_str());
-        fflush(stdout);
+        //printf("%s\n",rep.toString().c_str());
+        //fflush(stdout);
 
         for (int i=1; i<(int)rep.size(); ++i)
         {
@@ -77,25 +115,28 @@ public:
 
             if (list)
             {
-                mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mColumns,mRowLev0,*(rep.get(i).asList())));
+                mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(rep.get(i).asList())));
             }
         }
-        
-        /////////////////////////////////////////////////////////////////////////////
 
-        //mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
+        mThread=new iCubInterfaceGuiThread();
 
-        show_all_children();
+        mThread->mSigWindow.connect(sigc::mem_fun(*this,&iCubInterfaceGuiWindow::run));
 
-        yarp::os::Time::delay(2.0);
-        
-        start();
+        mThread->start();
+    }
+
+    virtual ~iCubInterfaceGuiWindow()
+    {
+        if (mThread!=NULL)
+        {
+            mThread->stop();
+            delete mThread;
+        }
     }
 
     void run()
     {
-        printf("#\n");
-
         yarp::os::Bottle bot;
         yarp::os::Bottle rep;
         bot.addString("GET_DATA");
@@ -108,16 +149,7 @@ public:
             if (rep.size()>1)
             {
                 fromBottle(rep);
-                mTreeView.queue_draw();
             }
-        }
-    }
-
-    ~iCubInterfaceGuiClient()
-    {
-        for (int i=0; i<(int)mNetworks.size(); ++i)
-        {
-            delete mNetworks[i];
         }
     }
 
@@ -130,13 +162,6 @@ public:
         }
     }
 
-    /*
-    Gtk::Window& getWindow()
-    {
-        return mWindow;
-    }
-    */
-
 protected:
     Gtk::VBox mVBox;
     Gtk::TreeView mTreeView;
@@ -145,20 +170,11 @@ protected:
     Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
     ModelColumns mColumns;
 
+    iCubInterfaceGuiThread* mThread;
+
     yarp::os::Port mPort;
     std::vector<iCubNetwork*> mNetworks;
-    //Gtk::Window mWindow;
-
-    void onTreeViewRowActivated(const Gtk::TreeModel::Path& path,Gtk::TreeViewColumn* /* column */)
-    {
-        Gtk::TreeModel::iterator iter=mRefTreeModel->get_iter(path);
-        
-        if (iter)
-        {
-            Gtk::TreeModel::Row row=*iter;
-            //std::cout << "Row activated: ID=" << row[gColumns.mColValue] << ", Name=" << row[g_columns.m_colName] << std::endl;
-        }
-    }
 };
 
 #endif
+

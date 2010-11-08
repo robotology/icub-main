@@ -17,10 +17,10 @@
 class iCubNetworkGui : public iCubNetwork, public iCubInterfaceGuiRows
 {
 public:
-    iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,ModelColumns& modelColumns,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
+    iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
         : iCubNetwork(),iCubInterfaceGuiRows()
     {
-        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,modelColumns,parent,mRowNames);
+        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
 
         for (int i=2; i<(int)bot.size(); ++i)
         {
@@ -28,7 +28,7 @@ public:
 
             //if (netBot->get(1).asString()=="BLL")
             //{
-                mBoards.push_back(new iCubBLLBoardGui(refTreeModel,modelColumns,*baseRow,*netBot));
+                mBoards.push_back(new iCubBLLBoardGui(refTreeModel,*baseRow,*netBot));
             //}
             /*
             else
@@ -38,13 +38,11 @@ public:
             */
         }
 
-        mColumns=&modelColumns;
-
         mData.fromBottle(*(bot.get(1).asList()));
 
         for (int i=0; i<(int)mData.size(); ++i)
         {
-            mRows[i][mColumns->mColValue]=mData.toString(i);
+            mRows[i][mColumns.mColValue]=mData.toString(i);
         }
     }
 
@@ -60,15 +58,12 @@ public:
         {
             if (mData.test(i))
             {
-                mRows[i][mColumns->mColValue]=mData.toString(i);
+                mRows[i][mColumns.mColValue]=mData.toString(i);
             }
         }
     }
 
 protected:
-    //Gtk::ScrolledWindow mScrolledWindow;
-    //Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
-    ModelColumns *mColumns;
 };
 
 #endif

@@ -35,7 +35,11 @@ ADD_EXECUTABLE(iCubInterfaceGuiClient
                mainClient.cpp)
 
 TARGET_LINK_LIBRARIES(iCubInterfaceGui ${YARP_LIBRARIES})
-TARGET_LINK_LIBRARIES(iCubInterfaceGuiClient ${GTKMM_LIBRARIES} ${YARP_LIBRARIES})
+TARGET_LINK_LIBRARIES(iCubInterfaceGuiClient 
+                      ${GTKMM_LIBRARIES} 
+                      ${YARP_LIBRARIES} 
+                      ${GTHREAD_LIBRARIES}
+)
 
 IF (WIN32 AND NOT CYGWIN)
 	SET_TARGET_PROPERTIES(iCubInterfaceGui PROPERTIES COMPILE_FLAGS /wd4250)
