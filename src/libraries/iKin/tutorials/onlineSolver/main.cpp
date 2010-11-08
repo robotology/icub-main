@@ -92,7 +92,7 @@ int main()
     xd[0]=-0.3;
     xd[1]=0.0;
     xd[2]=0.1;
-    iCubArmCartesianSolver::addTargetOption(cmd,xd);
+    CartesianHelper::addTargetOption(cmd,xd);
     out.write(cmd);
     in.read(reply);
 
@@ -104,7 +104,7 @@ int main()
     // ask the same but with torso enabled
     Vector dof(3);
     dof=1;
-    iCubArmCartesianSolver::addDOFOption(cmd,dof);
+    CartesianHelper::addDOFOption(cmd,dof);
     out.write(cmd);
     in.read(reply);
 
