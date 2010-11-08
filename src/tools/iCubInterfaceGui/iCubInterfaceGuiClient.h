@@ -55,20 +55,21 @@ public:
 
 	    //Add the TreeView's view columns:
         
-        mColumns.mColNameID=mTreeView.append_column("Name",mColumns.mColName);
-        mColumns.mColValueID=mTreeView.append_column("Value",mColumns.mColValue);
+        mColumns.mColNameID=mTreeView.append_column("",mColumns.mColName)-1;
+        mColumns.mColValueID=mTreeView.append_column("",mColumns.mColValue)-1;
         
-        //Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
-        //int colsNum=mTreeView.append_column("Status",*cell);
-        //Gtk::TreeViewColumn* pColumn=mTreeView.get_column(colsNum-1);
-        //pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColStatus);
+        Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
+        mColumns.mColIconID=mTreeView.append_column("",*cell)-1;
+        Gtk::TreeViewColumn* pColumn=mTreeView.get_column(mColumns.mColIconID);
+        pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColIcon);
         
 
         //Fill the TreeView's model
         mRowLev0=*(mRefTreeModel->append());
         mRowLev0[mColumns.mColName]="Networks"; //partName.c_str();
         mRowLev0[mColumns.mColValue]=""; //partName.c_str();
-        //mRowLev0[mColumns.mColStatus]=Gdk::Pixbuf::create_from_file("warning_icon.png");
+        mRowLev0[mColumns.mColIcon]=Glib::RefPtr<Gdk::Pixbuf>(NULL);
+        //mRowLev0[mColumns.mColIcon]=Gdk::Pixbuf::create_from_file("C:/Documents and Settings/Administrator/My Documents/IIT/iCub/app/iCubGenova01/conf/warning.png");
         
         /////////////////////////////////////////////////////////////////////////////
 

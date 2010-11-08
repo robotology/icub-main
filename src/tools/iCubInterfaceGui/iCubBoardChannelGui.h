@@ -20,16 +20,15 @@ public:
     {
         add(mColName);
         add(mColValue);
-        //add(mColStatus);
+        add(mColIcon);
     }
 
     Gtk::TreeModelColumn<Glib::ustring> mColName;
     int mColNameID;
-    //Gtk::TreeModelColumn<Glib::ustring> mColValue;
     Gtk::TreeModelColumn<Glib::ustring> mColValue;
     int mColValueID;
-    //Gtk::TreeModelColumn<Gtk::cell> mColValue;
-    //Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColStatus;
+    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColIcon;
+    int mColIconID;
 };
 
 ///////////////////////////////////////////////////

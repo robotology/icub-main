@@ -89,7 +89,7 @@ public:
 
     bool findAndWrite(std::string addr,yarp::os::Value* data);
 
-    yarp::os::Bottle toBottle(bool bConfig=false)
+    virtual yarp::os::Bottle toBottle(bool bConfig=false)
     {
         yarp::os::Bottle bot;
 
@@ -115,7 +115,7 @@ public:
         return bot;
     }
 
-    void fromBottle(yarp::os::Bottle &bot)
+    virtual void fromBottle(yarp::os::Bottle &bot)
     {
         for (int i=1; i<(int)bot.size(); ++i)
         {

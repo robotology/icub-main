@@ -41,7 +41,9 @@ public:
     {
         pServer=server;
 
-        for (int i=0; i<22; ++i) mValues[i]=yarp::os::Value(0);
+        mValues[0]=yarp::os::Value("net_headtorso");
+        mValues[1]=yarp::os::Value("cfw2can");
+        for (int i=2; i<22; ++i) mValues[i]=yarp::os::Value(0);
     }
 
     virtual ~FakeDriver()
@@ -52,9 +54,13 @@ public:
     {
         static int counter=0;
 
-        mValues[14]=yarp::os::Value(++counter);
+        //mValues[iCubBLLChannel::INT_Can_Rx_Error_counter]=yarp::os::Value(++counter);
 
-        pServer->findAndWrite("net_rarm,2,0",mValues);
+        //pServer->findAndWrite("net_rarm,2,0",mValues);
+
+        mValues[iCubNetwork::BOOL_Bus_off]=yarp::os::Value(counter=!counter);
+
+        pServer->findAndWrite("net_headtorso",mValues);
     }
 
 protected:

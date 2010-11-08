@@ -33,7 +33,7 @@ public:
 
     int size(){ return mData.size(); }
 
-    yarp::os::Bottle toBottle(bool bConfig=false)
+    virtual yarp::os::Bottle toBottle(bool bConfig=false)
     {
         yarp::os::Bottle bot;
 
@@ -50,7 +50,7 @@ public:
         return bot;
     }
 
-    void fromBottle(yarp::os::Bottle &bot)
+    virtual void fromBottle(yarp::os::Bottle &bot)
     {
         for (int i=1; i<bot.size(); i+=2)
         {
@@ -72,6 +72,11 @@ public:
     std::string toString(int index)
     {
         if (index<0 || index>=(int)mData.size()) return std::string();
+
+        if (mData[index].isVocab()) 
+        {
+            return std::string(mData[index].asVocab()?"true":"false");
+        }
 
         return std::string(mData[index].toString().c_str());
     }
@@ -107,6 +112,10 @@ public:
         if (mData[index]!=data)
         {
             mData[index]=yarp::os::Value(data);
+            if (data.isVocab() && !mData[index].isVocab())
+            {
+                printf("*************************************************\n");
+            }
             mFlag[index]=true;
         }
 
