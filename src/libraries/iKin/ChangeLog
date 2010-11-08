@@ -1,4 +1,7 @@
 
+2010-11-08 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h: now iKinLimb is public inherited from iKinChain
+
 2010-10-31 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * tutorials: names turned in something meaningful
            * iKinInv.cpp,.h: removed the q0 parameter
