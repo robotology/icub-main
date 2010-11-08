@@ -776,7 +776,7 @@ public:
 *
 * A class for defining generic Limb
 */
-class iKinLimb : protected iKinChain
+class iKinLimb : public iKinChain
 {
 protected:
     std::deque<iKinLink*> linkList;
@@ -786,6 +786,20 @@ protected:
     virtual void allocate(const std::string &_type);
     virtual void clone(const iKinLimb &limb);
     virtual void dispose();
+
+    // make the following methods protected in order to prevent user from changing
+    // too easily the internal structure of the chain;
+    // to get access anyway to these hidden methods, user can rely on asChain()
+    iKinChain &operator=(const iKinChain &c)              { return iKinChain::operator=(c);  }
+    iKinChain &operator<<(iKinLink &l)                    { return iKinChain::operator<<(l); }
+    iKinChain &operator--(int)                            { return iKinChain::operator--(0); }
+    iKinLink  &operator[](const unsigned int i)           { return iKinChain::operator[](i); }
+    iKinLink  &operator()(const unsigned int i)           { return iKinChain::operator()(i); }
+    bool       addLink(const unsigned int i, iKinLink &l) { return iKinChain::addLink(i,l);  }
+    bool       rmLink(const unsigned int i)               { return iKinChain::rmLink(i);     }
+    void       pushLink(iKinLink &l)                      { iKinChain::pushLink(l);          }
+    void       clear()                                    { iKinChain::clear();              }
+    void       popLink()                                  { iKinChain::popLink();            }
 
 public:
     /**
@@ -900,42 +914,6 @@ public:
     * limb-specific: see the implementations for iCubLimbs. 
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim) { notImplemented(verbose); return true; }
-
-    // Since iKinLimb is derived with protected modifier from iKinChain in order to make some methods hidden
-    // to the user such as addLink, rmLink and so on, all the remaining public methods have to be
-    // redeclared hereafter and simply inherited
-                                                                     
-    unsigned int      getN() const                                                    { return iKinChain::getN();                   }
-    unsigned int      getDOF() const                                                  { return iKinChain::getDOF();                 }
-    bool              blockLink(const unsigned int i, double Ang)                     { return iKinChain::blockLink(i,Ang);         }
-    bool              blockLink(const unsigned int i)                                 { return iKinChain::blockLink(i);             }
-    bool              setBlockingValue(const unsigned int i, double Ang)              { return iKinChain::setBlockingValue(i,Ang);  }
-    bool              releaseLink(const unsigned int i)                               { return iKinChain::releaseLink(i);           }
-    bool              isLinkBlocked(const unsigned int i)                             { return iKinChain::isLinkBlocked(i);         }
-    void              setAllConstraints(bool _constrained)                            { iKinChain::setAllConstraints(_constrained); }
-    void              setConstraint(unsigned int i, bool _constrained)                { iKinChain::setConstraint(i,_constrained);   }
-    bool              getConstraint(unsigned int i)                                   { return iKinChain::getConstraint(i);         }
-    void              setAllLinkVerbosity(unsigned int _verbose)                      { iKinChain::setAllLinkVerbosity(_verbose);   }
-    void              setVerbosity(unsigned int _verbose)                             { iKinChain::setVerbosity(_verbose);          }
-    unsigned int      getVerbosity() const                                            { return iKinChain::getVerbosity();           }
-    yarp::sig::Vector setAng(const yarp::sig::Vector &q)                              { return iKinChain::setAng(q);                }
-    yarp::sig::Vector getAng()                                                        { return iKinChain::getAng();                 }
-    double            setAng(const unsigned int i, double _Ang)                       { return iKinChain::setAng(i,_Ang);           }
-    double            getAng(const unsigned int i)                                    { return iKinChain::getAng(i);                }
-    yarp::sig::Matrix getH(const unsigned int i, const bool allLink=false)            { return iKinChain::getH(i,allLink);          }
-    yarp::sig::Matrix getH()                                                          { return iKinChain::getH();                   }
-    yarp::sig::Matrix getH(const yarp::sig::Vector &q)                                { return iKinChain::getH(q);                  }
-    yarp::sig::Vector Pose(const unsigned int i, const bool axisRep=true)             { return iKinChain::Pose(i,axisRep);          }
-    yarp::sig::Vector EndEffPose(const bool axisRep=true)                             { return iKinChain::EndEffPose(axisRep);      }
-    yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true) { return iKinChain::EndEffPose(q,axisRep);    }
-    yarp::sig::Matrix AnaJacobian(unsigned int col=3)                                 { return iKinChain::AnaJacobian(col);         }
-    yarp::sig::Matrix AnaJacobian(const yarp::sig::Vector &q, unsigned int col=3)     { return iKinChain::AnaJacobian(q,col);       }
-    yarp::sig::Matrix GeoJacobian(const unsigned int i)                               { return iKinChain::GeoJacobian(i);           }
-    yarp::sig::Matrix GeoJacobian()                                                   { return iKinChain::GeoJacobian();            }
-    yarp::sig::Matrix GeoJacobian(const yarp::sig::Vector &q)                         { return iKinChain::GeoJacobian(q);           }
-    yarp::sig::Vector Hessian_ij(const unsigned int i, const unsigned int j)          { return iKinChain::Hessian_ij(i,j);          }
-    void              prepareForHessian()                                             { iKinChain::prepareForHessian();             }
-    yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j)      { return iKinChain::fastHessian_ij(i,j);      }
 
     /**
     * Destructor. 
