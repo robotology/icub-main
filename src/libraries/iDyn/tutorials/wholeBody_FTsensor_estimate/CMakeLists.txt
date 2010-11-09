@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-SET(PROJECTNAME WholeBody_FTSensor_estimate)
+SET(PROJECTNAME wholeBody_FTsensor_estimate)
 
 PROJECT(${PROJECTNAME})
 
