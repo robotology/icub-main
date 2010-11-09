@@ -87,4 +87,6 @@ bool disparityModule::updateModule() {
 
 	return true;
 }
+
 //make gcc happy
+
