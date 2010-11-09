@@ -64,6 +64,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     saccadeInterv=3000; //milliseconds
     
     //default values of the coefficients
+    /*
     k1=0.5;
     k2=0.1;
     k3=0.5;
@@ -72,6 +73,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     k6=1.0;
     kmotion=0.2;
     kc1=0.0;
+    */
 
     // images
     edges_yarp=new ImageOf<PixelMono>;
@@ -423,7 +425,7 @@ void selectiveAttentionProcessor::run(){
         int padding=map1_yarp->getPadding();
         int rowSize=map1_yarp->getRowSize();
         unsigned char maxValue=0;
-        double sumK=k1+k2+k3+k4+k5+k6; 
+        double sumK = k1 + k2 + k3 + k4 + k5 + k6 + kmotion + kc1;
         // combination of all the saliency maps
         if(!idle){
             for(int y=0;y<height;y++){
@@ -440,20 +442,20 @@ void selectiveAttentionProcessor::run(){
                     *plinear=value;
                     plinear++;
                 }
-                pmap1+=padding;pmap2+=padding;pmap3+=padding;
-                pmap4+=padding;pmap6+=padding;
-                plinear+=padding;
+                pmap1 += padding;pmap2 += padding;pmap3 += padding;
+                pmap4 += padding;pmap6 += padding;
+                plinear += padding;
             }
             //trasform the logpolar to cartesian (the logpolar image has to be 3channel image)
-            plinear=linearCombinationImage.getRawImage();
+            plinear = linearCombinationImage.getRawImage();
             unsigned char* pImage=inputLogImage->getRawImage();
-            int padding3C=inputLogImage->getPadding();
-            maxValue=0;
-            for(int y=0;y<height;y++) {
+            int padding3C = inputLogImage->getPadding();
+            maxValue = 0;
+            for(int y=0; y<height; y++) {
                 for(int x=0;x<width;x++) {
-                    *pImage++=(unsigned char)*plinear;
-                    *pImage++=(unsigned char)*plinear;
-                    *pImage++=(unsigned char)*plinear;
+                    *pImage ++=(unsigned char)*plinear;
+                    *pImage ++=(unsigned char)*plinear;
+                    *pImage ++=(unsigned char)*plinear;
                     plinear++;
                 }
                 pImage+=padding3C;
@@ -474,7 +476,7 @@ void selectiveAttentionProcessor::run(){
             unsigned char* pmotion= motion_yarp->getRawImage();
             int paddingInterm=intermCartOut->getPadding(); //padding of the colour image (640,480)
             int rowSizeInterm=intermCartOut->getRowSize();
-            double sumCart=2 - kc1 - kmotion + kmotion + kc1;
+            //double sumCart=2 - kc1 - kmotion + kmotion + kc1;
             int paddingCartesian=cart1_yarp->getPadding();
             int paddingOutput=outputCartImage.getPadding();
             //adding cartesian and finding the max value
@@ -482,7 +484,7 @@ void selectiveAttentionProcessor::run(){
                 if(y%2==0) {
                     for(int x=0;x<xSizeValue;x++) {
                         if(x%2==0) {
-                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumCart) + *pInter * ((2 - kc1 - kmotion)/sumCart) + *pmotion * (kmotion/sumCart)));
+                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumK) + *pInter * ((k1 + k2 + k3 + k4 + k5 + k6)/sumK) + *pmotion * (kmotion/sumK)));
                             //unsigned char value=*pInter;
                             *pImage=value;
                             if(maxValue<*pImage) {

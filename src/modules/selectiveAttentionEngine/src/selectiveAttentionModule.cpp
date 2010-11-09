@@ -164,6 +164,54 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
                            Value(3000), 
                            "saccadic intervall in ms (int)").asInt();
     currentProcessor->setSaccadicInterval(saccadicInterval);
+
+    /* parses the value of the coefficient map1 */
+    k1       = rf.check("k1", 
+                           Value(0.0), 
+                           "coefficient map1 (double)").asDouble();
+    currentProcessor->setK1(k1);
+
+    /* parses the value of the coefficient map2 */
+    k2       = rf.check("k2", 
+                           Value(0.0), 
+                           "coefficient map2 (double)").asDouble();
+    currentProcessor->setK2(k2);
+
+    /* parses the value of the coefficient map3 */
+    k3       = rf.check("k3", 
+                           Value(0.0), 
+                           "coefficient map1 (double)").asDouble();
+    currentProcessor->setK3(k3);
+
+    /* parses the value of the coefficient map4 */
+    k4       = rf.check("k4", 
+                           Value(0.0), 
+                           "coefficient map4 (double)").asDouble();
+    currentProcessor->setK4(k4);
+
+    /* parses the value of the coefficient map5 */
+    k5       = rf.check("k5", 
+                           Value(0.0), 
+                           "coefficient map5 (double)").asDouble();
+    currentProcessor->setK5(k5);
+
+    /* parses the value of the coefficient map6 */
+    k6       = rf.check("k6", 
+                           Value(0.0), 
+                           "coefficient map6 (double)").asDouble();
+    currentProcessor->setK6(k6);
+
+    /* parses the value of the coefficient map Motion */
+    kMotion       = rf.check("kMotion", 
+                           Value(0.0), 
+                           "coefficient mapMotion (int)").asDouble();
+    currentProcessor->setKMotion(kMotion);
+
+    /* parses the value of the coefficient map cartesian 1 */
+    kc1       = rf.check("kc1", 
+                           Value(0.0), 
+                           "coefficient map cartesian1 (double)").asDouble();
+    currentProcessor->setKC1(kc1);
     
     currentProcessor->start();
     printf("\n waiting for connection of the input port \n");
@@ -171,7 +219,7 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
 }
 
 // try to interrupt any communications or resource usage
-bool selectiveAttentionModule::interruptModule() {    
+bool selectiveAttentionModule::interruptModule() {
     cmdPort.interrupt();
     currentProcessor->interrupt();
     return true;
