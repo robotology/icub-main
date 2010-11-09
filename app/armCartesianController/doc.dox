@@ -76,7 +76,7 @@ and \f$ \epsilon \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}
 
 \subsection controller_sec 2. The Controller
 The generation of velocity profile is achieved by applying the concept of
-<a href="http://infoscience.epfl.ch/record/114045">Multi-Referential Systems</a>
+<a href="http://eris.liralab.it/viki/images/c/cf/CartesianControllersEvaluation.pdf">Multi-Referential Systems</a>
 where two minimum-jerk generators, one in joint space and one in task space, produce
 velocities commands simultaneously; the coherence constraints are enforced with a
 Lagrangian multipliers method that can be exploited also to modulate the relative
@@ -92,19 +92,19 @@ a human-like behaviour, while retaining converge property and robustness against
 
 For further details about:
 - <b>homography</b> please refer to \ref icub_eye2world documentation.
-- <b>executing motor primitives</b> such as the grasp please refer to \ref affActionPrimitives documentation.
+- <b>executing motor primitives</b> such as the grasp please refer to \ref ActionPrimitives documentation.
 - <b>controlling the gaze</b> please refer to \ref iKinGazeCtrl documentation.
 - <b>detecting contacts with objects</b> please refer to \ref icub_graspDetector documentation.
 
 \section dep_sec Dependencies
 Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
+Assumes \ref iKinGazeCtrl is running.
+Assumes camera images are available.
 
 \section int_sec Instantiated Modules
 - \ref icub_eye2world
 
-- \ref affActionPrimitivesExample
-
-- \ref iKinGazeCtrl
+- \ref ationPrimitivesExample
 
 - \ref icub_graspDetector
 
@@ -122,19 +122,11 @@ before launching them.
 - ./scripts/armCartesianController.xml.template
   provides grasping with both arms.
 
-- ./scripts/armCartesianController_left.xml.template
-  provides grasping using only the left arm.
-
-- ./scripts/armCartesianController_right.xml.template
-  provides grasping using only the right arm.
-
 \author Ugo Pattacini
 
 Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
-
-This file can be edited at app/armCartesianController/doc.dox
 */
 
 
