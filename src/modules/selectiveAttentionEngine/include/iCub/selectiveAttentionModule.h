@@ -184,6 +184,14 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class selectiveAttentionModule : public yarp::os::RFModule {
 private:
+    double k1;                  //coefficient map1
+    double k2;                  //coefficient map2
+    double k3;                  //coefficient map3
+    double k4;                  //coefficient map4
+    double k5;                  //coefficient map5
+    double k6;                  //coefficient map6
+    double kMotion;             //coefficient map Motion
+    double kc1;                 //coefficient map cartesian1
 
     yarp::os::Port cmdPort;     //command port of the module
     int ct;                     //counter of the module
