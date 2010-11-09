@@ -36,14 +36,12 @@ class FakeDriver : public yarp::os::RateThread
 {
 public:
     FakeDriver(iCubInterfaceGuiServer *server) 
-        : yarp::os::RateThread(1400) // period is greater than client period:
+        : yarp::os::RateThread(1500) // period is greater than client period:
                                      // some packets will be empty
     {
         pServer=server;
 
-        mValues[0]=yarp::os::Value("net_headtorso");
-        mValues[1]=yarp::os::Value("cfw2can");
-        for (int i=2; i<22; ++i) mValues[i]=yarp::os::Value(0);
+        pServer->findAndRead("net_headtorso",mValues);
     }
 
     virtual ~FakeDriver()
@@ -65,7 +63,7 @@ public:
 
 protected:
     iCubInterfaceGuiServer *pServer;
-    yarp::os::Value mValues[22];
+    yarp::os::Value mValues[32];
 };
 
 int main(int argc, char *argv[])

@@ -68,3 +68,21 @@ bool iCubBLLChannel::findAndWrite(std::string addr,yarp::os::Value* data)
 
     return true;
 }
+
+bool iCubBLLChannel::findAndRead(std::string addr,yarp::os::Value* data)
+{
+    int index=addr.find(",");
+
+    std::string sCh=index<0?addr:addr.substr(0,index);
+
+    if (sCh.length()==0) return false; // should never happen
+
+    if (mChannel!=atoi(sCh.c_str())) return false;
+
+    for (int i=0; i<(int)mData.size(); ++i)
+    {
+        mData.read(i,data[i]);
+    }
+
+    return true;
+}

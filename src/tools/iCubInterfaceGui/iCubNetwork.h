@@ -88,6 +88,7 @@ public:
     }
 
     bool findAndWrite(std::string addr,yarp::os::Value* data);
+    bool findAndRead(std::string addr,yarp::os::Value* data);
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false)
     {

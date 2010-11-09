@@ -135,8 +135,8 @@ void iCubInterfaceGuiServer::run()
                 rpl=toBottle(true);
                 mMutex.post();
 
-                printf("%s\n",rpl.toString().c_str());
-                fflush(stdout);
+                //printf("%s\n",rpl.toString().c_str());
+                //fflush(stdout);
 
                 mPort.reply(rpl);
             }
@@ -166,6 +166,21 @@ bool iCubInterfaceGuiServer::findAndWrite(std::string address,yarp::os::Value* d
     for (unsigned int n=0; n<(int)mNetworks.size(); ++n)
     {
         if (mNetworks[n]->findAndWrite(address,data))
+        {
+            mMutex.post();
+            return true;
+        }
+    }
+    mMutex.post();
+    return false;
+}
+
+bool iCubInterfaceGuiServer::findAndRead(std::string address,yarp::os::Value* data)
+{
+    mMutex.wait();
+    for (unsigned int n=0; n<(int)mNetworks.size(); ++n)
+    {
+        if (mNetworks[n]->findAndRead(address,data))
         {
             mMutex.post();
             return true;

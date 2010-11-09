@@ -69,3 +69,42 @@ bool iCubNetwork::findAndWrite(std::string addr,yarp::os::Value* data)
 
     return false;
 }
+
+bool iCubNetwork::findAndRead(std::string addr,yarp::os::Value* data)
+{
+    int index=addr.find(",");
+
+    std::string name=index<0?addr:addr.substr(0,index);
+
+    if (name.length()==0) return false; // should never happen
+
+    if (name!=mName) return false;
+
+    // is the message for the network or for a board channel?
+    if (index<0)
+    {
+        // for the network
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            mData.read(i,data[i]);
+        }
+
+        return true;
+    }
+
+    // for a board channel
+
+    ++index;
+
+    addr=addr.substr(index,addr.length()-index);
+
+    for (int i=0; i<(int)mBoards.size(); ++i)
+    {
+        if (mBoards[i]->findAndRead(addr,data))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
