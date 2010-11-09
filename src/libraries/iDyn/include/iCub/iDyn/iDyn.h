@@ -1013,14 +1013,8 @@ public:
 * \ingroup iDyn
 *
 * A class for defining a generic Limb within the iDyn framework.
-*
-* Note:
-* Since iKinLimb is derived with protected modifier from iKinChain in order to make some methods hidden
-* to the user such as addLink, rmLink and so on, all the remaining public methods have been
-* redeclared and simply inherited.
-* iDynLimb follows the same rule of iKinLimb, therefore the methods must be redeclared.
 */
-class iDynLimb : protected iDynChain
+class iDynLimb : public iDynChain
 {
 protected:
     std::deque<iDynLink*> linkList;
@@ -1030,6 +1024,20 @@ protected:
     virtual void allocate(const std::string &_type);
     virtual void clone(const iDynLimb &limb);
     virtual void dispose();
+
+    // make the following methods protected in order to prevent user from changing
+    // too easily the internal structure of the chain;
+    // to get access anyway to these hidden methods, user can rely on asChain()
+    iDynChain       &operator=(const iDynChain &c)                    { return iDynChain::operator=(c);        }
+    iKin::iKinChain &operator<<(iKin::iKinLink &l)                    { return iKinChain::operator<<(l);       }
+    iKin::iKinChain &operator--(int)                                  { return iKin::iKinChain::operator--(0); }
+    iKin::iKinLink  &operator[](const unsigned int i)                 { return iKin::iKinChain::operator[](i); }
+    iKin::iKinLink  &operator()(const unsigned int i)                 { return iKin::iKinChain::operator()(i); }
+    bool             addLink(const unsigned int i, iKin::iKinLink &l) { return iKin::iKinChain::addLink(i,l);  }
+    bool             rmLink(const unsigned int i)                     { return iKin::iKinChain::rmLink(i);     }
+    void             pushLink(iKin::iKinLink &l)                      { iKin::iKinChain::pushLink(l);          }
+    void             clear()                                          { iKin::iKinChain::clear();              }
+    void             popLink()                                        { iKin::iKinChain::popLink();            }
 
 public:
     /**
@@ -1147,191 +1155,6 @@ public:
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim)
 	{ notImplemented(verbose); return true; }
-
-
-	// base methods - see also iKin.
-    // Since iDynLimb is derived with protected modifier from iDynChain in order to make some methods hidden
-    // to the user such as addLink, rmLink and so on, all the remaining public methods have to be
-    // redeclared hereafter and simply inherited
-
-	unsigned int      getN() const                                                    { return iDynChain::getN();                   }
-	unsigned int      getDOF() const                                                  { return iDynChain::getDOF();                 }
-    bool              blockLink(const unsigned int i, double Ang)                     { return iDynChain::blockLink(i,Ang);         }
-    bool              blockLink(const unsigned int i)                                 { return iDynChain::blockLink(i);             }
-    bool              setBlockingValue(const unsigned int i, double Ang)              { return iDynChain::setBlockingValue(i,Ang);  }
-    bool              releaseLink(const unsigned int i)                               { return iDynChain::releaseLink(i);           }
-    bool              isLinkBlocked(const unsigned int i)                             { return iDynChain::isLinkBlocked(i);         }
-    void              setAllConstraints(bool _constrained)                            { iDynChain::setAllConstraints(_constrained); }
-    void              setConstraint(unsigned int i, bool _constrained)                { iDynChain::setConstraint(i,_constrained);   }
-    bool              getConstraint(unsigned int i)                                   { return iDynChain::getConstraint(i);         }
-    void              setAllLinkVerbosity(unsigned int _verbose)                      { iDynChain::setAllLinkVerbosity(_verbose);   }
-    void              setVerbosity(unsigned int _verbose)                             { iDynChain::setVerbosity(_verbose);          }
-    unsigned int      getVerbosity()                                                  { return iDynChain::getVerbosity();           }
-
-	// kinematics methods - see iKin
-
-	yarp::sig::Matrix getH(const unsigned int i, const bool allLink=false)            { return iDynChain::getH(i,allLink);          }
-    yarp::sig::Matrix getH()                                                          { return iDynChain::getH();                   }
-    yarp::sig::Matrix getH(const yarp::sig::Vector &q)                                { return iDynChain::getH(q);                  }
-    yarp::sig::Vector Pose(const unsigned int i, const bool axisRep=true)             { return iDynChain::Pose(i,axisRep);          }
-    yarp::sig::Vector EndEffPose(const bool axisRep=true)                             { return iDynChain::EndEffPose(axisRep);      }
-    yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true) { return iDynChain::EndEffPose(q,axisRep);    }
-    yarp::sig::Matrix AnaJacobian(unsigned int col=3)                                 { return iDynChain::AnaJacobian(col);         }
-    yarp::sig::Matrix AnaJacobian(const yarp::sig::Vector &q, unsigned int col=3)     { return iDynChain::AnaJacobian(q,col);       }
-    yarp::sig::Matrix GeoJacobian()                                                   { return iDynChain::GeoJacobian();            }
-    yarp::sig::Matrix GeoJacobian(const yarp::sig::Vector &q)                         { return iDynChain::GeoJacobian(q);           }
-    yarp::sig::Vector Hessian_ij(const unsigned int i, const unsigned int j)          { return iDynChain::Hessian_ij(i,j);          }
-    void              prepareForHessian()                                             { iDynChain::prepareForHessian();             }
-    yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j)      { return iDynChain::fastHessian_ij(i,j);      }
-
-	// q, dq, d2q
-
-    yarp::sig::Vector setAng(const yarp::sig::Vector &_q)                             { return iDynChain::setAng(_q);               }
-    yarp::sig::Vector getAng()                                                        { return iDynChain::getAng();                 }
-    double            setAng(const unsigned int i, double _q)                         { return iDynChain::setAng(i,_q);             }
-    double            getAng(const unsigned int i)                                    { return iDynChain::getAng(i);                }
-
-	yarp::sig::Vector setDAng(const yarp::sig::Vector &_dq)                           { return iDynChain::setDAng(_dq);             }
-    yarp::sig::Vector getDAng()                                                       { return iDynChain::getDAng();                }
-    double            setDAng(const unsigned int i, double _dq)                       { return iDynChain::setDAng(i,_dq);           }
-    double            getDAng(const unsigned int i)                                   { return iDynChain::getDAng(i);               }
-
-	yarp::sig::Vector setD2Ang(const yarp::sig::Vector &_ddq)                         { return iDynChain::setD2Ang(_ddq);           }
-    yarp::sig::Vector getD2Ang()                                                      { return iDynChain::getD2Ang();               }
-    double            setD2Ang(const unsigned int i, double _ddq)                     { return iDynChain::setD2Ang(i,_ddq);         }
-    double            getD2Ang(const unsigned int i)                                  { return iDynChain::getD2Ang(i);              }
-
-	// COM
-
-	yarp::sig::Vector getLinAcc(const unsigned int i)								  { return iDynChain::getLinAcc(i);				}
-	yarp::sig::Vector getLinAccCOM(const unsigned int i)							  { return iDynChain::getLinAccCOM(i);			}
-
-	// force, moment, torque							  
-
-	yarp::sig::Matrix getForces() const												  { return iDynChain::getForces();				}
-	yarp::sig::Matrix getMoments() const											  { return iDynChain::getMoments();				}
-	yarp::sig::Vector getTorques() const											  { return iDynChain::getTorques();				}
-	yarp::sig::Vector getForce(const unsigned int iLink) const						  { return iDynChain::getForce(iLink);			}
-	yarp::sig::Vector getMoment(const unsigned int iLink) const						  { return iDynChain::getMoment(iLink);			}
-	double			  getTorque(const unsigned int iLink) const						  { return iDynChain::getTorque(iLink);			}
-
-	// mass
-
-	yarp::sig::Vector getMasses() const												  { return iDynChain::getMasses();				}
-	bool			  setMasses(yarp::sig::Vector _m)								  { return iDynChain::setMasses(_m);			}
-	double			  getMass(const unsigned int i) const							  { return iDynChain::getMass(i);				}
-	bool			  setMass(const unsigned int i, const double _m)				  { return iDynChain::setMass(i,_m);			}
-
-	// dynamic parameters
-
-	/**
-	* Set the dynamic parameters of the i-th Link with motor.
-    * @param i the i-th Link
-    * @param _m is the Link mass
-    * @param _HC is the rototranslation matrix from the link frame to the center of mass
-    * @param _I is the Inertia matrix
-	* @param _kr is the rotor constant
-	* @param _Fv is the viscous friction constant
-	* @param _Fs is the static friction constant
-	* @param _Im is the rotor inertia
-	*/
-	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im) 
-	{ return iDynChain::setDynamicParameters(i,_m,_HC,_I,_kr,_Fv,_Fs,_Im); }
-
-	/**
-	* Set the dynamic parameters of the i-th Link with motor.
-    * @param i the i-th Link
-    * @param _m is the Link mass
-    * @param _HC is the rototranslation matrix from the link frame to the center of mass
-    * @param _I is the Inertia matrix
-	*/
-	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I)
-	{ return iDynChain::setDynamicParameters(i,_m,_HC,_I); }
-
-	/**
-	* Set the dynamic parameters of the i-th link if the chain is in a static situation (inertia is null).
-    * @param i the link index
-    * @param _m is the link mass
-    * @param _HC is the rototranslation matrix from the link frame to the center of mass
-	* @return true if operation is successful (ie matrices size is correct), false otherwise
-	*/
-	bool setStaticParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC)
-	{ return iDynChain::setStaticParameters(i,_m,_HC); }
-
-	// methods for Newton-Euler computation
-
-	bool				computeNewtonEuler()										{ return iDynChain::computeNewtonEuler(); }
-	void				setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)	{ iDynChain::setModeNewtonEuler(NewEulMode_s); }
-	void				prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC)	{ iDynChain::prepareNewtonEuler(NewEulMode_s); }
-	yarp::sig::Matrix	getForcesNewtonEuler() const								{ return iDynChain::getForcesNewtonEuler();}
-	yarp::sig::Matrix	getMomentsNewtonEuler() const								{ return iDynChain::getMomentsNewtonEuler();}
-	yarp::sig::Vector	getTorquesNewtonEuler() const								{ return iDynChain::getTorquesNewtonEuler();}
-	void				computeKinematicNewtonEuler() 								{ iDynChain::computeKinematicNewtonEuler();}
-	void				computeWrenchNewtonEuler()									{ iDynChain::computeWrenchNewtonEuler();}
-
-	bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
-	{ return iDynChain::computeNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
-
-	bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
-	{ return iDynChain::initNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
-
-	bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0)
-	{return iDynChain::initKinematicNewtonEuler(w0, dw0, ddp0);}
-	 
-	bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
-	{return iDynChain::initWrenchNewtonEuler(Fend,Muend);}
-
-	void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp) 
-	{iDynChain::getKinematicNewtonEuler(w,dw,ddp);}
-	 
-	void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp)
-	{iDynChain::getFrameKinematic(i,w,dw,ddp);}
-	 
-	void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu)
-	{iDynChain::getFrameWrench(i,F,Mu);}
-
-	void getWrenchNewtonEuler( yarp::sig::Vector &F, yarp::sig::Vector &Mu) 
-	{iDynChain::getWrenchNewtonEuler(F,Mu);}
-
-	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn )
-	{return iDynChain::computeGeoJacobian(iLinkN,Pn);}
-
-    yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
-	{return iDynChain::computeGeoJacobian(iLinkN,Pn,H0);}
-
-	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn )
-	{return iDynChain::computeGeoJacobian(Pn);}
-
-	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
-	{return iDynChain::computeGeoJacobian(Pn,_H0);}
-
-	yarp::sig::Matrix GeoJacobian(const unsigned int i)
-	{ return iDynChain::GeoJacobian(i);			}
-
-	yarp::sig::Matrix getH0() const				
-    { return iDynChain::getH0();}
-
-	bool setH0(const yarp::sig::Matrix &_H0)	
-    { return iDynChain::setH0(_H0);}
-
-	yarp::sig::Matrix getDenHart(unsigned int i) 
-    { return iDynChain::getDenHart(i);}
-
-    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink)  
-    { return iDynChain::computeCOMJacobian(iLink);}
-
-	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn)
-    { return iDynChain::computeCOMJacobian(iLink, Pn);}
-
-    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 )
-    { return iDynChain::computeCOMJacobian(iLink, Pn, _H0);}
-
-    yarp::sig::Matrix getCOM(unsigned int iLink)
-    { return iDynChain::getCOM(iLink); }
-
-    yarp::sig::Matrix getHCOM(unsigned int iLink)
-    { return iDynChain::getHCOM(iLink); }
-
 
 };
 

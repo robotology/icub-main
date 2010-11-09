@@ -1,4 +1,7 @@
 
+2010-11-09 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iDyn.h: now iDynLimb is public inherited from iDynChain
+
 2010-05-26 Serena Ivaldi <serena.ivaldi@iit.it> and Matteo Fumagalli <matteo.fumagalli@iit.it>
 	   * First release published on the repository
 
