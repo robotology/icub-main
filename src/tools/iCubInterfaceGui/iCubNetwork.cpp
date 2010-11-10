@@ -31,34 +31,33 @@ char* iCubNetwork::mRowNames[]=
         NULL
 };
 
-bool iCubNetwork::findAndWrite(std::string addr,yarp::os::Value* data)
+bool iCubNetwork::findAndWrite(std::string addr,yarp::os::Value& data)
 {
     int index=addr.find(",");
+    if (index<0) return false; // should never happen
 
-    std::string name=index<0?addr:addr.substr(0,index);
+    std::string name=addr.substr(0,index);
 
     if (name.length()==0) return false; // should never happen
-
     if (name!=mName) return false;
 
+    ++index;
+    addr=addr.substr(index,addr.length()-index);
+    index=addr.find(",");
+
     // is the message for the network or for a board channel?
-    if (index<0)
+    if (index<0) // for the network
     {
-        // for the network
-        for (int i=0; i<(int)mData.size(); ++i)
-        {
-            mData.write(i,data[i]);
-        }
+        index=atoi(addr.c_str());
+
+        if (index>=mData.size()) return false;
+
+        mData.write(index,data);
 
         return true;
     }
 
     // for a board channel
-
-    ++index;
-
-    addr=addr.substr(index,addr.length()-index);
-
     for (int i=0; i<(int)mBoards.size(); ++i)
     {
         if (mBoards[i]->findAndWrite(addr,data))

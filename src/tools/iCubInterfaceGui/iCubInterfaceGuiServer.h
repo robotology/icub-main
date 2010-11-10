@@ -35,8 +35,9 @@ public:
 
     void run();
     
-    bool findAndWrite(std::string address,yarp::os::Value* data);
+    bool findAndWrite(std::string address,yarp::os::Value& data);
     bool findAndRead(std::string address,yarp::os::Value* data);
+
     yarp::os::Bottle toBottle(bool bConfig=false);
 
 protected:

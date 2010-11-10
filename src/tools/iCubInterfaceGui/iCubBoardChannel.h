@@ -138,7 +138,7 @@ public:
     {
     }
 
-    virtual bool findAndWrite(std::string addr,yarp::os::Value* data)=0;
+    virtual bool findAndWrite(std::string addr,yarp::os::Value& data)=0;
     virtual bool findAndRead(std::string addr,yarp::os::Value* data)=0;
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
@@ -215,7 +215,7 @@ public:
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false);
     virtual void fromBottle(yarp::os::Bottle& bot);
-    virtual bool findAndWrite(std::string addr,yarp::os::Value* data);
+    virtual bool findAndWrite(std::string addr,yarp::os::Value& data);
     virtual bool findAndRead(std::string addr,yarp::os::Value* data);
 
 protected:

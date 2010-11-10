@@ -160,7 +160,7 @@ void iCubInterfaceGuiServer::run()
     } 
 }
 
-bool iCubInterfaceGuiServer::findAndWrite(std::string address,yarp::os::Value* data)
+bool iCubInterfaceGuiServer::findAndWrite(std::string address,yarp::os::Value& data)
 {
     mMutex.wait();
     for (unsigned int n=0; n<(int)mNetworks.size(); ++n)

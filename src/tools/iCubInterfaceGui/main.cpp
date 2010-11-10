@@ -41,7 +41,7 @@ public:
     {
         pServer=server;
 
-        pServer->findAndRead("net_headtorso",mValues);
+        //pServer->findAndRead("net_headtorso",mValues);
     }
 
     virtual ~FakeDriver()
@@ -56,14 +56,14 @@ public:
 
         //pServer->findAndWrite("net_rarm,2,0",mValues);
 
-        mValues[iCubNetwork::BOOL_Bus_off]=yarp::os::Value(counter=!counter);
+        //mValues[iCubNetwork::BOOL_Bus_off]=yarp::os::Value(counter=!counter);
 
-        pServer->findAndWrite("net_headtorso",mValues);
+        pServer->findAndWrite("net_headtorso,2,1,5",yarp::os::Value(counter=!counter));
     }
 
 protected:
     iCubInterfaceGuiServer *pServer;
-    yarp::os::Value mValues[32];
+    //yarp::os::Value mValues[32];
 };
 
 int main(int argc, char *argv[])

@@ -51,20 +51,21 @@ void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)
     mData.fromBottle(bot);
 }
 
-bool iCubBLLChannel::findAndWrite(std::string addr,yarp::os::Value* data)
+bool iCubBLLChannel::findAndWrite(std::string addr,yarp::os::Value& data)
 {
     int index=addr.find(",");
+    if (index<0) return false; // should never happen
 
-    std::string sCh=index<0?addr:addr.substr(0,index);
-
+    std::string sCh=addr.substr(0,index);
     if (sCh.length()==0) return false; // should never happen
-
     if (mChannel!=atoi(sCh.c_str())) return false;
 
-    for (int i=0; i<(int)mData.size(); ++i)
-    {
-        mData.write(i,data[i]);
-    }
+    ++index;
+    index=atoi(addr.substr(index,addr.length()-index).c_str());
+
+    if (index>=mData.size()) return false;
+
+    mData.write(index,data);
 
     return true;
 }
