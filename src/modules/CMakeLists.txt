@@ -23,7 +23,6 @@ add_subdirectory(skinDriftCompensation)
 add_subdirectory(objectsPropertiesCollector)
 
 if(ICUB_USE_OpenCV)
-    add_subdirectory(blobTracker)
     add_subdirectory(indepMotionDetector)
     add_subdirectory(faceTracker)
     add_subdirectory(salience)
