@@ -1118,7 +1118,7 @@ public:
 
 		string fwdSlash = "/";
 		Bottle tmp;
-		int rate = 100;
+		int rate = 10;
 		tmp=0;
 
 		/*string name;
@@ -1136,7 +1136,7 @@ public:
 		else
 		{
 			fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
-			rate = 100;
+			rate = 10;
 		}
 
 		//---------------------DEVICES--------------------------//
