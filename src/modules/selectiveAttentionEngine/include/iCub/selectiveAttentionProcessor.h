@@ -60,57 +60,59 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;              //temporary mono image
         yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;              //temporary rgb image
         yarp::sig::ImageOf<yarp::sig::PixelRgb> *intermCartOut;     //temporary rgb image
-        yarp::os::BufferedPort<yarp::os::Bottle> vergencePort;                //port dedicated to the communication with the vergence
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //a port for the inputImage (colour)
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageCartOut; //port for sending cartesian image result
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; // input port for the 1st saliency map
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; // input port for the 2nd saliency map
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; // input port for the 3rd saliency map
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port; //input port for the 4th saliency map
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; //input port for the 5th saliency map
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; //input port for the 6th saliency map
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > motionPort; //input port for the flow motion
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > cart1Port; //input port for the 1st cartesian saliency map
+        yarp::os::BufferedPort<yarp::os::Bottle> vergencePort;      //port dedicated to the communication with the vergence
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort;   //a port for the inputImage (colour)
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageCartOut;  //port for sending cartesian image result
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port;     // input port for the 1st saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port;     // input port for the 2nd saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port;     // input port for the 3rd saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port;     //input port for the 4th saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port;     //input port for the 5th saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port;     //input port for the 6th saliency map
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > motionPort;   //input port for the flow motion
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > cart1Port;    //input port for the 1st cartesian saliency map
 
-        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; //output port that represent the linear combination of different maps
-        yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;//output port where the centroid coordinate is sent
-        yarp::os::Port feedbackPort; //port necessary to send back command to the preattentive processors
+        yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort;    // output port that represent the linear combination of different maps
+        yarp::os::BufferedPort<yarp::os::Bottle > centroidPort;                                     // output port where the centroid coordinate is sent
+        yarp::os::BufferedPort<yarp::os::Bottle > gazeCoordPort;                                   // port that is dedicated to the streaming out gaze coordinates
+        yarp::os::Port feedbackPort;                                                                //port necessary to send back command to the preattentive processors
         
-        Ipp8u* map1_ippi; //ippi image of the 1st map
-        Ipp8u* map2_ippi; //ippi image of the 2nd map
-        Ipp8u* map3_ippi; //ippi image of the 3rd map
-        Ipp8u* map4_ippi; //ippi image of the 4th map
-        Ipp8u* map5_ippi; //ippi image of the 5th map
-        Ipp8u* map6_ippi; //ippi image of the 6th map
+        Ipp8u* map1_ippi;   //ippi image of the 1st map
+        Ipp8u* map2_ippi;   //ippi image of the 2nd map
+        Ipp8u* map3_ippi;   //ippi image of the 3rd map
+        Ipp8u* map4_ippi;   //ippi image of the 4th map
+        Ipp8u* map5_ippi;   //ippi image of the 5th map
+        Ipp8u* map6_ippi;   //ippi image of the 6th map
       
         //yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImagePlane; //temp variable for plane extraction;
-        int cLoop; //counter of the loop
-        int camSel;   //select the image plane: left or right ( 0: left, 1: right )
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *image_out; //temp variable for plane extraction;
-        yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp; //temp variable for plane extraction;
-        int targetRED; //value read from the blobFinder component (red intensity of the target)
-        int targetGREEN; //value read from the blobFinder component (green intensity of the target)
-        int targetBLUE; //value read from the blobFinder component (blue intensity of the target)
-        int width; //width of the input image
-        int height; //height of the input image
-        int xSizeValue; //x dimension of the remapped cartesian image
-        int ySizeValue; //y dimension of the remapped cartesian image
-        double overlap;     //overlap in the remapping
-        int numberOfRings;  //number of rings in the remapping
-        int numberOfAngles; //number of angles in the remapping
-        int saccadicInterval; //time interval between two different saccadic event
-        double salienceTD; //value of the weight of top-down approach in the blobFinder
-        double salienceBU; //value of the weight of bottom-up approach in the blobFinder
-        unsigned char targetRed; //colour information passed back for the reinforcement
-        unsigned char targetGreen; //colour information passed back for the reinforcement
-        unsigned char targetBlue; //colour information passed back for the reinforcement
-        std::string name; //name of the module and rootname of the connection
-        bool reinit_flag; //flag that is set after the dimension of the images is defined
-        bool interrupted; //flag set when the interrputed function has already be called
-        bool idle; //flag for the idle state of the processor   
-        bool gazePerform; //flag that allows the processor to ask the gazeControl for saccadic movements
-        yarp::os::Semaphore mutex; //semaphore for the respond function
+        int cLoop;      //counter of the loop
+        int camSel;     //select the image plane: left or right ( 0: left, 1: right )
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *image_out;         //temp variable for plane extraction;
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp;        //temp variable for plane extraction;
+        int targetRED;          //value read from the blobFinder component (red intensity of the target)
+        int targetGREEN;        //value read from the blobFinder component (green intensity of the target)
+        int targetBLUE;         //value read from the blobFinder component (blue intensity of the target)
+        int width;              //width of the input image
+        int height;             //height of the input image
+        int xSizeValue;         //x dimension of the remapped cartesian image
+        int ySizeValue;         //y dimension of the remapped cartesian image
+        double overlap;         //overlap in the remapping
+        int numberOfRings;      //number of rings in the remapping
+        int numberOfAngles;     //number of angles in the remapping
+        int saccadicInterval;   //time interval between two different saccadic event
+        double salienceTD;      //value of the weight of top-down approach in the blobFinder
+        double salienceBU;      //value of the weight of bottom-up approach in the blobFinder
+        unsigned char targetRed;        //colour information passed back for the reinforcement
+        unsigned char targetGreen;      //colour information passed back for the reinforcement
+        unsigned char targetBlue;       //colour information passed back for the reinforcement
+        std::string name;               //name of the module and rootname of the connection
+        bool reinit_flag;               //flag that is set after the dimension of the images is defined
+        bool interrupted;               //flag set when the interrputed function has already be called
+        bool idle;                      //flag for the idle state of the processor   
+        bool gazePerform;               //flag that allows the processor to ask the gazeControl for saccadic movements
+        yarp::os::Semaphore mutex;      //semaphore for the respond function
 
+        double z;                           // distance [m]
         double xm, ym;                          //position of the most salient object in the combination
         yarp::dev::IGazeControl *igaze;         //Ikin controller of the gaze
         yarp::dev::PolyDriver* clientGazeCtrl;  //polydriver for the gaze controller
@@ -278,6 +280,11 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         int getSaccadicInterval() { return saccadicInterval; };
 
         /**
+        * function that returns the z dimension of the saccadic event
+        */
+        double getZ() { return z; };
+
+        /**
         * function that returns the value of the parameter k1
         */
         double getK1() { return k1; };
@@ -316,6 +323,11 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         * function that returns the value of the parameter kmotion
         */
         double getKMotion() { return kmotion; };
+
+        /**
+        * function that sets the z dimension of the saccadic event
+        */
+        void setZ(double parameterZ) { z = parameterZ; };
 
         /**
         * function that sets the value of the parameter k1

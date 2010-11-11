@@ -184,6 +184,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class selectiveAttentionModule : public yarp::os::RFModule {
 private:
+    double parameterZ;          //z distance of the objects necessary for monocular gazing
     double k1;                  //coefficient map1
     double k2;                  //coefficient map2
     double k3;                  //coefficient map3
