@@ -43,8 +43,8 @@ using namespace yarp::dev;
 using namespace std;
 using namespace iCub::logpolar;
 
-#define XSIZE_DIM 640 //original mapping 
-#define YSIZE_DIM 480 //original mapping
+#define XSIZE_DIM 320 //original mapping 
+#define YSIZE_DIM 240 //original mapping
 #define TIME_CONST 50 //number of times period rateThread to send motion command
 
 selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThread(rateThread)
@@ -55,8 +55,10 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     idle=true;
     interrupted=false;
     gazePerform=true;
+    /**  removed lines. the dimension of the cartesian images (result of the remapping) must be read from 
     xSizeValue=XSIZE_DIM;
     ySizeValue=YSIZE_DIM;
+    */
 
     cLoop=0;
     endInt=0;
@@ -64,7 +66,7 @@ selectiveAttentionProcessor::selectiveAttentionProcessor(int rateThread):RateThr
     saccadeInterv=3000; //milliseconds
     
     //default values of the coefficients
-    /*
+    /** removed hardcoded. these value must be set from either the configuration file or the command line
     k1=0.5;
     k2=0.1;
     k3=0.5;
@@ -425,7 +427,7 @@ void selectiveAttentionProcessor::run(){
         int padding=map1_yarp->getPadding();
         int rowSize=map1_yarp->getRowSize();
         unsigned char maxValue=0;
-        double sumK = k1 + k2 + k3 + k4 + k5 + k6 + kmotion + kc1;
+        double sumK = k1 + k2 + k3 + k4 + k5 + k6 + kmotion + kc1;  //added kmotion and any coeff.for cartesian map to produce a perfect balance within clues
         // combination of all the saliency maps
         if(!idle){
             for(int y=0;y<height;y++){
@@ -462,8 +464,11 @@ void selectiveAttentionProcessor::run(){
                 plinear+=padding;
             }
             ImageOf<PixelRgb> &outputCartImage = imageCartOut.prepare();  //preparing the cartesian output
-            int outputXSize=(int)floor((double)xSizeValue/2);
-            int outputYSize=(int) floor((double)ySizeValue/2);
+            int ratioX = xSizeValue / XSIZE_DIM;    //introduced the ratio between the dimension of the remapping and 320
+            int ratioY = ySizeValue / YSIZE_DIM;    //introduced the ration between the dimension of the remapping and 240
+            // the ratio can be used to assure that the saccade command is located in the plane image (320,240)
+            int outputXSize=xSizeValue;
+            int outputYSize=ySizeValue;
             outputCartImage.resize(outputXSize,outputYSize);
             trsf.logpolarToCart(*intermCartOut,*inputLogImage);
             //find the max in the cartesian image and downsample
@@ -474,49 +479,40 @@ void selectiveAttentionProcessor::run(){
             unsigned char* pInter=intermCartOut->getRawImage();
             unsigned char* pcart1= cart1_yarp->getRawImage();
             unsigned char* pmotion= motion_yarp->getRawImage();
-            int paddingInterm=intermCartOut->getPadding(); //padding of the colour image (640,480)
+            int paddingInterm=intermCartOut->getPadding(); //padding of the colour image
             int rowSizeInterm=intermCartOut->getRowSize();
             //double sumCart=2 - kc1 - kmotion + kmotion + kc1;
             int paddingCartesian=cart1_yarp->getPadding();
             int paddingOutput=outputCartImage.getPadding();
             //adding cartesian and finding the max value
+            //removed downsampling of the image.
             for(int y=0;y<ySizeValue;y++) {
-                if(y%2==0) {
-                    for(int x=0;x<xSizeValue;x++) {
-                        if(x%2==0) {
-                            unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumK) + *pInter * ((k1 + k2 + k3 + k4 + k5 + k6)/sumK) + *pmotion * (kmotion/sumK)));
-                            //unsigned char value=*pInter;
-                            *pImage=value;
-                            if(maxValue<*pImage) {
-                                maxValue=*pImage;
-                            }
-                            pImage++;pInter++;
-                            *pImage=value;
-                            pImage++;pInter++;
-                            *pImage=value;
-                            pImage++;pInter++;
-                            pcart1++;
-                            pmotion++;
-                        }
-                        else {
-                            pInter+=3;
-                        }
+                for(int x=0;x<xSizeValue;x++) {
+                    unsigned char value=(unsigned char)ceil((double)(*pcart1 * (kc1/sumK) + *pInter * ((k1 + k2 + k3 + k4 + k5 + k6)/sumK) + *pmotion * (kmotion/sumK)));
+                    //unsigned char value=*pInter;
+                    *pImage=value;
+                    if(maxValue<*pImage) {
+                        maxValue=*pImage;
                     }
-                    pImage+=paddingOutput;
-                    pInter+=paddingInterm;
-                    pcart1+=paddingCartesian;
-                    pmotion+=paddingCartesian;
+                    pImage++;pInter++;
+                    *pImage=value;
+                    pImage++;pInter++;
+                    *pImage=value;
+                    pImage++;pInter++;
+                    pcart1++;
+                    pmotion++;
                 }
-                else {
-                    pInter+=paddingInterm+rowSizeInterm;
-                }
+                pImage+=paddingOutput;
+                pInter+=paddingInterm;
+                pcart1+=paddingCartesian;
+                pmotion+=paddingCartesian;
             }
             pImage=outputCartImage.getRawImage();
             float distance=0;
             bool foundmax=false;
             //looking for the max value 
-            for(int y=0;y<ySizeValue/2;y++) {
-                for(int x=0;x<xSizeValue/2;x++) {
+            for(int y=0;y<ySizeValue;y++) {
+                for(int x=0;x<xSizeValue;x++) {
                     //*pImage=value;
                     if(*pImage==maxValue) {
                         if(!foundmax) {
@@ -527,6 +523,7 @@ void selectiveAttentionProcessor::run(){
                         }
                         else {
                             distance=sqrt((x-xm)*(x-xm)+(y-ym)*(y-ym));
+                            // beware:the distance is useful to decrease computation demand but the WTA is selected in the top left hand corner!
                             if(distance < 10) {
                                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage-=2;
                                 countMaxes++;
@@ -547,14 +544,14 @@ void selectiveAttentionProcessor::run(){
             //representation of the vertical line
             pImage=outputCartImage.getRawImage();
             pImage+=round(xm)*3;
-            for(int i=0;i<ySizeValue/2;i++) {
+            for(int i=0;i<ySizeValue;i++) {
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
-                pImage += (xSizeValue/2-1) * 3 + paddingOutput;
+                pImage += (xSizeValue-1) * 3 + paddingOutput;
             }
             //representation of the horizontal line
             pImage=outputCartImage.getRawImage();
-            pImage+=round(ym) * (3 * (xSizeValue/2) + paddingOutput);
-            for(int i=0;i<xSizeValue/2;i++) {
+            pImage+=round(ym) * (3 * (xSizeValue) + paddingOutput);
+            for(int i=0;i<xSizeValue;i++) {
                 *pImage=255;pImage++;*pImage=0;pImage++;*pImage=0;pImage++;
             }
             //controlling the heading of the robot
@@ -563,15 +560,18 @@ void selectiveAttentionProcessor::run(){
             if(diff * 1000 > saccadeInterv) {
                 if(gazePerform) {
                     Vector px(2);
-                    px[0]=round(xm);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                    px[1]=round(ym);
+                    // ratio maps the WTA to an image 320,240 (see definition) because it is what iKinGazeCtrl asks
+                    px[0]=round(xm / ratioX);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                    px[1]=round(ym / ratioY);
+
                     //we still have one degree of freedom given by
                     //the distance of the object from the image plane
                     //if you do not have it, try to guess :)
                     double z=0.5;   // distance [m]
+
+                    /** removing the vergence suspension
                     if(vergencePort.getOutputCount()) {
                         //suspending any vergence control;
-                        
                         Bottle& command=vergencePort.prepare();
                         command.clear();
                         command.addString("sus");
@@ -580,12 +580,18 @@ void selectiveAttentionProcessor::run(){
                         //waiting for the ack from vergence
                         bool flag=false;
                     }
+                    */
 
+                    /* removed saccade delay
                     for(int k=0;k<10;k++){ 
                         Time::delay(0.050);
                         printf("*");
                     }
+                    */
+
                     igaze->lookAtMonoPixel(camSel,px,z);
+
+                    /* removing vergenge resumption
                     if(vergencePort.getOutputCount()) { 
                         //waiting for the end of the saccadic event
                         bool flag=false;
@@ -605,6 +611,7 @@ void selectiveAttentionProcessor::run(){
                         printf("resuming vergence \n");
                         vergencePort.write();
                     }
+                    */
 
                     //adding the element to the DB
                     /*if(databasePort.getOutputCount()) {
