@@ -365,7 +365,7 @@ public:
 		
 			ODE_access.wait();
 			ConstString subcmd = command.get(1).asString();
-			if (subcmd=="get"||subcmd=="set"||subcmd=="mk"||subcmd=="grab"||subcmd=="rot") {
+			if (subcmd=="get"||subcmd=="set"||subcmd=="mk"||subcmd=="grab"||subcmd=="rot" || subcmd=="del") {
 				int id = command.get(2).asVocab();
 				
 				dBodyID bid = NULL;
@@ -425,9 +425,60 @@ public:
 						bid2 = odeinit._wrld->tempGeom[0];
 						setBody = 12;
 						break;
+                    case VOCAB3('a','l','l'):
+                        bid = odeinit._wrld->tempBody;
+						setBody = 11;
+						break;
 				}
 				reply.clear();
 				if (bid!=NULL || bid2!=NULL) {
+                    if (subcmd=="del"){
+
+                        int b = odeinit._wrld->OBJNUM;//box
+                        int sb = odeinit._wrld->S_OBJNUM;
+                        int c = odeinit._wrld->cylOBJNUM;//box
+                        int sc = odeinit._wrld->S_cylOBJNUM;
+                        int s = odeinit._wrld->SPHNUM;//box
+                        int ss = odeinit._wrld->S_SPHNUM;
+                     
+                        for (int x=0; x<b; x++){
+                            odeinit.mutex.wait();
+                            dGeomDestroy(odeinit._wrld->obj[x].geom[0]);
+                            odeinit._wrld->OBJNUM = 0;
+                            odeinit.mutex.post();
+                        }
+                        for (int x=0; x<sb; x++){
+                            odeinit.mutex.wait();
+                            dGeomDestroy(odeinit._wrld->s_obj[x].geom[0]);
+                            odeinit._wrld->S_OBJNUM = 0;
+                            odeinit.mutex.post();
+                        }
+                        for (int x=0; x<c; x++){
+                            odeinit.mutex.wait();
+                            dGeomDestroy(odeinit._wrld->cyl_obj[x].cylgeom[0]);
+                            odeinit._wrld->cylOBJNUM = 0;
+                            odeinit.mutex.post();
+                        }
+                        for (int x=0; x<sc; x++){
+                            odeinit.mutex.wait();
+                            dGeomDestroy(odeinit._wrld->s_cyl_obj[x].cylgeom[0]);
+                            odeinit._wrld->S_cylOBJNUM = 0;
+                            odeinit.mutex.post();
+                        }
+                        for (int x=0; x<s; x++){
+                            odeinit.mutex.wait();
+                            dGeomDestroy(odeinit._wrld->sph[x].sphgeom[0]);
+                            odeinit._wrld->SPHNUM = 0;
+                            odeinit.mutex.post();
+                        }
+                        for (int x=0; x<ss; x++){
+                            odeinit.mutex.wait();
+                            dGeomDestroy(odeinit._wrld->s_sph[x].sphgeom[0]);
+                            odeinit._wrld->S_SPHNUM = 0;
+                            odeinit.mutex.post();
+                        }
+             
+                    }
 					if (subcmd=="get") {
 						if (setBody == 0 || setBody == 1 || setBody == 3 || setBody == 4){
 							const dReal *coords = dBodyGetPosition(bid);
