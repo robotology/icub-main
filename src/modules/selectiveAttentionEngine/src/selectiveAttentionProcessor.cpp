@@ -561,14 +561,11 @@ void selectiveAttentionProcessor::run(){
                 if(gazePerform) {
                     Vector px(2);
                     // ratio maps the WTA to an image 320,240 (see definition) because it is what iKinGazeCtrl asks
-                    px[0]=round(xm / ratioX);  //divided by two because the iKinGazeCtrl receives coordinates in image plane of 320,240
-                    px[1]=round(ym / ratioY);
-
-                    //we still have one degree of freedom given by
-                    //the distance of the object from the image plane
-                    //if you do not have it, try to guess :)
-                    double z=0.5;   // distance [m]
-
+                    px[0] = round(xm / ratioX);   //divided by ratioX because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                    px[1] = round(ym / ratioY);   //divided by ratioY because the iKinGazeCtrl receives coordinates in image plane of 320,240
+                    centroid_x = round(xm / ratioX);    //centroid_x is the value of gazeCoordinate streamed out
+                    centroid_y = round(ym / ratioY);    //centroid_y is the value of gazeCoordinate streamed out
+                    
                     /** removing the vergence suspension
                     if(vergencePort.getOutputCount()) {
                         //suspending any vergence control;
@@ -678,8 +675,8 @@ bool selectiveAttentionProcessor::outPorts(){
         commandBottle.clear();
         commandBottle.addString("sac");
         commandBottle.addString("img");
-        //commandBottle.addInt(centroid_x);
-        //commandBottle.addInt(centroid_y);
+        commandBottle.addInt(centroid_x);
+        commandBottle.addInt(centroid_y);
         centroidPort.write();
     }
 

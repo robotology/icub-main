@@ -165,6 +165,17 @@ bool selectiveAttentionModule::configure(ResourceFinder &rf) {
                            "saccadic intervall in ms (int)").asInt();
     currentProcessor->setSaccadicInterval(saccadicInterval);
 
+    //concerning monocular gazing, we still have one degree of freedom given by
+    //the distance of the object from the image plane
+    //if you do not have it, try to guess :)
+    /* selects which one of the two camera drives the gaze */
+    parameterZ       = rf.check("z", 
+                           Value(0.5), 
+                           "distance of objecr in meters (double)").asDouble();
+    currentProcessor->setZ(parameterZ);
+                    
+
+
     /* parses the value of the coefficient map1 */
     k1       = rf.check("k1", 
                            Value(0.0), 
