@@ -692,7 +692,7 @@ public:
 
 	void calibrateOffset(const unsigned int Ntrials)
 	{
-		fprintf(stderr,"SensToTorques: starting sensor offset calibration .. \n\n");
+		fprintf(stderr,"SensToTorques: starting sensor offset calibration, waiting for port connections... \n\n");
 
 		Offset_LArm.zero();
 		Offset_RArm.zero();
@@ -756,12 +756,22 @@ public:
 	bool readAndUpdate(bool waitMeasure=false, bool _init=false)
 	{
 		bool b = true;
-		
+
+		fprintf(stderr,"Trying to connect to left arm sensor... \n");
 		ft_arm_left  = port_ft_arm_left->read(waitMeasure);
-        ft_arm_right = port_ft_arm_right->read(waitMeasure);
-        ft_leg_left  = port_ft_leg_left->read(waitMeasure);
+		fprintf(stderr,"done. \n");
+        fprintf(stderr,"Trying to connect to right arm sensor... \n");
+		ft_arm_right = port_ft_arm_right->read(waitMeasure);
+        fprintf(stderr,"done. \n");
+        fprintf(stderr,"Trying to connect to left leg sensor... \n");
+		ft_leg_left  = port_ft_leg_left->read(waitMeasure);
+		fprintf(stderr,"done. \n");
+        fprintf(stderr,"Trying to connect to right leg sensot... \n");
         ft_leg_right = port_ft_leg_right->read(waitMeasure);
+		fprintf(stderr,"done. \n");
+        fprintf(stderr,"Trying to connect to intertial sensor.. \n");
 		inertial = port_inertial_thread->read(waitMeasure);
+		fprintf(stderr,"done. \n");
 		
 		if(test==VOCAB_TEST)
 		{
