@@ -7,6 +7,7 @@
       		<name>wholeBodyTorqueObserver</name>
       		<parameters>--context wholeBodyTorqueObserver/conf --from wholeBodyTorqueObserver.ini</parameters>
 			<node>console</node>
+			<stdio>console</stdio>
 			<tag>wholeBody_tqObs</tag>
    	</module>
 	<module>
