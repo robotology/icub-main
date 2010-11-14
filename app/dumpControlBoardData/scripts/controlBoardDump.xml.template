@@ -6,19 +6,19 @@
   <module>
     <name>dataDumper</name>
     <parameters>--name /icub/headDump/getEncoders</parameters>
-    <node>icub10</node>
+    <node>console</node>
     <tag>dumpHeadEncs</tag>
   </module>
   <module>
     <name>dataDumper</name>
     <parameters>--name /icub/headDump/getErrors</parameters>
-    <node>icub10</node>
+    <node>console</node>
     <tag>dumpHeadErrs</tag>
   </module>
   <module>
     <name>dataDumper</name>
     <parameters>--name /icub/headDump/getOutputs</parameters>
-    <node>icub10</node>
+    <node>console</node>
     <tag>dumpHeadOuts</tag>
   </module>
   <module>
