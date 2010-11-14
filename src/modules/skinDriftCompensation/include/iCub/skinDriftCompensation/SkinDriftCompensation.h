@@ -72,7 +72,7 @@ The following key-value pairs can be specified as command-line parameters by pre
    if true the raw data are considered from zero up, otherwise from 255 down
  
 
- section portsa_sec Ports Accessed
+\section portsa_sec Ports Accessed
 - /icub/skin/right_hand  or  /icub/skin/left_hand
 - /icub/skin/right_hand/rpc:i  or  /icub/skin/left_hand/rpc:i
 
