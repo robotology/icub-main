@@ -23,3 +23,14 @@ add_executable(${PROJECTNAME}
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}) 
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
+
+########## application
+set(appname demo)
+
+icub_app(${appname})
+
+file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
+
+icub_app_install(${appname}
+				FILES ${conf}
+				DESTINATION conf)			
