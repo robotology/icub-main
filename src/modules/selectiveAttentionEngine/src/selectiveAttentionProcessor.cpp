@@ -162,15 +162,14 @@ void selectiveAttentionProcessor::reinitialise(int width, int height){
     inputLogImage=new ImageOf<PixelRgb>;
     inputLogImage->resize(width,height);
 
-    //fixed resize 640,480
     intermCartOut=new ImageOf<PixelRgb>;
     intermCartOut->resize(xSizeValue,ySizeValue);
-    srcsizeCart.width=xSizeValue/2;
-    srcsizeCart.height=ySizeValue/2;
+    srcsizeCart.width=xSizeValue;
+    srcsizeCart.height=ySizeValue;
     motion_yarp=new ImageOf<PixelMono>;
-    motion_yarp->resize(xSizeValue/2,ySizeValue/2);
+    motion_yarp->resize(xSizeValue,ySizeValue);
     cart1_yarp=new ImageOf<PixelMono>;
-    cart1_yarp->resize(xSizeValue/2,ySizeValue/2);
+    cart1_yarp->resize(xSizeValue,ySizeValue);
 }
 
 void selectiveAttentionProcessor::resizeImages(int width,int height) {
@@ -323,7 +322,7 @@ void selectiveAttentionProcessor::run(){
             */
         }
 
-        tmp2=inImagePort.read(false);
+        tmp2=map1Port.read(false);
         if(tmp2==0){
             return;
         }
@@ -331,15 +330,12 @@ void selectiveAttentionProcessor::run(){
             reinitialise(tmp2->width(), tmp2->height());
             reinit_flag=true;
         }
-        ippiCopy_8u_C3R(tmp2->getRawImage(),tmp2->getRowSize(),inImage->getRawImage(), inImage->getRowSize(),srcsize);
+        //ippiCopy_8u_C3R(tmp2->getRawImage(),tmp2->getRowSize(),inImage->getRawImage(), inImage->getRowSize(),srcsize);
         if(map1Port.getInputCount()) {
             tmp=map1Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map1_yarp->getRawImage(),map1_yarp->getRowSize(),this->srcsize);
                 idle=false;
-            }
-            else {
-                map1_yarp->zero();
             }
         }
         if(map2Port.getInputCount()) {
@@ -348,18 +344,12 @@ void selectiveAttentionProcessor::run(){
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map2_yarp->getRawImage(),map2_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
-            else {
-                map2_yarp->zero();
-            }
         }
         if(map3Port.getInputCount()) {
             tmp=map3Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map3_yarp->getRawImage(),map3_yarp->getRowSize(),this->srcsize);
                 idle=false;
-            }
-            else {
-                map3_yarp->zero();
             }
         }
         if(map4Port.getInputCount()) {
@@ -368,9 +358,6 @@ void selectiveAttentionProcessor::run(){
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map4_yarp->getRawImage(),map4_yarp->getRowSize(),this->srcsize);
                 idle=false;
             }
-            else {
-                map4_yarp->zero();
-            }
         }
         if(map5Port.getInputCount()) {
             tmp=map5Port.read(false);
@@ -378,19 +365,12 @@ void selectiveAttentionProcessor::run(){
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map5_yarp->getRawImage(),map5_yarp->getRowSize(),srcsize);
                 idle=false;
             }
-            else {
-                map5_yarp->zero();
-            }
-
         }
         if(map6Port.getInputCount()) {
             tmp=map6Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),map6_yarp->getRawImage(),map6_yarp->getRowSize(),srcsize);
                 idle=false;
-            }
-            else {
-                map6_yarp->zero();
             }
         }
         if(motionPort.getInputCount()) {
@@ -403,15 +383,11 @@ void selectiveAttentionProcessor::run(){
                 motion_yarp->zero();
             }
         }
-        //colourSaliency
         if(cart1Port.getInputCount()) {
             tmp=cart1Port.read(false);
             if(tmp!=0) {
                 ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),cart1_yarp->getRawImage(),cart1_yarp->getRowSize(),srcsizeCart);
                 idle=false;
-            }
-            else {
-                cart1_yarp->zero();
             }
         }
         //2. processing of the input images
@@ -439,25 +415,26 @@ void selectiveAttentionProcessor::run(){
                     else {
                         value=(unsigned char)ceil((double)(*pmap1 * (k1/sumK) + *pmap2 * (k2/sumK) + *pmap3 * (k3/sumK) + *pmap4 * (k4/sumK) + *pmap6 * (k6/sumK)));
                     }
-                    pmap1++;pmap2++;pmap3++;
-                    pmap4++;pmap6++;
-                    *plinear=value;
+                    pmap1++; pmap2++; pmap3++;
+                    pmap4++; pmap6++;
+                    *plinear = value;
                     plinear++;
                 }
-                pmap1 += padding;pmap2 += padding;pmap3 += padding;
-                pmap4 += padding;pmap6 += padding;
+                pmap1 += padding; pmap2 += padding; pmap3 += padding;
+                pmap4 += padding; pmap6 += padding;
                 plinear += padding;
             }
+            
             //trasform the logpolar to cartesian (the logpolar image has to be 3channel image)
             plinear = linearCombinationImage.getRawImage();
-            unsigned char* pImage=inputLogImage->getRawImage();
+            unsigned char* pImage = inputLogImage->getRawImage();
             int padding3C = inputLogImage->getPadding();
             maxValue = 0;
             for(int y=0; y<height; y++) {
                 for(int x=0;x<width;x++) {
-                    *pImage ++=(unsigned char)*plinear;
-                    *pImage ++=(unsigned char)*plinear;
-                    *pImage ++=(unsigned char)*plinear;
+                    *pImage ++ =(unsigned char)*plinear;
+                    *pImage ++ =(unsigned char)*plinear;
+                    *pImage ++ =(unsigned char)*plinear;
                     plinear++;
                 }
                 pImage+=padding3C;
@@ -494,18 +471,18 @@ void selectiveAttentionProcessor::run(){
                     if(maxValue<*pImage) {
                         maxValue=*pImage;
                     }
-                    pImage++;pInter++;
-                    *pImage=value;
-                    pImage++;pInter++;
-                    *pImage=value;
-                    pImage++;pInter++;
+                    pImage++; pInter++;
+                    *pImage = value;
+                    pImage++; pInter++;
+                    *pImage = value;
+                    pImage++; pInter++;
                     pcart1++;
                     pmotion++;
                 }
-                pImage+=paddingOutput;
-                pInter+=paddingInterm;
-                pcart1+=paddingCartesian;
-                pmotion+=paddingCartesian;
+                pImage += paddingOutput;
+                pInter += paddingInterm;
+                pcart1 += paddingCartesian;
+                pmotion += paddingCartesian;
             }
             pImage=outputCartImage.getRawImage();
             float distance=0;
@@ -566,63 +543,61 @@ void selectiveAttentionProcessor::run(){
                     centroid_x = round(xm / ratioX);    //centroid_x is the value of gazeCoordinate streamed out
                     centroid_y = round(ym / ratioY);    //centroid_y is the value of gazeCoordinate streamed out
                     
-                    /** removing the vergence suspension
-                    if(vergencePort.getOutputCount()) {
-                        //suspending any vergence control;
-                        Bottle& command=vergencePort.prepare();
-                        command.clear();
-                        command.addString("sus");
-                        printf("suspending vergerce \n");
-                        vergencePort.write();
-                        //waiting for the ack from vergence
-                        bool flag=false;
-                    }
-                    */
+                    
+                    //if(vergencePort.getOutputCount()) {
+                    //    //suspending any vergence control;
+                    //    Bottle& command=vergencePort.prepare();
+                    //    command.clear();
+                    //    command.addString("sus");
+                    //    printf("suspending vergerce \n");
+                    //    vergencePort.write();
+                    //    //waiting for the ack from vergence
+                    //    bool flag=false;
+                    //}
+                    
 
-                    /* removed saccade delay
-                    for(int k=0;k<10;k++){ 
-                        Time::delay(0.050);
-                        printf("*");
-                    }
-                    */
+                    //for(int k=0;k<10;k++){ 
+                    //    Time::delay(0.050);
+                    //    printf("*");
+                    //}
+                    
 
                     igaze->lookAtMonoPixel(camSel,px,z);
 
-                    /* removing vergenge resumption
-                    if(vergencePort.getOutputCount()) { 
-                        //waiting for the end of the saccadic event
-                        bool flag=false;
-                        bool res=false;
-                        while(!flag) {                       
-                            igaze->checkMotionDone(&flag);                  
-                            Time::delay(0.010);
-                        }
-                        for(int k=0;k<10;k++){ 
-                            Time::delay(0.050);
-                        } 
-                        //suspending any vergence control
-                        Bottle& command=vergencePort.prepare();
-                        //resuming vergence
-                        command.clear();
-                        command.addString("res");
-                        printf("resuming vergence \n");
-                        vergencePort.write();
-                    }
-                    */
+                    //if(vergencePort.getOutputCount()) { 
+                    //    //waiting for the end of the saccadic event
+                    //    bool flag=false;
+                    //    bool res=false;
+                    //    while(!flag) {                       
+                    //        igaze->checkMotionDone(&flag);                  
+                    //        Time::delay(0.010);
+                    //    }
+                    //    for(int k=0;k<10;k++){ 
+                    //        Time::delay(0.050);
+                    //    } 
+                    //    //suspending any vergence control
+                    //    Bottle& command=vergencePort.prepare();
+                    //    //resuming vergence
+                    //    command.clear();
+                    //    command.addString("res");
+                    //    printf("resuming vergence \n");
+                    //    vergencePort.write();
+                    //}
 
                     //adding the element to the DB
-                    /*if(databasePort.getOutputCount()) {
-                        //suspending any vergence control
-                        Bottle& command=databasePort.prepare();
-                        command.clear();
-                        command.addInt(xm);
-                        command.addInt(ym);
-                        databasePort.write();
-                    }*/
+                    //if(databasePort.getOutputCount()) {
+                    //    //suspending any vergence control
+                    //    Bottle& command=databasePort.prepare();
+                    //    command.clear();
+                    //    command.addInt(xm);
+                    //    command.addInt(ym);
+                    //    databasePort.write();
+                    //}
                    
                 }
                 startInt=Time::now();
             }
+            
             outPorts();
         }
     }
