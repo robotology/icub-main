@@ -54,16 +54,8 @@ endif(ICUB_USE_IPOPT)
 
 if(ICUB_USE_IPP)
     # insert herein modules depending on IPP
-    add_subdirectory(saliencyBlobFinder)
-    add_subdirectory(selectiveAttentionEngine)
-    add_subdirectory(visualFilter)
     add_subdirectory(zdfModule)
-    add_subdirectory(yuvProcessor)
 else(ICUB_USE_IPP)
-    message(STATUS "IPP not found/selected, skipping saliencyBlobFinder")
-    message(STATUS "IPP not found/selected, skipping selectiveAttentionEngine")
-    message(STATUS "IPP not found/selected, skipping visualFilter")	
     message(STATUS "IPP not found/selected, skipping zdfModule")
-    message(STATUS "IPP not found/selected, skipping yuvProcessor")
 endif(ICUB_USE_IPP)
 
