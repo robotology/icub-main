@@ -49,7 +49,7 @@ public:
     * @return true/false on success failure (failure is notified if the 
     * format of the message is unknown)
     */
-    bool log(const std::string &key, const yarp::os::Value &data)=0;
+    virtual bool log(const std::string &key, const yarp::os::Value &data)=0;
 
     /*
     * Log data to server.
@@ -57,7 +57,7 @@ public:
     * @return true/false on success failure (failure is notified if the 
     * format of the message is unknown)
     */
-    bool log(const yarp::os::Bottle &data)=0;
+    virtual bool log(const yarp::os::Bottle &data)=0;
 };
 
 /**
@@ -72,7 +72,7 @@ public:
     * Set data logger server.
     * @param server is a pointer to a server implementing IServerLogger interface.
     */
-    void setServerLogger(const IServerLogger *server)=0;
+    virtual void setServerLogger(const IServerLogger *server)=0;
 };
 
 #endif
