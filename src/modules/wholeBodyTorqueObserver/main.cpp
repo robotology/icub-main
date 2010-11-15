@@ -757,21 +757,35 @@ public:
 	{
 		bool b = true;
 
-		fprintf(stderr,"Trying to connect to left arm sensor... \n");
+		if (waitMeasure)
+			fprintf(stderr,"Trying to connect to left arm sensor... \n");
 		ft_arm_left  = port_ft_arm_left->read(waitMeasure);
-		fprintf(stderr,"done. \n");
-        fprintf(stderr,"Trying to connect to right arm sensor... \n");
+		if (waitMeasure)
+		{
+			fprintf(stderr,"done. \n");
+			fprintf(stderr,"Trying to connect to right arm sensor... \n");
+		}
 		ft_arm_right = port_ft_arm_right->read(waitMeasure);
-        fprintf(stderr,"done. \n");
-        fprintf(stderr,"Trying to connect to left leg sensor... \n");
+		if (waitMeasure)
+		{
+			fprintf(stderr,"done. \n");
+			fprintf(stderr,"Trying to connect to left leg sensor... \n");
+		}
 		ft_leg_left  = port_ft_leg_left->read(waitMeasure);
-		fprintf(stderr,"done. \n");
-        fprintf(stderr,"Trying to connect to right leg sensot... \n");
+		if (waitMeasure)
+		{
+			fprintf(stderr,"done. \n");
+			fprintf(stderr,"Trying to connect to right leg sensot... \n");
+		}
         ft_leg_right = port_ft_leg_right->read(waitMeasure);
-		fprintf(stderr,"done. \n");
-        fprintf(stderr,"Trying to connect to intertial sensor.. \n");
+		if (waitMeasure)
+		{
+			fprintf(stderr,"done. \n");
+			fprintf(stderr,"Trying to connect to intertial sensor.. \n");
+		}
 		inertial = port_inertial_thread->read(waitMeasure);
-		fprintf(stderr,"done. \n");
+		if (waitMeasure)
+			fprintf(stderr,"done. \n");
 		
 		if(test==VOCAB_TEST)
 		{
