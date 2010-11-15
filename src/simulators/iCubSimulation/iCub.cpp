@@ -2457,12 +2457,12 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 			// attach to the lower torso
 			dJointAttach (fixedHipJoint,body_torso,0);
 			// move the torso up slightly (0.03 units)???
-			dBodySetPosition (body_torso,   0.0, 0.4912, -0.034);
+			//dBodySetPosition (body_torso,   0.0, 0.4912, -0.034);
 		} else {
 			// attach to the lower torso
 			dJointAttach (fixedHipJoint,torso[0],0);
 			// move the torso up slightly (0.03 units)???
-			dBodySetPosition (torso[0],   0.0, 0.4912, -0.034);
+			//dBodySetPosition (torso[0],   0.0, 0.4912, -0.034);
 		}
 		// this call fixes the joint to its current position in 3D space
 		dJointSetFixed (fixedHipJoint);
