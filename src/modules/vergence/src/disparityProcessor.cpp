@@ -310,10 +310,19 @@ void disparityProcessor::run(){
 
           // cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << " " << relangle << endl;
             
+            //temporary change for not using the ikinGaze interface..will use a flag soon.
             gazeVect[0] = 0.0;
             gazeVect[1] = 0.0;
             gazeVect[2] = relangle;
-            igaze->lookAtRelAngles(gazeVect);
+            if ( cmdOutput.getOutputCount() > 0 ) { 
+                Bottle bot;
+                bot.clear();
+                bot.addString("VER_REL");
+                bot.addDouble(relangle);
+                cmdOutput.write(bot);
+                bot.clear();
+            }
+            //igaze->lookAtRelAngles(gazeVect);//removed for use with the arbitrer
             
             //send shifts on shift port
             shift_Struct test;
