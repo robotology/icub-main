@@ -10,10 +10,7 @@
 #define __GTKMM_ICUB_INTERFACE_GUI_CLIENT_H__
 
 #include <gtkmm.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Port.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Network.h>
+#include <yarp/os/all.h>
 #include "iCubNetworkGui.h"
 
 class iCubInterfaceGuiThread : public yarp::os::RateThread
@@ -173,7 +170,7 @@ protected:
 
     iCubInterfaceGuiThread* mThread;
 
-    yarp::os::Port mPort;
+    yarp::os::RpcClient mPort;
     std::vector<iCubNetwork*> mNetworks;
 };
 

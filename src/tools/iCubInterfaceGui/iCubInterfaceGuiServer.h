@@ -10,8 +10,7 @@
 #define __GTKMM_ICUB_INTERFACE_GUI_SERVER_H__
 
 #include "iCubNetwork.h"
-#include <yarp/os/Port.h>
-#include <yarp/os/Semaphore.h>
+#include <yarp/os/all.h>
 
 class iCubInterfaceGuiServer : public yarp::os::Thread
 {
@@ -41,7 +40,7 @@ public:
     yarp::os::Bottle toBottle(bool bConfig=false);
 
 protected:
-    yarp::os::Port mPort;
+    yarp::os::RpcServer mPort;
     yarp::os::Semaphore mMutex;
     std::vector<iCubNetwork*> mNetworks;
 };
