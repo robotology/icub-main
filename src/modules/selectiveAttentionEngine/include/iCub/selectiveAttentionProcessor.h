@@ -58,7 +58,7 @@ class selectiveAttentionProcessor:public yarp::os::RateThread {
         IppiSize srcsize;               //IppiSize reference to the dimension of the input image
         IppiSize srcsizeCart;           //IppiSize reference to the dimension of the input image cartesian
         yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;              //temporary mono image
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;              //temporary rgb image
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp2;              //temporary rgb image
         yarp::sig::ImageOf<yarp::sig::PixelRgb> *intermCartOut;     //temporary rgb image
         yarp::os::BufferedPort<yarp::os::Bottle> vergencePort;      //port dedicated to the communication with the vergence
         yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort;   //a port for the inputImage (colour)
