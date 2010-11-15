@@ -51,7 +51,7 @@ void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)
     mData.fromBottle(bot);
 }
 
-bool iCubBLLChannel::findAndWrite(std::string addr,yarp::os::Value& data)
+bool iCubBLLChannel::findAndWrite(std::string addr,const yarp::os::Value& data)
 {
     int index=addr.find(",");
     if (index<0) return false; // should never happen

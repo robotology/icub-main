@@ -19,7 +19,7 @@ char *mRowNames[]=
     NULL
 };
 
-bool iCubBLLBoard::findAndWrite(std::string addr,yarp::os::Value& data)
+bool iCubBLLBoard::findAndWrite(std::string addr,const yarp::os::Value& data)
 {
     int index=addr.find(",");
     if (index<0) return false; // should never happen

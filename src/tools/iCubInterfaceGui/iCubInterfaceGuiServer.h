@@ -11,8 +11,9 @@
 
 #include "iCubNetwork.h"
 #include <yarp/os/all.h>
+#include <iCub/LoggerInterfaces.h>
 
-class iCubInterfaceGuiServer : public yarp::os::Thread
+class iCubInterfaceGuiServer : public yarp::os::Thread, public IServerLogger
 {
 public:
     iCubInterfaceGuiServer() : mMutex(1)
@@ -34,7 +35,10 @@ public:
 
     void run();
     
-    bool findAndWrite(std::string address,yarp::os::Value& data);
+    //bool findAndWrite(std::string address,yarp::os::Value& data);
+    bool log(const std::string &key, const yarp::os::Value &data);
+    bool log(const yarp::os::Bottle &data){ return false; }
+
     bool findAndRead(std::string address,yarp::os::Value* data);
 
     yarp::os::Bottle toBottle(bool bConfig=false);

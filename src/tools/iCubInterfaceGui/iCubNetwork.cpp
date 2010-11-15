@@ -31,7 +31,7 @@ char* iCubNetwork::mRowNames[]=
         NULL
 };
 
-bool iCubNetwork::findAndWrite(std::string addr,yarp::os::Value& data)
+bool iCubNetwork::findAndWrite(std::string addr,const yarp::os::Value& data)
 {
     int index=addr.find(",");
     if (index<0) return false; // should never happen

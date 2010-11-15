@@ -32,29 +32,36 @@
 #include <yarp/os/ResourceFinder.h>
 #include "iCubInterfaceGuiServer.h"
 
-class FakeDriver : public yarp::os::RateThread
+#include <iCub/LoggerInterfaces.h>
+
+class FakeDriver : public yarp::os::RateThread, public IClientLogger
 {
 public:
-    FakeDriver(iCubInterfaceGuiServer *server) 
+    FakeDriver() 
         : yarp::os::RateThread(1500) // period is greater than client period:
                                      // some packets will be empty
     {
-        pServer=server;
+        pServer=NULL;
     }
 
     virtual ~FakeDriver()
     {
     }
 
+    void setServerLogger(const IServerLogger *server)
+    {
+        pServer=(IServerLogger*)server;
+    }
+
     void run()
     {
         static int counter=0;
 
-        pServer->findAndWrite("net_headtorso,2,1,5",yarp::os::Value(counter=!counter));
+        if (pServer!=NULL) pServer->log("net_headtorso,2,1,5",yarp::os::Value(counter=!counter));
     }
 
 protected:
-    iCubInterfaceGuiServer *pServer;
+    IServerLogger *pServer;
 };
 
 int main(int argc, char *argv[])
@@ -94,7 +101,8 @@ int main(int argc, char *argv[])
 
     server.start();
 
-    FakeDriver fakeDriver(&server);
+    FakeDriver fakeDriver;
+    fakeDriver.setServerLogger(&server);
 
     fakeDriver.start();
 
