@@ -81,6 +81,7 @@ void TransformModule::printOptions(std::string error) {
     std::cout << "--trainport port       Data port for the training samples" << std::endl;
     std::cout << "--predictport port     Data port for the prediction samples" << std::endl;
     std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
+    std::cout << "--commands file        Load configuration commands from a file" << std::endl;
 }
 
 

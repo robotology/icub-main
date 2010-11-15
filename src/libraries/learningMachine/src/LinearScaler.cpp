@@ -52,7 +52,7 @@ bool LinearScaler::configure(Searchable& config) {
 
     // set the desired scale (double)
     if(config.find("scale").isDouble() || config.find("scale").isInt()) {
-        this->setScale(config.find("scale").asDouble());
+        this->setScale(1. / config.find("scale").asDouble());
         success = true;
     }
     // set the desired offset (double)

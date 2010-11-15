@@ -69,6 +69,7 @@ void PredictModule::printOptions(std::string error) {
     std::cout << "--help                 Display this help message" << std::endl;
     std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
     std::cout << "--modelport port       Model port of the training module" << std::endl;
+    std::cout << "--commands file        Load configuration commands from a file" << std::endl;
 }
 
 void PredictModule::registerAllPorts() {

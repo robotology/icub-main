@@ -57,6 +57,7 @@ void TrainModule::printOptions(std::string error) {
     std::cout << "--help                 Display this help message" << std::endl;
     std::cout << "--machine type         Desired type of learning machine" << std::endl;
     std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
+    std::cout << "--commands file        Load configuration commands from a file" << std::endl;
 }
 
 
