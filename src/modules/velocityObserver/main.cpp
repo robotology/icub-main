@@ -153,8 +153,6 @@ yarp connect /icub/right_arm/state:o /jointVel/pos:i
 \endcode 
  
 \author Ugo Pattacini
-
-This file can be edited at \in src/velocityObserver/main.cpp.
 */ 
 
 #include <yarp/os/Network.h>

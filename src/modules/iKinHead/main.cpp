@@ -124,9 +124,6 @@
   * Copyright (C) 2010 RobotCub Consortium
   *
   * CopyPolicy: Released under the terms of the GNU GPL v2.0.
-  *
-  *
-  *This file can be edited at \in src/eyeTriangulation/main.cpp
 **/
 
 

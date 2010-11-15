@@ -116,9 +116,6 @@ Try with the following:
 \endcode 
  
 \author Ugo Pattacini
-
-This file can be edited at 
-\in src/signalScope/main.cpp. 
 */ 
 
 #include <yarp/os/Network.h>
