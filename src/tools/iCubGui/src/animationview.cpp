@@ -49,6 +49,9 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     ySelect=false;
     zSelect=false;
 
+    mObjectsThread=new ObjectsThread(config.find("objport").asString().c_str());
+    //printf("objport=%s\n",config.find("objport").asString().c_str());
+
     leftMouseButton=false;
     modifier=0;
     
@@ -67,51 +70,52 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
 
 AnimationView::~AnimationView()
 {
+    if (mObjectsThread) delete mObjectsThread;
+
     if (pBVH) delete pBVH;
 }
 
 void AnimationView::drawFloor()
 {
-  float alpha=(100-Settings::floorTranslucency())/100.0;
+    float alpha=(100-Settings::floorTranslucency())/100.0;
 
-  //glEnable(GL_DEPTH_TEST);
-  glBegin(GL_QUADS);
-  for(int i=-10;i<10;i++)
-  {
-    for(int j=-10;j<10;j++)
+    //glEnable(GL_DEPTH_TEST);
+    glBegin(GL_QUADS);
+    for (int i=-10; i<10; ++i)
     {
-      if((i+j) % 2)
-      {
-          glColor4f(0.1,0.1,0.1,alpha);
-      }
-      else
-      {
-          glColor4f(0.6,0.6,0.6,alpha);
-      }
+        for (int j=-10; j<10; ++j)
+        {
+            if ((i+j)%2)
+            {
+                glColor4f(0.1,0.1,0.1,alpha);
+            }
+            else
+            {
+                glColor4f(0.6,0.6,0.6,alpha);
+            }
 
-      glVertex3f(i*40,0,j*40);
-      glVertex3f(i*40,0,(j+1)*40);
-      glVertex3f((i+1)*40,0,(j+1)*40);
-      glVertex3f((i+1)*40,0,j*40);
+            glVertex3f(i*40,0,j*40);
+            glVertex3f(i*40,0,(j+1)*40);
+            glVertex3f((i+1)*40,0,(j+1)*40);
+            glVertex3f((i+1)*40,0,j*40);
+        }
     }
-  }
-  glEnd();
+    glEnd();
 }
-
 
 void AnimationView::setProjection()
 {
-  gluPerspective(60.0,((float)width())/height(),1,2000);
+    gluPerspective(60.0,((float)width())/height(),1,2000);
 }
 
 void AnimationView::paintGL()
 {
-  draw();
+    draw();
 }
 
 void AnimationView::paintOverlayGL()
 {
-  draw();
+    draw();
 }
 
 void AnimationView::initializeGL()
@@ -185,6 +189,8 @@ void AnimationView::draw()
     drawFloor();
 
     pBVH->draw();
+
+    mObjectsThread->draw();
 }
 
 void AnimationView::mouseMoveEvent(QMouseEvent* event)
@@ -246,18 +252,19 @@ void AnimationView::mouseReleaseEvent(QMouseEvent* event)
     {
         leftMouseButton=false;
     }
-  /*
-  if(event->button()==Qt::LeftButton)
-  {
-    // move mouse cursor back to the beginning of the dragging process
-    //// causes problems on leopard
-    ////QCursor::setPos(returnPos);
-    // show mouse cursor again
-    setCursor(Qt::ArrowCursor);
-    leftMouseButton=false;
-    propDragging=0;
-  }
-  */
+  
+    /*
+    if(event->button()==Qt::LeftButton)
+    {
+        // move mouse cursor back to the beginning of the dragging process
+        //// causes problems on leopard
+        ////QCursor::setPos(returnPos);
+        // show mouse cursor again
+        setCursor(Qt::ArrowCursor);
+        leftMouseButton=false;
+        propDragging=0;
+    }
+    */
 }
 
 void AnimationView::mouseDoubleClickEvent(QMouseEvent* event)
@@ -363,8 +370,8 @@ void AnimationView::drawCircle(int axis,float radius,int width)
 
 void AnimationView::resetCamera()
 {
-  camera.reset();
-  repaint();
+    camera.reset();
+    repaint();
 }
 
 // handle widget resizes

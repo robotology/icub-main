@@ -10,6 +10,7 @@
 
 #include "camera.h"
 #include "bvh.h"
+#include "objectsthread.h"
 
 //#include "rotation.h"
 //#include "prop.h"
@@ -44,8 +45,40 @@ class AnimationView : public QGLWidget
     // This function clears the animations
     void clear();
 
-    void startTimer(int msec){ mTimer.start(msec); }
-    void stopTimer(){ mTimer.stop(); }
+    void startTimer(int msec)
+    {
+        /*
+        yarp::os::Port port;
+        port.open("/temp/objects");
+        yarp::os::Network::connect("/temp/objects","/iCubGui/objects");
+        yarp::os::Bottle msg;
+        msg.addString("delete");
+        msg.addString("pollo");
+        msg.addDouble(500.0);
+        msg.addDouble(1500.0);
+        msg.addDouble(500.0);
+        msg.addDouble(2000.0);
+        msg.addDouble(2000.0);
+        msg.addDouble(2000.0);
+        msg.addDouble(0.0);
+        msg.addDouble(0.0);
+        msg.addDouble(0.0);
+        msg.addInt(0);
+        msg.addInt(255);
+        msg.addInt(0);
+        msg.addDouble(0.5);
+
+        port.write(msg);
+        yarp::os::Time::delay(1.0);
+        port.close();
+        */
+
+        mTimer.start(msec); 
+    }
+    void stopTimer()
+    {
+        mTimer.stop();
+    }
 
 	QStringList& partNames(){ return pBVH->partNames; }
 
@@ -83,6 +116,7 @@ class AnimationView : public QGLWidget
 
     QTimer mTimer;
     BVH* pBVH;
+    ObjectsThread* mObjectsThread;
 
     QPoint clickPos;           // holds the mouse click position for dragging
     QPoint returnPos;          // holds the mouse position to return to after dragging

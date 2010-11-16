@@ -52,6 +52,8 @@
 
 int main( int argc, char ** argv )
 {
+    yarp::os::Network yarp; //initialize network, this goes before everything
+
 #ifdef USE_ICUB_MOD
     yarp::dev::DriverCollection dev;
 #endif 

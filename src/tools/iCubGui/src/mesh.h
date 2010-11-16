@@ -19,6 +19,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "visionobj.h"
+
 inline QStringList tokenize(QString in,char sep)
 {
     QStringList out;

@@ -421,7 +421,13 @@ void qavimator::fileExit()
 
     settings.endGroup();
 
-    if (animationView) delete animationView;
+    setPlaystate(PLAYSTATE_STOPPED);
+
+    if (animationView)
+    {
+        animationView->stopTimer();
+        delete animationView;
+    }
     animationView=0;
 
     // remove all widgets and close the main form
@@ -597,7 +603,15 @@ void qavimator::closeEvent(QCloseEvent* event)
     event->ignore();
     else
     */
-    if (animationView) delete animationView;
+
+    setPlaystate(PLAYSTATE_STOPPED);
+
+    if (animationView)
+    {
+        animationView->stopTimer();
+
+        delete animationView;
+    }
     animationView=0;
     event->accept();
 }
