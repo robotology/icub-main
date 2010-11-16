@@ -45,4 +45,4 @@ add_subdirectory(torqueObserver)
 add_subdirectory(wholeBodyTorqueObserver)
 add_subdirectory(robots)
 add_subdirectory(simConfig)
-add_subdirectory(zdfMod)
+
