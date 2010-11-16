@@ -47,32 +47,6 @@ class AnimationView : public QGLWidget
 
     void startTimer(int msec)
     {
-        /*
-        yarp::os::Port port;
-        port.open("/temp/objects");
-        yarp::os::Network::connect("/temp/objects","/iCubGui/objects");
-        yarp::os::Bottle msg;
-        msg.addString("delete");
-        msg.addString("pollo");
-        msg.addDouble(500.0);
-        msg.addDouble(1500.0);
-        msg.addDouble(500.0);
-        msg.addDouble(2000.0);
-        msg.addDouble(2000.0);
-        msg.addDouble(2000.0);
-        msg.addDouble(0.0);
-        msg.addDouble(0.0);
-        msg.addDouble(0.0);
-        msg.addInt(0);
-        msg.addInt(255);
-        msg.addInt(0);
-        msg.addDouble(0.5);
-
-        port.write(msg);
-        yarp::os::Time::delay(1.0);
-        port.close();
-        */
-
         mTimer.start(msec); 
     }
     void stopTimer()

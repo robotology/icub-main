@@ -132,7 +132,12 @@ public:
 
         tabWidget4->setCurrentPage(0);
 
-
+        //SettingsDialogForm->connect(floorTranslucencySpin,SIGNAL(valueChanged(int)),SettingsDialogForm,SLOT(on_floorTranslucencySpin_valueChanged(int)));
+        
+        SettingsDialogForm->connect(okButton,SIGNAL(clicked()),SettingsDialogForm,SLOT(on_okButton_clicked()));
+        SettingsDialogForm->connect(cancelButton,SIGNAL(clicked()),SettingsDialogForm,SLOT(on_cancelButton_clicked()));
+        SettingsDialogForm->connect(applyButton,SIGNAL(clicked()),SettingsDialogForm,SLOT(on_applyButton_clicked()));
+        //SettingsDialogForm->connect(floorTranslucencySpin,SIGNAL(valueChanged(int)),SettingsDialogForm,SLOT(on_floorTranslucencySpin_valueChanged(int)));
         //QMetaObject::connectSlotsByName(SettingsDialogForm);
     } // setupUi
 

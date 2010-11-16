@@ -66,10 +66,12 @@ void SettingsDialog::on_cancelButton_clicked()
 void SettingsDialog::on_useFogCheckbox_toggled(bool state)
 {
   qDebug("useFogToggled(%d)",state);
+  //Settings::setFog(state);
 }
 
 void SettingsDialog::on_floorTranslucencySpin_valueChanged(int value)
 {
   qDebug("floorTranslucencyChanged(%d)",value);
+  //Settings::setFloorTranslucency(value);
 }
 

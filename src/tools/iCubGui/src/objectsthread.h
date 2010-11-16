@@ -23,7 +23,6 @@ public:
     {
         mPort.open(portName);
         mRunning=true;
-        mObjects.push_back(new VisionObj("pollo",100.0,400.0,200.0,1000.0,-400.0,1000.0,20.0,40.0,30.0,255,128,128,0.8));
         start();
     }
 
