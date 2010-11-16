@@ -187,9 +187,6 @@ private:
     AWLinEstimator       *linEst;
     AWQuadEstimator      *quadEst;
 
-    unsigned int NVel,NAcc;
-    double DVel,DAcc;
-
     virtual void onRead(Bottle &b)
     {
         Stamp info;
@@ -225,10 +222,9 @@ private:
     }
 
 public:
-    dataCollector(unsigned int _NVel, double _DVel, BufferedPort<Vector> &_port_vel,
-                  unsigned int _NAcc, double _DAcc, BufferedPort<Vector> &_port_acc) :
-                  NVel(_NVel), DVel(_DVel), port_vel(_port_vel),
-                  NAcc(_NAcc), DAcc(_DAcc), port_acc(_port_acc)
+    dataCollector(unsigned int NVel, double DVel, BufferedPort<Vector> &_port_vel,
+                  unsigned int NAcc, double DAcc, BufferedPort<Vector> &_port_acc) :
+                  port_vel(_port_vel), port_acc(_port_acc)
     {
         linEst =new AWLinEstimator(NVel,DVel);
         quadEst=new AWQuadEstimator(NAcc,DAcc);
@@ -320,19 +316,14 @@ public:
         else
             DAcc=1.0;
 
-        string n1=portName+"/vel:o";
-        port_vel.open(n1.c_str());
-
-        string n2=portName+"/acc:o";
-        port_acc.open(n2.c_str());
+        port_vel.open((portName+"/vel:o").c_str());
+        port_acc.open((portName+"/acc:o").c_str());
 
         port_pos=new dataCollector(NVel,DVel,port_vel,NAcc,DAcc,port_acc);
         port_pos->useCallback();
-        string n3=portName+"/pos:i";
-        port_pos->open(n3.c_str());
+        port_pos->open((portName+"/pos:i").c_str());
 
-        string rpcPortName=portName+"/rpc";
-        rpcPort.open(rpcPortName.c_str());
+        rpcPort.open((portName+"/rpc").c_str());
         attach(rpcPort);
 
         return true;
