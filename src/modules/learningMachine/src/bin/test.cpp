@@ -45,7 +45,7 @@ std::string printVector(const std::vector<int>& v) {
   std::ostringstream output;
   output << "[";
   for(unsigned int i = 0; i < v.size(); i++) {
-    if(i > 0) output << ",";
+    if(i > 0) output << ", ";
     output << v[i];
   }
   output << "]";
@@ -372,10 +372,12 @@ public:
 
                     reply.addString("Testing module configuration options");
                     reply.addString("  help                  Displays this message");
+                    reply.addString("  conf                  Print configuration");
                     reply.addString("  train [n]             Send training samples");
                     reply.addString("  predict [n]           Send testing samples");
                     reply.addString("  skip [n]              Skip samples");
                     reply.addString("  reset                 Reset dataset");
+                    reply.addString("  shoot v1 ... vn       Shoot a single prediction sample");
                     reply.addString("  open fname            Opens a datafile");
                     reply.addString("  freq f                Sampling frequency in Hertz (0 for disabled)");
                     break;
@@ -467,7 +469,22 @@ public:
 
                     break;
                     }
-
+                
+                case VOCAB4('s','h','o','o'):
+                    {
+                    success = true;
+                    Vector input;
+                    for(int i = 1; i <= cmd.size(); i++) {
+                        if(cmd.get(i).isDouble() || cmd.get(i).isInt()) {
+                            input.push_back(cmd.get(i).asDouble());
+                        }
+                    }
+                    Vector prediction = this->sendPredictSample(input);
+                    std::string reply_str = printVector(input) + " -> " + printVector(prediction);
+                    reply.addString(reply_str.c_str());
+                    
+                    break;                
+                    }
 
                 case VOCAB4('o','p','e','n'):
                     success = true;
