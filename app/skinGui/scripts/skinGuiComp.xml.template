@@ -2,13 +2,13 @@
 <name>Face</name>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from lefthand.ini</parameters>
+      <parameters>--from lefthand.ini --useCalibration</parameters>
 	  <node>console</node>
 	<tag>skinGuiLeftHand</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from righthand.ini</parameters>
+      <parameters>--from righthand.ini --useCalibration</parameters>
 	  <node>console</node>
 	<tag>skinGuiRightHand</tag>
    </module>
