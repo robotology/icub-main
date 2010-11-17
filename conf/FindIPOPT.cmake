@@ -4,13 +4,17 @@
 # IPOPT_LINK_FLAGS   - Flags to be added to linker's options
 # IPOPT_FOUND        - If false, don't try to use IPOPT
 
-SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT main directory")
+SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
 SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
 
 IF(WIN32)
 
-   FIND_LIBRARY(IPOPT_LIBRARIES_RELEASE libipopt  ${IPOPT_DIR}/lib NO_DEFAULT_PATH)
-   FIND_LIBRARY(IPOPT_LIBRARIES_DEBUG   libipoptD ${IPOPT_DIR}/lib NO_DEFAULT_PATH)
+   FIND_LIBRARY(IPOPT_LIBRARIES_RELEASE libipopt  ${IPOPT_DIR}/lib 
+                                                  ${IPOPT_DIR}/lib/coin
+                                                  NO_DEFAULT_PATH)
+   FIND_LIBRARY(IPOPT_LIBRARIES_DEBUG   libipoptD ${IPOPT_DIR}/lib
+                                                  ${IPOPT_DIR}/lib/coin
+                                                  NO_DEFAULT_PATH)
 
    IF(IPOPT_LIBRARIES_RELEASE AND IPOPT_LIBRARIES_DEBUG)
       SET(IPOPT_LIBRARIES optimized ${IPOPT_LIBRARIES_RELEASE} debug ${IPOPT_LIBRARIES_DEBUG})
@@ -40,24 +44,32 @@ ELSE(WIN32)
      PKG_CHECK_MODULES(IPOPT ipopt)
    ENDIF(PKG_CONFIG_FOUND)
 
+   SET(IPOPT_LINK_FLAGS "")
+
    IF(NOT IPOPT_FOUND)
-      FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib)
+      FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
+                                         ${IPOPT_DIR}/lib/coin)
       IF(IPOPT_LIBRARIES)
-         SET(IPOPT_DEP_FILE ${IPOPT_DIR}/share/doc/coin/Ipopt/ipopt_addlibs_cpp.txt)
-         IF(EXISTS ${IPOPT_DEP_FILE})
+         FIND_FILE(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
+                                                        ${IPOPT_DIR}/share/coin/doc/Ipopt
+                                                        NO_DEFAULT_PATH)
+         IF(IPOPT_DEP_FILE)
             FILE(READ ${IPOPT_DEP_FILE} IPOPT_DEP)
             STRING(REGEX REPLACE "-[^l][^ ]* " "" IPOPT_DEP ${IPOPT_DEP})
-            STRING(REPLACE "-l" "" IPOPT_DEP ${IPOPT_DEP})
-            STRING(REPLACE "\n" "" IPOPT_DEP ${IPOPT_DEP})
+            STRING(REPLACE "-l"                "" IPOPT_DEP ${IPOPT_DEP})
+            STRING(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
+            STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})	# remove any possible auto-dependence
             SEPARATE_ARGUMENTS(IPOPT_DEP)
             SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${IPOPT_DEP})
-         ELSE(EXISTS ${IPOPT_DEP_FILE})
+            FIND_PATH(THIRDPARTY_LIBRARIES_PATH ThirdParty ${IPOPT_DIR}/lib/coin NO_DEFAULT_PATH)
+            IF(THIRDPARTY_LIBRARIES_PATH)
+               SET(IPOPT_LINK_FLAGS ${IPOPT_LINK_FLAGS} "-L${THIRDPARTY_LIBRARIES_PATH}/ThirdParty")
+            ENDIF(THIRDPARTY_LIBRARIES_PATH)
+         ELSE(IPOPT_DEP_FILE)
             SET(IPOPT_INCLUDE_DIRS /usr/include/coin)
-         ENDIF(EXISTS ${IPOPT_DEP_FILE})
+         ENDIF(IPOPT_DEP_FILE)
       ENDIF(IPOPT_LIBRARIES)
    ENDIF(NOT IPOPT_FOUND)
-
-   SET(IPOPT_LINK_FLAGS "")
 
 ENDIF(WIN32)
 
