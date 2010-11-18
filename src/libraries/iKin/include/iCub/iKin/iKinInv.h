@@ -983,9 +983,9 @@ public:
     virtual bool test_convergence(const double tol_size) { return false; }
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0) { return yarp::sig::Vector(0); }
     virtual yarp::sig::Vector solve(yarp::sig::Vector &xd, const double tol_size=IKINCTRL_DISABLED,
-                         const int max_iter=IKINCTRL_DISABLED,
-                         const unsigned int verbose=0, int *exit_code=NULL,
-                         bool *exhalt=NULL) { return yarp::sig::Vector(0); }
+                                    const int max_iter=IKINCTRL_DISABLED,
+                                    const unsigned int verbose=0, int *exit_code=NULL,
+                                    bool *exhalt=NULL) { return yarp::sig::Vector(0); }
 
     /**
     * Returns the guard ratio for the joints span (0.1 by default). 
