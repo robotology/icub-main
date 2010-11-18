@@ -672,6 +672,52 @@ protected:
         openHand(sel);
     }
 
+    void stopArmJoints(const int sel=USEDARM)
+    {
+        IEncoders        *ienc=encArm;
+        IPositionControl *ipos=posArm;
+        string type;
+
+        if (sel==LEFTARM)
+        {
+            if (useLeftArm)
+            {
+                drvLeftArm->view(ienc);
+                drvLeftArm->view(ipos);
+            }
+            else
+                return;
+
+            type="left_arm";
+        }
+        else if (sel==RIGHTARM)
+        {
+            if (useRightArm)
+            {
+                drvRightArm->view(ienc);
+                drvRightArm->view(ipos);
+            }
+            else
+                return;
+
+            type="right_arm";
+        }
+        else if (armSel!=NOARM)
+            type=armSel==LEFTARM?"left_arm":"right_arm";
+        else
+            return;
+
+        fprintf(stdout,"*** Stopping %s joints\n",type.c_str());
+
+        for (int j=0; j<homeVels.length(); j++)
+        {
+            double fb;
+
+            ienc->getEncoder(j,&fb);
+            ipos->positionMove(j,fb);
+        }
+    }
+
     void moveHand(const int action, const int sel=USEDARM)
     {
         IPositionControl *ipos=posArm;
@@ -779,6 +825,7 @@ protected:
                     }
 
                     fprintf(stdout,"*** Using %s\n",armSel==LEFTARM?"left_arm":"right_arm");
+                    stopArmJoints();
                     state=STATE_REACH;
                 }
             }
