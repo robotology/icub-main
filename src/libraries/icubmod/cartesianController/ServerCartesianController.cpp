@@ -1511,7 +1511,7 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
         if (latchToken)
             txTokenLatchedGoToRpc=txToken;
 
-        portSlvOut->writeStrict();
+        portSlvOut->write();
 
         return true;
     }
