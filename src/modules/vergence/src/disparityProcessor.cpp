@@ -281,8 +281,7 @@ void disparityProcessor::run(){
 
         imgInL = imageInLeft.read(true);
 		imgInR = imageInRight.read(true);
-        
-        
+                
         if( ( imgInL != NULL ) && ( imgInR != NULL ) ) {
 
             if( !dispInit ) {
