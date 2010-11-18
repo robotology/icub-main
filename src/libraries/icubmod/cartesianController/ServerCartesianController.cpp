@@ -924,11 +924,11 @@ bool ServerCartesianController::getNewTarget()
         {
             xdes=_xdes;
             qdes=_qdes;
-
-            // wake up rpc
-            if (tokened && (rxToken>=txTokenLatchedGoToRpc))
-                syncEvent.signal();
         }
+
+        // wake up rpc
+        if (tokened && (rxToken>=txTokenLatchedGoToRpc))
+            syncEvent.signal();
 
         return isNew;
     }
