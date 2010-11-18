@@ -693,6 +693,7 @@ public:
 	void calibrateOffset(const unsigned int Ntrials)
 	{
 		fprintf(stderr,"SensToTorques: starting sensor offset calibration, waiting for port connections... \n\n");
+		Vector *dummy = port_inertial_thread->read(true); //blocking call: waits for ports connection
 
 		Offset_LArm.zero();
 		Offset_RArm.zero();
