@@ -138,6 +138,7 @@ protected:
     double       txTokenLatchedStopControl;
     double       txTokenLatchedGoToRpc;
     bool         skipSlvRes;
+    bool         syncEventEnabled;
 
     yarp::os::Semaphore mutex;
     yarp::os::Event     syncEvent;

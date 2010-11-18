@@ -147,6 +147,7 @@ void ServerCartesianController::init()
     txTokenLatchedStopControl=0.0;
     txTokenLatchedGoToRpc=0.0;
     skipSlvRes=false;
+    syncEventEnabled=false;
 
     // request high resolution scheduling
     Time::turboBoost();
@@ -271,6 +272,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                     {
                         // wait for the solver
                         syncEvent.reset();
+                        syncEventEnabled=true;
                         syncEvent.wait();
 
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -927,8 +929,11 @@ bool ServerCartesianController::getNewTarget()
         }
 
         // wake up rpc
-        if (tokened && (rxToken>=txTokenLatchedGoToRpc))
+        if (tokened && syncEventEnabled && (rxToken>=txTokenLatchedGoToRpc))
+        {
+            syncEventEnabled=false;
             syncEvent.signal();
+        }
 
         return isNew;
     }
