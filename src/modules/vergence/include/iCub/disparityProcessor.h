@@ -91,7 +91,7 @@ private:
 
 	shift_Struct maxes[4];
 
-    std::string moduleName, robotName; 
+    std::string moduleName, robotName, ctrlType; 
     yarp::sig::Vector tempV, tmpPos;
     yarp::sig::Vector _head, _torso;
     bool dispInit;
@@ -132,7 +132,7 @@ public:
     void intersectRay (__kinType k, const Vector& v, int& x, int& y);
     void computeDirect (const Vector &joints);
     void computeFixation (const Matrix &T1, const Matrix &T2);
-    void setName(string module, string robot);
+    void setName(string module, string robot, string ctrlType);
 
     void _cartesianToPolar(const Vector &cartesian, Vector &polar) {
 	    polar(0) = atan2(cartesian(1), -cartesian(0));

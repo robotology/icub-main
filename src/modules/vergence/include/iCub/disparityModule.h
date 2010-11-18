@@ -34,7 +34,7 @@ private:
     bool init_flag;
     Port cmdPort;
     
-    std::string moduleName, robotName, robotPortName;
+    std::string moduleName, robotName, robotPortName, ctrlType;
     std::string outputPortName; 
 
     //property to get encoders 
@@ -98,7 +98,8 @@ public:
         string helpMessage =  string( getName().c_str() ) + 
             "commands are: \n" +  
             "help \n" + 
-            "quit \n";
+            "quit \n" +
+            "ctrl use either ctrlGaze or arbitrer";
         reply.clear(); 
 
         if ( command.get(0).asString() == "quit" )

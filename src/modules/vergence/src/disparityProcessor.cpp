@@ -51,6 +51,7 @@ disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
 	_leftJoints.resize(9);
 	_rightJoints.resize(9);
     dispInit = false;
+    //ctrlType = "ctrlGaze";
 }
 
 disparityProcessor::~disparityProcessor(){
@@ -58,27 +59,34 @@ disparityProcessor::~disparityProcessor(){
 }
 
 
-void disparityProcessor::setName(string name, string robotName) {
+void disparityProcessor::setName(string name, string robotName, string ctrlType) {
     this->moduleName = name;
     this->robotName = robotName;
+    this->ctrlType = ctrlType;
 }
 
 bool disparityProcessor::threadInit(){
 
+    if (ctrlType == "ctrlGaze" || ctrlType == "ctrlgaze"){
 
-    Property optGaze("(device gazecontrollerclient)");
-    optGaze.put("remote","/iKinGazeCtrl");
-    optGaze.put("local","/gaze_client");
+        Property optGaze("(device gazecontrollerclient)");
+        optGaze.put("remote","/iKinGazeCtrl");
+        optGaze.put("local","/gaze_client");
 
-    clientGaze=new PolyDriver;
-    if (!clientGaze->open(optGaze))
-    {
-        delete clientGaze;    
-        return false;
+        clientGaze=new PolyDriver;
+        if (!clientGaze->open(optGaze))
+        {
+            delete clientGaze;    
+            return false;
+        }
+
+        // open the view
+        clientGaze->view(igaze);
     }
-
-    // open the view
-    clientGaze->view(igaze);
+    if (ctrlType == "arbitrer"){
+        cout << "using arbitrer to control the robot" << endl;
+    }
+    
 
 
     string torsoPort, headPort;
@@ -183,7 +191,8 @@ bool disparityProcessor::threadInit(){
 }
 
 void disparityProcessor::threadRelease(){
-    igaze->stopControl();
+    if (ctrlType == "ctrlGaze" || ctrlType == "ctrlgaze")
+        igaze->stopControl();
 	histoOutPort.close();
 	imageInLeft.close();
 	imageInRight.close();
@@ -192,13 +201,15 @@ void disparityProcessor::threadRelease(){
     delete rightEye;   
 	delete robotHead;
 	delete robotTorso;
-    delete clientGaze;
+    if (ctrlType == "ctrlGaze" || ctrlType == "ctrlgaze")
+        delete clientGaze;
    
 }
 
 void disparityProcessor::onStop() 
 {
-    igaze->stopControl();
+    if (ctrlType == "ctrlGaze" || ctrlType == "ctrlgaze")
+        igaze->stopControl();
     histoOutPort.close();
 	imageInLeft.close();
 	imageInRight.close();
@@ -207,7 +218,8 @@ void disparityProcessor::onStop()
     delete rightEye;   
 	delete robotHead;
 	delete robotTorso;
-    delete clientGaze;
+    if (ctrlType == "ctrlGaze" || ctrlType == "ctrlgaze")
+        delete clientGaze;
 }
 
 void disparityProcessor::run(){	
@@ -310,19 +322,23 @@ void disparityProcessor::run(){
 
           // cout << "2 atan " <<(180/M_PI)*atan(disparityVal/(2*206.026))<< " angle " << angle <<" current " << fb[8] << " " << relangle << endl;
             
-            //temporary change for not using the ikinGaze interface..will use a flag soon.
-            gazeVect[0] = 0.0;
-            gazeVect[1] = 0.0;
-            gazeVect[2] = relangle;
-            if ( cmdOutput.getOutputCount() > 0 ) { 
-                Bottle bot;
-                bot.clear();
-                bot.addString("VER_REL");
-                bot.addDouble(relangle);
-                cmdOutput.write(bot);
-                bot.clear();
+            if (ctrlType == "ctrlGaze" || ctrlType == "ctrlgaze"){
+                gazeVect[0] = 0.0;
+                gazeVect[1] = 0.0;
+                gazeVect[2] = relangle;
+                igaze->lookAtRelAngles(gazeVect);
             }
-            //igaze->lookAtRelAngles(gazeVect);//removed for use with the arbitrer
+            if (ctrlType == "arbitrer"){
+                if ( cmdOutput.getOutputCount() > 0 ) { 
+                    Bottle bot;
+                    bot.clear();
+                    bot.addString("VER_REL");
+                    bot.addDouble(relangle);
+                    cmdOutput.write(bot);
+                    bot.clear();
+                }
+            }
+            ////removed for use with the arbitrer
             
             //send shifts on shift port
             shift_Struct test;

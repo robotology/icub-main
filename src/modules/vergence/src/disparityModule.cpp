@@ -44,6 +44,10 @@ bool disparityModule::configure( ResourceFinder &rf ) {
     }
     else    
         moduleName ="/vergence";
+
+    ctrlType = rf.check("ctrl", 
+               Value("ctrlGaze"), 
+               "controller type (string)").asString();
     /*
     * before continuing, set the module name before getting any other parameters, 
     * specifically the port names which are dependent on the module name
@@ -62,7 +66,7 @@ bool disparityModule::configure( ResourceFinder &rf ) {
     robotPortName = "/" + robotName + "/head";
     
     currentProcessor = new disparityProcessor();
-    currentProcessor->setName( moduleName, robotName );
+    currentProcessor->setName( moduleName, robotName, ctrlType );
     currentProcessor->start();
 
     cmdPort.open(getName("/cmd:i"));
