@@ -319,7 +319,11 @@ bool InputPort::handleTarget(Bottle *b)
             restPosChanged=false;
         }
         else
+        {
+            slv->lock();
             slv->send(xd,pToken);
+            slv->unlock();
+        }
 
         return true;
     }
