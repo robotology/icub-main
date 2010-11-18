@@ -1136,7 +1136,7 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, d
     if (tok)
         addTokenOption(b,*tok);
 
-    outPort->write();
+    outPort->writeStrict();
 }
 
 
@@ -1152,7 +1152,7 @@ void CartesianSolver::send(const Vector &xd, double *tok)
     if (tok)
         addTokenOption(b,*tok);
 
-    outPort->write();
+    outPort->writeStrict();
 }
 
 
