@@ -566,15 +566,15 @@ void iKinChain::build()
         }
     }
 
-    if (DOF)
-        curr_q=getAng();
+    if (DOF>0)
+        curr_q.resize(DOF,0);
 }
 
 
 /************************************************************************/
 void iKinChain::setH0(const Matrix &_H0)
 {
-    if (_H0.rows()==4 && _H0.cols()==4)
+    if ((_H0.rows()==4) && (_H0.cols()==4))
         H0=_H0;
     else
     {
@@ -589,16 +589,17 @@ void iKinChain::setH0(const Matrix &_H0)
 /************************************************************************/
 Vector iKinChain::setAng(const Vector &q)
 {
-    if (!DOF)
+    if (DOF==0)
+    {
+        if (verbose)
+            fprintf(stderr,"setAng() failed since DOF==0\n");
+
         return Vector(0);
+    }
 
-    curr_q.resize(DOF);
-
-    if (q.length()>=(int)DOF)
-        for (unsigned int i=0; i<DOF; i++)
-            curr_q[i]=quickList[hash_dof[i]]->setAng(q[i]);
-    else if (verbose)
-        fprintf(stderr,"setAng() failed: %d joint angles needed\n",DOF);
+    int sz=(q.length()>(int)DOF)?DOF:q.length();
+    for (int i=0; i<sz; i++)
+        curr_q[i]=quickList[hash_dof[i]]->setAng(q[i]);
 
     return curr_q;
 }
@@ -607,10 +608,13 @@ Vector iKinChain::setAng(const Vector &q)
 /************************************************************************/
 Vector iKinChain::getAng()
 {
-    if (!DOF)
-        return Vector(0);
+    if (DOF==0)
+    {
+        if (verbose)
+            fprintf(stderr,"getAng() failed since DOF==0\n");
 
-    curr_q.resize(DOF);
+        return Vector(0);
+    }
 
     for (unsigned int i=0; i<DOF; i++)
         curr_q[i]=quickList[hash_dof[i]]->getAng();
@@ -776,16 +780,16 @@ Matrix iKinChain::getH()
 /************************************************************************/
 Matrix iKinChain::getH(const Vector &q)
 {
-    if (q.length()>=(int)DOF && DOF)
+    if (DOF==0)
     {
-        setAng(q);
-
-        return getH();
+        if (verbose)
+            fprintf(stderr,"getH() failed since DOF==0\n");
+    
+        return Matrix(0,0);
     }
-    else if (verbose)
-        fprintf(stderr,"getH() failed: %d joint angles needed\n",DOF);
 
-    return Matrix(0,0);
+    setAng(q);
+    return getH();
 }
 
 
@@ -865,16 +869,16 @@ Vector iKinChain::EndEffPose(const bool axisRep)
 /************************************************************************/
 Vector iKinChain::EndEffPose(const Vector &q, const bool axisRep)
 {
-    if (q.length()>=(int)DOF && DOF)
+    if (DOF==0)
     {
-        setAng(q);
-
-        return EndEffPose(axisRep);
+        if (verbose)
+            fprintf(stderr,"EndEffPose() failed since DOF==0\n");
+    
+        return Vector(0);
     }
-    else if (verbose)
-        fprintf(stderr,"EndEffPose() failed: %d joint angles needed\n",DOF);
 
-    return Vector(0);
+    setAng(q);
+    return EndEffPose(axisRep);
 }
 
 
@@ -883,7 +887,9 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
 {
     if (i>=N)
     {
-        fprintf(stderr,"AnaJacobian() failed due to out of range index: %d>=%d\n",i,N);
+        if (verbose)
+            fprintf(stderr,"AnaJacobian() failed due to out of range index: %d>=%d\n",i,N);
+
         return Matrix(0,0);
     }
 
@@ -925,9 +931,11 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
 /************************************************************************/
 Matrix iKinChain::AnaJacobian(unsigned int col)
 {
-    if (!DOF)
+    if (DOF==0)
     {
-        fprintf(stderr,"AnaJacobian() failed since DOF==0\n");
+        if (verbose)
+            fprintf(stderr,"AnaJacobian() failed since DOF==0\n");
+
         return Matrix(0,0);
     }
 
@@ -972,16 +980,16 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
 /************************************************************************/
 Matrix iKinChain::AnaJacobian(const Vector &q, unsigned int col)
 {
-    if (q.length()>=(int)DOF && DOF)
+    if (DOF==0)
     {
-        setAng(q);
-
-        return AnaJacobian(col);
+        if (verbose)
+            fprintf(stderr,"AnaJacobian() failed since DOF==0\n");
+    
+        return Matrix(0,0);
     }
-    else if (verbose)
-        fprintf(stderr,"AnaJacobian() failed: %d joint angles needed\n",DOF);
 
-    return Matrix(0,0);
+    setAng(q);
+    return AnaJacobian(col);
 }
 
 
@@ -990,7 +998,9 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
 {
     if (i>=N)
     {
-        fprintf(stderr,"GeoJacobian() failed due to out of range index: %d>=%d\n",i,N);
+        if (verbose)
+            fprintf(stderr,"GeoJacobian() failed due to out of range index: %d>=%d\n",i,N);
+
         return Matrix(0,0);
     }
 
@@ -1026,9 +1036,11 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
 /************************************************************************/
 Matrix iKinChain::GeoJacobian()
 {
-    if (!DOF)
+    if (DOF==0)
     {
-        fprintf(stderr,"GeoJacobian() failed since DOF==0\n");
+        if (verbose)
+            fprintf(stderr,"GeoJacobian() failed since DOF==0\n");
+
         return Matrix(0,0);
     }
 
@@ -1066,31 +1078,35 @@ Matrix iKinChain::GeoJacobian()
 /************************************************************************/
 Matrix iKinChain::GeoJacobian(const Vector &q)
 {
-    if (q.length()>=(int)DOF && DOF)
+    if (DOF==0)
     {
-        setAng(q);
-
-        return GeoJacobian();
+        if (verbose)
+            fprintf(stderr,"GeoJacobian() failed since DOF==0\n");
+    
+        return Matrix(0,0);
     }
-    else if (verbose)
-        fprintf(stderr,"GeoJacobian() failed: %d joint angles needed\n",DOF);
 
-    return Matrix(0,0);
+    setAng(q);
+    return GeoJacobian();
 }
 
 
 /************************************************************************/
 Vector iKinChain::Hessian_ij(const unsigned int i, const unsigned int j)
 {
-    if (!DOF)
+    if (DOF==0)
     {
-        fprintf(stderr,"Hessian_ij() failed since DOF==0\n");
+        if (verbose)
+            fprintf(stderr,"Hessian_ij() failed since DOF==0\n");
+
         return Vector(0);
     }
 
-    if (i>=DOF || j>=DOF)
+    if ((i>=DOF) || (j>=DOF))
     {
-        fprintf(stderr,"Hessian_ij() failed due to out of range index\n");
+        if (verbose)
+            fprintf(stderr,"Hessian_ij() failed due to out of range index\n");
+
         return Vector(0);
     }
 
@@ -1130,9 +1146,11 @@ Vector iKinChain::Hessian_ij(const unsigned int i, const unsigned int j)
 /************************************************************************/
 void iKinChain::prepareForHessian()
 {
-    if (!DOF)
+    if (DOF==0)
     {
-        fprintf(stderr,"prepareForHessian() failed since DOF==0\n");
+        if (verbose)
+            fprintf(stderr,"prepareForHessian() failed since DOF==0\n");
+
         return;
     }
 
@@ -1163,15 +1181,19 @@ void iKinChain::prepareForHessian()
 /************************************************************************/
 Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 {
-    if (!DOF)
+    if (DOF==0)
     {
-        fprintf(stderr,"fastHessian_ij() failed since DOF==0\n");
+        if (verbose)
+            fprintf(stderr,"fastHessian_ij() failed since DOF==0\n");
+
         return Vector(0);
     }
 
-    if (i>=DOF || j>=DOF)
+    if ((i>=DOF) || (j>=DOF))
     {
-        fprintf(stderr,"fastHessian_ij() failed due to out of range index\n");
+        if (verbose)
+            fprintf(stderr,"fastHessian_ij() failed due to out of range index\n");
+
         return Vector(0);
     }
 
