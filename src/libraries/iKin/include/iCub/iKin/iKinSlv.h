@@ -265,7 +265,7 @@ public:
     bool   &get_contMode()       { return contMode; }
     double *get_tokenPtr()       { return pToken;   }
 
-    void reset(const yarp::sig::Vector &_xd);
+    void reset_xd(const yarp::sig::Vector &_xd);
     bool isNewDataEvent();
     bool handleTarget(yarp::os::Bottle *b);
     bool handleDOF(yarp::os::Bottle *b);
