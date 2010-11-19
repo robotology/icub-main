@@ -9,12 +9,18 @@ PROJECT (iCub)
 # Setup app directory, this is a target called "app" that is added to the main build.
 # first set up some files in the application directory
 icub_app(app)
-set(app-files "${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini;${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py;${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template")
-			  
+
+## policy file go to the icub application destination directory
 icub_app_install(app
 				ROOT
-				FILES ${app-files})
+				FILES "${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini")
 
+## some other files go inside the "application directory"/app 
+icub_app_install(app
+				ROOT
+				FILES "${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py;${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template"
+				DESTINATION app
+				)
 #################################
 
 ### Go through single applications
