@@ -3,7 +3,7 @@ Main
 
 [APPLICATIONS]
 # use * or leave empty to mean everything
-controlBasis
+cartesianSolver
 
 
 
