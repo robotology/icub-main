@@ -1,4 +1,7 @@
 
+2010-11-19 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.cpp,.h: even a new target equal to the previous one goes through the solver
+
 2010-11-08 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinFwd.h: now iKinLimb is public inherited from iKinChain
 

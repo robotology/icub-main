@@ -265,24 +265,19 @@ InputPort::InputPort(CartesianSolver *_slv)
 
     maxLen=7;
     xd.resize(maxLen,0.0);
-    xdOld=xd;
-
-    dof.resize(1,0);
+    dof.resize(1,0.0);
 
     pose=IKINCTRL_POSE_FULL;
     contMode=false;
     isNew=false;
-    dofChanged=false;
-    restPosChanged=false;
     token=0.0;
     pToken=NULL;
 }
 
 
 /************************************************************************/
-void InputPort::reset_xd(const Vector &_xd)
+void InputPort::reset()
 {
-    xdOld=xd=_xd;
     isNew=false;
 }
 
@@ -311,21 +306,7 @@ bool InputPort::handleTarget(Bottle *b)
         for (int i=0; i<l; i++)
             xd[i]=b->get(i).asDouble();
 
-        if (!(xd==xdOld) || dofChanged || restPosChanged)
-        {
-            isNew=true;
-            xdOld=xd;
-            dofChanged=false;
-            restPosChanged=false;
-        }
-        else
-        {
-            slv->lock();
-            slv->send(xd,pToken);
-            slv->unlock();
-        }
-
-        return true;
+        return isNew=true;
     }
     else
         return false;
@@ -342,11 +323,8 @@ bool InputPort::handleDOF(Bottle *b)
         slv->lock();
 
         dof.resize(len);
-
         for (int i=0; i<len; i++)
             dof[i]=b->get(i).asInt();
-
-        dofChanged=true;
 
         slv->unlock();
 
@@ -438,8 +416,6 @@ void InputPort::onRead(Bottle &b)
         slv->lock();
         slv->prepareJointsRestTask();
         slv->unlock();
-
-        restPosChanged=true;
     }
 
     // shall be the last handling
@@ -659,7 +635,7 @@ void CartesianSolver::initPos()
     unlock();
 
     latchUncontrolledJoints(unctrlJointsOld);
-    inPort->reset_xd(prt->chn->EndEffPose());
+    inPort->reset();
 }
 
 
@@ -1130,28 +1106,10 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, d
 {       
     Bottle &b=outPort->prepare();
     b.clear();
-    solutionBottle.clear();
 
     addVectorOption(b,IKINSLV_VOCAB_OPT_XD,xd);
-    addVectorOption(solutionBottle,IKINSLV_VOCAB_OPT_X,x);
-    addVectorOption(solutionBottle,IKINSLV_VOCAB_OPT_Q,q);
-    b.append(solutionBottle);
-
-    if (tok)
-        addTokenOption(b,*tok);
-
-    outPort->writeStrict();
-}
-
-
-/************************************************************************/
-void CartesianSolver::send(const Vector &xd, double *tok)
-{
-    Bottle &b=outPort->prepare();
-    b.clear();
-
-    addVectorOption(b,IKINSLV_VOCAB_OPT_XD,xd);
-    b.append(solutionBottle);
+    addVectorOption(b,IKINSLV_VOCAB_OPT_X,x);
+    addVectorOption(b,IKINSLV_VOCAB_OPT_Q,q);
 
     if (tok)
         addTokenOption(b,*tok);
@@ -1370,7 +1328,7 @@ bool CartesianSolver::open(Searchable &options)
 
     // handle joints rest position and weights
     restJntPos.resize(prt->chn->getN(),0.0);
-    restWeights.resize(prt->chn->getN(),0);
+    restWeights.resize(prt->chn->getN(),0.0);
     handleJointsRestPosition(options.find("rest_pos").asList());
     handleJointsRestWeights(options.find("rest_weights").asList());
     prepareJointsRestTask();

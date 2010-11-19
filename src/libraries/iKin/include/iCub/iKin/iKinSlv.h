@@ -246,8 +246,6 @@ protected:
 
     bool contMode;
     bool isNew;
-    bool dofChanged;
-    bool restPosChanged;
     int  maxLen;
     int  pose;
 
@@ -256,19 +254,18 @@ protected:
 
     yarp::sig::Vector dof;
     yarp::sig::Vector xd;
-    yarp::sig::Vector xdOld;
 
     virtual void onRead(yarp::os::Bottle &b);
 
 public:
-    InputPort(CartesianSolver *_slv);
-    void reset_xd(const yarp::sig::Vector &_xd);
+    InputPort(CartesianSolver *_slv);    
     yarp::sig::Vector &get_dof() { return dof;      }
     yarp::sig::Vector &get_xd()  { return xd;       }
     int    &get_pose()           { return pose;     }
     bool   &get_contMode()       { return contMode; }
     double *get_tokenPtr()       { return pToken;   }
 
+    void reset();
     bool isNewDataEvent();
     bool handleTarget(yarp::os::Bottle *b);
     bool handleDOF(yarp::os::Bottle *b);
@@ -350,8 +347,6 @@ protected:
     yarp::sig::Vector w_3rdTask;
     yarp::sig::Vector idx_3rdTask;
 
-    yarp::os::Bottle solutionBottle;
-
     yarp::os::Event dofEvent;
 
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options)=0;
@@ -382,7 +377,6 @@ protected:
     void   postDOFHandling();
     void   fillDOFInfo(yarp::os::Bottle &reply);
     double getNorm(const yarp::sig::Vector &v, const std::string &typ);    
-    void   send(const yarp::sig::Vector &xd, double *tok);
     void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q, double *tok);
     void   printInfo(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q,
                      const double t);    
