@@ -276,8 +276,9 @@ InputPort::InputPort(CartesianSolver *_slv)
 
 
 /************************************************************************/
-void InputPort::reset()
+void InputPort::reset(const Vector &_xd)
 {
+    xd=_xd;
     isNew=false;
 }
 
@@ -635,7 +636,7 @@ void CartesianSolver::initPos()
     unlock();
 
     latchUncontrolledJoints(unctrlJointsOld);
-    inPort->reset();
+    inPort->reset(prt->chn->EndEffPose());
 }
 
 
