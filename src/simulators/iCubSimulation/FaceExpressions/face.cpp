@@ -1,3 +1,16 @@
+
+/*
+ * Copyright (C) 2008 Martin Peniak
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ */
+/**
+ * \file face.cpp
+ * \brief source for face expressions
+ * \author Martin Peniak
+ * \date 2008
+ * \note Release under GNU GPL v2.0
+ **/
+
 #include <cstdlib>
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
