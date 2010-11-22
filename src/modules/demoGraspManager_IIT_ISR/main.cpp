@@ -916,10 +916,15 @@ protected:
             setFace(FACE_SHY);
         else if (state==STATE_REACH)
         {
-            if (checkArmForGrasp())
-                setFace(FACE_EVIL);
+            if (useLeftArm || useRightArm)
+            {
+                if (checkArmForGrasp())
+                    setFace(FACE_EVIL);
+                else
+                    setFace(FACE_ANGRY);
+            }
             else
-                setFace(FACE_ANGRY);
+                setFace(FACE_EVIL);
         }
         else if (state==STATE_WAIT)
             setFace(FACE_HAPPY);
