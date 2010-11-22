@@ -65,15 +65,21 @@ set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 # Set up some large-scale compile options - do you want devices? guis?
 # INCLUDE(${PROJECT_SOURCE_DIR}/ICUBOptions.cmake)
 
-# rpath
-#########################################################################
-# Control setting an rpath
-set(ENABLE_FORCE_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
-mark_as_advanced(ENABLE_FORCE_RPATH)
+########################################################################
+# settings for rpath
+set(ICUB_ENABLE_FORCE_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
+#mark_as_advanced(ENABLE_FORCE_RPATH)
 
-if (ENABLE_FORCE_RPATH)
-  set(FORCE_RPATH "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING 
-	"The rpath for the executables")
+if (ICUB_ENABLE_FORCE_RPATH)
+  set(ICUB_FORCE_RPATH_TO_INSTALL_PATH TRUE CACHE BOOL "Force rpath to match install path, leave on unless you know what you are doing!")
+
+  if (ICUB_FORCE_RPATH_TO_INSTALL_PATH)
+    set(FORCE_RPATH "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING 
+      "The rpath for the executables" FORCE)
+    else ()
+    set(FORCE_RPATH "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING 
+      "The rpath for the executables")
+  endif()
 	
   # when building, don't use the install RPATH already
   # (but later on when installing)
@@ -81,9 +87,8 @@ if (ENABLE_FORCE_RPATH)
 
   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
-endif (ENABLE_FORCE_RPATH)
-
-
+endif (ICUB_ENABLE_FORCE_RPATH)
+#########################################################################
 
 # add functionalities like icub_add_library/icub_add_executable
 include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
