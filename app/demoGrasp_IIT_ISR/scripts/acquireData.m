@@ -44,7 +44,7 @@ in=zeros(L,3);
 % x  y  z
 out=dataL(:,2:4);
 
-% fill the output data
+% fill the input data
 for i=1:L    
     [~,j]=min(abs(tR-tL(i)));    
     in(i,1)=dataL(i,5);
