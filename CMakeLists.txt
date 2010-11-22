@@ -65,6 +65,26 @@ set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 # Set up some large-scale compile options - do you want devices? guis?
 # INCLUDE(${PROJECT_SOURCE_DIR}/ICUBOptions.cmake)
 
+# rpath
+#########################################################################
+# Control setting an rpath
+set(ENABLE_FORCE_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
+mark_as_advanced(ENABLE_FORCE_RPATH)
+
+if (ENABLE_FORCE_RPATH)
+  set(FORCE_RPATH "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING 
+	"The rpath for the executables")
+	
+  # when building, don't use the install RPATH already
+  # (but later on when installing)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
+endif (ENABLE_FORCE_RPATH)
+
+
+
 # add functionalities like icub_add_library/icub_add_executable
 include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 

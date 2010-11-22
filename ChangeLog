@@ -1,3 +1,6 @@
+2010-11-22 Lorenzo Natale <lorenzo.natale@iit.it>
+	main/CMakeLists.txt: rapth options
+	
 2010-11-19 Lorenzo Natale <lorenzo.natale@iit.it>
 	main/app/CMakeLists.txt: fixed erroneus destination directory
 	for icubapp.py and app.txt.template
