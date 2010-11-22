@@ -1,7 +1,6 @@
 function [in,out,in_f,out_f]=acquireData(dataLogFileLeft,dataLogFileRight)
 % This function returns the formatted data to learn the network upon.
 % The two input files are the ones logged through the dataDumper module.
-%#ok<*FNDSB>
 
 % import raw data from log files
 dataL=dlmread(dataLogFileLeft);
@@ -22,10 +21,8 @@ dataR(:,5)=[];
 
 % select only the rows corresponding
 % to object in visibility
-idxL=find(dataL(:,7)~=0);
-idxR=find(dataR(:,7)~=0);
-dataL=dataL(idxL,1:6);
-dataR=dataR(idxR,1:6);
+dataL=dataL(dataL(:,7)~=0,1:6);
+dataR=dataR(dataR(:,7)~=0,1:6);
 
 % the data format is now as:
 % 1  2  3  4  5  6
