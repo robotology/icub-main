@@ -21,6 +21,7 @@
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 
@@ -50,26 +51,31 @@ using namespace iCub::iKin;
 class Controller : public RateThread
 {
 protected:
-    iCubEye               *eyeLim;
-    iKinChain             *chainEyeLim;
-    PolyDriver            *drvTorso,  *drvHead;
-    IControlLimits        *limTorso,  *limHead;
-    IEncoders             *encTorso,  *encHead;
-    IVelocityControl      *velHead;
-    exchangeData          *commData;
-    xdPort                *port_xd;
+    iCubHeadCenter            *neck;
+    iCubEye                   *eyeL,      *eyeR;
+    iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
+    PolyDriver                *drvTorso,  *drvHead;
+    IControlLimits            *limTorso,  *limHead;
+    IEncoders                 *encTorso,  *encHead;
+    IVelocityControl          *velHead;
+    exchangeData              *commData;
+    xdPort                    *port_xd;
+    iKinLink *alignLnkLeft1,  *alignLnkLeft2;
+    iKinLink *alignLnkRight1, *alignLnkRight2;
 
-    BufferedPort<Vector>  *port_qd;
-    BufferedPort<Vector>  *port_x;
-    BufferedPort<Vector>  *port_q;
-    BufferedPort<Vector>  *port_v;
+    BufferedPort<Vector>      *port_qd;
+    BufferedPort<Vector>      *port_x;
+    BufferedPort<Vector>      *port_q;
+    BufferedPort<Vector>      *port_v;
 
-    minJerkVelCtrl *mjCtrlNeck;
-    minJerkVelCtrl *mjCtrlEyes;
-    Integrator     *Int;
+    minJerkVelCtrl            *mjCtrlNeck;
+    minJerkVelCtrl            *mjCtrlEyes;
+    Integrator                *Int;
 
+    Semaphore mutex;
     string robotName;
     string localName;
+    string configFile;
     unsigned int period;
     bool Robotable;
     int nJointsTorso;
@@ -92,9 +98,9 @@ protected:
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-               const string &_robotName, const string &_localName, const double _neckTime,
-               const double _eyesTime, const double _eyeTiltMin, const double _eyeTiltMax,
-               const double _minAbsVel, unsigned int _period);
+               const string &_robotName, const string &_localName, const string &_configFile,
+               const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
+               const double _eyeTiltMax, const double _minAbsVel, unsigned int _period);
 
     void stopLimbsVel();
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
@@ -114,6 +120,7 @@ public:
     virtual bool   isMotionDone() const;
     virtual void   setTrackingMode(const bool f);
     virtual bool   getTrackingMode() const;
+    virtual bool   getPose(const string &eyeSel, Vector &x);
 };
 
 

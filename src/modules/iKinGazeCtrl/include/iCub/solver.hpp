@@ -59,20 +59,19 @@ using namespace iCub::iKin;
 class EyePinvRefGen : public RateThread
 {
 protected:
-    iCubHeadCenter *neck;
-    iCubEye        *eyeL,      *eyeR;
-    iKinChain      *chainNeck, *chainEyeL, *chainEyeR;
-    PolyDriver     *drvTorso,  *drvHead;
-    IControlLimits *limTorso,  *limHead;
-    IEncoders      *encTorso,  *encHead;
-    exchangeData   *commData;
-    xdPort         *port_xd;
-    Integrator     *I;
-
+    iCubHeadCenter            *neck;
+    iCubEye                   *eyeL,      *eyeR;
+    iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
+    PolyDriver                *drvTorso,  *drvHead;
+    IControlLimits            *limTorso,  *limHead;
+    IEncoders                 *encTorso,  *encHead;
+    exchangeData              *commData;
+    xdPort                    *port_xd;
+    Integrator                *I;
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
     iKinLink *alignLnkRight1, *alignLnkRight2;
 
-    BufferedPort<Vector> *port_inertial;
+    BufferedPort<Vector>      *port_inertial;
 
     unsigned int period;
     string robotName;
@@ -120,21 +119,20 @@ public:
 class Solver : public RateThread
 {
 protected:
-    iCubHeadCenter   *neck;
-    iCubEye          *eyeL,      *eyeR;
-    iKinChain        *chainNeck, *chainEyeL, *chainEyeR;
-    GazeIpOptMin     *invNeck,   *invEyes;
-    PolyDriver       *drvTorso,  *drvHead;
-    IControlLimits   *limTorso,  *limHead;
-    IEncoders        *encTorso,  *encHead;
-    exchangeData     *commData;
-    neckCallback     *neckCallbackObj;
-    eyesCallback     *eyesCallbackObj;
-    EyePinvRefGen    *eyesRefGen;
-    Localizer        *loc;
-    Controller       *ctrl;
-    xdPort           *port_xd;
-
+    iCubHeadCenter            *neck;
+    iCubEye                   *eyeL,      *eyeR;
+    iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
+    GazeIpOptMin              *invNeck,   *invEyes;
+    PolyDriver                *drvTorso,  *drvHead;
+    IControlLimits            *limTorso,  *limHead;
+    IEncoders                 *encTorso,  *encHead;
+    exchangeData              *commData;
+    neckCallback              *neckCallbackObj;
+    eyesCallback              *eyesCallbackObj;
+    EyePinvRefGen             *eyesRefGen;
+    Localizer                 *loc;
+    Controller                *ctrl;
+    xdPort                    *port_xd;
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
     iKinLink *alignLnkRight1, *alignLnkRight2;
 

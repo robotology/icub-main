@@ -251,6 +251,10 @@ following ports:
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
+    - [get] [pose] <val>: returns the left eye pose if
+      val=="left", the right eye pose if vel=="right" and the
+      cyclopic eye pose if val=="cyclopic". The pose is given in
+      axis/angle representation (i.e. 7-componenets vector).
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
@@ -476,7 +480,7 @@ public:
 
         // create and start threads
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,neckTime,eyesTime,
+                            localHeadName,configFile,neckTime,eyesTime,
                             eyeTiltMin,eyeTiltMax,minAbsVel,10);
 
         loc=new Localizer(&commData,localHeadName,configFile,10);
@@ -596,13 +600,45 @@ public:
                         int type=command.get(1).asVocab();
 
                         if (type==VOCAB4('T','n','e','c'))
+                        {
                             reply.addDouble(ctrl->getTneck());
+                        }
                         else if (type==VOCAB4('T','e','y','e'))
+                        {
                             reply.addDouble(ctrl->getTeyes());
+                        }
                         else if (type==VOCAB4('d','o','n','e'))
+                        {
                             reply.addInt((int)ctrl->isMotionDone());
+                        }
                         else if (type==VOCAB4('t','r','a','c'))
+                        {
                             reply.addInt((int)ctrl->getTrackingMode());
+                        }
+                        else if (type==VOCAB4('p','o','s','e'))
+                        {
+                            if (command.size()>2)
+                            {
+                                string eyeSel=command.get(2).asString().c_str();
+                                Vector x;
+
+                                if (ctrl->getPose(eyeSel,x))
+                                {
+                                    for (int i=0; i<x.length(); i++)
+                                        reply.addDouble(x[i]);
+                                }
+                                else
+                                {
+                                    reply.addVocab(nack);
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                reply.addVocab(nack);
+                                return false;
+                            }
+                        }
                         else
                         {
                             reply.addVocab(nack);

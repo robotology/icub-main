@@ -22,22 +22,48 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                       const string &_robotName, const string &_localName, const double _neckTime,
-                       const double _eyesTime, const double _eyeTiltMin, const double _eyeTiltMax,
-                       const double _minAbsVel, unsigned int _period) :
-                       RateThread(_period),     drvTorso(_drvTorso),   drvHead(_drvHead),
-                       commData(_commData),     robotName(_robotName), localName(_localName),
-                       neckTime(_neckTime),     eyesTime(_eyesTime),   eyeTiltMin(_eyeTiltMin),
-                       eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel), period(_period),
-                       Ts(_period/1000.0),      printAccTime(0.0)
+                       const string &_robotName, const string &_localName, const string &_configFile,
+                       const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
+                       const double _eyeTiltMax, const double _minAbsVel, unsigned int _period) :
+                       RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
+                       commData(_commData),     robotName(_robotName),   localName(_localName),
+                       configFile(_configFile), neckTime(_neckTime),     eyesTime(_eyesTime),
+                       eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel),
+                       period(_period),         Ts(_period/1000.0),      printAccTime(0.0)
 {
     Robotable=(drvHead!=NULL);
 
-    // Instantiate eye object for getting limits
-    eyeLim=new iCubEye();
+    // Instantiate objects
+    neck=new iCubHeadCenter();
+    eyeL=new iCubEye("left");
+    eyeR=new iCubEye("right");
 
-    // Get the chain object attached to the arm
-    chainEyeLim=eyeLim->asChain();
+    // release the neck roll
+    neck->releaseLink(4);
+
+    // Get the chain objects
+    chainNeck=neck->asChain();
+    chainEyeL=eyeL->asChain();
+    chainEyeR=eyeR->asChain();
+
+    // add aligning links read from configuration file
+    if (getAlignLinks(configFile,"ALIGN_KIN_LEFT",&alignLnkLeft1,&alignLnkLeft2))
+    {
+        *chainEyeL<<*alignLnkLeft1<<*alignLnkLeft2;
+        chainEyeL->blockLink(chainEyeL->getN()-1,0.0);
+        chainEyeL->blockLink(chainEyeL->getN()-2,0.0);
+    }
+    else
+        alignLnkLeft1=alignLnkLeft2=NULL;
+
+    if (getAlignLinks(configFile,"ALIGN_KIN_RIGHT",&alignLnkRight1,&alignLnkRight2))
+    {
+        *chainEyeR<<*alignLnkRight1<<*alignLnkRight2;
+        chainEyeR->blockLink(chainEyeR->getN()-1,0.0);
+        chainEyeR->blockLink(chainEyeR->getN()-2,0.0);
+    }
+    else
+        alignLnkRight1=alignLnkRight2=NULL;
 
     Matrix lim;
 
@@ -73,8 +99,10 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainEyeLim,limTorso,limHead,
+        lim=alignJointsBounds(chainNeck,limTorso,limHead,
                               eyeTiltMin,eyeTiltMax);
+        copyJointsBounds(chainNeck,chainEyeL);
+        copyJointsBounds(chainEyeL,chainEyeR);
 
         // reinforce vergence min bound
         lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
@@ -98,8 +126,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         lim.resize(nJointsHead,2);
         for (int i=0; i<nJointsHead-1; i++)
         {
-            lim(i,0)=(*chainEyeLim)[nJointsTorso+i].getMin();
-            lim(i,1)=(*chainEyeLim)[nJointsTorso+i].getMax();
+            lim(i,0)=(*chainNeck)[nJointsTorso+i].getMin();
+            lim(i,1)=(*chainNeck)[nJointsTorso+i].getMax();
         }
 
         // vergence
@@ -341,6 +369,26 @@ void Controller::run()
     port_q->write();
     port_v->write();
 
+    // update pose information
+    mutex.wait();
+
+    for (int i=0; i<nJointsTorso; i++)
+    {
+        chainNeck->setAng(i,fbTorso[i]);
+        chainEyeL->setAng(i,fbTorso[i]);
+        chainEyeR->setAng(i,fbTorso[i]);
+    }
+    for (int i=0; i<3; i++)
+    {
+        chainNeck->setAng(nJointsTorso+i,fbHead[i]);
+        chainEyeL->setAng(nJointsTorso+i,fbHead[i]);
+        chainEyeR->setAng(nJointsTorso+i,fbHead[i]);
+    }
+    chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
+    chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
+
+    mutex.post();
+
     // update joints angles
     fbHead=Int->integrate(v);
     commData->get_q()=fbHead;
@@ -368,10 +416,24 @@ void Controller::threadRelease()
     delete port_qd;
     delete port_q;
     delete port_v;
-    delete eyeLim;
+    delete neck;
+    delete eyeL;
+    delete eyeR;
     delete mjCtrlNeck;
     delete mjCtrlEyes;
     delete Int;
+
+    if (alignLnkLeft1)
+        delete alignLnkLeft1;
+
+    if (alignLnkLeft2)
+        delete alignLnkLeft2;
+
+    if (alignLnkRight1)
+        delete alignLnkRight1;
+
+    if (alignLnkRight2)
+        delete alignLnkRight2;
 }
 
 
@@ -473,6 +535,35 @@ void Controller::setTrackingMode(const bool f)
 bool Controller::getTrackingMode() const 
 {
     return !canCtrlBeDisabled;
+}
+
+
+/************************************************************************/
+bool Controller::getPose(const string &eyeSel, Vector &x)
+{
+    if (eyeSel=="left")
+    {
+        mutex.wait();
+        x=chainEyeL->EndEffPose();
+        mutex.post();
+        return true;
+    }
+    else if (eyeSel=="right")
+    {
+        mutex.wait();
+        x=chainEyeR->EndEffPose();
+        mutex.post();
+        return true;
+    }
+    else if (eyeSel=="cyclopic")
+    {
+        mutex.wait();
+        x=chainNeck->EndEffPose();
+        mutex.post();
+        return true;
+    }
+    else
+        return false;
 }
 
 

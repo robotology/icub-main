@@ -31,6 +31,7 @@
 
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
 
+using namespace std;
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -424,6 +425,67 @@ bool ClientGazeController::getEyesTrajTime(double *t)
         *t=reply.get(0).asDouble();
         return true;
     }
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getPose(const string eyeSel, Vector &x, Vector &o)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("pose");
+    command.addString(eyeSel.c_str());
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+    else
+    {
+        if (reply.size()>=7)
+        {
+            x.resize(3);
+            o.resize(reply.size()-x.length());
+
+            for (int i=0; i<x.length(); i++)
+                x[i]=reply.get(i).asDouble();
+
+            for (int i=0; i<o.length(); i++)
+                o[i]=reply.get(x.length()+i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getLeftEyePose(Vector &x, Vector &o)
+{
+    return getPose("left",x,o);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getRightEyePose(Vector &x, Vector &o)
+{
+    return getPose("right",x,o);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getCyclopicEyePose(Vector &x, Vector &o)
+{
+    return getPose("cyclopic",x,o);
 }
 
 

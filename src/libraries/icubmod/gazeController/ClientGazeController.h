@@ -43,6 +43,8 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/GazeControl.h>
 
+#include <string>
+
 
 class ClientGazeController : public yarp::dev::DeviceDriver,
                              public yarp::dev::IGazeControl
@@ -69,6 +71,8 @@ protected:
 
     yarp::os::Port                            *portRpc;
 
+    virtual bool getPose(const std::string eyeSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
+
 public:
     ClientGazeController();
     ClientGazeController(yarp::os::Searchable &config);
@@ -87,6 +91,9 @@ public:
     virtual bool lookAtStereoPixels(const yarp::sig::Vector &pxl, const yarp::sig::Vector &pxr);
     virtual bool getNeckTrajTime(double *t);
     virtual bool getEyesTrajTime(double *t);
+    virtual bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getCyclopicEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     virtual bool setNeckTrajTime(const double t);
     virtual bool setEyesTrajTime(const double t);
     virtual bool bindNeckPitch(const double min, const double max);
