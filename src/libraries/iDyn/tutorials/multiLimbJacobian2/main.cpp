@@ -80,6 +80,13 @@ public:
 		addLimb(torso,Htorso);
 		addLimb(head,Hhead);
 		addLimb(arm_left,Harm_left);
+
+        // print verbose error messages: useful during debug/tests
+        verbose = VERBOSE;
+        arm_right->setVerbosity(VERBOSE);
+        arm_left->setVerbosity(VERBOSE);
+        torso->setVerbosity(VERBOSE);
+        head->setVerbosity(VERBOSE);
 	}
 
 	~UpTorso()
@@ -125,6 +132,10 @@ public:
 	Vector Pose_ArmLeftArmRight(bool axisRep = false)	{	return computePose(3,JAC_IKIN,0,JAC_KIN, axisRep);	}
 	Vector Pose_ArmRightArmLeft(bool axisRep = false)	{	return computePose(0,JAC_IKIN,3,JAC_KIN, axisRep);	}
 
+    // generic print method
+    string toString() { return info; }
+
+
 };
 
 // useful print methods
@@ -155,6 +166,8 @@ int main()
 	
 	// we create the node with arm and torso
 	UpTorso node;
+
+    cout<<endl<<"Node <"<<node.toString()<<"> created"<<endl;
 	
 	// now we set the joint angles for the two limbs
 	// if connected to the real robot, we can take this values from the encoders

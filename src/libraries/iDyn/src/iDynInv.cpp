@@ -132,8 +132,10 @@ bool OneLinkNewtonEuler::setZM(const Vector &_zm)
 	else
 	{
 		if(verbose)
-			cerr<<"OneLinkNewtonEuler error: could not set Zm due to wrong size vector: "
-			<<_zm.length()<<" instead of 3"<<endl;
+        {
+            fprintf(stderr,"OneLinkNewtonEuler error: could not set Zm due to wrong size vector: ");
+            fprintf(stderr,"%ld instead of 3. \n",_zm.length());
+        }
 		return false;
 	}
 }
@@ -147,9 +149,7 @@ bool OneLinkNewtonEuler::setForce(const Vector &_F)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"OneLink error, could not set force due to wrong size: "
-			<<_F.length()<<" instead of 3."<<endl;
+		if(verbose)	fprintf(stderr,"OneLink error, could not set force due to wrong size: %ld instead of 3.\n",_F.length());
 		return false;		
 	}
 }
@@ -163,9 +163,7 @@ bool OneLinkNewtonEuler::setMoment(const Vector &_Mu)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"OneLink error, could not set moment due to wrong size: "
-			<<_Mu.length()<<" instead of 3."<<endl;
+		if(verbose)	fprintf(stderr,"OneLink error, could not set moment due to wrong size: %ld instead of 3.\n",_Mu.length());
 		return false;		
 	}
 }
@@ -184,9 +182,7 @@ bool OneLinkNewtonEuler::setAngVel(const Vector &_w)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"OneLink error, could not set w due to wrong size: "
-			<<_w.length()<<" instead of 3."<<endl;
+		if(verbose) fprintf(stderr,"OneLink error, could not set w due to wrong size: %ld instead of 3. \n", _w.length());
 		return false;
 	}
 }
@@ -200,9 +196,7 @@ bool OneLinkNewtonEuler::setAngAcc(const Vector &_dw)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"OneLink error, could not set dw due to wrong size: "
-			<<_dw.length()<<" instead of 3."<<endl;
+		if(verbose)	fprintf(stderr,"OneLink error, could not set dw due to wrong size: %ld instead of 3. \n",_dw.length() );
 		return false;
 	}
 }
@@ -216,9 +210,7 @@ bool OneLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"OneLink error, could not set ddp due to wrong size: "
-			<<_ddp.length()<<" instead of 3."<<endl;
+		if(verbose)	fprintf(stderr,"OneLink error, could not set ddp due to wrong size: %ld instead of 3. \n",_ddp.length() );
 		return false;
 	}
 }
@@ -232,9 +224,7 @@ bool OneLinkNewtonEuler::setLinAccC(const Vector &_ddpC)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"OneLink error, could not set ddpC due to wrong size: "
-			<<_ddpC.length()<<" instead of 3."<<endl;
+		if(verbose)	fprintf(stderr,"OneLink error, could not set ddpC due to wrong size: %ld instead of 3. \n",_ddpC.length() );
 		return false;
 	}
 }
@@ -248,9 +238,7 @@ bool OneLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"OneLink error, could not set dwM due to wrong size: "
-			<<_dwM.length()<<" instead of 3."<<endl;
+		if(verbose)	fprintf(stderr,"OneLink error, could not set dwM due to wrong size: %ld instead of 3. \n",_dwM.length());
 		return false;
 	}
 }
@@ -271,14 +259,13 @@ bool OneLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
 		}
 		else
 		{
-			if(verbose) cerr<<"OneLinkNewtonEuler error: could not set forces/moments due to wrong dimensions: ("
-				<<_F.length()<<","<<_Mu.length()<<") instead of (3,3)"<<endl;
+			if(verbose) fprintf(stderr,"OneLinkNewtonEuler error: could not set forces/moments due to wrong dimensions: (%ld,%ld) instead of (3,3). \n",_F.length(),_Mu.length());
 			return false;
 		}		
 	}
 	else		
 	{
-		if(verbose) cerr<<"OneLinkNewtonEuler error: could not set forces/moments due to missing link"<<endl;
+		if(verbose) fprintf(stderr,"OneLinkNewtonEuler error: could not set forces/moments due to missing link. \n");
 		return false;
 	}
 	
@@ -294,7 +281,7 @@ bool OneLinkNewtonEuler::setMeasuredTorque(const double _Tau)
 	}
 	else
 	{
-		if(verbose) cerr<<"OneLinkNewtonEuler error: could not set torque due to missing link"<<endl;
+		if(verbose) fprintf(stderr,"OneLinkNewtonEuler error: could not set torque due to missing link. \n");
 		return false;
 	}
 
@@ -663,8 +650,10 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const NewEulMode _mo
 		H0 = _H0;
 	else
 		if(verbose)
-			cerr<<"BaseLink error, could not set H0 due to wrong dimensions: ("
-			<<_H0.rows()<<","<<_H0.cols()<<") instead of (4,4)"<<endl;
+        {
+            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %ld,%ld) instead of (4,4). \n",_H0.rows(),_H0.cols());
+            fprintf(stderr," Default is set. \n");
+        }
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
@@ -682,8 +671,10 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, co
 		H0 = _H0;
 	else
 		if(verbose)
-			cerr<<"BaseLink error, could not set H0 due to wrong dimensions: ("
-			<<_H0.rows()<<","<<_H0.cols()<<") instead of (4,4)"<<endl;
+        {
+            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %ld,%ld) instead of (4,4). \n",_H0.rows(),_H0.cols());
+            fprintf(stderr," Default is set. \n");
+        }
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
@@ -706,9 +697,10 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const V
 		ddp.resize(3);	ddp.zero();
 	
 		if(verbose)
-			cerr<<"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: "
-				<<"("<<_w.length()<<","<<_dw.length()<<","<<_ddp.length()<<") instead of (3,3,3)"
-				<<"; default is set"<<endl;
+        {
+            fprintf(stderr,"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%ld,%ld,%ld) instead of (3,3,3). ",_w.length(),_dw.length(),_ddp.length());
+            fprintf(stderr," Default is set. \n");
+        }
 		return false;
 	}
 }
@@ -727,9 +719,10 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
 		Mu.resize(3);	Mu.zero();
 	
 		if(verbose)
-			cerr<<"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: "
-				<<"("<<_F.length()<<","<<_Mu.length()<<") instead of (3,3)"
-				<<"; default is set"<<endl;
+        {
+            fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%ld,%ld) instead of (3,3).",_F.length(),_Mu.length());
+			fprintf(stderr," Default is set. \n");
+        }
 		return false;
 	}
 }
@@ -791,8 +784,7 @@ bool BaseLinkNewtonEuler::setForce(const Vector &_F)
 	else
 	{
 		if(verbose)
-			cerr<<"BaseLink error, could not set force due to wrong dimension: "
-			<<_F.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"BaseLink error, could not set force due to wrong dimension: %ld instead of 3.\n",_F.length());
 		return false;
 	}
 }
@@ -807,8 +799,7 @@ bool BaseLinkNewtonEuler::setMoment(const Vector &_Mu)
 	else
 	{
 		if(verbose)
-			cerr<<"BaseLink error, could not set moment due to wrong dimension: "
-			<<_Mu.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"BaseLink error, could not set moment due to wrong dimension: %ld instead of 3.\n",_Mu.length());
 		return false;
 	}
 }
@@ -825,8 +816,7 @@ bool BaseLinkNewtonEuler::setAngVel(const Vector &_w)
 	else
 	{
 		if(verbose)
-			cerr<<"BaseLink error, could not set w due to wrong size: "
-			<<_w.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"BaseLink error, could not set w due to wrong size: %ld instead of 3. \n",_w.length() );
 		return false;
 	}
 }
@@ -841,8 +831,7 @@ bool BaseLinkNewtonEuler::setAngAcc(const Vector &_dw)
 	else
 	{
 		if(verbose)
-			cerr<<"BaseLink error, could not set dw due to wrong size: "
-			<<_dw.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"BaseLink error, could not set dw due to wrong size: %ld instead of 3. \n",_dw.length());
 		return false;
 	}
 }
@@ -857,8 +846,7 @@ bool BaseLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 	else
 	{
 		if(verbose)
-			cerr<<"BaseLink error, could not set ddp due to wrong size: "
-			<<_ddp.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"BaseLink error, could not set ddp due to wrong size: %ld instead of 3. \n",_ddp.length());
 		return false;
 	}
 }
@@ -866,14 +854,14 @@ bool BaseLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 bool BaseLinkNewtonEuler::setLinAccC(const Vector &_ddpC)
 {
 	if(verbose)
-		cerr<<"BaseLink error: no ddpC existing"<<endl;
+		fprintf(stderr,"BaseLink error: no ddpC existing \n");
 	return false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 {
 	if(verbose)
-		cerr<<"BaseLink error: no dwM existing"<<endl;
+		fprintf(stderr,"BaseLink error: no dwM existing \n");
 	return false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -927,9 +915,10 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const
 		ddp.resize(3);	ddp.zero();
 	
 		if(verbose)
-			cerr<<"FinalLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: "
-				<<"("<<_w.length()<<","<<_dw.length()<<","<<_ddp.length()<<") instead of (3,3,3)"
-				<<"; default is set"<<endl;
+        {
+            fprintf(stderr,"FinalLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%ld,%ld,%ld) instead of (3,3,3).",	_w.length(),_dw.length(),_ddp.length());
+			fprintf(stderr," Default is set. \n");
+        }
 		return false;
 	}
 }
@@ -949,9 +938,10 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
 		Mu.resize(3);	Mu.zero();
 	
 		if(verbose)
-			cerr<<"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: "
-				<<"("<<_F.length()<<","<<_Mu.length()<<") instead of (3,3)"
-				<<"; default is set"<<endl;
+        {
+            fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%ld,%ld) instead of (3,3).",_F.length(),_Mu.length());
+			fprintf(stderr," Default is set. \n");
+        }
 		return false;
 	}
 }
@@ -976,9 +966,9 @@ string FinalLinkNewtonEuler::toString() const
 	 //~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	FinalLinkNewtonEuler::getForce()		const	{return F;}
+Vector	FinalLinkNewtonEuler::getForce()		        const	{return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	FinalLinkNewtonEuler::getMoment(bool isBase)		const	{return Mu;}
+Vector	FinalLinkNewtonEuler::getMoment(bool isBase)	const	{return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	FinalLinkNewtonEuler::getAngVel()	const	{return w;}
 Vector	FinalLinkNewtonEuler::getAngAcc()	const	{return dw;}
@@ -1009,8 +999,7 @@ bool	FinalLinkNewtonEuler::setForce(const Vector &_F)
 	else
 	{
 		if(verbose)
-			cerr<<"FinalLink error, could not set force due to wrong dimension: "
-			<<_F.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"FinalLink error, could not set force due to wrong dimension: %ld instead of 3.\n",_F.length());
 		return false;
 	}
 }
@@ -1025,8 +1014,7 @@ bool	FinalLinkNewtonEuler::setMoment(const Vector &_Mu)
 	else
 	{
 		if(verbose)
-			cerr<<"FinalLink error, could not set moment due to wrong dimension: "
-			<<_Mu.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"FinalLink error, could not set moment due to wrong dimension: %ld instead of 3.\n",_Mu.length());
 		return false;
 	}
 }
@@ -1036,7 +1024,7 @@ void	FinalLinkNewtonEuler::setTorque(const double _Tau){}
 bool FinalLinkNewtonEuler::setAngVel(const Vector &_w)
 {
 	/*if(verbose)
-		cerr<<"FinalLink error: no w existing"<<endl;
+		fprintf(stderr,"FinalLink error: no w existing \n");
 	return false;*/
 	w=_w;
 	return true;
@@ -1045,7 +1033,7 @@ bool FinalLinkNewtonEuler::setAngVel(const Vector &_w)
 bool FinalLinkNewtonEuler::setAngAcc(const Vector &_dw)
 {
 	//if(verbose)
-	//	cerr<<"FinalLink error: no dw existing"<<endl;
+	//	fprintf(stderr,"FinalLink error: no dw existing \n");
 	//return false;
 	dw=_dw;	return true;
 }
@@ -1053,7 +1041,7 @@ bool FinalLinkNewtonEuler::setAngAcc(const Vector &_dw)
 bool FinalLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 {
 	//if(verbose)
-	//	cerr<<"FinalLink error: no ddp existing"<<endl;
+	//	fprintf(stderr,"FinalLink error: no ddp existing \n");
 	//return false;
 	ddp=_ddp;	return true;
 }
@@ -1061,14 +1049,14 @@ bool FinalLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 bool FinalLinkNewtonEuler::setLinAccC(const Vector &_ddpC)
 {
 	if(verbose)
-		cerr<<"FinalLink error: no ddpC existing"<<endl;
+		fprintf(stderr,"FinalLink error: no ddpC existing \n");
 	return false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 {
 	if(verbose)
-		cerr<<"FinalLink error: no dwM existing"<<endl;
+		fprintf(stderr,"FinalLink error: no dwM existing \n");
 	return false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1127,9 +1115,7 @@ bool SensorLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
 		Mu.resize(3);	Mu.zero();
 	
 		if(verbose)
-			cerr<<"SensorLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: "
-				<<"("<<_F.length()<<","<<_Mu.length()<<") instead of (3,3)"
-				<<"; default zero is set"<<endl;
+			fprintf(stderr,"SensorLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%ld,%ld) instead of (3,3). Default zero is set.\n",_F.length(),_Mu.length());
 		return false;
 	}
 }
@@ -1152,11 +1138,13 @@ bool SensorLinkNewtonEuler::setSensor(const Matrix &_H, const Matrix &_COM, cons
 		COM.resize(4,4); COM.eye();
 		I.resize(3,3); I.zero();
 		if(verbose)
-			cerr << "SensorLink error, could not set properly H,COM,I due to wrong dimensions: "
-			<<"("<<_H.rows()<<","<<_H.cols()<<")," 
-			<<"("<<_COM.rows()<<","<<_COM.cols()<<")," 
-			<<"("<<_I.rows()<<","<<_I.cols()<<")" 
-			<< " instead of (4,4),(4,4),(3,3). setting identities and zeros by default."<<endl;
+        {
+            fprintf(stderr,"SensorLink error, could not set properly H,COM,I due to wrong dimensions: \n");
+            fprintf(stderr,"    H:   (%ld,%ld) instead of (4,4) \n",_H.rows(),_H.cols());
+            fprintf(stderr,"  COM:   (%ld,%ld) instead of (4,4) \n",_COM.rows(),_COM.cols()); 
+            fprintf(stderr,"    I:   (%ld,%ld) instead of (3,3) \n",_I.rows(),_I.cols()); 
+			fprintf(stderr,"Setting identities and zeros by default.");
+        }
 		return false;
 	}
 }
@@ -1259,8 +1247,7 @@ bool	SensorLinkNewtonEuler::setForce		(const Vector &_F)
 	else
 	{
 		if(verbose)
-			cerr<<"SensorLink error, could not set force due to wrong dimension: "
-			<<_F.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"SensorLink error, could not set force due to wrong dimension: %ld instead of 3.\n",_F.length());
 		return false;
 	}
 }
@@ -1275,8 +1262,7 @@ bool	SensorLinkNewtonEuler::setMoment	(const Vector &_Mu)
 	else
 	{
 		if(verbose)
-			cerr<<"SensorLink error, could not set moment due to wrong dimension: "
-			<<_Mu.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"SensorLink error, could not set moment due to wrong dimension: %ld instead of 3.\n",_Mu.length());
 		return false;
 	}
 }
@@ -1293,8 +1279,7 @@ bool	SensorLinkNewtonEuler::setAngVel	(const Vector &_w)
 	else
 	{
 		if(verbose)
-			cerr<<"SensorLink error, could not set w due to wrong size: "
-			<<_w.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"SensorLink error, could not set w due to wrong size: %ld instead of 3. \n",_w.length());
 		return false;
 	}
 }
@@ -1309,8 +1294,7 @@ bool	SensorLinkNewtonEuler::setAngAcc	(const Vector &_dw)
 	else
 	{
 		if(verbose)
-			cerr<<"SensorLink error, could not set dw due to wrong size: "
-			<<_dw.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"SensorLink error, could not set dw due to wrong size: %ld instead of 3. \n",_dw.length());
 		return false;
 	}
 }
@@ -1325,8 +1309,7 @@ bool	SensorLinkNewtonEuler::setLinAcc	(const Vector &_ddp)
 	else
 	{
 		if(verbose)
-			cerr<<"SensorLink error, could not set ddp due to wrong size: "
-			<<_ddp.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %ld instead of 3. \n",_ddp.length());
 		return false;
 	}
 }
@@ -1341,8 +1324,7 @@ bool	SensorLinkNewtonEuler::setLinAccC	(const Vector &_ddpC)
 	else
 	{
 		if(verbose)
-			cerr<<"SensorLink error, could not set ddp due to wrong size: "
-			<<_ddpC.length()<<" instead of 3."<<endl;
+			fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %ld instead of 3. \n",_ddpC.length());
 		return false;
 	}
 }
@@ -1350,7 +1332,7 @@ bool	SensorLinkNewtonEuler::setLinAccC	(const Vector &_ddpC)
 bool	SensorLinkNewtonEuler::setAngAccM	(const Vector &_dwM)
 {
 	if(verbose)
-		cerr<<"SensorLink error: no dwM existing"<<endl;
+		fprintf(stderr,"SensorLink error: no dwM existing \n");
 	return false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1567,8 +1549,7 @@ bool OneChainNewtonEuler::getVelAccAfterForward(unsigned int i, Vector &w, Vecto
 	else
 	{
 		if(verbose)
-			cerr << "OneChain error, impossible to retrieve vel/acc due to out of range index: "
-			<<i<<" where max is "<<nEndEff<<endl;
+			fprintf(stderr,"OneChain error, impossible to retrieve vel/acc due to out of range index: %ld > %ld \n", i, nEndEff);
 		return false;
 	}
 }
@@ -1584,8 +1565,7 @@ bool OneChainNewtonEuler::getWrenchAfterForward(unsigned int i, Vector &F, Vecto
 	else
 	{
 		if(verbose)
-			cerr << "OneChain error, impossible to retrieve vel/acc due to out of range index: "
-			<<i<<" where max is "<<nEndEff<<endl;
+			fprintf(stderr,"OneChain error, impossible to retrieve vel/acc due to out of range index: %ld > %ld \n",i,nEndEff);
 		return false;
 	}
 }
@@ -1729,7 +1709,7 @@ void OneChainNewtonEuler::BackwardWrenchFromEnd(const Vector &F, const Vector &M
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::ForwardWrenchFromBase()
 {
-	
+    fprintf(stderr,"ForwardWrenchFromBase: not implemented yet \n");
 	/*for(int i=nEndEff-1; i>=0; i--)
 		neChain[i]->BackwardWrench(neChain[i+1]);
 	for(int i=nEndEff-1; i>0; i--)
@@ -1738,6 +1718,7 @@ void OneChainNewtonEuler::ForwardWrenchFromBase()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::ForwardWrenchFromBase(const Vector &F, const Vector &Mu)
 {
+    fprintf(stderr,"ForwardWrenchFromBase: not implemented yet \n");
 	/*for(int i=nEndEff-1; i>=0; i--)
 		neChain[i]->BackwardWrench(neChain[i+1]);
 	for(int i=nEndEff-1; i>0; i--)
@@ -1760,8 +1741,7 @@ bool OneChainNewtonEuler::ForwardWrenchToEnd(unsigned int lSens)
 	}
 	else
 	{
-		cerr<<"OneChainNewtonEuler error, could not perform ForwardWrenchToEnd because of out of range index: "
-			<<lSens<<">="<<nLinks;
+		fprintf(stderr,"OneChainNewtonEuler error, could not perform ForwardWrenchToEnd because of out of range index: %ld >= %ld \n",lSens,nLinks);
 		return false;
 	}
 }
@@ -1787,8 +1767,7 @@ bool OneChainNewtonEuler::BackwardWrenchToBase(unsigned int lSens)
 	}
 	else
 	{
-		cerr<<"OneChainNewtonEuler error, could not perform ForwardWrenchToEnd because of out of range index: "
-			<<lSens<<">="<<nLinks;
+		fprintf(stderr,"OneChainNewtonEuler error, could not perform ForwardWrenchToEnd because of out of range index: %ld >= %ld \n",lSens,nLinks);
 		return false;
 	}
 }
@@ -1857,8 +1836,7 @@ bool iDynInvSensor::setSensor(unsigned int i, const Matrix &_H, const Matrix &_H
 	else
 	{
 		if(verbose)
-			cerr<<"iDynInvSensor error, could not set FT Sensor inside the dynamic chain due to out of range index: "
-			<<i<<">="<<chain->getN()<<endl;
+            fprintf(stderr,"iDynInvSensor error: could not set FT Sensor inside the dynamic chain due to out of range index: %ld >= %ld \n",i,chain->getN());
 		return false;
 	}
 }
@@ -1869,18 +1847,11 @@ void iDynInvSensor::computeSensorForceMoment()
 	sens->BackwardAttachToLink(chain->refLink(lSens));
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynInvSensor::getSensorForce()	const
-{
-	return sens->getForce();
-}
+Vector	iDynInvSensor::getSensorForce()	const   {return sens->getForce();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynInvSensor::getSensorMoment()	const
-{
-	return sens->getMoment(false);
-}
-
+Vector	iDynInvSensor::getSensorMoment()const   {return sens->getMoment(false);}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynInvSensor::getTorques() const							{return chain->getTorques();}
+Vector iDynInvSensor::getTorques()      const	{return chain->getTorques();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//~~~~~~~~~~~~~~
@@ -1924,7 +1895,7 @@ string iDynInvSensor::getSensorInfo()			const	{return sens->getInfo();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynInvSensor::getSensorForceMoment()	const	{return sens->getForceMoment(); }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-unsigned int iDynInvSensor::getSensorLink()	const	{return lSens; }
+unsigned int iDynInvSensor::getSensorLink()	    const	{return lSens; }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -1955,7 +1926,7 @@ iCubArmSensorLink::iCubArmSensorLink(const string &_type, const NewEulMode _mode
 		if(!(type =="right"))
 		{
 			if(verbose)
-				cerr<<"iCubArmSensorLink error: type is not left/right: assuming right."<<endl;
+				fprintf(stderr,"iCubArmSensorLink error: type is not left/right: assuming right.\n");
 			type = "right";
 		}
 
@@ -1992,8 +1963,10 @@ iDynInvSensorArm::iDynInvSensorArm(iCubArmDyn *_c, const NewEulMode _mode, unsig
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
 		if(verbose)
-		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-			<<"iDynInvSensorArm: assuming right arm."<<endl;
+        {
+            fprintf(stderr,"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :) \n");
+			fprintf(stderr,"iDynInvSensorArm: assuming right arm. \n");
+        }
 		// set the sensor with the default value
 		sens = new iCubArmSensorLink("right",mode,verbose);
 	}
@@ -2013,8 +1986,10 @@ iDynInvSensorArm::iDynInvSensorArm(iDynChain *_c, const string _type, const NewE
 	if( !((_type=="left")||(_type=="right"))  )
 	{
 		if(verbose)
-		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-			<<"iDynInvSensorArm: assuming right arm."<<endl;
+        {
+            fprintf(stderr,"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :) \n");
+			fprintf(stderr,"iDynInvSensorArm: assuming right arm.\n");
+        }
 		// set the sensor with the default value
 		sens = new iCubArmSensorLink("right",mode,verbose);
 	}
@@ -2050,8 +2025,10 @@ iDynInvSensorArmNoTorso::iDynInvSensorArmNoTorso(iCubArmNoTorsoDyn *_c, const Ne
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
 		if(verbose)
-		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-			<<"iDynInvSensorArm: assuming right arm."<<endl;
+        {
+            fprintf(stderr,"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :) \n");
+			fprintf(stderr,"iDynInvSensorArm: assuming right arm. \n");
+        }
 		// set the sensor with the default value
 		sens = new iCubArmSensorLink("right",mode,verbose);
 	}
@@ -2072,8 +2049,10 @@ iDynInvSensorArmNoTorso::iDynInvSensorArmNoTorso(iDynChain *_c, const string _ty
 	if( !((_type=="left")||(_type=="right"))  )
 	{
 		if(verbose)
-		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-			<<"iDynInvSensorArm: assuming right arm."<<endl;
+        {
+            fprintf(stderr,"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :) \n");
+			fprintf(stderr,"iDynInvSensorArm: assuming right arm. \n");
+        }
 		// set the sensor with the default value
 		sens = new iCubArmSensorLink("right",mode,verbose);
 	}
@@ -2117,7 +2096,7 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 		if(!(type =="right"))
 		{
 			if(verbose)
-				cerr<<"iCubLegSensorLink error: type is not left/right: assuming right."<<endl;
+				fprintf(stderr,"iCubLegSensorLink error: type is not left/right: assuming right. \n");
 			type = "right";
 		}
 
@@ -2156,8 +2135,10 @@ iDynInvSensorLeg::iDynInvSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsig
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
 		if(verbose)
-			cerr<<"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :)"<<endl
-				<<"iDynInvSensorLeg: assuming right leg."<<endl;
+        {
+            fprintf(stderr,"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :) \n");
+			fprintf(stderr,"iDynInvSensorLeg: assuming right leg.\n");
+        }
 		// set the sensor with the default value
 		sens = new iCubLegSensorLink("right",mode,verbose);
 	}
@@ -2177,8 +2158,10 @@ iDynInvSensorLeg::iDynInvSensorLeg(iDynChain *_c, const string _type, const NewE
 	if( !((_type=="left")||(_type=="right"))  )
 	{
 		if(verbose)
-			cerr<<"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :)"<<endl
-				<<"iDynInvSensorLeg: assuming right leg."<<endl;
+        {
+            fprintf(stderr,"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :) \n");
+            fprintf(stderr,"iDynInvSensorLeg: assuming right leg.\n");
+        }
 		// set the sensor with the default value
 		sens = new iCubLegSensorLink("right",mode,verbose);
 	}
@@ -2229,8 +2212,9 @@ bool iDynSensor::setSensorMeasures(const Vector &FM)
 	else
 	{
 		if(verbose)
-			cerr<<"iDynSensor error: could not set sensor measures due to wrong sized vector: "
-			<<FM.length()<<" instead of 6 (3+3)"<<endl;
+        {
+            fprintf(stderr,"iDynSensor error: could not set sensor measures due to wrong sized vector: %ld instead of 6 (3+3). \n",FM.length());
+        }
 		return false;
 	}
 }
@@ -2345,8 +2329,10 @@ iDynSensorArm::iDynSensorArm(iCubArmDyn *_c, const NewEulMode _mode, unsigned in
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
 		if(verbose)
-		cerr<<"iDynSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-			<<"iDynSensorArm: assuming right arm."<<endl;
+        {
+            fprintf(stderr,"iDynSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :) \n");
+            fprintf(stderr,"iDynSensorArm: assuming right arm.\n");
+        }
 		// set the sensor with the default value
 		sens = new iCubArmSensorLink("right",mode,verbose);
 	}
@@ -2383,8 +2369,10 @@ iDynSensorArmNoTorso::iDynSensorArmNoTorso(iCubArmNoTorsoDyn *_c, const NewEulMo
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
 		if(verbose)
-		cerr<<"iDynSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-			<<"iDynSensorArm: assuming right arm."<<endl;
+        {
+            fprintf(stderr,"iDynSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :) \n");
+			fprintf(stderr,"iDynSensorArm: assuming right arm.\n");
+        }
 		// set the sensor with the default value
 		sens = new iCubArmSensorLink("right",mode,verbose);
 	}
@@ -2421,8 +2409,10 @@ iDynSensorLeg::iDynSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsigned in
 	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
 		if(verbose)
-			cerr<<"iDynSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :)"<<endl
-				<<"iDynSensorLeg: assuming right leg."<<endl;
+        {
+            fprintf(stderr,"iDynSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :) \n");
+			fprintf(stderr,"iDynSensorLeg: assuming right leg.\n");
+        }
 		// set the sensor with the default value
 		sens = new iCubLegSensorLink("right",mode,verbose);
 	}

@@ -41,12 +41,12 @@ using namespace iCub::iDyn;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCub::iDyn::notImplemented(const unsigned int verbose)
 {
-    if(verbose) cout<<"iDyn: error: not implemented"<<endl;
+    if(verbose) fprintf(stderr,"iDyn: error: not implemented \n");
 }
 
 void iCub::iDyn::notImplemented(const unsigned int verbose, const string &msg)
 {
-    if(verbose) cout<<"iDyn: error: not implemented"<<endl<<msg<<endl;
+    if(verbose) fprintf(stderr,"iDyn: error: not implemented \n %s \n",msg.c_str());
 }
 
 
@@ -166,9 +166,7 @@ bool iDynLink::setInertia(const yarp::sig::Matrix &_I)
 	else
 	{
 		I.resize(3,3); I.zero();
-		if(verbose)
-			cerr<<"iDynLink: error in setting Inertia due to wrong matrix size: ("
-			<<_I.rows()<<","<<_I.cols()<<") instead of (3,3). Inertia matrix now set automatically to zero."<<endl;
+		if(verbose)	fprintf(stderr,"iDynLink: error in setting Inertia due to wrong matrix size: (%ld,%ld) instead of (3,3). Inertia matrix now set automatically to zero. \n",_I.rows(),_I.cols());
 		return false;
 	}
 }
@@ -219,8 +217,7 @@ bool iDynLink::setCOM(const yarp::sig::Matrix &_HC)
 	{
 		HC.resize(4,4); HC.eye();
 		if(verbose)
-			cerr<<"iDynLink: error in setting COM roto-translation due to wrong matrix size: ("
-			<<_HC.rows()<<","<<_HC.cols()<<") instead of (4,4). HC matrix now set automatically as eye."<<endl;
+			fprintf(stderr,"iDynLink: error in setting COM roto-translation due to wrong matrix size: (%ld,%ld) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
 		return false;
 	}
 }
@@ -238,7 +235,7 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
 	else	
 	{
 		if(verbose)
-			cerr<<"iDynLink error, cannot set distance from COM due to wrong sized vector: "<<_rC.length()<<" instead of 3"<<endl;
+			fprintf(stderr,"iDynLink error, cannot set distance from COM due to wrong sized vector: %ld instead of 3 \n",_rC.length());
 		return false;
 	}
 }
@@ -261,7 +258,7 @@ bool iDynLink::setForce(const yarp::sig::Vector &_F)
 	else
 	{
 		if(verbose)
-			cerr<<"iDynLink error, cannot set forces due to wrong size: "<<_F.length()<<" instead of 3"<<endl;
+            fprintf(stderr,"iDynLink error: cannot set forces due to wrong size: %ld instead of 3.\n",_F.length());
 		return false;
 	}
 }
@@ -276,7 +273,7 @@ bool iDynLink::setMoment(const yarp::sig::Vector &_Mu)
 	else
 	{
 		if(verbose)
-			cerr<<"iDynLink error, cannot set moments due to wrong size: "<<_Mu.length()<<" instead of 3"<<endl;
+			fprintf(stderr,"iDynLink error, cannot set moments due to wrong size: %ld instead of 3. \n",_Mu.length());
 		return false;
 	}
 }
@@ -437,7 +434,7 @@ Vector iDynChain::setDAng(const Vector &dq)
 	}
     else 
 		if(verbose)
-        cerr<<"setVel() failed: " << DOF << " joint angles needed" <<endl;
+            fprintf(stderr,"iDynChain error: setVel() failed: %ld joint angles needed \n",DOF);
 
     return curr_dq;
 }
@@ -456,7 +453,7 @@ Vector iDynChain::setD2Ang(const Vector &ddq)
 	}
     else 
 		if(verbose)
-        cerr<<"setVel() failed: " << DOF << " joint angles needed" <<endl;
+        fprintf(stderr,"iDynChain error: setVel() failed: %ld joint angles needed \n",DOF);
 
     return curr_ddq;
 }
@@ -492,11 +489,8 @@ double iDynChain::setDAng(const unsigned int i, double _dq)
     if(i<N)
         return allList[i]->setDAng(_dq);
     else 
-	{	if(verbose)
-		{
-			cerr<<"setVel() failed due to out of range index: ";
-			cerr<<i<<">="<<N<<endl;
-		}
+	{	
+        if(verbose) fprintf(stderr,"iDynChain error: setVel() failed due to out of range index: %ld >= %ld \n",i,N);
 		return 0.0;
 		
 	}
@@ -508,11 +502,7 @@ double iDynChain::setD2Ang(const unsigned int i, double _ddq)
          return allList[i]->setD2Ang(_ddq);
     else 
     {
-		if(verbose)
-		{
-			cerr<<"setAcc() failed due to out of range index: ";
-			cerr<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: setD2Ang() failed due to out of range index: %ld >= %ld \n",i,N);
 		return 0.0;
     }
 }
@@ -523,11 +513,7 @@ double iDynChain::getDAng(const unsigned int i)
         return allList[i]->getDAng();
     else 
     {
-		if(verbose)
-		{
-			cerr<<"getVel() failed due to out of range index: ";
-			cerr<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: getDAng() failed due to out of range index: %ld >= %ld \n",i,N);
 		return 0.0;
     }
 }
@@ -538,11 +524,7 @@ double iDynChain::getD2Ang(const unsigned int i)
         return allList[i]->getD2Ang();
     else 
     {
-		if(verbose)
-		{
-			cerr<<"getAcc() failed due to out of range index: ";
-			cerr<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: getD2Ang() failed due to out of range index: %ld >= %ld \n",i,N);
 		return 0.0;
     }
 }
@@ -553,11 +535,7 @@ Vector iDynChain::getLinAcc(const unsigned int i) const
         return allList[i]->getLinAcc();
     else 
     {
-		if(verbose)
-		{
-			cerr<<"getLinAcc() failed due to out of range index: ";
-			cerr<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: getLinAcc() failed due to out of range index: %ld >= %ld \n",i,N);
 		return Vector(0);
     }	
 }
@@ -568,11 +546,7 @@ Vector iDynChain::getLinAccCOM(const unsigned int i) const
 		return allList[i]->getLinAccC();
     else 
     {
-		if(verbose)
-		{
-			cerr<<"getLinAccCOM() failed due to out of range index: ";
-			cerr<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: getLinAccCOM() failed due to out of range index: %ld >= %ld \n",i,N);
 		return Vector(0);
     }	
 }
@@ -583,11 +557,7 @@ iDynLink * iDynChain::refLink(const unsigned int i)
 		return dynamic_cast<iDynLink *>(allList[i]);
 	else 
 	{
-		if(verbose)
-		{
-			cerr<<"getAcc() failed due to out of range index: ";
-			cerr<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: refLink() failed due to out of range index: %ld >= %ld \n",i,N);
 		return NULL;
 	}
 }
@@ -598,11 +568,7 @@ Vector iDynChain::getForce(const unsigned int iLink)	const
 		return allList[iLink]->getForce();
 	else 
 	{
-		if(verbose)
-		{
-			cerr<<"getForce() failed due to out of range index: "
-				<<iLink<<">="<<N<<endl;
-		}
+		if(verbose) fprintf(stderr,"iDynChain error: getForce() failed due to out of range index: %ld >= %ld \n",iLink,N);
 		return Vector(0);
 	}
 }
@@ -613,11 +579,7 @@ Vector iDynChain::getMoment(const unsigned int iLink) const
 		return allList[iLink]->getMoment();
 	else 
 	{
-		if(verbose)
-		{
-			cerr<<"getMoment() failed due to out of range index: ";
-			cerr<<iLink<<">="<<N<<endl;
-		}
+		if(verbose) fprintf(stderr,"iDynChain error: getMoment() failed due to out of range index: %ld >= %ld \n",iLink,N);
 		return Vector(0);
 	}
 }
@@ -628,11 +590,7 @@ double iDynChain::getTorque(const unsigned int iLink) const
 		return allList[iLink]->getTorque();
 	else 
 	{
-		if(verbose)
-		{
-			cerr<<"getTorque() failed due to out of range index: ";
-			cerr<<iLink<<">="<<N<<endl;
-		}
+		if(verbose) fprintf(stderr,"iDynChain error: getTorque() failed due to out of range index: %ld >= %ld \n",iLink,N);
 		return 0.0;
 	}
 }
@@ -655,9 +613,7 @@ bool iDynChain::setMasses(Vector _m)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"iDynChain: setMasses() failed due to wrong vector size: "
-				<<_m.length()<<" instead of "<<N<<endl;
+		if(verbose) fprintf(stderr,"iDynChain error: setMasses() failed due to wrong vector size: %ld instead of %ld",_m.length(),N);
 		return false;
 	}
 }
@@ -668,9 +624,7 @@ double iDynChain::getMass(const unsigned int i) const
 		return allList[i]->getMass();
 	else
 	{
-		if(verbose)
-			cerr<<"iDynChain: getMass() failed due to out of range index: "
-				<<i<<">="<<N<<endl;
+		if(verbose) fprintf(stderr,"iDynChain error: getMass() failed due to out of range index: %ld >= %ld \n",i,N);
 		return 0.0;
 	}
 }
@@ -684,9 +638,7 @@ bool iDynChain::setMass(const unsigned int i, const double _m)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"iDynChain: setMass() failed due to out of range index: "
-				<<i<<">="<<N<<endl;
+		if(verbose)	fprintf(stderr,"iDynChain error: setMass() failed due to out of range index: %ld >= %ld \n",i,N);
 		return false;
 	}
 }
@@ -721,14 +673,9 @@ bool iDynChain::setDynamicParameters(const unsigned int i, const double _m, cons
 		return 	allList[i]->setDynamicParameters(_m,_HC,_I,_kr,_Fv,_Fs,_Im);	
 	else
 	{
-		if(verbose)
-		{
-			cerr<<"iDynChain: setDynamicParameters() failed due to out of range index: "
-				<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: setDynamicParameters() failed due to out of range index: %ld >= %ld \n",i,N);
 		return false;
 	}
-
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::setDynamicParameters(const unsigned int i, const double _m, const Matrix &_HC, const Matrix &_I)
@@ -737,11 +684,7 @@ bool iDynChain::setDynamicParameters(const unsigned int i, const double _m, cons
 		return allList[i]->setDynamicParameters(_m,_HC,_I);
 	else
 	{
-		if(verbose)
-		{
-			cerr<<"iDynChain: setDynamicParameters() failed due to out of range index: "
-				<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: setDynamicParameters() failed due to out of range index: %ld >= %ld \n",i,N);
 		return false;
 	}
 }
@@ -752,14 +695,9 @@ bool iDynChain::setStaticParameters(const unsigned int i, const double _m, const
 		return allList[i]->setStaticParameters(_m,_HC);
 	else
 	{
-		if(verbose)
-		{
-			cerr<<"iDynChain: setStaticParameters() failed due to out of range index: "
-				<<i<<">="<<N<<endl;
-		}
+		if(verbose)	fprintf(stderr,"iDynChain error: setStaticParameters() failed due to out of range index: %ld >= %ld \n",i,N);
 		return false;
 	}
-
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::prepareNewtonEuler(const NewEulMode NewEulMode_s)
@@ -784,8 +722,10 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 	if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call computeNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-			<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call computeNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode. \n");
+        }
 		prepareNewtonEuler();
 	}
 
@@ -806,11 +746,8 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 	{
 		if(verbose)
 		{
-			cerr<<"iDynChain error: could not compute with Newton Euler due to wrong sized initializing vectors: "
-				<<" w0,dw0,ddp0,Fend,Muend have size "
-				<< w0.length() <<","<< dw0.length() <<","
-				<< ddp0.length() <<","<< F0.length() <<","<< Mu0.length() <<","
-				<<" instead of 3,3,3,3,3"<<endl;
+            fprintf(stderr,"iDynChain error: could not compute with Newton Euler due to wrong sized initializing vectors: \n");
+            fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %ld,%ld,%ld,%ld,%ld instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),F0.length(),Mu0.length());
 		}
 		return false;
 	}
@@ -821,9 +758,11 @@ bool iDynChain::computeNewtonEuler()
 	if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call computeNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
-				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call computeNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode.  \n");
+			fprintf(stderr,"iDynChain: initNewtonEuler() called autonomously with default values.  \n");
+        }
 		prepareNewtonEuler();
 		initNewtonEuler();
 	}
@@ -862,9 +801,11 @@ void iDynChain::getKinematicNewtonEuler(Vector &w, Vector &dw, Vector &ddp)
 	if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call getKinematicNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
-				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call getKinematicNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode. \n");
+			fprintf(stderr,"iDynChain: initNewtonEuler() called autonomously with default values. \n");
+        }
 		prepareNewtonEuler();
 		initNewtonEuler();
 	}
@@ -888,9 +829,11 @@ void iDynChain::getFrameKinematic(unsigned int i, Vector &w, Vector &dw, Vector 
     if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call getFrameKinematic() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
-				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call getFrameKinematic() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode. \n");
+			fprintf(stderr,"iDynChain: initNewtonEuler() called autonomously with default values. \n");
+        }
 		prepareNewtonEuler();
 		initNewtonEuler();
 	}
@@ -905,9 +848,11 @@ void iDynChain::getFrameWrench(unsigned int i, Vector &F, Vector &Mu)
     if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call getFrameWrench() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
-				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+        {
+			fprintf(stderr,"iDynChain error: trying to call getFrameWrench() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode. \n");
+			fprintf(stderr,"iDynChain: initNewtonEuler() called autonomously with default values.  \n");
+        }
 		prepareNewtonEuler();
 		initNewtonEuler();
 	}
@@ -920,9 +865,11 @@ void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu)
 	if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call getWrenchNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
-				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call getWrenchNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode. \n");
+			fprintf(stderr,"iDynChain: initNewtonEuler() called autonomously with default values. \n");
+        }
 		prepareNewtonEuler();
 		initNewtonEuler();
 	}
@@ -956,8 +903,10 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
 	if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call initNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call initNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode.  \n");
+        }
 		prepareNewtonEuler();
 	}
 
@@ -981,11 +930,8 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
 	{
 		if(verbose)
 		{
-			cerr<<"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: "
-				<<" w0,dw0,ddp0,Fend,Muend have size "
-				<< w0.length() <<","<< dw0.length() <<","
-				<< ddp0.length() <<","<< Fend.length() <<","<< Muend.length() <<","
-				<<" instead of 3,3,3,3,3"<<endl;
+			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
+			fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %ld,%ld,%ld,%ld,%ld instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),Fend.length(),Muend.length());
 		}
 		return false;
 	}
@@ -996,8 +942,10 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
 	if(NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call initKinematicNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call initKinematicNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode.  \n");
+        }
 		prepareNewtonEuler();
 	}
 
@@ -1012,11 +960,8 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
 	{
 		if(verbose)
 		{
-			cerr<<"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: "
-				<<" w0,dw0,ddp0 have size "
-				<< w0.length() <<","<< dw0.length() <<","
-				<< ddp0.length() <<","
-				<<" instead of 3,3,3"<<endl;
+			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
+			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3 \n",w0.length(),dw0.length(),ddp0.length());
 		}
 		return false;
 	}
@@ -1027,8 +972,10 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
 	if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call initWrenchNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call initWrenchNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode. \n");
+        }
 		prepareNewtonEuler();
 	}
 
@@ -1043,10 +990,8 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
 	{
 		if(verbose)
 		{
-			cerr<<"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: "
-				<<" Fend,Muend have size "
-				<< Fend.length() <<","<< Muend.length() <<","
-				<<" instead of 3,3"<<endl;
+			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
+			fprintf(stderr," Fend,Muend have size %ld,%ld instead of 3,3 \n",Fend.length(),Muend.length());
 		}
 		return false;
 	}
@@ -1057,14 +1002,15 @@ void iDynChain::setModeNewtonEuler(const NewEulMode mode)
 	if( NE == NULL)
 	{
 		if(verbose)
-			cerr<<"iDynChain error: trying to call setModeNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
-				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+        {
+            fprintf(stderr,"iDynChain error: trying to call setModeNewtonEuler() without having prepared Newton-Euler method in the class. \n");
+			fprintf(stderr,"iDynChain: prepareNewtonEuler() called autonomously in the default mode. \n");
+        }
 		prepareNewtonEuler();
 	}
 
 	NE->setMode(mode);
-	if(verbose)
-		cerr<<"iDynChain: Newton-Euler mode set to "<<NewEulMode_s[mode]<<endl;
+	if(verbose) fprintf(stderr,"iDynChain: Newton-Euler mode set to %s \n",NewEulMode_s[mode].c_str());
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1083,8 +1029,7 @@ Matrix iDynChain::getForcesNewtonEuler() const
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"iDynChain error: trying to call getForcesNewtonEuler() without having prepared Newton-Euler."<<endl;
+		if(verbose)	fprintf(stderr,"iDynChain error: trying to call getForcesNewtonEuler() without having prepared Newton-Euler. \n");
 	}
 
 	return ret;
@@ -1100,8 +1045,7 @@ Matrix iDynChain::getMomentsNewtonEuler() const
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"iDynChain error: trying to call getMomentsNewtonEuler() without having prepared Newton-Euler."<<endl;
+		if(verbose)	fprintf(stderr,"iDynChain error: trying to call getMomentsNewtonEuler() without having prepared Newton-Euler. \n");
 	}
 	return ret;
 }
@@ -1116,8 +1060,7 @@ Vector iDynChain::getTorquesNewtonEuler() const
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"iDynChain error: trying to call getTorquesNewtonEuler() without having prepared Newton-Euler."<<endl;
+		if(verbose)	fprintf(stderr,"iDynChain error: trying to call getTorquesNewtonEuler() without having prepared Newton-Euler. \n");
 	}
 	return ret;
 }
@@ -1165,8 +1108,7 @@ void iDynChain::setIterMode(const ChainComputationMode mode)
 	case KINBWD_WREFWD: setIterModeKinematic(BACKWARD); setIterModeWrench(FORWARD);
 		break;
 	default:
-		if(verbose)
-			cerr<<"iDynChain error: in setIterMode() could not set iteration mode due to unexisting mode"<<endl; 
+		if(verbose)	fprintf(stderr,"iDynChain error: in setIterMode() could not set iteration mode due to unexisting mode \n"); 
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1184,8 +1126,7 @@ bool iDynChain::setH0(const Matrix &_H0)
      }
      else
      {
-        if(verbose) cerr<<"iDynChain: could not set H0 due to wrong sized matrix: "
-                        <<_H0.rows()<<"x"<<_H0.cols()<<" instead of 4x4."<<endl;
+        if(verbose) fprintf(stderr,"iDynChain: could not set H0 due to wrong sized matrix: %ldx%ld instead of 4x4 \n",_H0.rows(),_H0.cols());
         return false;
      }
 }
@@ -1200,13 +1141,12 @@ Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn
 {
 	if(DOF==0)
     {
-		if(verbose)cerr<<"iDynChain: computeGeoJacobian() failed since DOF==0"<<endl;
+		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed since DOF==0 \n");
         return Matrix(0,0);
     }
     if(iLinkN>=N)
     {
-		if(verbose) cerr<<"iDynChain: computeGeoJacobian() failed due to out of range indexes: "
-						<<"from 0 to "<<iLinkN<<" >= "<<N<<endl;
+		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed due to out of range indexes: from 0 to %ld >= %ld \n", iLinkN, N);
         return Matrix(0,0);
     }
 
@@ -1239,13 +1179,12 @@ Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn
 {
 	if(DOF==0)
     {
-		if(verbose)cerr<<"iDynChain: computeGeoJacobian() failed since DOF==0"<<endl;
+		if(verbose)fprintf(stderr,"iDynChain: computeGeoJacobian() failed since DOF==0 \n");
         return Matrix(0,0);
     }
     if(iLinkN>=N)
     {
-		if(verbose) cerr<<"iDynChain: computeGeoJacobian() failed due to out of range indexes: "
-						<<"from 0 to "<<iLinkN<<" >= "<<N<<endl;
+		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed due to out of range indexes: from 0 to %ld >= %ld \n",iLinkN,N);
         return Matrix(0,0);
     }
 
@@ -1278,7 +1217,7 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn)
 {
 	if (DOF==0)
     {
-		if(verbose)cerr<<"iDynChain: computeGeoJacobian() failed since DOF==0"<<endl;
+		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed since DOF==0 \n");
         return Matrix(0,0);
     }
 
@@ -1311,7 +1250,7 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn, const Matrix &_H0)
 {
 	if (DOF==0)
     {
-		if(verbose)cerr<<"iDynChain: computeGeoJacobian() failed since DOF==0"<<endl;
+		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed since DOF==0 \n");
         return Matrix(0,0);
     }
 
@@ -1350,8 +1289,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink)
 {
     if (iLink>=N)
     {
-        if(verbose) cerr<<"computeCOMJacobian() failed due to out of range index: "
-                        <<iLink<<">="<<N<<endl;
+        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %ld >= %ld \n",iLink, N);
         return Matrix(0,0);
     }
 
@@ -1387,8 +1325,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn)
 {
     if (iLink>=N)
     {
-        if(verbose) cerr<<"computeCOMJacobian() failed due to out of range index: "
-                        <<iLink<<">="<<N<<endl;
+        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %ld >= %ld \n", iLink,N);
         return Matrix(0,0);
     }
 
@@ -1422,8 +1359,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn,
 {
     if (iLink>=N)
     {
-        if(verbose) cerr<<"computeCOMJacobian() failed due to out of range index: "
-                        <<iLink<<">="<<N<<endl;
+        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %ld >= %ld \n", iLink,N);
         return Matrix(0,0);
     }
 
@@ -1457,8 +1393,7 @@ Matrix iDynChain::getCOM(unsigned int iLink)
 {
     if (iLink>=N)
     {
-        if(verbose) cerr<<"iDynChain: error, getCOM() failed due to out of range index: "
-                        <<iLink<<">="<<N<<endl;
+        if(verbose) fprintf(stderr,"iDynChain: error, getCOM() failed due to out of range index: %ld >= %ld \n", iLink,N);
         return Matrix(0,0);
     }
     return allList[iLink]->getCOM();
@@ -1468,8 +1403,7 @@ Matrix iDynChain::getHCOM(unsigned int iLink)
 {
     if (iLink>=N)
     {
-        if(verbose) cerr<<"iDynChain: error, getHCOM() failed due to out of range index: "
-                        <<iLink<<">="<<N<<endl;
+        if(verbose) fprintf(stderr,"iDynChain: error, getHCOM() failed due to out of range index: %ld >= %ld \n", iLink,N);
         return Matrix(0,0);
     }
     return getH(iLink,true) * allList[iLink]->getCOM();
@@ -1519,7 +1453,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
     type=opt.check("type",Value("right")).asString().c_str();
     if(type!="right" && type!="left")
     {
-        cerr<<"Error: invalid handedness type specified!" <<endl;
+        fprintf(stderr,"Error: invalid handedness type specified! \n");
         return false;
     }
 
@@ -1544,7 +1478,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
     int numLinks=opt.check("numLinks",Value(0)).asInt();
     if(numLinks==0)
     {
-        cerr<<"Error: invalid number of links specified!" <<endl;
+        fprintf(stderr,"Error: invalid number of links (0) specified! \n");
         type="right";
         H0.eye();
         return false;
@@ -1559,7 +1493,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         Bottle &bLink=opt.findGroup(link);
         if(bLink.isNull())
         {
-            cerr<<"Error: " << link << " is missing!" <<endl;
+            fprintf(stderr,"Error: link %ld is missing! \n",iLink);
             type="right";
             H0.eye();
             dispose();

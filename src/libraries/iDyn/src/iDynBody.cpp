@@ -70,9 +70,7 @@ bool RigidBodyTransformation::setRBT(const Matrix &_H)
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"RigidBodyTransformation: could not set RBT due to wrong sized matrix H: "
-				<<"("<<_H.cols()<<","<<_H.rows()<<") instead of (4,4). Setting identity as default."<<endl;
+		if(verbose) fprintf(stderr,"RigidBodyTransformation: could not set RBT due to wrong sized matrix H: %ld,%ld instead of (4,4). Setting identity as default. \n",_H.cols(),_H.rows());
 		H.resize(4,4);
 		H.eye();
 		return false;
@@ -454,8 +452,7 @@ Matrix iDynNode::getRBT(unsigned int iLimb) const
     }
     else
     {
-        if(verbose) cerr<<"iDynNode: error, could not getRBT() due to out of range index: "
-                        <<iLimb<<", while we have "<<rbtList.size()<<" limbs."<<endl;
+        if(verbose) fprintf(stderr,"iDynNode: error, could not getRBT() due to out of range index: %ld , while we have %ld limbs. \n", iLimb, rbtList.size() );
         return Matrix(0,0);
     }
 }
@@ -500,9 +497,10 @@ bool iDynNode::solveKinematics()
 	else
 	{
 		if(verbose)
-			cerr<<"iDynNode: error: there are "<<inputNode<<"limbs with Kinematic Flow = Input. "
-				<<" Only one limb must have Kinematic Input from outside measurements/computations. "
-				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
+        {
+            fprintf(stderr,"iDynNode error: there are %ld limbs with Kinematic Flow = Input. Only one limb must have Kinematic Input from outside measurements/computations. \n",inputNode);
+            fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s> \n",info.c_str());
+        }
 		return false;
 	}
 
@@ -548,9 +546,11 @@ bool iDynNode::solveKinematics(const Vector &w0, const Vector &dw0, const Vector
 	else
 	{
 		if(verbose)
-			cerr<<"iDynNode: error: there are "<<inputNode<<"limbs with Kinematic Flow = Input. "
-				<<" Only one limb must have Kinematic Input from outside measurements/computations. "
-				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
+        {
+            fprintf(stderr,"iDynNode: error: there are %ld limbs with Kinematic Flow = Input. ",inputNode);
+			fprintf(stderr," Only one limb must have Kinematic Input from outside measurements/computations. ");
+            fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s> \n", info.c_str());
+        }
 		return false;
 	}
 
@@ -571,15 +571,16 @@ bool iDynNode::setKinematicMeasure(const Vector &w0, const Vector &dw0, const Ve
             }
 		}
         if(verbose)
-            cerr<<"iDynNode: error, there is not a node to set kinematic measure!"<<endl;
+            fprintf(stderr,"iDynNode: error, there is not a node to set kinematic measure! \n");
 		return false;
 	}
 	else
 	{
 		if(verbose)
-			cerr<<"iDynNode: error, could not set Kinematic measures due to wrong sized vectors. "
-				<<" w,dw,ddp have lenght "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()
-				<<" instead of 3,3,3." <<endl;
+        {
+            fprintf(stderr,"iDynNode: error, could not set Kinematic measures due to wrong sized vectors: \n");
+			fprintf(stderr," w,dw,ddp have lenght %ld,%ld,%ld instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
+        }
 		return false;
 	}
 }
@@ -617,9 +618,11 @@ bool iDynNode::solveWrench()
 	if(outputNode==rbtList.size())
 	{
 		if(verbose>1)
-			cerr<<"iDynNode: warning: there are no limbs with Wrench Flow = Output. "
-				<<" At least one limb must have Wrench Output for balancing forces in the node. "
-				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
+        {
+            fprintf(stderr,"iDynNode: warning: there are no limbs with Wrench Flow = Output. ");
+			fprintf(stderr," At least one limb must have Wrench Output for balancing forces in the node. ");
+            fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s> \n",info.c_str());
+        }
 	}
 
 	//now forward the wrench output from the node to limbs whose wrench flow is output type
@@ -670,17 +673,19 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
 	if(FM.cols()<inputNode)
 	{
 		if(verbose)
-			cerr<<"iDynNode: could not solveWrench due to missing wrenches to initialize the computations: "
-				<<" only "<<FM.cols()<<" f/m available instead of "<<inputNode<<endl
-				<<"          Using default values, all zero."<<endl;
+        {
+            fprintf(stderr,"iDynNode: could not solveWrench due to missing wrenches to initialize the computations: ");
+			fprintf(stderr," only %ld f/m available instead of %ld. Using default values, all zero. \n ",FM.cols(),inputNode);
+        }
 		inputWasOk = false;
 	}
 	if(FM.rows()!=6)
 	{
 		if(verbose)
-			cerr<<"iDynNode: could not solveWrench due to wrong sized init wrenches: "
-				<<FM.rows()<<" instead of 6 (3+3)"<<endl
-				<<"          Using default values, all zero."<<endl;
+        {
+            fprintf(stderr,"iDynNode: could not solveWrench due to wrong sized init wrenches: ");
+			fprintf(stderr," %ld instead of 6 (3+3). Using default values, all zero. \n",FM.rows());
+        }
 		inputWasOk = false;
 	}
 
@@ -731,17 +736,19 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 	if((Fm.cols()<inputNode)||(Mm.cols()<inputNode))
 	{
 		if(verbose)
-			cerr<<"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: "
-				<<" only "<<Fm.cols()<<"/"<<Mm.cols()<<" f/m available instead of "<<inputNode<<"/"<<inputNode<<endl
-				<<"          Using default values, all zero."<<endl;
+        {
+            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: ");
+			fprintf(stderr," only %ld/%ld f/m available instead of %ld/%ld. Using default values, all zero. \n",Fm.cols(),Mm.cols(),inputNode,inputNode);
+        }
 		inputWasOk = false;
 	}
 	if((Fm.rows()!=3)||(Mm.rows()!=3))
 	{
 		if(verbose)
-			cerr<<"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: "
-				<<Fm.rows()<<"/"<<Mm.rows()<<" instead of 3/3 "<<endl
-				<<"          Using default values, all zero."<<endl;
+        {
+            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: ");
+			fprintf(stderr," %ld/%ld instead of 3/3. Using default values, all zero. \n",Fm.rows(),Mm.rows());
+        }
 		inputWasOk = false;
 	}
 
@@ -830,8 +837,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChain)
     }
     else
     {
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index "
-						<<iChain<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %ld > %ld. Returning a null matrix. \n",iChain,rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -846,8 +852,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChain, unsigned int iLink)
     }
     else
     {
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index "
-						<<iChain<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %ld > %ld. Returning a null matrix. \n",iChain,rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -858,15 +863,13 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index "
-						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to weird index for chains "<<iChainA
-						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Matrix(0,0);		
 	}
 
@@ -901,9 +904,9 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 
 	if(JAcols+JBcols!=J.cols())
 	{
-		cout<<"iDynNode error: Jacobian should be 6x"<<J.cols()<<" instead is 6x"<<(JAcols+JBcols)<<endl
-			<<"Note: limb A: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
-			<<"      limb B: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl;
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"Note:  limb A:  N=%ld  DOF=%ld  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
+        fprintf(stderr,"Note:  limb B:  N=%ld  DOF=%ld  \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF());
 		J.resize(6,JAcols+JBcols);
 	}
 	
@@ -925,22 +928,19 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index "
-						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix.\n",iChainA,iChainB,rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to weird index for chains "<<iChainA
-						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+        if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %ld : same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix.\n",iChainA);
 		return Matrix(0,0);		
 	}
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
-   		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index for chain "
-            <<iChainB<<": the selected link is "<<iLinkB<<" whereas the maximum is "<<rbtList[iChainB].getNLinks()<<". Returning a null matrix."<<endl;
+   		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %ld: the selected link %ld > %ld. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
 		return Matrix(0,0);	 
     }
 
@@ -976,10 +976,9 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 
 	if(JAcols+JBcols!=J.cols())
 	{
-		cout<<"iDynNode error: Jacobian should be 6x"<<J.cols()<<" instead is 6x"<<(JAcols+JBcols)<<endl
-			<<"Note: limb A: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
-			<<"      limb B: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
-            <<"              iLinkB = "<<iLinkB<<endl;
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"Note:  limb A:  N=%ld  DOF=%ld  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
+        fprintf(stderr,"Note:  limb B:  N=%ld  DOF=%ld  iLinkB=%ld \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
 		J.resize(6,JAcols+JBcols);
 	}
 	
@@ -1064,15 +1063,13 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) cerr<<"iDynNode: error, could not computePose() due to out of range index: limbs have index "
-						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Vector(0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) cerr<<"iDynNode: error, could not computePose() due to weird index for chains "<<iChainA
-						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Vector(0);		
 	}
 
@@ -1126,22 +1123,19 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) cerr<<"iDynNode: error, could not computePose() due to out of range index: limbs have index "
-						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Vector(0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) cerr<<"iDynNode: error, could not computePose() due to weird index for chains "<<iChainA
-						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Vector(0);		
 	}
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
-   		if(verbose) cerr<<"iDynNode: error, could not computePose() due to out of range index for chain "
-            <<iChainB<<": the selected link is "<<iLinkB<<" whereas the maximum is "<<rbtList[iChainB].getNLinks()<<". Returning a null matrix."<<endl;
+   		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index for chain %ld: the selected link is %ld > %ld. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
 		return Vector(0);	 
     }
 
@@ -1205,8 +1199,7 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChain, unsigned int iLink)
     }
     else
     {
-		if(verbose) cerr<<"iDynNode: error, could not computeCOMJacobian() due to out of range index: input limb has index "
-						<<iChain<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeCOMJacobian() due to out of range index: input limb has index %ld > %ld. Returning a null matrix. \n",iChain,rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -1217,22 +1210,19 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsign
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index "
-						<<iChainA<<","<<iChainB<<" whereas the maximum is "<<rbtList.size()<<". Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to weird index for chains "<<iChainA
-						<<": same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix."<<endl;
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Matrix(0,0);		
 	}
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
-   		if(verbose) cerr<<"iDynNode: error, could not computeJacobian() due to out of range index for chain "
-            <<iChainB<<": the selected link is "<<iLinkB<<" whereas the maximum is "<<rbtList[iChainB].getNLinks()<<". Returning a null matrix."<<endl;
+        if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %ld: the selected link is %ld > %ld. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
 		return Matrix(0,0);	 
     }
 
@@ -1268,10 +1258,9 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsign
 
 	if(JAcols+JBcols!=J.cols())
 	{
-		cout<<"iDynNode error: Jacobian should be 6x"<<J.cols()<<" instead is 6x"<<(JAcols+JBcols)<<endl
-			<<"Note: limb A: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
-			<<"      limb B: N="<<rbtList[iChainA].getNLinks()<<" DOF="<<rbtList[iChainA].getDOF()<<endl
-            <<"              iLinkB = "<<iLinkB<<endl;
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"Note:  limb A:  N=%ld  DOF=%ld  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
+        fprintf(stderr,"Note:  limb B:  N=%ld  DOF=%ld  iLinkB=%ld \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
 		J.resize(6,JAcols+JBcols);
 	}
 	
@@ -1398,9 +1387,10 @@ bool iDynSensorNode::solveWrench()
 	if(outputNode==rbtList.size())
 	{
 		if(verbose>1)
-			cerr<<"iDynNode: warning: there are no limbs with Wrench Flow = Output. "
-				<<" At least one limb must have Wrench Output for balancing forces in the node. "
-				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
+        {
+            fprintf(stderr,"iDynNode: warning: there are no limbs with Wrench Flow = Output. At least one limb must have Wrench Output for balancing forces in the node. \n");
+            fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s>\n",info.c_str());
+        }
 	}
 
 	//now forward the wrench output from the node to limbs whose wrench flow is output type
@@ -1439,20 +1429,16 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
 	{
 		if(verbose)
 		{
-			cerr<<"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: "
-				<<" only "<<FM.cols()<<" f/m available instead of "<<inputNode<<endl
-				<<"          Using default values, all zero."<<endl;
+			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %ld f/m available instead of %ld. Using default values, all zero.\n",FM.cols(),inputNode);
 			if(afterAttach==true)
-			cerr<<"          Remember that the first limb receives wrench input during an attach from another node."<<endl;
+			fprintf(stderr,"          Remember that the first limb receives wrench input during an attach from another node. \n");
 		}
 		inputWasOk = false;
 	}
 	if(FM.rows()!=6)
 	{
 		if(verbose)
-			cerr<<"iDynNode: could not setWrenchMeasure due to wrong sized init wrenches: "
-				<<FM.rows()<<" instead of 6 (3+3)"<<endl
-				<<"          Using default values, all zero."<<endl;
+			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init wrenches: %ld instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
 		inputWasOk = false;
 	}
 
@@ -1520,20 +1506,15 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
 	{
 		if(verbose)
 		{
-			cerr<<"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: "
-				<<" only "<<Fm.cols()<<"/"<<Mm.cols()<<" f/m available instead of "<<inputNode<<"/"<<inputNode<<endl
-				<<"          Using default values, all zero."<<endl;
+			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %ld/%ld f/m available instead of %ld/%ld. Using default values, all zero.\n",Fm.cols(),Mm.cols(),inputNode,inputNode);
 			if(afterAttach==true)
-			cerr<<"          Remember that the first limb receives wrench input during an attach from another node."<<endl;
+			fprintf(stderr,"          Remember that the first limb receives wrench input during an attach from another node.\n");
 		}
 		inputWasOk = false;
 	}
 	if((Fm.rows()!=3)||(Mm.rows()!=3))
 	{
-		if(verbose)
-			cerr<<"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: "
-				<<Fm.rows()<<"/"<<Mm.rows()<<" instead of 3/3 "<<endl
-				<<"          Using default values, all zero."<<endl;
+		if(verbose)	fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: %ld/%ld instead of 3/3. Using default values, all zero.\n",Fm.rows(),Mm.rows());
 		inputWasOk = false;
 	}
 
@@ -1599,20 +1580,15 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	//first check if the input is correct
 	if(FM.rows()!=6)
 	{
-		if(verbose)
-			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches matrix: "
-				<<FM.rows()<<" rows instead of 6 (3+3)"<<endl
-				<<"                Using default values, all zero."<<endl;
+		if(verbose)	fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches matrix: %ld rows instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
 		inputWasOk = false;
 	}
 	if(FM.cols()!=inputNode)
 	{
 		if(verbose)
-			cerr<<"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: "
-				<<FM.cols()<<" cols instead of "<<inputNode
-				<<"                Using default values, all zero."<<endl;
+			fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: %ld instead of %ld. Using default values, all zero. \n",FM.cols(),inputNode);
 		if(afterAttach==true)
-			cerr<<"                Remember that the first limb receives wrench input during an attach from another node."<<endl;
+			fprintf(stderr,"                Remember that the first limb receives wrench input during an attach from another node.\n");
 		inputWasOk = false;
 	}
 
@@ -1678,9 +1654,9 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	if(outputNode==rbtList.size())
 	{
 		if(verbose>1)
-			cerr<<"iDynSensorNode: warning: there are no limbs with Wrench Flow = Output. "
-				<<" At least one limb must have Wrench Output for balancing forces in the node. "
-				<<"Please check the coherence of the limb configuration in the node '"<<info<<"'"<<endl;
+			fprintf(stderr,"iDynSensorNode: warning: there are no limbs with Wrench Flow = Output. ");
+			fprintf(stderr," At least one limb must have Wrench Output for balancing forces in the node. ");
+            fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s> \n",info.c_str());
 	}
 
 	//now forward the wrench output from the node to limbs whose wrench flow is output type
@@ -1806,10 +1782,7 @@ bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vec
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"Node <"<<name<<"> could not set sensor measurements properly due to wrong sized vectors. "
-				<<" FM right/left have lenght "<<FM_right.length()<<","<<FM_left.length()
-				<<" instead of 6,6. Setting everything to zero. "<<endl;
+		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM right/left have lenght %ld,%ld instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_right.length(),FM_left.length());
 		setWrenchMeasure(FM,true);
 		return false;
 	}
@@ -1828,10 +1801,7 @@ bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vec
 	}
 	else
 	{
-		if(verbose)
-			cerr<<"Node <"<<name<<"> could not set sensor measurements properly due to wrong sized vectors. "
-				<<" FM up/right/left have lenght "<<FM_up.length()<<","<<FM_right.length()<<","<<FM_left.length()
-				<<" instead of 6,6. Setting everything to zero. "<<endl;
+		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM up/right/left have lenght %ld,%ld,%ld instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_up.length(),FM_right.length(),FM_left.length());
 		setWrenchMeasure(FM);
 		return false;
 	}
@@ -1858,10 +1828,12 @@ bool iDynSensorTorsoNode::update(const Vector &w0, const Vector &dw0, const Vect
 	else
 	{
 		if(verbose)
-			cerr<<"Node <"<<name<<"> error, could not update() due to wrong sized vectors. "
-				<<" w0,dw0,ddp0 have size "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()<<" instead of 3,3,3. "
-				<<" FM up/right/left have size "<<FM_up.length()<<","<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6,6. "
-				<<"            Updating without new values."<< endl;
+        {
+            fprintf(stderr,"Node <%s> error, could not update() due to wrong sized vectors. ",name.c_str());
+			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," FM up/right/left have size %ld,%ld,%ld instead of 6,6,6. \n",FM_up.length(),FM_right.length(),FM_left.length());
+			fprintf(stderr," Updating without new values.\n");
+        }
 		update();
 		return false;
 	}
@@ -1872,10 +1844,12 @@ bool iDynSensorTorsoNode::update(const Vector &FM_right, const Vector &FM_left, 
 	if(afterAttach==false)
 	{
 		if(verbose)
-			cerr<<"Node <"<<name<<"> error, could not update() due to missing wrench vectors. "
-			<<"This type of update() only works after an attachTorso() or after having set the central limb wrench and kinematics variables. "
-			<<" You should try with the other update() methods. "
-			<<"Could not perform update(): exiting. "<<endl;
+        {
+            fprintf(stderr,"Node <%s> error, could not update() due to missing wrench vectors. ",name.c_str());
+			fprintf(stderr,"This type of update() only works after an attachTorso() or after having set the central limb wrench and kinematics variables. ");
+			fprintf(stderr,"You should try with the other update() methods. ");
+			fprintf(stderr,"Could not perform update(): exiting. \n");
+        }
 		return false;
 	}
 
@@ -1890,9 +1864,10 @@ bool iDynSensorTorsoNode::update(const Vector &FM_right, const Vector &FM_left, 
 	else
 	{
 		if(verbose)
-			cerr<<"Node <"<<name<<"> error, could not update() due to wrong sized vectors. "
-				<<" FM right/left have size "<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6. "
-				<<"            Updating without new values."<< endl;
+        {
+            fprintf(stderr,"Node <%s> error, could not update() due to wrong sized vectors. ",name.c_str());
+			fprintf(stderr,"FM right/left have size %ld,%ld instead of 6,6. Updating without new values. \n",FM_right.length(),FM_left.length());
+        }
 		update();
 		return false;
 	}
@@ -1911,7 +1886,7 @@ Matrix iDynSensorTorsoNode::getForces(const string &limbType)
 	else if(limbType==right_name)		return right->getForces();
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Matrix(0,0);
 	}
 }
@@ -1923,7 +1898,7 @@ Matrix iDynSensorTorsoNode::getMoments(const string &limbType)
 	else if(limbType==right_name)	return right->getMoments();
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Matrix(0,0);
 	}
 }
@@ -1935,7 +1910,7 @@ Vector iDynSensorTorsoNode::getTorques(const string &limbType)
 	else if(limbType==right_name)	return right->getTorques();
 	else
 	{		
-		if(verbose) cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Vector(0);
 	}
 }
@@ -1963,7 +1938,7 @@ Vector iDynSensorTorsoNode::setAng(const string &limbType, const Vector &_q)
 	else if(limbType==right_name)	return right->setAng(_q);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Vector(0);
 	}
 }
@@ -1975,7 +1950,7 @@ Vector iDynSensorTorsoNode::getAng(const string &limbType)
 	else if(limbType==right_name)	return right->getAng();
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Vector(0);
 	}
 }
@@ -1987,7 +1962,7 @@ double iDynSensorTorsoNode::setAng(const string &limbType, const unsigned int i,
 	else if(limbType==right_name)	return right->setAng(i,_q);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return 0.0;
 	}
 }
@@ -1999,7 +1974,7 @@ double iDynSensorTorsoNode::getAng(const string &limbType, const unsigned int i)
 	else if(limbType==right_name)	return right->getAng(i);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return 0.0;
 	}
 }
@@ -2011,7 +1986,7 @@ Vector iDynSensorTorsoNode::setDAng(const string &limbType, const Vector &_dq)
 	else if(limbType==right_name)	return right->setDAng(_dq);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Vector(0);
 	}
 }
@@ -2023,7 +1998,7 @@ Vector iDynSensorTorsoNode::getDAng(const string &limbType)
 	else if(limbType==right_name)	return right->getDAng();
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Vector(0);
 	}
 }
@@ -2035,7 +2010,7 @@ double iDynSensorTorsoNode::setDAng(const string &limbType, const unsigned int i
 	else if(limbType==right_name)	return right->setDAng(i,_dq);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return 0.0;
 	}
 }
@@ -2047,7 +2022,7 @@ double iDynSensorTorsoNode::getDAng(const string &limbType, const unsigned int i
 	else if(limbType==right_name)	return right->getDAng(i);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return 0.0;
 	}
 }
@@ -2059,7 +2034,7 @@ Vector iDynSensorTorsoNode::setD2Ang(const string &limbType, const Vector &_ddq)
 	else if(limbType==right_name)	return right->setD2Ang(_ddq);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Vector(0);
 	}
 }
@@ -2071,7 +2046,7 @@ Vector iDynSensorTorsoNode::getD2Ang(const string &limbType)
 	else if(limbType==right_name)	return right->getD2Ang();
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return Vector(0);
 	}
 }
@@ -2083,7 +2058,7 @@ double iDynSensorTorsoNode::setD2Ang(const string &limbType, const unsigned int 
 	else if(limbType==right_name)	return right->setD2Ang(i,_ddq);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return 0.0;
 	}
 }
@@ -2095,7 +2070,7 @@ double iDynSensorTorsoNode::getD2Ang(const string &limbType, const unsigned int 
 	else if(limbType==right_name)	return right->getD2Ang(i);
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return 0.0;
 	}
 }
@@ -2107,7 +2082,7 @@ unsigned int iDynSensorTorsoNode::getNLinks(const string &limbType) const
 	else if(limbType==right_name)	return right->getN();
 	else
 	{		
-		if(verbose)	cerr<<"Node <"<<name<<"> there's not a limb named "<<limbType<<". Only "<<left_name<<","<<right_name<<","<<up_name<<" are available. "<<endl;
+		if(verbose)	fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
 		return 0;
 	}
 }
@@ -2371,9 +2346,7 @@ bool iCubUpperBody::setSensorsWrenchMeasure(const Vector &FM_right, const Vector
 	else
 	{
 		if(verbose)
-			cerr<<"iCubUpperBody could not set sensor measurements properly due to wrong sized vectors. "
-				<<" FM head/right/left have lenght "<<FM_head.length()<<","<<FM_right.length()<<","<<FM_left.length()
-				<<" instead of 6,6. Setting everything to zero. "<<endl;
+			fprintf(stderr,"iCubUpperBody could not set sensor measurements properly due to wrong sized vectors. FM head/right/left have lenght %ld,%ld,%ld instead of 6,6. Setting everything to zero. \n",FM_head.length(),FM_right.length(),FM_left.length());
 		return false;
 	}
 }
@@ -2387,7 +2360,7 @@ bool iCubUpperBody::setH0(const string &limbType, const Matrix &H0)
     else if(limbType=="torso")      return torso->setH0(H0);
     else
     {		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. ",limbType.c_str());
 	    return false;
     }
 }
@@ -2413,10 +2386,12 @@ bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &dd
 	else
 	{
 		if(verbose)
-            cerr<<"iCubUpperBody: error, could not update() due to wrong sized vectors. "
-				<<" w0,dw0,ddp0 have size "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()<<" instead of 3,3,3. "
-				<<" FM head,right/left arm have size "<<FM_head.length()<<","<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6,6. "
-				<<"            Updating without new values."<< endl;
+        { 
+            fprintf(stderr,"iCubUpperBody: error, could not update() due to wrong sized vectors. ");
+			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," FM head,right/left arm have size %ld,%ld,%ld instead of 6,6,6. ",FM_head.length(),FM_right.length(),FM_left.length());
+			fprintf(stderr," Updating without new values.\n");
+        }
 		update();
 		return false;
 	}
@@ -2436,10 +2411,12 @@ bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &dd
 	else
 	{
 		if(verbose)
-            cerr<<"iCubUpperBody: error, could not update() due to wrong sized vectors. "
-				<<" w0,dw0,ddp0 have size "<<w0.length()<<","<<dw0.length()<<","<<ddp0.length()<<" instead of 3,3,3. "
-				<<" FM right/left arm have size "<<FM_right.length()<<","<<FM_left.length()<<" instead of 6,6. "
-				<<"            Updating without new values."<< endl;
+        {
+            fprintf(stderr,"iCubUpperBody: error, could not update() due to wrong sized vectors. ");
+			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," FM right/left arm have size %ld,%ld instead of 6,6. ",FM_right.length(),FM_left.length());
+			fprintf(stderr," Updating without new values.\n");
+        }
 		update();
 		return false;
 	}
@@ -2459,7 +2436,7 @@ Matrix iCubUpperBody::getForces(const string &limbType)
     else if(limbType=="torso")          return torso->getForces();
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Matrix(0,0);
 	}
 }
@@ -2472,7 +2449,7 @@ Matrix iCubUpperBody::getMoments(const string &limbType)
 	else if(limbType=="torso")      return torso->getMoments();
     else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Matrix(0,0);
 	}
 }
@@ -2485,7 +2462,7 @@ Vector iCubUpperBody::getTorques(const string &limbType)
 	else if(limbType=="torso")      return torso->getTorques();
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Vector(0);
 	}
 }
@@ -2514,7 +2491,7 @@ Vector iCubUpperBody::setAng(const string &limbType, const Vector &_q)
 	else if(limbType=="torso")      return torso->setAng(_q);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Vector(0);
 	}
 }
@@ -2527,7 +2504,7 @@ Vector iCubUpperBody::getAng(const string &limbType)
 	else if(limbType=="torso")      return torso->getAng();
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Vector(0);
 	}
 }
@@ -2540,7 +2517,7 @@ double iCubUpperBody::setAng(const string &limbType, const unsigned int i, doubl
 	else if(limbType=="torso")      return torso->setAng(i,_q);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0.0;
 	}
 }
@@ -2553,7 +2530,7 @@ double iCubUpperBody::getAng(const string &limbType, const unsigned int i)
 	else if(limbType=="torso")      return torso->getAng(i);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0.0;
 	}
 }
@@ -2566,7 +2543,7 @@ Vector iCubUpperBody::setDAng(const string &limbType, const Vector &_dq)
 	else if(limbType=="torso")      return torso->setDAng(_dq);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Vector(0);
 	}
 }
@@ -2579,7 +2556,7 @@ Vector iCubUpperBody::getDAng(const string &limbType)
 	else if(limbType=="torso")      return torso->getDAng();
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Vector(0);
 	}
 }
@@ -2592,7 +2569,7 @@ double iCubUpperBody::setDAng(const string &limbType, const unsigned int i, doub
 	else if(limbType=="torso")      return torso->setDAng(i,_dq);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0.0;
 	}
 }
@@ -2605,7 +2582,7 @@ double iCubUpperBody::getDAng(const string &limbType, const unsigned int i)
 	else if(limbType=="torso")      return torso->getDAng(i);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0.0;
 	}
 }
@@ -2618,7 +2595,7 @@ Vector iCubUpperBody::setD2Ang(const string &limbType, const Vector &_ddq)
 	else if(limbType=="torso")      return torso->setD2Ang(_ddq);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Vector(0);
 	}
 }
@@ -2631,7 +2608,7 @@ Vector iCubUpperBody::getD2Ang(const string &limbType)
 	else if(limbType=="torso")      return torso->getD2Ang();
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return Vector(0);
 	}
 }
@@ -2644,7 +2621,7 @@ double iCubUpperBody::setD2Ang(const string &limbType, const unsigned int i, dou
 	else if(limbType=="torso")      return torso->setD2Ang(i,_ddq);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0.0;
 	}
 }
@@ -2657,7 +2634,7 @@ double iCubUpperBody::getD2Ang(const string &limbType, const unsigned int i)
 	else if(limbType=="torso")      return torso->getD2Ang(i);
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0.0;
 	}
 }
@@ -2671,7 +2648,7 @@ unsigned int iCubUpperBody::setJoints(const string &limbType, const Vector &_q, 
     else if(limbType=="torso")      {torso->setD2Ang(_ddq); torso->setDAng(_dq); qchange = torso->setAng(_q);}
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0;
 	}
     if(qchange==_q)
@@ -2688,7 +2665,7 @@ unsigned int iCubUpperBody::getNLinks(const string &limbType) const
 	else if(limbType=="torso")      return torso->getN();
 	else
 	{		
-        if(verbose)	cerr<<"iCubUpperBody: error there's not a limb named "<<limbType<<". Only 'head','right_arm','left_arm','torso' are available. "<<endl;
+        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
 		return 0;
 	}
 }
