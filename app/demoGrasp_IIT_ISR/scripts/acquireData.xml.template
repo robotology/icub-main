@@ -5,6 +5,7 @@
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
                 <port>/icub/camcalib/right/out</port>
+                <port>/icub/head/state:o</port>
         </dependencies>
       
         <module>
@@ -33,6 +34,13 @@
                 <parameters>--name /log/right --rxTime</parameters>
                 <node>console</node>
                 <tag>loggerRight</tag>
+        </module>
+
+        <module>
+                <name>dataDumper</name>
+                <parameters>--name /log/head --rxTime</parameters>
+                <node>console</node>
+                <tag>loggerHead</tag>
         </module>
 
         <module>
@@ -68,6 +76,11 @@
         <connection>
                 <from>/icub/PF3DTracker_R/dataOut</from>
                 <to>/log/right</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/head/state:o</from>
+                <to>/log/head</to>
                 <protocol>tcp</protocol>
         </connection>
 
