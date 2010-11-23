@@ -4,13 +4,13 @@
       <name>iCubSkinGui</name>
       <parameters>--from lefthandcomp.ini --useCalibration</parameters>
 	  <node>console</node>
-	<tag>skinGuiLeftHand</tag>
+	<tag>skinGuiLeftHandComp</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from righthandcomp.ini --useCalibration</parameters>
 	  <node>console</node>
-	<tag>skinGuiRightHand</tag>
+	<tag>skinGuiRightHandComp</tag>
    </module>
 <module>
     <name>skinDriftCompensation</name>
