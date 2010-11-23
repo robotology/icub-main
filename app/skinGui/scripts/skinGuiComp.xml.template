@@ -1,14 +1,14 @@
 <application>
-<name>Face</name>
+<name>Hands compensated</name>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from lefthand.ini --useCalibration</parameters>
+      <parameters>--from lefthandcomp.ini --useCalibration</parameters>
 	  <node>console</node>
 	<tag>skinGuiLeftHand</tag>
    </module>
 <module>
       <name>iCubSkinGui</name>
-      <parameters>--from righthand.ini --useCalibration</parameters>
+      <parameters>--from righthandcomp.ini --useCalibration</parameters>
 	  <node>console</node>
 	<tag>skinGuiRightHand</tag>
    </module>
@@ -26,12 +26,12 @@
   </module>
 <connection>
   <from>/icub/skin/left_hand_comp</from>
-  <to>/skinGui/left_hand:i</to>
+  <to>/skinGuiComp/left_hand:i</to>
   <protocol>tcp</protocol>
 </connection>
 <connection>
   <from>/icub/skin/right_hand_comp</from>
-  <to>/skinGui/right_hand:i</to>
+  <to>/skinGuiComp/right_hand:i</to>
   <protocol>tcp</protocol>
 </connection>
 </application>
