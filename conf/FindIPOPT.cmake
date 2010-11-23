@@ -42,9 +42,7 @@ ELSE(WIN32)
    FIND_PACKAGE(PkgConfig)
    IF(PKG_CONFIG_FOUND)
      PKG_CHECK_MODULES(IPOPT ipopt)
-   ENDIF(PKG_CONFIG_FOUND)
-
-   SET(IPOPT_LINK_FLAGS "")
+   ENDIF(PKG_CONFIG_FOUND)   
 
    IF(NOT IPOPT_FOUND)
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
@@ -60,16 +58,24 @@ ELSE(WIN32)
             STRING(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})	# remove any possible auto-dependence
             SEPARATE_ARGUMENTS(IPOPT_DEP)
-            SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${IPOPT_DEP})
-            FIND_PATH(THIRDPARTY_LIBRARIES_PATH ThirdParty ${IPOPT_DIR}/lib/coin NO_DEFAULT_PATH)
-            IF(THIRDPARTY_LIBRARIES_PATH)
-               SET(IPOPT_LINK_FLAGS ${IPOPT_LINK_FLAGS} "-L${THIRDPARTY_LIBRARIES_PATH}/ThirdParty")
-            ENDIF(THIRDPARTY_LIBRARIES_PATH)
+			FOREACH(LIB ${IPOPT_DEP})
+			   FIND_LIBRARY(${LIB}_LIB ${LIB} ${IPOPT_DIR}/lib
+				                              ${IPOPT_DIR}/lib/coin
+				   						      ${IPOPT_DIR}/lib/coin/ThirdParty
+											  NO_DEFAULT_PATH)
+			   IF(${LIB}_LIB)
+			      SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB}_LIB)
+			   ELSE(${LIB}_LIB)
+			      SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
+			   ENDIF(${LIB}_LIB)
+			ENDFOREACH(LIB)
          ELSE(IPOPT_DEP_FILE)
             SET(IPOPT_INCLUDE_DIRS /usr/include/coin)
          ENDIF(IPOPT_DEP_FILE)
       ENDIF(IPOPT_LIBRARIES)
    ENDIF(NOT IPOPT_FOUND)
+   
+   SET(IPOPT_LINK_FLAGS "")
 
 ENDIF(WIN32)
 
