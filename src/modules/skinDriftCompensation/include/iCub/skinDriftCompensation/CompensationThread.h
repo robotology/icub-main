@@ -47,12 +47,12 @@ private:
 	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
 	static const int FREQUENCY = 36;			// how many measurements every second? (same rate of skin ports)
 	static const int CAL_TIME = 5;				// calibration time in sec	
+	static const int ADD_THRESHOLD = 2;			// value added to the touch threshold of every taxel
 	int SKIN_DIM;								// number of taxels in one hand (192)
 	float MAX_DRIFT;							// the maximal drift that is being compensated every second
 	float CHANGE_PER_TIMESTEP;					// the maximal drift that is being compensated every cycle
 
 	/* class variables */
-	bool globalTouchDetected;
 	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
 	VectorOf<float> touchThresholds;			// threshold for discriminating between "touch" and "no touch"
 	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold

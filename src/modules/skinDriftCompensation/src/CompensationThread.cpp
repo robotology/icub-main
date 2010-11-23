@@ -114,11 +114,8 @@ void CompensationThread::run(){
 	if( !readRawAndWriteCompensatedData() )
 		return;
 
-	//If the read values are under the touch threshold 
-	if(!globalTouchDetected){
-		//then the baseline is updated
-		updateBaseline();
-	}
+	//If the read values are under the touch threshold then the baseline is updated
+	updateBaseline();
 
 	//If calibration is allowed AND at least one baseline is less than minBaseline (or greater than 255-minBaseline)
 	if( (*calibrationAllowed)==true && doesBaselineExceed()){
@@ -246,7 +243,6 @@ void CompensationThread::runCalibration(){
 }
 
 bool CompensationThread::readRawAndWriteCompensatedData(){
-	globalTouchDetected = false;
 	int err, loopCounter=0;
 	while((err=tactileSensor->read(rawData))!=IAnalogSensor::AS_OK && loopCounter<100){
         loopCounter++;
@@ -278,9 +274,8 @@ bool CompensationThread::readRawAndWriteCompensatedData(){
 
 		compensatedData2.push_back((int)d);
 
-		if(d > touchThresholds[i]){
+		if(d > touchThresholds[i] + ADD_THRESHOLD){
 			touchDetected[i] = true;
-			globalTouchDetected = true;
 		}
 		else
 			touchDetected[i] = false;
@@ -307,11 +302,11 @@ void CompensationThread::updateBaseline(){
 			d = compensatedData(j);
 
 			if(d > 0.5) {
-				baselines[j]		-= CHANGE_PER_TIMESTEP;
-				mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
-			}else if(d < -0.5) {
 				baselines[j]		+= CHANGE_PER_TIMESTEP;
 				mean_change			+= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
+			}else if(d < -0.5) {
+				baselines[j]		-= CHANGE_PER_TIMESTEP;
+				mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
 			}
 		}
     }
