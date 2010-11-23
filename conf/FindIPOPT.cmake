@@ -58,17 +58,17 @@ ELSE(WIN32)
             STRING(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})	# remove any possible auto-dependence
             SEPARATE_ARGUMENTS(IPOPT_DEP)
-			FOREACH(LIB ${IPOPT_DEP})
-			   FIND_LIBRARY(${LIB}_LIB ${LIB} ${IPOPT_DIR}/lib
-				                              ${IPOPT_DIR}/lib/coin
-				   						      ${IPOPT_DIR}/lib/coin/ThirdParty
-											  NO_DEFAULT_PATH)
-			   IF(${LIB}_LIB)
-			      SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB}_LIB)
-			   ELSE(${LIB}_LIB)
-			      SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
-			   ENDIF(${LIB}_LIB)
-			ENDFOREACH(LIB)
+	    FOREACH(LIB ${IPOPT_DEP})
+	       FIND_LIBRARY(${LIB}_LIB ${LIB} ${IPOPT_DIR}/lib
+                                              ${IPOPT_DIR}/lib/coin
+	     		   		      ${IPOPT_DIR}/lib/coin/ThirdParty
+	     				      NO_DEFAULT_PATH)
+               IF(${LIB}_LIB)
+                  SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${${LIB}_LIB})
+               ELSE(${LIB}_LIB)
+                  SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
+	       ENDIF(${LIB}_LIB)
+	    ENDFOREACH(LIB)
          ELSE(IPOPT_DEP_FILE)
             SET(IPOPT_INCLUDE_DIRS /usr/include/coin)
          ENDIF(IPOPT_DEP_FILE)
