@@ -247,11 +247,13 @@ public:
         Bottle *firstBlobLeft=imdLeft->get(0).asList();
         Bottle *firstBlobRight=imdRight->get(0).asList();
 
-        Vector in(3);
+        Vector in(5);
         in[0]=firstBlobLeft->get(0).asDouble();         // ul
         in[1]=firstBlobRight->get(0).asDouble();        // ur
         in[2]=(firstBlobLeft->get(1).asDouble()+
                firstBlobRight->get(1).asDouble())/2.0;  // v
+        in[3]=head[4];                                  // pan
+        in[4]=head[5];                                  // ver
 
         Vector out=net.predict(in);
         Vector homOut(4);
