@@ -40,6 +40,13 @@ public:
         }
 	
 		std::string part="/skinGui/";
+        
+        if (config.check("name"))
+        {
+            part=config.find("name").asString().c_str();
+            part+="/";
+        }
+
 		part.append(config.find("robotPart").asString());
 		part.append(":i");
 		skin_port.open(part.c_str());
