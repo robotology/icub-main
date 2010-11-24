@@ -1,3 +1,11 @@
+2010-11-24 Lorenzo Natale <lorenzo.natale@iit.it>
+	app/: robot specific files moved to main/app, don't forget to install them with 
+	on Linux: make install_applications
+	ICUB_ROOT.ini: deleted no longer needed, it gets installed with applications
+	
+2010-11-24 Lorenzo Natale <lorenzo.natale@iit.it>
+	main/CMakeLists.txt: rapth option renamed to ICUB_INSTALL_WITH_RPATH, to match YARP analogous
+	
 2010-11-22 Lorenzo Natale <lorenzo.natale@iit.it>
 	main/CMakeLists.txt: rapth options
 	
