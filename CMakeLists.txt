@@ -68,25 +68,15 @@ set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 ########################################################################
 # settings for rpath
 set(ICUB_ENABLE_FORCE_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
-#mark_as_advanced(ENABLE_FORCE_RPATH)
+#mark_as_advanced(ICUB_ENABLE_FORCE_RPATH)
 
 if (ICUB_ENABLE_FORCE_RPATH)
-  set(ICUB_FORCE_RPATH_TO_INSTALL_PATH TRUE CACHE BOOL "Force rpath to match install path, leave on unless you know what you are doing!")
-
-  if (ICUB_FORCE_RPATH_TO_INSTALL_PATH)
-    set(ICUB_FORCE_RPATH "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING 
-      "The rpath for the executables" FORCE)
-    else ()
-    set(ICUB_FORCE_RPATH "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING 
-      "The rpath for the executables")
-  endif()
-	
   # when building, don't use the install RPATH already
   # (but later on when installing), this tells cmake to relink 
   # at install, so in-tree binaries have correct rpath
   SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
-  SET(CMAKE_INSTALL_RPATH "${ICUB_FORCE_RPATH}")
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
 endif (ICUB_ENABLE_FORCE_RPATH)
 #########################################################################
