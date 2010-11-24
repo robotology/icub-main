@@ -79,14 +79,14 @@ in_f=filtfilt(d.Numerator,d.Denominator,in-in_ofs)+in_ofs;
 out_f=filtfilt(d.Numerator,d.Denominator,out-out_ofs)+out_ofs;
 
 figure;
-subplot(531),stairs([in(:,1),in_f(:,1)]),title('ul');
-subplot(533),stairs([in(:,2),in_f(:,2)]),title('ur');
-subplot(535),stairs([in(:,3),in_f(:,3)]),title('v');
-subplot(537),stairs([in(:,4),in_f(:,4)]),title('pan');
-subplot(538),stairs([in(:,5),in_f(:,5)]),title('ver');
+subplot(521),stairs([in(:,1),in_f(:,1)]),title('ul');
+subplot(523),stairs([in(:,2),in_f(:,2)]),title('ur');
+subplot(525),stairs([in(:,3),in_f(:,3)]),title('v');
+subplot(527),stairs([in(:,4),in_f(:,4)]),title('pan');
+subplot(528),stairs([in(:,5),in_f(:,5)]),title('ver');
 
-subplot(534),stairs([out(:,1),out_f(:,1)]),title('eye-x');
-subplot(536),stairs([out(:,2),out_f(:,2)]),title('eye-y');
-subplot(538),stairs([out(:,3),out_f(:,3)]),title('eye-z');
+subplot(524),stairs([out(:,1),out_f(:,1)]),title('eye-x');
+subplot(526),stairs([out(:,2),out_f(:,2)]),title('eye-y');
+subplot(528),stairs([out(:,3),out_f(:,3)]),title('eye-z');
 
 
