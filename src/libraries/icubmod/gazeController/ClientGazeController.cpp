@@ -749,10 +749,10 @@ bool ClientGazeController::waitMotionDone(const double period, const double time
 
     while (!done)
     {
+        Time::delay(period);
+
         if (!checkMotionDone(&done) || (timeout>0.0) && ((Time::now()-t0)>timeout))
             return false;
-
-        Time::delay(period);
     }
 
     return true;
