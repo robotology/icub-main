@@ -43,13 +43,11 @@ namespace skinDriftCompensation{
 class CompensationThread : public RateThread
 {
 private:
-
 	/* class constants */	
 	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
-	static const int CAL_TIME = 5;				// calibration time in sec
-	static const int ADD_THRESHOLD = 2;			// value added to the threshold of every taxel 
-	const int PERIOD;
-	static const int ADD_THRESHOLD = 2;			// value added to the touch threshold of every taxel
+	static const int FREQUENCY = 36;			// how many measurements every second? (same rate of skin ports)
+	static const int CAL_TIME = 5;				// calibration time in sec	
+	static const int ADD_THRESHOLD = 2;			// value added to the touch threshold of all the taxels
 	int SKIN_DIM;								// number of taxels in one hand (192)
 	float MAX_DRIFT;							// the maximal drift that is being compensated every second
 	float CHANGE_PER_TIMESTEP;					// the maximal drift that is being compensated every cycle
@@ -92,7 +90,7 @@ public:
 	/* class methods */
 
 	CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, bool *calibrationAllowed, 
-		bool *forceCalibration, bool zeroUpRawData, bool rightHand, int period);
+		bool *forceCalibration, bool zeroUpRawData, bool rightHand);
 	bool threadInit();
 	void threadRelease();
 	void run(); 
