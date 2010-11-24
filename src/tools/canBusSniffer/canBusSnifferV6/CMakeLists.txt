@@ -1,4 +1,4 @@
-SET(PROJECTNAME canBusSnifferV5)
+SET(PROJECTNAME canBusSnifferV6)
 
 PROJECT(${PROJECTNAME})
 
@@ -15,9 +15,9 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 # Add our include files into our compiler's search path.
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${ctrlLib_INCLUDE_DIRS})
 
 # Create everything needed to build our executable.
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} libfftw3-3.lib )
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib icubmod)
