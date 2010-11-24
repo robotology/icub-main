@@ -161,6 +161,16 @@ public:
 	bool updateModule();
 
 private:
+	// module default values
+	static const bool CALIBRATION_ALLOWED_DEFAULT;
+	static const int MIN_BASELINE_DEFAULT;
+	static const int PERIOD_DEFAULT;
+	static const string MODULE_NAME_DEFAULT;
+	static const string ROBOT_NAME_DEFAULT;
+	static const string HAND_DEFAULT;
+	static const string ZERO_UP_RAW_DATA_DEFAULT;
+	static const string RPC_PORT_DEFAULT;
+	
 
 	// module constants
 	static const string COMMAND_LIST[];						// list of commands received through the rpc port
