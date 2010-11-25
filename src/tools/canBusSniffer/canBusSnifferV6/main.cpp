@@ -128,7 +128,8 @@ public:
 			fprintf(stderr, "Error setting baud rate\n");
 
 		// add the id of can messages to be read
-		iCanBus->canIdAdd(0x11A);
+		iCanBus->canIdAdd(0x12A);
+		iCanBus->canIdAdd(0x12B);
         messageBuffer=iBufferFactory->createBuffer(localBufferSize);
 
 		cnt = 0;
@@ -165,13 +166,14 @@ public:
 			}
 			*/
 
-			if (messageBuffer[i].getId() == 0x11B) 
+			if (messageBuffer[i].getId() == 0x12B) 
 			{
-				sin_frequency[0] = messageBuffer[i].getData()[0];
-				sin_amplitude[0] = messageBuffer[i].getData()[1];
+				sin_frequency[0] = (messageBuffer[i].getData()[1]<<8) | messageBuffer[i].getData()[0];
+				sin_amplitude[0] = (messageBuffer[i].getData()[3]<<8) | messageBuffer[i].getData()[2];
+				dutyCycle[0]     = (messageBuffer[i].getData()[5]<<8) | messageBuffer[i].getData()[4];
 			}
 
-			if (messageBuffer[i].getId() == 0x11A) 
+			if (messageBuffer[i].getId() == 0x12A) 
 			{
 				position[0]  = (messageBuffer[i].getData()[1]<<8) | messageBuffer[i].getData()[0];
 				speed[0]	 = (messageBuffer[i].getData()[3]<<8) | messageBuffer[i].getData()[2];
@@ -185,11 +187,11 @@ public:
 					exit(0);
 				};*/
 						
-				if(log_start) fprintf(fp,"%d %d %d %d %d %d %d\n",cnt,sin_frequency[0],sin_amplitude[0],position[0],speed[0],pid[0],torque[0]);
+				if(log_start) fprintf(fp,"%d %d %d %d %d %d %d %d\n",cnt,sin_frequency[0],sin_amplitude[0],position[0],speed[0],pid[0],torque[0],dutyCycle[0]);
 				cnt++;
-				if ((cnt % 1000) == 0)
+				if ((cnt % 500) == 0)
 				{
-					fprintf(stdout,"%d %d %d %d %d %d %d\n",cnt,sin_frequency[0],sin_amplitude[0],position[0],speed[0],pid[0],torque[0]);
+					fprintf(stdout,"%d %d %d %d %d %d %d %d\n",cnt,sin_frequency[0],sin_amplitude[0],position[0],speed[0],pid[0],torque[0],dutyCycle[0]);
 				}
 			}
 		}
