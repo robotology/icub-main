@@ -232,9 +232,9 @@ protected:
                              const yarp::sig::Vector &o, const double execTime,
                              const bool oEnabled, const bool execHand, const HandWayPoint &handWP,
                              const bool handSeqTerminator, ActionPrimitivesCallback *clb);
-   virtual bool  _pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                             const std::string &handSeqKey, const double execTime,
-                             ActionPrimitivesCallback *clb, const bool oEnabled);
+    virtual bool  _pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                              const std::string &handSeqKey, const double execTime,
+                              ActionPrimitivesCallback *clb, const bool oEnabled);
     virtual bool stopJntTraj(const int jnt);
     virtual bool handCheckMotionDone(const int jnt);
     virtual void enableTorsoDof();
