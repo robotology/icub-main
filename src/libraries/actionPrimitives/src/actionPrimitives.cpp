@@ -386,6 +386,9 @@ bool ActionPrimitives::open(Property &opt)
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
 
+    // latch the cartesian controller context
+    cartCtrl->saveContext(&context_id);
+
     // set tolerance
     cartCtrl->setInTargetTol(reach_tol);
 
@@ -465,10 +468,7 @@ void ActionPrimitives::close()
     if ((polyHand!=NULL) && (polyCart!=NULL))
     {
         if (polyHand->isValid() && polyCart->isValid())
-        {    
             stopControl();
-            setTrackingMode(false);
-        }
     }
 
     if (polyHand!=NULL)
@@ -479,7 +479,8 @@ void ActionPrimitives::close()
 
     if (polyCart!=NULL)
     {
-        printMessage("closing cartesian driver ...\n"); 
+        printMessage("closing cartesian driver ...\n");
+        cartCtrl->restoreContext(context_id);
         delete polyCart;
     }
 
