@@ -316,31 +316,38 @@ Vector iCub::ctrl::sign(const Vector &v)
 	return ret;
 }
 
+
 /************************************************************************/
 double iCub::ctrl::max(const Vector &v)
 {
-    if(v.length()<=0)
+    if (v.length()<=0)
         return 0.0;
     
     double ret=v[0];
-    for(int i=0; i<v.length(); i++)
-        if(v[i]>ret)
+
+    for (int i=0; i<v.length(); i++)
+        if (v[i]>ret)
             ret=v[i];
-	return ret;
+
+    return ret;
 }
+
 
 /************************************************************************/
 double iCub::ctrl::min(const Vector &v)
 {
-    if(v.length()<=0)
+    if (v.length()<=0)
         return 0.0;
     
     double ret=v[0];
-    for(int i=0; i<v.length(); i++)
-        if(v[i]<ret)
+
+    for (int i=0; i<v.length(); i++)
+        if (v[i]<ret)
             ret=v[i];
+
 	return ret;
 }
+
 
 /************************************************************************/
 Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)

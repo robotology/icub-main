@@ -165,6 +165,7 @@ yarp::sig::Vector sign(const yarp::sig::Vector &v);
 */
 double max(const yarp::sig::Vector &v);
 
+
 /**
 * \ingroup Maths
 *
@@ -173,6 +174,7 @@ double max(const yarp::sig::Vector &v);
 * @return min(v). 
 */
 double min(const yarp::sig::Vector &v);
+
 
 /**
 * \ingroup Maths
