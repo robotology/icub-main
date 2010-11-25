@@ -107,8 +107,8 @@ public:
     virtual bool checkMotionDone(bool *f);
     virtual bool waitMotionDone(const double period=0.1, const double timeout=0.0);
     virtual bool stopControl();
-    virtual bool saveStatus(int *id);
-    virtual bool restoreStatus(const int id);
+    virtual bool saveContext(int *id);
+    virtual bool restoreContext(const int id);
 
     virtual yarp::os::Stamp getLastInputStamp();
 

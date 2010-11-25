@@ -261,10 +261,10 @@ following ports:
       for eyes movements.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
-    - [save]: save the controller's status returning an integer
+    - [save]: save the controller context returning an integer
       identifier.
-    - [rest] <id>: restore a previously saved controller's
-      status referred by the identifier \e id.
+    - [rest] <id>: restore a previously saved controller context
+      referred by the identifier \e id.
  
 \note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
@@ -367,7 +367,7 @@ protected:
     exchangeData   commData;
     Port           rpcPort;
 
-    struct Status
+    struct Context
     {
         // controller part
         double neckTime;
@@ -381,8 +381,8 @@ protected:
         double neckYawMax;
     };
 
-    int statusIdCnt;
-    std::map<int,Status> statusMap;
+    int contextIdCnt;
+    std::map<int,Context> contextMap;
 
     /************************************************************************/
     bool waitPart(const Property &partOpt, const double ping_robot_tmo)
@@ -410,39 +410,39 @@ protected:
     }
 
     /************************************************************************/
-    void saveStatus(int *id)
+    void saveContext(int *id)
     {
-        Status &status=statusMap[++statusIdCnt];
+        Context &context=contextMap[++contextIdCnt];
 
         // controller part
-        status.neckTime=ctrl->getTneck();
-        status.eyesTime=ctrl->getTeyes();
-        status.mode=ctrl->getTrackingMode();
+        context.neckTime=ctrl->getTneck();
+        context.eyesTime=ctrl->getTeyes();
+        context.mode=ctrl->getTrackingMode();
         
         // solver part
-        slv->getCurNeckPitchRange(status.neckPitchMin,status.neckPitchMax);
-        slv->getCurNeckYawRange(status.neckYawMin,status.neckYawMax);
+        slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
+        slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
 
-        *id=statusIdCnt;
+        *id=contextIdCnt;
     }
 
     /************************************************************************/
-    bool restoreStatus(const int id)
+    bool restoreContext(const int id)
     {
-        map<int,Status>::iterator itr=statusMap.find(id);
+        map<int,Context>::iterator itr=contextMap.find(id);
 
-        if (itr!=statusMap.end())
+        if (itr!=contextMap.end())
         {
-            Status &status=itr->second;
+            Context &context=itr->second;
 
             // controller part
-            ctrl->setTneck(status.neckTime);
-            ctrl->setTeyes(status.eyesTime);
-            ctrl->setTrackingMode(status.mode);
+            ctrl->setTneck(context.neckTime);
+            ctrl->setTeyes(context.eyesTime);
+            ctrl->setTrackingMode(context.mode);
 
             // solver part
-            slv->bindNeckPitch(status.neckPitchMin,status.neckPitchMax);
-            slv->bindNeckYaw(status.neckYawMin,status.neckYawMax);
+            slv->bindNeckPitch(context.neckPitchMin,context.neckPitchMax);
+            slv->bindNeckYaw(context.neckYawMin,context.neckYawMax);
 
             return true;
         }
@@ -568,7 +568,7 @@ public:
         rpcPort.open(rpcPortName.c_str());
         attach(rpcPort);
 
-        statusIdCnt=0;
+        contextIdCnt=0;
 
         return true;
     }
@@ -611,7 +611,7 @@ public:
                 case VOCAB4('s','a','v','e'):
                 {
                     int id;
-                    saveStatus(&id);                    
+                    saveContext(&id);                    
                     reply.addVocab(ack);
                     reply.addInt(id);
                     return true;
@@ -622,7 +622,7 @@ public:
                     if (command.size()>1)
                     {
                         int id=command.get(1).asInt();
-                        if (restoreStatus(id))
+                        if (restoreContext(id))
                         {
                             reply.addVocab(ack);
                             return true;
@@ -829,7 +829,7 @@ public:
         rpcPort.interrupt();
         rpcPort.close();
 
-        statusMap.clear();
+        contextMap.clear();
 
         return true;
     }

@@ -150,7 +150,7 @@ void ServerCartesianController::init()
     skipSlvRes=false;
     syncEventEnabled=false;
 
-    statusIdCnt=0;
+    contextIdCnt=0;
 
     // request high resolution scheduling
     Time::turboBoost();
@@ -306,7 +306,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             case IKINCARTCTRL_VOCAB_CMD_SAVE:
             {
                 int id;
-                if (saveStatus(&id))
+                if (saveContext(&id))
                 {
                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                     reply.addInt(id);
@@ -322,7 +322,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 if (command.size()>1)
                 {
                     int id=command.get(1).asInt();
-                    if (restoreStatus(id))
+                    if (restoreContext(id))
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                     else
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -1330,7 +1330,7 @@ bool ServerCartesianController::close()
 
     closePorts();
 
-    statusMap.clear();
+    contextMap.clear();
 
     return closed=true;
 }
@@ -2245,30 +2245,30 @@ bool ServerCartesianController::stopControl()
 
 
 /************************************************************************/
-bool ServerCartesianController::saveStatus(int *id)
+bool ServerCartesianController::saveContext(int *id)
 {
     if (attached && (id!=NULL))
     {
-        Status &status=statusMap[++statusIdCnt];
+        Context &context=contextMap[++contextIdCnt];
 
-        getDOF(status.dof);
-        getRestPos(status.restPos);
-        getRestWeights(status.restWeights);
+        getDOF(context.dof);
+        getRestPos(context.restPos);
+        getRestWeights(context.restWeights);
 
-        status.limits.resize(chain->getN(),2);
+        context.limits.resize(chain->getN(),2);
         for (unsigned int axis=0; axis<chain->getN(); axis++)
         {
             double min,max;
             getLimits(axis,&min,&max);
-            status.limits(axis,0)=min;
-            status.limits(axis,1)=max;
+            context.limits(axis,0)=min;
+            context.limits(axis,1)=max;
         }
 
-        getTrajTime(&status.trajTime);
-        getInTargetTol(&status.tol);
-        getTrackingMode(&status.mode);
+        getTrajTime(&context.trajTime);
+        getInTargetTol(&context.tol);
+        getTrackingMode(&context.mode);
 
-        *id=statusIdCnt;
+        *id=contextIdCnt;
 
         return true;
     }
@@ -2278,26 +2278,26 @@ bool ServerCartesianController::saveStatus(int *id)
 
 
 /************************************************************************/
-bool ServerCartesianController::restoreStatus(const int id)
+bool ServerCartesianController::restoreContext(const int id)
 {
     if (attached)
     {
-        map<int,Status>::iterator itr=statusMap.find(id);
+        map<int,Context>::iterator itr=contextMap.find(id);
 
-        if (itr!=statusMap.end())
+        if (itr!=contextMap.end())
         {
-            Status &status=itr->second;
+            Context &context=itr->second;
 
-            setDOF(status.dof,status.dof);
-            setRestPos(status.restPos,status.restPos);
-            setRestWeights(status.restWeights,status.restWeights);
+            setDOF(context.dof,context.dof);
+            setRestPos(context.restPos,context.restPos);
+            setRestWeights(context.restWeights,context.restWeights);
 
             for (unsigned int axis=0; axis<chain->getN(); axis++)
-                setLimits(axis,status.limits(axis,0),status.limits(axis,1));
+                setLimits(axis,context.limits(axis,0),context.limits(axis,1));
 
-            setTrajTime(status.trajTime);
-            setInTargetTol(status.tol);
-            setTrackingMode(status.mode);
+            setTrajTime(context.trajTime);
+            setInTargetTol(context.tol);
+            setTrackingMode(context.mode);
 
             return true;
         }

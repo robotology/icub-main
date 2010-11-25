@@ -797,7 +797,7 @@ bool ClientGazeController::stopControl()
 
 
 /************************************************************************/
-bool ClientGazeController::saveStatus(int *id)
+bool ClientGazeController::saveContext(int *id)
 {
     if (!connected || (id==NULL))
         return false;
@@ -823,7 +823,7 @@ bool ClientGazeController::saveStatus(int *id)
 
 
 /************************************************************************/
-bool ClientGazeController::restoreStatus(const int id)
+bool ClientGazeController::restoreContext(const int id)
 {
     if (!connected)
         return false;

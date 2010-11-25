@@ -1140,7 +1140,7 @@ bool ClientCartesianController::stopControl()
 
 
 /************************************************************************/
-bool ClientCartesianController::saveStatus(int *id)
+bool ClientCartesianController::saveContext(int *id)
 {
     if (!connected || (id==NULL))
         return false;
@@ -1173,7 +1173,7 @@ bool ClientCartesianController::saveStatus(int *id)
 
 
 /************************************************************************/
-bool ClientCartesianController::restoreStatus(const int id)
+bool ClientCartesianController::restoreContext(const int id)
 {
     if (!connected)
         return false;
