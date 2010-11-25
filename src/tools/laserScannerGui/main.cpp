@@ -206,3 +206,4 @@ int main(int argc, char *argv[])
     cvDestroyAllWindows();
     cvReleaseImage(&img);
 }
+
