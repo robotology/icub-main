@@ -159,6 +159,24 @@ yarp::sig::Vector sign(const yarp::sig::Vector &v);
 /**
 * \ingroup Maths
 *
+* Returns the maximum of the elements of a real vector.
+* @param v is the input vector. 
+* @return max(v). 
+*/
+double max(const yarp::sig::Vector &v);
+
+/**
+* \ingroup Maths
+*
+* Returns the minimum of the elements of a real vector.
+* @param v is the input vector. 
+* @return min(v). 
+*/
+double min(const yarp::sig::Vector &v);
+
+/**
+* \ingroup Maths
+*
 * Returns the the cross product between two vectors. 
 * @param a is the first input vector. 
 * @param b is the second input vector. 
