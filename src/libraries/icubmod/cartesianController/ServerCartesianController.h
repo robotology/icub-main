@@ -55,6 +55,7 @@
 #include <iCub/iKin/iKinInv.h>
 
 #include <deque>
+#include <map>
 
 
 class ServerCartesianController;
@@ -158,6 +159,20 @@ protected:
     CartesianCtrlRpcProcessor                 *rpcProcessor;
     yarp::os::Port                            *portRpc;
 
+    struct Status
+    {
+        yarp::sig::Vector dof;
+        yarp::sig::Vector restPos;
+        yarp::sig::Vector restWeights;
+        yarp::sig::Matrix limits;
+        double            trajTime;
+        double            tol;
+        bool              mode;
+    };
+
+    int statusIdCnt;
+    std::map<int,Status> statusMap;
+
     void init();
     void openPorts();
     void closePorts();
@@ -225,6 +240,8 @@ public:
     virtual bool checkMotionDone(bool *f);
     virtual bool waitMotionDone(const double period=0.1, const double timeout=0.0);
     virtual bool stopControl();
+    virtual bool saveStatus(int *id);
+    virtual bool restoreStatus(const int id);
 
     virtual yarp::os::Stamp getLastInputStamp();
 

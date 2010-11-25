@@ -35,6 +35,7 @@
 #define CARTCTRL_MAX_ACCEL          1e9
 #define CARTCTRL_CONNECT_TMO        5e3     // [ms]
 
+using namespace std;
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -148,6 +149,8 @@ void ServerCartesianController::init()
     txTokenLatchedGoToRpc=0.0;
     skipSlvRes=false;
     syncEventEnabled=false;
+
+    statusIdCnt=0;
 
     // request high resolution scheduling
     Time::turboBoost();
@@ -297,6 +300,34 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
 
+                break;
+            }
+
+            case IKINCARTCTRL_VOCAB_CMD_SAVE:
+            {
+                int id;
+                if (saveStatus(&id))
+                {
+                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                    reply.addInt(id);
+                }
+                else
+                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                break;
+            }
+
+            case IKINCARTCTRL_VOCAB_CMD_RESTORE:
+            {
+                if (command.size()>1)
+                {
+                    int id=command.get(1).asInt();
+                    if (restoreStatus(id))
+                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                    else
+                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                }
+    
                 break;
             }
 
@@ -1299,6 +1330,8 @@ bool ServerCartesianController::close()
 
     closePorts();
 
+    statusMap.clear();
+
     return closed=true;
 }
 
@@ -1838,7 +1871,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         Bottle command, reply;
     
         // begin of critical code
-        mutex.wait();    
+        mutex.wait();
     
         // prepare command
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2205,6 +2238,71 @@ bool ServerCartesianController::stopControl()
         skipSlvRes=true;
 
         return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::saveStatus(int *id)
+{
+    if (attached && (id!=NULL))
+    {
+        Status &status=statusMap[++statusIdCnt];
+
+        getDOF(status.dof);
+        getRestPos(status.restPos);
+        getRestWeights(status.restWeights);
+
+        status.limits.resize(chain->getN(),2);
+        for (unsigned int axis=0; axis<chain->getN(); axis++)
+        {
+            double min,max;
+            getLimits(axis,&min,&max);
+            status.limits(axis,0)=min;
+            status.limits(axis,1)=max;
+        }
+
+        getTrajTime(&status.trajTime);
+        getInTargetTol(&status.tol);
+        getTrackingMode(&status.mode);
+
+        *id=statusIdCnt;
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::restoreStatus(const int id)
+{
+    if (attached)
+    {
+        map<int,Status>::iterator itr=statusMap.find(id);
+
+        if (itr!=statusMap.end())
+        {
+            Status &status=itr->second;
+
+            setDOF(status.dof,status.dof);
+            setRestPos(status.restPos,status.restPos);
+            setRestWeights(status.restWeights,status.restWeights);
+
+            for (unsigned int axis=0; axis<chain->getN(); axis++)
+                setLimits(axis,status.limits(axis,0),status.limits(axis,1));
+
+            setTrajTime(status.trajTime);
+            setInTargetTol(status.tol);
+            setTrackingMode(status.mode);
+
+            return true;
+        }
+        else
+            return false;
     }
     else
         return false;

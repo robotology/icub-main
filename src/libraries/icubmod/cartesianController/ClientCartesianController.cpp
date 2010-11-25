@@ -180,10 +180,7 @@ bool ClientCartesianController::setTrackingMode(const bool f)
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_MODE);
 
-    if (f)
-        command.addVocab(IKINCARTCTRL_VOCAB_VAL_MODE_TRACK);
-    else
-        command.addVocab(IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
+    command.addVocab(f?IKINCARTCTRL_VOCAB_VAL_MODE_TRACK:IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))
@@ -192,10 +189,7 @@ bool ClientCartesianController::setTrackingMode(const bool f)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-        return true;
-    else
-        return false;
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -922,10 +916,7 @@ bool ClientCartesianController::setTrajTime(const double t)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-        return true;
-    else
-        return false;
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -984,10 +975,7 @@ bool ClientCartesianController::setInTargetTol(const double tol)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-        return true;
-    else
-        return false;
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -1147,10 +1135,63 @@ bool ClientCartesianController::stopControl()
         return false;
     }
 
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::saveStatus(int *id)
+{
+    if (!connected || (id==NULL))
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SAVE);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
     if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-        return true;
+    {
+        if (reply.size()>1)
+        {
+            *id=reply.get(1).asInt();
+            return true;
+        }
+        else
+            return false;
+    }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::restoreStatus(const int id)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_RESTORE);
+    command.addInt(id);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
