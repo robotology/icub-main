@@ -2,6 +2,10 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # New build system. Exploit new cmake 2.6 features (export). 
 
 #reduce warning level with cmake 2.6
@@ -12,30 +16,6 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 project(iCub)
-
-##### options
-if(MSVC)
-    MESSAGE(STATUS "Running on windows")    
-    
-    # ACE uses a bunch of functions MSVC warns about.
-    # The warnings make sense in general, but not in this case.
-    # this gets rids of deprecated unsafe crt functions
-    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-    # this gets rid of warning about deprecated POSIX names
-    add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
-    # Traditionally, we add "d" postfix to debug libraries
-    set(CMAKE_DEBUG_POSTFIX "d")
-endif(MSVC)
-
-if(NOT CMAKE_BUILD_TYPE)
-        set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
-        "Choose the type of build, recommanded options are: Debug or Release")
-endif(NOT CMAKE_BUILD_TYPE)
-# Hide variable to MSVC users, since it is not needed
- if (MSVC)
-        mark_as_advanced(CMAKE_BUILD_TYPE)
-endif(MSVC)
-######################
 
 #### Find YARP
 find_package(YARP)
@@ -62,24 +42,9 @@ set(CMAKE_MODULE_PATH ${YARP_MODULE_PATH} ${CMAKE_MODULE_PATH})
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
 set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 
-# Set up some large-scale compile options - do you want devices? guis?
-# INCLUDE(${PROJECT_SOURCE_DIR}/ICUBOptions.cmake)
-
-########################################################################
-# settings for rpath
-set(ICUB_INSTALL_WITH_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
-#mark_as_advanced(ICUB_ENABLE_FORCE_RPATH)
-
-if (ICUB_INSTALL_WITH_RPATH )
-  # when building, don't use the install RPATH already
-  # (but later on when installing), this tells cmake to relink 
-  # at install, so in-tree binaries have correct rpath
-  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-
-  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
-endif (ICUB_INSTALL_WITH_RPATH )
-#########################################################################
+# Import common options (disable flags in windows, rpath, etc..)
+# These options are shared with projects in contrib.
+include(${PROJECT_SOURCE_DIR}/conf/iCubOptions.cmake)
 
 # add functionalities like icub_add_library/icub_add_executable
 include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
@@ -87,6 +52,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
+#### options that are iCub specific
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
 
 # check for libraries that are strictly required
@@ -204,7 +170,9 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindQt3.cmake
                         FindGLUT.cmake
                         FindOpenGL.cmake
-						iCubHelpers.cmake)
+						iCubHelpers.cmake
+						iCubOptions.cmake
+						iCubFindDependencies.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
