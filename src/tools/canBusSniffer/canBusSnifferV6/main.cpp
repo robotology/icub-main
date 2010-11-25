@@ -56,7 +56,7 @@ class SnifferThread: public RateThread
 
 	/* variables to be sniffed from the Can Bus */
 	signed int position[2];
-	signed int speed[2];
+	signed short speed[2];
 	signed short pwm[2];
 	signed short pid[2];
 	signed short sin_frequency[2];
@@ -187,7 +187,7 @@ public:
 						
 				if(log_start) fprintf(fp,"%d %d %d %d %d %d %d\n",cnt,sin_frequency[0],sin_amplitude[0],position[0],speed[0],pid[0],torque[0]);
 				cnt++;
-				if ((cnt % 5000) == 0)
+				if ((cnt % 1000) == 0)
 				{
 					fprintf(stdout,"%d %d %d %d %d %d %d\n",cnt,sin_frequency[0],sin_amplitude[0],position[0],speed[0],pid[0],torque[0]);
 				}
