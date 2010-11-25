@@ -30,6 +30,8 @@
 #include "ClientGazeController.h"
 
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
+#define GAZECTRL_ACK            Vocab::encode("ack")
+#define GAZECTRL_NACK           Vocab::encode("nack")
 
 using namespace std;
 using namespace yarp;
@@ -223,7 +225,7 @@ bool ClientGazeController::setTrackingMode(const bool f)
         return false;
     }
 
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -243,11 +245,14 @@ bool ClientGazeController::getTrackingMode(bool *f)
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
     }
-    else
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
     {
-        *f=(reply.get(0).asInt()>0);
+        *f=(reply.get(1).asInt()>0);
         return true;
     }
+    else
+        return false;
 }
 
 
@@ -396,11 +401,14 @@ bool ClientGazeController::getNeckTrajTime(double *t)
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
     }
-    else
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
     {
-        *t=reply.get(0).asDouble();
+        *t=reply.get(1).asDouble();
         return true;
     }
+    else
+        return false;
 }
 
 
@@ -420,11 +428,14 @@ bool ClientGazeController::getEyesTrajTime(double *t)
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
     }
-    else
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
     {
-        *t=reply.get(0).asDouble();
+        *t=reply.get(1).asDouble();
         return true;
     }
+    else
+        return false;
 }
 
 
@@ -447,24 +458,27 @@ bool ClientGazeController::getPose(const string eyeSel, Vector &x, Vector &o)
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
     }
-    else
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
     {
-        if (reply.size()>=7)
+        if (reply.size()>=7+1)
         {
             x.resize(3);
-            o.resize(reply.size()-x.length());
-
+            o.resize(reply.size()-1-x.length());
+    
             for (int i=0; i<x.length(); i++)
-                x[i]=reply.get(i).asDouble();
-
+                x[i]=reply.get(1+i).asDouble();
+    
             for (int i=0; i<o.length(); i++)
-                o[i]=reply.get(x.length()+i).asDouble();
-
+                o[i]=reply.get(1+x.length()+i).asDouble();
+    
             return true;
         }
         else
             return false;
     }
+    else
+        return false;
 }
 
 
@@ -507,7 +521,7 @@ bool ClientGazeController::setNeckTrajTime(const double t)
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -529,7 +543,7 @@ bool ClientGazeController::setEyesTrajTime(const double t)
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -552,7 +566,7 @@ bool ClientGazeController::bindNeckPitch(const double min, const double max)
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -575,7 +589,7 @@ bool ClientGazeController::blockNeckPitch(const double val)
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -600,7 +614,7 @@ bool ClientGazeController::blockNeckPitch()
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -623,7 +637,7 @@ bool ClientGazeController::bindNeckYaw(const double min, const double max)
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -646,7 +660,7 @@ bool ClientGazeController::blockNeckYaw(const double val)
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -671,7 +685,7 @@ bool ClientGazeController::blockNeckYaw()
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -692,7 +706,7 @@ bool ClientGazeController::clearNeckPitch()
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -713,7 +727,7 @@ bool ClientGazeController::clearNeckYaw()
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
@@ -733,11 +747,14 @@ bool ClientGazeController::checkMotionDone(bool *f)
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
     }
-    else
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
     {
-        *f=(reply.get(0).asInt()>0);
+        *f=(reply.get(1).asInt()>0);
         return true;
     }
+    else
+        return false;
 }
 
 
@@ -775,8 +792,53 @@ bool ClientGazeController::stopControl()
         return false;
     }
     
-    return true;
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 
+/************************************************************************/
+bool ClientGazeController::saveStatus(int *id)
+{
+    if (!connected || (id==NULL))
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("save");
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        *id=reply.get(1).asInt();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::restoreStatus(const int id)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("rest");
+    command.addInt(id);
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
 

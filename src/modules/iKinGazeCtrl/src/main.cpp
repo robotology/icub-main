@@ -261,6 +261,10 @@ following ports:
       for eyes movements.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
+    - [save]: save the controller's status returning an integer
+      identifier.
+    - [rest] <id>: restore a previously saved controller's
+      status referred by the identifier \e id.
  
 \note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
@@ -342,6 +346,8 @@ background. Just connect the ports with the viewer and play.
 #include <iCub/solver.hpp>
 #include <iCub/controller.hpp>
 
+#include <map>
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -349,7 +355,7 @@ using namespace yarp::dev;
 using namespace yarp::sig;
 
 
-// Usual YARP stuff...
+/************************************************************************/
 class CtrlModule: public RFModule
 {
 protected:
@@ -361,19 +367,36 @@ protected:
     exchangeData   commData;
     Port           rpcPort;
 
-public:
+    struct Status
+    {
+        // controller part
+        double neckTime;
+        double eyesTime;
+        bool   mode;
+
+        // solver part
+        double neckPitchMin;
+        double neckPitchMax;
+        double neckYawMin;
+        double neckYawMax;
+    };
+
+    int statusIdCnt;
+    std::map<int,Status> statusMap;
+
+    /************************************************************************/
     bool waitPart(const Property &partOpt, const double ping_robot_tmo)
     {
         string portName=const_cast<Property&>(partOpt).find("remote").asString().c_str();
         portName+="/state:o";
         double t0=Time::now();
-    
+
         while ((Time::now()-t0)<ping_robot_tmo)
         {   
             fprintf(stdout,"Checking if %s port is active ... ",portName.c_str());
             bool ok=Network::exists(portName.c_str(),true);
             fprintf(stdout,"%s\n",ok?"ok":"not yet");
-    
+
             if (ok)
                 return true;
             else
@@ -386,6 +409,49 @@ public:
         return false;
     }
 
+    /************************************************************************/
+    void saveStatus(int *id)
+    {
+        Status &status=statusMap[++statusIdCnt];
+
+        // controller part
+        status.neckTime=ctrl->getTneck();
+        status.eyesTime=ctrl->getTeyes();
+        status.mode=ctrl->getTrackingMode();
+        
+        // solver part
+        slv->getCurNeckPitchRange(status.neckPitchMin,status.neckPitchMax);
+        slv->getCurNeckYawRange(status.neckYawMin,status.neckYawMax);
+
+        *id=statusIdCnt;
+    }
+
+    /************************************************************************/
+    bool restoreStatus(const int id)
+    {
+        map<int,Status>::iterator itr=statusMap.find(id);
+
+        if (itr!=statusMap.end())
+        {
+            Status &status=itr->second;
+
+            // controller part
+            ctrl->setTneck(status.neckTime);
+            ctrl->setTeyes(status.eyesTime);
+            ctrl->setTrackingMode(status.mode);
+
+            // solver part
+            slv->bindNeckPitch(status.neckPitchMin,status.neckPitchMax);
+            slv->bindNeckYaw(status.neckYawMin,status.neckYawMax);
+
+            return true;
+        }
+        else
+            return false;
+    }
+
+public:
+    /************************************************************************/
     virtual bool configure(ResourceFinder &rf)
     {
         string ctrlName;
@@ -502,9 +568,12 @@ public:
         rpcPort.open(rpcPortName.c_str());
         attach(rpcPort);
 
+        statusIdCnt=0;
+
         return true;
     }
 
+    /************************************************************************/
     virtual bool respond(const Bottle &command, Bottle &reply)
     {
         int ack=Vocab::encode("ack");
@@ -539,6 +608,38 @@ public:
                     return true;
                 }
 
+                case VOCAB4('s','a','v','e'):
+                {
+                    int id;
+                    saveStatus(&id);                    
+                    reply.addVocab(ack);
+                    reply.addInt(id);
+                    return true;
+                }
+
+                case VOCAB4('r','e','s','t'):
+                {
+                    if (command.size()>1)
+                    {
+                        int id=command.get(1).asInt();
+                        if (restoreStatus(id))
+                        {
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else
+                        {
+                            reply.addVocab(nack);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        reply.addVocab(nack);
+                        return false;
+                    }
+                }
+
                 case VOCAB4('b','i','n','d'):
                 {
                     if (command.size()>2)
@@ -556,15 +657,15 @@ public:
                             reply.addVocab(nack);
                             return false;
                         }
+
+                        reply.addVocab(ack);
+                        return true;
                     }
                     else
                     {
                         reply.addVocab(nack);
                         return false;
                     }
-
-                    reply.addVocab(ack);
-                    return true;
                 }
 
                 case VOCAB4('c','l','e','a'):
@@ -572,7 +673,6 @@ public:
                     if (command.size()>1)
                     {
                         int joint=command.get(1).asVocab();
-    
                         if (joint==VOCAB4('p','i','t','c'))
                             slv->clearNeckPitch();
                         else if (joint==VOCAB3('y','a','w'))
@@ -582,15 +682,15 @@ public:
                             reply.addVocab(nack);
                             return false;
                         }
+
+                        reply.addVocab(ack);
+                        return true;
                     }
                     else
                     {
                         reply.addVocab(nack);
                         return false;
                     }
-
-                    reply.addVocab(ack);
-                    return true;
                 }
 
                 case VOCAB3('g','e','t'):
@@ -601,18 +701,22 @@ public:
 
                         if (type==VOCAB4('T','n','e','c'))
                         {
+                            reply.addVocab(ack);
                             reply.addDouble(ctrl->getTneck());
                         }
                         else if (type==VOCAB4('T','e','y','e'))
                         {
+                            reply.addVocab(ack);
                             reply.addDouble(ctrl->getTeyes());
                         }
                         else if (type==VOCAB4('d','o','n','e'))
                         {
+                            reply.addVocab(ack);
                             reply.addInt((int)ctrl->isMotionDone());
                         }
                         else if (type==VOCAB4('t','r','a','c'))
                         {
+                            reply.addVocab(ack);
                             reply.addInt((int)ctrl->getTrackingMode());
                         }
                         else if (type==VOCAB4('p','o','s','e'))
@@ -624,6 +728,7 @@ public:
 
                                 if (ctrl->getPose(eyeSel,x))
                                 {
+                                    reply.addVocab(ack);
                                     for (int i=0; i<x.length(); i++)
                                         reply.addDouble(x[i]);
                                 }
@@ -644,14 +749,14 @@ public:
                             reply.addVocab(nack);
                             return false;
                         }
+                        
+                        return true;
                     }
                     else
                     {
                         reply.addVocab(nack);
                         return false;
                     }
-    
-                    return true;
                 }
 
                 case VOCAB3('s','e','t'):
@@ -702,6 +807,7 @@ public:
         }
     }
 
+    /************************************************************************/
     virtual bool close()
     {
         loc->stop();
@@ -723,15 +829,26 @@ public:
         rpcPort.interrupt();
         rpcPort.close();
 
+        statusMap.clear();
+
         return true;
     }
 
-    virtual double getPeriod()    { return 1.0;  }
-    virtual bool   updateModule() { return true; }
+    /************************************************************************/
+    virtual double getPeriod()
+    {
+        return 1.0;
+    }
+
+    /************************************************************************/
+    virtual bool updateModule()
+    {
+        return true;
+    }
 };
 
 
-
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;

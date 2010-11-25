@@ -498,6 +498,22 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 
 
 /************************************************************************/
+void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg) const
+{
+    min_deg=CTRL_RAD2DEG*(*chainNeck)[3].getMin();
+    max_deg=CTRL_RAD2DEG*(*chainNeck)[3].getMax();
+}
+
+
+/************************************************************************/
+void Solver::getCurNeckYawRange(double &min_deg, double &max_deg) const
+{
+    min_deg=CTRL_RAD2DEG*(*chainNeck)[5].getMin();
+    max_deg=CTRL_RAD2DEG*(*chainNeck)[5].getMax();
+}
+
+
+/************************************************************************/
 void Solver::clearNeckPitch()
 {
     (*chainNeck)[3].setMin(neckPitchMin);
