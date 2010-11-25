@@ -230,7 +230,7 @@ bool ClientGazeController::setTrackingMode(const bool f)
 /************************************************************************/
 bool ClientGazeController::getTrackingMode(bool *f)
 {
-    if (!connected)
+    if (!connected || (f==NULL))
         return false;
 
     Bottle command, reply;
@@ -383,7 +383,7 @@ bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &p
 /************************************************************************/
 bool ClientGazeController::getNeckTrajTime(double *t)
 {
-    if (!connected)
+    if (!connected || (t==NULL))
         return false;
 
     Bottle command, reply;
@@ -407,7 +407,7 @@ bool ClientGazeController::getNeckTrajTime(double *t)
 /************************************************************************/
 bool ClientGazeController::getEyesTrajTime(double *t)
 {
-    if (!connected)
+    if (!connected || (t==NULL))
         return false;
 
     Bottle command, reply;
@@ -720,7 +720,7 @@ bool ClientGazeController::clearNeckYaw()
 /************************************************************************/
 bool ClientGazeController::checkMotionDone(bool *f)
 {
-    if (!connected)
+    if (!connected || (f==NULL))
         return false;
 
     Bottle command, reply;

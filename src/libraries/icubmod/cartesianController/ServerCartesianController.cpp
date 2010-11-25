@@ -1563,7 +1563,7 @@ bool ServerCartesianController::setTrackingMode(const bool f)
 /************************************************************************/
 bool ServerCartesianController::getTrackingMode(bool *f)
 {
-    if (attached)
+    if (attached && (f!=NULL))
     {
         *f=trackingMode;
         return true;
@@ -2010,7 +2010,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
 /************************************************************************/
 bool ServerCartesianController::getLimits(const int axis, double *min, double *max)
 {
-    if (connected)
+    if (connected && (min!=NULL) && (max!=NULL))
     {
         if (axis<(int)chain->getN())
         {
@@ -2067,7 +2067,7 @@ bool ServerCartesianController::setLimits(const int axis, const double min, cons
 /************************************************************************/
 bool ServerCartesianController::getTrajTime(double *t)
 {
-    if (attached)
+    if (attached && (t!=NULL))
     {
         *t=trajTime;
         return true;
@@ -2093,7 +2093,7 @@ bool ServerCartesianController::setTrajTime(const double t)
 /************************************************************************/
 bool ServerCartesianController::getInTargetTol(double *tol)
 {
-    if (attached)
+    if (attached && (tol!=NULL))
     {
         *tol=targetTol;
         return true;
@@ -2162,7 +2162,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 /************************************************************************/
 bool ServerCartesianController::checkMotionDone(bool *f)
 {
-    if (attached)
+    if (attached && (f!=NULL))
     {
         *f=motionDone;
         return true;

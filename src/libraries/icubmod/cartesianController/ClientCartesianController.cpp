@@ -202,7 +202,7 @@ bool ClientCartesianController::setTrackingMode(const bool f)
 /************************************************************************/
 bool ClientCartesianController::getTrackingMode(bool *f)
 {
-    if (!connected)
+    if (!connected || (f==NULL))
         return false;
 
     Bottle command, reply;
@@ -804,7 +804,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
 /************************************************************************/
 bool ClientCartesianController::getLimits(const int axis, double *min, double *max)
 {
-    if (!connected)
+    if (!connected || (min==NULL) || (max==NULL))
         return false;
 
     Bottle command, reply;
@@ -870,7 +870,7 @@ bool ClientCartesianController::setLimits(const int axis, const double min, cons
 /************************************************************************/
 bool ClientCartesianController::getTrajTime(double *t)
 {
-    if (!connected)
+    if (!connected || (t==NULL))
         return false;
 
     Bottle command, reply;
@@ -932,7 +932,7 @@ bool ClientCartesianController::setTrajTime(const double t)
 /************************************************************************/
 bool ClientCartesianController::getInTargetTol(double *tol)
 {
-    if (!connected)
+    if (!connected || (tol==NULL))
         return false;
 
     Bottle command, reply;
@@ -1074,7 +1074,7 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 /************************************************************************/
 bool ClientCartesianController::checkMotionDone(bool *f)
 {
-    if (!connected)
+    if (!connected || (f==NULL))
         return false;
 
     Bottle command, reply;
