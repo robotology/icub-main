@@ -331,6 +331,20 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            case IKINCARTCTRL_VOCAB_CMD_DELETE:
+            {
+                if (command.size()>1)
+                {
+                    Bottle *ids=command.get(1).asList();
+                    if (deleteContexts(ids))
+                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                    else
+                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                }
+
+                break;
+            }
+
             case IKINSLV_VOCAB_CMD_GET:
             {
                 if (command.size()>1)
@@ -2303,6 +2317,26 @@ bool ServerCartesianController::restoreContext(const int id)
         }
         else
             return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
+{
+    if (contextIdList!=NULL)
+    {
+        for (int i=0; i<contextIdList->size(); i++)
+        {
+            int id=contextIdList->get(i).asInt();
+            map<int,Context>::iterator itr=contextMap.find(id);
+            if (itr!=contextMap.end())
+                contextMap.erase(itr);
+        }
+
+        return true;
     }
     else
         return false;

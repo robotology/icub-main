@@ -46,6 +46,8 @@
 
 #include <iCub/iKin/iKinHlp.h>
 
+#include <set>
+
 
 class ClientCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::IPreciselyTimed,
@@ -65,6 +67,10 @@ protected:
     yarp::os::BufferedPort<yarp::os::Bottle>  *portCmd;
     yarp::os::BufferedPort<yarp::sig::Vector> *portState;
     yarp::os::Port                            *portRpc;
+
+    std::set<int> contextIdList;
+
+    virtual bool deleteContexts();
 
 public:
     ClientCartesianController();

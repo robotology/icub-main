@@ -144,6 +144,7 @@ bool ClientGazeController::close()
         return true;
 
     stopControl();
+    deleteContexts();
 
     if (portCmdFp)
     {
@@ -814,7 +815,7 @@ bool ClientGazeController::storeContext(int *id)
 
     if (reply.get(0).asVocab()==GAZECTRL_ACK)
     {
-        *id=reply.get(1).asInt();
+        contextIdList.insert(*id=reply.get(1).asInt());
         return true;
     }
     else
@@ -826,6 +827,9 @@ bool ClientGazeController::storeContext(int *id)
 bool ClientGazeController::restoreContext(const int id)
 {
     if (!connected)
+        return false;
+
+    if (contextIdList.find(id)==contextIdList.end())
         return false;
 
     Bottle command, reply;
@@ -841,4 +845,32 @@ bool ClientGazeController::restoreContext(const int id)
 
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
+
+
+/************************************************************************/
+bool ClientGazeController::deleteContexts()
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("del");
+    Bottle &ids=command.addList();
+    for (set<int>::iterator itr=contextIdList.begin(); itr!=contextIdList.end(); itr++)
+        ids.addInt(*itr);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    contextIdList.clear();
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
 

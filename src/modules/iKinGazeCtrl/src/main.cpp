@@ -265,6 +265,8 @@ following ports:
       identifier.
     - [rest] <id>: restore a previously stored controller
       context referred by the identifier \e id.
+    - [del] (<id0> <id1> ...): delete all the contexts whose ids
+      are contained in the list.
  
 \note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
@@ -450,6 +452,25 @@ protected:
             return false;
     }
 
+    /************************************************************************/
+    bool deleteContexts(Bottle *contextIdList)
+    {
+        if (contextIdList!=NULL)
+        {
+            for (int i=0; i<contextIdList->size(); i++)
+            {
+                int id=contextIdList->get(i).asInt();
+                map<int,Context>::iterator itr=contextMap.find(id);
+                if (itr!=contextMap.end())
+                    contextMap.erase(itr);
+            }
+    
+            return true;
+        }
+        else
+            return false;
+    }
+
 public:
     /************************************************************************/
     virtual bool configure(ResourceFinder &rf)
@@ -623,6 +644,29 @@ public:
                     {
                         int id=command.get(1).asInt();
                         if (restoreContext(id))
+                        {
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else
+                        {
+                            reply.addVocab(nack);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        reply.addVocab(nack);
+                        return false;
+                    }
+                }
+
+                case VOCAB3('d','e','l'):
+                {
+                    if (command.size()>1)
+                    {
+                        Bottle *ids=command.get(1).asList();
+                        if (deleteContexts(ids))
                         {
                             reply.addVocab(ack);
                             return true;

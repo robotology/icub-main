@@ -44,6 +44,7 @@
 #include <yarp/dev/GazeControl.h>
 
 #include <string>
+#include <set>
 
 
 class ClientGazeController : public yarp::dev::DeviceDriver,
@@ -71,6 +72,9 @@ protected:
 
     yarp::os::Port                            *portRpc;
 
+    std::set<int> contextIdList;
+
+    virtual bool deleteContexts();
     virtual bool getPose(const std::string eyeSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
 
 public:

@@ -184,6 +184,7 @@ protected:
     bool getNewTarget();
     void sendVelocity(const yarp::sig::Vector &v);
     bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
+    bool deleteContexts(yarp::os::Bottle *contextIdList);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);

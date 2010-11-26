@@ -32,6 +32,7 @@
 
 #define CARTCTRL_DEFAULT_TMO    0.1 // [s]
 
+using namespace std;
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -140,6 +141,7 @@ bool ClientCartesianController::close()
         return true;
 
     stopControl();
+    deleteContexts();
 
     if (portCmd)
     {
@@ -1161,7 +1163,7 @@ bool ClientCartesianController::storeContext(int *id)
     {
         if (reply.size()>1)
         {
-            *id=reply.get(1).asInt();
+            contextIdList.insert(*id=reply.get(1).asInt());
             return true;
         }
         else
@@ -1178,6 +1180,9 @@ bool ClientCartesianController::restoreContext(const int id)
     if (!connected)
         return false;
 
+    if (contextIdList.find(id)==contextIdList.end())
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -1190,6 +1195,33 @@ bool ClientCartesianController::restoreContext(const int id)
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
     }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::deleteContexts()
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_DELETE);
+    Bottle &ids=command.addList();
+    for (set<int>::iterator itr=contextIdList.begin(); itr!=contextIdList.end(); itr++)
+        ids.addInt(*itr);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    contextIdList.clear();
 
     return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
