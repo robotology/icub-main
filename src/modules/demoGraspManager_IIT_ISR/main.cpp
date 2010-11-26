@@ -357,6 +357,8 @@ protected:
     Matrix R,Rx,Ry,Rz;
 
     int state;
+    int context_id_left;
+    int context_id_right;
 
     void getTorsoOptions(Bottle &b, const char *type, const int i, Vector &sw, Matrix &lim)
     {
@@ -484,11 +486,15 @@ protected:
         ICartesianControl *icart=cartArm;
         Vector dof;
         string type;
+        int *context_id;
 
         if (sel==LEFTARM)
         {
             if (useLeftArm)
+            {
                 drvCartLeftArm->view(icart);
+                context_id=&context_id_left;
+            }
             else
                 return;
 
@@ -497,7 +503,10 @@ protected:
         else if (sel==RIGHTARM)
         {
             if (useRightArm)
+            {
                 drvCartRightArm->view(icart);
+                context_id=&context_id_right;
+            }
             else
                 return;
 
@@ -509,6 +518,8 @@ protected:
             return;
 
         fprintf(stdout,"*** Initializing %s controller ...\n",type.c_str());
+
+        icart->saveContext(context_id);
 
         icart->setTrackingMode(false);
         icart->setTrajTime(trajTime);        
@@ -1055,10 +1066,20 @@ protected:
             delete drvRightArm;
 
         if (drvCartLeftArm)
+        {
+            ICartesianControl *icart;
+            drvCartLeftArm->view(icart);
+            icart->restoreContext(context_id_left);
             delete drvCartLeftArm;
+        }
 
         if (drvCartRightArm)
+        {
+            ICartesianControl *icart;
+            drvCartRightArm->view(icart);
+            icart->restoreContext(context_id_right);
             delete drvCartRightArm;
+        }
 
         if (drvGazeCtrl)
             delete drvGazeCtrl;
