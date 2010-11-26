@@ -122,7 +122,11 @@ bool ClientCartesianController::open(Searchable &config)
         if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
             if (reply.size()>1)
                 if (reply.get(1).asVocab()==IKINCARTCTRL_VOCAB_VAL_TRUE)
-                    return connected=true;
+                {
+                    connected=true;
+                    storeContext(&startup_context_id);
+                    return true;
+                }
 
         fprintf(stdout,"Error: unable to connect to solver!\n");
         close();
@@ -141,6 +145,7 @@ bool ClientCartesianController::close()
         return true;
 
     stopControl();
+    restoreContext(startup_context_id);
     deleteContexts();
 
     if (portCmd)
@@ -823,7 +828,6 @@ bool ClientCartesianController::getLimits(const int axis, double *min, double *m
         {
             *min=reply.get(1).asDouble();
             *max=reply.get(2).asDouble();
-
             return true;
         }
         else
@@ -887,7 +891,6 @@ bool ClientCartesianController::getTrajTime(double *t)
         if (reply.size()>1)
         {
             *t=reply.get(1).asDouble();
-
             return true;
         }
         else
@@ -946,7 +949,6 @@ bool ClientCartesianController::getInTargetTol(double *tol)
         if (reply.size()>1)
         {
             *tol=reply.get(1).asDouble();
-
             return true;
         }
         else

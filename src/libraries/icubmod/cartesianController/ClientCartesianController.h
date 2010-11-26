@@ -69,6 +69,7 @@ protected:
     yarp::os::Port                            *portRpc;
 
     std::set<int> contextIdList;
+    int startup_context_id;
 
     virtual bool deleteContexts();
 
