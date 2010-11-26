@@ -62,18 +62,18 @@ ELSE(WIN32)
 
             # use the find_library command in order to prepare rpath correctly 
 	    FOREACH(LIB ${IPOPT_DEP})
-	       FIND_LIBRARY(${LIB}_SEARCH_FOR_IPOPT ${LIB} ${IPOPT_DIR}/lib
+	       FIND_LIBRARY(SEARCH_FOR_IPOPT_${LIB} ${LIB} ${IPOPT_DIR}/lib
                                                            ${IPOPT_DIR}/lib/coin
 	     		   		                   ${IPOPT_DIR}/lib/coin/ThirdParty
 	     				                   NO_DEFAULT_PATH)
-               IF(${LIB}_SEARCH_FOR_IPOPT)
+               IF(SEARCH_FOR_IPOPT_${LIB})
                   # handle non-system libraries (e.g. coinblas)
-                  SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${${LIB}_SEARCH_FOR_IPOPT})
-               ELSE(${LIB}_SEARCH_FOR_IPOPT)
+                  SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${SEARCH_FOR_IPOPT_${LIB}})
+               ELSE(SEARCH_FOR_IPOPT_${LIB})
                   # handle system libraries (e.g. gfortran)
                   SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
-	       ENDIF(${LIB}_SEARCH_FOR_IPOPT)
-               MARK_AS_ADVANCED(${LIB}_SEARCH_FOR_IPOPT)
+	       ENDIF(SEARCH_FOR_IPOPT_${LIB})
+               MARK_AS_ADVANCED(SEARCH_FOR_IPOPT_${LIB})
 	    ENDFOREACH(LIB)
          ELSE(IPOPT_DEP_FILE)
             SET(IPOPT_INCLUDE_DIRS /usr/include/coin)
