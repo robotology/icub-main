@@ -35,7 +35,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 This module allows to integrate the Cartesian Interface with the
 the robot simulator. 
  
-\section lib_sec Dependences
+\section lib_sec Dependencies
 - YARP libraries. 
 - The \ref iKin library. 
 - The \ref servercartesiancontroller module. 
