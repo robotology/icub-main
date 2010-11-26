@@ -27,7 +27,7 @@
 #define IKINCARTCTRL_VOCAB_CMD_GET          VOCAB3('g','e','t')
 #define IKINCARTCTRL_VOCAB_CMD_SET          VOCAB3('s','e','t')
 #define IKINCARTCTRL_VOCAB_CMD_ASK          VOCAB3('a','s','k')
-#define IKINCARTCTRL_VOCAB_CMD_SAVE         VOCAB4('s','a','v','e')
+#define IKINCARTCTRL_VOCAB_CMD_STORE        VOCAB4('s','t','o','r')
 #define IKINCARTCTRL_VOCAB_CMD_RESTORE      VOCAB4('r','e','s','t')
 #define IKINCARTCTRL_VOCAB_CMD_GO           VOCAB2('g','o')
 #define IKINCARTCTRL_VOCAB_CMD_STOP         VOCAB4('s','t','o','p')

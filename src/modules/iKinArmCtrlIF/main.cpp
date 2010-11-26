@@ -198,7 +198,7 @@ public:
         client->view(arm);
 
         // latch the controller context
-        arm->saveContext(&context_id);
+        arm->storeContext(&context_id);
 
         // set trajectory time
         defaultExecTime=rf.check("T",Value(2.0)).asDouble();

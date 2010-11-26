@@ -519,7 +519,7 @@ protected:
 
         fprintf(stdout,"*** Initializing %s controller ...\n",type.c_str());
 
-        icart->saveContext(context_id);
+        icart->storeContext(context_id);
 
         icart->setTrackingMode(false);
         icart->setTrajTime(trajTime);        

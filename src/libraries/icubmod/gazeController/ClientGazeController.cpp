@@ -797,14 +797,14 @@ bool ClientGazeController::stopControl()
 
 
 /************************************************************************/
-bool ClientGazeController::saveContext(int *id)
+bool ClientGazeController::storeContext(int *id)
 {
     if (!connected || (id==NULL))
         return false;
 
     Bottle command, reply;
 
-    command.addString("save");
+    command.addString("stor");
 
     if (!portRpc->write(command,reply))
     {

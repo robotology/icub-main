@@ -1140,7 +1140,7 @@ bool ClientCartesianController::stopControl()
 
 
 /************************************************************************/
-bool ClientCartesianController::saveContext(int *id)
+bool ClientCartesianController::storeContext(int *id)
 {
     if (!connected || (id==NULL))
         return false;
@@ -1148,7 +1148,7 @@ bool ClientCartesianController::saveContext(int *id)
     Bottle command, reply;
 
     // prepare command
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SAVE);
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_STORE);
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))

@@ -303,10 +303,10 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
-            case IKINCARTCTRL_VOCAB_CMD_SAVE:
+            case IKINCARTCTRL_VOCAB_CMD_STORE:
             {
                 int id;
-                if (saveContext(&id))
+                if (storeContext(&id))
                 {
                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                     reply.addInt(id);
@@ -2245,7 +2245,7 @@ bool ServerCartesianController::stopControl()
 
 
 /************************************************************************/
-bool ServerCartesianController::saveContext(int *id)
+bool ServerCartesianController::storeContext(int *id)
 {
     if (attached && (id!=NULL))
     {

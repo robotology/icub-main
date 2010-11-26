@@ -261,10 +261,10 @@ following ports:
       for eyes movements.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
-    - [save]: save the controller context returning an integer
+    - [stor]: store the controller context returning an integer
       identifier.
-    - [rest] <id>: restore a previously saved controller context
-      referred by the identifier \e id.
+    - [rest] <id>: restore a previously stored controller
+      context referred by the identifier \e id.
  
 \note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
@@ -410,7 +410,7 @@ protected:
     }
 
     /************************************************************************/
-    void saveContext(int *id)
+    void storeContext(int *id)
     {
         Context &context=contextMap[++contextIdCnt];
 
@@ -608,10 +608,10 @@ public:
                     return true;
                 }
 
-                case VOCAB4('s','a','v','e'):
+                case VOCAB4('s','t','o','r'):
                 {
                     int id;
-                    saveContext(&id);                    
+                    storeContext(&id);                    
                     reply.addVocab(ack);
                     reply.addInt(id);
                     return true;

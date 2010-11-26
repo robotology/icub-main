@@ -387,7 +387,7 @@ bool ActionPrimitives::open(Property &opt)
     polyCart->view(cartCtrl);
 
     // latch the cartesian controller context
-    cartCtrl->saveContext(&context_id);
+    cartCtrl->storeContext(&context_id);
 
     // set tolerance
     cartCtrl->setInTargetTol(reach_tol);
