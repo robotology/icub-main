@@ -1177,10 +1177,7 @@ bool ClientCartesianController::storeContext(int *id)
 /************************************************************************/
 bool ClientCartesianController::restoreContext(const int id)
 {
-    if (!connected)
-        return false;
-
-    if (contextIdList.find(id)==contextIdList.end())
+    if (!connected || (contextIdList.find(id)==contextIdList.end()))
         return false;
 
     Bottle command, reply;
