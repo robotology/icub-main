@@ -157,7 +157,6 @@ protected:
     ICartesianControl   *arm;
     BufferedPort<Bottle> port_xd;
 
-    int context_id;
     bool ctrlCompletePose;
     string remoteName;
     string localName;
@@ -196,9 +195,6 @@ public:
 
         // open the view
         client->view(arm);
-
-        // latch the controller context
-        arm->storeContext(&context_id);
 
         // set trajectory time
         defaultExecTime=rf.check("T",Value(2.0)).asDouble();
@@ -297,7 +293,6 @@ public:
     virtual void threadRelease()
     {    
         arm->stopControl();
-        arm->restoreContext(context_id);
         delete client;
 
         port_xd.interrupt();
