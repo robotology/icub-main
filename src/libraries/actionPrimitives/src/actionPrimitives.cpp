@@ -386,6 +386,9 @@ bool ActionPrimitives::open(Property &opt)
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
 
+    // latch the controller context
+    cartCtrl->storeContext(&startup_context_id);
+
     // set tolerance
     cartCtrl->setInTargetTol(reach_tol);
 
@@ -477,6 +480,7 @@ void ActionPrimitives::close()
     if (polyCart!=NULL)
     {
         printMessage("closing cartesian driver ...\n");
+        cartCtrl->restoreContext(startup_context_id);
         delete polyCart;
     }
 

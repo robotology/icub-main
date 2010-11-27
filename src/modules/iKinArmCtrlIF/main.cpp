@@ -161,6 +161,8 @@ protected:
     string remoteName;
     string localName;
 
+    int startup_context_id;
+
     Vector xd;
     Vector od;
 
@@ -195,6 +197,9 @@ public:
 
         // open the view
         client->view(arm);
+
+        // latch the controller context
+        arm->storeContext(&startup_context_id);
 
         // set trajectory time
         defaultExecTime=rf.check("T",Value(2.0)).asDouble();
@@ -293,6 +298,7 @@ public:
     virtual void threadRelease()
     {    
         arm->stopControl();
+        arm->restoreContext(startup_context_id);
         delete client;
 
         port_xd.interrupt();

@@ -73,7 +73,6 @@ protected:
     yarp::os::Port                            *portRpc;
 
     std::set<int> contextIdList;
-    int startup_context_id;
 
     virtual bool deleteContexts();
     virtual bool getPose(const std::string eyeSel, yarp::sig::Vector &x, yarp::sig::Vector &o);

@@ -175,6 +175,7 @@ protected:
 
     int jHandMin;
     int jHandMax;
+    int startup_context_id;
 
     yarp::sig::Vector      enableTorsoSw;
     yarp::sig::Vector      disableTorsoSw;

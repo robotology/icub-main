@@ -133,12 +133,7 @@ bool ClientGazeController::open(Searchable &config)
     ok&=Network::connect((remote+"/q:o").c_str(),portStateHead->getName().c_str());
     ok&=Network::connect(portRpc->getName().c_str(),(remote+"/rpc").c_str());
 
-    connected=ok;
-
-    if (connected)
-        storeContext(&startup_context_id);
-
-    return connected;
+    return connected=ok;
 }
 
 
@@ -149,7 +144,6 @@ bool ClientGazeController::close()
         return true;
 
     stopControl();
-    restoreContext(startup_context_id);
     deleteContexts();
 
     if (portCmdFp)

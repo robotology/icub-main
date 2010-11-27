@@ -357,6 +357,8 @@ protected:
     Matrix R,Rx,Ry,Rz;
 
     int state;
+    int startup_context_id_left;
+    int startup_context_id_right;
 
     void getTorsoOptions(Bottle &b, const char *type, const int i, Vector &sw, Matrix &lim)
     {
@@ -488,7 +490,10 @@ protected:
         if (sel==LEFTARM)
         {
             if (useLeftArm)
+            {
                 drvCartLeftArm->view(icart);
+                icart->storeContext(&startup_context_id_left);
+            }
             else
                 return;
 
@@ -497,7 +502,10 @@ protected:
         else if (sel==RIGHTARM)
         {
             if (useRightArm)
+            {
                 drvCartRightArm->view(icart);
+                icart->storeContext(&startup_context_id_right);
+            }
             else
                 return;
 
@@ -1055,10 +1063,20 @@ protected:
             delete drvRightArm;
 
         if (drvCartLeftArm)
+        {
+            ICartesianControl *icart;
+            drvCartLeftArm->view(icart);
+            icart->restoreContext(startup_context_id_left);
             delete drvCartLeftArm;
+        }
 
         if (drvCartRightArm)
+        {
+            ICartesianControl *icart;
+            drvCartRightArm->view(icart);
+            icart->restoreContext(startup_context_id_right);
             delete drvCartRightArm;
+        }
 
         if (drvGazeCtrl)
             delete drvGazeCtrl;

@@ -122,11 +122,7 @@ bool ClientCartesianController::open(Searchable &config)
         if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
             if (reply.size()>1)
                 if (reply.get(1).asVocab()==IKINCARTCTRL_VOCAB_VAL_TRUE)
-                {
-                    connected=true;
-                    storeContext(&startup_context_id);
-                    return true;
-                }
+                    return connected=true;
 
         fprintf(stdout,"Error: unable to connect to solver!\n");
         close();
@@ -145,7 +141,6 @@ bool ClientCartesianController::close()
         return true;
 
     stopControl();
-    restoreContext(startup_context_id);
     deleteContexts();
 
     if (portCmd)
