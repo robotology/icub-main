@@ -11,7 +11,6 @@ SET(CMAKE_MODULE_PATH ${YARP_DIR}/conf ${CMAKE_MODULE_PATH})
 SET(CMAKE_MODULE_PATH ${ICUB_DIR}/conf ${CMAKE_MODULE_PATH})
 INCLUDE(iCubOptions)
 INCLUDE(iCubHelpers)
-INCLUDE(iCubFindDependencies)
 
 SET(folder_source main.cpp)
 
