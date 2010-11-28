@@ -150,7 +150,7 @@ on terminal 3:
 #include <fstream>
 #include <iomanip>
 #include <string>
-#include <stdio.h>
+#include <string.h>
 
 // MATLAB Engine Library
 #include "engine.h"
