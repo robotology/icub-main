@@ -46,8 +46,8 @@ Installation notes:
 Within CMake please assign the following two paths (example for 
 Windows is given): 
 
-- INCLUDE_DIRS   => ${MATLAB_ROOT}/extern/include
-- LIBRARIES_DIRS => ${MATLAB_ROOT}/extern/lib/win32/microsoft 
+- MATLAB_INCLUDE_DIRS   => ${MATLAB_ROOT}/extern/include
+- MATLAB_LIBRARIES_DIRS => ${MATLAB_ROOT}/extern/lib/win32/microsoft 
  
 For Windows users only: if you did not register MATLAB as COM 
 server during installation, on the command line you can issue 
