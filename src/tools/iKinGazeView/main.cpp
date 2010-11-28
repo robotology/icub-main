@@ -150,6 +150,7 @@ on terminal 3:
 #include <fstream>
 #include <iomanip>
 #include <string>
+#include <stdio.h>
 
 // MATLAB Engine Library
 #include "engine.h"
@@ -503,7 +504,7 @@ public:
         delete thread;
 
         rpcPort.interrupt();
-        rpcPort.close();        
+        rpcPort.close();
 
         return true;
     }
