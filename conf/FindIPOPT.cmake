@@ -39,10 +39,10 @@ IF(WIN32)
     
 ELSE(WIN32)
 
-   FIND_PACKAGE(PkgConfig)
-   IF(PKG_CONFIG_FOUND)
-     PKG_CHECK_MODULES(IPOPT ipopt)
-   ENDIF(PKG_CONFIG_FOUND)
+#   FIND_PACKAGE(PkgConfig)
+#   IF(PKG_CONFIG_FOUND)
+#     PKG_CHECK_MODULES(IPOPT ipopt)
+#   ENDIF(PKG_CONFIG_FOUND)
 
    IF(NOT IPOPT_FOUND)
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
@@ -52,7 +52,7 @@ ELSE(WIN32)
                                                         ${IPOPT_DIR}/share/coin/doc/Ipopt
                                                         NO_DEFAULT_PATH)
          IF(IPOPT_DEP_FILE)
-            # parse the file and acquire the dependences
+            # parse the file and acquire the dependencies
             FILE(READ ${IPOPT_DEP_FILE} IPOPT_DEP)
             STRING(REGEX REPLACE "-[^l][^ ]* " "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "-l"                "" IPOPT_DEP ${IPOPT_DEP})
