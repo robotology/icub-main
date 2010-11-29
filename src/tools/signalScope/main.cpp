@@ -129,6 +129,7 @@ Try with the following:
 #include <fstream>
 #include <iomanip>
 #include <string>
+#include <string.h>
 #include <deque>
 
 // MATLAB Engine Library
