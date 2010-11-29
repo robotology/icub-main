@@ -27,7 +27,7 @@ target_link_libraries(${PROJECTNAME} logpolar ${YARP_LIBRARIES})
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 ########## application
-set(appname logpolarConverExample)
+set(appname logpolarConvertExample)
 icub_app(${appname})
 	
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
