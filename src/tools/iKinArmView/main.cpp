@@ -48,6 +48,11 @@ Windows is given):
 - MATLAB_INCLUDE_DIRS   => ${MATLAB_ROOT}/extern/include
 - MATLAB_LIBRARIES_DIRS => ${MATLAB_ROOT}/extern/lib/win32/microsoft
  
+For a Linux platform something like the following should hold: 
+ 
+- MATLAB_INCLUDE_DIRS   => ${MATLAB_ROOT}/extern/include
+- MATLAB_LIBRARIES_DIRS => ${MATLAB_ROOT}/bin/glnxa64
+ 
 For Windows users only: if you did not register MATLAB as COM 
 server during installation, on the command line you can issue 
 the following: matlab /regserver 
