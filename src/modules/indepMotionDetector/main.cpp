@@ -163,8 +163,6 @@ Linux and Windows.
 #include <highgui.h>
 
 #include <stdio.h>
-#include <iostream>
-#include <iomanip>
 #include <string>
 #include <set>
 #include <deque>
@@ -287,6 +285,12 @@ public:
 
         recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
 
+        // thresholding 
+        if (coverXratio>1.0)
+            coverXratio=1.0;
+        if (coverYratio>1.0)
+            coverYratio=1.0;
+
         // if the OpenCV version supports multi-threading,
         // set the maximum number of threads available to OpenCV
     #ifdef _INDEP_MULTI_THREADING_
@@ -374,11 +378,11 @@ public:
                 // dispose previously allocated memory
                 disposeMem();
                 
-                int min_x=(int)ceil(((1.0-coverXratio)/2.0)*imgMonoIn.width());
-                int min_y=(int)ceil(((1.0-coverYratio)/2.0)*imgMonoIn.height());
+                int min_x=(int)(((1.0-coverXratio)/2.0)*imgMonoIn.width());
+                int min_y=(int)(((1.0-coverYratio)/2.0)*imgMonoIn.height());
 
-                nodesX=(imgMonoIn.width()-2*min_x)/nodesStep+1;
-                nodesY=(imgMonoIn.height()-2*min_y)/nodesStep+1;
+                nodesX=(imgMonoIn.width()-2*min_x)/nodesStep;
+                nodesY=(imgMonoIn.height()-2*min_y)/nodesStep;
 
                 nodesNum=nodesX*nodesY;
 
