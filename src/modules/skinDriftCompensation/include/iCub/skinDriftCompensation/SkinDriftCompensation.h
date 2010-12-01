@@ -188,9 +188,7 @@ private:
 	BufferedPort<Vector> compensatedTactileDataPort;	
 	Port handlerPort;									// a port to handle messages
 
-	bool calibrationAllowed;								// if false the thread is not allowed to run the calibration
-	bool forceCalibration;								// if true a calibration is executed as soon as possible, 
-														// after that the variable is set to false
+	bool calibrationAllowed;							// if false the thread is not allowed to run the calibration
 
 	/* pointer to a new thread to be created and started in configure() and stopped in close() */
 	CompensationThread *myThread;

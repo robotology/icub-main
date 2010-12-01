@@ -27,15 +27,13 @@ using namespace yarp::sig;
 using namespace iCub::skinDriftCompensation;
 
 
-CompensationThread::CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, 
-									   bool *calibrationAllowed, bool *forceCalibration, bool zeroUpRawData, bool rightHand)
-									   : RateThread(FREQUENCY)
+CompensationThread::CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, bool *calibrationAllowed, 
+									   bool zeroUpRawData, bool rightHand, int period)
+									   : RateThread(period), PERIOD(period), robotName(robotName)
 {
    this->rf								= rf;
-   this->robotName						= robotName;
    this->minBaseline					= minBaseline;
    this->calibrationAllowed				= calibrationAllowed;
-   this->forceCalibration				= forceCalibration;
    this->zeroUpRawData					= zeroUpRawData;
    this->rightHand						= rightHand;
 }
@@ -46,8 +44,11 @@ bool CompensationThread::threadInit()
 
    /* initialize variables and create data-structures if needed */
 	MAX_DRIFT = 0.1f;								// the maximal drift that is being compensated every second
-	CHANGE_PER_TIMESTEP = MAX_DRIFT/FREQUENCY;
-    *forceCalibration = false;
+	CHANGE_PER_TIMESTEP = MAX_DRIFT/PERIOD;
+	readErrorCounter = 0;
+	state = calibration;
+	calibrationCounter = 0;
+	calibrationRead = 0;
 
 	// open the output port
 	string compensatedTactileDataPortName;
@@ -98,161 +99,166 @@ bool CompensationThread::threadInit()
 	touchThresholds.resize(SKIN_DIM);
     baselines.resize(SKIN_DIM);
 
-	// First of all, a big and a small calibration are executed, assuming that the sensors are not in contact with anything. 
-	// The big calibration is performed by sending a message to the icubInterface. 
-	// The small calibration gathers the sensors data for 5 sec, computes the mean (that is the baseline) 
-	// and the 95 percentile (that will be used as touch threshold) for every taxel.
-	runCalibration();
-
 	return true;
 }
 
-void CompensationThread::run(){	
 
-	// It reads the raw data,
-	// computes the difference between the read values and the baseline and outputs these values
-	if( !readRawAndWriteCompensatedData() )
-		return;
-
-	//If the read values are under the touch threshold then the baseline is updated
-	updateBaseline();
-
-	//If calibration is allowed AND at least one baseline is less than minBaseline (or greater than 255-minBaseline)
-	if( (*calibrationAllowed)==true && doesBaselineExceed()){
-		// then the big and small calibrations are executed
-		runCalibration();
-	}else if( (*forceCalibration) == true){
-		runCalibration();
-		*forceCalibration = false;
+void CompensationThread::forceCalibration(){
+	stateSem.wait();
+	if(state != calibration){
+		state = calibration;
+		calibrationCounter = 0;	
+		calibrationRead = 0;
 	}
+	stateSem.post();
 }
 
-void CompensationThread::runCalibration(){
-    fprintf(stderr, "CALIBRATING.......................");
+void CompensationThread::run(){
+	stateSem.wait();
+
+	if( state == compensation){
+		// It reads the raw data, computes the difference between the read values and the baseline 
+		// and outputs these values
+		if(readRawAndWriteCompensatedData()){
+			//If the read succeeded, update the baseline
+			updateBaseline();
+		}
+
+		//If calibration is allowed AND at least one baseline is less than minBaseline (or greater than 255-minBaseline)
+		if( (*calibrationAllowed)==true && doesBaselineExceed()){
+			state = calibration;
+		}
+	}
+	else if(state == calibration){
+		if(calibrationCounter==0)
+			calibrationInit();
+		
+		calibrationDataCollection();
+
+		if(calibrationCounter==PERIOD*CAL_TIME){
+			calibrationFinish();
+			state = compensation;
+		}
+	}
+	else{
+		stateSem.post();
+		fprintf(stderr, "\n[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
+		this->suspend();
+		return;
+	}
+
+	stateSem.post();
+
+
+	if(readErrorCounter >= MAX_READ_ERROR){    // read failed too many times in a row, so suspend the thread
+        fprintf(stderr, "[ERROR] %d successive errors reading the sensor data. Suspending the thread.", MAX_READ_ERROR);
+		this->suspend();
+    }
+}
+
+void CompensationThread::calibrationInit(){   
+	fprintf(stderr, "CALIBRATING.......................");
 	// take the semaphore so that the touchThreshold can't be read during the calibration phase
 	touchThresholdSem.wait();
 
 	// send a command to the microcontroller for calibrating the skin sensors
 	if(robotName!="icubSim")	// this feature isn't implemented in the simulator and causes a runtime error
 		tactileSensor->calibrateSensor();
+	fprintf(stderr, "Chip calibration executed\n");
 
-    fprintf(stderr, "Chip calibration executed\n");
-	Vector input;
-	int err, loopCounter=1;
-	while((err=tactileSensor->read(input))!=IAnalogSensor::AS_OK && loopCounter<=100){
-        loopCounter++;
-        Time::delay(0.01);
-	}
-    fprintf(stderr, "First sensor read performed %d times.\n", loopCounter);
-    if(err != IAnalogSensor::AS_OK){    // the first 100 reads failed, so suspend the thread
-        fprintf(stderr, "ERROR while reading the sensor data in calibration phase. Suspending the thread. Error value: %d.\n", err);
-		this->suspend();
+	// initialize
+	start_sum.assign(SKIN_DIM, 0);
+	skin_empty.assign(SKIN_DIM, vector<int>(MAX_SKIN+1, 0));
+}
+
+void CompensationThread::calibrationDataCollection(){	
+	calibrationCounter++; 
+
+	Vector skin_values;
+	int err;
+	if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
+        readErrorCounter++;
+		fprintf(stderr, "Error reading tactile sensor: %d\n", err);
 		return;
-    }
-
-    fprintf(stderr,"First Input:\n");
-    for (int i=0; i<SKIN_DIM; i++) {
-		if(!(i%12)) fprintf(stderr, "\n");
-    	fprintf(stderr,"%3.0f ", input[i]);
-    }
-
-
-	//collect skin data for some time, and compute the 95% percentile
-	vector<float> start_sum(SKIN_DIM, 0);
-    vector< vector<int> > skin_empty(SKIN_DIM, vector<int>(MAX_SKIN+1, 0));
-
-	//collect data
-	for (int i=0; i<CAL_TIME*FREQUENCY; i++) {
-        loopCounter = 0;
-        while((err=tactileSensor->read(input))!=IAnalogSensor::AS_OK && loopCounter<=100){
-            loopCounter++;
-            Time::delay(0.01);
-	    }
-        if(err != IAnalogSensor::AS_OK){    // read failed 100 times in a row, so suspend the thread
-            fprintf(stderr, "ERROR while reading the sensor data during calibration phase. Suspending the thread. Error value: %d.\n", err);
-		    this->suspend();
-		    return;
-        }
-	
-		Vector skin_values(SKIN_DIM);
-		for (int j=0; j<SKIN_DIM; j++) {
-			if (zeroUpRawData==true)
-				skin_values[j] = input[j];
-			else{
-				skin_values[j] = MAX_SKIN - input[j];
-			}
-			if(skin_values[j]<0 || skin_values[j]>MAX_SKIN){
-				fprintf(stderr, "Error while reading the tactile data! Data out of range: %d\n", (int)skin_values[j]);
-			}
-			else{
-				skin_empty[j][int(skin_values[j])]++;
-				start_sum[j] += int(skin_values[j]);
-			}
-		}
-		/*fprintf(stderr,"Input:\n");
-        for (int i=0; i<SKIN_DIM; i++) {
-        	fprintf(stderr,"%3.0f ", skin_values[i]);
-        }*/		
-		Time::delay((float)1/FREQUENCY);
 	}
+	
+	readErrorCounter = 0;
+	calibrationRead++;
+		
+	for (int j=0; j<SKIN_DIM; j++) {
+		if (zeroUpRawData==false)
+			skin_values[j] = MAX_SKIN - skin_values[j];
+		
+		if(skin_values[j]<0 || skin_values[j]>MAX_SKIN){
+			fprintf(stderr, "Error while reading the tactile data! Data out of range: %d\n", (int)skin_values[j]);
+		}
+		else{
+			skin_empty[j][int(skin_values[j])]++;
+			start_sum[j] += int(skin_values[j]);
+		}
+	}
+	
+}
 
-	vector<float> standard_dev(SKIN_DIM, 0);
+void CompensationThread::calibrationFinish(){
+	
+	//vector<float> standard_dev(SKIN_DIM, 0);
 	//get percentile
-    for (int i=0; i<SKIN_DIM; i++) {
-        //avg start value
-		baselines[i] = start_sum[i]/(CAL_TIME*FREQUENCY);
+	for (int i=0; i<SKIN_DIM; i++) {
+		//avg start value
+		baselines[i] = start_sum[i]/calibrationRead;
 		
 		//cumulative values
 		for (int j=1; j<=MAX_SKIN; j++) {
-			standard_dev[i] += fabs(j-baselines[i]) * skin_empty[i][j];
+			//standard_dev[i] += fabs(j-baselines[i]) * skin_empty[i][j];
 			skin_empty[i][j] += skin_empty[i][j-1] ;			
 		}
-		standard_dev[i] /= (CAL_TIME*FREQUENCY);
+		//standard_dev[i] /= (CAL_TIME*PERIOD);
 
 		//when do we cross the threshold?
-    	for (int j=0; j<=MAX_SKIN; j++) {
-			if (skin_empty[i][j] > (CAL_TIME*FREQUENCY*0.95)) {
+		for (int j=0; j<=MAX_SKIN; j++) {
+			if (skin_empty[i][j] > (calibrationRead*0.95)) {
 				touchThresholds[i] = max<float>(0.0, (float)j - baselines[i]);	// the threshold can not be less than zero
 				j = MAX_SKIN;
 			}
-    	}
-    }
+		}
+	}
 	
 	// release the semaphore so that as of now the touchThreshold can be read
 	touchThresholdSem.post();
 
-	//printf
-    fprintf(stderr, "\nBaselines:\n");
+	// print to console
+	fprintf(stderr, "\nBaselines:\n");
 	for (int i=0; i<SKIN_DIM; i++) {
 		if(!(i%12)) fprintf(stderr, "\n");
-    	fprintf(stderr,"%4.1f ", baselines[i]);		
-    }
+		fprintf(stderr,"%4.1f ", baselines[i]);		
+	}
 
-	fprintf(stderr, "\nStandard dev:\n");
+	/*fprintf(stderr, "\nStandard dev:\n");
 	for (int i=0; i<SKIN_DIM; i++) {
 		if(!(i%12)) fprintf(stderr, "\n");
-    	fprintf(stderr,"%3.1f ", standard_dev[i]);
-    }
+		fprintf(stderr,"%3.1f ", standard_dev[i]);
+	}*/
 
-    fprintf(stderr,"\nThresholds (95 percentile):\n");
+	fprintf(stderr,"\nThresholds (95 percentile):\n");
 	for (int i=0; i<SKIN_DIM; i++) {
 		if(!(i%12)) fprintf(stderr, "\n");
-    	fprintf(stderr,"%3.1f ", touchThresholds[i]);		
-    }
-    fprintf(stderr,"\n");
+		fprintf(stderr,"%3.1f ", touchThresholds[i]);		
+	}
+	fprintf(stderr,"\n");
 }
 
 bool CompensationThread::readRawAndWriteCompensatedData(){
+	Vector rawData;				// raw tactile data
 	int err, loopCounter=0;
-	while((err=tactileSensor->read(rawData))!=IAnalogSensor::AS_OK && loopCounter<100){
-        loopCounter++;
-        Time::delay(0.01);
-	}
-    if(err != IAnalogSensor::AS_OK){    // read failed 100 times in a row, so suspend the thread
-        fprintf(stderr, "ERROR while reading the sensor data. Suspending the thread. Error value: %d", err);
-		this->suspend();
+	if((err=tactileSensor->read(rawData))!=IAnalogSensor::AS_OK){
+        readErrorCounter++;
 		return false;
-    }
+	}
+	else{
+		readErrorCounter = 0;
+	}
+    
 
 	if(rawData.size() != SKIN_DIM){
 		fprintf(stderr, "Unexpected size of the input array (raw tactile data): %d\n", rawData.size());
@@ -294,7 +300,7 @@ bool CompensationThread::readRawAndWriteCompensatedData(){
 void CompensationThread::updateBaseline(){
 	float mean_change = 0;
     int non_touching_taxels = 0;
-	double d;
+	double d; 
 
     for(int j=0; j<SKIN_DIM; j++) {
         if(!touchDetected[j]){

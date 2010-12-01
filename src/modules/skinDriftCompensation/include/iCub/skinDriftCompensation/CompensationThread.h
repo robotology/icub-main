@@ -42,13 +42,31 @@ namespace skinDriftCompensation{
 
 class CompensationThread : public RateThread
 {
+public:
+	typedef enum { calibration, compensation} CompensationThreadState;
+
+	/* class methods */
+
+	CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, bool *calibrationAllowed, 
+		bool zeroUpRawData, bool rightHand, int period);
+	bool threadInit();
+	void threadRelease();
+	void run(); 
+
+	VectorOf<float> getTouchThreshold();
+	void forceCalibration();
+
+
 private:
+
 	/* class constants */	
 	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
-	static const int FREQUENCY = 36;			// how many measurements every second? (same rate of skin ports)
-	static const int CAL_TIME = 5;				// calibration time in sec	
-	static const int ADD_THRESHOLD = 2;			// value added to the touch threshold of all the taxels
-	int SKIN_DIM;								// number of taxels in one hand (192)
+	static const int CAL_TIME = 5;				// calibration time in sec
+	static const int MAX_READ_ERROR = 100;		// max number of read errors before suspending the thread
+	const int PERIOD;
+	static const int ADD_THRESHOLD = 2;			// value added to the touch threshold of every taxel
+
+	int SKIN_DIM;								// number of taxels (for the hand it is 192)
 	float MAX_DRIFT;							// the maximal drift that is being compensated every second
 	float CHANGE_PER_TIMESTEP;					// the maximal drift that is being compensated every cycle
 
@@ -58,7 +76,13 @@ private:
 	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold
     VectorOf<float> baselines;					// mean of the raw tactile data 
 												// (considering only the samples read when no touch is detected)
-	Vector rawData;								// raw tactile data
+
+	int calibrationCounter;						// count the calibration cycles
+	int calibrationRead;						// count the calibration reads succeeded (if no error occurs calibrationRead=calibrationCounter)
+	vector<float> start_sum;					// sum of the values read during the calibration
+    vector< vector<int> > skin_empty;			// distribution of the values read during the calibration
+	
+	int readErrorCounter;						// it counts the number of successive errors
 	Vector compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
 	IAnalogSensor *tactileSensor;				// interface for executing the tactile sensor calibration
 	PolyDriver* tactileSensorDevice;
@@ -69,32 +93,26 @@ private:
 	string robotName;
 	float *minBaseline;				// if the baseline value is less than this, then a calibration is executed (if allowed)
 	bool *calibrationAllowed;		// if false the thread is not allowed to run the calibration
-	bool *forceCalibration;			// if true a calibration is executed as soon as possible; 
-									// after that the variable is set to false
 	bool zeroUpRawData;				// if true the raw data are considered from zero up, otherwise from 255 down
 	bool rightHand;					// if true then calibrate the right hand, otherwise the left hand
 
 	/* ports */
 	BufferedPort<Vector> compensatedTactileDataPort;	// output port
 
+	CompensationThreadState state;			// state of the thread (calibration, compensation)
+	Semaphore stateSem;
+
 	/* class private methods */
 	void log(string s, bool endLine=true);
 	
-	void runCalibration();
+	void calibrationInit();
+	void calibrationDataCollection();
+	void calibrationFinish();
 	bool readRawAndWriteCompensatedData();
 	void updateBaseline();
 	bool doesBaselineExceed();
 
-public:
 
-	/* class methods */
-
-	CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, bool *calibrationAllowed, 
-		bool *forceCalibration, bool zeroUpRawData, bool rightHand);
-	bool threadInit();
-	void threadRelease();
-	void run(); 
-	VectorOf<float> getTouchThreshold();
 };
 
 } //namespace iCub

@@ -22,6 +22,15 @@
 
 using namespace iCub::skinDriftCompensation;
 
+// module default values
+const bool SkinDriftCompensation::CALIBRATION_ALLOWED_DEFAULT = false;
+const int SkinDriftCompensation::MIN_BASELINE_DEFAULT = 3;
+const int SkinDriftCompensation::PERIOD_DEFAULT = 50;
+const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
+const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
+const string SkinDriftCompensation::HAND_DEFAULT = "right";
+const string SkinDriftCompensation::ZERO_UP_RAW_DATA_DEFAULT = "false";
+const string SkinDriftCompensation::RPC_PORT_DEFAULT = "/rpc";
 
 // the order of the command in this list MUST correspond to the order of the enum SkinDriftCompensation::SkinDriftCompCommand
 const string SkinDriftCompensation::COMMAND_LIST[]  = {
@@ -42,14 +51,14 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	/* Process all parameters from both command-line and .ini file */
 
 	/* get the module name which will form the stem of all module port names */
-	moduleName			= rf.check("name", Value("skinDriftCompensation"), "module name (string)").asString();
-	robotName			= rf.check("robot", Value("icub"), "name of the robot (string)").asString();
+	moduleName			= rf.check("name", Value(MODULE_NAME_DEFAULT.c_str()), "module name (string)").asString();
+	robotName			= rf.check("robot", Value(ROBOT_NAME_DEFAULT.c_str()), "name of the robot (string)").asString();
 	/* before continuing, set the module name before getting any other parameters, 
 	* specifically the port names which are dependent on the module name*/
 	setName(moduleName.c_str());
 
 	bool rightHand;
-	string hand			= rf.check("hand", Value("right"), "Hand to take as reference (string)").asString().c_str();
+	string hand			= rf.check("hand", Value(HAND_DEFAULT.c_str()), "Hand to take as reference (string)").asString().c_str();
 	if(hand.compare("right")==0){
 		rightHand = true;
 	}else if(hand.compare("left")==0){
@@ -59,11 +68,13 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	}
 
 	/* get some other values from the configuration file */
-	float minBaseline			= (float)rf.check("minBaseline", Value(3), 
+	float minBaseline		= (float)rf.check("minBaseline", Value(MIN_BASELINE_DEFAULT), 
 	   "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
+	int period				= (int)rf.check("period", Value(PERIOD_DEFAULT), 
+	   "Period of the thread in ms (positive int)").asInt();
 	
 	bool zeroUpRawData = true;
-	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value("false"), 
+	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value(ZERO_UP_RAW_DATA_DEFAULT.c_str()), 
 	   "if true the raw data are considered from zero up, otherwise from 255 down (string)").asString().c_str();
 	if(zeroUpRawDataStr.compare("true")==0){
 		zeroUpRawData = true;
@@ -76,7 +87,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	* so that messages received from the port are redirected to the respond method
 	*/
 	handlerPortName = "/";
-	handlerPortName += getName(rf.check("handlerPort", Value("/rpc")).asString());
+	handlerPortName += getName(rf.check("handlerPort", Value(RPC_PORT_DEFAULT.c_str())).asString());
 	if (!handlerPort.open(handlerPortName.c_str())) {
 		cout << getName() << ": Unable to open port " << handlerPortName << endl;  
 		return false;
@@ -85,9 +96,9 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 
 	/* create the thread and pass pointers to the module parameters */
-	calibrationAllowed = false;		// default -> calibration is not allowed!
+	calibrationAllowed = CALIBRATION_ALLOWED_DEFAULT;
 	myThread = new CompensationThread(&rf, robotName, &minBaseline, &calibrationAllowed, 
-		&forceCalibration, zeroUpRawData, rightHand);
+		zeroUpRawData, rightHand, period);
 	/* now start the thread to do the work */
 	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
@@ -98,7 +109,6 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 bool SkinDriftCompensation::interruptModule()
 {
-	//compensatedTactileDataPort.interrupt();
 	handlerPort.interrupt();
 
 	return true;
@@ -152,7 +162,7 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 			break;
 
 		case force_calibration:
-			forceCalibration = true;
+			myThread->forceCalibration();
 			break;
 
 		case get_percentile:
