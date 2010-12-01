@@ -372,8 +372,8 @@ protected:
     struct Context
     {
         // controller part
-        double neckTime;
         double eyesTime;
+        double neckTime;
         bool   mode;
 
         // solver part
@@ -417,8 +417,8 @@ protected:
         Context &context=contextMap[++contextIdCnt];
 
         // controller part
-        context.neckTime=ctrl->getTneck();
         context.eyesTime=ctrl->getTeyes();
+        context.neckTime=ctrl->getTneck();
         context.mode=ctrl->getTrackingMode();
         
         // solver part
@@ -438,8 +438,8 @@ protected:
             Context &context=itr->second;
 
             // controller part
-            ctrl->setTneck(context.neckTime);
-            ctrl->setTeyes(context.eyesTime);
+            ctrl->setTeyes(context.eyesTime);   // alway remind to set eyes before the neck
+            ctrl->setTneck(context.neckTime);   // due to internal saturation
             ctrl->setTrackingMode(context.mode);
 
             // solver part
