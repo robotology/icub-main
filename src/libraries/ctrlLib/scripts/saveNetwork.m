@@ -48,7 +48,7 @@ end
 fprintf(fid,')\n\n');
 
 fprintf(fid,'// input preprocessing\n');
-params=net.inputs{1}.processSettings{3};
+params=net.inputs{1}.processSettings{2};
 for i=1:szIW(2)
     fprintf(fid,'inMinMaxX_%d\t\t( %.15f %.15f )\n',uint8(i-1),params.xmin(i),params.xmax(i));
 end
