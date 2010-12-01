@@ -1574,6 +1574,7 @@ ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
 ImplementOpenLoopControl(this),
 ImplementControlMode(this),
+ImplementDebugInterface(this),
 _mutex(1),
 _done(0)
 {
@@ -1662,7 +1663,8 @@ bool CanBusMotionControl::open (Searchable &config)
 	_axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
 	ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
-	
+    ImplementDebugInterface::initialize(p._njoints, p._axisMap);
+
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
     _command_speeds = allocAndCheck<double>(p._njoints);
@@ -3365,6 +3367,55 @@ bool CanBusMotionControl::getOutputRaw(int axis, double *out)
     return true;
 }
 
+bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* value)
+{
+	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+  	if (!ENABLED(axis))
+    {
+		//@@@ TODO: check here
+		// value = 0;
+        return true;
+    }
+ 
+	CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        fprintf(stderr, "More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        return false;
+    }
+
+    r.startPacket();
+    r.addMessage (id, axis, type);
+    r.writePacket();
+
+	ThreadTable2 *t=threadPool->getThreadTable(id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+
+	CanMessage *m=t->get(0);
+    if (m==0)
+    {
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
+
+	unsigned char *data;
+	data=m->getData()+1;
+	*value= *((short *)(data));
+
+	t->clear();
+
+	return true;
+}
+
 bool CanBusMotionControl::getOutputsRaw(double *outs)
 {
     CanBusResources& r = RES(system_resources);
@@ -3445,6 +3496,15 @@ bool CanBusMotionControl::setOffsetRaw(int axis, double v)
         return false;
 
     return _writeWord16 (CAN_SET_OFFSET, axis, S_16(v));
+
+}
+
+bool CanBusMotionControl::setParameterRaw(int axis, unsigned int type, double value)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    return _writeWord16 (type, axis, S_16(value));
 
 }
 

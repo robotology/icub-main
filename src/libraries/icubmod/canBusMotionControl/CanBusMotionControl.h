@@ -34,6 +34,7 @@
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/CanBusInterface.h>
+#include <icub/DebugInterfaces.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Stamp.h>
@@ -338,7 +339,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IEncodersRaw, 
             public IAmplifierControlRaw,
             public IControlCalibrationRaw,
-            public IControlDebug,
+            public IDebugInterfaceRaw,
             public IControlLimitsRaw,
 			public ITorqueControlRaw,
 			public IImpedanceControlRaw,
@@ -356,6 +357,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
 			public ImplementImpedanceControl,
 			public ImplementOpenLoopControl,
             public ImplementControlMode,
+			public ImplementDebugInterface,
             public IFactoryInterface
 {
 private:
@@ -578,6 +580,10 @@ public:
     virtual bool setPrintFunction(int (*f) (const char *fmt, ...));
     virtual bool loadBootMemory();
     virtual bool saveBootMemory();
+
+    // IDebug Interface
+	virtual bool setParameterRaw(int j, unsigned int type, double value);
+	virtual bool getParameterRaw(int j, unsigned int type, double* value);
 
     /////// Limits
     virtual bool setLimitsRaw(int axis, double min, double max);
