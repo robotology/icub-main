@@ -24,6 +24,7 @@
 #include <yarp/os/Vocab.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
+#include <iCub/DebugInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/PreciselyTimed.h>
@@ -89,6 +90,7 @@ protected:
     yarp::dev::IControlLimits       *lim;
     yarp::dev::ITorqueControl       *torque;
     yarp::dev::IControlMode         *iMode;
+	yarp::dev::IDebugInterface      *iDbg;
     yarp::dev::IAxisInfo            *info;
     yarp::dev::IControlCalibration2   *ical2;
 	yarp::dev::IOpenLoopControl     *iOpenLoop;
@@ -174,6 +176,7 @@ public:
     ITorqueControl       *iTorque;
 	IImpedanceControl    *iImpedance;
 	IOpenLoopControl     *iOpenLoop;
+	IDebugInterface      *iDbg;
     IControlMode         *iMode;
     IAxisInfo          *info;
 
@@ -236,6 +239,7 @@ class ControlBoardWrapper2 : public DeviceDriver,
                              public IEncoders,
                              public IAmplifierControl,
                              public IControlLimits,
+							 public IDebugInterface,
                              public IControlCalibration,
                              public IControlCalibration2,
                              public IOpenLoopControl,
@@ -2599,6 +2603,38 @@ public:
         }
         return ret;
     }
+
+	virtual bool getParameter(int j, unsigned int type, double *t)
+	{
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getParameter(off+base, type, t);
+        }		
+        return false;
+	}
+
+	virtual bool setParameter(int j, unsigned int type, double t)
+	{
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->setParameter(off+base, type, t);
+        }		
+        return false;
+	}
 
     virtual bool setOutput(int j, double v)
     {

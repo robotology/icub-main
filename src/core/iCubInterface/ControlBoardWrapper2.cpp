@@ -35,6 +35,7 @@ SubDevice::SubDevice()
     iTimed= 0;
     info = 0;
     iOpenLoop=0;
+	iDbg = 0;
 
     iTorque=0;
 	iImpedance=0;
@@ -100,6 +101,7 @@ void SubDevice::detach()
     iMode=0;
     iTimed=0;
     iOpenLoop=0;
+	iDbg = 0;
 
     configuredF=false;
     attachedF=false;
@@ -144,6 +146,7 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
 			subdevice->view(iImpedance);
             subdevice->view(iMode);
             subdevice->view(iOpenLoop);
+			subdevice->view(iDbg);
         }
     else
         {
@@ -162,10 +165,13 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
         DEBUG_CW2("--> Warning iTorque not valid interface\n");
 
     if (iImpedance==0)
-        DEBUG_CW2("--> Warning iTorque not valid interface\n");
+        DEBUG_CW2("--> Warning iImpedance not valid interface\n");
 
     if (iOpenLoop==0)
         DEBUG_CW2("--> Warning iOpenLoop not valid interface\n");
+
+	if (iDbg==0)
+        DEBUG_CW2("--> Warning iDebug not valid interface\n");
 
     int deviceJoints=0;
 
@@ -882,7 +888,16 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         switch(cmd.get(1).asVocab()) 
                             {
-                            case VOCAB_OUTPUT:
+                             case VOCAB_DEBUG_PARAMETER:
+                                {
+                                    int j     = cmd.get(2).asInt();
+                                    int param = cmd.get(3).asInt();
+									double val   = cmd.get(4).asDouble();
+                                    ok = iDbg->setParameter(j, param, val);
+                                }
+                                break;
+
+							case VOCAB_OUTPUT:
                                 {
                                     double v;
                                     int j = cmd.get(2).asInt();
@@ -1234,6 +1249,17 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         switch(cmd.get(1).asVocab()) 
                             {
+							case VOCAB_DEBUG_PARAMETER:
+                                {
+                                    int j     = cmd.get(2).asInt();
+                                    int param = cmd.get(3).asInt();
+									ok = iDbg->getParameter(j, param, &dtmp);
+									response.addInt(j);
+									response.addInt(param);
+									response.addDouble(dtmp);
+                                }
+                                break;
+
                             case VOCAB_ERR: 
                                 {
                                     ok = pid->getError(cmd.get(2).asInt(), &dtmp);
@@ -1604,6 +1630,7 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) {
     info = dynamic_cast<yarp::dev::IAxisInfo *> (caller);
     ical2= dynamic_cast<yarp::dev::IControlCalibration2 *> (caller);
     iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (caller);
+	iDbg=dynamic_cast<yarp::dev::IDebugInterface *> (caller);
 	iImpedance=dynamic_cast<yarp::dev::IImpedanceControl *> (caller);
     torque=dynamic_cast<yarp::dev::ITorqueControl *> (caller);
     iMode=dynamic_cast<yarp::dev::IControlMode *> (caller);
