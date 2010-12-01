@@ -373,11 +373,14 @@ public:
 
                 // dispose previously allocated memory
                 disposeMem();
+                
+                int min_x=(int)ceil(((1.0-coverXratio)/2.0)*imgMonoIn.width());
+                int min_y=(int)ceil(((1.0-coverYratio)/2.0)*imgMonoIn.height());
 
-                // init internal variables
-                double nodesRow=ceil((coverXratio*imgMonoIn.width())/nodesStep);
-                double nodesCol=ceil((coverYratio*imgMonoIn.height())/nodesStep);
-                nodesNum=(int)(nodesRow*nodesCol);
+                nodesX=(imgMonoIn.width()-2*min_x)/nodesStep+1;
+                nodesY=(imgMonoIn.height()-2*min_y)/nodesStep+1;
+
+                nodesNum=nodesX*nodesY;
 
                 nodesPrev=new CvPoint2D32f[nodesNum];
                 nodesCurr=new CvPoint2D32f[nodesNum];
@@ -387,18 +390,12 @@ public:
                 featureErrors=new float[nodesNum];
 
                 memset(nodesPersistence,0,nodesNum*sizeof(int));
-
-                // populate grid
-                int min_x=(int)ceil(((1.0-coverXratio)/2.0)*imgMonoIn.width());
-                int min_y=(int)ceil(((1.0-coverYratio)/2.0)*imgMonoIn.height());
-                int cnt=0;
                 
-                for (int y=min_y; y<imgMonoIn.height()-min_y; y+=nodesStep)
-                    for (int x=min_x; x<imgMonoIn.width()-min_x; x+=nodesStep)
+                // populate grid
+                int cnt=0;
+                for (int y=min_y; y<=(imgMonoIn.height()-min_y); y+=nodesStep)
+                    for (int x=min_x; x<=(imgMonoIn.width()-min_x); x+=nodesStep)
                         nodesPrev[cnt++]=cvPoint2D32f(x,y);
-
-                nodesX=(imgMonoIn.width()-2*min_x)/nodesStep;
-                nodesY=(imgMonoIn.height()-2*min_y)/nodesStep;
 
                 // convert to gray-scale
                 cvCvtColor(pImgBgrIn->getIplImage(),imgMonoPrev.getIplImage(),CV_BGR2GRAY);
@@ -477,7 +474,7 @@ public:
 
                 // do not consider the border nodes and skip if inhibition is on
                 int row=i%nodesX;
-                bool skip=inhibition || (i<nodesX) || (i>=nodesNum-nodesX) || (row==0) || (row==nodesX-1);
+                bool skip=inhibition || (i<nodesX) || (i>=(nodesNum-nodesX)) || (row==0) || (row==(nodesX-1));
 
                 if (!skip && featuresFound[i] && (featureErrors[i]>recogThresAbs))
                 {
@@ -486,8 +483,8 @@ public:
                     int cntAdjNodesOn=-1;
 
                     // scroll per lines
-                    for (int j=i-nodesX; j<=i+nodesX; j+=nodesX)
-                        for (int k=j-1; k<=j+1; k++)
+                    for (int j=i-nodesX; j<=(i+nodesX); j+=nodesX)
+                        for (int k=j-1; k<=(j+1); k++)
                             cntAdjNodesOn+=(int)(featuresFound[k]&&(featureErrors[k]>recogThresAbs));
 
                     // highlight independent moving node if over threhold
@@ -634,8 +631,8 @@ public:
             activeNodesIndexSet.erase(el);
 
             // perform recursive exploration
-            for (int j=i-nodesX; j<=i+nodesX; j+=nodesX)
-                for (int k=j-1; k<=j+1; k++)
+            for (int j=i-nodesX; j<=(i+nodesX); j+=nodesX)
+                for (int k=j-1; k<=(j+1); k++)
                     if (k!=i)
                         floodFill(k,pBlob);
         }
