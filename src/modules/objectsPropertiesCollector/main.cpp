@@ -56,7 +56,12 @@ assigned to each stored item.
  
 - \e lifeTimer specifies the forgetting factor given in seconds, 
 meaning that after \e lifeTimer seconds since its creation, the 
-item is removed automatically from the database. 
+item is removed automatically from the database. The user can 
+read this property at run-time, can even modify it or assign it
+to an object after its creation. 
+ 
+- \e propSet is used to specify a list of properties over which 
+  execute the given command. 
  
 The commands sent as bottles to the module port 
 /<moduleName>/rpc are the following: 
@@ -69,17 +74,21 @@ properties. A unique identifier is returned that is used to
 access the item. 
 
 <b>del</b> \n
-Format: [del] ((id <num>)) \n 
+Format: [del] ((id <num>) (propSet ({prop0} {prop1} ...))) \n 
 Reply: [nack]; [ack] \n 
-Action: remove from the database an item specified with the 
-given identifier. \n
+Action: remove from the database the specified properties 
+belonging to the item specified with the given identifier. \n 
+The special command "del ((id <num>))" removes the whole item.\n
 The special command "[del] (all)" clears the current content of 
 the database. 
  
 <b>get</b> \n
-Format: [get] ((id <num>)) \n
+Format: [get] ((id <num>) (propSet ({prop0} {prop1} ...))) \n
 Reply: [nack]; [ack] (({prop0} <val0>) ({prop1} <val1>) ...) \n
-Action: return all the properties assigned to the stored item.
+Action: return the required properties assigned to the stored 
+item. \n 
+The special command "[get] ((id <num>))" returns all the 
+properties. 
  
 <b>set</b> \n
 Format: [set] ((id <num>) ({prop2} <val2>) ...) \n 
@@ -186,18 +195,22 @@ reply: [ack] (id (1))
 using namespace yarp::os;
 using namespace std;
 
-#define CMD_ADD         VOCAB3('a','d','d')
-#define CMD_DEL         VOCAB3('d','e','l')
-#define CMD_GET         VOCAB3('g','e','t')
-#define CMD_SET         VOCAB3('s','e','t')
-#define CMD_DUMP        VOCAB4('d','u','m','p')
-#define CMD_ASK         VOCAB3('a','s','k')
-
-#define REP_ACK         VOCAB3('a','c','k')
-#define REP_NACK        VOCAB4('n','a','c','k')
-#define REP_UNKNOWN     VOCAB4('u','n','k','n')
-
-#define OPT_ALL         VOCAB3('a','l','l')
+#define CMD_ADD             VOCAB3('a','d','d')
+#define CMD_DEL             VOCAB3('d','e','l')
+#define CMD_GET             VOCAB3('g','e','t')
+#define CMD_SET             VOCAB3('s','e','t')
+#define CMD_DUMP            VOCAB4('d','u','m','p')
+#define CMD_ASK             VOCAB3('a','s','k')
+                            
+#define REP_ACK             VOCAB3('a','c','k')
+#define REP_NACK            VOCAB4('n','a','c','k')
+#define REP_UNKNOWN         VOCAB4('u','n','k','n')
+                            
+#define OPT_ALL             VOCAB3('a','l','l')
+                            
+#define PROP_ID             ("id")
+#define PROP_LIFETIMER      ("lifeTimer")
+#define PROP_SET            ("propSet")
 
 
 namespace relationalOperators
@@ -332,7 +345,7 @@ protected:
     {
         int i=0;
         for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
-            fprintf(stream,"item_%d (id %d) (%s)\n",i++,it->first,it->second->toString().c_str());
+            fprintf(stream,"item_%d (%s %d) (%s)\n",i++,PROP_ID,it->first,it->second->toString().c_str());
     }
 
 public:
@@ -367,9 +380,7 @@ public:
             load();
 
         dump();
-
         initialized=true;
-
         fprintf(stdout,"database ready ...\n");
     }
 
@@ -377,7 +388,6 @@ public:
     void load()
     {
         mutex.wait();
-
         fprintf(stdout,"loading database from %s ...\n",dbFileName.c_str());
 
         clearMap();
@@ -423,7 +433,6 @@ public:
         }
 
         fprintf(stdout,"database loaded\n");
-
         mutex.post();
     }
 
@@ -431,7 +440,6 @@ public:
     void save()
     {
         mutex.wait();
-
         fprintf(stdout,"saving database in %s ...\n",dbFileName.c_str());
 
         FILE *fout=fopen(dbFileName.c_str(),"w");
@@ -439,7 +447,6 @@ public:
         fclose(fout);
 
         fprintf(stdout,"database stored\n");
-
         mutex.post();
     }
 
@@ -447,7 +454,6 @@ public:
     void dump()
     {
         mutex.wait();
-
         fprintf(stdout,"dumping database content ... \n");        
 
         if (itemsMap.size()==0)
@@ -462,12 +468,10 @@ public:
     void add(Bottle *content)
     {
         mutex.wait();
-
         Property *item=new Property(content->toString().c_str());
         itemsMap[idCnt]=item;
 
         fprintf(stdout,"added item %s\n",item->toString().c_str());
-
         mutex.post();
     }
 
@@ -475,7 +479,6 @@ public:
     bool remove(Bottle *content)
     {
         mutex.wait();
-
         if (content->size()==1)
             if (content->get(0).isVocab() || content->get(0).isString())
                 if (content->get(0).asVocab()==OPT_ALL)
@@ -488,29 +491,35 @@ public:
 
         Property request(content->toString().c_str());
 
-        if (!request.check("id"))
+        if (!request.check(PROP_ID))
         {
-            fprintf(stdout,"id field not present within the request!\n");
+            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
         
-        int id=request.find("id").asInt();
+        int id=request.find(PROP_ID).asInt();
         fprintf(stdout,"removing item %d ... ",id);
 
         map<int,Property*>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
-            eraseItem(it);
+            Bottle *propSet=request.find(PROP_SET).asList();
+            if (propSet!=NULL)
+            {
+                for (int i=0; i<propSet->size(); i++)
+                    it->second->unput(propSet->get(i).asString().c_str());
+            }
+            else
+                eraseItem(it);
+
             fprintf(stdout,"successfully\n");
             mutex.post();
             return true;
         }
-        
+
         fprintf(stdout,"not present!\n");
-
         mutex.post();
-
         return false;
     }
 
@@ -518,33 +527,46 @@ public:
     bool get(Bottle *content, Bottle &item)
     {
         mutex.wait();
-
         Property request(content->toString().c_str());
 
-        if (!request.check("id"))
+        if (!request.check(PROP_ID))
         {
-            fprintf(stdout,"id field not present within the request!\n");
+            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
 
-        int id=request.find("id").asInt();
+        int id=request.find(PROP_ID).asInt();
         fprintf(stdout,"getting item %d ... ",id);
 
         map<int,Property*>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
             item.clear();
-            item.fromString(it->second->toString().c_str());
+
+            Bottle *propSet=request.find(PROP_SET).asList();
+            if (propSet!=NULL)
+            {
+                Property prop;
+                for (int i=0; i<propSet->size(); i++)
+                {
+                    string propName=propSet->get(i).asString().c_str();
+                    if (it->second->check(propName.c_str()))
+                        prop.put(propName.c_str(),it->second->find(propName.c_str()));
+                }
+
+                item.fromString(prop.toString().c_str());
+            }
+            else
+                item.fromString(it->second->toString().c_str());
+
             fprintf(stdout,"%s\n",item.toString().c_str());
             mutex.post();
             return true;
         }
 
         fprintf(stdout,"not present!\n");
-
         mutex.post();
-
         return false;
     }
 
@@ -552,23 +574,22 @@ public:
     bool set(Bottle *content)
     {
         mutex.wait();
-
         Property request(content->toString().c_str());
 
-        if (!request.check("id"))
+        if (!request.check(PROP_ID))
         {
-            fprintf(stdout,"id field not present within the request!\n");
+            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
 
-        int id=request.find("id").asInt();
+        int id=request.find(PROP_ID).asInt();
         fprintf(stdout,"setting item %d ... ",id);
 
         map<int,Property*>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
-            request.unput("id");
+            request.unput(PROP_ID);
             Bottle b(request.toString().c_str());
 
             fprintf(stdout,"%s\n",b.toString().c_str());
@@ -596,9 +617,7 @@ public:
         }
 
         fprintf(stdout,"not present!\n");
-
         mutex.post();
-
         return false;
     }
 
@@ -606,7 +625,6 @@ public:
     bool ask(Bottle *content, Bottle &items)
     {
         mutex.wait();
-
         if (content->size()==1)
             if (content->get(0).isVocab() || content->get(0).isString())
                 if (content->get(0).asVocab()==OPT_ALL)
@@ -731,9 +749,7 @@ public:
         }
 
         fprintf(stdout,"found items matching received conditions (%s)\n",items.toString().c_str());
-
         mutex.post();
-
         return true;
     }
 
@@ -741,12 +757,11 @@ public:
     void periodicHandler(const double dt)   // manage the items life-timers
     {
         mutex.wait();
-
         for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
-            if (it->second->check("lifeTimer"))
+            if (it->second->check(PROP_LIFETIMER))
             {
-                double lifeTimer=it->second->find("lifeTimer").asDouble()-dt;
+                double lifeTimer=it->second->find(PROP_LIFETIMER).asDouble()-dt;
 
                 if (lifeTimer<0.0)
                 {
@@ -756,8 +771,8 @@ public:
                 }
                 else
                 {
-                    it->second->unput("lifeTimer");
-                    it->second->put("lifeTimer",lifeTimer);
+                    it->second->unput(PROP_LIFETIMER);
+                    it->second->put(PROP_LIFETIMER,lifeTimer);
                 }
             }
         }
@@ -793,7 +808,7 @@ public:
                 add(content);
                 reply.addVocab(REP_ACK);
                 Bottle &b=reply.addList();
-                b.addString("id");
+                b.addString(PROP_ID);
                 b.addInt(idCnt);
                 idCnt++;
 
@@ -880,7 +895,7 @@ public:
                 {
                     reply.addVocab(REP_ACK);
                     Bottle &b=reply.addList();
-                    b.addString("id");
+                    b.addString(PROP_ID);
                     b.addList()=items;
                 }
                 else
