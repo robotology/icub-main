@@ -26,11 +26,6 @@
 
 ///specific to this device driver.
 #include "iCubSimulationControl.h"
-#include "OdeInit.h"
-
-//extern OdeInit odeinit;
-extern OdeInit& getOdeInit();
- #define odeinit (getOdeInit())
 
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
@@ -42,8 +37,6 @@ static bool NOT_YET_IMPLEMENTED(const char *txt)
 
     return false;
 }
-
-bool isExperimental = false;
 
 iCubLogicalJoints iCubSimulationControl::manager;
 
