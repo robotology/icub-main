@@ -33,13 +33,13 @@
 extern OdeInit& getOdeInit();
  #define odeinit (getOdeInit())
 
-#include "ControlBoardInterfacesImpl_without_ace.inl"
+#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 using namespace yarp::os;
 using namespace yarp::dev;
 static bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    ACE_OS::fprintf(stderr, "%s not yet implemented for iCubSimulationControl\n", txt);
+    fprintf(stderr, "%s not yet implemented for iCubSimulationControl\n", txt);
 
     return false;
 }
@@ -250,7 +250,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     Searchable& p = config;
 
 	if (!p.check("GENERAL","section for general motor control parameters")) {
-        ACE_OS::fprintf(stderr, "Cannot understand configuration parameters\n");
+        fprintf(stderr, "Cannot understand configuration parameters\n");
         return false;
     }
 	
