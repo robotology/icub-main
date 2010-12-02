@@ -13,9 +13,6 @@
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/Thread.h>
-#include <yarp/os/ConstString.h>
 #include <yarp/os/all.h>
 
 #include "iCubLogicalJoints.h"
@@ -30,7 +27,7 @@ using namespace yarp::dev;
 
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
-	public os::Thread, 
+	public yarp::os::RateThread, 
            public IPidControlRaw, 
             public IPositionControlRaw, 
             public IVelocityControlRaw, 

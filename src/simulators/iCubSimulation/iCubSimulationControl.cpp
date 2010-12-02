@@ -43,6 +43,7 @@ iCubLogicalJoints iCubSimulationControl::manager;
 //////////////////////////////////
 
 iCubSimulationControl::iCubSimulationControl() : 
+    RateThread(10),
     ImplementPositionControl<iCubSimulationControl, IPositionControl>(this),
    ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
@@ -204,7 +205,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 		
     velocityMode = false;
 
-	Thread::start();
+	RateThread::start();
 	//_done.wait ();
 	_mutex.post();
 	_opened = true;
@@ -215,11 +216,11 @@ bool iCubSimulationControl::close (void)
 {
     if (_opened) {
 
-        if (Thread::isRunning())
+        if (RateThread::isRunning())
             {
             }
         
-        Thread::stop();	/// stops the thread first (joins too).
+        RateThread::stop();	/// stops the thread first (joins too).
         
         ImplementPositionControl<iCubSimulationControl, IPositionControl>::uninitialize ();
         ImplementVelocityControl<iCubSimulationControl, IVelocityControl>::uninitialize();
@@ -259,40 +260,37 @@ bool iCubSimulationControl::close (void)
 }
 
 void iCubSimulationControl::run() {
-	while(!isStopping()) {
-        _mutex.wait();
-		int lengths[] = { 0, 16, 16, 6, 6 , 6, 3};
-        if (partSelec<=6) {
-            int len = lengths[partSelec];
-            int i;
-            
-			for (i=0; i<len; i++) {
-                LogicalJoint& ctrl = manager.control(partSelec,i); 
-                current_pos[i] = ctrl.getAngle();
-                current_vel[i] = ctrl.getVelocity();
-            }
-
-			for (i=0; i<len; i++) {
-                LogicalJoint& ctrl = manager.control(partSelec,i); 
-                motor_on[i] = true; // no reason to turn motors off, for now
-                if (velocityMode) {
-                    //ctrl.setVelocity(next_vel[i]);
-					if(((current_pos[i]<limitsMin[i])&&(next_vel[i]<0)) || ((current_pos[i]>limitsMax[i])&&(next_vel[i]>0)))
-                         ctrl.setVelocity(0.0);
-                     else{
-                         ctrl.setVelocity(next_vel[i]);
-					}
-						
-                } else {
-                    // no acceleration control right now, just velocity
-                    ctrl.setControlParameters(vels[i],1);
-                    ctrl.setPosition(next_pos[i]);
+    _mutex.wait();
+    int lengths[] = { 0, 16, 16, 6, 6 , 6, 3};
+    if (partSelec<=6) {
+        int len = lengths[partSelec];
+        int i;
+        
+        for (i=0; i<len; i++) {
+            LogicalJoint& ctrl = manager.control(partSelec,i); 
+            current_pos[i] = ctrl.getAngle();
+            current_vel[i] = ctrl.getVelocity();
+        }
+        
+        for (i=0; i<len; i++) {
+            LogicalJoint& ctrl = manager.control(partSelec,i); 
+            motor_on[i] = true; // no reason to turn motors off, for now
+            if (velocityMode) {
+                //ctrl.setVelocity(next_vel[i]);
+                if(((current_pos[i]<limitsMin[i])&&(next_vel[i]<0)) || ((current_pos[i]>limitsMax[i])&&(next_vel[i]>0)))
+                    ctrl.setVelocity(0.0);
+                else{
+                    ctrl.setVelocity(next_vel[i]);
                 }
+				
+            } else {
+                // no acceleration control right now, just velocity
+                ctrl.setControlParameters(vels[i],1);
+                ctrl.setPosition(next_pos[i]);
             }
         }
-        _mutex.post();
-        Time::delay(0.01);
-    }    
+    }
+    _mutex.post();
 }
 
 
