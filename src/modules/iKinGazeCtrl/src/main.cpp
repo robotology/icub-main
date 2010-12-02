@@ -117,7 +117,7 @@ Factors</a>.
 --Tneck \e time
 - specify the neck trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.70
-  seconds. (Tneck cannot be lower than Teyes).
+  seconds. (Tneck cannot be set equal or lower than Teyes).
  
 --Teyes \e time
 - specify the eyes trajectory execution time in point-to-point 
