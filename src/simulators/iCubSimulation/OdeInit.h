@@ -54,37 +54,9 @@ public:
         return name;
     }
 
-	OdeInit():mutex(1)
-	{	
-			
-			//create the world parameters
-			world = dWorldCreate();
-			space = dHashSpaceCreate (0);
-			contactgroup = dJointGroupCreate (0);
+    ~OdeInit();
 
-			dWorldSetGravity (world,0,-9.8,0);
-			ground = dCreatePlane (space,0, 1, 0, 0);
-	//		feedback = new dJointFeedback;
-	//		feedback1 = new dJointFeedback;
-	//		feedback_mat = new dJointFeedback;
-			_iCub = new ICubSim(world, space, 0,0,0);
-			_wrld = new worldSim(world, space, 0,0,0);	
-	}
-
-    
-
-    ~OdeInit()
-    {
-        delete _wrld;    
-        delete _iCub;
-        
-        dGeomDestroy(ground);
-        dJointGroupDestroy(contactgroup);
-        dSpaceDestroy(space);
-        dWorldDestroy(world);
-    }
-
-    static void create() {
+    static void init() {
         get();
     }
 
@@ -93,6 +65,8 @@ public:
     static void destroy();
 
 private:
+    OdeInit();
+
     static OdeInit *_odeinit;
 };
 

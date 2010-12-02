@@ -171,25 +171,7 @@ int main( int argc, char** argv)
 		
     finder.configure(argc, argv, moduleName);
 
-    OdeInit::create();
-
-	odeinit._wrld->OBJNUM = 0;
-	odeinit._wrld->waitOBJ = 0;
-	odeinit._wrld->S_OBJNUM = 0;
-
-  	odeinit._wrld->SPHNUM = 0;
-	odeinit._wrld->waitSPH = 0;
-	odeinit._wrld->S_SPHNUM = 0;
-		
-	odeinit._wrld->cylOBJNUM = 0;
-	odeinit._wrld->waitOBJ1 = 0;
-	odeinit._wrld->S_cylOBJNUM = 0;
-	
-	odeinit._wrld->waitMOD = 0;
-	odeinit._wrld->MODEL_NUM = 0;
-
-	odeinit._wrld->s_waitMOD = 0;
-	odeinit._wrld->s_MODEL_NUM = 0;
+    OdeInit::init();
 
     iCubSimulationControl::init();
 
