@@ -1650,7 +1650,7 @@ bool ServerCartesianController::getPose(const int axis, Vector &x, Vector &o)
     {
         if (axis<(int)chain->getN())
         {
-            Matrix H=chain->getH(axis);
+            Matrix H=chain->getH(axis,true);
     
             x.resize(3);
     
