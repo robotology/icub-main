@@ -12,6 +12,10 @@
  * \date 2007
  * \note Release under GNU GPL v2.0
  **/
+
+#ifndef ICUBSIMULATION_ODEINIT_INC
+#define ICUBSIMULATION_ODEINIT_INC
+
 #include "iCub.h"
 #include "world.h"
 #include <time.h>
@@ -20,7 +24,12 @@
 
 using namespace std;
 
-class OdeInit{
+/**
+ *
+ * ODE state information.
+ *
+ */
+class OdeInit {
 public:
 	double SimTime;
 	dWorldID world;
@@ -73,6 +82,21 @@ public:
         dJointGroupDestroy(contactgroup);
         dSpaceDestroy(space);
         dWorldDestroy(world);
- 		
     }
+
+    static void create() {
+        get();
+    }
+
+    static OdeInit& get();
+
+    static void destroy();
+
+private:
+    static OdeInit *_odeinit;
 };
+
+// hack, for compatibility with existing code
+#define odeinit (OdeInit::get())
+
+#endif

@@ -126,9 +126,6 @@
 #include "OdeInit.h" 
 #include "iCubSimulationControl.h" 
 
-extern OdeInit& getOdeInit();
-#define odeinit (getOdeInit())
-
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
@@ -174,6 +171,8 @@ int main( int argc, char** argv)
 		
     finder.configure(argc, argv, moduleName);
 
+    OdeInit::create();
+
 	odeinit._wrld->OBJNUM = 0;
 	odeinit._wrld->waitOBJ = 0;
 	odeinit._wrld->S_OBJNUM = 0;
@@ -214,7 +213,7 @@ int main( int argc, char** argv)
 
     module.closeModule();
     finder.deleteFinder();
-    delete &getOdeInit();
+    OdeInit::destroy();
 
     dCloseODE();
 

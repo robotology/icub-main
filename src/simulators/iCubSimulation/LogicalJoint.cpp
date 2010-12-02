@@ -8,9 +8,6 @@
 
 using namespace std;
 
-extern OdeInit& getOdeInit();
-#define odeinit (getOdeInit())
-
 LogicalJoint::LogicalJoint() : filter(6,0.3,0.0,100) {
     sub = NULL;
     joint = NULL;

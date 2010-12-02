@@ -32,17 +32,6 @@ using namespace iCub::logpolar;
 
 VideoTexture *Simulation::video=0;
 
-//string globalName;
-
-OdeInit *_odeinit = NULL;
-OdeInit& getOdeInit() {
-    if (_odeinit==NULL) {
-        _odeinit=new OdeInit;
-    }
-    return *_odeinit;
-}
-#define odeinit (getOdeInit())
-
 static int num=0;// number of objects in simulation
 static int nextobj=0;// next object to recycle if num==NUM
 size_t i;

@@ -47,10 +47,6 @@ static float xyz[3];
 static float hpr[8];
 static float rez[3];
 
-//extern OdeInit odeinit;
-extern OdeInit& getOdeInit();
-#define odeinit (getOdeInit())
-
 int contactPoint;
 int mouseDiffx, mouseDiffy;
 bool picking = false;

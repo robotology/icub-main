@@ -3,9 +3,6 @@
 #include "iCubLogicalJoints.h"
 #include "OdeInit.h"
 
-extern OdeInit& getOdeInit();
-#define odeinit (getOdeInit())
-
 iCubLogicalJoints::iCubLogicalJoints() {
     isSetup = false;
 }

@@ -50,6 +50,7 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME} logpolar
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 # added files, touching CMakeLists.txt so GLOB is rerun
-# touch 1 2 3 4 5
+# touch 1 2 3 4 5 6
+
 
 
