@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#ifndef ICUBSIMULATION_SIMCONTROL_INC
-#define ICUBSIMULATION_SIMCONTROL_INC
+#ifndef ICUBSIMULATION_LOGICALJOINT_INC
+#define ICUBSIMULATION_LOGICALJOINT_INC
 
 #include <ode/ode.h>
 
@@ -18,28 +18,28 @@
  * control joints in the ICUB specification.
  *
  */
-class SimControl {
+class LogicalJoint {
 public:
     /**
      * Constructor.
      */
-    SimControl();
+    LogicalJoint();
 
     /**
      * Destructor.
      */
-    virtual ~SimControl();
+    virtual ~LogicalJoint();
 
     /**
      * Create an array of nested control units.  The array will be 
      * destroyed when this object is destroyed.
      */
-    SimControl *nest(int len);
+    LogicalJoint *nest(int len);
 
     /**
      * Access a nested control unit.
      */
-    SimControl *at(int index);
+    LogicalJoint *at(int index);
 
     /**
      * Initialize a regular control unit.
@@ -49,7 +49,7 @@ public:
     /**
      * Initialize a differential pair of control units.
      */
-    void init(SimControl& left, SimControl& right, SimControl& peer, int sgn);
+    void init(LogicalJoint& left, LogicalJoint& right, LogicalJoint& peer, int sgn);
 
     /**
      * Get the angle of an associated joint, in ICUB units and sign.
@@ -111,14 +111,14 @@ private:
     bool hinged;
     int universal;
     int sign;
-    SimControl *sub;
+    LogicalJoint *sub;
     int subLength;
     bool active;
     double vel;
     double acc;
     PidFilter filter;
 
-    SimControl *left, *right, *peer;
+    LogicalJoint *left, *right, *peer;
     int verge;
 };
 

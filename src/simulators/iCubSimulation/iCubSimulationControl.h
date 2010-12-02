@@ -18,6 +18,8 @@
 #include <yarp/os/ConstString.h>
 #include <yarp/os/all.h>
 
+#include "iCubLogicalJoints.h"
+
 namespace yarp{
     namespace dev{
         class iCubSimulationControl;
@@ -163,7 +165,14 @@ class yarp::dev::iCubSimulationControl :
 
   void run(void);
 
+  ////// Initialization
+  static void init(void) {
+      manager.init();
+  }
+
 protected:
+    static iCubLogicalJoints manager;
+
     yarp::os::Semaphore _mutex;
     yarp::os::Semaphore _done;
     

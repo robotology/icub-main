@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#include "SimControl.h"
+#include "LogicalJoint.h"
 #include "OdeInit.h"
 
 #include <stdio.h>
@@ -11,7 +11,7 @@ using namespace std;
 extern OdeInit& getOdeInit();
 #define odeinit (getOdeInit())
 
-SimControl::SimControl() : filter(6,0.3,0.0,100) {
+LogicalJoint::LogicalJoint() : filter(6,0.3,0.0,100) {
     sub = NULL;
     joint = NULL;
     speed = NULL;
@@ -27,33 +27,33 @@ SimControl::SimControl() : filter(6,0.3,0.0,100) {
 
 
 
-SimControl::~SimControl() {
+LogicalJoint::~LogicalJoint() {
     if (sub!=NULL) {
         delete[] sub;
         sub = NULL;
     }
 }
 
-SimControl *SimControl::nest(int len) {
+LogicalJoint *LogicalJoint::nest(int len) {
     if (sub!=NULL) {
         delete[] sub;
         sub = NULL;
     }
-    sub = new SimControl[len];
+    sub = new LogicalJoint[len];
     subLength = len;
     return sub;
 }
 
-SimControl *SimControl::at(int index) {
+LogicalJoint *LogicalJoint::at(int index) {
     if (sub!=NULL) {
         return sub+index;
     }
     return NULL;
 }
 
-void SimControl::init(SimControl& left,
-                      SimControl& right,
-                      SimControl& peer,
+void LogicalJoint::init(LogicalJoint& left,
+                      LogicalJoint& right,
+                      LogicalJoint& peer,
                       int sgn) {
     active = true;
     verge = sgn;
@@ -64,7 +64,7 @@ void SimControl::init(SimControl& left,
 }
 
 
-void SimControl::init(const char *unit,
+void LogicalJoint::init(const char *unit,
                       const char *type,
                       int index,
                       int sign) {
@@ -137,7 +137,7 @@ void SimControl::init(const char *unit,
 }
 
 
-double SimControl::getAngleRaw() {
+double LogicalJoint::getAngleRaw() {
     if (verge==0) {
         if (hinged) {
             return dJointGetHingeAngle(*joint);
@@ -154,7 +154,7 @@ double SimControl::getAngleRaw() {
 }
 
 
-double SimControl::getVelocityRaw() {
+double LogicalJoint::getVelocityRaw() {
     if (verge==0) {
         if (joint == NULL){
             return 0;
@@ -174,7 +174,7 @@ double SimControl::getVelocityRaw() {
 }
 
 
-void SimControl::setControlParameters(double vel, double acc) {
+void LogicalJoint::setControlParameters(double vel, double acc) {
     this->vel = vel;
     this->acc = acc;
     if (sub!=NULL) {
@@ -189,7 +189,7 @@ void SimControl::setControlParameters(double vel, double acc) {
 }
 
 
-void SimControl::setPosition(double target) {
+void LogicalJoint::setPosition(double target) {
     double error = target - getAngleRaw()*sign;
     double ctrl = filter.pid(error);
     setVelocityRaw(ctrl*sign*vel);
@@ -200,7 +200,7 @@ void SimControl::setPosition(double target) {
     }
 }
 
-void SimControl::setVelocity(double target) {
+void LogicalJoint::setVelocity(double target) {
     if (sub!=NULL) {
         for (int i=0; i<subLength; i++) {
             sub[i].setVelocity(target);
@@ -210,7 +210,7 @@ void SimControl::setVelocity(double target) {
 }
 
 
-void SimControl::setVelocityRaw(double target) {
+void LogicalJoint::setVelocityRaw(double target) {
     speedSetpoint = target;
     if (verge==0) {
         if (speed != NULL){

@@ -1617,7 +1617,9 @@ int main( int argc, char** argv)
 	odeinit._wrld->s_MODEL_NUM = 0;
 
 	a = b = c = 0;
-	
+
+    iCubSimulationControl::init();
+
     Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
         "controlboard",
         "iCubSimulationControl"));
