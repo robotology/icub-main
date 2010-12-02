@@ -55,13 +55,24 @@ namespace yarp{
     }
 }
 
-#define _YARP_ASSERT(x) { if (!(x)) { printf("memory allocation failure\n"); /*yarp::os::exit(1);*/ } }
+#define _YARP_ASSERT_DEBUG(x) { if (!(x)) { printf("memory allocation failure\n"); /*yarp::os::exit(1);*/ } }
 
 template <class T>
-inline T* allocAndCheck(int size);
+inline T* allocAndCheckDebug(int size)
+{
+    T* t = new T[size];
+    _YARP_ASSERT (t != 0);
+    memset(t, 0, sizeof(T) * size);
+    return t;
+}
 
 template <class T>
-inline void checkAndDestroy(T* &p);
+inline void checkAndDestroyDebug(T* &p) {
+    if (p!=0) {
+        delete [] p;
+        p = 0;
+    }
+}
 
 class ControlBoardHelper2
 {
@@ -131,19 +142,19 @@ public:
         invAxisMap=new int [nj];
         angleToEncoders=new double [nj];
 		newtonsToSensors=new double [nj];
-        _YARP_ASSERT(zeros != 0 && signs != 0 && axisMap != 0 && invAxisMap != 0 && angleToEncoders != 0 && newtonsToSensors != 0);
+        _YARP_ASSERT_DEBUG(zeros != 0 && signs != 0 && axisMap != 0 && invAxisMap != 0 && angleToEncoders != 0 && newtonsToSensors != 0);
 
         return true;
     }
 
     bool dealloc()
     {
-        checkAndDestroy<double> (zeros);
-        checkAndDestroy<double> (signs);
-        checkAndDestroy<int> (axisMap);
-        checkAndDestroy<int> (invAxisMap);
-        checkAndDestroy<double> (angleToEncoders);
-		checkAndDestroy<double> (newtonsToSensors);
+        checkAndDestroyDebug<double> (zeros);
+        checkAndDestroyDebug<double> (signs);
+        checkAndDestroyDebug<int> (axisMap);
+        checkAndDestroyDebug<int> (invAxisMap);
+        checkAndDestroyDebug<double> (angleToEncoders);
+		checkAndDestroyDebug<double> (newtonsToSensors);
         return true;
     }
 

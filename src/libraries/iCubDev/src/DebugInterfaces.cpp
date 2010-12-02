@@ -31,7 +31,7 @@ bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap)
         dummy[k]=0;
 
     helper=(void *)(new ControlBoardHelper2(size, amap, dummy, dummy, dummy));
-    _YARP_ASSERT(helper != 0);
+    _YARP_ASSERT_DEBUG(helper != 0);
 
     delete [] dummy;
     return true;
