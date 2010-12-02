@@ -1296,17 +1296,7 @@ void SimulatorModule::init()
         }
     }
 
-	//odeinit._wrld->model_DIR = finder.findPath("model_path_default").asString();
-	odeinit._wrld->model_DIR = finder.findPath("model_path_default");//findPath("model_path_default");
-	
- /* if(!iCubLArm->isValid() && odeinit._iCub->actLArm == "on" || !iCubRArm->isValid() || !iCubHead->isValid() || !iCubLLeg->isValid() || !iCubRLeg->isValid() || !iCubTorso->isValid())
-    {
-      printf("Device not available. Here are the known devices:\n");
-	  printf("%s", Drivers::factory().toString().c_str());
-      Network::fini();
-      yarp::os::exit(1);
-    }*/
-
+	odeinit._wrld->model_DIR = finder.findPath("model_path_default");
 }
 
 void SimulatorModule::initImagePorts() {
@@ -1408,9 +1398,9 @@ bool SimulatorModule::runModule() {
 
 void SimulatorModule::displayStep(int pause) {
     if (odeinit.sync){
-        bool needLeft = (portLeft.getOutputCount()>0);// || viewParam1;
-        bool needRight = (portRight.getOutputCount()>0);// || viewParam2;
-        bool needWide = (portWide.getOutputCount()>0);// || (!(viewParam1 || viewParam2));
+        bool needLeft = (portLeft.getOutputCount()>0);
+        bool needRight = (portRight.getOutputCount()>0);
+        bool needWide = (portWide.getOutputCount()>0);
         bool needLeftFov = (portLeftFov.getOutputCount()>0);
         bool needLeftLog = (portLeftLog.getOutputCount()>0);
         bool needRightFov = (portRightFov.getOutputCount()>0);
@@ -1568,21 +1558,6 @@ bool SimulatorModule::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& ds
     dst.resize (ifovea, ifovea);
     return iCub::logpolar::subsampleFovea(dst, src);
 }
-
-class MyNetwork
-{
-public:
-    MyNetwork()
-    {
-        Network::init();
-    }
-        
-        ~MyNetwork()
-        {
-            Network::fini();
-            fprintf(stderr, "Closing network\n");
-        }
-};
 
 int main( int argc, char** argv) 
 {		
