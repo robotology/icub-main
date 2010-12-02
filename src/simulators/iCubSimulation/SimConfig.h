@@ -17,7 +17,6 @@
 #include <stdio.h>
 #include <iostream>
 
-using namespace std;
 #include <string>
 
 class SimConfig {
@@ -27,12 +26,12 @@ public:
     // can't actually configure from command line yet, since
     // some config files get loaded before main() - this needs
     // to be fixed.
-    string configure(int argc, char *argv[], string & moduleName);
+    std::string configure(int argc, char *argv[], std::string & moduleName);
     
     yarp::os::ConstString find(const char *fileName);
 	yarp::os::ConstString findPath(const char *key);
     bool isActive();
-    static string moduleName;
+    static std::string moduleName;
     void deleteFinder();
     
 };

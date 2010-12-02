@@ -22,9 +22,6 @@ namespace yarp{
         class iCubSimulationControl;
     }
 }
-using namespace yarp::os;
-using namespace yarp::dev;
-
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
 	public yarp::os::RateThread, 
