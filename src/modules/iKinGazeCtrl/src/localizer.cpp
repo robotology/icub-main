@@ -74,17 +74,17 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     else
         PrjR=invPrjR=NULL;
 
-    if (PrjL && PrjR)
+    if ((PrjL!=NULL) && (PrjR!=NULL))
     {
         cx=(cxl+cxr)/2.0;
         cy=(cyl+cyr)/2.0;
     }
-    else if (PrjL)
+    else if (PrjL!=NULL)
     {
         cx=cxl;
         cy=cyl;
     }
-    else if (PrjR)
+    else if (PrjR!=NULL)
     {
         cx=cxr;
         cy=cyr;
@@ -242,7 +242,7 @@ void Localizer::handleStereoInput()
                 double vm=(vl+vr)/2.0;
             
                 // consider a reference frame attached to the current
-                // fixation point aligned with the cyclopic eye axes
+                // fixation point aligned with the head-centered frame
                 Vector ref(3), fb(3);
             
                 // along x
@@ -255,7 +255,7 @@ void Localizer::handleStereoInput()
                 double el=um-ul;
                 double er=um-ur;
                 ref[2]=0.0; fb[2]=(fabs(el)+fabs(er))/2.0;
-                if (el<0.0 || er>0.0)
+                if ((el<0.0) || (er>0.0))
                     fb[2]=-fb[2];   // go towards increasing direction of z
             
                 // predict next position relative to the
@@ -452,13 +452,13 @@ void Localizer::threadRelease()
     delete port_anglesIn;
     delete port_anglesOut;
 
-    if (PrjL)
+    if (PrjL!=NULL)
     {
         delete PrjL;
         delete invPrjL;
     }
 
-    if (PrjR)
+    if (PrjR!=NULL)
     {
         delete PrjR;
         delete invPrjR;
