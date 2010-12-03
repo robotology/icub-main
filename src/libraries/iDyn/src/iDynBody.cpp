@@ -1654,9 +1654,11 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	if(outputNode==rbtList.size())
 	{
 		if(verbose>1)
+        {
 			fprintf(stderr,"iDynSensorNode: warning: there are no limbs with Wrench Flow = Output. ");
 			fprintf(stderr," At least one limb must have Wrench Output for balancing forces in the node. ");
             fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s> \n",info.c_str());
+        }
 	}
 
 	//now forward the wrench output from the node to limbs whose wrench flow is output type
