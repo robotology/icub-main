@@ -8,26 +8,24 @@
  * \note Release under GNU GPL v2.0
  **/
 
-#pragma once
+#ifndef ICUBSIMULATION_WORLD_INC
+#define ICUBSIMULATION_WORLD_INC
+
 #include "SDL.h"
 #include "SDL_opengl.h"
 #include "rendering.h" 
 #include <ode/ode.h>
 #include <string>
-using std::string;
-using std::cout;
-using std::endl;
+#include "RobotConfig.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
 #endif 
 
-using namespace yarp::os;
-
 class worldSimData{ 
 public:	
-	#define MAXNUM 100
-	#define GPB 3// maximum number of geometries per body
+#define MAXNUM 100
+#define GPB 3// maximum number of geometries per body
 	double l_massobj0;
 	double l_massobj1;
 	double l_massobj2;
@@ -62,14 +60,14 @@ public:
 class worldSim : public worldSimData {
 public:
 	static const bool textured = true;
-	ConstString actWorld;
+    yarp::os::ConstString actWorld;
 	dTriMeshDataID TriData[100];
 	dTriMeshX trimesh[100];
 
     dTriMeshDataID s_TriData[100];
 	dTriMeshX s_trimesh[100];
 	
-			// max number of objects
+    // max number of objects
 #define numObjJoints 5 //define Joints
 
 	dJointID joint	[numObjJoints];
@@ -98,48 +96,48 @@ public:
 	
 	bool WAITLOADING;
 	bool static_model;
-struct MyObject {
-  dBodyID boxbody;			// the body
-  dGeomID geom[GPB];		// geometries representing this body
-  dReal size[3];
-};
+    struct MyObject {
+        dBodyID boxbody;			// the body
+        dGeomID geom[GPB];		// geometries representing this body
+        dReal size[3];
+    };
 
- MyObject obj[MAXNUM];
- MyObject s_obj[MAXNUM];
+    MyObject obj[MAXNUM];
+    MyObject s_obj[MAXNUM];
 
- struct MyObject1 {
-  dBodyID cylbody;			// the body
-  dGeomID cylgeom[GPB];		// geometries representing this body
-  dReal radius;
-  dReal lenght;
-};
+    struct MyObject1 {
+        dBodyID cylbody;			// the body
+        dGeomID cylgeom[GPB];		// geometries representing this body
+        dReal radius;
+        dReal lenght;
+    };
 
- MyObject1 cyl_obj[MAXNUM];
- MyObject1 s_cyl_obj[MAXNUM];
+    MyObject1 cyl_obj[MAXNUM];
+    MyObject1 s_cyl_obj[MAXNUM];
 
-int modelTexture[100];
- int s_modelTexture[100];
+    int modelTexture[100];
+    int s_modelTexture[100];
 
-struct MyObject2 {
-  dBodyID body;			// the body
-  dGeomID geom;  		// geometries representing this body
-};
- MyObject2 ThreeD_obj[100];
- MyObject2 s_ThreeD_obj[100]; 
-
-
-struct MyObject3 {
-  dBodyID sphbody;			// the body
-  dGeomID sphgeom[GPB];		// geometries representing this body
-  dReal radius;
-};
-
- MyObject3 sph[MAXNUM];
- MyObject3 s_sph[MAXNUM];
+    struct MyObject2 {
+        dBodyID body;			// the body
+        dGeomID geom;  		// geometries representing this body
+    };
+    MyObject2 ThreeD_obj[100];
+    MyObject2 s_ThreeD_obj[100]; 
 
 
-ConstString texture;
-string model_DIR;
+    struct MyObject3 {
+        dBodyID sphbody;			// the body
+        dGeomID sphgeom[GPB];		// geometries representing this body
+        dReal radius;
+    };
+
+    MyObject3 sph[MAXNUM];
+    MyObject3 s_sph[MAXNUM];
+
+
+    yarp::os::ConstString texture;
+    std::string model_DIR;
 public:
 
 	void resetSpeeds();
@@ -149,12 +147,17 @@ public:
 	void draw();
 	void drawGeom(dGeomID g, const dReal *pos, const dReal *rot);//, float red  = 0.0f, float green = 128.5f, float blue = 255.0f);
     void setPosition(dReal agent1X, dReal agent1Z, dReal agent1Y );
-	void activateWorld();
-	void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z );
-	void loadTexture(ConstString texture, int numTexture);
+	void activateWorld(RobotConfig& config);
+	void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+               RobotConfig& config);
+	void loadTexture(yarp::os::ConstString texture, int numTexture);
 
 
 	~worldSim();
 
-	worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z);
+	worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+             RobotConfig& config);
 };
+
+
+#endif

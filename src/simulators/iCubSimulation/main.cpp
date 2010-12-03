@@ -130,32 +130,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
 
-static SimulatorModule *simulatorModule = NULL;
-
-void sendTouch(Bottle& report) {
-	simulatorModule->sendTouch(report);
-}
-
-bool shouldSendTouch() {
-	return simulatorModule->shouldSendTouch();
-}
-
-void sendInertial(Bottle& report) {
-	simulatorModule->sendInertial(report);
-}
-
-bool shouldSendInertial() {
-	return simulatorModule->shouldSendInertial();
-}
-
-
-void sendVision(){
-    simulatorModule->displayStep(0);
-}
-
-static void displayStep(int pause) {
-    // simulatorModule->displayStep(pause);
-}
+//static SimulatorModule *simulatorModule = NULL;
 
 int main( int argc, char** argv) 
 {		
@@ -166,15 +141,12 @@ int main( int argc, char** argv)
     if (!yarp.checkNetwork())
         return -1;
 
-    SimConfig finder;
+    SimConfig config;
     string moduleName;
-		
-    finder.configure(argc, argv, moduleName);
+    config.configure(argc, argv, moduleName);
 
-    OdeInit::init();
-
+    OdeInit::init(&config);
     iCubSimulationControl::init();
-
     Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
         "controlboard",
         "iCubSimulationControl"));
@@ -184,9 +156,7 @@ int main( int argc, char** argv)
         yarp::os::exit(1);
     }
 
-    SimulatorModule module;
-    simulatorModule = &module;
-    module.moduleName = moduleName;
+    SimulatorModule module(config);
     odeinit.setName(moduleName);
     module.open();
 
@@ -194,7 +164,6 @@ int main( int argc, char** argv)
     module.runModule();
 
     module.closeModule();
-    finder.deleteFinder();
     OdeInit::destroy();
 
     dCloseODE();

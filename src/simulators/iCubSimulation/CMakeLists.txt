@@ -31,9 +31,6 @@ ENDIF (USE_ODE_DOUBLE)
 # If glut is set up, we can turn this on
 ADD_DEFINITIONS(-DUSE_GLUT)
 
-# Using the new configuration method right from the start
-ADD_DEFINITIONS(-DEXPERIMENTAL_CONFIG_METHOD)
-
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
                     ${logpolar_INCLUDE_DIRS}
 				    ${ODE_INCLUDE_DIRS}
@@ -50,7 +47,7 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME} logpolar
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 # added files, touching CMakeLists.txt so GLOB is rerun
-# touch 1 2 3 4 5 6
+# touch 1 2 3 4 5 6 7 8
 
 
 

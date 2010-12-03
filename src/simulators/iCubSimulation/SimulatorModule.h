@@ -1,13 +1,22 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2007 Vadim Tikhanoff, Paul Fitzpatrick
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ */
+
+
 #ifndef ICUBSIMULATION_SIMULATORMODULE_INC
 #define ICUBSIMULATION_SIMULATORMODULE_INC
 
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
-#include <yarp/dev/all.h>
+#include <yarp/os/Bottle.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/sig/Image.h>
+#include <yarp/dev/PolyDriver.h>
 
-#include "SimConfig.h"
+#include "RobotStreamer.h"
+#include "RobotConfig.h"
+#include "WorldManager.h"
 
 // wouldn't be better to have this in conditional compilation?
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
@@ -15,9 +24,46 @@
 // forward declaration
 class Simulation;
 
-class SimulatorModule : public yarp::os::PortReader {
+class SimulatorModule : public yarp::os::PortReader, public RobotStreamer
+{
 public:
-    SimulatorModule();
+    SimulatorModule(RobotConfig& config);
+
+    bool open();
+    bool runModule();
+
+    bool closeModule();
+    bool interruptModule();
+
+	bool read(yarp::os::ConnectionReader& connection);
+
+    bool respond(const yarp::os::Bottle &command, 
+                 yarp::os::Bottle &reply);
+
+    // RobotStreamer interface
+
+    virtual void sendVision();
+
+    virtual void sendTouch(yarp::os::Bottle& report);
+    virtual bool shouldSendTouch();
+
+    virtual void sendInertial(yarp::os::Bottle& report);
+    virtual bool shouldSendInertial();
+
+private:
+    // wrapper to logpolarTransform, taking into account initialization
+    bool cartToLogPolar(yarp::sig::ImageOf<yarp::sig::PixelRgb> &lp, 
+                        const yarp::sig::ImageOf<yarp::sig::PixelRgb> &cart);
+    bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
+                        const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
+
+
+    void displayStep(int pause);
+
+    void getImage();
+    void sendImage(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
+    void sendImageFov(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
+    void sendImageLog(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
 
     std::string moduleName;
     iCub::logpolar::logpolarTransform trsf;
@@ -25,40 +71,6 @@ public:
 
     yarp::sig::ImageOf<yarp::sig::PixelRgb> buffer;
 
-    // wrapper to logpolarTransform, taking into account initialization
-    bool cartToLogPolar(yarp::sig::ImageOf<yarp::sig::PixelRgb> &lp, 
-                        const yarp::sig::ImageOf<yarp::sig::PixelRgb> &cart);
-    bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
-                        const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
-
-    bool open();
-    bool runModule();
-
-	bool configure(int argc, char **argv);
-
-    void sendTouch(yarp::os::Bottle& report);
-    bool shouldSendTouch();
-
-    void sendInertial(yarp::os::Bottle& report);
-    bool shouldSendInertial();
-
-    bool closeModule();
-    bool interruptModule();
-
-    void displayStep(int pause);
-
-	bool read(yarp::os::ConnectionReader& connection);
-
-    bool respond(const yarp::os::Bottle &command, 
-                 yarp::os::Bottle &reply);
-
-    void getImage();
-    void sendImage(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
-    void sendImageFov(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
-    void sendImageLog(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
-
-
-private:
     yarp::dev::PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;
 	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide, portLeftFov, portLeftLog, portRightFov, portRightLog ;
     yarp::os::Port cmdPort;
@@ -78,7 +90,10 @@ private:
     void init();
     void initImagePorts();
 	void initIcubParts();
-	SimConfig finder;
+
+    WorldManager world_manager;
+    RobotConfig& robot_config;
+    yarp::os::ResourceFinder& finder;
 };
 
 #endif

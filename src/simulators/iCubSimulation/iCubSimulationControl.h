@@ -10,10 +10,13 @@
 #ifndef __iCubSimulationControlh__
 #define __iCubSimulationControlh__
 
+#include <yarp/os/Bottle.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/os/RateThread.h>
+#include <yarp/sig/Image.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/os/all.h>
 
 #include "iCubLogicalJoints.h"
 

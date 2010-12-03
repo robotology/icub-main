@@ -7,8 +7,11 @@
  **/
 
 
+#include "SDL.h"
+#include "SDL_opengl.h"
 #include <ode/ode.h>
 #include "VideoTexture.h"
+#include <yarp/os/ResourceFinder.h>
 #include "xloader.h"
 #include <iostream>
 # include <stdio.h>
@@ -36,7 +39,7 @@ typedef struct                       /**** BMP file info structure ****/
 extern unsigned int Texture[200];
 
 void setupTexture(char *filename, int whichtexture);
-void setup_opengl();
+void setup_opengl(yarp::os::ResourceFinder& finder);
 void DrawVideo(VideoTexture *video);
 void DrawGround(bool wireframe);
 void DrawBox(float length, float height, float width, bool wireframe, bool texture, int whichtexture);

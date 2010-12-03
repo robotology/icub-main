@@ -8,10 +8,12 @@
  * \note Release under GNU GPL v2.0
  **/
 #include "world.h"
-#include "SimConfig.h"
 #include <stdio.h>
 #include <yarp/os/ConstString.h>
 #include <iostream>
+
+using namespace std;
+using namespace yarp::os;
 
 static float xyz[3], hpr[3];
 static dReal ballVel[3], ballDamp[3];
@@ -180,20 +182,21 @@ void worldSim::setPosition(dReal agent1X, dReal agent1Y, dReal agent1Z ) {
 	}
 }
 
-void worldSim::activateWorld() {
+void worldSim::activateWorld(RobotConfig& config) {
+    ResourceFinder& finder = config.getFinder();
 
 	Property options;
-	SimConfig finder;
   	//start left arm device driver
-	ConstString general = finder.find("general");
+	ConstString general = finder.findFile("general");
 	options.fromConfigFile(general.c_str());
 
 	//readConfig(options,"conf/iCub_parts_activation.ini");
 	actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
 }
 
-void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) {
-	activateWorld();
+void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+                     RobotConfig& config) {
+	activateWorld(config);
 	/*------------iCub Space creation-------------*/
 	/*
 	* objects in the same space do not collide...see collision function in ICub_sim
@@ -311,8 +314,9 @@ worldSim::~worldSim() {
 	dSpaceDestroy (boxObj);
 }
 
-worldSim::worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z)
+worldSim::worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+                   RobotConfig& config)
 : worldSimData() {
 	resetSpeeds();
-	init(world, space, X, Y, Z);
+	init(world, space, X, Y, Z, config);
 }

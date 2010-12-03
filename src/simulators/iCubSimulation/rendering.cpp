@@ -15,7 +15,6 @@
 #include "SDL_opengl.h"
 #include "rendering.h"
 #pragma warning(disable:4244 4305)  //for VC++, no precision loss complaints
-#include "SimConfig.h"
 #include "VideoTexture.h"
 #include <string.h>
 
@@ -40,13 +39,11 @@ GLUquadricObj *cylinder;
 GLUquadricObj *cap;
 
 static GLuint FindTextureRAW(const char *str, bool flag) {
-    //SimConfig finder;
-
     return LoadTextureRAW(str,flag);
 }
 
 //Function to setup OpenGl
-void setup_opengl(){
+void setup_opengl(ResourceFinder& finder){
     glShadeModel( GL_SMOOTH );
     /* Culling. */
     glCullFace( GL_BACK );
@@ -77,32 +74,31 @@ skybox_left data/texture/skybox/lt.raw
 skybox_right data/texture/skybox/rt.raw
 face data/texture/face.raw
 */
-	SimConfig finder;
-	ConstString floor = finder.find("floor");
+	ConstString floor = finder.findFile("floor");
 	Texture[0] = LoadTextureRAW( floor.c_str(), false );
 
-	ConstString body1 = finder.find("body1");
+	ConstString body1 = finder.findFile("body1");
 	Texture[1] = LoadTextureRAW( body1.c_str(), false );
 	
-	ConstString body2 = finder.find("body2");
+	ConstString body2 = finder.findFile("body2");
 	Texture[2] = LoadTextureRAW( body2.c_str(), false );
 	
-	ConstString skybox_ft = finder.find("skybox_ft");
+	ConstString skybox_ft = finder.findFile("skybox_ft");
 	Texture[3] = LoadTextureRAW( skybox_ft.c_str(), false );
 	
-	ConstString skybox_bk = finder.find("skybox_bk");
+	ConstString skybox_bk = finder.findFile("skybox_bk");
 	Texture[4] = LoadTextureRAW( skybox_bk.c_str(), false );
 
-	ConstString skybox_lt = finder.find("skybox_lt");
+	ConstString skybox_lt = finder.findFile("skybox_lt");
 	Texture[5] = LoadTextureRAW( skybox_lt.c_str(), false );
 
-	ConstString skybox_rt = finder.find("skybox_rt");
+	ConstString skybox_rt = finder.findFile("skybox_rt");
 	Texture[6] = LoadTextureRAW( skybox_rt.c_str(), false );
 
-	ConstString skybox_up = finder.find("skybox_up");
+	ConstString skybox_up = finder.findFile("skybox_up");
 	Texture[7] = LoadTextureRAW( skybox_up.c_str(), false );
 	
-	ConstString face = finder.find("face");
+	ConstString face = finder.findFile("face");
 	Texture[8] = LoadTextureRAW( face.c_str(), false );
 
 	if (!Texture[1]){
@@ -445,26 +441,6 @@ GLuint LoadTextureRAW( const char * filename, int wrap )
 
 void DrawVideo(VideoTexture *video) {
     // give opportunity to replace textures with video
-#if 0
-//    static bool first = true;
- //   static VideoTexture video;
- //   if (first) {
- //       Property options;
-		
-		SimConfig finder;
-		ConstString videoconf = finder.find("video");
-        
-		options.fromConfigFile(videoconf.c_str());
-
-        Bottle textures = options.findGroup("textures").tail();
-        for (int i=0; i<textures.size(); i++) {
-            ConstString name = textures.get(i).asString();
-            printf("Adding video texture %s\n", name.c_str());
-            video.add(options.findGroup(name.c_str()));
-		}
-        first = false;
-	}
-#endif    
 	video->apply( Texture );
 }
 

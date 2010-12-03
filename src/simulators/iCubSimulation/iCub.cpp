@@ -18,8 +18,10 @@
 #include <iostream>
 
 #include "iCub.h"
-#include "SimConfig.h"
 #include "EyeLidsController.h"
+
+#include "MS3D.h"
+#include "xloader.h"
 
 using std::string;
 using std::cout;
@@ -843,10 +845,9 @@ void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
 		dBodySetPosition (bottomEyeLid, 0.0, elev + 0.928,	0.035);
 }
 
-void ICubSim::activateiCubParts() {
+void ICubSim::activateiCubParts(RobotConfig& config) {
 
-	SimConfig finder;
-	ConstString general = finder.find("general");
+	ConstString general = config.getFinder().findFile("general");
 
     Property options;
 	options.fromConfigFile(general.c_str());
@@ -890,16 +891,17 @@ void ICubSim::activateiCubParts() {
 	}
 }
 
-void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) {
-	activateiCubParts();
+void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+                    RobotConfig& config) {
+    ResourceFinder& finder = config.getFinder();
+	activateiCubParts(config);
 	iCubHeadModel =  new Model();
 	topEyeLidModel =      new Model();
 	bottomEyeLidModel =   new Model();
 
-    SimConfig finder;
-	iCubHeadModel->loadModelData(finder.find("data/model/iCub_Head.ms3d").c_str());
-	topEyeLidModel->loadModelData(finder.find("data/model/topEyeLid.ms3d").c_str());
-	bottomEyeLidModel->loadModelData(finder.find("data/model/bottomEyeLid.ms3d").c_str());
+	iCubHeadModel->loadModelData(finder.findFile("data/model/iCub_Head.ms3d").c_str());
+	topEyeLidModel->loadModelData(finder.findFile("data/model/topEyeLid.ms3d").c_str());
+	bottomEyeLidModel->loadModelData(finder.findFile("data/model/bottomEyeLid.ms3d").c_str());
 
 	//mass
 	dMass m, m2;
@@ -2559,10 +2561,11 @@ ICubSim::~ICubSim() {
     
 }
 
-ICubSim::ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z)
+ICubSim::ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+                 RobotConfig& config)
 : ICubData() {
 	resetSpeeds();
-	init(world, space, X, Y, Z);
+	init(world, space, X, Y, Z, config);
     reinitialized = false;
     eyeLids = 0;
 }

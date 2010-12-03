@@ -4,7 +4,7 @@
 
 OdeInit *OdeInit::_odeinit = NULL;
 
-OdeInit::OdeInit() : mutex(1) {
+OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
     //create the world parameters
     world = dWorldCreate();
     space = dHashSpaceCreate (0);
@@ -15,8 +15,8 @@ OdeInit::OdeInit() : mutex(1) {
 	//		feedback = new dJointFeedback;
 	//		feedback1 = new dJointFeedback;
 	//		feedback_mat = new dJointFeedback;
-    _iCub = new ICubSim(world, space, 0,0,0);
-    _wrld = new worldSim(world, space, 0,0,0);	
+    _iCub = new ICubSim(world, space, 0,0,0, *robot_config);
+    _wrld = new worldSim(world, space, 0,0,0, *robot_config);	
     
     _wrld->OBJNUM = 0;
 	_wrld->waitOBJ = 0;
@@ -47,11 +47,13 @@ OdeInit::~OdeInit() {
     dWorldDestroy(world);
 }
 
-OdeInit& OdeInit::get() {
+void OdeInit::init(RobotConfig *config) {
     if (_odeinit==NULL) {
-        _odeinit=new OdeInit;
-
+        _odeinit=new OdeInit(config);
     }
+}
+
+OdeInit& OdeInit::get() {
     return *_odeinit;
 }
 

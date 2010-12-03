@@ -22,6 +22,8 @@
 #include <yarp/os/Semaphore.h>
 //#include <vector>
 
+#include "RobotConfig.h"
+
 using namespace std;
 
 /**
@@ -56,18 +58,18 @@ public:
 
     ~OdeInit();
 
-    static void init() {
-        get();
-    }
+    static void init(RobotConfig *config);
 
     static OdeInit& get();
 
     static void destroy();
 
 private:
-    OdeInit();
+    OdeInit(RobotConfig *config);
 
     static OdeInit *_odeinit;
+
+    RobotConfig *robot_config;
 };
 
 // hack, for compatibility with existing code

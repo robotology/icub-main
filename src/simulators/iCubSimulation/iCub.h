@@ -12,14 +12,12 @@
  * \date 2007
  * \note Release under GNU GPL v2.0
  **/
-#pragma once
-#include "SDL.h"
-#include "SDL_opengl.h"
-#include "rendering.h" 
-#include "MS3D.h"
-#include "xloader.h"
+#ifndef ICUBSIMULATION_ICUB_INC
+#define ICUBSIMULATION_ICUB_INC
+
 #include <ode/ode.h>
 #include <string>
+#include "RobotConfig.h"
 
 #include "EyeLidsController.h"
 
@@ -41,17 +39,16 @@ public:
 
 class ICubSim : public ICubData {
 public:
+
     EyeLids *eyeLids;
     static const bool textured = true;
 	ConstString actElevation, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actCover, actWorld, actPressure;
     double elev;
 	
 //    dGeomID screenGeom;
-	bool reinitialized;
+    bool reinitialized;
 	float eyeLidRot;
     string eyeLidsPortName;
-
-    int inc;
 
 	dSpaceID iCub;
 	dGeomID geom_cube[1];
@@ -177,29 +174,40 @@ public:
 	dReal	 ra_speed1	[25];
 	dReal	 h_speed	[25];
 
-struct Object {
-  dBodyID body;			   // the body
-  dGeomID geom;
-};
+    //struct Object {
+    //dBodyID body;			   // the body
+    //dGeomID geom;
+    //};
 
-dBodyID vad;
+    //dBodyID vad;
 
-public:
+	ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+            RobotConfig& config);
+
+	~ICubSim();
+
 
 	void resetSpeeds();
 	void setJointSpeeds();
 	void setJointTorques();
 	//void syncAngles();
+
 	bool checkTouchSensor(int bodyToCheck);
 	bool checkTouchSensor(dBodyID id);
     double checkTouchSensor_continuousValued(int bodyToCheck);
     double checkTouchSensor_continuousValued(dBodyID id);
 	void draw();
-    void setPosition(dReal agentX, dReal agentY, dReal agentZ );
-	void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z);
-	void activateiCubParts();
-	
-	~ICubSim();
 
-	ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z);
+private:
+
+    //int inc;
+
+    void setPosition(dReal agentX, dReal agentY, dReal agentZ );
+	void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+               RobotConfig& config);
+	void activateiCubParts(RobotConfig& config);
+
 };
+
+
+#endif

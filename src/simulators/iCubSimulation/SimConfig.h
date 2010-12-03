@@ -11,15 +11,13 @@
 #ifndef SIMCONFIG_INC
 #define SIMCONFIG_INC
 
-#include <yarp/os/ConstString.h>
-#include <yarp/os/Value.h>
-// std
+#include <yarp/os/ResourceFinder.h>
 #include <stdio.h>
-#include <iostream>
-
 #include <string>
 
-class SimConfig {
+#include "RobotConfig.h"
+
+class SimConfig : public yarp::os::ResourceFinder, public RobotConfig {
     
 public:
 
@@ -28,12 +26,24 @@ public:
     // to be fixed.
     std::string configure(int argc, char *argv[], std::string & moduleName);
     
-    yarp::os::ConstString find(const char *fileName);
-	yarp::os::ConstString findPath(const char *key);
-    bool isActive();
-    static std::string moduleName;
-    void deleteFinder();
-    
+    //yarp::os::ConstString find(const char *fileName);
+	//yarp::os::ConstString findPath(const char *key);
+    //bool isActive();
+
+    //void deleteFinder();
+
+    // RobotConfig interface
+
+    virtual yarp::os::ConstString getModuleName() {
+        return moduleName.c_str();
+    }
+
+    virtual yarp::os::ResourceFinder& getFinder() {
+        return *this;
+    }
+
+private:
+    std::string moduleName;    
 };
 
 
