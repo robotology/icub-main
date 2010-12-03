@@ -423,16 +423,16 @@ void Controller::threadRelease()
     delete mjCtrlEyes;
     delete Int;
 
-    if (alignLnkLeft1)
+    if (alignLnkLeft1!=NULL)
         delete alignLnkLeft1;
 
-    if (alignLnkLeft2)
+    if (alignLnkLeft2!=NULL)
         delete alignLnkLeft2;
 
-    if (alignLnkRight1)
+    if (alignLnkRight1!=NULL)
         delete alignLnkRight1;
 
-    if (alignLnkRight2)
+    if (alignLnkRight2!=NULL)
         delete alignLnkRight2;
 }
 

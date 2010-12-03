@@ -519,7 +519,7 @@ Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd,
     
     Ipopt::ApplicationReturnStatus status=optimize(GetRawPtr(nlp));
 
-    if (exit_code)
+    if (exit_code!=NULL)
         *exit_code=status;
 
     return nlp->get_qd();

@@ -864,10 +864,10 @@ public:
         delete slv;
         delete ctrl;
 
-        if (drvTorso)
+        if (drvTorso!=NULL)
             delete drvTorso;
 
-        if (drvHead)
+        if (drvHead!=NULL)
             delete drvHead;
 
         rpcPort.interrupt();

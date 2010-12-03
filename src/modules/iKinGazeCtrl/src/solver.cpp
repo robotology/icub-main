@@ -281,7 +281,7 @@ void EyePinvRefGen::run()
 /************************************************************************/
 void EyePinvRefGen::threadRelease()
 {
-    if (port_inertial)
+    if (port_inertial!=NULL)
     {
         port_inertial->interrupt();
         port_inertial->close();
@@ -293,16 +293,16 @@ void EyePinvRefGen::threadRelease()
     delete eyeR;
     delete I;
 
-    if (alignLnkLeft1)
+    if (alignLnkLeft1!=NULL)
         delete alignLnkLeft1;
 
-    if (alignLnkLeft2)
+    if (alignLnkLeft2!=NULL)
         delete alignLnkLeft2;
 
-    if (alignLnkRight1)
+    if (alignLnkRight1!=NULL)
         delete alignLnkRight1;
 
-    if (alignLnkRight2)
+    if (alignLnkRight2!=NULL)
         delete alignLnkRight2;
 }
 
@@ -693,16 +693,16 @@ void Solver::threadRelease()
     delete eyeL;
     delete eyeR;
 
-    if (alignLnkLeft1)
+    if (alignLnkLeft1!=NULL)
         delete alignLnkLeft1;
 
-    if (alignLnkLeft2)
+    if (alignLnkLeft2!=NULL)
         delete alignLnkLeft2;
 
-    if (alignLnkRight1)
+    if (alignLnkRight1!=NULL)
         delete alignLnkRight1;
 
-    if (alignLnkRight2)
+    if (alignLnkRight2!=NULL)
         delete alignLnkRight2;
 }
 
