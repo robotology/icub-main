@@ -19,8 +19,15 @@ void SkinMeshThreadPort::run()
 {	
     mutex.wait();
 
-	Bottle *input;
-    input = skin_port.read();
+	Bottle *input=0;
+
+    input = skin_port.read(false);
+    
+    if (input==0)
+    {
+        mutex.post();
+        return;
+    }
 
 	yarp::sig::Vector skin_value;
 	int sensorId =0;

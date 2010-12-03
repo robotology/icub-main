@@ -154,10 +154,12 @@ public:
 
     void draw(unsigned char *image)
     {
+        mutex.wait();
         for (int t=0; t<16; ++t)
         {
             if (sensor[t]) sensor[t]->draw(image);
         }        
+        mutex.post();
     }
 };
 
