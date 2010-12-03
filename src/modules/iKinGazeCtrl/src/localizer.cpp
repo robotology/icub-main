@@ -95,13 +95,13 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(3),  Tt(3);
     Matrix satLim(3,2);
 
-    Kp[0]=KP_PAN;
-    Kp[1]=KP_TILT;
-    Kp[2]=KP_VERG;
+    Kp[0]=KP_EYE_X;
+    Kp[1]=KP_EYE_Y;
+    Kp[2]=KP_EYE_Z;
     
-    Ki[0]=KI_PAN;
-    Ki[1]=KI_TILT;
-    Ki[2]=KI_VERG;
+    Ki[0]=KI_EYE_X;
+    Ki[1]=KI_EYE_Y;
+    Ki[2]=KI_EYE_Z;
 
     Kd=0.0;
 
@@ -242,8 +242,7 @@ void Localizer::handleStereoInput()
                 double vm=(vl+vr)/2.0;
             
                 // consider a reference frame attached to the current
-                // fixation point aligned with the normalized sum
-                // of the left eye axis and right eye axis
+                // fixation point aligned with the cyclopic eye axes
                 Vector ref(3), fb(3);
             
                 // along x
@@ -269,8 +268,8 @@ void Localizer::handleStereoInput()
                 dx[3]=1.0;  // impose homogeneous coordinates
             
                 // get the head-centered frame
-                // do not use reference since we're gonna modify it
-                // and we don't want to keep the changes
+                // do not use the reference directly since we're
+                // gonna modify it and we don't want to keep the changes
                 Matrix fpFrame=commData->get_fpFrame();
             
                 // set-up translational part

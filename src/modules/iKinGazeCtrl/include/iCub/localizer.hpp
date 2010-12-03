@@ -27,14 +27,14 @@
 #include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>
                             
-#define KP_PAN               0.0012
-#define KP_TILT              0.0012
-#define KP_VERG              0.0005
-#define KI_PAN               0.0001
-#define KI_TILT              0.0001
-#define KI_VERG              0.0001
-#define LIM_LOW             -0.2
-#define LIM_HIGH             0.2
+#define KP_EYE_X            0.0010
+#define KP_EYE_Y            0.0010
+#define KP_EYE_Z            0.0005
+#define KI_EYE_X            0.0001
+#define KI_EYE_Y            0.0001
+#define KI_EYE_Z            0.0001
+#define LIM_LOW             -0.1
+#define LIM_HIGH            0.1
 
 using namespace std;
 using namespace yarp;
