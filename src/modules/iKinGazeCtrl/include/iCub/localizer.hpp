@@ -27,12 +27,12 @@
 #include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>
                             
-#define KP_EYE_X            0.0010
-#define KP_EYE_Y            0.0010
-#define KP_EYE_Z            0.0005
-#define KI_EYE_X            0.0001
-#define KI_EYE_Y            0.0001
-#define KI_EYE_Z            0.0001
+#define KP_EYE_X            0.0005
+#define KP_EYE_Y            0.0005
+#define KP_EYE_Z            0.0001
+#define KI_EYE_X            0.00005
+#define KI_EYE_Y            0.00005
+#define KI_EYE_Z            0.00001
 #define LIM_LOW             -0.1
 #define LIM_HIGH            0.1
 
