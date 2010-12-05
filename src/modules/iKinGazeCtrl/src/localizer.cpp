@@ -103,7 +103,9 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Ki[1]=KI_EYE_Y;
     Ki[2]=KI_EYE_Z;
 
-    Kd=0.0;
+    Kd[0]=KD_EYE_X;
+    Kd[1]=KD_EYE_Y;
+    Kd[2]=KD_EYE_Z;
 
     Wp=Wi=1.0;
     Wd=0.0;
