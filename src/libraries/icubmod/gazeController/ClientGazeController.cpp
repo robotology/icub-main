@@ -505,6 +505,40 @@ bool ClientGazeController::getCyclopicEyePose(Vector &x, Vector &o)
 
 
 /************************************************************************/
+bool ClientGazeController::getStereoOptions(Property &options)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("pid");
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        if (Bottle *bOpt=reply.get(1).asList())
+        {
+            options.fromString(bOpt->toString().c_str());
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::setNeckTrajTime(const double t)
 {
     if (!connected)
@@ -544,6 +578,29 @@ bool ClientGazeController::setEyesTrajTime(const double t)
         return false;
     }
     
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::setStereoOptions(const Property &options)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("set");
+    command.addString("pid");
+    Bottle &bOpt=command.addList();
+    bOpt.fromString(options.toString().c_str());
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 

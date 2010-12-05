@@ -38,6 +38,7 @@
 #define __CLIENTGAZECONTROLLER_H__
 
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/PolyDriver.h>
@@ -98,8 +99,10 @@ public:
     virtual bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     virtual bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     virtual bool getCyclopicEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getStereoOptions(yarp::os::Property &options);
     virtual bool setNeckTrajTime(const double t);
     virtual bool setEyesTrajTime(const double t);
+    virtual bool setStereoOptions(const yarp::os::Property &options);
     virtual bool bindNeckPitch(const double min, const double max);
     virtual bool blockNeckPitch(const double val);
     virtual bool blockNeckPitch();

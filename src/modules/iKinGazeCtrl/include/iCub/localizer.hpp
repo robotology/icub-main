@@ -77,9 +77,9 @@ public:
     Localizer(exchangeData *_commData, const string &_localName,
               const string &_configFile, unsigned int _period);
 
-    void set_xdport(xdPort *_port_xd)     { port_xd=_port_xd;         }
-    void getPidOptions(Property &options) { pid->getOptions(options); }
-    void setPidOptions(Property &options) { pid->setOptions(options); }
+    void set_xdport(xdPort *_port_xd)           { port_xd=_port_xd;         }
+    void getPidOptions(Property &options)       { pid->getOptions(options); }
+    void setPidOptions(const Property &options) { pid->setOptions(options); }
 
     virtual bool threadInit();
     virtual void afterStart(bool s);

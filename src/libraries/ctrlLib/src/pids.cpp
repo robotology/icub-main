@@ -45,11 +45,12 @@ namespace ctrl
     }
 
     /************************************************************************/
-    bool changeValHelper(Property &options, const char *key, Vector &val)
+    bool changeValHelper(const Property &options, const char *key, Vector &val)
     {
-        if (options.check(key))
+        Property &opt=const_cast<Property&>(options);
+        if (opt.check(key))
         {
-            Bottle *b=options.find(key).asList();
+            Bottle *b=opt.find(key).asList();
             int len=val.length();
             int size=b->size();
 
@@ -274,19 +275,17 @@ void parallelPID::setOptions(const Property &options)
         for (int r=0; r<satLim.rows(); r++)
             satLimVect[c*satLim.cols()+r]=satLim(r,c);
 
-    Property &opt=const_cast<Property&>(options);
     bool recomputeQuantities=false;
+    changeValHelper(options,"Ki",Ki);
+    changeValHelper(options,"Wp",Wp);
+    changeValHelper(options,"Wi",Wi);
+    changeValHelper(options,"Wd",Wd);
+    changeValHelper(options,"Tt",Tt);
 
-    changeValHelper(opt,"Ki",Ki);
-    changeValHelper(opt,"Wp",Wp);
-    changeValHelper(opt,"Wi",Wi);
-    changeValHelper(opt,"Wd",Wd);
-    changeValHelper(opt,"Tt",Tt);
-
-    if (changeValHelper(opt,"Kp",Kp) || changeValHelper(opt,"Kd",Kd) || changeValHelper(opt,"N",N))
+    if (changeValHelper(options,"Kp",Kp) || changeValHelper(options,"Kd",Kd) || changeValHelper(options,"N",N))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"satLim",satLimVect))
+    if (changeValHelper(options,"satLim",satLimVect))
     {
         for (int c=0; c<satLim.cols(); c++)
             for (int r=0; r<satLim.rows(); r++)
@@ -445,14 +444,12 @@ void seriesPID::setOptions(const Property &options)
         for (int r=0; r<satLim.rows(); r++)
             satLimVect[c*satLim.cols()+r]=satLim(r,c);
 
-    Property &opt=const_cast<Property&>(options);
     bool recomputeQuantities=false;
-
-    if (changeValHelper(opt,"Kp",Kp) || changeValHelper(opt,"Ti",Ti) ||
-        changeValHelper(opt,"Kd",Kd) || changeValHelper(opt,"N",N))
+    if (changeValHelper(options,"Kp",Kp) || changeValHelper(options,"Ti",Ti) ||
+        changeValHelper(options,"Kd",Kd) || changeValHelper(options,"N",N))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"satLim",satLimVect))
+    if (changeValHelper(options,"satLim",satLimVect))
     {
         for (int c=0; c<satLim.cols(); c++)
             for (int r=0; r<satLim.rows(); r++)
