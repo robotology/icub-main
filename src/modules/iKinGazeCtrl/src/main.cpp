@@ -172,13 +172,13 @@ point:
 - by localizing the target in just one image plane and then 
   sending its coordinates together with a guessed
   distance z from the eye's frame to the /<ctrlName>/mono:i
-  port. <b> In this mode the intrinsic cameras parameters
-  (fx,fy,cx,cy) are required </b>.
+  port. <b> In this mode the intrinsic cameras parameters are
+  required </b>.
 - by localizing the target in the two image planes and thus 
   sending its coordinates to the /<ctrlName>/stereo:i port.
   Notice that t's required to feed continuosly the port with new
   feedback while converging to the target. <b> In this mode the
-  intrinsic cameras parameters (cx,cy) are required </b>.
+  intrinsic cameras parameters are required </b>.
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
@@ -267,8 +267,7 @@ following ports:
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
       <val> ...)): sets the pid values used to converge to the
       target with stereo input. The pid is implemented in
-      parallel form (\ref PIDs) and works in the cartesian space
-      with three dimensions xyz.
+      parallel form (\ref PIDs).
     - [store]: store the controller context returning an integer
       identifier.
     - [restore] <id>: restore a previously stored controller
