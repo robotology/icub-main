@@ -26,18 +26,6 @@
 
 #include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>
-                            
-#define KP_EYE_X            0.00050
-#define KP_EYE_Y            0.00050
-#define KP_EYE_Z            0.00010
-#define KI_EYE_X            0.00000
-#define KI_EYE_Y            0.00000
-#define KI_EYE_Z            0.00000
-#define KD_EYE_X            0.00005
-#define KD_EYE_Y            0.00005
-#define KD_EYE_Z            0.00005
-#define LIM_LOW             -0.1
-#define LIM_HIGH            0.1
 
 using namespace std;
 using namespace yarp;
@@ -89,7 +77,9 @@ public:
     Localizer(exchangeData *_commData, const string &_localName,
               const string &_configFile, unsigned int _period);
 
-    void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
+    void set_xdport(xdPort *_port_xd)     { port_xd=_port_xd;         }
+    void getPidOptions(Property &options) { pid->getOptions(options); }
+    void setPidOptions(Property &options) { pid->setOptions(options); }
 
     virtual bool threadInit();
     virtual void afterStart(bool s);

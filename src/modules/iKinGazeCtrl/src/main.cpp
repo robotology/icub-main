@@ -255,15 +255,23 @@ following ports:
       val=="left", the right eye pose if vel=="right" and the
       cyclopic eye pose if val=="cyclopic". The pose is given in
       axis/angle representation (i.e. 7-componenets vector).
+    - [get] [pid]: returns (enclosed in a list ) a property
+      containing the pid values used to converge to the target
+      with stereo input.
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
       for eyes movements.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
-    - [stor]: store the controller context returning an integer
+    - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
+      <val> ...)): sets the pid values used to converge to the
+      target with stereo input. The pid is implemented in
+      parallel form (@ref PIDs) and works in the cartesian space
+      with three dimensions xyz.
+    - [store]: store the controller context returning an integer
       identifier.
-    - [rest] <id>: restore a previously stored controller
+    - [restore] <id>: restore a previously stored controller
       context referred by the identifier \e id.
     - [del] (<id0> <id1> ...): delete all the contexts whose ids
       are contained in the list.
@@ -381,6 +389,9 @@ protected:
         double neckPitchMax;
         double neckYawMin;
         double neckYawMax;
+
+        // localizer part
+        Property pidOptions;
     };
 
     int contextIdCnt;
@@ -425,6 +436,9 @@ protected:
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
         slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
 
+        // localizer part
+        loc->getPidOptions(context.pidOptions);
+
         *id=contextIdCnt;
     }
 
@@ -445,6 +459,9 @@ protected:
             // solver part
             slv->bindNeckPitch(context.neckPitchMin,context.neckPitchMax);
             slv->bindNeckYaw(context.neckYawMin,context.neckYawMax);
+
+            // localizer part
+            loc->setPidOptions(context.pidOptions);
 
             return true;
         }
@@ -788,6 +805,15 @@ public:
                                 return false;
                             }
                         }
+                        else if (type==VOCAB3('p','i','d'))
+                        {
+                            Property options;
+                            loc->getPidOptions(options);
+
+                            reply.addVocab(ack);
+                            Bottle &bOpt=reply.addList();
+                            bOpt.fromString(options.toString().c_str());
+                        }
                         else
                         {
                             reply.addVocab(nack);
@@ -823,6 +849,19 @@ public:
                         {
                             bool mode=(command.get(2).asInt()>0);
                             ctrl->setTrackingMode(mode);
+                        }
+                        else if (type==VOCAB3('p','i','d'))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                Property options(bOpt->get(0).toString().c_str());
+                                loc->setPidOptions(options);
+                            }
+                            else
+                            {
+                                reply.addVocab(nack);
+                                return false;
+                            }
                         }
                         else
                         {

@@ -30,6 +30,7 @@
 #ifndef __PIDS_H__
 #define __PIDS_H__
 
+#include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
@@ -233,6 +234,32 @@ public:
     virtual void reset();
 
     /**
+    * Returns the current options used by the pid.
+    * @param options is a property containing the current 
+    *                configuration used by the pid.
+    *  
+    * @note The returned property looks like as follows: 
+    * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ... 
+    * @note the satLim property is returned ordered by rows.
+    */
+    virtual void getOptions(yarp::os::Property &options);
+
+    /**
+    * Update the options used by the pid.
+    * @param options is a property containing the new configuration
+    *                used by the pid.
+    *  
+    * @note The property parameter should look like as follows: 
+    * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ... 
+    * @note The vectors dimension at pid creation time is always 
+    *       retained.
+    * @note The sampling time Ts is obviously the only option user 
+    *       cannot change.
+    * @note the satLim property must be given ordered by rows. 
+    */
+    virtual void setOptions(const yarp::os::Property &options);
+
+    /**
     * Destructor. 
     */
     ~parallelPID();
@@ -308,6 +335,32 @@ public:
     * Resets the internal state of integral and derivative part.
     */
     virtual void reset();
+
+    /**
+    * Returns the current options used by the pid.
+    * @param options is a property containing the current 
+    *                configuration used by the pid.
+    *  
+    * @note The returned property looks like as follows: 
+    * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
+    * @note the satLim property is returned ordered by rows.
+    */
+    virtual void getOptions(yarp::os::Property &options);
+
+    /**
+    * Update the options used by the pid.
+    * @param options is a property containing the new configuration
+    *                used by the pid.
+    *  
+    * @note The property parameter should look like as follows: 
+    * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
+    * @note The vectors dimension at pid creation time is always 
+    *       retained.
+    * @note The sampling time Ts is obviously the only option user 
+    *       cannot change.
+    * @note the satLim property must be given ordered by rows. 
+    */
+    virtual void setOptions(const yarp::os::Property &options);
 
     /**
     * Destructor. 

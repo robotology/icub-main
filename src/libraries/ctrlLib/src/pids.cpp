@@ -20,16 +20,51 @@
 #include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/ctrlMath.h>
 
-#include <iostream>
-#include <iomanip>
-
-#define SAT(x,L,H)  ((x)>(H)?(H):((x)<(L)?(L):(x)))
+#define PID_SAT(x,L,H)      ((x)>(H)?(H):((x)<(L)?(L):(x)))
 
 using namespace std;
 using namespace yarp;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
+
+namespace iCub
+{
+
+namespace ctrl
+{
+    /************************************************************************/
+    void addKeyHelper(Bottle &b, const char *key, const Vector &val)
+    {
+        Bottle &bKey=b.addList();
+        bKey.addString(key);
+        Bottle &bKeyContent=bKey.addList();
+        for (int i=0; i<val.length(); i++)
+            bKeyContent.addDouble(val[i]);
+    }
+
+    /************************************************************************/
+    bool changeValHelper(Property &options, const char *key, Vector &val)
+    {
+        if (options.check(key))
+        {
+            Bottle *b=options.find(key).asList();
+            int len=val.length();
+            int size=b->size();
+
+            int l=size<len?size:len;
+            for (int i=0; i<l; i++)
+                val[i]=b->get(i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+}
+
+}
 
 
 /************************************************************************/
@@ -138,9 +173,9 @@ parallelPID::parallelPID(const double _Ts,
     dim=N.length();
     u.resize(dim,0.0);
 
-    uSat.resize(dim);
+    uSat.resize(dim,0.0);
     for (unsigned int i=0; i<dim; i++)
-        uSat[i]=SAT(u[i],satLim(i,0),satLim(i,1));
+        uSat[i]=PID_SAT(u[i],satLim(i,0),satLim(i,1));
 
     Int=new Integrator(Ts,uSat);
 
@@ -152,13 +187,12 @@ parallelPID::parallelPID(const double _Ts,
         num[0]=2.0;        num[1]=-2.0;
         den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
         u0i[0]=uSat[i];
-
         Der.push_back(new Filter(num,den,u0i));
     }
 
-    P.resize(dim);
-    I.resize(dim);
-    D.resize(dim);
+    P.resize(dim,0.0);
+    I.resize(dim,0.0);
+    D.resize(dim,0.0);
 }
 
 
@@ -189,7 +223,7 @@ Vector parallelPID::compute(const Vector &ref, const Vector &fb)
 
     // saturation stage
     for (unsigned int i=0; i<dim; i++)
-        uSat[i]=SAT(u[i],satLim(i,0),satLim(i,1));
+        uSat[i]=PID_SAT(u[i],satLim(i,0),satLim(i,1));
 
     return uSat;
 }
@@ -205,6 +239,77 @@ void parallelPID::reset()
 
     for (unsigned int i=0; i<dim; i++)
         Der[i]->init(z1);
+}
+
+
+/************************************************************************/
+void parallelPID::getOptions(Property &options)
+{
+    Vector satLimVect(satLim.rows()*satLim.cols());
+    for (int c=0; c<satLim.cols(); c++)
+        for (int r=0; r<satLim.rows(); r++)
+            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+
+    Bottle b;
+    addKeyHelper(b,"Kp",Kp);
+    addKeyHelper(b,"Ki",Ki);
+    addKeyHelper(b,"Kd",Kd);
+    addKeyHelper(b,"Wp",Wp);
+    addKeyHelper(b,"Wi",Wi);
+    addKeyHelper(b,"Wd",Wd);
+    addKeyHelper(b,"N",N);
+    addKeyHelper(b,"Tt",Tt);
+    addKeyHelper(b,"satLim",satLimVect);
+        
+    options.fromString(b.toString().c_str());
+    options.put("Ts",Ts);
+}
+
+
+/************************************************************************/
+void parallelPID::setOptions(const Property &options)
+{
+    Vector satLimVect(satLim.rows()*satLim.cols());
+    for (int c=0; c<satLim.cols(); c++)
+        for (int r=0; r<satLim.rows(); r++)
+            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+
+    Property &opt=const_cast<Property&>(options);
+    bool recomputeQuantities=false;
+
+    changeValHelper(opt,"Ki",Ki);
+    changeValHelper(opt,"Wp",Wp);
+    changeValHelper(opt,"Wi",Wi);
+    changeValHelper(opt,"Wd",Wd);
+    changeValHelper(opt,"Tt",Tt);
+
+    if (changeValHelper(opt,"Kp",Kp) || changeValHelper(opt,"Kd",Kd) || changeValHelper(opt,"N",N))
+        recomputeQuantities=true;    
+
+    if (changeValHelper(opt,"satLim",satLimVect))
+    {
+        for (int c=0; c<satLim.cols(); c++)
+            for (int r=0; r<satLim.rows(); r++)
+                satLim(r,c)=satLimVect[c*satLim.cols()+r];
+
+        recomputeQuantities=true;
+    }
+
+    if (recomputeQuantities)
+    {
+        for (unsigned int i=0; i<dim; i++)
+            uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
+    
+        for (unsigned int i=0; i<dim; i++)
+        {
+            Vector num(2),den(2);
+            double tau=Kd[i]/(Kp[i]*N[i]);
+    
+            num[0]=2.0;        num[1]=-2.0;
+            den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
+            Der[i]->adjustCoeffs(num,den);
+        }
+    }
 }
 
 
@@ -229,9 +334,9 @@ seriesPID::seriesPID(const double _Ts,
     dim=N.length();
     u.resize(dim,0.0);
 
-    uSat.resize(dim);
+    uSat.resize(dim,0.0);
     for (unsigned int i=0; i<dim; i++)
-        uSat[i]=SAT(u[i],satLim(i,0),satLim(i,1));
+        uSat[i]=PID_SAT(u[i],satLim(i,0),satLim(i,1));
 
     for (unsigned int i=0; i<dim; i++)
     {
@@ -240,20 +345,18 @@ seriesPID::seriesPID(const double _Ts,
 
         num[0]=Ts;           num[1]=Ts;
         den[0]=Ts+2.0*Ti[i]; den[1]=Ts-2.0*Ti[i];
-
         Int.push_back(new Filter(num,den,u0i));
 
         double tau=Kd[i]/(Kp[i]*N[i]);
         num[0]=2.0;        num[1]=-2.0;
         den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
-
         Der.push_back(new Filter(num,den,u0i));
     }
 
-    e.resize(dim);
-    P.resize(dim);
-    I.resize(dim);
-    D.resize(dim);
+    e.resize(dim,0.0);
+    P.resize(dim,0.0);
+    I.resize(dim,0.0);
+    D.resize(dim,0.0);
 }
 
 
@@ -295,7 +398,7 @@ Vector seriesPID::compute(const Vector &ref, const Vector &fb)
 
     // saturation stage
     for (unsigned int i=0; i<dim; i++)
-        uSat[i]=SAT(u[i],satLim(i,0),satLim(i,1));
+        uSat[i]=PID_SAT(u[i],satLim(i,0),satLim(i,1));
 
     return uSat;
 }
@@ -310,6 +413,72 @@ void seriesPID::reset()
     {
         Int[i]->init(z1);    
         Der[i]->init(z1);
+    }
+}
+
+
+/************************************************************************/
+void seriesPID::getOptions(Property &options)
+{
+    Vector satLimVect(satLim.rows()*satLim.cols());
+    for (int c=0; c<satLim.cols(); c++)
+        for (int r=0; r<satLim.rows(); r++)
+            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+
+    Bottle b;
+    addKeyHelper(b,"Kp",Kp);
+    addKeyHelper(b,"Ti",Ti);
+    addKeyHelper(b,"Kd",Kd);
+    addKeyHelper(b,"N",N);
+    addKeyHelper(b,"satLim",satLimVect);
+        
+    options.fromString(b.toString().c_str());
+    options.put("Ts",Ts);
+}
+
+
+/************************************************************************/
+void seriesPID::setOptions(const Property &options)
+{
+    Vector satLimVect(satLim.rows()*satLim.cols());
+    for (int c=0; c<satLim.cols(); c++)
+        for (int r=0; r<satLim.rows(); r++)
+            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+
+    Property &opt=const_cast<Property&>(options);
+    bool recomputeQuantities=false;
+
+    if (changeValHelper(opt,"Kp",Kp) || changeValHelper(opt,"Ti",Ti) ||
+        changeValHelper(opt,"Kd",Kd) || changeValHelper(opt,"N",N))
+        recomputeQuantities=true;    
+
+    if (changeValHelper(opt,"satLim",satLimVect))
+    {
+        for (int c=0; c<satLim.cols(); c++)
+            for (int r=0; r<satLim.rows(); r++)
+                satLim(r,c)=satLimVect[c*satLim.cols()+r];
+
+        recomputeQuantities=true;
+    }
+
+    if (recomputeQuantities)
+    {
+        for (unsigned int i=0; i<dim; i++)
+            uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
+    
+        for (unsigned int i=0; i<dim; i++)
+        {
+            Vector num(2),den(2);
+
+            num[0]=Ts;           num[1]=Ts;
+            den[0]=Ts+2.0*Ti[i]; den[1]=Ts-2.0*Ti[i];
+            Int[i]->adjustCoeffs(num,den);
+
+            double tau=Kd[i]/(Kp[i]*N[i]);
+            num[0]=2.0;        num[1]=-2.0;
+            den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
+            Der[i]->adjustCoeffs(num,den);
+        }
     }
 }
 

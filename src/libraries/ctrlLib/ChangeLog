@@ -1,4 +1,7 @@
 
+2010-12-05 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * pids: added getOptions(.)/setOptions(.) methods
+
 2010-10-26 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iostream replaced by fprintf()
 

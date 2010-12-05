@@ -95,26 +95,16 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(3),  Tt(3);
     Matrix satLim(3,2);
 
-    Kp[0]=KP_EYE_X;
-    Kp[1]=KP_EYE_Y;
-    Kp[2]=KP_EYE_Z;
-    
-    Ki[0]=KI_EYE_X;
-    Ki[1]=KI_EYE_Y;
-    Ki[2]=KI_EYE_Z;
+    Kp=0.001;
+    Ki=Kd=0.0;
 
-    Kd[0]=KD_EYE_X;
-    Kd[1]=KD_EYE_Y;
-    Kd[2]=KD_EYE_Z;
-
-    Wp=Wi=1.0;
-    Wd=0.0;
+    Wp=Wi=Wd=1.0;
 
     N=10.0;
     Tt=1.0;
 
-    satLim(0,0)=satLim(1,0)=satLim(2,0)=LIM_LOW;
-    satLim(0,1)=satLim(1,1)=satLim(2,1)=LIM_HIGH;
+    satLim(0,0)=satLim(1,0)=satLim(2,0)=-0.1;
+    satLim(0,1)=satLim(1,1)=satLim(2,1)=0.1;
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
