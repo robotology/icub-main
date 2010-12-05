@@ -17,7 +17,7 @@ The board types currently supported by the CanLoader application are:
 - MAIS	 (DSPIC 30f4013 Hall-effect position sensor)
 _ SKIN   (DSPIC 30f4011 Tactile Sensor board) 
 In order to successfully transfer the firmware to the boards using the CanLoader application, the desired boards
-must be powered on and properly connected to the CAN Bus using either the 'ecan' or 'pcan' CAN Bus driver.
+must be powered on and properly connected to the CAN Bus using either the 'ecan' or 'pcan' or 'cfw2can' or 'socketcan' CAN Bus driver.
 The CanLoader application can run in two different modalities:
 - Graphical User Interface (GUI) modality:
 This modality allows the user to examinate the status of the DSP boards detected on the specified CAN Bus, to download
@@ -41,7 +41,7 @@ executes the graphical version of the canLoader.
 To use the canLoader application by command line, without the graphical interface, use the following syntax:
 ./canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S
 All of the parameters are mandatory. A description of the parameters follows:
---canDeviceType t: specifies the type of canBusDriver used. The parameter t can assume the values 'ecan' or 'pcan'
+--canDeviceType t: specifies the type of canBusDriver used. The parameter t can assume the values 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'
 --canDeviceNum x: specifies the canBus identification number. The parameter x can be 0,1,2 or 3.
 --boardId y: specifies the can address of the board on which the firmware will be downloaded. The parameter y ranges from 1 to 15.
 --firmware myFirmware.out.S: specifies the file name containing the firmware (binary code) that will be downloaded.
@@ -367,6 +367,8 @@ static GtkTreeModel * create_netType_model (void)
     gtk_list_store_set (store, &iter, 0, "pcan",-1);    
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter, 0, "cfw2can",-1);    
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, 0, "socketcan",-1);    
 
     return GTK_TREE_MODEL (store);
 }
@@ -387,6 +389,7 @@ static void combo_nettype_changed (GtkComboBox *box,	gpointer   user_data)
 		case 0: networkType = "ecan"; break;
 		case 1: networkType = "pcan";  break;
         case 2: networkType="cfw2can"; break;
+		case 3: networkType="socketcan"; break;
 	}
 }
 
@@ -1395,7 +1398,7 @@ void fatal_error(int err)
 		break;
 		case INVALID_PARAM_CANTYPE:
 			printf("ERROR: invalid --canDeviceType parameter \n");
-			printf("must be 'ecan' or 'pcan' or 'cfw2'\n");
+			printf("must be 'ecan' or 'pcan' or 'cfw2' or 'socketcan'\n");
 			exit(err);
 		break;
 		case INVALID_PARAM_CANNUM:
@@ -1461,13 +1464,13 @@ int myMain( int   argc, char *argv[] )
 		printf("Initializing prompt version of canLoader...\n");
 		if      (argc==2 && strcmp(argv[1],"--help")==0)
 		{
-				printf("CANLOADER APPLICATION V2.6\n");
+				printf("CANLOADER APPLICATION V2.7\n");
 				printf("Syntax:\n");
 				printf("1) to execute the GUI version of the canLoader:\n");
 				printf("./canLoader20 \n");
 				printf("2) to execute the command line version of the canLoader:\n");
 				printf("./canLoader20 --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
-				printf("parameter <t> is the name of the CAN bus driver. It can be ecan or pcan or cfw2can\n");
+				printf("parameter <t> is the name of the CAN bus driver. It can be 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'\n");
 				printf("parameter <x> is the number of the CAN bus (0-3)\n");
 				printf("parameter <y> is the CAN address of the board (0-15)\n");
 				exit(0);
@@ -1487,7 +1490,8 @@ int myMain( int   argc, char *argv[] )
 
 				if (strcmp(argv[2],"ecan") !=0 &&
 					strcmp(argv[2],"pcan") !=0 &&
-                    strcmp(argv[2],"cfw2can")!=0)
+                    strcmp(argv[2],"cfw2can")!=0 &&
+					strcmp(argv[2],"socketcan")!=0)
 					{
 						fatal_error(INVALID_PARAM_CANTYPE);
 					}
@@ -1573,7 +1577,7 @@ int myMain( int   argc, char *argv[] )
     //create the main window, and sets the callback destroy_main() to quit
     //the application when the main window is closed
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.6");
+    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.7");
     g_signal_connect (window, "destroy",G_CALLBACK (destroy_main), &window);
 
     gtk_container_set_border_width (GTK_CONTAINER (window), 8);
