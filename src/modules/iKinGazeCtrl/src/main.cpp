@@ -267,7 +267,7 @@ following ports:
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
       <val> ...)): sets the pid values used to converge to the
       target with stereo input. The pid is implemented in
-      parallel form (@ref PIDs) and works in the cartesian space
+      parallel form (\ref PIDs) and works in the cartesian space
       with three dimensions xyz.
     - [store]: store the controller context returning an integer
       identifier.
