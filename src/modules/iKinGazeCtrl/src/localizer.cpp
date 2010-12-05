@@ -248,12 +248,11 @@ void Localizer::handleStereoInput()
                 double ur=stereo->get(2).asDouble();
                 double vr=stereo->get(3).asDouble();
                    
-                double el=cx-ul;
-                double er=cx-ur;
-
                 Vector ref(1), fb(1), fp;
+
                 ref[0]=0.0;
-                fb[0]=er;
+                fb[0]=cx-ur;
+
                 Vector dz=pid->compute(ref,fb);
 
                 // the left eye is dominant
