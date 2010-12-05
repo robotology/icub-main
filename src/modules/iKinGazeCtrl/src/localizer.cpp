@@ -90,21 +90,24 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
         cy=cyr;
     }
 
-    Vector Kp(3), Ki(3), Kd(3);
-    Vector Wp(3), Wi(3), Wd(3);
-    Vector N(3),  Tt(3);
-    Matrix satLim(3,2);
+    z0=0.3;
+
+    Vector Kp(1), Ki(1), Kd(1);
+    Vector Wp(1), Wi(1), Wd(1);
+    Vector N(1),  Tt(1);
+    Matrix satLim(1,2);
 
     Kp=0.001;
-    Ki=Kd=0.0;
+    Ki=0.001;
+    Kd=0.001;
 
     Wp=Wi=Wd=1.0;
 
     N=10.0;
-    Tt=1.0;
+    Tt=0.5;
 
-    satLim(0,0)=satLim(1,0)=satLim(2,0)=-0.1;
-    satLim(0,1)=satLim(1,1)=satLim(2,1)=0.1;
+    satLim(0,0)=-0.1;
+    satLim(0,1)=0.1;
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
@@ -148,6 +151,62 @@ void Localizer::afterStart(bool s)
 
 
 /************************************************************************/
+bool Localizer::projectPoint(const string &type, const double u, const double v,
+                             const double z, Vector &fp)
+{
+    bool isLeft=(type=="left");
+
+    Matrix  *invPrj=(isLeft?invPrjL:invPrjR);
+    iCubEye *eye=(isLeft?eyeL:eyeR);
+
+    if (invPrj)
+    {
+        Vector &torso=commData->get_torso();
+        Vector &head=commData->get_q();
+
+        Vector q(8);
+        q[0]=torso[0];
+        q[1]=torso[1];
+        q[2]=torso[2];
+        q[3]=head[0];
+        q[4]=head[1];
+        q[5]=head[2];
+        q[6]=head[3];
+
+        if (isLeft)
+            q[7]=head[4]+head[5]/2.0;
+        else
+            q[7]=head[4]-head[5]/2.0;
+
+        Vector x(3);
+        x[0]=z*u;
+        x[1]=z*v;
+        x[2]=z;
+
+        // find the 3D position from the 2D projection,
+        // knowing the distance z from the camera
+        Vector Xe=*invPrj*x;
+        Xe[3]=1.0;  // impose homogeneous coordinates                
+
+        // update position wrt the root frame
+        Vector Xo=eye->getH(q)*Xe;
+
+        fp.resize(3,0.0);
+        fp[0]=Xo[0];
+        fp[1]=Xo[1];
+        fp[2]=Xo[2];
+
+        return true;
+    }
+    else
+    {
+        fprintf(stdout,"Unspecified projection matrix for %s camera!\n",type.c_str());
+        return false;
+    }
+}
+
+
+/************************************************************************/
 void Localizer::handleMonocularInput()
 {
     if (Bottle *mono=port_mono->read(false))
@@ -158,58 +217,16 @@ void Localizer::handleMonocularInput()
             double u=mono->get(1).asDouble();
             double v=mono->get(2).asDouble();
             double z=mono->get(3).asDouble();
-        
-            bool isLeft=(type=="left");
-        
-            Matrix  *invPrj=(isLeft?invPrjL:invPrjR);
-            iCubEye *eye=(isLeft?eyeL:eyeR);
-        
-            if (invPrj)
+
+            Vector fp;
+
+            if (projectPoint(type,u,v,z,fp))
             {
-                Vector &torso=commData->get_torso();
-                Vector &head=commData->get_q();
-        
-                Vector q(8);
-                q[0]=torso[0];
-                q[1]=torso[1];
-                q[2]=torso[2];
-                q[3]=head[0];
-                q[4]=head[1];
-                q[5]=head[2];
-                q[6]=head[3];
-        
-                if (isLeft)
-                    q[7]=head[4]+head[5]/2.0;
-                else
-                    q[7]=head[4]-head[5]/2.0;
-        
-                Vector x(3);
-                x[0]=z*u;
-                x[1]=z*v;
-                x[2]=z;
-        
-                // find the 3D position from the 2D projection,
-                // knowing the guessed distance z from the camera
-                Vector Xe=*invPrj*x;
-                Xe[3]=1.0;  // impose homogeneous coordinates                
-        
-                // update position wrt the root frame
-                Vector Xo=eye->getH(q)*Xe;
-        
                 if (port_xd)
-                {
-                    Vector xd(3);
-                    xd[0]=Xo[0];
-                    xd[1]=Xo[1];
-                    xd[2]=Xo[2];
-        
-                    port_xd->set_xd(xd);
-                }
+                    port_xd->set_xd(fp);
                 else
                     fprintf(stdout,"Internal error occured!\n");
             }
-            else
-                fprintf(stdout,"Unspecified projection matrix for %s camera!\n",type.c_str());
         }
         else
             fprintf(stdout,"Got wrong mono information!\n");
@@ -230,58 +247,23 @@ void Localizer::handleStereoInput()
                 double vl=stereo->get(1).asDouble();
                 double ur=stereo->get(2).asDouble();
                 double vr=stereo->get(3).asDouble();
-                double um=(ul+ur)/2.0;
-                double vm=(vl+vr)/2.0;
-            
-                // consider a reference frame attached to the current
-                // fixation point aligned with the head-centered frame
-                Vector ref(3), fb(3);
-            
-                // along x
-                ref[0]=cx; fb[0]=um;
-            
-                // along y
-                ref[1]=cy; fb[1]=vm;
-            
-                // along z
-                double el=um-ul;
-                double er=um-ur;
-                ref[2]=0.0; fb[2]=(fabs(el)+fabs(er))/2.0;
-                if ((el<0.0) || (er>0.0))
-                    fb[2]=-fb[2];   // go towards increasing direction of z
-            
-                // predict next position relative to the
-                // fixation point frame
-                Vector u=pid->compute(ref,fb);
-                Vector dx(4);
-                dx[0]=-u[0];
-                dx[1]=-u[1];
-                dx[2]=-u[2];
-                dx[3]=1.0;  // impose homogeneous coordinates
-            
-                // get the head-centered frame
-                // do not use the reference directly since we're
-                // gonna modify it and we don't want to keep the changes
-                Matrix fpFrame=commData->get_fpFrame();
-            
-                // set-up translational part
-                for (unsigned int i=0; i<3; i++)
-                    fpFrame(i,3)=commData->get_x()[i];
-            
-                // update position wrt the root frame
-                Vector xdO=fpFrame*dx;
-            
-                if (port_xd)
+                   
+                double el=cx-ul;
+                double er=cx-ur;
+
+                Vector ref(1), fb(1), fp;
+                ref[0]=0.0;
+                fb[0]=er;
+                Vector dz=pid->compute(ref,fb);
+
+                // the left eye is dominant
+                if (projectPoint("left",ul,vl,z0+dz[0],fp))
                 {
-                    Vector xd(3);
-                    xd[0]=xdO[0];
-                    xd[1]=xdO[1];
-                    xd[2]=xdO[2];
-            
-                    port_xd->set_xd(xd);
+                    if (port_xd)
+                        port_xd->set_xd(fp);
+                    else
+                        fprintf(stdout,"Internal error occured!\n");
                 }
-                else
-                    fprintf(stdout,"Internal error occured!\n");
             }
             else
                 fprintf(stdout,"Got wrong stereo information!\n");

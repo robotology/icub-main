@@ -65,6 +65,7 @@ protected:
     Matrix *PrjR, *invPrjR;
     double  cx;
     double  cy;
+    double  z0;
 
     parallelPID *pid;
 
@@ -80,6 +81,9 @@ public:
     void set_xdport(xdPort *_port_xd)           { port_xd=_port_xd;         }
     void getPidOptions(Property &options)       { pid->getOptions(options); }
     void setPidOptions(const Property &options) { pid->setOptions(options); }
+
+    bool projectPoint(const string &type, const double u, const double v,
+                      const double z, Vector &fp);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);
