@@ -59,7 +59,7 @@ YARP libraries and OpenCV
 - The analogous for the y-axis image.
  
 --nodesStep \e step
-- The parameter \e step selects the step in pixel between two 
+- The parameter \e step selects the step in pixels between two 
   consecutive grid nodes.
  
 --winSize \e size
