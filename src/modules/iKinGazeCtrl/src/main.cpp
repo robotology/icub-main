@@ -854,7 +854,7 @@ public:
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
-                                Property options(bOpt->get(0).toString().c_str());
+                                Property options(bOpt->toString().c_str());
                                 loc->setPidOptions(options);
                             }
                             else
