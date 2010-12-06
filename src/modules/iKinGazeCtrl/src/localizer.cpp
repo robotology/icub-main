@@ -232,8 +232,8 @@ void Localizer::handleStereoInput()
                 double t0=Time::now();
                    
                 Vector ref(1), fb(1);
-                ref=0.0;
-                fb=cxr-ur;
+                ref=cxr;
+                fb=ur;
 
                 Vector u=pid->compute(ref,fb);
 
