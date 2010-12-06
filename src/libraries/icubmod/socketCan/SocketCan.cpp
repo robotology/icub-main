@@ -37,6 +37,7 @@
 #define AF_CAN PF_CAN
 #endif
 
+//#define SOCK_DEBUG 1
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -106,16 +107,21 @@ bool SocketCan::canRead(CanBuffer &msgs,
 
     int i=0;
     int bytes_read=0;
+    #if SOCK_DEBUG
     printf("Asked for %d messages\n", size);
+    #endif
     for (i=0; i<size; i++)
     {
         can_frame *frm=reinterpret_cast<can_frame *>(msgs[i].getPointer());
         //printf("start reading\n");
         bytes_read = 0;
         bytes_read = read( skt, frm, sizeof(*frm) );
+        #if SOCK_DEBUG
         printf("finished reading. read %d bytes\n",bytes_read);
+        #endif
         if (bytes_read<=0) break;
 
+        #if SOCK_DEBUG
         printf("Read: %d \n ",bytes_read);
         printf("len %d ", frm->can_dlc);
         printf("id %d ", frm->can_id);
@@ -124,10 +130,14 @@ bool SocketCan::canRead(CanBuffer &msgs,
         for(j=0;j<frm->can_dlc;j++)
             printf("%2x ", frm->data[j]);
         printf("\n");
+        #endif
+
         //yarp::os::Time::delay(0.010); //test only
     }
     *readout=i;
+    #if SOCK_DEBUG
     printf("Read %d messages\n", *readout);
+    #endif
     return true;
 
 	/*
