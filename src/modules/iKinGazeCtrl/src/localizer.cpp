@@ -92,22 +92,34 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
 
     z0=0.3;
 
-    Vector Kp(1), Ki(1), Kd(1);
-    Vector Wp(1), Wi(1), Wd(1);
-    Vector N(1),  Tt(1);
-    Matrix satLim(1,2);
+    Vector Kp(3), Ki(3), Kd(3);
+    Vector Wp(3), Wi(3), Wd(3);
+    Vector N(3),  Tt(3);
+    Matrix satLim(3,2);
 
-    Kp=0.0010;
-    Ki=0.0001;
-    Kd=0.0005;
+    // ul part
+    Kp[0]=1.0;
+    Ki[0]=0.1;
+    Kd[0]=0.5;
+
+    // vl part
+    Kp[1]=1.0;
+    Ki[1]=0.1;
+    Kd[1]=0.5;
+
+    // z part
+    Kp[2]=0.0010;
+    Ki[2]=0.0001;
+    Kd[2]=0.0005;
 
     Wp=Wi=Wd=1.0;
 
     N=10.0;
     Tt=1.0;
 
-    satLim(0,0)=-0.2;
-    satLim(0,1)=2.0;
+    satLim(0,0)=-20.0; satLim(0,1)=20.0;    // pixels
+    satLim(1,0)=-20.0; satLim(1,1)=20.0;    // pixels
+    satLim(2,0)=-0.2;  satLim(2,1)=2.0;     // [m]
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
@@ -248,15 +260,17 @@ void Localizer::handleStereoInput()
                 double ur=stereo->get(2).asDouble();
                 double vr=stereo->get(3).asDouble();
                    
-                Vector ref(1), fb(1), fp;
+                Vector ref(3), fb(3), fp;
 
-                ref[0]=0.0;
-                fb[0]=cx-ur;
+                ref=0.0;
+                fb[0]=cx-ul;
+                fb[1]=cy-vl;
+                fb[2]=cx-ur;
 
-                Vector dz=pid->compute(ref,fb);
+                Vector u=pid->compute(ref,fb);
 
                 // the left eye is dominant
-                if (projectPoint("left",ul,vl,z0+dz[0],fp))
+                if (projectPoint("left",ul+u[0],vl+u[1],z0+u[2],fp))
                 {
                     if (port_xd)
                         port_xd->set_xd(fp);
