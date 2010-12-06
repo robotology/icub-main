@@ -183,7 +183,16 @@ point:
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
   straight ahead). Vergence is also to be given either in
-  relative mode or absolute mode.
+  relative mode or absolute mode. \n Since the controller
+  running underneath is intrinsically cartesian, the angular
+  quantities are tranformed into 3D points: therefore, due to
+  the simplication operated by the low-level firmware in
+  managing the version angle (see <a
+  href="http://eris.liralab.it/wiki/Vergence%2C_Version_and_Disparity">
+  here</a>), the user might experience some steady-state errors
+  while attaining the angular target. These errors depend on the
+  starting configuration and can be made negligible just by
+  re-issueing the command when closer to the target.
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 
