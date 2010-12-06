@@ -98,27 +98,27 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Matrix satLim(3,2);
 
     // ul part
-    Kp[0]=1.0;
-    Ki[0]=0.1;
-    Kd[0]=0.5;
+    Kp[0]=0.010;
+    Ki[0]=0.001;
+    Kd[0]=0.001;
 
     // vl part
-    Kp[1]=1.0;
-    Ki[1]=0.1;
-    Kd[1]=0.5;
+    Kp[1]=0.010;
+    Ki[1]=0.001;
+    Kd[1]=0.001;
 
     // z part
     Kp[2]=0.0010;
     Ki[2]=0.0001;
-    Kd[2]=0.0005;
+    Kd[2]=0.0001;
 
     Wp=Wi=Wd=1.0;
 
     N=10.0;
     Tt=1.0;
 
-    satLim(0,0)=-20.0; satLim(0,1)=20.0;    // pixels
-    satLim(1,0)=-20.0; satLim(1,1)=20.0;    // pixels
+    satLim(0,0)=-10.0; satLim(0,1)=10.0;    // pixels
+    satLim(1,0)=-10.0; satLim(1,1)=10.0;    // pixels
     satLim(2,0)=-0.2;  satLim(2,1)=2.0;     // [m]
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
