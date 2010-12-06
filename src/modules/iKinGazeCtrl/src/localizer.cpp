@@ -97,17 +97,17 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(1),  Tt(1);
     Matrix satLim(1,2);
 
-    Kp=0.001;
+    Kp=0.0010;
     Ki=0.0001;
-    Kd=0.0001;
+    Kd=0.0005;
 
     Wp=Wi=Wd=1.0;
 
     N=10.0;
-    Tt=0.5;
+    Tt=1.0;
 
-    satLim(0,0)=-0.1;
-    satLim(0,1)=0.1;
+    satLim(0,0)=-0.2;
+    satLim(0,1)=2.0;
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
