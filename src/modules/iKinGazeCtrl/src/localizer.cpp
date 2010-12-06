@@ -79,7 +79,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(1),  Tt(1);
     Matrix satLim(1,2);
 
-    Kp=0.0001;
+    Kp=0.0010;
     Ki=0.0001;
     Kd=0.0001;
 
@@ -239,7 +239,7 @@ void Localizer::handleStereoInput()
 
                 // the left eye is dominant
                 Vector fp;
-                if (projectPoint("left",ul,vl,z0-u[0],fp))
+                if (projectPoint("left",ul,vl,z0+u[0],fp))
                 {
                     if (port_xd)
                         port_xd->set_xd(fp);
