@@ -48,7 +48,7 @@ protected:
     BufferedPort<Bottle> *port_stereo;
     BufferedPort<Bottle> *port_anglesIn;
     BufferedPort<Vector> *port_anglesOut;
-    
+
     string localName;
     string configFile;
     unsigned int period;

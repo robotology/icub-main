@@ -79,7 +79,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(1),  Tt(1);
     Matrix satLim(1,2);
 
-    Kp=0.0010;
+    Kp=0.0001;
     Ki=0.0001;
     Kd=0.0001;
 
@@ -228,6 +228,8 @@ void Localizer::handleStereoInput()
                 double vl=stereo->get(1).asDouble();
                 double ur=stereo->get(2).asDouble();
                 double vr=stereo->get(3).asDouble();
+
+                double t0=Time::now();
                    
                 Vector ref(1), fb(1);
                 ref=0.0;
