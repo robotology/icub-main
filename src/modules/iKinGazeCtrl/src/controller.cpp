@@ -203,21 +203,10 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 /************************************************************************/
 bool Controller::threadInit()
 {
-    port_x=new BufferedPort<Vector>;
-    string n1=localName+"/x:o";
-    port_x->open(n1.c_str());
-
-    port_qd=new BufferedPort<Vector>;
-    string n2=localName+"/qd:o";
-    port_qd->open(n2.c_str());
-
-    port_q=new BufferedPort<Vector>;
-    string n3=localName+"/q:o";
-    port_q->open(n3.c_str());
-
-    port_v=new BufferedPort<Vector>;
-    string n4=localName+"/v:o";
-    port_v->open(n4.c_str());
+    port_x.open((localName+"/x:o").c_str());
+    port_qd.open((localName+"/qd:o").c_str());
+    port_q.open((localName+"/q:o").c_str());
+    port_v.open((localName+"/v:o").c_str());
 
     fprintf(stdout,"Starting Controller at %d ms\n",period);
 
@@ -344,10 +333,10 @@ void Controller::run()
     printIter(xd,fp,qddeg,qdeg,vdeg,1.0);
 
     // send qd,x,q,v through YARP ports
-    Vector &x  =port_x->prepare();
-    Vector &qd1=port_qd->prepare();
-    Vector &q1 =port_q->prepare();
-    Vector &v1 =port_v->prepare();
+    Vector &x  =port_x.prepare();
+    Vector &qd1=port_qd.prepare();
+    Vector &q1 =port_q.prepare();
+    Vector &v1 =port_v.prepare();
 
     qd1.resize(nJointsTorso+nJointsHead);
     q1.resize(nJointsTorso+nJointsHead);
@@ -364,10 +353,10 @@ void Controller::run()
     x=fp;
     v1=vdeg;
 
-    port_x->write();
-    port_qd->write();
-    port_q->write();
-    port_v->write();
+    port_x.write();
+    port_qd.write();
+    port_q.write();
+    port_v.write();
 
     // update pose information
     mutex.wait();
@@ -402,20 +391,16 @@ void Controller::threadRelease()
 {
     stopLimbsVel();
 
-    port_x->interrupt();
-    port_qd->interrupt();
-    port_q->interrupt();
-    port_v->interrupt();
+    port_x.interrupt();
+    port_qd.interrupt();
+    port_q.interrupt();
+    port_v.interrupt();
 
-    port_x->close();
-    port_qd->close();
-    port_q->close();
-    port_v->close();
+    port_x.close();
+    port_qd.close();
+    port_q.close();
+    port_v.close();
 
-    delete port_x;
-    delete port_qd;
-    delete port_q;
-    delete port_v;
     delete neck;
     delete eyeL;
     delete eyeR;

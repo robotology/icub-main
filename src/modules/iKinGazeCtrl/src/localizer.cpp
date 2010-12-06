@@ -100,21 +100,10 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
 /************************************************************************/
 bool Localizer::threadInit()
 { 
-    port_mono=new BufferedPort<Bottle>;
-    string n1=localName+"/mono:i";
-    port_mono->open(n1.c_str());
-
-    port_stereo=new BufferedPort<Bottle>;
-    string n2=localName+"/stereo:i";
-    port_stereo->open(n2.c_str());
-
-    port_anglesIn=new BufferedPort<Bottle>;
-    string n3=localName+"/angles:i";
-    port_anglesIn->open(n3.c_str());
-
-    port_anglesOut=new BufferedPort<Vector>;
-    string n4=localName+"/angles:o";
-    port_anglesOut->open(n4.c_str());
+    port_mono.open((localName+"/mono:i").c_str());
+    port_stereo.open((localName+"/stereo:i").c_str());
+    port_anglesIn.open((localName+"/angles:i").c_str());
+    port_anglesOut.open((localName+"/angles:o").c_str());
 
     fprintf(stdout,"Starting Localizer at %d ms\n",period);
 
@@ -191,7 +180,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 /************************************************************************/
 void Localizer::handleMonocularInput()
 {
-    if (Bottle *mono=port_mono->read(false))
+    if (Bottle *mono=port_mono.read(false))
     {
         if (mono->size()>=4)
         {
@@ -218,7 +207,7 @@ void Localizer::handleMonocularInput()
 /************************************************************************/
 void Localizer::handleStereoInput()
 {
-    if (Bottle *stereo=port_stereo->read(false))
+    if (Bottle *stereo=port_stereo.read(false))
     {
         if ((PrjL!=NULL) || (PrjR!=NULL))
         {
@@ -259,7 +248,7 @@ void Localizer::handleStereoInput()
 /************************************************************************/
 void Localizer::handleAnglesInput()
 {
-    if (Bottle *angles=port_anglesIn->read(false))
+    if (Bottle *angles=port_anglesIn.read(false))
         if (angles->size()>=4)
         {
             string type=angles->get(0).asString().c_str();
@@ -369,14 +358,14 @@ void Localizer::handleAnglesOutput()
     // get fp wrt head-centered system
     Vector fph=invEyeCAbsFrame*fp;
 
-    Vector &angles=port_anglesOut->prepare();
+    Vector &angles=port_anglesOut.prepare();
     angles.resize(3);
 
     angles[0]=CTRL_RAD2DEG*atan2(fph[0],fph[2]);
     angles[1]=-CTRL_RAD2DEG*atan2(fph[1],fph[2]);
     angles[2]=CTRL_RAD2DEG*commData->get_q()[5];
 
-    port_anglesOut->write();
+    port_anglesOut.write();
 }
 
 
@@ -393,20 +382,15 @@ void Localizer::run()
 /************************************************************************/
 void Localizer::threadRelease()
 {
-    port_mono->interrupt();
-    port_stereo->interrupt();
-    port_anglesIn->interrupt();
-    port_anglesOut->interrupt();
+    port_mono.interrupt();
+    port_stereo.interrupt();
+    port_anglesIn.interrupt();
+    port_anglesOut.interrupt();
 
-    port_mono->close();
-    port_stereo->close();
-    port_anglesIn->close();
-    port_anglesOut->close();
-
-    delete port_mono;
-    delete port_stereo;
-    delete port_anglesIn;
-    delete port_anglesOut;
+    port_mono.close();
+    port_stereo.close();
+    port_anglesIn.close();
+    port_anglesOut.close();
 
     if (PrjL!=NULL)
     {

@@ -44,10 +44,10 @@ class Localizer : public RateThread
 protected:
     exchangeData         *commData;
     xdPort               *port_xd;
-    BufferedPort<Bottle> *port_mono;
-    BufferedPort<Bottle> *port_stereo;
-    BufferedPort<Bottle> *port_anglesIn;
-    BufferedPort<Vector> *port_anglesOut;
+    BufferedPort<Bottle>  port_mono;
+    BufferedPort<Bottle>  port_stereo;
+    BufferedPort<Bottle>  port_anglesIn;
+    BufferedPort<Vector>  port_anglesOut;
 
     string localName;
     string configFile;

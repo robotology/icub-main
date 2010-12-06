@@ -63,10 +63,10 @@ protected:
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
     iKinLink *alignLnkRight1, *alignLnkRight2;
 
-    BufferedPort<Vector>      *port_qd;
-    BufferedPort<Vector>      *port_x;
-    BufferedPort<Vector>      *port_q;
-    BufferedPort<Vector>      *port_v;
+    BufferedPort<Vector>       port_qd;
+    BufferedPort<Vector>       port_x;
+    BufferedPort<Vector>       port_q;
+    BufferedPort<Vector>       port_v;
 
     minJerkVelCtrl            *mjCtrlNeck;
     minJerkVelCtrl            *mjCtrlEyes;
