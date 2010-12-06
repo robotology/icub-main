@@ -247,9 +247,9 @@ void parallelPID::reset()
 void parallelPID::getOptions(Property &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
-    for (int c=0; c<satLim.cols(); c++)
-        for (int r=0; r<satLim.rows(); r++)
-            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+    for (int r=0; r<satLim.rows(); r++)
+        for (int c=0; c<satLim.cols(); c++)
+            satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
     Bottle b;
     addKeyHelper(b,"Kp",Kp);
@@ -271,9 +271,9 @@ void parallelPID::getOptions(Property &options)
 void parallelPID::setOptions(const Property &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
-    for (int c=0; c<satLim.cols(); c++)
-        for (int r=0; r<satLim.rows(); r++)
-            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+    for (int r=0; r<satLim.rows(); r++)
+        for (int c=0; c<satLim.cols(); c++)
+            satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
     bool recomputeQuantities=false;
     changeValHelper(options,"Ki",Ki);
@@ -287,9 +287,9 @@ void parallelPID::setOptions(const Property &options)
 
     if (changeValHelper(options,"satLim",satLimVect))
     {
-        for (int c=0; c<satLim.cols(); c++)
-            for (int r=0; r<satLim.rows(); r++)
-                satLim(r,c)=satLimVect[c*satLim.cols()+r];
+        for (int r=0; r<satLim.rows(); r++)
+            for (int c=0; c<satLim.cols(); c++)
+                satLim(r,c)=satLimVect[r*satLim.cols()+c];
 
         recomputeQuantities=true;
     }
@@ -420,9 +420,9 @@ void seriesPID::reset()
 void seriesPID::getOptions(Property &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
-    for (int c=0; c<satLim.cols(); c++)
-        for (int r=0; r<satLim.rows(); r++)
-            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+    for (int r=0; r<satLim.rows(); r++)
+        for (int c=0; c<satLim.cols(); c++)
+            satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
     Bottle b;
     addKeyHelper(b,"Kp",Kp);
@@ -440,9 +440,9 @@ void seriesPID::getOptions(Property &options)
 void seriesPID::setOptions(const Property &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
-    for (int c=0; c<satLim.cols(); c++)
-        for (int r=0; r<satLim.rows(); r++)
-            satLimVect[c*satLim.cols()+r]=satLim(r,c);
+    for (int r=0; r<satLim.rows(); r++)
+        for (int c=0; c<satLim.cols(); c++)
+            satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
     bool recomputeQuantities=false;
     if (changeValHelper(options,"Kp",Kp) || changeValHelper(options,"Ti",Ti) ||
@@ -451,9 +451,9 @@ void seriesPID::setOptions(const Property &options)
 
     if (changeValHelper(options,"satLim",satLimVect))
     {
-        for (int c=0; c<satLim.cols(); c++)
-            for (int r=0; r<satLim.rows(); r++)
-                satLim(r,c)=satLimVect[c*satLim.cols()+r];
+        for (int r=0; r<satLim.rows(); r++)
+            for (int c=0; c<satLim.cols(); c++)
+                satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
         recomputeQuantities=true;
     }

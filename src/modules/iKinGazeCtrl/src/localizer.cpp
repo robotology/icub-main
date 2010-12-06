@@ -48,8 +48,6 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     // ... and its inverse
     invEyeCAbsFrame=SE3inv(eyeCAbsFrame);
 
-    double cxl,cyl,cxr,cyr;
-
     // get camera projection matrix from the configFile
     if (getCamPrj(configFile,"CAMERA_CALIBRATION_LEFT",&PrjL))
     {
@@ -74,52 +72,24 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     else
         PrjR=invPrjR=NULL;
 
-    if ((PrjL!=NULL) && (PrjR!=NULL))
-    {
-        cx=(cxl+cxr)/2.0;
-        cy=(cyl+cyr)/2.0;
-    }
-    else if (PrjL!=NULL)
-    {
-        cx=cxl;
-        cy=cyl;
-    }
-    else if (PrjR!=NULL)
-    {
-        cx=cxr;
-        cy=cyr;
-    }
-
     z0=0.3;
 
-    Vector Kp(3), Ki(3), Kd(3);
-    Vector Wp(3), Wi(3), Wd(3);
-    Vector N(3),  Tt(3);
-    Matrix satLim(3,2);
+    Vector Kp(1), Ki(1), Kd(1);
+    Vector Wp(1), Wi(1), Wd(1);
+    Vector N(1),  Tt(1);
+    Matrix satLim(1,2);
 
-    // ul part
-    Kp[0]=0.010;
-    Ki[0]=0.001;
-    Kd[0]=0.001;
-
-    // vl part
-    Kp[1]=0.010;
-    Ki[1]=0.001;
-    Kd[1]=0.001;
-
-    // z part
-    Kp[2]=0.0010;
-    Ki[2]=0.0001;
-    Kd[2]=0.0001;
+    Kp=0.0010;
+    Ki=0.0001;
+    Kd=0.0001;
 
     Wp=Wi=Wd=1.0;
 
     N=10.0;
     Tt=1.0;
 
-    satLim(0,0)=-10.0; satLim(0,1)=10.0;    // pixels
-    satLim(1,0)=-10.0; satLim(1,1)=10.0;    // pixels
-    satLim(2,0)=-0.2;  satLim(2,1)=2.0;     // [m]
+    satLim(0,0)=-0.2;
+    satLim(0,1)=2.0;
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
@@ -231,7 +201,6 @@ void Localizer::handleMonocularInput()
             double z=mono->get(3).asDouble();
 
             Vector fp;
-
             if (projectPoint(type,u,v,z,fp))
             {
                 if (port_xd)
@@ -260,17 +229,15 @@ void Localizer::handleStereoInput()
                 double ur=stereo->get(2).asDouble();
                 double vr=stereo->get(3).asDouble();
                    
-                Vector ref(3), fb(3), fp;
-
+                Vector ref(1), fb(1);
                 ref=0.0;
-                fb[0]=cx-ul;
-                fb[1]=cy-vl;
-                fb[2]=cx-ur;
+                fb=cxr-ur;
 
                 Vector u=pid->compute(ref,fb);
 
                 // the left eye is dominant
-                if (projectPoint("left",ul+u[0],vl+u[1],z0+u[2],fp))
+                Vector fp;
+                if (projectPoint("left",ul,vl,z0-u[0],fp))
                 {
                     if (port_xd)
                         port_xd->set_xd(fp);
