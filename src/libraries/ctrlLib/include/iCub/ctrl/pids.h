@@ -30,7 +30,7 @@
 #ifndef __PIDS_H__
 #define __PIDS_H__
 
-#include <yarp/os/Property.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
@@ -235,19 +235,19 @@ public:
 
     /**
     * Returns the current options used by the pid.
-    * @param options is a property containing the current 
-    *                configuration used by the pid.
+    * @param options is a property-like bottle containing the 
+    *                current configuration used by the pid.
     *  
-    * @note The returned property looks like as follows: 
+    * @note The returned bottle looks like as follows: 
     * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ... 
     * @note the satLim property is returned ordered by rows.
     */
-    virtual void getOptions(yarp::os::Property &options);
+    virtual void getOptions(yarp::os::Bottle &options);
 
     /**
     * Update the options used by the pid.
-    * @param options is a property containing the new configuration
-    *                used by the pid.
+    * @param options is a property-like bottle containing the new 
+    *                configuration used by the pid.
     *  
     * @note The property parameter should look like as follows: 
     * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ... 
@@ -257,7 +257,7 @@ public:
     *       cannot change.
     * @note the satLim property must be given ordered by rows. 
     */
-    virtual void setOptions(const yarp::os::Property &options);
+    virtual void setOptions(const yarp::os::Bottle &options);
 
     /**
     * Destructor. 
@@ -338,19 +338,19 @@ public:
 
     /**
     * Returns the current options used by the pid.
-    * @param options is a property containing the current 
-    *                configuration used by the pid.
+    * @param options is a property-like bottle containing the 
+    *                current configuration used by the pid.
     *  
-    * @note The returned property looks like as follows: 
+    * @note The returned bottle looks like as follows: 
     * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
     * @note the satLim property is returned ordered by rows.
     */
-    virtual void getOptions(yarp::os::Property &options);
+    virtual void getOptions(yarp::os::Bottle &options);
 
     /**
     * Update the options used by the pid.
-    * @param options is a property containing the new configuration
-    *                used by the pid.
+    * @param options is a property-like bottle containing the new 
+    *                configuration used by the pid.
     *  
     * @note The property parameter should look like as follows: 
     * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
@@ -360,7 +360,7 @@ public:
     *       cannot change.
     * @note the satLim property must be given ordered by rows. 
     */
-    virtual void setOptions(const yarp::os::Property &options);
+    virtual void setOptions(const yarp::os::Bottle &options);
 
     /**
     * Destructor. 

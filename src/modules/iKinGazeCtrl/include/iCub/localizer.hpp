@@ -21,6 +21,7 @@
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
+#include <yarp/os/Bottle.h>
 
 #include <iCub/ctrl/pids.h>
 
@@ -78,9 +79,9 @@ public:
     Localizer(exchangeData *_commData, const string &_localName,
               const string &_configFile, unsigned int _period);
 
-    void set_xdport(xdPort *_port_xd)           { port_xd=_port_xd;         }
-    void getPidOptions(Property &options)       { pid->getOptions(options); }
-    void setPidOptions(const Property &options) { pid->setOptions(options); }
+    void set_xdport(xdPort *_port_xd)         { port_xd=_port_xd;         }
+    void getPidOptions(Bottle &options)       { pid->getOptions(options); }
+    void setPidOptions(const Bottle &options) { pid->setOptions(options); }
 
     bool projectPoint(const string &type, const double u, const double v,
                       const double z, Vector &fp);

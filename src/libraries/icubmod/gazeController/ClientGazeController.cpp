@@ -505,7 +505,7 @@ bool ClientGazeController::getCyclopicEyePose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ClientGazeController::getStereoOptions(Property &options)
+bool ClientGazeController::getStereoOptions(Bottle &options)
 {
     if (!connected)
         return false;
@@ -527,7 +527,7 @@ bool ClientGazeController::getStereoOptions(Property &options)
     {
         if (Bottle *bOpt=reply.get(1).asList())
         {
-            options.fromString(bOpt->toString().c_str());
+            options=*bOpt;
             return true;
         }
         else
@@ -583,7 +583,7 @@ bool ClientGazeController::setEyesTrajTime(const double t)
 
 
 /************************************************************************/
-bool ClientGazeController::setStereoOptions(const Property &options)
+bool ClientGazeController::setStereoOptions(const Bottle &options)
 {
     if (!connected)
         return false;
@@ -592,8 +592,7 @@ bool ClientGazeController::setStereoOptions(const Property &options)
 
     command.addString("set");
     command.addString("pid");
-    Bottle &bOpt=command.addList();
-    bOpt.fromString(options.toString().c_str());
+    command.addList()=options;
 
     if (!portRpc->write(command,reply))
     {

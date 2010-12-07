@@ -264,9 +264,9 @@ following ports:
       val=="left", the right eye pose if vel=="right" and the
       cyclopic eye pose if val=="cyclopic". The pose is given in
       axis/angle representation (i.e. 7-componenets vector).
-    - [get] [pid]: returns (enclosed in a list ) a property
-      containing the pid values used to converge to the target
-      with stereo input.
+    - [get] [pid]: returns (enclosed in a list ) a property-like
+      bottle containing the pid values used to converge to the
+      target with stereo input.
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
@@ -355,6 +355,7 @@ background. Just connect the ports with the viewer and play.
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -399,7 +400,7 @@ protected:
         double neckYawMax;
 
         // localizer part
-        Property pidOptions;
+        Bottle pidOptions;
     };
 
     int contextIdCnt;
@@ -815,12 +816,11 @@ public:
                         }
                         else if (type==VOCAB3('p','i','d'))
                         {
-                            Property options;
+                            Bottle options;
                             loc->getPidOptions(options);
 
                             reply.addVocab(ack);
-                            Bottle &bOpt=reply.addList();
-                            bOpt.fromString(options.toString().c_str());
+                            reply.addList()=options;
                         }
                         else
                         {
@@ -861,10 +861,7 @@ public:
                         else if (type==VOCAB3('p','i','d'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
-                            {
-                                Property options(bOpt->toString().c_str());
-                                loc->setPidOptions(options);
-                            }
+                                loc->setPidOptions(*bOpt);
                             else
                             {
                                 reply.addVocab(nack);

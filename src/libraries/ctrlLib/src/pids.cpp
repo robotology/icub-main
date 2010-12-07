@@ -45,9 +45,9 @@ namespace ctrl
     }
 
     /************************************************************************/
-    bool changeValHelper(const Property &options, const char *key, Vector &val)
+    bool changeValHelper(const Bottle &options, const char *key, Vector &val)
     {
-        Property &opt=const_cast<Property&>(options);
+        Bottle &opt=const_cast<Bottle&>(options);
         if (opt.check(key))
         {
             Bottle *b=opt.find(key).asList();
@@ -244,31 +244,32 @@ void parallelPID::reset()
 
 
 /************************************************************************/
-void parallelPID::getOptions(Property &options)
+void parallelPID::getOptions(Bottle &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
     for (int r=0; r<satLim.rows(); r++)
         for (int c=0; c<satLim.cols(); c++)
             satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
-    Bottle b;
-    addKeyHelper(b,"Kp",Kp);
-    addKeyHelper(b,"Ki",Ki);
-    addKeyHelper(b,"Kd",Kd);
-    addKeyHelper(b,"Wp",Wp);
-    addKeyHelper(b,"Wi",Wi);
-    addKeyHelper(b,"Wd",Wd);
-    addKeyHelper(b,"N",N);
-    addKeyHelper(b,"Tt",Tt);
-    addKeyHelper(b,"satLim",satLimVect);
+    options.clear();
+    addKeyHelper(options,"Kp",Kp);
+    addKeyHelper(options,"Ki",Ki);
+    addKeyHelper(options,"Kd",Kd);
+    addKeyHelper(options,"Wp",Wp);
+    addKeyHelper(options,"Wi",Wi);
+    addKeyHelper(options,"Wd",Wd);
+    addKeyHelper(options,"N",N);
+    addKeyHelper(options,"Tt",Tt);
+    addKeyHelper(options,"satLim",satLimVect);
         
-    options.fromString(b.toString().c_str());
-    options.put("Ts",Ts);
+    Bottle &bTs=options.addList();
+    bTs.addString("Ts");
+    bTs.addDouble(Ts);
 }
 
 
 /************************************************************************/
-void parallelPID::setOptions(const Property &options)
+void parallelPID::setOptions(const Bottle &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
     for (int r=0; r<satLim.rows(); r++)
@@ -417,27 +418,28 @@ void seriesPID::reset()
 
 
 /************************************************************************/
-void seriesPID::getOptions(Property &options)
+void seriesPID::getOptions(Bottle &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
     for (int r=0; r<satLim.rows(); r++)
         for (int c=0; c<satLim.cols(); c++)
             satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
-    Bottle b;
-    addKeyHelper(b,"Kp",Kp);
-    addKeyHelper(b,"Ti",Ti);
-    addKeyHelper(b,"Kd",Kd);
-    addKeyHelper(b,"N",N);
-    addKeyHelper(b,"satLim",satLimVect);
+    options.clear();
+    addKeyHelper(options,"Kp",Kp);
+    addKeyHelper(options,"Ti",Ti);
+    addKeyHelper(options,"Kd",Kd);
+    addKeyHelper(options,"N",N);
+    addKeyHelper(options,"satLim",satLimVect);
         
-    options.fromString(b.toString().c_str());
-    options.put("Ts",Ts);
+    Bottle &bTs=options.addList();
+    bTs.addString("Ts");
+    bTs.addDouble(Ts);
 }
 
 
 /************************************************************************/
-void seriesPID::setOptions(const Property &options)
+void seriesPID::setOptions(const Bottle &options)
 {
     Vector satLimVect(satLim.rows()*satLim.cols());
     for (int r=0; r<satLim.rows(); r++)
