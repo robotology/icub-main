@@ -8,6 +8,7 @@ iCubLogicalJoints::iCubLogicalJoints() {
 }
 
 void iCubLogicalJoints::init() {
+    OdeInit& odeinit = OdeInit::get();
     if (!isSetup) {
         ////////////////////////////////////////////////////////////
         // Setting up the head

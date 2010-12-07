@@ -1,9 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /*
-* Copyright (C) 2007 Vadim Tikhanoff, Paul Fitzpatrick, MArtin Peniak
-* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
-*
-*/
+ * Copyright (C) 2007 Vadim Tikhanoff, Paul Fitzpatrick, MArtin Peniak
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+ *
+ */
 
 #include "iCub_Sim.h"
 
@@ -66,21 +66,25 @@ static dJointFeedback touchSensorFeedbacks[MAX_CONTACTS * N_TOUCH_SENSORS];
 
 static int nFeedbackStructs=0;
 
-void Simulation::draw(){
+void Simulation::draw() {
+    OdeInit& odeinit = OdeInit::get();
     odeinit._iCub->draw();
     odeinit._wrld->draw();
 }
 
-void Simulation::setJointTorques(){
+void Simulation::setJointTorques() {
+    OdeInit& odeinit = OdeInit::get();
     odeinit._iCub->setJointTorques();
 }
 
-void Simulation::setJointSpeed(){
+void Simulation::setJointSpeed() {
+    OdeInit& odeinit = OdeInit::get();
     odeinit._iCub->setJointSpeeds();
 
 }
 
-void Simulation::printStats(){
+void Simulation::printStats() {
+    OdeInit& odeinit = OdeInit::get();
 
     finishTime = clock() ;
     duration += (double)(finishTime - startTime) / CLOCKS_PER_SEC ;
@@ -102,8 +106,7 @@ void Simulation::printStats(){
     //drawText(text, textPos);
 }
 
-void Simulation::handle_key_down(SDL_keysym* keysym)
-{
+void Simulation::handle_key_down(SDL_keysym* keysym) {
     switch (keysym->sym)
 		{
 		case SDLK_e:
@@ -119,8 +122,7 @@ void Simulation::handle_key_down(SDL_keysym* keysym)
 		}
 }
 
-void Simulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion)
-{
+void Simulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion) {
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1)){// MOUSE LEFT BUTTON
         //if (!picking){
         //camera movement
@@ -162,7 +164,8 @@ void Simulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion)
     }
 }
 
-void Simulation::process_events(void){
+void Simulation::process_events(void) {
+    OdeInit& odeinit = OdeInit::get();
     SDL_Event event;
 
     Uint8 * keystate = SDL_GetKeyState(NULL);
@@ -256,8 +259,8 @@ void Simulation::process_events(void){
     }
 }
 
-void Simulation::nearCallback (void *data, dGeomID o1, dGeomID o2)
-{
+void Simulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
+    OdeInit& odeinit = OdeInit::get();
 
     assert(o1);
     assert(o2);
@@ -348,6 +351,7 @@ void Simulation::nearCallback (void *data, dGeomID o1, dGeomID o2)
 
 // returns true if the body with the bodyID is a touch-sensitive body, returns false otherwise.
 bool Simulation::isBodyTouchSensitive (dBodyID bodyID) {
+    OdeInit& odeinit = OdeInit::get();
 
 	// check the smaller hand parts if the left hand is active.
 	if (odeinit._iCub->actLHand == "on") {	
@@ -390,7 +394,8 @@ bool Simulation::isBodyTouchSensitive (dBodyID bodyID) {
 	return false;
 }
 
-void Simulation::inspectBodyTouch_continuousValued(Bottle& report){
+void Simulation::inspectBodyTouch_continuousValued(Bottle& report) {
+    OdeInit& odeinit = OdeInit::get();
 	report.clear();
 	if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
 		const char *names[] = {
@@ -496,7 +501,8 @@ void Simulation::inspectBodyTouch_continuousValued(Bottle& report){
 	}
 }
 
-void Simulation::inspectBodyTouch(Bottle& report){
+void Simulation::inspectBodyTouch(Bottle& report) {
+    OdeInit& odeinit = OdeInit::get();
     report.clear();
     if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
         const char *names[] = {
@@ -636,7 +642,7 @@ void Simulation::getAngles(const dReal *m, float& z, float& y, float& x) {
     z *= 180/M_PI;
 }
 
-void Simulation::initViewpoint(){
+void Simulation::initViewpoint() {
     xpos = 0;
     ypos = 1;
     zpos = 1;
@@ -654,7 +660,8 @@ void Simulation::mouseMovement(float x, float y) {
     yrot += (float) diffx;	//set the xrot to yrot with the addition of the difference in the x position
 }
 
-void Simulation::draw_screen(){
+void Simulation::draw_screen() {
+    OdeInit& odeinit = OdeInit::get();
         
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
 
@@ -695,182 +702,185 @@ void Simulation::draw_screen(){
 
 
 
-void Simulation::retreiveInertialData(Bottle& inertialReport){
-        static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3], roll, pitch, yaw;
-        inertialReport.clear();
-        //this prepares a bottle of 12 doubles to be sent on the /icubSim/inertial port
+void Simulation::retreiveInertialData(Bottle& inertialReport) {
+    OdeInit& odeinit = OdeInit::get();
+    static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3], roll, pitch, yaw;
+    inertialReport.clear();
+    //this prepares a bottle of 12 doubles to be sent on the /icubSim/inertial port
         
-        roll = dBodyGetRotation(odeinit._iCub->head)[1] ;
-        pitch = dBodyGetRotation(odeinit._iCub->head)[6] ;
-        yaw = dBodyGetRotation(odeinit._iCub->head)[2] ;
-        //Add Euler angles roll pitch yaw
-        inertialReport.addDouble( roll * 180/M_PI); // roll 
-        inertialReport.addDouble( pitch * 180/M_PI); // pitch
-        inertialReport.addDouble( yaw * 180/M_PI); // yaw
+    roll = dBodyGetRotation(odeinit._iCub->head)[1] ;
+    pitch = dBodyGetRotation(odeinit._iCub->head)[6] ;
+    yaw = dBodyGetRotation(odeinit._iCub->head)[2] ;
+    //Add Euler angles roll pitch yaw
+    inertialReport.addDouble( roll * 180/M_PI); // roll 
+    inertialReport.addDouble( pitch * 180/M_PI); // pitch
+    inertialReport.addDouble( yaw * 180/M_PI); // yaw
         		
-        //in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
-		LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->head)[0];
-		LinearVel[1] = dBodyGetLinearVel(odeinit._iCub->head)[1];
-		LinearVel[2] = dBodyGetLinearVel(odeinit._iCub->head)[2];
-		//// a = dv/dt = ( t - t_old ) / dt
-		LinearAccel[0] = ( LinearVel[0] - OldLinearVel[0] ) / 0.02;
-		LinearAccel[1] = ( LinearVel[1] - OldLinearVel[1] ) / 0.02;
-		LinearAccel[2] = ( LinearVel[2] - OldLinearVel[2] ) / 0.02;
-		OldLinearVel[0] = LinearVel[0];
-		OldLinearVel[1] = LinearVel[1];
-		OldLinearVel[2] = LinearVel[2];
+    //in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
+    LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->head)[0];
+    LinearVel[1] = dBodyGetLinearVel(odeinit._iCub->head)[1];
+    LinearVel[2] = dBodyGetLinearVel(odeinit._iCub->head)[2];
+    //// a = dv/dt = ( t - t_old ) / dt
+    LinearAccel[0] = ( LinearVel[0] - OldLinearVel[0] ) / 0.02;
+    LinearAccel[1] = ( LinearVel[1] - OldLinearVel[1] ) / 0.02;
+    LinearAccel[2] = ( LinearVel[2] - OldLinearVel[2] ) / 0.02;
+    OldLinearVel[0] = LinearVel[0];
+    OldLinearVel[1] = LinearVel[1];
+    OldLinearVel[2] = LinearVel[2];
         
-		////Add linear acceleration
-        inertialReport.addDouble( -(sin(pitch) * cos(roll)) * 9.8 );
-        inertialReport.addDouble( (sin(roll)) * 9.8 );
-        inertialReport.addDouble( (cos(pitch) * cos(roll)) * 9.8 );
+    ////Add linear acceleration
+    inertialReport.addDouble( -(sin(pitch) * cos(roll)) * 9.8 );
+    inertialReport.addDouble( (sin(roll)) * 9.8 );
+    inertialReport.addDouble( (cos(pitch) * cos(roll)) * 9.8 );
 		
-        //Add angular velocity
-        inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[2] / 10);
-        inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[0] / 10);
-        inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->head)[1] / 10);
+    //Add angular velocity
+    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[2] / 10);
+    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[0] / 10);
+    inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->head)[1] / 10);
         
-        //Add magnetic fields
-        inertialReport.addDouble(0.0);
-        inertialReport.addDouble(0.0);
-        inertialReport.addDouble(0.0);
+    //Add magnetic fields
+    inertialReport.addDouble(0.0);
+    inertialReport.addDouble(0.0);
+    inertialReport.addDouble(0.0);
 
+}
+
+Uint32 Simulation::ODE_process(Uint32 interval, void *param) {
+    OdeInit& odeinit = OdeInit::get();
+    //static clock_t startTimeODE= clock(), finishTimeODE= clock();
+    //startTimeODE = clock();
+		
+    odeinit.mutex.wait();
+    nFeedbackStructs=0;
+    dSpaceCollide(odeinit.space,0,&nearCallback);
+    dWorldStep(odeinit.world, 0.01); // TIMESTEP
+    odeinit.sync = true;
+    odeinit.mutex.post();
+
+    if (robot_streamer->shouldSendTouch()) {
+        Bottle report;
+        if (odeinit._iCub->actPressure == "on")
+            inspectBodyTouch_continuousValued(report);
+        else
+            inspectBodyTouch(report);
+        robot_streamer->sendTouch(report);
     }
 
-Uint32 Simulation::ODE_process(Uint32 interval, void *param){
-		//static clock_t startTimeODE= clock(), finishTimeODE= clock();
-		//startTimeODE = clock();
+    dJointGroupEmpty (odeinit.contactgroup);
+
+    if (robot_streamer->shouldSendInertial()) {
+        Bottle inertialReport;
+        retreiveInertialData(inertialReport);
+        robot_streamer->sendInertial(inertialReport);
+    }
+    setJointSpeed();
+    //setJointTorques();
+    //finishTimeODE = clock() ;
+    //SPS();
+    //printf("ODE=%lf\n",(double)(finishTimeODE - startTimeODE) / CLOCKS_PER_SEC);
+    return(interval);
+}
+
+
+int Simulation::thread_func(void *unused) {
+    // this needs to be kept synchronized with the timestep in
+    // dWorldStep, in order to get correct world clock time
+    //  --paulfitz
+    int delay = 50;
+    id = SDL_AddTimer( delay, &Simulation::ODE_process, (void*)1);
+
+    return(0);
+}
+/*
+  static void SPS()     
+  {
+  static float sps           = 0.0f;      
+  static float previousTime  = 0.0f; 
+  static int currentsps; 
+  static char  strSPS[60]    = {0};
+
+  float currentTime = (GetTickCount() * 0.001f);    
+
+  ++sps; // Increment the SPS counter
+
+  if( currentTime - previousTime > 1.0f ){
+  previousTime = currentTime;
+  currentsps = int(sps);
+  printf("current SPS: %d\n",currentsps);
+  sps = 0.0f;
+  }
+  }
+*/
+
+void Simulation::sighandler(int sig) {
+    OdeInit& odeinit = OdeInit::get();
+    odeinit.stop = true;
+    cout << "\nCAUGHT Ctrl-c" << endl;
+}	
+
+void Simulation::simLoop(int h,int w) {
+    OdeInit& odeinit = OdeInit::get();
+
+    SDL_Init(SDL_INIT_TIMER | SDL_GL_ACCELERATED_VISUAL);
+    SDL_SetVideoMode(h,w,32,SDL_OPENGL | SDL_RESIZABLE);// | SDL_SWSURFACE| SDL_ANYFORMAT); // on init 
+
+    dAllocateODEDataForThread(dAllocateMaskAll);
+    ConstString logo = robot_config->getFinder().findFile("logo");
+
+    image = SDL_LoadBMP(robot_config->getFinder().findFile(logo.c_str()));
+    SDL_WM_SetIcon(image,0);
+    SDL_FreeSurface(image);
+    SDL_WM_SetCaption("iCub Simulator", "image");
+
+    SDL_Thread *thread;
+
+    thread = SDL_CreateThread(thread_func, NULL);
+
+    if ( thread == NULL ) {
+        fprintf(stderr, "Unable to create thread: %s\n", SDL_GetError());
+        return;
+    }
+
+    initViewpoint();
+    setup_opengl(robot_config->getFinder());
+    startTime = clock();
+    odeinit.stop = false;
 		
-		odeinit.mutex.wait();
-        nFeedbackStructs=0;
-		dSpaceCollide(odeinit.space,0,&nearCallback);
-		dWorldStep(odeinit.world, 0.01); // TIMESTEP
-        odeinit.sync = true;
-		odeinit.mutex.post();
+    yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
+    yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
 
-		if (robot_streamer->shouldSendTouch()) {
-			Bottle report;
-            if (odeinit._iCub->actPressure == "on")
-                inspectBodyTouch_continuousValued(report);
-            else
-			    inspectBodyTouch(report);
-			robot_streamer->sendTouch(report);
-		}
-
-		dJointGroupEmpty (odeinit.contactgroup);
-
-        if (robot_streamer->shouldSendInertial()) {
-            Bottle inertialReport;
-            retreiveInertialData(inertialReport);
-            robot_streamer->sendInertial(inertialReport);
+    odeinit._wrld->WAITLOADING = false;
+    odeinit._wrld->static_model = false;
+    while(!odeinit.stop) {
+        /* Process incoming events. */
+        process_events();
+        /* Draw the screen. */
+        if ( !odeinit._wrld->WAITLOADING ){
+            odeinit.mutexTexture.wait();
+            draw_screen();  
+            odeinit.mutexTexture.post();
         }
-		setJointSpeed();
-		//setJointTorques();
-		//finishTimeODE = clock() ;
-		//SPS();
-		//printf("ODE=%lf\n",(double)(finishTimeODE - startTimeODE) / CLOCKS_PER_SEC);
-		return(interval);
-	}
-
-
-int Simulation::thread_func(void *unused)
-	{
-        // this needs to be kept synchronized with the timestep in
-        // dWorldStep, in order to get correct world clock time
-        //  --paulfitz
-		int delay = 50;
-		id = SDL_AddTimer( delay, &Simulation::ODE_process, (void*)1);
-
-		return(0);
-	}
-	/*
-	static void SPS()     
-	{
-	    static float sps           = 0.0f;      
-	    static float previousTime  = 0.0f; 
-	    static int currentsps; 
-	    static char  strSPS[60]    = {0};
-
-	    float currentTime = (GetTickCount() * 0.001f);    
-
-	    ++sps; // Increment the SPS counter
-
-	if( currentTime - previousTime > 1.0f ){
-	    previousTime = currentTime;
-	    currentsps = int(sps);
-	    printf("current SPS: %d\n",currentsps);
-	    sps = 0.0f;
-	    }
-	}
-	*/
-
-void Simulation::sighandler(int sig){
-		odeinit.stop = true;
-		cout << "\nCAUGHT Ctrl-c" << endl;
-	}	
-
-void Simulation::simLoop(int h,int w){        
-
-		SDL_Init(SDL_INIT_TIMER | SDL_GL_ACCELERATED_VISUAL);
-		SDL_SetVideoMode(h,w,32,SDL_OPENGL | SDL_RESIZABLE);// | SDL_SWSURFACE| SDL_ANYFORMAT); // on init 
-
-		dAllocateODEDataForThread(dAllocateMaskAll);
-		ConstString logo = robot_config->getFinder().findFile("logo");
-
-		image = SDL_LoadBMP(robot_config->getFinder().findFile(logo.c_str()));
-		SDL_WM_SetIcon(image,0);
-		SDL_FreeSurface(image);
-		SDL_WM_SetCaption("iCub Simulator", "image");
-
-		SDL_Thread *thread;
-
-		thread = SDL_CreateThread(thread_func, NULL);
-
-		if ( thread == NULL ) {
-			fprintf(stderr, "Unable to create thread: %s\n", SDL_GetError());
-			return;
-		}
-
-		initViewpoint();
-		setup_opengl(robot_config->getFinder());
-		startTime = clock();
-		odeinit.stop = false;
-		
-		yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
-		yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
-
-		odeinit._wrld->WAITLOADING = false;
-		odeinit._wrld->static_model = false;
-		while(!odeinit.stop) {
-			/* Process incoming events. */
-			process_events();
-			/* Draw the screen. */
-			if ( !odeinit._wrld->WAITLOADING ){
-				odeinit.mutexTexture.wait();
-				draw_screen();  
-				odeinit.mutexTexture.post();
-			}
-			else{
-				glFinish();
-				glFlush();
-				//make sure it can also be done for static objects
-				if (odeinit._wrld->static_model){
-					odeinit._wrld->loadTexture(odeinit._wrld->texture, odeinit._wrld->s_modelTexture[odeinit._wrld->s_MODEL_NUM-1]);
-				}else{
-					odeinit._wrld->loadTexture(odeinit._wrld->texture, odeinit._wrld->modelTexture[odeinit._wrld->MODEL_NUM-1]);
-				}
-				odeinit._wrld->WAITLOADING = false;	
-				odeinit._wrld->static_model = false;	
-			}
-		}     
-        printf("\n\nStopping SDL and ODE threads...\n");
-		//stop the timer
-		SDL_RemoveTimer(id);
-		//Stop the thread
-		//SDL_KillThread( thread );
-        SDL_WaitThread( thread, NULL );
-        //SDL_Quit();
-	}
+        else{
+            glFinish();
+            glFlush();
+            //make sure it can also be done for static objects
+            if (odeinit._wrld->static_model){
+                odeinit._wrld->loadTexture(odeinit._wrld->texture, odeinit._wrld->s_modelTexture[odeinit._wrld->s_MODEL_NUM-1]);
+            }else{
+                odeinit._wrld->loadTexture(odeinit._wrld->texture, odeinit._wrld->modelTexture[odeinit._wrld->MODEL_NUM-1]);
+            }
+            odeinit._wrld->WAITLOADING = false;	
+            odeinit._wrld->static_model = false;	
+        }
+    }     
+    printf("\n\nStopping SDL and ODE threads...\n");
+    //stop the timer
+    SDL_RemoveTimer(id);
+    //Stop the thread
+    //SDL_KillThread( thread );
+    SDL_WaitThread( thread, NULL );
+    //SDL_Quit();
+}
 
 
 
@@ -878,83 +888,85 @@ void Simulation::simLoop(int h,int w){
 //////////////////////////////
 //////////////////////////////
 
-void Simulation::drawView(bool left, bool right, bool wide){
-		const dReal *pos;
-		const dReal *rot;
-		glViewport(0,0,320,240);
-		glMatrixMode (GL_PROJECTION);
-		glLoadIdentity();
-		gluPerspective( 50, (float) 320/240, 0.04, 100.0 );
+void Simulation::drawView(bool left, bool right, bool wide) {
+    OdeInit& odeinit = OdeInit::get();
+    const dReal *pos;
+    const dReal *rot;
+    glViewport(0,0,320,240);
+    glMatrixMode (GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective( 50, (float) 320/240, 0.04, 100.0 );
 	
-		if (left){
-			pos = dGeomGetPosition(odeinit._iCub->Leye1_geom);
-			rot = dGeomGetRotation(odeinit._iCub->Leye1_geom);
-			float zoomFactor = 51.0f;//51 with gluPerspective 0.1
-			zoom = 0.023;
-			glMatrixMode (GL_MODELVIEW);
-			glLoadIdentity();
-			glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-			gluLookAt(
-				pos[0]  - rot[2]/ zoomFactor,
-				pos[1]  - rot[6]/ zoomFactor,
-				(pos[2]+zoom) - rot[10]/ zoomFactor,
-				pos[0],
-				pos[1],
-				(pos[2]+zoom),
-				-rot[4], 1, 0
-				);
-		}
-		if (right){
-			pos = dGeomGetPosition(odeinit._iCub->Reye1_geom);
-			rot = dGeomGetRotation(odeinit._iCub->Reye1_geom);
-			float zoomFactor = 51.0f;//51 with gluPerspective 0.1
-			zoom = 0.023;
-			glMatrixMode (GL_MODELVIEW);
-			glLoadIdentity();
-			glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-			gluLookAt(
-				pos[0]  - rot[2]/ zoomFactor,
-				pos[1]  - rot[6]/ zoomFactor,
-				(pos[2]+zoom) - rot[10]/ zoomFactor,
-				pos[0],
-				pos[1],
-				(pos[2]+zoom),
-				-rot[4], 1, 0
-				);
-		}	
-		if (wide){
-			glMatrixMode (GL_MODELVIEW);
-			glLoadIdentity();
-			glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-			glRotatef (xrot, 1,0,0);
-			glRotatef (yrot, 0,1,0);
-			glTranslated(-xpos,-ypos,-zpos);
-		}
+    if (left){
+        pos = dGeomGetPosition(odeinit._iCub->Leye1_geom);
+        rot = dGeomGetRotation(odeinit._iCub->Leye1_geom);
+        float zoomFactor = 51.0f;//51 with gluPerspective 0.1
+        zoom = 0.023;
+        glMatrixMode (GL_MODELVIEW);
+        glLoadIdentity();
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        gluLookAt(
+                  pos[0]  - rot[2]/ zoomFactor,
+                  pos[1]  - rot[6]/ zoomFactor,
+                  (pos[2]+zoom) - rot[10]/ zoomFactor,
+                  pos[0],
+                  pos[1],
+                  (pos[2]+zoom),
+                  -rot[4], 1, 0
+                  );
+    }
+    if (right){
+        pos = dGeomGetPosition(odeinit._iCub->Reye1_geom);
+        rot = dGeomGetRotation(odeinit._iCub->Reye1_geom);
+        float zoomFactor = 51.0f;//51 with gluPerspective 0.1
+        zoom = 0.023;
+        glMatrixMode (GL_MODELVIEW);
+        glLoadIdentity();
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        gluLookAt(
+                  pos[0]  - rot[2]/ zoomFactor,
+                  pos[1]  - rot[6]/ zoomFactor,
+                  (pos[2]+zoom) - rot[10]/ zoomFactor,
+                  pos[0],
+                  pos[1],
+                  (pos[2]+zoom),
+                  -rot[4], 1, 0
+                  );
+    }	
+    if (wide){
+        glMatrixMode (GL_MODELVIEW);
+        glLoadIdentity();
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        glRotatef (xrot, 1,0,0);
+        glRotatef (yrot, 0,1,0);
+        glTranslated(-xpos,-ypos,-zpos);
+    }
 
-		//draw the ground
+    //draw the ground
 
-        /* What is the relationship between this code and that in
-           draw_screen? */
+    /* What is the relationship between this code and that in
+       draw_screen? */
 
-		glColor3d(0.5,0.5,1);
-		glEnable(GL_TEXTURE_2D);
-		glPushMatrix();
-		glRotatef(90.0,1,0,0);
-		glRotatef(180.0,0,1,0);
-		DrawGround(false);     
-		glPopMatrix();
-		glDisable(GL_TEXTURE_2D);
-		draw();
-		glEnable(GL_TEXTURE_2D);
-		drawSkyDome(0,0,0,50,50,50); // Draw the Skybox	
-	}
+    glColor3d(0.5,0.5,1);
+    glEnable(GL_TEXTURE_2D);
+    glPushMatrix();
+    glRotatef(90.0,1,0,0);
+    glRotatef(180.0,0,1,0);
+    DrawGround(false);     
+    glPopMatrix();
+    glDisable(GL_TEXTURE_2D);
+    draw();
+    glEnable(GL_TEXTURE_2D);
+    drawSkyDome(0,0,0,50,50,50); // Draw the Skybox	
+}
 
-void Simulation::clearBuffer(){
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
-	}
+void Simulation::clearBuffer() {
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
+}
 
 	
-Simulation::Simulation(RobotStreamer *streamer, RobotConfig *config){
+Simulation::Simulation(RobotStreamer *streamer, RobotConfig *config) {
+    OdeInit& odeinit = OdeInit::get();
     if (video!=NULL) {
         fprintf(stderr, "Only one Simulation object allowed\n");
         yarp::os::exit(1);
@@ -962,26 +974,25 @@ Simulation::Simulation(RobotStreamer *streamer, RobotConfig *config){
     robot_streamer = streamer;
     robot_config = config;
 
-        video = new VideoTexture;
-        string moduleName = odeinit.getName();
-        video->setName( moduleName ); 
-        odeinit._iCub->eyeLidsPortName = moduleName;
-        Property options;
+    video = new VideoTexture;
+    string moduleName = odeinit.getName();
+    video->setName( moduleName ); 
+    odeinit._iCub->eyeLidsPortName = moduleName;
+    Property options;
 		
-		ConstString videoconf = robot_config->getFinder().findFile("video");
+    ConstString videoconf = robot_config->getFinder().findFile("video");
         
-		options.fromConfigFile(videoconf.c_str());
+    options.fromConfigFile(videoconf.c_str());
 
-        Bottle textures = options.findGroup("textures").tail();
-        for (int i=0; i<textures.size(); i++) {
-            ConstString name = textures.get(i).asString();
-            printf("Adding video texture %s\n", name.c_str());
-            video->add(options.findGroup(name.c_str()));
-		}
-  	}
-
-Simulation::~Simulation()
-    {
-        delete video;
-        
+    Bottle textures = options.findGroup("textures").tail();
+    for (int i=0; i<textures.size(); i++) {
+        ConstString name = textures.get(i).asString();
+        printf("Adding video texture %s\n", name.c_str());
+        video->add(options.findGroup(name.c_str()));
     }
+}
+
+Simulation::~Simulation() {
+    delete video;
+        
+}

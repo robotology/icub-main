@@ -58,7 +58,7 @@ public:
 
     ~OdeInit();
 
-    static void init(RobotConfig *config);
+    static OdeInit& init(RobotConfig *config);
 
     static OdeInit& get();
 
@@ -71,8 +71,5 @@ private:
 
     RobotConfig *robot_config;
 };
-
-// hack, for compatibility with existing code
-#define odeinit (OdeInit::get())
 
 #endif

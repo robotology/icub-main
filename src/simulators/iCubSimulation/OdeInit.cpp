@@ -47,10 +47,11 @@ OdeInit::~OdeInit() {
     dWorldDestroy(world);
 }
 
-void OdeInit::init(RobotConfig *config) {
+OdeInit& OdeInit::init(RobotConfig *config) {
     if (_odeinit==NULL) {
         _odeinit=new OdeInit(config);
     }
+    return *_odeinit;
 }
 
 OdeInit& OdeInit::get() {

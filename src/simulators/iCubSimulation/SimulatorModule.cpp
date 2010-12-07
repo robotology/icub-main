@@ -113,6 +113,7 @@ bool SimulatorModule::closeModule() {
 
 // this should become a close
 bool SimulatorModule::interruptModule() {
+    OdeInit& odeinit = OdeInit::get();
     stopped = true;//odeinit.stop = true;
     
     if (iCubLArm!=NULL && odeinit._iCub->actLArm == "on"|| odeinit._iCub->actRHand == "on") {
@@ -190,6 +191,7 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
 
 void SimulatorModule::init()
 {
+    OdeInit& odeinit = OdeInit::get();
 	Property options;
     if (odeinit._iCub->actLArm == "on" || odeinit._iCub->actLHand == "on"){
       	//start left arm device driver
@@ -357,6 +359,7 @@ void SimulatorModule::initImagePorts() {
 
 
 bool SimulatorModule::open() {
+    OdeInit& odeinit = OdeInit::get();
     
 	cmdPort.setReader(*this);
     string world = moduleName + "/world";
@@ -393,6 +396,7 @@ bool SimulatorModule::runModule() {
 
 
 void SimulatorModule::displayStep(int pause) {
+    OdeInit& odeinit = OdeInit::get();
     if (odeinit.sync){
         bool needLeft = (portLeft.getOutputCount()>0);
         bool needRight = (portRight.getOutputCount()>0);

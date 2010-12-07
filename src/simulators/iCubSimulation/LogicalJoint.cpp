@@ -65,6 +65,7 @@ void LogicalJoint::init(const char *unit,
                       const char *type,
                       int index,
                       int sign) {
+    OdeInit& odeinit = OdeInit::get();
     active = true;
     number = index;
     this->sign = sign;

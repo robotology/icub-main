@@ -10,18 +10,134 @@
 #include "OdeInit.h"
 #include "iCub_Sim.h"
 
-static int a = 0, b = 0, c = 0;
-static int num=0;// number of objects in simulation
-static int nextobj=0;// next object to recycle if num==NUM
-static size_t i;
-static int setBody = 0;
-static dReal sides[3];
-
 #define DENSITY (1.0)		// density of all objects
 
 using namespace yarp::os;
 
+
+int nameToBody(int id, dBodyID& bid, dGeomID& bid2) {
+    OdeInit& odeinit = OdeInit::get();
+
+    int setBody = 0;
+    switch (id) {
+    case VOCAB4('c','u','b','e'):
+        bid = odeinit._wrld->Box;
+        setBody = 0;
+        break;
+    case VOCAB4('b','a','l','l'):
+        bid = odeinit._wrld->ballBody;
+        setBody = 1;
+        break;
+    case VOCAB3('b','o','x'):
+        bid = odeinit._wrld->tempBody;
+        setBody = 2;
+        break;
+    case VOCAB4('s','b','o','x'):
+        bid2 = odeinit._wrld->tempGeom[0];//temporary then will be replaced...
+        setBody = 5;
+        break;
+    case VOCAB3('c','y','l'):
+        bid = odeinit._wrld->tempBody;
+        setBody = 6;
+        break;
+    case VOCAB4('s','c','y','l'):
+        bid2 = odeinit._wrld->tempGeom[0];//temporary then will be replaced...
+        setBody = 7;
+        break;
+    case VOCAB4('l','h','a','n'):
+        if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10]; printf("Full left hand\n");}
+        else {bid = odeinit._iCub->l_hand; printf("slim left hand\n");}
+        setBody = 3;
+        break;
+    case VOCAB4('r','h','a','n'):
+        if (odeinit._iCub->actRHand=="on"){bid = odeinit._iCub->body[11]; printf("Full left hand\n");}
+        else {bid = odeinit._iCub->r_hand; printf("slim right hand\n");}
+        setBody = 4;
+        break;
+    case VOCAB4('m','o','d','e'):
+        bid = odeinit._wrld->tempBody;
+        setBody = 8;
+        break;
+    case VOCAB4('s','m','o','d'):
+        bid2 = odeinit._wrld->tempGeom[0];
+        setBody = 9;
+        break;
+    case VOCAB4('m','d','i','r'):
+        bid2 = odeinit._wrld->tempGeom[0];
+        setBody = 10;
+        break;
+    case VOCAB3('s','p','h'):
+        bid = odeinit._wrld->tempBody;
+        setBody = 11;
+        break;
+    case VOCAB4('s','s','p','h'):
+        bid2 = odeinit._wrld->tempGeom[0];
+        setBody = 12;
+        break;
+    case VOCAB3('a','l','l'):
+        bid = odeinit._wrld->tempBody;
+        setBody = 11;
+        break;
+    }
+    return setBody;
+}
+
+
+void deleteObjects() {
+    OdeInit& odeinit = OdeInit::get();
+
+    int b = odeinit._wrld->OBJNUM;//box
+    int sb = odeinit._wrld->S_OBJNUM;
+    int c = odeinit._wrld->cylOBJNUM;//box
+    int sc = odeinit._wrld->S_cylOBJNUM;
+    int s = odeinit._wrld->SPHNUM;//box
+    int ss = odeinit._wrld->S_SPHNUM;
+                     
+    for (int x=0; x<b; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->obj[x].geom[0]);
+        odeinit._wrld->OBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<sb; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->s_obj[x].geom[0]);
+        odeinit._wrld->S_OBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<c; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->cyl_obj[x].cylgeom[0]);
+        odeinit._wrld->cylOBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<sc; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->s_cyl_obj[x].cylgeom[0]);
+        odeinit._wrld->S_cylOBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<s; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->sph[x].sphgeom[0]);
+        odeinit._wrld->SPHNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<ss; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->s_sph[x].sphgeom[0]);
+        odeinit._wrld->S_SPHNUM = 0;
+        odeinit.mutex.post();
+    }
+             
+}
+
 bool WorldManager::respond(const Bottle &command, Bottle &reply) {
+    OdeInit& odeinit = OdeInit::get();
+
+    int setBody = 0;
+    size_t i;
+
     bool done = false;
     bool ok = true;
 
@@ -32,114 +148,11 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
 				
         dBodyID bid = NULL;
         dGeomID bid2 = NULL;
-        switch (id) {
-        case VOCAB4('c','u','b','e'):
-            bid = odeinit._wrld->Box;
-            setBody = 0;
-            break;
-        case VOCAB4('b','a','l','l'):
-            bid = odeinit._wrld->ballBody;
-            setBody = 1;
-            break;
-        case VOCAB3('b','o','x'):
-            bid = odeinit._wrld->tempBody;
-            setBody = 2;
-            break;
-        case VOCAB4('s','b','o','x'):
-            bid2 = odeinit._wrld->tempGeom[0];//temporary then will be replaced...
-            setBody = 5;
-            break;
-        case VOCAB3('c','y','l'):
-            bid = odeinit._wrld->tempBody;
-            setBody = 6;
-            break;
-        case VOCAB4('s','c','y','l'):
-            bid2 = odeinit._wrld->tempGeom[0];//temporary then will be replaced...
-            setBody = 7;
-            break;
-        case VOCAB4('l','h','a','n'):
-            if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10]; printf("Full left hand\n");}
-            else {bid = odeinit._iCub->l_hand; printf("slim left hand\n");}
-            setBody = 3;
-            break;
-        case VOCAB4('r','h','a','n'):
-            if (odeinit._iCub->actRHand=="on"){bid = odeinit._iCub->body[11]; printf("Full left hand\n");}
-            else {bid = odeinit._iCub->r_hand; printf("slim right hand\n");}
-            setBody = 4;
-            break;
-        case VOCAB4('m','o','d','e'):
-            bid = odeinit._wrld->tempBody;
-            setBody = 8;
-            break;
-        case VOCAB4('s','m','o','d'):
-            bid2 = odeinit._wrld->tempGeom[0];
-            setBody = 9;
-            break;
-        case VOCAB4('m','d','i','r'):
-            bid2 = odeinit._wrld->tempGeom[0];
-            setBody = 10;
-            break;
-        case VOCAB3('s','p','h'):
-            bid = odeinit._wrld->tempBody;
-            setBody = 11;
-            break;
-        case VOCAB4('s','s','p','h'):
-            bid2 = odeinit._wrld->tempGeom[0];
-            setBody = 12;
-            break;
-        case VOCAB3('a','l','l'):
-            bid = odeinit._wrld->tempBody;
-            setBody = 11;
-            break;
-        }
+        setBody = nameToBody(id,bid,bid2);
         reply.clear();
         if (bid!=NULL || bid2!=NULL) {
             if (subcmd=="del"){
-
-                int b = odeinit._wrld->OBJNUM;//box
-                int sb = odeinit._wrld->S_OBJNUM;
-                int c = odeinit._wrld->cylOBJNUM;//box
-                int sc = odeinit._wrld->S_cylOBJNUM;
-                int s = odeinit._wrld->SPHNUM;//box
-                int ss = odeinit._wrld->S_SPHNUM;
-                     
-                for (int x=0; x<b; x++){
-                    odeinit.mutex.wait();
-                    dGeomDestroy(odeinit._wrld->obj[x].geom[0]);
-                    odeinit._wrld->OBJNUM = 0;
-                    odeinit.mutex.post();
-                }
-                for (int x=0; x<sb; x++){
-                    odeinit.mutex.wait();
-                    dGeomDestroy(odeinit._wrld->s_obj[x].geom[0]);
-                    odeinit._wrld->S_OBJNUM = 0;
-                    odeinit.mutex.post();
-                }
-                for (int x=0; x<c; x++){
-                    odeinit.mutex.wait();
-                    dGeomDestroy(odeinit._wrld->cyl_obj[x].cylgeom[0]);
-                    odeinit._wrld->cylOBJNUM = 0;
-                    odeinit.mutex.post();
-                }
-                for (int x=0; x<sc; x++){
-                    odeinit.mutex.wait();
-                    dGeomDestroy(odeinit._wrld->s_cyl_obj[x].cylgeom[0]);
-                    odeinit._wrld->S_cylOBJNUM = 0;
-                    odeinit.mutex.post();
-                }
-                for (int x=0; x<s; x++){
-                    odeinit.mutex.wait();
-                    dGeomDestroy(odeinit._wrld->sph[x].sphgeom[0]);
-                    odeinit._wrld->SPHNUM = 0;
-                    odeinit.mutex.post();
-                }
-                for (int x=0; x<ss; x++){
-                    odeinit.mutex.wait();
-                    dGeomDestroy(odeinit._wrld->s_sph[x].sphgeom[0]);
-                    odeinit._wrld->S_SPHNUM = 0;
-                    odeinit.mutex.post();
-                }
-             
+                deleteObjects();
             }
             if (subcmd=="get") {
                 if (setBody == 0 || setBody == 1 || setBody == 3 || setBody == 4){
@@ -824,6 +837,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
 
 
 void WorldManager::clear() {
+    OdeInit& odeinit = OdeInit::get();
     for (int x =0; x < a; x++)
         dTriMeshXDestroy(odeinit._wrld->trimesh[x]);
 }

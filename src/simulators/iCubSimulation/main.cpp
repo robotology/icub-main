@@ -145,7 +145,7 @@ int main( int argc, char** argv)
     string moduleName;
     config.configure(argc, argv, moduleName);
 
-    OdeInit::init(&config);
+    OdeInit& odeinit = OdeInit::init(&config);
     iCubSimulationControl::init();
     Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
         "controlboard",
