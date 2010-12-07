@@ -86,7 +86,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     N=10.0;
     Tt=1.0;
 
-    satLim(0,0)=-0.2;
+    satLim(0,0)=0.05;
     satLim(0,1)=2.0;
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
