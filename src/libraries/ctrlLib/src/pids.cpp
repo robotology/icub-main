@@ -50,15 +50,19 @@ namespace ctrl
         Bottle &opt=const_cast<Bottle&>(options);
         if (opt.check(key))
         {
-            Bottle *b=opt.find(key).asList();
-            int len=val.length();
-            int size=b->size();
-
-            int l=size<len?size:len;
-            for (int i=0; i<l; i++)
-                val[i]=b->get(i).asDouble();
-
-            return true;
+            if (Bottle *b=opt.find(key).asList())
+            {
+                int len=val.length();
+                int size=b->size();
+    
+                int l=size<len?size:len;
+                for (int i=0; i<l; i++)
+                    val[i]=b->get(i).asDouble();
+    
+                return true;
+            }
+            else
+                return false;
         }
         else
             return false;

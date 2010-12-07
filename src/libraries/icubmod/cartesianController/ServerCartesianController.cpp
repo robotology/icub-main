@@ -2263,7 +2263,7 @@ bool ServerCartesianController::storeContext(int *id)
 {
     if (attached && (id!=NULL))
     {
-        Context &context=contextMap[++contextIdCnt];
+        Context &context=contextMap[contextIdCnt];
 
         getDOF(context.dof);
         getRestPos(context.restPos);
@@ -2282,7 +2282,7 @@ bool ServerCartesianController::storeContext(int *id)
         getInTargetTol(&context.tol);
         getTrackingMode(&context.mode);
 
-        *id=contextIdCnt;
+        *id=contextIdCnt++;
 
         return true;
     }

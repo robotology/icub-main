@@ -434,7 +434,7 @@ protected:
     /************************************************************************/
     void storeContext(int *id)
     {
-        Context &context=contextMap[++contextIdCnt];
+        Context &context=contextMap[contextIdCnt];
 
         // controller part
         context.eyesTime=ctrl->getTeyes();
@@ -448,7 +448,7 @@ protected:
         // localizer part
         loc->getPidOptions(context.pidOptions);
 
-        *id=contextIdCnt;
+        *id=contextIdCnt++;
     }
 
     /************************************************************************/
