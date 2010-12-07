@@ -125,10 +125,22 @@ public:
     bool getSaturation() { return applySat; }
 
     /**
+    * Sets the sample time. 
+    * @param _Ts is the sample time.
+    */
+    void setTs(const double _Ts);
+
+    /**
     * Sets the output vector constraints matrix. 
     * @param _lim is the constraints matrix.
     */
     void setLim(const yarp::sig::Matrix &_lim);
+
+    /**
+    * Returns the sample time. 
+    * @return the sample time.
+    */
+    double getTs() { return Ts; }
 
     /**
     * Returns the constraints matrix. 
@@ -254,8 +266,6 @@ public:
     * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ... 
     * @note The vectors dimension at pid creation time is always 
     *       retained.
-    * @note The sampling time Ts is obviously the only option user 
-    *       cannot change.
     * @note The satLim property must be given ordered by rows. 
     * @note The special property (reset (u0[0] u0[1] ...)) serves to 
     *       call the reset(u0) method straightaway.
@@ -360,8 +370,6 @@ public:
     * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
     * @note The vectors dimension at pid creation time is always 
     *       retained.
-    * @note The sampling time Ts is obviously the only option user 
-    *       cannot change.
     * @note The satLim property must be given ordered by rows. 
     * @note The special property (reset (u0[0] u0[1] ...)) serves to 
     *       call the reset(u0) method straightaway. 

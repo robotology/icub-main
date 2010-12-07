@@ -45,12 +45,11 @@ namespace ctrl
     }
 
     /************************************************************************/
-    bool changeValHelper(const Bottle &options, const char *key, Vector &val, int &size)
+    bool changeValHelper(Bottle &options, const char *key, Vector &val, int &size)
     {
-        Bottle &opt=const_cast<Bottle&>(options);
-        if (opt.check(key))
+        if (options.check(key))
         {
-            if (Bottle *b=opt.find(key).asList())
+            if (Bottle *b=options.find(key).asList())
             {
                 int len=val.length();
                 int bSize=b->size();
@@ -135,6 +134,14 @@ void Integrator::setSaturation(bool _applySat)
 {
     if (applySat=_applySat)
         y=saturate(y);
+}
+
+
+/************************************************************************/
+void Integrator::setTs(const double _Ts)
+{
+    if (_Ts>0.0)
+        Ts=_Ts;
 }
 
 
@@ -279,6 +286,8 @@ void parallelPID::getOptions(Bottle &options)
 /************************************************************************/
 void parallelPID::setOptions(const Bottle &options)
 {
+    Bottle &opt=const_cast<Bottle&>(options);
+
     Vector satLimVect(satLim.rows()*satLim.cols());
     for (int r=0; r<satLim.rows(); r++)
         for (int c=0; c<satLim.cols(); c++)
@@ -286,28 +295,38 @@ void parallelPID::setOptions(const Bottle &options)
 
     bool recomputeQuantities=false;
     int size;
-    changeValHelper(options,"Ki",Ki,size);
-    changeValHelper(options,"Wp",Wp,size);
-    changeValHelper(options,"Wi",Wi,size);
-    changeValHelper(options,"Wd",Wd,size);
-    changeValHelper(options,"Tt",Tt,size);
+    changeValHelper(opt,"Ki",Ki,size);
+    changeValHelper(opt,"Wp",Wp,size);
+    changeValHelper(opt,"Wi",Wi,size);
+    changeValHelper(opt,"Wd",Wd,size);
+    changeValHelper(opt,"Tt",Tt,size);
 
-    if (changeValHelper(options,"Kp",Kp,size))
+    if (changeValHelper(opt,"Kp",Kp,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(options,"Kd",Kd,size))
+    if (changeValHelper(opt,"Kd",Kd,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(options,"N",N,size))
-        recomputeQuantities=true;    
+    if (changeValHelper(opt,"N",N,size))
+        recomputeQuantities=true;
 
-    if (changeValHelper(options,"satLim",satLimVect,size))
+    if (changeValHelper(opt,"satLim",satLimVect,size))
     {
         for (int r=0; r<satLim.rows(); r++)
             for (int c=0; c<satLim.cols(); c++)
                 satLim(r,c)=satLimVect[r*satLim.cols()+c];
 
         recomputeQuantities=true;
+    }
+    
+    if (opt.check("Ts"))
+    {
+        double _Ts=opt.find("Ts").asDouble();
+        if (_Ts>0.0)
+        {
+            Ts=_Ts;
+            recomputeQuantities=true;
+        }
     }
 
     if (recomputeQuantities)
@@ -324,10 +343,12 @@ void parallelPID::setOptions(const Bottle &options)
             den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
             Der[i]->adjustCoeffs(num,den);
         }
+
+        Int->setTs(Ts);
     }
 
     Vector v(dim);
-    if (changeValHelper(options,"reset",v,size))
+    if (changeValHelper(opt,"reset",v,size))
     {
         Vector u0(size);
         for (int i=0; i<size; i++)
@@ -468,6 +489,8 @@ void seriesPID::getOptions(Bottle &options)
 /************************************************************************/
 void seriesPID::setOptions(const Bottle &options)
 {
+    Bottle &opt=const_cast<Bottle&>(options);
+
     Vector satLimVect(satLim.rows()*satLim.cols());
     for (int r=0; r<satLim.rows(); r++)
         for (int c=0; c<satLim.cols(); c++)
@@ -475,25 +498,35 @@ void seriesPID::setOptions(const Bottle &options)
 
     bool recomputeQuantities=false;
     int size;
-    if (changeValHelper(options,"Kp",Kp,size))
+    if (changeValHelper(opt,"Kp",Kp,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(options,"Ti",Ti,size))
+    if (changeValHelper(opt,"Ti",Ti,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(options,"Kd",Kd,size))
+    if (changeValHelper(opt,"Kd",Kd,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(options,"N",N,size))
+    if (changeValHelper(opt,"N",N,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(options,"satLim",satLimVect,size))
+    if (changeValHelper(opt,"satLim",satLimVect,size))
     {
         for (int r=0; r<satLim.rows(); r++)
             for (int c=0; c<satLim.cols(); c++)
                 satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
         recomputeQuantities=true;
+    }
+
+    if (opt.check("Ts"))
+    {
+        double _Ts=opt.find("Ts").asDouble();
+        if (_Ts>0.0)
+        {
+            Ts=_Ts;
+            recomputeQuantities=true;
+        }
     }
 
     if (recomputeQuantities)
@@ -517,7 +550,7 @@ void seriesPID::setOptions(const Bottle &options)
     }
 
     Vector v(dim);
-    if (changeValHelper(options,"reset",v,size))
+    if (changeValHelper(opt,"reset",v,size))
     {
         Vector u0(size);
         for (int i=0; i<size; i++)

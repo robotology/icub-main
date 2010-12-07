@@ -77,9 +77,9 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(1),  Tt(1);
     Matrix satLim(1,2);
 
-    Kp=0.010;
-    Ki=0.010;
-    Kd=0.001;
+    Kp=-0.001;
+    Ki=-0.010;
+    Kd=0.0;
 
     Wp=Wi=Wd=1.0;
 
@@ -89,9 +89,9 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     satLim(0,0)=0.05;
     satLim(0,1)=2.0;
 
-    pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
+    pid=new parallelPID(0.05,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
-    Vector u0(1); u0[0]=0.3;
+    Vector u0(1); u0[0]=0.5;
     pid->reset(u0);
 
     port_xd=NULL;
