@@ -237,7 +237,7 @@ Vector parallelPID::compute(const Vector &ref, const Vector &fb)
 /************************************************************************/
 void parallelPID::reset(const Vector &u0)
 {
-    int len=u0.length()>dim?dim:u0.length();
+    int len=u0.length()>(int)dim?dim:u0.length();
 
     Vector y=Int->get();
     Vector z1(1);
@@ -292,7 +292,13 @@ void parallelPID::setOptions(const Bottle &options)
     changeValHelper(options,"Wd",Wd,size);
     changeValHelper(options,"Tt",Tt,size);
 
-    if (changeValHelper(options,"Kp",Kp,size) || changeValHelper(options,"Kd",Kd,size) || changeValHelper(options,"N",N,size))
+    if (changeValHelper(options,"Kp",Kp,size))
+        recomputeQuantities=true;    
+
+    if (changeValHelper(options,"Kd",Kd,size))
+        recomputeQuantities=true;    
+
+    if (changeValHelper(options,"N",N,size))
         recomputeQuantities=true;    
 
     if (changeValHelper(options,"satLim",satLimVect,size))
@@ -426,7 +432,7 @@ Vector seriesPID::compute(const Vector &ref, const Vector &fb)
 /************************************************************************/
 void seriesPID::reset(const Vector &u0)
 {
-    int len=u0.length()>dim?dim:u0.length();
+    int len=u0.length()>(int)dim?dim:u0.length();
 
     Vector z1(1);
     for (int i=0; i<len; i++)
@@ -469,8 +475,16 @@ void seriesPID::setOptions(const Bottle &options)
 
     bool recomputeQuantities=false;
     int size;
-    if (changeValHelper(options,"Kp",Kp,size) || changeValHelper(options,"Ti",Ti,size) ||
-        changeValHelper(options,"Kd",Kd,size) || changeValHelper(options,"N",N,size))
+    if (changeValHelper(options,"Kp",Kp,size))
+        recomputeQuantities=true;    
+
+    if (changeValHelper(options,"Ti",Ti,size))
+        recomputeQuantities=true;    
+
+    if (changeValHelper(options,"Kd",Kd,size))
+        recomputeQuantities=true;    
+
+    if (changeValHelper(options,"N",N,size))
         recomputeQuantities=true;    
 
     if (changeValHelper(options,"satLim",satLimVect,size))
