@@ -249,8 +249,19 @@ bool PF3DTracker::open(Searchable& config)
                                         Value(0.99),
                                         "attentionOutputDecrease (double)").asDouble();
 
-
-
+	if (botConfig.check("outputUVDataPort"))
+	{
+		supplyUVdata = true;
+		_outputUVDataPortName = botConfig.check("outputUVDataPort",
+                                      Value("/PF3DTracker/dataUVOut"),
+                                      "Image plane output data port (string)").asString();
+		_outputUVDataPort.open(_outputUVDataPortName);
+	}
+	else 
+	{	
+		fprintf(stderr, "No (u,v) data will be supplied\n");
+		supplyUVdata = false;
+	}
 
     _nParticles = botConfig.check("nParticles",
                                     Value("1000"),
@@ -671,6 +682,7 @@ bool PF3DTracker::close()
     _inputVideoPort.close();
     _outputVideoPort.close();
     _outputDataPort.close();
+	_outputUVDataPort.close();
     _outputParticlePort.close();
     _outputAttentionPort.close();
 
@@ -688,6 +700,7 @@ bool PF3DTracker::interruptModule()
     _inputVideoPort.interrupt();
     _outputVideoPort.interrupt();
     _outputDataPort.interrupt();
+	_outputUVDataPort.interrupt();
     _outputParticlePort.interrupt();
     _outputAttentionPort.interrupt();
 
@@ -1012,7 +1025,18 @@ bool PF3DTracker::updateModule()
         output.addDouble(meanV);
         output.addDouble(_seeingObject);
         _outputDataPort.write();
-    
+
+		if (_seeingObject && supplyUVdata)
+		{	
+			Bottle& outputUV=_outputUVDataPort.prepare();
+
+			outputUV.clear();
+	        outputUV.addDouble(meanU);
+			outputUV.addDouble(meanV);
+
+			_outputUVDataPort.write();
+		}
+
         VectorOf<double>& tempVector=_outputAttentionPort.prepare();
         tempVector.resize(5);
         if(maxLikelihood>_likelihoodThreshold)

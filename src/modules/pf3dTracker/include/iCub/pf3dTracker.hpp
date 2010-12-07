@@ -76,6 +76,9 @@ ConstString _outputParticlePortName;
 BufferedPort<Bottle> _outputParticlePort;
 ConstString _outputAttentionPortName;
 BufferedPort<VectorOf<double> > _outputAttentionPort;
+ConstString _outputUVDataPortName;
+BufferedPort<Bottle> _outputUVDataPort;
+bool supplyUVdata;
 
 string _projectionModel;
 float _perspectiveFx;
