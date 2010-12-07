@@ -42,11 +42,10 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
 /***************************************************************************/
 void Filter::init(const Vector &y0)
 {
-    y=y0;
-    
     for (int i=0; i<m-1; i++)
-        uold[i]=y;
-    
+        uold[i]=0.0;
+
+    y=y0;
     for (int i=0; i<n-1; i++)
         yold[i]=y;
 }
