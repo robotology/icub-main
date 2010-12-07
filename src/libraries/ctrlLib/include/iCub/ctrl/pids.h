@@ -78,7 +78,7 @@ public:
     *             lower (1st column) and the upper limit (2nd
     *             column) of the ith component:
     *             _lim(i,1)<=output[i]<=_lim(i,2)
-    * @note the saturation here is on by default 
+    * @note The saturation here is on by default 
     */
     Integrator(const double _Ts, const yarp::sig::Vector &y0, const yarp::sig::Matrix &_lim);
 
@@ -86,7 +86,7 @@ public:
     * Constructor. 
     * @param _Ts is the integrator sample time.
     * @param y0 is the initial value of the output vector. 
-    * @note the saturation here is off by default. 
+    * @note The saturation here is off by default. 
     */
     Integrator(const double _Ts, const yarp::sig::Vector &y0);
 
@@ -139,7 +139,7 @@ public:
     /**
     * Resets the internal state and sets the output vector to the 
     * given value. 
-    * @param y0 is new value of output vector.
+    * @param y0 is the new value of output vector. 
     */
     void reset(const yarp::sig::Vector &y0);
 
@@ -229,9 +229,10 @@ public:
     virtual yarp::sig::Vector compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
 
     /**
-    * Resets the internal state of integral and derivative part.
+    * Resets the internal state of integral and derivative part. 
+    * @param u0 is the new value of output vector. 
     */
-    virtual void reset();
+    virtual void reset(const yarp::sig::Vector &u0);
 
     /**
     * Returns the current options used by the pid.
@@ -255,7 +256,9 @@ public:
     *       retained.
     * @note The sampling time Ts is obviously the only option user 
     *       cannot change.
-    * @note the satLim property must be given ordered by rows. 
+    * @note The satLim property must be given ordered by rows. 
+    * @note The special property (reset (u0[0] u0[1] ...)) serves to 
+    *       call the reset(u0) method straightaway.
     */
     virtual void setOptions(const yarp::os::Bottle &options);
 
@@ -332,9 +335,10 @@ public:
     virtual yarp::sig::Vector compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
 
     /**
-    * Resets the internal state of integral and derivative part.
+    * Resets the internal state of integral and derivative part. 
+    * @param u0 is the new value of output vector. 
     */
-    virtual void reset();
+    virtual void reset(const yarp::sig::Vector &u0);
 
     /**
     * Returns the current options used by the pid.
@@ -343,7 +347,7 @@ public:
     *  
     * @note The returned bottle looks like as follows: 
     * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
-    * @note the satLim property is returned ordered by rows.
+    * @note The satLim property is returned ordered by rows.
     */
     virtual void getOptions(yarp::os::Bottle &options);
 
@@ -358,7 +362,9 @@ public:
     *       retained.
     * @note The sampling time Ts is obviously the only option user 
     *       cannot change.
-    * @note the satLim property must be given ordered by rows. 
+    * @note The satLim property must be given ordered by rows. 
+    * @note The special property (reset (u0[0] u0[1] ...)) serves to 
+    *       call the reset(u0) method straightaway. 
     */
     virtual void setOptions(const yarp::os::Bottle &options);
 

@@ -72,8 +72,6 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     else
         PrjR=invPrjR=NULL;
 
-    z0=0.3;
-
     Vector Kp(1), Ki(1), Kd(1);
     Vector Wp(1), Wi(1), Wd(1);
     Vector N(1),  Tt(1);
@@ -92,6 +90,9 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     satLim(0,1)=2.0;
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
+
+    Vector u0(1); u0[0]=0.3;
+    pid->reset(u0);
 
     port_xd=NULL;
 }
@@ -228,7 +229,7 @@ void Localizer::handleStereoInput()
 
                 // the left eye is dominant
                 Vector fp;
-                if (projectPoint("left",ul,vl,z0+u[0],fp))
+                if (projectPoint("left",ul,vl,-u[0],fp))
                 {
                     if (port_xd)
                         port_xd->set_xd(fp);

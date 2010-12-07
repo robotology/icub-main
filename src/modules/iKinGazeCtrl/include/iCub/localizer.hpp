@@ -66,7 +66,6 @@ protected:
     Matrix *PrjR, *invPrjR;
     double  cxl, cyl;
     double  cxr, cyr;
-    double  z0;
 
     parallelPID *pid;
 
