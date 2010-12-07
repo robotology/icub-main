@@ -346,9 +346,8 @@ public:
 
     /**
     * Resets the internal state of integral and derivative part. 
-    * @param u0 is the new value of output vector. 
     */
-    virtual void reset(const yarp::sig::Vector &u0);
+    virtual void reset();
 
     /**
     * Returns the current options used by the pid.

@@ -191,15 +191,15 @@ parallelPID::parallelPID(const double _Ts,
 
     Int=new Integrator(Ts,uSat);
 
+    Vector u0(1); u0=0.0;
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector num(2),den(2),u0i(1);
+        Vector num(2),den(2);
         double tau=Kd[i]/(Kp[i]*N[i]);
 
         num[0]=2.0;        num[1]=-2.0;
         den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
-        u0i[0]=uSat[i];
-        Der.push_back(new Filter(num,den,u0i));
+        Der.push_back(new Filter(num,den,u0));
     }
 
     P.resize(dim,0.0);
@@ -247,10 +247,10 @@ void parallelPID::reset(const Vector &u0)
     int len=u0.length()>(int)dim?dim:u0.length();
 
     Vector y=Int->get();
-    Vector z1(1);
+    Vector z1(1); z1=0.0;
     for (int i=0; i<len; i++)
     {
-        y[i]=z1[0]=u0[i];
+        y[i]=u0[i];
         Der[i]->init(z1);
     }
 
@@ -334,6 +334,7 @@ void parallelPID::setOptions(const Bottle &options)
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
     
+        Vector u0(1); u0=0.0;
         for (unsigned int i=0; i<dim; i++)
         {
             Vector num(2),den(2);
@@ -342,6 +343,7 @@ void parallelPID::setOptions(const Bottle &options)
             num[0]=2.0;        num[1]=-2.0;
             den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
             Der[i]->adjustCoeffs(num,den);
+            Der[i]->init(u0);
         }
 
         Int->setTs(Ts);
@@ -384,19 +386,19 @@ seriesPID::seriesPID(const double _Ts,
     for (unsigned int i=0; i<dim; i++)
         uSat[i]=PID_SAT(u[i],satLim(i,0),satLim(i,1));
 
+    Vector u0(1); u0=0.0;
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector num(2),den(2),u0i(1);
-        u0i[0]=uSat[i];
+        Vector num(2),den(2);
 
         num[0]=Ts;           num[1]=Ts;
         den[0]=Ts+2.0*Ti[i]; den[1]=Ts-2.0*Ti[i];
-        Int.push_back(new Filter(num,den,u0i));
+        Int.push_back(new Filter(num,den,u0));
 
         double tau=Kd[i]/(Kp[i]*N[i]);
         num[0]=2.0;        num[1]=-2.0;
         den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
-        Der.push_back(new Filter(num,den,u0i));
+        Der.push_back(new Filter(num,den,u0));
     }
 
     e.resize(dim,0.0);
@@ -451,16 +453,13 @@ Vector seriesPID::compute(const Vector &ref, const Vector &fb)
 
 
 /************************************************************************/
-void seriesPID::reset(const Vector &u0)
+void seriesPID::reset()
 {
-    int len=u0.length()>(int)dim?dim:u0.length();
-
-    Vector z1(1);
-    for (int i=0; i<len; i++)
+    Vector u0(1); u0=0.0;
+    for (unsigned int i=0; i<dim; i++)
     {
-        z1[0]=u0[i];
-        Int[i]->init(z1);    
-        Der[i]->init(z1);
+        Int[i]->init(u0);    
+        Der[i]->init(u0);
     }
 }
 
@@ -534,6 +533,7 @@ void seriesPID::setOptions(const Bottle &options)
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
     
+        Vector u0(1); u0=0.0;
         for (unsigned int i=0; i<dim; i++)
         {
             Vector num(2),den(2);
@@ -541,23 +541,18 @@ void seriesPID::setOptions(const Bottle &options)
             num[0]=Ts;           num[1]=Ts;
             den[0]=Ts+2.0*Ti[i]; den[1]=Ts-2.0*Ti[i];
             Int[i]->adjustCoeffs(num,den);
+            Int[i]->init(u0);
 
             double tau=Kd[i]/(Kp[i]*N[i]);
             num[0]=2.0;        num[1]=-2.0;
             den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
             Der[i]->adjustCoeffs(num,den);
+            Der[i]->init(u0);
         }
     }
 
-    Vector v(dim);
-    if (changeValHelper(opt,"reset",v,size))
-    {
-        Vector u0(size);
-        for (int i=0; i<size; i++)
-            u0[i]=v[i];
-
-        reset(u0);
-    }
+    if (opt.check("reset"))
+        reset();
 }
 
 
