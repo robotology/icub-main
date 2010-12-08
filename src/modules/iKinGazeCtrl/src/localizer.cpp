@@ -77,8 +77,8 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(1),  Tt(1);
     Matrix satLim(1,2);
 
-    Kp=-0.003;
-    Ki=-0.005;
+    Kp=0.003;
+    Ki=0.005;
     Kd=0.0;
 
     Wp=Wi=Wd=1.0;
@@ -87,12 +87,13 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Tt=1.0;
 
     satLim(0,0)=0.05;
-    satLim(0,1)=2.0;
+    satLim(0,1)=10.0;
 
     pid=new parallelPID(0.05,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
-    Vector u0(1); u0[0]=0.5;
-    pid->reset(u0);
+    Vector z0(1); z0[0]=0.5;
+    pid->reset(z0);
+    dominantEye="left";
 
     port_xd=NULL;
 }
@@ -119,6 +120,32 @@ void Localizer::afterStart(bool s)
         fprintf(stdout,"Localizer started successfully\n");
     else
         fprintf(stdout,"Localizer did not start\n");
+}
+
+
+/************************************************************************/
+void Localizer::getPidOptions(Bottle &options)
+{
+    pid->getOptions(options);
+
+    Bottle &bDominantEye=options.addList();
+    bDominantEye.addString("dominantEye");
+    bDominantEye.addString(dominantEye.c_str());
+}
+
+
+/************************************************************************/
+void Localizer::setPidOptions(const Bottle &options)
+{
+    pid->setOptions(options);
+
+    Bottle &opt=const_cast<Bottle&>(options);
+    if (opt.check("dominantEye"))
+    {
+        string domEye=opt.find("dominantEye").asString().c_str();
+        if ((domEye=="left") || (domEye=="right"))
+            dominantEye=domEye;
+    }
 }
 
 
@@ -219,17 +246,29 @@ void Localizer::handleStereoInput()
                 double ur=stereo->get(2).asDouble();
                 double vr=stereo->get(3).asDouble();
 
-                double t0=Time::now();
-                   
-                Vector ref(1), fb(1);
-                ref=cxr;
-                fb=ur;
+                Vector ref(1), fb(1), fp;
+                double u, v;
 
-                Vector u=pid->compute(ref,fb);
+                if (dominantEye=="left")
+                {
+                    u=ul;
+                    v=vl;
+                    fb=ur-cxr;
+                    // by inverting the sign of the error
+                    // we can keep gains always positive
+                }
+                else
+                {                    
+                    u=ur;
+                    v=vr;
+                    fb=cxl-ul;
+                }
+
+                ref=0.0;
+                Vector z=pid->compute(ref,fb);
 
                 // the left eye is dominant
-                Vector fp;
-                if (projectPoint("left",ul,vl,u[0],fp))
+                if (projectPoint(dominantEye,u,v,z[0],fp))
                 {
                     if (port_xd)
                         port_xd->set_xd(fp);

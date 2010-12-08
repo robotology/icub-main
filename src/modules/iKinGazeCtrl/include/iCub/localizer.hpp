@@ -28,6 +28,8 @@
 #include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>
 
+#include <string>
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -68,6 +70,7 @@ protected:
     double  cxr, cyr;
 
     parallelPID *pid;
+    string dominantEye;
 
     void handleMonocularInput();
     void handleStereoInput();
@@ -78,10 +81,10 @@ public:
     Localizer(exchangeData *_commData, const string &_localName,
               const string &_configFile, unsigned int _period);
 
-    void set_xdport(xdPort *_port_xd)         { port_xd=_port_xd;         }
-    void getPidOptions(Bottle &options)       { pid->getOptions(options); }
-    void setPidOptions(const Bottle &options) { pid->setOptions(options); }
+    void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
 
+    void getPidOptions(Bottle &options);
+    void setPidOptions(const Bottle &options);
     bool projectPoint(const string &type, const double u, const double v,
                       const double z, Vector &fp);
 

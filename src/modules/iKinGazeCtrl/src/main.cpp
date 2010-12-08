@@ -175,10 +175,12 @@ point:
   port. <b> In this mode the intrinsic cameras parameters are
   required </b>.
 - by localizing the target in the two image planes and thus 
-  sending its coordinates to the /<ctrlName>/stereo:i port.
-  Notice that t's required to feed continuosly the port with new
-  feedback while converging to the target. <b> In this mode the
-  intrinsic cameras parameters are required </b>.
+  sending its coordinates to the /<ctrlName>/stereo:i port. This
+  strategy employs the monocular approach along with a pid that
+  varies the distance z incrementally according to the actual
+  error; to achieve that it's required to feed continuosly the
+  port with new feedback while converging to the target. <b> In
+  this mode the intrinsic cameras parameters are required </b>.
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
@@ -264,7 +266,7 @@ following ports:
       val=="left", the right eye pose if vel=="right" and the
       cyclopic eye pose if val=="cyclopic". The pose is given in
       axis/angle representation (i.e. 7-componenets vector).
-    - [get] [pid]: returns (enclosed in a list ) a property-like
+    - [get] [pid]: returns (enclosed in a list) a property-like
       bottle containing the pid values used to converge to the
       target with stereo input.
     - [set] [Tneck] <val>: sets a new movements execution time
@@ -276,7 +278,10 @@ following ports:
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
       <val> ...)): sets the pid values used to converge to the
       target with stereo input. The pid is implemented in
-      parallel form (\ref PIDs).
+      parallel form (\ref PIDs). Aside from the usual pid
+      parameters a further option "dominantEye" is available
+      that enables the user to chose the dominant eye employed
+      for the monocular approach.
     - [store]: store the controller context returning an integer
       identifier.
     - [restore] <id>: restore a previously stored controller
