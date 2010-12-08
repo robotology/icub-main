@@ -59,15 +59,59 @@ for i=1:L
     in(i,7)=dataR(jR,6);
 end
 
-figure;
-subplot(521),stairs(in(:,1)),title('tilt');
-subplot(523),stairs(in(:,2)),title('pan');
-subplot(525),stairs(in(:,3)),title('ver');
-subplot(527),stairs(in(:,[4 6])),title('[ul ur]');
-subplot(529),stairs(in(:,[5 7])),title('[vl vr]');
+figure('Color','w');
+global ha;
 
-subplot(524),stairs(out(:,1)),title('eye-x');
-subplot(526),stairs(out(:,2)),title('eye-y');
-subplot(528),stairs(out(:,3)),title('eye-z');
+subplot(521),hold('on'),grid,stairs(in(:,1));
+ha{1}=gca;title('tilt');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+subplot(523),hold('on'),grid,stairs(in(:,2));
+ha{2}=gca;title('pan');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+subplot(525),hold('on'),grid,stairs(in(:,3));
+ha{3}=gca;title('ver');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+subplot(527),hold('on'),grid,stairs(in(:,[4 6]));
+ha{4}=gca;title('[ul ur]');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+subplot(529),hold('on'),grid,stairs(in(:,[5 7]));
+ha{5}=gca;title('[vl vr]');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+subplot(524),hold('on'),grid,stairs(out(:,1));
+ha{6}=gca;title('eye-x');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+subplot(526),hold('on'),grid,stairs(out(:,2));
+ha{7}=gca;title('eye-y');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+subplot(528),hold('on'),grid,stairs(out(:,3));
+ha{8}=gca;title('eye-z');
+set(zoom,'ActionPostCallback',@mypostcallback);
+set(pan,'ActionPostCallback',@mypostcallback);
+
+
+%--------------------------------------------------------------------------
+function mypostcallback(obj,evd) %#ok<INUSL>
+
+global ha;
+
+newLim=get(evd.Axes,'XLim');
+
+for i=1:length(ha)
+    xlim(ha{i},newLim);
+end
 
 
