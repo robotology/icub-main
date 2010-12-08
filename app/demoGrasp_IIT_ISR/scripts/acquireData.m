@@ -63,8 +63,8 @@ figure;
 subplot(521),stairs(in(:,1)),title('tilt');
 subplot(523),stairs(in(:,2)),title('pan');
 subplot(525),stairs(in(:,3)),title('ver');
-subplot(527),stairs(in(:,4:5)),title('[ul ur]');
-subplot(529),stairs(in(:,6:7)),title('[vl vr]');
+subplot(527),stairs(in(:,[4 6])),title('[ul ur]');
+subplot(529),stairs(in(:,[5 7])),title('[vl vr]');
 
 subplot(524),stairs(out(:,1)),title('eye-x');
 subplot(526),stairs(out(:,2)),title('eye-y');
