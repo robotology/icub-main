@@ -1,4 +1,4 @@
-function [in,out,in_f,out_f]=acquireData(dataLogFileLeft,dataLogFileRight,dataLogFileHead)
+function [in,out]=acquireData(dataLogFileLeft,dataLogFileRight,dataLogFileHead)
 % This function returns the formatted data to learn the network upon.
 % The three input files are the ones logged through the dataDumper module.
 
@@ -39,9 +39,9 @@ tH=dataH(:,1);
 L=length(tL);
 
 % form input data as:
-% 1   2   3   4   5
-% ul  ur  v   pan ver
-in=zeros(L,5);
+% 1    2    3    4    5    6    7
+% tilt pan  ver  ul   vl   ur   vr
+in=zeros(L,7);
 
 % form the output data as:
 % 1  2  3
@@ -52,41 +52,22 @@ out=dataL(:,2:4);
 for i=1:L    
     [~,jR]=min(abs(tR-tL(i)));
     [~,jH]=min(abs(tH-tL(i)));
-    in(i,1)=dataL(i,5);
-    in(i,2)=dataR(jR,5);
-    in(i,3)=mean([dataL(i,6),dataR(jR,6)]);
-    in(i,4:5)=dataH(jH,6:7);
+    in(i,1:3)=dataH(jH,5:7);
+    in(i,4)=dataL(i,5);
+    in(i,5)=dataL(i,6);
+    in(i,6)=dataR(jR,5);
+    in(i,7)=dataR(jR,6);
 end
 
-% filter out ripple
-h=fdesign.lowpass('Fp,Fst,Ap,Ast',0.1,0.15,1,40);
-d=design(h,'butter');
-d=convert(d,'df1');
-
-in_ofs=in;
-in_ofs(:,1)=in(1,1);
-in_ofs(:,2)=in(1,2);
-in_ofs(:,3)=in(1,3);
-in_ofs(:,4)=in(1,4);
-in_ofs(:,5)=in(1,5);
-
-out_ofs=out;
-out_ofs(:,1)=out(1,1);
-out_ofs(:,2)=out(1,2);
-out_ofs(:,3)=out(1,3);
-
-in_f=filtfilt(d.Numerator,d.Denominator,in-in_ofs)+in_ofs;
-out_f=filtfilt(d.Numerator,d.Denominator,out-out_ofs)+out_ofs;
-
 figure;
-subplot(521),stairs([in(:,1),in_f(:,1)]),title('ul');
-subplot(523),stairs([in(:,2),in_f(:,2)]),title('ur');
-subplot(525),stairs([in(:,3),in_f(:,3)]),title('v');
-subplot(527),stairs([in(:,4),in_f(:,4)]),title('pan');
-subplot(528),stairs([in(:,5),in_f(:,5)]),title('ver');
+subplot(521),stairs(in(:,1)),title('tilt');
+subplot(523),stairs(in(:,2)),title('pan');
+subplot(525),stairs(in(:,3)),title('ver');
+subplot(527),stairs(in(:,4:5)),title('[ul ur]');
+subplot(529),stairs(in(:,6:7)),title('[vl vr]');
 
-subplot(524),stairs([out(:,1),out_f(:,1)]),title('eye-x');
-subplot(526),stairs([out(:,2),out_f(:,2)]),title('eye-y');
-subplot(528),stairs([out(:,3),out_f(:,3)]),title('eye-z');
+subplot(524),stairs(out(:,1)),title('eye-x');
+subplot(526),stairs(out(:,2)),title('eye-y');
+subplot(528),stairs(out(:,3)),title('eye-z');
 
 
