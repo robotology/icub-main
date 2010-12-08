@@ -72,6 +72,11 @@ protected:
     parallelPID *pid;
     string dominantEye;
 
+    Vector getCurAbsAngles();
+    Vector getFixationPoint(const Vector &absAngles);
+    bool   projectPoint(const string &type, const double u, const double v,
+                        const double z, Vector &fp);
+
     void handleMonocularInput();
     void handleStereoInput();
     void handleAnglesInput();
@@ -82,11 +87,8 @@ public:
               const string &_configFile, unsigned int _period);
 
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
-
     void getPidOptions(Bottle &options);
     void setPidOptions(const Bottle &options);
-    bool projectPoint(const string &type, const double u, const double v,
-                      const double z, Vector &fp);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);

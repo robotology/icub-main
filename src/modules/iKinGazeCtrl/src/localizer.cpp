@@ -150,6 +150,73 @@ void Localizer::setPidOptions(const Bottle &options)
 
 
 /************************************************************************/
+Vector Localizer::getCurAbsAngles()
+{
+    Vector fp(4);
+    fp[0]=commData->get_x()[0];
+    fp[1]=commData->get_x()[1];
+    fp[2]=commData->get_x()[2];
+    fp[3]=1.0;  // impose homogeneous coordinates
+
+    // get fp wrt head-centered system
+    Vector fph=invEyeCAbsFrame*fp;
+
+    Vector absAngles(3);
+    absAngles[0]=atan2(fph[0],fph[2]);
+    absAngles[1]=-atan2(fph[1],fph[2]);
+    absAngles[2]=commData->get_q()[5];
+
+    return absAngles;
+}
+
+
+/************************************************************************/
+Vector Localizer::getFixationPoint(const Vector &absAngles)
+{
+    double azi=absAngles[0];
+    double ele=absAngles[1];
+    double ver=absAngles[2];
+
+    // impose vergence != 0.0
+    if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
+        ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+
+    Vector q(8); q=0.0;
+
+    q[7]=ver/2.0;
+    eyeL->setAng(q);
+
+    q[7]=-ver/2.0;
+    eyeR->setAng(q);
+
+    Vector fp(4);
+    fp[3]=1.0;  // impose homogeneous coordinates
+
+    // compute new fp due to changed vergence
+    computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp);
+
+    // compute rotational matrix to
+    // account for elevation and azimuth
+    Vector x(4); Vector y(4);
+    x[0]=1.0;    y[0]=0.0;
+    x[1]=0.0;    y[1]=1.0;
+    x[2]=0.0;    y[2]=0.0;
+    x[3]=ele;    y[3]=azi;   
+    Matrix R=axis2dcm(y)*axis2dcm(x);
+
+    Vector fph=invEyeCAbsFrame*fp;  // get fp wrt absolute head-centered frame
+    fp=eyeCAbsFrame*(R*fph);        // apply rotations and retrieve fp wrt root frame
+
+    Vector xd(3);
+    xd[0]=fp[0];
+    xd[1]=fp[1];
+    xd[2]=fp[2];
+
+    return xd;
+}
+
+
+/************************************************************************/
 bool Localizer::projectPoint(const string &type, const double u, const double v,
                              const double z, Vector &fp)
 {
@@ -291,93 +358,20 @@ void Localizer::handleAnglesInput()
     if (Bottle *angles=port_anglesIn.read(false))
         if (angles->size()>=4)
         {
+            Vector ang(3);
+
             string type=angles->get(0).asString().c_str();
-            double azi=CTRL_DEG2RAD*angles->get(1).asDouble();
-            double ele=CTRL_DEG2RAD*angles->get(2).asDouble();
-            double ver=CTRL_DEG2RAD*angles->get(3).asDouble();
+            ang[0]=CTRL_DEG2RAD*angles->get(1).asDouble();
+            ang[1]=CTRL_DEG2RAD*angles->get(2).asDouble();
+            ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
 
-            bool isRel=(type=="rel");
+            if (type=="rel")
+                ang=ang+getCurAbsAngles();
 
-            Vector &torso=commData->get_torso();
-            Vector &head=commData->get_q();
-
-            Vector q(8);
-            q[0]=torso[0];
-            q[1]=torso[1];
-            q[2]=torso[2];
-            q[3]=head[0];
-            q[4]=head[1];
-            q[5]=head[2];
-            q[6]=head[3];
-
-            if (isRel)
-                ver+=head[5];
-
-            // impose vergence != 0.0
-            if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
-                ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
-
-            q[7]=head[4]+ver/2.0;
-            eyeL->setAng(q);
-
-            q[7]=head[4]-ver/2.0;
-            eyeR->setAng(q);
-
-            Vector fp(4);
-            fp[3]=1.0;  // impose homogeneous coordinates
-
-            // compute new fp due to changed vergence
-            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp))
-            {
-                // keep the old fp if some errors occur
-                fp[0]=commData->get_x()[0];
-                fp[1]=commData->get_x()[1];
-                fp[2]=commData->get_x()[2];
-
-                fprintf(stdout,"Vergence error occured!\n");
-            }
-
-            // compute rotational matrix to
-            // account for elevation and azimuth
-            Vector x(4);
-            x[0]=1.0;
-            x[1]=0.0;
-            x[2]=0.0;
-            x[3]=ele;
-
-            Vector y(4);
-            y[0]=0.0;
-            y[1]=1.0;
-            y[2]=0.0;
-            y[3]=azi;
-            
-            Matrix R=axis2dcm(y)*axis2dcm(x);
-
-            Vector fph, xdO;
-            if (isRel)
-            {
-                Matrix &frame=commData->get_fpFrame();
-                fph=SE3inv(frame)*fp;                   // get fp wrt relative head-centered frame
-                xdO=frame*(R*fph);                      // apply rotation and retrieve fp wrt root frame
-            }
-            else
-            {
-                fph=invEyeCAbsFrame*fp;                 // get fp wrt absolute head-centered frame
-                fph[3]=0.0;                             // remove the last coordinate to compute the vector norm
-                Vector z=norm(fph)*R.getCol(2);         // take the rotated z-axis at the proper distance
-                z[3]=1.0;                               // impose homogeneous coordinates again
-                xdO=eyeCAbsFrame*z;                     // retrieve fp wrt root frame
-            }
+            Vector xd=getFixationPoint(ang);
 
             if (port_xd)
-            {
-                Vector xd(3);
-                xd[0]=xdO[0];
-                xd[1]=xdO[1];
-                xd[2]=xdO[2];
-
                 port_xd->set_xd(xd);
-            }
             else
                 fprintf(stdout,"Internal error occured!\n");
         }
@@ -389,22 +383,7 @@ void Localizer::handleAnglesInput()
 /************************************************************************/
 void Localizer::handleAnglesOutput()
 {
-    Vector fp(4);
-    fp[0]=commData->get_x()[0];
-    fp[1]=commData->get_x()[1];
-    fp[2]=commData->get_x()[2];
-    fp[3]=1.0;  // impose homogeneous coordinates
-
-    // get fp wrt head-centered system
-    Vector fph=invEyeCAbsFrame*fp;
-
-    Vector &angles=port_anglesOut.prepare();
-    angles.resize(3);
-
-    angles[0]=CTRL_RAD2DEG*atan2(fph[0],fph[2]);
-    angles[1]=-CTRL_RAD2DEG*atan2(fph[1],fph[2]);
-    angles[2]=CTRL_RAD2DEG*commData->get_q()[5];
-
+    port_anglesOut.prepare()=CTRL_RAD2DEG*getCurAbsAngles();
     port_anglesOut.write();
 }
 
