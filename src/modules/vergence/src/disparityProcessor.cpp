@@ -612,4 +612,5 @@ void disparityProcessor::computeFixation (const Matrix &T1, const Matrix &T2) {
 
 	_cartesianToPolar(_fixationPoint, _fixationPolar);	
 }
-//left blank
+
+
