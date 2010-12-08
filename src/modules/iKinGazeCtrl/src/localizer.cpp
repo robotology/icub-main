@@ -249,22 +249,22 @@ void Localizer::handleStereoInput()
                 Vector ref(1), fb(1), fp;
                 double u, v;
 
+                ref=0.0;
                 if (dominantEye=="left")
                 {
                     u=ul;
                     v=vl;
-                    fb=ur-cxr;
-                    // by inverting the sign of the error
+                    fb=cxr-ur;
+                    // by inverting the sign of the error (e=ref-fb=-fb)
                     // we can keep gains always positive
                 }
                 else
                 {                    
                     u=ur;
                     v=vr;
-                    fb=cxl-ul;
+                    fb=ul-cxl;
                 }
-
-                ref=0.0;
+                
                 Vector z=pid->compute(ref,fb);
 
                 // the left eye is dominant
