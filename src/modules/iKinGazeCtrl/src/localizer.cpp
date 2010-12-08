@@ -178,8 +178,8 @@ Vector Localizer::getFixationPoint(const Vector &absAngles)
     double ver=absAngles[2];
 
     // impose vergence != 0.0
-    if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
-        ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+    if (ver<MINALLOWED_VERGENCE)
+        ver=MINALLOWED_VERGENCE;
 
     Vector q(8); q=0.0;
 
