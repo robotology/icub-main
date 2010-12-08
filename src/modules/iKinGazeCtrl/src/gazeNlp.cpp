@@ -134,7 +134,7 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
     double qty2R=dot(H2R,2,H1,3);
     double qty3=qty1*qty1-1.0;
 
-    if (!qty3)
+    if (qty3==0.0)
         return true;
 
     double tL=qty2L/qty3;
@@ -249,7 +249,7 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
     double qty2R=dot(H2R,2,H1,3);
     double qty3=qty1*qty1-1.0;
 
-    if (!qty3)
+    if (qty3==0.0)
         return true;
 
     double tL=qty2L/qty3;
@@ -287,7 +287,7 @@ Eyes_NLP::Eyes_NLP(iKinChain &_eyeL, iKinChain &_eyeR, const Vector &_q0, Vector
     for (; i<dim; i++)
         qd[i]=0.0;
 
-    if (!qd[dim-1])
+    if (qd[dim-1]==0.0)
         qd[dim-1]=subsStartVerg0;
 
     q=qd;
@@ -382,7 +382,7 @@ bool Eyes_NLP::get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number* x,
     for (Ipopt::Index i=0; i<n; i++)
         x[i]=q0[i];
 
-    if (!x[n-1])
+    if (x[n-1]==0.0)
         x[n-1]=subsStartVerg0;
 
     return true;
@@ -441,7 +441,7 @@ bool Eyes_NLP::eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                           Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow,
                           Ipopt::Index *jCol, Ipopt::Number* values)
 {
-    if (!values)
+    if (values==NULL)
     {
         Ipopt::Index idx=0;
 
