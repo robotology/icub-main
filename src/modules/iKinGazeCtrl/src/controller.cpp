@@ -38,6 +38,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     eyeL=new iCubEye("left");
     eyeR=new iCubEye("right");
 
+    // release links
+    neck->releaseLink(0); eyeL->releaseLink(0); eyeR->releaseLink(0);
+    neck->releaseLink(1); eyeL->releaseLink(1); eyeR->releaseLink(1);
+    neck->releaseLink(2); eyeL->releaseLink(2); eyeR->releaseLink(2);
+
     // release the neck roll
     neck->releaseLink(4);
 
