@@ -140,12 +140,13 @@ bool getProjectionMatrix(Bottle b, Matrix &P)
   else 
     return 0;  
 
-  if(b.check("cx"))
-    cx = b.find("cx").asDouble();
+  // we suppose that the center distorsion is already compensated
+  if(b.check("h"))
+    cx = b.find("h").asDouble()/2.0;
   else 
     return 0;
-  if(b.check("cy"))
-    cy = b.find("cy").asDouble();
+  if(b.check("h"))
+    cy = b.find("h").asDouble()/2.0;
   else 
     return 0;
   

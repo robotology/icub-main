@@ -129,11 +129,12 @@ bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
 
         if (parType.size())
         {
-            if (parType.check("cx") && parType.check("cy") &&
+            if (parType.check("w") && parType.check("h") &&
                 parType.check("fx") && parType.check("fy"))
             {
-                double cx=parType.find("cx").asDouble();
-                double cy=parType.find("cy").asDouble();
+                // we suppose that the center distorsion is already compensated
+                double cx=parType.find("w").asDouble()/2.0;
+                double cy=parType.find("h").asDouble()/2.0;
                 double fx=parType.find("fx").asDouble();
                 double fy=parType.find("fy").asDouble();
 
