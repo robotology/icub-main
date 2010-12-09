@@ -39,7 +39,7 @@ namespace yarp{
  * Interface for a server that logs status messages.
  *
  */
-class IServerLogger
+class yarp::dev::IServerLogger
 {
 public:
     /*
@@ -49,7 +49,7 @@ public:
     * @return true/false on success failure (failure is notified if the 
     * format of the message is unknown)
     */
-    virtual bool log(const std::string &key, const yarp::os::Value &data)=0;
+    virtual bool log(std::string &key,yarp::os::Value &data)=0;
 
     /*
     * Log data to server.
@@ -57,7 +57,7 @@ public:
     * @return true/false on success failure (failure is notified if the 
     * format of the message is unknown)
     */
-    virtual bool log(const yarp::os::Bottle &data)=0;
+    virtual bool log(const yarp::os::Bottle &data)const=0;
 };
 
 /**
@@ -65,7 +65,7 @@ public:
  * Interface for a client that logs status messages to a server.
  *
  */
-class IClientLogger
+class yarp::dev::IClientLogger
 {
 public:
     /*
