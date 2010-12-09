@@ -34,7 +34,9 @@
 
 #include <iCub/LoggerInterfaces.h>
 
-class FakeDriver : public yarp::os::RateThread, public IClientLogger
+#include <signal.h>
+
+class FakeDriver : public yarp::os::RateThread, public yarp::dev::IClientLogger
 {
 public:
     FakeDriver() 
@@ -48,25 +50,49 @@ public:
     {
     }
 
-    void setServerLogger(const IServerLogger *server)
+    void setServerLogger(const yarp::dev::IServerLogger *server)
     {
-        pServer=(IServerLogger*)server;
+        pServer=(yarp::dev::IServerLogger*)server;
     }
 
     void run()
     {
         static int counter=0;
 
-        if (pServer!=NULL) pServer->log("net_headtorso,2,1,5",yarp::os::Value(counter=!counter));
+        if (pServer!=NULL) pServer->log(std::string("cfw2can 2,2,1,5"),yarp::os::Value(counter=!counter));
     }
 
 protected:
-    IServerLogger *pServer;
+    yarp::dev::IServerLogger *pServer;
 };
+
+/*
+#include <yarp/os/RFModule.h>
+
+class MyModule : public yarp::os::RFModule
+{
+public:
+    MyModule(){}
+    ~MyModule(){}
+
+    double getPeriod(){ return 30.0; }
+
+    bool updateModule()
+    {
+        printf("enter updateModule\n");
+        yarp::os::Time::delay(29.5);
+        printf("exit updateModule\n");
+        return true;
+    }
+};
+*/
 
 int main(int argc, char *argv[])
 {
 	yarp::os::Network yarp; //initialize network, this goes before everything
+
+    //MyModule mod;
+    //mod.runModule();
 
 	yarp::os::ResourceFinder rf;
 	rf.setVerbose();
@@ -110,6 +136,6 @@ int main(int argc, char *argv[])
 
     fakeDriver.stop();
     server.stop();
-
+    
 	return 0;
 }

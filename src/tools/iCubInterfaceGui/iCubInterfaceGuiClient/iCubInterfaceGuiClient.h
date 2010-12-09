@@ -59,7 +59,6 @@ public:
         mColumns.mColIconID=mTreeView.append_column("",*cell)-1;
         Gtk::TreeViewColumn* pColumn=mTreeView.get_column(mColumns.mColIconID);
         pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColIcon);
-        
 
         //Fill the TreeView's model
         mRowLev0=*(mRefTreeModel->append());

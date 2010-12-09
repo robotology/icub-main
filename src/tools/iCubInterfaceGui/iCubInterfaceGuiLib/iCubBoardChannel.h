@@ -151,7 +151,7 @@ public:
     {
     }
 
-    iCubBLLChannel(int channel,int joint) : iCubBoardChannel(),mData(),mChannel(channel)
+    iCubBLLChannel(int channel,int joint) : iCubBoardChannel(),mData(),mChannel(channel),mJoint(joint)
     {
         mData.write(INT_Channel,yarp::os::Value(channel));
         mData.write(INT_Joint,yarp::os::Value(joint));
@@ -219,6 +219,7 @@ public:
     virtual bool findAndRead(std::string addr,yarp::os::Value* data);
 
 protected:
+    int mJoint;
     int mChannel;
     RawData mData;
     static char *mRowNames[];

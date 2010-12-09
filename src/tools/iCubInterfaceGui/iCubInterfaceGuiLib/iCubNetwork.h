@@ -29,6 +29,7 @@ public:
         mName="";
         mFile="";
         mDevice="";
+        //mID=-1;
     }
 
     iCubNetwork(std::string &name,std::string &file,std::string &device) 
@@ -54,6 +55,10 @@ public:
     void setID(int ID)
     {
         mData.write(INT_Network_id,yarp::os::Value(ID));
+
+        char buff[32];
+        sprintf(buff,"%d",ID);
+        mID=buff;
     }
 
     enum Index
@@ -67,7 +72,8 @@ public:
         INT_Rx_Can_errors,	// Rx errors (can device)
         INT_Tx_Can_errors,	// Tx errors  (can device)
         INT_Rx_buffer_ovf, 	// Overflow Rx buffer (can device)
-        
+        INT_Tx_buffer_ovf, 	// Overflow Tx buffer (can device)
+
         BOOL_Bus_off, //Bus off flag
  
         DOUBLE_Requested_rate,         //Requested rate for the associated thread [ms]
@@ -133,7 +139,7 @@ public:
         }
     }
 
-    std::string mName,mFile,mDevice;
+    std::string mName,mFile,mDevice,mID;
 
 protected:
     std::vector<iCubBoard*> mBoards;

@@ -13,7 +13,7 @@
 #include <yarp/os/all.h>
 #include <iCub/LoggerInterfaces.h>
 
-class iCubInterfaceGuiServer : public yarp::os::Thread, public IServerLogger
+class iCubInterfaceGuiServer : public yarp::os::Thread, public yarp::dev::IServerLogger
 {
 public:
     iCubInterfaceGuiServer() : mMutex(1)
@@ -36,8 +36,8 @@ public:
     void run();
     
     //bool findAndWrite(std::string address,yarp::os::Value& data);
-    bool log(const std::string &key, const yarp::os::Value &data);
-    bool log(const yarp::os::Bottle &data){ return false; }
+    bool log(std::string &key,yarp::os::Value &data);
+    bool log(const yarp::os::Bottle &data)const{ return false; }
 
     bool findAndRead(std::string address,yarp::os::Value* data);
 

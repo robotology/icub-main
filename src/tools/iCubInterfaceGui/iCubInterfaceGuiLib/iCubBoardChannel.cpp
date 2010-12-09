@@ -56,9 +56,13 @@ bool iCubBLLChannel::findAndWrite(std::string addr,const yarp::os::Value& data)
     int index=addr.find(",");
     if (index<0) return false; // should never happen
 
-    std::string sCh=addr.substr(0,index);
-    if (sCh.length()==0) return false; // should never happen
-    if (mChannel!=atoi(sCh.c_str())) return false;
+    //std::string sCh=addr.substr(0,index);
+    //if (sCh.length()==0) return false; // should never happen
+    //if (mChannel!=atoi(sCh.c_str())) return false;
+
+    std::string sJoint=addr.substr(0,index);
+    if (sJoint.length()==0) return false; // should never happen
+    if (mJoint!=atoi(sJoint.c_str())) return false;
 
     ++index;
     index=atoi(addr.substr(index,addr.length()-index).c_str());

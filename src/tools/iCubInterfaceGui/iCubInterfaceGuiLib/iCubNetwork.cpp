@@ -22,6 +22,7 @@ char* iCubNetwork::mRowNames[]=
         "Rx Can errors",	// Rx errors (can device)
         "Tx Can errors",	// Tx errors  (can device)
         "Rx buffer ovf", 	// Overflow Rx buffer (can device)
+        "Tx buffer ovf", 	// Overflow Tx buffer (can device)
         
         "Bus off", //Bus off flag
  
@@ -39,7 +40,10 @@ bool iCubNetwork::findAndWrite(std::string addr,const yarp::os::Value& data)
     std::string name=addr.substr(0,index);
 
     if (name.length()==0) return false; // should never happen
-    if (name!=mName) return false;
+
+    //if (name!=mName) return false;
+
+    if (name!=mDevice+" "+mID) return false;
 
     ++index;
     addr=addr.substr(index,addr.length()-index);
