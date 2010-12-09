@@ -145,7 +145,7 @@ protected:
     std::vector<iCubBoard*> mBoards;
 
     RawData mData;
-    static char* mRowNames[];
+    static const char* mRowNames[];
 };
 
 #endif

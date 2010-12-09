@@ -125,7 +125,7 @@ protected:
     
     int mID;
     RawData mData;
-    static char *mRawNames[];
+    static const char *mRawNames[];
 };
 
 #endif

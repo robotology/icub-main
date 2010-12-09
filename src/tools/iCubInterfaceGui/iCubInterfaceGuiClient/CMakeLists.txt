@@ -20,6 +20,6 @@ target_link_libraries(${PROJECTNAME}
                       ${GTKMM_LIBRARIES} 
                       ${YARP_LIBRARIES} 
                       ${GTHREAD_LIBRARIES}
-		      iCubInterfaceGuiLib)
+		              iCubInterfaceGuiLib)
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)

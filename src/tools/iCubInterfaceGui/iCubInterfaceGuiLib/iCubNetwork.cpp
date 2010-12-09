@@ -8,11 +8,13 @@
 
 ////////////////////////////////////
 
+#include <stdlib.h>
+
 #include "iCubNetwork.h"
 
 ////////////////////////////////////
 
-char* iCubNetwork::mRowNames[]=
+const char* iCubNetwork::mRowNames[]=
 {
         "Name",
         "Device identifier",// Name of the yarp can device: pcan/cfw2

@@ -41,7 +41,7 @@ public:
         mRows=NULL;
     }
 
-    Gtk::TreeModel::Row* createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,char *rowNames[])
+    Gtk::TreeModel::Row* createRows(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,const char *rowNames[])
     {
         int numRows=0;
 

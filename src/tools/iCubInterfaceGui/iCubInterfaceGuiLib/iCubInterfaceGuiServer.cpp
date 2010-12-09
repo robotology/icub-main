@@ -83,9 +83,9 @@ void iCubInterfaceGuiServer::config(yarp::os::Property &robot)
 
             if (!bExists)
             {
-                mNetworks.push_back(new iCubNetwork(netName,
-                                                    std::string(net.find("file").asString().c_str()),
-                                                    std::string(net.find("canbusdevice").asString().c_str())));
+                std::string file(net.find("file").asString().c_str());
+                std::string device(net.find("canbusdevice").asString().c_str());
+                mNetworks.push_back(new iCubNetwork(netName,file,device));
 
                 jointRmp.push_back(JointRemapper());
                 jointRmp.back().push(d0,d1,j0);

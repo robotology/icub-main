@@ -52,7 +52,7 @@ public:
     }
 
 protected:
-    static char* mRowNames[0];
+    static const char* mRowNames[];
 };
 
 #endif

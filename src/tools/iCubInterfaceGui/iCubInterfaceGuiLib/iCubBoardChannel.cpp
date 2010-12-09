@@ -6,9 +6,11 @@
 *
 */
 
+#include <stdlib.h>
+
 #include "iCubBoardChannel.h"
 
-char* iCubBLLChannel::mRowNames[]=
+const char* iCubBLLChannel::mRowNames[]=
 {
     // interface generated
     //"Device identifier",	// Name of the yarp can device: pcan/cfw2

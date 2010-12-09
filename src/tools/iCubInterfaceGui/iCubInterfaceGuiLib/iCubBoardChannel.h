@@ -222,7 +222,7 @@ protected:
     int mJoint;
     int mChannel;
     RawData mData;
-    static char *mRowNames[];
+    static const char *mRowNames[];
 };
 
 #endif
