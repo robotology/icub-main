@@ -165,12 +165,12 @@ Vector Localizer::getCurAbsAngles()
     // get fp wrt head-centered system
     Vector fph=invEyeCAbsFrame*fp;
 
-    Vector absAngles(3);
-    absAngles[0]=atan2(fph[0],fph[2]);
-    absAngles[1]=-atan2(fph[1],fph[2]);
-    absAngles[2]=commData->get_q()[5];
+    Vector ang(3);
+    ang[0]=atan2(fph[0],fph[2]);
+    ang[1]=-atan2(fph[1],fph[2]);
+    ang[2]=commData->get_q()[5];
 
-    return absAngles;
+    return ang;
 }
 
 
@@ -226,25 +226,25 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
     x[3]=ele;    y[3]=azi;   
     Matrix R=axis2dcm(y)*axis2dcm(x);
 
-    Vector fph, xdO;
+    Vector fph, xd;
     if (type=="rel")
     {
         Matrix &frame=commData->get_fpFrame();
-        fph=SE3inv(frame)*fp;           // get fp wrt relative head-centered frame
-        xdO=frame*(R*fph);              // apply rotation and retrieve fp wrt root frame
+        fph=SE3inv(frame)*fp;       // get fp wrt relative head-centered frame
+        xd=frame*(R*fph);           // apply rotation and retrieve fp wrt root frame
     }
     else
     {
-        fph=invEyeCAbsFrame*fp;         // get fp wrt absolute head-centered frame
-        xdO=eyeCAbsFrame*(R*fph);       // apply rotation and retrieve fp wrt root frame
+        fph=invEyeCAbsFrame*fp;     // get fp wrt absolute head-centered frame
+        xd=eyeCAbsFrame*(R*fph);    // apply rotation and retrieve fp wrt root frame
     }
 
-    Vector xd(3);
-    xd[0]=xdO[0];
-    xd[1]=xdO[1];
-    xd[2]=xdO[2];
+    Vector xo(3);
+    xo[0]=xd[0];
+    xo[1]=xd[1];
+    xo[2]=xd[2];
 
-    return xd;
+    return xo;
 }
 
 
@@ -283,16 +283,16 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 
         // find the 3D position from the 2D projection,
         // knowing the distance z from the camera
-        Vector Xe=*invPrj*x;
-        Xe[3]=1.0;  // impose homogeneous coordinates                
+        Vector xe=*invPrj*x;
+        xe[3]=1.0;  // impose homogeneous coordinates                
 
         // update position wrt the root frame
-        Vector Xo=eye->getH(q)*Xe;
+        Vector xo=eye->getH(q)*xe;
 
         fp.resize(3,0.0);
-        fp[0]=Xo[0];
-        fp[1]=Xo[1];
-        fp[2]=Xo[2];
+        fp[0]=xo[0];
+        fp[1]=xo[1];
+        fp[2]=xo[2];
 
         return true;
     }
