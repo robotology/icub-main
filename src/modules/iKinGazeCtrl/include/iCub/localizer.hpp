@@ -55,7 +55,6 @@ protected:
     string localName;
     string configFile;
     unsigned int period;
-    double Ts;
     
     iCubEye *eyeL;
     iCubEye *eyeR;

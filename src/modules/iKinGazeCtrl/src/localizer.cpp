@@ -28,7 +28,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
                      const string &_configFile, unsigned int _period) :
                      RateThread(_period), localName(_localName),
                      commData(_commData), configFile(_configFile),
-                     period(_period),     Ts(_period/1000.0)
+                     period(_period)
 {
     iCubHeadCenter eyeC;
     eyeL=new iCubEye("left");
