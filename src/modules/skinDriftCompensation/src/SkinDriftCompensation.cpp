@@ -26,6 +26,7 @@ using namespace iCub::skinDriftCompensation;
 const bool SkinDriftCompensation::CALIBRATION_ALLOWED_DEFAULT = false;
 const int SkinDriftCompensation::MIN_BASELINE_DEFAULT = 3;
 const int SkinDriftCompensation::PERIOD_DEFAULT = 50;
+const float SkinDriftCompensation::SMOOTH_FACTOR_DEFAULT = 0.5;
 const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
 const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
 const string SkinDriftCompensation::HAND_DEFAULT = "right";
@@ -35,7 +36,9 @@ const string SkinDriftCompensation::RPC_PORT_DEFAULT = "/rpc";
 // the order of the command in this list MUST correspond to the order of the enum SkinDriftCompensation::SkinDriftCompCommand
 const string SkinDriftCompensation::COMMAND_LIST[]  = {
 	"forbid calibration",	"allow calibration",	"force calibration", 
-	"get percentile",		"help",					"quit"};
+	"get percentile",		"set binarization",		"get binarization", 
+	"set smooth filter",	"get smooth filter",	"set smooth factor",	
+	"get smooth factor",	"help",					"quit"};
 
 // the order in COMMAND_DESC must correspond to the order in COMMAND_LIST
 const string SkinDriftCompensation::COMMAND_DESC[]  = {
@@ -43,6 +46,12 @@ const string SkinDriftCompensation::COMMAND_DESC[]  = {
 	"allow the automatic calibration", 
 	"force the calibration (for 5 sec no touch should happens)", 
 	"get the 95 percentile of the tactile data", 
+	"enable or disable the binarization filter (255 touch, 0 no touch)",
+	"get the binarization filter state (on, off)",
+	"enable or disable the smooth filter",
+	"get the smooth filter state (on, off)",
+	"set the value of the smooth factor (in [0,1])",
+	"get the smooth factor value",
 	"get this list", 
 	"quit the module"};
 
@@ -72,6 +81,10 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	   "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
 	int period				= (int)rf.check("period", Value(PERIOD_DEFAULT), 
 	   "Period of the thread in ms (positive int)").asInt();
+	bool binarization		= rf.check("binarization");
+	bool smoothFilter		= rf.check("smoothFilter");
+	float smoothFactor		= (float)rf.check("smoothFactor", Value(SMOOTH_FACTOR_DEFAULT), 
+	   "Determine the smoothing intensity (float in [0,1])").asDouble();
 	
 	bool zeroUpRawData = true;
 	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value(ZERO_UP_RAW_DATA_DEFAULT.c_str()), 
@@ -98,7 +111,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	/* create the thread and pass pointers to the module parameters */
 	calibrationAllowed = CALIBRATION_ALLOWED_DEFAULT;
 	myThread = new CompensationThread(&rf, robotName, &minBaseline, &calibrationAllowed, 
-		zeroUpRawData, rightHand, period);
+		zeroUpRawData, rightHand, period, binarization, smoothFilter, smoothFactor);
 	/* now start the thread to do the work */
 	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
@@ -167,11 +180,83 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
 		case get_percentile:
 			{
-			VectorOf<float> touchThreshold = myThread->getTouchThreshold();
+			Vector touchThreshold = myThread->getTouchThreshold();
 			for(int i=0; i< touchThreshold.size(); i++) 
 				reply.addDouble(touchThreshold[i]);
 			return true;
 			}
+
+		case set_binarization:
+			{
+			if(command.size()<3){
+				reply.addString("Binarization state missing! Specify either on or off.");
+				return true;
+			}
+			string value = command.get(2).asString().c_str();
+			if(value.compare("on")==0)
+				myThread->setBinarization(true);
+			else if(value.compare("off")==0)
+				myThread->setBinarization(false);
+			else{
+				reply.addString("Value not recognized.");
+				return true;
+			}
+			break;
+			}
+
+		case get_binarization:
+			if(myThread->getBinarization())
+				reply.addString("on");
+			else
+				reply.addString("off");
+			return true;
+
+		case set_smooth_filter:
+			{
+			if(command.size()<4){
+				reply.addString("Smooth filter state missing! Specify either on or off.");
+				return true;
+			}
+			string value = command.get(3).asString().c_str();
+			if(value.compare("on")==0)
+				myThread->setSmoothFilter(true);
+			else if(value.compare("off")==0)
+				myThread->setSmoothFilter(false);
+			else{
+				reply.addString("Value not recognized.");
+				return true;
+			}
+			break;
+			}
+
+		case get_smooth_filter:
+			if(myThread->getSmoothFilter())
+				reply.addString("on");
+			else
+				reply.addString("off");
+			return true;
+
+		case set_smooth_factor:
+			{
+			if(command.size()<4 || (!command.get(3).isDouble() && !command.get(3).isInt())){
+				reply.addString("New smooth factor value missing or not a number! Smooth factor not updated.");
+				return true;
+			}
+
+			stringstream temp;
+			if(myThread->setSmoothFactor((float)command.get(3).asDouble())){				
+				temp<< "New smooth factor set: "<< command.get(3).asDouble();				
+			}
+			else{
+				temp<< "ERROR in setting new smooth factor: "<< command.get(3).asDouble();
+			}
+			reply.addString( temp.str().c_str());
+			return true;
+			}
+
+		case get_smooth_factor:
+			reply.addDouble(myThread->getSmoothFactor());
+			return true;
 
 		default:
 			reply.addString("ERROR: This command is known but it is not managed in the code.");

@@ -28,8 +28,10 @@ using namespace iCub::skinDriftCompensation;
 
 
 CompensationThread::CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, bool *calibrationAllowed, 
-									   bool zeroUpRawData, bool rightHand, int period)
-									   : RateThread(period), PERIOD(period), robotName(robotName)
+									   bool zeroUpRawData, bool rightHand, int period, bool binarization, bool smoothFilter, 
+									   float smoothFactor)
+									   : RateThread(period), PERIOD(period), robotName(robotName), binarization(binarization),
+									   smoothFilter(smoothFilter), smoothFactor(smoothFactor)
 {
    this->rf								= rf;
    this->minBaseline					= minBaseline;
@@ -103,6 +105,28 @@ bool CompensationThread::threadInit()
 }
 
 
+void CompensationThread::setBinarization(bool value){
+	binarization = value;
+}
+void CompensationThread::setSmoothFilter(bool value){
+	if(smoothFilter != value){
+		stateSem.wait();
+		smoothFilter = value;
+		if(value){				
+			// set the old output value of the smooth filter to the last read, to get a smooth start
+			compensatedDataOld = compensatedData;			
+		}
+		stateSem.post();
+	}
+}
+bool CompensationThread::setSmoothFactor(float value){
+	if(value<0 || value>1)
+		return false;
+	smoothFactorSem.wait();
+	smoothFactor = value;
+	smoothFactorSem.post();
+	return true;
+}
 void CompensationThread::forceCalibration(){
 	stateSem.wait();
 	if(state != calibration){
@@ -127,6 +151,8 @@ void CompensationThread::run(){
 		//If calibration is allowed AND at least one baseline is less than minBaseline (or greater than 255-minBaseline)
 		if( (*calibrationAllowed)==true && doesBaselineExceed()){
 			state = calibration;
+			calibrationCounter = 0;	
+			calibrationRead = 0;
 		}
 	}
 	else if(state == calibration){
@@ -218,7 +244,7 @@ void CompensationThread::calibrationFinish(){
 		//when do we cross the threshold?
 		for (int j=0; j<=MAX_SKIN; j++) {
 			if (skin_empty[i][j] > (calibrationRead*0.95)) {
-				touchThresholds[i] = max<float>(0.0, (float)j - baselines[i]);	// the threshold can not be less than zero
+				touchThresholds[i] = max<double>(0.0, (double)j - baselines[i]);	// the threshold can not be less than zero
 				j = MAX_SKIN;
 			}
 		}
@@ -226,6 +252,9 @@ void CompensationThread::calibrationFinish(){
 	
 	// release the semaphore so that as of now the touchThreshold can be read
 	touchThresholdSem.post();
+
+	// set the "old output value" for the smoothing filter to the baseline value to get a smooth start
+	compensatedDataOld = baselines;
 
 	// print to console
 	fprintf(stderr, "\nBaselines:\n");
@@ -250,50 +279,63 @@ void CompensationThread::calibrationFinish(){
 
 bool CompensationThread::readRawAndWriteCompensatedData(){
 	Vector rawData;				// raw tactile data
-	int err, loopCounter=0;
-	if((err=tactileSensor->read(rawData))!=IAnalogSensor::AS_OK){
+	if(tactileSensor->read(rawData)!=IAnalogSensor::AS_OK){
         readErrorCounter++;
 		return false;
 	}
-	else{
-		readErrorCounter = 0;
-	}
-    
+	readErrorCounter = 0;    
 
 	if(rawData.size() != SKIN_DIM){
 		fprintf(stderr, "Unexpected size of the input array (raw tactile data): %d\n", rawData.size());
 		return false;
 	}
-	Vector& compensatedData2 = compensatedTactileDataPort.prepare();
-    compensatedData2.clear();
+	Vector& compensatedData2Send = compensatedTactileDataPort.prepare();
+    compensatedData2Send.clear();
+	compensatedData.clear();
 	
-	float d;
+	double d;
 	for(int i=0; i<SKIN_DIM; i++){
+		// baseline compensation
 		if( zeroUpRawData == false){
-			d = (float)( MAX_SKIN - rawData(i) - baselines[i]);
+			d = (double)( MAX_SKIN - rawData(i) - baselines[i]);
 		}else{
-			d = (float)(rawData(i) - baselines[i]);
+			d = (double)(rawData(i) - baselines[i]);
 		}
+		compensatedData.push_back(d);	// save the data before applying filtering
+
+		// smooth filter
+		if(smoothFilter){
+			smoothFactorSem.wait();
+			d = smoothFactor*d + (1-smoothFactor)*compensatedDataOld(i);
+			smoothFactorSem.post();
+			compensatedDataOld(i) = d;	// update old value
+		}
+		
         
 		if(d<0) 
-			d=0;
+			d=0;		
 
-		compensatedData2.push_back((int)d);
-
+		// binarization filter
 		if(d > touchThresholds[i] + ADD_THRESHOLD){
 			touchDetected[i] = true;
+			if(binarization)
+				d = BIN_TOUCH;
 		}
-		else
+		else{
 			touchDetected[i] = false;
+			if(binarization)
+				d = BIN_NO_TOUCH;
+		}
+
+		compensatedData2Send.push_back(d);
 	}
 
-	if(compensatedData2.size() != SKIN_DIM){
-		fprintf(stderr, "Unexpected size of the output array (compensated tactile data): %d\n", compensatedData2.size());
+	if(compensatedData2Send.size() != SKIN_DIM){
+		fprintf(stderr, "Unexpected size of the output array (compensated tactile data): %d\n", compensatedData2Send.size());
 		return false;
 	}
 
 	compensatedTactileDataPort.write();
-    compensatedData = compensatedData2;
 	return true;
 }
 
@@ -349,13 +391,22 @@ void CompensationThread::threadRelease()
 	compensatedTactileDataPort.close();
 }
 
-VectorOf<float> CompensationThread::getTouchThreshold(){
+Vector CompensationThread::getTouchThreshold(){
 	touchThresholdSem.wait();
-	VectorOf<float> res = touchThresholds;
+	Vector res = touchThresholds;
 	touchThresholdSem.post();
 	return res;
 }
 
+bool CompensationThread::getBinarization(){
+	return binarization;
+}
+bool CompensationThread::getSmoothFilter(){
+	return smoothFilter;
+}
+float CompensationThread::getSmoothFactor(){
+	return smoothFactor;
+}
 void CompensationThread::log(string s, bool endLine){
 	cout << "[SKIN DRIFT COMP THREAD]: " << s;
 	if(endLine)

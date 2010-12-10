@@ -25,6 +25,7 @@
 
 This module reads the raw tactile sensor values, compensates the drift of the sensors 
 and writes the compensated values on its output port.
+Optionally, it also can apply a smoothing filter and/or a binarization filter to the data.
 
 
 \section intro_sec Description
@@ -39,6 +40,16 @@ If no touch is detected (i.e. the compensated values are under the touch thresho
 If the automatic calibration is allowed, when the touch threshold almost reaches one of the two limits 
 (either 0 or 255), then the big and small calibrations are executed.
 By default the automatic calibration is forbidden.
+
+The binarization filter is really simple.
+Every taxel has a touch threshold, given by its 95% percentile plus a safety threshold equals to 2.
+If the read value is greater than the corrisponding touch threshold the output is set to 100, otherwise to 0.
+The binarization filter can be used for stressing the touch detection, especially in cases where the touch is very light.
+
+The smoothing filter performs an exponential moving average in order to reduce the sensor noise.
+The intensity of the filter can be tuned by setting the parameter alpha, also called "smoothing factor".
+The smoothed output is a weighted average of the current input and the previous output:
+y(t) = alpha*x(t) + (1-alpha)*y(t-1)
 
 
 \section lib_sec Libraries
@@ -70,6 +81,14 @@ The following key-value pairs can be specified as command-line parameters by pre
    if the baseline of one sensor (at least) reaches this value, then the calibration is executed (if allowed)
  - \c zeroUpRawData \c false \n
    if true the raw data are considered from zero up, otherwise from 255 down
+ - \c binarization \c false \n
+   if true the output tactile data are binarized: 0 indicates no touch, whereas 100 indicates touch
+ - \c smoothFilter \c false \n
+   if true the output tactile data are filtered with an exponential moving average:
+		y(t) = alpha*x(t) + (1-alpha)*y(t-1)
+ - \c smoothFactor \c 0.5 \n
+   alfa value of the smoothing filter
+
  
 
 \section portsa_sec Ports Accessed
@@ -92,6 +111,9 @@ All the port names listed below will be prefixed by \c /moduleName or whatever e
 	- “allow calibration”: enable the automatic sensor calibration
 	- “force calibration”: force the sensor calibration
 	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
+	- "set binarization": enable or disable the binarization (specifying the value on/off)
+	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
+	- "set smooth factor": set the value of the smooth factor (in [0,1])
 	- "help": get a list of the commands accepted by this module
 	- "quit": quit the module
 
@@ -150,8 +172,12 @@ class SkinDriftCompensation:public RFModule
 public:
 
 	// the last element of the enum (COMMANDS_COUNT) represents the total number of commands accepted by this module
-	typedef enum { forbid_calibration, allow_calibration, force_calibration, get_percentile, 
-		help, quit, COMMANDS_COUNT} SkinDriftCompCommand;
+	typedef enum { 
+		forbid_calibration, allow_calibration,	force_calibration, 
+		get_percentile,		set_binarization,	get_binarization, 
+		set_smooth_filter,	get_smooth_filter,	set_smooth_factor, 
+		get_smooth_factor,	help,				quit, 
+		COMMANDS_COUNT} SkinDriftCompCommand;
    
 	bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
 	bool interruptModule();                       // interrupt, e.g., the ports 
@@ -165,6 +191,7 @@ private:
 	static const bool CALIBRATION_ALLOWED_DEFAULT;
 	static const int MIN_BASELINE_DEFAULT;
 	static const int PERIOD_DEFAULT;
+	static const float SMOOTH_FACTOR_DEFAULT;
 	static const string MODULE_NAME_DEFAULT;
 	static const string ROBOT_NAME_DEFAULT;
 	static const string HAND_DEFAULT;
