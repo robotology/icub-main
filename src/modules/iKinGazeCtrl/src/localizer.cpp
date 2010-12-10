@@ -30,17 +30,21 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
                      commData(_commData), configFile(_configFile),
                      period(_period),     Ts(_period/1000.0)
 {
+    iCubHeadCenter eyeC;
     eyeL=new iCubEye("left");
-    eyeR=new iCubEye("right");
+    eyeR=new iCubEye("right");    
 
     // remove constraints on the links
     eyeL->setAllConstraints(false);
     eyeR->setAllConstraints(false);
 
     // release links
-    eyeL->releaseLink(0); eyeR->releaseLink(0);
-    eyeL->releaseLink(1); eyeR->releaseLink(1);
-    eyeL->releaseLink(2); eyeR->releaseLink(2);
+    eyeL->releaseLink(0); eyeC.releaseLink(0); eyeR->releaseLink(0);
+    eyeL->releaseLink(1); eyeC.releaseLink(1); eyeR->releaseLink(1);
+    eyeL->releaseLink(2); eyeC.releaseLink(2); eyeR->releaseLink(2);
+
+    // release the neck roll
+    eyeC.releaseLink(4);
 
     // get the absolute reference frame of the cyclopic eye
     Vector q(eyeC.getDOF()); q=0.0;
@@ -178,8 +182,8 @@ Vector Localizer::getFixationPoint(const Vector &absAngles)
     double ver=absAngles[2];
 
     // impose vergence != 0.0
-    if (ver<MINALLOWED_VERGENCE)
-        ver=MINALLOWED_VERGENCE;
+    if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
+        ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
     Vector q(8); q=0.0;
 

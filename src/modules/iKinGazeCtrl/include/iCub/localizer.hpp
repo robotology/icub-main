@@ -56,10 +56,9 @@ protected:
     string configFile;
     unsigned int period;
     double Ts;
-
-    iCubHeadCenter  eyeC;
-    iCubEye        *eyeL;
-    iCubEye        *eyeR;
+    
+    iCubEye *eyeL;
+    iCubEye *eyeR;
 
     Matrix eyeCAbsFrame;
     Matrix invEyeCAbsFrame;
