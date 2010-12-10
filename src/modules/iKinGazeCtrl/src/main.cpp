@@ -185,7 +185,14 @@ point:
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
   straight ahead). Vergence is also to be given either in
-  relative mode or absolute mode.
+  relative mode or absolute mode. \n In this mode a final
+  conversion to 3D points is always performed wrt to the
+  absolute head position since the controller is intrinsically
+  cartesian. Moreover, as the center of the head varies over
+  time because of the motion induced by the neck, the ultimate
+  target vergence given for instance as delta wrt the current
+  one may differ from what expected beacuse what is actually
+  achieved is the corresponding 3D point.
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 

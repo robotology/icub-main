@@ -192,13 +192,12 @@ Vector Localizer::getFixationPoint(const Vector &absAngles)
 
     q[7]=-ver/2.0;
     eyeR->setAng(q);
-    
-    // compute new fp due to changed vergence
-    Vector d(3);
-    computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),d);
 
-    // take the norm
-    double dist=norm(d);
+    Vector fp(4);
+    fp[3]=1.0;  // impose homogeneous coordinates
+
+    // compute new fp due to changed vergence
+    computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp);
 
     // compute rotational matrix to
     // account for elevation and azimuth
@@ -209,7 +208,8 @@ Vector Localizer::getFixationPoint(const Vector &absAngles)
     x[3]=ele;    y[3]=azi;   
     Matrix R=axis2dcm(y)*axis2dcm(x);
 
-    Vector fp=eyeCAbsFrame*(dist*R.getCol(2));
+    Vector fph=invEyeCAbsFrame*fp;  // get fp wrt absolute head-centered frame
+    fp=eyeCAbsFrame*(R*fph);        // apply rotations and retrieve fp wrt root frame
 
     Vector xd(3);
     xd[0]=fp[0];
