@@ -72,7 +72,7 @@ protected:
     string dominantEye;
 
     Vector getCurAbsAngles();
-    Vector getFixationPoint(const Vector &absAngles);
+    Vector getFixationPoint(const string &type, const Vector &ang);
     bool   projectPoint(const string &type, const double u, const double v,
                         const double z, Vector &fp);
 

@@ -175,22 +175,40 @@ Vector Localizer::getCurAbsAngles()
 
 
 /************************************************************************/
-Vector Localizer::getFixationPoint(const Vector &absAngles)
+Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
 {
-    double azi=absAngles[0];
-    double ele=absAngles[1];
-    double ver=absAngles[2];
+    double azi=ang[0];
+    double ele=ang[1];
+    double ver=ang[2];
 
+    Vector q(8);
+    if (type=="rel")
+    {
+        Vector &torso=commData->get_torso();
+        Vector &head=commData->get_q();
+
+        q[0]=torso[0];
+        q[1]=torso[1];
+        q[2]=torso[2];
+        q[3]=head[0];
+        q[4]=head[1];
+        q[5]=head[2];
+        q[6]=head[3];
+        q[7]=head[4];
+
+        ver+=head[5];
+    }
+    else
+        q=0.0;
+    
     // impose vergence != 0.0
     if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
         ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
-    Vector q(8); q=0.0;
-
-    q[7]=ver/2.0;
+    q[7]+=ver/2.0;
     eyeL->setAng(q);
 
-    q[7]=-ver/2.0;
+    q[7]-=ver;
     eyeR->setAng(q);
 
     Vector fp(4);
@@ -208,13 +226,23 @@ Vector Localizer::getFixationPoint(const Vector &absAngles)
     x[3]=ele;    y[3]=azi;   
     Matrix R=axis2dcm(y)*axis2dcm(x);
 
-    Vector fph=invEyeCAbsFrame*fp;  // get fp wrt absolute head-centered frame
-    fp=eyeCAbsFrame*(R*fph);        // apply rotations and retrieve fp wrt root frame
+    Vector fph, xdO;
+    if (type=="rel")
+    {
+        Matrix &frame=commData->get_fpFrame();
+        fph=SE3inv(frame)*fp;           // get fp wrt relative head-centered frame
+        xdO=frame*(R*fph);              // apply rotation and retrieve fp wrt root frame
+    }
+    else
+    {
+        fph=invEyeCAbsFrame*fp;         // get fp wrt absolute head-centered frame
+        xdO=eyeCAbsFrame*(R*fph);       // apply rotation and retrieve fp wrt root frame
+    }
 
     Vector xd(3);
-    xd[0]=fp[0];
-    xd[1]=fp[1];
-    xd[2]=fp[2];
+    xd[0]=xdO[0];
+    xd[1]=xdO[1];
+    xd[2]=xdO[2];
 
     return xd;
 }
@@ -369,10 +397,7 @@ void Localizer::handleAnglesInput()
             ang[1]=CTRL_DEG2RAD*angles->get(2).asDouble();
             ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
 
-            if (type=="rel")
-                ang=ang+getCurAbsAngles();
-
-            Vector xd=getFixationPoint(ang);
+            Vector xd=getFixationPoint(type,ang);
 
             if (port_xd)
                 port_xd->set_xd(xd);
