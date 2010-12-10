@@ -39,16 +39,14 @@ provided at time being but can be easily implemented.
  
 The controller can be seen as cartesian gaze controller since it
 receives as input a 3D position in the task space. Nonetheless, 
-further command modalities are available, listed in order of 
-implementation: 1) the position of the target within the two 
-image planes can be converted in relative displacement in 3D 
-task space with respect to the actual fixation point; 2) in case 
-only a monocular vision is exploited, the coordinates (u,v) of 
-just one pixel in the image plane along with a guessed distance 
-z wrt the eye's reference frame can be given to the module; 3) 
-the head-centered azimuth and elevation angles along with the 
-vergence angle can be passed to the module both in absolute and 
-relative mode (i.e. wrt to the current head position).
+further command modalities are available: 1) the coordinates
+(u,v) of just one pixel in the image plane along with a guessed 
+distance z wrt the eye's reference frame can be provided; 2) the
+position of the target within the two image planes can be 
+converted in the 3D task space using the monocular approach 
+coupled with a pid on the distance z; 3) the head-centered 
+azimuth and elevation angles along with the vergence angle can 
+be given to the module both in absolute and relative mode.
 
 Moreover, this module also implements the server part of the <a 
 href="http://eris.liralab.it/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze 
@@ -184,15 +182,16 @@ point:
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
-  straight ahead). Vergence is also to be given either in
-  relative mode or absolute mode. \n In this mode a final
-  conversion to 3D points is always performed wrt to the
-  absolute head position since the controller is intrinsically
-  cartesian. Moreover, as the center of the head varies over
-  time because of the motion induced by the neck, the ultimate
-  target vergence given for instance as delta wrt the current
-  one may differ from what expected beacuse what is actually
-  achieved is the corresponding 3D point.
+  straight ahead and all neck and eyes encoders zeroed).
+  Vergence is also to be given either in relative mode or
+  absolute mode. \n In this mode a final conversion to 3D points
+  is always performed wrt to the absolute head position since
+  the controller is intrinsically cartesian. Moreover, as the
+  center of the head varies over time because of the motion
+  induced by the neck, the ultimate target vergence given for
+  instance as delta wrt the current one may differ from what
+  expected beacuse what is actually achieved is the
+  corresponding 3D point.
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 
