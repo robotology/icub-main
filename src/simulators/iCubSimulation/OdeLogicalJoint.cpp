@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#include "LogicalJoint.h"
+#include "OdeLogicalJoint.h"
 #include "OdeInit.h"
 
 #include <stdio.h>
@@ -8,7 +8,7 @@
 
 using namespace std;
 
-LogicalJoint::LogicalJoint() : filter(6,0.3,0.0,100) {
+OdeLogicalJoint::OdeLogicalJoint() : filter(6,0.3,0.0,100) {
     sub = NULL;
     joint = NULL;
     speed = NULL;
@@ -24,33 +24,33 @@ LogicalJoint::LogicalJoint() : filter(6,0.3,0.0,100) {
 
 
 
-LogicalJoint::~LogicalJoint() {
+OdeLogicalJoint::~OdeLogicalJoint() {
     if (sub!=NULL) {
         delete[] sub;
         sub = NULL;
     }
 }
 
-LogicalJoint *LogicalJoint::nest(int len) {
+OdeLogicalJoint *OdeLogicalJoint::nest(int len) {
     if (sub!=NULL) {
         delete[] sub;
         sub = NULL;
     }
-    sub = new LogicalJoint[len];
+    sub = new OdeLogicalJoint[len];
     subLength = len;
     return sub;
 }
 
-LogicalJoint *LogicalJoint::at(int index) {
+OdeLogicalJoint *OdeLogicalJoint::at(int index) {
     if (sub!=NULL) {
         return sub+index;
     }
     return NULL;
 }
 
-void LogicalJoint::init(LogicalJoint& left,
-                      LogicalJoint& right,
-                      LogicalJoint& peer,
+void OdeLogicalJoint::init(OdeLogicalJoint& left,
+                      OdeLogicalJoint& right,
+                      OdeLogicalJoint& peer,
                       int sgn) {
     active = true;
     verge = sgn;
@@ -61,7 +61,7 @@ void LogicalJoint::init(LogicalJoint& left,
 }
 
 
-void LogicalJoint::init(const char *unit,
+void OdeLogicalJoint::init(const char *unit,
                       const char *type,
                       int index,
                       int sign) {
@@ -135,7 +135,7 @@ void LogicalJoint::init(const char *unit,
 }
 
 
-double LogicalJoint::getAngleRaw() {
+double OdeLogicalJoint::getAngleRaw() {
     if (verge==0) {
         if (hinged) {
             return dJointGetHingeAngle(*joint);
@@ -152,7 +152,7 @@ double LogicalJoint::getAngleRaw() {
 }
 
 
-double LogicalJoint::getVelocityRaw() {
+double OdeLogicalJoint::getVelocityRaw() {
     if (verge==0) {
         if (joint == NULL){
             return 0;
@@ -172,7 +172,7 @@ double LogicalJoint::getVelocityRaw() {
 }
 
 
-void LogicalJoint::setControlParameters(double vel, double acc) {
+void OdeLogicalJoint::setControlParameters(double vel, double acc) {
     this->vel = vel;
     this->acc = acc;
     if (sub!=NULL) {
@@ -187,7 +187,7 @@ void LogicalJoint::setControlParameters(double vel, double acc) {
 }
 
 
-void LogicalJoint::setPosition(double target) {
+void OdeLogicalJoint::setPosition(double target) {
     double error = target - getAngleRaw()*sign;
     double ctrl = filter.pid(error);
     setVelocityRaw(ctrl*sign*vel);
@@ -198,7 +198,7 @@ void LogicalJoint::setPosition(double target) {
     }
 }
 
-void LogicalJoint::setVelocity(double target) {
+void OdeLogicalJoint::setVelocity(double target) {
     if (sub!=NULL) {
         for (int i=0; i<subLength; i++) {
             sub[i].setVelocity(target);
@@ -208,7 +208,7 @@ void LogicalJoint::setVelocity(double target) {
 }
 
 
-void LogicalJoint::setVelocityRaw(double target) {
+void OdeLogicalJoint::setVelocityRaw(double target) {
     speedSetpoint = target;
     if (verge==0) {
         if (speed != NULL){

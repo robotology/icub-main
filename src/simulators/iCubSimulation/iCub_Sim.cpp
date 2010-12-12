@@ -7,6 +7,10 @@
 
 #include "iCub_Sim.h"
 
+#include "OdeInit.h"
+
+using namespace yarp::sig;
+
 // globals
 Semaphore ODE_access(1);
 
@@ -66,24 +70,24 @@ static dJointFeedback touchSensorFeedbacks[MAX_CONTACTS * N_TOUCH_SENSORS];
 
 static int nFeedbackStructs=0;
 
-void Simulation::draw() {
+void OdeSdlSimulation::draw() {
     OdeInit& odeinit = OdeInit::get();
     odeinit._iCub->draw();
     odeinit._wrld->draw();
 }
 
-void Simulation::setJointTorques() {
+void OdeSdlSimulation::setJointTorques() {
     OdeInit& odeinit = OdeInit::get();
     odeinit._iCub->setJointTorques();
 }
 
-void Simulation::setJointSpeed() {
+void OdeSdlSimulation::setJointSpeed() {
     OdeInit& odeinit = OdeInit::get();
     odeinit._iCub->setJointSpeeds();
 
 }
 
-void Simulation::printStats() {
+void OdeSdlSimulation::printStats() {
     OdeInit& odeinit = OdeInit::get();
 
     finishTime = clock() ;
@@ -106,7 +110,7 @@ void Simulation::printStats() {
     //drawText(text, textPos);
 }
 
-void Simulation::handle_key_down(SDL_keysym* keysym) {
+void OdeSdlSimulation::handle_key_down(SDL_keysym* keysym) {
     switch (keysym->sym)
 		{
 		case SDLK_e:
@@ -122,7 +126,7 @@ void Simulation::handle_key_down(SDL_keysym* keysym) {
 		}
 }
 
-void Simulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion) {
+void OdeSdlSimulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion) {
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1)){// MOUSE LEFT BUTTON
         //if (!picking){
         //camera movement
@@ -164,7 +168,7 @@ void Simulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion) {
     }
 }
 
-void Simulation::process_events(void) {
+void OdeSdlSimulation::process_events(void) {
     OdeInit& odeinit = OdeInit::get();
     SDL_Event event;
 
@@ -259,7 +263,7 @@ void Simulation::process_events(void) {
     }
 }
 
-void Simulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
+void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     OdeInit& odeinit = OdeInit::get();
 
     assert(o1);
@@ -350,7 +354,7 @@ void Simulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
 */
 
 // returns true if the body with the bodyID is a touch-sensitive body, returns false otherwise.
-bool Simulation::isBodyTouchSensitive (dBodyID bodyID) {
+bool OdeSdlSimulation::isBodyTouchSensitive (dBodyID bodyID) {
     OdeInit& odeinit = OdeInit::get();
 
 	// check the smaller hand parts if the left hand is active.
@@ -394,7 +398,7 @@ bool Simulation::isBodyTouchSensitive (dBodyID bodyID) {
 	return false;
 }
 
-void Simulation::inspectBodyTouch_continuousValued(Bottle& report) {
+void OdeSdlSimulation::inspectBodyTouch_continuousValued(Bottle& report) {
     OdeInit& odeinit = OdeInit::get();
 	report.clear();
 	if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
@@ -501,7 +505,7 @@ void Simulation::inspectBodyTouch_continuousValued(Bottle& report) {
 	}
 }
 
-void Simulation::inspectBodyTouch(Bottle& report) {
+void OdeSdlSimulation::inspectBodyTouch(Bottle& report) {
     OdeInit& odeinit = OdeInit::get();
     report.clear();
     if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
@@ -624,7 +628,7 @@ void Simulation::inspectBodyTouch(Bottle& report) {
     }
 }
 
-void Simulation::getAngles(const dReal *m, float& z, float& y, float& x) {
+void OdeSdlSimulation::getAngles(const dReal *m, float& z, float& y, float& x) {
     const dReal eps = 0.00001;
 
     y = -asin(m[2]);
@@ -642,7 +646,7 @@ void Simulation::getAngles(const dReal *m, float& z, float& y, float& x) {
     z *= 180/M_PI;
 }
 
-void Simulation::initViewpoint() {
+void OdeSdlSimulation::initViewpoint() {
     xpos = 0;
     ypos = 1;
     zpos = 1;
@@ -651,7 +655,7 @@ void Simulation::initViewpoint() {
     //zrot = 0;
 }
 
-void Simulation::mouseMovement(float x, float y) {
+void OdeSdlSimulation::mouseMovement(float x, float y) {
     float diffx = x-lastx; //check the difference between the current x and the last x position
     float diffy = y-lasty; //check the difference between the current y and the last y position
     lastx =x; //set lastx to the current x position
@@ -660,7 +664,7 @@ void Simulation::mouseMovement(float x, float y) {
     yrot += (float) diffx;	//set the xrot to yrot with the addition of the difference in the x position
 }
 
-void Simulation::draw_screen() {
+void OdeSdlSimulation::draw_screen() {
     OdeInit& odeinit = OdeInit::get();
         
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
@@ -702,7 +706,7 @@ void Simulation::draw_screen() {
 
 
 
-void Simulation::retreiveInertialData(Bottle& inertialReport) {
+void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     OdeInit& odeinit = OdeInit::get();
     static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3], roll, pitch, yaw;
     inertialReport.clear();
@@ -745,7 +749,7 @@ void Simulation::retreiveInertialData(Bottle& inertialReport) {
 
 }
 
-Uint32 Simulation::ODE_process(Uint32 interval, void *param) {
+Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     OdeInit& odeinit = OdeInit::get();
     //static clock_t startTimeODE= clock(), finishTimeODE= clock();
     //startTimeODE = clock();
@@ -782,12 +786,12 @@ Uint32 Simulation::ODE_process(Uint32 interval, void *param) {
 }
 
 
-int Simulation::thread_func(void *unused) {
+int OdeSdlSimulation::thread_func(void *unused) {
     // this needs to be kept synchronized with the timestep in
     // dWorldStep, in order to get correct world clock time
     //  --paulfitz
     int delay = 50;
-    id = SDL_AddTimer( delay, &Simulation::ODE_process, (void*)1);
+    id = SDL_AddTimer( delay, &OdeSdlSimulation::ODE_process, (void*)1);
 
     return(0);
 }
@@ -812,13 +816,13 @@ int Simulation::thread_func(void *unused) {
   }
 */
 
-void Simulation::sighandler(int sig) {
+void OdeSdlSimulation::sighandler(int sig) {
     OdeInit& odeinit = OdeInit::get();
     odeinit.stop = true;
     cout << "\nCAUGHT Ctrl-c" << endl;
 }	
 
-void Simulation::simLoop(int h,int w) {
+void OdeSdlSimulation::simLoop(int h,int w) {
     OdeInit& odeinit = OdeInit::get();
 
     SDL_Init(SDL_INIT_TIMER | SDL_GL_ACCELERATED_VISUAL);
@@ -888,7 +892,7 @@ void Simulation::simLoop(int h,int w) {
 //////////////////////////////
 //////////////////////////////
 
-void Simulation::drawView(bool left, bool right, bool wide) {
+void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     OdeInit& odeinit = OdeInit::get();
     const dReal *pos;
     const dReal *rot;
@@ -960,12 +964,16 @@ void Simulation::drawView(bool left, bool right, bool wide) {
     drawSkyDome(0,0,0,50,50,50); // Draw the Skybox	
 }
 
-void Simulation::clearBuffer() {
+void OdeSdlSimulation::clearBuffer() {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
 }
 
 	
-Simulation::Simulation(RobotStreamer *streamer, RobotConfig *config) {
+OdeSdlSimulation::OdeSdlSimulation() {
+}
+
+void OdeSdlSimulation::init(RobotStreamer *streamer, 
+                            RobotConfig *config) {
     OdeInit& odeinit = OdeInit::get();
     if (video!=NULL) {
         fprintf(stderr, "Only one Simulation object allowed\n");
@@ -992,7 +1000,39 @@ Simulation::Simulation(RobotStreamer *streamer, RobotConfig *config) {
     }
 }
 
-Simulation::~Simulation() {
+OdeSdlSimulation::~OdeSdlSimulation() {
     delete video;
-        
+}
+
+
+bool OdeSdlSimulation::checkSync(bool reset) {
+    OdeInit& odeinit = OdeInit::get();
+    if (reset) {
+        odeinit.sync = false;
+    }
+    return odeinit.sync;
+}
+
+bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
+    int w = 320;
+    int h = 240;
+    int p = 3;//320 240
+
+	char buf[ 320 * 240 * 3 ];
+    glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
+    ImageOf<PixelRgb> img;
+    img.setQuantum(1);
+	img.setExternal(buf,w,h);
+
+    // inefficient flip!
+    target.resize(img);
+    int ww = img.width();
+    int hh = img.height();
+    for (int x=0; x<ww; x++) {
+        for (int y=0; y<hh; y++) {
+            target(x,y) = img(x,hh-1-y);
+        }
+    }
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    return true;
 }

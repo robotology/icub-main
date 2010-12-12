@@ -42,8 +42,13 @@ public:
         return *this;
     }
 
+    RobotFlags& getFlags() {
+        return flags;
+    }
+
 private:
     std::string moduleName;    
+    RobotFlags flags;
 };
 
 

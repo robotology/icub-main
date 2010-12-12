@@ -38,8 +38,6 @@ static bool NOT_YET_IMPLEMENTED(const char *txt)
     return false;
 }
 
-iCubLogicalJoints iCubSimulationControl::manager;
-
 //////////////////////////////////
 
 iCubSimulationControl::iCubSimulationControl() : 
@@ -55,6 +53,7 @@ iCubSimulationControl::iCubSimulationControl() :
     _mutex(1)
 {
     _opened = false;
+    manager = NULL;
 }
 
 
@@ -205,6 +204,21 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 		
     velocityMode = false;
 
+    if (!p.check("joint_device")) {
+        printf("Need a device to access the joints\n");
+        return false;
+    }
+    if (!joints.open(p.find("joint_device").asString().c_str())) {
+        printf("Failed to create a device to access the joints\n");
+        return false;
+    }
+    manager = NULL;
+    joints.view(manager);
+    if (manager==NULL) {
+        printf("Wrong type for device to access the joints\n");
+        return false;
+    }
+
 	RateThread::start();
 	//_done.wait ();
 	_mutex.post();
@@ -261,19 +275,23 @@ bool iCubSimulationControl::close (void)
 
 void iCubSimulationControl::run() {
     _mutex.wait();
+    if (manager==NULL) {
+        _mutex.post();
+        return;
+    }
     int lengths[] = { 0, 16, 16, 6, 6 , 6, 3};
     if (partSelec<=6) {
         int len = lengths[partSelec];
         int i;
         
         for (i=0; i<len; i++) {
-            LogicalJoint& ctrl = manager.control(partSelec,i); 
+            LogicalJoint& ctrl = manager->control(partSelec,i); 
             current_pos[i] = ctrl.getAngle();
             current_vel[i] = ctrl.getVelocity();
         }
         
         for (i=0; i<len; i++) {
-            LogicalJoint& ctrl = manager.control(partSelec,i); 
+            LogicalJoint& ctrl = manager->control(partSelec,i); 
             motor_on[i] = true; // no reason to turn motors off, for now
             if (velocityMode) {
                 //ctrl.setVelocity(next_vel[i]);

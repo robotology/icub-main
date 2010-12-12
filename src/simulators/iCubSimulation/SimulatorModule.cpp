@@ -6,13 +6,13 @@
  */
 
 #include "SimulatorModule.h"
-#include "iCubSimulationControl.h"
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Os.h>
+#include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 #include <yarp/dev/Drivers.h>
@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <string>
+
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -28,9 +30,7 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace iCub::logpolar;
-
-#include "iCub_Sim.h"
-
+using namespace std;
 
 bool viewParam1 = false, viewParam2 = false;
 bool noCam;
@@ -39,10 +39,12 @@ const int ifovea = 128;
 const int baseWidth = 320;
 const int baseHeight = 240;
 
-SimulatorModule::SimulatorModule(RobotConfig& config) : 
+SimulatorModule::SimulatorModule(RobotConfig& config, Simulation *sim) : 
     moduleName(config.getModuleName()), mutex(1), pulse(0), ack(0), 
     robot_config(config),
-    finder(config.getFinder()) {
+    robot_flags(config.getFlags()),
+    finder(config.getFinder()),
+    sim(sim) {
 	Property options;       
     wrappedStep = NULL;
     stopped = false;
@@ -51,6 +53,12 @@ SimulatorModule::SimulatorModule(RobotConfig& config) :
     viewParam2 = false;	
     sim = NULL;
     sloth = 0;
+    iCubLArm = NULL;
+    iCubRArm = NULL;
+    iCubHead = NULL; 
+    iCubLLeg = NULL;
+    iCubRLeg = NULL;
+    iCubTorso = NULL;
 }
     
 
@@ -113,30 +121,29 @@ bool SimulatorModule::closeModule() {
 
 // this should become a close
 bool SimulatorModule::interruptModule() {
-    OdeInit& odeinit = OdeInit::get();
-    stopped = true;//odeinit.stop = true;
+    stopped = true;
     
-    if (iCubLArm!=NULL && odeinit._iCub->actLArm == "on"|| odeinit._iCub->actRHand == "on") {
+    if (iCubLArm!=NULL) {
         delete iCubLArm;
         iCubLArm = NULL;
     }
-    if (iCubRArm!=NULL && odeinit._iCub->actRArm == "on" || odeinit._iCub->actRHand == "on") {
+    if (iCubRArm!=NULL) {
         delete iCubRArm;
         iCubRArm = NULL;
     }
-    if (iCubHead!=NULL && odeinit._iCub->actHead == "on") {
+    if (iCubHead!=NULL) {
         delete iCubHead;
         iCubHead = NULL;
     }
-    if (iCubLLeg!=NULL && odeinit._iCub->actLegs == "on") {
+    if (iCubLLeg!=NULL) {
         delete iCubLLeg;
         iCubLLeg = NULL;
     }
-    if (iCubRLeg!=NULL && odeinit._iCub->actLegs == "on") {
+    if (iCubRLeg!=NULL) {
         delete iCubRLeg;
         iCubRLeg = NULL;
     }
-    if (iCubTorso!=NULL && odeinit._iCub->actTorso == "on") {
+    if (iCubTorso!=NULL) {
         delete iCubTorso;
         iCubTorso = NULL;
     }
@@ -189,112 +196,61 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
     return ok;
 }
 
+yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
+	Property options;
+    ConstString part_file = finder.findFile(name);
+    options.fromConfigFile(part_file.c_str());
+    ConstString part_port = options.check("name",Value(1),"what did the user select?").asString();
+    string full_name = moduleName + part_port.c_str();
+    options.put("name", full_name.c_str() );
+    options.put("joint_device", "icub_joints");
+    yarp::dev::PolyDriver *driver = new yarp::dev::PolyDriver(options);
+
+    if (!driver->isValid()){
+        printf("Device not available. Here are the known devices:\n");
+        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
+        Network::fini();
+        yarp::os::exit(1);
+    }
+    return driver;
+}
+
 void SimulatorModule::init()
 {
-    OdeInit& odeinit = OdeInit::get();
+    if (!robot_flags.valid) {
+        printf("Robot flags are not set when creating SimulatorModule\n");
+        yarp::os::exit(1);
+    }
+
 	Property options;
-    if (odeinit._iCub->actLArm == "on" || odeinit._iCub->actLHand == "on"){
+    if (robot_flags.actLArm || robot_flags.actLHand) {
       	//start left arm device driver
-	    ConstString left_arm = finder.findFile("left_arm");
-	    options.fromConfigFile(left_arm.c_str());
-        ConstString leftArmPort = options.check("name",Value(1),"what did the user select?").asString();
-        string leftArm = moduleName + leftArmPort.c_str();
-        options.put("name", leftArm.c_str() );
-      	iCubLArm = new yarp::dev::PolyDriver(options);
-
-        if (!iCubLArm->isValid()){
-            printf("Device not available. Here are the known devices:\n");
-	        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
-            Network::fini();
-            yarp::os::exit(1);
-        }
+      	iCubLArm = createPart("left_arm");
     }
 
-    if (odeinit._iCub->actRArm == "on" || odeinit._iCub->actRHand == "on"){
+    if (robot_flags.actRArm || robot_flags.actRHand) {
       	//start right arm device driver
-      	ConstString right_arm = finder.findFile("right_arm");
-	    options.fromConfigFile(right_arm.c_str());
-        ConstString rightArmPort = options.check("name",Value(1),"what did the user select?").asString();
-        string rightArm = moduleName + rightArmPort.c_str();
-        options.put("name", rightArm.c_str() );
-      	iCubRArm = new yarp::dev::PolyDriver(options);
-
-        if (!iCubRArm->isValid()){
-            printf("Device not available. Here are the known devices:\n");
-	        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
-            Network::fini();
-            yarp::os::exit(1);
-        }
+      	iCubRArm = createPart("right_arm");
     }
 
-    if (odeinit._iCub->actHead == "on"){
+    if (robot_flags.actHead) {
       	//start head device driver
-      	ConstString head = finder.findFile("head");
-	    options.fromConfigFile(head.c_str());
-        ConstString headPort = options.check("name",Value(1),"what did the user select?").asString();
-        string headStr = moduleName + headPort.c_str();
-        options.put("name", headStr.c_str() );
-      	iCubHead = new yarp::dev::PolyDriver(options);
-
-        if (!iCubHead->isValid()){
-            printf("Device not available. Here are the known devices:\n");
-	        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
-            Network::fini();
-            yarp::os::exit(1);
-        }
+      	iCubHead = createPart("head");
     }
 
-    if (odeinit._iCub->actLegs == "on"){
+    if (robot_flags.actLegs) {
       	//start left leg device driver
-     	ConstString left_leg = finder.findFile("left_leg");
-	    options.fromConfigFile(left_leg.c_str());
-        ConstString leftLegPort = options.check("name",Value(1),"what did the user select?").asString();
-        string leftLeg = moduleName + leftLegPort.c_str();
-        options.put("name", leftLeg.c_str() );
-      	iCubLLeg = new yarp::dev::PolyDriver(options);
-
-        if (!iCubLLeg->isValid()){
-            printf("Device not available. Here are the known devices:\n");
-	        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
-            Network::fini();
-            yarp::os::exit(1);
-        }
+      	iCubLLeg = createPart("left_leg");
     }
 
-    if (odeinit._iCub->actLegs == "on"){
+    if (robot_flags.actLegs) {
        	//start right leg device driver
-     	ConstString right_leg = finder.findFile("right_leg");
-	    options.fromConfigFile(right_leg.c_str());
-        ConstString rightLegPort = options.check("name",Value(1),"what did the user select?").asString();
-        string rightLeg = moduleName + rightLegPort.c_str();
-        options.put("name", rightLeg.c_str() );
-      	iCubRLeg = new yarp::dev::PolyDriver(options);
-
-        if (!iCubRLeg->isValid()){
-            printf("Device not available. Here are the known devices:\n");
-	        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
-            Network::fini();
-            yarp::os::exit(1);
-        }
+      	iCubRLeg = createPart("right_leg");
     }
-    if (odeinit._iCub->actTorso == "on"){
+    if (robot_flags.actTorso) {
         //start torso device driver
-      	ConstString torso = finder.findFile("torso");
-	    options.fromConfigFile(torso.c_str());
-        ConstString torsoPort = options.check("name",Value(1),"what did the user select?").asString();
-        string torsoStr = moduleName + torsoPort.c_str();
-        options.put("name", torsoStr.c_str() );
-      	iCubTorso = new yarp::dev::PolyDriver(options);
-        
-        if (!iCubTorso->isValid()){
-            printf("Device not available. Here are the known devices:\n");
-	        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
-            Network::fini();
-            yarp::os::exit(1);
-        }
+        iCubTorso = createPart("torso");
     }
-
-	odeinit._wrld->model_DIR = finder.findPath("model_path_default");
 }
 
 void SimulatorModule::initImagePorts() {
@@ -359,8 +315,6 @@ void SimulatorModule::initImagePorts() {
 
 
 bool SimulatorModule::open() {
-    OdeInit& odeinit = OdeInit::get();
-    
 	cmdPort.setReader(*this);
     string world = moduleName + "/world";
     string tactile = moduleName + "/touch";
@@ -369,11 +323,11 @@ bool SimulatorModule::open() {
 	tactilePort.open( tactile.c_str() );
     inertialPort.open( inertial.c_str() );
 
-    if (odeinit._iCub->actVision=="on") {
+    if (robot_flags.actVision) {
         initImagePorts();
     }
     init();
-    sim = new Simulation(this,&robot_config);
+    sim->init(this,&robot_config);
 	 
     w = 480;
     h = 640;
@@ -389,15 +343,14 @@ bool SimulatorModule::open() {
 bool SimulatorModule::runModule() {
 
     Time::delay(1); // there's some clash over keyboard on Windows
-	Simulation::simLoop(h,w);
+	sim->simLoop(h,w);
     return true;
 }
 
 
 
 void SimulatorModule::displayStep(int pause) {
-    OdeInit& odeinit = OdeInit::get();
-    if (odeinit.sync){
+    if (sim->checkSync()){
         bool needLeft = (portLeft.getOutputCount()>0);
         bool needRight = (portRight.getOutputCount()>0);
         bool needWide = (portWide.getOutputCount()>0);
@@ -489,34 +442,12 @@ void SimulatorModule::displayStep(int pause) {
         if (target>now) {
             Time::delay(target-now);
         }
-        odeinit.sync = false;
+        sim->checkSync(true);
     }
 }
 
 void SimulatorModule::getImage(){
-    
-    int w = 320;
-    int h = 240;
-    int p = 3;//320 240
-
-	char buf[ 320 * 240 * 3 ];
-    glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
-    static ImageOf<PixelRgb> img;
-    img.setQuantum(1);
-	img.setExternal(buf,w,h);
-
-    // inefficient flip!
-    ImageOf<PixelRgb> target;
-    target.resize(img);
-    int ww = img.width();
-    int hh = img.height();
-    for (int x=0; x<ww; x++) {
-        for (int y=0; y<hh; y++) {
-            target(x,y) = img(x,hh-1-y);
-        }
-    }
-    buffer.copy(target);
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    sim->getImage(buffer);
 }
 
 void SimulatorModule::sendImage(BufferedPort<ImageOf<PixelRgb> >& port) {

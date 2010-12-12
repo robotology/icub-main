@@ -15,10 +15,11 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/sig/Image.h>
 #include <yarp/dev/DeviceDriver.h>
+#include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 
-#include "iCubLogicalJoints.h"
+#include "LogicalJoints.h"
 
 namespace yarp{
     namespace dev{
@@ -160,15 +161,12 @@ class yarp::dev::iCubSimulationControl :
   virtual bool setLimitsRaw(int axis, double min, double max);
   virtual bool getLimitsRaw(int axis, double *min, double *max);
 
+  /////// RateThread
   void run(void);
 
-  ////// Initialization
-  static void init(void) {
-      manager.init();
-  }
-
 protected:
-    static iCubLogicalJoints manager;
+    yarp::dev::PolyDriver joints;
+    LogicalJoints *manager;
 
     yarp::os::Semaphore _mutex;
     yarp::os::Semaphore _done;

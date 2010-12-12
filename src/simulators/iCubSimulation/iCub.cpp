@@ -845,6 +845,11 @@ void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
 		dBodySetPosition (bottomEyeLid, 0.0, elev + 0.928,	0.035);
 }
 
+static void set_flag(bool& flag,const ConstString& str) {
+    flag = (str == "on");
+}
+#define FLAGIFY(flags,name) set_flag(flags.name,name)
+
 void ICubSim::activateiCubParts(RobotConfig& config) {
 
 	ConstString general = config.getFinder().findFile("general");
@@ -852,22 +857,39 @@ void ICubSim::activateiCubParts(RobotConfig& config) {
     Property options;
 	options.fromConfigFile(general.c_str());
 
+    RobotFlags& flags = config.getFlags();
+
 	actElevation = options.findGroup("SETUP").check("elevation",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actElevation);
 	
 	actLegs = options.findGroup("PARTS").check("legs",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actLegs);
 	actTorso = options.findGroup("PARTS").check("torso",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actTorso);
 	actLArm = options.findGroup("PARTS").check("left_arm",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actLArm);
 	actRArm = options.findGroup("PARTS").check("right_arm",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actRArm);
 	actLHand = options.findGroup("PARTS").check("left_hand",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actLHand);
 	actRHand = options.findGroup("PARTS").check("right_hand",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actRHand);
 	actHead = options.findGroup("PARTS").check("head",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actHead);
 	actfixedHip = options.findGroup("PARTS").check("fixed_hip",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags,actfixedHip);
 	actVision = options.findGroup("VISION").check("cam",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actVision);
     
     actPressure = options.findGroup("SENSORS").check("pressure",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actPressure);
 
 	actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actWorld);
 	actCover = options.findGroup("RENDER").check("cover",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actCover);
+
+    flags.valid = true;
 	
 	cout << "The iCub simulator will start with the following configuration: " << endl << endl <<
 		"Elevation : " << actElevation << endl <<

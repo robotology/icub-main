@@ -122,20 +122,21 @@
 #include <yarp/dev/all.h>
 
 #include "SimulatorModule.h"
+#include "iCubSimulationControl.h"
 #include "SimConfig.h"
+
 #include "OdeInit.h" 
-#include "iCubSimulationControl.h" 
+#include "iCubLogicalJoints.h"
+#include "iCub_Sim.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
 
-//static SimulatorModule *simulatorModule = NULL;
-
-int main( int argc, char** argv) 
-{		
+int main(int argc, char** argv) {
 	dInitODE2(0); 
 	printf("\nODE configuration: %s\n\n", dGetConfiguration());
+
     Network yarp;
 
     if (!yarp.checkNetwork())
@@ -146,7 +147,17 @@ int main( int argc, char** argv)
     config.configure(argc, argv, moduleName);
 
     OdeInit& odeinit = OdeInit::init(&config);
-    iCubSimulationControl::init();
+
+    // Set up ODE joints
+    iCubLogicalJoints icub_joints(config);
+
+    PolyDriver icub_joints_dev;
+    icub_joints_dev.give(&icub_joints,false);
+
+    // Make sure all individual control boards route to single ode_joints driver
+    Drivers::factory().add(new DriverLinkCreator("icub_joints",icub_joints_dev));
+
+    // Provide simulated controlboard driver
     Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
         "controlboard",
         "iCubSimulationControl"));
@@ -156,7 +167,7 @@ int main( int argc, char** argv)
         yarp::os::exit(1);
     }
 
-    SimulatorModule module(config);
+    SimulatorModule module(config, new OdeSdlSimulation());
     odeinit.setName(moduleName);
     module.open();
 
@@ -164,9 +175,11 @@ int main( int argc, char** argv)
     module.runModule();
 
     module.closeModule();
-    OdeInit::destroy();
 
+#ifndef TEST_WITHOUT_ODE
+    OdeInit::destroy();
     dCloseODE();
+#endif
 
     return 0;
 }

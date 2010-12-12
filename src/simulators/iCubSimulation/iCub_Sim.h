@@ -16,6 +16,7 @@
 #define ICUB_SIMH
 
 #include <yarp/os/Os.h>
+#include <yarp/os/Semaphore.h>
 
 #include "SDL_thread.h"
 #include "SDL.h"
@@ -24,7 +25,6 @@
 #include "rendering.h"
 #include <ode/ode.h>
 #include <assert.h>
-#include "OdeInit.h"
 #include "iCub.h"
 #include <stdio.h>
 #include "world.h"
@@ -40,6 +40,7 @@
 #include "VideoTexture.h"
 #include "RobotStreamer.h"
 #include "RobotConfig.h"
+#include "Simulation.h"
 
 extern Semaphore ODE_access;
 
@@ -48,23 +49,23 @@ extern Semaphore ODE_access;
  * Main simulation driver, using SDL and ODE.
  *
  */
-class Simulation {
+class OdeSdlSimulation : public Simulation {
 public:	
     /**
      *
-     * Constructor.  Passed a streamer object, which during simulation
-     * will be called back to transport vision, touch, and inertial
-     * information.
+     * Constructor.  Be sure to also call init().
      *
      */
-    Simulation(RobotStreamer *streamer, RobotConfig *config);
+    OdeSdlSimulation();
+
+    void init(RobotStreamer *streamer, RobotConfig *config);
 
     /**
      *
      * Destructor.
      *
      */
-    ~Simulation();
+    ~OdeSdlSimulation();
 
     /**
      *
@@ -88,7 +89,11 @@ public:
      * window.
      *
      */
-	static void simLoop(int h,int w);
+	void simLoop(int h,int w);
+
+    bool checkSync(bool reset = false);
+
+    virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& target);
 
 private:
 	static void draw();

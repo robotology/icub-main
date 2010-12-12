@@ -17,17 +17,15 @@
 #include "RobotStreamer.h"
 #include "RobotConfig.h"
 #include "WorldManager.h"
+#include "Simulation.h"
 
 // wouldn't be better to have this in conditional compilation?
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
-// forward declaration
-class Simulation;
-
 class SimulatorModule : public yarp::os::PortReader, public RobotStreamer
 {
 public:
-    SimulatorModule(RobotConfig& config);
+    SimulatorModule(RobotConfig& config, Simulation *sim);
 
     bool open();
     bool runModule();
@@ -82,7 +80,6 @@ private:
     int w, h;
     bool stopped;
     bool extractImages;
-    Simulation *sim;
     void (*wrappedStep) (int pause);
     yarp::os::Semaphore mutex, pulse, ack;
     double sloth;
@@ -91,9 +88,13 @@ private:
     void initImagePorts();
 	void initIcubParts();
 
+    yarp::dev::PolyDriver *createPart(const char *name);
+
     WorldManager world_manager;
     RobotConfig& robot_config;
+    RobotFlags& robot_flags;
     yarp::os::ResourceFinder& finder;
+    Simulation *sim;
 };
 
 #endif

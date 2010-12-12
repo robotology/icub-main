@@ -11,10 +11,23 @@
 
 #include <yarp/os/ResourceFinder.h>
 
+class RobotFlags {
+public:
+    bool valid;
+    bool actElevation, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actCover, actWorld, actPressure;
+    
+    RobotFlags() {
+        valid = false;
+    }
+};
+
 class RobotConfig {
 public:
     virtual yarp::os::ConstString getModuleName() = 0;
     virtual yarp::os::ResourceFinder& getFinder() = 0;
+    virtual RobotFlags& getFlags() = 0;
+
+    void setFlags();
 };
 
 #endif

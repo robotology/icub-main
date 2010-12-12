@@ -196,6 +196,9 @@ void worldSim::activateWorld(RobotConfig& config) {
 
 void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
                      RobotConfig& config) {
+
+    model_DIR = config.getFinder().findPath("model_path_default");
+
 	activateWorld(config);
 	/*------------iCub Space creation-------------*/
 	/*

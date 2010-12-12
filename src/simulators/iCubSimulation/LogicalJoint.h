@@ -3,123 +3,47 @@
 #ifndef ICUBSIMULATION_LOGICALJOINT_INC
 #define ICUBSIMULATION_LOGICALJOINT_INC
 
-#include <ode/ode.h>
-
-#include <string>
-
-#include "pidfilter.h"
 
 /////////////////////////////////////////////////////////////////////
 // establish a mapping from the model to the external axes of control
 
 /**
  *
- * Convenience class for mapping from physical ODE joints in the model to
- * control joints in the ICUB specification.
+ * Abstract class for mapping from "physical" (simulated) joints in the model 
+ * to control joints in the ICUB specification.
  *
  */
 class LogicalJoint {
 public:
     /**
-     * Constructor.
-     */
-    LogicalJoint();
-
-    /**
      * Destructor.
      */
-    virtual ~LogicalJoint();
-
-    /**
-     * Create an array of nested control units.  The array will be 
-     * destroyed when this object is destroyed.
-     */
-    LogicalJoint *nest(int len);
-
-    /**
-     * Access a nested control unit.
-     */
-    LogicalJoint *at(int index);
-
-    /**
-     * Initialize a regular control unit.
-     */
-    void init(const char *unit, const char *type, int index, int sign);
-
-    /**
-     * Initialize a differential pair of control units.
-     */
-    void init(LogicalJoint& left, LogicalJoint& right, LogicalJoint& peer, int sgn);
+    virtual ~LogicalJoint() {}
 
     /**
      * Get the angle of an associated joint, in ICUB units and sign.
      */
-    double getAngle() {
-        return getAngleRaw()*sign;
-    }
+    virtual double getAngle() = 0;
 
     /**
      * Get the angular velocity of an associated joint, in ICUB units and sign.
      */
-    double getVelocity() {
-        return getVelocityRaw()*sign;
-    }
-
-    /**
-     * Get the angle of an associated joint in unconverted units and sign.
-     */
-    double getAngleRaw();
-
-    /**
-     * Get the velocity of an associated joint in unconverted units and sign.
-     */
-    double getVelocityRaw();
-
-    /**
-     * Get the current target velocity.
-     */
-    double getSpeedSetpoint() {
-        return speedSetpoint;
-    }
+    virtual double getVelocity() = 0;
 
     /**
      * Set velocity and acceleration control parameters.
      */
-    void setControlParameters(double vel, double acc);
+    virtual void setControlParameters(double vel, double acc) = 0;
 
     /**
      * Drive towards an angle setpoint (in ICUB units/sign).
      */
-    void setPosition(double target);
+    virtual void setPosition(double target) = 0;
 
     /**
      * Set velocity of joint (in ICUB units/sign).
      */
-    void setVelocity(double target);
-
-    /**
-     * Set raw velocity of joint (in ODE units/sign).
-     */
-    void setVelocityRaw(double target);
-
-private:
-    int number;
-	std::string unit;
-    dJointID *joint;
-    dReal *speed;
-    double speedSetpoint;
-    bool hinged;
-    int universal;
-    int sign;
-    LogicalJoint *sub;
-    int subLength;
-    bool active;
-    double vel;
-    double acc;
-    PidFilter filter;
-
-    LogicalJoint *left, *right, *peer;
-    int verge;
+    virtual void setVelocity(double target) = 0;
 };
 
 

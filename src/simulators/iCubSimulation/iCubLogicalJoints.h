@@ -3,7 +3,11 @@
 #ifndef ICUBSIMULATION_ICUBLOGICALJOINTS_INC
 #define ICUBSIMULATION_ICUBLOGICALJOINTS_INC
 
-#include "LogicalJoint.h"
+#include "LogicalJoints.h"
+#include "OdeLogicalJoint.h"
+#include "RobotConfig.h"
+
+#include <yarp/dev/DeviceDriver.h>
 
 #define MAX_PART 10
 #define MAX_AXIS 40
@@ -21,21 +25,14 @@
  * Route control for the iCub's logical joints to their ODE implementation.
  *
  */
-class iCubLogicalJoints {
+class iCubLogicalJoints : public yarp::dev::DeviceDriver, public LogicalJoints {
 public:
     /**
      *
      * Constructor.
      *
      */
-    iCubLogicalJoints();
-
-    /**
-     *
-     * Make sure joints are initialized.
-     *
-     */
-    void init();
+    iCubLogicalJoints(RobotConfig& config);
 
     /**
      *
@@ -43,13 +40,11 @@ public:
      * number.
      *
      */
-    LogicalJoint& control(int part, int axis);
+    virtual LogicalJoint& control(int part, int axis);
 private:
-    bool isSetup;
-
-    LogicalJoint simControl[MAX_PART][MAX_AXIS];
+    OdeLogicalJoint simControl[MAX_PART][MAX_AXIS];
     
-    LogicalJoint& getController(int part, int axis) {
+    OdeLogicalJoint& getController(int part, int axis) {
         return simControl[part][axis];
     }
 };
