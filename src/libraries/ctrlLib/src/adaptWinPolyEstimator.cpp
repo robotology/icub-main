@@ -227,7 +227,7 @@ Vector AWLinEstimator::fit(const Vector &x, const Vector &y, const unsigned int 
         sum_xiyi+=x[i]*y[i];
     }
 
-    double den=(M*sum_xixi-sum_xi*sum_xi);
+    double den=M*sum_xixi-sum_xi*sum_xi;
 
     Vector c(2);
 
