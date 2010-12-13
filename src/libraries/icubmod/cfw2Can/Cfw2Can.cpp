@@ -44,14 +44,21 @@ bool Cfw2Can::canGetBaudRate(unsigned int *rate)
 
 bool Cfw2Can::canIdAdd(unsigned int id)
 {
-    //printf("Cfw2Can::canIdAdd not implemented yet\n");
-
+ 
+#ifdef CFW2_HAS_FILTERS
+    int res;
+    res = cfwCanSetIdFilter(*handle ,  id , 1);
+#endif
     return true;
 }
 
 bool Cfw2Can::canIdDelete(unsigned int id)
 {
-    //    printf("Cfw2Can::canIdDelete not implemented yet\n");
+
+#ifdef CFW2_HAS_FILTERS
+    int res;
+    res = cfwCanSetIdFilter(*handle ,  id , 0);
+#endif
     return true;
 }
 
@@ -113,6 +120,13 @@ bool Cfw2Can::open(yarp::os::Searchable &par)
         fprintf(stderr, "Cfw2Can::open() returning error %d\n", res);
         return false;
     }
+#ifdef CFW2_HAS_FILTERS
+    int rtxEnable = cfwCanRtxEnable(*handle);
+    if( rtxEnable != 0) {
+        fprintf(stderr, "Cfw2Can::RtxEnable() returning error %d\n", rtxEnable);
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -122,7 +136,13 @@ bool Cfw2Can::close()
     int res;
     if (!handle)
         return false;
-
+#ifdef CFW2_HAS_FILTERS    
+    int rtxDisable = cfwCanRtxDisable(*handle);
+    if(rtxDisable != 0) {
+        fprintf(stderr, "Cfw2Can::RtxDisabling() returning error %d\n", rtxDisable);
+        return false;  
+    }
+#endif
     res=cfwCanClose (*handle);
 
     if (res!=0)
