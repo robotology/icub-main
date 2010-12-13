@@ -6,12 +6,13 @@
 
 #include "RobotConfig.h"
 
+#include <yarp/os/Property.h>
+
 void RobotConfig::setFlags() {
-    ConstString general = getFinder().findFile("general");
+    yarp::os::ConstString general = getFinder().findFile("general");
   
-    Property options;
+    yarp::os::Property options;
 	options.fromConfigFile(general.c_str());
 
-    RobotFlags& flags = config.getFlags();
-
+    // not finished...
 }
