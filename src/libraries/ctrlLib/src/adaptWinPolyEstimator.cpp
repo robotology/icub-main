@@ -61,7 +61,7 @@ Vector AWPolyEstimator::fit(const Vector &x, const Vector &y, const unsigned int
 {
     size_t nx=x.length();
     size_t ny=y.length();
-    size_t i2=nx>ny ? ny : nx;
+    size_t i2=(nx>ny)?ny:nx;
 
     unsigned int i1=0;
     unsigned int M =i2;
@@ -138,8 +138,8 @@ Vector AWPolyEstimator::estimate()
             x[j]=elemList[delta+j].data[i];
 
         // change the window length of two units, back and forth
-        unsigned int n1=(unsigned int)(winLen[i]>order+1 ? winLen[i]-1 : order+1);
-        unsigned int n2=(unsigned int)(winLen[i]<N ? winLen[i]+1 : N);
+        unsigned int n1=(unsigned int)((winLen[i]>(order+1))?(winLen[i]-1):(order+1));
+        unsigned int n2=(unsigned int)((winLen[i]<N)?(winLen[i]+1):N);
 
         // cycle upon all possibile window's length
         for (unsigned int n=n1; n<=n2; n++)
@@ -203,7 +203,7 @@ Vector AWLinEstimator::fit(const Vector &x, const Vector &y, const unsigned int 
 {
     size_t nx=x.length();
     size_t ny=y.length();
-    size_t i2=nx>ny ? ny : nx;
+    size_t i2=(nx>ny)?ny:nx;
 
     unsigned int i1=0;
     unsigned int M =i2;
