@@ -276,7 +276,9 @@ following ports:
       that enables the user to chose the dominant eye employed
       for the monocular approach.
     - [store]: store the controller context returning an integer
-      identifier.
+      identifier. The context comprises the values of internal
+      controller variables, such as the tracking mode, the
+      trajectory time and so on.
     - [restore] <id>: restore a previously stored controller
       context referred by the identifier \e id.
     - [del] (<id0> <id1> ...): delete all the contexts whose ids
