@@ -462,24 +462,28 @@ bool ClientGazeController::getPose(const string eyeSel, Vector &x, Vector &o)
 
     if (reply.get(0).asVocab()==GAZECTRL_ACK)
     {
-        if (reply.size()>=7+1)
+        if (reply.size()>1)
         {
-            x.resize(3);
-            o.resize(reply.size()-1-x.length());
-    
-            for (int i=0; i<x.length(); i++)
-                x[i]=reply.get(1+i).asDouble();
-    
-            for (int i=0; i<o.length(); i++)
-                o[i]=reply.get(1+x.length()+i).asDouble();
-    
-            return true;
+            if (Bottle *bPose=reply.get(1).asList())
+            {
+                if (bPose->size()>=7)
+                {
+                    x.resize(3);
+                    o.resize(bPose->size()-x.length());
+            
+                    for (int i=0; i<x.length(); i++)
+                        x[i]=bPose->get(i).asDouble();
+            
+                    for (int i=0; i<o.length(); i++)
+                        o[i]=bPose->get(x.length()+i).asDouble();
+            
+                    return true;
+                }
+            }
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -530,11 +534,9 @@ bool ClientGazeController::getStereoOptions(Bottle &options)
             options=*bOpt;
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 

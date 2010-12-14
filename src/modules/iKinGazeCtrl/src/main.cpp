@@ -222,21 +222,11 @@ following ports:
 - \e /<ctrlName>/<part>/x:o returns the actual fixation point 
   (Vector of 3 double).
  
-- \e /<ctrlName>/<part>/qd:o returns the target joints 
-  configuration which achieves the target fixation point (Vector
-  of 9 double: 3 for the non-controlled torso, 3 for neck and 3
-  for eyes). The order for torso angles is the one defined by
-  kinematic chain (reversed order). Units in deg.
- 
 - \e /<ctrlName>/<part>/q:o returns the actual joints 
   configuration during movement (Vector of 9 double). The order
   for torso angles is the one defined by kinematic chain
   (reversed order). Units in deg.
 
-- \e /<ctrlName>/<part>/v:o returns the computed joints 
-  velocities which steers the head to gaze at the target
-  fixation point (Vector of 6 double). Units in deg/s.
- 
 - \e /<ctrlName>/<part>/angles:o returns the current 
   azimuth/elevation couple wrt to the absolute head position,
   together with the current vergence (Vector of 3 double). Units
@@ -259,10 +249,15 @@ following ports:
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
-    - [get] [pose] <val>: returns the left eye pose if
-      val=="left", the right eye pose if vel=="right" and the
-      cyclopic eye pose if val=="cyclopic". The pose is given in
-      axis/angle representation (i.e. 7-componenets vector).
+    - [get] [des]: retusn the desired head joints angles that
+      achieve the target [deg].
+    - [get] [vel]: returns the head joints velocities commanded
+      by the controller [deg/s].
+    - [get] [pose] <val>: returns (enclosed in a list) the left
+      eye pose if val=="left", the right eye pose if
+      vel=="right" and the cyclopic eye pose if val=="cyclopic".
+      The pose is given in axis/angle representation (i.e.
+      7-componenets vector).
     - [get] [pid]: returns (enclosed in a list) a property-like
       bottle containing the pid values used to converge to the
       target with stereo input.
@@ -791,6 +786,32 @@ public:
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->getTrackingMode());
                         }
+                        else if (type==VOCAB3('d','e','s'))
+                        {
+                            Vector des;
+                            if (ctrl->getDesired(des))
+                            {
+                                reply.addVocab(ack);
+                                Bottle &bDes=reply.addList();
+                                for (int i=0; i<des.length(); i++)
+                                    bDes.addDouble(des[i]);
+                            }
+                            else
+                                reply.addVocab(nack);
+                        }
+                        else if (type==VOCAB3('v','e','l'))
+                        {
+                            Vector vel;
+                            if (ctrl->getVelocity(vel))
+                            {
+                                reply.addVocab(ack);
+                                Bottle &bVel=reply.addList();
+                                for (int i=0; i<vel.length(); i++)
+                                    bVel.addDouble(vel[i]);
+                            }
+                            else
+                                reply.addVocab(nack);
+                        }
                         else if (type==VOCAB4('p','o','s','e'))
                         {
                             if (command.size()>2)
@@ -801,8 +822,9 @@ public:
                                 if (ctrl->getPose(eyeSel,x))
                                 {
                                     reply.addVocab(ack);
+                                    Bottle &bPose=reply.addList();
                                     for (int i=0; i<x.length(); i++)
-                                        reply.addDouble(x[i]);
+                                        bPose.addDouble(x[i]);
                                 }
                                 else
                                 {

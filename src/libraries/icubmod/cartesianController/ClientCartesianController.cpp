@@ -296,11 +296,9 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -586,11 +584,9 @@ bool ClientCartesianController::getDOF(Vector &curDof)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -628,11 +624,9 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -666,11 +660,9 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -708,11 +700,9 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -746,11 +736,9 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -789,11 +777,9 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -825,11 +811,9 @@ bool ClientCartesianController::getLimits(const int axis, double *min, double *m
             *max=reply.get(2).asDouble();
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -888,11 +872,9 @@ bool ClientCartesianController::getTrajTime(double *t)
             *t=reply.get(1).asDouble();
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -946,11 +928,9 @@ bool ClientCartesianController::getInTargetTol(double *tol)
             *tol=reply.get(1).asDouble();
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -1008,11 +988,9 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -1050,11 +1028,9 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -1090,11 +1066,9 @@ bool ClientCartesianController::checkMotionDone(bool *f)
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -1163,11 +1137,9 @@ bool ClientCartesianController::storeContext(int *id)
             contextIdList.insert(*id=reply.get(1).asInt());
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 

@@ -63,10 +63,8 @@ protected:
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
     iKinLink *alignLnkRight1, *alignLnkRight2;
 
-    BufferedPort<Vector>       port_qd;
     BufferedPort<Vector>       port_x;
     BufferedPort<Vector>       port_q;
-    BufferedPort<Vector>       port_v;
 
     minJerkVelCtrl            *mjCtrlNeck;
     minJerkVelCtrl            *mjCtrlEyes;
@@ -120,6 +118,8 @@ public:
     virtual bool   isMotionDone() const;
     virtual void   setTrackingMode(const bool f);
     virtual bool   getTrackingMode() const;
+    virtual bool   getDesired(Vector &des) const;
+    virtual bool   getVelocity(Vector &vel) const;
     virtual bool   getPose(const string &eyeSel, Vector &x);
 };
 

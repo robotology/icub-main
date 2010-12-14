@@ -162,6 +162,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     vdegOld=v;
 
     qd=fbHead;
+    qddeg=CTRL_RAD2DEG*qd;
+    vdeg =CTRL_RAD2DEG*v;
 
     commData->get_isCtrlActive()=isCtrlActive=false;
     commData->get_canCtrlBeDisabled()=canCtrlBeDisabled=true;
@@ -209,9 +211,7 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 bool Controller::threadInit()
 {
     port_x.open((localName+"/x:o").c_str());
-    port_qd.open((localName+"/qd:o").c_str());
     port_q.open((localName+"/q:o").c_str());
-    port_v.open((localName+"/v:o").c_str());
 
     fprintf(stdout,"Starting Controller at %d ms\n",period);
 
@@ -337,31 +337,20 @@ void Controller::run()
     // print info
     printIter(xd,fp,qddeg,qdeg,vdeg,1.0);
 
-    // send qd,x,q,v through YARP ports
-    Vector &x  =port_x.prepare();
-    Vector &qd1=port_qd.prepare();
-    Vector &q1 =port_q.prepare();
-    Vector &v1 =port_v.prepare();
+    // send x,q through YARP ports
+    port_x.prepare()=fp;
 
-    qd1.resize(nJointsTorso+nJointsHead);
-    q1.resize(nJointsTorso+nJointsHead);
+    Vector &q=port_q.prepare();
+    q.resize(nJointsTorso+nJointsHead);
 
     int j;
     for (j=0; j<nJointsTorso; j++)
-        qd1[j]=q1[j]=CTRL_RAD2DEG*fbTorso[j];
+        q[j]=CTRL_RAD2DEG*fbTorso[j];
     for (; j<nJointsTorso+nJointsHead; j++)
-    {
-        qd1[j]=qddeg[j-nJointsTorso];
-        q1[j] =qdeg[j-nJointsTorso];
-    }
-
-    x=fp;
-    v1=vdeg;
+        q[j]=qdeg[j-nJointsTorso];
 
     port_x.write();
-    port_qd.write();
     port_q.write();
-    port_v.write();
 
     // update pose information
     mutex.wait();
@@ -397,14 +386,10 @@ void Controller::threadRelease()
     stopLimbsVel();
 
     port_x.interrupt();
-    port_qd.interrupt();
     port_q.interrupt();
-    port_v.interrupt();
 
     port_x.close();
-    port_qd.close();
     port_q.close();
-    port_v.close();
 
     delete neck;
     delete eyeL;
@@ -525,6 +510,22 @@ void Controller::setTrackingMode(const bool f)
 bool Controller::getTrackingMode() const 
 {
     return !canCtrlBeDisabled;
+}
+
+
+/************************************************************************/
+bool Controller::getDesired(Vector &des) const
+{
+    des=qddeg;
+    return true;
+}
+
+
+/************************************************************************/
+bool Controller::getVelocity(Vector &vel) const
+{
+    vel=vdeg;
+    return true;
 }
 
 
