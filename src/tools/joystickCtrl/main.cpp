@@ -329,6 +329,19 @@ public:
 		if (numAxes!=num_inputs)
 		{
 			fprintf ( stderr, "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
+			fprintf ( stderr, "This probably means that your .ini file does not containt a correct configuration.\n");
+			fprintf ( stderr, "Do you want to continue anyway (y/n)?\n");
+			char input[255];
+			cin >> input;
+			if (input[0]!='y' && input[0]!='Y') 
+			{
+				fprintf ( stderr, "Quitting...\n");
+				return false;
+			}
+			else
+			{
+				fprintf ( stderr, "Ovveriding the number of axes specified in the configuration file. Using %d axes.\n",numAxes);
+			}
 		}
 
 		/*
@@ -381,7 +394,7 @@ public:
 		}
 
 		// Sending data out on a Yarp port
-		Bottle data;
+		Bottle& data = port_command.prepare();
 		for(int i=0;i<num_outputs;i++)
 		{			
 			if (jointProperties[i].type == JTYPE_POLAR)
@@ -422,7 +435,6 @@ public:
 			{			
 				data.addDouble(outAxes[i]);
 			}
-		port_command.prepare() = data;
 		port_command.write();
 
 		// Displaying status
@@ -453,7 +465,7 @@ public:
 			//for (int i=0;i <numButtons; i++)
 			//	printf ( "%+6d", rawButtons[i] );
 
-			for (int i=0;i <num_inputs; i++)
+			for (int i=0;i <numAxes; i++)
 			{
 				fprintf ( stderr, "%+9.1f", rawAxes[i] );
 			}
@@ -462,7 +474,8 @@ public:
 			{
 				fprintf ( stderr, "%+9.1f", outAxes[i] );
 			}
-			printf ( "\r");
+			//printf ( "\r");
+			printf ( "\n");
             t0=t;
         }
     }
