@@ -220,12 +220,13 @@ following ports:
   upward.
  
 - \e /<ctrlName>/<part>/x:o returns the actual fixation point 
-  (Vector of 3 double).
+  (Vector of 3 double). Units in meters.
  
 - \e /<ctrlName>/<part>/q:o returns the actual joints 
   configuration during movement (Vector of 9 double). The order
   for torso angles is the one defined by kinematic chain
-  (reversed order). Units in deg.
+  (reversed order). Useful in conjunction with the \ref
+  iKinGazeView "viewer". Units in deg.
 
 - \e /<ctrlName>/<part>/angles:o returns the current 
   azimuth/elevation couple wrt to the absolute head position,
