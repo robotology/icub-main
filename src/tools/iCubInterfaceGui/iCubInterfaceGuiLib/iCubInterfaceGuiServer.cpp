@@ -158,7 +158,7 @@ void iCubInterfaceGuiServer::run()
     } 
 }
 
-bool iCubInterfaceGuiServer::log(std::string &key,yarp::os::Value &data)
+bool iCubInterfaceGuiServer::log(const std::string &key,const yarp::os::Value &data)
 {
     mMutex.wait();
     for (unsigned int n=0; n<(int)mNetworks.size(); ++n)

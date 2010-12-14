@@ -211,11 +211,21 @@ RobotInterfaceRemap::RobotInterfaceRemap()
     isParking=false;
     isCalibrating=false;
     abortF=false;
+
+    #ifdef _USE_INTERFACEGUI
+    mServerLogger=NULL;
+    #endif
 }  
 
 RobotInterfaceRemap::~RobotInterfaceRemap()
 {
-
+    #ifdef _USE_INTERFACEGUI
+    if (mServerLogger)
+    {
+        mServerLogger->stop();
+        delete mServerLogger;
+    }
+    #endif
 }
 
 void RobotInterfaceRemap::park(bool wait)
@@ -828,6 +838,25 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             }
         }
     }
+
+    #ifdef _USE_INTERFACEGUI
+    mServerLogger=new iCubInterfaceGuiServer;
+    mServerLogger->config(robotOptions);
+    mServerLogger->start();
+
+    netit=networks.begin();
+    while(netit!=networks.end())
+    {
+        RobotNetworkEntry *netEntry=(*netit);
+        IClientLogger* pCL;
+        netEntry->driver.view(pCL);
+
+        if (pCL)
+        {
+            pCL->setServerLogger(mServerLogger);
+        }
+    }
+    #endif
 
     return true;
 }

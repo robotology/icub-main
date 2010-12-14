@@ -42,7 +42,7 @@
 #include <list>
 
 #include <iCub/FactoryInterface.h>
-
+#include <iCub/LoggerInterfaces.h>
 
 namespace yarp{
     namespace dev{
@@ -358,7 +358,8 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
 			public ImplementOpenLoopControl,
             public ImplementControlMode,
 			public ImplementDebugInterface,
-            public IFactoryInterface
+            public IFactoryInterface,
+            public IClientLogger
 {
 private:
     CanBusMotionControl(const CanBusMotionControl&);
@@ -374,9 +375,13 @@ private:
     double lastReportTime;
     os::Stamp stampEncoders;
 
+    char _buff[256];
+
     std::list<AnalogSensor *> analogSensors;
 
     yarp::os::ConstString canDevName;
+
+    IServerLogger *mServerLogger;
 
     AnalogSensor *instantiateAnalog(yarp::os::Searchable& config, std::string id);
     void finiAnalog(AnalogSensor *s);
@@ -416,7 +421,36 @@ public:
 
     ////////////// IFactoryInterface
     yarp::dev::DeviceDriver *createDevice(yarp::os::Searchable& config);
+
+    ////////////// IClientLogger
+    void setServerLogger(const IServerLogger *server)
+    { 
+        mServerLogger=(IServerLogger*)server; 
+    }
+
+    #ifdef _USE_INTERFACEGUI
+    void logJointData(const char *devName,int network,int joint,int index,const yarp::os::Value& data)
+    {
+        if (mServerLogger)
+        {
+            sprintf(_buff,"%s %d,%d,%d",devName,network,joint,index);
+            mServerLogger->log(std::string(_buff),data);
+        }
+    }
     
+    void logNetworkData(const char *devName,int network,int index,const yarp::os::Value& data)
+    {
+        if (mServerLogger)
+        {
+            sprintf(_buff,"%s %d,%d",devName,network,index);
+            mServerLogger->log(std::string(_buff),data);
+        }
+    }
+    #else
+    #define logJointData(a,b,c,d,e)
+    #define logNetworkData(a,b,c,d)
+    #endif
+
     ///////////// PID INTERFACE
     //
     virtual bool setPidRaw(int j, const Pid &pid);

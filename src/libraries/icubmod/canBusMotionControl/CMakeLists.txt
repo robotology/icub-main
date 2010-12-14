@@ -2,8 +2,11 @@ PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
     INCLUDE CanBusMotionControl.h 
     WRAPPER controlboard)
 
-IF (NOT SKIP_canmotioncontrol)
+if (ICUB_USE_INTERFACEGUI)
+	add_definitions(-D_USE_INTERFACEGUI)
+endif (ICUB_USE_INTERFACEGUI)
 
+IF (NOT SKIP_canmotioncontrol)
   ADD_DEFINITIONS(-D_REENTRANT)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})

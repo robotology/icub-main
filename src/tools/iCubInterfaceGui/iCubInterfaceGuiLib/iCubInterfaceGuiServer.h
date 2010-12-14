@@ -36,8 +36,8 @@ public:
     void run();
     
     //bool findAndWrite(std::string address,yarp::os::Value& data);
-    bool log(std::string &key,yarp::os::Value &data);
-    bool log(const yarp::os::Bottle &data)const{ return false; }
+    bool log(const std::string &key,const yarp::os::Value &data);
+    bool log(const yarp::os::Bottle &data){ return false; }
 
     bool findAndRead(std::string address,yarp::os::Value* data);
 

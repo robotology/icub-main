@@ -522,7 +522,7 @@ void CanBackDoor::onRead(Bottle &b)
        bus->_writeBuffer[0].getData()[4]= val[5] & 0xFF;
        bus->_writeBuffer[0].setLen(6);
        bus->_writeMessages++;
-	    bus->writePacket();
+	   bus->writePacket();
 	   
 	   if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
 	   {
@@ -1582,6 +1582,8 @@ _done(0)
     ACE_ASSERT (system_resources != NULL);
     _opened = false;
 	_axisTorqueHelper = 0;
+
+    mServerLogger = NULL;
 }
 
 
@@ -2320,6 +2322,8 @@ void CanBusMotionControl:: run()
                                         canDevName.c_str(),
                                         r._networkN,
                                         rq.threadId, rq.msg, rq.joint);
+
+                                logJointData(canDevName.c_str(),r._networkN,j,3,yarp::os::Value(1));
                             }
                         else
                             ++it;
@@ -2365,6 +2369,20 @@ void CanBusMotionControl:: run()
                             errors.busoff,
                             errors.rxBufferOvr,
                             errors.txBufferOvr);
+
+                    
+                    const char *can=canDevName.c_str();
+
+                    logNetworkData(can,r._networkN,5,yarp::os::Value(errors.rxCanErrors));
+                    logNetworkData(can,r._networkN,6,yarp::os::Value(errors.txCanErrors));
+                    
+                    logNetworkData(can,r._networkN,7,yarp::os::Value((int)errors.rxCanFifoOvr));
+                    logNetworkData(can,r._networkN,8,yarp::os::Value((int)errors.txCanFifoOvr));
+
+                    logNetworkData(can,r._networkN,9,yarp::os::Value((int)errors.busoff));
+
+                    logNetworkData(can,r._networkN,3,yarp::os::Value((int)errors.rxBufferOvr));
+                    logNetworkData(can,r._networkN,4,yarp::os::Value((int)errors.txBufferOvr));
                 }
             else
                 {
@@ -2384,8 +2402,9 @@ void CanBusMotionControl:: run()
 					{
 						errorF=true;
 						int addr=r._destinations[j/2];
-						 fprintf(stderr, "%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
-						r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
+						fprintf(stderr, "%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
+						logJointData(canDevName.c_str(),r._networkN,j,18,yarp::os::Value((int)r._bcastRecvBuffer[j]._mainLoopOverflowCounter));                
+                        r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
 					}
             for (j=0; j<r._njoints ;j+=2)
                 {
@@ -2395,6 +2414,9 @@ void CanBusMotionControl:: run()
                             errorF=true;
                             sprintf(tmp, "Id:%d T:%u R:%u ", addr, r._bcastRecvBuffer[j]._canTxError, r._bcastRecvBuffer[j]._canRxError);
                             sprintf(message, "%s%s", message, tmp);
+
+                            logJointData(canDevName.c_str(),r._networkN,j,14,yarp::os::Value((int)r._bcastRecvBuffer[j]._canTxError));
+                            logJointData(canDevName.c_str(),r._networkN,j,15,yarp::os::Value((int)r._bcastRecvBuffer[j]._canRxError));
                         }
                 }
             if (!errorF)
@@ -2410,6 +2432,8 @@ void CanBusMotionControl:: run()
                 {
                     double lastRecv = r._bcastRecvBuffer[j]._update_e;
 
+                    logJointData(canDevName.c_str(),r._networkN,j,2,yarp::os::Value((int)(currentRun-lastRecv)));
+
                     if ( (currentRun-lastRecv)>BCAST_STATUS_TIMEOUT)
                         {
                             int ch=j%2;
@@ -2418,6 +2442,8 @@ void CanBusMotionControl:: run()
                                     canDevName.c_str(),
                                     r._networkN, 
                                     addr, ch, currentRun-lastRecv);
+
+                            logJointData(canDevName.c_str(),r._networkN,j,3,yarp::os::Value(1));
                         }
                 }
 
@@ -2431,8 +2457,11 @@ void CanBusMotionControl:: run()
                     r._bcastRecvBuffer[j]._position.getStats(it, dT, min, max);
                     r._bcastRecvBuffer[j]._position.resetStats();
 
+                    logJointData(canDevName.c_str(),r._networkN,j,4,yarp::os::Value(max));
+
                     double POS_LATENCY_WARN_THR=averagePeriod*1.5;
                     if (max>POS_LATENCY_WARN_THR)
+                    {
                         fprintf(stderr, "%s [%d] jnt %d, warning encoder latency above threshold (lat: %.2lf [ms], received %d msgs)\n",
                                 canDevName.c_str(),
                                 r._networkN,
@@ -2440,13 +2469,16 @@ void CanBusMotionControl:: run()
                                 max,
                                 it);
 
+                        logJointData(canDevName.c_str(),r._networkN,j,5,yarp::os::Value(1));
+                    }
                     if (it<1)
+                    {
                         fprintf(stderr, "%s [%d] joint %d, warning not enough encoder messages (received %d msgs)\n",
                                 canDevName.c_str(),
                                 r._networkN,
                                 j, 
                                 it);
-
+                    }
                 }
 
             ///////////////////check analog

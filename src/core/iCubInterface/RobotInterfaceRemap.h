@@ -36,6 +36,11 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/os/BufferedPort.h>
 
+#ifdef _USE_INTERFACEGUI
+#include <iCub/LoggerInterfaces.h>
+#include <iCubInterfaceGuiServer.h>
+#endif
+
 class AnalogServer: public yarp::os::RateThread, public yarp::os::PortReader
 {
     yarp::dev::IAnalogSensor *is;
@@ -492,6 +497,10 @@ protected:
     bool automaticIds;
 
     std::string robotName;
+
+    #ifdef _USE_INTERFACEGUI
+    iCubInterfaceGuiServer *mServerLogger;
+    #endif
 
 public:
     // default constructor.
