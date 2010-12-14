@@ -250,7 +250,7 @@ following ports:
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
-    - [get] [des]: retusn the desired head joints angles that
+    - [get] [des]: returns the desired head joints angles that
       achieve the target [deg].
     - [get] [vel]: returns the head joints velocities commanded
       by the controller [deg/s].
