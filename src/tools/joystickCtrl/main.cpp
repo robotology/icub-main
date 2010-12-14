@@ -394,7 +394,7 @@ public:
 		}
 
 		// Sending data out on a Yarp port
-		Bottle& data = port_command.prepare();
+		Bottle data;
 		for(int i=0;i<num_outputs;i++)
 		{			
 			if (jointProperties[i].type == JTYPE_POLAR)
@@ -435,6 +435,7 @@ public:
 			{			
 				data.addDouble(outAxes[i]);
 			}
+		port_command.prepare() = data;
 		port_command.write();
 
 		// Displaying status
