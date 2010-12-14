@@ -57,7 +57,7 @@ for i=1:szIW(2)
 end
 fprintf(fid,'\n');
 
-fprintf(fid,'// output preprocessing\n');
+fprintf(fid,'// output postprocessing\n');
 params=net.outputs{2}.processSettings{end};
 for i=1:szLW(1)
     fprintf(fid,'outMinMaxY_%d\t\t( %.15f %.15f )\n',uint8(i-1),params.ymin,params.ymax);
