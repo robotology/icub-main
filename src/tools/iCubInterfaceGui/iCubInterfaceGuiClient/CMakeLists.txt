@@ -1,7 +1,6 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 set(PROJECTNAME iCubInterfaceGuiClient)
 
-add_definitions(${GTKMM_C_FLAGS})
+add_definitions(${GtkMM_C_FLAGS})
 
 file(GLOB folder_header *.h)
 file(GLOB folder_source *.cpp)
@@ -17,9 +16,9 @@ include_directories(${GTKMM_INCLUDE_DIRS})
 add_executable(${PROJECTNAME} ${folder_source} ${folder_header})
 
 target_link_libraries(${PROJECTNAME} 
-                      ${GTKMM_LIBRARIES} 
+                      ${GtkMM_LIBRARIES} 
                       ${YARP_LIBRARIES} 
-                      ${GTHREAD_LIBRARIES}
+                      ${Gthread_LIBRARIES}
 		              iCubInterfaceGuiLib)
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
