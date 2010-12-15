@@ -42,8 +42,11 @@ public:
 
     virtual void sendVision();
 
-    virtual void sendTouch(yarp::os::Bottle& report);
-    virtual bool shouldSendTouch();
+    virtual void sendTouchLeft(yarp::os::Bottle& report);
+    virtual void sendTouchRight(yarp::os::Bottle& report);
+
+    virtual bool shouldSendTouchLeft();
+    virtual bool shouldSendTouchRight();
 
     virtual void sendInertial(yarp::os::Bottle& report);
     virtual bool shouldSendInertial();
@@ -72,7 +75,9 @@ private:
     yarp::dev::PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;
 	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide, portLeftFov, portLeftLog, portRightFov, portRightLog ;
     yarp::os::Port cmdPort;
-	yarp::os::BufferedPort<yarp::os::Bottle> tactilePort;
+	yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> tactileRightPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> tactilePort;
     yarp::os::BufferedPort<yarp::os::Bottle> inertialPort;
 
     int _argc;

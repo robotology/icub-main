@@ -14,8 +14,10 @@
 class RobotStreamer {
 public:
     virtual void sendVision() = 0;
-    virtual void sendTouch(yarp::os::Bottle& report) = 0;
-    virtual bool shouldSendTouch() = 0;
+    virtual void sendTouchLeft(yarp::os::Bottle& report) = 0;
+    virtual void sendTouchRight(yarp::os::Bottle& report) = 0;
+    virtual bool shouldSendTouchLeft() = 0;
+    virtual bool shouldSendTouchRight() = 0;
     virtual void sendInertial(yarp::os::Bottle& report) = 0;
     virtual bool shouldSendInertial() = 0;
 };

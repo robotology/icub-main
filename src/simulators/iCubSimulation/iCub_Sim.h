@@ -117,7 +117,7 @@ private:
 
     static void inspectBodyTouch_continuousValued(Bottle& report);
 
-	static void inspectBodyTouch(Bottle& report);
+    static void inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean);
 
 	static void getAngles(const dReal *m, float& z, float& y, float& x);
 

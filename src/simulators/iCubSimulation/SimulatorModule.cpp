@@ -60,15 +60,23 @@ SimulatorModule::SimulatorModule(RobotConfig& config, Simulation *sim) :
     iCubRLeg = NULL;
     iCubTorso = NULL;
 }
-    
 
-void SimulatorModule::sendTouch(Bottle& report){
-    tactilePort.prepare() = report;
-    tactilePort.write();
+void SimulatorModule::sendTouchLeft(Bottle& report){
+    tactileLeftPort.prepare() = report;
+    tactileLeftPort.write();
+}
+
+void SimulatorModule::sendTouchRight(Bottle& report){
+    tactileRightPort.prepare() = report;
+    tactileRightPort.write();
 }
 	
-bool SimulatorModule::shouldSendTouch() {
-    return tactilePort.getOutputCount()>0;
+bool SimulatorModule::shouldSendTouchLeft() {
+    return tactileLeftPort.getOutputCount()>0;
+}
+
+bool SimulatorModule::shouldSendTouchRight() {
+    return tactileRightPort.getOutputCount()>0;
 }
 
 void SimulatorModule::sendInertial(Bottle& report){
@@ -111,7 +119,8 @@ bool SimulatorModule::closeModule() {
     
     portWide.close();
     
-    tactilePort.close();
+    tactileLeftPort.close();
+    tactileRightPort.close();
     inertialPort.close();
     cmdPort.close();
     
@@ -317,10 +326,14 @@ void SimulatorModule::initImagePorts() {
 bool SimulatorModule::open() {
 	cmdPort.setReader(*this);
     string world = moduleName + "/world";
-    string tactile = moduleName + "/touch";
+    
+    string tactileLeft = moduleName + "/touch/left";
+    string tactileRight = moduleName + "/touch/right";
+
     string inertial = moduleName + "/inertial";
 	cmdPort.open( world.c_str() );
-	tactilePort.open( tactile.c_str() );
+	tactileLeftPort.open( tactileLeft.c_str() );
+    tactileRightPort.open( tactileRight.c_str() );
     inertialPort.open( inertial.c_str() );
 
     if (robot_flags.actVision) {
