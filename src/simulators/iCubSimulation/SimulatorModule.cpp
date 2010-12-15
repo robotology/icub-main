@@ -327,8 +327,8 @@ bool SimulatorModule::open() {
 	cmdPort.setReader(*this);
     string world = moduleName + "/world";
     
-    string tactileLeft = moduleName + "/touch/left";
-    string tactileRight = moduleName + "/touch/right";
+    string tactileLeft = moduleName + "/skin/left_hand";
+    string tactileRight = moduleName + "/skin/right_hand";
 
     string inertial = moduleName + "/inertial";
 	cmdPort.open( world.c_str() );
