@@ -304,49 +304,49 @@ public:
     */
     virtual ~iKinLink() { }
 
-	/****** void methods for iDyn *******/
-	/** set **/
-	virtual	double setDAng(const double _dteta)                                               { notImplemented(verbose); return 0.0;   }
-	virtual	double setD2Ang(const double _ddteta)                                             { notImplemented(verbose); return 0.0;   }
-	virtual void   setPosVelAcc(const double _teta,const double _dteta,const double _ddteta)  { notImplemented(verbose);               }
-	virtual	bool   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
+    /****** void methods for iDyn *******/
+    /** set **/
+    virtual double setDAng(const double _dteta)                                               { notImplemented(verbose); return 0.0;   }
+    virtual double setD2Ang(const double _ddteta)                                             { notImplemented(verbose); return 0.0;   }
+    virtual void   setPosVelAcc(const double _teta,const double _dteta,const double _ddteta)  { notImplemented(verbose);               }
+    virtual bool   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
                                         const yarp::sig::Matrix &_I, const double _kr,
                                         const double _Fv, const double _Fs, const double _Im) { notImplemented(verbose); return false; }
-	virtual	bool   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
+    virtual bool   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
                                         const yarp::sig::Matrix &_I)                          { notImplemented(verbose); return false; }
-	virtual	bool   setStaticParameters(const double _m, const yarp::sig::Matrix &_HC)         { notImplemented(verbose); return false; }
-	virtual	bool   setInertia(const yarp::sig::Matrix &_I)                                    { notImplemented(verbose); return false; }
-	virtual	void   setMass(const double _m)				                                      { notImplemented(verbose);               }
-	virtual	bool   setCOM(const yarp::sig::Matrix &_HC)	                                      { notImplemented(verbose); return false; }
-	virtual	bool   setCOM(const yarp::sig::Vector &_rC)	                                      { notImplemented(verbose); return false; }
-	virtual bool   setForce(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu)        { notImplemented(verbose); return false; }
-	virtual bool   setMoment(const yarp::sig::Vector &_Mu)                                    { notImplemented(verbose); return false; }
-	virtual void   setTorque(const double _Tau)                                               { notImplemented(verbose);               }
+    virtual bool   setStaticParameters(const double _m, const yarp::sig::Matrix &_HC)         { notImplemented(verbose); return false; }
+    virtual bool   setInertia(const yarp::sig::Matrix &_I)                                    { notImplemented(verbose); return false; }
+    virtual void   setMass(const double _m)                                                   { notImplemented(verbose);               }
+    virtual bool   setCOM(const yarp::sig::Matrix &_HC)	                                      { notImplemented(verbose); return false; }
+    virtual bool   setCOM(const yarp::sig::Vector &_rC)	                                      { notImplemented(verbose); return false; }
+    virtual bool   setForce(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu)        { notImplemented(verbose); return false; }
+    virtual bool   setMoment(const yarp::sig::Vector &_Mu)                                    { notImplemented(verbose); return false; }
+    virtual void   setTorque(const double _Tau)                                               { notImplemented(verbose);               }
 
-	/** get **/
-	virtual	yarp::sig::Matrix getInertia() const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-	virtual	double			  getMass()	   const { notImplemented(verbose); return 0.0;                                }
-	virtual	double			  getIm()	   const { notImplemented(verbose); return 0.0;                                }
-	virtual	double			  getKr()	   const { notImplemented(verbose); return 0.0;                                }
-	virtual	double			  getFs()	   const { notImplemented(verbose); return 0.0;                                }
-	virtual	double			  getFv()	   const { notImplemented(verbose); return 0.0;                                }
-	virtual	yarp::sig::Matrix getCOM()	   const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-	virtual	double			  getDAng()    const { notImplemented(verbose); return 0.0;                                }
-	virtual	double			  getD2Ang()   const { notImplemented(verbose); return 0.0;                                }
-	virtual	yarp::sig::Matrix getR()	         { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-	virtual	yarp::sig::Matrix getRC()	         { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-	virtual	yarp::sig::Vector getr()	         { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getrC()	         { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getW()	   const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getdW()      const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getdWM()     const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getLinAcc()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getLinAccC() const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getLinVel()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getLinVelC() const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getForce()   const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	yarp::sig::Vector getMoment()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-	virtual	double			  getTorque()  const { notImplemented(verbose); return 0.0;                                }
+    /** get **/
+    virtual yarp::sig::Matrix getInertia() const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+    virtual double            getMass()	   const { notImplemented(verbose); return 0.0;                                }
+    virtual double            getIm()      const { notImplemented(verbose); return 0.0;                                }
+    virtual double            getKr()      const { notImplemented(verbose); return 0.0;                                }
+    virtual double            getFs()      const { notImplemented(verbose); return 0.0;                                }
+    virtual double            getFv()      const { notImplemented(verbose); return 0.0;                                }
+    virtual yarp::sig::Matrix getCOM()     const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+    virtual double            getDAng()    const { notImplemented(verbose); return 0.0;                                }
+    virtual double            getD2Ang()   const { notImplemented(verbose); return 0.0;                                }
+    virtual yarp::sig::Matrix getR()             { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+    virtual yarp::sig::Matrix getRC()            { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+    virtual yarp::sig::Vector getr()             { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getrC()            { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getW()       const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getdW()      const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getdWM()     const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getLinAcc()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getLinAccC() const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getLinVel()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getLinVelC() const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getForce()   const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual yarp::sig::Vector getMoment()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual double            getTorque()  const { notImplemented(verbose); return 0.0;                                }
 };
 
 
@@ -375,7 +375,7 @@ protected:
 
     virtual void clone(const iKinChain &c);
     virtual void build();
-	virtual void dispose();
+    virtual void dispose();
 
     yarp::sig::Vector RotAng(const yarp::sig::Matrix &R);
     yarp::sig::Vector dRotAng(const yarp::sig::Matrix &R, const yarp::sig::Matrix &dR);
@@ -895,7 +895,7 @@ public:
     * @return a pointer to a Chain object with the same Links of 
     *         Limb.
     */
-	iKinChain *asChain() { return static_cast<iKinChain*>(this); }
+    iKinChain *asChain() { return static_cast<iKinChain*>(this); }
 
     /**
     * Returns the Limb type as a string. 
