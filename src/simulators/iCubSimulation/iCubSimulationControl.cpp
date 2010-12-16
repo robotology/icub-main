@@ -287,12 +287,14 @@ void iCubSimulationControl::run() {
         
         for (i=0; i<len; i++) {
             LogicalJoint& ctrl = manager->control(partSelec,i); 
+            if (!ctrl.isValid()) continue;
             current_pos[i] = ctrl.getAngle();
             current_vel[i] = ctrl.getVelocity();
         }
         
         for (i=0; i<len; i++) {
             LogicalJoint& ctrl = manager->control(partSelec,i); 
+            if (!ctrl.isValid()) continue;
             motor_on[i] = true; // no reason to turn motors off, for now
             if (velocityMode) {
                 //ctrl.setVelocity(next_vel[i]);

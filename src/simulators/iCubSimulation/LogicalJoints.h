@@ -5,12 +5,14 @@
 
 #include "LogicalJoint.h"
 
+#include <yarp/dev/DeviceDriver.h>
+
 /**
  *
  * Route control for the robots controlled joints to their implementation.
  *
  */
-class LogicalJoints {
+class LogicalJoints : public yarp::dev::DeviceDriver {
 public:
     virtual ~LogicalJoints() {}
 

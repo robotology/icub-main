@@ -25,7 +25,7 @@
  * Route control for the iCub's logical joints to their ODE implementation.
  *
  */
-class iCubLogicalJoints : public yarp::dev::DeviceDriver, public LogicalJoints {
+class iCubLogicalJoints : public LogicalJoints {
 public:
     /**
      *

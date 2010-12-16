@@ -101,6 +101,10 @@ public:
      */
     void setVelocityRaw(double target);
 
+    virtual bool isValid() {
+        return number != -1;
+    }
+
 private:
     int number;
 	std::string unit;

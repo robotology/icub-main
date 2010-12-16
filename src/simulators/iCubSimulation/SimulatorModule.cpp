@@ -206,6 +206,7 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
 }
 
 yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
+    printf("Creating interface for body part %s\n", name);
 	Property options;
     ConstString part_file = finder.findFile(name);
     options.fromConfigFile(part_file.c_str());

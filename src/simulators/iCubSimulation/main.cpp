@@ -125,34 +125,52 @@
 #include "iCubSimulationControl.h"
 #include "SimConfig.h"
 
-#include "OdeInit.h" 
-#include "iCubLogicalJoints.h"
-#include "iCub_Sim.h"
+#include "OdeSdlSimulationBundle.h"
+#include "FakeSimulationBundle.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
 
 int main(int argc, char** argv) {
-	dInitODE2(0); 
-	printf("\nODE configuration: %s\n\n", dGetConfiguration());
+    Property options;
+    options.fromCommand(argc,argv);
+
+    // the "bundle" controls the implementation used for the simulation
+    // (as opposed to the simulation interface).  The default is the
+    // standard ODE/SDL implementation.  There is a "fake" do-nothing
+    // simulation for test purposes that does nothing other than create
+    // the standard ports (pass --fake to start this simulation).
+    SimulationBundle *bundle = NULL;
+    if (options.check("fake")) {
+        bundle = new FakeSimulationBundle;
+    } else {
+        bundle = new OdeSdlSimulationBundle;
+    }
+    if (bundle==NULL) {
+        fprintf(stderr,"Failed to allocate simulator\n");
+        return 1;
+    }
+
+    bundle->onBegin();
 
     Network yarp;
-
     if (!yarp.checkNetwork())
-        return -1;
+        return 1;
 
     SimConfig config;
     string moduleName;
     config.configure(argc, argv, moduleName);
 
-    OdeInit& odeinit = OdeInit::init(&config);
-
-    // Set up ODE joints
-    iCubLogicalJoints icub_joints(config);
+    LogicalJoints *icub_joints = bundle->createJoints(config);
+    if (icub_joints==NULL) {
+        fprintf(stderr,"Failed to allocate joints\n");
+        delete bundle;
+        return 1;
+    }
 
     PolyDriver icub_joints_dev;
-    icub_joints_dev.give(&icub_joints,false);
+    icub_joints_dev.give(icub_joints,true);
 
     // Make sure all individual control boards route to single ode_joints driver
     Drivers::factory().add(new DriverLinkCreator("icub_joints",icub_joints_dev));
@@ -167,8 +185,8 @@ int main(int argc, char** argv) {
         yarp::os::exit(1);
     }
 
-    SimulatorModule module(config, new OdeSdlSimulation());
-    odeinit.setName(moduleName);
+    SimulatorModule module(config,bundle->createSimulation(config));
+
     module.open();
 
     //this blocks until termination (through ctrl+c or a kill)
@@ -176,10 +194,10 @@ int main(int argc, char** argv) {
 
     module.closeModule();
 
-#ifndef TEST_WITHOUT_ODE
-    OdeInit::destroy();
-    dCloseODE();
-#endif
+    bundle->onEnd();
+
+    delete bundle;
+    bundle = NULL;
 
     return 0;
 }

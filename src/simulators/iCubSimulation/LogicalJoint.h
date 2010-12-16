@@ -44,6 +44,8 @@ public:
      * Set velocity of joint (in ICUB units/sign).
      */
     virtual void setVelocity(double target) = 0;
+
+    virtual bool isValid() = 0;
 };
 
 
