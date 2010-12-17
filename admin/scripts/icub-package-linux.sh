@@ -10,7 +10,7 @@ export URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
 scp $ARCHFILE babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
 rm $ARCHFILE
 
-cp ./admin/scripts/current_dependencies.txt $DEPFILE
+cp $SOURCE_TMP_DIR./admin/scripts/current_dependencies.txt $DEPFILE
 scp $DEPFILE babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
 
 #export SOURCE_TMP_DIR=./package-tmp
