@@ -62,16 +62,17 @@ echo "Done Windows"
 ################ Upload
 
 scp $ARCHFILE_LINUX babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
-rm $ARCHFILE_LINUX
 
 scp $ARCHFILE_WINDOWS babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
-rm $ARCHFILE_WINDOWS
 
 scp $DEPFILE babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
+
+#scp $ARCHFILE_WINDOWS natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/win/$ARCHFILE_WINDOWS
+#scp $ARCHFILE_LINUX natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/linux/$ARCHFILE_LINUX
 
 echo "Done"
 
 cd ..
-rm $SOURCE_TMP_DIR -rf
+#rm $SOURCE_TMP_DIR -rf
 
 
