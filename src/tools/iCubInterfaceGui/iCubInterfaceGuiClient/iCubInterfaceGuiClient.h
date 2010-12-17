@@ -129,7 +129,11 @@ public:
         {
             mThread->stop();
             delete mThread;
+            mThread=NULL;
         }
+
+        mPort.interrupt();
+        mPort.close();
     }
 
     void run()

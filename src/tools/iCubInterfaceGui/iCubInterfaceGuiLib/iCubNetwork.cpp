@@ -34,27 +34,25 @@ const char* iCubNetwork::mRowNames[]=
         NULL
 };
 
-bool iCubNetwork::findAndWrite(std::string addr,const yarp::os::Value& data)
+bool iCubNetwork::findAndWrite(std::string address,const yarp::os::Value& data)
 {
-    int index=addr.find(",");
+    int index=address.find(",");
     if (index<0) return false; // should never happen
 
-    std::string name=addr.substr(0,index);
+    std::string netAddress=address.substr(0,index);
 
-    if (name.length()==0) return false; // should never happen
+    if (netAddress.length()==0) return false; // should never happen
 
-    //if (name!=mName) return false;
-
-    if (name!=mDevice+" "+mID) return false;
+    if (netAddress!=mNetAddress) return false;
 
     ++index;
-    addr=addr.substr(index,addr.length()-index);
-    index=addr.find(",");
+    address=address.substr(index,address.length()-index);
+    index=address.find(",");
 
     // is the message for the network or for a board channel?
     if (index<0) // for the network
     {
-        index=atoi(addr.c_str());
+        index=atoi(address.c_str());
 
         if (index>=mData.size()) return false;
 
@@ -66,7 +64,7 @@ bool iCubNetwork::findAndWrite(std::string addr,const yarp::os::Value& data)
     // for a board channel
     for (int i=0; i<(int)mBoards.size(); ++i)
     {
-        if (mBoards[i]->findAndWrite(addr,data))
+        if (mBoards[i]->findAndWrite(address,data))
         {
             return true;
         }
@@ -74,7 +72,7 @@ bool iCubNetwork::findAndWrite(std::string addr,const yarp::os::Value& data)
 
     return false;
 }
-
+/*
 bool iCubNetwork::findAndRead(std::string addr,yarp::os::Value* data)
 {
     int index=addr.find(",");
@@ -113,3 +111,4 @@ bool iCubNetwork::findAndRead(std::string addr,yarp::os::Value* data)
 
     return false;
 }
+*/

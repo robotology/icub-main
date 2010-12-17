@@ -41,7 +41,7 @@ protected:
     std::vector<int> mapD0,mapD1,mapJ0;
 };
 
-void iCubInterfaceGuiServer::config(yarp::os::Property &robot)
+void iCubInterfaceGuiServer::config(std::string& PATH,yarp::os::Property &robot)
 {
     std::vector<JointRemapper> jointRmp;
 
@@ -98,9 +98,9 @@ void iCubInterfaceGuiServer::config(yarp::os::Property &robot)
     for (unsigned int n=0; n<mNetworks.size(); ++n)
     {
         yarp::os::Property netConf;
-        netConf.fromConfigFile(mNetworks[n]->mFile.c_str());
+        netConf.fromConfigFile((PATH+mNetworks[n]->mFile).c_str());
         yarp::os::Bottle canConf=netConf.findGroup("CAN");
-    
+        
         mNetworks[n]->setID(canConf.find("CanDeviceNum").asInt());
     
         yarp::os::Bottle devices=canConf.findGroup("CanAddresses");
@@ -145,6 +145,7 @@ void iCubInterfaceGuiServer::run()
                 rpl=toBottle();
 
                 //printf("%s\n",rpl.toString().c_str());
+                //fflush(stdout);
 
                 mPort.reply(rpl);
 
@@ -173,6 +174,7 @@ bool iCubInterfaceGuiServer::log(const std::string &key,const yarp::os::Value &d
     return false;
 }
 
+/*
 bool iCubInterfaceGuiServer::findAndRead(std::string address,yarp::os::Value* data)
 {
     mMutex.wait();
@@ -187,6 +189,7 @@ bool iCubInterfaceGuiServer::findAndRead(std::string address,yarp::os::Value* da
     mMutex.post();
     return false;
 }
+*/
 
 yarp::os::Bottle iCubInterfaceGuiServer::toBottle(bool bConfig)
 {

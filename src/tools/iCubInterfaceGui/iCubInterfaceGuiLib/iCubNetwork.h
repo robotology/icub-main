@@ -59,6 +59,8 @@ public:
         char buff[32];
         sprintf(buff,"%d",ID);
         mID=buff;
+
+        mNetAddress=mDevice+" "+mID;
     }
 
     enum Index
@@ -94,7 +96,7 @@ public:
     }
 
     bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    bool findAndRead(std::string addr,yarp::os::Value* data);
+    //bool findAndRead(std::string addr,yarp::os::Value* data);
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false)
     {
@@ -139,7 +141,7 @@ public:
         }
     }
 
-    std::string mName,mFile,mDevice,mID;
+    std::string mName,mFile,mDevice,mID,mNetAddress;
 
 protected:
     std::vector<iCubBoard*> mBoards;
