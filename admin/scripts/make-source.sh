@@ -11,44 +11,45 @@ export ARCHFILE_WINDOWS=$MODULE-src-$REL.zip
 export DEPFILE=$MODULE-dep-$REL.txt
 export URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
 
-versionFile=$MODULE/VERSION
+mkdir $SOURCE_TMP_DIR
+cd $SOURCE_TMP_DIR
+
+versionFile=$SOURCE_TMP_DIR/$MODULE/VERSION
 echo "iCub snapshot version $REL" > $versionFile
 echo "Built on `date`" >> $versionFile
 echo "See $DEPFILE for list of library dependencies." >> $versionFile
 
 ########### Linux
 echo "Checkout code from $URL"
-mkdir $SOURCE_TMP_DIR
-cd $SOURCE_TMP_DIR
 
 svn export $URL
 
 cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
+cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
 
 echo "Preparing tar file"
-tar cvfz ../$ARCHFILE_LINUX $MODULE
+tar cvfz $ARCHFILE_LINUX $MODULE
 
-echo "Cleaning tmp dir"
+echo "Cleaning checkout"
 cd ..
-rm $SOURCE_TMP_DIR -rf
+rm $MODULE -rf
 
 echo "Done Linux"
 
 ########### Windows
 echo "Checkout code from $URL"
-mkdir $SOURCE_TMP_DIR
-cd $SOURCE_TMP_DIR
 
 svn export $URL --native-eol CRLF
 
 cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
+cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
 
 echo "Preparing zip file"
-zip -r ../$ARCHFILE_WINDOWS $MODULE
+zip -r $ARCHFILE_WINDOWS $MODULE
 
-echo "Cleaning tmp dir"
+echo "Cleaning checkout"
 cd ..
-rm $SOURCE_TMP_DIR -rf
+rm $MODULE -rf
 
 echo "Done Windows"
 
@@ -60,8 +61,11 @@ rm $ARCHFILE_LINUX
 scp $ARCHFILE_WINDOWS babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
 rm $ARCHFILE_WINDOWS
 
-svn up admin/scripts
-cp ./admin/scripts/current_dependencies.txt $DEPFILE
 scp $DEPFILE babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
 
 echo "Done"
+
+cd ..
+rm $SOURCE_TMP_DIR -rf
+
+
