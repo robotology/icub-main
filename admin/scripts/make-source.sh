@@ -14,7 +14,7 @@ export URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
 mkdir $SOURCE_TMP_DIR
 cd $SOURCE_TMP_DIR
 
-versionFile=$SOURCE_TMP_DIR/$MODULE/VERSION
+versionFile=VERSION
 echo "iCub snapshot version $REL" > $versionFile
 echo "Built on `date`" >> $versionFile
 echo "See $DEPFILE for list of library dependencies." >> $versionFile
@@ -24,8 +24,12 @@ echo "Checkout code from $URL"
 
 svn export $URL
 
-cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
+#store this file for later upload
 cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
+
+#preparing repository
+cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
+cp $versionFile $MODULE
 
 echo "Preparing tar file"
 tar cvfz $ARCHFILE_LINUX $MODULE
@@ -41,8 +45,12 @@ echo "Checkout code from $URL"
 
 svn export $URL --native-eol CRLF
 
-cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
+#store this file for later upload
 cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
+
+#preparing repository
+cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
+cp $versionFile $MODULE
 
 echo "Preparing zip file"
 zip -r $ARCHFILE_WINDOWS $MODULE
