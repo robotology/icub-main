@@ -165,8 +165,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     qddeg=CTRL_RAD2DEG*qd;
     vdeg =CTRL_RAD2DEG*v;
 
-    commData->get_isCtrlActive()=isCtrlActive=false;
-    commData->get_canCtrlBeDisabled()=canCtrlBeDisabled=true;
+    commData->get_isCtrlActive()=false;
+    commData->get_canCtrlBeDisabled()=true;
 
     port_xd=NULL;
 }
@@ -235,24 +235,23 @@ void Controller::run()
     bool swOffCond=(norm(commData->get_qd()-fbHead)<CTRL_DEG2RAD*GAZECTRL_MOTIONDONE_QTHRES);
 
     // verify control switching conditions
-    if (isCtrlActive)
+    if (commData->get_isCtrlActive())
     {
         // switch-off condition
         if (swOffCond)
         {
             stopLimbsVel();
 
-            commData->get_isCtrlActive()=isCtrlActive=false;
+            commData->get_isCtrlActive()=false;
             port_xd->get_new()=false;
         }
     }       
     else if (!swOffCond)
     {
         // switch-on condition
-        isCtrlActive=(canCtrlBeDisabled ? (port_xd->get_new() || (commData->get_qd()[0]!=qd[0]) || (commData->get_qd()[1]!=qd[1]) || (commData->get_qd()[2]!=qd[2])) :
-                                          (norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES));
-
-        commData->get_isCtrlActive()=isCtrlActive;
+        commData->get_isCtrlActive()=(commData->get_canCtrlBeDisabled() ? 
+                                      (port_xd->get_new() || (commData->get_qd()[0]!=qd[0]) || (commData->get_qd()[1]!=qd[1]) || (commData->get_qd()[2]!=qd[2])) :
+                                      (norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES));
     }
 
     // get data
@@ -283,7 +282,7 @@ void Controller::run()
         fbEyes[i]=fbHead[3+i];
     }
 
-    if (isCtrlActive)
+    if (commData->get_isCtrlActive())
     {
         // control loop
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
@@ -492,14 +491,14 @@ void Controller::setTeyes(const double execTime)
 /************************************************************************/
 bool Controller::isMotionDone() const
 {
-    return !isCtrlActive;
+    return !commData->get_isCtrlActive();
 }
 
 
 /************************************************************************/
 void Controller::setTrackingMode(const bool f)
 {
-    commData->get_canCtrlBeDisabled()=canCtrlBeDisabled=!f;
+    commData->get_canCtrlBeDisabled()=!f;
 
     if (port_xd && f)
         port_xd->set_xd(fp);
@@ -509,7 +508,7 @@ void Controller::setTrackingMode(const bool f)
 /************************************************************************/
 bool Controller::getTrackingMode() const 
 {
-    return !canCtrlBeDisabled;
+    return !commData->get_canCtrlBeDisabled();
 }
 
 

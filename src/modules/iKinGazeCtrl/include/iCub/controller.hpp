@@ -86,9 +86,6 @@ protected:
     double minAbsVel;
     double Ts;
 
-    bool isCtrlActive;
-    bool canCtrlBeDisabled;
-
     Vector qddeg,qdeg,vdeg,xd,fp;
     Vector v,vNeck,vEyes,vdegOld;
     Vector qd,qdNeck,qdEyes;
