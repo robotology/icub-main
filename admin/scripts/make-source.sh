@@ -35,7 +35,6 @@ echo "Preparing tar file"
 tar cvfz $ARCHFILE_LINUX $MODULE
 
 echo "Cleaning checkout"
-cd ..
 rm $MODULE -rf
 
 echo "Done Linux"
@@ -56,7 +55,6 @@ echo "Preparing zip file"
 zip -r $ARCHFILE_WINDOWS $MODULE
 
 echo "Cleaning checkout"
-cd ..
 rm $MODULE -rf
 
 echo "Done Windows"
