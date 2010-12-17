@@ -841,21 +841,20 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
     #ifdef _USE_INTERFACEGUI
     mServerLogger=new iCubInterfaceGuiServer;
-    mServerLogger->config(robotOptions);
-    mServerLogger->start();
+    mServerLogger->config(PATH,robotOptions);
 
-    netit=networks.begin();
-    while(netit!=networks.end())
+    for (RobotNetworkIt netit=networks.begin(); netit!=networks.end(); ++netit)
     {
-        RobotNetworkEntry *netEntry=(*netit);
-        IClientLogger* pCL;
-        netEntry->driver.view(pCL);
+        IClientLogger* pCL=NULL;
+        (*netit)->driver.view(pCL);
 
         if (pCL)
         {
             pCL->setServerLogger(mServerLogger);
         }
     }
+
+    mServerLogger->start();
     #endif
 
     return true;
@@ -866,9 +865,10 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     std::string file=robotOptions.find("file").asString().c_str();
     std::string fullFilename;
     fullFilename=path;
-    if (fullFilename[fullFilename.length()-1]!='/' && fullFilename.length()!=0)
+    if (fullFilename.length()!=0 && fullFilename[fullFilename.length()-1]!='/')
+    {
         fullFilename.append("/",1);
-
+    }
     fullFilename.append(file.c_str(), file.length());
 
     Property deviceParameters;
@@ -993,9 +993,10 @@ bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property 
 
     std::string fullFilename;
     fullFilename=path;
-    if (fullFilename[fullFilename.length()-1]!='/' && fullFilename.length()!=0)
+    if (fullFilename.length()!=0 && fullFilename[fullFilename.length()-1]!='/')
+    {
         fullFilename.append("/",1);
-
+    }
     fullFilename.append(file.c_str(), file.length());
 
     Property deviceParameters;
