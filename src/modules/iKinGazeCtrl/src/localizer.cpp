@@ -366,7 +366,6 @@ void Localizer::handleStereoInput()
                 
                 Vector z=pid->compute(ref,fb);
 
-                // the left eye is dominant
                 if (projectPoint(dominantEye,u,v,z[0],fp))
                 {
                     if (port_xd)
