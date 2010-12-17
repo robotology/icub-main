@@ -1,0 +1,8 @@
+<cluster name="icubsrv" user="icub">
+
+<nameserver namespace="/root" node="icubsrv"> </nameserver>
+
+<node>pc104</node>
+<node display="yes">icubsrv</node>
+</cluster>
+
