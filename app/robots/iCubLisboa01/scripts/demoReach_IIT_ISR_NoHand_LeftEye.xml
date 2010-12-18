@@ -1,5 +1,5 @@
 <application>
-<name>Joint Reaching Demo (IIT+ISR) No Hand</name>
+<name>Joint Reaching Demo (IIT+ISR), No Hand, Left Eye</name>
 
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
@@ -23,7 +23,8 @@
 
         <module>
                 <name>demoReachManager_IIT_ISR</name>
-                <node>icubbrain1</node>
+		<parameters>--from /home/icub/iCub/main/src/modules/demoReachManager_IIT_ISR/config.ini</parameters>
+                <node>icubbrain2</node>
                 <tag>manager</tag>
         </module>
 
@@ -36,7 +37,6 @@
   
         <module>
                 <name>iKinGazeCtrl</name>
-                <parameters></parameters>
                 <node>icubbrain2</node>
                 <tag>gazeCtrl</tag>
         </module>
