@@ -109,7 +109,7 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
 		else
 		{
 			limb = new iCubArmDyn("right");
-			limbInv = new iCubArmDyn("left");
+			limbInv = new iCubArmDyn("right");
 		}
 		limb->releaseLink(0);
 		limb->releaseLink(1);
@@ -159,10 +159,11 @@ SensToTorques::SensToTorques(int _rate, PolyDriver *_dd, PolyDriver *_tt, string
 	// first the unused ones
 	// joints var
 
-	int jnt=jnt1+jnt2;
-	fprintf(stderr,"\nTotal JNT number: %d\n",jnt);
 	fprintf(stderr,"\nJNT 1 : %d\n",jnt1);
 	fprintf(stderr,"\nJNT 2 : %d\n",jnt2);
+	int jnt=jnt1+jnt2;
+	fprintf(stderr,"\nTotal JNT number: %d\n",jnt);
+
     q.resize(jnt,0.0);
     dq.resize(jnt,0.0);
 
