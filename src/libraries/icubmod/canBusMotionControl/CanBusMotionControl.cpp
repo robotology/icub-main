@@ -2357,6 +2357,11 @@ void CanBusMotionControl:: run()
                     avPeriod,
                     avThTime);
 
+            const char *can=canDevName.c_str();
+            logNetworkData(can,r._networkN,10,yarp::os::Value(r._polling_interval));
+            logNetworkData(can,r._networkN,11,yarp::os::Value(avPeriod));
+            logNetworkData(can,r._networkN,12,yarp::os::Value(avThTime));
+
             if (r.iCanErrors)
                 {
                     CanErrors errors;
@@ -2369,9 +2374,6 @@ void CanBusMotionControl:: run()
                             errors.busoff,
                             errors.rxBufferOvr,
                             errors.txBufferOvr);
-
-                    
-                    const char *can=canDevName.c_str();
 
                     logNetworkData(can,r._networkN,5,yarp::os::Value(errors.rxCanErrors));
                     logNetworkData(can,r._networkN,6,yarp::os::Value(errors.txCanErrors));
