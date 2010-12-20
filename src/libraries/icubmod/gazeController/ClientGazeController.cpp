@@ -509,7 +509,7 @@ bool ClientGazeController::getHeadPose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ClientGazeController::getJointsDesired(yarp::sig::Vector &qdes)
+bool ClientGazeController::getJointsDesired(Vector &qdes)
 {
     if (!connected)
         return false;
@@ -547,7 +547,7 @@ bool ClientGazeController::getJointsDesired(yarp::sig::Vector &qdes)
 
 
 /************************************************************************/
-bool ClientGazeController::getJointsVelocities(yarp::sig::Vector &qdot)
+bool ClientGazeController::getJointsVelocities(Vector &qdot)
 {
     if (!connected)
         return false;
