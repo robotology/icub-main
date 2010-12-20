@@ -2,7 +2,7 @@ set(appname simConfig)
 
 icub_app(${appname})
 
-file(GLOB init ${CMAKE_CURRENT_SOURCE_DIR}/*)
+file(GLOB init ${CMAKE_CURRENT_SOURCE_DIR}/*.ini)
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template)
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 file(GLOB data ${CMAKE_CURRENT_SOURCE_DIR}/data/*.bmp)
