@@ -248,19 +248,19 @@ protected:
     /************************************************************************/
     void disposeMem()
     {
-        if (nodesPrev)
+        if (nodesPrev!=NULL)
             delete nodesPrev;
 
-        if (nodesCurr)
+        if (nodesCurr!=NULL)
             delete nodesCurr;
 
-        if (nodesPersistence)
+        if (nodesPersistence!=NULL)
             delete nodesPersistence;
 
-        if (featuresFound)
+        if (featuresFound!=NULL)
             delete featuresFound;
 
-        if (featureErrors)
+        if (featureErrors!=NULL)
             delete featureErrors;
     }
 
@@ -360,14 +360,14 @@ public:
             Stamp stamp;
             inPort.getEnvelope(stamp);
 
-            if (isStopping() || pImgBgrIn==NULL)
+            if (isStopping() || (pImgBgrIn==NULL))
                 break;
 
             double t0=Time::now();
              
             // consistency check
-            if (pImgBgrIn->width()!=imgMonoIn.width() ||
-                pImgBgrIn->height()!=imgMonoIn.height())
+            if ((pImgBgrIn->width()!=imgMonoIn.width()) ||
+                (pImgBgrIn->height()!=imgMonoIn.height()))
             {    
                 imgMonoIn.resize(*pImgBgrIn);
                 imgMonoPrev.resize(*pImgBgrIn);
