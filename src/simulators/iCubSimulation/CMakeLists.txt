@@ -5,6 +5,9 @@ PROJECT(${PROJECTNAME})
 FILE(GLOB folder_source *.cpp)
 FILE(GLOB folder_header *.h)
 
+FILE(GLOB_RECURSE wrapper_source wrapper/*.cpp)
+FILE(GLOB_RECURSE wrapper_header wrapper/*.h)
+
 IF (APPLE)
   ADD_DEFINITIONS(-DHAVE_APPLE_OPENGL_FRAMEWORK)
  ## add SDLMain.m and SDLMain.h required for Mac OS platform
@@ -31,23 +34,34 @@ ENDIF (USE_ODE_DOUBLE)
 # If glut is set up, we can turn this on
 ADD_DEFINITIONS(-DUSE_GLUT)
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
-                    ${logpolar_INCLUDE_DIRS}
-				    ${ODE_INCLUDE_DIRS}
-					${SDL_INCLUDE_DIR}
-                    ${YARP_INCLUDE_DIRS})
+OPTION(OMIT_LOGPOLAR "Omit logpolar support from simulator" FALSE)
+IF (OMIT_LOGPOLAR)
+  ADD_DEFINITIONS(-DOMIT_LOGPOLAR)
+ENDIF ()
 
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} logpolar
-                                     ${SDL_LIBRARY}
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/wrapper
+  ${ODE_INCLUDE_DIRS}
+  ${SDL_INCLUDE_DIR}
+  ${YARP_INCLUDE_DIRS})
+IF (NOT OMIT_LOGPOLAR)
+  INCLUDE_DIRECTORIES(${logpolar_INCLUDE_DIRS})
+ENDIF ()
+
+ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header} ${wrapper_source} ${wrapper_header})
+
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${SDL_LIBRARY}
 			                         ${ODE_LIBRARIES}
                                      ${YARP_LIBRARIES})
+IF (NOT OMIT_LOGPOLAR)
+  TARGET_LINK_LIBRARIES(${PROJECTNAME} logpolar)
+ENDIF ()
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 # added files, touching CMakeLists.txt so GLOB is rerun
-# touch 1 2 3 4 5 6 7 8 9 10
+# touch 1 2 3 4 5 6 7 8 9 10 11
 
 
 

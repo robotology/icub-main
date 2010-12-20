@@ -43,7 +43,7 @@ static GLuint FindTextureRAW(const char *str, bool flag) {
 }
 
 //Function to setup OpenGl
-void setup_opengl(ResourceFinder& finder){
+bool setup_opengl(ResourceFinder& finder){
     glShadeModel( GL_SMOOTH );
     /* Culling. */
     glCullFace( GL_BACK );
@@ -103,9 +103,9 @@ face data/texture/face.raw
 
 	if (!Texture[1]){
 		printf("No texture loaded\n");
-		exit(1);
+        return false;
 	}
-
+    return true;
 }
 
 void DrawGround(bool wireframe){  

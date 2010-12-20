@@ -118,22 +118,18 @@
 //\brief This file is responsible for the initialisation the module and yarp ports. It deals with incoming world commands such as getting information or creating new objects 
 
 #include <yarp/os/Network.h>
-#include <yarp/os/Os.h>
-#include <yarp/dev/all.h>
+#include <yarp/os/Property.h>
 
-#include "SimulatorModule.h"
-#include "iCubSimulationControl.h"
-#include "SimConfig.h"
-
+#include "SimulationRun.h"
 #include "OdeSdlSimulationBundle.h"
 #include "FakeSimulationBundle.h"
 
-using namespace yarp::os;
-using namespace yarp::dev;
-using namespace std;
-
 int main(int argc, char** argv) {
-    Property options;
+    yarp::os::Network yarp;
+    if (!yarp.checkNetwork())
+        return 1;
+
+    yarp::os::Property options;
     options.fromCommand(argc,argv);
 
     // the "bundle" controls the implementation used for the simulation
@@ -152,52 +148,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    bundle->onBegin();
-
-    Network yarp;
-    if (!yarp.checkNetwork())
-        return 1;
-
-    SimConfig config;
-    string moduleName;
-    config.configure(argc, argv, moduleName);
-
-    LogicalJoints *icub_joints = bundle->createJoints(config);
-    if (icub_joints==NULL) {
-        fprintf(stderr,"Failed to allocate joints\n");
-        delete bundle;
-        return 1;
-    }
-
-    PolyDriver icub_joints_dev;
-    icub_joints_dev.give(icub_joints,true);
-
-    // Make sure all individual control boards route to single ode_joints driver
-    Drivers::factory().add(new DriverLinkCreator("icub_joints",icub_joints_dev));
-
-    // Provide simulated controlboard driver
-    Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
-        "controlboard",
-        "iCubSimulationControl"));
-
-    if (!Network::checkNetwork()) {
-        printf("Please start a yarp name server first\n");
-        yarp::os::exit(1);
-    }
-
-    SimulatorModule module(config,bundle->createSimulation(config));
-
-    module.open();
-
-    //this blocks until termination (through ctrl+c or a kill)
-    module.runModule();
-
-    module.closeModule();
-
-    bundle->onEnd();
-
-    delete bundle;
-    bundle = NULL;
-
+    SimulationRun main;
+    if (!main.run(bundle,argc,argv)) return 1;
     return 0;
 }

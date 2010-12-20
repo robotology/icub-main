@@ -202,7 +202,12 @@ void OdeSdlSimulation::process_events(void) {
 				width = event.resize.w;
 				height = event.resize.h;
 				SDL_SetVideoMode(width,height,16,SDL_OPENGL | SDL_RESIZABLE);
-				setup_opengl(robot_config->getFinder());
+                {
+                    bool ok = setup_opengl(robot_config->getFinder());
+                    if (!ok) {
+                        odeinit.stop = true;
+                    }
+                }
 				odeinit._iCub->reinitialized = true;
 				//draw_screen( );
 				break;
@@ -793,7 +798,8 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     }
 
     initViewpoint();
-    setup_opengl(robot_config->getFinder());
+    bool ok = setup_opengl(robot_config->getFinder());
+    if (!ok) return;
     startTime = clock();
     odeinit.stop = false;
 		

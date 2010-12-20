@@ -29,7 +29,9 @@
 
 using namespace yarp::os;
 using namespace yarp::sig;
+#ifndef OMIT_LOGPOLAR
 using namespace iCub::logpolar;
+#endif
 using namespace std;
 
 bool viewParam1 = false, viewParam2 = false;
@@ -59,6 +61,7 @@ SimulatorModule::SimulatorModule(RobotConfig& config, Simulation *sim) :
     iCubLLeg = NULL;
     iCubRLeg = NULL;
     iCubTorso = NULL;
+    failureToLaunch = false;
 }
 
 void SimulatorModule::sendTouchLeft(Bottle& report){
@@ -101,21 +104,25 @@ bool SimulatorModule::closeModule() {
     sim=NULL;
 
     portLeft.interrupt();        
+    portRight.interrupt();
+#ifndef OMIT_LOGPOLAR
     portLeftFov.interrupt();
     portLeftLog.interrupt();
-    portRight.interrupt();
     portRightFov.interrupt();
     portRightLog.interrupt();
-    
+#endif    
     portWide.interrupt();
     
     portLeft.close();
-    portLeftFov.close();
-    portLeftLog.close();
     
     portRight.close();
+
+#ifndef OMIT_LOGPOLAR
+    portLeftFov.close();
+    portLeftLog.close();
     portRightFov.close();
     portRightLog.close();
+#endif
     
     portWide.close();
     
@@ -213,14 +220,14 @@ yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
     ConstString part_port = options.check("name",Value(1),"what did the user select?").asString();
     string full_name = moduleName + part_port.c_str();
     options.put("name", full_name.c_str() );
-    options.put("joint_device", "icub_joints");
+    options.put("joint_device", "robot_joints");
     yarp::dev::PolyDriver *driver = new yarp::dev::PolyDriver(options);
 
     if (!driver->isValid()){
         printf("Device not available. Here are the known devices:\n");
         printf("%s", yarp::dev::Drivers::factory().toString().c_str());
-        Network::fini();
-        yarp::os::exit(1);
+        failureToLaunch = true;
+        return NULL;
     }
     return driver;
 }
@@ -229,7 +236,8 @@ void SimulatorModule::init()
 {
     if (!robot_flags.valid) {
         printf("Robot flags are not set when creating SimulatorModule\n");
-        yarp::os::exit(1);
+        failureToLaunch = true;
+        return;
     }
 
 	Property options;
@@ -284,6 +292,7 @@ void SimulatorModule::initImagePorts() {
                       Value("/cam/right"),
                       "Name of right camera port").asString();
 
+#ifndef OMIT_LOGPOLAR
     ConstString nameLeftFov = 
         options.check("name_leftFov",
                       Value("/cam/left/fov"),
@@ -301,26 +310,30 @@ void SimulatorModule::initImagePorts() {
         options.check("name_rightLog",
                       Value("/cam/right/logpolar"),
                       "Name of right camera logpolar port").asString();
-
+#endif
 
     string leftCam = moduleName + nameLeft.c_str();
     string rightCam = moduleName + nameRight.c_str();
     string mainCam = moduleName + nameExternal.c_str();
-    
+
+#ifndef OMIT_LOGPOLAR    
     string leftFov = moduleName + nameLeftFov.c_str();
     string rightFov = moduleName + nameRightFov.c_str();
     string leftLog = moduleName + nameLeftLog.c_str();
     string rightLog = moduleName + nameRightLog.c_str();
+#endif
 
     portLeft.open( leftCam.c_str());
     portRight.open( rightCam.c_str() );
     portWide.open( mainCam.c_str() );
 
+#ifndef OMIT_LOGPOLAR    
     portLeftFov.open( leftFov.c_str() );
     portRightFov.open( rightFov.c_str() );
 
     portLeftLog.open( leftLog.c_str() );
     portRightLog.open( rightLog.c_str() );
+#endif
 }
 
 
@@ -341,6 +354,8 @@ bool SimulatorModule::open() {
         initImagePorts();
     }
     init();
+    if (failureToLaunch) return false;
+
     sim->init(this,&robot_config);
 	 
     w = 480;
@@ -368,10 +383,12 @@ void SimulatorModule::displayStep(int pause) {
         bool needLeft = (portLeft.getOutputCount()>0);
         bool needRight = (portRight.getOutputCount()>0);
         bool needWide = (portWide.getOutputCount()>0);
+#ifndef OMIT_LOGPOLAR
         bool needLeftFov = (portLeftFov.getOutputCount()>0);
         bool needLeftLog = (portLeftLog.getOutputCount()>0);
         bool needRightFov = (portRightFov.getOutputCount()>0);
         bool needRightLog = (portRightLog.getOutputCount()>0); 
+#endif
 
         mutex.wait();
         //stopping
@@ -398,6 +415,7 @@ void SimulatorModule::displayStep(int pause) {
 				    sendImage(portLeft);
 				    sim->clearBuffer();
                 }
+#ifndef OMIT_LOGPOLAR    
                 if (needLeftFov) {
 				    sim->drawView(true,false,false);
                     getImage();
@@ -410,6 +428,7 @@ void SimulatorModule::displayStep(int pause) {
 				    sendImageLog(portLeftLog);
 				    sim->clearBuffer();
                 }
+#endif
                 break;
             case 'r':
 			    if (needRight) {
@@ -418,6 +437,7 @@ void SimulatorModule::displayStep(int pause) {
 				    sendImage(portRight);
 				    sim->clearBuffer();
                 }
+#ifndef OMIT_LOGPOLAR    
                 if (needRightFov) {
 				    sim->drawView(false,true,false);
                     getImage();
@@ -430,6 +450,7 @@ void SimulatorModule::displayStep(int pause) {
 				    sendImageLog(portRightLog);
 				    sim->clearBuffer();
                 }
+#endif
                 break;
             case 'w':
                 if (needWide) {
@@ -470,6 +491,8 @@ void SimulatorModule::sendImage(BufferedPort<ImageOf<PixelRgb> >& port) {
     port.write();
 }
 
+#ifndef OMIT_LOGPOLAR    
+
 void SimulatorModule::sendImageFov(BufferedPort<ImageOf<PixelRgb> >& portFov) {
     static ImageOf<PixelRgb> fov;
     ImageOf<PixelRgb>& targetFov = portFov.prepare();
@@ -507,3 +530,5 @@ bool SimulatorModule::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& ds
     dst.resize (ifovea, ifovea);
     return iCub::logpolar::subsampleFovea(dst, src);
 }
+
+#endif

@@ -19,8 +19,12 @@
 #include "WorldManager.h"
 #include "Simulation.h"
 
+#include <string>
+
+#ifndef OMIT_LOGPOLAR
 // wouldn't be better to have this in conditional compilation?
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
+#endif
 
 class SimulatorModule : public yarp::os::PortReader, public RobotStreamer
 {
@@ -52,28 +56,37 @@ public:
     virtual bool shouldSendInertial();
 
 private:
+
+#ifndef OMIT_LOGPOLAR
     // wrapper to logpolarTransform, taking into account initialization
     bool cartToLogPolar(yarp::sig::ImageOf<yarp::sig::PixelRgb> &lp, 
                         const yarp::sig::ImageOf<yarp::sig::PixelRgb> &cart);
     bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
                         const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
 
+    void sendImageFov(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
+    void sendImageLog(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
+#endif
 
     void displayStep(int pause);
 
     void getImage();
     void sendImage(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
-    void sendImageFov(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
-    void sendImageLog(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
 
     std::string moduleName;
+#ifndef OMIT_LOGPOLAR
     iCub::logpolar::logpolarTransform trsf;
+#endif
     bool firstpass;
 
     yarp::sig::ImageOf<yarp::sig::PixelRgb> buffer;
 
     yarp::dev::PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;
-	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide, portLeftFov, portLeftLog, portRightFov, portRightLog ;
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide;
+
+#ifndef OMIT_LOGPOLAR
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeftFov, portLeftLog, portRightFov, portRightLog ;
+#endif
     yarp::os::Port cmdPort;
 	yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort;
     yarp::os::BufferedPort<yarp::os::Bottle> tactileRightPort;
@@ -100,6 +113,7 @@ private:
     RobotFlags& robot_flags;
     yarp::os::ResourceFinder& finder;
     Simulation *sim;
+    bool failureToLaunch;
 };
 
 #endif

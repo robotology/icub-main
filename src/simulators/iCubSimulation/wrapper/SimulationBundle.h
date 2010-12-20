@@ -12,6 +12,8 @@
 #include "Simulation.h"
 #include "LogicalJoints.h"
 
+#include <yarp/os/Module.h>
+
 class SimulationBundle {
 public:
     virtual bool onBegin() = 0;

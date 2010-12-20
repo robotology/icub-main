@@ -84,7 +84,6 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
             	  		printf("Only triangular polygons supported! Convert your model!\n");
             	 		return 0;
             		}
-            		//if(ret == 0) exit(1);
             		for(j = 0; j < 3; j++) {//hardcoded 3
             	    	p = strtok(NULL, ",;");
             	    	ret = sscanf(p, "%d", &intval);

@@ -39,7 +39,7 @@ typedef struct                       /**** BMP file info structure ****/
 extern unsigned int Texture[200];
 
 void setupTexture(char *filename, int whichtexture);
-void setup_opengl(yarp::os::ResourceFinder& finder);
+bool setup_opengl(yarp::os::ResourceFinder& finder);
 void DrawVideo(VideoTexture *video);
 void DrawGround(bool wireframe);
 void DrawBox(float length, float height, float width, bool wireframe, bool texture, int whichtexture);

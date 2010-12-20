@@ -52,6 +52,7 @@ void OdeLogicalJoint::init(OdeLogicalJoint& left,
                       OdeLogicalJoint& right,
                       OdeLogicalJoint& peer,
                       int sgn) {
+    printf("Vergence motor remap %d\n", sgn);
     active = true;
     verge = sgn;
     sign = 1;

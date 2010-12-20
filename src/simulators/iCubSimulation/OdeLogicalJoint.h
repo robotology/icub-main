@@ -102,7 +102,7 @@ public:
     void setVelocityRaw(double target);
 
     virtual bool isValid() {
-        return number != -1;
+        return (number != -1) || (verge != 0);
     }
 
 private:
