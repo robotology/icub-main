@@ -163,6 +163,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody == 2){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->OBJNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->OBJNUM == 0){reply.addString("object not known");}
                     else{
                         const dReal *coords = dBodyGetPosition(odeinit._wrld->obj[N-1].boxbody);
@@ -173,6 +174,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody == 5){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->S_OBJNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_OBJNUM == 0 ){reply.addString("object not known");}
                     else{	const dReal *coords = dGeomGetPosition(odeinit._wrld->s_obj[N-1].geom[0]);
                         reply.addDouble(coords[0]);
@@ -182,6 +184,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==6){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->cylOBJNUM;
                     if ( (N >(i+1)) || (N < 1) || odeinit._wrld->cylOBJNUM == 0 ){reply.addString("object not known");}
                     else{
                         const dReal *coords = dBodyGetPosition(odeinit._wrld->cyl_obj[N-1].cylbody);
@@ -192,6 +195,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==7){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->S_cylOBJNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_cylOBJNUM == 0 ){reply.addString("object not known");}
                     else{
                         const dReal *coords = dGeomGetPosition(odeinit._wrld->s_cyl_obj[N-1].cylgeom[0]);
@@ -202,6 +206,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==8){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->MODEL_NUM;
                     if ((N >(i+1)) || (N < 1) ||  odeinit._wrld->MODEL_NUM == 0 ){reply.addString("object not known");}
                     else{
                         const dReal *coords = dGeomGetPosition(odeinit._wrld->ThreeD_obj[N-1].geom);
@@ -212,6 +217,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==9){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->s_MODEL_NUM;
                     if ((N >(i+1)) || (N < 1) ||  odeinit._wrld->s_MODEL_NUM == 0 ){reply.addString("object not known");}
                     else{
                         const dReal *coords = dGeomGetPosition(odeinit._wrld->s_ThreeD_obj[N-1].geom);
@@ -227,6 +233,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==11){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->SPHNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->SPHNUM == 0 ){reply.addString("object not known");}
                     else{
                         const dReal *coords = dBodyGetPosition(odeinit._wrld->sph[N-1].sphbody);
@@ -237,6 +244,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==12){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->S_SPHNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_SPHNUM == 0 ){reply.addString("object not known");}
                     else{
                         const dReal *coords = dGeomGetPosition(odeinit._wrld->s_sph[N-1].sphgeom[0]);
@@ -263,6 +271,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==2){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->OBJNUM;
                     if ( (N >(i+1)) || (N < 1) || odeinit._wrld->OBJNUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
@@ -277,6 +286,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==5){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->S_OBJNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_OBJNUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
@@ -289,6 +299,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==6){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->cylOBJNUM;
                     if ( (N >(i+1)) || (N < 1) || odeinit._wrld->cylOBJNUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
@@ -303,6 +314,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==7){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->S_cylOBJNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_cylOBJNUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
@@ -315,6 +327,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==8){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->MODEL_NUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->MODEL_NUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
@@ -327,6 +340,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==9){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->s_MODEL_NUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->s_MODEL_NUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
@@ -342,6 +356,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==11){
                     unsigned int N = command.get(3).asInt();
+                    i = odeinit._wrld->SPHNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->SPHNUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
@@ -355,7 +370,7 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 if (setBody==12){
                     unsigned int N = command.get(3).asInt();
-                            
+                    i = odeinit._wrld->S_SPHNUM;
                     if ((N >(i+1)) || (N < 1) || odeinit._wrld->S_SPHNUM == 0 ){reply.addString("object not known");}
                     else{
                         double x = command.get(4).asDouble();
