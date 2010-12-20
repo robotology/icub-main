@@ -46,7 +46,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     // release the neck roll
     eyeC.releaseLink(4);
 
-    // get the absolute reference frame of the cyclopic eye
+    // get the absolute reference frame of the head
     Vector q(eyeC.getDOF()); q=0.0;
     eyeCAbsFrame=eyeC.getH(q);
     // ... and its inverse

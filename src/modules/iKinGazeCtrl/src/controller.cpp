@@ -529,23 +529,23 @@ bool Controller::getVelocity(Vector &vel) const
 
 
 /************************************************************************/
-bool Controller::getPose(const string &eyeSel, Vector &x)
+bool Controller::getPose(const string &poseSel, Vector &x)
 {
-    if (eyeSel=="left")
+    if (poseSel=="left")
     {
         mutex.wait();
         x=chainEyeL->EndEffPose();
         mutex.post();
         return true;
     }
-    else if (eyeSel=="right")
+    else if (poseSel=="right")
     {
         mutex.wait();
         x=chainEyeR->EndEffPose();
         mutex.post();
         return true;
     }
-    else if (eyeSel=="cyclopic")
+    else if (poseSel=="head")
     {
         mutex.wait();
         x=chainNeck->EndEffPose();

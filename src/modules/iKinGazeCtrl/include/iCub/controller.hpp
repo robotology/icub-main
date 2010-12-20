@@ -117,7 +117,7 @@ public:
     virtual bool   getTrackingMode() const;
     virtual bool   getDesired(Vector &des) const;
     virtual bool   getVelocity(Vector &vel) const;
-    virtual bool   getPose(const string &eyeSel, Vector &x);
+    virtual bool   getPose(const string &poseSel, Vector &x);
 };
 
 

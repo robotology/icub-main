@@ -441,7 +441,7 @@ bool ClientGazeController::getEyesTrajTime(double *t)
 
 
 /************************************************************************/
-bool ClientGazeController::getPose(const string eyeSel, Vector &x, Vector &o)
+bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
 {
     if (!connected)
         return false;
@@ -451,7 +451,7 @@ bool ClientGazeController::getPose(const string eyeSel, Vector &x, Vector &o)
     // prepare command
     command.addString("get");
     command.addString("pose");
-    command.addString(eyeSel.c_str());
+    command.addString(poseSel.c_str());
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))
@@ -502,9 +502,85 @@ bool ClientGazeController::getRightEyePose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ClientGazeController::getCyclopicEyePose(Vector &x, Vector &o)
+bool ClientGazeController::getHeadPose(Vector &x, Vector &o)
 {
-    return getPose("cyclopic",x,o);
+    return getPose("head",x,o);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getJointsDesired(yarp::sig::Vector &qdes)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("des");
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        if (reply.size()>1)
+        {
+            if (Bottle *bDes=reply.get(1).asList())
+            {
+                qdes.resize(bDes->size());
+                for (int i=0; i<qdes.length(); i++)
+                    qdes[i]=bDes->get(i).asDouble();
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getJointsVelocities(yarp::sig::Vector &qdot)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("vel");
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        if (reply.size()>1)
+        {
+            if (Bottle *bVel=reply.get(1).asList())
+            {
+                qdot.resize(bVel->size());
+                for (int i=0; i<qdot.length(); i++)
+                    qdot[i]=bVel->get(i).asDouble();
+
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 

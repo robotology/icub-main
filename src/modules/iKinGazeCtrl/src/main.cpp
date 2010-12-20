@@ -256,7 +256,7 @@ following ports:
       by the controller [deg/s].
     - [get] [pose] <val>: returns (enclosed in a list) the left
       eye pose if val=="left", the right eye pose if
-      vel=="right" and the cyclopic eye pose if val=="cyclopic".
+      vel=="right" and the head-centered pose if val=="head".
       The pose is given in axis/angle representation (i.e.
       7-componenets vector).
     - [get] [pid]: returns (enclosed in a list) a property-like
@@ -819,10 +819,10 @@ public:
                         {
                             if (command.size()>2)
                             {
-                                string eyeSel=command.get(2).asString().c_str();
+                                string poseSel=command.get(2).asString().c_str();
                                 Vector x;
 
-                                if (ctrl->getPose(eyeSel,x))
+                                if (ctrl->getPose(poseSel,x))
                                 {
                                     reply.addVocab(ack);
                                     Bottle &bPose=reply.addList();

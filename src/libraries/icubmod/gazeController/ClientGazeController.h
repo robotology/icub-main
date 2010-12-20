@@ -75,7 +75,7 @@ protected:
     std::set<int> contextIdList;
 
     virtual bool deleteContexts();
-    virtual bool getPose(const std::string eyeSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getPose(const std::string &poseSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
 
 public:
     ClientGazeController();
@@ -97,7 +97,9 @@ public:
     virtual bool getEyesTrajTime(double *t);
     virtual bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     virtual bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-    virtual bool getCyclopicEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool getJointsDesired(yarp::sig::Vector &qdes);
+    virtual bool getJointsVelocities(yarp::sig::Vector &qdot);
     virtual bool getStereoOptions(yarp::os::Bottle &options);
     virtual bool setNeckTrajTime(const double t);
     virtual bool setEyesTrajTime(const double t);
