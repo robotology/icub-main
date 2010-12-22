@@ -121,6 +121,7 @@ public:
     }
 
 protected:
+    char mChBuff[64];
     std::vector<yarp::os::Value> mData;
     std::vector<bool> mFlag;
 };
