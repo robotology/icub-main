@@ -18,23 +18,35 @@ class iCubInterfaceGuiServer : public yarp::os::Thread, public yarp::dev::IServe
 public:
     iCubInterfaceGuiServer() : mMutex(1)
     {
-        
     }
     
     virtual ~iCubInterfaceGuiServer()
     {
-        mPort.interrupt();
-        mPort.close();
-
-        for (int i=0; i<(int)mNetworks.size(); ++i)
-        {
-            if (mNetworks[i]!=NULL) delete mNetworks[i];
-        }
+        stop();
     }
 
     void config(std::string& PATH,yarp::os::Property &robot);
 
     void run();
+
+    bool stop()
+    {
+        mPort.interrupt();
+        mPort.close();
+
+        bool ret=yarp::os::Thread::stop();
+
+        for (int i=0; i<(int)mNetworks.size(); ++i)
+        {
+            if (mNetworks[i]!=NULL)
+            {
+                delete mNetworks[i];
+                mNetworks[i]=NULL;
+            }
+        }
+
+        return ret;
+    }
     
     //bool findAndWrite(std::string address,yarp::os::Value& data);
     bool log(const std::string &key,const yarp::os::Value &data);
