@@ -222,8 +222,11 @@ RobotInterfaceRemap::~RobotInterfaceRemap()
     #ifdef _USE_INTERFACEGUI
     if (mServerLogger)
     {
-        mServerLogger->stop();
-        delete mServerLogger;
+        iCubInterfaceGuiServer *deleting=mServerLogger;
+        mServerLogger=NULL;
+
+        deleting->stop();
+        delete deleting;
     }
     #endif
 }
@@ -1059,6 +1062,17 @@ bool RobotInterfaceRemap::closeNetworks()
         delete tmpNet;
         networks.pop_back();
     }
+
+    #ifdef _USE_INTERFACEGUI
+    if (mServerLogger)
+    {
+        iCubInterfaceGuiServer *deleting=mServerLogger;
+        mServerLogger=NULL;
+
+        deleting->stop();
+        delete deleting;
+    }
+    #endif
 
     skinparts.close();
 
