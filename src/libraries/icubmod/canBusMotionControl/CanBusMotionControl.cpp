@@ -2359,8 +2359,8 @@ void CanBusMotionControl:: run()
 
             const char *can=canDevName.c_str();
             logNetworkData(can,r._networkN,10,yarp::os::Value(r._polling_interval));
-            logNetworkData(can,r._networkN,11,yarp::os::Value(avPeriod));
-            logNetworkData(can,r._networkN,12,yarp::os::Value(avThTime));
+            logNetworkData(can,r._networkN,11,yarp::os::Value((double)avPeriod));
+            logNetworkData(can,r._networkN,12,yarp::os::Value((double)avThTime));
 
             if (r.iCanErrors)
                 {
