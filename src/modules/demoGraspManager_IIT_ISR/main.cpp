@@ -1064,20 +1064,10 @@ protected:
             delete drvRightArm;
 
         if (drvCartLeftArm)
-        {
-            ICartesianControl *icart;
-            drvCartLeftArm->view(icart);
-            icart->restoreContext(startup_context_id_left);
             delete drvCartLeftArm;
-        }
 
         if (drvCartRightArm)
-        {
-            ICartesianControl *icart;
-            drvCartRightArm->view(icart);
-            icart->restoreContext(startup_context_id_right);
             delete drvCartRightArm;
-        }
 
         if (drvGazeCtrl)
             delete drvGazeCtrl;
@@ -1374,6 +1364,20 @@ public:
         steerTorsoToHome();
         steerArmToHome(LEFTARM);
         steerArmToHome(RIGHTARM);
+
+        if (useLeftArm)
+        {
+            ICartesianControl *icart;
+            drvCartLeftArm->view(icart);
+            icart->restoreContext(startup_context_id_left);
+        }
+
+        if (useRightArm)
+        {
+            ICartesianControl *icart;
+            drvCartRightArm->view(icart);
+            icart->restoreContext(startup_context_id_right);
+        }
 
         close();
     }
