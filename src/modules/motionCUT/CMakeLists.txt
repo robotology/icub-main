@@ -1,4 +1,4 @@
-SET(PROJECTNAME indepMotionDetector)
+SET(PROJECTNAME motionCUT)
 
 PROJECT(${PROJECTNAME})
 

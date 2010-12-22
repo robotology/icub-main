@@ -10,15 +10,15 @@
         </dependencies>
       
         <module>
-            <name>indepMotionDetector</name>
-            <parameters>--name indepMotionDetector/left --recogThres 0.002</parameters>
+            <name>motionCUT</name>
+            <parameters>--name motionCUT/left --recogThres 0.002</parameters>
             <node>pwrNode1</node>
             <tag>motionDetectorLeft</tag>
         </module>
    
         <module>
-            <name>indepMotionDetector</name>
-            <parameters>--name indepMotionDetector/right --recogThres 0.002</parameters>
+            <name>motionCUT</name>
+            <parameters>--name motionCUT/right --recogThres 0.002</parameters>
             <node>pwrNode2</node>
             <tag>motionDetectorRight</tag>
         </module>
@@ -45,38 +45,38 @@
 
         <connection>
                 <from>/icub/camcalib/left/out</from>
-                <to>/indepMotionDetector/left/img:i</to>
+                <to>/motionCUT/left/img:i</to>
                 <protocol>mcast</protocol>
         </connection>
 
         <connection>
                 <from>/icub/camcalib/right/out</from>
-                <to>/indepMotionDetector/right/img:i</to>
+                <to>/motionCUT/right/img:i</to>
                 <protocol>udp</protocol>
         </connection>
 
 
         <connection>
-                <from>/indepMotionDetector/left/blobs:o</from>
+                <from>/motionCUT/left/blobs:o</from>
                 <to>/demoGraspManager_IIT_ISR/imdTargetLeft:i</to>
                 <protocol>udp</protocol>
         </connection>
 
         <connection>
-                <from>/indepMotionDetector/right/blobs:o</from>
+                <from>/motionCUT/right/blobs:o</from>
                 <to>/demoGraspManager_IIT_ISR/imdTargetRight:i</to>
                 <protocol>udp</protocol>
         </connection>
 
 
         <connection>
-                <from>/indepMotionDetector/left/img:o</from>
+                <from>/motionCUT/left/img:o</from>
                 <to>/motionViewerLeft</to>
                 <protocol>udp</protocol>
         </connection>
 
         <connection>
-                <from>/indepMotionDetector/right/img:o</from>
+                <from>/motionCUT/right/img:o</from>
                 <to>/motionViewerRight</to>
                 <protocol>udp</protocol>
         </connection>

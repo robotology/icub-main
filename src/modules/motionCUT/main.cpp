@@ -19,7 +19,7 @@
 /**
 @ingroup icub_module
 
-\defgroup indepMotionDetector indepMotionDetector
+\defgroup motionCUT motionCUT
  
 Detects independent moving points of a grid used to sample the 
 input images. The algorithm works also with moving cameras.
@@ -169,7 +169,7 @@ Linux and Windows.
 
 // check if OpenCV supports multi-threading
 #if CV_MAJOR_VERSION > 0
-    #define _INDEP_MULTI_THREADING_
+    #define _MOTIONCUT_MULTI_THREADING_
 #endif
 
 // in BGR format
@@ -221,7 +221,7 @@ protected:
     int nodesX;
     int nodesY;
 
-#ifdef _INDEP_MULTI_THREADING_
+#ifdef _MOTIONCUT_MULTI_THREADING_
     int numThreads;
 #endif
 
@@ -271,7 +271,7 @@ public:
     /************************************************************************/
     virtual bool threadInit()
     {
-        name=rf.check("name",Value("indepMotionDetector")).asString().c_str();
+        name=rf.check("name",Value("motionCUT")).asString().c_str();
         coverXratio=rf.check("coverXratio",Value(0.75)).asDouble();
         coverYratio=rf.check("coverYratio",Value(0.75)).asDouble();
         nodesStep=rf.check("nodesStep",Value(6)).asInt();
@@ -293,7 +293,7 @@ public:
 
         // if the OpenCV version supports multi-threading,
         // set the maximum number of threads available to OpenCV
-    #ifdef _INDEP_MULTI_THREADING_
+    #ifdef _MOTIONCUT_MULTI_THREADING_
         numThreads=rf.check("numThreads",Value(0)).asInt();
         cvSetNumThreads(numThreads);
         numThreads=cvGetNumThreads();
@@ -333,7 +333,7 @@ public:
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
             
-        #ifdef _INDEP_MULTI_THREADING_
+        #ifdef _MOTIONCUT_MULTI_THREADING_
             fprintf(stdout,"numThreads        = %d\n",numThreads);
         #else
             fprintf(stdout,"numThreads        = OpenCV version does not support multi-threading");
@@ -702,7 +702,7 @@ public:
                 }
                 else if (subcmd=="numThreads")
                 {
-                #ifdef _INDEP_MULTI_THREADING_
+                #ifdef _MOTIONCUT_MULTI_THREADING_
                     numThreads=req.get(2).asInt();
                     cvSetNumThreads(numThreads);
                     numThreads=cvGetNumThreads();
@@ -742,7 +742,7 @@ public:
                 else if (subcmd=="framesPersistence")
                     reply.addInt(framesPersistence);
                 else if (subcmd=="numThreads")
-                #ifdef _INDEP_MULTI_THREADING_
+                #ifdef _MOTIONCUT_MULTI_THREADING_
                     reply.addInt(numThreads);
                 #else
                     reply.addString("multi-threading not supported");
@@ -851,7 +851,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--adjNodesThres     <int>\n");
         fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
         fprintf(stdout,"\t--framesPersistence <int>\n");
-    #ifdef _INDEP_MULTI_THREADING_
+    #ifdef _MOTIONCUT_MULTI_THREADING_
         fprintf(stdout,"\t--numThreads        <int>\n");
     #endif
         fprintf(stdout,"\t--verbosity           -\n");

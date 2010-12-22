@@ -62,12 +62,12 @@ interface implemented) and \ref iKinGazeCtrl are running.
   position to track.
  
 - \e /demoGraspManager_IIT_ISR/imdTargetLeft:i receives the 
-  blobs list as produced by the \ref indepMotionDetector module
-  for the left eye.
+  blobs list as produced by the \ref motionCUT module for the
+  left eye.
  
 - \e /demoGraspManager_IIT_ISR/imdTargetRight:i receives the 
-  blobs list as produced by the \ref indepMotionDetector module
-  for the right eye.
+  blobs list as produced by the \ref motionCUT module for the
+  right eye.
  
 - \e /demoGraspManager_IIT_ISR/cmdFace:o sends out commands to 
   the face expression high level interface in order to give an

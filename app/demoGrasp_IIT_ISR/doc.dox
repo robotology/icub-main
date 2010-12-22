@@ -22,7 +22,7 @@ interface implemented) and \ref iKinGazeCtrl are running.
 
 - \ref eye2RootFrameTransformer "eye2RootFrameTransformer"
 
-- \ref indepMotionDetector "indepMotionDetector"
+- \ref motionCUT "motionCUT"
 
 - \ref demoGraspManager_IIT_ISR "demoGraspManager_IIT_ISR"
 
