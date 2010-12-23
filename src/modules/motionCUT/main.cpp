@@ -206,6 +206,7 @@ protected:
     ResourceFinder &rf;
 
     string name;
+    bool firstConsistencyCheck;
     double coverXratio;
     double coverYratio;
     int nodesStep;
@@ -311,6 +312,8 @@ public:
         nodesPort.open(("/"+name+"/nodes:o").c_str());
         blobsPort.open(("/"+name+"/blobs:o").c_str());
 
+        firstConsistencyCheck=true;
+
         return true;
     }
 
@@ -366,9 +369,11 @@ public:
             double t0=Time::now();
              
             // consistency check
-            if ((pImgBgrIn->width()!=imgMonoIn.width()) ||
+            if (firstConsistencyCheck || (pImgBgrIn->width()!=imgMonoIn.width()) ||
                 (pImgBgrIn->height()!=imgMonoIn.height()))
-            {    
+            {
+                firstConsistencyCheck=false;
+
                 imgMonoIn.resize(*pImgBgrIn);
                 imgMonoPrev.resize(*pImgBgrIn);
 
