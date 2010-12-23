@@ -1,0 +1,15 @@
+<application>
+<name>robotMotorGui</name>
+<dependencies>
+   <port>/icubV2/head/state:o</port>
+</dependencies>
+
+<module>
+      <name>robotMotorGui</name>
+      <parameters>--from /usr/local/src/robot/iCub/app/iCubOffenbach01/conf/robotMotorGui.ini</parameters>
+	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>	
+	<tag>iCubInterface</tag>
+   </module>
+   </application>
+
