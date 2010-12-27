@@ -16,8 +16,8 @@
  * Public License for more details
 */
 
-#include <iCub/solver.hpp>
-#include <iCub/controller.hpp>
+#include <iCub/solver.h>
+#include <iCub/controller.h>
 
 
 /************************************************************************/

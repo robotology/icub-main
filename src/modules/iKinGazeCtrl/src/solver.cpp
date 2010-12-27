@@ -17,7 +17,7 @@
 */
 
 #include <yarp/math/SVD.h>
-#include <iCub/solver.hpp>
+#include <iCub/solver.h>
 
 
 /************************************************************************/

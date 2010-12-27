@@ -2,11 +2,11 @@ SET(PROJECTNAME iKinGazeCtrl)
 
 PROJECT(${PROJECTNAME})
 
-SET(folder_header include/iCub/gazeNlp.hpp
-                  include/iCub/utils.hpp
-                  include/iCub/solver.hpp
-                  include/iCub/controller.hpp
-                  include/iCub/localizer.hpp)
+SET(folder_header include/iCub/gazeNlp.h
+                  include/iCub/utils.h
+                  include/iCub/solver.h
+                  include/iCub/controller.h
+                  include/iCub/localizer.h)
 
 SET(folder_source src/gazeNlp.cpp
                   src/utils.cpp

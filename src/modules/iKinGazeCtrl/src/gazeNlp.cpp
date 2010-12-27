@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <iCub/gazeNlp.hpp>
+#include <iCub/gazeNlp.h>
 
 
 /************************************************************************/

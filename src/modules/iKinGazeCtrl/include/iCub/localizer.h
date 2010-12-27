@@ -25,8 +25,8 @@
 
 #include <iCub/ctrl/pids.h>
 
-#include <iCub/gazeNlp.hpp>
-#include <iCub/utils.hpp>
+#include <iCub/gazeNlp.h>
+#include <iCub/utils.h>
 
 #include <string>
 

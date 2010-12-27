@@ -31,7 +31,7 @@
 
 #include <string>
 
-#include <iCub/gazeNlp.hpp>
+#include <iCub/gazeNlp.h>
 
 using namespace std;
 using namespace yarp;

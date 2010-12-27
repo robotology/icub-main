@@ -30,10 +30,10 @@
 
 #include <iCub/ctrl/pids.h>
 
-#include <iCub/gazeNlp.hpp>
-#include <iCub/utils.hpp>
-#include <iCub/localizer.hpp>
-#include <iCub/controller.hpp>
+#include <iCub/gazeNlp.h>
+#include <iCub/utils.h>
+#include <iCub/localizer.h>
+#include <iCub/controller.h>
 
 #define EYEPINVREFGEN_GAIN                  12.5
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]

@@ -31,7 +31,7 @@
 #include <iCub/ctrl/minJerkCtrl.h>
 #include <iCub/ctrl/pids.h>
 
-#include <iCub/utils.hpp>
+#include <iCub/utils.h>
 
 #define GAZECTRL_MOTIONDONE_QTHRES      0.1         // [deg]
 #define GAZECTRL_MOTIONSTART_XTHRES     1e-3        // [m]

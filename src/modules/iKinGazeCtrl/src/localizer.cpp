@@ -17,8 +17,8 @@
 */
 
 #include <yarp/math/SVD.h>
-#include <iCub/localizer.hpp>
-#include <iCub/solver.hpp>
+#include <iCub/localizer.h>
+#include <iCub/solver.h>
 
 #include <stdio.h>
 

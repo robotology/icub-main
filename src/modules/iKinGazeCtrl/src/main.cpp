@@ -361,9 +361,9 @@ background. Just connect the ports with the viewer and play.
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include <iCub/localizer.hpp>
-#include <iCub/solver.hpp>
-#include <iCub/controller.hpp>
+#include <iCub/localizer.h>
+#include <iCub/solver.h>
+#include <iCub/controller.h>
 
 #include <map>
 
