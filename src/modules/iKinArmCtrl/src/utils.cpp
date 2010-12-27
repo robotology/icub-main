@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <iCub/utils.hpp>
+#include <iCub/utils.h>
 
 
 /************************************************************************/

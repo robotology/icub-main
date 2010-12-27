@@ -6,9 +6,9 @@ IF(NOT ICUB_USE_IPOPT)
    MESSAGE(FATAL_ERROR "${PROJECTNAME}: IPOPT is strictly required!")
 ENDIF(NOT ICUB_USE_IPOPT)
 
-SET(folder_header include/iCub/utils.hpp
-                  include/iCub/solver.hpp
-                  include/iCub/controller.hpp)
+SET(folder_header include/iCub/utils.h
+                  include/iCub/solver.h
+                  include/iCub/controller.h)
 
 SET(folder_source src/utils.cpp
                   src/solver.cpp

@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <iCub/solver.hpp>
+#include <iCub/solver.h>
 
 
 /************************************************************************/

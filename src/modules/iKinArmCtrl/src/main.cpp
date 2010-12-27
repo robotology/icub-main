@@ -207,9 +207,9 @@ Taiwan, 2010.
 #include <iomanip>
 #include <string>
 
-#include <iCub/utils.hpp>
-#include <iCub/solver.hpp>
-#include <iCub/controller.hpp>
+#include <iCub/utils.h>
+#include <iCub/solver.h>
+#include <iCub/controller.h>
 
 using namespace std;
 using namespace yarp;

@@ -33,7 +33,7 @@
 
 #include <iCub/iKin/iKinInv.h>
 
-#include <iCub/utils.hpp>
+#include <iCub/utils.h>
 
 using namespace std;
 using namespace yarp;

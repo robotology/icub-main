@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <iCub/controller.hpp>
+#include <iCub/controller.h>
 
 
 /************************************************************************/
