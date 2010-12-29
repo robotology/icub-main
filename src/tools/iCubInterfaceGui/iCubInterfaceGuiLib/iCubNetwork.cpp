@@ -34,6 +34,43 @@ const char* iCubNetwork::mRowNames[]=
         NULL
 };
 
+yarp::dev::LoggerDataRef* iCubNetwork::getDataReference(std::string address)
+{
+    int index=address.find(",");
+    if (index<0) return NULL; // should never happen
+
+    std::string netAddress=address.substr(0,index);
+
+    if (netAddress.length()==0) return NULL; // should never happen
+
+    if (netAddress!=mNetAddress) return NULL;
+
+    ++index;
+    address=address.substr(index,address.length()-index);
+    index=address.find(",");
+
+    // is the message for the network or for a board channel?
+    if (index<0) // for the network
+    {
+        index=atoi(address.c_str());
+
+        return mData.getDataReference(index);
+    }
+
+    yarp::dev::LoggerDataRef* pRef=NULL;
+
+    // for a board channel
+    for (int i=0; i<(int)mBoards.size(); ++i)
+    {
+        if ((pRef=mBoards[i]->getDataReference(address)))
+        {
+            return pRef;
+        }
+    }
+
+    return NULL;
+}
+
 bool iCubNetwork::findAndWrite(std::string address,const yarp::os::Value& data)
 {
     int index=address.find(",");

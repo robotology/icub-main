@@ -83,20 +83,19 @@ public:
         DOUBLE_Estimated_std_rate	   // Same as before, standard deviation, ms
     };
 
-    /*
-    inline bool operator==(iCubNetwork& n)
+    inline bool operator==(std::string& name)
     {
-        return mName==n.mName;
+        return name==mName;
     }
-    */
 
     void addBoard(iCubBoard* board)
     {
         mBoards.push_back(board);
     }
 
+    yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    //bool findAndRead(std::string addr,yarp::os::Value* data);
+    bool getReference(const std::string &key,yarp::os::Value* &pData,bool* &pFlag);
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false)
     {

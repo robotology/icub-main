@@ -14,6 +14,7 @@
 #include <yarp/os/Property.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Bottle.h>
+#include <iCub/LoggerInterfaces.h>
 
 ////////////////////////////////////
 
@@ -29,6 +30,13 @@ public:
 
     ~RawData()
     {
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            delete mData[i];
+            mData[i]=NULL;
+            delete mFlag[i];
+            mFlag[i]=NULL;
+        }
     }
 
     int size(){ return mData.size(); }
@@ -39,11 +47,11 @@ public:
 
         for (int i=0; i<(int)mData.size(); ++i)
         {
-            if (bConfig || mFlag[i])
+            if (bConfig || *(mFlag[i]))
             {
-                mFlag[i]=false;
+                *(mFlag[i])=false;
                 bot.addInt(i);
-                bot.add(mData[i]);
+                bot.add(*(mData[i]));
             }
         }
 
@@ -62,9 +70,9 @@ public:
     {
         if (index<0 || index>=(int)mData.size()) return false;
 
-        bool tmp=mFlag[index];
+        bool tmp=*(mFlag[index]);
 
-        if (reset) mFlag[index]=false;
+        if (reset) *(mFlag[index])=false;
 
         return tmp;
     }
@@ -80,18 +88,18 @@ public:
         }
         */
 
-        return std::string(mData[index].toString().c_str());
+        return std::string(mData[index]->toString().c_str());
     }
 
     bool read(int index,yarp::os::Value& data,bool rst=true)
     {
         if (index<0 || index>=(int)mData.size()) return false;
 
-        data=mData[index];
+        data=*(mData[index]);
 
-        bool tmp=mFlag[index];
+        bool tmp=*(mFlag[index]);
 
-        if (rst) mFlag[index]=false;
+        if (rst) *(mFlag[index])=false;
 
         return tmp;
     }
@@ -104,26 +112,32 @@ public:
         {
             for (int i=(int)mData.size(); i<=index; ++i)
             {
-                mFlag.push_back(true);
-                mData.push_back(data);
+                mFlag.push_back(new bool(true));
+                mData.push_back(new yarp::os::Value(data));
             }
 
             return true;
         }
 
-        if (mData[index]!=data)
+        if (*(mData[index])!=data)
         {
-            mData[index]=yarp::os::Value(data);
-            mFlag[index]=true;
+            *(mFlag[index])=true;
+            *(mData[index])=yarp::os::Value(data);
         }
 
         return true;
     }
 
+    yarp::dev::LoggerDataRef* getDataReference(int index)
+    {
+        if (index<0 || index>=(int)mData.size()) return NULL;
+
+        return new yarp::dev::LoggerDataRef(mData[index],mFlag[index]);
+    }
+
 protected:
-    char mChBuff[64];
-    std::vector<yarp::os::Value> mData;
-    std::vector<bool> mFlag;
+    std::vector<bool*> mFlag;
+    std::vector<yarp::os::Value*> mData;
 };
 
 ////////////////////////////////////
@@ -131,7 +145,7 @@ protected:
 class iCubBoardChannel
 {
 public:
-    iCubBoardChannel()
+    iCubBoardChannel(int channel=-1) : mData(),mChannel(channel)
     {
     }
 
@@ -139,25 +153,41 @@ public:
     {
     }
 
+    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr)=0;
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data)=0;
-    virtual bool findAndRead(std::string addr,yarp::os::Value* data)=0;
-    virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
-    virtual void fromBottle(yarp::os::Bottle& bot)=0;
+    virtual bool findAndRead(std::string addr,yarp::os::Value& data)=0;
+
+    virtual yarp::os::Bottle toBottle(bool bConfig=false)
+    {
+        return mData.toBottle(bConfig);
+    }
+
+    virtual void fromBottle(yarp::os::Bottle& bot)
+    {
+        mData.fromBottle(bot);
+    }
+
+    virtual bool hasAlarm(){ return false; }
+
+protected:
+    int mChannel;
+    RawData mData;
+    //static const char *mRowNames[];
 };
 
 class iCubBLLChannel : public iCubBoardChannel
 {
 public:
-    iCubBLLChannel() : iCubBoardChannel(),mData(),mChannel(-1)
+    iCubBLLChannel() : iCubBoardChannel(),mJoint(-1)
     {
     }
 
-    iCubBLLChannel(int channel,int joint) : iCubBoardChannel(),mData(),mChannel(channel),mJoint(joint)
+    iCubBLLChannel(int channel,int joint) : iCubBoardChannel(channel),mJoint(joint)
     {
         mData.write(INT_Channel,yarp::os::Value(channel));
         mData.write(INT_Joint,yarp::os::Value(joint));
 
-        for (int i=DOUBLE_Status_messages_latency; i<=(int)INT_Control_mode; ++i)
+        for (int i=DOUBLE_Status_messages_latency; i<(int)NUM_ROWS; ++i)
         {
             mData.write(i,yarp::os::Value(0));
         }
@@ -170,9 +200,6 @@ public:
     enum Index
     {
         // interface generated
-        //STRING_Device_identifier,	// Name of the yarp can device: pcan/cfw2
-        //INT_Board_ID,	            // The id with which the board is identified on the canbus
-        
         INT_Channel,	            // The channel (boards can have up to 2 channels)
         INT_Joint,	                // Corresponding joint (for readability)
         
@@ -197,7 +224,8 @@ public:
         BOOL_Main_loop_overflow,        // Main loop exceeded requested period (>1ms, typically)
         BOOL_Over_temperature,	
         BOOL_Temp_sensor_error,         // Read error in temperature sensor
-        INT_Control_mode               // Status of the controller. This enumeration is illustrated below.
+        INT_Control_mode,               // Status of the controller. This enumeration is illustrated below.
+        NUM_ROWS
     };
 
     enum ControlMode
@@ -214,15 +242,64 @@ public:
         MODE_OPENLOOP               // receiving PWM values via canbus
     };
 
-    virtual yarp::os::Bottle toBottle(bool bConfig=false);
-    virtual void fromBottle(yarp::os::Bottle& bot);
+    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    virtual bool findAndRead(std::string addr,yarp::os::Value* data);
+    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
 
 protected:
     int mJoint;
-    int mChannel;
-    RawData mData;
+    static const char *mRowNames[];
+};
+
+class iCubAnalogChannel : public iCubBoardChannel
+{
+public:
+    iCubAnalogChannel() : iCubBoardChannel()
+    {
+    }
+
+    iCubAnalogChannel(int channel) : iCubBoardChannel(channel)
+    {
+        mData.write(INT_Channel,yarp::os::Value(channel));
+
+        for (int i=DOUBLE_Status_messages_latency; i<(int)NUM_ROWS; ++i)
+        {
+            mData.write(i,yarp::os::Value(0));
+        }
+    }
+
+    virtual ~iCubAnalogChannel()
+    {
+    }
+
+    enum Index
+    {
+        // interface generated
+        INT_Channel,	            // The channel (boards can have up to 6 channels)
+        
+        DOUBLE_Status_messages_latency,       // Keep track of the time the last status message has been received (seconds)
+        BOOL_Status_messages_latency_timeout, // If status messages latency > threshold (5s) raise an error
+
+        // device generated
+        BOOL_Is_Fault_Ok,               // Status of the fault pin, general error
+        BOOL_Fault_undervoltage,        // Power supply voltage is below minimum
+        BOOL_Fault_overload,            // Hardware fault triggered by the operational amplifier
+        BOOL_Fault_overcurrent,	        // Current exceeds maximum value
+        BOOL_Fault_external,            // External fault button is pressed
+        BOOL_BusOff,
+        INT_Can_Tx_Error_counter,	
+        INT_Can_Rx_Error_counter,
+        BOOL_Can_Tx_Overflow,	        // Canbus Tx Buffer overflow (firmware)
+        BOOL_Can_Rx_Overrun,            // Canbus Rx buffer overflow (firmware)
+        BOOL_Main_loop_overflow,        // Main loop exceeded requested period (>1ms, typically)
+        NUM_ROWS
+    };
+
+    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
+    virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
+    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
+
+protected:
     static const char *mRowNames[];
 };
 

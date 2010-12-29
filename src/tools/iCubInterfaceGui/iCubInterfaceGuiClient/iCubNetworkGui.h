@@ -22,20 +22,23 @@ public:
     {
         Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
 
+        printf("* * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("%s\n",bot.toString().c_str());
+
         for (int i=2; i<(int)bot.size(); ++i)
         {
             yarp::os::Bottle *netBot=bot.get(i).asList();
+            yarp::os::ConstString boardType=netBot->get(1).asList()->get(2).asString();
+            printf("- %s\n",boardType.c_str());
 
-            //if (netBot->get(1).asString()=="BLL")
-            //{
-                mBoards.push_back(new iCubBLLBoardGui(refTreeModel,*baseRow,*netBot));
-            //}
-            /*
-            else
+            if (boardType=="BLL")
             {
-                will deal with other board models
+                mBoards.push_back(new iCubBLLBoardGui(refTreeModel,*baseRow,*netBot));
             }
-            */
+            else if (boardType=="analog")
+            {
+                mBoards.push_back(new iCubAnalogBoardGui(refTreeModel,*baseRow,*netBot));
+            }
         }
 
         mData.fromBottle(*(bot.get(1).asList()));

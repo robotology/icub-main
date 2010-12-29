@@ -113,6 +113,42 @@ void iCubInterfaceGuiServer::config(std::string& PATH,yarp::os::Property &robot)
         }
     }
 
+    // ANALOGS
+    yarp::os::Bottle *analogs=general.find("analog").asList();
+
+    if (analogs)
+    {       
+        for (int a=0; a<analogs->size(); ++a)
+        {
+            std::string name=analogs->get(a).asString().c_str();
+
+            std::string netID=robot.findGroup(name.c_str()).find("network").asString().c_str();
+
+            for (int n=0; n<(int)mNetworks.size(); ++n)
+            {
+                if (*mNetworks[n]==netID)
+                {
+                    yarp::os::Property analogConf;
+                    analogConf.fromConfigFile((PATH+mNetworks[n]->mFile).c_str());
+
+                    yarp::os::Bottle *deviceIDs=robot.findGroup(name.c_str()).find("deviceId").asList();
+                    for (int d=0; d<deviceIDs->size(); ++d)
+                    {
+                        std::string dev=deviceIDs->get(d).asString().c_str();
+                        yarp::os::Bottle devConf=analogConf.findGroup(dev.c_str());
+                        
+                        int CanAddress=devConf.find("CanAddress").asInt();
+                        int Channels=devConf.find("Channels").asInt();
+
+                        mNetworks[n]->addBoard(new iCubAnalogBoard(CanAddress,Channels));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////
     mPort.open("/icubinterfacegui/server");
 }
 
@@ -132,23 +168,13 @@ void iCubInterfaceGuiServer::run()
                 mMutex.wait();
                 rpl=toBottle(true);
                 mMutex.post();
-
-                //printf("%s\n",rpl.toString().c_str());
-                //fflush(stdout);
-
                 mPort.reply(rpl);
             }
             else if (cmd=="GET_DATA")
             {
                 mMutex.wait();
-
                 rpl=toBottle();
-
-                //printf("%s\n",rpl.toString().c_str());
-                //fflush(stdout);
-
                 mPort.reply(rpl);
-
                 mMutex.post();
             }
         }
@@ -174,22 +200,20 @@ bool iCubInterfaceGuiServer::log(const std::string &key,const yarp::os::Value &d
     return false;
 }
 
-/*
-bool iCubInterfaceGuiServer::findAndRead(std::string address,yarp::os::Value* data)
+yarp::dev::LoggerDataRef* iCubInterfaceGuiServer::getDataReference(const std::string &key)
 {
-    mMutex.wait();
+    yarp::dev::LoggerDataRef* pRef=NULL;
+
     for (unsigned int n=0; n<(int)mNetworks.size(); ++n)
     {
-        if (mNetworks[n]->findAndRead(address,data))
+        if ((pRef=mNetworks[n]->getDataReference(key)))
         {
-            mMutex.post();
-            return true;
+            return pRef;
         }
     }
-    mMutex.post();
-    return false;
+
+    return NULL;
 }
-*/
 
 yarp::os::Bottle iCubInterfaceGuiServer::toBottle(bool bConfig)
 {
@@ -212,3 +236,19 @@ yarp::os::Bottle iCubInterfaceGuiServer::toBottle(bool bConfig)
     return bot;
 }
 
+/*
+bool iCubInterfaceGuiServer::findAndRead(std::string address,yarp::os::Value* data)
+{
+    mMutex.wait();
+    for (unsigned int n=0; n<(int)mNetworks.size(); ++n)
+    {
+        if (mNetworks[n]->findAndRead(address,data))
+        {
+            mMutex.post();
+            return true;
+        }
+    }
+    mMutex.post();
+    return false;
+}
+*/

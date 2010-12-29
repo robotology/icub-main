@@ -70,8 +70,6 @@ public:
         if (mRows!=NULL) delete [] mRows;
     }
 
-    //Gtk::TreeModel::Row* getBase(){ return &mRows[0]; }
-
 protected:
     int mNumRows;
     Gtk::TreeModel::Row *mRows;
@@ -85,8 +83,6 @@ public:
         : iCubBLLChannel(),iCubInterfaceGuiRows()
     {
         Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
-
-        //mColumns=&modelColumns;
 
         mData.fromBottle(bot);
         
@@ -103,6 +99,42 @@ public:
     virtual void fromBottle(yarp::os::Bottle &bot)
     {
         iCubBLLChannel::fromBottle(bot);
+
+        for (int i=0; i<mData.size(); ++i)
+        {
+            if (mData.test(i))
+            {
+                mRows[i][mColumns.mColValue]=mData.toString(i);
+            }
+        }
+    }
+
+protected:
+};
+
+class iCubAnalogChannelGui : public iCubAnalogChannel, public iCubInterfaceGuiRows
+{
+public:
+    iCubAnalogChannelGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
+        : iCubAnalogChannel(),iCubInterfaceGuiRows()
+    {
+        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
+
+        mData.fromBottle(bot);
+        
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            mRows[i][mColumns.mColValue]=mData.toString(i);
+        }
+    }
+
+    virtual ~iCubAnalogChannelGui()
+    {
+    }
+
+    virtual void fromBottle(yarp::os::Bottle &bot)
+    {
+        iCubAnalogChannel::fromBottle(bot);
 
         for (int i=0; i<mData.size(); ++i)
         {

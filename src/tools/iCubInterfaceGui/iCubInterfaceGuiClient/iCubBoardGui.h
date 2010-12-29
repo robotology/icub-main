@@ -47,12 +47,50 @@ public:
         }
     }
 
-    virtual ~iCubBLLBoardGui()
+protected:
+    //static const char* mRowNames[];
+};
+
+class iCubAnalogBoardGui : public iCubAnalogBoard, public iCubInterfaceGuiRows
+{
+public:
+    iCubAnalogBoardGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot) 
+        : iCubAnalogBoard(),iCubInterfaceGuiRows()
     {
+        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
+
+        nChannels=bot.get(1).asList()->get(6).asInt();
+
+        mChannel=new iCubAnalogChannel*[nChannels];
+
+        for (int c=0; c<nChannels; ++c)
+        {
+            mChannel[c]=new iCubAnalogChannelGui(refTreeModel,*baseRow,*(bot.get(c+2).asList()));
+        }
+
+        mData.fromBottle(*(bot.get(1).asList()));
+
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            mRows[i][mColumns.mColValue]=mData.toString(i);
+        }
+    }
+
+    virtual void fromBottle(yarp::os::Bottle& bot)
+    {
+        iCubAnalogBoard::fromBottle(bot);
+
+        for (int i=0; i<(int)mData.size(); ++i)
+        {
+            if (mData.test(i))
+            {
+                mRows[i][mColumns.mColValue]=mData.toString(i);
+            }
+        }
     }
 
 protected:
-    static const char* mRowNames[];
+    //static const char* mRowNames[];
 };
 
 #endif

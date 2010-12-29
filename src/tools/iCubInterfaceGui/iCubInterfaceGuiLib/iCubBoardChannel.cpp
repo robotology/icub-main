@@ -43,24 +43,25 @@ const char* iCubBLLChannel::mRowNames[]=
     NULL
 };
 
-yarp::os::Bottle iCubBLLChannel::toBottle(bool bConfig)
+yarp::dev::LoggerDataRef* iCubBLLChannel::getDataReference(std::string addr)
 {
-    return mData.toBottle(bConfig);
-}
+    int index=addr.find(",");
+    if (index<0) return NULL; // should never happen
 
-void iCubBLLChannel::fromBottle(yarp::os::Bottle& bot)
-{
-    mData.fromBottle(bot);
+    std::string sJoint=addr.substr(0,index);
+    if (sJoint.length()==0) return NULL; // should never happen
+    if (mJoint!=atoi(sJoint.c_str())) return NULL;
+
+    ++index;
+    index=atoi(addr.substr(index,addr.length()-index).c_str());
+
+    return mData.getDataReference(index);
 }
 
 bool iCubBLLChannel::findAndWrite(std::string addr,const yarp::os::Value& data)
 {
     int index=addr.find(",");
     if (index<0) return false; // should never happen
-
-    //std::string sCh=addr.substr(0,index);
-    //if (sCh.length()==0) return false; // should never happen
-    //if (mChannel!=atoi(sCh.c_str())) return false;
 
     std::string sJoint=addr.substr(0,index);
     if (sJoint.length()==0) return false; // should never happen
@@ -76,20 +77,97 @@ bool iCubBLLChannel::findAndWrite(std::string addr,const yarp::os::Value& data)
     return true;
 }
 
-bool iCubBLLChannel::findAndRead(std::string addr,yarp::os::Value* data)
+bool iCubBLLChannel::findAndRead(std::string addr,yarp::os::Value& data)
 {
     int index=addr.find(",");
+    if (index<0) return false; // should never happen
 
-    std::string sCh=index<0?addr:addr.substr(0,index);
+    std::string sJoint=addr.substr(0,index);
+    if (sJoint.length()==0) return false; // should never happen
+    if (mJoint!=atoi(sJoint.c_str())) return false;
 
+    ++index;
+    index=atoi(addr.substr(index,addr.length()-index).c_str());
+
+    if (index>=mData.size()) return false;
+
+    mData.read(index,data);
+
+    return true;
+}
+
+const char* iCubAnalogChannel::mRowNames[]=
+{
+    // interface generated
+    "Channel",	            // The channel (boards can have up to 2 channels)
+
+    "Status_messages_latency",         // Keep track of the time the last status message has been received (seconds)
+    "Status_messages_latency_timeout", // If status messages latency > threshold (5s) raise an error
+
+    // device generated
+    "Is_Fault_Ok",               // Status of the fault pin, general error
+    "Fault_undervoltage",        // Power supply voltage is below minimum
+    "Fault_overload",            // Hardware fault triggered by the operational amplifier
+    "Fault_overcurrent",	     // Current exceeds maximum value
+    "Fault_external",            // External fault button is pressed
+    "BusOff",
+    "Can_Tx_Error_counter",	
+    "Can_Rx_Error_counter",
+    "Can_Tx_Overflow",	         // Canbus Tx Buffer overflow (firmware)
+    "Can_Rx_Overrun",            // Canbus Rx buffer overflow (firmware)
+    "Main_loop_overflow",        // Main loop exceeded requested period (>1ms, typically)
+    NULL
+};
+
+yarp::dev::LoggerDataRef* iCubAnalogChannel::getDataReference(std::string addr)
+{
+    int index=addr.find(",");
+    if (index<0) return NULL; // should never happen
+
+    std::string sCh=addr.substr(0,index);
+    if (sCh.length()==0) return NULL; // should never happen
+    if (mChannel!=atoi(sCh.c_str())) return NULL;
+
+    ++index;
+    index=atoi(addr.substr(index,addr.length()-index).c_str());
+
+    return mData.getDataReference(index);
+}
+
+bool iCubAnalogChannel::findAndWrite(std::string addr,const yarp::os::Value& data)
+{
+    int index=addr.find(",");
+    if (index<0) return false; // should never happen
+
+    std::string sCh=addr.substr(0,index);
     if (sCh.length()==0) return false; // should never happen
-
     if (mChannel!=atoi(sCh.c_str())) return false;
 
-    for (int i=0; i<(int)mData.size(); ++i)
-    {
-        mData.read(i,data[i]);
-    }
+    ++index;
+    index=atoi(addr.substr(index,addr.length()-index).c_str());
+
+    if (index>=mData.size()) return false;
+
+    mData.write(index,data);
+
+    return true;
+}
+
+bool iCubAnalogChannel::findAndRead(std::string addr,yarp::os::Value& data)
+{
+    int index=addr.find(",");
+    if (index<0) return false; // should never happen
+
+    std::string sCh=addr.substr(0,index);
+    if (sCh.length()==0) return false; // should never happen
+    if (mChannel!=atoi(sCh.c_str())) return false;
+
+    ++index;
+    index=atoi(addr.substr(index,addr.length()-index).c_str());
+
+    if (index>=mData.size()) return false;
+
+    mData.read(index,data);
 
     return true;
 }

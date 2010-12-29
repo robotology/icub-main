@@ -11,7 +11,7 @@ source_group("Header Files" FILES ${folder_header})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../iCubInterfaceGuiLib)
 include_directories(${YARP_INCLUDE_DIRS})
-#include_directories(${iCubDev_INCLUDE_DIRS})
+include_directories(${iCubDev_INCLUDE_DIRS})
 include_directories(${GtkMM_INCLUDE_DIRS})
 include_directories(${Gthread_INCLUDE_DIRS})
 
@@ -21,6 +21,6 @@ target_link_libraries(${PROJECTNAME}
                       ${GtkMM_LIBRARIES} 
                       ${YARP_LIBRARIES} 
                       ${Gthread_LIBRARIES}
-		              iCubInterfaceGuiLib)
+		      iCubInterfaceGuiLib)
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)

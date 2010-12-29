@@ -31,11 +31,14 @@ public:
     {
     }
 
+    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr)=0;
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data)=0;
-    virtual bool findAndRead(std::string addr,yarp::os::Value* data)=0;
+    virtual bool findAndRead(std::string addr,yarp::os::Value& data)=0;
     
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
+
+    virtual bool hasAlarm(){ return false; }
 };
 
 class iCubBLLBoard : public iCubBoard
@@ -89,9 +92,109 @@ public:
             }
         }
 
-        //bot.addList()=mData.toBottle(bConfig);
-        //bot.addList()=mChannel[0]->toBottle(bConfig);        
-        //bot.addList()=mChannel[1]->toBottle(bConfig);
+        return bot;
+    }
+
+    virtual void fromBottle(yarp::os::Bottle& bot)
+    {
+        for (int i=1; i<(int)bot.size(); ++i)
+        {
+            yarp::os::Bottle *list=bot.get(i).asList();
+
+            if (list->get(0).asInt()==-1)
+            {
+                mData.fromBottle(*list);
+            }
+            else
+            {
+                mChannel[list->get(0).asInt()]->fromBottle(*list);
+            }
+        }
+    }
+
+    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
+    virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
+    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
+
+protected:
+    iCubBLLChannel *mChannel[2];
+     
+    int mID;
+    RawData mData;
+    static const char *mRowNames[];
+};
+
+class iCubAnalogBoard : public iCubBoard
+{
+public:
+    iCubAnalogBoard() : iCubBoard()
+    {
+    }
+
+    iCubAnalogBoard(int ID,int channels) : iCubBoard(),mID(ID)
+    {
+        printf("########## iCubAnalogBoard(%d,%d) ##############\n",ID,channels); 
+        nChannels=channels;
+
+        mChannel=new iCubAnalogChannel*[nChannels];
+
+        for (int c=0; c<nChannels; ++c)
+        {
+            mChannel[c]=new iCubAnalogChannel(c);
+        }
+
+        mData.write(STRING_Board_Type,yarp::os::Value("analog"));
+        mData.write(INT_Board_ID,yarp::os::Value(ID));
+        mData.write(INT_Num_Channels,yarp::os::Value(nChannels));
+    }
+
+    virtual ~iCubAnalogBoard()
+    {
+        if (mChannel)
+        {
+            for (int c=0; c<nChannels; ++c)
+            {
+                if (mChannel[c]!=NULL)
+                {
+                    delete mChannel[c];
+                    mChannel[c]=NULL;
+                }
+            }
+
+            delete [] mChannel;
+            mChannel=NULL;
+        }
+    }
+
+    enum Index
+    {
+        STRING_Board_Type,  // ="BLL"
+        INT_Board_ID,       //The id with which the board is identified on the canbus
+        INT_Num_Channels
+    };
+
+    virtual yarp::os::Bottle toBottle(bool bConfig)
+    {
+        yarp::os::Bottle bot;
+
+        yarp::os::Bottle data=mData.toBottle(bConfig);
+        if (data.size())
+        {
+            yarp::os::Bottle &addList=bot.addList();
+            addList.addInt(-1);
+            addList.append(data);
+        }
+
+        for (int c=0; c<nChannels; ++c)
+        {
+            yarp::os::Bottle chan=mChannel[c]->toBottle(bConfig);
+            if (chan.size())
+            {
+                yarp::os::Bottle &addList=bot.addList();
+                addList.addInt(c);
+                addList.append(chan);
+            }
+        }
 
         return bot;
     }
@@ -111,21 +214,20 @@ public:
                 mChannel[list->get(0).asInt()]->fromBottle(*list);
             }
         }
-
-        //mData.fromBottle(*(bot.get(0).asList()));
-        //mChannel[0]->fromBottle(*(bot.get(1).asList()));
-        //mChannel[1]->fromBottle(*(bot.get(2).asList()));
     }
 
+    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    virtual bool findAndRead(std::string addr,yarp::os::Value* data);
+    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
 
 protected:
-    iCubBLLChannel *mChannel[2];
+    iCubAnalogChannel **mChannel;
     
     int mID;
+    int nChannels;
+
     RawData mData;
-    static const char *mRawNames[];
+    static const char *mRowNames[];
 };
 
 #endif
