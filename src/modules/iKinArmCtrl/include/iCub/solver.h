@@ -73,7 +73,7 @@ protected:
 public:
     slvCallback(exchangeData *_commData) : commData(_commData) { }
 
-    virtual void exec(Vector xd, Vector q) { commData->setDesired(xd,q); }
+    virtual void exec(const Vector &xd, const Vector &q) { commData->setDesired(xd,q); }
 };
 
 

@@ -282,7 +282,7 @@ protected:
 public:
     SolverCallback(CartesianSolver *_slv) : slv(_slv) { }
 
-    virtual void exec(yarp::sig::Vector xd, yarp::sig::Vector q);
+    virtual void exec(const yarp::sig::Vector &xd, const yarp::sig::Vector &q);
 };
 
 

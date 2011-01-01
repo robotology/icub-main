@@ -433,7 +433,7 @@ void InputPort::onRead(Bottle &b)
 
 
 /************************************************************************/
-void SolverCallback::exec(Vector xd, Vector q)
+void SolverCallback::exec(const Vector &xd, const Vector &q)
 {
     slv->send(xd,slv->prt->chn->EndEffPose(),CTRL_RAD2DEG*q,slv->pToken);
 }

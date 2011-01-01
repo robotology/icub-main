@@ -66,7 +66,7 @@ public:
     * @param xd current target.
     * @param q current estimation of joint angles. 
     */ 
-    virtual void exec(yarp::sig::Vector xd, yarp::sig::Vector q) = 0;
+    virtual void exec(const yarp::sig::Vector &xd, const yarp::sig::Vector &q) = 0;
 };
 
 
