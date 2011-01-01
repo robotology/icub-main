@@ -162,7 +162,7 @@ bool EyePinvRefGen::threadInit()
         string portName=localName+inertialName+":i";
         port_inertial->open(portName.c_str());
 
-        if (!Network::connect(("/"+robotName+"/"+inertialName).c_str(),portName.c_str(),"udp"))
+        if (!Network::connect(("/"+robotName+"/"+inertialName).c_str(),portName.c_str()))
         {
             delete port_inertial;
             port_inertial=NULL;                
