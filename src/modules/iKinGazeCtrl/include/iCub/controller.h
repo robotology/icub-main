@@ -55,7 +55,6 @@ protected:
     iCubEye                   *eyeL,      *eyeR;
     iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver                *drvTorso,  *drvHead;
-    IControlLimits            *limTorso,  *limHead;
     IEncoders                 *encTorso,  *encHead;
     IVelocityControl          *velHead;
     exchangeData              *commData;

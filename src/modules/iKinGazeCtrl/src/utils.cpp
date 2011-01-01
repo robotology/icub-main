@@ -94,27 +94,6 @@ void xdPort::run()
 
 
 /************************************************************************/
-void neckCallback::exec(Vector xd, Vector q)
-{
-    // update neck pitch,yaw
-    commData->get_xd()=xd;
-    commData->get_qd()[0]=q[0];
-    commData->get_qd()[2]=q[1];
-}
-
-
-/************************************************************************/
-void eyesCallback::exec(Vector xd, Vector q)
-{
-    // update eyes tilt,pan,vergence
-    commData->get_xd()=xd;
-    commData->get_qd()[3]=q[0];
-    commData->get_qd()[4]=q[1];
-    commData->get_qd()[5]=q[2];
-}
-
-
-/************************************************************************/
 bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
 {
     *Prj=NULL;
@@ -207,27 +186,39 @@ bool getAlignLinks(const string &configFile, const string &type,
 
 
 /************************************************************************/
-Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLimits *limHead,
+Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drvHead,
                          const double eyeTiltMin, const double eyeTiltMax)
 {
-    double min, max;
+    IEncoders      *encs;
+    IControlLimits *lims;
 
-    if (limTorso!=NULL)
+    double min, max;
+    int nJointsTorso=3;    
+
+    if (drvTorso!=NULL)
     {
-        for (int i=0; i<3; i++)
+        drvTorso->view(encs);
+        drvTorso->view(lims);        
+        encs->getAxes(&nJointsTorso);
+
+        for (int i=0; i<nJointsTorso; i++)
         {   
-            limTorso->getLimits(i,&min,&max);
+            lims->getLimits(i,&min,&max);
         
-            (*chain)[2-i].setMin(CTRL_DEG2RAD*min);
-            (*chain)[2-i].setMax(CTRL_DEG2RAD*max);
+            (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min); // reversed order
+            (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
         }
     }
 
-    Matrix lim(6,2);
+    drvHead->view(encs);
+    drvHead->view(lims);
+    int nJointsHead;
+    encs->getAxes(&nJointsHead);
+    Matrix lim(nJointsHead,2);
 
-    for (int i=0; i<6; i++)
+    for (int i=0; i<nJointsHead; i++)
     {   
-        limHead->getLimits(i,&min,&max);
+        lims->getLimits(i,&min,&max);
 
         // limit eye's tilt due to eyelids
         if (i==3)
@@ -243,10 +234,10 @@ Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLim
         lim(i,1)=CTRL_DEG2RAD*max;
 
         // just one eye's got only 5 dofs
-        if (i<5)
+        if (i<nJointsHead-1)
         {
-            (*chain)[3+i].setMin(lim(i,0));
-            (*chain)[3+i].setMax(lim(i,1));
+            (*chain)[nJointsTorso+i].setMin(lim(i,0));
+            (*chain)[nJointsTorso+i].setMax(lim(i,1));
         }
     }
 
@@ -270,15 +261,15 @@ void copyJointsBounds(iKinChain *ch1, iKinChain *ch2)
 
 
 /************************************************************************/
-void updateTorsoBlockedJoints(iKinChain *chain, Vector &fbTorso)
+void updateTorsoBlockedJoints(iKinChain *chain, const Vector &fbTorso)
 {
-    for (int i=0; i<3; i++)
+    for (int i=0; i<fbTorso.length(); i++)
          chain->setBlockingValue(i,fbTorso[i]);
 }
 
 
 /************************************************************************/
-void updateNeckBlockedJoints(iKinChain *chain, Vector &fbNeck)
+void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 {
     for (int i=0; i<3; i++)
          chain->setBlockingValue(3+i,fbNeck[i]);
@@ -288,14 +279,17 @@ void updateNeckBlockedJoints(iKinChain *chain, Vector &fbNeck)
 /************************************************************************/
 bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead)
 {
-    Vector fb(6);
+    int nJointsTorso=fbTorso.length();
+    int nJointsHead=fbHead.length();
+
+    Vector fb(nJointsTorso<nJointsHead?nJointsHead:nJointsTorso);
     bool ret=true;
-    
+
     if (encTorso!=NULL)
     {
         if (encTorso->getEncoders(fb.data()))
-            for (int i=0; i<3; i++)
-                fbTorso[i]=CTRL_DEG2RAD*fb[2-i];    // reversed order
+            for (int i=0; i<nJointsTorso; i++)
+                fbTorso[i]=CTRL_DEG2RAD*fb[nJointsTorso-1-i];    // reversed order
         else
             ret=false;
     }
@@ -303,13 +297,14 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
         fbTorso=0.0;
 
     if (encHead->getEncoders(fb.data()))
-        fbHead=CTRL_DEG2RAD*fb;
+        for (int i=0; i<nJointsHead; i++)
+            fbHead[i]=CTRL_DEG2RAD*fb[i];
     else
         ret=false;
 
     // impose vergence != 0.0
-    if (fbHead[5]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
-        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+    if (fbHead[nJointsHead-1]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
+        fbHead[nJointsHead-1]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
     return ret;
 }

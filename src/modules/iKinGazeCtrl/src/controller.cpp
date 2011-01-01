@@ -43,9 +43,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     neck->releaseLink(1); eyeL->releaseLink(1); eyeR->releaseLink(1);
     neck->releaseLink(2); eyeL->releaseLink(2); eyeR->releaseLink(2);
 
-    // release the neck roll
-    neck->releaseLink(4);
-
     // Get the chain objects
     chainNeck=neck->asChain();
     chainEyeL=eyeL->asChain();
@@ -78,17 +75,10 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         bool ok=true;
 
         if (drvTorso!=NULL)
-        {
-            ok&=drvTorso->view(limTorso);
             ok&=drvTorso->view(encTorso);
-        }
         else
-        {
-            limTorso=NULL;
             encTorso=NULL;
-        }
 
-        ok&=drvHead->view(limHead);
         ok&=drvHead->view(encHead);
         ok&=drvHead->view(velHead);
 
@@ -104,8 +94,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainNeck,limTorso,limHead,
-                              eyeTiltMin,eyeTiltMax);
+        lim=alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 

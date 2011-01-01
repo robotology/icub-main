@@ -93,61 +93,6 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
 bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp);
 
 
-// Describe the nonlinear problem of eyes handling.
-// DOFs=tilt+pan+vergence.
-class Eyes_NLP : public iKin_NLP
-{
-private:
-    Eyes_NLP(const Eyes_NLP&);
-    Eyes_NLP &operator=(const Eyes_NLP&);
-
-protected:
-    iKinChain dummyChain;
-    Vector    dummyVector;
-
-    iKinChain &eyeL;
-    iKinChain &eyeR;
-
-    Vector qL;
-    Vector qR;
-    Vector fp;
-
-    Matrix J;
-
-    double subsStartVerg0;
-    bool   divByZero;
-
-    void         reinforceBounds();
-    virtual void computeQuantities(const Ipopt::Number *x);
-
-public:
-    Eyes_NLP(iKinChain &_eyeL, iKinChain &_eyeR, const Vector &_q0, Vector &_xd,
-             iKinLinIneqConstr &_LIC, bool *_exhalt=NULL);
-
-    virtual bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
-                              Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style);
-    virtual bool get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
-                                 Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u);
-
-    virtual bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number* x,
-                                    bool init_z, Ipopt::Number* z_L, Ipopt::Number* z_U,
-                                    Ipopt::Index m, bool init_lambda,
-                                    Ipopt::Number* lambda);
-    virtual bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number& obj_value);
-    virtual bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number* grad_f);
-    virtual bool eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                        Ipopt::Index m, Ipopt::Number* g);
-    virtual bool eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                            Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow, Ipopt::Index *jCol,
-                            Ipopt::Number* values);
-    virtual void finalize_solution(Ipopt::SolverReturn status,
-                                   Ipopt::Index n, const Ipopt::Number* x, const Ipopt::Number* z_L, const Ipopt::Number* z_U,
-                                   Ipopt::Index m, const Ipopt::Number* g, const Ipopt::Number* lambda, Ipopt::Number obj_value,
-                                   const Ipopt::IpoptData* ip_data,
-                                   Ipopt::IpoptCalculatedQuantities* ip_cq);
-};
-
-
 // Solve through IPOPT the nonlinear problem 
 class GazeIpOptMin : public iKinIpOptMin
 {
@@ -156,14 +101,11 @@ private:
     GazeIpOptMin(const GazeIpOptMin&);
     GazeIpOptMin &operator=(const GazeIpOptMin&);
 
-protected:
-    iKinChain &chain2;
-    bool neckType;
-
 public:
-    GazeIpOptMin(const string &type, iKinChain &c1, iKinChain &c2,
-                 const double tol, const int max_iter=IKINCTRL_DISABLED,
-                 const unsigned int verbose=0);
+    GazeIpOptMin(iKinChain &_chain, const double tol, const int max_iter=IKINCTRL_DISABLED,
+                 const unsigned int verbose=0) :
+                 iKinIpOptMin(_chain,IKINCTRL_POSE_XYZ,tol,max_iter,verbose,false) { }
+
     void set_ctrlPose(unsigned int _ctrlPose) { }
     void setHessianOpt(const bool useHessian) { }   // Hessian not implemented
     virtual Vector solve(const Vector &q0, Vector &xd,

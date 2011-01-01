@@ -36,6 +36,7 @@
 #include <iCub/controller.h>
 
 #define EYEPINVREFGEN_GAIN                  12.5
+#define NECKSOLVER_RESTPOSITIONWEIGHT       0.01
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
 #define NECKSOLVER_ACTIVATIONANGLE_TRA      2.5     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE_SAG      2.5     // [deg]
@@ -63,7 +64,6 @@ protected:
     iCubEye                   *eyeL,      *eyeR;
     iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver                *drvTorso,  *drvHead;
-    IControlLimits            *limTorso,  *limHead;
     IEncoders                 *encTorso,  *encHead;
     exchangeData              *commData;
     xdPort                    *port_xd;
@@ -122,13 +122,10 @@ protected:
     iCubHeadCenter            *neck;
     iCubEye                   *eyeL,      *eyeR;
     iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
-    GazeIpOptMin              *invNeck,   *invEyes;
+    GazeIpOptMin              *invNeck;
     PolyDriver                *drvTorso,  *drvHead;
-    IControlLimits            *limTorso,  *limHead;
     IEncoders                 *encTorso,  *encHead;
     exchangeData              *commData;
-    neckCallback              *neckCallbackObj;
-    eyesCallback              *eyesCallbackObj;
     EyePinvRefGen             *eyesRefGen;
     Localizer                 *loc;
     Controller                *ctrl;
@@ -154,6 +151,8 @@ protected:
 
     double neckPitchMin;
     double neckPitchMax;
+    double neckRollMin;
+    double neckRollMax;
     double neckYawMin;
     double neckYawMax;
 
@@ -168,10 +167,13 @@ public:
     void   updateAngles();
 
     void bindNeckPitch(const double min_deg, const double max_deg);
+    void bindNeckRoll(const double min_deg, const double max_deg);
     void bindNeckYaw(const double min_deg, const double max_deg);
     void getCurNeckPitchRange(double &min_deg, double &max_deg) const;
+    void getCurNeckRollRange(double &min_deg, double &max_deg) const;
     void getCurNeckYawRange(double &min_deg, double &max_deg) const;
     void clearNeckPitch();
+    void clearNeckRoll();
     void clearNeckYaw();
 
     virtual bool threadInit();

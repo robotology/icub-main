@@ -683,7 +683,7 @@ bool ClientGazeController::setStereoOptions(const Bottle &options)
 
 
 /************************************************************************/
-bool ClientGazeController::bindNeckPitch(const double min, const double max)
+bool ClientGazeController::blockNeckJoint(const string &joint, const double min, const double max)
 {
     if (!connected)
         return false;
@@ -691,7 +691,7 @@ bool ClientGazeController::bindNeckPitch(const double min, const double max)
     Bottle command, reply;
 
     command.addString("bind");
-    command.addString("pitch");
+    command.addString(joint.c_str());
     command.addDouble(min);
     command.addDouble(max);
 
@@ -700,169 +700,138 @@ bool ClientGazeController::bindNeckPitch(const double min, const double max)
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
     }
-    
+
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::blockNeckJoint(const string &joint, const int j)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    Vector *val=portStateHead->read(true);
+
+    command.addString("bind");
+    command.addString(joint.c_str());
+    command.addDouble((*val)[j]);
+    command.addDouble((*val)[j]);
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::clearNeckJoint(const string &joint)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("clear");
+    command.addString(joint.c_str());
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::bindNeckPitch(const double min, const double max)
+{
+    return blockNeckJoint("pitch",min,max);
 }
 
 
 /************************************************************************/
 bool ClientGazeController::blockNeckPitch(const double val)
 {
-    if (!connected)
-        return false;
-
-    Bottle command, reply;
-
-    command.addString("bind");
-    command.addString("pitch");
-    command.addDouble(val);
-    command.addDouble(val);
-
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return blockNeckJoint("pitch",val,val);
 }
 
 
 /************************************************************************/
 bool ClientGazeController::blockNeckPitch()
 {
-    if (!connected)
-        return false;
+    return blockNeckJoint("pitch",3);
+}
 
-    Bottle command, reply;
 
-    Vector *val=portStateHead->read(true);
+/************************************************************************/
+bool ClientGazeController::bindNeckRoll(const double min, const double max)
+{
+    return blockNeckJoint("roll",min,max);
+}
 
-    command.addString("bind");
-    command.addString("pitch");
-    command.addDouble((*val)[3]);
-    command.addDouble((*val)[3]);
 
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+/************************************************************************/
+bool ClientGazeController::blockNeckRoll(const double val)
+{
+    return blockNeckJoint("roll",val,val);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::blockNeckRoll()
+{
+    return blockNeckJoint("roll",4);
 }
 
 
 /************************************************************************/
 bool ClientGazeController::bindNeckYaw(const double min, const double max)
 {
-    if (!connected)
-        return false;
-
-    Bottle command, reply;
-
-    command.addString("bind");
-    command.addString("yaw");
-    command.addDouble(min);
-    command.addDouble(max);
-
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return blockNeckJoint("yaw",min,max);
 }
 
 
 /************************************************************************/
 bool ClientGazeController::blockNeckYaw(const double val)
 {
-    if (!connected)
-        return false;
-
-    Bottle command, reply;
-
-    command.addString("bind");
-    command.addString("yaw");
-    command.addDouble(val);
-    command.addDouble(val);
-
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return blockNeckJoint("yaw",val,val);
 }
 
 
 /************************************************************************/
 bool ClientGazeController::blockNeckYaw()
 {
-    if (!connected)
-        return false;
-
-    Bottle command, reply;
-
-    Vector *val=portStateHead->read(true);
-
-    command.addString("bind");
-    command.addString("yaw");
-    command.addDouble((*val)[5]);
-    command.addDouble((*val)[5]);
-
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return blockNeckJoint("yaw",5);
 }
 
 
 /************************************************************************/
 bool ClientGazeController::clearNeckPitch()
 {
-    if (!connected)
-        return false;
+    return clearNeckJoint("pitch");
+}
 
-    Bottle command, reply;
 
-    command.addString("clear");
-    command.addString("pitch");
-
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+/************************************************************************/
+bool ClientGazeController::clearNeckRoll()
+{
+    return clearNeckJoint("roll");
 }
 
 
 /************************************************************************/
 bool ClientGazeController::clearNeckYaw()
 {
-    if (!connected)
-        return false;
-
-    Bottle command, reply;
-
-    command.addString("clear");
-    command.addString("yaw");
-
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return clearNeckJoint("yaw");
 }
 
 

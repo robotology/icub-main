@@ -43,9 +43,6 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeL->releaseLink(1); eyeC.releaseLink(1); eyeR->releaseLink(1);
     eyeL->releaseLink(2); eyeC.releaseLink(2); eyeR->releaseLink(2);
 
-    // release the neck roll
-    eyeC.releaseLink(4);
-
     // get the absolute reference frame of the head
     Vector q(eyeC.getDOF()); q=0.0;
     eyeCAbsFrame=eyeC.getH(q);

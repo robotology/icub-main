@@ -110,38 +110,6 @@ public:
 };
 
 
-// This class handles callbacks for neck solver
-class neckCallback : public iKinIterateCallback
-{
-private:
-    neckCallback(const neckCallback&);
-    neckCallback &operator=(const neckCallback&);
-
-protected:
-    exchangeData *commData;
-
-public:
-    neckCallback(exchangeData *_commData) : commData(_commData) { }
-    virtual void exec(Vector xd, Vector q);
-};
-
-
-// This class handles callbacks for eyes solver
-class eyesCallback : public iKinIterateCallback
-{
-private:
-    eyesCallback(const eyesCallback&);
-    eyesCallback &operator=(const eyesCallback&);
-
-protected:
-    exchangeData *commData;
-
-public:
-    eyesCallback(exchangeData *_commData) : commData(_commData) { }
-    virtual void exec(Vector xd, Vector q);
-};
-
-
 // Allocates Projection Matrix Prj for the camera read from configFile
 // type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}
 // Returns true if correctly configured
@@ -157,7 +125,7 @@ bool getAlignLinks(const string &configFile, const string &type,
 
 // Aligns head joints bounds with current onboard bounds.
 // Returns a matrix containing the actual limits
-Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLimits *limHead,
+Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drvHead,
                          const double eyeTiltMin, const double eyeTiltMax);
 
 
@@ -166,11 +134,11 @@ void copyJointsBounds(iKinChain *ch1, iKinChain *ch2);
 
 
 // Updates torso blocked joints values within the chain
-void updateTorsoBlockedJoints(iKinChain *chain, Vector &fbTorso);
+void updateTorsoBlockedJoints(iKinChain *chain, const Vector &fbTorso);
 
 
 // Updates neck blocked joints values within the chain
-void updateNeckBlockedJoints(iKinChain *chain, Vector &fbNeck);
+void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 
 
 // Reads encoders values.

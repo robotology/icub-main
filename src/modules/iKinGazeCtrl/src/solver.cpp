@@ -75,17 +75,10 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         bool ok=true;
 
         if (drvTorso!=NULL)
-        {
-            ok&=drvTorso->view(limTorso);
             ok&=drvTorso->view(encTorso);
-        }
         else
-        {
-            limTorso=NULL;
             encTorso=NULL;
-        }
 
-        ok&=drvHead->view(limHead);
         ok&=drvHead->view(encHead);
 
         if (!ok)
@@ -100,8 +93,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainNeck,limTorso,limHead,
-                              eyeTiltMin,eyeTiltMax);
+        lim=alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
@@ -224,6 +216,7 @@ void EyePinvRefGen::run()
 
         // update neck chain
         chainNeck->setAng(nJointsTorso+0,fbHead[0]);
+        chainNeck->setAng(nJointsTorso+1,fbHead[1]);
         chainNeck->setAng(nJointsTorso+2,fbHead[2]);
 
         // update eyes chains for convergence purpose
@@ -244,17 +237,20 @@ void EyePinvRefGen::run()
 
             // implement OCR
             Matrix h0=chainNeck->getH(2,true);
+            Matrix h1=chainNeck->getH(3,true);
             Matrix h2=chainNeck->getH(4,true);
 
             for (unsigned int i=0; i<3; i++)
             {
                 h0(i,3)=fp[i]-h0(i,3);
+                h1(i,3)=fp[i]-h1(i,3);
                 h2(i,3)=fp[i]-h2(i,3);
             }
 
-            h0(3,3)=h2(3,3)=0.0;
+            h0(3,3)=h1(3,3)=h2(3,3)=0.0;
 
             Vector fprelv=commData->get_v()[0]*cross(h0,2,h0,3)+
+                          commData->get_v()[1]*cross(h1,2,h1,3)+
                           commData->get_v()[2]*cross(h2,2,h2,3);
 
             commData->get_compv()=pinv(eyesJ)*fprelv;
@@ -347,8 +343,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     neck=new iCubHeadCenter();
     eyeL=new iCubEye("left");
     eyeR=new iCubEye("right");
-    neckCallbackObj=new neckCallback(commData);
-    eyesCallbackObj=new eyesCallback(commData);
 
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
@@ -385,17 +379,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         bool ok=true;
 
         if (drvTorso!=NULL)
-        {
-            ok&=drvTorso->view(limTorso);
             ok&=drvTorso->view(encTorso);
-        }
         else
-        {
-            limTorso=NULL;
             encTorso=NULL;
-        }
 
-        ok&=drvHead->view(limHead);
         ok&=drvHead->view(encHead);
 
         if (!ok)
@@ -409,8 +396,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        alignJointsBounds(chainNeck,limTorso,limHead,
-                          eyeTiltMin,eyeTiltMax);
+        alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
@@ -434,13 +420,12 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     // store neck pitch/yaw bounds
     neckPitchMin=(*chainNeck)[3].getMin();
     neckPitchMax=(*chainNeck)[3].getMax();
+    neckRollMin =(*chainNeck)[4].getMin();
+    neckRollMax =(*chainNeck)[4].getMax();
     neckYawMin  =(*chainNeck)[5].getMin();
     neckYawMax  =(*chainNeck)[5].getMax();
 
-    // neck roll disabled
-    fbHead[1]=0.0;
-
-    neckPos.resize(2);
+    neckPos.resize(3);
     gazePos.resize(3);
     updateAngles();
 
@@ -482,6 +467,22 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 
 
 /************************************************************************/
+void Solver::bindNeckRoll(const double min_deg, const double max_deg)
+{
+    double min_rad=CTRL_DEG2RAD*min_deg;
+    double max_rad=CTRL_DEG2RAD*max_deg;
+
+    min_rad=(min_rad<neckRollMin)?neckRollMin:(min_rad>neckRollMax?neckRollMax:min_rad);
+    max_rad=(max_rad<neckRollMin)?neckRollMin:(max_rad>neckRollMax?neckRollMax:max_rad);
+
+    (*chainNeck)[4].setMin(min_rad);
+    (*chainNeck)[4].setMax(max_rad);
+
+    fprintf(stdout,"\nneck roll constrained in [%g,%g] deg\n\n",min_deg,max_deg);
+}
+
+
+/************************************************************************/
 void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 {
     double min_rad=CTRL_DEG2RAD*min_deg;
@@ -506,6 +507,14 @@ void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg) const
 
 
 /************************************************************************/
+void Solver::getCurNeckRollRange(double &min_deg, double &max_deg) const
+{
+    min_deg=CTRL_RAD2DEG*(*chainNeck)[4].getMin();
+    max_deg=CTRL_RAD2DEG*(*chainNeck)[4].getMax();
+}
+
+
+/************************************************************************/
 void Solver::getCurNeckYawRange(double &min_deg, double &max_deg) const
 {
     min_deg=CTRL_RAD2DEG*(*chainNeck)[5].getMin();
@@ -524,6 +533,16 @@ void Solver::clearNeckPitch()
 
 
 /************************************************************************/
+void Solver::clearNeckRoll()
+{
+    (*chainNeck)[4].setMin(neckRollMin);
+    (*chainNeck)[4].setMax(neckRollMax);
+
+    fprintf(stdout,"\nneck roll cleared\n\n");
+}
+
+
+/************************************************************************/
 void Solver::clearNeckYaw()
 {
     (*chainNeck)[5].setMin(neckYawMin);
@@ -537,7 +556,8 @@ void Solver::clearNeckYaw()
 void Solver::updateAngles()
 {
     neckPos[0]=fbHead[0];
-    neckPos[1]=fbHead[2];
+    neckPos[1]=fbHead[1];
+    neckPos[2]=fbHead[2];
     gazePos[0]=fbHead[3];
     gazePos[1]=fbHead[4];
     gazePos[2]=fbHead[5];
@@ -576,10 +596,8 @@ Vector Solver::neckTargetRotAngles(const Vector &xd)
 /************************************************************************/
 bool Solver::threadInit()
 {
-    // Instantiate optimizers
-    iKinChain dummyChain;
-    invNeck=new GazeIpOptMin("neck",*chainNeck,dummyChain,1e-3,20);
-    invEyes=new GazeIpOptMin("eyes",*chainEyeL,*chainEyeR,1e-3,20);
+    // Instantiate optimizer
+    invNeck=new GazeIpOptMin(*chainNeck,1e-3,20);
 
     // Initialization
     Vector fp(3);
@@ -592,7 +610,7 @@ bool Solver::threadInit()
     commData->get_x()=fp;
     commData->get_q()=fbHead;
     commData->get_torso()=fbTorso;
-    commData->get_v().resize(5,0.0);
+    commData->get_v().resize(fbHead.length(),0.0);
     commData->get_compv().resize(3,0.0);
     commData->get_fpFrame()=chainNeck->getH();
 
@@ -655,19 +673,17 @@ void Solver::run()
                  (theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD);
 
     // skip solving iff not in tracking mode and the controller is inactive
-    if (commData->get_canCtrlBeDisabled() && !commData->get_isCtrlActive() &&
-        doSolve && (xd==xdOld))
-        return;
+    doSolve&=!(commData->get_canCtrlBeDisabled() && !commData->get_isCtrlActive() && (xd==xdOld));
 
     // call the solver for neck
     if (doSolve)
     {
-        //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
         neckPos=invNeck->solve(neckPos,xd);
 
-        // update neck pitch,yaw        
+        // update neck pitch,roll,yaw        
         commData->get_qd()[0]=neckPos[0];
-        commData->get_qd()[2]=neckPos[1];
+        commData->get_qd()[1]=neckPos[1];
+        commData->get_qd()[2]=neckPos[2];
     }
 
     // latch the target
@@ -685,9 +701,6 @@ void Solver::threadRelease()
 
     delete port_xd;
     delete invNeck;
-    delete invEyes;
-    delete neckCallbackObj;
-    delete eyesCallbackObj;
     delete neck;
     delete eyeL;
     delete eyeR;
@@ -721,9 +734,6 @@ void Solver::resume()
     {
         // read encoders
         getFeedback(fbTorso,fbHead,encTorso,encHead);
-
-        // neck roll disabled
-        fbHead[1]=0.0;
 
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);

@@ -17,6 +17,7 @@
 */
 
 #include <iCub/gazeNlp.h>
+#include <iCub/solver.h>
 
 
 /************************************************************************/
@@ -28,9 +29,6 @@ void iCubHeadCenter::allocate(const string &_type)
     // block last two links
     blockLink(getN()-2,0.0);
     blockLink(getN()-1,0.0);
-
-    // disable neck roll
-    blockLink(4,0.0);
 }
 
 
@@ -94,7 +92,10 @@ bool HeadCenter_NLP::eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
 {
     computeQuantities(x);
 
-    obj_value=cosAng+1.0;
+    obj_value=1.0+cosAng;
+
+    for (Ipopt::Index i=0; i<n; i++)
+        obj_value+=NECKSOLVER_RESTPOSITIONWEIGHT*0.5*(x[i]*x[i]);
 
     return true;
 }
@@ -108,7 +109,8 @@ bool HeadCenter_NLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x,
 
     for (Ipopt::Index i=0; i<n; i++)
         grad_f[i]=(dot(AnaJacobZ,i,Hxd,3)+dot(Hxd,2,GeoJacobP,i))/mod
-                  -(cosAng*dot(Hxd,3,GeoJacobP,i))/(mod*mod);
+                  -(cosAng*dot(Hxd,3,GeoJacobP,i))/(mod*mod)+
+                  NECKSOLVER_RESTPOSITIONWEIGHT*x[i];
 
     return true;
 }
@@ -263,255 +265,12 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
 
 
 /************************************************************************/
-Eyes_NLP::Eyes_NLP(iKinChain &_eyeL, iKinChain &_eyeR, const Vector &_q0, Vector &_xd,
-                   iKinLinIneqConstr &_LIC, bool *_exhalt) :
-                   iKin_NLP(_eyeL,IKINCTRL_POSE_XYZ,_q0,_xd,
-                   0.0,dummyChain,dummyVector,dummyVector,
-                   0.0,dummyVector,dummyVector,
-                   _LIC,_exhalt), eyeL(_eyeL), eyeR(_eyeR)
-{
-    // tilt+pan+vergence
-    dim=3;
-
-    // prevent from starting with verg==0.0
-    subsStartVerg0=5.0;
-
-    qd.resize(dim);
-    size_t n=q0.length();
-    n=n>dim ? dim : n;
-
-    unsigned int i;
-    for (i=0; i<n; i++)
-        qd[i]=q0[i];
-
-    for (; i<dim; i++)
-        qd[i]=0.0;
-
-    if (qd[dim-1]==0.0)
-        qd[dim-1]=subsStartVerg0;
-
-    q=qd;
-
-    qL.resize(2);
-    qR.resize(2);
-    fp.resize(3);
-    J.resize(3,3);
-}
-
-
-/************************************************************************/
-void Eyes_NLP::reinforceBounds()
-{
-    qL[0]=qR[0]=q[0];
-    qL[1]=q[1]+q[2]/2.0;
-    qR[1]=q[1]-q[2]/2.0;
-
-    qL=eyeL.setAng(qL);
-    qR=eyeR.setAng(qR);
-
-    q[0]=(qL[0]+qR[0]) / 2.0;   // tilt
-    q[1]=(qL[1]+qR[1]) / 2.0;   // pan
-    q[2]=qL[1]-qR[1];           // vergence
-}
-
-
-/************************************************************************/
-void Eyes_NLP::computeQuantities(const Ipopt::Number *x)
-{
-    Vector new_q(dim);
-
-    for (Ipopt::Index i=0; i<(int)dim; i++)
-        new_q[i]=x[i];
-
-    if (!(q==new_q) || firstGo)
-    {
-        firstGo=false;
-        q=new_q;
-
-        reinforceBounds();
-        divByZero=computeFixationPointData(eyeL,eyeR,fp,J);
-
-        e_xyz=xd-fp;
-    }
-}
-
-
-/************************************************************************/
-bool Eyes_NLP::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
-                            Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
-{
-    n=dim;
-    m=2;
-    nnz_jac_g=m*(n-1);
-    nnz_h_lag=0;
-    index_style=TNLP::C_STYLE;
-    
-    return true;
-}
-
-
-/************************************************************************/
-bool Eyes_NLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
-                               Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u)
-{
-    // tilt bounds
-    x_l[0]=eyeL(0).getMin();
-    x_u[0]=eyeL(0).getMax();
-
-    // pan bounds
-    x_l[1]=eyeL(1).getMin();
-    x_u[1]=eyeL(1).getMax();
-
-    // vergence bounds
-    x_l[2]=0.0;
-    x_u[2]=eyeL(1).getMax();
-
-    g_l[0]=g_l[1]=x_l[1];   // minimum joint angle m
-    g_u[0]=g_u[1]=x_u[1];   // Maximum joint angle M
-
-    return true;
-}
-
-
-/************************************************************************/
-bool Eyes_NLP::get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number* x,
-                                  bool init_z, Ipopt::Number* z_L, Ipopt::Number* z_U,
-                                  Ipopt::Index m, bool init_lambda,
-                                  Ipopt::Number* lambda)
-{
-    for (Ipopt::Index i=0; i<n; i++)
-        x[i]=q0[i];
-
-    if (x[n-1]==0.0)
-        x[n-1]=subsStartVerg0;
-
-    return true;
-}
-
-
-/************************************************************************/
-bool Eyes_NLP::eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                      Ipopt::Number& obj_value)
-{
-    computeQuantities(x);
-
-    if (divByZero)
-        return false;
-
-    obj_value=0.5*norm2(e_xyz);
-
-    return true;
-}
-
-
-/************************************************************************/
-bool Eyes_NLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                           Ipopt::Number* grad_f)
-{
-    computeQuantities(x);
-
-    if (divByZero)
-        return false;
-
-    for (Ipopt::Index i=0; i<n; i++)
-        grad_f[i]=-dot(e_xyz,J.getCol(i));
-
-    return true;
-}
-
-
-/************************************************************************/
-bool Eyes_NLP::eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                      Ipopt::Index m, Ipopt::Number* g)
-{
-    computeQuantities(x);
-
-    if (divByZero)
-        return false;
-
-    g[0]=x[1]+x[2]/2.0; // l=pan+vergence/2 in [m,M]
-    g[1]=x[1]-x[2]/2.0; // r=pan-vergence/2 in [m,M]
-
-    return true;
-}
-
-
-/************************************************************************/
-bool Eyes_NLP::eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                          Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow,
-                          Ipopt::Index *jCol, Ipopt::Number* values)
-{
-    if (values==NULL)
-    {
-        Ipopt::Index idx=0;
-
-        for (Ipopt::Index row=0; row<m; row++)
-            for (Ipopt::Index col=1; col<n; col++) // irrespective of tilt
-            {
-                iRow[idx]=row;
-                jCol[idx]=col;
-                idx++;
-            }
-    }
-    else
-    {
-        computeQuantities(x);
-
-        if (divByZero)
-            return false;
-
-        values[0]= 1.0;
-        values[1]= 0.5;
-        values[2]= 1.0;
-        values[3]=-0.5;
-    }
-
-    return true;
-}
-
-
-/************************************************************************/
-void Eyes_NLP::finalize_solution(Ipopt::SolverReturn status,
-                                 Ipopt::Index n, const Ipopt::Number* x,
-                                 const Ipopt::Number* z_L, const Ipopt::Number* z_U,
-                                 Ipopt::Index m, const Ipopt::Number* g,
-                                 const Ipopt::Number* lambda, Ipopt::Number obj_value,
-                                 const Ipopt::IpoptData* ip_data,
-                                 Ipopt::IpoptCalculatedQuantities* ip_cq)
-{
-    for (Ipopt::Index i=0; i<n; i++)
-        q[i]=x[i];
-
-    reinforceBounds();
-    qd=q;
-}
-
-
-/************************************************************************/
-GazeIpOptMin::GazeIpOptMin(const string &type, iKinChain &c1, iKinChain &c2,
-                           const double tol, const int max_iter,
-                           const unsigned int verbose) :
-                           iKinIpOptMin(c1,IKINCTRL_POSE_XYZ,tol,max_iter,verbose,false),
-                           chain2(c2)
-{
-    neckType=type=="neck" ? true : false;
-
-    if (!neckType)
-        chain2.setAllConstraints(false);
-}
-
-
-/************************************************************************/
 Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd,
                            Ipopt::ApplicationReturnStatus *exit_code, bool *exhalt,
                            iKinIterateCallback *iterate)
 {
     Ipopt::SmartPtr<iKin_NLP> nlp;
-
-    if (neckType)
-        nlp=new HeadCenter_NLP(chain,q0,xd,*pLIC,exhalt);
-    else
-        nlp=new Eyes_NLP(chain,chain2,q0,xd,*pLIC,exhalt);
+    nlp=new HeadCenter_NLP(chain,q0,xd,*pLIC,exhalt);
 
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);

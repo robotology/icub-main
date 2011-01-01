@@ -76,6 +76,9 @@ protected:
 
     virtual bool deleteContexts();
     virtual bool getPose(const std::string &poseSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool blockNeckJoint(const std::string &joint, const double min, const double max);
+    virtual bool blockNeckJoint(const std::string &joint, const int j);
+    virtual bool clearNeckJoint(const std::string &joint);
 
 public:
     ClientGazeController();
@@ -107,10 +110,14 @@ public:
     virtual bool bindNeckPitch(const double min, const double max);
     virtual bool blockNeckPitch(const double val);
     virtual bool blockNeckPitch();
+    virtual bool bindNeckRoll(const double min, const double max);
+    virtual bool blockNeckRoll(const double val);
+    virtual bool blockNeckRoll();
     virtual bool bindNeckYaw(const double min, const double max);
     virtual bool blockNeckYaw(const double val);
     virtual bool blockNeckYaw();
     virtual bool clearNeckPitch();
+    virtual bool clearNeckRoll();
     virtual bool clearNeckYaw();
     virtual bool checkMotionDone(bool *f);
     virtual bool waitMotionDone(const double period=0.1, const double timeout=0.0);

@@ -241,9 +241,12 @@ following ports:
     - [stop]: stop the motion immediately.
     - [bind] [pitch] <min> <max>: bind the neck pitch within a
       range given in degrees.
+    - [bind] [roll] <min> <max>: bind the neck roll within a
+      range given in degrees.
     - [bind] [yaw] <min> <max>: bind the neck yaw within a range
       given in degrees.
     - [clear] [pitch]: restore the neck pitch range.
+    - [clear] [roll]: restore the neck roll range.
     - [clear] [yaw]: restore the neck yaw range.
     - [get] [Tneck]: returns the neck movements execution time.
     - [get] [Teyes]: returns the eyes movements execution time.
@@ -396,6 +399,8 @@ protected:
         // solver part
         double neckPitchMin;
         double neckPitchMax;
+        double neckRollMin;
+        double neckRollMax;
         double neckYawMin;
         double neckYawMax;
 
@@ -443,6 +448,7 @@ protected:
         
         // solver part
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
+        slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
         slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
 
         // localizer part
@@ -467,6 +473,7 @@ protected:
 
             // solver part
             slv->bindNeckPitch(context.neckPitchMin,context.neckPitchMax);
+            slv->bindNeckRoll(context.neckRollMin,context.neckRollMax);
             slv->bindNeckYaw(context.neckYawMin,context.neckYawMax);
 
             // localizer part
@@ -720,6 +727,8 @@ public:
 
                         if (joint==VOCAB4('p','i','t','c'))
                             slv->bindNeckPitch(min,max);
+                        else if (joint==VOCAB4('r','o','l','l'))
+                            slv->bindNeckRoll(min,max);
                         else if (joint==VOCAB3('y','a','w'))
                             slv->bindNeckYaw(min,max);
                         else
@@ -745,6 +754,8 @@ public:
                         int joint=command.get(1).asVocab();
                         if (joint==VOCAB4('p','i','t','c'))
                             slv->clearNeckPitch();
+                        else if (joint==VOCAB4('r','o','l','l'))
+                            slv->clearNeckRoll();
                         else if (joint==VOCAB3('y','a','w'))
                             slv->clearNeckYaw();
                         else
