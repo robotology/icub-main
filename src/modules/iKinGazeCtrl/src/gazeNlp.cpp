@@ -17,103 +17,6 @@
 */
 
 #include <iCub/gazeNlp.h>
-#include <iCub/solver.h>
-
-
-/************************************************************************/
-void iCubHeadCenter::allocate(const string &_type)
-{
-    // change DH parameters
-    linkList[getN()-2]->setD(0.0);
-
-    // block last two links
-    blockLink(getN()-2,0.0);
-    blockLink(getN()-1,0.0);
-}
-
-
-/************************************************************************/
-void HeadCenter_NLP::computeQuantities(const Ipopt::Number *x)
-{
-    Vector new_q(dim);
-
-    for (Ipopt::Index i=0; i<(int)dim; i++)
-        new_q[i]=x[i];
-
-    if (!(q==new_q) || firstGo)
-    {
-        firstGo=false;
-        q=new_q;
-
-        q=chain.setAng(q);
-        Hxd=chain.getH();
-        Hxd(0,3)-=xd[0];
-        Hxd(1,3)-=xd[1];
-        Hxd(2,3)-=xd[2];
-        Hxd(3,3)=0.0;
-        mod=norm(Hxd,3);
-        cosAng=dot(Hxd,2,Hxd,3)/mod;
-        
-        GeoJacobP=chain.GeoJacobian();
-        AnaJacobZ=chain.AnaJacobian(2);
-    }
-}
-
-
-/************************************************************************/
-bool HeadCenter_NLP::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
-                                  Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
-{
-    n=dim;
-    m=nnz_jac_g=nnz_h_lag=0;        
-    index_style=TNLP::C_STYLE;
-    
-    return true;
-}
-
-
-/************************************************************************/
-bool HeadCenter_NLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
-                                     Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u)
-{
-    for (Ipopt::Index i=0; i<n; i++)
-    {
-        x_l[i]=chain(i).getMin();
-        x_u[i]=chain(i).getMax();
-    }
-
-    return true;
-}
-
-
-/************************************************************************/
-bool HeadCenter_NLP::eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                            Ipopt::Number& obj_value)
-{
-    computeQuantities(x);
-
-    obj_value=1.0+cosAng;
-
-    for (Ipopt::Index i=0; i<n; i++)
-        obj_value+=NECKSOLVER_RESTPOSITIONWEIGHT*0.5*(x[i]*x[i]);
-
-    return true;
-}
-
-
-/************************************************************************/
-bool HeadCenter_NLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x,
-                                 bool new_x, Ipopt::Number* grad_f)
-{
-    computeQuantities(x);
-
-    for (Ipopt::Index i=0; i<n; i++)
-        grad_f[i]=(dot(AnaJacobZ,i,Hxd,3)+dot(Hxd,2,GeoJacobP,i))/mod
-                  -(cosAng*dot(Hxd,3,GeoJacobP,i))/(mod*mod)+
-                  NECKSOLVER_RESTPOSITIONWEIGHT*x[i];
-
-    return true;
-}
 
 
 /************************************************************************/
@@ -265,6 +168,136 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
 
 
 /************************************************************************/
+void iCubHeadCenter::allocate(const string &_type)
+{
+    // change DH parameters
+    linkList[getN()-2]->setD(0.0);
+
+    // block last two links
+    blockLink(getN()-2,0.0);
+    blockLink(getN()-1,0.0);
+}
+
+
+/************************************************************************/
+void HeadCenter_NLP::computeQuantities(const Ipopt::Number *x)
+{
+    Vector new_q(dim);
+
+    for (Ipopt::Index i=0; i<(int)dim; i++)
+        new_q[i]=x[i];
+
+    if (!(q==new_q) || firstGo)
+    {
+        firstGo=false;
+        q=new_q;
+
+        q=chain.setAng(q);
+        Hxd=chain.getH();
+        Hxd(0,3)-=xd[0];
+        Hxd(1,3)-=xd[1];
+        Hxd(2,3)-=xd[2];
+        Hxd(3,3)=0.0;
+        mod=norm(Hxd,3);
+        cosAng=dot(Hxd,2,Hxd,3)/mod;
+        
+        GeoJacobP=chain.GeoJacobian();
+        AnaJacobZ=chain.AnaJacobian(2);
+    }
+}
+
+
+/************************************************************************/
+bool HeadCenter_NLP::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
+                                  Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
+{
+    n=dim;
+    m=1;
+    nnz_jac_g=dim;
+    nnz_h_lag=0;
+    index_style=TNLP::C_STYLE;
+    
+    return true;
+}
+
+
+/************************************************************************/
+bool HeadCenter_NLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
+                                     Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u)
+{
+    for (Ipopt::Index i=0; i<n; i++)
+    {
+        x_l[i]=chain(i).getMin();
+        x_u[i]=chain(i).getMax();
+    }
+
+    g_l[0]=lowerBoundInf;
+    g_u[0]=translationalTol;
+
+    return true;
+}
+
+
+/************************************************************************/
+bool HeadCenter_NLP::eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
+                            Ipopt::Number& obj_value)
+{
+    obj_value=0.0;
+    for (Ipopt::Index i=0; i<n; i++)
+        obj_value+=0.5*(x[i]*x[i]);
+
+    return true;
+}
+
+
+/************************************************************************/
+bool HeadCenter_NLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x,
+                                 bool new_x, Ipopt::Number* grad_f)
+{
+    for (Ipopt::Index i=0; i<n; i++)
+        grad_f[i]=x[i];
+
+    return true;
+}
+
+
+/************************************************************************/
+bool HeadCenter_NLP::eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
+                            Ipopt::Index m, Ipopt::Number* g)
+{
+    computeQuantities(x);
+
+    g[0]=1.0+cosAng;
+
+    return true;
+}
+
+
+/************************************************************************/
+bool HeadCenter_NLP::eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
+                                Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow,
+                                Ipopt::Index *jCol, Ipopt::Number* values)
+{
+    if (!values)
+    {
+        iRow[0]=0; jCol[0]=0;
+        iRow[1]=0; jCol[1]=1;
+        iRow[2]=0; jCol[2]=2;
+    }
+    else
+    {
+        computeQuantities(x);
+
+        for (Ipopt::Index i=0; i<n; i++)
+            values[i]=(dot(AnaJacobZ,i,Hxd,3)+dot(Hxd,2,GeoJacobP,i))/mod
+                      -(cosAng*dot(Hxd,3,GeoJacobP,i))/(mod*mod);
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
 Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd,
                            Ipopt::ApplicationReturnStatus *exit_code, bool *exhalt,
                            iKinIterateCallback *iterate)
@@ -274,6 +307,7 @@ Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd,
 
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);
+    nlp->set_translational_tol(translationalTol);
     nlp->set_callback(iterate);
     
     Ipopt::ApplicationReturnStatus status=optimize(GetRawPtr(nlp));

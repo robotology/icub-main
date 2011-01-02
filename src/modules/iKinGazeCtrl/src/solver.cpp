@@ -106,7 +106,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
+        getFeedback(fbTorso,fbHead,encTorso,encHead);        
     }
     else
     {
@@ -447,6 +447,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     chainEyeR->setAng(eyePos);
 
     xdOld.resize(3,0.0);
+    fbTorsoOld=fbTorso;
 }
 
 
@@ -650,6 +651,8 @@ void Solver::run()
     // update the target straightaway 
     commData->get_xd()=xd;
 
+    bool torsoChanged=false;
+
     if (Robotable)
     {
         // read encoders
@@ -657,6 +660,8 @@ void Solver::run()
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
+
+        torsoChanged=norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_TORSO*CTRL_DEG2RAD;
     }
     else
         fbHead=commData->get_q();
@@ -667,13 +672,21 @@ void Solver::run()
     updateNeckBlockedJoints(chainEyeR,fbHead);
     chainNeck->setAng(neckPos);
 
-    Vector theta=neckTargetRotAngles(xd);
+    // hereafter accumulate solving conditions: the order does matter
 
+    // 1) compute the distance in the transverse and sagittal planes
+    Vector theta=neckTargetRotAngles(xd);
     bool doSolve=(theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD) ||
                  (theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD);
 
-    // skip solving iff not in tracking mode and the controller is inactive
-    doSolve&=!(commData->get_canCtrlBeDisabled() && !commData->get_isCtrlActive() && (xd==xdOld));
+    // 2) skip if controller is active and no torso motion is detected
+    doSolve&=!(commData->get_isCtrlActive() && !torsoChanged);
+
+    // 3) skip if controller is inactive and we are not in tracking mode
+    doSolve&=!(!commData->get_isCtrlActive() && commData->get_canCtrlBeDisabled());
+
+    // 4) solve straightaway if the target has changed
+    doSolve|=!(xd==xdOld);
 
     // call the solver for neck
     if (doSolve)
@@ -686,8 +699,9 @@ void Solver::run()
         commData->get_qd()[2]=neckPos[2];
     }
 
-    // latch the target
+    // latch quantities
     xdOld=xd;
+    fbTorsoOld=fbTorso;
 }
 
 
@@ -757,6 +771,10 @@ void Solver::resume()
 
     // update input port
     port_xd->set_xd(fp);
+
+    // update latched quantities
+    xdOld=fp;
+    fbTorsoOld=fbTorso;
 
     fprintf(stdout,"\nSolver has been resumed!\n\n");
 

@@ -32,6 +32,16 @@ using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
 
+// Compute fixation point position and Jacobian wrt eyes (tilt,pan,vergence)
+// Return true if division by zero is detected
+bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matrix &J);
+
+
+// Compute fixation point position wrt eyes (tilt,pan,vergence)
+// Return true if division by zero is detected
+bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp);
+
+
 // Describe the kinematic of the straight line
 // coming out from the point located between eyes.
 class iCubHeadCenter : public iCubEye
@@ -80,17 +90,10 @@ public:
                                  Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u);
     virtual bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number& obj_value);
     virtual bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number* grad_f);
+    virtual bool eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Index m, Ipopt::Number* g);
+    virtual bool eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,Ipopt::Index m, Ipopt::Index nele_jac,
+                            Ipopt::Index* iRow, Ipopt::Index *jCol, Ipopt::Number* values);
 };
-
-
-// Compute fixation point position and Jacobian wrt eyes (tilt,pan,vergence)
-// Return true if division by zero is detected
-bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matrix &J);
-
-
-// Compute fixation point position wrt eyes (tilt,pan,vergence)
-// Return true if division by zero is detected
-bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp);
 
 
 // Solve through IPOPT the nonlinear problem 

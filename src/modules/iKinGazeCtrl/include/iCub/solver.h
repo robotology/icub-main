@@ -36,8 +36,8 @@
 #include <iCub/controller.h>
 
 #define EYEPINVREFGEN_GAIN                  12.5
-#define NECKSOLVER_RESTPOSITIONWEIGHT       0.01
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
+#define NECKSOLVER_ACTIVATIONANGLE_TORSO    0.5     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE_TRA      2.5     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE_SAG      2.5     // [deg]
 #define NECKSOLVER_RESTORINGANGLE_TRA       5.0     // [deg]
@@ -148,6 +148,7 @@ protected:
     Vector neckPos;
     Vector gazePos;
     Vector xdOld;
+    Vector fbTorsoOld;
 
     double neckPitchMin;
     double neckPitchMax;
