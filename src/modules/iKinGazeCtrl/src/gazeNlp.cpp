@@ -243,8 +243,11 @@ bool HeadCenter_NLP::eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                             Ipopt::Number& obj_value)
 {
     obj_value=0.0;
+
     for (Ipopt::Index i=0; i<n; i++)
-        obj_value+=0.5*(x[i]*x[i]);
+        obj_value+=x[i]*x[i];
+
+    obj_value*=0.5;
 
     return true;
 }
