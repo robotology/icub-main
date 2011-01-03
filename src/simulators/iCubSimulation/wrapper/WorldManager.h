@@ -5,24 +5,20 @@
 
 #include <yarp/os/Bottle.h>
 
+#include "WorldOp.h"
+
 class WorldManager {
 public:
-    WorldManager() {
-        num = 0;
-        a = b = c = 0;
+    virtual ~WorldManager() {}
+
+    virtual bool respond(const yarp::os::Bottle &command, 
+                         yarp::os::Bottle &reply);
+
+    virtual void clear() {
     }
 
-    bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
+    virtual void apply(const WorldOp& op, WorldResult& result) = 0;
 
-    void clear();
-
-private:
-    int num;
-    int a, b, c;
-    //static int a = 0, b = 0, c = 0;
-    //static int num=0;// number of objects in simulation
-
-    
 };
 
 #endif

@@ -121,8 +121,12 @@
 #include <yarp/os/Property.h>
 
 #include "SimulationRun.h"
+#ifdef ICUB_SIM_ENABLE_ODESDL
 #include "OdeSdlSimulationBundle.h"
+#endif
+#ifdef ICUB_SIM_ENABLE_FAKE
 #include "FakeSimulationBundle.h"
+#endif
 
 int main(int argc, char** argv) {
     yarp::os::Network yarp;
@@ -139,9 +143,13 @@ int main(int argc, char** argv) {
     // the standard ports (pass --fake to start this simulation).
     SimulationBundle *bundle = NULL;
     if (options.check("fake")) {
+#ifdef ICUB_SIM_ENABLE_FAKE
         bundle = new FakeSimulationBundle;
+#endif
     } else {
+#ifdef ICUB_SIM_ENABLE_ODESDL
         bundle = new OdeSdlSimulationBundle;
+#endif
     }
     if (bundle==NULL) {
         fprintf(stderr,"Failed to allocate simulator\n");

@@ -8,6 +8,7 @@
 #include "FakeSimulationBundle.h"
 
 #include "FakeLogicalJoints.h"
+#include "FakeWorldManager.h"
 #include "FakeSimulation.h"
 
 bool FakeSimulationBundle::onBegin() {
@@ -17,6 +18,10 @@ bool FakeSimulationBundle::onBegin() {
 LogicalJoints *FakeSimulationBundle::createJoints(RobotConfig& config) {
     config.setFlags();
     return new FakeLogicalJoints;
+}
+
+WorldManager *FakeSimulationBundle::createWorldManager(RobotConfig& config) {
+    return new FakeWorldManager;
 }
 
 Simulation *FakeSimulationBundle::createSimulation(RobotConfig& config) {

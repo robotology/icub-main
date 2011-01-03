@@ -16,6 +16,8 @@ public:
 
     virtual LogicalJoints *createJoints(RobotConfig& config);
 
+    virtual WorldManager *createWorldManager(RobotConfig& config);
+
     virtual Simulation *createSimulation(RobotConfig& config);
 
     virtual bool onEnd();

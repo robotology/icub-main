@@ -35,6 +35,13 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
         return false;
     }
 
+    WorldManager *world = bundle->createWorldManager(config);
+    if (world==NULL) {
+        fprintf(stderr,"Failed to allocate world manager\n");
+        delete bundle;
+        return false;
+    }
+
     PolyDriver icub_joints_dev;
     icub_joints_dev.give(icub_joints,true);
 
@@ -46,7 +53,7 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
         "controlboard",
         "iCubSimulationControl"));
 
-    SimulatorModule module(config,bundle->createSimulation(config));
+    SimulatorModule module(*world,config,bundle->createSimulation(config));
 
     if (module.open()) {
         //this blocks until termination (through ctrl+c or a kill)
@@ -56,6 +63,9 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
     module.closeModule();
 
     bundle->onEnd();
+
+    delete world;
+    world = NULL;
 
     delete bundle;
     bundle = NULL;

@@ -29,7 +29,7 @@
 class SimulatorModule : public yarp::os::PortReader, public RobotStreamer
 {
 public:
-    SimulatorModule(RobotConfig& config, Simulation *sim);
+    SimulatorModule(WorldManager& world, RobotConfig& config, Simulation *sim);
 
     bool open();
     bool runModule();
@@ -108,7 +108,7 @@ private:
 
     yarp::dev::PolyDriver *createPart(const char *name);
 
-    WorldManager world_manager;
+    WorldManager& world_manager;
     RobotConfig& robot_config;
     RobotFlags& robot_flags;
     yarp::os::ResourceFinder& finder;

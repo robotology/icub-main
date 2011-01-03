@@ -10,6 +10,7 @@
 #include "OdeInit.h" 
 #include "iCubLogicalJoints.h"
 #include "iCub_Sim.h"
+#include "OdeWorldManager.h"
 
 bool OdeSdlSimulationBundle::onBegin() {
     dInitODE2(0); 
@@ -23,6 +24,10 @@ LogicalJoints *OdeSdlSimulationBundle::createJoints(RobotConfig& config) {
 
     // Set up ODE joints
     return new iCubLogicalJoints(config);
+}
+
+WorldManager *OdeSdlSimulationBundle::createWorldManager(RobotConfig& config) {
+    return new OdeWorldManager();
 }
 
 Simulation *OdeSdlSimulationBundle::createSimulation(RobotConfig& config) {

@@ -5,7 +5,7 @@
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  */
 
-#include "WorldManager.h"
+#include "OdeWorldManager.h"
 
 #include "OdeInit.h"
 #include "iCub_Sim.h"
@@ -132,7 +132,7 @@ void deleteObjects() {
              
 }
 
-bool WorldManager::respond(const Bottle &command, Bottle &reply) {
+bool OdeWorldManager::respond(const Bottle &command, Bottle &reply) {
     OdeInit& odeinit = OdeInit::get();
 
     int setBody = 0;
@@ -851,10 +851,9 @@ bool WorldManager::respond(const Bottle &command, Bottle &reply) {
 }
 
 
-void WorldManager::clear() {
+void OdeWorldManager::clear() {
     OdeInit& odeinit = OdeInit::get();
     for (int x =0; x < a; x++)
         dTriMeshXDestroy(odeinit._wrld->trimesh[x]);
 }
-
 

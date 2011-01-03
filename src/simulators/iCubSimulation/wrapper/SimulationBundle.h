@@ -11,6 +11,7 @@
 
 #include "Simulation.h"
 #include "LogicalJoints.h"
+#include "WorldManager.h"
 
 #include <yarp/os/Module.h>
 
@@ -19,6 +20,8 @@ public:
     virtual bool onBegin() = 0;
 
     virtual LogicalJoints *createJoints(RobotConfig& config) = 0;
+
+    virtual WorldManager *createWorldManager(RobotConfig& config) = 0;
 
     virtual Simulation *createSimulation(RobotConfig& config) = 0;
 

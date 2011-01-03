@@ -41,8 +41,10 @@ const int ifovea = 128;
 const int baseWidth = 320;
 const int baseHeight = 240;
 
-SimulatorModule::SimulatorModule(RobotConfig& config, Simulation *sim) : 
+SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config, 
+                                 Simulation *sim) : 
     moduleName(config.getModuleName()), mutex(1), pulse(0), ack(0), 
+    world_manager(world),
     robot_config(config),
     robot_flags(config.getFlags()),
     finder(config.getFinder()),
@@ -189,6 +191,7 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
         printf("\tright\n");
         printf("\twide\n");
         printf("\tworld\n");
+        reply.fromString("world etc");
         done = true;
     } else if (cmd=="left") {
         viewParam1 = true;
