@@ -448,6 +448,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
     xdOld.resize(3,0.0);
     fbTorsoOld=fbTorso;
+    fbHeadOld=fbHead;
 }
 
 
@@ -661,10 +662,12 @@ void Solver::run()
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
-        torsoChanged=norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_TORSO*CTRL_DEG2RAD;
+        torsoChanged=norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD;        
     }
     else
         fbHead=commData->get_q();
+
+    bool headChanged=norm(fbHead-fbHeadOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD;
 
     // update kinematics
     updateAngles();
@@ -685,7 +688,12 @@ void Solver::run()
     // 3) skip if controller is inactive and we are not in tracking mode
     doSolve&=!(!commData->get_isCtrlActive() && commData->get_canCtrlBeDisabled());
 
-    // 4) solve straightaway if the target has changed
+    // 4) skip if controller is inactive, we are in tracking mode and nothing has changed
+    // De Morgan's law used
+    doSolve&=commData->get_isCtrlActive() || commData->get_canCtrlBeDisabled() ||
+             torsoChanged || headChanged;
+
+    // 5) solve straightaway if the target has changed
     doSolve|=!(xd==xdOld);
 
     // call the solver for neck
@@ -702,6 +710,7 @@ void Solver::run()
     // latch quantities
     xdOld=xd;
     fbTorsoOld=fbTorso;
+    fbHeadOld=fbHead;
 }
 
 
@@ -775,6 +784,7 @@ void Solver::resume()
     // update latched quantities
     xdOld=fp;
     fbTorsoOld=fbTorso;
+    fbHeadOld=fbHead;
 
     fprintf(stdout,"\nSolver has been resumed!\n\n");
 

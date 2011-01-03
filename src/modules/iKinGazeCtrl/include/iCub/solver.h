@@ -37,7 +37,7 @@
 
 #define EYEPINVREFGEN_GAIN                  12.5
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
-#define NECKSOLVER_ACTIVATIONANGLE_TORSO    0.5     // [deg]
+#define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE_TRA      2.5     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE_SAG      2.5     // [deg]
 #define NECKSOLVER_RESTORINGANGLE_TRA       5.0     // [deg]
@@ -149,6 +149,7 @@ protected:
     Vector gazePos;
     Vector xdOld;
     Vector fbTorsoOld;
+    Vector fbHeadOld;
 
     double neckPitchMin;
     double neckPitchMax;
