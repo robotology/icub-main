@@ -232,7 +232,7 @@ bool HeadCenter_NLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::
     }
 
     g_l[0]=lowerBoundInf;
-    g_u[0]=translationalTol;
+    g_u[0]=-1.0+translationalTol;
 
     return true;
 }
@@ -270,7 +270,7 @@ bool HeadCenter_NLP::eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
 {
     computeQuantities(x);
 
-    g[0]=1.0+cosAng;
+    g[0]=cosAng;
 
     return true;
 }
