@@ -247,13 +247,13 @@ bool ClientGazeController::getTrackingMode(bool *f)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
         *f=(reply.get(1).asInt()>0);
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -403,13 +403,13 @@ bool ClientGazeController::getNeckTrajTime(double *t)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
         *t=reply.get(1).asDouble();
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -430,13 +430,13 @@ bool ClientGazeController::getEyesTrajTime(double *t)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
         *t=reply.get(1).asDouble();
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -460,25 +460,22 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        if (reply.size()>1)
+        if (Bottle *bPose=reply.get(1).asList())
         {
-            if (Bottle *bPose=reply.get(1).asList())
+            if (bPose->size()>=7)
             {
-                if (bPose->size()>=7)
-                {
-                    x.resize(3);
-                    o.resize(bPose->size()-x.length());
-            
-                    for (int i=0; i<x.length(); i++)
-                        x[i]=bPose->get(i).asDouble();
-            
-                    for (int i=0; i<o.length(); i++)
-                        o[i]=bPose->get(x.length()+i).asDouble();
-            
-                    return true;
-                }
+                x.resize(3);
+                o.resize(bPose->size()-x.length());
+        
+                for (int i=0; i<x.length(); i++)
+                    x[i]=bPose->get(i).asDouble();
+        
+                for (int i=0; i<o.length(); i++)
+                    o[i]=bPose->get(x.length()+i).asDouble();
+        
+                return true;
             }
         }
     }
@@ -527,18 +524,15 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        if (reply.size()>1)
+        if (Bottle *bDes=reply.get(1).asList())
         {
-            if (Bottle *bDes=reply.get(1).asList())
-            {
-                qdes.resize(bDes->size());
-                for (int i=0; i<qdes.length(); i++)
-                    qdes[i]=bDes->get(i).asDouble();
+            qdes.resize(bDes->size());
+            for (int i=0; i<qdes.length(); i++)
+                qdes[i]=bDes->get(i).asDouble();
 
-                return true;
-            }
+            return true;
         }
     }
 
@@ -565,18 +559,15 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        if (reply.size()>1)
+        if (Bottle *bVel=reply.get(1).asList())
         {
-            if (Bottle *bVel=reply.get(1).asList())
-            {
-                qdot.resize(bVel->size());
-                for (int i=0; i<qdot.length(); i++)
-                    qdot[i]=bVel->get(i).asDouble();
+            qdot.resize(bVel->size());
+            for (int i=0; i<qdot.length(); i++)
+                qdot[i]=bVel->get(i).asDouble();
 
-                return true;
-            }
+            return true;
         }
     }
 
@@ -603,7 +594,7 @@ bool ClientGazeController::getStereoOptions(Bottle &options)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bOpt=reply.get(1).asList())
         {
@@ -731,6 +722,34 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const int j)
 
 
 /************************************************************************/
+bool ClientGazeController::getNeckJointRange(const string &joint, double *min, double *max)
+{
+    if (!connected || (min==NULL) || (max==NULL))
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("get");
+    command.addString(joint.c_str());
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>2))
+    {
+        *min=reply.get(1).asDouble();
+        *max=reply.get(2).asDouble();
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::clearNeckJoint(const string &joint)
 {
     if (!connected)
@@ -811,6 +830,27 @@ bool ClientGazeController::blockNeckYaw(const double val)
 bool ClientGazeController::blockNeckYaw()
 {
     return blockNeckJoint("yaw",5);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getNeckPitchRange(double *min, double *max)
+{
+    return getNeckJointRange("pitch",min,max);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getNeckRollRange(double *min, double *max)
+{
+    return getNeckJointRange("roll",min,max);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getNeckYawRange(double *min, double *max)
+{
+    return getNeckJointRange("yaw",min,max);
 }
 
 

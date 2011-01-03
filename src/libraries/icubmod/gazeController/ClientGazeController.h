@@ -78,6 +78,7 @@ protected:
     virtual bool getPose(const std::string &poseSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
     virtual bool blockNeckJoint(const std::string &joint, const double min, const double max);
     virtual bool blockNeckJoint(const std::string &joint, const int j);
+    virtual bool getNeckJointRange(const std::string &joint, double *min, double *max);
     virtual bool clearNeckJoint(const std::string &joint);
 
 public:
@@ -116,6 +117,9 @@ public:
     virtual bool bindNeckYaw(const double min, const double max);
     virtual bool blockNeckYaw(const double val);
     virtual bool blockNeckYaw();
+    virtual bool getNeckPitchRange(double *min, double *max);
+    virtual bool getNeckRollRange(double *min, double *max);
+    virtual bool getNeckYawRange(double *min, double *max);
     virtual bool clearNeckPitch();
     virtual bool clearNeckRoll();
     virtual bool clearNeckYaw();

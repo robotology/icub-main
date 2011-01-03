@@ -73,6 +73,8 @@ protected:
 
     double mod;
     double cosAng;
+    double fPitch;
+    double dfPitch;
 
     virtual void computeQuantities(const Ipopt::Number *x);
 

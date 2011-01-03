@@ -200,6 +200,18 @@ void HeadCenter_NLP::computeQuantities(const Ipopt::Number *x)
         Hxd(3,3)=0.0;
         mod=norm(Hxd,3);
         cosAng=dot(Hxd,2,Hxd,3)/mod;
+
+        double offset=5.0*CTRL_DEG2RAD;
+        double delta=1.0*CTRL_DEG2RAD;
+        double pitch_cog=chain(0).getMin()+offset+delta/2.0;
+        double c=10.0/delta;
+        double _tanh=tanh(c*(q[0]-pitch_cog));
+
+        // transition function and its first derivative
+        // to block the roll around 0.0 when the pitch
+        // approaches its minimum
+        fPitch=0.5*(1.0+_tanh);
+        dfPitch=0.5*c*(1.0-_tanh*_tanh);
         
         GeoJacobP=chain.GeoJacobian();
         AnaJacobZ=chain.AnaJacobian(2);
@@ -212,8 +224,8 @@ bool HeadCenter_NLP::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index
                                   Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
 {
     n=dim;
-    m=1;
-    nnz_jac_g=dim;
+    m=3;
+    nnz_jac_g=n+2*(n-1);
     nnz_h_lag=0;
     index_style=TNLP::C_STYLE;
     
@@ -233,6 +245,12 @@ bool HeadCenter_NLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::
 
     g_l[0]=lowerBoundInf;
     g_u[0]=-1.0+translationalTol;
+
+    g_l[1]=lowerBoundInf;
+    g_u[1]=0.0;
+
+    g_l[2]=lowerBoundInf;
+    g_u[2]=0.0;
 
     return true;
 }
@@ -271,6 +289,8 @@ bool HeadCenter_NLP::eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
     computeQuantities(x);
 
     g[0]=cosAng;
+    g[1]=chain(1).getMin()*fPitch-x[1];
+    g[2]=x[1]-chain(1).getMax()*fPitch;
 
     return true;
 }
@@ -286,6 +306,12 @@ bool HeadCenter_NLP::eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new
         iRow[0]=0; jCol[0]=0;
         iRow[1]=0; jCol[1]=1;
         iRow[2]=0; jCol[2]=2;
+
+        iRow[3]=1; jCol[3]=0;
+        iRow[4]=1; jCol[4]=1;
+
+        iRow[5]=2; jCol[5]=0;
+        iRow[6]=2; jCol[6]=1;
     }
     else
     {
@@ -294,6 +320,18 @@ bool HeadCenter_NLP::eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new
         for (Ipopt::Index i=0; i<n; i++)
             values[i]=(dot(AnaJacobZ,i,Hxd,3)+dot(Hxd,2,GeoJacobP,i))/mod
                       -(cosAng*dot(Hxd,3,GeoJacobP,i))/(mod*mod);
+
+        // dg[1]/dPitch
+        values[3]=chain(1).getMin()*dfPitch;
+
+        // dg[1]/dRoll
+        values[4]=-1.0;
+
+        // dg[2]/dPitch
+        values[5]=-chain(1).getMax()*dfPitch;
+
+        // dg[2]/dRoll
+        values[6]=1.0;
     }
 
     return true;

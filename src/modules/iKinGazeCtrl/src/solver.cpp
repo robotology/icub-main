@@ -461,8 +461,8 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     min_rad=(min_rad<neckPitchMin)?neckPitchMin:(min_rad>neckPitchMax?neckPitchMax:min_rad);
     max_rad=(max_rad<neckPitchMin)?neckPitchMin:(max_rad>neckPitchMax?neckPitchMax:max_rad);
 
-    (*chainNeck)[3].setMin(min_rad);
-    (*chainNeck)[3].setMax(max_rad);
+    (*chainNeck)(0).setMin(min_rad);
+    (*chainNeck)(0).setMax(max_rad);
 
     fprintf(stdout,"\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -477,8 +477,8 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     min_rad=(min_rad<neckRollMin)?neckRollMin:(min_rad>neckRollMax?neckRollMax:min_rad);
     max_rad=(max_rad<neckRollMin)?neckRollMin:(max_rad>neckRollMax?neckRollMax:max_rad);
 
-    (*chainNeck)[4].setMin(min_rad);
-    (*chainNeck)[4].setMax(max_rad);
+    (*chainNeck)(1).setMin(min_rad);
+    (*chainNeck)(1).setMax(max_rad);
 
     fprintf(stdout,"\nneck roll constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -493,8 +493,8 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     min_rad=(min_rad<neckYawMin)?neckYawMin:(min_rad>neckYawMax?neckYawMax:min_rad);
     max_rad=(max_rad<neckYawMin)?neckYawMin:(max_rad>neckYawMax?neckYawMax:max_rad);
 
-    (*chainNeck)[5].setMin(min_rad);
-    (*chainNeck)[5].setMax(max_rad);
+    (*chainNeck)(2).setMin(min_rad);
+    (*chainNeck)(2).setMax(max_rad);
 
     fprintf(stdout,"\nneck yaw constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -503,32 +503,32 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg) const
 {
-    min_deg=CTRL_RAD2DEG*(*chainNeck)[3].getMin();
-    max_deg=CTRL_RAD2DEG*(*chainNeck)[3].getMax();
+    min_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMin();
+    max_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMax();
 }
 
 
 /************************************************************************/
 void Solver::getCurNeckRollRange(double &min_deg, double &max_deg) const
 {
-    min_deg=CTRL_RAD2DEG*(*chainNeck)[4].getMin();
-    max_deg=CTRL_RAD2DEG*(*chainNeck)[4].getMax();
+    min_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMin();
+    max_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMax();
 }
 
 
 /************************************************************************/
 void Solver::getCurNeckYawRange(double &min_deg, double &max_deg) const
 {
-    min_deg=CTRL_RAD2DEG*(*chainNeck)[5].getMin();
-    max_deg=CTRL_RAD2DEG*(*chainNeck)[5].getMax();
+    min_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMin();
+    max_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMax();
 }
 
 
 /************************************************************************/
 void Solver::clearNeckPitch()
 {
-    (*chainNeck)[3].setMin(neckPitchMin);
-    (*chainNeck)[3].setMax(neckPitchMax);
+    (*chainNeck)(0).setMin(neckPitchMin);
+    (*chainNeck)(0).setMax(neckPitchMax);
 
     fprintf(stdout,"\nneck pitch cleared\n\n");
 }
@@ -537,8 +537,8 @@ void Solver::clearNeckPitch()
 /************************************************************************/
 void Solver::clearNeckRoll()
 {
-    (*chainNeck)[4].setMin(neckRollMin);
-    (*chainNeck)[4].setMax(neckRollMax);
+    (*chainNeck)(1).setMin(neckRollMin);
+    (*chainNeck)(1).setMax(neckRollMax);
 
     fprintf(stdout,"\nneck roll cleared\n\n");
 }
@@ -547,8 +547,8 @@ void Solver::clearNeckRoll()
 /************************************************************************/
 void Solver::clearNeckYaw()
 {
-    (*chainNeck)[5].setMin(neckYawMin);
-    (*chainNeck)[5].setMax(neckYawMax);
+    (*chainNeck)(2).setMin(neckYawMin);
+    (*chainNeck)(2).setMax(neckYawMax);
 
     fprintf(stdout,"\nneck yaw cleared\n\n");
 }
@@ -626,9 +626,6 @@ bool Solver::threadInit()
 
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
-
-    // bind the roll as per default
-    bindNeckRoll(0.0,0.0);
 
     fprintf(stdout,"Starting Solver at %d ms\n",period);
 

@@ -242,8 +242,7 @@ following ports:
     - [bind] [pitch] <min> <max>: bind the neck pitch within a
       range given in degrees.
     - [bind] [roll] <min> <max>: bind the neck roll within a
-      range given in degrees. By default the neck roll is
-      constrained at 0 deg at start-up.
+      range given in degrees.
     - [bind] [yaw] <min> <max>: bind the neck yaw within a range
       given in degrees.
     - [clear] [pitch]: restore the neck pitch range.
@@ -254,6 +253,12 @@ following ports:
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
+    - [get] [pitch]: returns in degrees the current range of
+      neck pitch joint.
+    - [get] [roll]: returns in degrees the current range of
+      neck roll joint.
+    - [get] [yaw]: returns in degrees the current range of
+      neck yaw joint.
     - [get] [des]: returns the desired head joints angles that
       achieve the target [deg].
     - [get] [vel]: returns the head joints velocities commanded
@@ -800,6 +805,33 @@ public:
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->getTrackingMode());
+                        }
+                        else if (type==VOCAB4('p','i','t','c'))
+                        {
+                            double min_deg,max_deg;
+                            slv->getCurNeckPitchRange(min_deg,max_deg);
+
+                            reply.addVocab(ack);
+                            reply.addDouble(min_deg);
+                            reply.addDouble(max_deg);
+                        }
+                        else if (type==VOCAB4('r','o','l','l'))
+                        {
+                            double min_deg,max_deg;
+                            slv->getCurNeckRollRange(min_deg,max_deg);
+
+                            reply.addVocab(ack);
+                            reply.addDouble(min_deg);
+                            reply.addDouble(max_deg);
+                        }
+                        else if (type==VOCAB3('y','a','w'))
+                        {
+                            double min_deg,max_deg;
+                            slv->getCurNeckYawRange(min_deg,max_deg);
+
+                            reply.addVocab(ack);
+                            reply.addDouble(min_deg);
+                            reply.addDouble(max_deg);
                         }
                         else if (type==VOCAB3('d','e','s'))
                         {
