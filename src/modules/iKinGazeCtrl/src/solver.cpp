@@ -627,6 +627,9 @@ bool Solver::threadInit()
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
 
+    // bind the roll as per default
+    bindNeckRoll(0.0,0.0);
+
     fprintf(stdout,"Starting Solver at %d ms\n",period);
 
     return true;

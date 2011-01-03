@@ -242,7 +242,8 @@ following ports:
     - [bind] [pitch] <min> <max>: bind the neck pitch within a
       range given in degrees.
     - [bind] [roll] <min> <max>: bind the neck roll within a
-      range given in degrees.
+      range given in degrees. By default the neck roll is
+      constrained at 0 deg at start-up.
     - [bind] [yaw] <min> <max>: bind the neck yaw within a range
       given in degrees.
     - [clear] [pitch]: restore the neck pitch range.
