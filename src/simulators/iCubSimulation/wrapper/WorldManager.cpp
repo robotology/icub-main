@@ -12,6 +12,7 @@ public:
     WorldOp& op;
     WorldResult& result;
     int offset;
+    bool needIndex;
     WorldManager& manager;
 
     ManagerState(const yarp::os::Bottle &command,
@@ -25,6 +26,7 @@ public:
     {
         offset = 2;
         failed = false;
+        needIndex = false;
     }
 
     const yarp::os::Value& get(int offset) {
@@ -182,32 +184,40 @@ void consumeKind(ManagerState& state) {
     case VOCAB3('b','o','x'):
         state.op.kind = "box";
         state.op.dynamic = WorldOpFlag(!static_obj);
+        state.needIndex = true;
         break;
     case VOCAB4('s','c','y','l'):
         static_obj = true;
     case VOCAB3('c','y','l'):
         state.op.kind = "cyl";
         state.op.dynamic = WorldOpFlag(!static_obj);
+        state.needIndex = true;
         break;
     case VOCAB4('s','s','p','h'):
         static_obj = true;
     case VOCAB3('s','p','h'):
         state.op.kind = "sph";
         state.op.dynamic = WorldOpFlag(!static_obj);
+        state.needIndex = true;
         break;
     case VOCAB4('l','h','a','n'):
         state.op.kind = WorldOpName("hand");
-        state.op.name = WorldOpName("icub_left_hand");
+        //state.op.name = WorldOpName("icub_left_hand");
         state.op.index = WorldOpIndex(1);
         state.op.dynamic = WorldOpFlag(true);
         state.op.rightHanded = WorldOpFlag(false);
         break;
     case VOCAB4('r','h','a','n'):
         state.op.kind = WorldOpName("hand");
-        state.op.name = WorldOpName("icub_right_hand");
+        //state.op.name = WorldOpName("icub_right_hand");
         state.op.index = WorldOpIndex(2);
         state.op.dynamic = WorldOpFlag(true);
         state.op.rightHanded = WorldOpFlag(true);
+        break;
+    case VOCAB4('t','a','b','l'):
+    case VOCAB4('c','u','b','e'):
+    case VOCAB4('b','a','l','l'):
+    case VOCAB3('a','l','l'):
         break;
     default:
         state.failed = true;
@@ -229,11 +239,17 @@ void consumeHand(ManagerState& state) {
     }
 }
 
-bool doGet(ManagerState& state) {
+void consumeObject(ManagerState& state) {
     consumeKind(state);
-    if (!state.op.index.valid) {
-        state.consume(state.op.index,"index");
+    if (state.needIndex) {
+        if (!state.op.index.valid) {
+            state.consume(state.op.index,"index");
+        }
     }
+}
+
+bool doGet(ManagerState& state) {
+    consumeObject(state);
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
     }
@@ -274,15 +290,7 @@ bool doMake(ManagerState& state) {
 }
 
 bool doGrab(ManagerState& state) {
-    consumeKind(state);
-    if (state.failed) {
-        // ok to fail
-        state.failed = false;
-        state.why = "";
-        state.op.name = state.op.kind;
-    } else {
-        state.consume(state.op.index,"index");
-    }
+    consumeObject(state);
     consumeHand(state);
     state.consume(state.op.active,"active");
     if (!state.failed) {
@@ -292,8 +300,7 @@ bool doGrab(ManagerState& state) {
 }
 
 bool doRotate(ManagerState& state) {
-    consumeKind(state);
-    state.consume(state.op.index,"index");
+    consumeObject(state);
     state.consume(state.op.rotation,"rotation");
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
@@ -302,7 +309,11 @@ bool doRotate(ManagerState& state) {
 }
 
 bool doDelete(ManagerState& state) {
-    return false;
+    consumeObject(state);
+    if (!state.failed) {
+        state.manager.apply(state.op,state.result);
+    }
+    return !state.failed;
 }
 
 bool WorldManager::respond(const yarp::os::Bottle& command, 
@@ -333,7 +344,8 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
         doDelete(state);
         break;
     default:
-        // unrecognized command
+        state.failed = true;
+        state.why = "unrecognized command";
         break;
     }
 
