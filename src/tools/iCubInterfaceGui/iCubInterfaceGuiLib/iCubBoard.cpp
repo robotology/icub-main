@@ -9,68 +9,60 @@
 ////////////////////////////////////
 
 #include <stdlib.h>
-
 #include "iCubBoard.h"
 
 ////////////////////////////////////
 
+const std::string iCubBLLBoard::mBoardType="BLL";
+
 const char* iCubBLLBoard::mRowNames[]=
 {
-    "Device Type",   // ="BLL"
     "Board ID",       // The id with which the board is identified on the canbus
+    "Device Type",   // ="BLL"
     NULL
 };
+
+const std::string iCubAnalogBoard::mBoardType="analog";
 
 const char* iCubAnalogBoard::mRowNames[]=
 {
-    "Device Type",    // ="analog"
     "Board ID",       // The id with which the board is identified on the canbus
-    "#Channels",      // Number of channels
+    "Device Type",    // ="analog"
+    "Channels",       // Number of channels
+    "!Saturations",
+    "!Errors",
+    "!Timeouts",
     NULL
 };
 
-yarp::dev::LoggerDataRef* iCubBLLBoard::getDataReference(std::string addr)
+bool iCubBLLBoard::findAndWrite(std::string address,const yarp::os::Value& data)
 {
-    int index=addr.find(",");
-    if (index<0) return NULL; // should never happen
+    int separator=address.find(",");
+    if (separator<0) return false; // should never happen
+    std::string boardType=address.substr(0,separator);
+    if (boardType.length()==0) return false; // should never happen
+    if (boardType!=mBoardType) return false;
+    ++separator;
+    address=address.substr(separator,address.length()-separator);
 
-    std::string sID=addr.substr(0,index);
+    // address==[joint,]index
 
-    if (sID.length()==0) return NULL; //should never happen
-    if (mID!=atoi(sID.c_str())) return NULL;
-
-    ++index;
-    addr=addr.substr(index,addr.length()-index);
-
-    yarp::dev::LoggerDataRef* pRef=NULL;    
-
-    for (int i=0; i<2; ++i)
+    separator=address.find(",");
+    
+    // is the message for the board or for a joint?
+    if (separator<0) // for the board
     {
-        if ((pRef=mChannel[i]->getDataReference(addr)))
-        {
-            return pRef;
-        }
+        // address==index
+        mData.write(atoi(address.c_str()),data);
+
+        return true;
     }
-
-    return NULL;
-}
-
-bool iCubBLLBoard::findAndWrite(std::string addr,const yarp::os::Value& data)
-{
-    int index=addr.find(",");
-    if (index<0) return false; // should never happen
-
-    std::string sID=addr.substr(0,index);
-
-    if (sID.length()==0) return false; //should never happen
-    if (mID!=atoi(sID.c_str())) return false;
-
-    ++index;
-    addr=addr.substr(index,addr.length()-index);
-
+    
+    // address==joint,index
+   
     for (int i=0; i<2; ++i)
     {
-        if (mChannel[i]->findAndWrite(addr,data))
+        if (mChannel[i]->findAndWrite(address,data))
         {
             return true;
         }
@@ -79,6 +71,60 @@ bool iCubBLLBoard::findAndWrite(std::string addr,const yarp::os::Value& data)
     return false;
 }
 
+bool iCubAnalogBoard::findAndWrite(std::string address,const yarp::os::Value& data)
+{
+    int separator=address.find(",");
+    if (separator<0) return false; // should never happen
+    std::string boardType=address.substr(0,separator);
+    if (boardType.length()==0) return false; // should never happen
+    if (boardType!=mBoardType) return false;
+    ++separator;
+    address=address.substr(separator,address.length()-separator);
+
+    separator=address.find(",");
+    if (separator<0) return false; // should never happen
+    std::string sID=address.substr(0,separator);
+    if (sID.length()==0) return false; //should never happen
+    if (mID!=atoi(sID.c_str())) return false;
+    ++separator;
+    address=address.substr(separator,address.length()-separator);
+
+    // address==[channel,]index
+
+    separator=address.find(",");
+    
+    // is the message for the board or for a channel?
+    if (separator<0) // for the board
+    {
+        // address==index
+        mData.write(atoi(address.c_str()),data);
+
+        return true;
+    }
+    
+    // address==channel,index
+    
+    if (mChannel)
+    {
+        for (int i=0; i<nChannels; ++i)
+        {
+            if (mChannel[i]->findAndWrite(address,data))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+/*
 bool iCubBLLBoard::findAndRead(std::string addr,yarp::os::Value& data)
 {
     int index=addr.find(",");
@@ -129,30 +175,6 @@ yarp::dev::LoggerDataRef* iCubAnalogBoard::getDataReference(std::string addr)
     return NULL;
 }
 
-bool iCubAnalogBoard::findAndWrite(std::string addr,const yarp::os::Value& data)
-{
-    int index=addr.find(",");
-    if (index<0) return false; // should never happen
-
-    std::string sID=addr.substr(0,index);
-
-    if (sID.length()==0) return false; //should never happen
-    if (mID!=atoi(sID.c_str())) return false;
-
-    ++index;
-    addr=addr.substr(index,addr.length()-index);
-
-    for (int i=0; i<nChannels; ++i)
-    {
-        if (mChannel[i]->findAndWrite(addr,data))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 bool iCubAnalogBoard::findAndRead(std::string addr,yarp::os::Value& data)
 {
     int index=addr.find(",");
@@ -176,3 +198,30 @@ bool iCubAnalogBoard::findAndRead(std::string addr,yarp::os::Value& data)
 
     return false;
 }
+
+yarp::dev::LoggerDataRef* iCubBLLBoard::getDataReference(std::string addr)
+{
+    int index=addr.find(",");
+    if (index<0) return NULL; // should never happen
+
+    std::string sID=addr.substr(0,index);
+
+    if (sID.length()==0) return NULL; //should never happen
+    if (mID!=atoi(sID.c_str())) return NULL;
+
+    ++index;
+    addr=addr.substr(index,addr.length()-index);
+
+    yarp::dev::LoggerDataRef* pRef=NULL;    
+
+    for (int i=0; i<2; ++i)
+    {
+        if ((pRef=mChannel[i]->getDataReference(addr)))
+        {
+            return pRef;
+        }
+    }
+
+    return NULL;
+}
+*/

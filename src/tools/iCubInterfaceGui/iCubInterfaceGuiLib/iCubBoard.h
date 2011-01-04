@@ -23,6 +23,8 @@
 class iCubBoard
 {
 public:
+    enum { ALARM_NONE,ALARM_HIGH,ALARM_LOW };
+
     iCubBoard()
     {
     }
@@ -31,9 +33,9 @@ public:
     {
     }
 
-    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr)=0;
+    //virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr)=0;
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data)=0;
-    virtual bool findAndRead(std::string addr,yarp::os::Value& data)=0;
+    //virtual bool findAndRead(std::string addr,yarp::os::Value& data)=0;
     
     virtual yarp::os::Bottle toBottle(bool bConfig=false)=0;
     virtual void fromBottle(yarp::os::Bottle& bot)=0;
@@ -53,8 +55,8 @@ public:
         mChannel[0]=new iCubBLLChannel(0,j0);
         mChannel[1]=new iCubBLLChannel(1,j1);
 
-        mData.write(STRING_Board_Type,yarp::os::Value("BLL"));
         mData.write(INT_Board_ID,yarp::os::Value(ID));
+        mData.write(STRING_Board_Type,yarp::os::Value(mBoardType.c_str()));
     }
 
     virtual ~iCubBLLBoard()
@@ -65,8 +67,9 @@ public:
 
     enum Index
     {
+        INT_Board_ID,       //The id with which the board is identified on the canbus
         STRING_Board_Type,  // ="BLL"
-        INT_Board_ID        //The id with which the board is identified on the canbus
+        NUM_ROWS
     };
 
     virtual yarp::os::Bottle toBottle(bool bConfig)
@@ -112,14 +115,14 @@ public:
         }
     }
 
-    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
+    //virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
+    //virtual bool findAndRead(std::string addr,yarp::os::Value& data);
 
 protected:
-    iCubBLLChannel *mChannel[2];
-     
+    static const std::string mBoardType;
     int mID;
+    iCubBLLChannel *mChannel[2];
     RawData mData;
     static const char *mRowNames[];
 };
@@ -129,22 +132,24 @@ class iCubAnalogBoard : public iCubBoard
 public:
     iCubAnalogBoard() : iCubBoard()
     {
+        nChannels=0;
     }
 
     iCubAnalogBoard(int ID,int channels) : iCubBoard(),mID(ID)
     {
-        printf("########## iCubAnalogBoard(%d,%d) ##############\n",ID,channels); 
         nChannels=channels;
+        mChannel=NULL;//new iCubAnalogChannel*[nChannels];
 
-        mChannel=new iCubAnalogChannel*[nChannels];
-
-        for (int c=0; c<nChannels; ++c)
+        if (mChannel)
         {
-            mChannel[c]=new iCubAnalogChannel(c);
+            for (int c=0; c<nChannels; ++c)
+            {
+                mChannel[c]=new iCubAnalogChannel(c);
+            }
         }
 
-        mData.write(STRING_Board_Type,yarp::os::Value("analog"));
         mData.write(INT_Board_ID,yarp::os::Value(ID));
+        mData.write(STRING_Board_Type,yarp::os::Value(mBoardType.c_str()));
         mData.write(INT_Num_Channels,yarp::os::Value(nChannels));
     }
 
@@ -168,9 +173,13 @@ public:
 
     enum Index
     {
-        STRING_Board_Type,  // ="BLL"
         INT_Board_ID,       //The id with which the board is identified on the canbus
-        INT_Num_Channels
+        STRING_Board_Type,  // ="analog"
+        INT_Num_Channels,
+        INT_Saturations,
+        INT_Errors,
+        INT_Timeouts,
+        NUM_ROWS
     };
 
     virtual yarp::os::Bottle toBottle(bool bConfig)
@@ -185,14 +194,17 @@ public:
             addList.append(data);
         }
 
-        for (int c=0; c<nChannels; ++c)
+        if (mChannel)
         {
-            yarp::os::Bottle chan=mChannel[c]->toBottle(bConfig);
-            if (chan.size())
+            for (int c=0; c<nChannels; ++c)
             {
-                yarp::os::Bottle &addList=bot.addList();
-                addList.addInt(c);
-                addList.append(chan);
+                yarp::os::Bottle chan=mChannel[c]->toBottle(bConfig);
+                if (chan.size())
+                {
+                    yarp::os::Bottle &addList=bot.addList();
+                    addList.addInt(c);
+                    addList.append(chan);
+                }
             }
         }
 
@@ -211,16 +223,18 @@ public:
             }
             else
             {
-                mChannel[list->get(0).asInt()]->fromBottle(*list);
+                if (mChannel) mChannel[list->get(0).asInt()]->fromBottle(*list);
             }
         }
     }
 
-    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
+    //virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
+    //virtual bool findAndRead(std::string addr,yarp::os::Value& data);
 
 protected:
+    static const std::string mBoardType;
+
     iCubAnalogChannel **mChannel;
     
     int mID;

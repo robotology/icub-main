@@ -60,7 +60,7 @@ public:
         sprintf(buff,"%d",ID);
         mID=buff;
 
-        mNetAddress=mDevice+" "+mID;
+        mDevice_ID=mDevice+" "+mID;
     }
 
     enum Index
@@ -93,9 +93,8 @@ public:
         mBoards.push_back(board);
     }
 
-    yarp::dev::LoggerDataRef* getDataReference(std::string addr);
+    //yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    bool getReference(const std::string &key,yarp::os::Value* &pData,bool* &pFlag);
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false)
     {
@@ -140,7 +139,9 @@ public:
         }
     }
 
-    std::string mName,mFile,mDevice,mID,mNetAddress;
+    virtual bool hasAlarm(){ return false; }
+
+    std::string mName,mFile,mDevice,mID,mDevice_ID;
 
 protected:
     std::vector<iCubBoard*> mBoards;

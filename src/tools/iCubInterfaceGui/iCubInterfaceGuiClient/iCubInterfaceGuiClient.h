@@ -52,19 +52,23 @@ public:
 
 	    //Add the TreeView's view columns:
         
+        mColumns.mColIconID=mTreeView.append_column("",mColumns.mColIcon)-1;
         mColumns.mColNameID=mTreeView.append_column("",mColumns.mColName)-1;
         mColumns.mColValueID=mTreeView.append_column("",mColumns.mColValue)-1;
-        
+
+        /*
         Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
         mColumns.mColIconID=mTreeView.append_column("",*cell)-1;
         Gtk::TreeViewColumn* pColumn=mTreeView.get_column(mColumns.mColIconID);
         pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColIcon);
+        */
 
         //Fill the TreeView's model
         mRowLev0=*(mRefTreeModel->append());
         mRowLev0[mColumns.mColName]="Networks"; //partName.c_str();
         mRowLev0[mColumns.mColValue]=""; //partName.c_str();
-        mRowLev0[mColumns.mColIcon]=Glib::RefPtr<Gdk::Pixbuf>(NULL);
+        mRowLev0[mColumns.mColIcon]="";
+        //mRowLev0[mColumns.mColIcon]=Glib::RefPtr<Gdk::Pixbuf>(NULL);
         //mRowLev0[mColumns.mColIcon]=Gdk::Pixbuf::create_from_file("C:/Documents and Settings/Administrator/My Documents/IIT/iCub/app/iCubGenova01/conf/warning.png");
         
         /////////////////////////////////////////////////////////////////////////////
@@ -116,6 +120,15 @@ public:
             }
         }
 
+        if (hasAlarm())
+        {
+            mRowLev0[mColumns.mColIcon]="(!)";
+        }
+        else
+        {
+            mRowLev0[mColumns.mColIcon]="";
+        }
+
         mThread=new iCubInterfaceGuiThread();
 
         mThread->mSigWindow.connect(sigc::mem_fun(*this,&iCubInterfaceGuiWindow::run));
@@ -151,6 +164,15 @@ public:
             {
                 fromBottle(rep);
             }
+
+            if (hasAlarm())
+            {
+                mRowLev0[mColumns.mColIcon]="(!)";
+            }
+            else
+            {
+                mRowLev0[mColumns.mColIcon]="";
+            }
         }
     }
 
@@ -161,6 +183,21 @@ public:
             yarp::os::Bottle *net=bot.get(i).asList();
             mNetworks[net->get(0).asInt()]->fromBottle(*net);
         }
+    }
+
+    bool hasAlarm()
+    {
+        bool alarm=false;
+
+        for (int i=0; i<(int)mNetworks.size(); ++i)
+        {
+            if (mNetworks[i]->hasAlarm())
+            {
+                alarm=true;
+            }
+        }
+
+        return alarm;
     }
 
 protected:

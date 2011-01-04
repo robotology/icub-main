@@ -48,7 +48,7 @@ public:
         return ret;
     }
     
-    yarp::dev::LoggerDataRef* getDataReference(const std::string &key);
+    //yarp::dev::LoggerDataRef* getDataReference(const std::string &key);
     bool log(const std::string &key,const yarp::os::Value &data);
     bool log(const yarp::os::Bottle &data){ return false; }
 

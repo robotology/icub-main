@@ -147,7 +147,35 @@ void iCubInterfaceGuiServer::config(std::string& PATH,yarp::os::Property &robot)
             }
         }
     }
+  
+    // skin
+    yarp::os::Bottle *skinParts=general.find("skinParts").asList();
+    if (skinParts)
+    {       
+        int nskin=skinParts->size();
+        
+        for (int n=0; n<nskin; ++n)
+        {
+            std::string skinName=skinParts->get(n).asString().c_str();
 
+            yarp::os::Property skinOptions;
+            skinOptions.fromString(robot.findGroup(skinName.c_str()).toString());
+
+            if (skinOptions.check("file"))
+            {
+                std::string file=PATH+(skinOptions.find("file").asString()).c_str();
+
+                yarp::os::Property skin;
+                skin.fromConfigFile(file.c_str());
+
+                std::string device(skinOptions.find("canbusdevice").asString().c_str());
+                
+                mNetworks.push_back(new iCubNetwork(skinName,file,device));
+                mNetworks.back()->setID(skin.find("CanDeviceNum").asInt());
+            }
+        }
+    }
+    
     ///////////////////////////////////////
     mPort.open("/icubinterfacegui/server");
 }
@@ -199,7 +227,7 @@ bool iCubInterfaceGuiServer::log(const std::string &key,const yarp::os::Value &d
     mMutex.post();
     return false;
 }
-
+/*
 yarp::dev::LoggerDataRef* iCubInterfaceGuiServer::getDataReference(const std::string &key)
 {
     yarp::dev::LoggerDataRef* pRef=NULL;
@@ -208,13 +236,14 @@ yarp::dev::LoggerDataRef* iCubInterfaceGuiServer::getDataReference(const std::st
     {
         if ((pRef=mNetworks[n]->getDataReference(key)))
         {
+            pRef->setMutex(&mMutex);
             return pRef;
         }
     }
 
     return NULL;
 }
-
+*/
 yarp::os::Bottle iCubInterfaceGuiServer::toBottle(bool bConfig)
 {
     yarp::os::Bottle bot;

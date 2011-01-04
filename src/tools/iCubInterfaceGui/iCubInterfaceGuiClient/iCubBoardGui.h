@@ -26,12 +26,42 @@ public:
 
         mData.fromBottle(*(bot.get(1).asList()));
 
+        mAlarmMask=new char[mNumRows];
+        mAlarmState=new bool[mNumRows];
+
         for (int i=0; i<(int)mData.size(); ++i)
         {
+            mAlarmState[i]=false;
+            mAlarmMask[i]=ALARM_NONE;
+            if (mRowNames[i][0]=='!')
+            {
+                if (mRowNames[i][1]=='~')
+                {
+                    mAlarmMask[i]=ALARM_LOW;
+                }
+                else
+                {
+                    mAlarmMask[i]=ALARM_HIGH;
+                }
+            }
+
+            if (mAlarmMask[i]==ALARM_HIGH)
+            {
+                mAlarmState[i]=mData.isHigh(i);                    
+            }
+            else if (mAlarmMask[i]==ALARM_LOW)
+            {
+                mAlarmState[i]=mData.isLow(i);
+            }
+            
             mRows[i][mColumns.mColValue]=mData.toString(i);
         }
+    }
 
-        //fromBottle(*(bot.get(0).asList()));
+    virtual ~iCubBLLBoardGui()
+    {
+        delete [] mAlarmMask;
+        delete [] mAlarmState;
     }
 
     virtual void fromBottle(yarp::os::Bottle& bot)
@@ -42,13 +72,60 @@ public:
         {
             if (mData.test(i))
             {
+                if (mAlarmMask[i]==ALARM_HIGH)
+                {
+                    mAlarmState[i]=mData.isHigh(i);
+                }
+                else if (mAlarmMask[i]==ALARM_LOW)
+                {
+                    mAlarmState[i]=mData.isLow(i);
+                }
+
                 mRows[i][mColumns.mColValue]=mData.toString(i);
             }
         }
     }
 
+    virtual bool hasAlarm()
+    {
+        bool alarm=false;
+
+        for (int i=0; i<mNumRows; ++i)
+        {
+            if (mAlarmState[i])
+            {
+                alarm=true;
+                mRows[i][mColumns.mColIcon]="(!)";
+            }
+            else
+            {
+                mRows[i][mColumns.mColIcon]="";
+            }
+        }
+
+        for (int i=0; i<2; ++i)
+        {
+            if (mChannel[i]->hasAlarm()) 
+            {
+                alarm=true;
+            }
+        }
+
+        if (alarm)
+        {
+            mRows[0][mColumns.mColIcon]="(!)";
+        }
+        else
+        {
+            mRows[0][mColumns.mColIcon]="";
+        }
+
+        return alarm;
+    }
+
 protected:
-    //static const char* mRowNames[];
+    bool* mAlarmState;
+    char* mAlarmMask;
 };
 
 class iCubAnalogBoardGui : public iCubAnalogBoard, public iCubInterfaceGuiRows
@@ -61,36 +138,121 @@ public:
 
         nChannels=bot.get(1).asList()->get(6).asInt();
 
-        mChannel=new iCubAnalogChannel*[nChannels];
+        mChannel=NULL; //new iCubAnalogChannel*[nChannels];
 
-        for (int c=0; c<nChannels; ++c)
+        if (mChannel)
         {
-            mChannel[c]=new iCubAnalogChannelGui(refTreeModel,*baseRow,*(bot.get(c+2).asList()));
+            for (int c=0; c<nChannels; ++c)
+            {
+                mChannel[c]=new iCubAnalogChannelGui(refTreeModel,*baseRow,*(bot.get(c+2).asList()));
+            }
         }
 
         mData.fromBottle(*(bot.get(1).asList()));
 
-        for (int i=0; i<(int)mData.size(); ++i)
+        mAlarmMask=new char[mNumRows];
+        mAlarmState=new bool[mNumRows];
+
+        for (int i=0; i<mNumRows; ++i)
         {
+            mAlarmState[i]=false;
+            mAlarmMask[i]=ALARM_NONE;
+            if (mRowNames[i][0]=='!')
+            {
+                if (mRowNames[i][1]=='~')
+                {
+                    mAlarmMask[i]=ALARM_LOW;
+                }
+                else
+                {
+                    mAlarmMask[i]=ALARM_HIGH;
+                }
+            }
+
+            if (mAlarmMask[i]==ALARM_HIGH)
+            {
+                mAlarmState[i]=mData.isHigh(i);                    
+            }
+            else if (mAlarmMask[i]==ALARM_LOW)
+            {
+                mAlarmState[i]=mData.isLow(i);
+            }
+
             mRows[i][mColumns.mColValue]=mData.toString(i);
         }
+    }
+
+    virtual ~iCubAnalogBoardGui()
+    {
+        delete [] mAlarmMask;
+        delete [] mAlarmState;
     }
 
     virtual void fromBottle(yarp::os::Bottle& bot)
     {
         iCubAnalogBoard::fromBottle(bot);
 
-        for (int i=0; i<(int)mData.size(); ++i)
+        for (int i=0; i<mNumRows; ++i)
         {
             if (mData.test(i))
             {
+                if (mAlarmMask[i]==ALARM_HIGH)
+                {
+                    mAlarmState[i]=mData.isHigh(i);
+                }
+                else if (mAlarmMask[i]==ALARM_LOW)
+                {
+                    mAlarmState[i]=mData.isLow(i);
+                }
+
                 mRows[i][mColumns.mColValue]=mData.toString(i);
             }
         }
     }
 
+    virtual bool hasAlarm()
+    {
+        bool alarm=false;
+
+        for (int i=0; i<mNumRows; ++i)
+        {
+            if (mAlarmState[i])
+            {
+                alarm=true;
+                mRows[i][mColumns.mColIcon]="(!)";
+            }
+            else
+            {
+                mRows[i][mColumns.mColIcon]="";
+            }
+        }
+
+        if (mChannel)
+        {
+            for (int i=0; i<nChannels; ++i)
+            {
+                if (mChannel[i]->hasAlarm()) 
+                {
+                    alarm=true;
+                }
+            }
+        }
+
+        if (alarm)
+        {
+            mRows[0][mColumns.mColIcon]="(!)";
+        }
+        else
+        {
+            mRows[0][mColumns.mColIcon]="";
+        }
+
+        return alarm;
+    }
+
 protected:
-    //static const char* mRowNames[];
+    bool* mAlarmState;
+    char* mAlarmMask;
 };
 
 #endif

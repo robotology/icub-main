@@ -91,6 +91,20 @@ public:
         return std::string(mData[index]->toString().c_str());
     }
 
+    bool isHigh(int index)
+    {
+        if (index<0 || index>=(int)mData.size()) return false;
+
+        return mData[index]->asInt()!=0;
+    }
+
+    bool isLow(int index)
+    {
+        if (index<0 || index>=(int)mData.size()) return false;
+
+        return mData[index]->asInt()==0;
+    }
+
     bool read(int index,yarp::os::Value& data,bool rst=true)
     {
         if (index<0 || index>=(int)mData.size()) return false;
@@ -128,12 +142,14 @@ public:
         return true;
     }
 
+    /*
     yarp::dev::LoggerDataRef* getDataReference(int index)
     {
         if (index<0 || index>=(int)mData.size()) return NULL;
 
         return new yarp::dev::LoggerDataRef(mData[index],mFlag[index]);
     }
+    */
 
 protected:
     std::vector<bool*> mFlag;
@@ -145,6 +161,8 @@ protected:
 class iCubBoardChannel
 {
 public:
+    enum { ALARM_NONE,ALARM_HIGH,ALARM_LOW };
+
     iCubBoardChannel(int channel=-1) : mData(),mChannel(channel)
     {
     }
@@ -153,9 +171,9 @@ public:
     {
     }
 
-    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr)=0;
+    //virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr)=0;
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data)=0;
-    virtual bool findAndRead(std::string addr,yarp::os::Value& data)=0;
+    //virtual bool findAndRead(std::string addr,yarp::os::Value& data)=0;
 
     virtual yarp::os::Bottle toBottle(bool bConfig=false)
     {
@@ -242,9 +260,9 @@ public:
         MODE_OPENLOOP               // receiving PWM values via canbus
     };
 
-    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
+    //virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
+    //virtual bool findAndRead(std::string addr,yarp::os::Value& data);
 
 protected:
     int mJoint;
@@ -279,7 +297,7 @@ public:
         
         DOUBLE_Status_messages_latency,       // Keep track of the time the last status message has been received (seconds)
         BOOL_Status_messages_latency_timeout, // If status messages latency > threshold (5s) raise an error
-
+        
         // device generated
         BOOL_Is_Fault_Ok,               // Status of the fault pin, general error
         BOOL_Fault_undervoltage,        // Power supply voltage is below minimum
@@ -295,9 +313,9 @@ public:
         NUM_ROWS
     };
 
-    virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
+    //virtual yarp::dev::LoggerDataRef* getDataReference(std::string addr);
     virtual bool findAndWrite(std::string addr,const yarp::os::Value& data);
-    virtual bool findAndRead(std::string addr,yarp::os::Value& data);
+    //virtual bool findAndRead(std::string addr,yarp::os::Value& data);
 
 protected:
     static const char *mRowNames[];
