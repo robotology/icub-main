@@ -10,8 +10,8 @@ R{1}.A=0.032;   R{1}.D=0;       R{1}.alpha=pi/2;  R{1}.offset=0;
 R{2}.A=0;       R{2}.D=0;       R{2}.alpha=pi/2;  R{2}.offset=-pi/2;
 R{3}.A=0.00231; R{3}.D=-0.1933; R{3}.alpha=-pi/2; R{3}.offset=-pi/2;
 R{4}.A=0.033;   R{4}.D=0;       R{4}.alpha=pi/2;  R{4}.offset=pi/2;
-R{5}.A=0;       R{5}.D=0;       R{5}.alpha=pi/2;  R{5}.offset=pi/2;
-R{6}.A=-0.054;  R{6}.D=0.0825;  R{6}.alpha=-pi/2; R{6}.offset=-pi/2;
+R{5}.A=0;       R{5}.D=0.001;   R{5}.alpha=-pi/2; R{5}.offset=-pi/2;
+R{6}.A=-0.054;  R{6}.D=0.0825;  R{6}.alpha=-pi/2; R{6}.offset=pi/2;
 R{7}.A=0;       R{7}.D=0.034;   R{7}.alpha=-pi/2; R{7}.offset=0;
 R{8}.A=0;       R{8}.D=0;       R{8}.alpha=pi/2;  R{8}.offset=-pi/2;
 
