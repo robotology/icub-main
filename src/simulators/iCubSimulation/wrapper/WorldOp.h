@@ -40,7 +40,7 @@ public:
 class WorldOpIndex {
 public:
     bool valid;
-    bool index;
+    int index;
 
     WorldOpIndex() { valid = false; }
 
@@ -83,15 +83,19 @@ public:
     WorldOpTriplet rotation;
     WorldOpScalar radius;
     WorldOpFlag active;
+    WorldOpFlag dynamic;
+    WorldOpFlag rightHanded;
     WorldOpIndex index;
 };
 
 class WorldResult {
 public:
     bool success;
+    std::string msg;
 
     WorldResult() {
         success = false;
+        msg = "";
     }
 };
 

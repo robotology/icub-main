@@ -847,7 +847,10 @@ bool OdeWorldManager::respond(const Bottle &command, Bottle &reply) {
     }
     done = true;
     ODE_access.post();
-	return ok;
+    if (reply.size()==0||!ok) {
+        reply.addVocab(VOCAB4('f','a','i','l'));
+    }
+	return true;
 }
 
 

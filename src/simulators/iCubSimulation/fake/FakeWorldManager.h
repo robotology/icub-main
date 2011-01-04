@@ -6,7 +6,7 @@
 #include "WorldManager.h"
 
 class FakeWorldManager : public WorldManager {
-    virtual void apply(const WorldOp& op, WorldResult& result) {}
+    virtual void apply(const WorldOp& op, WorldResult& result);
 };
 
 #endif
