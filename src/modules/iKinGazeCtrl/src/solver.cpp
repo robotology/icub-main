@@ -18,7 +18,6 @@
 
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>
-#include <deque>
 
 
 /************************************************************************/
@@ -358,6 +357,9 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     eyeL=new iCubEye("left");
     eyeR=new iCubEye("right");
 
+    // remove constraints on the links: logging purpose
+    inertialSensor.setAllConstraints(false);
+
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
     eyeL->blockLink(4,0.0); eyeR->blockLink(4,0.0);
@@ -413,13 +415,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
-
-        IControlLimits *limTorso; drvTorso->view(limTorso);
-        IControlLimits *limHead;  drvHead->view(limHead);
-        deque<IControlLimits*> lim;
-        lim.push_back(limTorso);
-        lim.push_back(limHead);
-        inertialSensor.alignJointsBounds(lim);
 
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);

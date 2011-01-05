@@ -119,10 +119,11 @@ public:
 // on IPOPT computation.
 class Solver : public RateThread
 {
-protected:
+protected:    
     iCubHeadCenter            *neck;    
     iCubEye                   *eyeL,      *eyeR;
     iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
+    iCubInertialSensor         inertialSensor;
     GazeIpOptMin              *invNeck;
     PolyDriver                *drvTorso,  *drvHead;
     IEncoders                 *encTorso,  *encHead;
@@ -132,8 +133,7 @@ protected:
     Controller                *ctrl;
     xdPort                    *port_xd;
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
-    iKinLink *alignLnkRight1, *alignLnkRight2;
-    iCubInertialSensor         inertialSensor;
+    iKinLink *alignLnkRight1, *alignLnkRight2;    
 
     string localName;
     string configFile;

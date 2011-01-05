@@ -35,6 +35,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeR=new iCubEye("right");    
 
     // remove constraints on the links
+    // we use the chains for logging purpose
     eyeL->setAllConstraints(false);
     eyeR->setAllConstraints(false);
 
