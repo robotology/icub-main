@@ -15,7 +15,7 @@ global P;
 
 if strcmpi(armType,'right')
     P{1}.A =0.032;      P{1}.D =0;        P{1}.alpha =pi/2;  P{1}.offset =0;
-    P{2}.A =0;          P{2}.D =0;        P{2}.alpha =pi/2;  P{2}.offset =-pi/2;
+    P{2}.A =0;          P{2}.D =-0.0055;  P{2}.alpha =pi/2;  P{2}.offset =-pi/2;
     P{3}.A =-0.0233647; P{3}.D =-0.1433;  P{3}.alpha =pi/2;  P{3}.offset =-pi/2-15*pi/180;
     P{4}.A =0;          P{4}.D =-0.10774; P{4}.alpha =pi/2;  P{4}.offset =-pi/2;
     P{5}.A =0;          P{5}.D =0;        P{5}.alpha =-pi/2; P{5}.offset =-pi/2;
@@ -26,7 +26,7 @@ if strcmpi(armType,'right')
     P{10}.A=0.0625;     P{10}.D=0.016;    P{10}.alpha=0;     P{10}.offset=pi;
 else
     P{1}.A =0.032;      P{1}.D =0;        P{1}.alpha =pi/2;  P{1}.offset =0;
-    P{2}.A =0;          P{2}.D =0;        P{2}.alpha =pi/2;  P{2}.offset =-pi/2;
+    P{2}.A =0;          P{2}.D =-0.0055;  P{2}.alpha =pi/2;  P{2}.offset =-pi/2;
     P{3}.A =0.0233647;  P{3}.D =-0.1433;  P{3}.alpha =-pi/2; P{3}.offset =pi/2+15*pi/180;
     P{4}.A =0;          P{4}.D =0.10774;  P{4}.alpha =-pi/2; P{4}.offset =pi/2;
     P{5}.A =0;          P{5}.D =0;        P{5}.alpha =pi/2;  P{5}.offset =-pi/2;
