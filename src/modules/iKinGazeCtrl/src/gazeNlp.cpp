@@ -180,6 +180,24 @@ void iCubHeadCenter::allocate(const string &_type)
 
 
 /************************************************************************/
+void HeadCenter_NLP::setGravityDirection(const Vector &gDir)
+{
+    // we assume that gDir is provided in homogeneous form
+    // rest pitch
+    Vector gDirHp=SE3inv(chain.getH(2,true))*gDir;
+    qRest[0]=-atan2(gDirHp[0],gDirHp[1]);
+    qRest[0]=qRest[0]>chain(0).getMax()?chain(0).getMax():
+             (qRest[0]<chain(0).getMin()?chain(0).getMin():qRest[0]);
+
+    // rest roll
+    Vector gDirHr=SE3inv(chain.getH(3,true))*gDir;
+    qRest[1]=atan2(gDirHr[1],gDirHr[0]);
+    qRest[1]=qRest[1]>chain(1).getMax()?chain(1).getMax():
+             (qRest[1]<chain(1).getMin()?chain(1).getMin():qRest[1]);
+}
+
+
+/************************************************************************/
 void HeadCenter_NLP::computeQuantities(const Ipopt::Number *x)
 {
     Vector new_q(dim);
@@ -243,14 +261,9 @@ bool HeadCenter_NLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::
         x_u[i]=chain(i).getMax();
     }
 
-    g_l[0]=lowerBoundInf;
+    g_l[0]=g_l[1]=g_l[2]=lowerBoundInf;
     g_u[0]=-1.0+translationalTol;
-
-    g_l[1]=lowerBoundInf;
-    g_u[1]=0.0;
-
-    g_l[2]=lowerBoundInf;
-    g_u[2]=0.0;
+    g_u[1]=g_u[2]=0.0;
 
     return true;
 }
@@ -263,7 +276,10 @@ bool HeadCenter_NLP::eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
     obj_value=0.0;
 
     for (Ipopt::Index i=0; i<n; i++)
-        obj_value+=x[i]*x[i];
+    {
+        double tmp=x[i]-qRest[i];
+        obj_value+=tmp*tmp;
+    }
 
     obj_value*=0.5;
 
@@ -276,7 +292,7 @@ bool HeadCenter_NLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x,
                                  bool new_x, Ipopt::Number* grad_f)
 {
     for (Ipopt::Index i=0; i<n; i++)
-        grad_f[i]=x[i];
+        grad_f[i]=x[i]-qRest[i];
 
     return true;
 }
@@ -289,8 +305,8 @@ bool HeadCenter_NLP::eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
     computeQuantities(x);
 
     g[0]=cosAng;
-    g[1]=chain(1).getMin()*fPitch-x[1];
-    g[2]=x[1]-chain(1).getMax()*fPitch;
+    g[1]=(chain(1).getMin()-qRest[1])*fPitch-(x[1]-qRest[1]);
+    g[2]=x[1]-qRest[1]-(chain(1).getMax()-qRest[1])*fPitch;
 
     return true;
 }
@@ -317,18 +333,19 @@ bool HeadCenter_NLP::eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new
     {
         computeQuantities(x);
 
+        // dg[0]/dxi
         for (Ipopt::Index i=0; i<n; i++)
             values[i]=(dot(AnaJacobZ,i,Hxd,3)+dot(Hxd,2,GeoJacobP,i))/mod
                       -(cosAng*dot(Hxd,3,GeoJacobP,i))/(mod*mod);
 
         // dg[1]/dPitch
-        values[3]=chain(1).getMin()*dfPitch;
+        values[3]=(chain(1).getMin()-qRest[1])*dfPitch;
 
         // dg[1]/dRoll
         values[4]=-1.0;
 
         // dg[2]/dPitch
-        values[5]=-chain(1).getMax()*dfPitch;
+        values[5]=-(chain(1).getMax()-qRest[1])*dfPitch;
 
         // dg[2]/dRoll
         values[6]=1.0;
@@ -339,17 +356,18 @@ bool HeadCenter_NLP::eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new
 
 
 /************************************************************************/
-Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd,
+Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd, const Vector &gDir,
                            Ipopt::ApplicationReturnStatus *exit_code, bool *exhalt,
                            iKinIterateCallback *iterate)
 {
-    Ipopt::SmartPtr<iKin_NLP> nlp;
+    Ipopt::SmartPtr<HeadCenter_NLP> nlp;
     nlp=new HeadCenter_NLP(chain,q0,xd,*pLIC,exhalt);
 
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);
     nlp->set_translational_tol(translationalTol);
     nlp->set_callback(iterate);
+    nlp->setGravityDirection(gDir);
     
     Ipopt::ApplicationReturnStatus status=optimize(GetRawPtr(nlp));
 

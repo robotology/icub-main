@@ -18,6 +18,7 @@
 
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>
+#include <deque>
 
 
 /************************************************************************/
@@ -143,13 +144,26 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     qd[2]=fbHead[5];
     I=new Integrator(Ts,qd,lim);
 
+    gyro.resize(12,0.0);
     fp.resize(3,0.0);
     eyesJ.resize(3,3);
     eyesJ.zero();
-    gyro.resize(12,0.0);
 
     genOn=false;
     port_xd=NULL;
+}
+
+
+/************************************************************************/
+bool EyePinvRefGen::getGyro(Vector &data)
+{
+    if (port_inertial!=NULL)
+    {
+        data=gyro;
+        return true;
+    }
+    else
+        return false;
 }
 
 
@@ -203,7 +217,7 @@ void EyePinvRefGen::run()
             fbHead=commData->get_q();
 
         // read gyro data
-        if (port_inertial)
+        if (port_inertial!=NULL)
             if (Vector *_gyro=port_inertial->read(false))
                 gyro=*_gyro;
 
@@ -400,6 +414,13 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
+        IControlLimits *limTorso; drvTorso->view(limTorso);
+        IControlLimits *limHead;  drvHead->view(limHead);
+        deque<IControlLimits*> lim;
+        lim.push_back(limTorso);
+        lim.push_back(limHead);
+        inertialSensor.alignJointsBounds(lim);
+
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
@@ -446,7 +467,9 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     eyePos[1]=gazePos[1]-gazePos[2]/2.0;
     chainEyeR->setAng(eyePos);
 
-    xdOld.resize(3,0.0);
+    gDefaultDir.resize(4,0.0);
+    gDefaultDir[2]=gDefaultDir[3]=1.0;
+
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
 }
@@ -563,6 +586,38 @@ void Solver::updateAngles()
     gazePos[0]=fbHead[3];
     gazePos[1]=fbHead[4];
     gazePos[2]=fbHead[5];
+}
+
+
+/************************************************************************/
+Vector Solver::getGravityDirection(const Vector &gyro)
+{
+    double roll =CTRL_DEG2RAD*gyro[0];
+    double pitch=CTRL_DEG2RAD*gyro[1];
+
+    // compute rotational matrix to
+    // account for roll and pitch
+    Vector x(4); Vector y(4);
+    x[0]=1.0;    y[0]=0.0;
+    x[1]=0.0;    y[1]=1.0;
+    x[2]=0.0;    y[2]=0.0;
+    x[3]=roll;   y[3]=pitch;   
+    Matrix R=axis2dcm(y)*axis2dcm(x);
+
+    Vector q(inertialSensor.getDOF());
+    q[0]=fbTorso[0];
+    q[1]=fbTorso[1];
+    q[2]=fbTorso[2];
+    q[3]=fbHead[0];
+    q[4]=fbHead[1];
+    q[5]=fbHead[2];
+    Matrix H=inertialSensor.getH(q)*R.transposed();
+
+    // gravity is aligned along the z-axis
+    Vector gDir=H.getCol(2);
+    gDir[3]=1.0;    // impose homogeneous coordinates
+
+    return gDir;
 }
 
 
@@ -689,17 +744,34 @@ void Solver::run()
     doSolve&=!(!commData->get_isCtrlActive() && commData->get_canCtrlBeDisabled());
 
     // 4) skip if controller is inactive, we are in tracking mode and nothing has changed
-    // De Morgan's law used
+    // note that the De Morgan's law has been applied hereafter
     doSolve&=commData->get_isCtrlActive() || commData->get_canCtrlBeDisabled() ||
              torsoChanged || headChanged;
 
     // 5) solve straightaway if the target has changed
-    doSolve|=!(xd==xdOld);
+    doSolve|=port_xd->get_newDelayed();
+
+    // clear trigger
+    port_xd->get_newDelayed()=false;
 
     // call the solver for neck
     if (doSolve)
     {
-        neckPos=invNeck->solve(neckPos,xd);
+        Vector  gyro;
+        Vector  gDir;
+        Vector *pgDir;
+
+        if (eyesRefGen->getGyro(gyro))
+        {
+            gDir=getGravityDirection(gyro);
+            pgDir=&gDir;
+        }
+        else
+            pgDir=&gDefaultDir;
+
+        // debug
+        neckPos=invNeck->solve(neckPos,xd,gDefaultDir);
+        //neckPos=invNeck->solve(neckPos,xd,*pgDir);
 
         // update neck pitch,roll,yaw        
         commData->get_qd()[0]=neckPos[0];
@@ -708,7 +780,6 @@ void Solver::run()
     }
 
     // latch quantities
-    xdOld=xd;
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
 }
@@ -782,7 +853,6 @@ void Solver::resume()
     port_xd->set_xd(fp);
 
     // update latched quantities
-    xdOld=fp;
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
 

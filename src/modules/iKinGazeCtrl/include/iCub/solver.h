@@ -102,6 +102,7 @@ public:
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void enable()                     { genOn=true;       }
     void disable()                    { genOn=false;      }
+    bool getGyro(Vector &data);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);
@@ -119,7 +120,7 @@ public:
 class Solver : public RateThread
 {
 protected:
-    iCubHeadCenter            *neck;
+    iCubHeadCenter            *neck;    
     iCubEye                   *eyeL,      *eyeR;
     iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
     GazeIpOptMin              *invNeck;
@@ -132,6 +133,7 @@ protected:
     xdPort                    *port_xd;
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
     iKinLink *alignLnkRight1, *alignLnkRight2;
+    iCubInertialSensor         inertialSensor;
 
     string localName;
     string configFile;
@@ -147,7 +149,7 @@ protected:
     Vector fbHead;
     Vector neckPos;
     Vector gazePos;
-    Vector xdOld;
+    Vector gDefaultDir;
     Vector fbTorsoOld;
     Vector fbHeadOld;
 
@@ -158,6 +160,9 @@ protected:
     double neckYawMin;
     double neckYawMax;
 
+    void   updateAngles();
+    Vector getGravityDirection(const Vector &gyro);
+
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
@@ -165,8 +170,7 @@ public:
            const double _eyeTiltMax, unsigned int _period);
 
     // Returns a measure of neck angle required to reach the target
-    Vector neckTargetRotAngles(const Vector &xd);
-    void   updateAngles();
+    Vector neckTargetRotAngles(const Vector &xd);    
 
     void bindNeckPitch(const double min_deg, const double max_deg);
     void bindNeckRoll(const double min_deg, const double max_deg);

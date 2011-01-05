@@ -71,6 +71,8 @@ protected:
     Matrix GeoJacobP;
     Matrix AnaJacobZ;
 
+    Vector qRest;
+
     double mod;
     double cosAng;
     double fPitch;
@@ -84,7 +86,7 @@ public:
                    iKin_NLP(c,IKINCTRL_POSE_XYZ,_q0,_xd,
                             0.0,dummyChain,dummyVector,dummyVector,
                             0.0,dummyVector,dummyVector,
-                            _LIC,_exhalt) { }
+                            _LIC,_exhalt) { qRest.resize(dim,0.0); }
 
     virtual bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
                               Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style);
@@ -95,6 +97,8 @@ public:
     virtual bool eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Index m, Ipopt::Number* g);
     virtual bool eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,Ipopt::Index m, Ipopt::Index nele_jac,
                             Ipopt::Index* iRow, Ipopt::Index *jCol, Ipopt::Number* values);
+
+    void setGravityDirection(const Vector &gDir);
 };
 
 
@@ -113,7 +117,7 @@ public:
 
     void set_ctrlPose(unsigned int _ctrlPose) { }
     void setHessianOpt(const bool useHessian) { }   // Hessian not implemented
-    virtual Vector solve(const Vector &q0, Vector &xd,
+    virtual Vector solve(const Vector &q0, Vector &xd, const Vector &gDir,
                          Ipopt::ApplicationReturnStatus *exit_code=NULL, bool *exhalt=NULL,
                          iKinIterateCallback *iterate=NULL);
 };

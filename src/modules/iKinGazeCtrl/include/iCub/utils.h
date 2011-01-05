@@ -62,6 +62,7 @@ protected:
     Vector xd;
     Vector xdDelayed;
     bool   isNew;
+    bool   isNewDelayed;
     bool   closing;
 
     virtual void onRead(Bottle &b);
@@ -72,9 +73,10 @@ public:
     void set_xd(const Vector &_xd);
     ~xdPort();
 
-    bool   &get_new()        { return isNew;     }
-    Vector &get_xd()         { return xd;        }
-    Vector &get_xdDelayed()  { return xdDelayed; }
+    bool   &get_new()        { return isNew;        }
+    bool   &get_newDelayed() { return isNewDelayed; }
+    Vector &get_xd()         { return xd;           }
+    Vector &get_xdDelayed()  { return xdDelayed;    }
 };
 
 

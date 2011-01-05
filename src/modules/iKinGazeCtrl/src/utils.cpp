@@ -24,7 +24,7 @@
 xdPort::xdPort(const Vector &xd0, void *_slv)
 {   
     xdDelayed=xd=xd0;
-    isNew=false;
+    isNewDelayed=isNew=false;
     closing=false;
 
     slv=_slv;
@@ -89,6 +89,7 @@ void xdPort::run()
         Time::delay(timeDelay);
 
         xdDelayed=xd;
+        isNewDelayed=true;
     }
 }
 
