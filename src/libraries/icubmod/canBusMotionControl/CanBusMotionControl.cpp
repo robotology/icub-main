@@ -2164,30 +2164,67 @@ void CanBusMotionControl::handleBroadcasts()
                         }
 #endif
 
-                    if (r._bcastRecvBuffer[j].isOverCurrent()) printf ("%s [%d] board %d OVERCURRENT AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                    bool bFlag;
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) printf ("%s [%d] board %d OVERCURRENT AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                    logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
+
                     //r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
                     //if (r._bcastRecvBuffer[j].isFaultOk()) ACE_OS::printf ("Board %d OK\n", addr);
-                    if (r._bcastRecvBuffer[j].isFaultUndervoltage()) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    if (r._bcastRecvBuffer[j].isFaultExternal()) printf ("%s [%d] board %d FAULT EXT AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    if (r._bcastRecvBuffer[j].isFaultOverload()) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 0\n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isHallSensorError()) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isAbsEncoderError()) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);		
-					if (r._bcastRecvBuffer[j].isCanTxOverflow()) printf ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanBusOff()) printf ("%s [%d] board %d CAN BUS_OFF \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanTxError()) printf ("%s [%d] board %d CAN TX ERROR \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanRxError()) printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanRxWarning()) printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanRxOverrun()) printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isMainLoopOverflow()) 
+                    
+                    logJointData(canDevName.c_str(),_networkN,j,21,yarp::os::Value((int)r._bcastRecvBuffer[j]._controlmodeStatus));
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                    logJointData(canDevName.c_str(),_networkN,j,7,yarp::os::Value((int)bFlag));
+                    
+                    if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) printf ("%s [%d] board %d FAULT EXT AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                    logJointData(canDevName.c_str(),_networkN,j,10,yarp::os::Value((int)bFlag));
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isFaultOverload())) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 0\n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,8,yarp::os::Value((int)bFlag));
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,11,yarp::os::Value((int)bFlag));
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);		
+					logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverflow())) printf ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,16,yarp::os::Value((int)bFlag));
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isCanBusOff())) printf ("%s [%d] board %d CAN BUS_OFF \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,13,yarp::os::Value((int)bFlag));
+
+                    if (r._bcastRecvBuffer[j].isCanTxError()) printf ("%s [%d] board %d CAN TX ERROR \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,14,yarp::os::Value((int)r._bcastRecvBuffer[j]._canTxError));
+
+                    if (r._bcastRecvBuffer[j].isCanRxError()) printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,15,yarp::os::Value((int)r._bcastRecvBuffer[j]._canRxError));
+
+                    if (r._bcastRecvBuffer[j].isCanRxWarning()) printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isCanRxOverrun())) printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,17,yarp::os::Value((int)bFlag));
+
+                    if ((bFlag=r._bcastRecvBuffer[j].isMainLoopOverflow())) 
 					{
 						r._bcastRecvBuffer[j]._mainLoopOverflowCounter++;
 						//printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
 					}
-					if (r._bcastRecvBuffer[j].isOverTempCh1()) printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isOverTempCh2()) printf ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isTempErrorCh1()) printf ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isTempErrorCh2()) printf ("%s [%d] board %d ERROR TEMPERATURE CH 2\n", canDevName.c_str(), _networkN, addr);
-                   
+                    logJointData(canDevName.c_str(),_networkN,j,18,yarp::os::Value((int)bFlag));
+
+					if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh1())) printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,19,yarp::os::Value((int)bFlag));
+                    
+                    if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh2())) printf ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j+1,19,yarp::os::Value((int)bFlag));
+                    
+                    if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh1())) printf ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,20,yarp::os::Value((int)bFlag));
+                    
+                    if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh2())) printf ("%s [%d] board %d ERROR TEMPERATURE CH 2\n", canDevName.c_str(), _networkN, addr);
+                    logJointData(canDevName.c_str(),_networkN,j+1,20,yarp::os::Value((int)bFlag));
+
                     j++;
 
                     if (j < r.getJoints())
@@ -2197,12 +2234,26 @@ void CanBusMotionControl::handleBroadcasts()
                         r._bcastRecvBuffer[j]._update_e = before;	
 						r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+3));
                         // r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
-					    if (r._bcastRecvBuffer[j].isOverCurrent()) printf ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
-                        if (r._bcastRecvBuffer[j].isFaultUndervoltage()) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
-                        if (r._bcastRecvBuffer[j].isFaultExternal()) printf ("%s [%d] board %d FAULT EXT AXIS 1\n", canDevName.c_str(), _networkN, addr);
-						if (r._bcastRecvBuffer[j].isFaultOverload()) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 1\n", canDevName.c_str(), _networkN, addr);
-					    if (r._bcastRecvBuffer[j].isHallSensorError()) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
-						if (r._bcastRecvBuffer[j].isAbsEncoderError()) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+					    
+                        logJointData(canDevName.c_str(),_networkN,j,21,yarp::os::Value((int)r._bcastRecvBuffer[j]._controlmodeStatus));
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) printf ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
+                        
+                        if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,7,yarp::os::Value((int)bFlag));
+                        
+                        if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) printf ("%s [%d] board %d FAULT EXT AXIS 1\n", canDevName.c_str(), _networkN, addr);
+						logJointData(canDevName.c_str(),_networkN,j,10,yarp::os::Value((int)bFlag));
+                        
+                        if ((bFlag=r._bcastRecvBuffer[j].isFaultOverload())) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 1\n", canDevName.c_str(), _networkN, addr);
+					    logJointData(canDevName.c_str(),_networkN,j,8,yarp::os::Value((int)bFlag));
+                        
+                        if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+						logJointData(canDevName.c_str(),_networkN,j,11,yarp::os::Value((int)bFlag));
+                        
+                        if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
                     }	
 
                     break;
@@ -2323,7 +2374,8 @@ void CanBusMotionControl:: run()
                                         r._networkN,
                                         rq.threadId, rq.msg, rq.joint);
 
-                                logJointData(canDevName.c_str(),r._networkN,j,3,yarp::os::Value(1));
+                                // ???
+                                //logJointData(canDevName.c_str(),r._networkN,j,3,yarp::os::Value(1));
                             }
                         else
                             ++it;
@@ -2494,10 +2546,20 @@ void CanBusMotionControl:: run()
                     unsigned int err;
                     unsigned int tout; 
                     pAnalog->getCounters(sat, err, tout);
+
+                    const char* devName=canDevName.c_str();
+                    int id=pAnalog->getId();
+
+                    #ifdef _USE_INTERFACEGUI
+                    logAnalogData(devName,r._networkN,id,3,yarp::os::Value((int)sat));
+                    logAnalogData(devName,r._networkN,id,4,yarp::os::Value((int)err));
+                    logAnalogData(devName,r._networkN,id,5,yarp::os::Value((int)tout));
+                    #endif
+
                     if (sat+err+tout!=0)
                     {
                         fprintf(stderr, "%s [%d] analog %s saturated:%u errors: %u timeout:%u\n",
-                                canDevName.c_str(),
+                                devName,
                                 r._networkN,
                                 pAnalog->getDeviceId().c_str(),
                                 sat, err, tout);
