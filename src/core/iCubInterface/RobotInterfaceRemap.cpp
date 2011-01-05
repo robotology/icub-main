@@ -133,6 +133,10 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
     deviceP.put("canbusdevice", canbusdevice.c_str());
 
+    printf("\n\n\n\n\n\n\n\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
+    printf("$$$$$$$$$$$$$$$$$$ %s $$$$$$$$$$$$$$$$$$$$$$$$$$\n",deviceP.toString().c_str());
+    printf("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n\n\n\n\n\n\n\n\n");
+
     driver.open(deviceP);
     if (!driver.isValid())
         return false;
@@ -724,7 +728,11 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             fprintf(stderr, "RobotInterface::warning troubles instantiating inertial sensor\n");
     }
     else
+    {
         fprintf(stderr, "RobotInterface::no inertial sensor defined in the config file\n");
+    }
+
+
 
     // now go thourgh list of networks and create analog interface
     Bottle *analogNets=robotOptions.findGroup("GENERAL").find("analog").asList();
@@ -846,10 +854,21 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     mServerLogger=new iCubInterfaceGuiServer;
     mServerLogger->config(PATH,robotOptions);
 
-    for (RobotNetworkIt netit=networks.begin(); netit!=networks.end(); ++netit)
+    for (RobotNetworkIt netIt=networks.begin(); netIt!=networks.end(); ++netIt)
     {
         IClientLogger* pCL=NULL;
-        (*netit)->driver.view(pCL);
+        (*netIt)->driver.view(pCL);
+
+        if (pCL)
+        {
+            pCL->setServerLogger(mServerLogger);
+        }
+    }
+
+    for (std::list<SkinPartEntry*>::iterator skinIt=skinparts.begin(); skinIt!=skinparts.end(); ++skinIt)
+    {
+        IClientLogger* pCL=NULL;
+        (*skinIt)->driver.view(pCL);
 
         if (pCL)
         {

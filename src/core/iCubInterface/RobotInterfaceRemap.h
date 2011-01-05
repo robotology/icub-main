@@ -447,10 +447,8 @@ typedef std::list<CartesianController *> CartesianControllers;
 class SkinPartEntry
 {
 private:
-    yarp::dev::PolyDriver driver;
     AnalogServer *analogServer;
     yarp::dev::IAnalogSensor *analog;
-
 
 public:
     SkinPartEntry();
@@ -464,6 +462,7 @@ public:
     { id=i; }
 
     std::string id;
+    yarp::dev::PolyDriver driver;
 };
 
 class SkinParts: public std::list<SkinPartEntry *>
