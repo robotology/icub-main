@@ -254,7 +254,7 @@ void EyePinvRefGen::run()
             Matrix h1=chainNeck->getH(3,true);
             Matrix h2=chainNeck->getH(4,true);
 
-            for (unsigned int i=0; i<3; i++)
+            for (int i=0; i<3; i++)
             {
                 h0(i,3)=fp[i]-h0(i,3);
                 h1(i,3)=fp[i]-h1(i,3);
@@ -626,7 +626,7 @@ Vector Solver::neckTargetRotAngles(const Vector &xd)
 {    
     Matrix H=chainNeck->getH();
 
-    for (unsigned int i=0; i<3; i++)
+    for (int i=0; i<3; i++)
         H(i,3)-=xd[i];
 
     H(3,3)=0.0;
