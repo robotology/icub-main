@@ -226,7 +226,7 @@ void HeadCenter_NLP::computeQuantities(const Ipopt::Number *x)
         double _tanh=tanh(c*(q[0]-pitch_cog));
 
         // transition function and its first derivative
-        // to block the roll around 0.0 when the pitch
+        // to block the roll around qRest[1] when the pitch
         // approaches its minimum
         fPitch=0.5*(1.0+_tanh);
         dfPitch=0.5*c*(1.0-_tanh*_tanh);
