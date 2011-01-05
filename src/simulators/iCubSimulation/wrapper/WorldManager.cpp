@@ -97,79 +97,9 @@ public:
         return true;
     }
 
-    void show(WorldOpTriplet& x) {
-        if (!x.valid) {
-            printf("not set");
-        } else {
-            printf("%g %g %g", x.x[0], x.x[1], x.x[2]);
-        }
-        printf("\n");
-    }
-
-    void show(WorldOpScalar& x) {
-        if (!x.valid) {
-            printf("not set");
-        } else {
-            printf("%g", x.val);
-        }
-        printf("\n");
-    }
-
-    void show(WorldOpFlag& x, 
-              const char *yes="True", 
-              const char *no="False") {
-        if (!x.valid) {
-            printf("not set");
-        } else {
-            printf("%s", x.setting?yes:no);
-        }
-        printf("\n");
-    }
-
-    void show(WorldOpIndex& x) {
-        if (!x.valid) {
-            printf("not set");
-        } else {
-            printf("%d", x.index);
-        }
-        printf("\n");
-    }
-
-    void show(WorldOpName& x) {
-        if (!x.valid) {
-            printf("not set");
-        } else {
-            printf("%s", x.name.c_str());
-        }
-        printf("\n");
-    }
-
     void debug() {
-        printf("Command: %s\n", command.toString().c_str());
-        printf("Parsed command:\n");
-        printf("  tag: %s\n", yarp::os::Vocab::decode(op.cmd).c_str());
-        printf("  kind: ");
-        show(op.kind);
-        printf("  name: ");
-        show(op.name);
-        printf("  dynamic: ");
-        show(op.dynamic);
-        printf("  location: ");
-        show(op.location);
-        printf("  size: ");
-        show(op.size);
-        printf("  color: ");
-        show(op.color);
-        printf("  rotation: ");
-        show(op.rotation);
-        printf("  radius: ");
-        show(op.radius);
-        printf("  active: ");
-        show(op.active);
-        printf("  index: ");
-        show(op.index);
-        printf("  hand: ");
-        show(op.rightHanded,"right","left");
+        //printf("Command: %s\n", command.toString().c_str());
+        //op.show();
     }
 };
 
@@ -268,21 +198,18 @@ bool doSet(ManagerState& state) {
 
 bool doMake(ManagerState& state) {
     consumeKind(state);
-    if (state.op.kind.name == "box") {
-        state.consume(state.op.size,"size");
-        state.consume(state.op.location,"location");
-        state.consume(state.op.color,"color");
-    } else if (state.op.kind.name == "cyl") {
-        state.consume(state.op.radius,"radius");
-        state.consume(state.op.location,"location");
-        state.consume(state.op.color,"color");
-    } else if (state.op.kind.name == "sph") {
-        state.consume(state.op.radius,"radius");
-        state.consume(state.op.location,"location");
-        state.consume(state.op.color,"color");
-    } else {
+    std::string name = state.op.kind.name;
+    if (!(name=="box"||name=="cyl"||name=="sph")) 
+        state.result.setFail("cannot create object of requested type");
         return false;
+    state.consume(state.op.location,"location");
+    if (name == "box") {
+        state.consume(state.op.size,"size");
     }
+    if (name == "cyl" || name == "sph") {
+        state.consume(state.op.radius,"radius");
+    }
+    state.consume(state.op.color,"color");
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
     }
@@ -361,6 +288,10 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
             reply.addString(result.msg.c_str());
         }
         return true;
+    } else {
+        if (reply.size()==0) {
+            reply.addVocab(VOCAB2('o','k'));
+        }
     }
     return true;
 }

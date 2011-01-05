@@ -10,12 +10,62 @@
 #include "OdeInit.h"
 #include "iCub_Sim.h"
 
+#ifndef DENSITY
 #define DENSITY (1.0)		// density of all objects
+#endif
 
 using namespace yarp::os;
 
+static void deleteObjects() {
+    OdeInit& odeinit = OdeInit::get();
 
-int nameToBody(int id, dBodyID& bid, dGeomID& bid2) {
+    int b = odeinit._wrld->OBJNUM;//box
+    int sb = odeinit._wrld->S_OBJNUM;
+    int c = odeinit._wrld->cylOBJNUM;//box
+    int sc = odeinit._wrld->S_cylOBJNUM;
+    int s = odeinit._wrld->SPHNUM;//box
+    int ss = odeinit._wrld->S_SPHNUM;
+                     
+    for (int x=0; x<b; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->obj[x].geom[0]);
+        odeinit._wrld->OBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<sb; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->s_obj[x].geom[0]);
+        odeinit._wrld->S_OBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<c; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->cyl_obj[x].cylgeom[0]);
+        odeinit._wrld->cylOBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<sc; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->s_cyl_obj[x].cylgeom[0]);
+        odeinit._wrld->S_cylOBJNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<s; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->sph[x].sphgeom[0]);
+        odeinit._wrld->SPHNUM = 0;
+        odeinit.mutex.post();
+    }
+    for (int x=0; x<ss; x++){
+        odeinit.mutex.wait();
+        dGeomDestroy(odeinit._wrld->s_sph[x].sphgeom[0]);
+        odeinit._wrld->S_SPHNUM = 0;
+        odeinit.mutex.post();
+    }
+             
+}
+
+static int nameToBody(int id, dBodyID& bid, dGeomID& bid2) {
     OdeInit& odeinit = OdeInit::get();
 
     int setBody = 0;
@@ -83,54 +133,7 @@ int nameToBody(int id, dBodyID& bid, dGeomID& bid2) {
 }
 
 
-void deleteObjects() {
-    OdeInit& odeinit = OdeInit::get();
-
-    int b = odeinit._wrld->OBJNUM;//box
-    int sb = odeinit._wrld->S_OBJNUM;
-    int c = odeinit._wrld->cylOBJNUM;//box
-    int sc = odeinit._wrld->S_cylOBJNUM;
-    int s = odeinit._wrld->SPHNUM;//box
-    int ss = odeinit._wrld->S_SPHNUM;
-                     
-    for (int x=0; x<b; x++){
-        odeinit.mutex.wait();
-        dGeomDestroy(odeinit._wrld->obj[x].geom[0]);
-        odeinit._wrld->OBJNUM = 0;
-        odeinit.mutex.post();
-    }
-    for (int x=0; x<sb; x++){
-        odeinit.mutex.wait();
-        dGeomDestroy(odeinit._wrld->s_obj[x].geom[0]);
-        odeinit._wrld->S_OBJNUM = 0;
-        odeinit.mutex.post();
-    }
-    for (int x=0; x<c; x++){
-        odeinit.mutex.wait();
-        dGeomDestroy(odeinit._wrld->cyl_obj[x].cylgeom[0]);
-        odeinit._wrld->cylOBJNUM = 0;
-        odeinit.mutex.post();
-    }
-    for (int x=0; x<sc; x++){
-        odeinit.mutex.wait();
-        dGeomDestroy(odeinit._wrld->s_cyl_obj[x].cylgeom[0]);
-        odeinit._wrld->S_cylOBJNUM = 0;
-        odeinit.mutex.post();
-    }
-    for (int x=0; x<s; x++){
-        odeinit.mutex.wait();
-        dGeomDestroy(odeinit._wrld->sph[x].sphgeom[0]);
-        odeinit._wrld->SPHNUM = 0;
-        odeinit.mutex.post();
-    }
-    for (int x=0; x<ss; x++){
-        odeinit.mutex.wait();
-        dGeomDestroy(odeinit._wrld->s_sph[x].sphgeom[0]);
-        odeinit._wrld->S_SPHNUM = 0;
-        odeinit.mutex.post();
-    }
-             
-}
+#ifdef OLD_RESPONDER
 
 bool OdeWorldManager::respond(const Bottle &command, Bottle &reply) {
     OdeInit& odeinit = OdeInit::get();
@@ -255,6 +258,22 @@ bool OdeWorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 //reply.fromString("ok");
             } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             if (subcmd=="set") {
                 if (setBody == 0 || setBody == 1){
                     double x = command.get(3).asDouble();
@@ -384,6 +403,14 @@ bool OdeWorldManager::respond(const Bottle &command, Bottle &reply) {
                 }
                 //reply.fromString("ok");
             }
+
+
+
+
+
+
+
+
             if (subcmd=="mk"){ //this allows the user to create some objects around the world		
 
                 if (setBody==2){
@@ -853,6 +880,7 @@ bool OdeWorldManager::respond(const Bottle &command, Bottle &reply) {
 	return true;
 }
 
+#endif
 
 void OdeWorldManager::clear() {
     OdeInit& odeinit = OdeInit::get();

@@ -17,10 +17,101 @@
 #include <ode/ode.h>
 #include <string>
 #include "RobotConfig.h"
+#include "WorldOp.h"
+
+#define DENSITY (1.0)		// density of all objects
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
 #endif 
+
+class WorldObject {
+public:
+    virtual dBodyID getBody() const = 0;
+    virtual dGeomID getGeometry() const = 0;
+    virtual bool create(const WorldOp& op, WorldResult& result) {
+        result.setFail("create not implemented yet for this object type");
+        return false;
+    }
+};
+
+typedef dReal real3[3];
+
+class WorldObjectList {
+public:
+    int len;
+    int *counter;
+    real3 *colors;
+
+    WorldObjectList(int len, int& counter, real3 *colors) :
+        len(len),
+        counter(&counter),
+        colors(colors) {
+    }
+
+    virtual WorldObject& get(int index) = 0;
+    virtual const WorldObject& get(int index) const = 0;
+
+    virtual bool create(const WorldOp& op, WorldResult& result) {
+        if (counter==NULL) return false;
+
+        if (!op.location.isValid()) {
+            result.setFail("location not set");
+            return false;
+        }
+
+        int at = *counter;
+        if (at>=len-1) {
+            result.setFail("too many objects");
+            return false;
+        }
+        WorldObject& obj = get(at);
+        if (!obj.create(op,result)) return false;
+        (*counter)++;
+
+        if (op.dynamic.get()) {
+            dBodySetPosition(obj.getBody(),
+                             op.location.get(0),
+                             op.location.get(1),
+                             op.location.get(2));
+        } else {
+            dGeomSetPosition(obj.getGeometry(),
+                             op.location.get(0),
+                             op.location.get(1),
+                             op.location.get(2));
+        }
+
+        if (op.color.isValid()) {
+            if (colors!=NULL) {
+                colors[at][0] = op.color.get(0);
+                colors[at][1] = op.color.get(1);
+                colors[at][2] = op.color.get(2);
+            }
+        }
+        return true;
+    }
+};
+
+template <class T>
+class WorldObjectListOf : public WorldObjectList {
+public:
+    T *store;
+
+    WorldObjectListOf(T *store, int len, int& counter, real3 *colors) :
+        WorldObjectList(len,counter,colors),
+        store(store)
+    {
+    }
+
+    virtual WorldObject& get(int index) {
+        return store[index];
+    }
+
+    virtual const WorldObject& get(int index) const {
+        return store[index];
+    }
+
+};
 
 class worldSimData{ 
 public:	
@@ -96,45 +187,71 @@ public:
 	
 	bool WAITLOADING;
 	bool static_model;
-    struct MyObject {
+    class MyObject : public WorldObject {
+    public:
         dBodyID boxbody;			// the body
         dGeomID geom[GPB];		// geometries representing this body
         dReal size[3];
+
+        virtual dBodyID getBody() const { return boxbody; }
+        virtual dGeomID getGeometry() const { return geom[0]; }
+
+        virtual bool create(const WorldOp& op, WorldResult& result);
     };
 
     MyObject obj[MAXNUM];
     MyObject s_obj[MAXNUM];
 
-    struct MyObject1 {
+    WorldObjectListOf<MyObject> box_static;
+    WorldObjectListOf<MyObject> box_dynamic;
+
+    class MyObject1 : public WorldObject {
+    public:
         dBodyID cylbody;			// the body
         dGeomID cylgeom[GPB];		// geometries representing this body
         dReal radius;
         dReal lenght;
+
+        virtual dBodyID getBody() const { return cylbody; }
+        virtual dGeomID getGeometry() const { return cylgeom[0]; }
     };
 
     MyObject1 cyl_obj[MAXNUM];
     MyObject1 s_cyl_obj[MAXNUM];
 
+    WorldObjectListOf<MyObject1> cylinder_static;
+    WorldObjectListOf<MyObject1> cylinder_dynamic;
+
     int modelTexture[100];
     int s_modelTexture[100];
 
-    struct MyObject2 {
+    class MyObject2 : public WorldObject {
+    public:
         dBodyID body;			// the body
         dGeomID geom;  		// geometries representing this body
+        virtual dBodyID getBody() const { return body; }
+        virtual dGeomID getGeometry() const { return geom; }
     };
     MyObject2 ThreeD_obj[100];
     MyObject2 s_ThreeD_obj[100]; 
 
+    WorldObjectListOf<MyObject2> model_static;
+    WorldObjectListOf<MyObject2> model_dynamic;
 
-    struct MyObject3 {
+    class MyObject3 : public WorldObject {
+    public:
         dBodyID sphbody;			// the body
         dGeomID sphgeom[GPB];		// geometries representing this body
         dReal radius;
+        virtual dBodyID getBody() const { return sphbody; }
+        virtual dGeomID getGeometry() const { return sphgeom[0]; }
     };
 
     MyObject3 sph[MAXNUM];
     MyObject3 s_sph[MAXNUM];
 
+    WorldObjectListOf<MyObject3> sphere_static;
+    WorldObjectListOf<MyObject3> sphere_dynamic;
 
     yarp::os::ConstString texture;
     std::string model_DIR;

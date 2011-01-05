@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <yarp/os/ConstString.h>
 #include <iostream>
+#include "OdeInit.h"
 
 using namespace std;
 using namespace yarp::os;
@@ -319,7 +320,39 @@ worldSim::~worldSim() {
 
 worldSim::worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
                    RobotConfig& config)
-: worldSimData() {
+    : box_dynamic(obj,MAXNUM,OBJNUM,color),
+      box_static(s_obj,MAXNUM,S_OBJNUM,s_color),
+      cylinder_dynamic(cyl_obj,MAXNUM,cylOBJNUM,color1),
+      cylinder_static(s_cyl_obj,MAXNUM,S_cylOBJNUM,s_color1),
+      model_dynamic(ThreeD_obj,MAXNUM,MODEL_NUM,NULL),
+      model_static(s_ThreeD_obj,MAXNUM,s_MODEL_NUM,NULL),
+      sphere_dynamic(sph,MAXNUM,SPHNUM,color2),
+      sphere_static(s_sph,MAXNUM,S_SPHNUM,s_color2)
+{
 	resetSpeeds();
 	init(world, space, X, Y, Z, config);
+}
+
+
+bool worldSim::MyObject::create(const WorldOp& op, WorldResult& result) {
+    if (!op.size.isValid()) {
+        result.setFail("size not set");
+        return false;
+    }
+    size[0] = op.size.get(0);
+    size[1] = op.size.get(1);
+    size[2] = op.size.get(2);
+    OdeInit& odeinit = OdeInit::get();
+    if (op.dynamic.get()) {
+        dMass m;
+        dMassSetZero(&m);
+        boxbody = dBodyCreate (odeinit.world);
+        dMassSetBoxTotal (&m,DENSITY,size[0],size[1],size[2]);
+        dBodySetMass (boxbody,&m);
+    }
+    geom[0] = dCreateBox (odeinit.space,size[0],size[1],size[2]);
+    if (op.dynamic.get()) {
+        dGeomSetBody (geom[0],boxbody);
+    }
+    return true;
 }

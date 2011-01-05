@@ -17,52 +17,64 @@ enum WORLD_OP {
     WORLD_OP_DEL = VOCAB3('d','e','l'),
 };
 
-class WorldOpName {
+class WorldOpDatum {
 public:
     bool valid;
+
+    bool isValid() const {
+        return valid;
+    }
+};
+
+class WorldOpName : public WorldOpDatum {
+public:
     std::string name;
 
-    WorldOpName() { valid = false; }
+    WorldOpName() {}
 
     WorldOpName(const char *name) : name(name) { valid = true; }
+
+    std::string get() const { return name; }
 };
 
-class WorldOpFlag {
+class WorldOpFlag : public WorldOpDatum {
 public:
-    bool valid;
     bool setting;
 
-    WorldOpFlag() { valid = false; }
+    WorldOpFlag() { setting=false; }
 
     WorldOpFlag(bool setting) : setting(setting) { valid = true; }
+
+    bool get() const { return setting; }
 };
 
-class WorldOpIndex {
+class WorldOpIndex : public WorldOpDatum {
 public:
-    bool valid;
     int index;
 
-    WorldOpIndex() { valid = false; }
+    WorldOpIndex() { index = 0; }
 
     WorldOpIndex(int index) : index(index) { valid = true; }
+
+    int get() const { return index; }
 };
 
-class WorldOpScalar {
+class WorldOpScalar : public WorldOpDatum {
 public:
-    bool valid;
     double val;
 
-    WorldOpScalar() { valid = false; }
+    WorldOpScalar() { val = 0; }
 
     WorldOpScalar(double val) : val(val) { valid = true; }
+
+    double get() const { return val; }
 };
 
-class WorldOpTriplet {
+class WorldOpTriplet : public WorldOpDatum {
 public:
-    bool valid;
     double x[3];
 
-    WorldOpTriplet() { valid = false; }
+    WorldOpTriplet() { x[0] = x[1] = x[2] = 0; }
 
     WorldOpTriplet(double x, double y, double z) { 
         valid = true; 
@@ -70,6 +82,9 @@ public:
         this->x[1] = y;
         this->x[2] = z;
     }
+
+    double get(int offset) const { return x[offset]; }
+
 };
 
 class WorldOp {
@@ -86,6 +101,9 @@ public:
     WorldOpFlag dynamic;
     WorldOpFlag rightHanded;
     WorldOpIndex index;
+
+    // for debugging
+    void show() const;
 };
 
 class WorldResult {
@@ -96,6 +114,16 @@ public:
     WorldResult() {
         success = false;
         msg = "";
+    }
+
+    void setOk() {
+        success = true;
+        msg = "";
+    }
+
+    void setFail(const char *msg) {
+        success = false;
+        this->msg = msg;
     }
 };
 

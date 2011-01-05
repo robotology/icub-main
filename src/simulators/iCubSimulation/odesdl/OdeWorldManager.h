@@ -13,13 +13,16 @@ public:
         a = b = c = 0;
     }
 
+#ifdef OLD_RESPONDER
     // will need to move logic from respond to apply asap
     virtual bool respond(const yarp::os::Bottle &command, 
                          yarp::os::Bottle &reply);
+#endif
 
     virtual void clear();
 
-    virtual void apply(const WorldOp& op, WorldResult& result) {}
+    // will only be used when respond() is removed.
+    virtual void apply(const WorldOp& op, WorldResult& result);
 
 private:
     int num;
