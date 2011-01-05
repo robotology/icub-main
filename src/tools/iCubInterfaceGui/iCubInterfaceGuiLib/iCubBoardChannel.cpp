@@ -24,7 +24,7 @@ const char* iCubBLLChannel::mRowNames[]=
     "!Encoder_latency_timeout",         // If encoder latency > threshold (5s) raise an error
 
     // device generated
-    "!~Is_Fault_Ok",               // Status of the fault pin, general error
+    "!Is_Fault_Ok",               // Status of the fault pin, general error
     "!Fault_undervoltage",        // Power supply voltage is below minimum
     "!Fault_overload",            // Hardware fault triggered by the operational amplifier
     "!Fault_overcurrent",	     // Current exceeds maximum value
@@ -107,7 +107,7 @@ const char* iCubAnalogChannel::mRowNames[]=
     "!Status_messages_latency_timeout", // If status messages latency > threshold (5s) raise an error
 
     // device generated
-    "!~Is_Fault_Ok",               // Status of the fault pin, general error
+    "!Is_Fault_Ok",               // Status of the fault pin, general error
     "!Fault_undervoltage",        // Power supply voltage is below minimum
     "!Fault_overload",            // Hardware fault triggered by the operational amplifier
     "!Fault_overcurrent",	     // Current exceeds maximum value

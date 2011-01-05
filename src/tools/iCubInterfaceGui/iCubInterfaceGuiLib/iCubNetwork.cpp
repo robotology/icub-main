@@ -16,7 +16,7 @@
 
 const char* iCubNetwork::mRowNames[]=
 {
-        "Network name",
+        "Network",
         "Device identifier",// Name of the yarp can device: pcan/cfw2
         "Network id",	    // Usually a number for each device, from 0 to … n
         "Driver Rx ovf",	// Rx buffer overflow in device driver (# messages)

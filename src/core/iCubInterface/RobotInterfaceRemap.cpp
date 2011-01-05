@@ -133,10 +133,6 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
     deviceP.put("canbusdevice", canbusdevice.c_str());
 
-    printf("\n\n\n\n\n\n\n\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
-    printf("$$$$$$$$$$$$$$$$$$ %s $$$$$$$$$$$$$$$$$$$$$$$$$$\n",deviceP.toString().c_str());
-    printf("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n\n\n\n\n\n\n\n\n");
-
     driver.open(deviceP);
     if (!driver.isValid())
         return false;

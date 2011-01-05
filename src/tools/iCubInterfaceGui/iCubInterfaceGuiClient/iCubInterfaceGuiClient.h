@@ -157,8 +157,8 @@ public:
         
         if (mPort.write(bot,rep))
         {
-            printf("%s\n",rep.toString().c_str());
-            fflush(stdout);
+            //printf("%s\n",rep.toString().c_str());
+            //fflush(stdout);
 
             if (rep.size()>1)
             {
