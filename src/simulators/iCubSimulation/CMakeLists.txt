@@ -2,8 +2,8 @@ SET(PROJECTNAME iCub_SIM)
 
 PROJECT(${PROJECTNAME})
 
-FILE(GLOB folder_source *.cpp)
-FILE(GLOB folder_header *.h)
+FILE(GLOB folder_source EyeLidsController.cpp main.cpp)
+FILE(GLOB folder_header EyeLidsController.h)
 
 # include code for network wrapper
 FILE(GLOB_RECURSE wrapper_source wrapper/*.cpp)
