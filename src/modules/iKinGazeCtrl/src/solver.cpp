@@ -270,8 +270,8 @@ void EyePinvRefGen::run()
             // with gyro readouts (VOR): to this end, compute the
             // effect of gyro rates on the fprelv;
             // however, the gyro readouts are affected by the
-            // delay that exists between the velocity command and
-            // the gyro feedbacks which turns to be significative
+            // delay that exists between the velocity command (get_v())
+            // and the gyro feedbacks which turns to be significative
             // compared to the the feedforward term that is computed
             // directly on the basis of current velocity command.
 
