@@ -45,12 +45,11 @@ public:
 };
 
 bool OdeLink::checkObject(bool forCreate) {
-    printf("HELLO\n");
     op.show();
     OdeInit& odeinit = OdeInit::get();
 
-    bid = (dBodyID)0;
-    gid = (dGeomID)0;
+    bid = NULL;
+    gid = NULL;
     store = NULL;
     object = NULL;
 
@@ -60,6 +59,30 @@ bool OdeLink::checkObject(bool forCreate) {
         bid = odeinit._wrld->Box;
     } else if (kind=="ball") {
         bid = odeinit._wrld->ballBody;
+    } else if (kind=="hand") {
+        if (op.rightHanded.get()) {
+             if (
+                odeinit._iCub->actRHand=="on") { 
+                bid = odeinit._iCub->body[11]; 
+                printf("Full left hand\n");
+            } else {
+                bid = odeinit._iCub->r_hand; 
+                printf("slim left hand\n");
+            }
+        } else {
+            if (
+                odeinit._iCub->actLHand=="on") { 
+                bid = odeinit._iCub->body[10]; 
+                printf("Full left hand\n");
+            } else {
+                bid = odeinit._iCub->l_hand; 
+                printf("slim left hand\n");
+            }
+        }
+    }
+
+    if (bid!=NULL) {
+        return true;
     }
 
     if (!forCreate) {
