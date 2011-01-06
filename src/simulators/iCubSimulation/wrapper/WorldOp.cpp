@@ -76,6 +76,8 @@ void WorldOp::show() const {
     ::show(active);
     printf("  index: ");
     ::show(index);
+    printf("  parameter: ");
+    ::show(parameter);
     printf("  rightHanded?: ");
     ::show(rightHanded,"right","left");
     printf("  modelName: ");
@@ -90,6 +92,8 @@ void WorldResult::show() {
     printf("  msg: %s\n", msg.c_str());
     printf("  location: ");
     ::show(location);
+    printf("  path: ");
+    ::show(path);
  }
 
 

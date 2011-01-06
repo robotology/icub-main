@@ -104,6 +104,7 @@ public:
     WorldOpFlag active;
     WorldOpFlag dynamic;
     WorldOpFlag rightHanded;
+    WorldOpFlag parameter;
     WorldOpName modelName;
     WorldOpName modelTexture;
 
@@ -116,6 +117,7 @@ public:
     bool success;
     std::string msg;
     WorldOpTriplet location;
+    WorldOpName path;
 
     WorldResult() {
         success = false;

@@ -167,6 +167,9 @@ void consumeKind(ManagerState& state) {
         state.op.dynamic = WorldOpFlag(true);
         state.op.rightHanded = WorldOpFlag(true);
         break;
+    case VOCAB4('m','d','i','r'):
+        state.op.parameter = WorldOpFlag(true);
+        break;
     case VOCAB4('t','a','b','l'):
     case VOCAB4('c','u','b','e'):
     case VOCAB4('b','a','l','l'):
@@ -210,9 +213,17 @@ bool doGet(ManagerState& state) {
 }
 
 bool doSet(ManagerState& state) {
-    consumeKind(state);
-    state.consume(state.op.index,"index");
-    state.consume(state.op.location,"location");
+    consumeObject(state);
+    if (state.op.parameter.get()) {
+        if (state.op.kind.get() == "mdir") {
+            state.consume(state.op.modelName,"model path");
+        } else {
+            state.result.setFail("parameter not recognized");
+            return false;
+        }
+    } else {
+        state.consume(state.op.location,"location");
+    }
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
     }
@@ -329,6 +340,8 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
                 reply.addDouble(result.location.get(0));
                 reply.addDouble(result.location.get(1));
                 reply.addDouble(result.location.get(2));
+            } else if (result.path.isValid()) {
+                reply.addString(result.path.get().c_str());
             } else {
                 reply.addVocab(VOCAB2('o','k'));
             }

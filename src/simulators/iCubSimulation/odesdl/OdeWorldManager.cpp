@@ -114,6 +114,17 @@ bool OdeLink::checkObject(bool forCreate) {
 void OdeLink::doGet() {
     OdeInit& odeinit = OdeInit::get();
 
+    if (op.parameter.get()) {
+        if (op.kind.get()=="mdir") {
+            result.path = WorldOpName(odeinit._wrld->model_DIR.c_str());
+            result.setOk();
+            return;
+        } else {
+            result.setFail("parameter not recognized");
+            return;
+        }
+    }
+
     if (!checkObject()) return;
     if (bid!=NULL) {
         odeinit.mutex.wait();
@@ -137,7 +148,19 @@ void OdeLink::doGet() {
 void OdeLink::doSet() {
     OdeInit& odeinit = OdeInit::get();
 
+    if (op.parameter.get()) {
+        if (op.kind.get()=="mdir") {
+            odeinit._wrld->model_DIR = op.modelName.get().c_str();
+            result.setOk();
+            return;
+        } else {
+            result.setFail("parameter not recognized");
+            return;
+        }
+    }
+
     if (!checkObject()) return;
+
     if (!op.location.isValid()) {
         result.setFail("no location set");
         return;
