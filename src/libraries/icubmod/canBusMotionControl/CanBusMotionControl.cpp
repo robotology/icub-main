@@ -3512,6 +3512,56 @@ bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* v
 	return true;
 }
 
+bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, double* value)
+{
+	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+  	if (!ENABLED(axis))
+    {
+		//@@@ TODO: check here
+		// value = 0;
+        return true;
+    }
+ 
+	CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        fprintf(stderr, "More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        return false;
+    }
+
+    r.startPacket();
+    r.addMessage (id, axis, CAN_GET_DEBUG_PARAM); 
+	*((unsigned char *)(r._writeBuffer[0].getData()+1)) = index;
+    r.writePacket();
+
+	ThreadTable2 *t=threadPool->getThreadTable(id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+
+	CanMessage *m=t->get(0);
+    if (m==0)
+    {
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
+
+	unsigned char *data;
+	data=m->getData()+1;
+	*value= *((short *)(data));
+
+	t->clear();
+
+	return true;
+}
+
 bool CanBusMotionControl::getOutputsRaw(double *outs)
 {
     CanBusResources& r = RES(system_resources);
@@ -3602,6 +3652,14 @@ bool CanBusMotionControl::setParameterRaw(int axis, unsigned int type, double va
 
     return _writeWord16 (type, axis, S_16(value));
 
+}
+
+bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, double value)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+	return _writeByteWords16 (CAN_SET_DEBUG_PARAM, axis, S_16(index), S_16(value),0,0);
 }
 
 bool CanBusMotionControl::setOutputsRaw(const double *v)

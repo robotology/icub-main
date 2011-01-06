@@ -69,7 +69,8 @@ bool yarp::dev::DebugInterfaceClient::open(Searchable& config)
         Value("udp"),
         "default carrier for streaming robot state").asString().c_str();
 
-    if (local != "") {
+    if (local != "")
+	{
         ConstString s1 = local;
         s1 += "/rpc:o";
         rpc_p.open(s1.c_str());
@@ -80,34 +81,33 @@ bool yarp::dev::DebugInterfaceClient::open(Searchable& config)
     }
 
     bool connectionProblem = false;
-    if (remote != "") {
+    if (remote != "")
+	{
         ConstString s1 = remote;
         s1 += "/rpc:i";
         ConstString s2 = local;
         s2 += "/rpc:o";
         bool ok = false;
         ok=Network::connect(s2.c_str(), s1.c_str());
-        if (!ok) {
-            printf("Problem connecting to %s, is the remote device available?\n", s1.c_str());
-            connectionProblem = true;
-        }
+        if (!ok)
+			{
+				printf("Problem connecting to %s, is the remote device available?\n", s1.c_str());
+				connectionProblem = true;
+			}
         s1 = remote;
         s1 += "/command:i";
         s2 = local;
         s2 += "/command:o";
         ok = Network::connect(s2.c_str(), s1.c_str(), carrier);
-        if (!ok) {
-            printf("Problem connecting to %s, is the remote device available?\n", s1.c_str());
-            connectionProblem = true;
-        }
-
-		if (!ok) {
-            printf("Problem connecting to %s, is the remote device available?\n", s1.c_str());
-            connectionProblem = true;
-        }
+        if (!ok) 
+			{
+				printf("Problem connecting to %s, is the remote device available?\n", s1.c_str());
+				connectionProblem = true;
+			}
     }
 
-    if (connectionProblem) {
+    if (connectionProblem)
+	{
         return false;
     }
 
@@ -146,7 +146,7 @@ bool yarp::dev::DebugInterfaceClient::setParameter(int j, unsigned int type, dou
 { 
     Bottle cmd, response;
     cmd.addVocab(VOCAB_SET);
-    cmd.addVocab(VOCAB_DEBUG_PARAMETER);
+    cmd.addVocab(VOCAB_GENERIC_PARAMETER);
     cmd.addInt(j);
 	cmd.addInt(type);
 	cmd.addDouble(t);
@@ -159,14 +159,14 @@ bool yarp::dev::DebugInterfaceClient::getParameter(int j, unsigned int type, dou
 { 
     Bottle cmd, resp;
     cmd.addVocab(VOCAB_GET);
-    cmd.addVocab(VOCAB_DEBUG_PARAMETER);
+    cmd.addVocab(VOCAB_GENERIC_PARAMETER);
     cmd.addInt(j);
 	cmd.addInt(type);
 
     bool ok = rpc_p.write(cmd, resp);
 
     if (  (resp.get(0).asVocab()==VOCAB_IS)
-		&&(resp.get(1).asInt()==VOCAB_DEBUG_PARAMETER)
+		&&(resp.get(1).asInt()==VOCAB_GENERIC_PARAMETER)
         &&(resp.get(2).asInt()==j)
         &&(resp.get(3).asInt()==type))
     {
@@ -176,6 +176,39 @@ bool yarp::dev::DebugInterfaceClient::getParameter(int j, unsigned int type, dou
     return ok;
 }
 
+bool yarp::dev::DebugInterfaceClient::setDebugParameter(int j, unsigned int index, double t)
+{ 
+    Bottle cmd, response;
+    cmd.addVocab(VOCAB_SET);
+    cmd.addVocab(VOCAB_DEBUG_PARAMETER);
+    cmd.addInt(j);
+	cmd.addInt(index);
+	cmd.addDouble(t);
+
+    bool ok = rpc_p.write(cmd, response);
+    return CHECK_FAIL(ok, response);
+}
+
+bool yarp::dev::DebugInterfaceClient::getDebugParameter(int j, unsigned int index, double *t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_PARAMETER);
+    cmd.addInt(j);
+	cmd.addInt(index);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+		&&(resp.get(1).asInt()==VOCAB_DEBUG_PARAMETER)
+        &&(resp.get(2).asInt()==j)
+        &&(resp.get(3).asInt()==index))
+    {
+        ok=ok&&true;
+        *t=resp.get(4).asDouble();
+    }
+    return ok;
+}
 
 // implementation of CommandsHelper
 yarp::dev::DriverCreator *createDebugInterfaceClient() {

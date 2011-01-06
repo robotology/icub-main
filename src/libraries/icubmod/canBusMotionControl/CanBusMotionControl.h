@@ -629,6 +629,8 @@ public:
     // IDebug Interface
 	virtual bool setParameterRaw(int j, unsigned int type, double value);
 	virtual bool getParameterRaw(int j, unsigned int type, double* value);
+	virtual bool setDebugParameterRaw(int j, unsigned int index, double value);
+	virtual bool getDebugParameterRaw(int j, unsigned int index, double* value);
 
     /////// Limits
     virtual bool setLimitsRaw(int axis, double min, double max);

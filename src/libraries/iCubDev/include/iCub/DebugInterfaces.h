@@ -44,6 +44,7 @@
 #include <stdio.h> // for printf
 
 // additional vocabs defined for the IDebug interface.
+#define VOCAB_GENERIC_PARAMETER VOCAB4('g','e','n','p')
 #define VOCAB_DEBUG_PARAMETER VOCAB4('d','b','g','p')
 
 /* LATER: is it likely that some of these would move into iCub::dev namespace? */
@@ -522,14 +523,28 @@ public:
     virtual ~IDebugInterface() {}
 
     /* Set a generic parameter (for debug)
+     * @param type is the CAN code representing the command message 
      * @return true/false on success/failure
      */
     virtual bool setParameter(int j, unsigned int type, double value)=0;
 
     /* Get a generic parameter (for debug)
+     * @param type is the CAN code representing the command message 
      * @return true/false on success/failure
      */
     virtual bool getParameter(int j, unsigned int type, double* value)=0;
+
+    /* Set a generic parameter (for debug)
+	 * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool setDebugParameter(int j, unsigned int index, double value)=0;
+
+    /* Get a generic parameter (for debug)
+	 * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool getDebugParameter(int j, unsigned int index, double* value)=0;
 };
 
 class yarp::dev::IDebugInterfaceRaw {
@@ -537,14 +552,28 @@ public:
     virtual ~IDebugInterfaceRaw() {}
 
     /* Set a generic parameter (for debug)
+	 * @param type is the CAN code representing the command message 
      * @return true/false on success/failure
      */
     virtual bool setParameterRaw(int j, unsigned int type, double value)=0;
 
     /* Get a generic parameter (for debug)
+     * @param type is the CAN code representing the command message 
      * @return true/false on success/failure
      */
     virtual bool getParameterRaw(int j, unsigned int type, double* value)=0;
+
+    /* Set a generic parameter (for debug)
+     * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool setDebugParameterRaw(int j, unsigned int index, double value)=0;
+
+    /* Get a generic parameter (for debug)
+	 * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool getDebugParameterRaw(int j, unsigned int index, double* value)=0;
 };
 
 class yarp::dev::ImplementDebugInterface: public IDebugInterface
@@ -559,6 +588,8 @@ public:
     ~ImplementDebugInterface();
 	bool setParameter(int j, unsigned int type, double value);
     bool getParameter(int j, unsigned int type, double* value);
+	bool setDebugParameter(int j, unsigned int index, double value);
+    bool getDebugParameter(int j, unsigned int index, double *value);
 };
 
 #endif /* __DEBUGINTERFACES__ */

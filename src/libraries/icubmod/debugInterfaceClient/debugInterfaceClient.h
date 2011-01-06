@@ -49,6 +49,8 @@ public:
     virtual bool close();
 	bool setParameter(int j, unsigned int type, double t);
     bool getParameter(int j, unsigned int type, double *t);
+	bool setDebugParameter(int j, unsigned int index, double t);
+    bool getDebugParameter(int j, unsigned int index, double *t);
 };
 
 #endif

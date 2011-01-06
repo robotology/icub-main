@@ -15,6 +15,18 @@ bool yarp::dev::ImplementDebugInterface::getParameter(int j, unsigned int type, 
     return raw->getParameterRaw(j, type, value);
 }
 
+bool yarp::dev::ImplementDebugInterface::setDebugParameter(int j, unsigned int index, double value)
+{
+	int k=castToMapper2(helper)->toHw(j);
+	return raw->setDebugParameterRaw(j, index, value);
+}
+
+bool yarp::dev::ImplementDebugInterface::getDebugParameter(int j, unsigned int index, double* value)
+{
+	int k=castToMapper2(helper)->toHw(j);
+    return raw->getDebugParameterRaw(j, index, value);
+}
+
 yarp::dev::ImplementDebugInterface::ImplementDebugInterface(IDebugInterfaceRaw *r)
 {
     raw=r;

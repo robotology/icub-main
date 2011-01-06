@@ -891,6 +891,15 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                              case VOCAB_DEBUG_PARAMETER:
                                 {
                                     int j     = cmd.get(2).asInt();
+                                    int index = cmd.get(3).asInt();
+									double val   = cmd.get(4).asDouble();
+                                    ok = iDbg->setDebugParameter(j, index, val);
+                                }
+                                break;
+
+							case VOCAB_GENERIC_PARAMETER:
+                                {
+                                    int j     = cmd.get(2).asInt();
                                     int param = cmd.get(3).asInt();
 									double val   = cmd.get(4).asDouble();
                                     ok = iDbg->setParameter(j, param, val);
@@ -1250,6 +1259,17 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                         switch(cmd.get(1).asVocab()) 
                             {
 							case VOCAB_DEBUG_PARAMETER:
+                                {
+                                    int j     = cmd.get(2).asInt();
+                                    int index = cmd.get(3).asInt();
+									ok = iDbg->getDebugParameter(j, index, &dtmp);
+									response.addInt(j);
+									response.addInt(index);
+									response.addDouble(dtmp);
+                                }
+                                break;
+
+							case VOCAB_GENERIC_PARAMETER:
                                 {
                                     int j     = cmd.get(2).asInt();
                                     int param = cmd.get(3).asInt();

@@ -2636,6 +2636,38 @@ public:
         return false;
 	}
 
+	virtual bool getDebugParameter(int j, unsigned int index, double *t)
+	{
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getDebugParameter(off+base, index, t);
+        }		
+        return false;
+	}
+
+	virtual bool setDebugParameter(int j, unsigned int index, double t)
+	{
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->setDebugParameter(off+base, index, t);
+        }		
+        return false;
+	}
+
     virtual bool setOutput(int j, double v)
     {
         int off=device.lut[j].offset;
