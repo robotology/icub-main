@@ -110,29 +110,38 @@ bool OdeLink::checkObject(bool forCreate) {
 
 
 void OdeLink::doGet() {
+    OdeInit& odeinit = OdeInit::get();
+
     if (!checkObject()) return;
     if (bid!=NULL) {
+        odeinit.mutex.wait();
         const dReal *coords = dBodyGetPosition(bid);
         result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
         result.setOk();
+        odeinit.mutex.post();
         return;
     }
     if (gid!=NULL) {
+        odeinit.mutex.wait();
         const dReal *coords = dGeomGetPosition(gid);
         result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
         result.setOk();
+        odeinit.mutex.post();
         return;
     }
     result.setFail("no object found");
 }
 
 void OdeLink::doSet() {
+    OdeInit& odeinit = OdeInit::get();
+
     if (!checkObject()) return;
     if (!op.location.isValid()) {
         result.setFail("no location set");
         return;
     }
     if (bid!=NULL) {
+        odeinit.mutex.wait();
         dBodySetPosition(bid,
                          op.location.get(0),
                          op.location.get(1),
@@ -140,14 +149,17 @@ void OdeLink::doSet() {
         dBodySetLinearVel(bid,0.0,0.0,0.0);
         dBodySetAngularVel(bid,0.0,0.0,0.0);
         result.setOk();
+        odeinit.mutex.post();
         return;
     }
     if (gid!=NULL) {
+        odeinit.mutex.wait();
         dGeomSetPosition(gid,
                          op.location.get(0),
                          op.location.get(1),
                          op.location.get(2));
         result.setOk();
+        odeinit.mutex.post();
         return;
     }
     result.setFail("no object found");
@@ -168,9 +180,9 @@ void OdeLink::doMake() {
 }
 
 void OdeLink::doGrab() {
-    if (!checkObject()) return;
-
     OdeInit& odeinit = OdeInit::get();
+
+    if (!checkObject()) return;
 
     if (!op.rightHanded.isValid()) {
         result.setFail("hand not set");
@@ -199,6 +211,7 @@ void OdeLink::doGrab() {
         return;
     }
 
+    odeinit.mutex.wait();
     if (active) {
         if (bid!=NULL) {
             if (left) {
@@ -220,11 +233,14 @@ void OdeLink::doGrab() {
             dJointDestroy(odeinit._iCub->grab);
         }
     }
+    odeinit.mutex.post();
     result.setOk();
 }
 
 
 void OdeLink::doRotate() {
+    OdeInit& odeinit = OdeInit::get();
+
     if (!checkObject()) return;
     if (!op.rotation.isValid()) {
         result.setFail("no rotation set");
@@ -247,20 +263,30 @@ void OdeLink::doRotate() {
     
     dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
     dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
+    odeinit.mutex.wait();
     dGeomSetRotation(object->getGeometry(),Rtmp2);
+    odeinit.mutex.post();
     result.setOk();
 }
 
 void OdeLink::doDelete() {
-    result.setFail("delete operation not implemented");
-    /*
+    OdeInit& odeinit = OdeInit::get();
+
     if (op.kind.get() == "all") {
-        deleteObjects();
+        odeinit.mutex.wait();
+        odeinit._wrld->box_dynamic.clear();
+        odeinit._wrld->box_static.clear();
+        odeinit._wrld->cylinder_dynamic.clear();
+        odeinit._wrld->cylinder_static.clear();
+        odeinit._wrld->model_dynamic.clear();
+        odeinit._wrld->model_static.clear();
+        odeinit._wrld->sphere_dynamic.clear();
+        odeinit._wrld->sphere_static.clear();
+        odeinit.mutex.post();
         result.setOk();
         return;
     }
     result.setFail("delete operation implemented only for target: all");
-    */
 }
 
 void OdeLink::apply() {

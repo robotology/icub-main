@@ -94,6 +94,15 @@ public:
     bool inRange(int index) const {
         return index>=0 && index<(*counter);
     }
+
+    void clear() {
+        for (int i=0; i<*counter; i++) {
+            // shouldn't bodies be destroyed as well?
+            // original code doesn't do this, so maybe it is ok?
+            dGeomDestroy(get(i).getGeometry());
+        }
+        *counter = 0;
+    }
 };
 
 template <class T>
