@@ -273,7 +273,7 @@ void EyePinvRefGen::run()
             // delay that exists between the velocity command and
             // the gyro feedbacks which turns to be significative
             // compared to the the feedforward term that is computed
-            // directly on the current velocity command.
+            // directly on the basis of current velocity command.
 
             commData->get_compv()=pinv(eyesJ)*fprelv;
             qd=I->integrate(v-commData->get_compv());
