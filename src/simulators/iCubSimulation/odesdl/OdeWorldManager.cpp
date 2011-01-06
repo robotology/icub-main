@@ -89,39 +89,68 @@ bool OdeLink::checkObject(bool forCreate) {
         return false;
     }
 
+    if (!forCreate) {
+        int index = op.index.get()-1;
+        if (!store->inRange(index)) {
+            result.setFail("out of range");
+            return false;
+        }
+        
+        WorldObject& obj = store->get(index);
+        if (op.dynamic.get()) {
+            bid = obj.getBody();
+        } else {
+            gid = obj.getGeometry();
+        }
+        object = &obj;
+    }
+
     return true;
 }
 
 
 void OdeLink::doGet() {
     if (!checkObject()) return;
-    if (store==NULL) {
+    if (bid!=NULL) {
         const dReal *coords = dBodyGetPosition(bid);
         result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
         result.setOk();
         return;
     }
-    int index = op.index.get()-1;
-    if (!store->inRange(index)) {
-        result.setFail("out of range");
-        return;
-    }
-    WorldObject& obj = store->get(index);
-    if (op.dynamic.get()) {
-        const dReal *coords = dBodyGetPosition(obj.getBody());
-        result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
-        result.setOk();
-        return;
-    } else {
-        const dReal *coords = dGeomGetPosition(obj.getGeometry());
+    if (gid!=NULL) {
+        const dReal *coords = dGeomGetPosition(gid);
         result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
         result.setOk();
         return;
     }
+    result.setFail("no object found");
 }
 
 void OdeLink::doSet() {
-    result.setFail("set operation not implemented");
+    if (!checkObject()) return;
+    if (!op.location.isValid()) {
+        result.setFail("no location set");
+        return;
+    }
+    if (bid!=NULL) {
+        dBodySetPosition(bid,
+                         op.location.get(0),
+                         op.location.get(1),
+                         op.location.get(2));
+        dBodySetLinearVel(bid,0.0,0.0,0.0);
+        dBodySetAngularVel(bid,0.0,0.0,0.0);
+        result.setOk();
+        return;
+    }
+    if (gid!=NULL) {
+        dGeomSetPosition(gid,
+                         op.location.get(0),
+                         op.location.get(1),
+                         op.location.get(2));
+        result.setOk();
+        return;
+    }
+    result.setFail("no object found");
 }
 
 void OdeLink::doMake() {
@@ -143,7 +172,30 @@ void OdeLink::doGrab() {
 }
 
 void OdeLink::doRotate() {
-    result.setFail("rotate operation not implemented");
+    if (!checkObject()) return;
+    if (!op.rotation.isValid()) {
+        result.setFail("no rotation set");
+        return;
+    }
+    if (object==NULL) {
+        result.setFail("no geometry found");
+        return;
+    }
+
+    dMatrix3 Rtx,Rty,Rtz, Rtmp1,Rtmp2;
+    
+    double rotx = (op.rotation.get(0) * M_PI) / 180;
+    double roty = (op.rotation.get(1) * M_PI) / 180;
+    double rotz = (op.rotation.get(2) * M_PI) / 180;
+    
+    dRFromAxisAndAngle(Rtx,1,0,0,rotx);
+    dRFromAxisAndAngle(Rty,0,1,0,roty);
+    dRFromAxisAndAngle(Rtz,0,0,1,rotz);
+    
+    dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
+    dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
+    dGeomSetRotation(object->getGeometry(),Rtmp2);
+    result.setOk();
 }
 
 void OdeLink::doDelete() {
