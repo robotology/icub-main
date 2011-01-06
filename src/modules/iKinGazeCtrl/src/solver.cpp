@@ -268,7 +268,12 @@ void EyePinvRefGen::run()
 
             // this is the place where introduce some data fusion
             // with gyro readouts (VOR): to this end, compute the
-            // effect of gyro rates on the fprelv
+            // effect of gyro rates on the fprelv;
+            // however, the gyro readouts are affected by the
+            // delay that exists between the velocity command and
+            // the gyro feedbacks which turns to be significative
+            // compared to the the feedforward term that is computed
+            // directly on the current velocity command.
 
             commData->get_compv()=pinv(eyesJ)*fprelv;
             qd=I->integrate(v-commData->get_compv());
