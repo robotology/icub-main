@@ -199,16 +199,17 @@ bool doSet(ManagerState& state) {
 bool doMake(ManagerState& state) {
     consumeKind(state);
     std::string name = state.op.kind.name;
-    if (!(name=="box"||name=="cyl"||name=="sph")) 
+    if (!(name=="box"||name=="cyl"||name=="sph")) {
         state.result.setFail("cannot create object of requested type");
         return false;
-    state.consume(state.op.location,"location");
+    }
     if (name == "box") {
         state.consume(state.op.size,"size");
     }
     if (name == "cyl" || name == "sph") {
         state.consume(state.op.radius,"radius");
     }
+    state.consume(state.op.location,"location");
     state.consume(state.op.color,"color");
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
@@ -290,7 +291,13 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
         return true;
     } else {
         if (reply.size()==0) {
-            reply.addVocab(VOCAB2('o','k'));
+            if (result.location.isValid()) {
+                reply.addDouble(result.location.get(0));
+                reply.addDouble(result.location.get(1));
+                reply.addDouble(result.location.get(2));
+            } else {
+                reply.addVocab(VOCAB2('o','k'));
+            }
         }
     }
     return true;

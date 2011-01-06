@@ -21,6 +21,8 @@ class WorldOpDatum {
 public:
     bool valid;
 
+    WorldOpDatum() { valid = false; }
+
     bool isValid() const {
         return valid;
     }
@@ -110,6 +112,7 @@ class WorldResult {
 public:
     bool success;
     std::string msg;
+    WorldOpTriplet location;
 
     WorldResult() {
         success = false;
@@ -125,6 +128,8 @@ public:
         success = false;
         this->msg = msg;
     }
+
+    void show();
 };
 
 #endif

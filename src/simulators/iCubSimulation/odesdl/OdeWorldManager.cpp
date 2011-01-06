@@ -33,7 +33,7 @@ public:
         store = NULL;
     }
 
-    bool checkObject();
+    bool checkObject(bool forCreate = false);
     
     void doGet();
     void doSet();
@@ -44,7 +44,7 @@ public:
     void apply();
 };
 
-bool OdeLink::checkObject() {
+bool OdeLink::checkObject(bool forCreate) {
     OdeInit& odeinit = OdeInit::get();
 
     bid = (dBodyID)0;
@@ -60,12 +60,12 @@ bool OdeLink::checkObject() {
         bid = odeinit._wrld->ballBody;
     }
 
-    /*
-    if (bid==-1 && !op.index.isActive()) {
-        result.setFail("object without index is not known");
-        return false;
+    if (!forCreate) {
+        if ((!bid) && !op.index.isValid()) {
+            result.setFail("object without index is not known");
+            return false;
+        }
     }
-    */
 
     if (!op.dynamic.isValid()) {
         result.setFail("do not know if object is dynamic or static");
@@ -95,23 +95,29 @@ bool OdeLink::checkObject() {
 
 void OdeLink::doGet() {
     if (!checkObject()) return;
-    /*
-    if (!needIndex) {
+    if (store==NULL) {
         const dReal *coords = dBodyGetPosition(bid);
-        reply.addDouble(coords[0]);
-        reply.addDouble(coords[1]);
-        reply.addDouble(coords[2]);
+        result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
+        result.setOk();
         return;
     }
-    if (needIndex) {
-        if (!op.index.isActive()) {
-            result.setFail("object needs index");
-            return;
-        }
-        int index = op.index.get();
+    int index = op.index.get()-1;
+    if (!store->inRange(index)) {
+        result.setFail("out of range");
+        return;
     }
-    */
-    result.setFail("get operation not implemented");
+    WorldObject& obj = store->get(index);
+    if (op.dynamic.get()) {
+        const dReal *coords = dBodyGetPosition(obj.getBody());
+        result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
+        result.setOk();
+        return;
+    } else {
+        const dReal *coords = dGeomGetPosition(obj.getGeometry());
+        result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
+        result.setOk();
+        return;
+    }
 }
 
 void OdeLink::doSet() {
@@ -119,7 +125,7 @@ void OdeLink::doSet() {
 }
 
 void OdeLink::doMake() {
-    if (!checkObject()) return;
+    if (!checkObject(true)) return;
     if (store==NULL) {
         result.setFail("cannot create that kind of object");
         return;
@@ -179,6 +185,7 @@ void OdeLink::apply() {
         result.setFail("unrecognized command");
         break;
     }
+    result.show();
     ODE_access.post();
 }
 

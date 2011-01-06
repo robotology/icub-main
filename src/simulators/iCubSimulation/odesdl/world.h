@@ -90,6 +90,10 @@ public:
         }
         return true;
     }
+
+    bool inRange(int index) const {
+        return index>=0 && index<(*counter);
+    }
 };
 
 template <class T>

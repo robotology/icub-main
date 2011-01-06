@@ -78,6 +78,15 @@ void WorldOp::show() const {
     ::show(rightHanded,"right","left");
 }
 
+void WorldResult::show() {
+    printf("Result:\n");
+    printf("  success: %s\n", success?"true":"false");
+    printf("  msg: %s\n", msg.c_str());
+    printf("  location: ");
+    ::show(location);
+ }
+
+
 
 
 
