@@ -3538,6 +3538,7 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
     r.startPacket();
     r.addMessage (id, axis, CAN_GET_DEBUG_PARAM); 
 	*((unsigned char *)(r._writeBuffer[0].getData()+1)) = index;
+	r._writeBuffer[0].setLen(2);
     r.writePacket();
 
 	ThreadTable2 *t=threadPool->getThreadTable(id);
