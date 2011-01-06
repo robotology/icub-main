@@ -168,8 +168,61 @@ void OdeLink::doMake() {
 }
 
 void OdeLink::doGrab() {
-    result.setFail("grab operation not implemented");
+    if (!checkObject()) return;
+
+    OdeInit& odeinit = OdeInit::get();
+
+    if (!op.rightHanded.isValid()) {
+        result.setFail("hand not set");
+        return;
+    }
+    bool right = op.rightHanded.get();
+    bool left = !right;
+
+    if (left && odeinit._iCub->actLHand!="off") {
+        result.setFail("left hand must be disabled, cannot use grab with fingers");
+        return;
+    }
+    if (right && odeinit._iCub->actRHand!="off") {
+        result.setFail("right hand must be disabled, cannot use grab with fingers");
+        return;
+    }
+
+    if (!op.active.isValid()) {
+        result.setFail("activity flag not set");
+        return;
+    }
+    bool active = op.active.get();
+
+    if (bid==NULL) {
+        result.setFail("grab requires a dynamic object");
+        return;
+    }
+
+    if (active) {
+        if (bid!=NULL) {
+            if (left) {
+                odeinit._iCub->grab = dJointCreateFixed(odeinit.world,0);
+                dJointAttach (odeinit._iCub->grab,odeinit._iCub->l_hand,bid);
+                dJointSetFixed(odeinit._iCub->grab);
+            }
+            if (right) {
+                odeinit._iCub->grab1 = dJointCreateFixed(odeinit.world,0);
+                dJointAttach (odeinit._iCub->grab1,odeinit._iCub->r_hand,bid);
+                dJointSetFixed(odeinit._iCub->grab1);
+            }
+        }
+    } else {
+        if (left) {
+            dJointDestroy(odeinit._iCub->grab);
+        }
+        if (right) {
+            dJointDestroy(odeinit._iCub->grab);
+        }
+    }
+    result.setOk();
 }
+
 
 void OdeLink::doRotate() {
     if (!checkObject()) return;
