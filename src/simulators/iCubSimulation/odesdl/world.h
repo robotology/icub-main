@@ -29,10 +29,8 @@ class WorldObject {
 public:
     virtual dBodyID getBody() const = 0;
     virtual dGeomID getGeometry() const = 0;
-    virtual bool create(const WorldOp& op, WorldResult& result) {
-        result.setFail("create not implemented yet for this object type");
-        return false;
-    }
+    virtual bool create(const WorldOp& op, WorldResult& result, int idx) = 0;
+    virtual bool takeColor() { return true; }
 };
 
 typedef dReal real3[3];
@@ -66,7 +64,7 @@ public:
             return false;
         }
         WorldObject& obj = get(at);
-        if (!obj.create(op,result)) return false;
+        if (!obj.create(op,result,at)) return false;
         (*counter)++;
 
         if (op.dynamic.get()) {
@@ -209,7 +207,7 @@ public:
         virtual dBodyID getBody() const { return boxbody; }
         virtual dGeomID getGeometry() const { return geom[0]; }
 
-        virtual bool create(const WorldOp& op, WorldResult& result);
+        virtual bool create(const WorldOp& op, WorldResult& result, int idx);
     };
 
     MyObject obj[MAXNUM];
@@ -227,6 +225,7 @@ public:
 
         virtual dBodyID getBody() const { return cylbody; }
         virtual dGeomID getGeometry() const { return cylgeom[0]; }
+        virtual bool create(const WorldOp& op, WorldResult& result, int idx);
     };
 
     MyObject1 cyl_obj[MAXNUM];
@@ -244,6 +243,8 @@ public:
         dGeomID geom;  		// geometries representing this body
         virtual dBodyID getBody() const { return body; }
         virtual dGeomID getGeometry() const { return geom; }
+        virtual bool create(const WorldOp& op, WorldResult& result, int idx);
+        virtual bool takeColor() { return false; }
     };
     MyObject2 ThreeD_obj[100];
     MyObject2 s_ThreeD_obj[100]; 
@@ -258,6 +259,7 @@ public:
         dReal radius;
         virtual dBodyID getBody() const { return sphbody; }
         virtual dGeomID getGeometry() const { return sphgeom[0]; }
+        virtual bool create(const WorldOp& op, WorldResult& result, int idx);
     };
 
     MyObject3 sph[MAXNUM];

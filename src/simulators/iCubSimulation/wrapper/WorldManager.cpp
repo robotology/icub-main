@@ -33,6 +33,12 @@ public:
         return command.get(offset);
     }
 
+    void fail(const char *msg) {
+        failed = true;
+        why = std::string("could not set ") + msg;
+        result.setFail(why.c_str());
+    }
+
     bool consume(WorldOpTriplet& x, const char *msg) {
         if (failed) return false;
         bool ok0 = (get(offset).isDouble()||get(offset).isInt());
@@ -40,11 +46,7 @@ public:
         bool ok2 = (get(offset+2).isDouble()||get(offset+2).isInt());
         x.valid = false;
         if (!(ok0&&ok1&&ok2)) {
-            failed = true;
-            why = std::string("could not parse ") + msg + " from " +
-                get(offset).toString().c_str() + " " +
-                get(offset+1).toString().c_str() + " " +
-                get(offset+2).toString().c_str();
+            fail(msg);
             return false;
         }
         x.x[0] = get(offset).asDouble();
@@ -60,10 +62,24 @@ public:
         bool ok = (get(offset).isInt());
         x.valid = false;
         if (!ok) {
-            failed = true;
+            fail(msg);
             return false;
         }
         x.index = get(offset).asInt();
+        x.valid = true;
+        offset++;
+        return true;
+    }
+
+    bool consume(WorldOpName& x, const char *msg) {
+        if (failed) return false;
+        bool ok = get(offset).isString();
+        x.valid = false;
+        if (!ok) {
+            fail(msg);
+            return false;
+        }
+        x.name = get(offset).asString();
         x.valid = true;
         offset++;
         return true;
@@ -74,7 +90,7 @@ public:
         bool ok = (get(offset).isDouble()||get(offset).isInt());
         x.valid = false;
         if (!ok) {
-            failed = true;
+            fail(msg);
             return false;
         }
         x.val = get(offset).asDouble();
@@ -88,7 +104,7 @@ public:
         bool ok = (get(offset).isInt());
         x.valid = false;
         if (!ok) {
-            failed = true;
+            fail(msg);
             return false;
         }
         x.setting = get(offset).asInt()?true:false;
@@ -127,6 +143,13 @@ void consumeKind(ManagerState& state) {
         static_obj = true;
     case VOCAB3('s','p','h'):
         state.op.kind = "sph";
+        state.op.dynamic = WorldOpFlag(!static_obj);
+        state.needIndex = true;
+        break;
+    case VOCAB4('s','m','o','d'):
+        static_obj = true;
+    case VOCAB4('m','o','d','e'):
+        state.op.kind = "model";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
@@ -199,7 +222,7 @@ bool doSet(ManagerState& state) {
 bool doMake(ManagerState& state) {
     consumeKind(state);
     std::string name = state.op.kind.name;
-    if (!(name=="box"||name=="cyl"||name=="sph")) {
+    if (!(name=="box"||name=="cyl"||name=="sph"||name=="model")) {
         state.result.setFail("cannot create object of requested type");
         return false;
     }
@@ -209,8 +232,17 @@ bool doMake(ManagerState& state) {
     if (name == "cyl" || name == "sph") {
         state.consume(state.op.radius,"radius");
     }
+    if (name == "cyl") {
+        state.consume(state.op.length,"length");
+    }
+    if (name == "model") {
+        state.consume(state.op.modelName,"model name");
+        state.consume(state.op.modelTexture,"model texture");
+    }
     state.consume(state.op.location,"location");
-    state.consume(state.op.color,"color");
+    if (name != "model") {
+        state.consume(state.op.color,"color");
+    }
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
     }
@@ -286,7 +318,9 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
             reply.addString(state.why.c_str());
         }
         if (result.msg!="") {
-            reply.addString(result.msg.c_str());
+            if (result.msg!=state.why) {
+                reply.addString(result.msg.c_str());
+            }
         }
         return true;
     } else {

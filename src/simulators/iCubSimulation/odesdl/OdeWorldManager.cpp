@@ -45,6 +45,8 @@ public:
 };
 
 bool OdeLink::checkObject(bool forCreate) {
+    printf("HELLO\n");
+    op.show();
     OdeInit& odeinit = OdeInit::get();
 
     bid = (dBodyID)0;

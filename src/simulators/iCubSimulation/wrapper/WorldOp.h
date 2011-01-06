@@ -94,15 +94,18 @@ public:
     WORLD_OP cmd;
     WorldOpName kind;
     WorldOpName name;
+    WorldOpIndex index;
     WorldOpTriplet location;
     WorldOpTriplet size;
     WorldOpTriplet color;
     WorldOpTriplet rotation;
     WorldOpScalar radius;
+    WorldOpScalar length;
     WorldOpFlag active;
     WorldOpFlag dynamic;
     WorldOpFlag rightHanded;
-    WorldOpIndex index;
+    WorldOpName modelName;
+    WorldOpName modelTexture;
 
     // for debugging
     void show() const;

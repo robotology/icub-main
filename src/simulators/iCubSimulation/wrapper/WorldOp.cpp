@@ -70,12 +70,18 @@ void WorldOp::show() const {
     ::show(rotation);
     printf("  radius: ");
     ::show(radius);
+    printf("  length: ");
+    ::show(length);
     printf("  active: ");
     ::show(active);
     printf("  index: ");
     ::show(index);
     printf("  rightHanded?: ");
     ::show(rightHanded,"right","left");
+    printf("  modelName: ");
+    ::show(modelName);
+    printf("  modelTexture: ");
+    ::show(modelTexture);
 }
 
 void WorldResult::show() {

@@ -334,7 +334,8 @@ worldSim::worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
 }
 
 
-bool worldSim::MyObject::create(const WorldOp& op, WorldResult& result) {
+// BOX
+bool worldSim::MyObject::create(const WorldOp& op, WorldResult& result, int idx) {
     if (!op.size.isValid()) {
         result.setFail("size not set");
         return false;
@@ -356,3 +357,116 @@ bool worldSim::MyObject::create(const WorldOp& op, WorldResult& result) {
     }
     return true;
 }
+
+// CYLINDER
+bool worldSim::MyObject1::create(const WorldOp& op, WorldResult& result, int idx) {
+    if (!op.radius.isValid()) {
+        result.setFail("radius not set");
+        return false;
+    }
+    if (!op.length.isValid()) {
+        result.setFail("length not set");
+        return false;
+    }
+    radius = op.radius.get();
+    lenght = op.length.get();
+    OdeInit& odeinit = OdeInit::get();
+    if (op.dynamic.get()) {
+        dMass m;
+        dMassSetZero(&m);
+        cylbody = dBodyCreate (odeinit.world);
+        dMassSetCylinderTotal (&m,DENSITY,3,radius,lenght);
+        dBodySetMass (cylbody,&m);
+    }
+    cylgeom[0] = dCreateCylinder(odeinit.space,radius,lenght);
+    if (op.dynamic.get()) {        
+     dGeomSetBody (cylgeom[0],cylbody);
+    }
+    return true;
+}
+
+// 3D model
+bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx) {
+    printf("Making a model\n");
+    if (!op.modelName.isValid()) {
+        result.setFail("model name not set");
+        return false;
+    }
+    if (!op.modelTexture.isValid()) {
+        result.setFail("model texture not set");
+        return false;
+    }
+
+    string model = op.modelName.get();
+    OdeInit& odeinit = OdeInit::get();
+    odeinit._wrld->texture = op.modelTexture.get().c_str();
+
+    bool dynamic = op.dynamic.get();
+    dTriMeshDataID *tridata = dynamic?odeinit._wrld->TriData:odeinit._wrld->s_TriData;
+    dTriMeshX *trimesh = dynamic?odeinit._wrld->trimesh:odeinit._wrld->s_trimesh;
+    int *modelTexture = dynamic?odeinit._wrld->modelTexture:odeinit._wrld->s_modelTexture;
+                    
+    tridata[idx] = dGeomTriMeshDataCreate();
+    ConstString tmp = (char *) odeinit._wrld->model_DIR.c_str();
+    model = string(tmp.c_str()) + "/" + model.c_str();
+    trimesh[idx] = dLoadMeshFromX(model.c_str());
+    if (!trimesh[idx]){
+        result.setFail("Check spelling and location of model file");
+        return false;
+    } 
+    
+    dGeomTriMeshDataBuildSingle(tridata[idx], 
+                                trimesh[idx]->Vertices, 
+                                3 * sizeof(float), 
+                                trimesh[idx]->VertexCount, 
+                                trimesh[idx]->Indices, 
+                                trimesh[idx]->IndexCount, 
+                                3 * sizeof(int));
+    if (dynamic) {
+        body = dBodyCreate (odeinit.world);
+    }
+    geom = dCreateTriMesh(odeinit.space, tridata[idx], 
+                          0, 0, 0);
+    dGeomSetData(geom,tridata[idx]);
+    if (dynamic) {
+        dMass m;
+        dMassSetZero(&m);
+        dMassSetTrimesh(&m, 0.1, geom);
+        dGeomSetBody(geom, body);
+        dMassTranslate(&m, -m.c[0], -m.c[1], -m.c[2]);
+        dBodySetMass(body, &m);
+    }
+    
+    // this all seems incredibly dodgy
+    modelTexture[idx] = idx + 1 + (dynamic?19:49);
+    odeinit.mutexTexture.wait();
+    odeinit._wrld->static_model = !dynamic;	
+    odeinit._wrld->WAITLOADING = true;	
+    odeinit.mutexTexture.post();
+    
+    return true;
+}
+
+
+// SPHERE
+bool worldSim::MyObject3::create(const WorldOp& op, WorldResult& result, int idx) {
+    if (!op.radius.isValid()) {
+        result.setFail("radius not set");
+        return false;
+    }
+    radius = op.radius.get();
+    OdeInit& odeinit = OdeInit::get();
+    if (op.dynamic.get()) {
+        dMass m;
+        dMassSetZero(&m);
+        sphbody = dBodyCreate(odeinit.world);
+        dMassSetSphereTotal(&m,DENSITY, radius);
+        dBodySetMass(sphbody, &m);
+    }
+    sphgeom[0] = dCreateSphere (odeinit.space, radius);
+    if (op.dynamic.get()) {
+        dGeomSetBody(sphgeom[0], sphbody);
+    }
+    return true;
+}
+
