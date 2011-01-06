@@ -266,11 +266,11 @@ void EyePinvRefGen::run()
                           commData->get_v()[1]*cross(h1,2,h1,3)+
                           commData->get_v()[2]*cross(h2,2,h2,3);
 
-            commData->get_compv()=pinv(eyesJ)*fprelv;
-
             // this is the place where introduce some data fusion
-            // on compv with gyro readouts (VOR)
+            // with gyro readouts (VOR): to this end, compute the
+            // effect of gyro rates on the fprelv
 
+            commData->get_compv()=pinv(eyesJ)*fprelv;
             qd=I->integrate(v-commData->get_compv());
         }
         else
