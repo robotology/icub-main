@@ -303,8 +303,8 @@ void EyePinvRefGen::run()
             chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
             // compensate neck rotation at eyes level
-            computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ);
-            commData->get_compv()=getVelocityDueToNeckRotation(eyesJ,fp);
+            if (!computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
+                commData->get_compv()=getVelocityDueToNeckRotation(eyesJ,fp);
 
             // update reference
             qd=I->integrate(v-commData->get_compv());
