@@ -128,11 +128,6 @@ Factors</a>.
 - enable the vestibulo-ocular reflex replacing the OCR while 
   computing the counter-rotation of the eyes due to neck
   rotation.
-  \note However, the gyro readouts (used by VOR) are affected by
-  the delay that exists between the velocity command and the
-  gyro feedbacks which turns to be significative compared to the
-  use of the feedforward term (OCR) that is computed directly on
-  the basis of current velocity command.
  
 --simulation
 - simulate the presence of the robot. 
