@@ -33,9 +33,8 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 This module provides a controller for the iCub gaze capable of 
 steering the neck and the eyes independently performing 
-saccades, pursuit, vergence and OCR (oculo-collic reflex).
-VOR (vestibulo-ocular reflex relying on inertial data) is not 
-provided at time being but can be easily implemented. 
+saccades, pursuit, vergence, OCR (oculo-collic reflex) and VOR 
+(vestibulo-ocular reflex relying on inertial data). 
  
 The controller can be seen as cartesian gaze controller since it
 receives as input a 3D position in the task space. Nonetheless, 
@@ -108,10 +107,6 @@ Factors</a>.
 - The parameter \e name selects the robot's torso port to 
   connect to; if not specified \e torso is assumed.
  
---inertial \e name 
-- The parameter \e name selects the robot's inertial port to 
-  connect to; if not specified \e inertial is assumed.
- 
 --Tneck \e time
 - specify the neck trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.70
@@ -128,6 +123,16 @@ Factors</a>.
  
 --context \e dir
 - Resource finder searching dir for config file.
+ 
+--VOR
+- enable the vestibulo-ocular reflex replacing the OCR while 
+  computing the counter-rotation of the eyes due to neck
+  rotation.
+  \note However, the gyro readouts (used by VOR) are affected by
+  the delay that exists between the velocity command and the
+  gyro feedbacks which turns to be significative compared to the
+  use of the feedforward term (OCR) that is computed directly on
+  the basis of current velocity command.
  
 --simulation
 - simulate the presence of the robot. 
@@ -518,13 +523,13 @@ public:
         string robotName;
         string partName;
         string torsoName;
-        string inertialName;
         string configFile;
         double neckTime;
         double eyesTime;
         double eyeTiltMin;
         double eyeTiltMax;
         double minAbsVel;
+        bool   VOR;
         bool   Robotable;
         double ping_robot_tmo;
 
@@ -535,7 +540,6 @@ public:
         robotName=rf.check("robot",Value("icub")).asString().c_str();
         partName=rf.check("part",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
-        inertialName=rf.check("inertial",Value("inertial")).asString().c_str();
         neckTime=rf.check("Tneck",Value(0.7)).asDouble();
         eyesTime=rf.check("Teyes",Value(0.2)).asDouble();
         eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
@@ -548,10 +552,8 @@ public:
         if (minAbsVel<0.0)
             minAbsVel=-minAbsVel;
 
-        if (rf.check("simulation"))
-            Robotable=false;
-        else
-            Robotable=true;
+        VOR=rf.check("VOR");
+        Robotable=!rf.check("simulation");
 
         if (rf.check("config"))
         {    
@@ -612,8 +614,8 @@ public:
         loc=new Localizer(&commData,localHeadName,configFile,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
-                                     localHeadName,inertialName,configFile,
-                                     eyeTiltMin,eyeTiltMax,20);
+                                     localHeadName,configFile,eyeTiltMin,
+                                     eyeTiltMax,VOR,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
                        localHeadName,configFile,eyeTiltMin,eyeTiltMax,20);
@@ -1022,11 +1024,11 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--robot         name: robot name to connect to (default: icub)\n");
         fprintf(stdout,"\t--part          name: robot head port name, (default: head)\n");
         fprintf(stdout,"\t--torso         name: robot torso port name (default: torso)\n");
-        fprintf(stdout,"\t--inertial      name: robot inertial port name (default: inertial)\n");
         fprintf(stdout,"\t--Tneck         time: specify the neck movements time in seconds (default: 0.70)\n");
-        fprintf(stdout,"\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)\n");
+        fprintf(stdout,"\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)\n");        
         fprintf(stdout,"\t--config        file: file name for kinematics and cameras parameters\n");
         fprintf(stdout,"\t--context        dir: resource finder searching dir for config file\n");
+        fprintf(stdout,"\t--VOR               : enable the vestibulo-ocular reflex\n");
         fprintf(stdout,"\t--simulation        : simulate the presence of the robot\n");
         fprintf(stdout,"\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot\n");
         fprintf(stdout,"\t--eyeTiltMin     min: minimum eye tilt angle [deg]\n");

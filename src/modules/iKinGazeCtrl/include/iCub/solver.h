@@ -63,6 +63,7 @@ protected:
     iCubHeadCenter            *neck;
     iCubEye                   *eyeL,      *eyeR;
     iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
+    iCubInertialSensor         inertialSensor;
     PolyDriver                *drvTorso,  *drvHead;
     IEncoders                 *encTorso,  *encHead;
     exchangeData              *commData;
@@ -76,10 +77,10 @@ protected:
     unsigned int period;
     string robotName;
     string localName;
-    string inertialName;
     string configFile;
     bool Robotable;
     bool genOn;
+    bool VOR;
     int nJointsTorso;
     int nJointsHead;
     double eyeTiltMin;
@@ -92,12 +93,14 @@ protected:
     Matrix eyesJ;
     Vector gyro;
 
+    Vector getFpVelocityDueToNeckRotation(const Vector &fp);
+
 public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                   exchangeData *_commData, const string &_robotName,
-                  const string &_localName, const string &_inertialName,
-                  const string &_configFile, const double _eyeTiltMin,
-                  const double _eyeTiltMax, unsigned int _period);
+                  const string &_localName, const string &_configFile,
+                  const double _eyeTiltMin, const double _eyeTiltMax,
+                  const bool _VOR, unsigned int _period);
 
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void enable()                     { genOn=true;       }

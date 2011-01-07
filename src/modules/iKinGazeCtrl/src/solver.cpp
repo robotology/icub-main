@@ -23,20 +23,24 @@
 /************************************************************************/
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              exchangeData *_commData, const string &_robotName,
-                             const string &_localName, const string &_inertialName,
-                             const string &_configFile, const double _eyeTiltMin,
-                             const double _eyeTiltMax, unsigned int _period) :
-                             RateThread(_period),         drvTorso(_drvTorso),     drvHead(_drvHead),
-                             commData(_commData),         robotName(_robotName),   localName(_localName),
-                             inertialName(_inertialName), configFile(_configFile), period(_period),
-                             eyeTiltMin(_eyeTiltMin),     eyeTiltMax(_eyeTiltMax), Ts(_period/1000.0)
+                             const string &_localName, const string &_configFile,
+                             const double _eyeTiltMin, const double _eyeTiltMax,
+                             const bool _VOR, unsigned int _period) :
+                             RateThread(_period),     drvTorso(_drvTorso),   drvHead(_drvHead),
+                             commData(_commData),     robotName(_robotName), localName(_localName),
+                             configFile(_configFile), period(_period),       eyeTiltMin(_eyeTiltMin),
+                             eyeTiltMax(_eyeTiltMax), Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
+    VOR=Robotable&&_VOR;
 
     // Instantiate objects
     neck=new iCubHeadCenter();
     eyeL=new iCubEye("left");
     eyeR=new iCubEye("right");
+
+    // remove constraints on the links: logging purpose
+    inertialSensor.setAllConstraints(false);
 
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
@@ -167,18 +171,70 @@ bool EyePinvRefGen::getGyro(Vector &data)
 
 
 /************************************************************************/
+Vector EyePinvRefGen::getFpVelocityDueToNeckRotation(const Vector &fp)
+{
+    Vector fprelv;
+
+    if (VOR)
+    {
+        // implement VOR
+        Vector q(inertialSensor.getDOF());
+        q[0]=fbTorso[0];
+        q[1]=fbTorso[1];
+        q[2]=fbTorso[2];
+        q[3]=fbHead[0];
+        q[4]=fbHead[1];
+        q[5]=fbHead[2];
+        Matrix H=inertialSensor.getH(q);
+
+        H(0,3)=fp[0]-H(0,3);
+        H(1,3)=fp[1]-H(1,3);
+        H(2,3)=fp[2]-H(2,3);
+
+        // gyro rate [rad/s]
+        double &gyrX=gyro[6];
+        double &gyrY=gyro[7];
+        double &gyrZ=gyro[8];
+
+        fprelv=gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3);
+    }
+    else
+    {
+        // implement OCR
+        Matrix H0=chainNeck->getH(2,true);
+        Matrix H1=chainNeck->getH(3,true);
+        Matrix H2=chainNeck->getH(4,true);
+    
+        for (int i=0; i<3; i++)
+        {
+            H0(i,3)=fp[i]-H0(i,3);
+            H1(i,3)=fp[i]-H1(i,3);
+            H2(i,3)=fp[i]-H2(i,3);
+        }
+    
+        fprelv=commData->get_v()[0]*cross(H0,2,H0,3)+
+               commData->get_v()[1]*cross(H1,2,H1,3)+
+               commData->get_v()[2]*cross(H2,2,H2,3);
+    }
+
+    return fprelv;
+}
+
+
+/************************************************************************/
 bool EyePinvRefGen::threadInit()
 {
     if (Robotable)
     {
         port_inertial=new BufferedPort<Vector>;
-        string portName=localName+inertialName+":i";
+        string portName=localName+"/inertial:i";
         port_inertial->open(portName.c_str());
 
-        if (!Network::connect(("/"+robotName+"/"+inertialName).c_str(),portName.c_str()))
+        if (!Network::connect(("/"+robotName+"/inertial").c_str(),portName.c_str()))
         {
             delete port_inertial;
-            port_inertial=NULL;                
+            port_inertial=NULL;
+            VOR=false;
         }
     }
     else
@@ -246,36 +302,11 @@ void EyePinvRefGen::run()
             chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
             chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
+            // compensate neck rotation at eyes level
             computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ);
+            commData->get_compv()=pinv(eyesJ)*getFpVelocityDueToNeckRotation(fp);
 
-            // implement OCR
-            Matrix h0=chainNeck->getH(2,true);
-            Matrix h1=chainNeck->getH(3,true);
-            Matrix h2=chainNeck->getH(4,true);
-
-            for (int i=0; i<3; i++)
-            {
-                h0(i,3)=fp[i]-h0(i,3);
-                h1(i,3)=fp[i]-h1(i,3);
-                h2(i,3)=fp[i]-h2(i,3);
-            }
-
-            h0(3,3)=h1(3,3)=h2(3,3)=0.0;
-
-            Vector fprelv=commData->get_v()[0]*cross(h0,2,h0,3)+
-                          commData->get_v()[1]*cross(h1,2,h1,3)+
-                          commData->get_v()[2]*cross(h2,2,h2,3);
-
-            // this is the place where introduce some data fusion
-            // with gyro readouts (VOR): to this end, compute the
-            // effect of gyro rates on the fprelv;
-            // however, the gyro readouts are affected by the
-            // delay that exists between the velocity command (get_v())
-            // and the gyro feedbacks which turns to be significative
-            // compared to the the feedforward term that is computed
-            // directly on the basis of current velocity command.
-
-            commData->get_compv()=pinv(eyesJ)*fprelv;
+            // update reference
             qd=I->integrate(v-commData->get_compv());
         }
         else
