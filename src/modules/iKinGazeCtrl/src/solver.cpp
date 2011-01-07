@@ -171,7 +171,7 @@ bool EyePinvRefGen::getGyro(Vector &data)
 
 
 /************************************************************************/
-Vector EyePinvRefGen::getFpVelocityDueToNeckRotation(const Vector &fp)
+Vector EyePinvRefGen::getVelocityDueToNeckRotation(const Matrix &eyesJ, const Vector &fp)
 {
     Vector fprelv;
 
@@ -217,7 +217,7 @@ Vector EyePinvRefGen::getFpVelocityDueToNeckRotation(const Vector &fp)
                commData->get_v()[2]*cross(H2,2,H2,3);
     }
 
-    return fprelv;
+    return pinv(eyesJ)*fprelv;
 }
 
 
@@ -304,7 +304,7 @@ void EyePinvRefGen::run()
 
             // compensate neck rotation at eyes level
             computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ);
-            commData->get_compv()=pinv(eyesJ)*getFpVelocityDueToNeckRotation(fp);
+            commData->get_compv()=getVelocityDueToNeckRotation(eyesJ,fp);
 
             // update reference
             qd=I->integrate(v-commData->get_compv());

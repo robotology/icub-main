@@ -93,7 +93,7 @@ protected:
     Matrix eyesJ;
     Vector gyro;
 
-    Vector getFpVelocityDueToNeckRotation(const Vector &fp);
+    Vector getVelocityDueToNeckRotation(const Matrix &eyesJ, const Vector &fp);
 
 public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
