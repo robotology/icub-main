@@ -40,7 +40,7 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
     double qty3=qty1*qty1-1.0;
 
     if (qty3==0.0)
-        return true;
+        return false;
 
     double tL=qty2L/qty3;
     double tR=qty2R/qty3;
@@ -130,7 +130,7 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
         J(i,2)=0.25*(dfpL1[i]-dfpR1[i] + dfpL2[i]-dfpR2[i]);    // vergence
     }
 
-    return false;
+    return true;
 }
 
 
@@ -155,7 +155,7 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
     double qty3=qty1*qty1-1.0;
 
     if (qty3==0.0)
-        return true;
+        return false;
 
     double tL=qty2L/qty3;
     double tR=qty2R/qty3;
@@ -163,7 +163,7 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
     for (unsigned int i=0; i<3; i++)
         fp[i]=0.5*(HL(i,3)+tL*HL(i,2)+HR(i,3)+tR*HR(i,2));
 
-    return false;
+    return true;
 }
 
 
