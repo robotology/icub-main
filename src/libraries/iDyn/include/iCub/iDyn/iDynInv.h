@@ -64,7 +64,7 @@ const std::string ChainComputationMode_s[4] = {"Kinematic Forward - Wrench Forwa
 
 // verbosity levels
 // useful for all classes
-enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
+enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 
 
 	class iDynLink;
@@ -82,6 +82,7 @@ enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 	class iGenericFrame;
     class iFrameOnLink;
 	class iFTransformation;
+
 
 
 
@@ -768,7 +769,7 @@ public:
 
  	/**
      * Get the sensor force and moment in a single (6x1) vector
-	  * @return a (6x1) vector where 0:2=force 3:5=moment
+	 * @return a (6x1) vector where 0:2=force 3:5=moment
      */
 	yarp::sig::Vector getForceMoment() const;
 
@@ -832,6 +833,95 @@ public:
 	 virtual std::string getType() const;
 
 };
+
+
+
+/**
+* \ingroup RecursiveNewtonEuler
+*
+* A base class for computing external forces applied to links of a serial link chain
+*/
+class ContactNewtonEuler
+{
+protected:
+	/// roto-traslation defining the position of the contact wrt to a reference link (usually the one of the host link) 
+	yarp::sig::Matrix H;
+	///contact force
+	yarp::sig::Vector F;
+	///contact moment
+	yarp::sig::Vector Mu;	
+    ///info or useful notes
+	std::string	info;
+	///verbosity flag
+	unsigned int verbose;
+
+public:
+
+    /**
+    * Default constructor
+    */
+    ContactNewtonEuler(unsigned int verb = NO_VERBOSE);
+
+    /**
+    * There is no more contact, so everything is set to zero and sconnected by the link
+    */
+    void sconnect();
+
+    /**
+    * Everything is set to zero, but the connection with the link holds
+    */
+    void zero();
+
+ 	/**
+     * Get the contact force and moment in a single (6x1) vector
+	 * @return a 6x1 vector where 0:2=force 3:5=moment
+     */
+	yarp::sig::Vector getForceMoment() const;
+
+   /**
+     * Set the external force/moment - if a measure is available, e.g. by a free standing FT sensor
+	 * @param _FM the 6x1 force/moment vector where 0:2=force 3:5=moment
+	 * @return true if dimensions are correct, false otherwise
+     */
+	bool setMeasuredFMu(const yarp::sig::Vector &_FM);
+
+    /**
+     * Useful to print some information..
+     */
+	std::string toString() const;
+	
+    /**
+	* Set the verbosity level of comments during operations
+	* @param verb, a boolean flag
+	*/
+	 void setVerbose(unsigned int verb = VERBOSE);
+
+    /**
+	* Compute the external force
+	* @param link the link where the external force is applied to
+    * @param next the link after, in the sense defined by the chain
+	*/
+     void computeExternalWrench(OneLinkNewtonEuler *link, OneLinkNewtonEuler *next);
+  
+	//~~~~~~~~~~~~~~~~~~~~~~
+	//   get methods
+	//~~~~~~~~~~~~~~~~~~~~~~
+    yarp::sig::Vector	getForce()		const;
+	yarp::sig::Vector	getMoment()		const;	
+	yarp::sig::Matrix	getH()		const;
+ 	yarp::sig::Matrix	getR() const;
+	yarp::sig::Vector	getr() const;
+
+    //~~~~~~~~~~~~~~~~~~~~~~
+	//   set methods
+	//~~~~~~~~~~~~~~~~~~~~~~
+	bool setForce(const yarp::sig::Vector &_F);
+	bool setMoment(const yarp::sig::Vector &_Mu);
+    bool setH(const yarp::sig::Matrix &_H);
+    void setInfo(const std::string &_info);
+
+};
+
 
 
 /**
@@ -1170,6 +1260,11 @@ protected:
 	unsigned int verbose;
 	/// a string with useful information if needed
 	std::string info;
+
+    /// the contact element containing description of external force, e.g. due to contact
+    ContactNewtonEuler * contact;
+    /// the link "hosting" the contact, i.e. the index of the link in the chain: the external forces are acting on this link
+    unsigned int lCont;
 
 public:
 
@@ -1726,6 +1821,13 @@ public:
 
 
 };
+
+
+
+
+
+
+
 
 }
 

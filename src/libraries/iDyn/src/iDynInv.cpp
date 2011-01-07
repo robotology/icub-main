@@ -36,6 +36,163 @@ using namespace iCub::iDyn;
 
 //================================
 //
+//		CONTACT NEWTON EULER
+//
+//================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ContactNewtonEuler::ContactNewtonEuler(unsigned int verb)
+{
+    verbose = verb;
+    info = "contact";
+    H.resize(4,4); H.eye();
+    F.resize(3); F.zero();
+    Mu.resize(3); Mu.zero();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void ContactNewtonEuler::sconnect()
+{
+    H.eye();
+    F.zero(); Mu.zero();
+    info = "no contact";
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void ContactNewtonEuler::zero()
+{
+    H.eye();
+    F.zero(); Mu.zero();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//~~~~~~~~~~~~~~~~~~~~~~
+//   get methods
+//~~~~~~~~~~~~~~~~~~~~~~
+
+Vector	ContactNewtonEuler::getForce()	const   {return F;}
+Vector	ContactNewtonEuler::getMoment()	const	{return Mu;}
+Matrix	ContactNewtonEuler::getH()		const   {return H;}
+Matrix	ContactNewtonEuler::getR()      const   {return H.submatrix(0,2,0,2);}
+Vector	ContactNewtonEuler::getr()      const   {return H.submatrix(0,2,0,3).getCol(3);}
+
+//~~~~~~~~~~~~~~~~~~~~~~
+//   set methods
+//~~~~~~~~~~~~~~~~~~~~~~
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void ContactNewtonEuler::setVerbose(unsigned int verb)
+{
+	verbose = verb;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void ContactNewtonEuler::setInfo(const string &_info)
+{
+	info = _info;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool ContactNewtonEuler::setForce(const Vector &_F)
+{
+	if(_F.length()==3)
+	{
+		F=_F;
+		return true;
+	}
+	else
+	{
+		if(verbose)
+			fprintf(stderr,"ContactNewtonEuler error, could not set force due to wrong dimension: %ld instead of 3.\n",_F.length());
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool ContactNewtonEuler::setMoment(const Vector &_Mu)
+{
+	if(_Mu.length()==3)
+	{
+		Mu=_Mu;
+		return true;
+	}
+	else
+	{
+		if(verbose)
+			fprintf(stderr,"ContactNewtonEuler error, could not set moment due to wrong dimension: %ld instead of 3.\n",_Mu.length());
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool ContactNewtonEuler::setMeasuredFMu(const Vector &_FM)
+{
+	if((_FM.length()==6))
+	{
+        F = _FM.subVector(0,2);
+        Mu = _FM.subVector(3,5);
+		return true;
+	}
+	else
+	{
+		F.resize(3);	F.zero();
+		Mu.resize(3);	Mu.zero();
+	
+		if(verbose)
+            fprintf(stderr,"ContactNewtonEuler error: could not set F/Mu due to wrong dimensions: (%ld) instead of (6 = 3,3). Default zero is set.\n",_FM.length());
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool ContactNewtonEuler::setH(const Matrix &_H)
+{
+    if((_H.rows()==4)&&(_H.cols()==4))
+	{
+        H.resize(4,4); H=_H;
+		return true;
+	}
+	else
+	{
+		H.resize(4,4);	H.eye();
+		if(verbose)
+            fprintf(stderr,"ContactNewtonEuler error: could not set H due to wrong dimensions: (%ld,%ld) instead of (4,4). Default identity is set.\n",_H.rows(),_H.cols());
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//~~~~~~~~~~~~~~~~~~~~~~
+//   compute methods
+//~~~~~~~~~~~~~~~~~~~~~~
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector ContactNewtonEuler::getForceMoment() const
+{
+	Vector ret(6); ret.zero();
+	ret[0]=F[0]; ret[1]=F[1]; ret[2]=F[2];
+	ret[3]=Mu[0]; ret[4]=Mu[1]; ret[5]=Mu[2];
+	return ret;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string ContactNewtonEuler::toString() const
+{
+    string ret = "[Contact]: " + info;
+
+    char buffer[300]; int j=0;		  
+	j=sprintf(buffer," [Force]: %.3f,%.3f,%.3f",F(0),F(1),F(2));
+	j+=sprintf(buffer+j," [Moment]: %.3f,%.3f,%.3f",Mu(0),Mu(1),Mu(2));	
+    Vector r = getr();
+	j+=sprintf(buffer+j," [r]: %.3f,%.3f,%.3f",r(0),r(1),r(2));
+		
+	ret.append(buffer);
+	return ret;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void ContactNewtonEuler::computeExternalWrench(OneLinkNewtonEuler *link, OneLinkNewtonEuler *next)
+{
+    //a compute backward
+    F = getR() * ( next->getR() * ( next->getForce() + next->getMass() * next->getLinAccC() ) - link->getForce() );
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//================================
+//
 //		ONE LINK NEWTON EULER
 //
 //================================
@@ -366,7 +523,6 @@ Vector	OneLinkNewtonEuler::getr(bool proj)			{ return link->getr(proj);}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	OneLinkNewtonEuler::getrC(bool proj)		{ return link->getrC(proj);} 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 	 //~~~~~~~~~~~~~~~~~~~~~~
 	 //   core computation
@@ -1791,6 +1947,10 @@ iDynInvSensor::iDynInvSensor(iDynChain *_c, const string &_info, const NewEulMod
 	//unknown sensor
 	lSens = 0;
 	sens = NULL;
+    //no contact
+    lCont = 0;
+    contact = NULL;
+
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynInvSensor::iDynInvSensor(iDynChain *_c, unsigned int i, const Matrix &_H, const Matrix &_HC, const double _m, const Matrix &_I, const string &_info, const NewEulMode _mode, unsigned int verb)
@@ -1802,6 +1962,9 @@ iDynInvSensor::iDynInvSensor(iDynChain *_c, unsigned int i, const Matrix &_H, co
 	// new sensor
 	lSens = i;
 	sens = new SensorLinkNewtonEuler(_H,_HC,_m,_I,_mode,verb);
+    //no contact
+    lCont = 0;
+    contact = NULL;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynInvSensor::~iDynInvSensor()
@@ -1809,6 +1972,10 @@ iDynInvSensor::~iDynInvSensor()
 	if(sens!=NULL)
 		delete sens;
 	sens=NULL;
+
+    if(contact!=NULL)
+        delete contact;
+    contact=NULL;
 
 	//do not delete the chain! only stop pointing at it!
 	chain=NULL;
@@ -1831,7 +1998,13 @@ bool iDynInvSensor::setSensor(unsigned int i, const Matrix &_H, const Matrix &_H
 	if(i<chain->getN())
 	{
 		lSens = i;
-		return sens->setSensor(_H,_HC,_m,_I); 
+        if(sens==NULL)
+        {
+            sens = new SensorLinkNewtonEuler(_H,_HC,_m,_I,mode,verbose);
+            return true;
+        }
+        else
+            return sens->setSensor(_H,_HC,_m,_I); 
 	}
 	else
 	{
@@ -1843,15 +2016,45 @@ bool iDynInvSensor::setSensor(unsigned int i, const Matrix &_H, const Matrix &_H
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynInvSensor::computeSensorForceMoment()
 {
-	sens->ForwardAttachToLink(chain->refLink(lSens));
-	sens->BackwardAttachToLink(chain->refLink(lSens));
+    if(sens != NULL)
+    {
+	    sens->ForwardAttachToLink(chain->refLink(lSens));
+	    sens->BackwardAttachToLink(chain->refLink(lSens));
+    }
+    else
+    {
+        fprintf(stderr,"iDynInvSensor error: could not make computations, the sensor is not set yet.\n");
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynInvSensor::getSensorForce()	const   {return sens->getForce();}
+Vector	iDynInvSensor::getSensorForce()	const   
+{
+    if(sens != NULL)
+        return sens->getForce();
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get FT Sensor force, because the sensor is not set yet.\n");
+        return Vector(0);
+    }
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynInvSensor::getSensorMoment()const   {return sens->getMoment(false);}
+Vector	iDynInvSensor::getSensorMoment()const   
+{
+    if(sens != NULL)    
+        return sens->getMoment(false);
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get FT Sensor moment, because the sensor is not set yet.\n");
+        return Vector(0);
+    }
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynInvSensor::getTorques()      const	{return chain->getTorques();}
+Vector iDynInvSensor::getTorques()      const	
+{
+    return chain->getTorques();
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//~~~~~~~~~~~~~~
@@ -1862,13 +2065,13 @@ Vector iDynInvSensor::getTorques()      const	{return chain->getTorques();}
 void iDynInvSensor::setMode(const NewEulMode _mode)
 {
 	mode = _mode;
-	sens->setMode(_mode);
+	if(sens != NULL) sens->setMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynInvSensor::setVerbose(unsigned int verb)
 {
 	verbose = verb;
-	sens->setVerbose(verb);
+	if(sens != NULL) sens->setVerbose(verb);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynInvSensor::setInfo(const string &_info)
@@ -1878,7 +2081,7 @@ void iDynInvSensor::setInfo(const string &_info)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynInvSensor::setSensorInfo(const string &_info)
 {
-	sens->setInfo(_info);
+	if(sens != NULL) sens->setInfo(_info);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1889,11 +2092,42 @@ void iDynInvSensor::setSensorInfo(const string &_info)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynInvSensor::getInfo()					const	{return info;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynInvSensor::getH()					const	{return sens->getH();}
+Matrix iDynInvSensor::getH()					const	
+{
+    if(sens != NULL) 
+        return sens->getH();
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get H of the FT sensor, because the sensor is not set yet.\n");
+        return Matrix(0,0);
+    }
+
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynInvSensor::getSensorInfo()			const	{return sens->getInfo();}
+string iDynInvSensor::getSensorInfo()			const	
+{
+    if(sens != NULL) 
+        return sens->getInfo();
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get info from the FT sensor, because the sensor is not set yet.\n");
+        return "FT sensor is not set";
+    }
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynInvSensor::getSensorForceMoment()	const	{return sens->getForceMoment(); }
+Vector iDynInvSensor::getSensorForceMoment()	const	
+{
+    if(sens != NULL) 
+        return sens->getForceMoment(); 
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get force-moment of the FT sensor, because the sensor is not set yet.\n");
+        return Vector(0);
+    }
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 unsigned int iDynInvSensor::getSensorLink()	    const	{return lSens; }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

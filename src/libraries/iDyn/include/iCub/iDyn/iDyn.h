@@ -80,6 +80,7 @@ namespace iDyn
     class BaseLinkNewtonEuler;
     class FinalLinkNewtonEuler;
     class SensorLinkNewtonEuler;
+    class ContactNewtonEuler;
     class OneChainNewtonEuler;
     class OneChainSensorNewtonEuler;
     class iDynSensor;

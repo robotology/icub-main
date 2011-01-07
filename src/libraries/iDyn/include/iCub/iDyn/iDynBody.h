@@ -58,6 +58,7 @@ namespace iDyn
 	class BaseLinkNewtonEuler;
 	class FinalLinkNewtonEuler;
 	class SensorLinkNewtonEuler;
+    class ContactNewtonEuler;
 	class OneChainNewtonEuler;
 	class OneChainSensorNewtonEuler;
 	class iDynSensor;
@@ -1745,6 +1746,8 @@ public:
 	yarp::sig::Vector Pose_ArmRightArmLeft(bool axisRep = false);
 
 };
+
+
 
 
 }// end of namespace iDyn
