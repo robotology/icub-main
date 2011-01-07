@@ -39,7 +39,7 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
     double qty2R=dot(H2R,2,H1,3);
     double qty3=qty1*qty1-1.0;
 
-    if (qty3==0.0)
+    if (fabs(qty3)<1e-6)
         return false;
 
     double tL=qty2L/qty3;
@@ -154,7 +154,7 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
     double qty2R=dot(H2R,2,H1,3);
     double qty3=qty1*qty1-1.0;
 
-    if (qty3==0.0)
+    if (fabs(qty3)<1e-6)
         return false;
 
     double tL=qty2L/qty3;
