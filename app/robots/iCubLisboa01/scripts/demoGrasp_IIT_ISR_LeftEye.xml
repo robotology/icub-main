@@ -24,6 +24,7 @@
 
         <module>
                 <name>demoGraspManager_IIT_ISR</name>
+		<parameters>--context iCubLisboa01/conf --from demoGrasp.ini</parameters>
                 <node>icubbrain2</node>
                 <tag>manager</tag>
         </module>
