@@ -6,6 +6,7 @@
       
         <module>
                 <name>iCubInterface</name>
+		<parameters></parameters>
                 <node>pc104</node>
                 <stdio>chico3</stdio>
                 <tag>iCubInterface</tag>
@@ -21,15 +22,18 @@
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part left_arm</parameters>
-                <node>icubbrain2</node>
+                <node>icubbrain1</node>
                 <tag>leftArmSolver</tag>
         </module>
 
+	<!--
         <module>
                 <name>iKinGazeCtrl</name>
-                <parameters>--context cameraCalibration/conf --config icubEyes.ini --eyeTiltMin -7.5 --eyeTiltMax 15.0 --ping_robot_tmo 40.0</parameters>
-                <node>icubbrain2</node>
+                <parameters>- -context cameraCalibration/conf - -config icubEyes.ini - -eyeTiltMin -7.5 - -eyeTiltMax 15.0 - -ping_robot_tmo 40.0 <parameters>
+                <node>icubbrain1</node>
                 <tag>gazeController</tag>
         </module>
+	-->
+
 
 </application>
