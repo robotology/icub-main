@@ -36,6 +36,7 @@
 #include <iCub/controller.h>
 
 #define EYEPINVREFGEN_GAIN                  12.5
+#define EYEPINVREFGEN_VOR_FPRELV_MIN        1e-3    // [m/s]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
 #define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE_TRA      2.5     // [deg]
