@@ -124,8 +124,8 @@ Factors</a>.
 --context \e dir
 - Resource finder searching dir for config file.
  
---VOR
-- enable the vestibulo-ocular reflex replacing the OCR while 
+--noVOR
+- disable the vestibulo-ocular reflex in favour of the OCR while
   computing the counter-rotation of the eyes due to neck
   rotation.
  
@@ -547,7 +547,7 @@ public:
         if (minAbsVel<0.0)
             minAbsVel=-minAbsVel;
 
-        VOR=rf.check("VOR");
+        VOR=!rf.check("noVOR");
         Robotable=!rf.check("simulation");
 
         if (rf.check("config"))
@@ -1023,7 +1023,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)\n");        
         fprintf(stdout,"\t--config        file: file name for kinematics and cameras parameters\n");
         fprintf(stdout,"\t--context        dir: resource finder searching dir for config file\n");
-        fprintf(stdout,"\t--VOR               : enable the vestibulo-ocular reflex\n");
+        fprintf(stdout,"\t--noVOR             : disable the vestibulo-ocular reflex\n");
         fprintf(stdout,"\t--simulation        : simulate the presence of the robot\n");
         fprintf(stdout,"\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot\n");
         fprintf(stdout,"\t--eyeTiltMin     min: minimum eye tilt angle [deg]\n");

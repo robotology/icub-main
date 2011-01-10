@@ -802,9 +802,7 @@ void Solver::run()
         else
             pgDir=&gDefaultDir;
 
-        // debug
-        neckPos=invNeck->solve(neckPos,xd,gDefaultDir);
-        //neckPos=invNeck->solve(neckPos,xd,*pgDir);
+        neckPos=invNeck->solve(neckPos,xd,*pgDir);
 
         // update neck pitch,roll,yaw        
         commData->get_qd()[0]=neckPos[0];
