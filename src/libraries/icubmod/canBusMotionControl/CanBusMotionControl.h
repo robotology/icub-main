@@ -117,6 +117,8 @@ public:
     Pid *_pids;                                 /** initial gains */
 	Pid *_tpids;								/** initial torque gains */
 	bool _tpidsEnabled;							/** abilitation for torque gains */
+	DebugParameters *_debug_params;             /** debug parameters */
+	bool _debug_paramsEnabled;					/** abilitation for debug parameters */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */

@@ -1015,6 +1015,25 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         _pids[j].scale = xtmp.get(6).asDouble();
         _pids[j].offset = xtmp.get(7).asDouble();
     }
+	
+	////// DEBUG PARAMETERS
+	if (p.check("DEBUG_PARAMETERS","DEBUG parameters")==true)
+	{
+		printf("DEBUG parameters section found\n");
+		_debug_paramsEnabled=true;
+		for(j=0;j<nj;j++)
+		{
+			char tmp[80];
+			sprintf(tmp, "Debug%d", j); 
+			xtmp = p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").findGroup(tmp);	
+
+			for (int par=0; par<8; par++) {_debug_params[j].data[par] = xtmp.get(par+1).asDouble();}
+		}
+	}
+	else
+	{
+		printf("Debug parameters section NOT enabled, skipping...\n");
+	}
 
 	////// TORQUE PIDS
 	if (p.check("TORQUE_PIDS","TORQUE_PID parameters")==true)
@@ -1040,7 +1059,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 	}
 	else
 	{
-		printf("Torque Pids section NOT enabled\n");
+		printf("Torque Pids section NOT enabled, skipping...\n");
 	}
 
     /////// LIMITS
@@ -1158,6 +1177,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _pids=0;
 	_tpids=0;
 	_tpidsEnabled=false;
+	_debug_paramsEnabled=false;
     _limitsMax=0;
     _limitsMin=0;
     _currentLimits=0;
@@ -1167,6 +1187,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
 	_torqueSensorChan=0;	
 	_maxTorque=0;
 	_newtonsToSensor=0;
+	_debug_params=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1194,6 +1215,8 @@ bool CanBusMotionControlParameters::alloc(int nj)
 
     _pids=allocAndCheck<Pid>(nj);
 	_tpids=allocAndCheck<Pid>(nj);
+	_debug_params=allocAndCheck<DebugParameters>(nj);
+
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
     _currentLimits=allocAndCheck<double>(nj);
@@ -1239,6 +1262,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
 
     checkAndDestroy<Pid>(_pids);
 	checkAndDestroy<Pid>(_tpids);
+	checkAndDestroy<DebugParameters>(_debug_params);
     checkAndDestroy<double>(_limitsMax);
     checkAndDestroy<double>(_limitsMin);
     checkAndDestroy<double>(_currentLimits);
@@ -1678,6 +1702,12 @@ bool CanBusMotionControl::open (Searchable &config)
     // default initialization for this device driver.
     setPids(p._pids);
 	if (p._tpidsEnabled==true) setTorquePids(p._tpids);
+	if (p._debug_paramsEnabled==true)
+	{
+		for (int j=0; j<p._njoints; j++)
+			for (int param_num=0; param_num<8; param_num++)
+				setDebugParameter(j,param_num,p._debug_params[j].data[param_num]);
+	}
 
     int i;
     for(i = 0; i < p._njoints; i++)
@@ -3659,8 +3689,20 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
+    
+	CanBusResources& r = RES(system_resources);
+	_mutex.wait();
+		r.startPacket();
+		r.addMessage (CAN_SET_DEBUG_PARAM, axis);
+		*((unsigned char *)(r._writeBuffer[0].getData()+1)) = unsigned char(index & 0xFF);
+		*((short *)(r._writeBuffer[0].getData()+2)) = S_16(value);
+		*((short *)(r._writeBuffer[0].getData()+4)) = 0;
+		*((short *)(r._writeBuffer[0].getData()+6)) = 0;
+		r._writeBuffer[0].setLen(8);
+		r.writePacket();
+    _mutex.post();
 
-	return _writeByteWords16 (CAN_SET_DEBUG_PARAM, axis, S_16(index), S_16(value),0,0);
+	return true;
 }
 
 bool CanBusMotionControl::setOutputsRaw(const double *v)
