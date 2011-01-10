@@ -275,7 +275,7 @@ void Controller::run()
     {
         // control loop
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
-        vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)-commData->get_compv();
+        vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes);
     }
     else
     {
