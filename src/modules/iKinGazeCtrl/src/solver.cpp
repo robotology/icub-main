@@ -201,9 +201,8 @@ Vector EyePinvRefGen::getVelocityDueToNeckRotation(const Matrix &eyesJ, const Ve
             (fabs(gyrY)<GYRO_BIAS_STABILITY*CTRL_DEG2RAD) &&
             (fabs(gyrZ)<GYRO_BIAS_STABILITY*CTRL_DEG2RAD))
         {
-            // pinv(eyesJ) => use rows
-            Vector ret(eyesJ.rows()); ret=0.0;
-            return ret;
+            fprelv.resize(eyesJ.rows(),0.0);    // pinv(eyesJ) => use rows
+            return fprelv;
         }
         else
             fprelv=gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3);
