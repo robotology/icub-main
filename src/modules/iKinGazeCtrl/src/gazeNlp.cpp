@@ -63,7 +63,7 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
         // derivative wrt eye tilt
         j=0;
         dqty1=dot(AnaJacobZ_R,j,HL,2)+dot(HR,2,AnaJacobZ_L,j);
-        for (unsigned int i=0; i<3; i++)
+        for (int i=0; i<3; i++)
             H3(i,2)=AnaJacobZ_L(i,j)-dqty1*HR(i,2)-qty1*AnaJacobZ_R(i,j);
         dqty2=dot(H3,2,H1,3)+dot(H2L,2,GeoJacobP_L-GeoJacobP_R,j);
         dfp1=M.getCol(j)+Hz*((dqty2-2.0*qty1*qty2L*dqty1/qty3)/qty3);
@@ -71,14 +71,14 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
         // derivative wrt pan left eye
         j=1;
         dqty1L=dot(HR,2,AnaJacobZ_L,j);
-        for (unsigned int i=0; i<3; i++)
+        for (int i=0; i<3; i++)
             H3(i,2)=AnaJacobZ_L(i,j)-dqty1*HR(i,2);
         dqty2L=dot(H3,2,H1,3)+dot(H2L,2,GeoJacobP_L,j);
         dfpL1=M.getCol(j)+Hz*((dqty2L-2.0*qty1*qty2L*dqty1L/qty3)/qty3);
 
         // derivative wrt pan right eye
         dqty1R=dot(AnaJacobZ_R,j,HL,2);
-        for (unsigned int i=0; i<3; i++)
+        for (int i=0; i<3; i++)
             H3(i,2)=-dqty1*HR(i,2)-qty1*AnaJacobZ_R(i,j);
         dqty2R=dot(H3,2,H1,3)+dot(H2L,2,-1.0*GeoJacobP_R,j);
         dfpR1=Hz*((dqty2R-2.0*qty1*qty2L*dqty1R/qty3)/qty3);
@@ -96,7 +96,7 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
         // derivative wrt eye tilt
         j=0;
         dqty1=dot(AnaJacobZ_R,j,HL,2)+dot(HR,2,AnaJacobZ_L,j);
-        for (unsigned int i=0; i<3; i++)
+        for (int i=0; i<3; i++)
             H3(i,2)=qty1*AnaJacobZ_L(i,j)+dqty1*HL(i,2)-AnaJacobZ_R(i,j);
         dqty2=dot(H3,2,H1,3)+dot(H2R,2,GeoJacobP_L-GeoJacobP_R,j);
         dfp2=M.getCol(j)+Hz*((dqty2-2.0*qty1*qty2R*dqty1/qty3)/qty3);
@@ -104,20 +104,20 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
         // derivative wrt pan left eye
         j=1;
         dqty1L=dot(HR,2,AnaJacobZ_L,j);
-        for (unsigned int i=0; i<3; i++)
+        for (int i=0; i<3; i++)
             H3(i,2)=qty1*AnaJacobZ_L(i,j)+dqty1L*HL(i,2);
         dqty2L=dot(H3,2,H1,3)+dot(H2R,2,GeoJacobP_L,j);
         dfpL2=Hz*((dqty2L-2.0*qty1*qty2R*dqty1L/qty3)/qty3);
 
         // derivative wrt pan right eye
         dqty1R=dot(AnaJacobZ_R,j,HL,2);
-        for (unsigned int i=0; i<3; i++)
+        for (int i=0; i<3; i++)
             H3(i,2)=dqty1R*HL(i,2)-AnaJacobZ_R(i,j);
         dqty2R=dot(H3,2,H1,3)+dot(H2R,2,-1.0*GeoJacobP_R,j);
         dfpR2=M.getCol(j)+Hz*((dqty2R-2.0*qty1*qty2R*dqty1R/qty3)/qty3);
     }
 
-    for (unsigned int i=0; i<3; i++)
+    for (int i=0; i<3; i++)
     {
         // fixation point position
         fp[i]=0.5*(HL(i,3)+tL*HL(i,2)+HR(i,3)+tR*HR(i,2));
@@ -161,7 +161,7 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
     double tL=qty2L/qty3;
     double tR=qty2R/qty3;
 
-    for (unsigned int i=0; i<3; i++)
+    for (int i=0; i<3; i++)
         fp[i]=0.5*(HL(i,3)+tL*HL(i,2)+HR(i,3)+tR*HR(i,2));
 
     return true;
