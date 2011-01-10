@@ -197,7 +197,7 @@ Vector EyePinvRefGen::getVelocityDueToNeckRotation(const Matrix &eyesJ, const Ve
         double &gyrZ=gyro[8];
 
         // to filter out the noise on the gyro readouts
-        if (sqrt(gyrX*gyrX+gyrY*gyrY+gyrZ*gyrZ)>EYEPINVREFGEN_VOR_GYRO_MIN*CTRL_DEG2RAD)
+        if (sqrt(gyrX*gyrX+gyrY*gyrY+gyrZ*gyrZ)>GYRO_BIAS_STABILITY*CTRL_DEG2RAD)
             fprelv=gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3);
         else
             fprelv.resize(3,0.0);
