@@ -3694,7 +3694,7 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
 	_mutex.wait();
 		r.startPacket();
 		r.addMessage (CAN_SET_DEBUG_PARAM, axis);
-		*((unsigned char *)(r._writeBuffer[0].getData()+1)) = unsigned char(index & 0xFF);
+		*((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(index & 0xFF);
 		*((short *)(r._writeBuffer[0].getData()+2)) = S_16(value);
 		*((short *)(r._writeBuffer[0].getData()+4)) = 0;
 		*((short *)(r._writeBuffer[0].getData()+6)) = 0;
