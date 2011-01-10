@@ -22,7 +22,7 @@
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part left_arm</parameters>
-                <node>icubbrain1</node>
+                <node>icubbrain2</node>
                 <tag>leftArmSolver</tag>
         </module>
 
