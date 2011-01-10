@@ -109,7 +109,7 @@ Factors</a>.
  
 --Tneck \e time
 - specify the neck trajectory execution time in point-to-point 
-  movements [expressed in seconds]; by default \e time is 0.70
+  movements [expressed in seconds]; by default \e time is 0.75
   seconds. (Tneck cannot be set equal or lower than Teyes).
  
 --Teyes \e time
@@ -535,7 +535,7 @@ public:
         robotName=rf.check("robot",Value("icub")).asString().c_str();
         partName=rf.check("part",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
-        neckTime=rf.check("Tneck",Value(0.70)).asDouble();
+        neckTime=rf.check("Tneck",Value(0.75)).asDouble();
         eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
         eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
         eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
@@ -1019,7 +1019,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--robot         name: robot name to connect to (default: icub)\n");
         fprintf(stdout,"\t--part          name: robot head port name, (default: head)\n");
         fprintf(stdout,"\t--torso         name: robot torso port name (default: torso)\n");
-        fprintf(stdout,"\t--Tneck         time: specify the neck movements time in seconds (default: 0.70)\n");
+        fprintf(stdout,"\t--Tneck         time: specify the neck movements time in seconds (default: 0.75)\n");
         fprintf(stdout,"\t--Teyes         time: specify the eyes movements time in seconds (default: 0.25)\n");        
         fprintf(stdout,"\t--config        file: file name for kinematics and cameras parameters\n");
         fprintf(stdout,"\t--context        dir: resource finder searching dir for config file\n");
