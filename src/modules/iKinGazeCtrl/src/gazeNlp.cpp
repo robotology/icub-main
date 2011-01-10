@@ -17,6 +17,7 @@
 */
 
 #include <iCub/gazeNlp.h>
+#include <iCub/utils.h>
 
 
 /************************************************************************/
@@ -39,7 +40,7 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
     double qty2R=dot(H2R,2,H1,3);
     double qty3=qty1*qty1-1.0;
 
-    if (fabs(qty3)<1e-6)
+    if (fabs(qty3)<ALMOST_ZERO)
         return false;
 
     double tL=qty2L/qty3;
@@ -154,7 +155,7 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
     double qty2R=dot(H2R,2,H1,3);
     double qty3=qty1*qty1-1.0;
 
-    if (fabs(qty3)<1e-6)
+    if (fabs(qty3)<ALMOST_ZERO)
         return false;
 
     double tL=qty2L/qty3;

@@ -173,6 +173,17 @@ bool EyePinvRefGen::getGyro(Vector &data)
 /************************************************************************/
 Vector EyePinvRefGen::getVelocityDueToNeckRotation(const Matrix &eyesJ, const Vector &fp)
 {
+    Vector vNeck(3);
+    vNeck[0]=commData->get_v()[0];
+    vNeck[1]=commData->get_v()[1];
+    vNeck[2]=commData->get_v()[2];
+
+    // skip computation if neck is not moving;
+    // this is particularly useful to filter out
+    // the noise on the gyro readouts
+    if (norm(vNeck)<ALMOST_ZERO)
+        return vNeck;
+
     Vector fprelv;
 
     if (VOR)
