@@ -305,7 +305,7 @@ void EyePinvRefGen::run()
         if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
         {
             // converge
-            Vector v=EYEPINVREFGEN_GAIN*pinv(eyesJ)*(xd-fp);
+            Vector v=EYEPINVREFGEN_GAIN*(pinv(eyesJ)*(xd-fp));
 
             // update eyes chains in actual configuration for velocity compensation
             chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
