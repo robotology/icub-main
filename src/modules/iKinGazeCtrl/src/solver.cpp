@@ -171,7 +171,7 @@ bool EyePinvRefGen::getGyro(Vector &data)
 
 
 /************************************************************************/
-Vector EyePinvRefGen::getVelocityDueToNeckRotation(const Matrix &eyesJ, const Vector &fp)
+Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp)
 {
     Vector fprelv;
 
@@ -226,7 +226,7 @@ Vector EyePinvRefGen::getVelocityDueToNeckRotation(const Matrix &eyesJ, const Ve
                commData->get_v()[2]*cross(H2,2,H2,3);
     }
 
-    return pinv(eyesJ)*fprelv;
+    return -1.0*(pinv(eyesJ)*fprelv);
 }
 
 
@@ -313,15 +313,15 @@ void EyePinvRefGen::run()
 
             // compensate neck rotation at eyes level
             if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
-                commData->get_compv()=getVelocityDueToNeckRotation(eyesJ,fp);
+                commData->get_counterv()=getEyesCounterVelocity(eyesJ,fp);
             else
-                commData->get_compv()=0.0;
+                commData->get_counterv()=0.0;
 
             // update reference
-            qd=I->integrate(v-commData->get_compv());
+            qd=I->integrate(v+commData->get_counterv());
         }
         else
-            commData->get_compv()=0.0;
+            commData->get_counterv()=0.0;
 
         // set a new target position
         commData->get_xd()=xd;
@@ -710,7 +710,7 @@ bool Solver::threadInit()
     commData->get_q()=fbHead;
     commData->get_torso()=fbTorso;
     commData->get_v().resize(fbHead.length(),0.0);
-    commData->get_compv().resize(3,0.0);
+    commData->get_counterv().resize(3,0.0);
     commData->get_fpFrame()=chainNeck->getH();
 
     port_xd=new xdPort(fp,this);

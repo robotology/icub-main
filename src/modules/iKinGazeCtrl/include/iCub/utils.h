@@ -90,7 +90,7 @@ class exchangeData
 protected:
     Vector xd,qd;
     Vector x,q,torso;
-    Vector v,compv;
+    Vector v,counterv;
     Matrix S;
     bool   isCtrlActive;
     bool   canCtrlBeDisabled;
@@ -108,7 +108,7 @@ public:
     Vector &get_q()                 { return q;                 }
     Vector &get_torso()             { return torso;             }
     Vector &get_v()                 { return v;                 }
-    Vector &get_compv()             { return compv;             }
+    Vector &get_counterv()          { return counterv;          }
     Matrix &get_fpFrame()           { return S;                 }
     bool   &get_isCtrlActive()      { return isCtrlActive;      }
     bool   &get_canCtrlBeDisabled() { return canCtrlBeDisabled; }
