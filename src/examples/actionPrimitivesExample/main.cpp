@@ -304,7 +304,7 @@ public:
         setName(name.c_str());
 
         partUsed=rf.check("part",Value("both_arms")).asString().c_str();
-        if (partUsed!="both_arms" && partUsed!="left_arm" && partUsed!="right_arm")
+        if ((partUsed!="both_arms") && (partUsed!="left_arm") && (partUsed!="right_arm"))
         {
             cout<<"Invalid part requested !"<<endl;
             return false;
@@ -360,7 +360,7 @@ public:
             getArmDependentOptions(bRight,graspOrienR,graspDispR,
                                    dOffsR,dLiftR,home_xR);
 
-        if (partUsed=="both_arms" || partUsed=="left_arm")
+        if ((partUsed=="both_arms") || (partUsed=="left_arm"))
         {    
             cout<<"***** Instantiating primitives for left_arm"<<endl;
             actionL=new AFFACTIONPRIMITIVESLAYER(optionL);
@@ -374,7 +374,7 @@ public:
                 useArm(USE_LEFT);
         }
 
-        if (partUsed=="both_arms" || partUsed=="right_arm")
+        if ((partUsed=="both_arms") || (partUsed=="right_arm"))
         {    
             cout<<"***** Instantiating primitives for right_arm"<<endl;
             actionR=new AFFACTIONPRIMITIVESLAYER(optionR);
@@ -458,7 +458,7 @@ public:
     {
         bool f;
 
-        if (partUsed=="both_arms" || partUsed=="right_arm")
+        if ((partUsed=="both_arms") || (partUsed=="right_arm"))
         {
             useArm(USE_RIGHT);
             action->pushAction(*home_x,"open_hand");
@@ -466,7 +466,7 @@ public:
             action->enableArmWaving(*home_x);
         }
 
-        if (partUsed=="both_arms" || partUsed=="left_arm")
+        if ((partUsed=="both_arms") || (partUsed=="left_arm"))
         {
             useArm(USE_LEFT);
             action->pushAction(*home_x,"open_hand");
