@@ -19,13 +19,13 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${iCubVis_INCLUDE_DIRS}
-                    ${OPENCV_INCLUDE_DIR}
+                    ${OpenCV_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} iCubVis
-                                     ${OPENCV_LIBRARIES}
+                                     ${OpenCV_LIBRARIES}
                                      ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
