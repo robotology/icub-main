@@ -37,8 +37,8 @@ iCubDriver::iCubDriver()
         if (m_apDriver[part])
         {
             m_apDriver[part]->view(m_apEnc[part]);
-            m_apDriver[part]->view(m_apPid[part]);
-            m_apDriver[part]->view(m_apAmp[part]);
+            //m_apDriver[part]->view(m_apPid[part]);
+            //m_apDriver[part]->view(m_apAmp[part]);
             m_apDriver[part]->view(m_apPos[part]);
             m_apDriver[part]->view(m_apVel[part]);
 
@@ -47,6 +47,7 @@ iCubDriver::iCubDriver()
                 m_apEnc[part]->getAxes(&m_aiCubPartNumJoints[part]);
             }
 
+            /*
             for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
             {
                 if (m_apPid[part])
@@ -59,12 +60,14 @@ iCubDriver::iCubDriver()
                     m_apAmp[part]->enableAmp(j);
                 }
             }
+            */
         }
     }
 }
 
 void iCubDriver::close()
 {
+    /*
     for (int part=TORSO; part<NUM_ICUB_PARTS; ++part)
     {
         for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
@@ -73,6 +76,7 @@ void iCubDriver::close()
             m_apAmp[part]->disableAmp(j);
         }
     }
+    */
 }
 
 yarp::dev::PolyDriver* iCubDriver::openDriver(std::string part)
