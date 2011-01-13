@@ -144,30 +144,12 @@ iCubTestMotors::iCubTestMotors(yarp::os::Searchable& configuration) : iCubTest(c
 
 iCubTestMotors::~iCubTestMotors()
 {		
-    if (m_aTargetVal)
-    {
-        delete [] m_aTargetVal;
-    }
-    if (m_aMaxErr)
-    {
-        delete [] m_aMaxErr;
-    }
-    if (m_aMinErr)
-    {
-        delete [] m_aMinErr;
-    }
-    if (m_aRefVel)
-    {
-        delete [] m_aRefVel;
-    }
-    if (m_aRefAcc)
-    {
-        delete [] m_aRefAcc;
-    }
-    if (m_aTimeout)
-    {
-        delete [] m_aTimeout;
-    }
+    if (m_aTargetVal) delete [] m_aTargetVal;
+    if (m_aMaxErr) delete [] m_aMaxErr;
+    if (m_aMinErr) delete [] m_aMinErr;
+    if (m_aRefVel) delete [] m_aRefVel;
+    if (m_aRefAcc) delete [] m_aRefAcc;
+    if (m_aTimeout) delete [] m_aTimeout;
 }
 
 iCubTestReport* iCubTestMotors::run()
@@ -176,7 +158,7 @@ iCubTestReport* iCubTestMotors::run()
 
     m_bSuccess=true;
 
-    for (int joint=0; joint<iCubDriver::instance()->getNumOfJoints(iCubDriver::LEFT_ARM); ++joint)
+    for (int joint=0; joint<m_NumJoints; ++joint)
     {
         iCubTestPartReportEntry *pOutput=new iCubTestPartReportEntry();
 
@@ -200,7 +182,7 @@ iCubTestReport* iCubTestMotors::run()
 
         iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
 
-        bool bSuccess=false;
+        bool bSetPosSuccess=false;
 
         switch (result)
         {
@@ -220,10 +202,10 @@ iCubTestReport* iCubTestMotors::run()
             pOutput->m_Result="FAILED: IPositionControl->setRefAcceleration";
             break;
         case iCubDriver::IPOS_POSMOVE_OK:
-            bSuccess=true;
+            bSetPosSuccess=true;
         }
 
-        if (!bSuccess)
+        if (!bSetPosSuccess)
         {
             m_bSuccess=false;
             pTestReport->incFailures();
@@ -234,9 +216,7 @@ iCubTestReport* iCubTestMotors::run()
         // only if success
 
         result=iCubDriver::instance()->waitPos(m_Part,joint,m_aTimeout[joint]);
-
-        bSuccess=false;
-
+        bool bWaitPosSuccess=false;
         switch (result)
         {
         case iCubDriver::IPOS_FAILED:
@@ -249,44 +229,40 @@ iCubTestReport* iCubTestMotors::run()
             pOutput->m_Result="FAILED: Timeout in IPositionControl->positionMove";
             break;
         case iCubDriver::IPOS_CHECKMOTIONDONE_OK:
-            bSuccess=true;
+            bWaitPosSuccess=true;
         }
 
-        if (!bSuccess)
-        {
-            m_bSuccess=false;
-            pTestReport->incFailures();
-            pTestReport->addEntry(pOutput);
-            continue;
-        }
-
+        // { encoders 
         double pos;
         result=iCubDriver::instance()->getEncPos(m_Part,joint,pos);
-
-        bSuccess=false;
-
+        bool bGetEncPosSuccess=false;
         switch (result)
         {
         case iCubDriver::IENC_FAILED:
-            pOutput->m_Result="FAILED: !IEncoders";
+            if (bWaitPosSuccess)
+            {
+                pOutput->m_Result="FAILED: !IEncoders";
+            }
             break;
         case iCubDriver::IENC_GETPOS_FAILED:
-            pOutput->m_Result="FAILED: IEncoders->getEncoder";
+            if (bWaitPosSuccess)
+            {
+                pOutput->m_Result="FAILED: IEncoders->getEncoder";
+            }
             break;
         case iCubDriver::IENC_GETPOS_OK:
-            bSuccess=true;
+            sprintf(posString,"%f",pos);
+            pOutput->m_Value=posString;
+            bGetEncPosSuccess=true;
         }
 
-        if (!bSuccess)
+        if (!bWaitPosSuccess || !bGetEncPosSuccess)
         {
             m_bSuccess=false;
             pTestReport->incFailures();
             pTestReport->addEntry(pOutput);
             continue;
         }
-
-        sprintf(posString,"%f",pos);
-        pOutput->m_Value=posString;
 
         if (pos>=m_aTargetVal[joint]+m_aMinErr[joint] && pos<=m_aTargetVal[joint]+m_aMaxErr[joint])
         {
