@@ -40,7 +40,7 @@ The controller can be seen as cartesian gaze controller since it
 receives as input a 3D position in the task space. Nonetheless, 
 further command modalities are available: 1) the coordinates
 (u,v) of just one pixel in the image plane along with a guessed 
-distance z wrt the eye's reference frame can be provided; 2) the
+component z in the eye's reference frame can be provided; 2) the
 position of the target within the two image planes can be 
 converted in the 3D task space using the monocular approach 
 coupled with a pid on the distance z; 3) the head-centered 
@@ -168,10 +168,9 @@ point:
 - by sending the absolute 3D position to gaze at in the task 
   space through /<ctrlName>/xd:i port.
 - by localizing the target in just one image plane and then 
-  sending its coordinates together with a guessed
-  distance z from the eye's frame to the /<ctrlName>/mono:i
-  port. <b> In this mode the intrinsic cameras parameters are
-  required </b>.
+  sending its coordinates together with a guessed distance z
+  from the image plane to the /<ctrlName>/mono:i port. <b> In
+  this mode the intrinsic cameras parameters are required </b>.
 - by localizing the target in the two image planes and thus 
   sending its coordinates to the /<ctrlName>/stereo:i port. This
   strategy employs the monocular approach along with a pid that
@@ -205,7 +204,7 @@ following ports:
   position expressed in one image plane. The input data format
   is the Bottle [type u v z], where \e type can be left or
   right, <i> (u,v) </i> is the pixel coordinates and \e z is the
-  guessed distance relative to the eye's reference frame.
+  guessed z-component in the eye's reference frame.
  
 - \e /<ctrlName>/<part>/stereo:i receives the current target 
   position expressed in image planes. It accepts 4 double (also
