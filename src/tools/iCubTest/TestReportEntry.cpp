@@ -19,3 +19,10 @@
 */
 
 #include "TestReportEntry.h"
+
+// The following dummy definition is made
+// to avoid LNK4221 warning under Windows:
+// compiler complained because no public
+// symbols were found.
+char dummy;		// to be removed once any meaningful variable will be allocated
+
