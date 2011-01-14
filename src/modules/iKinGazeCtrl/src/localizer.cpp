@@ -317,7 +317,7 @@ void Localizer::handleMonocularInput()
             Vector fp;
             if (projectPoint(type,u,v,z,fp))
             {
-                if (port_xd)
+                if (port_xd!=NULL)
                     port_xd->set_xd(fp);
                 else
                     fprintf(stdout,"Internal error occured!\n");
@@ -366,7 +366,7 @@ void Localizer::handleStereoInput()
 
                 if (projectPoint(dominantEye,u,v,z[0],fp))
                 {
-                    if (port_xd)
+                    if (port_xd!=NULL)
                         port_xd->set_xd(fp);
                     else
                         fprintf(stdout,"Internal error occured!\n");
@@ -396,7 +396,7 @@ void Localizer::handleAnglesInput()
 
             Vector xd=getFixationPoint(type,ang);
 
-            if (port_xd)
+            if (port_xd!=NULL)
                 port_xd->set_xd(xd);
             else
                 fprintf(stdout,"Internal error occured!\n");
