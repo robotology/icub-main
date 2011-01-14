@@ -53,6 +53,22 @@ namespace yarp{
 
 class ThreadPool2;
 class RequestsQueue;
+struct SpeedEstimationParameters
+{
+	double jnt_Vel_estimator_shift;
+	double jnt_Acc_estimator_shift;
+	double mot_Vel_estimator_shift;
+	double mot_Acc_estimator_shift;
+
+	SpeedEstimationParameters()
+	{
+		jnt_Vel_estimator_shift=0;
+		jnt_Acc_estimator_shift=0;
+		mot_Vel_estimator_shift=0;
+		mot_Acc_estimator_shift=0;
+	}
+};
+
 /**
 * \file CanBusMotionControl.h 
 * class for interfacing with a generic can device driver.
@@ -117,6 +133,7 @@ public:
     Pid *_pids;                                 /** initial gains */
 	Pid *_tpids;								/** initial torque gains */
 	bool _tpidsEnabled;							/** abilitation for torque gains */
+	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 	DebugParameters *_debug_params;             /** debug parameters */
 	bool _debug_paramsEnabled;					/** abilitation for debug parameters */
     double *_limitsMin;                         /** joint limits, max*/
@@ -283,6 +300,29 @@ public:
         return calibrateChannel(ch, 0);
     }
     /////////////////////////////////
+};
+
+class speedEstimationHelper
+{
+	int  jointsNum;
+	SpeedEstimationParameters *estim_params;
+	
+	public:
+	speedEstimationHelper (int njoints, SpeedEstimationParameters* estim_parameters );
+	inline int getNumberOfJoints ()
+	{ 
+		return jointsNum;
+	}
+	inline SpeedEstimationParameters getEstimationParameters (int jnt)
+	{
+		if (jnt>=0 && jnt<jointsNum) return estim_params[jnt];
+		SpeedEstimationParameters empty_params;
+		return empty_params;
+	}
+	inline ~speedEstimationHelper()
+	{
+		delete [] estim_params;
+	}
 };
 
 class axisTorqueHelper
@@ -588,6 +628,8 @@ public:
 	bool setVelocityShift(int j, double val);
 	//Timeout factors for velocity control
 	bool setVelocityTimeout(int j, double val);
+	//Shift factors for speed / acceleration estimation
+	bool setSpeedEstimatorShift(int j, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc);
 
 
     //////////////////////// BEGIN EncoderInterface
@@ -681,6 +723,7 @@ protected:
 	bool _writeByte8 (int msg, int axis, int value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
 	axisTorqueHelper *_axisTorqueHelper;
+	speedEstimationHelper *_speedEstimationHelper;
 
     // internal stuff.
     double *_ref_speeds;		// used for position control.

@@ -50,9 +50,6 @@
 const int REPORT_PERIOD=6; //seconds
 const double BCAST_STATUS_TIMEOUT=6; //seconds
 
-//windows size for the circular buffers which are used in DSP-controller for velocity and acceleration estimation
-#define WINDOW_SIZE_VEL 35.0
-#define WINDOW_SIZE_ACC 55.0
 
 using namespace yarp;
 using namespace yarp::os;
@@ -539,6 +536,16 @@ void CanBackDoor::onRead(Bottle &b)
 	   }
 	}
     semaphore->post();
+}
+
+speedEstimationHelper::speedEstimationHelper(int njoints, SpeedEstimationParameters* estim_parameters )
+{
+	jointsNum=njoints;
+	estim_params = new SpeedEstimationParameters [jointsNum];
+	if (estim_parameters!=0)
+		memcpy(estim_params, estim_parameters, sizeof(SpeedEstimationParameters)*jointsNum);
+    else
+		memset(estim_params, 0, sizeof(SpeedEstimationParameters)*jointsNum);
 }
 
 axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens )
@@ -1119,6 +1126,16 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                     for(i=1;i<xtmp.size(); i++) 
                         _velocityTimeout[i-1]=xtmp.get(i).asInt();
                 }
+
+	        /////// Speed/Acceleration Estimation
+		    for(i=1;i<nj+1; i++)
+			{
+				//These are default values. The parameters are not yet read from file
+				_estim_params[i-1].jnt_Vel_estimator_shift = 5;   
+				_estim_params[i-1].jnt_Acc_estimator_shift = 5;   
+				_estim_params[i-1].mot_Vel_estimator_shift = 5;   
+				_estim_params[i-1].mot_Acc_estimator_shift = 5;  
+			}
         }
     else
     {
@@ -1129,6 +1146,15 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
         for(i=1;i<nj+1; i++)
             _velocityTimeout[i-1] = 1000;   //Default value
+
+		fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
+        for(i=1;i<nj+1; i++)
+		{
+			_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
+			_estim_params[i-1].jnt_Acc_estimator_shift = 5;   
+			_estim_params[i-1].mot_Vel_estimator_shift = 5;   
+			_estim_params[i-1].mot_Acc_estimator_shift = 5;  
+		}
     }
 
     xtmp=p.findGroup("CAN").findGroup("broadcast_pos");
@@ -1188,6 +1214,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
 	_maxTorque=0;
 	_newtonsToSensor=0;
 	_debug_params=0;
+	_estim_params=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1216,6 +1243,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _pids=allocAndCheck<Pid>(nj);
 	_tpids=allocAndCheck<Pid>(nj);
 	_debug_params=allocAndCheck<DebugParameters>(nj);
+	_estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
 
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
@@ -1262,6 +1290,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
 
     checkAndDestroy<Pid>(_pids);
 	checkAndDestroy<Pid>(_tpids);
+	checkAndDestroy<SpeedEstimationParameters>(_estim_params);
 	checkAndDestroy<DebugParameters>(_debug_params);
     checkAndDestroy<double>(_limitsMax);
     checkAndDestroy<double>(_limitsMin);
@@ -1606,6 +1635,7 @@ _done(0)
     ACE_ASSERT (system_resources != NULL);
     _opened = false;
 	_axisTorqueHelper = 0;
+	_speedEstimationHelper = 0;
 
     mServerLogger = NULL;
 }
@@ -1725,7 +1755,16 @@ bool CanBusMotionControl::open (Searchable &config)
         setVelocityTimeout(i, p._velocityTimeout[i]);
     }
 
-    // disable the controller, cards will start with the pid controller & pwm off
+	// set parameters for speed/acceleration estimation
+    for(i = 0; i < p._njoints; i++) {
+		setSpeedEstimatorShift(i,p._estim_params[i].jnt_Vel_estimator_shift,
+								 p._estim_params[i].jnt_Acc_estimator_shift,
+								 p._estim_params[i].mot_Vel_estimator_shift,
+								 p._estim_params[i].mot_Acc_estimator_shift);
+	}
+	_speedEstimationHelper = new speedEstimationHelper(p._njoints, p._estim_params);
+    
+	// disable the controller, cards will start with the pid controller & pwm off
     for (i = 0; i < p._njoints; i++) {
         disablePid(i);
         disableAmp(i);
@@ -4299,7 +4338,8 @@ bool CanBusMotionControl::getEncoderSpeedsRaw(double *v)
     int i;
     _mutex.wait();
     for (i = 0; i < r.getJoints(); i++) {
-        v[i] = (double(r._bcastRecvBuffer[i]._speed)*1000.0)/WINDOW_SIZE_VEL;
+		int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
+        v[i] = (double(r._bcastRecvBuffer[i]._speed)*1000.0)/vel_factor;
     }
     _mutex.post();
     return true;
@@ -4313,7 +4353,8 @@ bool CanBusMotionControl::getEncoderSpeedRaw(int j, double *v)
         return false;
 
     _mutex.wait();
-    *v = (double(r._bcastRecvBuffer[j]._speed)*1000.0)/WINDOW_SIZE_VEL;
+	int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
+    *v = (double(r._bcastRecvBuffer[j]._speed)*1000.0)/vel_factor;
     _mutex.post();
 
     return true;
@@ -4325,7 +4366,9 @@ bool CanBusMotionControl::getEncoderAccelerationsRaw(double *v)
     int i;
     _mutex.wait();
     for (i = 0; i < r.getJoints(); i++) {
-        v[i] = (double(r._bcastRecvBuffer[i]._accel)*1000000.0)/(WINDOW_SIZE_VEL*WINDOW_SIZE_ACC);
+		int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
+		int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Acc_estimator_shift));
+        v[i] = (double(r._bcastRecvBuffer[i]._accel)*1000000.0)/(vel_factor*acc_factor);
     }
     _mutex.post();
     return true;
@@ -4339,7 +4382,9 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
         return false;
 
     _mutex.wait();
-    *v = (double(r._bcastRecvBuffer[j]._accel)*1000000.0)/(WINDOW_SIZE_VEL*WINDOW_SIZE_ACC);
+	int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
+	int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Acc_estimator_shift));
+    *v = (double(r._bcastRecvBuffer[j]._accel)*1000000.0)/(vel_factor*acc_factor);
     _mutex.post();
 
     return true;
@@ -4405,6 +4450,26 @@ bool CanBusMotionControl::setVelocityShift(int axis, double shift)
         return false;
 
     return _writeWord16 (CAN_SET_VEL_SHIFT, axis, S_16(shift));
+}
+
+bool CanBusMotionControl::setSpeedEstimatorShift(int axis, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+	
+	CanBusResources& r = RES(system_resources);
+	_mutex.wait();
+		r.startPacket();
+		r.addMessage (CAN_SET_SPEED_ESTIM_SHIFT, axis);
+		*((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(jnt_speed) & 0xFF;
+		*((unsigned char *)(r._writeBuffer[0].getData()+2)) = (unsigned char)(jnt_acc)   & 0xFF;
+		*((unsigned char *)(r._writeBuffer[0].getData()+3)) = (unsigned char)(mot_speed) & 0xFF;
+		*((unsigned char *)(r._writeBuffer[0].getData()+4)) = (unsigned char)(mot_acc)   & 0xFF;
+		r._writeBuffer[0].setLen(5);
+		r.writePacket();
+    _mutex.post();
+
+    return true;
 }
 
 bool CanBusMotionControl::setVelocityTimeout(int axis, double timeout)
