@@ -2592,7 +2592,7 @@ void CanBusMotionControl:: run()
                                 max,
                                 it);
 
-                        logJointData(canDevName.c_str(),r._networkN,j,5,yarp::os::Value(1));
+                        logJointData(canDevName.c_str(),r._networkN,j,5,yarp::os::Value(max));
                     }
                     if (it<1)
                     {
@@ -2601,6 +2601,8 @@ void CanBusMotionControl:: run()
                                 r._networkN,
                                 j, 
                                 it);
+
+                        logJointData(canDevName.c_str(),r._networkN,j,4,yarp::os::Value(1));
                     }
                 }
 
