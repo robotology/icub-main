@@ -16,6 +16,69 @@
 * \image html icubgui-merged.jpg "Screenshots: iCubGui running on Linux"
 * \image latex icubgui1.eps "Screenshots: iCubGui running on Linux" width=10cm
 *
+* \section visobj_sec Vision objects
+*
+* iCubGui can also display data blobs from vision modules, representing them as
+* 3D ellipsoids characterized by name, dimensions, color, transparency, position
+* and orientation. Objects in iCubGui are managed by a port specified in the 
+* iCubGui.ini configuration file with the tag \e objport, as follows:
+* 
+* \code
+* robot /icubSim
+* geometry skeleton.ini
+* objport /iCubGui/objects
+* \endcode
+*
+* To add an object to the display object list, send to iCubGui a bottle 
+* composed as following on the port specified in iCubGui.ini:
+*
+* \code
+* yarp::os::Bottle obj;
+*
+* obj.addString("object"); // command to add/update an object
+* obj.addString("my_object_name");
+*
+* // object dimensions in millimiters 
+* // (it will be displayed as an ellipsoid with the tag "my_object_name")
+* obj.addDouble(dimX);
+* obj.addDouble(dimY);
+* obj.addDouble(dimZ);
+* 
+* // object position in millimiters
+* // reference frame: X=fwd, Y=left, Z=up
+* obj.addDouble(posX);
+* obj.addDouble(posY);
+* obj.addDouble(posZ);
+*
+* // object orientation (roll, pitch, yaw) in degrees
+* obj.addDouble(rotX);
+* obj.addDouble(rotY);
+* obj.addDouble(rotZ);
+* 
+* // object color (0-255)
+* obj.addInt(R);
+* obj.addInt(G);
+* obj.addInt(B);
+* // transparency (0.0=invisible 1.0=solid)
+* obj.addDouble(alpha);
+* \endcode
+*
+* To delete an object:
+*
+* \code
+* yarp::os::Bottle obj;
+*
+* obj.addString("delete");
+* obj.addString("my_object_name");
+* \endcode
+*
+* To reset the object list:
+*
+* \code
+* yarp::os::Bottle obj;
+*
+* obj.addString("reset");
+* \endcode
 *
 * \section lib_sec Libraries
 *  - YARP
