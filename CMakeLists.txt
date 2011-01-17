@@ -178,7 +178,7 @@ foreach(conf ${ICUB_CMAKE_SCRIPTS})
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
   install(FILES  conf/${conf} COMPONENT scripts 
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/${conf})
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/)
 endforeach(conf)
 
 ## add the "uninstall" target
