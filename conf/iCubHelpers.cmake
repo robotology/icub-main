@@ -256,7 +256,7 @@ function(icub_app_install target)
 	MESSAGE(STATUS "Option root: ${${target}_ROOT}")
   endif(VERBOSE)
   
-  message("f-${target} ${${target}_FILES}")
+  message("-${target} ${${target}_FILES}")
   
   set(files ${${target}_FILES})
   set(destination ${${target}_DESTINATION})
