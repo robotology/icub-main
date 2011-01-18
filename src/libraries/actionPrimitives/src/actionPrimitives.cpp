@@ -234,8 +234,8 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
         bool sw=opt.find(key.c_str()).asString()=="on"?true:false;
 
         Vector newDof, dummyRet;
-        newDof.resize(3,2);
-        newDof[j]=sw?1:0;
+        newDof.resize(3,2.0);
+        newDof[j]=sw?1.0:0.0;
 
         printMessage("%s %s\n",key.c_str(),sw?"enabled":"disabled");
         cartCtrl->setDOF(newDof,dummyRet);
@@ -403,8 +403,8 @@ bool ActionPrimitives::open(Property &opt)
     Vector curDof;
     cartCtrl->getDOF(curDof);
 
-    enableTorsoSw.resize(3,0);
-    disableTorsoSw.resize(3,0);
+    enableTorsoSw.resize(3,0.0);
+    disableTorsoSw.resize(3,0.0);
     for (int i=0; i<3; i++)
         enableTorsoSw[i]=curDof[i];
 
@@ -1016,9 +1016,7 @@ void ActionPrimitives::enableTorsoDof()
     if (!torsoActive && norm(enableTorsoSw))
     {
         Vector dummyRet;
-
         cartCtrl->setDOF(enableTorsoSw,dummyRet);
-
         torsoActive=true;
     }
 }
@@ -1031,9 +1029,7 @@ void ActionPrimitives::disableTorsoDof()
     if (torsoActive && norm(enableTorsoSw))
     {
         Vector dummyRet;
-
         cartCtrl->setDOF(disableTorsoSw,dummyRet);
-
         torsoActive=false;
     }
 }
@@ -1404,6 +1400,35 @@ bool ActionPrimitives::getCartesianIF(ICartesianControl *&ctrl) const
     if (configured)
     {
         ctrl=cartCtrl;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::getTorsoUsedJoints(yarp::sig::Vector &torso)
+{
+    if (configured)
+    {
+        torso=enableTorsoSw;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::setTorsoUsedJoints(const yarp::sig::Vector &torso)
+{
+    if (configured)
+    {
+        int len=torso.length()>3?3:torso.length();
+        for (int i=0; i<len; i++)
+            enableTorsoSw[i]=torso[i];
+
         return true;
     }
     else

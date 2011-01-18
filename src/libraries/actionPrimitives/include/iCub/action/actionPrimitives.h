@@ -602,6 +602,32 @@ public:
     virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl) const;
 
     /**
+    * Return the control status of torso joints.
+    * @param torso the vector containing the control status of torso 
+    *              joints (@see getDOF(.) method of the cartesian
+    *              interface).
+    * @return true/false on success/fail. 
+    *  
+    * @note Unlike the arm, the torso is a part that can be shared, 
+    *       therefore the enabling/disabling of its joints must be
+    *       properly notified.
+    */
+    virtual bool getTorsoUsedJoints(yarp::sig::Vector &torso);
+
+    /**
+    * Change the control status of torso joints.
+    * @param torso the vector containing the control status of torso
+    *              joints (@see setDOF(.) method of the cartesian
+    *              interface).
+    * @return true/false on success/fail. 
+    *  
+    * @note Unlike the arm, the torso is a part that can be shared, 
+    *       therefore the enabling/disabling of its joints must be
+    *       properly notified.
+    */
+    virtual bool setTorsoUsedJoints(const yarp::sig::Vector &torso);
+
+    /**
     * Get the current arm pose.
     * @param x a 3-d vector which is filled with the actual 
     *         position x,y,z (meters).
