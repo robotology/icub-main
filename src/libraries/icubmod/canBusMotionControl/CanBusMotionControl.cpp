@@ -2521,14 +2521,21 @@ void CanBusMotionControl:: run()
 
             bool errorF=false;
 			for (j=0; j<r._njoints ;j++)
+            {
 				if ( r._bcastRecvBuffer[j]._mainLoopOverflowCounter>0)
-					{
-						errorF=true;
-						int addr=r._destinations[j/2];
-						fprintf(stderr, "%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
-						logJointData(canDevName.c_str(),r._networkN,j,18,yarp::os::Value((int)r._bcastRecvBuffer[j]._mainLoopOverflowCounter));                
-                        r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
-					}
+				{
+					errorF=true;
+					int addr=r._destinations[j/2];
+					fprintf(stderr, "%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
+					logJointData(canDevName.c_str(),r._networkN,j,18,yarp::os::Value((int)r._bcastRecvBuffer[j]._mainLoopOverflowCounter));                
+                    r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
+				}
+                else
+                {
+                    logJointData(canDevName.c_str(),r._networkN,j,18,yarp::os::Value(0));
+                }
+            }
+
             for (j=0; j<r._njoints ;j+=2)
                 {
                     int addr=r._destinations[j/2];
@@ -2541,6 +2548,11 @@ void CanBusMotionControl:: run()
                             logJointData(canDevName.c_str(),r._networkN,j,14,yarp::os::Value((int)r._bcastRecvBuffer[j]._canTxError));
                             logJointData(canDevName.c_str(),r._networkN,j,15,yarp::os::Value((int)r._bcastRecvBuffer[j]._canRxError));
                         }
+                    else
+                    {
+                        logJointData(canDevName.c_str(),r._networkN,j,14,yarp::os::Value(0));
+                        logJointData(canDevName.c_str(),r._networkN,j,15,yarp::os::Value(0));
+                    }
                 }
             if (!errorF)
                 {
@@ -2558,7 +2570,7 @@ void CanBusMotionControl:: run()
                     logJointData(canDevName.c_str(),r._networkN,j,2,yarp::os::Value((int)(currentRun-lastRecv)));
 
                     if ( (currentRun-lastRecv)>BCAST_STATUS_TIMEOUT)
-                        {
+                    {
                             int ch=j%2;
                             int addr=r._destinations[j/2];
                             fprintf(stderr, "%s [%d] have not heard from board %d (channel %d) since %.2lf seconds\n", 
@@ -2567,7 +2579,11 @@ void CanBusMotionControl:: run()
                                     addr, ch, currentRun-lastRecv);
 
                             logJointData(canDevName.c_str(),r._networkN,j,3,yarp::os::Value(1));
-                        }
+                    }
+                    else
+                    {
+                        logJointData(canDevName.c_str(),r._networkN,j,3,yarp::os::Value(0));
+                    }
                 }
 
             //Check position update frequency
@@ -2580,7 +2596,7 @@ void CanBusMotionControl:: run()
                     r._bcastRecvBuffer[j]._position.getStats(it, dT, min, max);
                     r._bcastRecvBuffer[j]._position.resetStats();
 
-                    logJointData(canDevName.c_str(),r._networkN,j,4,yarp::os::Value(max));
+                    logJointData(canDevName.c_str(),r._networkN,j,5,yarp::os::Value(max));
 
                     double POS_LATENCY_WARN_THR=averagePeriod*1.5;
                     if (max>POS_LATENCY_WARN_THR)
@@ -2591,9 +2607,8 @@ void CanBusMotionControl:: run()
                                 j, 
                                 max,
                                 it);
-
-                        logJointData(canDevName.c_str(),r._networkN,j,5,yarp::os::Value(max));
                     }
+
                     if (it<1)
                     {
                         fprintf(stderr, "%s [%d] joint %d, warning not enough encoder messages (received %d msgs)\n",
@@ -2603,6 +2618,10 @@ void CanBusMotionControl:: run()
                                 it);
 
                         logJointData(canDevName.c_str(),r._networkN,j,4,yarp::os::Value(1));
+                    }
+                    else
+                    {
+                        logJointData(canDevName.c_str(),r._networkN,j,4,yarp::os::Value(0));
                     }
                 }
 
