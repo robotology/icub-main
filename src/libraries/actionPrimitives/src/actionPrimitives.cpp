@@ -1408,7 +1408,7 @@ bool ActionPrimitives::getCartesianIF(ICartesianControl *&ctrl) const
 
 
 /************************************************************************/
-bool ActionPrimitives::getTorsoUsedJoints(yarp::sig::Vector &torso)
+bool ActionPrimitives::getTorsoJoints(yarp::sig::Vector &torso)
 {
     if (configured)
     {
@@ -1421,7 +1421,7 @@ bool ActionPrimitives::getTorsoUsedJoints(yarp::sig::Vector &torso)
 
 
 /************************************************************************/
-bool ActionPrimitives::setTorsoUsedJoints(const yarp::sig::Vector &torso)
+bool ActionPrimitives::setTorsoJoints(const yarp::sig::Vector &torso)
 {
     if (configured)
     {

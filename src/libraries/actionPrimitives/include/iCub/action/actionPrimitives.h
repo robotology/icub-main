@@ -612,7 +612,7 @@ public:
     *       therefore the enabling/disabling of its joints must be
     *       properly notified.
     */
-    virtual bool getTorsoUsedJoints(yarp::sig::Vector &torso);
+    virtual bool getTorsoJoints(yarp::sig::Vector &torso);
 
     /**
     * Change the control status of torso joints.
@@ -625,7 +625,7 @@ public:
     *       therefore the enabling/disabling of its joints must be
     *       properly notified.
     */
-    virtual bool setTorsoUsedJoints(const yarp::sig::Vector &torso);
+    virtual bool setTorsoJoints(const yarp::sig::Vector &torso);
 
     /**
     * Get the current arm pose.
