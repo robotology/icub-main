@@ -235,8 +235,10 @@ endmacro(icub_app)
 #
 # By default FILES will be copied to ${ICUB_INSTALL_PREFIX}/app/${target}/DESTINATION
 # if you specify ROOT, files will be copied to ${ICUB_INSTALL_PREFIX}.
-#
-macro(icub_app_install target)
+# 
+# Jan 2011: converted the macro to be a function, to avoid clashing with cmake variables defined outside.
+# Hopefully functions have local scope and will prevent clashes to happen in the future.
+function(icub_app_install target)
   PARSE_ARGUMENTS(${target}
 	"FILES;DESTINATION"
     "VERBOSE;ROOT"
@@ -254,10 +256,12 @@ macro(icub_app_install target)
 	MESSAGE(STATUS "Option root: ${${target}_ROOT}")
   endif(VERBOSE)
   
+  message("f-${target} ${${target}_FILES}")
+  
   set(files ${${target}_FILES})
   set(destination ${${target}_DESTINATION})
   set(root ${${target}_ROOT})
-
+  
   set(cmakefile ${CMAKE_BINARY_DIR}/app-${target}.cmake)
   
   if (root)
@@ -288,7 +292,7 @@ macro(icub_app_install target)
   file(APPEND ${cmakefile} "\t\tendif()\n")
   file(APPEND ${cmakefile} "\tendif()\n")
   file(APPEND ${cmakefile} "endforeach(f \"\${files}\")\n\n")
-endmacro(icub_app_install)
+endfunction(icub_app_install)
 
 ##
 # This function is now obsolete.
