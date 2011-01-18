@@ -110,9 +110,12 @@ mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
 set_property(GLOBAL PROPERTY ICUB_INCLUDE_DIRS)
 set_property(GLOBAL PROPERTY ICUB_TARGETS)
 
-# clean up icub-export-build.cmake and icub-export-build-includes.cmake(required because targets append to it)
+# clean up:
+# icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-install-includes.cmake
+# this is a required step because we will append data to these files during the build
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
+file(WRITE ${CMAKE_BINARY_DIR}/icub-export-install-includes.cmake "")
 
 set(ICUB_EXPERIMENTAL_APP_INSTALL TRUE CACHE BOOL "Turn on app install experimental feature")
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)

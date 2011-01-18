@@ -121,8 +121,8 @@ add_library(iCubVis ${folder_source} ${folder_header})
 target_link_libraries(iCubVis ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 
 icub_export_library(iCubVis 
-                    INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include 
-                    EXTERNAL_INCLUDE_DIRS ${iCubVis_INCLUDE_DIRS}
+                    INTERNAL_INCLUDE_DIRS ${iCubVis_INCLUDE_DIRS}
+                    EXTERNAL_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS}
                     DESTINATION include/iCub/iCubVis
                     FILES ${folder_public_headers}
 )
