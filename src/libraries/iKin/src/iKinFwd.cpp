@@ -1154,7 +1154,7 @@ void iKinChain::prepareForHessian()
         return;
     }
 
-    if (hess_DH)
+    if (hess_DH!=NULL)
         delete[] hess_DH;
 
     hess_H.clear();
@@ -1228,7 +1228,7 @@ void iKinChain::dispose()
     allList.clear();
     quickList.clear();
 
-    if (hess_DH)
+    if (hess_DH!=NULL)
     {
         delete[] hess_DH;
         hess_DH=NULL;
@@ -1388,7 +1388,7 @@ void iKinLimb::clone(const iKinLimb &limb)
         for (unsigned int i=0; i<n; i++)
         {
             linkList[i]=new iKinLink(*limb.linkList[i]);
-            *this << *linkList[i];
+            *this<<*linkList[i];
         }
     }
 
@@ -1402,7 +1402,7 @@ void iKinLimb::dispose()
     if (unsigned int n=linkList.size())
     {
         for (unsigned int i=0; i<n; i++)
-            if (linkList[i])
+            if (linkList[i]!=NULL)
                 delete linkList[i];
 
         linkList.clear();
@@ -1476,7 +1476,7 @@ void iCubArm::allocate(const string &_type)
     }
 
     for (unsigned int i=0; i<linkList.size(); i++)
-        *this << *linkList[i];
+        *this<<*linkList[i];
 
     blockLink(0,0.0);
     blockLink(1,0.0);
@@ -1578,7 +1578,7 @@ void iCubLeg::allocate(const string &_type)
     }
 
     for (unsigned int i=0; i<linkList.size(); i++)
-        *this << *linkList[i];
+        *this<<*linkList[i];
 }
 
 
@@ -1664,7 +1664,7 @@ void iCubEye::allocate(const string &_type)
     }
 
     for (unsigned int i=0; i<linkList.size(); i++)
-        *this << *linkList[i];
+        *this<<*linkList[i];
 
     blockLink(0,0.0);
     blockLink(1,0.0);
@@ -1782,7 +1782,7 @@ void iCubInertialSensor::allocate(const string &_type)
     linkList[6]=new iKinLink(     0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0);
 
     for (unsigned int i=0; i<linkList.size(); i++)
-        *this << *linkList[i];
+        *this<<*linkList[i];
 
     // block virtual links
     blockLink(6,0.0);
