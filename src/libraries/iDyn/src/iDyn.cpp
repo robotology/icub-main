@@ -17,7 +17,7 @@
 */
 
 #include <iCub/iDyn/iDyn.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>

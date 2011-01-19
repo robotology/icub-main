@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include <yarp/math/Math.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynInv.h>

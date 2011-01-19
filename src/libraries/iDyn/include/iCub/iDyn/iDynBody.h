@@ -41,7 +41,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iDyn/iDynInv.h>
 #include <deque>

@@ -45,7 +45,7 @@
 #include <yarp/sig/all.h>
 
 #include <iCub/iKin/iKinFwd.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 
 #include <stdexcept>
 

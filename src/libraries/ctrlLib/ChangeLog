@@ -1,4 +1,7 @@
 
+2011-19-01 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * "ctrlMath.*" changed into "math.*"
+
 2010-12-05 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * pids: added getOptions(.)/setOptions(.) methods
 

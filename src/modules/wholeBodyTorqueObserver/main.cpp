@@ -108,7 +108,7 @@ This file can be edited at src/wholeBodyTorqueObserver/main.cpp.
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/dev/all.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>

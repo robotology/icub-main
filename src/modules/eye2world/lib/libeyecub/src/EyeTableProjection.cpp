@@ -18,7 +18,7 @@
 
 #include <cmath>
 #include <yarp/math/Math.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <vislab/yarp/sig.h>
 
 using namespace yarp::os;

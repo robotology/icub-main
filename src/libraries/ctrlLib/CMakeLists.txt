@@ -2,7 +2,7 @@ SET(PROJECTNAME ctrlLib)
 
 PROJECT(${PROJECTNAME})
 
-SET(folder_source src/ctrlMath.cpp
+SET(folder_source src/math.cpp
                   src/filters.cpp
                   src/kalman.cpp
                   src/pids.cpp
@@ -12,7 +12,7 @@ SET(folder_source src/ctrlMath.cpp
                   src/optimalControl.cpp
                   src/neuralNetworks.cpp)
 
-SET(folder_header include/iCub/ctrl/ctrlMath.h
+SET(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/filters.h
                   include/iCub/ctrl/kalman.h
                   include/iCub/ctrl/pids.h

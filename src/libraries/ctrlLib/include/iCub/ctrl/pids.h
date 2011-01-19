@@ -36,7 +36,7 @@
 
 #include <deque>
 
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <iCub/ctrl/filters.h>
 
 

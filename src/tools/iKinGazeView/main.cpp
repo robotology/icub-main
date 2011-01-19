@@ -149,7 +149,7 @@ on terminal 3:
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 
 #include <iostream>
 #include <fstream>

@@ -24,7 +24,7 @@
 
 #include <gsl/gsl_math.h>
 
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <iCub/action/actionPrimitives.h>
 
 #include <stdio.h>

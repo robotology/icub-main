@@ -26,7 +26,7 @@
 #include <yarp/os/all.h>
 #include <yarp/math/Math.h>
 
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 
 namespace vislab {
 namespace math {

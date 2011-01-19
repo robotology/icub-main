@@ -70,7 +70,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 
 
 namespace iCub

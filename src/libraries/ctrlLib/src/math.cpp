@@ -17,7 +17,7 @@
 */
 
 #include <yarp/math/SVD.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 
 #include <string>
 #include <stdio.h>

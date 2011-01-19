@@ -174,7 +174,7 @@ Windows, Linux
 #include <yarp/dev/GazeControl.h>
 
 #include <gsl/gsl_math.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 #include <iCub/ctrl/neuralNetworks.h>
 #include <iCub/iKin/iKinFwd.h>
 

@@ -66,7 +66,7 @@
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
 
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 
 #include <string>
 #include <deque>

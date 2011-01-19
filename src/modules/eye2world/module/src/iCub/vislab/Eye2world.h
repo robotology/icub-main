@@ -220,7 +220,7 @@
 #include <yarp/math/Math.h>
 
 #include <iCub/iKin/iKinFwd.h>
-#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/math.h>
 
 #include <iCub/vislab/EyeTableProjection.h>
 
