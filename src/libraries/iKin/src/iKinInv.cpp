@@ -1181,7 +1181,7 @@ void MultiRefMinJerkCtrl::computeWeight()
 {
     for (unsigned int i=0; i<dim; i++)
     {
-        if (q[i]>=qGuardMinInt[i] && q[i]<=qGuardMaxInt[i])
+        if ((q[i]>=qGuardMinInt[i]) && (q[i]<=qGuardMaxInt[i]))
             W(i,i)=gamma;
         else if ((q[i]<=qGuardMinExt[i]) || (q[i]>=qGuardMaxExt[i]))
             W(i,i)=0.0;
