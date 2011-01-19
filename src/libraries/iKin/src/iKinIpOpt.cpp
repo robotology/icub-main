@@ -497,10 +497,10 @@ bool iKin_NLP::intermediate_callback(AlgorithmMode mode, Index iter, Number obj_
                                      Index ls_trials, const IpoptData* ip_data,
                                      IpoptCalculatedQuantities* ip_cq)
 {
-    if (callback)
+    if (callback!=NULL)
         callback->exec(xd,q);
 
-    if (exhalt)
+    if (exhalt!=NULL)
         return !(*exhalt);
     else
         return true;
@@ -700,7 +700,7 @@ yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Ve
 
     ApplicationReturnStatus status=App->OptimizeTNLP(GetRawPtr(nlp));
 
-    if (exit_code)
+    if (exit_code!=NULL)
         *exit_code=status;
 
     return nlp->get_qd();

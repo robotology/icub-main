@@ -259,14 +259,16 @@ Vector iKinCtrl::solve(Vector &xd, const double tol_size, const int max_iter,
             break;
         }
 
-        if (exhalt)
+        if (exhalt!=NULL)
+        {
             if (*exhalt)
             {
                 if (exit_code)
                     *exit_code=IKINCTRL_RET_EXHALT;
-
+            
                 break;
             }
+        }
 
         if (max_iter>0 && (int)iter>=max_iter)
         {
