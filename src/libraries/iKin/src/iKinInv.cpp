@@ -1180,6 +1180,7 @@ void MultiRefMinJerkCtrl::computeGuard()
 void MultiRefMinJerkCtrl::computeWeight()
 {
     for (unsigned int i=0; i<dim; i++)
+    {
         if (q[i]>=qGuardMinInt[i] && q[i]<=qGuardMaxInt[i])
             W(i,i)=gamma;
         else if (q[i]<=qGuardMinExt[i] || q[i]>=qGuardMaxExt[i])
@@ -1188,6 +1189,7 @@ void MultiRefMinJerkCtrl::computeWeight()
             W(i,i)=0.5*gamma*(1.0+tanh(+10.0*(q[i]-qGuardMinCOG[i])/qGuard[i]));
         else
             W(i,i)=0.5*gamma*(1.0+tanh(-10.0*(q[i]-qGuardMaxCOG[i])/qGuard[i]));
+    }
 }
 
 
