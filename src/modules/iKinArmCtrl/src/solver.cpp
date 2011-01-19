@@ -26,8 +26,8 @@ iCubShoulderConstr::iCubShoulderConstr(unsigned int dofs, double lower_bound_inf
 {
     unsigned int offs=dofs<=7 ? 0 : 3;
 
-    double joint1_0= 10.0*CTRL_DEG2RAD;
-    double joint1_1= 15.0*CTRL_DEG2RAD;
+    double joint1_0= 24.0*CTRL_DEG2RAD;
+    double joint1_1= 17.0*CTRL_DEG2RAD;
     double joint2_0=-33.0*CTRL_DEG2RAD;
     double joint2_1= 60.0*CTRL_DEG2RAD;
     double m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
