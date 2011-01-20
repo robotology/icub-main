@@ -26,6 +26,7 @@
 
 #define CARTSLV_SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
 #define CARTSLV_DEFAULT_PER                 20      // [ms]
+#define CARTSLV_DEFAULT_TOL                 1e-3
 #define CARTSLV_DEFAULT_TMO                 1000    // [ms]
 #define CARTSLV_WEIGHT_2ND_TASK             0.01
 #define CARTSLV_WEIGHT_3RD_TASK             0.01
@@ -559,6 +560,18 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
 
 
 /************************************************************************/
+void CartesianSolver::set_ctrlPose(const unsigned int _ctrlPose)
+{
+    slv->set_ctrlPose(_ctrlPose);
+
+    if (slv->get_ctrlPose()==IKINCTRL_POSE_XYZ)
+        slv->setTol(slv->getTranslationalTol());
+    else
+        slv->setTol(tol);
+}
+
+
+/************************************************************************/
 void CartesianSolver::countUncontrolledJoints()
 {
     unctrlJointsNum=prt->chn->getN()-prt->chn->getDOF();
@@ -1041,9 +1054,9 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                     int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
 
                     if (pose==IKINSLV_VOCAB_VAL_POSE_FULL)
-                        slv->set_ctrlPose(IKINCTRL_POSE_FULL);
+                        set_ctrlPose(IKINCTRL_POSE_FULL);
                     else if (pose==IKINSLV_VOCAB_VAL_POSE_XYZ)
-                        slv->set_ctrlPose(IKINCTRL_POSE_XYZ);
+                        set_ctrlPose(IKINCTRL_POSE_XYZ);
                 }
 
                 // set things for the 3rd task
@@ -1353,9 +1366,7 @@ bool CartesianSolver::open(Searchable &options)
     alignJointsBounds();    
 
     // parse configuration options
-    period=CARTSLV_DEFAULT_PER;
-    if (options.check("period"))
-        setRate(period=options.find("period").asInt());
+    setRate(period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt());
 
     ctrlPose=IKINCTRL_POSE_FULL;
     if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
@@ -1371,13 +1382,8 @@ bool CartesianSolver::open(Searchable &options)
         if (options.find("verbosity").asVocab()==IKINSLV_VOCAB_VAL_ON)
             verbosity=true;
 
-    double tol=1e-3;
-    if (options.check("tol"))
-        tol=options.find("tol").asDouble();
-
-    int maxIter=200;
-    if (options.check("maxIter"))
-        maxIter=options.find("maxIter").asInt();
+    tol=options.check("tol",Value(CARTSLV_DEFAULT_TOL)).asDouble();
+    int maxIter=options.check("maxIter",Value(200)).asInt();
 
     // instantiate the optimizer
     slv=new iKinIpOptMin(*prt->chn,ctrlPose,tol,maxIter);
@@ -1643,7 +1649,7 @@ void CartesianSolver::run()
                 qd_3rdTask[i]=(*prt->chn)(i).getAng();
 
         // update optimizer's options
-        slv->set_ctrlPose(ctrlPose=inPort->get_pose());
+        set_ctrlPose(ctrlPose=inPort->get_pose());
 
         // call the solver to converge
         double t0=Time::now();

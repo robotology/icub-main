@@ -334,6 +334,7 @@ protected:
     int           maxPartJoints;
     int           unctrlJointsNum;
     double        ping_robot_tmo;
+    double        tol;
     double        token;
     double       *pToken;
 
@@ -366,6 +367,7 @@ protected:
     bool   waitPart(const yarp::os::Property &partOpt);
     void   alignJointsBounds();
     bool   setLimits(int axis, double min, double max);
+    void   set_ctrlPose(const unsigned int _ctrlPose);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
     void   getFeedback(const bool wait=false);    
