@@ -115,7 +115,7 @@ public:
                  const unsigned int verbose=0) :
                  iKinIpOptMin(_chain,IKINCTRL_POSE_XYZ,tol,max_iter,verbose,false) { }
 
-    void set_ctrlPose(unsigned int _ctrlPose) { }
+    void set_ctrlPose(const unsigned int _ctrlPose) { }
     void setHessianOpt(const bool useHessian) { }   // Hessian not implemented
     virtual Vector solve(const Vector &q0, Vector &xd, const Vector &gDir,
                          Ipopt::ApplicationReturnStatus *exit_code=NULL, bool *exhalt=NULL,

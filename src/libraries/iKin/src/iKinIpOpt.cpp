@@ -536,8 +536,9 @@ void iKin_NLP::finalize_solution(SolverReturn status,
 
 
 /************************************************************************/
-iKinIpOptMin::iKinIpOptMin(iKinChain &c, unsigned int _ctrlPose, const double tol, const int max_iter,
-                           const unsigned int verbose, bool useHessian) : chain(c)
+iKinIpOptMin::iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose, const double tol,
+                           const int max_iter, const unsigned int verbose, bool useHessian) :
+                           chain(c)
 {
     ctrlPose=_ctrlPose;
     pLIC=&noLIC;
@@ -572,7 +573,7 @@ iKinIpOptMin::iKinIpOptMin(iKinChain &c, unsigned int _ctrlPose, const double to
 
 
 /************************************************************************/
-void iKinIpOptMin::set_ctrlPose(unsigned int _ctrlPose)
+void iKinIpOptMin::set_ctrlPose(const unsigned int _ctrlPose)
 {
     ctrlPose=_ctrlPose;
 
@@ -582,7 +583,7 @@ void iKinIpOptMin::set_ctrlPose(unsigned int _ctrlPose)
 
 
 /************************************************************************/
-iKinChain &iKinIpOptMin::specify2ndTaskEndEff(unsigned int n)
+iKinChain &iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
 {
     chain2ndTask.clear();
     chain2ndTask.setH0(chain.getH0());
@@ -638,8 +639,8 @@ void iKinIpOptMin::setHessianOpt(const bool useHessian)
 
 
 /************************************************************************/
-void iKinIpOptMin::setUserScaling(const bool useUserScaling, Number _obj_scaling,
-                                  Number _x_scaling, Number _g_scaling)
+void iKinIpOptMin::setUserScaling(const bool useUserScaling, const Number _obj_scaling,
+                                  const Number _x_scaling, const Number _g_scaling)
 {
     if (useUserScaling)
     {
@@ -684,7 +685,7 @@ void iKinIpOptMin::getBoundsInf(Number &lower, Number &upper)
 
 
 /************************************************************************/
-void iKinIpOptMin::setBoundsInf(Number lower, Number upper)
+void iKinIpOptMin::setBoundsInf(const Number lower, const Number upper)
 {
     App->Options()->SetNumericValue("nlp_lower_bound_inf",lower);
     App->Options()->SetNumericValue("nlp_upper_bound_inf",upper);

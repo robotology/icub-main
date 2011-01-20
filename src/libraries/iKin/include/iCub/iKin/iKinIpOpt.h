@@ -407,7 +407,7 @@ public:
     *                enable Quasi-Newton approximation (true by
     *                default).
     */
-    iKinIpOptMin(iKinChain &c, unsigned int _ctrlPose,
+    iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose,
                  const double tol, const int max_iter=IKINCTRL_DISABLED,
                  const unsigned int verbose=0, bool useHessian=true);
 
@@ -418,7 +418,7 @@ public:
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
     */
-    void set_ctrlPose(unsigned int _ctrlPose);
+    void set_ctrlPose(const unsigned int _ctrlPose);
 
     /**
     * Returns the state of Pose control settings.
@@ -449,7 +449,7 @@ public:
     *          2nd End-Effector.
     * @return a reference to the secondary chain. 
     */
-    iKinChain &specify2ndTaskEndEff(unsigned int n);
+    iKinChain &specify2ndTaskEndEff(const unsigned int n);
 
     /**
     * Sets Tolerance.
@@ -489,8 +489,8 @@ public:
     * @param x_scaling user scaling factor for variables. 
     * @param g_scaling user scaling factor for constraints. 
     */
-    void setUserScaling(const bool useUserScaling, Ipopt::Number _obj_scaling,
-                        Ipopt::Number _x_scaling, Ipopt::Number _g_scaling);
+    void setUserScaling(const bool useUserScaling, const Ipopt::Number _obj_scaling,
+                        const Ipopt::Number _x_scaling, const Ipopt::Number _g_scaling);
 
     /**
     * Enable\disable derivative test at each call to solve method 
@@ -514,7 +514,7 @@ public:
     * @param lower is the new lower bound 
     * @param upper is the new upper bound 
     */
-    void setBoundsInf(Ipopt::Number lower, Ipopt::Number upper);
+    void setBoundsInf(const Ipopt::Number lower, const Ipopt::Number upper);
 
     /**
     * Sets the tolerance used by the algorithm for translational 
