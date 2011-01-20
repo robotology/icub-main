@@ -517,14 +517,6 @@ public:
     void setBoundsInf(Ipopt::Number lower, Ipopt::Number upper);
 
     /**
-    * Returns the tolerance used by the algorithm for translational 
-    * part when the complete pose is to be achieved. 
-    * @note tolerance is applied to the squared norm 
-    * @return the current translational tolerance (1e-6 by default).
-    */
-    Ipopt::Number getTranslationalTol() { return translationalTol; }
-
-    /**
     * Sets the tolerance used by the algorithm for translational 
     * part when the complete pose is to be achieved (1e-6 by 
     * default). 
