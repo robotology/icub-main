@@ -27,8 +27,15 @@ endif(MSVC)
 
 ########################################################################
 # settings for rpath
-set(ICUB_INSTALL_WITH_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
-#mark_as_advanced(ICUB_ENABLE_FORCE_RPATH)
+
+
+#########################################################################
+# Control setting an rpath
+if (NOT MSVC)
+	set(ICUB_INSTALL_WITH_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
+	#mark_as_advanced(ICUB_ENABLE_FORCE_RPATH)
+endif (NOT MSVC)
+
 
 if (ICUB_INSTALL_WITH_RPATH )
   # when building, don't use the install RPATH already
