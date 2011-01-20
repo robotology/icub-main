@@ -261,11 +261,12 @@ bool iKin_NLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
     Index offs=0;
 
     for (Index i=0; i<m; i++)
+    {
         if (i==0 && ctrlPose==IKINCTRL_POSE_FULL)
         {
             g_l[0]=lowerBoundInf;
             g_u[0]=translationalTol;
-
+        
             offs=1;
         }
         else
@@ -273,6 +274,7 @@ bool iKin_NLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
             g_l[i]=LIC.getlB()[i-offs];
             g_u[i]=LIC.getuB()[i-offs];
         }
+    }
 
     return true;
 }
@@ -336,14 +338,16 @@ bool iKin_NLP::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
     Index offs=0;
 
     for (Index i=0; i<m; i++)
+    {
         if (i==0 && ctrlPose==IKINCTRL_POSE_FULL)
         {
             g[0]=0.5*norm2(e_xyz);
-
+        
             offs=1;
         }
         else
             g[i]=linC[i-offs];
+    }
 
     return true;
 }
@@ -361,12 +365,14 @@ bool iKin_NLP::eval_jac_g(Index n, const Number* x, bool new_x,
             Index idx=0;
     
             for (Index row=0; row<m; row++)
+            {
                 for (Index col=0; col<n; col++)
                 {
                     iRow[idx]=row;
                     jCol[idx]=col;
                     idx++;
                 }
+            }
         }
         else
         {
@@ -378,6 +384,7 @@ bool iKin_NLP::eval_jac_g(Index n, const Number* x, bool new_x,
             Index offs=0;
 
             for (Index row=0; row<m; row++)
+            {
                 for (Index col=0; col<n; col++)
                 {    
                     if (row==0 && ctrlPose==IKINCTRL_POSE_FULL)
@@ -388,9 +395,10 @@ bool iKin_NLP::eval_jac_g(Index n, const Number* x, bool new_x,
                     }
                     else
                         values[idx]=LIC.getC()(row-offs,col);
-
+                
                     idx++;
                 }
+            }
         }
     }
 
@@ -408,12 +416,14 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
         Index idx=0;
     
         for (Index row=0; row<n; row++)
+        {
             for (Index col=0; col<=row; col++)
             {
                 iRow[idx]=row;
                 jCol[idx]=col;
                 idx++;
             }
+        }
     }
     else
     {
@@ -430,6 +440,7 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
         Index idx=0;
 
         for (Index row=0; row<n; row++)
+        {
             for (Index col=0; col<=row; col++)
             {
                 yarp::sig::Vector h=chain.fastHessian_ij(row,col);
@@ -440,18 +451,18 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
                 h_ang[0]=h[3];
                 h_ang[1]=h[4];
                 h_ang[2]=h[5];
-
+            
                 yarp::sig::Vector *h_1st;
                 if (ctrlPose==IKINCTRL_POSE_XYZ)
                     h_1st=&h_xyz;
                 else
                     h_1st=&h_ang;
-
+            
                 values[idx]=obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st));
-
+            
                 if (m)
                     values[idx]+=lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz));
-
+            
                 if ((weight2ndTask!=0.0) && row<(int)dim_2nd && col<(int)dim_2nd)
                 {    
                     yarp::sig::Vector h2=chain2ndTask.fastHessian_ij(row,col);
@@ -459,12 +470,13 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
                     h_2nd[0]=(w_2nd[0]*w_2nd[0])*h2[0];
                     h_2nd[1]=(w_2nd[1]*w_2nd[1])*h2[1];
                     h_2nd[2]=(w_2nd[2]*w_2nd[2])*h2[2];
-
+            
                     values[idx]+=obj_factor*weight2ndTask*(dot(J_2nd,row,J_2nd,col)-dot(h_2nd,e_2nd));
                 }
-
+            
                 idx++;
             }
+        }
     }
     
     return true;
