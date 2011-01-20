@@ -126,10 +126,10 @@ public:
 
         double joint3_0, joint3_1;
         double joint4_0, joint4_1;
-        joint3_0= 90.0*CTRL_DEG2RAD;
+        joint3_0= 85.0*CTRL_DEG2RAD;
         joint3_1=105.0*CTRL_DEG2RAD;
         joint4_0= 90.0*CTRL_DEG2RAD;
-        joint4_1= 50.0*CTRL_DEG2RAD;
+        joint4_1= 40.0*CTRL_DEG2RAD;
         elb_m=(joint4_1-joint4_0)/(joint3_1-joint3_0);
         elb_n=joint4_0-elb_m*joint3_0;
 
