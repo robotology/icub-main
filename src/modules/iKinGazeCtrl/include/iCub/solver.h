@@ -142,6 +142,7 @@ protected:
     string configFile;
     unsigned int period;
     bool Robotable;
+    bool bindSolveRequest;
     int nJointsTorso;
     int nJointsHead;
     double eyeTiltMin;

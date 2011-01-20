@@ -514,6 +514,8 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
+
+    bindSolveRequest=false;
 }
 
 
@@ -526,8 +528,11 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     min_rad=(min_rad<neckPitchMin)?neckPitchMin:(min_rad>neckPitchMax?neckPitchMax:min_rad);
     max_rad=(max_rad<neckPitchMin)?neckPitchMin:(max_rad>neckPitchMax?neckPitchMax:max_rad);
 
+    double cur_rad=(*chainNeck)(0).getAng();
+    bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
+
     (*chainNeck)(0).setMin(min_rad);
-    (*chainNeck)(0).setMax(max_rad);
+    (*chainNeck)(0).setMax(max_rad);    
 
     fprintf(stdout,"\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -541,6 +546,9 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 
     min_rad=(min_rad<neckRollMin)?neckRollMin:(min_rad>neckRollMax?neckRollMax:min_rad);
     max_rad=(max_rad<neckRollMin)?neckRollMin:(max_rad>neckRollMax?neckRollMax:max_rad);
+
+    double cur_rad=(*chainNeck)(1).getAng();
+    bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     (*chainNeck)(1).setMin(min_rad);
     (*chainNeck)(1).setMax(max_rad);
@@ -557,6 +565,9 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 
     min_rad=(min_rad<neckYawMin)?neckYawMin:(min_rad>neckYawMax?neckYawMax:min_rad);
     max_rad=(max_rad<neckYawMin)?neckYawMin:(max_rad>neckYawMax?neckYawMax:max_rad);
+
+    double cur_rad=(*chainNeck)(2).getAng();
+    bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     (*chainNeck)(2).setMin(min_rad);
     (*chainNeck)(2).setMax(max_rad);
@@ -790,11 +801,16 @@ void Solver::run()
     doSolve&=commData->get_isCtrlActive() || commData->get_canCtrlBeDisabled() ||
              torsoChanged || headChanged;
 
-    // 5) solve straightaway if the target has changed
+    // 5) solve straightaway if we are in tracking mode and a request is raised
+    // by the binding methods
+    doSolve|=!commData->get_canCtrlBeDisabled() && bindSolveRequest;
+
+    // 6) solve straightaway if the target has changed
     doSolve|=port_xd->get_newDelayed();
 
-    // clear trigger
+    // clear triggers
     port_xd->get_newDelayed()=false;
+    bindSolveRequest=false;
 
     // call the solver for neck
     if (doSolve)
