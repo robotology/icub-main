@@ -537,23 +537,27 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
     int cnt=0;
 
     for (int i=0; i<prt->num; i++)
+    {
         for (int j=0; j<jnt[i]; j++)
+        {
             if (cnt++==axis)
             {
                 double curMin, curMax;
-
+            
                 lim[i]->getLimits(rmp[i][j],&curMin,&curMax);
-
+            
                 if (min>=curMin && max<=curMax)
                 {
                     (*prt->chn)[axis].setMin(CTRL_DEG2RAD*min);
                     (*prt->chn)[axis].setMax(CTRL_DEG2RAD*max);
-
+            
                     return true;
                 }
                 else
                     return false;
             }
+        }
+    }
 
     return false;
 }
@@ -1173,12 +1177,14 @@ bool CartesianSolver::decodeDOF(const Vector &_dof)
     int len=l1<l2 ? l1 : l2;
 
     for (int i=0; i<len; i++)
+    {
         if (_dof[i]>1.0)
             continue;
         else if (_dof[i])
             prt->chn->releaseLink(i);
         else
             prt->chn->blockLink(i);
+    }
 
     prepareJointsRestTask();
 
@@ -1259,10 +1265,12 @@ bool CartesianSolver::isNewDOF(const Vector &_dof)
     int len=l1<l2 ? l1 : l2;
 
     for (int i=0; i<len; i++)
+    {
         if (_dof[i]>1.0)
             continue;
         else if (_dof[i]!=dof[i])
             return true;
+    }
 
     return false;
 }
