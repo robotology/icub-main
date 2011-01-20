@@ -165,8 +165,8 @@ int main()
     // method in order to relax constraints
     for (unsigned int i=0; i<chain->getN(); i++)
     {
-        cout<<"link "<<i<<": "<<
-            (chain->getConstraint(i)?"constrained":"not-constrained")<<endl;
+        cout << "link " << i << ": " <<
+            (chain->getConstraint(i)?"constrained":"not-constrained") << endl;
     }
 
     // solve for xf starting from current configuration q0
