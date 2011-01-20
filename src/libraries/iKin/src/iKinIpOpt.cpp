@@ -19,6 +19,8 @@
 #include <iCub/iKin/iKinIpOpt.h>
 
 #define IKINIPOPT_DEFAULT_TRANSTOL      1e-6
+#define IKINIPOPT_DEFAULT_LWBOUNDINF    (-1e9)
+#define IKINIPOPT_DEFAULT_UPBOUNDINF    (+1e9)
 
 using namespace yarp;
 using namespace yarp::sig;
@@ -31,8 +33,8 @@ using namespace Ipopt;
 /************************************************************************/
 iKinLinIneqConstr::iKinLinIneqConstr()
 {
-    lowerBoundInf=-1e9;
-    upperBoundInf=+1e9;
+    lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
+    upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
     active=false;
 }
 
@@ -137,9 +139,8 @@ iKin_NLP::iKin_NLP(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector
     __x_scaling  =1.0;
     __g_scaling  =1.0;
 
-    lowerBoundInf=-1e9;
-    upperBoundInf=+1e9;
-
+    lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
+    upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
     translationalTol=IKINIPOPT_DEFAULT_TRANSTOL;
 
     callback=NULL;
