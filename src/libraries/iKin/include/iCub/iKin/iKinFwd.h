@@ -577,9 +577,10 @@ public:
     /**
     * Sets H0, the rigid roto-translation matrix from the root 
     * reference frame to the 0th frame. 
-    * @param H0
+    * @param H0 
+    * @return true if succeed, false otherwise. 
     */
-    void setH0(const yarp::sig::Matrix &_H0);
+    bool setH0(const yarp::sig::Matrix &_H0);
 
     /**
     * Sets the free joint angles to values of q[i].
@@ -765,9 +766,6 @@ public:
     * Destructor. 
     */
     virtual ~iKinChain();
-
-	//**** void methods used by iDyn *****//
-	void setAngVel() { }
 };
 
 
@@ -800,6 +798,7 @@ protected:
     void       pushLink(iKinLink &l)                      { iKinChain::pushLink(l);          }
     void       clear()                                    { iKinChain::clear();              }
     void       popLink()                                  { iKinChain::popLink();            }
+    void       pushLink(iKinLink *pl);
 
 public:
     /**
