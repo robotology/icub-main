@@ -113,7 +113,7 @@ Factors</a>.
   seconds. (Tneck cannot be set equal or lower than Teyes).
  
 --Teyes \e time
-- specify the eyes trajectory execution time in point-to-point 
+- Specify the eyes trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.25
   seconds.
  
@@ -125,12 +125,13 @@ Factors</a>.
 - Resource finder searching dir for config file.
  
 --noVOR
-- disable the vestibulo-ocular reflex in favour of the OCR while
+- Disable the vestibulo-ocular reflex in favour of the OCR while
   computing the counter-rotation of the eyes due to neck
-  rotation.
+  rotation. Turn off the VOR when the inertial measurements are
+  particularly noisy.
  
 --simulation
-- simulate the presence of the robot. 
+- Simulate the presence of the robot. 
  
 --ping_robot_tmo \e tmo
 - The parameter \e tmo is the timeout (in seconds) to allow to
