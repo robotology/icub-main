@@ -263,7 +263,7 @@ bool iKin_NLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
 
     for (Index i=0; i<m; i++)
     {
-        if (i==0 && ctrlPose==IKINCTRL_POSE_FULL)
+        if ((i==0) && (ctrlPose==IKINCTRL_POSE_FULL))
         {
             g_l[0]=lowerBoundInf;
             g_u[0]=translationalTol;
@@ -340,7 +340,7 @@ bool iKin_NLP::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
 
     for (Index i=0; i<m; i++)
     {
-        if (i==0 && ctrlPose==IKINCTRL_POSE_FULL)
+        if ((i==0) && (ctrlPose==IKINCTRL_POSE_FULL))
         {
             g[0]=0.5*norm2(e_xyz);
         
@@ -388,7 +388,7 @@ bool iKin_NLP::eval_jac_g(Index n, const Number* x, bool new_x,
             {
                 for (Index col=0; col<n; col++)
                 {    
-                    if (row==0 && ctrlPose==IKINCTRL_POSE_FULL)
+                    if ((row==0) && (ctrlPose==IKINCTRL_POSE_FULL))
                     {
                         values[idx]=grad[idx];
                     
