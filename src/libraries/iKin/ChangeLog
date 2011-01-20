@@ -1,4 +1,7 @@
 
+2011-01-20 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * major update: now the translational part is always treated as nonlinear constraint
+
 2010-11-19 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinSlv.cpp,.h: even a new target equal to the previous one goes through the solver
 

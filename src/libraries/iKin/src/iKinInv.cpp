@@ -85,7 +85,7 @@ void iKinCtrl::set_ctrlPose(unsigned int _ctrlPose)
 /************************************************************************/
 void iKinCtrl::set_q(const Vector &q0)
 {
-    size_t n=q0.length();
+    unsigned int n=q0.length();
     n=n>dim ? dim : n;
 
     for (unsigned int i=0; i<n; i++)

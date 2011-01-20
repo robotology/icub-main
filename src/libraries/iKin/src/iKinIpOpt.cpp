@@ -18,7 +18,7 @@
 
 #include <iCub/iKin/iKinIpOpt.h>
 
-#define IKINIPOPT_DEFAULT_TRANSTOL      1e-6
+#define IKINIPOPT_DEFAULT_TRANSTOL      (1e-6)
 #define IKINIPOPT_DEFAULT_LWBOUNDINF    (-1e9)
 #define IKINIPOPT_DEFAULT_UPBOUNDINF    (+1e9)
 
@@ -101,7 +101,7 @@ iKin_NLP::iKin_NLP(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector
 
     qd.resize(dim);
 
-    size_t n=q0.length();
+    unsigned int n=q0.length();
     n=n>dim ? dim : n;
 
     unsigned int i;
@@ -113,24 +113,26 @@ iKin_NLP::iKin_NLP(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector
 
     q=qd;
 
+    e_zero.resize(3,0.0);
     e_xyz.resize(3,0.0);
     e_ang.resize(3,0.0);
     e_2nd.resize(3,0.0);
     e_3rd.resize(dim,0.0);
 
-    J_xyz.resize(3,dim); J_xyz.zero();
-    J_ang.resize(3,dim); J_ang.zero();
-    J_2nd.resize(3,dim); J_2nd.zero();
+    J_zero.resize(3,dim); J_zero.zero();
+    J_xyz.resize(3,dim);  J_xyz.zero();
+    J_ang.resize(3,dim);  J_ang.zero();
+    J_2nd.resize(3,dim);  J_2nd.zero();
 
-    if (ctrlPose==IKINCTRL_POSE_XYZ)
-    {
-        e_1st=&e_xyz;
-        J_1st=&J_xyz;
-    }
-    else
+    if (ctrlPose==IKINCTRL_POSE_FULL)
     {
         e_1st=&e_ang;
         J_1st=&J_ang;
+    }
+    else
+    {
+        e_1st=&e_zero;
+        J_1st=&J_zero;
     }
 
     firstGo=true;
@@ -218,31 +220,24 @@ bool iKin_NLP::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
                             Index& nnz_h_lag, IndexStyleEnum& index_style)
 {
     n=dim;
-    m=0;
-    nnz_jac_g=0;
+    m=1;
+    nnz_jac_g=dim;
 
     if (LIC.isActive())
     {
-        size_t lenLower=LIC.getlB().length();
-        size_t lenUpper=LIC.getuB().length();
+        int lenLower=LIC.getlB().length();
+        int lenUpper=LIC.getuB().length();
 
-        if (lenLower && lenLower==lenUpper && LIC.getC().cols()==dim)
+        if (lenLower && (lenLower==lenUpper) && (LIC.getC().cols()==dim))
         {
-            m=lenLower;
-            nnz_jac_g=lenLower*dim;
+            m+=lenLower;
+            nnz_jac_g+=lenLower*dim;
         }
         else
             LIC.setActive(false);
     }
     
-    if (ctrlPose==IKINCTRL_POSE_FULL)
-    {
-        m+=1;
-        nnz_jac_g+=dim;
-    }
-
     nnz_h_lag=(dim*(dim+1))>>1;
-    
     index_style=TNLP::C_STYLE;
     
     return true;
@@ -263,11 +258,10 @@ bool iKin_NLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
 
     for (Index i=0; i<m; i++)
     {
-        if ((i==0) && (ctrlPose==IKINCTRL_POSE_FULL))
+        if (i==0)
         {
             g_l[0]=lowerBoundInf;
-            g_u[0]=translationalTol;
-        
+            g_u[0]=translationalTol;        
             offs=1;
         }
         else
@@ -340,10 +334,9 @@ bool iKin_NLP::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
 
     for (Index i=0; i<m; i++)
     {
-        if ((i==0) && (ctrlPose==IKINCTRL_POSE_FULL))
+        if (i==0)
         {
-            g[0]=0.5*norm2(e_xyz);
-        
+            g[0]=0.5*norm2(e_xyz);        
             offs=1;
         }
         else
@@ -388,10 +381,9 @@ bool iKin_NLP::eval_jac_g(Index n, const Number* x, bool new_x,
             {
                 for (Index col=0; col<n; col++)
                 {    
-                    if ((row==0) && (ctrlPose==IKINCTRL_POSE_FULL))
+                    if (row==0)
                     {
-                        values[idx]=grad[idx];
-                    
+                        values[idx]=grad[idx];                    
                         offs=1;
                     }
                     else
@@ -445,24 +437,23 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
             for (Index col=0; col<=row; col++)
             {
                 yarp::sig::Vector h=chain.fastHessian_ij(row,col);
-                yarp::sig::Vector h_xyz(3), h_ang(3);
+                yarp::sig::Vector h_xyz(3), h_ang(3), h_zero(3);
                 h_xyz[0]=h[0];
                 h_xyz[1]=h[1];
                 h_xyz[2]=h[2];
                 h_ang[0]=h[3];
                 h_ang[1]=h[4];
                 h_ang[2]=h[5];
+                h_zero=0.0;
             
                 yarp::sig::Vector *h_1st;
-                if (ctrlPose==IKINCTRL_POSE_XYZ)
-                    h_1st=&h_xyz;
-                else
+                if (ctrlPose==IKINCTRL_POSE_FULL)
                     h_1st=&h_ang;
+                else
+                    h_1st=&h_zero;
             
-                values[idx]=obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st));
-            
-                if (m)
-                    values[idx]+=lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz));
+                values[idx]=obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st));            
+                values[idx]+=lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz));
             
                 if ((weight2ndTask!=0.0) && (row<(int)dim_2nd) && (col<(int)dim_2nd))
                 {    
@@ -589,7 +580,7 @@ iKinChain &iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
     chain2ndTask.setH0(chain.getH0());
 
     for (unsigned int i=0; i<n; i++)
-        chain2ndTask << chain[i];
+        chain2ndTask<<chain[i];
 
     return chain2ndTask;
 }

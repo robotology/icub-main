@@ -564,18 +564,6 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
 
 
 /************************************************************************/
-void CartesianSolver::setCtrlPose(const unsigned int _ctrlPose)
-{
-    slv->set_ctrlPose(_ctrlPose);
-
-    if (slv->get_ctrlPose()==IKINCTRL_POSE_XYZ)
-        slv->setTol(slv->getTranslationalTol());
-    else
-        slv->setTol(tol);
-}
-
-
-/************************************************************************/
 void CartesianSolver::countUncontrolledJoints()
 {
     unctrlJointsNum=prt->chn->getN()-prt->chn->getDOF();
@@ -1058,9 +1046,9 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                     int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
 
                     if (pose==IKINSLV_VOCAB_VAL_POSE_FULL)
-                        setCtrlPose(IKINCTRL_POSE_FULL);
+                        slv->set_ctrlPose(IKINCTRL_POSE_FULL);
                     else if (pose==IKINSLV_VOCAB_VAL_POSE_XYZ)
-                        setCtrlPose(IKINCTRL_POSE_XYZ);
+                        slv->set_ctrlPose(IKINCTRL_POSE_XYZ);
                 }
 
                 // set things for the 3rd task
@@ -1390,7 +1378,7 @@ bool CartesianSolver::open(Searchable &options)
         if (options.find("verbosity").asVocab()==IKINSLV_VOCAB_VAL_ON)
             verbosity=true;
 
-    tol=options.check("tol",Value(CARTSLV_DEFAULT_TOL)).asDouble();
+    double tol=options.check("tol",Value(CARTSLV_DEFAULT_TOL)).asDouble();
     int maxIter=options.check("maxIter",Value(200)).asInt();
 
     // instantiate the optimizer
@@ -1657,7 +1645,7 @@ void CartesianSolver::run()
                 qd_3rdTask[i]=(*prt->chn)(i).getAng();
 
         // update optimizer's options
-        setCtrlPose(ctrlPose=inPort->get_pose());
+        slv->set_ctrlPose(ctrlPose=inPort->get_pose());
 
         // call the solver to converge
         double t0=Time::now();

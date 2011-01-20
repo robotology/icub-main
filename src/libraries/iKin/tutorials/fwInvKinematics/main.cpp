@@ -151,9 +151,8 @@ int main()
     // for both translational and rotational part
     iKinIpOptMin slv(*chain,IKINCTRL_POSE_FULL,1e-3,100);
 
-    // when the complete pose is to be achieved, we have
-    // a dedicated tolerance for the translational part
-    // which is by default equal to 1e-6
+    // we have a dedicated tolerance for the translational part
+    // which is by default equal to 1e-6;
     // note that the tolerance is applied to the squared norm
     slv.setTranslationalTol(1e-8);
 

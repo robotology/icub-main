@@ -208,10 +208,13 @@ protected:
     yarp::sig::Vector  q;
     bool   *exhalt;
 
+    yarp::sig::Vector  e_zero;
     yarp::sig::Vector  e_xyz;
     yarp::sig::Vector  e_ang;
     yarp::sig::Vector  e_2nd;
     yarp::sig::Vector  e_3rd;
+
+    yarp::sig::Matrix  J_zero;
     yarp::sig::Matrix  J_xyz;
     yarp::sig::Matrix  J_ang;
     yarp::sig::Matrix  J_2nd;
@@ -518,21 +521,11 @@ public:
 
     /**
     * Sets the tolerance used by the algorithm for translational 
-    * part when the complete pose is to be achieved (1e-6 by 
-    * default). 
+    * part (1e-6 by default). 
     * @note tolerance is applied to the squared norm. 
     * @param tol is the new translational tolerance.
     */
     void setTranslationalTol(const Ipopt::Number tol) { translationalTol=tol; }
-
-    /**
-    * Returns the tolerance used by the algorithm for translational 
-    * part when the complete pose is to be achieved (1e-6 by 
-    * default). 
-    * @note tolerance is applied to the squared norm. 
-    * @return tol is the current translational tolerance.
-    */
-    Ipopt::Number getTranslationalTol() { return translationalTol; }
 
     /**
     * Executes the IpOpt algorithm trying to converge on target. 

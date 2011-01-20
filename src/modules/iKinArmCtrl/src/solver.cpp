@@ -174,9 +174,6 @@ bool Solver::threadInit()
     // mode, the tolerance and a maximum number of iteration set equal to 200.
     slv=new iKinIpOptMin(*chain,ctrlPose,1e-3,200);
 
-    if (ctrlPose==IKINCTRL_POSE_XYZ)
-        slv->setTol(slv->getTranslationalTol());
-
     // Identify the elbow xyz position to be used as 2nd task
     slv->specify2ndTaskEndEff(6);
 

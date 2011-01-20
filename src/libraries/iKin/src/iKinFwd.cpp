@@ -771,7 +771,7 @@ Matrix iKinChain::getH()
 {
     // may be different from DOF since one blocked link may lie
     // at the end of the chain.
-    size_t n=quickList.size();
+    unsigned int n=quickList.size();
     Matrix H=H0;
 
     for (unsigned int i=0; i<n; i++)
@@ -947,7 +947,7 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
 
     // may be different from DOF since one blocked link may lie
     // at the end of the chain.
-    size_t n=quickList.size();
+    unsigned int n=quickList.size();
     Matrix J(6,DOF);
     Matrix H,dH,_H;
     Vector dr;

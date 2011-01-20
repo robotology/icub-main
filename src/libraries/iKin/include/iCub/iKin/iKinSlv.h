@@ -334,7 +334,6 @@ protected:
     int           maxPartJoints;
     int           unctrlJointsNum;
     double        ping_robot_tmo;
-    double        tol;
     double        token;
     double       *pToken;
 
@@ -367,7 +366,6 @@ protected:
     bool   waitPart(const yarp::os::Property &partOpt);
     void   alignJointsBounds();
     bool   setLimits(int axis, double min, double max);
-    void   setCtrlPose(const unsigned int _ctrlPose);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
     void   getFeedback(const bool wait=false);    
@@ -467,8 +465,7 @@ public:
     *  
     * \b xyzTol <double>: example (xyzTol 1e-6), specifies the 
     *    desired tolerance on the positional part of the task
-    *    function to be minimized whenever the "full" pose
-    *    requirement is raised.
+    *    function to be minimized.
     *  
     * \b interPoints <vocab>: example (interPoints on), selects 
     *    whether to force or not the solver to output on the port
