@@ -464,7 +464,7 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
                 if (m)
                     values[idx]+=lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz));
             
-                if ((weight2ndTask!=0.0) && row<(int)dim_2nd && col<(int)dim_2nd)
+                if ((weight2ndTask!=0.0) && (row<(int)dim_2nd) && (col<(int)dim_2nd))
                 {    
                     yarp::sig::Vector h2=chain2ndTask.fastHessian_ij(row,col);
                     yarp::sig::Vector h_2nd(3);
