@@ -503,16 +503,16 @@ public:
     void setDerivativeTest(const bool enableTest, const bool enable2ndDer=false);
 
     /**
-    * Returns the lower and upper bounds to represent -inf and +inf
-    * @param lower is a reference to return the lower bound 
-    * @param upper is a reference to return the upper bound 
+    * Returns the lower and upper bounds to represent -inf and +inf.
+    * @param lower is a reference to return the lower bound.
+    * @param upper is a reference to return the upper bound. 
     */
     void getBoundsInf(Ipopt::Number &lower, Ipopt::Number &upper);
 
     /**
-    * Sets the lower and upper bounds to represent -inf and +inf
-    * @param lower is the new lower bound 
-    * @param upper is the new upper bound 
+    * Sets the lower and upper bounds to represent -inf and +inf.
+    * @param lower is the new lower bound. 
+    * @param upper is the new upper bound. 
     */
     void setBoundsInf(const Ipopt::Number lower, const Ipopt::Number upper);
 
@@ -520,10 +520,19 @@ public:
     * Sets the tolerance used by the algorithm for translational 
     * part when the complete pose is to be achieved (1e-6 by 
     * default). 
-    * @note tolerance is applied to the squared norm 
-    * @param tol is the new translational tolerance
+    * @note tolerance is applied to the squared norm. 
+    * @param tol is the new translational tolerance.
     */
     void setTranslationalTol(const Ipopt::Number tol) { translationalTol=tol; }
+
+    /**
+    * Returns the tolerance used by the algorithm for translational 
+    * part when the complete pose is to be achieved (1e-6 by 
+    * default). 
+    * @note tolerance is applied to the squared norm. 
+    * @return tol is the current translational tolerance.
+    */
+    Ipopt::Number getTranslationalTol() { return translationalTol; }
 
     /**
     * Executes the IpOpt algorithm trying to converge on target. 
