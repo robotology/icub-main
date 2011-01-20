@@ -149,7 +149,7 @@ int main()
 
     // instantiate a IPOPT solver for inverse kinematic
     // for both translational and rotational part
-    iKinIpOptMin slv(*chain,IKINCTRL_POSE_FULL,1e-3,100);
+    iKinIpOptMin slv(*chain,IKINCTRL_POSE_FULL,1e-3,100);    
 
     // we have a dedicated tolerance for the translational part
     // which is by default equal to 1e-6;
@@ -160,6 +160,14 @@ int main()
     // is usually required (a good scaling holds each element of the jacobian
     // of constraints and the hessian of lagrangian in norm between 0.1 and 10.0).
     slv.setUserScaling(true,100.0,100.0,100.0);
+
+    // note how the solver called internally the chain->setAllConstraints(false)
+    // method in order to relax constraints
+    for (unsigned int i=0; i<chain->getN(); i++)
+    {
+        cout<<"link "<<i<<": "<<
+            (chain->getConstraint(i)?"constrained":"not-constrained")<<endl;
+    }
 
     // solve for xf starting from current configuration q0
     qhat=slv.solve(chain->getAng(),xf);
