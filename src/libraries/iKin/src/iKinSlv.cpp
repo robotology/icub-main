@@ -564,7 +564,7 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
 
 
 /************************************************************************/
-void CartesianSolver::set_ctrlPose(const unsigned int _ctrlPose)
+void CartesianSolver::setCtrlPose(const unsigned int _ctrlPose)
 {
     slv->set_ctrlPose(_ctrlPose);
 
@@ -1058,9 +1058,9 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                     int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
 
                     if (pose==IKINSLV_VOCAB_VAL_POSE_FULL)
-                        set_ctrlPose(IKINCTRL_POSE_FULL);
+                        setCtrlPose(IKINCTRL_POSE_FULL);
                     else if (pose==IKINSLV_VOCAB_VAL_POSE_XYZ)
-                        set_ctrlPose(IKINCTRL_POSE_XYZ);
+                        setCtrlPose(IKINCTRL_POSE_XYZ);
                 }
 
                 // set things for the 3rd task
@@ -1657,7 +1657,7 @@ void CartesianSolver::run()
                 qd_3rdTask[i]=(*prt->chn)(i).getAng();
 
         // update optimizer's options
-        set_ctrlPose(ctrlPose=inPort->get_pose());
+        setCtrlPose(ctrlPose=inPort->get_pose());
 
         // call the solver to converge
         double t0=Time::now();

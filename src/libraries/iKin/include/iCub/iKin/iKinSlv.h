@@ -367,7 +367,7 @@ protected:
     bool   waitPart(const yarp::os::Property &partOpt);
     void   alignJointsBounds();
     bool   setLimits(int axis, double min, double max);
-    void   set_ctrlPose(const unsigned int _ctrlPose);
+    void   setCtrlPose(const unsigned int _ctrlPose);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
     void   getFeedback(const bool wait=false);    
