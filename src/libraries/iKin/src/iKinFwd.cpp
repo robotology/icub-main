@@ -1322,8 +1322,6 @@ bool iKinLimb::fromLinksProperties(const Property &option)
         return false;
     }
 
-    linkList.resize(numLinks,NULL);
-
     for (int i=0; i<numLinks; i++)
     {
         char link[255];
@@ -1348,9 +1346,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
         double min=CTRL_DEG2RAD*bLink.check("min",Value(0.0)).asDouble();
         double max=CTRL_DEG2RAD*bLink.check("max",Value(0.0)).asDouble();
 
-        linkList[i]=new iKinLink(A,D,alpha,offset,min,max);
-
-        *this<<*linkList[i];
+        pushLink(new iKinLink(A,D,alpha,offset,min,max));
 
         if (bLink.check("blocked"))
             blockLink(i,CTRL_DEG2RAD*bLink.find("blocked").asDouble());
@@ -1395,16 +1391,8 @@ void iKinLimb::clone(const iKinLimb &limb)
     type=limb.type;
     H0=limb.H0;
 
-    if (unsigned int n=limb.linkList.size())
-    {
-        linkList.resize(n);
-
-        for (unsigned int i=0; i<n; i++)
-        {
-            linkList[i]=new iKinLink(*limb.linkList[i]);
-            *this<<*linkList[i];
-        }
-    }
+    for (unsigned int i=0; i<limb.getN(); i++)
+        pushLink(new iKinLink(*(limb.linkList[i])));
 
     configured=limb.configured;
 }
@@ -1413,15 +1401,11 @@ void iKinLimb::clone(const iKinLimb &limb)
 /************************************************************************/
 void iKinLimb::dispose()
 {
-    if (unsigned int n=linkList.size())
-    {
-        for (unsigned int i=0; i<n; i++)
-            if (linkList[i]!=NULL)
-                delete linkList[i];
+    for (unsigned int i=0; i<linkList.size(); i++)
+        if (linkList[i]!=NULL)
+            delete linkList[i];
 
-        linkList.clear();
-    }
-
+    linkList.clear();
     iKinChain::dispose();
 
     configured=false;

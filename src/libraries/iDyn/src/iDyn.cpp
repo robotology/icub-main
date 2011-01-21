@@ -1470,7 +1470,6 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         H0.eye();
         return false;
     }
-    linkList.resize(numLinks,NULL);
 
     for(int iLink=0; iLink<numLinks; iLink++)
     {
@@ -1529,9 +1528,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
 			}
 		}
 		//create iDynLink from parameters
-		linkList[iLink] = new iDynLink(mass,HC,I,A,D,alpha,offset,min,max);
-		//insert the link in the list
-        *this<<*linkList[iLink];
+		pushLink(new iDynLink(mass,HC,I,A,D,alpha,offset,min,max));
 
         if(bLink.check("blocked"))
             blockLink(iLink,CTRL_DEG2RAD*bLink.find("blocked").asDouble());
@@ -1575,39 +1572,26 @@ void iDynLimb::clone(const iDynLimb &limb)
 	curr_dq = limb.curr_dq;
 	curr_ddq = limb.curr_ddq;
 
-	unsigned int n,i;
-	
 	//now copy all lists
-
-    if(n=limb.linkList.size())
+    for(unsigned int i=0; i<limb.getN(); i++)
     {
-        linkList.resize(n);
-        for(i=0; i<n; i++)
-        {
-            linkList[i]=new iDynLink(*limb.linkList[i]);
-			//also push into allList
-            *this << *linkList[i];
+        pushLink(new iDynLink(*(limb.linkList[i])));
 
-			//push into quick list and hash lists (see iKinChain::buildChain())
-			quickList.push_back(allList[i]);
-            hash_dof.push_back(quickList.size()-1);
-            hash.push_back(i);
-        }
+        //push into quick list and hash lists (see iKinChain::buildChain())
+        quickList.push_back(allList[i]);
+        hash_dof.push_back(quickList.size()-1);
+        hash.push_back(i);
     }
     configured=limb.configured;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynLimb::dispose()
 {
-    if(unsigned int n=linkList.size())
-    {
-        for(unsigned int i=0; i<n; i++)
-            if(linkList[i])
-                delete linkList[i];
-
-        linkList.clear();
-    }
+    for(unsigned int i=0; i<linkList.size(); i++)
+        if(linkList[i])
+            delete linkList[i];
 	
+    linkList.clear();
 	iDynChain::dispose();
 
     configured=false;
@@ -1931,7 +1915,7 @@ void iCubLegDyn::allocate(const string &_type)
         H0(1,3)=0.0681;
 
 		//create iDynLink from parameters calling
-		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
+		//pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
 
         pushLink(new iDynLink(0.754,         -0.0782,  -0.00637,  -0.00093,				0,			0,			0,			0,			0,			0,									   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -44.0*CTRL_DEG2RAD,      132.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.526,         0.00296,  -0.00072,	  0.03045,				0,			0,			0,			0,			0,			0,									   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -17.0*CTRL_DEG2RAD,  119.0*CTRL_DEG2RAD));
@@ -2074,7 +2058,7 @@ void iCubEyeDyn::allocate(const string &_type)
     if(getType()=="right")
     {
 		//create iDynLink from parameters calling
-		//linkList[i] = new iDynLink(mass,HC,I,A,D,alfa,offset,min,max);
+		//pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
 
         pushLink(new iDynLink(m[0],	HC[0],	I[0],   0.032,    0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(m[1],	HC[1],	I[1],     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
