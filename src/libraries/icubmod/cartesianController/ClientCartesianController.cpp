@@ -43,10 +43,6 @@ using namespace yarp::math;
 /************************************************************************/
 ClientCartesianController::ClientCartesianController()
 {
-    portCmd  =NULL;
-    portState=NULL;
-    portRpc  =NULL;
-
     connected=false;
     closed=false;
 
@@ -88,20 +84,15 @@ bool ClientCartesianController::open(Searchable &config)
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
 
-    portCmd=new BufferedPort<Bottle>;
-    portCmd->open((local+"/command:o").c_str());
-
-    portState=new BufferedPort<Vector>;
-    portState->open((local+"/state:i").c_str());
-
-    portRpc=new Port;
-    portRpc->open((local+"/rpc:o").c_str());
+    portCmd.open((local+"/command:o").c_str());
+    portState.open((local+"/state:i").c_str());
+    portRpc.open((local+"/rpc:o").c_str());
 
     bool ok=true;
 
-    ok&=Network::connect(portCmd->getName().c_str(),(remote+"/command:i").c_str());
-    ok&=Network::connect((remote+"/state:o").c_str(),portState->getName().c_str());
-    ok&=Network::connect(portRpc->getName().c_str(),(remote+"/rpc:i").c_str());
+    ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str());
+    ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str());
+    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
 
     // check whether the solver is alive and connected
     if (ok)
@@ -111,7 +102,7 @@ bool ClientCartesianController::open(Searchable &config)
         command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
         command.addVocab(IKINCARTCTRL_VOCAB_OPT_ISSOLVERON);
     
-        if (!portRpc->write(command,reply))
+        if (!portRpc.write(command,reply))
         {
             fprintf(stdout,"Error: unable to get reply from server!\n");
             close();
@@ -143,26 +134,13 @@ bool ClientCartesianController::close()
     stopControl();
     deleteContexts();
 
-    if (portCmd)
-    {
-        portCmd->interrupt();
-        portCmd->close();
-        delete portCmd;
-    }
+    portCmd.interrupt();
+    portState.interrupt();
+    portRpc.interrupt();
 
-    if (portState)
-    {
-        portState->interrupt();
-        portState->close();
-        delete portState;
-    }
-
-    if (portRpc)
-    {
-        portRpc->interrupt();
-        portRpc->close();
-        delete portRpc;
-    }
+    portCmd.close();
+    portState.close();
+    portRpc.close();
 
     connected=false;
 
@@ -185,7 +163,7 @@ bool ClientCartesianController::setTrackingMode(const bool f)
     command.addVocab(f?IKINCARTCTRL_VOCAB_VAL_MODE_TRACK:IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -208,7 +186,7 @@ bool ClientCartesianController::getTrackingMode(bool *f)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_MODE);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -241,11 +219,11 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
     double now=Time::now();
 
     // receive from network in streaming mode (non-blocking)
-    if (Vector *v=portState->read(false))
+    if (Vector *v=portState.read(false))
     {
         pose=*v;
         lastPoseMsgArrivalTime=now;
-        portState->getEnvelope(rxInfo);
+        portState.getEnvelope(rxInfo);
     }
 
     x.resize(3);
@@ -275,7 +253,7 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
     command.addInt(axis);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -308,8 +286,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
     if (!connected || xd.length()<3 || od.length()<4)
         return false;
 
-    Bottle &command=portCmd->prepare();
-    command.clear();
+    Bottle command;
 
     // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
@@ -324,7 +301,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
         xdesPart.addDouble(od[i]);    
 
     // send command
-    portCmd->write();
+    portCmd.write(command);
 
     return true;
 }
@@ -336,8 +313,7 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
     if (!connected || xd.length()<3)
         return false;
 
-    Bottle &command=portCmd->prepare();
-    command.clear();
+    Bottle command;
 
     // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
@@ -349,7 +325,7 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
         xdesPart.addDouble(xd[i]);    
 
     // send command
-    portCmd->write();
+    portCmd.write(command);
 
     return true;
 }
@@ -376,7 +352,7 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
         xdesPart.addDouble(od[i]);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -404,7 +380,7 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
         xdesPart.addDouble(xd[i]);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -427,7 +403,7 @@ bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_DES);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -459,7 +435,7 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -493,7 +469,7 @@ bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -518,7 +494,7 @@ bool ClientCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -544,7 +520,7 @@ bool ClientCartesianController::askForPosition(const Vector &q0, const Vector &x
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -567,7 +543,7 @@ bool ClientCartesianController::getDOF(Vector &curDof)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_DOF);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -607,7 +583,7 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         dofPart.addInt((int)newDof[i]);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -643,7 +619,7 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -683,7 +659,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
         restPart.addDouble(newRestPos[i]);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -719,7 +695,7 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -760,7 +736,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         restPart.addDouble(newRestWeights[i]);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -797,7 +773,7 @@ bool ClientCartesianController::getLimits(const int axis, double *min, double *m
     command.addInt(axis);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -833,7 +809,7 @@ bool ClientCartesianController::setLimits(const int axis, const double min, cons
     command.addDouble(max);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -859,7 +835,7 @@ bool ClientCartesianController::getTrajTime(double *t)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIME);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -892,7 +868,7 @@ bool ClientCartesianController::setTrajTime(const double t)
     command.addDouble(t);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -915,7 +891,7 @@ bool ClientCartesianController::getInTargetTol(double *tol)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_TOL);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -948,7 +924,7 @@ bool ClientCartesianController::setInTargetTol(const double tol)
     command.addDouble(tol);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -971,7 +947,7 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_QDOT);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -1007,7 +983,7 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_XDOT);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -1047,7 +1023,7 @@ bool ClientCartesianController::checkMotionDone(bool *f)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_MOTIONDONE);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -1102,7 +1078,7 @@ bool ClientCartesianController::stopControl()
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_STOP);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -1124,7 +1100,7 @@ bool ClientCartesianController::storeContext(int *id)
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_STORE);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -1156,7 +1132,7 @@ bool ClientCartesianController::restoreContext(const int id)
     command.addInt(id);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -1181,7 +1157,7 @@ bool ClientCartesianController::deleteContexts()
         ids.addInt(*itr);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
