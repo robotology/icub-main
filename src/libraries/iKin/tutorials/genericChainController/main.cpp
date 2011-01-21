@@ -120,15 +120,15 @@ public:
 class Solver : public RateThread
 {
 protected:
-    ResourceFinder       &rf;
-    iKinLimb             *limb;
-    iKinChain            *chain;
-    iKinIpOptMin         *slv;
-    exchangeData         *commData;
+    ResourceFinder &rf;
+    iKinLimb       *limb;
+    iKinChain      *chain;
+    iKinIpOptMin   *slv;
+    exchangeData   *commData;
 
-    inPort               *port_q;
-    inPort                port_xd;
-    BufferedPort<Vector>  port_qd;
+    inPort         *port_q;
+    inPort          port_xd;
+    Port            port_qd;
 
     Vector xd_old;
 
@@ -232,8 +232,7 @@ public:
             commData->setDesired(xdhat,qdhat);
 
             // send qdhat over yarp
-            port_qd.prepare()=CTRL_RAD2DEG*qdhat;
-            port_qd.write();
+            port_qd.write(CTRL_RAD2DEG*qdhat);
 
             // latch the current target
             xd_old=xd;
@@ -260,15 +259,15 @@ public:
 class Controller : public RateThread
 {
 protected:
-    ResourceFinder       &rf;
-    iKinLimb             *limb;
-    iKinChain            *chain;
-    MultiRefMinJerkCtrl  *ctrl;
-    exchangeData         *commData;
+    ResourceFinder      &rf;
+    iKinLimb            *limb;
+    iKinChain           *chain;
+    MultiRefMinJerkCtrl *ctrl;
+    exchangeData        *commData;
 
-    inPort               *port_q;
-    BufferedPort<Vector>  port_v;
-    BufferedPort<Vector>  port_x;
+    inPort              *port_q;
+    Port                 port_v;
+    Port                 port_x;
 
 public:
     /*****************************************************************/
@@ -341,19 +340,16 @@ public:
         ctrl->iterate(xd,qd,0x0064ffff);
 
         // send v and x through YARP ports
-        port_v.prepare()=CTRL_RAD2DEG*ctrl->get_qdot();
-        port_x.prepare()=ctrl->get_x();
-
-        port_v.write();
-        port_x.write();
+        port_v.write(CTRL_RAD2DEG*ctrl->get_qdot());
+        port_x.write(ctrl->get_x());
     }
 
     /*****************************************************************/
     virtual void threadRelease()
     {
         // make sure that the limb is stopped before closing
-        port_v.prepare().resize(chain->getDOF(),0.0);
-        port_v.write();
+        Vector v_zero(chain->getDOF()); v_zero=0.0;
+        port_v.write(v_zero);
 
         port_v.interrupt();
         port_x.interrupt();
