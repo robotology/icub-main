@@ -61,16 +61,16 @@ protected:
     yarp::sig::Vector fixationPoint;
     yarp::sig::Vector angles;
 
-    yarp::os::BufferedPort<yarp::os::Bottle>  *portCmdFp;
-    yarp::os::BufferedPort<yarp::os::Bottle>  *portCmdAng;
-    yarp::os::BufferedPort<yarp::os::Bottle>  *portCmdMono;
-    yarp::os::BufferedPort<yarp::os::Bottle>  *portCmdStereo;
+    yarp::os::BufferedPort<yarp::sig::Vector> portStateFp;
+    yarp::os::BufferedPort<yarp::sig::Vector> portStateAng;
+    yarp::os::BufferedPort<yarp::sig::Vector> portStateHead;
 
-    yarp::os::BufferedPort<yarp::sig::Vector> *portStateFp;
-    yarp::os::BufferedPort<yarp::sig::Vector> *portStateAng;
-    yarp::os::BufferedPort<yarp::sig::Vector> *portStateHead;
+    yarp::os::Port portCmdFp;
+    yarp::os::Port portCmdAng;
+    yarp::os::Port portCmdMono;
+    yarp::os::Port portCmdStereo;
 
-    yarp::os::Port                            *portRpc;
+    yarp::os::Port portRpc;
 
     std::set<int> contextIdList;
 

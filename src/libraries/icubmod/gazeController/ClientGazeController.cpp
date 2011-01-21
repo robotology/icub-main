@@ -45,15 +45,6 @@ using namespace iCub::ctrl;
 /************************************************************************/
 ClientGazeController::ClientGazeController()
 {
-    portCmdFp=NULL;
-    portCmdAng=NULL;
-    portCmdMono=NULL;
-    portCmdStereo=NULL;
-    portStateFp=NULL;
-    portStateAng=NULL;
-    portStateHead=NULL;
-    portRpc=NULL;
-
     connected=false;
     closed=false;
 
@@ -97,41 +88,26 @@ bool ClientGazeController::open(Searchable &config)
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
 
-    portCmdFp=new BufferedPort<Bottle>;
-    portCmdFp->open((local+"/xd:o").c_str());
-
-    portCmdAng=new BufferedPort<Bottle>;
-    portCmdAng->open((local+"/angles:o").c_str());
-
-    portCmdMono=new BufferedPort<Bottle>;
-    portCmdMono->open((local+"/mono:o").c_str());
-
-    portCmdStereo=new BufferedPort<Bottle>;
-    portCmdStereo->open((local+"/stereo:o").c_str());
-
-    portStateFp=new BufferedPort<Vector>;
-    portStateFp->open((local+"/x:i").c_str());
-
-    portStateAng=new BufferedPort<Vector>;
-    portStateAng->open((local+"/angles:i").c_str());
-
-    portStateHead=new BufferedPort<Vector>;
-    portStateHead->open((local+"/q:i").c_str());
-
-    portRpc=new Port;
-    portRpc->open((local+"/rpc").c_str());
+    portCmdFp.open((local+"/xd:o").c_str());
+    portCmdAng.open((local+"/angles:o").c_str());
+    portCmdMono.open((local+"/mono:o").c_str());
+    portCmdStereo.open((local+"/stereo:o").c_str());
+    portStateFp.open((local+"/x:i").c_str());
+    portStateAng.open((local+"/angles:i").c_str());
+    portStateHead.open((local+"/q:i").c_str());
+    portRpc.open((local+"/rpc").c_str());
 
     remote=remote+"/head";
     bool ok=true;
 
-    ok&=Network::connect(portCmdFp->getName().c_str(),(remote+"/xd:i").c_str());
-    ok&=Network::connect(portCmdAng->getName().c_str(),(remote+"/angles:i").c_str());
-    ok&=Network::connect(portCmdMono->getName().c_str(),(remote+"/mono:i").c_str());
-    ok&=Network::connect(portCmdStereo->getName().c_str(),(remote+"/stereo:i").c_str());
-    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp->getName().c_str());
-    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng->getName().c_str());
-    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead->getName().c_str());
-    ok&=Network::connect(portRpc->getName().c_str(),(remote+"/rpc").c_str());
+    ok&=Network::connect(portCmdFp.getName().c_str(),(remote+"/xd:i").c_str());
+    ok&=Network::connect(portCmdAng.getName().c_str(),(remote+"/angles:i").c_str());
+    ok&=Network::connect(portCmdMono.getName().c_str(),(remote+"/mono:i").c_str());
+    ok&=Network::connect(portCmdStereo.getName().c_str(),(remote+"/stereo:i").c_str());
+    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str());
+    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str());
+    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str());
+    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
 
     return connected=ok;
 }
@@ -146,61 +122,23 @@ bool ClientGazeController::close()
     stopControl();
     deleteContexts();
 
-    if (portCmdFp)
-    {
-        portCmdFp->interrupt();
-        portCmdFp->close();
-        delete portCmdFp;
-    }
+    portCmdFp.interrupt();
+    portCmdAng.interrupt();
+    portCmdMono.interrupt();
+    portCmdStereo.interrupt();
+    portStateFp.interrupt();
+    portStateAng.interrupt();
+    portStateHead.interrupt();
+    portRpc.interrupt();
 
-    if (portCmdAng)
-    {
-        portCmdAng->interrupt();
-        portCmdAng->close();
-        delete portCmdAng;
-    }
-
-    if (portCmdMono)
-    {
-        portCmdMono->interrupt();
-        portCmdMono->close();
-        delete portCmdMono;
-    }
-
-    if (portCmdStereo)
-    {
-        portCmdStereo->interrupt();
-        portCmdStereo->close();
-        delete portCmdStereo;
-    }
-
-    if (portStateFp)
-    {
-        portStateFp->interrupt();
-        portStateFp->close();
-        delete portStateFp;
-    }
-
-    if (portStateAng)
-    {
-        portStateAng->interrupt();
-        portStateAng->close();
-        delete portStateAng;
-    }
-
-    if (portStateHead)
-    {
-        portStateHead->interrupt();
-        portStateHead->close();
-        delete portStateHead;
-    }
-
-    if (portRpc)
-    {
-        portRpc->interrupt();
-        portRpc->close();
-        delete portRpc;
-    }
+    portCmdFp.close();
+    portCmdAng.close();
+    portCmdMono.close();
+    portCmdStereo.close();
+    portStateFp.close();
+    portStateAng.close();
+    portStateHead.close();
+    portRpc.close();
 
     connected=false;
 
@@ -220,7 +158,7 @@ bool ClientGazeController::setTrackingMode(const bool f)
     command.addString("track");
     command.addInt((int)f);
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -241,7 +179,7 @@ bool ClientGazeController::getTrackingMode(bool *f)
     command.addString("get");
     command.addString("track");
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -265,7 +203,7 @@ bool ClientGazeController::getFixationPoint(Vector &fp)
 
     double now=Time::now();
 
-    if (Vector *v=portStateFp->read(false))
+    if (Vector *v=portStateFp.read(false))
     {
         fixationPoint=*v;
         lastFpMsgArrivalTime=now;
@@ -285,7 +223,7 @@ bool ClientGazeController::getAngles(Vector &ang)
 
     double now=Time::now();
 
-    if (Vector *v=portStateAng->read(false))
+    if (Vector *v=portStateAng.read(false))
     {
         angles=*v;
         lastAngMsgArrivalTime=now;
@@ -303,12 +241,11 @@ bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
     if (!connected || fp.length()<3)
         return false;
 
-    Bottle &cmd=portCmdFp->prepare();
-    cmd.clear();
+    Bottle cmd;
     cmd.addDouble(fp[0]);
     cmd.addDouble(fp[1]);
     cmd.addDouble(fp[2]);
-    portCmdFp->write();
+    portCmdFp.write(cmd);
 
     return true;
 }
@@ -320,13 +257,12 @@ bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
     if (!connected || ang.length()<3)
         return false;
 
-    Bottle &cmd=portCmdAng->prepare();
-    cmd.clear();
+    Bottle cmd;
     cmd.addString("abs");
     cmd.addDouble(ang[0]);
     cmd.addDouble(ang[1]);
     cmd.addDouble(ang[2]);
-    portCmdAng->write();
+    portCmdAng.write(cmd);
 
     return true;
 }
@@ -338,13 +274,12 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
     if (!connected || ang.length()<3)
         return false;
 
-    Bottle &cmd=portCmdAng->prepare();
-    cmd.clear();
+    Bottle cmd;
     cmd.addString("rel");
     cmd.addDouble(ang[0]);
     cmd.addDouble(ang[1]);
     cmd.addDouble(ang[2]);
-    portCmdAng->write();
+    portCmdAng.write(cmd);
 
     return true;
 }
@@ -356,13 +291,12 @@ bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px, c
     if (!connected || px.length()<2)
         return false;
 
-    Bottle &cmd=portCmdMono->prepare();
-    cmd.clear();
+    Bottle cmd;
     cmd.addString((camSel)?"right":"left");
     cmd.addDouble(px[0]);
     cmd.addDouble(px[1]);
     cmd.addDouble(z);
-    portCmdMono->write();
+    portCmdMono.write(cmd);
 
     return true;
 }
@@ -374,13 +308,12 @@ bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &p
     if (!connected || pxl.length()<2 || pxr.length()<2)
         return false;
 
-    Bottle &cmd=portCmdStereo->prepare();
-    cmd.clear();
+    Bottle cmd;
     cmd.addDouble(pxl[0]);
     cmd.addDouble(pxl[1]);
     cmd.addDouble(pxr[0]);
     cmd.addDouble(pxr[1]);
-    portCmdStereo->write();
+    portCmdStereo.write(cmd);
 
     return true;
 }
@@ -397,7 +330,7 @@ bool ClientGazeController::getNeckTrajTime(double *t)
     command.addString("get");
     command.addString("Tneck");
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -424,7 +357,7 @@ bool ClientGazeController::getEyesTrajTime(double *t)
     command.addString("get");
     command.addString("Teyes");
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -454,7 +387,7 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
     command.addString(poseSel.c_str());
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -518,7 +451,7 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
     command.addString("des");
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -553,7 +486,7 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
     command.addString("vel");
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -588,7 +521,7 @@ bool ClientGazeController::getStereoOptions(Bottle &options)
     command.addString("pid");
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -619,7 +552,7 @@ bool ClientGazeController::setNeckTrajTime(const double t)
     command.addString("Tneck");
     command.addDouble(t);
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -641,7 +574,7 @@ bool ClientGazeController::setEyesTrajTime(const double t)
     command.addString("Teyes");
     command.addDouble(t);
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -663,7 +596,7 @@ bool ClientGazeController::setStereoOptions(const Bottle &options)
     command.addString("pid");
     command.addList()=options;
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -686,7 +619,7 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const double min,
     command.addDouble(min);
     command.addDouble(max);
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -704,14 +637,14 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const int j)
 
     Bottle command, reply;
 
-    Vector *val=portStateHead->read(true);
+    Vector *val=portStateHead.read(true);
 
     command.addString("bind");
     command.addString(joint.c_str());
     command.addDouble((*val)[j]);
     command.addDouble((*val)[j]);
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -732,7 +665,7 @@ bool ClientGazeController::getNeckJointRange(const string &joint, double *min, d
     command.addString("get");
     command.addString(joint.c_str());
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -760,7 +693,7 @@ bool ClientGazeController::clearNeckJoint(const string &joint)
     command.addString("clear");
     command.addString(joint.c_str());
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -886,7 +819,7 @@ bool ClientGazeController::checkMotionDone(bool *f)
     command.addString("get");
     command.addString("done");
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -930,7 +863,7 @@ bool ClientGazeController::stopControl()
 
     command.addString("stop");
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -950,7 +883,7 @@ bool ClientGazeController::storeContext(int *id)
 
     command.addString("stor");
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -977,7 +910,7 @@ bool ClientGazeController::restoreContext(const int id)
     command.addString("rest");
     command.addInt(id);
 
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
@@ -1002,7 +935,7 @@ bool ClientGazeController::deleteContexts()
         ids.addInt(*itr);
 
     // send command and wait for reply
-    if (!portRpc->write(command,reply))
+    if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
         return false;
