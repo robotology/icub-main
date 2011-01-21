@@ -177,12 +177,10 @@ public:
         // mode, the tolerance and a maximum number of iteration
         slv=new iKinIpOptMin(*chain,ctrlPose,1e-3,200);
 
-        // when the complete pose is to be achieved, we have
-        // a dedicated tolerance for the translational part
-        // which is by default equal to 1e-6
+        // we have a dedicated tolerance for the translational part
+        // which is by default equal to 1e-6;
         // note that the tolerance is applied to the squared norm
-        if (ctrlPose==IKINCTRL_POSE_FULL)
-            slv->setTranslationalTol(1e-8);
+        slv->setTranslationalTol(1e-8);
 
         // in order to speed up the process, a scaling for the problem 
         // is usually required (a good scaling holds each element of the jacobian
