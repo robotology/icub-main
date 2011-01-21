@@ -1478,11 +1478,12 @@ int myMain( int   argc, char *argv[] )
 		if		(argc==9) 
 		{		
 				//printf("canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-				if (strcmp(argv[1],"--canDeviceType")!=0) fatal_error(INVALID_CMD_STRING);
-				if (strcmp(argv[3],"--canDeviceNum")!=0)  fatal_error(INVALID_CMD_STRING);
-				if (strcmp(argv[5],"--boardId")!=0)		  fatal_error(INVALID_CMD_STRING);
+				if (strcmp(argv[1],"--canDeviceType")!=0)       fatal_error(INVALID_CMD_STRING);
+				if (strcmp(argv[3],"--canDeviceNum")!=0)        fatal_error(INVALID_CMD_STRING);
+				if (strcmp(argv[5],"--boardId")!=0)		        fatal_error(INVALID_CMD_STRING);
 				if (strcmp(argv[7],"--firmware")!=0 &&
-					strcmp(argv[7],"--calibration")!=0)	  fatal_error(INVALID_CMD_STRING);
+					strcmp(argv[7],"--calibration")!=0 &&
+					strcmp(argv[7],"--firmwareANDeeprom")!=0)	fatal_error(INVALID_CMD_STRING);
 	
 				int param_board_id=0;
 				std::string param_filename = "empty";
@@ -1532,6 +1533,14 @@ int myMain( int   argc, char *argv[] )
 						filestr.close();
 					}
 				printf("Selecting canDeviceType %s canDeviceNum %d, boardId %d, firmware %s\n", networkType.c_str(), networkId, param_board_id, param_filename.c_str());
+				
+				//eeprom check
+				bool use_eeprom=false;
+				if (strcmp(argv[7],"--firmwareANDeeprom")==0) 
+				{
+					printf("EEprom flag is active \n");
+					use_eeprom=true;
+				}
 
 				start_end_click (NULL,	NULL);
 				if (downloader.board_list_size==0)
@@ -1547,6 +1556,7 @@ int myMain( int   argc, char *argv[] )
 							{
 								downloader.board_list[i].selected=true;
 								one_selected=true;
+								if (use_eeprom==true) downloader.board_list[i].eeprom=true;
 							}
 					}
 				if (one_selected==false)
