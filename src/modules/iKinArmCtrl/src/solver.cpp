@@ -254,7 +254,7 @@ void Solver::run()
         Vector w_3rd(chain->getDOF()); w_3rd=1.0;
         Vector qd_3rd=chain->getAng();
         if (ctrlTorso)
-            qd_3rd[0]=qd_3rd[1]=qd_3rd[2]=0.0;        
+            qd_3rd[0]=qd_3rd[1]=qd_3rd[2]=0.0;
 
         // Call the solver and start the convergence from the current point.
         Vector _qd=slv->solve(chain->getAng(),xd,weight2ndTask,xdElb,w_2nd,
