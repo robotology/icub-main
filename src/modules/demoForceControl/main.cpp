@@ -196,6 +196,7 @@ public:
 			p.addDouble(0.0);
 			command(p);
 		}
+		return true;
     }
 	bool initRobotDemo()
 	{
