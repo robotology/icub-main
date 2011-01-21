@@ -1027,19 +1027,22 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 	if (p.check("DEBUG_PARAMETERS","DEBUG parameters")==true)
 	{
 		printf("DEBUG parameters section found\n");
-		_debug_paramsEnabled=true;
 		for(j=0;j<nj;j++)
 		{
 			char tmp[80];
 			sprintf(tmp, "Debug%d", j); 
-			xtmp = p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").findGroup(tmp);	
-
-			for (int par=0; par<8; par++) {_debug_params[j].data[par] = xtmp.get(par+1).asDouble();}
+			if (p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").check(tmp)==true)
+			{
+				xtmp = p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").findGroup(tmp);	
+				_debug_params[j].enabled=true;
+				for (int par=0; par<8; par++) {_debug_params[j].data[par] = xtmp.get(par+1).asDouble();}
+			}
 		}
 	}
 	else
 	{
 		printf("Debug parameters section NOT enabled, skipping...\n");
+		//note: by default the _debug_params[j] constructor puts _debug_params[j].enabled=false;
 	}
 
 	////// TORQUE PIDS
@@ -1203,7 +1206,6 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _pids=0;
 	_tpids=0;
 	_tpidsEnabled=false;
-	_debug_paramsEnabled=false;
     _limitsMax=0;
     _limitsMin=0;
     _currentLimits=0;
@@ -1732,12 +1734,14 @@ bool CanBusMotionControl::open (Searchable &config)
     // default initialization for this device driver.
     setPids(p._pids);
 	if (p._tpidsEnabled==true) setTorquePids(p._tpids);
-	if (p._debug_paramsEnabled==true)
-	{
-		for (int j=0; j<p._njoints; j++)
+	
+	// debug parameters
+	for (int j=0; j<p._njoints; j++)
+		if (p._debug_params[j].enabled==true)
+		{
 			for (int param_num=0; param_num<8; param_num++)
 				setDebugParameter(j,param_num,p._debug_params[j].data[param_num]);
-	}
+		}
 
     int i;
     for(i = 0; i < p._njoints; i++)

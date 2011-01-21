@@ -109,7 +109,14 @@ public:
     */
     ~CanBusMotionControlParameters ();
 
-    bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
+	struct DebugParameters
+	{
+		double data[8];
+		bool   enabled;
+		DebugParameters() {for (int i=0; i<8; i++) data[i]=0; enabled=false;}
+	};
+
+	bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
 
     bool fromConfig(yarp::os::Searchable &config);
     bool alloc(int nj);
@@ -135,7 +142,6 @@ public:
 	bool _tpidsEnabled;							/** abilitation for torque gains */
 	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 	DebugParameters *_debug_params;             /** debug parameters */
-	bool _debug_paramsEnabled;					/** abilitation for debug parameters */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */

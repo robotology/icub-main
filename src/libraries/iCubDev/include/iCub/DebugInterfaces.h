@@ -576,13 +576,6 @@ public:
     virtual bool getDebugParameterRaw(int j, unsigned int index, double* value)=0;
 };
 
-struct DebugParameters
-{
-	double data[8];
-
-	DebugParameters() {for (int i=0; i<8; i++) data[i]=0;}
-};
-
 class yarp::dev::ImplementDebugInterface: public IDebugInterface
 {
     void *helper;
