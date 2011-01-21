@@ -6,28 +6,28 @@
         </dependencies>
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--robot icub --part left_arm</parameters>
+      		<parameters>--from leftArmFT</parameters>
 			<node>console</node>
 			<tag>left_arm_dfc</tag>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--robot icub --part right_arm</parameters>
+      		<parameters>--from rightArmFT</parameters>
 			<node>console</node>
 			<tag>right_arm_dfc</tag>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--robot icub --part left_leg</parameters>
+      		<parameters>--from leftArmFT</parameters>
 			<node>console</node>
 			<tag>left_leg_dfc</tag>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--robot icub --part right_leg</parameters>
+      		<parameters>--from rightArmFT</parameters>
 			<node>console</node>
 			<tag>right_leg_dfc</tag>
    	</module>
