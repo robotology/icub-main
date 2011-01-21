@@ -62,6 +62,7 @@ class ArmWavingMonitor : public RateThread
 {
     ICartesianControl *cartCtrl;
     Vector restPos;
+    Vector q0,w0;
     double L;
 
 public:
@@ -73,6 +74,9 @@ public:
         L=ACTIONPRIM_BALANCEARM_LENGTH;
 
         restPos.resize(1,0.0);
+
+        cartCtrl->getRestPos(q0);
+        cartCtrl->getRestWeights(w0);
 
         Rand::init();
     }
@@ -95,7 +99,21 @@ public:
     {
         if (isSuspended())
         {
+            cartCtrl->getRestPos(q0);
+            cartCtrl->getRestWeights(w0);
+
+            // try to keep the wrist aligned along the arm
+            // since we reach only in position and not in orientation
+            Vector q=q0;
+            Vector w=w0;
+            q[3+5]=0.0;
+            w[3+5]=1.0;
+
+            cartCtrl->setRestPos(q,q);
+            cartCtrl->setRestWeights(w,w);
+
             resume();
+
             return true;
         }
         else
@@ -107,7 +125,11 @@ public:
     {
         if (!isSuspended())
         {
+            cartCtrl->setRestPos(q0,q0);
+            cartCtrl->setRestWeights(w0,w0);
+
             suspend();
+
             return true;
         }
         else
