@@ -1,8 +1,4 @@
-# Copyright: (C) 2009 RobotCub Consortium
-# Authors: Lorenzo Natale
-# CopyPolicy: Released under the terms of the GNU GPL v2.0.
-
-# Copyright: (C) 2010 RobotCub Consortium
+# Copyright: (C) 2009,2010 RobotCub Consortium
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -41,6 +37,9 @@ set(CMAKE_MODULE_PATH ${YARP_MODULE_PATH} ${CMAKE_MODULE_PATH})
 # Pick up our scripts - they are all in the conf subdirectory
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
 set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
+
+# get the current version of the iCub build
+include(${PROJECT_SOURCE_DIR}/conf/iCubVersion.cmake)
 
 # Import common options (disable flags in windows, rpath, etc..)
 # These options are shared with projects in contrib.
@@ -134,6 +133,14 @@ if (ICUB_EXPERIMENTAL_APP_INSTALL)
     icub_app_all()
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
+########### propagate version info to targets
+get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
+foreach(t ${ICUB_TARGETS})
+  set_target_properties(${t} PROPERTIES VERSION ${ICUB_GENERIC_VERSION}
+	SOVERSION ${ICUB_GENERIC_SOVERSION})
+endforeach()
+######################
+
 # export the build tree
 message(STATUS "Now exporting build tree")
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
@@ -178,8 +185,12 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
 						iCubFindDependencies.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
+  # in YARP we used to copy Find* scripts to the build directory
+  # this as changed in YARP but NOT in iCub.
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
+				 
+  # on the other hand we do need to install Find* script at install time
   install(FILES  conf/${conf} COMPONENT scripts 
       DESTINATION ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/)
 endforeach(conf)
