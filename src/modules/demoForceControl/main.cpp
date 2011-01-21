@@ -180,13 +180,29 @@ public:
 		p.addVocab(VOCAB_QUIT);
 		command(p);
 	}
-	
+	bool setZeroImp()
+	{
+		//if( (part=="left_arm") || (part == "right_arm")) 
+		//	//ipos->positionMove(3,50.0);
+		//fprintf(stderr,"moving to start position...\n");
+		//Time::delay(3.0);
+		for(int i=0; i<ctrlJnt; i++)
+		{
+			Bottle p;
+			p.addVocab(VOCAB_SET);
+			p.addVocab(VOCAB_IMPEDANCE);
+			p.addInt(i);
+			p.addDouble(0.0);
+			p.addDouble(0.0);
+			command(p);
+		}
+    }
 	bool initRobotDemo()
 	{
-		if( (part=="left_arm") || (part == "right_arm")) 
-			ipos->positionMove(3,50.0);
-		fprintf(stderr,"moving to start position...\n");
-		Time::delay(3.0);
+		//if( (part=="left_arm") || (part == "right_arm")) 
+		//	//ipos->positionMove(3,50.0);
+		//fprintf(stderr,"moving to start position...\n");
+		//Time::delay(3.0);
 		for(int i=0; i<ctrlJnt; i++)
 		{
 			Bottle p;
@@ -195,7 +211,7 @@ public:
 			p.addInt(i);
 			p.addDouble(0.08);
 			p.addDouble(0.02);
-			command(p);
+			//command(p);
 		}
 		for(int i=0; i<ctrlJnt; i++)
 		{
@@ -481,27 +497,11 @@ public:
 		iimp->setImpedance(axis,stiffness,dumping,0.0);		
 		return true;
 	}
-	//bool setTorquePid(int _jnt, double _kp, double _kd, double _ki)
-	//{
-	//	Pid pid;
-	//	pid.setKp(_kp);
-	//	pid.setKd(_kd);
-	//	_ki = 0;
-	//	pid.setKi(_ki);
-	//	itqs->setTorquePid(_jnt, pid);
-	//	itqs->getTorquePid(_jnt,&pid);
-	//	
-	//	fprintf(stderr,"Pid of joint %d set to: %.1lf\n", _jnt, 0.3);
-	//	return true;
-	//}
-	//bool setImpedanceGains(int _jnt, double _k, double _d, double _o)
-	//{
-	//	iimp->setImpedance(_jnt,_k,_d,_o);
-	//	return true;
-	//}
-	//get Functions:
-
-	// cmd function:
+	bool setImpedance(int j, double stiffness, double damping)
+	{
+		iimp->setImpedance(j,stiffness,damping,0.0);		
+		return true;
+	}
 	bool command(const Bottle &p)
 	{
         Bottle response;
@@ -536,7 +536,6 @@ private:
 	Property Options;
 	PolyDriver *dd;
 	ftCommand *ft_control;
-	//string handlerPortName;
     Port rpcPort;      //a port to handle messages 
 	
 public:
@@ -666,6 +665,36 @@ public:
 		fprintf(stderr,"input port opened...\n");
 		ft_control = new ftCommand(dd,part);
 		fprintf(stderr,"ft client istantiated...\n");
+		Bottle S=0;
+		Bottle D=0;
+		int jnt=0;
+		fprintf(stderr,"before check\n");
+		if(rf.check("IMPEDANCE"))
+		{
+			fprintf(stderr,"in check\n");
+			char tmp[80];
+			sprintf(tmp, "Stiffness"); 
+			fprintf(stderr,"before find group, setting stiffness\n");
+			S = rf.findGroup("IMPEDANCE").findGroup(tmp);
+			fprintf(stderr,"found group\n");
+			
+			sprintf(tmp, "Damping"); 
+			D = rf.findGroup("IMPEDANCE").findGroup(tmp);
+			for(int i=1;i<S.size();i++)
+			{
+				jnt=i-1;
+				ft_control->setImpedance(jnt,S.get(i).asDouble(),D.get(i).asDouble());
+				fprintf(stderr,"Impedance jnt:%d, S=%lf, D=%lf\n", jnt,S.get(i).asDouble(),D.get(i).asDouble());
+			}
+
+			
+		}
+        else 
+        {
+            ft_control->setZeroImp();
+            fprintf(stderr,"not enough parameters; setting zeros and exit");  
+            return false;      
+        }
 		//ft_control->initRobotDemo();
 		return true;
 	}
