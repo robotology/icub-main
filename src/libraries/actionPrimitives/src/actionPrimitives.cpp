@@ -75,9 +75,6 @@ public:
 
         restPos.resize(1,0.0);
 
-        cartCtrl->getRestPos(q0);
-        cartCtrl->getRestWeights(w0);
-
         Rand::init();
     }
 
@@ -90,6 +87,9 @@ public:
     /************************************************************************/
     virtual void afterStart(bool s)
     {
+        cartCtrl->getRestPos(q0);
+        cartCtrl->getRestWeights(w0);
+
         // start in suspended mode
         disable();
     }
