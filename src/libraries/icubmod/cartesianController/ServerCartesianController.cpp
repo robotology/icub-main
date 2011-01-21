@@ -122,12 +122,7 @@ void ServerCartesianController::init()
     chain=NULL;
     ctrl =NULL;
 
-    portSlvIn   =NULL;
-    portSlvOut  =NULL;
-    portSlvRpc  =NULL;
     portCmd     =NULL;
-    portState   =NULL;
-    portRpc     =NULL;
     rpcProcessor=NULL;
 
     attached     =false;
@@ -160,75 +155,47 @@ void ServerCartesianController::init()
 /************************************************************************/
 void ServerCartesianController::openPorts()
 {
-    portSlvIn   =new BufferedPort<Bottle>;
-    portSlvOut  =new BufferedPort<Bottle>;
-    portSlvRpc  =new Port;
     portCmd     =new CartesianCtrlCommandPort(this);
-    portState   =new BufferedPort<Vector>;
-    portRpc     =new Port;
     rpcProcessor=new CartesianCtrlRpcProcessor(this);
 
     portCmd->useCallback();
-    portRpc->setReader(*rpcProcessor);
+    portRpc.setReader(*rpcProcessor);
 
     ConstString prefixName="/";
     prefixName=prefixName+ctrlName;
 
-    portSlvIn->open((prefixName+"/"+slvName+"/in").c_str());
-    portSlvOut->open((prefixName+"/"+slvName+"/out").c_str());
-    portSlvRpc->open((prefixName+"/"+slvName+"/rpc").c_str());
+    portSlvIn.open((prefixName+"/"+slvName+"/in").c_str());
+    portSlvOut.open((prefixName+"/"+slvName+"/out").c_str());
+    portSlvRpc.open((prefixName+"/"+slvName+"/rpc").c_str());
     portCmd->open((prefixName+"/command:i").c_str());
-    portState->open((prefixName+"/state:o").c_str());
-    portRpc->open((prefixName+"/rpc:i").c_str());
+    portState.open((prefixName+"/state:o").c_str());
+    portRpc.open((prefixName+"/rpc:i").c_str());
 }
 
 
 /************************************************************************/
 void ServerCartesianController::closePorts()
 {
-    if (portSlvIn)
-    {
-        portSlvIn->interrupt();
-        portSlvIn->close();
-        delete portSlvIn;
-    }
+    portSlvIn.interrupt();
+    portSlvOut.interrupt();
+    portSlvRpc.interrupt();
+    portState.interrupt();
+    portRpc.interrupt();
 
-    if (portSlvOut)
-    {
-        portSlvOut->interrupt();
-        portSlvOut->close();
-        delete portSlvOut;
-    }
+    portSlvIn.close();
+    portSlvOut.close();
+    portSlvRpc.close();
+    portState.close();
+    portRpc.close();
 
-    if (portSlvRpc)
-    {
-        portSlvRpc->interrupt();
-        portSlvRpc->close();
-        delete portSlvRpc;
-    }
-
-    if (portCmd)
+    if (portCmd!=NULL)
     {
         portCmd->interrupt();
         portCmd->close();
         delete portCmd;
     }
 
-    if (portState)
-    {
-        portState->interrupt();
-        portState->close();
-        delete portState;
-    }
-
-    if (portRpc)
-    {
-        portRpc->interrupt();
-        portRpc->close();
-        delete portRpc;
-    }
-
-    if (rpcProcessor)
+    if (rpcProcessor!=NULL)
         delete rpcProcessor;
 }
 
@@ -294,7 +261,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 // just behave as a relay
                 Bottle slvCommand=command;
 
-                if (!portSlvRpc->write(slvCommand,reply))
+                if (!portSlvRpc.write(slvCommand,reply))
                 {
                     fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -807,7 +774,7 @@ void ServerCartesianController::alignJointsBounds()
             command.addInt(i);
 
             // send command to solver and wait for reply
-            if (!portSlvRpc->write(command,reply))
+            if (!portSlvRpc.write(command,reply))
             {
                 fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
                 return;
@@ -898,7 +865,7 @@ void ServerCartesianController::newController()
 /************************************************************************/
 bool ServerCartesianController::getNewTarget()
 {
-    if (Bottle *b1=portSlvIn->read(false))
+    if (Bottle *b1=portSlvIn.read(false))
     {
         bool tokened=getTokenOption(*b1,&rxToken);
 
@@ -1101,9 +1068,9 @@ void ServerCartesianController::run()
     
         // streams out the end-effector pose
         txInfo.update();
-        portState->prepare()=chain->EndEffPose();
-        portState->setEnvelope(txInfo);
-        portState->write();        
+        portState.prepare()=chain->EndEffPose();
+        portState.setEnvelope(txInfo);
+        portState.write();        
     
         // end of critical code
         mutex.post();
@@ -1502,9 +1469,9 @@ bool ServerCartesianController::connectToSolver()
 
         bool ok=true;
 
-        ok&=Network::connect((portSlvName+"/out").c_str(),portSlvIn->getName().c_str());
-        ok&=Network::connect(portSlvOut->getName().c_str(),(portSlvName+"/in").c_str());
-        ok&=Network::connect(portSlvRpc->getName().c_str(),(portSlvName+"/rpc").c_str());
+        ok&=Network::connect((portSlvName+"/out").c_str(),portSlvIn.getName().c_str());
+        ok&=Network::connect(portSlvOut.getName().c_str(),(portSlvName+"/in").c_str());
+        ok&=Network::connect(portSlvRpc.getName().c_str(),(portSlvName+"/rpc").c_str());
 
         if (!ok)
             return false;
@@ -1541,7 +1508,7 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
         if (t>0.0)
             setTrajTime(t);
 
-        Bottle &b=portSlvOut->prepare();
+        Bottle &b=portSlvOut.prepare();
         b.clear();
     
         // xd part
@@ -1563,7 +1530,7 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
         if (latchToken)
             txTokenLatchedGoToRpc=txToken;
 
-        portSlvOut->writeStrict();
+        portSlvOut.writeStrict();
 
         return true;
     }
@@ -1588,7 +1555,7 @@ bool ServerCartesianController::setTrackingMode(const bool f)
             command.addInt(IKINSLV_VOCAB_VAL_MODE_SINGLE);
 
         // send command to solver and wait for reply
-        if (!portSlvRpc->write(command,reply))
+        if (!portSlvRpc.write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
             return false;
@@ -1765,7 +1732,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
-    if (!portSlvRpc->write(command,reply))
+    if (!portSlvRpc.write(command,reply))
     {
         fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
         return false;
@@ -1799,7 +1766,7 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
-    if (!portSlvRpc->write(command,reply))
+    if (!portSlvRpc.write(command,reply))
     {
         fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
         return false;
@@ -1824,7 +1791,7 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
-    if (!portSlvRpc->write(command,reply))
+    if (!portSlvRpc.write(command,reply))
     {
         fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
         return false;
@@ -1850,7 +1817,7 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
-    if (!portSlvRpc->write(command,reply))
+    if (!portSlvRpc.write(command,reply))
     {
         fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
         return false;
@@ -1895,7 +1862,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             txDofPart.addInt((int)newDof[i]);
     
         // send command to solver and wait for reply
-        if (!portSlvRpc->write(command,reply))
+        if (!portSlvRpc.write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
 
@@ -1939,7 +1906,7 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
         command.addVocab(IKINSLV_VOCAB_OPT_REST_POS);
     
         // send command to solver and wait for reply
-        if (!portSlvRpc->write(command,reply))
+        if (!portSlvRpc.write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
             return false;
@@ -1972,7 +1939,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
             txRestPart.addDouble(newRestPos[i]);
     
         // send command to solver and wait for reply
-        if (!portSlvRpc->write(command,reply))
+        if (!portSlvRpc.write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
             return false;
@@ -2002,7 +1969,7 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
         command.addVocab(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
     
         // send command to solver and wait for reply
-        if (!portSlvRpc->write(command,reply))
+        if (!portSlvRpc.write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
             return false;
@@ -2036,7 +2003,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
             txRestPart.addDouble(newRestWeights[i]);
     
         // send command to solver and wait for reply
-        if (!portSlvRpc->write(command,reply))
+        if (!portSlvRpc.write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
             return false;
@@ -2089,7 +2056,7 @@ bool ServerCartesianController::setLimits(const int axis, const double min, cons
         command.addDouble(max);
 
         // send command to solver and wait for reply
-        if (!portSlvRpc->write(command,reply))
+        if (!portSlvRpc.write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
             return false;

@@ -150,14 +150,15 @@ protected:
     yarp::sig::Vector velCmd;
     yarp::sig::Vector fb;
 
-    yarp::os::BufferedPort<yarp::os::Bottle>  *portSlvIn;
-    yarp::os::BufferedPort<yarp::os::Bottle>  *portSlvOut;
-    yarp::os::Port                            *portSlvRpc;
+    yarp::os::BufferedPort<yarp::os::Bottle>   portSlvIn;
+    yarp::os::BufferedPort<yarp::os::Bottle>   portSlvOut;
+    yarp::os::Port                             portSlvRpc;
+
+    yarp::os::BufferedPort<yarp::sig::Vector>  portState;
+    yarp::os::Port                             portRpc;
 
     CartesianCtrlCommandPort                  *portCmd;
-    yarp::os::BufferedPort<yarp::sig::Vector> *portState;
     CartesianCtrlRpcProcessor                 *rpcProcessor;
-    yarp::os::Port                            *portRpc;
 
     struct Context
     {
