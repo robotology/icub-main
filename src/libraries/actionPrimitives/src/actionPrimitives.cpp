@@ -102,12 +102,13 @@ public:
             cartCtrl->getRestPos(q0);
             cartCtrl->getRestWeights(w0);
 
-            // try to keep the wrist aligned along the arm
+            // impose further constraints as third task
             // since we reach only in position and not in orientation
             Vector q=q0;
             Vector w=w0;
+            q[3+1]=30.0;
             q[3+5]=0.0;
-            w[3+5]=1.0;
+            w[3+1]=w[3+5]=1.0;
 
             cartCtrl->setRestPos(q,q);
             cartCtrl->setRestWeights(w,w);
