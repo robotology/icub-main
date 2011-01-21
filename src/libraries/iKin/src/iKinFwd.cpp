@@ -1174,10 +1174,12 @@ void iKinChain::prepareForHessian()
         hess_H.push_back(hess_H[k]*allList[k]->getH(true));
 
         for (unsigned int i=0; i<DOF; i++)
+        {
             if (k==hash[i])
                 hess_DH[i].push_back(hess_DH[i][k]*allList[k]->getDnH(1,true));
             else
                 hess_DH[i].push_back(hess_DH[i][k]*allList[k]->getH(true));
+        }
     }
 }
 
