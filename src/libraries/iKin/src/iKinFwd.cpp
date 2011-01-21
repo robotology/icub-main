@@ -1380,7 +1380,7 @@ void iKinLimb::allocate(const string &_type)
 {
     type=_type;
 
-    if (type!="right" && type!="left")
+    if ((type!="right") && (type!="left"))
         type="right";
 
     configured=true;
