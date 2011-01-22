@@ -117,10 +117,10 @@ public:
 
         double joint1_0, joint1_1;
         double joint2_0, joint2_1;
-        joint1_0= 24.0*CTRL_DEG2RAD;
-        joint1_1= 17.0*CTRL_DEG2RAD;
-        joint2_0=-33.0*CTRL_DEG2RAD;
-        joint2_1= 60.0*CTRL_DEG2RAD;
+        joint1_0= 25.0*CTRL_DEG2RAD;
+        joint1_1= 20.0*CTRL_DEG2RAD;
+        joint2_0=-37.0*CTRL_DEG2RAD;
+        joint2_1= 80.0*CTRL_DEG2RAD;
         shou_m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
         shou_n=joint1_0-shou_m*joint2_0;
 
