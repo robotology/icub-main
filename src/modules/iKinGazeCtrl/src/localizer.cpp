@@ -79,8 +79,8 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     Vector N(1),  Tt(1);
     Matrix satLim(1,2);
 
-    Kp=0.003;
-    Ki=0.005;
+    Kp=0.001;
+    Ki=0.001;
     Kd=0.0;
 
     Wp=Wi=Wd=1.0;
