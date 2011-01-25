@@ -121,13 +121,16 @@ grasp_offset	    0.0 0.0 -0.05
 grasp_sigma 0.01 0.01 0.01 
 // hand orientation to be kept [axis-angle rep.] 
 hand_orientation 0.064485 0.707066 0.704201 3.140572 
+// enable impedance velocity mode 
+impedance_velocity_mode off 
 
 [right_arm]
 reach_offset	    0.0 0.15 -0.05
 grasp_offset	    0.0 0.0 -0.05
 grasp_sigma	        0.01 0.01 0.01
 hand_orientation    -0.012968 -0.721210 0.692595 2.917075
-
+impedance_velocity_mode off  
+ 
 [home_arm]
 // home position [deg] 
 poss    -30.0 30.0 0.0  45.0 0.0  0.0  0.0  0.0
@@ -383,7 +386,7 @@ protected:
     }
 
     void getArmOptions(Bottle &b, Vector &reachOffs, Vector &graspOffs,
-                       Vector &graspSigma, Vector &orien)
+                       Vector &graspSigma, Vector &orien, bool &impVelMode)
     {
         if (b.check("reach_offset","Getting reaching offset"))
         {
@@ -424,6 +427,8 @@ protected:
             for (int i=0; i<len; i++)
                 orien[i]=grp.get(1+i).asDouble();
         }
+
+        impVelMode=b.check("impedance_velocity_mode",Value("off"),"Getting arm impedance-velocity-mode").asString()=="on"?true:false;
     }
 
     void getHomeOptions(Bottle &b, Vector &poss, Vector &vels)
@@ -1133,10 +1138,13 @@ public:
         rightArmGraspSigma.resize(3,0.0);
         rightArmHandOrien.resize(4,0.0);
 
+        bool leftImpVelMode;
+        bool rightImpVelMode;
+
         getArmOptions(bLeftArm,leftArmReachOffs,leftArmGraspOffs,
-                      leftArmGraspSigma,leftArmHandOrien);
+                      leftArmGraspSigma,leftArmHandOrien,leftImpVelMode);
         getArmOptions(bRightArm,rightArmReachOffs,rightArmGraspOffs,
-                      rightArmGraspSigma,rightArmHandOrien);
+                      rightArmGraspSigma,rightArmHandOrien,rightImpVelMode);
 
         // home part
         Bottle &bHome=rf.findGroup("home_arm");
@@ -1289,6 +1297,15 @@ public:
             armGraspSigma=&leftArmGraspSigma;
             armHandOrien=&leftArmHandOrien;
             armSel=LEFTARM;
+
+            if (leftImpVelMode)
+            {
+                IControlMode *imode;
+                drvLeftArm->view(imode);
+
+                for (int j=0; j<5; j++)
+                    imode->setImpedanceVelocityMode(j);
+            }
         }
         else if (useRightArm)
         {
@@ -1300,6 +1317,15 @@ public:
             armGraspSigma=&rightArmGraspSigma;
             armHandOrien=&rightArmHandOrien;
             armSel=RIGHTARM;
+
+            if (rightImpVelMode)
+            {
+                IControlMode *imode;
+                drvRightArm->view(imode);
+
+                for (int j=0; j<5; j++)
+                    imode->setImpedanceVelocityMode(j);
+            }
         }
         else
         {
