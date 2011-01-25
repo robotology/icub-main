@@ -341,6 +341,8 @@ protected:
     Predictor pred;
     bool useNetwork;
     bool wentHome;
+    bool leftImpVelMode;
+    bool rightImpVelMode;
 
     double trajTime;
     double idleTimer, idleTmo;
@@ -1138,9 +1140,6 @@ public:
         rightArmGraspSigma.resize(3,0.0);
         rightArmHandOrien.resize(4,0.0);
 
-        bool leftImpVelMode;
-        bool rightImpVelMode;
-
         getArmOptions(bLeftArm,leftArmReachOffs,leftArmGraspOffs,
                       leftArmGraspSigma,leftArmHandOrien,leftImpVelMode);
         getArmOptions(bRightArm,rightArmReachOffs,rightArmGraspOffs,
@@ -1396,6 +1395,15 @@ public:
             ICartesianControl *icart;
             drvCartLeftArm->view(icart);
             icart->restoreContext(startup_context_id_left);
+
+            if (leftImpVelMode)
+            {
+                IControlMode *imode;
+                drvLeftArm->view(imode);
+
+                for (int j=0; j<5; j++)
+                    imode->setVelocityMode(j);
+            }
         }
 
         if (useRightArm)
@@ -1403,6 +1411,15 @@ public:
             ICartesianControl *icart;
             drvCartRightArm->view(icart);
             icart->restoreContext(startup_context_id_right);
+
+            if (rightImpVelMode)
+            {
+                IControlMode *imode;
+                drvRightArm->view(imode);
+
+                for (int j=0; j<5; j++)
+                    imode->setVelocityMode(j);
+            }
         }
 
         close();
