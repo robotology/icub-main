@@ -445,7 +445,7 @@ protected:
         {
             Bottle &grp=b.findGroup("impedance_stiffness");
             int sz=grp.size()-1;
-            int len=sz>5?5:sz;
+            int len=sz>impStiff.length()?impStiff.length():sz;
 
             for (int i=0; i<len; i++)
                 impStiff[i]=grp.get(1+i).asDouble();
@@ -455,7 +455,7 @@ protected:
         {
             Bottle &grp=b.findGroup("impedance_damping");
             int sz=grp.size()-1;
-            int len=sz>5?5:sz;
+            int len=sz>impDamp.length()?impDamp.length():sz;
 
             for (int i=0; i<len; i++)
                 impDamp[i]=grp.get(1+i).asDouble();
@@ -1164,10 +1164,14 @@ public:
         leftArmGraspOffs.resize(3,0.0);
         leftArmGraspSigma.resize(3,0.0);
         leftArmHandOrien.resize(4,0.0);
+        leftArmJointsStiffness.resize(5,0.0);
+        leftArmJointsDamping.resize(5,0.0);
         rightArmReachOffs.resize(3,0.0);
         rightArmGraspOffs.resize(3,0.0);
         rightArmGraspSigma.resize(3,0.0);
         rightArmHandOrien.resize(4,0.0);
+        rightArmJointsStiffness.resize(5,0.0);
+        rightArmJointsDamping.resize(5,0.0);
 
         getArmOptions(bLeftArm,leftArmReachOffs,leftArmGraspOffs,
                       leftArmGraspSigma,leftArmHandOrien,leftArmImpVelMode,
