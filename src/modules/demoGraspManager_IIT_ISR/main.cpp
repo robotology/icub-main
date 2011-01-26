@@ -123,13 +123,17 @@ grasp_sigma 0.01 0.01 0.01
 hand_orientation 0.064485 0.707066 0.704201 3.140572 
 // enable impedance velocity mode 
 impedance_velocity_mode off 
+impedance_stiffness 0.5 0.5 0.5 0.2 0.1 
+impedance_damping 60.0 60.0 60.0 20.0 0.0 
 
 [right_arm]
 reach_offset	    0.0 0.15 -0.05
 grasp_offset	    0.0 0.0 -0.05
 grasp_sigma	        0.01 0.01 0.01
 hand_orientation    -0.012968 -0.721210 0.692595 2.917075
-impedance_velocity_mode off  
+impedance_velocity_mode off 
+impedance_stiffness 0.5 0.5 0.5 0.2 0.1 
+impedance_damping 60.0 60.0 60.0 20.0 0.0 
  
 [home_arm]
 // home position [deg] 
@@ -325,11 +329,15 @@ protected:
     Vector leftArmGraspOffs;
     Vector leftArmGraspSigma;
     Vector leftArmHandOrien;
+    Vector leftArmJointsStiffness;
+    Vector leftArmJointsDamping;
 
     Vector rightArmReachOffs;
     Vector rightArmGraspOffs;
     Vector rightArmGraspSigma;
     Vector rightArmHandOrien;
+    Vector rightArmJointsStiffness;
+    Vector rightArmJointsDamping;
 
     Vector *armReachOffs;
     Vector *armGraspOffs;
@@ -341,8 +349,8 @@ protected:
     Predictor pred;
     bool useNetwork;
     bool wentHome;
-    bool leftImpVelMode;
-    bool rightImpVelMode;
+    bool leftArmImpVelMode;
+    bool rightArmImpVelMode;
 
     double trajTime;
     double idleTimer, idleTmo;
@@ -388,7 +396,8 @@ protected:
     }
 
     void getArmOptions(Bottle &b, Vector &reachOffs, Vector &graspOffs,
-                       Vector &graspSigma, Vector &orien, bool &impVelMode)
+                       Vector &graspSigma, Vector &orien, bool &impVelMode,
+                       Vector &impStiff, Vector &impDamp)
     {
         if (b.check("reach_offset","Getting reaching offset"))
         {
@@ -431,6 +440,26 @@ protected:
         }
 
         impVelMode=b.check("impedance_velocity_mode",Value("off"),"Getting arm impedance-velocity-mode").asString()=="on"?true:false;
+
+        if (b.check("impedance_stiffness","Getting joints stiffness"))
+        {
+            Bottle &grp=b.findGroup("impedance_stiffness");
+            int sz=grp.size()-1;
+            int len=sz>5?5:sz;
+
+            for (int i=0; i<len; i++)
+                impStiff[i]=grp.get(1+i).asDouble();
+        }
+
+        if (b.check("impedance_damping","Getting joints damping"))
+        {
+            Bottle &grp=b.findGroup("impedance_damping");
+            int sz=grp.size()-1;
+            int len=sz>5?5:sz;
+
+            for (int i=0; i<len; i++)
+                impDamp[i]=grp.get(1+i).asDouble();
+        }
     }
 
     void getHomeOptions(Bottle &b, Vector &poss, Vector &vels)
@@ -1141,9 +1170,11 @@ public:
         rightArmHandOrien.resize(4,0.0);
 
         getArmOptions(bLeftArm,leftArmReachOffs,leftArmGraspOffs,
-                      leftArmGraspSigma,leftArmHandOrien,leftImpVelMode);
+                      leftArmGraspSigma,leftArmHandOrien,leftArmImpVelMode,
+                      leftArmJointsStiffness,leftArmJointsDamping);
         getArmOptions(bRightArm,rightArmReachOffs,rightArmGraspOffs,
-                      rightArmGraspSigma,rightArmHandOrien,rightImpVelMode);
+                      rightArmGraspSigma,rightArmHandOrien,rightArmImpVelMode,
+                      rightArmJointsStiffness,rightArmJointsDamping);
 
         // home part
         Bottle &bHome=rf.findGroup("home_arm");
@@ -1260,7 +1291,25 @@ public:
             {
                 close();
                 return false;
-            }            
+            }
+
+            if (leftArmImpVelMode)
+            {
+                IControlMode      *imode;
+                IImpedanceControl *iimp;
+
+                drvLeftArm->view(imode);
+                drvLeftArm->view(iimp);
+
+                int len=leftArmJointsStiffness.length()<leftArmJointsDamping.length()?
+                        leftArmJointsStiffness.length():leftArmJointsDamping.length();
+
+                for (int j=0; j<len; j++)
+                {
+                    imode->setImpedanceVelocityMode(j);
+                    iimp->setImpedance(j,leftArmJointsStiffness[j],leftArmJointsDamping[j],0.0);
+                }
+            }
         }
 
         if (useRightArm)
@@ -1270,6 +1319,24 @@ public:
             {
                 close();
                 return false;
+            }
+
+            if (rightArmImpVelMode)
+            {
+                IControlMode      *imode;
+                IImpedanceControl *iimp;
+
+                drvRightArm->view(imode);
+                drvRightArm->view(iimp);
+
+                int len=rightArmJointsStiffness.length()<rightArmJointsDamping.length()?
+                        rightArmJointsStiffness.length():rightArmJointsDamping.length();
+
+                for (int j=0; j<len; j++)
+                {
+                    imode->setImpedanceVelocityMode(j);
+                    iimp->setImpedance(j,rightArmJointsStiffness[j],rightArmJointsDamping[j],0.0);
+                }
             }
         }
 
@@ -1296,15 +1363,6 @@ public:
             armGraspSigma=&leftArmGraspSigma;
             armHandOrien=&leftArmHandOrien;
             armSel=LEFTARM;
-
-            if (leftImpVelMode)
-            {
-                IControlMode *imode;
-                drvLeftArm->view(imode);
-
-                for (int j=0; j<5; j++)
-                    imode->setImpedanceVelocityMode(j);
-            }
         }
         else if (useRightArm)
         {
@@ -1316,15 +1374,6 @@ public:
             armGraspSigma=&rightArmGraspSigma;
             armHandOrien=&rightArmHandOrien;
             armSel=RIGHTARM;
-
-            if (rightImpVelMode)
-            {
-                IControlMode *imode;
-                drvRightArm->view(imode);
-
-                for (int j=0; j<5; j++)
-                    imode->setImpedanceVelocityMode(j);
-            }
         }
         else
         {
@@ -1396,12 +1445,15 @@ public:
             drvCartLeftArm->view(icart);
             icart->restoreContext(startup_context_id_left);
 
-            if (leftImpVelMode)
+            if (leftArmImpVelMode)
             {
                 IControlMode *imode;
                 drvLeftArm->view(imode);
 
-                for (int j=0; j<5; j++)
+                int len=leftArmJointsStiffness.length()<leftArmJointsDamping.length()?
+                        leftArmJointsStiffness.length():leftArmJointsDamping.length();
+
+                for (int j=0; j<len; j++)
                     imode->setVelocityMode(j);
             }
         }
@@ -1412,12 +1464,15 @@ public:
             drvCartRightArm->view(icart);
             icart->restoreContext(startup_context_id_right);
 
-            if (rightImpVelMode)
+            if (rightArmImpVelMode)
             {
                 IControlMode *imode;
                 drvRightArm->view(imode);
 
-                for (int j=0; j<5; j++)
+                int len=rightArmJointsStiffness.length()<rightArmJointsDamping.length()?
+                        rightArmJointsStiffness.length():rightArmJointsDamping.length();
+
+                for (int j=0; j<len; j++)
                     imode->setVelocityMode(j);
             }
         }
