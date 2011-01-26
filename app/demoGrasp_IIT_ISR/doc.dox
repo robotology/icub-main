@@ -35,8 +35,9 @@ The file ./conf/network.ini contains the network weights.
 Customize the file ./scripts/*.template for your specific platform
 before launching them.
 
-- ./scripts/demoGrasp_IIT_ISR.xml.template: detection done via particle filter.
+- ./scripts/demoGrasp.xml.template: detection done via particle filter.
 - ./scripts/demoGrasp_Stereo.xml.template: detection done with stero.
+- ./scripts/demoGrasp_Impedance.xml.template: as demoGrasp.xml.template but with impedance control enabled.
 
 \note To enable/disable arms refer to the options available within the config.ini file.
 
