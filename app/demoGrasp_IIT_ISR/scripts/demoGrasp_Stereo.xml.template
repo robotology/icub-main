@@ -25,6 +25,7 @@
 
         <module>
                 <name>demoGraspManager_IIT_ISR</name>
+                <parameters>--from config_Stereo.ini</parameters>
                 <node>pwrNode3</node>
                 <tag>manager</tag>
         </module>
