@@ -103,7 +103,8 @@ public:
             cartCtrl->getRestWeights(w0);
 
             // impose further constraints as third task
-            // since we reach only in position and not in orientation
+            // since we reach only in position and not in orientation:
+            // keep the wrist aligned with the forearm
             Vector q=q0;
             Vector w=w0;
             q[3+5]=0.0;
