@@ -19,6 +19,7 @@ private:
     char robotName[255];
     yarp::dev::IVelocityControl *ivel;
     yarp::dev::IEncoders        *ienc;
+	yarp::dev::IControlMode     *imod;
     int nJoints;
     yarp::dev::PolyDriver *driver;
 
@@ -37,7 +38,6 @@ private:
     yarp::sig::Vector maxVel; //added ludo
 
     bool suspended;
-    int first_command;
 
     int nb_void_loops;
 

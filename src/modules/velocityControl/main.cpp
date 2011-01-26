@@ -57,7 +57,7 @@ part is the required part as specified with --part (see below).
 
 - /robot/vc/part/input: input port of the module
     -	[susp]: suspend the controller (command zero velocity)
-    -	[run]: resume the controller
+    -	[run]: start (and resume after being suspended) the controller
     -	[quit]: quit the module (exit)
     -   [set] j p: move joint j to p (degrees)
     -   [svel] j v: set maximum speed for joint j to v (deg/sec)

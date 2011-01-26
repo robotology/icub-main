@@ -21,7 +21,7 @@ velControlThread::velControlThread(int rate):
 				yarp::os::RateThread(rate)
 {
 	control_rate = rate;
-	first_command = 0;
+	suspended = true;
 }
 
 velControlThread::~velControlThread()
@@ -30,7 +30,6 @@ velControlThread::~velControlThread()
 void velControlThread::run()
 {
 	double t_start = yarp::os::Time::now();
-
 
 	if (getIterations()>100)
 	{
@@ -63,7 +62,6 @@ void velControlThread::run()
 			}
 			//fprintf(stderr, "for joint *%d, received %f, \t", ind, targets(ind));
 		}
-		first_command++;
 	} else {
         nb_void_loops++;
         if(nb_void_loops > 5) {
@@ -76,7 +74,6 @@ void velControlThread::run()
 	if (vec!=0)
 	{
 		targets=*vec;
-		first_command++;
 	}
 
 	static int count=0;
@@ -117,7 +114,7 @@ void velControlThread::run()
 	fprintf(targetSpeedFile,"%f\n",t_start-time_watch);
 #endif
 
-	if(first_command) {
+	if(!suspended) {
 		int trials = 0;
 		while(!ivel->velocityMove(command.data())){
 			trials++;
@@ -135,7 +132,7 @@ void velControlThread::run()
 
 bool velControlThread::threadInit()
 {
-	suspended=false;
+	suspended=true;
 	ienc->getEncoders(encoders.data());
 	//ienc->getEncoderSpeeds(encoders_speed.data());
 	targets=encoders;
@@ -143,7 +140,6 @@ bool velControlThread::threadInit()
 	count = 0;
 	time_watch = Time::now();
 	time_loop = 0.0;
-	first_command=0;
 
 	return true;
 }
@@ -152,8 +148,10 @@ void velControlThread::threadRelease()
 {
 	for(int k=0;k<nJoints;k++)
 	{
-		command(k)=0;
-		ivel->velocityMove(k, command[k]);
+		ivel->stop();
+		for(int k = 0; k < nJoints; k++)
+			imod->setPositionMode(k);
+		suspended = true;
 	}
 
 	command_port.close();
@@ -193,8 +191,9 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 
 	driver->view(ivel);
 	driver->view(ienc);
+	driver->view(imod);
 
-	if ( (ivel==0)||(ienc==0))
+	if ( (ivel==0)||(ienc==0) || (imod==0))
 		return false;
 
 	ivel->getAxes(&nJoints);
@@ -240,11 +239,9 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 void velControlThread::halt()
 {
 	suspended=true;
-	for(int k=0;k<nJoints;k++)
-	{
-		command(k)=0;
-		ivel->velocityMove(k, command[k]);
-	}
+	ivel->stop();
+	for(int k = 0; k < nJoints; k++)
+		imod->setPositionMode(k);
 	fprintf(stderr, "Suspended\n");
 	targets=encoders;
 	ffVelocities = 0;
@@ -253,6 +250,8 @@ void velControlThread::halt()
 void velControlThread::go()
 {
 	suspended=false;
+	for(int k = 0; k < nJoints; k++)
+		imod->setPositionMode(k);
 	fprintf(stderr, "Run\n");
 	targets=encoders;
 	ffVelocities = 0;
@@ -265,7 +264,6 @@ void velControlThread::setRef(int i, double pos)
 	_mutex.wait();
 	targets(i)=pos;
 	ffVelocities(i)=0;
-	first_command++;
 	_mutex.post();
 }
 
