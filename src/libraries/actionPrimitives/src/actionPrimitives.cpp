@@ -277,7 +277,15 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
             cartCtrl->setLimits(j,min,max);
             cartCtrl->getLimits(j,&min,&max);
 
-            printMessage("%s limits: [%g,%g] deg\n",key.c_str(),min,max);            
+            Vector weights;
+            if (cartCtrl->getRestWeights(weights))
+            {
+                // enforce the torso rest position
+                weights[j]=4.0;
+                cartCtrl->setRestWeights(weights,weights);
+            }
+
+            printMessage("%s limits: [%g,%g] deg; weight=%g\n",key.c_str(),min,max,weights[j]);
         }
 
         return true;
