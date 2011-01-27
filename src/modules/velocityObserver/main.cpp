@@ -182,10 +182,10 @@ using namespace iCub::ctrl;
 class dataCollector : public BufferedPort<Bottle>
 {
 private:
-    AWLinEstimator  *linEst;
-    AWQuadEstimator *quadEst;
-    Port            &port_vel;
-    Port            &port_acc;
+    AWLinEstimator       *linEst;
+    AWQuadEstimator      *quadEst;
+    BufferedPort<Vector> &port_vel;
+    BufferedPort<Vector> &port_acc;
 
     virtual void onRead(Bottle &b)
     {
@@ -210,20 +210,20 @@ private:
         else
             el.time=Time::now();
 
-        Vector vel=linEst->estimate(el);
-        Vector acc=quadEst->estimate(el);
+        port_vel.prepare()=linEst->estimate(el);
+        port_acc.prepare()=quadEst->estimate(el);
 
         // the outbound packets will carry the same
         // envelope information of the inbound ones.
         port_vel.setEnvelope(info);
         port_acc.setEnvelope(info);
-        port_vel.write(vel);
-        port_acc.write(acc);
+        port_vel.write();
+        port_acc.write();
     }
 
 public:
-    dataCollector(unsigned int NVel, double DVel, Port &_port_vel,
-                  unsigned int NAcc, double DAcc, Port &_port_acc) :
+    dataCollector(unsigned int NVel, double DVel, BufferedPort<Vector> &_port_vel,
+                  unsigned int NAcc, double DAcc, BufferedPort<Vector> &_port_acc) :
                   port_vel(_port_vel), port_acc(_port_acc)
     {
         linEst =new AWLinEstimator(NVel,DVel);
@@ -243,10 +243,10 @@ public:
 class velObserver: public RFModule
 {
 private:
-    dataCollector *port_pos;
-    Port           port_vel;
-    Port           port_acc;
-    Port           rpcPort;
+    dataCollector        *port_pos;
+    BufferedPort<Vector>  port_vel;
+    BufferedPort<Vector>  port_acc;
+    Port                  rpcPort;
 
 public:
     velObserver() { }

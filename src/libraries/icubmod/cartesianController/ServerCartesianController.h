@@ -154,7 +154,7 @@ protected:
     yarp::os::BufferedPort<yarp::os::Bottle>   portSlvOut;
     yarp::os::Port                             portSlvRpc;
 
-    yarp::os::Port                             portState;
+    yarp::os::BufferedPort<yarp::sig::Vector>  portState;
     yarp::os::Port                             portRpc;
 
     CartesianCtrlCommandPort                  *portCmd;

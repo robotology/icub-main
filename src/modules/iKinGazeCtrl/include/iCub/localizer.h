@@ -50,7 +50,7 @@ protected:
     BufferedPort<Bottle>  port_mono;
     BufferedPort<Bottle>  port_stereo;
     BufferedPort<Bottle>  port_anglesIn;
-    Port                  port_anglesOut;
+    BufferedPort<Vector>  port_anglesOut;
 
     string localName;
     string configFile;
