@@ -210,12 +210,15 @@ private:
         else
             el.time=Time::now();
 
+        Vector vel=linEst->estimate(el);
+        Vector acc=quadEst->estimate(el);
+
         // the outbound packets will carry the same
         // envelope information of the inbound ones.
         port_vel.setEnvelope(info);
         port_acc.setEnvelope(info);
-        port_vel.write(linEst->estimate(el));
-        port_acc.write(quadEst->estimate(el));
+        port_vel.write(vel);
+        port_acc.write(acc);
     }
 
 public:
