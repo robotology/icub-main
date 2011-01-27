@@ -1067,9 +1067,9 @@ void ServerCartesianController::run()
         }
     
         // streams out the end-effector pose
+        portState.prepare()=chain->EndEffPose();
         txInfo.update();
         portState.setEnvelope(txInfo);
-        portState.prepare()=chain->EndEffPose();
         portState.write();
     
         // end of critical code
