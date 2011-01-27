@@ -50,7 +50,7 @@ protected:
     BufferedPort<Bottle>  port_mono;
     BufferedPort<Bottle>  port_stereo;
     BufferedPort<Bottle>  port_anglesIn;
-    BufferedPort<Vector>  port_anglesOut;
+    Port                  port_anglesOut;
 
     string localName;
     string configFile;
@@ -78,7 +78,6 @@ protected:
     void handleMonocularInput();
     void handleStereoInput();
     void handleAnglesInput();
-    void handleAnglesOutput();
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,

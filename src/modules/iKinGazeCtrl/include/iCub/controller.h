@@ -19,7 +19,7 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
-#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Port.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
@@ -62,12 +62,12 @@ protected:
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
     iKinLink *alignLnkRight1, *alignLnkRight2;
 
-    BufferedPort<Vector>       port_x;
-    BufferedPort<Vector>       port_q;
-
     minJerkVelCtrl            *mjCtrlNeck;
     minJerkVelCtrl            *mjCtrlEyes;
     Integrator                *Int;
+
+    Port port_x;
+    Port port_q;
 
     Semaphore mutex;
     string robotName;

@@ -326,19 +326,15 @@ void Controller::run()
     printIter(xd,fp,qddeg,qdeg,vdeg,1.0);
 
     // send x,q through YARP ports
-    port_x.prepare()=fp;
-
-    Vector &q=port_q.prepare();
-    q.resize(nJointsTorso+nJointsHead);
-
+    Vector q(nJointsTorso+nJointsHead);
     int j;
     for (j=0; j<nJointsTorso; j++)
         q[j]=CTRL_RAD2DEG*fbTorso[j];
-    for (; j<nJointsTorso+nJointsHead; j++)
+    for (; j<q.length(); j++)
         q[j]=qdeg[j-nJointsTorso];
 
-    port_x.write();
-    port_q.write();
+    port_x.write(fp);
+    port_q.write(q);
 
     // update pose information
     mutex.wait();
