@@ -407,13 +407,20 @@ void Localizer::handleAnglesInput()
 
 
 /************************************************************************/
+void Localizer::handleAnglesOutput()
+{
+    Vector ang_deg=CTRL_RAD2DEG*getCurAbsAngles();
+    port_anglesOut.write(ang_deg);
+}
+
+
+/************************************************************************/
 void Localizer::run()
 {
     handleMonocularInput();
     handleStereoInput();
     handleAnglesInput();
-
-    port_anglesOut.write(CTRL_RAD2DEG*getCurAbsAngles());
+    handleAnglesOutput();
 }
 
 

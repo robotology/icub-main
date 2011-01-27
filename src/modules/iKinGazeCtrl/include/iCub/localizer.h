@@ -78,6 +78,7 @@ protected:
     void handleMonocularInput();
     void handleStereoInput();
     void handleAnglesInput();
+    void handleAnglesOutput();
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,
