@@ -1069,8 +1069,7 @@ void ServerCartesianController::run()
         // streams out the end-effector pose
         txInfo.update();
         portState.setEnvelope(txInfo);
-        Vector x=chain->EndEffPose();
-        portState.write(x);
+        portState.write(static_cast<PortWriter&>(chain->EndEffPose()));
     
         // end of critical code
         mutex.post();
