@@ -116,6 +116,14 @@ public:
 		DebugParameters() {for (int i=0; i<8; i++) data[i]=0; enabled=false;}
 	};
 
+	struct ImpedanceParameters
+	{
+		double stiffness;
+		double damping;
+		bool   enabled;
+		ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
+	};
+
 	bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
 
     bool fromConfig(yarp::os::Searchable &config);
@@ -142,6 +150,7 @@ public:
 	bool _tpidsEnabled;							/** abilitation for torque gains */
 	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 	DebugParameters *_debug_params;             /** debug parameters */
+	ImpedanceParameters *_impedance_params;		/** impedance parameters */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
