@@ -253,68 +253,39 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        string portName;
-        unsigned int NVel,NAcc;
-        double DVel,DAcc;
-
         Time::turboBoost();
 
-        if (rf.check("name"))
-            portName=rf.find("name").asString();
-        else
-            portName="/velObs";
+        string portName=rf.check("name",Value("/velObs")).asString().c_str();
 
-        if (rf.check("lenVel"))
+        unsigned int NVel=rf.check("lenVel",Value(16)).asInt();
+        unsigned int NAcc=rf.check("lenAcc",Value(25)).asInt();
+
+        double DVel=rf.check("thrVel",Value(1.0)).asDouble();
+        double DAcc=rf.check("thrAcc",Value(1.0)).asDouble();
+
+        if (NVel<2)
         {
-            NVel=rf.find("lenVel").asInt();
-
-            if (NVel<2)
-            {
-                cout << "Warning: lenVel cannot be lower than 2 => N=2 is assumed" << endl;    
-                NVel=2;
-            }
+            cout<<"Warning: lenVel cannot be lower than 2 => N=2 is assumed"<<endl;
+            NVel=2;
         }
-        else
-            NVel=16;
 
-        if (rf.check("lenAcc"))
+        if (NAcc<3)
         {
-            NAcc=rf.find("lenAcc").asInt();
-
-            if (NAcc<3)
-            {
-                cout << "Warning: lenAcc cannot be lower than 3 => N=3 is assumed" << endl;    
-                NAcc=3;
-            }
+            cout<<"Warning: lenAcc cannot be lower than 3 => N=3 is assumed"<<endl;
+            NAcc=3;
         }
-        else
-            NAcc=25;
 
-        if (rf.check("thrVel"))
+        if (DVel<0.0)
         {
-            DVel=rf.find("thrVel").asDouble();
-
-            if (DVel<0.0)
-            {
-                cout << "Warning: thrVel cannot be lower than 0.0 => D=0.0 is assumed" << endl;    
-                DVel=0.0;
-            }
+            cout<<"Warning: thrVel cannot be lower than 0.0 => D=0.0 is assumed"<<endl;
+            DVel=0.0;
         }
-        else
-            DVel=1.0;
 
-        if (rf.check("thrAcc"))
+        if (DAcc<0.0)
         {
-            DAcc=rf.find("thrAcc").asDouble();
-
-            if (DAcc<0.0)
-            {
-                cout << "Warning: thrAcc cannot be lower than 0.0 => D=0.0 is assumed" << endl;    
-                DAcc=0.0;
-            }
+            cout<<"Warning: thrAcc cannot be lower than 0.0 => D=0.0 is assumed"<<endl;
+            DAcc=0.0;
         }
-        else
-            DAcc=1.0;
 
         port_vel.open((portName+"/vel:o").c_str());
         port_acc.open((portName+"/acc:o").c_str());
@@ -360,12 +331,12 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        cout << "Options:" << endl << endl;
-        cout << "\t--name   name: observer port name (default /velObs)"                << endl;
-        cout << "\t--lenVel    N: velocity window's max length (default: 16)"          << endl;
-        cout << "\t--thrVel    D: velocity max deviation threshold (default: 1.0)"     << endl;
-        cout << "\t--lenAcc    N: acceleration window's max length (default: 25)"      << endl;
-        cout << "\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)" << endl;
+        cout<<"Options:"<<endl<<endl;
+        cout<<"\t--name   name: observer port name (default /velObs)"               <<endl;
+        cout<<"\t--lenVel    N: velocity window's max length (default: 16)"         <<endl;
+        cout<<"\t--thrVel    D: velocity max deviation threshold (default: 1.0)"    <<endl;
+        cout<<"\t--lenAcc    N: acceleration window's max length (default: 25)"     <<endl;
+        cout<<"\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)"<<endl;
 
         return 0;
     }
