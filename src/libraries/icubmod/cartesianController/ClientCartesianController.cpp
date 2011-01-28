@@ -1013,7 +1013,7 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 /************************************************************************/
 bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vector &odot)
 {
-    if (!connected || (xdot.length()<3) || (xdot.length()<4))
+    if (!connected || (xdot.length()<3) || (odot.length()<4))
         return false;
 
     Bottle command;

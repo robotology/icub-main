@@ -79,9 +79,9 @@ CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *_c
 /************************************************************************/
 void CartesianCtrlCommandPort::onRead(Bottle &command)
 {
-    if (command.size()>3)
+    if (command.size())
     {
-        if (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO)
+        if ((command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO) && (command.size()>3))
         {
             int pose=command.get(1).asVocab();
             double t=command.get(2).asDouble();
@@ -110,7 +110,7 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
                 ctrl->goToPosition(xd,t);
             }
         }
-        else if (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_TASKVEL)
+        else if ((command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_TASKVEL) && (command.size()>1))
         {
             Bottle *v=command.get(1).asList();
 
