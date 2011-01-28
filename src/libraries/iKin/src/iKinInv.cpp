@@ -1246,20 +1246,21 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
         Vector _qdot=mjCtrlJoint->computeCmd(execTime,q_set-q);
         Vector _xdot7=mjCtrlTask->computeCmd(execTime,x_set-x);
 
+        Vector *pxdot=(xdot_set!=NULL)?xdot_set:&_xdot7;
         Vector _xdot(6);
-        _xdot[0]=_xdot7[0];
-        _xdot[1]=_xdot7[1];
-        _xdot[2]=_xdot7[2];
-        _xdot[3]=_xdot7[3]*_xdot7[6];
-        _xdot[4]=_xdot7[4]*_xdot7[6];
-        _xdot[5]=_xdot7[5]*_xdot7[6];
+        _xdot[0]=(*pxdot)[0];
+        _xdot[1]=(*pxdot)[1];
+        _xdot[2]=(*pxdot)[2];
+        _xdot[3]=(*pxdot)[3]*(*pxdot)[6];
+        _xdot[4]=(*pxdot)[4]*(*pxdot)[6];
+        _xdot[5]=(*pxdot)[5]*(*pxdot)[6];
     
         J =chain.GeoJacobian();
         Jt=J.transposed();
 
         computeWeight();
 
-        _qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(((xdot_set!=NULL)?*xdot_set:_xdot)-J*_qdot)));
+        _qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));
         qdot=checkVelocity(_qdot,Ts);
         xdot=J*qdot;
         q=chain.setAng(Int->integrate(qdot));

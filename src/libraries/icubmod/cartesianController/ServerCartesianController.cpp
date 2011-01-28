@@ -2247,8 +2247,8 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         for (int i=0; i<3; i++)
             xdot_set[i]=xdot[i];
 
-        for (int i=0; i<4; i++)
-            xdot_set[3+i]=odot[i];
+        for (int i=3; i<xdot_set.length(); i++)
+            xdot_set[i]=odot[i-3];
 
         if (!taskVelModeOn)
             taskRefVelPeriodCnt=0;

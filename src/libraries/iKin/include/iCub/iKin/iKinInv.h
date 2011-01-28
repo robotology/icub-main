@@ -977,7 +977,9 @@ public:
     * @param xd is the End-Effector target Pose to be tracked. 
     * @param qd is the target joint angles (it shall satisfy the
     *           forward kinematic function xd=f(qd)).
-    * @param xdot_set is the Task Space reference velocity.
+    * @param xdot_set is the Task Space reference velocity; the 
+    *                 vector size is 7 (due to the axis-angle
+    *                 notation) and units are [rad/s].
     * @param verbose is a integer whose 32 bits are intended as
     *                follows. The lowest word (16 bits)
     *                progressively enables different levels of
