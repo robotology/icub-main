@@ -1230,7 +1230,8 @@ Vector MultiRefMinJerkCtrl::calc_e()
 
 
 /************************************************************************/
-Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int verbose)
+Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
+                                    const unsigned int verbose)
 {
     x_set=xd;
     q_set=qd;
@@ -1258,7 +1259,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
 
         computeWeight();
 
-        _qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));
+        _qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(((xdot_set!=NULL)?*xdot_set:_xdot)-J*_qdot)));
         qdot=checkVelocity(_qdot,Ts);
         xdot=J*qdot;
         q=chain.setAng(Int->integrate(qdot));
@@ -1275,6 +1276,21 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
     printIter(verbose);    
 
     return q;
+}
+
+
+/************************************************************************/
+Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int verbose)
+{
+    return iterate(xd,qd,NULL,verbose);
+}
+
+
+/************************************************************************/
+Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector &xdot_set,
+                                    const unsigned int verbose)
+{
+    return iterate(xd,qd,&xdot_set,verbose);
 }
 
 

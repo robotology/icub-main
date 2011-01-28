@@ -923,6 +923,8 @@ protected:
 
     virtual void computeGuard();
     virtual void computeWeight();
+    virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, yarp::sig::Vector &qd,
+                                      yarp::sig::Vector *xdot_set, const unsigned int verbose);
 
     virtual yarp::sig::Vector calc_e();
     virtual void inTargetFcn()         { }
@@ -947,13 +949,6 @@ public:
     * @param xd is the End-Effector target Pose to be tracked. 
     * @param qd is the target joint angles (it shall satisfy the
     *           forward kinematic function xd=f(qd)).
-    * @note The reason why qd is provided externally instead of 
-    *       computed here is to discouple the inverse kinematic
-    *       problem (which may require some computational effort
-    *       depending on the current pose xd and the chosen
-    *       algorithm, should not interrupt the control loop and
-    *       whose function calling rate is worth to be programmable)
-    *       from the reaching issue.
     * @param verbose is a integer whose 32 bits are intended as
     *                follows. The lowest word (16 bits)
     *                progressively enables different levels of
@@ -968,9 +963,43 @@ public:
     *                next one, 0x0002####=> print one iteration and
     *                skip the next two).
     * @return current estimation of joints configuration. 
+    * @note The reason why qd is provided externally instead of 
+    *       computed here is to discouple the inverse kinematic
+    *       problem (which may require some computational effort
+    *       depending on the current pose xd) from the reaching
+    *       issue. 
     */
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, yarp::sig::Vector &qd,
                                       const unsigned int verbose=0);
+
+    /**
+    * Executes one iteration of the control algorithm 
+    * @param xd is the End-Effector target Pose to be tracked. 
+    * @param qd is the target joint angles (it shall satisfy the
+    *           forward kinematic function xd=f(qd)).
+    * @param xdot_set is the Task Space reference velocity.
+    * @param verbose is a integer whose 32 bits are intended as
+    *                follows. The lowest word (16 bits)
+    *                progressively enables different levels of
+    *                warning messages or status dump: the larger
+    *                this value the more detailed is the output
+    *                (0x####0000=>off by default). The highest word
+    *                indicates how many successive calls to the dump
+    *                shall be skipped in order to reduce the amount
+    *                of information on the screen (ex:
+    *                0x0000####=>print all iterations,
+    *                0x0001####=>print one iteration and skip the
+    *                next one, 0x0002####=> print one iteration and
+    *                skip the next two).
+    * @return current estimation of joints configuration. 
+    * @note The reason why qd is provided externally instead of 
+    *       computed here is to discouple the inverse kinematic
+    *       problem (which may require some computational effort
+    *       depending on the current pose xd) from the reaching
+    *       issue.  
+    */
+    virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, yarp::sig::Vector &qd,
+                                      yarp::sig::Vector &xdot_set, const unsigned int verbose=0);
 
     virtual void restart(const yarp::sig::Vector &q0);
 
