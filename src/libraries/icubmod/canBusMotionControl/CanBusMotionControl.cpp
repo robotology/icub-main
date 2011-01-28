@@ -1072,6 +1072,28 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 		printf("Torque Pids section NOT enabled, skipping...\n");
 	}
 
+	////// IMPEDANCE PIDS
+	if (p.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
+	{
+		printf("IMPEDANCE parameters section found\n");
+		for(j=0;j<nj;j++)
+		{
+			char tmp[80];
+			sprintf(tmp, "Imp%d", j); 
+			if (p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(tmp)==true)
+			{
+				xtmp = p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(tmp);	
+				_impedance_params[j].enabled=true;
+				_impedance_params[j].stiffness = xtmp.get(1).asDouble();
+				_impedance_params[j].damping   = xtmp.get(2).asDouble();
+			}
+		}
+	}
+	else
+	{
+		printf("Impedance section NOT enabled, skipping...\n");
+	}
+
     /////// LIMITS
     xtmp = p.findGroup("LIMITS").findGroup("Currents",
         "a list of current limits");
@@ -1130,15 +1152,70 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                         _velocityTimeout[i-1]=xtmp.get(i).asInt();
                 }
 
-	        /////// Speed/Acceleration Estimation
-		    for(i=1;i<nj+1; i++)
-			{
-				//These are default values. The parameters are not yet read from file
-				_estim_params[i-1].jnt_Vel_estimator_shift = 5;   
-				_estim_params[i-1].jnt_Acc_estimator_shift = 5;   
-				_estim_params[i-1].mot_Vel_estimator_shift = 5;   
-				_estim_params[i-1].mot_Acc_estimator_shift = 5;  
-			}
+	        /////// Joint Speed Estimation
+			xtmp.clear();
+            xtmp = p.findGroup("VELOCITY").findGroup("JNT_speed_estimation",
+                                                     "a list of shift factors used by the firmware joint speed estimator");
+			if (xtmp.size() != nj+1) 
+                {
+                    fprintf(stderr, "[VELOCITY] JNT_speed_estimation do not have the right number of entries. Using default value=5\n");
+                    for(i=1;i<nj+1; i++)
+                        _estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
+                }
+            else
+                {
+                    for(i=1;i<xtmp.size(); i++) 
+                        _estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
+                }
+
+			/////// Motor Speed Estimation
+			xtmp.clear();
+            xtmp = p.findGroup("VELOCITY").findGroup("MOT_speed_estimation",
+                                                     "a list of shift factors used by the firmware motor speed estimator");
+			if (xtmp.size() != nj+1) 
+                {
+                    fprintf(stderr, "[VELOCITY] MOT_speed_estimation do not have the right number of entries. Using default value=5\n");
+                    for(i=1;i<nj+1; i++)
+                        _estim_params[i-1].mot_Vel_estimator_shift = 5;   //Default value
+                }
+            else
+                {
+                    for(i=1;i<xtmp.size(); i++) 
+                        _estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
+                }
+
+			/////// Joint Acceleration Estimation
+			xtmp.clear();
+            xtmp = p.findGroup("VELOCITY").findGroup("JNT_accel_estimation",
+                                                     "a list of shift factors used by the firmware joint speed estimator");
+			if (xtmp.size() != nj+1) 
+                {
+                    fprintf(stderr, "[VELOCITY] JNT_accel_estimation do not have the right number of entries. Using default value=5\n");
+                    for(i=1;i<nj+1; i++)
+                        _estim_params[i-1].jnt_Acc_estimator_shift = 5;   //Default value
+                }
+            else
+                {
+                    for(i=1;i<xtmp.size(); i++) 
+                        _estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
+                }
+
+			/////// Motor Acceleration Estimation
+			xtmp.clear();
+            xtmp = p.findGroup("VELOCITY").findGroup("MOT_accel_estimation",
+                                                     "a list of shift factors used by the firmware motor speed estimator");
+			if (xtmp.size() != nj+1) 
+                {
+                    fprintf(stderr, "[VELOCITY] MOT_accel_estimation do not have the right number of entries. Using default value=5\n");
+                    for(i=1;i<nj+1; i++)
+                        _estim_params[i-1].mot_Acc_estimator_shift = 5;   //Default value
+                }
+            else
+                {
+                    for(i=1;i<xtmp.size(); i++) 
+                        _estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt();
+                }
+
         }
     else
     {
@@ -1216,6 +1293,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
 	_maxTorque=0;
 	_newtonsToSensor=0;
 	_debug_params=0;
+	_impedance_params=0;
 	_estim_params=0;
 
     _my_address = 0;
@@ -1245,6 +1323,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _pids=allocAndCheck<Pid>(nj);
 	_tpids=allocAndCheck<Pid>(nj);
 	_debug_params=allocAndCheck<DebugParameters>(nj);
+	_impedance_params=allocAndCheck<ImpedanceParameters>(nj);
 	_estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
 
     _limitsMax=allocAndCheck<double>(nj);
@@ -1294,6 +1373,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
 	checkAndDestroy<Pid>(_tpids);
 	checkAndDestroy<SpeedEstimationParameters>(_estim_params);
 	checkAndDestroy<DebugParameters>(_debug_params);
+	checkAndDestroy<ImpedanceParameters>(_impedance_params);
     checkAndDestroy<double>(_limitsMax);
     checkAndDestroy<double>(_limitsMin);
     checkAndDestroy<double>(_currentLimits);
@@ -1741,6 +1821,13 @@ bool CanBusMotionControl::open (Searchable &config)
 		{
 			for (int param_num=0; param_num<8; param_num++)
 				setDebugParameter(j,param_num,p._debug_params[j].data[param_num]);
+		}
+
+	// impedance parameters
+	for (int j=0; j<p._njoints; j++)
+		if (p._impedance_params[j].enabled==true)
+		{
+			setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping,0);
 		}
 
     int i;
