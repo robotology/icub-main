@@ -370,8 +370,7 @@ Vector SteepCtrl::iterate(Vector &xd, const unsigned int verbose)
         else
             qdot=_qdot;
 
-        q=I->integrate(qdot);
-        q=chain.setAng(q);
+        q=chain.setAng(I->integrate(qdot));
         x=chain.EndEffPose();
     }
 
@@ -636,8 +635,7 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
         else
             qdot=_qdot;
 
-        q=I->integrate(qdot);
-        q=chain.setAng(q);
+        q=chain.setAng(I->integrate(qdot));
         x=chain.EndEffPose();
 
         mu=update_mu();
@@ -1244,23 +1242,24 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
 
         calc_e();
 
-        qdot=mjCtrlJoint->computeCmd(execTime,q_set-q);
-        xdot7=mjCtrlTask->computeCmd(execTime,x_set-x);
+        Vector _qdot=mjCtrlJoint->computeCmd(execTime,q_set-q);
+        Vector _xdot7=mjCtrlTask->computeCmd(execTime,x_set-x);
 
-        xdot[0]=xdot7[0];
-        xdot[1]=xdot7[1];
-        xdot[2]=xdot7[2];
-        xdot[3]=xdot7[3]*xdot7[6];
-        xdot[4]=xdot7[4]*xdot7[6];
-        xdot[5]=xdot7[5]*xdot7[6];
+        Vector _xdot(6);
+        _xdot[0]=_xdot7[0];
+        _xdot[1]=_xdot7[1];
+        _xdot[2]=_xdot7[2];
+        _xdot[3]=_xdot7[3]*_xdot7[6];
+        _xdot[4]=_xdot7[4]*_xdot7[6];
+        _xdot[5]=_xdot7[5]*_xdot7[6];
     
         J =chain.GeoJacobian();
         Jt=J.transposed();
 
         computeWeight();
 
-        qdot=qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(xdot-J*qdot)));
-        qdot=checkVelocity(qdot,Ts);
+        _qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));
+        qdot=checkVelocity(_qdot,Ts);
         xdot=J*qdot;
         q=chain.setAng(Int->integrate(qdot));
         x=chain.EndEffPose();

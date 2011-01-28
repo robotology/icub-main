@@ -909,7 +909,6 @@ protected:
     yarp::sig::Vector q_set;
     yarp::sig::Vector qdot;
     yarp::sig::Vector xdot;
-    yarp::sig::Vector xdot7;
     yarp::sig::Matrix W;
     yarp::sig::Matrix Eye6;
 
