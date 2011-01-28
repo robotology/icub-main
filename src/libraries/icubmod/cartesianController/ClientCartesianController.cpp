@@ -283,7 +283,7 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
 /************************************************************************/
 bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, const double t)
 {
-    if (!connected || xd.length()<3 || od.length()<4)
+    if (!connected || (xd.length()<3) || (od.length()<4))
         return false;
 
     Bottle command;
@@ -310,7 +310,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
 /************************************************************************/
 bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 {
-    if (!connected || xd.length()<3)
+    if (!connected || (xd.length()<3))
         return false;
 
     Bottle command;
@@ -334,7 +334,7 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 /************************************************************************/
 bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od, const double t)
 {
-    if (!connected || xd.length()<3 || od.length()<4)
+    if (!connected || (xd.length()<3) || (od.length()<4))
         return false;
 
     Bottle command, reply;
@@ -365,7 +365,7 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
 /************************************************************************/
 bool ClientCartesianController::goToPositionSync(const Vector &xd, const double t)
 {
-    if (!connected || xd.length()<3)
+    if (!connected || (xd.length()<3))
         return false;
 
     Bottle command, reply;
@@ -1007,6 +1007,31 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
     }
 
     return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vector &odot)
+{
+    if (!connected || (xdot.length()<3) || (xdot.length()<4))
+        return false;
+
+    Bottle command;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_TASKVEL);
+    Bottle &xdotPart=command.addList();
+
+    for (int i=0; i<3; i++)
+        xdotPart.addDouble(xdot[i]);
+
+    for (int i=0; i<4; i++)
+        xdotPart.addDouble(odot[i]);    
+
+    // send command
+    portCmd.write(command);
+
+    return true;
 }
 
 

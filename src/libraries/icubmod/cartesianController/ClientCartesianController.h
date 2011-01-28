@@ -110,6 +110,7 @@ public:
     virtual bool setInTargetTol(const double tol);
     virtual bool getJointsVelocities(yarp::sig::Vector &qdot);
     virtual bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
+    virtual bool setTaskVelocities(const yarp::sig::Vector &xdot, const yarp::sig::Vector &odot);
     virtual bool checkMotionDone(bool *f);
     virtual bool waitMotionDone(const double period=0.1, const double timeout=0.0);
     virtual bool stopControl();

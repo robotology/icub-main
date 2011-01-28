@@ -31,6 +31,7 @@
 #define IKINCARTCTRL_VOCAB_CMD_RESTORE      VOCAB4('r','e','s','t')
 #define IKINCARTCTRL_VOCAB_CMD_DELETE       VOCAB3('d','e','l')
 #define IKINCARTCTRL_VOCAB_CMD_GO           VOCAB2('g','o')
+#define IKINCARTCTRL_VOCAB_CMD_TASKVEL      VOCAB4('t','v','e','l')
 #define IKINCARTCTRL_VOCAB_CMD_STOP         VOCAB4('s','t','o','p')
 #define IKINCARTCTRL_VOCAB_OPT_MODE         VOCAB4('m','o','d','e')
 #define IKINCARTCTRL_VOCAB_OPT_TIME         VOCAB4('t','i','m','e')

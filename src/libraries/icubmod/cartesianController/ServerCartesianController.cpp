@@ -29,11 +29,12 @@
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
 
-#define CARTCTRL_DEFAULT_PER        10
-#define CARTCTRL_DEFAULT_TOL        1e-2
-#define CARTCTRL_DEFAULT_TRAJTIME   2.0     // [s]
-#define CARTCTRL_MAX_ACCEL          1e9
-#define CARTCTRL_CONNECT_TMO        5e3     // [ms]
+#define CARTCTRL_DEFAULT_PER                10      // [ms]
+#define CARTCTRL_DEFAULT_TASKVELPER_FACTOR  4
+#define CARTCTRL_DEFAULT_TOL                1e-2
+#define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
+#define CARTCTRL_MAX_ACCEL                  1e9     // [deg/s^2]
+#define CARTCTRL_CONNECT_TMO                5e3     // [ms]
 
 using namespace std;
 using namespace yarp;
@@ -79,21 +80,37 @@ CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *_c
 void CartesianCtrlCommandPort::onRead(Bottle &command)
 {
     if (command.size()>3)
+    {
         if (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO)
         {   
             int pose=command.get(1).asVocab();
             double t=command.get(2).asDouble();
             Bottle *v=command.get(3).asList();
-            Vector xd(v->size());
-
-            for (int i=0; i<v->size(); i++)
-                xd[i]=v->get(i).asDouble();
-
+        
             if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
-                ctrl->goTo(IKINCTRL_POSE_FULL,xd,t);
+            {
+                Vector xd(3);
+                Vector od(v->size()-xd.length());
+
+                for (int i=0; i<xd.length(); i++)
+                    xd[i]=v->get(i).asDouble();
+
+                for (int i=0; i<od.length(); i++)
+                    od[i]=v->get(xd.length()+i).asDouble();
+
+                ctrl->goToPose(xd,od,t);
+            }
             else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
-                ctrl->goTo(IKINCTRL_POSE_XYZ,xd,t);
+            {
+                Vector xd(v->size());
+
+                for (int i=0; i<v->size(); i++)
+                    xd[i]=v->get(i).asDouble();
+
+                ctrl->goToPosition(xd,t);
+            }
         }
+    }
 }
 
 
@@ -130,7 +147,8 @@ void ServerCartesianController::init()
     closed       =false;
     trackingMode =false;
     executingTraj=false;
-    motionDone   =true;
+    taskVelModeOn=false;
+    motionDone   =true;    
 
     connectCnt=0;
     ctrlPose=IKINCTRL_POSE_FULL;
@@ -231,12 +249,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                     for (int i=0; i<v->size(); i++)
                         xd[i]=v->get(i).asDouble();
 
-                    bool ret;
+                    bool ret=false;
 
                     if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
+                    {
+                        taskVelModeOn=false;
                         ret=goTo(IKINCTRL_POSE_FULL,xd,t,true);
+                    }
                     else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
+                    {
+                        taskVelModeOn=false;
                         ret=goTo(IKINCTRL_POSE_XYZ,xd,t,true);
+                    }
 
                     if (ret)
                     {
@@ -840,7 +864,7 @@ void ServerCartesianController::newController()
     stopControl();
 
     // if it already exists, destroy old controller
-    if (ctrl)
+    if (ctrl!=NULL)
         delete ctrl;
 
     // update quantities
@@ -1034,6 +1058,15 @@ void ServerCartesianController::run()
         getFeedback(fb);
         ctrl->set_q(fb);
 
+        // manage the virtual target yielded by a
+        // request for a task-space reference velocity
+        if (taskVelModeOn && (++taskRefVelPeriodCnt>=taskRefVelPeriodFactor))
+        {
+            taskRefVelTargetGen->reset(xdes);
+            goTo(IKINCTRL_POSE_FULL,taskRefVelTargetGen->integrate(xdot_set),0.0);
+            taskRefVelPeriodCnt=0;
+        }
+
         // get the current target pose
         if (getNewTarget())
         {    
@@ -1046,7 +1079,10 @@ void ServerCartesianController::run()
         if (executingTraj)
         {
             // limb control loop
-            ctrl->iterate(xdes,qdes);
+            if (taskVelModeOn)
+                ctrl->iterate(xdes,qdes,xdot_set);
+            else
+                ctrl->iterate(xdes,qdes);
 
             // send joints velocities to the robot [deg/s]
             sendVelocity(CTRL_RAD2DEG*ctrl->get_qdot());
@@ -1146,7 +1182,7 @@ bool ServerCartesianController::open(Searchable &config)
     {
         kinType=optGeneral.find("KinematicType").asString();
 
-        if (kinType!="left" && kinType!="right")
+        if ((kinType!="left") && (kinType!="right"))
         {
             fprintf(stdout,"Attempt to instantiate an unknown kinematic type\n");
             fprintf(stdout,"Available types are: left, right\n");
@@ -1194,6 +1230,9 @@ bool ServerCartesianController::open(Searchable &config)
 
     if (optGeneral.check("ControllerPeriod"))
         setRate(optGeneral.find("ControllerPeriod").asInt());
+
+    taskRefVelPeriodFactor=optGeneral.check("TaskRefVelPeriodFactor",
+                                            Value(CARTCTRL_DEFAULT_TASKVELPER_FACTOR)).asInt();
 
     // scan DRIVER groups
     for (int i=0; i<numDrv; i++)
@@ -1303,10 +1342,10 @@ bool ServerCartesianController::close()
     lJnt.clear();
     lRmp.clear();
 
-    if (limb)
+    if (limb!=NULL)
         delete limb;
 
-    if (ctrl)
+    if (ctrl!=NULL)
         delete ctrl;
 
     closePorts();
@@ -1418,6 +1457,14 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     // create controller
     newController();
+
+    // init task-space reference velocity
+    xdot_set.resize(7,0.0);
+
+    // create the target generator for
+    // task-space reference velocity
+    taskRefVelTargetGen=new Integrator(taskRefVelPeriodFactor*(getRate()/1000.0),ctrl->get_x());
+    taskRefVelPeriodCnt=0;
 
     // this line shall be put before any
     // call to attached-dependent methods
@@ -1649,6 +1696,7 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od, con
         for (int i=0; i<od.length(); i++)
             _xd[xd.length()+i]=od[i];
 
+        taskVelModeOn=false;
         return goTo(IKINCTRL_POSE_FULL,_xd,t);
     }
     else
@@ -1660,7 +1708,10 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od, con
 bool ServerCartesianController::goToPosition(const Vector &xd, const double t)
 {
     if (connected)
+    {
+        taskVelModeOn=false;
         return goTo(IKINCTRL_POSE_XYZ,xd,t);
+    }
     else
         return false;
 }
@@ -2174,6 +2225,27 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 
 
 /************************************************************************/
+bool ServerCartesianController::setTaskVelocities(const Vector &xdot, const Vector &odot)
+{
+    if (connected)
+    {
+        for (int i=0; i<3; i++)
+            xdot_set[i]=xdot[i];
+
+        for (int i=0; i<4; i++)
+            xdot_set[3+i]=odot[i];
+
+        if (!taskVelModeOn)
+            taskRefVelPeriodCnt=0;
+
+        return taskVelModeOn=true;
+    }
+    else
+        return false;    
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::checkMotionDone(bool *f)
 {
     if (attached && (f!=NULL))
@@ -2210,10 +2282,12 @@ bool ServerCartesianController::stopControl()
     if (connected)
     {
         executingTraj=false;
+        taskVelModeOn=false;
         motionDone   =true;
         
         stopLimbVel();
         velCmd=0.0;
+        xdot_set=0.0;
 
         txTokenLatchedStopControl=txToken;
         skipSlvRes=true;

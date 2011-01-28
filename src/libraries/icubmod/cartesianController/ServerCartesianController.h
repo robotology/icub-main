@@ -50,6 +50,7 @@
 #include <yarp/dev/PreciselyTimed.h>
 #include <yarp/dev/CartesianControl.h>
 
+#include <iCub/ctrl/pids.h>
 #include <iCub/iKin/iKinHlp.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iKin/iKinInv.h>
@@ -104,11 +105,13 @@ class ServerCartesianController : public    yarp::dev::DeviceDriver,
 {
 protected:
     yarp::dev::PolyDriverList drivers;
+
     bool attached;
     bool connected;
     bool closed;
     bool trackingMode;
     bool executingTraj;
+    bool taskVelModeOn;
     bool motionDone;
 
     yarp::os::ConstString ctrlName;
@@ -120,6 +123,7 @@ protected:
     iCub::iKin::iKinLimb            *limb;
     iCub::iKin::iKinChain           *chain;
     iCub::iKin::MultiRefMinJerkCtrl *ctrl;
+    iCub::ctrl::Integrator          *taskRefVelTargetGen;
     
     std::deque<DriverDescriptor>             lDsc;
     std::deque<yarp::dev::IControlLimits*>   lLim;
@@ -133,6 +137,8 @@ protected:
     int          maxPartJoints;
     double       targetTol;
     double       trajTime;
+    int          taskRefVelPeriodFactor;
+    int          taskRefVelPeriodCnt;
 
     double       txToken;
     double       rxToken;
@@ -147,6 +153,7 @@ protected:
 
     yarp::sig::Vector xdes;
     yarp::sig::Vector qdes;
+    yarp::sig::Vector xdot_set;
     yarp::sig::Vector velCmd;
     yarp::sig::Vector fb;
 
@@ -239,6 +246,7 @@ public:
     virtual bool setInTargetTol(const double tol);
     virtual bool getJointsVelocities(yarp::sig::Vector &qdot);
     virtual bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
+    virtual bool setTaskVelocities(const yarp::sig::Vector &xdot, const yarp::sig::Vector &odot);
     virtual bool checkMotionDone(bool *f);
     virtual bool waitMotionDone(const double period=0.1, const double timeout=0.0);
     virtual bool stopControl();
