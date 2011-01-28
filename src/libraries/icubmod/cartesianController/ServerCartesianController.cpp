@@ -82,7 +82,7 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
     if (command.size()>3)
     {
         if (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO)
-        {   
+        {
             int pose=command.get(1).asVocab();
             double t=command.get(2).asDouble();
             Bottle *v=command.get(3).asList();
@@ -109,6 +109,21 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
 
                 ctrl->goToPosition(xd,t);
             }
+        }
+        else if (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_TASKVEL)
+        {
+            Bottle *v=command.get(1).asList();
+
+            Vector xdot(3);
+            Vector odot(v->size()-xdot.length());
+
+            for (int i=0; i<xdot.length(); i++)
+                xdot[i]=v->get(i).asDouble();
+
+            for (int i=0; i<odot.length(); i++)
+                odot[i]=v->get(xdot.length()+i).asDouble();
+
+            ctrl->setTaskVelocities(xdot,odot);
         }
     }
 }
