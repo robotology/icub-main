@@ -889,9 +889,7 @@ public:
 * A class derived from iKinCtrl implementing the 
 * multi-referential approach (<a 
 * href="http://eris.liralab.it/viki/images/c/cf/CartesianControllersEvaluation.pdf">pdf</a>). 
-* \note Minimum-Jerk time-based generators in Task Space and 
-*       Joint Space are used instead of VITE coupled
-*       controllers.
+* @note Minimum-Jerk controllers in Task Space and Joint Space 
 */
 class MultiRefMinJerkCtrl : public iKinCtrl
 {
@@ -977,7 +975,7 @@ public:
 
     virtual void restart(const yarp::sig::Vector &q0);
 
-    virtual std::string getAlgoName() { return "multi-referential-minimum-jerk-generators"; }
+    virtual std::string getAlgoName() { return "multi-referential-minimum-jerk-controllers"; }
 
     // disable unused father's methods
     virtual bool test_convergence(const double tol_size) { return false; }
