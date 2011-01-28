@@ -107,7 +107,7 @@ protected:
     unsigned int dim;
     unsigned int iter;
 
-    int  State;
+    int  state;
 
     bool watchDogOn;
     int  watchDogCnt;
@@ -124,7 +124,7 @@ protected:
     /**
     * Updates the control state.
     */
-    virtual void updateState();
+    virtual void update_state();
 
     /**
     * Handles the watchDog.
@@ -269,7 +269,7 @@ public:
     * starting point. 
     * @param q0 is the new starting point. 
     */
-    virtual void restart(const yarp::sig::Vector &q0) { State=IKINCTRL_STATE_RUNNING; iter=0; set_q(q0); }
+    virtual void restart(const yarp::sig::Vector &q0);
 
     /**
     * Returns the algorithm's name.
@@ -336,7 +336,7 @@ public:
     * IKINCTRL_STATE_INTARGET 
     * IKINCTRL_STATE_DEADLOCK 
     */
-    int get_State() const { return State; }
+    int get_state() const { return state; }
 
     /**
     * Sets the state of Pose control settings.

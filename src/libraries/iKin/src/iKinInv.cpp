@@ -50,7 +50,7 @@ iKinCtrl::iKinCtrl(iKinChain &c, unsigned int _ctrlPose) : chain(c)
 
     iter=0;
 
-    State=IKINCTRL_STATE_RUNNING;
+    state=IKINCTRL_STATE_RUNNING;
 
     set_ctrlPose(_ctrlPose);
 
@@ -151,33 +151,35 @@ Vector iKinCtrl::calc_e()
 
 
 /************************************************************************/
-void iKinCtrl::updateState()
+void iKinCtrl::update_state()
 {
-    if (State==IKINCTRL_STATE_RUNNING)
+    if (state==IKINCTRL_STATE_RUNNING)
     {
         if (isInTarget())
         {
-            State=IKINCTRL_STATE_INTARGET;
+            state=IKINCTRL_STATE_INTARGET;
             watchDogCnt=0;
         }
         else if (watchDogOn)
             watchDog();
     }
-    else if (State==IKINCTRL_STATE_INTARGET)
+    else if (state==IKINCTRL_STATE_INTARGET)
     {
         if (!isInTarget())
-            State=IKINCTRL_STATE_RUNNING;
+            state=IKINCTRL_STATE_RUNNING;
 
         watchDogCnt=0;
     }
-    else if (State==IKINCTRL_STATE_DEADLOCK)
+    else if (state==IKINCTRL_STATE_DEADLOCK)
+    {
         if (isInTarget())
         {
-            State=IKINCTRL_STATE_INTARGET;
+            state=IKINCTRL_STATE_INTARGET;
             watchDogCnt=0;
         }
         else
             watchDog();
+    }
 }
 
 
@@ -201,15 +203,24 @@ void iKinCtrl::watchDog()
         watchDogCnt++;
     else
     {
-        State=IKINCTRL_STATE_RUNNING;
+        state=IKINCTRL_STATE_RUNNING;
         watchDogCnt=0;
     }
 
     if (watchDogCnt>=watchDogMaxIter)
     {
-        State=IKINCTRL_STATE_DEADLOCK;
+        state=IKINCTRL_STATE_DEADLOCK;
         watchDogCnt=0;
     }    
+}
+
+
+/************************************************************************/
+void iKinCtrl::restart(const Vector &q0)
+{
+    state=IKINCTRL_STATE_RUNNING;
+    iter=0;
+    set_q(q0);
 }
 
 
@@ -251,7 +262,7 @@ Vector iKinCtrl::solve(Vector &xd, const double tol_size, const int max_iter,
             break;
         }
 
-        if (State==IKINCTRL_STATE_DEADLOCK)
+        if (state==IKINCTRL_STATE_DEADLOCK)
         {
             if (exit_code)
                 *exit_code=IKINCTRL_RET_TOLQ;   
@@ -330,7 +341,7 @@ Vector SteepCtrl::iterate(Vector &xd, const unsigned int verbose)
 {
     x_set=xd;
 
-    if (State!=IKINCTRL_STATE_DEADLOCK)
+    if (state!=IKINCTRL_STATE_DEADLOCK)
     {
         iter++;
         q_old=q;
@@ -364,11 +375,11 @@ Vector SteepCtrl::iterate(Vector &xd, const unsigned int verbose)
         x=chain.EndEffPose();
     }
 
-    updateState();
+    update_state();
 
-    if (State==IKINCTRL_STATE_INTARGET)
+    if (state==IKINCTRL_STATE_INTARGET)
         inTargetFcn();
-    else if (State==IKINCTRL_STATE_DEADLOCK)
+    else if (state==IKINCTRL_STATE_DEADLOCK)
         deadLockRecoveryFcn();
 
     printIter(verbose);
@@ -401,7 +412,7 @@ void SteepCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
         fprintf(stdout,"iter #%d\n",iter);
-        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"state   = %s\n",strState[state].c_str());
         fprintf(stdout,"norm(e) = %g\n",dist());
         fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
         fprintf(stdout,"x       = %s\n",x.toString().c_str());
@@ -591,7 +602,7 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
 {
     x_set=xd;
 
-    if (State!=IKINCTRL_STATE_DEADLOCK)
+    if (state!=IKINCTRL_STATE_DEADLOCK)
     {
         iter++;
         q_old=q;
@@ -632,11 +643,11 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
         mu=update_mu();
     }
 
-    updateState();
+    update_state();
 
-    if (State==IKINCTRL_STATE_INTARGET)
+    if (state==IKINCTRL_STATE_INTARGET)
         inTargetFcn();
-    else if (State==IKINCTRL_STATE_DEADLOCK)
+    else if (state==IKINCTRL_STATE_DEADLOCK)
         deadLockRecoveryFcn();
 
     printIter(verbose);
@@ -670,7 +681,7 @@ void LMCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
         fprintf(stdout,"iter #%d\n",iter);
-        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"state   = %s\n",strState[state].c_str());
         fprintf(stdout,"norm(e) = %g\n",dist());
         fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
         fprintf(stdout,"x       = %s\n",x.toString().c_str());
@@ -916,7 +927,7 @@ Vector GSLMinCtrl::iterate(Vector &xd, const unsigned int verbose)
 
     x_set=xd;
 
-    if (State!=IKINCTRL_STATE_DEADLOCK)
+    if (state!=IKINCTRL_STATE_DEADLOCK)
     {    
         iter++;
         q_old=q;        
@@ -943,11 +954,11 @@ Vector GSLMinCtrl::iterate(Vector &xd, const unsigned int verbose)
         x=chain.EndEffPose();
     }
 
-    updateState();
+    update_state();
 
-    if (State==IKINCTRL_STATE_INTARGET)
+    if (state==IKINCTRL_STATE_INTARGET)
         inTargetFcn();
-    else if (State==IKINCTRL_STATE_DEADLOCK)
+    else if (state==IKINCTRL_STATE_DEADLOCK)
         deadLockRecoveryFcn();
 
     printIter(verbose);
@@ -1008,7 +1019,7 @@ void GSLMinCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
         fprintf(stdout,"iter #%d\n",iter);
-        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"state   = %s\n",strState[state].c_str());
         fprintf(stdout,"norm(e) = %g\n",dist());
         fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
         fprintf(stdout,"x       = %s\n",x.toString().c_str());
@@ -1226,7 +1237,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
     x_set=xd;
     q_set=qd;
 
-    if (State!=IKINCTRL_STATE_DEADLOCK)
+    if (state!=IKINCTRL_STATE_DEADLOCK)
     {
         iter++;
         q_old=q;
@@ -1255,11 +1266,11 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
         x=chain.EndEffPose();
     }
 
-    updateState();
+    update_state();
 
-    if (State==IKINCTRL_STATE_INTARGET)
+    if (state==IKINCTRL_STATE_INTARGET)
         inTargetFcn();
-    else if (State==IKINCTRL_STATE_DEADLOCK)
+    else if (state==IKINCTRL_STATE_DEADLOCK)
         deadLockRecoveryFcn();
 
     printIter(verbose);    
@@ -1292,7 +1303,7 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        fprintf(stdout,"State   = %s\n",strState[State].c_str());
+        fprintf(stdout,"state   = %s\n",strState[state].c_str());
         fprintf(stdout,"norm(e) = %g\n",dist());
         fprintf(stdout,"xd      = %s\n",x_set.toString().c_str());
         fprintf(stdout,"x       = %s\n",x.toString().c_str());
