@@ -945,7 +945,7 @@ public:
     MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts);
 
     /**
-    * Executes one iteration of the control algorithm 
+    * Executes one iteration of the control algorithm.
     * @param xd is the End-Effector target Pose to be tracked. 
     * @param qd is the target joint angles (it shall satisfy the
     *           forward kinematic function xd=f(qd)).
@@ -973,7 +973,7 @@ public:
                                       const unsigned int verbose=0);
 
     /**
-    * Executes one iteration of the control algorithm 
+    * Executes one iteration of the control algorithm.
     * @param xd is the End-Effector target Pose to be tracked. 
     * @param qd is the target joint angles (it shall satisfy the
     *           forward kinematic function xd=f(qd)).
