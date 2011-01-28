@@ -80,7 +80,7 @@ ELSE ()
   INCLUDE_DIRECTORIES(${logpolar_INCLUDE_DIRS})
 ENDIF ()
 
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header} ${wrapper_source} ${wrapper_header})
+ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES})
 IF (ICUB_SIM_ENABLE_ODESDL)
