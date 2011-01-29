@@ -8,6 +8,39 @@
 
 #include <iCub/CamCalibModule.h>
 
+CamCalibPort::CamCalibPort()
+{
+    portImgOut=NULL;
+    calibTool=NULL;
+}
+
+void CamCalibPort::setData(yarp::os::Port *_portImgOut, ICalibTool *_calibTool)
+{
+    portImgOut=_portImgOut;
+    calibTool=_calibTool;
+}
+
+void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
+{
+    // execute calibration
+    if (portImgOut!=NULL)
+    {        
+        yarp::sig::ImageOf<PixelRgb> yrpImgOut;
+
+        if (calibTool!=NULL)
+            calibTool->apply(yrpImgIn,yrpImgOut);
+        else
+            yrpImgOut=yrpImgIn;
+
+        // timestamp propagation
+        yarp::os::Stamp stamp;
+        BufferedPort<ImageOf<PixelRgb> >::getEnvelope(stamp);
+        portImgOut->setEnvelope(stamp);
+
+        portImgOut->write(yrpImgOut);
+    }
+}
+
 CamCalibModule::CamCalibModule(){
 
     _calibTool = NULL;	
@@ -41,15 +74,6 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
         }
     }
 
-	// framerate
-	_intFPS = botConfig.check("fps", Value(20), "Try to achieve this number of frames per second (int).").asInt();
-	_intPrintFPSAfterNumFrames = botConfig.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
-	_dblTPF = 1.0f/((float)_intFPS);
-	_intFPSAchieved = 0;
-	_intFC = 0;
-	_dblTPFAchieved = 0.0;
-	_dblStartTime = 0.0;
-
     string calibToolName = botConfig.check("projection",
                                          Value("pinhole"),
                                          "Projection/mapping applied to calibrated image [projection|spherical] (string).").asString().c_str();
@@ -64,11 +88,15 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
         }
     }
 
-	_prtImgIn.open(getName("/in"));
-	_prtImgOut.open(getName("/out"));
+    _prtImgIn.open(getName("/in"));
+    _prtImgIn.setData(&_prtImgOut,_calibTool);
+    _prtImgIn.useCallback();
+    _prtImgOut.open(getName("/out"));
     _configPort.open(getName("/conf"));
+
     attach(_configPort);
 	fflush(stdout);
+
     return true;
 }
 
@@ -92,42 +120,10 @@ bool CamCalibModule::interruptModule(){
 }
 
 bool CamCalibModule::updateModule(){	
-
-    // framerate stuff
-	_intFC++;
-	if(_intPrintFPSAfterNumFrames <= _intFC && _intPrintFPSAfterNumFrames > 0){
-		std::cout << "FPS: " << _intFPSAchieved << std::endl;
-		_intFC = 0;
-	}
-	_dblTPFAchieved = ((float)(yarp::os::Time::now() - _dblStartTime));
-	if(_dblTPFAchieved < _dblTPF){
-		yarp::os::Time::delay(_dblTPF-_dblTPFAchieved);
-		_intFPSAchieved = _intFPS;
-	}
-	else{
-		_intFPSAchieved = (int)::floor((1.0 / _dblTPFAchieved) + 0.5);
-	}
-	_dblStartTime = yarp::os::Time::now();
-
-	// calibration
-    yarp::sig::ImageOf<PixelRgb> *yrpImgIn = _prtImgIn.read(false);
-	if (yrpImgIn != NULL) {        
-		_semaphore.wait();
-		yarp::sig::ImageOf<PixelRgb>& yrpImgOut = _prtImgOut.prepare();
-		_calibTool->apply(*yrpImgIn, yrpImgOut);
-		
-        //timestamp propagation
-        yarp::os::Stamp stamp;
-        _prtImgIn.getEnvelope(stamp);
-        _prtImgOut.setEnvelope(stamp);
-
-        _prtImgOut.write();
-		_semaphore.post();  
-	}	
     return true;
 }
 
 double CamCalibModule::getPeriod() {
-  return 0.0;
+  return 1.0;
 }
 

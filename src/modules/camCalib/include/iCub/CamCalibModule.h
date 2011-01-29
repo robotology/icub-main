@@ -33,11 +33,32 @@ using namespace std;
 
 namespace iCub {
     namespace contrib {
+        class CamCalibPort;
         class CamCalibModule;
     }
 }
 
 using namespace iCub::contrib;
+
+
+/**
+ *
+ * Camera Calibration Port class
+ *
+ */
+class iCub::contrib::CamCalibPort : public BufferedPort<ImageOf<PixelRgb> >
+{
+private:
+    yarp::os::Port *portImgOut;
+    ICalibTool     *calibTool;
+
+    virtual void onRead(ImageOf<PixelRgb> &yrpImgIn);
+
+public:
+    CamCalibPort();
+    void setData(yarp::os::Port *_portImgOut, ICalibTool *_calibTool);
+};
+
 
 /**
  *
@@ -50,22 +71,11 @@ class iCub::contrib::CamCalibModule : public RFModule {
 
 private:
 
-    BufferedPort<ImageOf<PixelRgb> >    _prtImgIn;
-	BufferedPort<ImageOf<PixelRgb> >    _prtImgOut;
+    CamCalibPort   _prtImgIn;
+	yarp::os::Port _prtImgOut;
     yarp::os::Port _configPort;
 
-    ICalibTool                           *_calibTool;
-
-    Semaphore                           _semaphore;
-
-	// framerate
-    int _intFPS;
-	int _intFPSAchieved;
-	int _intPrintFPSAfterNumFrames;
-	int _intFC; // frame counter
-	double _dblTPF; // time per frame (ms)
-	double _dblTPFAchieved; // actual time per frame 
-	double _dblStartTime;
+    ICalibTool *_calibTool;
 
 public:
 
