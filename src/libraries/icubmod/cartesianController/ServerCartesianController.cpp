@@ -2245,7 +2245,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
             taskVel=J*(CTRL_DEG2RAD*velCmd);
 
         xdot.resize(3);
-        odot.resize(taskVel.length()-3);
+        odot.resize(taskVel.length()-xdot.length());
     
         for (int i=0; i<xdot.length(); i++)
             xdot[i]=taskVel[i];
