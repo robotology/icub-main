@@ -12,9 +12,11 @@ CamCalibPort::CamCalibPort()
 {
     portImgOut=NULL;
     calibTool=NULL;
+
+    t0=Time::now();
 }
 
-void CamCalibPort::setData(yarp::os::Port *_portImgOut, ICalibTool *_calibTool)
+void CamCalibPort::setPointers(yarp::os::Port *_portImgOut, ICalibTool *_calibTool)
 {
     portImgOut=_portImgOut;
     calibTool=_calibTool;
@@ -22,15 +24,28 @@ void CamCalibPort::setData(yarp::os::Port *_portImgOut, ICalibTool *_calibTool)
 
 void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 {
+    double t=Time::now();
+   
     // execute calibration
     if (portImgOut!=NULL)
     {        
         yarp::sig::ImageOf<PixelRgb> yrpImgOut;
 
+        if (verbose)
+            fprintf(stdout,"received input image after %g [s] ... ",t-t0);
+
+        double t1=Time::now();
+
         if (calibTool!=NULL)
+        {
             calibTool->apply(yrpImgIn,yrpImgOut);
+            fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
+        }
         else
+        {
             yrpImgOut=yrpImgIn;
+            fprintf(stdout,"just copied in %g [s]\n",Time::now()-t1);
+        }
 
         // timestamp propagation
         yarp::os::Stamp stamp;
@@ -39,6 +54,8 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 
         portImgOut->write(yrpImgOut);
     }
+
+    t0=t;
 }
 
 CamCalibModule::CamCalibModule(){
@@ -89,7 +106,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     }
 
     _prtImgIn.open(getName("/in"));
-    _prtImgIn.setData(&_prtImgOut,_calibTool);
+    _prtImgIn.setPointers(&_prtImgOut,_calibTool);
+    _prtImgIn.setVerbose(rf.check("verbose"));
     _prtImgIn.useCallback();
     _prtImgOut.open(getName("/out"));
     _configPort.open(getName("/conf"));

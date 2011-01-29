@@ -52,11 +52,15 @@ private:
     yarp::os::Port *portImgOut;
     ICalibTool     *calibTool;
 
+    bool verbose;
+    double t0;
+
     virtual void onRead(ImageOf<PixelRgb> &yrpImgIn);
 
 public:
     CamCalibPort();
-    void setData(yarp::os::Port *_portImgOut, ICalibTool *_calibTool);
+    void setPointers(yarp::os::Port *_portImgOut, ICalibTool *_calibTool);
+    void setVerbose(const bool sw) { verbose=sw; }
 };
 
 
