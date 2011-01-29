@@ -13,6 +13,7 @@ CamCalibPort::CamCalibPort()
     portImgOut=NULL;
     calibTool=NULL;
 
+    verbose=false;
     t0=Time::now();
 }
 
@@ -39,12 +40,16 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         if (calibTool!=NULL)
         {
             calibTool->apply(yrpImgIn,yrpImgOut);
-            fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
+
+            if (verbose)
+                fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
         }
         else
         {
             yrpImgOut=yrpImgIn;
-            fprintf(stdout,"just copied in %g [s]\n",Time::now()-t1);
+
+            if (verbose)
+                fprintf(stdout,"just copied in %g [s]\n",Time::now()-t1);
         }
 
         // timestamp propagation
