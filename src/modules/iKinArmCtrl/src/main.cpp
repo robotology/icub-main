@@ -33,9 +33,9 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description 
  
-\note This module is deprecated on iCub, but can be still be 
-      useful as baseline for other robots. You are invited to
-      use the <a
+\note This module is deprecated on iCub, but can be still useful 
+      as baseline for other robots. You are invited to use the
+      <a
       href="http://eris.liralab.it/iCub/main/dox/html/icub_cartesian_interface.html">Cartesian
       Interface</a>.
 
