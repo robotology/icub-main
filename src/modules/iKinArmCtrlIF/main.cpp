@@ -66,7 +66,7 @@ The main differences with respect to \ref iKinArmCtrl are:
  
 --T \e time
 - specify the task execution time in seconds; by default \e time
-  is 2.0 seconds. Note that this just an approximation of
+  is 2.0 seconds. Note that this is just an approximation of
   execution time since there exists a controller running
   underneath.
  
