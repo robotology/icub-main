@@ -126,10 +126,6 @@ void RFModule2::setName(const char *name) {
 		// so that messages received from the port are redirected to the respond method
 		if (handlerPort.open(prefix + getName())) {
 			attach(handlerPort);
-#ifndef __unix__
-			// TODO: Hmmm, the warning actually appears on windows and unix systems
-			attachTerminal();
-#endif
 		} else {
 			cout << getName() << ": unable to open port " << handlerPort.getName() << endl;
 		}
