@@ -173,7 +173,8 @@ void Eye2world::WorkerThread::run() {
 		yarp::os::Time::delay(1);
 #else
 		inputCoordinates = in->read(true);
-		if (isStopping()) {
+
+		if (isStopping() || inputCoordinates == NULL) {
             break;
         }
 
@@ -207,7 +208,7 @@ void Eye2world::WorkerThread::run() {
 			positionUpdated = true;
 		}
 
-        if (isStopping()) {
+        if (isStopping() || headPosition == NULL) {
             break;
         }
 
@@ -220,7 +221,7 @@ void Eye2world::WorkerThread::run() {
 			positionUpdated = true;
 		}
 
-        if (isStopping()) {
+        if (isStopping() || torsoPosition == NULL) {
             break;
         }
 
@@ -230,7 +231,6 @@ void Eye2world::WorkerThread::run() {
 			transformationAvailable = true;
 		}
 #endif
-
 		Vector object3d(3);
 		projections[camera]->project(object2d, object3d);
 

@@ -54,8 +54,8 @@ bool ThreadedRFModule::startThread() {
 bool ThreadedRFModule::interruptModule() {
 	// Since derived classes are supposed to create the Thread object,
 	// we cannot rely on its existence.
-	bool b = (workerThread != NULL ? workerThread->stop() : true);
-	return RFModule2::interruptModule() && b;
+	bool b = RFModule2::interruptModule();
+	return b && (workerThread != NULL ? workerThread->stop() : true);
 }
 
 ThreadedRFModule::RFWorkerThread::RFWorkerThread(
