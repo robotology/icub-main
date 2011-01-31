@@ -166,7 +166,7 @@ bool iDynLink::setInertia(const yarp::sig::Matrix &_I)
 	else
 	{
 		I.resize(3,3); I.zero();
-		if(verbose)	fprintf(stderr,"iDynLink: error in setting Inertia due to wrong matrix size: (%ld,%ld) instead of (3,3). Inertia matrix now set automatically to zero. \n",_I.rows(),_I.cols());
+		if(verbose)	fprintf(stderr,"iDynLink: error in setting Inertia due to wrong matrix size: (%d,%d) instead of (3,3). Inertia matrix now set automatically to zero. \n",_I.rows(),_I.cols());
 		return false;
 	}
 }
@@ -217,7 +217,7 @@ bool iDynLink::setCOM(const yarp::sig::Matrix &_HC)
 	{
 		HC.resize(4,4); HC.eye();
 		if(verbose)
-			fprintf(stderr,"iDynLink: error in setting COM roto-translation due to wrong matrix size: (%ld,%ld) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
+			fprintf(stderr,"iDynLink: error in setting COM roto-translation due to wrong matrix size: (%d,%d) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
 		return false;
 	}
 }
@@ -235,7 +235,7 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
 	else	
 	{
 		if(verbose)
-			fprintf(stderr,"iDynLink error, cannot set distance from COM due to wrong sized vector: %ld instead of 3 \n",_rC.length());
+			fprintf(stderr,"iDynLink error, cannot set distance from COM due to wrong sized vector: %d instead of 3 \n",_rC.length());
 		return false;
 	}
 }
@@ -258,7 +258,7 @@ bool iDynLink::setForce(const yarp::sig::Vector &_F)
 	else
 	{
 		if(verbose)
-            fprintf(stderr,"iDynLink error: cannot set forces due to wrong size: %ld instead of 3.\n",_F.length());
+            fprintf(stderr,"iDynLink error: cannot set forces due to wrong size: %d instead of 3.\n",_F.length());
 		return false;
 	}
 }
@@ -273,7 +273,7 @@ bool iDynLink::setMoment(const yarp::sig::Vector &_Mu)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"iDynLink error, cannot set moments due to wrong size: %ld instead of 3. \n",_Mu.length());
+			fprintf(stderr,"iDynLink error, cannot set moments due to wrong size: %d instead of 3. \n",_Mu.length());
 		return false;
 	}
 }
@@ -434,7 +434,7 @@ Vector iDynChain::setDAng(const Vector &dq)
 	}
     else 
 		if(verbose)
-            fprintf(stderr,"iDynChain error: setVel() failed: %ld joint angles needed \n",DOF);
+            fprintf(stderr,"iDynChain error: setVel() failed: %d joint angles needed \n",DOF);
 
     return curr_dq;
 }
@@ -453,7 +453,7 @@ Vector iDynChain::setD2Ang(const Vector &ddq)
 	}
     else 
 		if(verbose)
-        fprintf(stderr,"iDynChain error: setVel() failed: %ld joint angles needed \n",DOF);
+        fprintf(stderr,"iDynChain error: setVel() failed: %d joint angles needed \n",DOF);
 
     return curr_ddq;
 }
@@ -490,7 +490,7 @@ double iDynChain::setDAng(const unsigned int i, double _dq)
         return allList[i]->setDAng(_dq);
     else 
 	{	
-        if(verbose) fprintf(stderr,"iDynChain error: setVel() failed due to out of range index: %ld >= %ld \n",i,N);
+        if(verbose) fprintf(stderr,"iDynChain error: setVel() failed due to out of range index: %d >= %d \n",i,N);
 		return 0.0;
 		
 	}
@@ -502,7 +502,7 @@ double iDynChain::setD2Ang(const unsigned int i, double _ddq)
          return allList[i]->setD2Ang(_ddq);
     else 
     {
-		if(verbose)	fprintf(stderr,"iDynChain error: setD2Ang() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: setD2Ang() failed due to out of range index: %d >= %d \n",i,N);
 		return 0.0;
     }
 }
@@ -513,7 +513,7 @@ double iDynChain::getDAng(const unsigned int i)
         return allList[i]->getDAng();
     else 
     {
-		if(verbose)	fprintf(stderr,"iDynChain error: getDAng() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: getDAng() failed due to out of range index: %d >= %d \n",i,N);
 		return 0.0;
     }
 }
@@ -524,7 +524,7 @@ double iDynChain::getD2Ang(const unsigned int i)
         return allList[i]->getD2Ang();
     else 
     {
-		if(verbose)	fprintf(stderr,"iDynChain error: getD2Ang() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: getD2Ang() failed due to out of range index: %d >= %d \n",i,N);
 		return 0.0;
     }
 }
@@ -535,7 +535,7 @@ Vector iDynChain::getLinAcc(const unsigned int i) const
         return allList[i]->getLinAcc();
     else 
     {
-		if(verbose)	fprintf(stderr,"iDynChain error: getLinAcc() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: getLinAcc() failed due to out of range index: %d >= %d \n",i,N);
 		return Vector(0);
     }	
 }
@@ -546,7 +546,7 @@ Vector iDynChain::getLinAccCOM(const unsigned int i) const
 		return allList[i]->getLinAccC();
     else 
     {
-		if(verbose)	fprintf(stderr,"iDynChain error: getLinAccCOM() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: getLinAccCOM() failed due to out of range index: %d >= %d \n",i,N);
 		return Vector(0);
     }	
 }
@@ -557,7 +557,7 @@ iDynLink * iDynChain::refLink(const unsigned int i)
 		return dynamic_cast<iDynLink *>(allList[i]);
 	else 
 	{
-		if(verbose)	fprintf(stderr,"iDynChain error: refLink() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: refLink() failed due to out of range index: %d >= %d \n",i,N);
 		return NULL;
 	}
 }
@@ -568,7 +568,7 @@ Vector iDynChain::getForce(const unsigned int iLink)	const
 		return allList[iLink]->getForce();
 	else 
 	{
-		if(verbose) fprintf(stderr,"iDynChain error: getForce() failed due to out of range index: %ld >= %ld \n",iLink,N);
+		if(verbose) fprintf(stderr,"iDynChain error: getForce() failed due to out of range index: %d >= %d \n",iLink,N);
 		return Vector(0);
 	}
 }
@@ -579,7 +579,7 @@ Vector iDynChain::getMoment(const unsigned int iLink) const
 		return allList[iLink]->getMoment();
 	else 
 	{
-		if(verbose) fprintf(stderr,"iDynChain error: getMoment() failed due to out of range index: %ld >= %ld \n",iLink,N);
+		if(verbose) fprintf(stderr,"iDynChain error: getMoment() failed due to out of range index: %d >= %d \n",iLink,N);
 		return Vector(0);
 	}
 }
@@ -590,7 +590,7 @@ double iDynChain::getTorque(const unsigned int iLink) const
 		return allList[iLink]->getTorque();
 	else 
 	{
-		if(verbose) fprintf(stderr,"iDynChain error: getTorque() failed due to out of range index: %ld >= %ld \n",iLink,N);
+		if(verbose) fprintf(stderr,"iDynChain error: getTorque() failed due to out of range index: %d >= %d \n",iLink,N);
 		return 0.0;
 	}
 }
@@ -613,7 +613,7 @@ bool iDynChain::setMasses(Vector _m)
 	}
 	else
 	{
-		if(verbose) fprintf(stderr,"iDynChain error: setMasses() failed due to wrong vector size: %ld instead of %ld",_m.length(),N);
+		if(verbose) fprintf(stderr,"iDynChain error: setMasses() failed due to wrong vector size: %d instead of %d",_m.length(),N);
 		return false;
 	}
 }
@@ -624,7 +624,7 @@ double iDynChain::getMass(const unsigned int i) const
 		return allList[i]->getMass();
 	else
 	{
-		if(verbose) fprintf(stderr,"iDynChain error: getMass() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose) fprintf(stderr,"iDynChain error: getMass() failed due to out of range index: %d >= %d \n",i,N);
 		return 0.0;
 	}
 }
@@ -638,7 +638,7 @@ bool iDynChain::setMass(const unsigned int i, const double _m)
 	}
 	else
 	{
-		if(verbose)	fprintf(stderr,"iDynChain error: setMass() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: setMass() failed due to out of range index: %d >= %d \n",i,N);
 		return false;
 	}
 }
@@ -673,7 +673,7 @@ bool iDynChain::setDynamicParameters(const unsigned int i, const double _m, cons
 		return 	allList[i]->setDynamicParameters(_m,_HC,_I,_kr,_Fv,_Fs,_Im);	
 	else
 	{
-		if(verbose)	fprintf(stderr,"iDynChain error: setDynamicParameters() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: setDynamicParameters() failed due to out of range index: %d >= %d \n",i,N);
 		return false;
 	}
 }
@@ -684,7 +684,7 @@ bool iDynChain::setDynamicParameters(const unsigned int i, const double _m, cons
 		return allList[i]->setDynamicParameters(_m,_HC,_I);
 	else
 	{
-		if(verbose)	fprintf(stderr,"iDynChain error: setDynamicParameters() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: setDynamicParameters() failed due to out of range index: %d >= %d \n",i,N);
 		return false;
 	}
 }
@@ -695,7 +695,7 @@ bool iDynChain::setStaticParameters(const unsigned int i, const double _m, const
 		return allList[i]->setStaticParameters(_m,_HC);
 	else
 	{
-		if(verbose)	fprintf(stderr,"iDynChain error: setStaticParameters() failed due to out of range index: %ld >= %ld \n",i,N);
+		if(verbose)	fprintf(stderr,"iDynChain error: setStaticParameters() failed due to out of range index: %d >= %d \n",i,N);
 		return false;
 	}
 }
@@ -747,7 +747,7 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 		if(verbose)
 		{
             fprintf(stderr,"iDynChain error: could not compute with Newton Euler due to wrong sized initializing vectors: \n");
-            fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %ld,%ld,%ld,%ld,%ld instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),F0.length(),Mu0.length());
+            fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),F0.length(),Mu0.length());
 		}
 		return false;
 	}
@@ -931,7 +931,7 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
 		if(verbose)
 		{
 			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-			fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %ld,%ld,%ld,%ld,%ld instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),Fend.length(),Muend.length());
+			fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),Fend.length(),Muend.length());
 		}
 		return false;
 	}
@@ -961,7 +961,7 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
 		if(verbose)
 		{
 			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3 \n",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3 \n",w0.length(),dw0.length(),ddp0.length());
 		}
 		return false;
 	}
@@ -991,7 +991,7 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
 		if(verbose)
 		{
 			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-			fprintf(stderr," Fend,Muend have size %ld,%ld instead of 3,3 \n",Fend.length(),Muend.length());
+			fprintf(stderr," Fend,Muend have size %d,%d instead of 3,3 \n",Fend.length(),Muend.length());
 		}
 		return false;
 	}
@@ -1127,7 +1127,7 @@ Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn
     }
     if(iLinkN>=N)
     {
-		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed due to out of range indexes: from 0 to %ld >= %ld \n", iLinkN, N);
+		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed due to out of range indexes: from 0 to %d >= %d \n", iLinkN, N);
         return Matrix(0,0);
     }
 
@@ -1165,7 +1165,7 @@ Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn
     }
     if(iLinkN>=N)
     {
-		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed due to out of range indexes: from 0 to %ld >= %ld \n",iLinkN,N);
+		if(verbose) fprintf(stderr,"iDynChain: computeGeoJacobian() failed due to out of range indexes: from 0 to %d >= %d \n",iLinkN,N);
         return Matrix(0,0);
     }
 
@@ -1270,7 +1270,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink)
 {
     if (iLink>=N)
     {
-        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %ld >= %ld \n",iLink, N);
+        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %d >= %d \n",iLink, N);
         return Matrix(0,0);
     }
 
@@ -1306,7 +1306,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn)
 {
     if (iLink>=N)
     {
-        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %ld >= %ld \n", iLink,N);
+        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %d >= %d \n", iLink,N);
         return Matrix(0,0);
     }
 
@@ -1340,7 +1340,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn,
 {
     if (iLink>=N)
     {
-        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %ld >= %ld \n", iLink,N);
+        if(verbose) fprintf(stderr,"computeCOMJacobian() failed due to out of range index: %d >= %d \n", iLink,N);
         return Matrix(0,0);
     }
 
@@ -1374,7 +1374,7 @@ Matrix iDynChain::getCOM(unsigned int iLink)
 {
     if (iLink>=N)
     {
-        if(verbose) fprintf(stderr,"iDynChain: error, getCOM() failed due to out of range index: %ld >= %ld \n", iLink,N);
+        if(verbose) fprintf(stderr,"iDynChain: error, getCOM() failed due to out of range index: %d >= %d \n", iLink,N);
         return Matrix(0,0);
     }
     return allList[iLink]->getCOM();
@@ -1384,7 +1384,7 @@ Matrix iDynChain::getHCOM(unsigned int iLink)
 {
     if (iLink>=N)
     {
-        if(verbose) fprintf(stderr,"iDynChain: error, getHCOM() failed due to out of range index: %ld >= %ld \n", iLink,N);
+        if(verbose) fprintf(stderr,"iDynChain: error, getHCOM() failed due to out of range index: %d >= %d \n", iLink,N);
         return Matrix(0,0);
     }
     return getH(iLink,true) * allList[iLink]->getCOM();
@@ -1479,7 +1479,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         Bottle &bLink=opt.findGroup(link);
         if(bLink.isNull())
         {
-            fprintf(stderr,"Error: link %ld is missing! \n",iLink);
+            fprintf(stderr,"Error: link %d is missing! \n",iLink);
             type="right";
             H0.eye();
             dispose();

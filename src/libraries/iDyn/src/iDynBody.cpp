@@ -70,7 +70,7 @@ bool RigidBodyTransformation::setRBT(const Matrix &_H)
 	}
 	else
 	{
-		if(verbose) fprintf(stderr,"RigidBodyTransformation: could not set RBT due to wrong sized matrix H: %ld,%ld instead of (4,4). Setting identity as default. \n",_H.cols(),_H.rows());
+		if(verbose) fprintf(stderr,"RigidBodyTransformation: could not set RBT due to wrong sized matrix H: %d,%d instead of (4,4). Setting identity as default. \n",_H.cols(),_H.rows());
 		H.resize(4,4);
 		H.eye();
 		return false;
@@ -452,7 +452,7 @@ Matrix iDynNode::getRBT(unsigned int iLimb) const
     }
     else
     {
-        if(verbose) fprintf(stderr,"iDynNode: error, could not getRBT() due to out of range index: %ld , while we have %ld limbs. \n", iLimb, rbtList.size() );
+        if(verbose) fprintf(stderr,"iDynNode: error, could not getRBT() due to out of range index: %d , while we have %d limbs. \n", iLimb, rbtList.size() );
         return Matrix(0,0);
     }
 }
@@ -498,7 +498,7 @@ bool iDynNode::solveKinematics()
 	{
 		if(verbose)
         {
-            fprintf(stderr,"iDynNode error: there are %ld limbs with Kinematic Flow = Input. Only one limb must have Kinematic Input from outside measurements/computations. \n",inputNode);
+            fprintf(stderr,"iDynNode error: there are %d limbs with Kinematic Flow = Input. Only one limb must have Kinematic Input from outside measurements/computations. \n",inputNode);
             fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s> \n",info.c_str());
         }
 		return false;
@@ -547,7 +547,7 @@ bool iDynNode::solveKinematics(const Vector &w0, const Vector &dw0, const Vector
 	{
 		if(verbose)
         {
-            fprintf(stderr,"iDynNode: error: there are %ld limbs with Kinematic Flow = Input. ",inputNode);
+            fprintf(stderr,"iDynNode: error: there are %d limbs with Kinematic Flow = Input. ",inputNode);
 			fprintf(stderr," Only one limb must have Kinematic Input from outside measurements/computations. ");
             fprintf(stderr,"Please check the coherence of the limb configuration in the node <%s> \n", info.c_str());
         }
@@ -579,7 +579,7 @@ bool iDynNode::setKinematicMeasure(const Vector &w0, const Vector &dw0, const Ve
 		if(verbose)
         {
             fprintf(stderr,"iDynNode: error, could not set Kinematic measures due to wrong sized vectors: \n");
-			fprintf(stderr," w,dw,ddp have lenght %ld,%ld,%ld instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," w,dw,ddp have lenght %d,%d,%d instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
         }
 		return false;
 	}
@@ -675,7 +675,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
 		if(verbose)
         {
             fprintf(stderr,"iDynNode: could not solveWrench due to missing wrenches to initialize the computations: ");
-			fprintf(stderr," only %ld f/m available instead of %ld. Using default values, all zero. \n ",FM.cols(),inputNode);
+			fprintf(stderr," only %d f/m available instead of %d. Using default values, all zero. \n ",FM.cols(),inputNode);
         }
 		inputWasOk = false;
 	}
@@ -684,7 +684,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
 		if(verbose)
         {
             fprintf(stderr,"iDynNode: could not solveWrench due to wrong sized init wrenches: ");
-			fprintf(stderr," %ld instead of 6 (3+3). Using default values, all zero. \n",FM.rows());
+			fprintf(stderr," %d instead of 6 (3+3). Using default values, all zero. \n",FM.rows());
         }
 		inputWasOk = false;
 	}
@@ -738,7 +738,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 		if(verbose)
         {
             fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: ");
-			fprintf(stderr," only %ld/%ld f/m available instead of %ld/%ld. Using default values, all zero. \n",Fm.cols(),Mm.cols(),inputNode,inputNode);
+			fprintf(stderr," only %d/%d f/m available instead of %d/%d. Using default values, all zero. \n",Fm.cols(),Mm.cols(),inputNode,inputNode);
         }
 		inputWasOk = false;
 	}
@@ -747,7 +747,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 		if(verbose)
         {
             fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: ");
-			fprintf(stderr," %ld/%ld instead of 3/3. Using default values, all zero. \n",Fm.rows(),Mm.rows());
+			fprintf(stderr," %d/%d instead of 3/3. Using default values, all zero. \n",Fm.rows(),Mm.rows());
         }
 		inputWasOk = false;
 	}
@@ -837,7 +837,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChain)
     }
     else
     {
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %ld > %ld. Returning a null matrix. \n",iChain,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -852,7 +852,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChain, unsigned int iLink)
     }
     else
     {
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %ld > %ld. Returning a null matrix. \n",iChain,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -863,13 +863,13 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Matrix(0,0);		
 	}
 
@@ -905,8 +905,8 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	if(JAcols+JBcols!=J.cols())
 	{
         fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
-        fprintf(stderr,"Note:  limb A:  N=%ld  DOF=%ld  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
-        fprintf(stderr,"Note:  limb B:  N=%ld  DOF=%ld  \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF());
+        fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
+        fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF());
 		J.resize(6,JAcols+JBcols);
 	}
 	
@@ -928,19 +928,19 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix.\n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix.\n",iChainA,iChainB,rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-        if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %ld : same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix.\n",iChainA);
+        if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %d : same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix.\n",iChainA);
 		return Matrix(0,0);		
 	}
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
-   		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %ld: the selected link %ld > %ld. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
+   		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %d: the selected link %d > %d. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
 		return Matrix(0,0);	 
     }
 
@@ -977,8 +977,8 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	if(JAcols+JBcols!=J.cols())
 	{
         fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
-        fprintf(stderr,"Note:  limb A:  N=%ld  DOF=%ld  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
-        fprintf(stderr,"Note:  limb B:  N=%ld  DOF=%ld  iLinkB=%ld \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
+        fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
+        fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
 		J.resize(6,JAcols+JBcols);
 	}
 	
@@ -1063,13 +1063,13 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Vector(0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Vector(0);		
 	}
 
@@ -1123,19 +1123,19 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Vector(0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Vector(0);		
 	}
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
-   		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index for chain %ld: the selected link is %ld > %ld. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
+   		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index for chain %d: the selected link is %d > %d. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
 		return Vector(0);	 
     }
 
@@ -1199,7 +1199,7 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChain, unsigned int iLink)
     }
     else
     {
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeCOMJacobian() due to out of range index: input limb has index %ld > %ld. Returning a null matrix. \n",iChain,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeCOMJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -1210,19 +1210,19 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsign
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %ld,%ld > %ld. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
 	if( iChainA==iChainB )
 	{
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %ld: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
 		return Matrix(0,0);		
 	}
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
-        if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %ld: the selected link is %ld > %ld. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
+        if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %d: the selected link is %d > %d. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
 		return Matrix(0,0);	 
     }
 
@@ -1259,8 +1259,8 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsign
 	if(JAcols+JBcols!=J.cols())
 	{
         fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
-        fprintf(stderr,"Note:  limb A:  N=%ld  DOF=%ld  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
-        fprintf(stderr,"Note:  limb B:  N=%ld  DOF=%ld  iLinkB=%ld \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
+        fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
+        fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
 		J.resize(6,JAcols+JBcols);
 	}
 	
@@ -1429,7 +1429,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
 	{
 		if(verbose)
 		{
-			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %ld f/m available instead of %ld. Using default values, all zero.\n",FM.cols(),inputNode);
+			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %d f/m available instead of %d. Using default values, all zero.\n",FM.cols(),inputNode);
 			if(afterAttach==true)
 			fprintf(stderr,"          Remember that the first limb receives wrench input during an attach from another node. \n");
 		}
@@ -1438,7 +1438,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
 	if(FM.rows()!=6)
 	{
 		if(verbose)
-			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init wrenches: %ld instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
+			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init wrenches: %d instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
 		inputWasOk = false;
 	}
 
@@ -1506,7 +1506,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
 	{
 		if(verbose)
 		{
-			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %ld/%ld f/m available instead of %ld/%ld. Using default values, all zero.\n",Fm.cols(),Mm.cols(),inputNode,inputNode);
+			fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %d/%d f/m available instead of %d/%d. Using default values, all zero.\n",Fm.cols(),Mm.cols(),inputNode,inputNode);
 			if(afterAttach==true)
 			fprintf(stderr,"          Remember that the first limb receives wrench input during an attach from another node.\n");
 		}
@@ -1514,7 +1514,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
 	}
 	if((Fm.rows()!=3)||(Mm.rows()!=3))
 	{
-		if(verbose)	fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: %ld/%ld instead of 3/3. Using default values, all zero.\n",Fm.rows(),Mm.rows());
+		if(verbose)	fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: %d/%d instead of 3/3. Using default values, all zero.\n",Fm.rows(),Mm.rows());
 		inputWasOk = false;
 	}
 
@@ -1580,13 +1580,13 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 	//first check if the input is correct
 	if(FM.rows()!=6)
 	{
-		if(verbose)	fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches matrix: %ld rows instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
+		if(verbose)	fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches matrix: %d rows instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
 		inputWasOk = false;
 	}
 	if(FM.cols()!=inputNode)
 	{
 		if(verbose)
-			fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: %ld instead of %ld. Using default values, all zero. \n",FM.cols(),inputNode);
+			fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: %d instead of %d. Using default values, all zero. \n",FM.cols(),inputNode);
 		if(afterAttach==true)
 			fprintf(stderr,"                Remember that the first limb receives wrench input during an attach from another node.\n");
 		inputWasOk = false;
@@ -1784,7 +1784,7 @@ bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vec
 	}
 	else
 	{
-		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM right/left have lenght %ld,%ld instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_right.length(),FM_left.length());
+		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM right/left have lenght %d,%d instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_right.length(),FM_left.length());
 		setWrenchMeasure(FM,true);
 		return false;
 	}
@@ -1803,7 +1803,7 @@ bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vec
 	}
 	else
 	{
-		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM up/right/left have lenght %ld,%ld,%ld instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_up.length(),FM_right.length(),FM_left.length());
+		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM up/right/left have lenght %d,%d,%d instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_up.length(),FM_right.length(),FM_left.length());
 		setWrenchMeasure(FM);
 		return false;
 	}
@@ -1832,8 +1832,8 @@ bool iDynSensorTorsoNode::update(const Vector &w0, const Vector &dw0, const Vect
 		if(verbose)
         {
             fprintf(stderr,"Node <%s> error, could not update() due to wrong sized vectors. ",name.c_str());
-			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
-			fprintf(stderr," FM up/right/left have size %ld,%ld,%ld instead of 6,6,6. \n",FM_up.length(),FM_right.length(),FM_left.length());
+			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," FM up/right/left have size %d,%d,%d instead of 6,6,6. \n",FM_up.length(),FM_right.length(),FM_left.length());
 			fprintf(stderr," Updating without new values.\n");
         }
 		update();
@@ -1868,7 +1868,7 @@ bool iDynSensorTorsoNode::update(const Vector &FM_right, const Vector &FM_left, 
 		if(verbose)
         {
             fprintf(stderr,"Node <%s> error, could not update() due to wrong sized vectors. ",name.c_str());
-			fprintf(stderr,"FM right/left have size %ld,%ld instead of 6,6. Updating without new values. \n",FM_right.length(),FM_left.length());
+			fprintf(stderr,"FM right/left have size %d,%d instead of 6,6. Updating without new values. \n",FM_right.length(),FM_left.length());
         }
 		update();
 		return false;
@@ -2348,7 +2348,7 @@ bool iCubUpperBody::setSensorsWrenchMeasure(const Vector &FM_right, const Vector
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"iCubUpperBody could not set sensor measurements properly due to wrong sized vectors. FM head/right/left have lenght %ld,%ld,%ld instead of 6,6. Setting everything to zero. \n",FM_head.length(),FM_right.length(),FM_left.length());
+			fprintf(stderr,"iCubUpperBody could not set sensor measurements properly due to wrong sized vectors. FM head/right/left have lenght %d,%d,%d instead of 6,6. Setting everything to zero. \n",FM_head.length(),FM_right.length(),FM_left.length());
 		return false;
 	}
 }
@@ -2390,8 +2390,8 @@ bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &dd
 		if(verbose)
         { 
             fprintf(stderr,"iCubUpperBody: error, could not update() due to wrong sized vectors. ");
-			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
-			fprintf(stderr," FM head,right/left arm have size %ld,%ld,%ld instead of 6,6,6. ",FM_head.length(),FM_right.length(),FM_left.length());
+			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," FM head,right/left arm have size %d,%d,%d instead of 6,6,6. ",FM_head.length(),FM_right.length(),FM_left.length());
 			fprintf(stderr," Updating without new values.\n");
         }
 		update();
@@ -2415,8 +2415,8 @@ bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &dd
 		if(verbose)
         {
             fprintf(stderr,"iCubUpperBody: error, could not update() due to wrong sized vectors. ");
-			fprintf(stderr," w0,dw0,ddp0 have size %ld,%ld,%ld instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
-			fprintf(stderr," FM right/left arm have size %ld,%ld instead of 6,6. ",FM_right.length(),FM_left.length());
+			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," FM right/left arm have size %d,%d instead of 6,6. ",FM_right.length(),FM_left.length());
 			fprintf(stderr," Updating without new values.\n");
         }
 		update();
