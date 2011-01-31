@@ -172,13 +172,10 @@ void Eye2world::WorkerThread::run() {
 #ifdef DEBUG_OFFLINE
 		yarp::os::Time::delay(1);
 #else
-		do {
-			inputCoordinates = in->read(true);
-		} while (inputCoordinates == NULL && !isStopping());
-
+		inputCoordinates = in->read(true);
 		if (isStopping()) {
-			break;
-		}
+            break;
+        }
 
 		unsigned int coordinatesPos = 0;
 		if (inputCoordinates->get(0).isString()) {
@@ -210,6 +207,10 @@ void Eye2world::WorkerThread::run() {
 			positionUpdated = true;
 		}
 
+        if (isStopping()) {
+            break;
+        }
+
 		Bottle* torsoPosition = torso->read(!transformationAvailable);
 		if (torsoPosition != NULL && torsoPosition->size() >= 3) {
 			//get data and convert from degrees to radiant
@@ -218,6 +219,10 @@ void Eye2world::WorkerThread::run() {
 			}
 			positionUpdated = true;
 		}
+
+        if (isStopping()) {
+            break;
+        }
 
 		if (positionUpdated || !transformationAvailable) { // The 2nd one is just to be sure ;)
 			projections[camera]->setHeightOffset(zOffset, false);
