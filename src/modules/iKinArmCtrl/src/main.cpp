@@ -61,7 +61,7 @@ algorithm, it should not interrupt the Controller and, finally,
 it can be called at different rate. 
  
 \note A video on iCub performing grasp-priming can be seen <a 
-      href="http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.wmv">here</a>.
+      href="http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.mpg">here</a>.
  
 \note A video on iCub courting my sister :) can be seen <a 
       href="http://eris.liralab.it/misc/icubvideos/icub_courting.wmv">here</a>.
