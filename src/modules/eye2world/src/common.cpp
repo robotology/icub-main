@@ -171,50 +171,6 @@ void readMatrices(const Bottle& in, map<const string, Matrix>& output, bool isSu
 	}
 }
 
-void readMotionSequence(const Bottle& in, MotionSequence& output) {
-	Bottle seq = in;
-	Bottle& b = seq.findGroup("DIMENSIONS");
-	int numPoses = b.find("numberOfPoses").asInt();
-	int numJoints = b.find("numberOfJoints").asInt();
-	if (numJoints <= 0 || numPoses <= 0) {
-		// cout << "Warning: " <<  endl;
-	} else {
-		output.setNumJoints(numJoints);
-		Vector v(numJoints);
-
-		for (int i = 0; i < numPoses; i++) {
-			ostringstream ss;
-			ss << "POSITION" << i;
-			Bottle& position = seq.findGroup(ss.str().c_str());
-
-			Motion m(numJoints);
-
-			readVector(position.findGroup("jointPositions"), v, numJoints);
-			m.setPosition(v);
-			readVector(position.findGroup("jointVelocities"), v, numJoints);
-			m.setVelocity(v);
-			m.setTiming(position.find("timing").asDouble());
-
-			output.addMotion(m);
-		}
-	}
-}
-
-void readMotionSequences(const Bottle& in, map<const string, MotionSequence>& output) {
-	int startIdx = 0;
-	for (int i = startIdx; i < in.size(); i++) {
-		Bottle line(in.get(i).toString());
-		if (line.size() > 1) {
-			string key = line.get(0).asString().c_str();
-			MotionSequence& sequence = output[key];
-			readMotionSequence(line, sequence);
-			if (sequence.length() <= 0) {
-				output.erase(key);
-			}
-		}
-	}
-}
-
 }
 }
 }

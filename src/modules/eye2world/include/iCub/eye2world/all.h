@@ -24,7 +24,6 @@
 #include <iCub/eye2world/contactables.h>
 #include <iCub/eye2world/eye2world.h>
 #include <iCub/eye2world/eyeTableProjection.h>
-#include <iCub/eye2world/motionSequence.h>
 #include <iCub/eye2world/nameMap.h>
 #include <iCub/eye2world/nullCommand.h>
 #include <iCub/eye2world/option.h>
@@ -34,6 +33,5 @@
 #include <iCub/eye2world/simpleHomography.h>
 #include <iCub/eye2world/synchronizedNameMap.h>
 #include <iCub/eye2world/threadedRFModule.h>
-#include <iCub/eye2world/timedMotionSequence.h>
 
 #endif /* __VISLAB_YARP_UTIL_ALL_H_ */

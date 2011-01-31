@@ -21,8 +21,6 @@
 #include <yarp/os/all.h>
 #include <yarp/math/Math.h>
 
-#include <iCub/eye2world/motionSequence.h>
-
 #include <iostream>
 #include <sstream>
 #include <cstring>
