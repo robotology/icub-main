@@ -136,7 +136,6 @@ bool EmotionInterfaceModule::open(Searchable& config){
     _outputPort.open(getName("out"));
     
     attach(_inputPort, true);
-    attachTerminal();
 
     Time::turboBoost();
     return true;
