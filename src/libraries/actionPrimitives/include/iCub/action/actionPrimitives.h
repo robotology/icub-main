@@ -238,8 +238,6 @@ protected:
                               ActionPrimitivesCallback *clb, const bool oEnabled);
     virtual bool stopJntTraj(const int jnt);
     virtual bool handCheckMotionDone(const int jnt);
-    virtual void enableTorsoDof();
-    virtual void disableTorsoDof();
     virtual bool wait(const Action &action);
     virtual bool cmdArm(const Action &action);
     virtual bool cmdHand(const Action &action);
@@ -626,6 +624,28 @@ public:
     *       properly notified.
     */
     virtual bool setTorsoJoints(const yarp::sig::Vector &torso);
+
+    /**
+    * Disable the controlled joints of torso specified at configuration
+    * time.
+    * @return true/false on success/fail. 
+    *  
+    * @note Unlike the arm, the torso is a part that can be shared, 
+    *       therefore the enabling/disabling of its joints must be
+    *       properly notified.
+    */
+    virtual void disableTorsoDof();
+
+    /**
+    * Enable the controlled joints of torso specified at configuration.
+    * time.
+    * @return true/false on success/fail. 
+    *  
+    * @note Unlike the arm, the torso is a part that can be shared, 
+    *       therefore the enabling/disabling of its joints must be
+    *       properly notified.
+    */
+    virtual void enableTorsoDof();
 
     /**
     * Get the current arm pose.
