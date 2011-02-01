@@ -626,7 +626,7 @@ public:
     virtual bool setTorsoJoints(const yarp::sig::Vector &torso);
 
     /**
-    * Disable the controlled joints of torso specified at open() 
+    * Disable the controlled joints of torso as specified at open() 
     * time. 
     * @return true/false on success/fail. 
     *  
@@ -637,7 +637,7 @@ public:
     virtual void disableTorsoDof();
 
     /**
-    * Enable the controlled joints of torso specified at open() 
+    * Enable the controlled joints of torso as specified at open() 
     * time. 
     * @return true/false on success/fail. 
     *  
