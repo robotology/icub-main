@@ -44,6 +44,29 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeL->releaseLink(1); eyeC.releaseLink(1); eyeR->releaseLink(1);
     eyeL->releaseLink(2); eyeC.releaseLink(2); eyeR->releaseLink(2);
 
+    // add aligning links read from configuration file
+    if (getAlignLinks(configFile,"ALIGN_KIN_LEFT",&alignLnkLeft1,&alignLnkLeft2))
+    {
+        iKinChain &chain=*(eyeL->asChain());
+
+        chain<<*alignLnkLeft1<<*alignLnkLeft2;
+        chain.blockLink(chain.getN()-1,0.0);
+        chain.blockLink(chain.getN()-2,0.0);
+    }
+    else
+        alignLnkLeft1=alignLnkLeft2=NULL;
+
+    if (getAlignLinks(configFile,"ALIGN_KIN_RIGHT",&alignLnkRight1,&alignLnkRight2))
+    {
+        iKinChain &chain=*(eyeR->asChain());
+
+        chain<<*alignLnkRight1<<*alignLnkRight2;
+        chain.blockLink(chain.getN()-1,0.0);
+        chain.blockLink(chain.getN()-2,0.0);
+    }
+    else
+        alignLnkRight1=alignLnkRight2=NULL;
+
     // get the absolute reference frame of the head
     Vector q(eyeC.getDOF()); q=0.0;
     eyeCAbsFrame=eyeC.getH(q);
@@ -437,6 +460,10 @@ void Localizer::threadRelease()
     port_anglesIn.close();
     port_anglesOut.close();
 
+    delete eyeL;
+    delete eyeR;
+    delete pid;
+
     if (PrjL!=NULL)
     {
         delete PrjL;
@@ -449,10 +476,17 @@ void Localizer::threadRelease()
         delete invPrjR;
     }
 
-    delete eyeL;
-    delete eyeR;
+    if (alignLnkLeft1!=NULL)
+        delete alignLnkLeft1;
 
-    delete pid;
+    if (alignLnkLeft2!=NULL)
+        delete alignLnkLeft2;
+
+    if (alignLnkRight1!=NULL)
+        delete alignLnkRight1;
+
+    if (alignLnkRight2!=NULL)
+        delete alignLnkRight2;
 }
 
 
