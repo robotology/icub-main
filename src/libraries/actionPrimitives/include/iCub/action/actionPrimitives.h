@@ -626,8 +626,8 @@ public:
     virtual bool setTorsoJoints(const yarp::sig::Vector &torso);
 
     /**
-    * Disable the controlled joints of torso specified at configuration
-    * time.
+    * Disable the controlled joints of torso specified at open() 
+    * time. 
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -637,8 +637,8 @@ public:
     virtual void disableTorsoDof();
 
     /**
-    * Enable the controlled joints of torso specified at configuration.
-    * time.
+    * Enable the controlled joints of torso specified at open() 
+    * time. 
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
