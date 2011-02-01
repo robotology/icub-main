@@ -34,6 +34,7 @@ public:
         mPort.interrupt();
         mPort.close();
 
+		askStop=true;
         bool ret=yarp::os::Thread::stop();
 
         for (int i=0; i<(int)mNetworks.size(); ++i)
@@ -60,6 +61,7 @@ protected:
     yarp::os::RpcServer mPort;
     yarp::os::Semaphore mMutex;
     std::vector<iCubNetwork*> mNetworks;
+	bool askStop;
 };
 
 #endif

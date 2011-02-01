@@ -184,8 +184,9 @@ void iCubInterfaceGuiServer::run()
 {
     yarp::os::Bottle msg;
     yarp::os::Bottle rpl;
+	askStop=false;
 
-    while (!isStopping())
+    while (!askStop)
     {
         if (mPort.read(msg,true))
         {
