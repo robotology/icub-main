@@ -1025,7 +1025,9 @@ public:
     double get_guardRatio() const { return guardRatio; }
 
     /**
-    * Returns the parameter gamma. 
+    * Returns the parameter gamma which is used to blend the 
+    * contribute of the cartesian controller versus the contribute 
+    * of the joint controller. 
     * @return gamma.
     */
     double get_gamma() const { return gamma; }
@@ -1055,7 +1057,9 @@ public:
     void set_guardRatio(double _guardRatio);
 
     /**
-    * Sets the parameter gamma. 
+    * Sets the parameter gamma which is used to blend the contribute 
+    * of the cartesian contorller versus the contribute of the joint
+    * controller. 
     * @param _gamma. 
     */
     void set_gamma(double _gamma) { gamma=_gamma; }
