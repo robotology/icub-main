@@ -1026,7 +1026,7 @@ public:
 
     /**
     * Returns the parameter gamma which is used to blend the 
-    * contribute of the cartesian controller versus the contribute 
+    * contribute of the task controller versus the contribute 
     * of the joint controller. 
     * @return gamma.
     */
@@ -1058,7 +1058,7 @@ public:
 
     /**
     * Sets the parameter gamma which is used to blend the contribute 
-    * of the cartesian contorller versus the contribute of the joint
+    * of the task contorller versus the contribute of the joint
     * controller. 
     * @param _gamma. 
     */
