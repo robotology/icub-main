@@ -310,7 +310,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         // update position wrt the root frame
         Vector xo=eye->getH(q)*xe;
 
-        fp.resize(3,0.0);
+        fp.resize(3);
         fp[0]=xo[0];
         fp[1]=xo[1];
         fp[2]=xo[2];
