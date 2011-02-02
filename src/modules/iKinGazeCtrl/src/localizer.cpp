@@ -408,17 +408,18 @@ void Localizer::handleStereoInput()
 void Localizer::handleAnglesInput()
 {
     if (Bottle *angles=port_anglesIn.read(false))
+    {
         if (angles->size()>=4)
         {
             Vector ang(3);
-
+        
             string type=angles->get(0).asString().c_str();
             ang[0]=CTRL_DEG2RAD*angles->get(1).asDouble();
             ang[1]=CTRL_DEG2RAD*angles->get(2).asDouble();
             ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
-
+        
             Vector xd=getFixationPoint(type,ang);
-
+        
             if (port_xd!=NULL)
                 port_xd->set_xd(xd);
             else
@@ -426,6 +427,7 @@ void Localizer::handleAnglesInput()
         }
         else
             fprintf(stdout,"Got wrong angles information!\n");
+    }
 }
 
 
