@@ -1138,11 +1138,16 @@ void ServerCartesianController::run()
             }
         }
     
-        // streams out the end-effector pose
-        portState.prepare()=chain->EndEffPose();
+        // update the stamp anyway
         txInfo.update();
-        portState.setEnvelope(txInfo);
-        portState.write();
+
+        // streams out the end-effector pose
+        if (portState.getOutputCount()>0)
+        {
+            portState.prepare()=chain->EndEffPose();
+            portState.setEnvelope(txInfo);
+            portState.write();
+        }
     
         // end of critical code
         mutex.post();
