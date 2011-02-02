@@ -1141,7 +1141,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
 
     mjCtrlJoint=new minJerkVelCtrl(Ts,dim);
     mjCtrlTask =new minJerkVelCtrl(Ts,x.length());
-    Int=new Integrator(Ts,q,lim);
+    I=new Integrator(Ts,q,lim);
 
     gamma=0.02;
     guardRatio=0.1;
@@ -1263,7 +1263,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
         _qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));
         qdot=checkVelocity(_qdot,Ts);
         xdot=J*qdot;
-        q=chain.setAng(Int->integrate(qdot));
+        q=chain.setAng(I->integrate(qdot));
         x=chain.EndEffPose();
     }
 
@@ -1341,7 +1341,7 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
 void MultiRefMinJerkCtrl::set_q(const Vector &q0)
 {
     iKinCtrl::set_q(q0);
-    Int->reset(q);
+    I->reset(q);
 }
 
 
@@ -1364,7 +1364,7 @@ MultiRefMinJerkCtrl::~MultiRefMinJerkCtrl()
 {
     delete mjCtrlJoint;
     delete mjCtrlTask;
-    delete Int;
+    delete I;
 }
 
 

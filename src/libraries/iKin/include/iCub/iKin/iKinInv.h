@@ -904,7 +904,7 @@ private:
 protected:
     ctrl::minJerkVelCtrl *mjCtrlJoint;
     ctrl::minJerkVelCtrl *mjCtrlTask;
-    ctrl::Integrator     *Int;
+    ctrl::Integrator     *I;
 
     yarp::sig::Vector q_set;
     yarp::sig::Vector qdot;
