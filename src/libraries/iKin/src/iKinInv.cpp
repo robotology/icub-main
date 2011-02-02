@@ -1143,7 +1143,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
     mjCtrlTask =new minJerkVelCtrl(Ts,x.length());
     I=new Integrator(Ts,q,lim);
 
-    gamma=0.02;
+    gamma=0.05;
     guardRatio=0.1;
 
     qGuard.resize(dim);
