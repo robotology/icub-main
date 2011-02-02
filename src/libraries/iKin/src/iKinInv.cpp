@@ -1352,7 +1352,7 @@ double MultiRefMinJerkCtrl::set_execTime(const double _execTime, const bool warn
 
     execTime=_execTime>lowerThres ? _execTime : lowerThres;
 
-    if (warn && execTime!=_execTime)
+    if (warn && (execTime!=_execTime))
         fprintf(stderr,"Warning: task execution time limited to the lower bound %g\n",lowerThres);
 
     return execTime;
