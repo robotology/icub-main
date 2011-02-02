@@ -119,14 +119,14 @@ const int CONTROL_RATE=20;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class VelControlModule: public Module {
+class VelControlModule: public RFModule {
 private:
     PolyDriver driver;
     velControlThread *vc;
     char partName[255];
   
     //added by ludovic
-    BufferedPort<Bottle> input_port;
+    Port input_port;
     ////
 public:
   
@@ -218,7 +218,7 @@ public:
                     {
                         cmdSize--;
                         index++;
-                        return Module::respond(command, reply); // call default
+                        return respond(command, reply); // call default
                     }
                 }
                 return true;
@@ -227,9 +227,10 @@ public:
         return false;
     }
   
-    virtual bool open(yarp::os::Searchable &s)
+    virtual bool configure(yarp::os::ResourceFinder &rf)
     {
-        Property options(s.toString());
+        Property options;
+		options.fromString(rf.toString());
         char robotName[255];
         Time::turboBoost();    
         options.put("device", "remote_controlboard");
@@ -258,7 +259,7 @@ public:
             
                 options.put("carrier", "mcast");
             
-                attach(input_port,true);
+                attach(input_port);
             }
         else
             {
@@ -305,23 +306,27 @@ public:
         input_port.close();
 
         fprintf(stderr, "Module [%s] closed\n", partName);
-
         return true;
     }
 
-    virtual double getPeriod()
-    { return 5.0; } // module period
-
-    virtual bool updateModule()
+	bool updateModule()
     {
         return true;
     }
+
 };
 
 int main(int argc, char *argv[])
 {
     Network yarp;
     VelControlModule mod;
+	ResourceFinder rf;
     
-    return mod.runModule(argc, argv);
+	rf.configure("ICUB_ROOT", argc, argv);
+	rf.setVerbose(true);
+	mod.configure(rf);
+    mod.runModule();
+	fprintf(stderr, "Main returning\n");
+	return 0;
+
 }
