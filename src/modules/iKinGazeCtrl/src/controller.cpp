@@ -333,8 +333,11 @@ void Controller::run()
     for (; j<q.length(); j++)
         q[j]=qdeg[j-nJointsTorso];
 
-    port_x.write(fp);
-    port_q.write(q);
+    if (port_x.getOutputCount()>0)
+        port_x.write(fp);
+
+    if (port_q.getOutputCount()>0)
+        port_q.write(q);
 
     // update pose information
     mutex.wait();

@@ -432,8 +432,11 @@ void Localizer::handleAnglesInput()
 /************************************************************************/
 void Localizer::handleAnglesOutput()
 {
-    port_anglesOut.prepare()=CTRL_RAD2DEG*getCurAbsAngles();
-    port_anglesOut.write();
+    if (port_anglesOut.getOutputCount()>0)
+    {
+        port_anglesOut.prepare()=CTRL_RAD2DEG*getCurAbsAngles();
+        port_anglesOut.write();
+    }
 }
 
 

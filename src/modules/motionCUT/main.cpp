@@ -543,20 +543,30 @@ public:
             dt2=Time::now()-latch_t;
 
             // send out images, propagating the time-stamp
-            outPort.setEnvelope(stamp);
-            outPort.write();
+            if (outPort.getOutputCount()>0)
+            {
+                outPort.setEnvelope(stamp);
+                outPort.write();
+            }
+            else
+                outPort.unprepare();
 
-            optPort.setEnvelope(stamp);
-            optPort.write();
+            if (optPort.getOutputCount()>0)
+            {
+                optPort.setEnvelope(stamp);
+                optPort.write();
+            }
+            else
+                optPort.unprepare();
 
             // send out data bottles, propagating the time-stamp
-            if (nodesBottle.size()>1)
+            if ((nodesPort.getOutputCount()>0) && (nodesBottle.size()>1))
             {
                 nodesPort.setEnvelope(stamp);
                 nodesPort.write(nodesBottle);
             }
 
-            if (blobsBottle.size())
+            if ((blobsPort.getOutputCount()>0) && blobsBottle.size())
             {
                 blobsPort.setEnvelope(stamp);
                 blobsPort.write(blobsBottle);

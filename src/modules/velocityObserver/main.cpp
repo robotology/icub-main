@@ -215,10 +215,21 @@ private:
 
         // the outbound packets will carry the same
         // envelope information of the inbound ones.
-        port_vel.setEnvelope(info);
-        port_acc.setEnvelope(info);
-        port_vel.write();
-        port_acc.write();
+        if (port_vel.getOutputCount()>0)
+        {
+            port_vel.setEnvelope(info);
+            port_vel.write();
+        }
+        else
+            port_vel.unprepare();
+        
+        if (port_acc.getOutputCount()>0)
+        {
+            port_acc.setEnvelope(info);
+            port_acc.write();
+        }
+        else
+            port_acc.unprepare();
     }
 
 public:
