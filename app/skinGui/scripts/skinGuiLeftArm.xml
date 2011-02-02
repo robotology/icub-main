@@ -1,0 +1,80 @@
+<application>
+  <name>Left Whole Arm</name>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_bottom.ini</parameters>
+    <node>console</node>
+    <tag>LeftarmUpBot</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_internal.ini</parameters>
+    <node>console</node>
+    <tag>LeftarmUpInt</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_external.ini</parameters>
+    <node>console</node>
+    <tag>LeftarmUpExt</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_lower.ini</parameters>
+    <node>console</node>
+    <tag>LeftarmLow</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_upper.ini</parameters>
+    <node>console</node>
+    <tag>LeftForearmUp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_lower.ini</parameters>
+    <node>console</node>
+    <tag>LeftForearmLow</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from lefthand.ini</parameters>
+    <node>console</node>
+    <tag>LeftHand</tag>
+  </module>
+  <connection>
+    <from>/icub/skin/left_hand</from>
+    <to>/skinGui/left_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_lower</from>
+    <to>/skinGui/left_forearm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_upper</from>
+    <to>/skinGui/left_forearm_upper:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_internal</from>
+    <to>/skinGui/leftupperarm_upper_internal:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_external</from>
+    <to>/skinGui/leftupperarm_upper_external:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_bottom</from>
+    <to>/skinGui/leftupperarm_upper_bottom:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_lower</from>
+    <to>/skinGui/leftupperarm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+</application>
