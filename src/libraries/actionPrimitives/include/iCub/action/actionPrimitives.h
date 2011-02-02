@@ -602,8 +602,8 @@ public:
     /**
     * Return the control status of torso joints.
     * @param torso the vector containing the control status of torso 
-    *              joints (@see getDOF(.) method of the cartesian
-    *              interface).
+    *              joints
+    * @see getDOF(.) method of the cartesian interface.
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -615,8 +615,8 @@ public:
     /**
     * Change the control status of torso joints.
     * @param torso the vector containing the control status of torso
-    *              joints (@see setDOF(.) method of the cartesian
-    *              interface).
+    *              joints
+    * @see setDOF(.) method of the cartesian interface.
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -626,8 +626,8 @@ public:
     virtual bool setTorsoJoints(const yarp::sig::Vector &torso);
 
     /**
-    * Disable the controlled joints of torso as specified at open() 
-    * time. 
+    * Disable the controlled joints of torso as specified by open(.)
+    * and setTorsoJoints(.) methods. 
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -637,8 +637,8 @@ public:
     virtual void disableTorsoDof();
 
     /**
-    * Enable the controlled joints of torso as specified at open() 
-    * time. 
+    * Enable the controlled joints of torso as specified by open(.) 
+    * and setTorsoJoints(.) methods. 
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -752,7 +752,8 @@ public:
     * querying the action status. 
     * @param disable disable the blocking feature for future 
     * calls with sync switch on; useful to allow a graceful stop of 
-    * the application. @see syncCheckReinstate to reinstate it.
+    * the application. 
+    * @see syncCheckReinstate() method to reinstate it.
     * @return true/false on success/fail. 
     */
     virtual bool syncCheckInterrupt(const bool disable=false);

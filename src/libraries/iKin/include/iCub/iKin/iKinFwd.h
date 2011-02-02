@@ -281,7 +281,7 @@ public:
 
     /**
     * Same as getH() with specification of new joint angle position. 
-    * @see getH
+    * @see getH()
     * @param _Ang is the new joint angle position. 
     * @param c_override.
     * @return a reference to H.
@@ -456,7 +456,7 @@ public:
     /**
     * Adds a Link at the bottom of the Chain.
     * @param l is the Link to be added. 
-    * @see operator<< 
+    * @see operator<<()
     */
     void pushLink(iKinLink &l);
 
@@ -467,7 +467,7 @@ public:
 
     /**
     * Removes a Link from the bottom of the Chain. 
-    * @see operator--  
+    * @see operator--()
     */
     void popLink();
 
@@ -740,7 +740,7 @@ public:
     /**
     * Prepares computation for a successive call to 
     * fastHessian_ij(). 
-    * @see fastHessian_ij
+    * @see fastHessian_ij()
     */
     void prepareForHessian();
 
@@ -753,7 +753,7 @@ public:
     * prepareForHessian(). 
     * @note It is advisable to use this version when successive 
     * computations with different indexes values are needed. 
-    * @see prepareForHessian 
+    * @see prepareForHessian()
     * @param i is the index of the first DOF. 
     * @param j is the index of the second DOF.
     * @return the 6x1 vector \f$ 
@@ -823,7 +823,7 @@ public:
     * Creates a new Limb from a list of properties wherein links 
     * parameters are specified. 
     * @param option is the list of links properties. 
-    * @see fromLinksProperties
+    * @see fromLinksProperties()
     */
     iKinLimb(const yarp::os::Property &option);
 

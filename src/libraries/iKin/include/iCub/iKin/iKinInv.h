@@ -222,8 +222,8 @@ public:
     * Iterates the control algorithm trying to converge on the 
     * target. 
     * @param xd is the End-Effector target Pose to be tracked. 
-    * @see setInTargetTol 
-    * @see getInTargetTol 
+    * @see setInTargetTol()
+    * @see getInTargetTol()
     * @param tol_size exits if test_convergence(tol_size) is true 
     *                 (tol_size<0 disables this check, default).
     * @param max_iter exits if iter>=max_iter (max_iter<0 disables
