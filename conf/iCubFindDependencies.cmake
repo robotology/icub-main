@@ -54,6 +54,8 @@ checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 checkandset_dependency(IPP)
 
+MESSAGE("Experimental, OpenCV version: ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}.${OpenCV_VERSION_PATCH}")
+
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
     message(STATUS "found yarp math library")
