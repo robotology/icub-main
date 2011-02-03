@@ -14,7 +14,11 @@ endif(COMMAND cmake_policy)
 project(iCub)
 
 #### Find YARP
-find_package(YARP)
+find_package(YARP REQUIRED)
+
+## request particular version (to be enabled)
+#find_package(YARP 2.3.2 REQUIRED)
+
 if (YARP_FOUND)
    if (YARP_HAS_MATH_LIB)
      set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
