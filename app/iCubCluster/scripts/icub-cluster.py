@@ -16,6 +16,8 @@
 ##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 ##Public License for more details
 
+# No longer looking for $ICUB_ROBOTNAME env variable
+	
 import xml.dom.minidom
 import subprocess
 import os
@@ -264,9 +266,9 @@ class App:
             
             if running==0 and selected==1:
                 if node.display:
-                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, '$ICUB_ROOT/scripts/yarprun.sh', ' start ', 'display']
+                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h', ' start ', 'display']
                 else:
-                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, '$ICUB_ROOT/scripts/yarprun.sh', ' start ']
+                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h', ' start ']
                     
                 print 'Running',
                 print cmd
@@ -289,7 +291,7 @@ class App:
             running=i.next().get()
 
             if running==1 and selected==1 :
-                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, '$ICUB_ROOT/scripts/yarprun.sh' ' stop']
+                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h' ' stop']
                 print 'Running',
                 print cmd
                 ret=subprocess.Popen(cmd).wait()
@@ -306,7 +308,7 @@ class App:
         for node in self.cluster.nodes:
             selected=iS.next().get()
             if (selected):
-                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, '$ICUB_ROOT/scripts/yarprun.sh' ' kill']
+                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h' ' kill']
                 print cmd
                 ret=subprocess.Popen(cmd).wait()
 
@@ -328,7 +330,7 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, '$ICUB_ROOT/scripts/yarpserver.sh' ' start']
+            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.h' ' start']
             print 'Running',
             print cmd
             ret=subprocess.Popen(cmd).wait()
@@ -341,7 +343,7 @@ class App:
         print 'Stopping nameserver'
         self.checkNs()
         if self.nsFlag.get()==1:
-            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, '$ICUB_ROOT/scripts/yarpserver.sh' ' stop']
+            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.h' ' stop']
             print 'Running',
             print cmd
             ret=subprocess.Popen(cmd).wait()
@@ -354,15 +356,7 @@ if __name__ == '__main__':
 
     argc = len(sys.argv)
 
-    if (argc!=2):
-        robotName = os.environ.get("ICUB_ROBOTNAME")
-
-        if (robotName!=None):
-            configFilename='../../'+robotName+'/scripts/cluster-config.xml'
-        else:
-            configFilename='./cluster-config.xml'
-    else:
-        configFilename=sys.argv[1]
+    configFilename=sys.argv[1]
         
     print configFilename
 

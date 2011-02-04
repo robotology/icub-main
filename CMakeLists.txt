@@ -151,7 +151,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 
 ################ copying python scripts
 message(STATUS "Installing manager.py")
-install(FILES  app/default/scripts/manager.py COMPONENT scripts 
+install(FILES  app/default/scripts/manager.py app/default/scripts/icub-cluster-server.sh app/default/scripts/icub-cluster-run.sh COMPONENT scripts 
         DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 # add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
@@ -159,7 +159,9 @@ install(FILES  app/default/scripts/manager.py COMPONENT scripts
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/python-scripts-cmd
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/manager.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
-      COMMENT "Copying manager.py to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/icub-cluster-server.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+	  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/icub-cluster-run.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+	  COMMENT "Copying manager.py, icub-cluster scripts to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
 add_custom_target(python-scripts ALL DEPENDS ${CMAKE_BINARY_DIR}/python-scripts-cmd)
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
 	add_dependencies(install_applications python-scripts)
