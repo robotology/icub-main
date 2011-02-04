@@ -54,8 +54,16 @@ checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 checkandset_dependency(IPP)
 
-MESSAGE(STATUS "Experimental, OpenCV version: ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}.${OpenCV_VERSION_PATCH}")
-MESSAGE(STATUS "${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBRARIES}")
+if (OpenCV_FOUND)
+  # check version of openCV
+  if (OpenCV_VERSION_MAJOR>=2)
+    set(ICUB_HAS_OpenCV2 TRUE CACHE BOOL "Detected OpenCV > 2.0" FORCE)
+    set(ICUB_USE_OpenCV2 TRUE CACHE BOOL "Use OpenCV 2")
+  else()
+    set(ICUB_HAS_OpenCV2 FALSE CACHE BOOL "Detected OpenCV > 2.0" FORCE)
+  endif()
+endif()
+
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
     message(STATUS "found yarp math library")
