@@ -1,4 +1,8 @@
-2011-03-02 Lorenzo Natale <lorenzo.natale@iit.it>
+2011-04-02 Lorenzo Natale <lorenzo.natale@iit.it>
+	* main/conf/iCubFindDependencies.cmake check OpenCV version 
+	info and detect OpenCV 2
+
+2011-04-02 Lorenzo Natale <lorenzo.natale@iit.it>
 	* app/CMakeLists.txt
 	* app/default/scripts/icub-cluster-run.sh
 	* app/default/scripts/icub-cluster-server.sh
@@ -6,9 +10,6 @@
 	* app/iCubCluster/scripts/icub-cluster.py
 	* CMakeLists.txt
      fixed icub-cluster.py to work when applications are installed
-
-2011-04-02 Lorenzo Natale <lorenzo.natale@iit.it>
-	* main/conf/iCubFindDependencies.cmake check OpenCV version infor and detect OpenCV 2
 	
 2011-21-01 Lorenzo Natale <lorenzo.natale@iit.it>
 	* fixed various installation issues
