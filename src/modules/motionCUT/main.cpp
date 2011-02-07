@@ -38,7 +38,11 @@ detect independent moving points over a selectable grid of
 nodes. The algorithm is designed in such a way that it works 
 also with moving cameras. 
  
-\note If you're going to use this detector for your work, please
+\note the tag motionCUT stands for motion Cover/Uncover Trick 
+      and refers to its working principle that will be detailed
+      soon :)
+ 
+\note If you're going to use the motionCUT for your work, please
       quote it within any resulting publication.
  
 \section lib_sec Libraries 
