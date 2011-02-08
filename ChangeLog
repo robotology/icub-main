@@ -1,4 +1,13 @@
 2011-04-02 Lorenzo Natale <lorenzo.natale@iit.it>
+	* main/app/icub-app.py
+	* main/app/default/scripts/manager.py
+	added scrollbar -- patch from Philipp Robbel
+	
+	* main/src/core/iCubInterface/ControlBoardWrapper.h
+	* main/src/core/iCubInterface/ControlBoardWrapper2.h
+	disabled warning 4355 in MSVC
+	
+2011-04-02 Lorenzo Natale <lorenzo.natale@iit.it>
 	* main/conf/iCubFindDependencies.cmake check OpenCV version 
 	info and detect OpenCV 2
 

@@ -57,8 +57,8 @@ inline void DEBUG_CW2(const char *fmt, ...)
 
 #include "ControlBoardWrapper.h"
 
-#ifdef WIN32
-	#pragma warning(once:4355)
+#ifdef MSVC
+	#pragma warning(disable:4355)
 #endif
 
 using namespace yarp::os;

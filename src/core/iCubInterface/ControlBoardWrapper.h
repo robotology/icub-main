@@ -36,7 +36,7 @@
 #include <string>
 
 #ifdef WIN32
-	#pragma warning(once:4355)
+	#pragma warning(disable:4355)
 #endif
 
 using namespace yarp::os;
