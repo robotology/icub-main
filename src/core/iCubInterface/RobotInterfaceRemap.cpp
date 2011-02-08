@@ -111,8 +111,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     correct=correct&&partP.check("device");
     correct=correct&&partP.check("robot");
     correct=correct&&partP.check("canbusdevice");
-
-    std::string robotName=partP.find("robot").asString().c_str();
+	//correct=correct&&partP.check("ports");		// list of the ports where to send the tactile data
     
     if (!correct)
         return false;
@@ -127,6 +126,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
         std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
     }
 
+	// Open the device
     std::string devicename=partP.find("device").asString().c_str();
     deviceP.put("device", devicename.c_str());
 
@@ -146,14 +146,72 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
         return false;
     }
 
-    std::string robotname=partP.find("robot").asString().c_str();
-    std::string name;
-    name+="/";
-    name+=robotName;
-    name+="/skin/";
-    name+=id.c_str();
+	// Read the list of ports
+    std::string robotName=partP.find("robot").asString().c_str();
+    std::string root_name;
+    root_name+="/";
+    root_name+=robotName;
+    root_name+="/skin/";
 
-    analogServer=new AnalogServer(name.c_str());
+	std::vector<AnalogPortEntry> skinPorts;
+	if(!partP.check("ports")){	
+		// if there is no "ports" section take the name of the "skin" group as the only port name
+		skinPorts.resize(1);
+		skinPorts[0].offset = 0;
+		skinPorts[0].length = -1;
+		skinPorts[0].port_name = root_name + this->id;
+	}
+	else{
+		Bottle *ports=partP.find("ports").asList();
+
+		if (!partP.check("total_taxels", "number of taxels of the part"))
+			return false;
+		int total_taxels=partP.find("total_taxels").asInt();
+		int nports=ports->size();
+		int totalT = 0;
+		skinPorts.resize(nports);
+	    
+		for(int k=0;k<ports->size();k++)
+		{
+			Bottle parameters=partP.findGroup(ports->get(k).asString().c_str());
+
+			if (parameters.size()!=5)
+			{
+				cerr<<"Error: check skin port parameters in part description"<<endl;
+				cerr<<"--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers"<<endl;
+				return false;
+			}
+
+			int wBase=parameters.get(1).asInt();
+			int wTop=parameters.get(2).asInt();
+			int base=parameters.get(3).asInt();
+			int top=parameters.get(4).asInt();
+
+			cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
+
+			//check consistenty
+			if(wTop-wBase != top-base){
+				cerr<<"Error: check skin port parameters in part description"<<endl;
+				cerr<<"Numbers of mapped taxels do not match.\n";
+				return false;
+			}
+			int taxels=top-base+1;
+
+			skinPorts[k].length = taxels;
+			skinPorts[k].offset = wBase;
+			skinPorts[k].port_name = root_name+string(ports->get(k).asString().c_str());
+	        
+			totalT+=taxels;
+		}
+
+		if (totalT!=total_taxels)
+		{
+			cerr<<"Error total number of mapped taxels does not correspond to total taxels"<<endl;
+			return false;
+		}
+	}
+
+    analogServer = new AnalogServer(skinPorts);
     analogServer->setRate(period);
     analogServer->attach(analog);
     analogServer->start();
@@ -767,36 +825,36 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
                         yarp::dev::IFactoryInterface *iFactory;
                         selectedNet->driver.view(iFactory);
                         if (iFactory==0)
-                            {
-                                std::cout<<"CanBus device does not support iFactory interface\n";
-                            }
+                        {
+                            std::cout<<"CanBus device does not support iFactory interface\n";
+                        }
                         else
+                        {
+                            yarp::os::Property prop;
+                            prop.put("device", "analog");
+                            prop.put("deviceid", deviceId.c_str());
+                            dTmp=iFactory->createDevice(prop);
+
+                            IAnalogSensor *iTmp=dynamic_cast<IAnalogSensor *>(dTmp);
+
+                            selectedNet->analogSensors.push_back(iTmp);
+                            if (iTmp)
                             {
-                                yarp::os::Property prop;
-                                prop.put("device", "analog");
-                                prop.put("deviceid", deviceId.c_str());
-                                dTmp=iFactory->createDevice(prop);
+                                std::string name;
+                                name+="/";
+                                name+=robotName;
+                                name+="/";
+                                name+=deviceId.c_str();
+                                name+="/analog:o";
 
-                                IAnalogSensor *iTmp=dynamic_cast<IAnalogSensor *>(dTmp);
+                                AnalogServer *tmp=new AnalogServer(name.c_str());
+                                tmp->setRate(period);
+                                tmp->attach(iTmp);
+                                tmp->start();
 
-                                selectedNet->analogSensors.push_back(iTmp);
-                                if (iTmp)
-                                    {
-                                        std::string name;
-                                        name+="/";
-                                        name+=robotName;
-                                        name+="/";
-                                        name+=deviceId.c_str();
-                                        name+="/analog:o";
-
-                                        AnalogServer *tmp=new AnalogServer(name.c_str());
-                                        tmp->setRate(period);
-                                        tmp->attach(iTmp);
-                                        tmp->start();
-
-                                        selectedNet->analogServers.push_back(tmp);
-                                    }
+                                selectedNet->analogServers.push_back(tmp);
                             }
+                        }
                     }
                 }
         }

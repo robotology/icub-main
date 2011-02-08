@@ -27,8 +27,10 @@
 #include "canIdDiscoverer/canIdDiscoverer.h"
 
 #include <list>
+#include <vector>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
@@ -41,34 +43,33 @@
 #include <iCubInterfaceGuiServer.h>
 #endif
 
-class AnalogServer: public yarp::os::RateThread, public yarp::os::PortReader
+using namespace std;
+
+/**
+  * Handler of the rpc port related to an analog sensor.
+  * Manage the calibration command received on the rpc port.
+ **/
+class AnalogServerHandler: public yarp::os::PortReader
 {
-    yarp::dev::IAnalogSensor *is;
-    yarp::os::BufferedPort<yarp::sig::Vector> port;
-    yarp::os::Port rpcPort;
-    std::string name;
-	yarp::os::Stamp lastStateStamp;
+	yarp::dev::IAnalogSensor* is;	// analog sensor to calibrate, when required
+	yarp::os::Port rpcPort;			// rpc port related to the analog sensor
 
 public:
-    AnalogServer(const char *n, int rate=20): RateThread(rate)
-    {
-        is=0;
-        name=std::string(n);
-        rpcPort.setReader(*this);
-    }
+	AnalogServerHandler(const char* n){
+		rpcPort.open(n);
+		rpcPort.setReader(*this);
+	}
 
-    ~AnalogServer()
-    {
-        threadRelease();
-        is=0;
-    }
+	~AnalogServerHandler(){
+		rpcPort.close();
+		is = 0;
+	}
 
-    void attach(yarp::dev::IAnalogSensor *s)
-    {
-        is=s;
-    }
+	void setInterface(yarp::dev::IAnalogSensor *is){
+		this->is = is;
+	}
 
-    bool _handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply)
+	bool _handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply)
     {
         if (is==0)
             return false;
@@ -134,41 +135,142 @@ public:
         return true;
     }
 
+};
 
-     bool threadInit()
+
+/**
+  * A yarp port that output data read from an analog sensor.
+  * It contains information about which data of the analog sensor are sent
+  * on the port, i.e. an offset and a length.
+  */
+struct AnalogPortEntry
+{
+	yarp::os::BufferedPort<yarp::sig::Vector> port;
+	std::string port_name;		// the complete name of the port
+    int offset;					// an offset, the port is mapped starting from this taxel
+    int length;					// length of the output vector of the port (-1 for max length)
+	AnalogPortEntry(){}
+	AnalogPortEntry(const AnalogPortEntry &alt){
+		this->length = alt.length;
+		this->offset = alt.offset;
+		this->port_name = alt.port_name;
+	}	
+	AnalogPortEntry &operator =(const AnalogPortEntry &alt){ 
+		this->length = alt.length;
+		this->offset = alt.offset;
+		this->port_name = alt.port_name;
+		return *this;
+	}
+};
+
+/**
+  * It reads the data from an analog sensor and sends them on one or more ports.
+  * It creates one rpc port and its related handler for every output port.
+  */
+class AnalogServer: public yarp::os::RateThread
+{
+    yarp::dev::IAnalogSensor *is;				// the analog sensor to read from
+    std::vector<AnalogPortEntry> analogPorts;	// the list of output ports
+	std::vector<AnalogServerHandler*> handlers;	// the list of rpc port handlers
+	yarp::os::Stamp lastStateStamp;				// the last reading time stamp
+
+	void setHandlers(){
+		for(unsigned int i=0;i<analogPorts.size(); i++){
+			std::string rpcPortName = analogPorts[i].port_name;
+			rpcPortName += "/rpc:i";
+			AnalogServerHandler* ash = new AnalogServerHandler(rpcPortName.c_str());
+			handlers.push_back(ash);
+		}
+	}
+
+public:
+	// Constructor used when there is only one output port
+	AnalogServer(const char* name, int rate=20): RateThread(rate)
     {
-        // open rpc port
-        std::string rpcPortName=name;
-		rpcPortName+="/rpc:i";
-        rpcPort.open(rpcPortName.c_str());
+        is=0;
+        analogPorts.resize(1);
+		analogPorts[0].offset = 0;
+		analogPorts[0].length = -1;	// max length
+		analogPorts[0].port_name = std::string(name);
+		setHandlers();
+    }
 
-        if (port.open(name.c_str()))
-            return true;
-        else
-            return false;
+	// Contructor used when one or more output ports are specified
+	AnalogServer(const std::vector<AnalogPortEntry>& _analogPorts, int rate=20): RateThread(rate)
+    {
+        is=0;
+        this->analogPorts=_analogPorts;
+        setHandlers();
+    }
+
+    ~AnalogServer()
+    {
+        threadRelease();
+        is=0;
+    }
+
+	/**
+	  * Specify which analog sensor this thread has to read from.
+	  */
+    void attach(yarp::dev::IAnalogSensor *s)
+    {
+        is=s;
+		for(unsigned int i=0;i<analogPorts.size(); i++){
+			handlers[i]->setInterface(is);
+		}
+    }    
+
+
+	bool threadInit()
+    {        
+		for(unsigned int i=0; i<analogPorts.size(); i++){
+			// open data port
+			if (!analogPorts[i].port.open(analogPorts[i].port_name.c_str()))
+				return false;
+		}
+		return true;
     }
 
     void threadRelease()
     {
-        rpcPort.close();
-        port.close();
+		for(unsigned int i=0; i<analogPorts.size(); i++){
+			analogPorts[i].port.close();
+		}
     }
 
     void run()
     {
-
+		int first, last, ret;
         if (is!=0)
         {
+			// read from the analog sensor
             yarp::sig::Vector v;
-            int ret=is->read(v);
+            ret=is->read(v);
             
             if (ret==yarp::dev::IAnalogSensor::AS_OK)
             {
-                yarp::sig::Vector &pv=port.prepare();
-                pv=v;
-                lastStateStamp.update();
-                port.setEnvelope(lastStateStamp);
-                port.write();
+                if (v.size()>0)
+                {
+                    lastStateStamp.update();
+                    // send the data on the port(s), splitting them as specified in the config file
+                    for(unsigned int i=0; i<analogPorts.size(); i++){
+                        yarp::sig::Vector &pv = analogPorts[i].port.prepare();
+                        first = analogPorts[i].offset;
+                        if(analogPorts[i].length==-1)	// read the max length available
+                            last = v.size()-1;
+                        else
+                            last = analogPorts[i].offset + analogPorts[i].length - 1;
+                        // check vector limit
+                        if(last>=v.size()){
+                            cerr<<"Error while sending analog sensor output on port "<< analogPorts[i].port_name<< endl;
+                            cerr<<"Vector size expected to be at least "<<last<<" whereas it is "<< v.size()<< endl;
+                            continue;
+                        }
+                        pv = v.subVector(first, last);
+                        analogPorts[i].port.setEnvelope(lastStateStamp);
+                        analogPorts[i].port.write();
+                    }
+				}
             }
             else
             {
