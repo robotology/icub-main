@@ -129,6 +129,7 @@ protected:
 	double* jointMax;
 	double* jointMin;
 	double* jointOffset;
+	double* jointDeadband;
 	struct_jointProperties* jointProperties;
 
 public:
@@ -145,6 +146,7 @@ public:
 		jointMax=0;
 		jointMin=0;
 		jointOffset=0;
+		jointDeadband=0;
 		jointProperties=0;
 	}
 
@@ -158,6 +160,7 @@ public:
 			jointMax = new double [num_inputs];
 			jointMin = new double [num_inputs];
 			jointOffset = new double [num_inputs];
+			jointDeadband = new double [num_inputs];
 			fprintf ( stderr, "Number of input axes in the configuration options: %d \n",num_inputs);
 		}
 		else
@@ -195,6 +198,13 @@ public:
 				for (int i = 1; i < b.size(); i++) jointOffset[i-1] = b.get(i).asDouble();
 			}
 		else {fprintf ( stderr, "Configuration error: invalid number of entries 'Offset'\n"); return false;}
+
+		b = rf.findGroup("INPUTS").findGroup("Deadband");
+		if (b.size()-1 == num_inputs)
+			{
+				for (int i = 1; i < b.size(); i++) jointDeadband[i-1] = b.get(i).asDouble();
+			}
+		else {fprintf ( stderr, "Configuration error: invalid number of entries 'Deadband'\n"); return false;}
 
 		if (rf.findGroup("OUTPUTS").check("OutputsNumber"))
 		{
@@ -386,6 +396,10 @@ public:
 		for(int i=0;i<num_inputs;i++)
 		{
 			double v = rawAxes[i];
+			if (jointDeadband[i]>0)
+			{
+				if (abs(v)<jointDeadband[i]) v=0;
+			}
 			v = v+jointOffset[i];
 			v = v*jointGain[i];
 			v = (v<jointMax[i]) ? v : jointMax[i];
@@ -451,6 +465,7 @@ public:
 		if (jointMax)        delete [] jointMax;
 		if (jointMin)        delete [] jointMin;
 		if (jointOffset)     delete [] jointOffset;
+		if (jointDeadband)   delete [] jointDeadband;
 		if (jointProperties) delete [] jointProperties;
         port_command.interrupt();
         port_command.close();
