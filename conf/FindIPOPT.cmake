@@ -45,8 +45,11 @@ ELSE(WIN32)
 #   ENDIF(PKG_CONFIG_FOUND)
 
    IF(NOT IPOPT_FOUND)
+#      FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
+#                                         ${IPOPT_DIR}/lib/coin)
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
-                                         ${IPOPT_DIR}/lib/coin)
+                                         ${IPOPT_DIR}/lib/coin
+                                         NO_DEFAULT_PATH)
       IF(IPOPT_LIBRARIES)
          FIND_FILE(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
                                                         ${IPOPT_DIR}/share/coin/doc/Ipopt
