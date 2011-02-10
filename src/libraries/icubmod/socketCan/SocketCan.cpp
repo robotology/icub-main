@@ -189,6 +189,13 @@ bool SocketCan::canWrite(const CanBuffer &msgs,
     //debug
     //fprintf(stderr, "id:%d data:%d size:%d\n", tmp->can_id, tmp->data[0], tmp->can_dlc );
    
+    //@@@ IMPORTANT (RANDAZ): I'm putting here a delay of one millisecond.
+	//I noticed that without this delay a lot CAN messages are lost when iCubInterface starts and
+	//sends the configuration parameters (PIDs etc.) to the control boards.
+	//Further investigation is required in order to understand how the internal buffer is handled 
+	//when the function write( skt, tmp, sizeof(*tmp) ); is called.
+	Time::delay(0.001);
+	
     int i=0;
 	(*sent)=0;
 	for (i=0; i<size; i++)
