@@ -45,6 +45,7 @@ ELSE(WIN32)
 #   ENDIF(PKG_CONFIG_FOUND)
 
    IF(NOT IPOPT_FOUND)
+#      to be used to fetch the native Ipopt library provided with apt-get utility
 #      FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
 #                                         ${IPOPT_DIR}/lib/coin)
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
