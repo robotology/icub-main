@@ -398,7 +398,7 @@ public:
 			double v = rawAxes[i];
 			if (jointDeadband[i]>0)
 			{
-				if (abs(v)<jointDeadband[i]) v=0;
+				if (fabs(v)<jointDeadband[i]) v=0;
 			}
 			v = v+jointOffset[i];
 			v = v*jointGain[i];
