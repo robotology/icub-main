@@ -95,7 +95,7 @@ using namespace yarp::math;
 
 #define PRINT_STATUS_PER 0.1
 
-enum { JTYPE_UNDEF=-1, JTYPE_POLAR=0, JTYPE_CARTESIAN=1, JTYPE_CONSTANT=2 };
+enum { JTYPE_UNDEF=-1, JTYPE_POLAR=0, JTYPE_CARTESIAN=1, JTYPE_CONSTANT=2, JTYPE_STRING=3 };
 
 class CtrlThread: public RateThread
 {
@@ -103,6 +103,7 @@ class CtrlThread: public RateThread
 	{
 		int type; 
 		int param[3];
+		string param_s;
 	};
 
 protected:
@@ -249,6 +250,14 @@ public:
 				jointProperties[i].param[0]=b.get(2).asInt();
 				jointProperties[i].param[1]=0;
 				jointProperties[i].param[2]=0;
+			}
+			if (b.get(1).asString()=="string")
+			{
+				jointProperties[i].type=JTYPE_STRING;
+				jointProperties[i].param[0]=0;
+				jointProperties[i].param[1]=0;
+				jointProperties[i].param[2]=0;
+				jointProperties[i].param_s=b.get(2).asString();
 			}
 			else
 			{
@@ -446,8 +455,11 @@ public:
 
 		// Sending data on the yarp port
 		for(int i=0;i<num_outputs;i++)
-			{			
-				data.addDouble(outAxes[i]);
+			{	
+				if ( jointProperties[i].type == JTYPE_STRING)
+					data.addString(jointProperties[i].param_s.c_str());
+				else
+					data.addDouble(outAxes[i]);
 			}
 		port_command.prepare() = data;
 		port_command.write();
