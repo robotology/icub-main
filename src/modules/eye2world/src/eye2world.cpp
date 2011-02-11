@@ -208,7 +208,7 @@ void Eye2world::WorkerThread::run() {
 			positionUpdated = true;
 		}
 
-        if (isStopping() || headPosition == NULL) {
+        if (isStopping()) {
             break;
         }
 
@@ -221,7 +221,7 @@ void Eye2world::WorkerThread::run() {
 			positionUpdated = true;
 		}
 
-        if (isStopping() || torsoPosition == NULL) {
+        if (isStopping()) {
             break;
         }
 
