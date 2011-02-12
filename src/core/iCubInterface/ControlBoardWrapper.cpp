@@ -1,5 +1,12 @@
 #include "ControlBoardWrapper.h"
 
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Lorenzo Natale
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #include <iostream>
 
 inline void appendTimeStamp(Bottle &bot, Stamp &st)

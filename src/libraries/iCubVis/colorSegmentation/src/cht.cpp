@@ -1,9 +1,12 @@
-#include <iCub/vis/cht.h>
+// 
+// Copyright: 2004-2006 Lorenzo Natale, Eduardo Rocha Costa, Hemerson Pistori
+// Author: Lorenzo Natale
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-#include <stdio.h>
-#include <math.h>
-#include <memory.h>
-#include <yarp/sig/Image.h>
+// Adapted in C++ from Java implementation from Hemerson Pistori 
+// and Eduardo Rocha Costa, 2004.
+// http://rsbweb.nih.gov/ij/plugins/download/Hough_Circles.java
+// 
 
 using namespace yarp::sig;
 

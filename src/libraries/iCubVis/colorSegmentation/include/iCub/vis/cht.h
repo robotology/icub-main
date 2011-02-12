@@ -1,6 +1,15 @@
 #ifndef __HOUGH__
 #define __HOUGH__
 
+// 
+// Copyright: 2004-2006 Lorenzo Natale, Eduardo Rocha Costa, Hemerson Pistori
+// Author: Lorenzo Natale
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+// Adapted in C++ from Java implementation from Hemerson Pistori 
+// and Eduardo Rocha Costa, 2004.
+// http://rsbweb.nih.gov/ij/plugins/download/Hough_Circles.java
+// 
 #include <yarp/sig/Image.h>
 
 typedef unsigned int HOUGH_MAP_TYPE;

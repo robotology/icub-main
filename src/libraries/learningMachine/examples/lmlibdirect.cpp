@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * Copyright (C) 2007-2009 Arjan Gijsberts
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * Example code how to use the learningMachine library in a direct manner.

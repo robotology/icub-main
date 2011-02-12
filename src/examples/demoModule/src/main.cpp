@@ -2,7 +2,7 @@
 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: $YOUR_NAME
+ * Authors: David Vernon, Lorenzo Natale
  * email:   $YOUR_EMAIL
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program

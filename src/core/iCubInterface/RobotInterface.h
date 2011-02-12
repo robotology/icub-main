@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Lorenzo Natale
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #include "IRobotInterface.h"
 
 #include <yarp/os/Network.h>

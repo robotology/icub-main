@@ -1,6 +1,14 @@
 #ifndef __CANIDDISCOVERER__
 #define __CANIDDISCOVERER__
 
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Lorenzo Natale
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
+
 // Probe canbus network for control cards
 // return a list of pairs <KEY, ID>
 // KEY=a string identifying the board type (HEAD, RIGHTARM...)

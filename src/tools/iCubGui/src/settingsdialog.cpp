@@ -1,3 +1,7 @@
+
+// Copyright: 2006 Zi Ree
+// Copypolicy: Released under the terms of the GNU GPL v2.0.
+
 /***************************************************************************
  *   Copyright (C) 2006 by Zi Ree   *
  *   Zi Ree @ SecondLife   *
