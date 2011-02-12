@@ -1,4 +1,8 @@
+#
+# Copyright: 2010 RobotCub Consortium
 # Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# 
 # Wrap kitware's original FindQt3 script. Standardize varibles.
 #
 # In windows require you set QTDIR

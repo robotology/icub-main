@@ -1,3 +1,7 @@
+# Copyright: 2010 RobotCub Consortium
+# Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 set(appname default)
 
 icub_app(${appname})

@@ -1,3 +1,6 @@
+# Copyright: 2010 RobotCub Consortium
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 set(appname cameraCalibration)
 
 icub_app(${appname})

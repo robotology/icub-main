@@ -1,4 +1,7 @@
+# Copyright: 2010 RobotCub Consortium
 # Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # Wrap kitware's original FindGLUT script to work on windows with
 # binary distribution. Standardize varibles.
 #

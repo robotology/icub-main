@@ -1,3 +1,7 @@
+# Copyright: 2008-2010 RobotCub Consortium
+# Author: Ugo Pattacini
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # Created:
 # IPOPT_INCLUDE_DIRS - Directories to include to use IPOPT
 # IPOPT_LIBRARIES    - Default library to link against to use IPOPT
