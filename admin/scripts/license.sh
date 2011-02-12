@@ -8,23 +8,21 @@
 
 echo "Make sure you run this as ./admin/scripts/update-license"
 
-# reset change log
-echo -n | tee license-changes.txt
-echo -n | tee license-good.txt
-echo -n | tee license-odd.txt
+# reset log
+echo -n | tee licenses-all.txt
 
 ### put back when done
 #rm -rf license_check
 #svn export . license_check
 
-prefix_dir="license_check/main/src/core"
+#prefix_dir="license_check/main"
+prefix_dir="./main/src/"
 
-file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "*.txt" -or -iname "*.cmake"`
+file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`
 
-rm licenses-all.txt
 for f in $file_list
 do
-    ./admin/scripts/update-license-single.pl $prefix_dir/$f >> licenses-all.txt
+    ./admin/scripts/license-collect.pl $prefix_dir/$f >> licenses-all.txt
 done
 
-./admin/scripts/aggregate-license.pl licenses-all.txt
+./admin/scripts/license-aggregate.pl licenses-all.txt
