@@ -43,14 +43,19 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
         }
     }
 
-#    if ($line=~m/copypolicy:?\s*/i){
-#	$license=$';
-#        $license=~s/\s+$//;
-#    }
+    # now skip some tricky sentences that contain the word "author"
+    # in licensing context
+    next if $line=~m/The name of the author may not be used/i;
+    next if $line=~m/BE LIABLE FOR ANY/i;
+    next if $line=~m/\`*AS IS\'* AND ANY EXPRESS/i;
 
-    
-    if ($line=~m/authors?:?\s*/i && !$line=~m/the author (\`{1,2}|\")?as is/i && $author eq "unknown"){
+    if ($line=~m/authors?:?\s*/i && $author eq "unknown"){
+        
         $author=$';
+        if ($fname=~m/main\/CMakeLists/i) {
+             print "$author\n";
+        }
+
         $author =~ s/\s+$//; #remove trailing spaces
         $author =~ s/\.+$//; #remove trailing .
 

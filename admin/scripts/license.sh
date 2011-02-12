@@ -13,11 +13,12 @@ echo -n | tee licenses-all.txt
 
 ### put back when done
 #rm -rf license_check
-#svn export . license_check
+#sv . license_check
 
-#prefix_dir="license_check/main"
-prefix_dir="./main/src/"
+prefix_dir="./main"
+#prefix_dir="./main/"
 
+#`cd $prefix svn up`
 file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`
 
 for f in $file_list
