@@ -8,6 +8,13 @@
 // http://rsbweb.nih.gov/ij/plugins/download/Hough_Circles.java
 // 
 
+
+#include <iCub/vis/cht.h>
+#include <stdio.h>
+#include <math.h>
+#include <memory.h>
+#include <yarp/sig/Image.h>
+
 using namespace yarp::sig;
 
 CircularHT::CircularHT():
