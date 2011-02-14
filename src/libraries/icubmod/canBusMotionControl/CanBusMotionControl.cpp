@@ -1887,7 +1887,7 @@ bool CanBusMotionControl::open (Searchable &config)
 	for (int j=0; j<p._njoints; j++) 
 	{
 		bool b=getFirmwareVersionRaw(j,&(info[j]));
-		if (b==false) fprintf(stderr,"Error reading firmware version");
+		if (b==false) fprintf(stderr,"Error reading firmware version\n");
 	}
 	_firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info);
 	_firmwareVersionHelper->printFirmwareVersions();

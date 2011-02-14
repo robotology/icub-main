@@ -407,15 +407,15 @@ class firmwareVersionHelper
 	}
 	inline void printFirmwareVersions()
 	{
-		printf("\n");
-		printf("**********************************\n");
-		printf("Firmware report:\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"**********************************\n");
+		fprintf(stderr,"Firmware report:\n");
 		for (int j=0; j<jointsNum; j++)
 		{
 			infos[j].print_info();
 		}
-		printf("**********************************\n");
-		printf("\n");
+		fprintf(stderr,"**********************************\n");
+		fprintf(stderr,"\n");
 	}
 	inline ~firmwareVersionHelper()
 	{
