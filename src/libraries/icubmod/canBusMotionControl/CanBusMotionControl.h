@@ -340,6 +340,90 @@ class speedEstimationHelper
 	}
 };
 
+#define BOARD_TYPE_4DC    0x03
+#define BOARD_TYPE_BLL    0x04
+
+struct firmware_info
+{
+	int joint;
+	int network_number;
+	std::string network_name;
+	int board_can_id;
+	int board_type;
+	int major;
+	int version;
+	int build;
+
+	inline void print_info()
+	{
+		fprintf(stderr,"%s [%d] joint: %d can_address: %2d ",network_name.c_str(),network_number,joint,board_can_id);
+		
+		if (board_type==0)
+		{
+			fprintf(stderr,"Unable to detect firmware version. Old firmware running?\n");
+		}
+		else
+		{
+		   if (board_type==BOARD_TYPE_4DC) fprintf(stderr,"board type: 3 (4DC) ");
+		   if (board_type==BOARD_TYPE_BLL) fprintf(stderr,"board type: 4 (BLL) ");
+		   fprintf(stderr,"version:%2x.%2x build:%3d ", major, version, build);
+		}
+		fprintf(stderr,"\n");
+	}
+
+};
+
+class firmwareVersionHelper
+{
+	int  jointsNum;
+	
+	public:
+	firmware_info* infos;
+
+	firmwareVersionHelper(int joints, firmware_info* f_infos)
+	{
+		jointsNum=joints;
+		infos = new firmware_info [jointsNum];
+		for (int i=0; i<jointsNum; i++)
+		{
+			infos[i] = f_infos[i];
+		}
+	}
+	inline int getNumberOfJoints ()
+	{ 
+		return jointsNum;
+	}
+	inline bool checkFirmwareVersions()
+	{
+		for (int j=0; j<jointsNum; j++)
+		{
+			if (infos[j].board_type==0) return false;
+		    if (infos[j].board_type==BOARD_TYPE_BLL && 
+				infos[j].build<55) return false;
+		    if (infos[j].board_type==BOARD_TYPE_4DC && 
+				infos[j].build<41) return false;
+		}
+		return true;
+	}
+	inline void printFirmwareVersions()
+	{
+		printf("\n");
+		printf("**********************************\n");
+		printf("Firmware report:\n");
+		for (int j=0; j<jointsNum; j++)
+		{
+			infos[j].print_info();
+		}
+		printf("**********************************\n");
+		printf("\n");
+	}
+	inline ~firmwareVersionHelper()
+	{
+		delete [] infos;
+		infos = 0;
+	}
+};
+
 class axisTorqueHelper
 {
 	int  jointsNum;
@@ -695,6 +779,9 @@ public:
     virtual bool setLimitsRaw(int axis, double min, double max);
     virtual bool getLimitsRaw(int axis, double *min, double *max);
 
+	// Firmware version
+	bool getFirmwareVersionRaw (int axis, firmware_info *info);
+
 protected:
     bool setBCastMessages (int axis, unsigned int v);
 
@@ -738,6 +825,7 @@ protected:
 	bool _writeByte8 (int msg, int axis, int value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
 	axisTorqueHelper *_axisTorqueHelper;
+	firmwareVersionHelper *_firmwareVersionHelper;
 	speedEstimationHelper *_speedEstimationHelper;
 
     // internal stuff.

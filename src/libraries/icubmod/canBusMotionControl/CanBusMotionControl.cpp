@@ -1717,6 +1717,7 @@ _done(0)
     ACE_ASSERT (system_resources != NULL);
     _opened = false;
 	_axisTorqueHelper = 0;
+	_firmwareVersionHelper = 0;
 	_speedEstimationHelper = 0;
 
     mServerLogger = NULL;
@@ -1881,8 +1882,29 @@ bool CanBusMotionControl::open (Searchable &config)
     RateThread::setRate(p._polling_interval);
     RateThread::start();
 
-    _opened = true;
+	//get firmware versions
+	firmware_info* info = new firmware_info[p._njoints];
+	for (int j=0; j<p._njoints; j++) 
+	{
+		bool b=getFirmwareVersionRaw(j,&(info[j]));
+		if (b==false) fprintf(stderr,"Error reading firmware version");
+	}
+	_firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info);
+	_firmwareVersionHelper->printFirmwareVersions();
+	if (!_firmwareVersionHelper->checkFirmwareVersions())
+	{
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"  ICubInterface detected that your control boards are not running the latest\n");
+		fprintf(stderr,"  available firmware version. Upgrading your iCub firmware is highly recommended.\n");
+		fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
+	}
 
+    _opened = true;
     DEBUG("CanBusMotionControl::open returned true\n");
     return true;
 }
@@ -2172,6 +2194,8 @@ bool CanBusMotionControl::close (void)
         delete threadPool;
 	if (_axisTorqueHelper != 0)
 		delete _axisTorqueHelper;
+	if (_firmwareVersionHelper != 0)
+		delete _firmwareVersionHelper;
 
     checkAndDestroy<double> (_ref_positions);
     checkAndDestroy<double> (_command_speeds);
@@ -3738,6 +3762,69 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
 	unsigned char *data;
 	data=m->getData()+1;
 	*value= *((short *)(data));
+
+	t->clear();
+
+	return true;
+}
+
+
+bool CanBusMotionControl::getFirmwareVersionRaw (int axis, firmware_info* info)
+{
+	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+  	if (!ENABLED(axis))
+    {
+		//@@@ TODO: check here
+		// value = 0;
+        return true;
+    }
+ 
+	CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        fprintf(stderr, "More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        return false;
+    }
+
+    info->network_name=this->canDevName;
+	info->joint=axis;
+	info->board_can_id=r._destinations[axis/2] & 0x0f;
+	info->network_number=r._networkN;
+
+    r.startPacket();
+    r.addMessage (id, axis, CAN_GET_FIRMWARE_VERSION);
+    r.writePacket();
+
+	ThreadTable2 *t=threadPool->getThreadTable(id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+
+	CanMessage *m=t->get(0);
+    if (m==0)
+    {
+		info->board_type= 0;
+		info->major= 0;
+		info->version= 0;
+		info->build= 0;
+        return false;
+    }
+
+	unsigned char *data;
+	data=m->getData()+1;
+	info->board_type= *((char *)(data));
+	data+=1;
+	info->major= *((char *)(data));
+	data+=1;
+	info->version= *((char *)(data));
+    data+=1;
+	info->build= *((char *)(data));
 
 	t->clear();
 
