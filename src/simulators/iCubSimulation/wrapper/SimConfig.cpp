@@ -1,4 +1,10 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+/*
+* Copyright (C) 2008 Vadim Tikhanoff, Paul Fitzpatrick
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
+
 /**
  * \file SimConfig.cpp
  * \brief This deals with the automatic configuration of the iCub Simulator

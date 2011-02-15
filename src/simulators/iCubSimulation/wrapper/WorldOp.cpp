@@ -1,4 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+/*
+* Copyright (C) 2011 Paul Fitzpatrick, Vadim Tikhanoff
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
 
 #include "WorldOp.h"
 
