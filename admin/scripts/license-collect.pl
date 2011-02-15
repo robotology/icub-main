@@ -69,8 +69,8 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
         $author=fix_names($author);
     }
 
-    if ($line=~m/copyright\s?(\s*:?\s*)?(\(C\))?\s*(((<?\d*>?)|(\d*))(\-?|\,(\d*)|(\d*))*)*\s*\,?\s*(.*)$/i && $copyright eq "unknown"){
-        $line=$10;
+    if ($line=~m/copyright\s?(\s*:?\s*)?(\(C\))?\s*((<?\d*>?)|(\d*))(\,|\-?(\d*))*\s*\,?\s*(.*)$/i && $copyright eq "unknown"){
+        $line=$8;
 
         # now knock all the trailing 2010-2010 etc..
         $line=~s/(\s*\,?\s*(\,?|\-?|\s?(\d*))*)\$//i;
