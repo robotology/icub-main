@@ -1,3 +1,8 @@
+# Copyright: 2010 RobotCub Consortium
+# Author: Ugo Pattacini
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# 
+
 PREPARE_DEVICE(gazecontrollerclient TYPE    ClientGazeController 
                                     INCLUDE ClientGazeController.h
                                     WRAPPER gazecontrollerclient)

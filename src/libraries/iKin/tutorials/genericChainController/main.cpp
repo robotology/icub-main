@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Ugo Pattacini
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 //
 // A tutorial on how to control a generic serial kinematic chain
 // relying only on yarp ports

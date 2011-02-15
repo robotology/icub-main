@@ -1,3 +1,8 @@
+# Copyright: 2010 RobotCub Consortium
+# Author: Ugo Pattacini
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# 
+
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 SET(PROJECTNAME onlineSolver)

@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Ugo Pattacini
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 //
 // A tutorial on how to use the iKin on-line solver.
 //
