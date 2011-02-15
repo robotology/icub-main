@@ -2276,6 +2276,12 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         for (int i=3; i<xdot_set.length(); i++)
             xdot_set[i]=odot[i-3];
 
+        if (norm(xdot_set)==0.0)
+        {
+            stopControl();
+            return true;
+        }
+
         if (!taskVelModeOn)
         {
             taskRefVelTargetGen->reset(chain->EndEffPose());
@@ -2285,7 +2291,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         return taskVelModeOn=true;
     }
     else
-        return false;    
+        return false;
 }
 
 
