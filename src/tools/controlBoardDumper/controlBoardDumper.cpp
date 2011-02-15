@@ -1,9 +1,10 @@
 #include "controlBoardDumper.h"
 
-// Copyright (C) 2008 RobotCub Consortium
-// Author: Francesco Nori
-//
-// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+/*
+ * Copyright (C) 2006 Francesco Nori
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
 
 
 void controlBoardDumper::setDevice(PolyDriver *Arm_d, int rate, ConstString portPrefix, ConstString dataToDump)

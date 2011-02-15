@@ -1,10 +1,10 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-
-// Copyright (C) 2008 RobotCub Consortium
-// Author: Francesco Nori
-//
-// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+/*
+ * Copyright (C) 2006 Francesco Nori
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
  
 /**
  * @ingroup icub_tools
