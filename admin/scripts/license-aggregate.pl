@@ -58,16 +58,18 @@ while(!eof(FILE) && defined (my $line=<FILE>)) {
         print BAD "$filename: missing copyright information\n";
     }
     else {
-        @names=split /\s*\,\s*/, $copyright;
-        foreach $name (@names) { 
-              $authors{$name}++
+         my @authors=split('\s*\,\s*|\sand\s+', $copyright);
+
+        foreach my $aut (@authors)
+        {
+            $authors{$aut}++;
         }
     }
 
     if ($author=~m/unknown/i) {
     }
     else {
-        @names=split /\s*\,\s*/, $author;
+        @names=split(',\s*|\sand\s+', $author);
         foreach $name (@names)
             { $authors{$name}++; }
     }

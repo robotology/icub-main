@@ -15,7 +15,7 @@ echo -n | tee licenses-all.txt
 #rm -rf license_check
 #sv . license_check
 
-prefix_dir="./main"
+prefix_dir="./main/"
 #prefix_dir="./main/"
 
 #`cd $prefix svn up`

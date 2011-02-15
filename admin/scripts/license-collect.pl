@@ -25,6 +25,19 @@ my $author="unknown";
 my $copyright="unknown";
 my $license="unknown";
 
+# Perform basic conversions to fix common problems
+sub fix_names {
+        my $names=$_[0];
+        $names=~s/Alex Bernardino/Alexandre Bernardino/;
+        $names=~s/\,?\s?European Commission FP6 Project IST(\-004370)?//;
+        $names=~s/Robotcub/RobotCub/;
+        $names=~s/^The\s|^\-//;
+
+        $names=~s/\$YOUR_NAME/unknown/;
+
+        return $names;
+}
+
 
 ## Detect authors, copyright and licenses
 while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
@@ -50,35 +63,21 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
     next if $line=~m/\`*AS IS\'* AND ANY EXPRESS/i;
 
     if ($line=~m/authors?:?\s*/i && $author eq "unknown"){
-        
         $author=$';
-        if ($fname=~m/main\/CMakeLists/i) {
-             print "$author\n";
-        }
-
-        $author =~ s/\s+$//; #remove trailing spaces
-        $author =~ s/\.+$//; #remove trailing .
-
-
-        $author=~s/Alex Bernardino/Alexandre Bernardino/;
-        $author=~s/^The\s//;
-
-        $author=~s/\$YOUR_NAME/unknown/;
+        $author=~s/\.?\s*$//;  #remove trailing . and eof ...
+        
+        $author=fix_names($author);
     }
-    if ($line=~m/copyright\s?(\s*:?\s*)?(\(C\))?\s*(<?\d\d\d\d>?((-|\,|\s)\s*\d\d\d\d-?\d?)*)\s*/i && $copyright eq "unknown"){
-        $copyright=$';
-        $copyright =~ s/\s+$//;
-        $copyright =~ s/\.+$//; #remove trailing .
 
-        #if ($3) { $copyright=$copyright." $3";}
+    if ($line=~m/copyright\s?(\s*:?\s*)?(\(C\))?\s*(((<?\d*>?)|(\d*))(\-?|\,(\d*)|(\d*))*)*\s*\,?\s*(.*)$/i && $copyright eq "unknown"){
+        $line=$10;
 
-        #catch unwanted modifiers
-        $copyright=~s/Alex Bernardino/Alexandre Bernardino/;
-        $copyright=~s/\,?\s?European Commission FP6 Project IST-004370//;
-        $copyright=~s/Robotcub/RobotCub/;
-        $copyright=~s/^The\s|^\-//;
-
-        $copyright=~s/\$YOUR_NAME/unknown/;
+        # now knock all the trailing 2010-2010 etc..
+        $line=~s/(\s*\,?\s*(\,?|\-?|\s?(\d*))*)\$//i;
+        $line=~s/\.?\s*$//;  #remove trailing . and eof ...
+        #print"--> $`<$&>$' $line\n";
+        $copyright=$line;
+        $copyright=fix_names($copyright);
     }
 }
 
