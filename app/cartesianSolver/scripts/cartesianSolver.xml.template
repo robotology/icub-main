@@ -10,6 +10,13 @@
                 <stdio>console</stdio>
                 <tag>icubInterface</tag>
         </module>
+		
+	    <module>
+                <name>iCubInterfaceGuiClient</name>
+                <node>console</node>
+                <stdio>console</stdio>
+                <tag>iCubInterfaceGuiClient</tag>
+        </module>
    
         <module>
                 <name>iKinCartesianSolver</name>
