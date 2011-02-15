@@ -1,4 +1,10 @@
 
+/*
+ * Copyright (C) 2007 RobotCub Consortium
+ * Author: Lorenzo natale
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ */
+
 /**
  * \file pidfilter.h
  * \brief Header to implement the PID filter

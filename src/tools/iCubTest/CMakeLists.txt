@@ -1,4 +1,7 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Alessandro Scalzo
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 set(PROJECTNAME iCubTest)
 
 file(GLOB folder_header *.h)

@@ -1,6 +1,13 @@
 //
 //  $Id: pidfilter.cpp,v 1.9 2009/02/23 09:54:36 vtikha Exp $
 //
+
+/*
+ * Copyright (C) 2007 RobotCub Consortium
+ * Author: Lorenzo natale
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ */
+
 /**
  * \file pidfilter.cpp
  * \brief This file deals with the PID controller

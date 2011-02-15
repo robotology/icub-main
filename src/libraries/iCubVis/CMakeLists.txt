@@ -1,3 +1,7 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Alessandro Scalzo
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 project(iCubVis)
 
 file(GLOB folder_source 

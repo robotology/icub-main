@@ -1,3 +1,8 @@
+// Copyright (C) 2008 RobotCub Consortium
+// Author: Francesco Nori
+//
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 #include "genericControlBoardDumper.h"
 
 GetData::GetData()

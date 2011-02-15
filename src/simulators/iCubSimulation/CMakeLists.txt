@@ -1,3 +1,7 @@
+# Copyright: (C) 2008,2009,2010 RobotCub Consortium
+# Authors: Paul Fitzpatrick and Vadim Tikhanoff
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 SET(PROJECTNAME iCub_SIM)
 
 PROJECT(${PROJECTNAME})

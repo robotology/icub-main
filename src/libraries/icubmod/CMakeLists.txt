@@ -1,4 +1,6 @@
-#PROJECT(iCubModules)
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 # Prepare a device library called "icubmod".
 # A test executable called "icubmoddev" will also be produced.

@@ -3,9 +3,9 @@
 /**
  * \file SimConfig.h
  * \brief Header for the automatic configuration of the iCub Simulator
- * \author  Paul Fitzpatrick Vadim Tikhanoff
+ * \author  Paul Fitzpatrick and Vadim Tikhanoff
  * \date 2008
- * \note Release under GNU GPL v2.0
+ * \note CopyPolicy: Released under the terms of the GNU GPL v2.0. 
  **/
 
 #ifndef SIMCONFIG_INC

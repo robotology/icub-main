@@ -5,7 +5,7 @@
  * \brief This file initializes the port to be used in order to control the eyeLids
  * \author Martin Peniak, Vadim Tikhanoff
  * \date 2008
- * \note Release under GNU GPL v2.0
+ * \note Released under the terms of the GNU GPL v2.0.
  **/
 #include "EyeLidsController.h"
 
