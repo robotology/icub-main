@@ -1,3 +1,7 @@
+# Author: Alexandre Bernardino
+# Copyright (C) 2008 RobotCub Consortium
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 SET(PROJECTNAME camExtrinsicsCalib)
 
 PROJECT(${PROJECTNAME})
