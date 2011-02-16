@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2009 RobotCub Consortium
+ * Author: Marco Maggiali marco.maggiali@iit.it, Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #ifndef __SKIN_MESH_THREAD_PORT_H__
 #define __SKIN_MESH_THREAD_PORT_H__
 
@@ -140,7 +147,7 @@ public:
         mutex.post();
     }
 
-    void eval(double *image)
+    void eval(unsigned char *image)
     {
         mutex.wait();
 
@@ -154,12 +161,12 @@ public:
 
     void draw(unsigned char *image)
     {
-        mutex.wait();
+        //mutex.wait();
         for (int t=0; t<16; ++t)
         {
             if (sensor[t]) sensor[t]->draw(image);
         }        
-        mutex.post();
+        //mutex.post();
     }
 };
 

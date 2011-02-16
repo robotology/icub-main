@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2009 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #include <gsl/gsl_math.h>
 #include <memory.h>
 
@@ -48,7 +55,7 @@ public:
         }
 
         double sigma=0.5*5.55*scale;
-        int maxRange=int(3.0*sigma);
+        int maxRange=int(2.5*sigma);
         
         if (maxRange!=m_maxRange)
         {
@@ -92,8 +99,9 @@ public:
         return x>=0?x:-x;
     }
     
-    void eval(double *image)
+    void eval(unsigned char *image)
     {
+        int act;
         int dx,dy;
         int Y0,Y1;
         double k0,k1;
@@ -131,7 +139,11 @@ public:
 
                 for (dx=dxa; dx<=dxb; ++dx)
                 {
-                    image[dx+Y1]+=k1*Exponential[Abs(dx)];
+                    if (image[dx+Y1]!=255)
+                    {
+                        act=image[dx+Y1]+int(k1*Exponential[Abs(dx)]);
+                        image[dx+Y1]=act<255?act:255;
+                    }
                 }
             }
         }
@@ -190,43 +202,43 @@ protected:
 
         if (image[bytePos-3]<R4) image[bytePos-3]=R4;
         if (image[bytePos-2]<G4) image[bytePos-2]=G4;
-        if (image[bytePos-1]<B4) image[bytePos-1]=B4;
+        //if (image[bytePos-1]<B4) image[bytePos-1]=B4;
 
         if (image[bytePos  ]<R2) image[bytePos  ]=R2;
         if (image[bytePos+1]<G2) image[bytePos+1]=G2;
-        if (image[bytePos+2]<B2) image[bytePos+2]=B2;
+        //if (image[bytePos+2]<B2) image[bytePos+2]=B2;
 
         if (image[bytePos+3]<R4) image[bytePos+3]=R4;
         if (image[bytePos+4]<G4) image[bytePos+4]=G4;
-        if (image[bytePos+5]<B4) image[bytePos+5]=B4;
+        //if (image[bytePos+5]<B4) image[bytePos+5]=B4;
 
         bytePos+=m_Width*3;
 
         if (image[bytePos-3]<R2) image[bytePos-3]=R2;
         if (image[bytePos-2]<G2) image[bytePos-2]=G2;
-        if (image[bytePos-1]<B2) image[bytePos-1]=B2;
+        //if (image[bytePos-1]<B2) image[bytePos-1]=B2;
 
         if (image[bytePos  ]<R1) image[bytePos  ]=R1;
         if (image[bytePos+1]<G1) image[bytePos+1]=G1;
-        if (image[bytePos+2]<B1) image[bytePos+2]=B1;
+        //if (image[bytePos+2]<B1) image[bytePos+2]=B1;
 
         if (image[bytePos+3]<R2) image[bytePos+3]=R2;
         if (image[bytePos+4]<G2) image[bytePos+4]=G2;
-        if (image[bytePos+5]<B2) image[bytePos+5]=B2;
+        //if (image[bytePos+5]<B2) image[bytePos+5]=B2;
 
         bytePos+=m_Width*3;
 
         if (image[bytePos-3]<R4) image[bytePos-3]=R4;
         if (image[bytePos-2]<G4) image[bytePos-2]=G4;
-        if (image[bytePos-1]<B4) image[bytePos-1]=B4;
+        //if (image[bytePos-1]<B4) image[bytePos-1]=B4;
 
         if (image[bytePos  ]<R2) image[bytePos  ]=R2;
         if (image[bytePos+1]<G2) image[bytePos+1]=G2;
-        if (image[bytePos+2]<B2) image[bytePos+2]=B2;
+        //if (image[bytePos+2]<B2) image[bytePos+2]=B2;
 
         if (image[bytePos+3]<R4) image[bytePos+3]=R4;
         if (image[bytePos+4]<G4) image[bytePos+4]=G4;
-        if (image[bytePos+5]<B4) image[bytePos+5]=B4;
+        //if (image[bytePos+5]<B4) image[bytePos+5]=B4;
     }
     
     void drawLine(unsigned char *image,int x0,int y0,int x1,int y1)

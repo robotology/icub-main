@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2009 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #ifndef __SKIN_MESH_THREAD_CAN_H__
 #define __SKIN_MESH_THREAD_CAN_H__
 
@@ -141,7 +148,7 @@ public:
         mutex.post();
     }
 
-    void eval(double *image)
+    void eval(unsigned char *image)
     {
         mutex.wait();
 

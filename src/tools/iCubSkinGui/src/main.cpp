@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2009 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 /**
 *
 @ingroup icub_guis
@@ -89,7 +96,7 @@ iCubSkinGui --from righthand.ini --useCan
 
 \author Alessandro Scalzo, Lorenzo Natale, Marco Randazzo
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
  
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -166,17 +173,20 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
     
     if (TheadType == TYPE_CAN && gpSkinMeshThreadCan)
     {
-        memset(gpActivationMap,0,gMapSize);
+        //memset(gpActivationMap,0,gMapSize);
         memset(gpImageBuff,0,gImageSize);
         
         if (gWidth>=180 && gHeight>=180)
         {
-            gpSkinMeshThreadCan->eval(gpActivationMap);
+            //gpSkinMeshThreadCan->eval(gpActivationMap);
+            gpSkinMeshThreadCan->eval(gpImageBuff);
 
+            /*
             for (int i=0; i<gImageArea; ++i)
             {
                 gpImageBuff[i*3]=gpActivationMap[i]<255.0?guchar(gpActivationMap[i]):255;
             }
+            */
            
             gpSkinMeshThreadCan->draw(gpImageBuff);
         }
@@ -191,17 +201,20 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
     }
 	else if (TheadType == TYPE_PORT && gpSkinMeshThreadPort)
 	{
-        memset(gpActivationMap,0,gMapSize);
+        //memset(gpActivationMap,0,gMapSize);
         memset(gpImageBuff,0,gImageSize);
         
         if (gWidth>=180 && gHeight>=180)
         {
-            gpSkinMeshThreadPort->eval(gpActivationMap);
+            //gpSkinMeshThreadPort->eval(gpActivationMap);
+            gpSkinMeshThreadPort->eval(gpImageBuff);
 
+            /*
             for (int i=0; i<gImageArea; ++i)
             {
                 gpImageBuff[i*3]=gpActivationMap[i]<255.0?guchar(gpActivationMap[i]):255;
             }
+            */
            
             gpSkinMeshThreadPort->draw(gpImageBuff);
         }
