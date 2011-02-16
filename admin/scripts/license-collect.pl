@@ -10,6 +10,7 @@ my $max_lines=60;
 my %good_licenses= ( # a list of "good" licenses
 		     "Released under the terms of the GNU GPL v2.0"=> "GPL20",
              "under the terms of the GNU General Public License, version 2"=>"GPL20",
+			 "This program is free software; you can redistribute it and\/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation"=>"GPL20";
              "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:"=>"BSD",
 
 );
@@ -38,48 +39,57 @@ sub fix_names {
         return $names;
 }
 
-
-## Detect authors, copyright and licenses
+## collect file into a single variable, perform some pre-processing
 while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
     $line_num++;
 
-    # next unless $line=~m/Copyright|Author|Copypolicy/i;
     chomp $line;
-    # print "$line_num: $line\n";
-
-    #### search for known good licenses
-    while ( ($key, $value) = each %good_licenses) {
-            
-            if ($line=~m/$key/i) {
-                #print "Match: $line_num: $line $value\n";
-                $license=$value;
-        }
-    }
-
-    # now skip some tricky sentences that contain the word "author"
-    # in licensing context
-    next if $line=~m/The name of the author may not be used/i;
-    next if $line=~m/BE LIABLE FOR ANY/i;
-    next if $line=~m/\`*AS IS\'* AND ANY EXPRESS/i;
-
-    if ($line=~m/authors?:?\s*/i && $author eq "unknown"){
-        $author=$';
-        $author=~s/\.?\s*$//;  #remove trailing . and eof ...
-        
-        $author=fix_names($author);
-    }
-
-    if ($line=~m/copyright\s?(\s*:?\s*)?(\(C\))?\s*((<?\d*>?)|(\d*))(\,|\-?(\d*))*\s*\,?\s*(.*)$/i && $copyright eq "unknown"){
-        $line=$8;
-
-        # now knock all the trailing 2010-2010 etc..
-        $line=~s/(\s*\,?\s*(\,?|\-?|\s?(\d*))*)\$//i;
-        $line=~s/\.?\s*$//;  #remove trailing . and eof ...
-        #print"--> $`<$&>$' $line\n";
-        $copyright=$line;
-        $copyright=fix_names($copyright);
-    }
+	# remove comments 
+	$line =~s/^\#+\s+//;
+	$line =~s/^\/\/+/;
+	$line =~s/^\*+\s+//;
+	$line =~s/^\/\s?\*+//;
+	
+	$txt .= $line;
 }
+
+## Detect authors, copyright and licenses
+
+# print "$line_num: $line\n";
+
+#### search for known good licenses
+while ( ($key, $value) = each %good_licenses) {
+		
+		if ($line=~m/$key/i) {
+			#print "Match: $line_num: $line $value\n";
+			$license=$value;
+	}
+}
+
+# now skip some tricky sentences that contain the word "author"
+# in licensing context
+#next if $line=~m/The name of the author may not be used/i;
+#next if $line=~m/BE LIABLE FOR ANY/i;
+#next if $line=~m/\`*AS IS\'* AND ANY EXPRESS/i;
+
+if ($line=~m/authors?:?\s*/i && $author eq "unknown"){
+	$author=$';
+	$author=~s/\.?\s*$//;  #remove trailing . and eof ...
+	
+	$author=fix_names($author);
+}
+
+if ($line=~m/copyright\s?(\s*:?\s*)?(\(C\))?\s*((<?\d*>?)|(\d*))(\,|\-?(\d*))*\s*\,?\s*(.*)$/i && $copyright eq "unknown"){
+	$line=$8;
+
+	# now knock all the trailing 2010-2010 etc..
+	$line=~s/(\s*\,?\s*(\,?|\-?|\s?(\d*))*)\$//i;
+	$line=~s/\.?\s*$//;  #remove trailing . and eof ...
+	#print"--> $`<$&>$' $line\n";
+	$copyright=$line;
+	$copyright=fix_names($copyright);
+}
+
 
 print "File:$fname\n";
 print "Copyright:$copyright\n";
