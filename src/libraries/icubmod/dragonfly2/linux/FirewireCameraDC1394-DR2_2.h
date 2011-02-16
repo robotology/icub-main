@@ -1,11 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
-* Copyright (C) 2007 Robotcub Consortium
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-* Author: Alessandro Scalzo
-*/
+ * Copyright (C) 2007 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
 
 //  L      I  N   N  U   U  X   X
 //  L      I  NN  N  U   U   X X

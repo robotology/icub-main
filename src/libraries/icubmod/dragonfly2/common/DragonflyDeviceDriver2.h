@@ -1,9 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-//
-// $Id: DragonflyDeviceDriver2.h,v 1.1 2009/03/18 17:03:16 ale-scalzo Exp $
-//
-//
+/*
+ * Copyright (C) 2007 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
 
 #ifndef __DragonflyDeviceDriver2h__
 #define __DragonflyDeviceDriver2h__

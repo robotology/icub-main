@@ -1,3 +1,9 @@
+#
+# Copyright (C) 2007 RobotCub Consortium
+# Author: Alessandro Scalzo alessandro.scalzo@iit.it
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+#
+
 PREPARE_DEVICE(dragonfly2 TYPE DragonflyDeviceDriver2 INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
 
 IF(NOT SKIP_dragonfly2)
