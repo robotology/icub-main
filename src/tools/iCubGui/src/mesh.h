@@ -2,6 +2,19 @@
  * mesh.h
  */
 
+/*
+ * Copyright (C) 2009 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * Based on:
+ *
+ *   Qavimator
+ *   Copyright (C) 2006 by Zi Ree   *
+ *   Zi Ree @ SecondLife   *
+ *   Released under the terms of the GNU GPL v2.0.
+ */
+
 #ifndef ICUBMESH_H
 #define ICUBMESH_H
 
@@ -90,6 +103,10 @@ public:
         double x1,y1,z1;
         double x2,y2,z2;
         double x3,y3,z3;
+
+        double xmin=1E+20,xmax=-xmin;
+        double ymin=1E+20,ymax=-ymin;
+        double zmin=1E+20,zmax=-zmin;
         
         while(!objFile.atEnd())
         {
@@ -99,6 +116,13 @@ public:
             
             if (parameters[0]=="v")
             {
+                if (parameters[1].toDouble()<xmin) xmin=parameters[1].toDouble();
+                if (parameters[1].toDouble()>xmax) xmax=parameters[1].toDouble();
+                if (parameters[2].toDouble()<ymin) ymin=parameters[2].toDouble();
+                if (parameters[2].toDouble()>ymax) ymax=parameters[2].toDouble();
+                if (parameters[3].toDouble()<zmin) zmin=parameters[3].toDouble();
+                if (parameters[3].toDouble()>zmax) zmax=parameters[3].toDouble();
+
                 x1=parameters[1].toDouble()+tx;
                 y1=parameters[2].toDouble()+ty;
                 z1=parameters[3].toDouble()+tz;
@@ -151,6 +175,12 @@ public:
             }   
         }
         objFile.close();
+
+        printf("mesh %s\n",fileName.ascii());
+        printf("xmin %lf    xmax %lf\n",xmin,xmax);
+        printf("ymin %lf    ymax %lf\n",ymin,ymax);
+        printf("zmin %lf    zmax %lf\n",zmin,zmax);
+        printf("********************\n");
     }
 
     ~iCubMesh()

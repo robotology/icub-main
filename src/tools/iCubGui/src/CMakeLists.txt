@@ -1,3 +1,7 @@
+# Copyright (C) 2009 RobotCub Consortium
+# Author: Alessandro Scalzo alessandro.scalzo@iit.it
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # Headers
 set(icubgui_MOC_HDR animationview.h qavimator.h settingsdialog.h)
 
