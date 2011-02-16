@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2007 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 /**
  * \defgroup icub_framegrabbergui2 frameGrabberGui2
  * @ingroup icub_guis
@@ -19,7 +26,7 @@
  *
  * \author Alessandro Scalzo
  *
- * Copyright (C) 2009 RobotCub Consortium
+ * Copyright (C) 2007 RobotCub Consortium
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
