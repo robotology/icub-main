@@ -1,3 +1,7 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 PREPARE_DEVICE(cfw2can TYPE Cfw2Can
     INCLUDE Cfw2Can.h 
     WRAPPER "")

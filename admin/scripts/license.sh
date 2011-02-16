@@ -12,11 +12,11 @@ echo "Make sure you run this as ./admin/scripts/update-license"
 echo -n | tee licenses-all.txt
 
 ### put back when done
-rm -rf license_check
-svn export . license_check
+#rm -rf license_check
+#svn export . license_check
 
 prefix_dir="./license_check/main/"
-#prefix_dir="./main/"
+prefix_dir="./main/src/"
 
 #`cd $prefix svn up`
 file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`

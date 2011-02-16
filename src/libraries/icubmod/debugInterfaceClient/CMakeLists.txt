@@ -1,3 +1,7 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Marco Randazzo
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 PREPARE_DEVICE(debugInterfaceClient TYPE DebugInterfaceClient INCLUDE debugInterfaceClient.h WRAPPER controlboard)
 
 if (NOT SKIP_debugInterfaceClient)

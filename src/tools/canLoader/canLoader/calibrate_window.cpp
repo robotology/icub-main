@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Marco Maggiali, Marco Randazzo, Lorenzo Natale
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #include "downloader.h"
 #include "calibrate_window.h"
 

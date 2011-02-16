@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Lorenzo Natale
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #ifndef __FAKEBOARD__
 #define __FAKEBOARD__
 

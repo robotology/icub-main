@@ -1,3 +1,9 @@
+#
+# Copyright (C) 2010 RobotCub Consortium
+# Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+#
+
 SET(PROJECTNAME ctpService)
 PROJECT(${PROJECTNAME})
 

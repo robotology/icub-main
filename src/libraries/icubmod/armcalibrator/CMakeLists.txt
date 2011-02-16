@@ -1,3 +1,6 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 IF (COMPILE_DEVICE_LIBRARY)
   PREPARE_DEVICE(icubarmcalibrator TYPE iCubArmCalibrator INCLUDE iCubArmCalibrator.h)

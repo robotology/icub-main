@@ -1,3 +1,8 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
 PREPARE_DEVICE(icubheadcalibratorV2 TYPE iCubHeadCalibratorV2 INCLUDE iCubHeadCalibratorV2.h)
 
 if (NOT SKIP_icubheadcalibratorV2)

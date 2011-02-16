@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2008 RobotCub Consortium
+ * Author: Marco Maggiali, Marco Randazzo
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #ifndef CALIBRATE_WINDOW_H
 #define CALIBRATE_WINDOW_H
 

@@ -1,6 +1,6 @@
 #
 # Copyright (C) 2007 RobotCub Consortium
-# Author: Alessandro Scalzo alessandro.scalzo@iit.it
+# Author: Alessandro Scalzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
 
