@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2010 RobotCub Consortium
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 /**
 *
 * \defgroup icubinterfacegui_gui iCubInterfaceGuiClient
@@ -37,7 +44,7 @@
 *
 * \author Alessandro Scalzo
 *
-* Copyright (C) 2009 RobotCub Consortium
+* Copyright (C) 2010 RobotCub Consortium
 *
 * CopyPolicy: Released under the terms of the GNU GPL v2.0.
 *
