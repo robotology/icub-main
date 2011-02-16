@@ -12,10 +12,10 @@ echo "Make sure you run this as ./admin/scripts/update-license"
 echo -n | tee licenses-all.txt
 
 ### put back when done
-#rm -rf license_check
-#sv . license_check
+rm -rf license_check
+svn export . license_check
 
-prefix_dir="./main/"
+prefix_dir="./license_check/main/"
 #prefix_dir="./main/"
 
 #`cd $prefix svn up`
@@ -27,3 +27,6 @@ do
 done
 
 ./admin/scripts/license-aggregate.pl licenses-all.txt
+
+rm -rf license_check
+
