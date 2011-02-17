@@ -211,3 +211,4 @@ add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
 
 set(ICUB_USE_INTERFACEGUI FALSE CACHE BOOL "enable interface gui")
+set(ICUB_CANPROTOCOL_STRICT FALSE CACHE BOOL "Enable strict check of canbus protocol and firmware versions")
