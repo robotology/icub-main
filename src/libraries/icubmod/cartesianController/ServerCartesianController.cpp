@@ -1586,7 +1586,7 @@ bool ServerCartesianController::connectToSolver()
 bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
                                      const double t, const bool latchToken)
 {    
-    if (connected)
+    if (connected && (ctrl->get_dim()!=0))
     {
         motionDone=false;
         

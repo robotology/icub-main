@@ -51,12 +51,14 @@ bool CartesianHelper::getDesiredOption(Bottle &reply, Vector &xdhat,
         if (reply.check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
         {
             Bottle *xData=getEndEffectorPoseOption(reply);
-            xdhat.resize(3);
-            odhat.resize(4);
+            if (xData->size()==0)
+                return false;
 
+            xdhat.resize(3);
             for (int i=0; i<xdhat.length(); i++)
                 xdhat[i]=xData->get(i).asDouble();
 
+            odhat.resize(4);
             for (int i=0; i<odhat.length(); i++)
                 odhat[i]=xData->get(xdhat.length()+i).asDouble();
         }
@@ -67,8 +69,10 @@ bool CartesianHelper::getDesiredOption(Bottle &reply, Vector &xdhat,
         if (reply.check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
         {
             Bottle *qData=getJointsOption(reply);
-            qdhat.resize(qData->size());
+            if (qData->size()==0)
+                return false;
 
+            qdhat.resize(qData->size());
             for (int i=0; i<qdhat.length(); i++)
                 qdhat[i]=qData->get(i).asDouble();
         }
