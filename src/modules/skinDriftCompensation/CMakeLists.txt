@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 2.6)
-
+# Copyright (C) 2010 RobotCub Consortium
+# Authors: Andrea del Prete, Alexander Schmitz
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 set(PROJECTNAME skinDriftCompensation)
 PROJECT(${PROJECTNAME})
