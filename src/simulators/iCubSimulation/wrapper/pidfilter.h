@@ -1,7 +1,7 @@
 
 /*
  * Copyright (C) 2007 RobotCub Consortium
- * Author: Lorenzo natale
+ * Author: Lorenzo Natale
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  */
 
