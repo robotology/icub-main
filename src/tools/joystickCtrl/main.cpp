@@ -251,6 +251,7 @@ public:
 				jointProperties[i].param[1]=0;
 				jointProperties[i].param[2]=0;
 			}
+			else
 			if (b.get(1).asString()=="string")
 			{
 				jointProperties[i].type=JTYPE_STRING;
