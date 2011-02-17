@@ -300,7 +300,7 @@ bool InputPort::isNewDataEvent()
 /************************************************************************/
 bool InputPort::handleTarget(Bottle *b)
 {
-    if (b)
+    if (b!=NULL)
     {
         int len=b->size();
         int l=maxLen<len ? maxLen : len;
@@ -318,7 +318,7 @@ bool InputPort::handleTarget(Bottle *b)
 /************************************************************************/
 bool InputPort::handleDOF(Bottle *b)
 {
-    if (b)
+    if (b!=NULL)
     {
         int len=b->size();        
         
