@@ -1882,27 +1882,29 @@ bool CanBusMotionControl::open (Searchable &config)
     RateThread::setRate(p._polling_interval);
     RateThread::start();
 
+#ifdef ICUB_CANPROTOCOL_STRICT
+	////////////////////////////
 	//get firmware versions
 	firmware_info* info = new firmware_info[p._njoints];
+	can_protocol_info icub_interface_protocol;
+	icub_interface_protocol.major=CAN_PROTOCOL_MAJOR;
+	icub_interface_protocol.minor=CAN_PROTOCOL_MINOR;
 	for (int j=0; j<p._njoints; j++) 
 	{
-		bool b=getFirmwareVersionRaw(j,&(info[j]));
+		bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
 		if (b==false) fprintf(stderr,"Error reading firmware version\n");
 	}
-	_firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info);
+	_firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info, icub_interface_protocol);
 	_firmwareVersionHelper->printFirmwareVersions();
 	if (!_firmwareVersionHelper->checkFirmwareVersions())
 	{
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"  ICubInterface detected that your control boards are not running the latest\n");
-		fprintf(stderr,"  available firmware version. Upgrading your iCub firmware is highly recommended.\n");
-		fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
+		RateThread::stop();
+		_opened = false;
+		DEBUG("checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
+		return false;
 	}
+	/////////////////////////////////
+#endif
 
     _opened = true;
     DEBUG("CanBusMotionControl::open returned true\n");
@@ -3088,7 +3090,8 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 	data=m->getData()+1;
 	*stiff= *((short *)(data));
 	data+=2;
-	*damp= *((short *)(data));
+	*damp= *((short *)(data)); 
+	*damp/= 1000;
     data+=2;
 	*off= *((short *)(data));
 
@@ -3162,7 +3165,7 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp, 
 		r.startPacket();
 		r.addMessage (CAN_SET_IMPEDANCE_PARAMS, axis);
 		*((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
-		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp);
+		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp*1000);
 		*((short *)(r._writeBuffer[0].getData()+5)) = S_16(off);
 		*((short *)(r._writeBuffer[0].getData()+7)) = 0;
 		r._writeBuffer[0].setLen(8);
@@ -3769,7 +3772,7 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
 }
 
 
-bool CanBusMotionControl::getFirmwareVersionRaw (int axis, firmware_info* info)
+bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info* fw_info)
 {
 	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
@@ -3792,13 +3795,19 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, firmware_info* info)
         return false;
     }
 
-    info->network_name=this->canDevName;
-	info->joint=axis;
-	info->board_can_id=r._destinations[axis/2] & 0x0f;
-	info->network_number=r._networkN;
+    fw_info->network_name=this->canDevName;
+	fw_info->joint=axis;
+	fw_info->board_can_id=r._destinations[axis/2] & 0x0f;
+	fw_info->network_number=r._networkN;
 
     r.startPacket();
     r.addMessage (id, axis, CAN_GET_FIRMWARE_VERSION);
+	*((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(icub_interface_protocol.major & 0xFF);
+	*((unsigned char *)(r._writeBuffer[0].getData()+2)) = (unsigned char)(icub_interface_protocol.minor & 0xFF);
+	*((unsigned char *)(r._writeBuffer[0].getData()+3)) = 0;
+	*((short *)(r._writeBuffer[0].getData()+4)) = 0;
+	*((short *)(r._writeBuffer[0].getData()+6)) = 0;
+	r._writeBuffer[0].setLen(8);
     r.writePacket();
 
 	ThreadTable2 *t=threadPool->getThreadTable(id);
@@ -3809,23 +3818,28 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, firmware_info* info)
 	CanMessage *m=t->get(0);
     if (m==0)
     {
-		info->board_type= 0;
-		info->major= 0;
-		info->version= 0;
-		info->build= 0;
+		fw_info->board_type= 0;
+		fw_info->fw_major= 0;
+		fw_info->fw_version= 0;
+		fw_info->fw_build= 0;
         return false;
     }
 
 	unsigned char *data;
 	data=m->getData()+1;
-	info->board_type= *((char *)(data));
+	fw_info->board_type= *((char *)(data));
 	data+=1;
-	info->major= *((char *)(data));
+	fw_info->fw_major= *((char *)(data));
 	data+=1;
-	info->version= *((char *)(data));
+	fw_info->fw_version= *((char *)(data));
     data+=1;
-	info->build= *((char *)(data));
-
+	fw_info->fw_build= *((char *)(data));
+    data+=1;
+	fw_info->can_protocol.major = *((char *)(data));
+    data+=1;
+	fw_info->can_protocol.minor = *((char *)(data));
+	data+=1;
+	fw_info->ack = *((char *)(data));
 	t->clear();
 
 	return true;

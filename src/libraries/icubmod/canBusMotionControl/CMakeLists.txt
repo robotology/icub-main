@@ -6,6 +6,10 @@ PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
     INCLUDE CanBusMotionControl.h 
     WRAPPER controlboard)
 
+if (ICUB_CANPROTOCOL_STRICT)
+	add_definitions(-DICUB_CANPROTOCOL_STRICT)
+endif()
+
 if (ICUB_USE_INTERFACEGUI)
 	add_definitions(-D_USE_INTERFACEGUI)
 endif (ICUB_USE_INTERFACEGUI)

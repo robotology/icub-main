@@ -43,6 +43,7 @@
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
+#include <messages.h>
 
 namespace yarp{
     namespace dev{
@@ -343,6 +344,12 @@ class speedEstimationHelper
 #define BOARD_TYPE_4DC    0x03
 #define BOARD_TYPE_BLL    0x04
 
+struct can_protocol_info
+{
+	int major;
+	int minor;
+};
+
 struct firmware_info
 {
 	int joint;
@@ -350,9 +357,11 @@ struct firmware_info
 	std::string network_name;
 	int board_can_id;
 	int board_type;
-	int major;
-	int version;
-	int build;
+	int fw_major;
+	int fw_version;
+	int fw_build;
+	can_protocol_info can_protocol;
+	int ack;
 
 	inline void print_info()
 	{
@@ -360,13 +369,13 @@ struct firmware_info
 		
 		if (board_type==0)
 		{
-			fprintf(stderr,"Unable to detect firmware version. Old firmware running?\n");
+			fprintf(stderr,"Unable to detect firmware version. Old firmware running?");
 		}
 		else
 		{
 		   if (board_type==BOARD_TYPE_4DC) fprintf(stderr,"board type: 3 (4DC) ");
 		   if (board_type==BOARD_TYPE_BLL) fprintf(stderr,"board type: 4 (BLL) ");
-		   fprintf(stderr,"version:%2x.%2x build:%3d ", major, version, build);
+		   fprintf(stderr,"version:%2x.%2x build:%3d CAN_protocol:%d.%d", fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);
 		}
 		fprintf(stderr,"\n");
 	}
@@ -379,9 +388,11 @@ class firmwareVersionHelper
 	
 	public:
 	firmware_info* infos;
+	can_protocol_info icub_protocol;
 
-	firmwareVersionHelper(int joints, firmware_info* f_infos)
+	firmwareVersionHelper(int joints, firmware_info* f_infos, can_protocol_info& protocol)
 	{
+		icub_protocol = protocol;
 		jointsNum=joints;
 		infos = new firmware_info [jointsNum];
 		for (int i=0; i<jointsNum; i++)
@@ -393,15 +404,39 @@ class firmwareVersionHelper
 	{ 
 		return jointsNum;
 	}
-	inline bool checkFirmwareVersions()
+	bool checkFirmwareVersions()
 	{
 		for (int j=0; j<jointsNum; j++)
 		{
-			if (infos[j].board_type==0) return false;
-		    if (infos[j].board_type==BOARD_TYPE_BLL && 
-				infos[j].build<55) return false;
-		    if (infos[j].board_type==BOARD_TYPE_4DC && 
-				infos[j].build<41) return false;
+			if (infos[j].board_type==0)
+			{
+				printMessageSevereError();
+				return false;
+			}
+
+			if (infos[j].ack==0)
+			{
+				printMessageSevereError();
+				return false;
+			}
+
+		    if (infos[j].board_type==BOARD_TYPE_BLL)
+			{
+				if (infos[j].fw_build<LAST_BLL_BUILD) 
+				{
+					printMessagePleaseUpgrade();
+					return true;
+				}
+			}
+
+		    if (infos[j].board_type==BOARD_TYPE_4DC)
+			{
+				if (infos[j].fw_build<LAST_MC4_BUILD) 
+				{
+					printMessagePleaseUpgrade();
+					return true;
+				}
+			}
 		}
 		return true;
 	}
@@ -409,12 +444,42 @@ class firmwareVersionHelper
 	{
 		fprintf(stderr,"\n");
 		fprintf(stderr,"**********************************\n");
+		fprintf(stderr,"iCubInterface CAN protocol: %d.%d\n",icub_protocol.major,icub_protocol.minor);
 		fprintf(stderr,"Firmware report:\n");
 		for (int j=0; j<jointsNum; j++)
 		{
 			infos[j].print_info();
 		}
 		fprintf(stderr,"**********************************\n");
+		fprintf(stderr,"\n");
+	}
+	inline void printMessagePleaseUpgrade()
+	{
+		fprintf(stderr,"\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
+		fprintf(stderr,"  available firmware version. Upgrading your iCub firmware is highly recommended.\n");
+		fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"\n");
+	}
+	inline void printMessageSevereError()
+	{
+		fprintf(stderr,"\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"  It has been detected that your control boards are not using the same\n");
+		fprintf(stderr,"  CAN protocol used by iCubinterface. iCubInterface cannot continue.\n");
+		fprintf(stderr,"  Please update your system (iCubInterface and/or your control board firmware.\n");
+		fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
 		fprintf(stderr,"\n");
 	}
 	inline ~firmwareVersionHelper()
@@ -780,7 +845,7 @@ public:
     virtual bool getLimitsRaw(int axis, double *min, double *max);
 
 	// Firmware version
-	bool getFirmwareVersionRaw (int axis, firmware_info *info);
+	bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
