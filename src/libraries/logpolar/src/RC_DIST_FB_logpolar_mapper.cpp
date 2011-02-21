@@ -2,7 +2,7 @@
  *  logpolar mapper library. subsamples rectangular images into logpolar.
  *
  *  Copyright (C) 2005-2010 The RobotCub Consortium
- *  Author: Fabio Berton & Giorgio Metta
+ *  Author: Fabio Berton and Giorgio Metta
  *  RobotCub Consortium, European Commission FP6 Project IST-004370
  *  email:   fberton@dist.unige.it, giorgio.metta@iit.it
  *  website: www.robotcub.org
