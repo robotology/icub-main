@@ -269,7 +269,17 @@ public:
 		//string s = b.toString(); //this causes compilation issues under linux
 
 		// open the output port
-		port_command.open("/joystickCtrl:o");
+		string output_port_name;
+		if (rf.findGroup("GENERAL").check("outputPortName"))
+		{
+			output_port_name = rf.findGroup("GENERAL").find("outputPortName").asString();
+		}
+		else
+		{
+			output_port_name = "/joystickCtrl:o";
+			fprintf ( stderr, "outputPortName not found, using %s \n", output_port_name.c_str());
+		}
+		port_command.open(output_port_name.c_str());
 
 		// start SDL subsystem
 		if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK ) < 0 )
