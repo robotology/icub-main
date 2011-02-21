@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author: Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0
+ *
+ */
+
 #ifndef __ICUB_BLOB_DESC_SUPPORT_H__
 #define __ICUB_BLOB_DESC_SUPPORT_H__
 

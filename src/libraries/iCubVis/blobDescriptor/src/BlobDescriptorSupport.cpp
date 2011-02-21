@@ -1,5 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author: Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0
+ *
+ */
+
 /* iCub */
 #include <iCub/vis/BlobDescriptorSupport.h>
 
