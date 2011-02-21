@@ -3,6 +3,11 @@
 #ifndef ICUBSIMULATION_LOGICALJOINT_INC
 #define ICUBSIMULATION_LOGICALJOINT_INC
 
+/*
+* Copyright (C) 2011 Paul Fitzpatrick
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
 
 /////////////////////////////////////////////////////////////////////
 // establish a mapping from the model to the external axes of control
