@@ -1,4 +1,10 @@
 
+/*
+* Copyright (C) 2007 Ronny André Reierstad, Vadim Tikhanoff  
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
+
 // Thanks to Brett Porter and Mete Ciragan for help with this MS3D model loading code
 
 /**
@@ -6,7 +12,7 @@
  * \brief This file deals with the loading of 3D objects into the simulator. To be changed by a more generic method
  * \author Ronny André Reierstad, Vadim Tikhanoff 
  * \date 2007
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 
 #ifndef MS3D_H

@@ -1,14 +1,20 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
 #ifndef __VIDEO_TEXTURE__
 #define __VIDEO_TEXTURE__
 
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+/*
+ * Copyright (C) 2008 Paul Fitzpatrick
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
 
 /**
  * \file VideoTexture.h
  * \brief Header file for the video stream texture
  * \author Paul Fitzpatrick
  * \date 2008
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 
 

@@ -1,9 +1,15 @@
+/*
+* Copyright (C) 2008 Vadim Tikhanoff
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
+
 /**
  * \file rendering.h
  * \brief Header file for the rendering
  * \author Vadim Tikhanoff
  * \date 2008
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 
 

@@ -1,11 +1,16 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+* Copyright (C) 2008 Vadim Tikhanoff
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
 /**
  * \file rendering.cpp
  * \brief This file deals with setting up the OpenGL and the rendering of objects in the environment 
  * \author Vadim Tikhanoff
  * \date 2008
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 
 #ifdef WIN32

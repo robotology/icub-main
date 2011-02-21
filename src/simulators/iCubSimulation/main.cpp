@@ -1,5 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+// Copyright (C) 2007 - 2008 - 2009 RobotCub Consortium
+// Authors: Tikhanoff Vadim, Fitzpatrick Paul *
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 /**
  * @ingroup icub_module
  * 

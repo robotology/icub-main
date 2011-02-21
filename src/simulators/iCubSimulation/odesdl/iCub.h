@@ -10,7 +10,7 @@
  * \brief The iCub header file  
  * \author Vadim Tikhanoff
  * \date 2007
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 #ifndef ICUBSIMULATION_ICUB_INC
 #define ICUBSIMULATION_ICUB_INC

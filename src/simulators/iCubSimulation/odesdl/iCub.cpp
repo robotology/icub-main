@@ -9,7 +9,7 @@
  * \brief This cpp creates and places all the objects that are used to make the iCub simulator robot (all parts dimensions weight and joint configurations). It also deals with the sensors feedback and setting the joint speeds
  * \author Vadim Tikhanoff
  * \date 2007
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 #include <stdio.h>
 #include <string.h>

@@ -1,11 +1,17 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+* Copyright (C) 2008 Vadim Tikhanoff
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
+
 /**
  * \file world.cpp
  * \brief This creates and places all the objects that are in the environment.The object parameters and joint parameters are included in this file.
  * \author Vadim Tikhanoff
  * \date 2007
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 #include "world.h"
 #include <stdio.h>

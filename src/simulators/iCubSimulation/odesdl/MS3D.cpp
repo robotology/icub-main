@@ -1,9 +1,15 @@
+/*
+* Copyright (C) 2007 Ronny André Reierstad, Vadim Tikhanoff 
+* CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+*
+*/
+
 /**
  * \file MS3D.cpp
  * \brief This file deals with the loading of 3D objects into the simulator. To be changed by a more generic method
  * \author Ronny André Reierstad, Vadim Tikhanoff 
  * \date 2007
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  **/
 
 #include "MS3D.h"
