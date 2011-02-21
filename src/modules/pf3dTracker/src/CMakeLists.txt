@@ -1,3 +1,6 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Lorenzo Natale, Matteo Taiana, Ugo Pattacini
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 add_executable(eye2RootFrameTransformer eye2RootFrameTransformer.cpp)
 target_link_libraries(eye2RootFrameTransformer iKin ${YARP_LIBRARIES})

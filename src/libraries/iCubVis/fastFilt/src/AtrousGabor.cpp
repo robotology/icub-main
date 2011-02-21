@@ -1,3 +1,8 @@
+// Copyright: (C) 2004 Alex Bernardino, ISR-IST
+// Authors: Alex Bernardino
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
 // AUTHOR:  Alexandre Bernardino - ISR/IST
 // FILE:    AtrousGabor.cpp
 // VERSION: 1.0

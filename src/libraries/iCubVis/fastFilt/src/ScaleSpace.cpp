@@ -1,12 +1,15 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+// Copyright: (C) 2006-2007 Alex Bernardino, ISR-IST
+// Authors: Alex Bernardino
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 /**
  * \file ScaleSpace.cpp
  * \brief Implements a Gaussian Scale Space for floating point images.
  * \author Alex Bernardino, ISR-IST
  * \date 2006-2007
- * \note Release under GNU GPL v2.0
+ * \note Released under GNU GPL v2.0
  * 
  */
 
