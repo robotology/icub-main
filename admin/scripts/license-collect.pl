@@ -12,6 +12,7 @@ my %good_licenses= ( # a list of "good" licenses
              "Permission is granted to copy, distribute, and/or modify this program under the terms of the GNU General Public License, version 2 or any later version published by the Free Software Foundation"=>"GPL20 or later",
 			 "This program is free software; you can redistribute it and\/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation"=>"GPL20",
              "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission." => "BSD",
+			 "BSD license" => "BSD",
 );
 
 
