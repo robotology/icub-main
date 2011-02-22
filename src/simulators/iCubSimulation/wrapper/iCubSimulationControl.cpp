@@ -1,19 +1,23 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/*
- * Copyright (C) 2007 Vadim Tikhanoff, Paul Fitzpatrick, Giorgio Metta
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * Thanks to Ruben Smits for the Velocity Control limits patch
- *
- */
+/* 
+* Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+* Author: Vadim Tikhanoff, Paul Fitzpatrick, Giorgio Metta
+* email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu, giorgio.metta@iit.it
+* website: www.robotcub.org
+* Permission is granted to copy, distribute, and/or modify this program
+* under the terms of the GNU General Public License, version 2 or any
+* later version published by the Free Software Foundation.
+*
+* A copy of the license can be found at
+* http://www.robotcub.org/icub/license/gpl.txt
+*
+* This program is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+* Public License for more details
+*/
 
-/**
- * \file iCubSimulationControl.cpp
- * \brief This file is the yarp interface of the iCubSimulation. It initializes the joints number and names, and deals with the PID motion (position control velocity control)
- * \author Vadim Tikhanoff, Paul Fitzpatrick, Giorgio Metta
- * \date 2007
- * \note Release under GNU GPL v2.0
- **/
 #ifdef _MSC_VER
 #pragma warning(disable:4355)  //for VC++, no precision loss complaints
 #define _USE_MATH_DEFINES	   // for M_PI
