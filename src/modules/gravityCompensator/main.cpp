@@ -713,9 +713,7 @@ private:
     Property OptionsRightLeg;
     Property OptionsTorso;
 
-	
-//	dataFilter *port_inertial_input;
-	BufferedPort<Vector> port_filtered;	
+    Port rpcPort;
 
     gravityCompensator *gComp;
 
@@ -776,9 +774,6 @@ public:
         if (rf.check("rate"))
             rate = rf.find("rate").asInt();
         else rate = 20;
-
-		attachTerminal();                     // attach to terminal
-
 
 
         //---------------------DEVICES--------------------------//
@@ -850,7 +845,9 @@ public:
 		}
 		else
 			fprintf(stderr,"device driver created\n");
-        
+
+        rpcPort.open(("/"+name+"/rpc").c_str());
+        attach(rpcPort);        
 
 
         //--------------------------THREAD--------------------------
@@ -907,6 +904,9 @@ public:
             g_comp->stop();
             delete g_comp; g_comp = 0;
         }
+
+        rpcPort.interrupt();
+        rpcPort.close();
 
         return true;
     }
