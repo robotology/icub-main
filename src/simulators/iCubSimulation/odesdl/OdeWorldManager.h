@@ -1,5 +1,10 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/*
+ * Copyright (C) 2007, 2010 Vadim Tikhanoff, Paul Fitzpatrick
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ */
+
 #ifndef ICUBSIMULATION_ODEWORLDMANAGER_INC
 #define ICUBSIMULATION_ODEWORLDMANAGER_INC
 
