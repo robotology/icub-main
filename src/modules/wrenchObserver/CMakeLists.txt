@@ -1,3 +1,7 @@
+# Copyright (C) 2010 RobotCub Consortium
+# Author: Matteo Fumagalli
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 SET(PROJECTNAME wrenchObserver)
 
 PROJECT(${PROJECTNAME})
