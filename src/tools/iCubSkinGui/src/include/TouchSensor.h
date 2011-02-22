@@ -104,6 +104,7 @@ public:
         int act;
         int dx,dy;
         int Y0,Y1;
+        int index;
         double k0,k1;
         int dya,dyb,dxa,dxb;
 		double remapped_activation[12];
@@ -139,10 +140,12 @@ public:
 
                 for (dx=dxa; dx<=dxb; ++dx)
                 {
-                    if (image[dx+Y1]!=255)
+                    index=(dx+Y1)*3;
+
+                    if (image[index]!=255)
                     {
-                        act=image[dx+Y1]+int(k1*Exponential[Abs(dx)]);
-                        image[dx+Y1]=act<255?act:255;
+                        act=image[index]+int(k1*Exponential[Abs(dx)]);
+                        image[index]=act<255?act:255;
                     }
                 }
             }
