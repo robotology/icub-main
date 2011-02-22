@@ -1,3 +1,8 @@
+// Copyright: Vadim Tikhanoff 2007
+// Author: Vadim Tikhanoff
+// This code was written starting from tutorial code by Kosei Demura
+// Copypolicy: Released under GNU GPL v2.0
+
 /**
  * \file xloader.cpp
  * \brief This loads a mesh from a 3D file and loads it onto the simulator..
