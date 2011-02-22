@@ -1,3 +1,9 @@
+/** 
+* Copyright: 2010-2011 RobotCub Consortium
+* Author: Serena Ivaldi
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+**/ 
+
 //
 // An example on using iCubWholeBody to estimate the measurements of the FT sensors
 // for all the arms and legs, exploiting the modeled dynamic and the inertial sensor 

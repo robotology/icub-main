@@ -1,3 +1,9 @@
+/** 
+* Copyright: 2010-2011 RobotCub Consortium
+* Author: Serena Ivaldi
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+**/ 
+
 //
 // An example on finding a multi-limb Jacobian exploiting iDynNode.
 // A node with torso and right arm is created. Then the Jacobian

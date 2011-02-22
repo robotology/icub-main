@@ -1,3 +1,9 @@
+/** 
+* Copyright: 2010-2011 RobotCub Consortium
+* Author: Serena Ivaldi
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+**/ 
+
 //
 // The most basic example on the use of iDyn: the computation of forces and torques in a single chain.
 //

@@ -1,3 +1,9 @@
+/** 
+* Copyright: 2010-2011 RobotCub Consortium
+* Author: Serena Ivaldi
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+**/ 
+
 //
 // The most basic example on the use of iDyn when the chain is provided with
 // a force/torque sensor, and the sensor is placed inside the chain. 

@@ -1,3 +1,8 @@
+# Copyright: 2010-2011 RobotCub Consortium
+# Author: Serena Ivaldi
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# 
+
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 SET(PROJECTNAME multiLimbJacobian)
