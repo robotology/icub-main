@@ -1,3 +1,5 @@
+// CopyPolicy: BSD license
+
 /*
  * lefteye_eye_dist_eye_centered.cc
  *

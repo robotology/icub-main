@@ -9,6 +9,8 @@
  *
  */
 
+// CopyPolicy: BSD license
+
 #include <iCub/vis/righteye_eye_only_eye_centered.h>
 
 void righteye_eye_only_eye_centered::assignData(MPEyeFinder *ef, FeatureData &d){

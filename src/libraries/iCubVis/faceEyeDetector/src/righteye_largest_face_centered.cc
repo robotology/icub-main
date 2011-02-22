@@ -8,7 +8,7 @@
  * at the end of this file.
  *
  */
-
+// CopyPolicy: BSD license
 #include <iCub/vis/righteye_largest_face_centered.h>
 
 void righteye_largest_face_centered::assignData(MPEyeFinder *ef, FeatureData &d){

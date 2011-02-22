@@ -8,6 +8,7 @@
  * at the end of this file.
  *
  */
+// CopyPolicy: BSD license
 
 #include <iCub/vis/righteye_smallest_eye_centered.h>
 

@@ -1,3 +1,6 @@
+// Copyright: 2004 UCSD Machine Perception Lab. 
+// CopyPolicy: BSD license
+
 /*********** File: ci.h ***********
 FILE GENERATED FROM MATLAB
 In Matlab:

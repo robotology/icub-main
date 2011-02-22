@@ -1,3 +1,7 @@
+// This file was originally from the Machine Perception Toolbox
+// Copyright: 2004 UCSD Machine Perception Lab. 
+// CopyPolicy: BSD license
+
 /*********** File: lefteye_largest_eye_centered.h ***********
 FILE GENERATED FROM MATLAB
 In Matlab:

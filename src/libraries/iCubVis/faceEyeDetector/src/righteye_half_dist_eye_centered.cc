@@ -8,6 +8,7 @@
  * at the end of this file.
  *
  */
+// CopyPolicy: BSD license
 
 #include <iCub/vis/righteye_half_dist_eye_centered.h>
 
