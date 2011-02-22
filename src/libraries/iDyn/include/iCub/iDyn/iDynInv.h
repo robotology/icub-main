@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2010-2011 RobotCub Consortium
+ * Author: Serena Ivaldi, Matteo Fumagalli
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 /**
  * \defgroup RecursiveNewtonEuler RecursiveNewtonEuler 
  *    
@@ -66,6 +73,8 @@ const std::string ChainComputationMode_s[4] = {"Kinematic Forward - Wrench Forwa
 // useful for all classes
 enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 
+// contact flags
+enum ContactStatus { NO_CONTACT, CONTACT };
 
 	class iDynLink;
 	class iDynChain;
@@ -865,7 +874,7 @@ public:
     /**
     * There is no more contact, so everything is set to zero and sconnected by the link
     */
-    void sconnect();
+    void disconnect();
 
     /**
     * Everything is set to zero, but the connection with the link holds
@@ -897,7 +906,7 @@ public:
 	 void setVerbose(unsigned int verb = VERBOSE);
 
     /**
-	* Compute the external force
+	* Compute the external force acting on the link
 	* @param link the link where the external force is applied to
     * @param next the link after, in the sense defined by the chain
 	*/
@@ -911,6 +920,7 @@ public:
 	yarp::sig::Matrix	getH()		const;
  	yarp::sig::Matrix	getR() const;
 	yarp::sig::Vector	getr() const;
+    std::string         getInfo() const;
 
     //~~~~~~~~~~~~~~~~~~~~~~
 	//   set methods
@@ -919,6 +929,109 @@ public:
 	bool setMoment(const yarp::sig::Vector &_Mu);
     bool setH(const yarp::sig::Matrix &_H);
     void setInfo(const std::string &_info);
+
+};
+
+/**
+* \ingroup iDyn
+*
+* A base class for computing external forces due to contact in a chain.
+* IMPORTANT: this class is still experimental! Please DO NOT USE IT!
+* If you need to use it for specific tasks, send an email to the authors 
+* and ask for updates. 
+*/
+class iDynContact
+{
+    friend class iDynChain;
+    friend class iDynSensor;
+    friend class OneChainNewtonEuler;
+
+protected:
+
+    /// the iDynChain describing the robotic chain where the contact is applied to
+	iDynChain * chain;
+    /// the contact element containing description of external force, e.g. due to contact
+    ContactNewtonEuler * contact;
+    /// the link "hosting" the contact, i.e. the index of the link in the chain: the external forces are acting on this link
+    unsigned int lCont;
+	///verbosity flag
+	unsigned int verbose;
+    /// status
+    ContactStatus status;
+
+public:
+
+    /**
+     * Default constructor [experimental - do not use it]
+     */
+    iDynContact(iDynChain *_c, unsigned int verb = NO_VERBOSE);
+
+    /**
+     * Default constructor [experimental - do not use it]
+     */
+    iDynContact(iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const std::string &_info, unsigned int verb = NO_VERBOSE);
+
+    /**
+     * Default destructor [experimental - do not use it]
+     */
+    ~iDynContact();
+
+    /**
+     * Set a new contact or new contact (external force) properties [experimental - do not use it]
+	 * @param i the i-th link to whom the contact is applied to
+	 * @param Hext the roto-traslational matrix from the reference frame of the i-th link to the point of contact
+	 * @return true if the operation is successful, false otherwise (eg if index is out of range)
+     */
+	bool setExtContact(unsigned int i, const yarp::sig::Matrix &Hext);
+
+	/**
+     * Set a new contact or new contact (external force) properties [experimental - do not use it]
+	 * @param i the i-th link to whom the contact is applied to
+	 * @param Hext the roto-traslational matrix from the reference frame of the i-th link to the point of contact
+	 * @param FMext a 6x1 measure of the external wrench - for example if an external free FT sensor is available
+     * @return true if the operation is successful, false otherwise (eg if index is out of range)
+     */
+    bool setExtContact(unsigned int i, const yarp::sig::Matrix &Hext, const yarp::sig::Vector &FMext);
+
+    /**
+     * Returns the xternal (e.g. due to contact) estimated force [experimental - do not use it]
+	 * @return the force at the contact frame
+	 */
+	yarp::sig::Vector	getExtContactForce()	const;
+
+	/**
+     * Returns the external (e.g. due to contact) estimated moment [experimental - do not use it]
+	 * @return the moment at the contact frame
+	 */
+	yarp::sig::Vector	getExtContactMoment()	const;
+
+ 	/**
+     * Get the external (e.g. due to contact) force and moment in a single (6x1) vector [experimental - do not use it]
+	 * @return a (6x1) vector where 0:2=force 3:5=moment
+     */
+	yarp::sig::Vector getExtContactForceMoment() const;
+
+
+    std::string getExtContactInfo() const;
+    unsigned int getExtContactLink()	const;
+    void setExtContactInfo(const std::string &_info);
+
+    /**
+     * Sconnect the contact from the link. The contact keeps its relationship with
+     * the chain, but its status is NO_CONTACT. This can be used for repetetive contacts
+     * in the same location, or for contacts which are expected in a certain chain but 
+     * in an unknown location  (e.g. from crawling to standing, iDynContact can be always 
+     * be referred to a certain leg, but the link where the external contact is applied to
+     * may vary from knee to foot). [experimental - do not use it]
+     */
+    void removeExtContact();
+
+    /**
+     * Sconnect the contact from the current link and the current chain.
+     * The contact status is set to NO_CONTACT; a new chain is connected (just a 
+     * pointer exchange). [experimental - do not use it]
+     */
+    void changeChain(iDyn::iDynChain *_c);
 
 };
 
@@ -1125,6 +1238,35 @@ public:
 	 */
 	bool BackwardWrenchToBase(unsigned int lSens);
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//   computations for contacts
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	/**
+     * Base function for inverse Newton-Euler: from the lA-th link to the lB-th, 
+	 * forward of forces and moments using the inverse formula; lA < lB
+	 * @param lA the lA-th link
+     * @param lB the lB-th link
+	 * @return true if the operation is successful, false otherwise (eg out of range index)
+     */
+	bool ForwardWrenchFromAtoB(unsigned int lA, unsigned int lB);
+
+	/**
+     * Base function for inverse Newton-Euler: from the lA-th link to the lB-th, 
+	 * backward of forces and moments; lA > lB
+	 * @param lA the lA-th link
+     * @param lB the lB-th link
+	 * @return true if the operation is successful, false otherwise (eg out of range index)
+     */
+	bool BackwardWrenchFromAtoB(unsigned int lA, unsigned int lB);
+
+
+    /**
+	* Compute the external force acting on the specified link
+	* @param link the link where the external force is applied to
+    * @param 
+	*/
+    bool computeExtContactWrench(iDynContact *contact);
 
 };
 
@@ -1240,7 +1382,7 @@ public:
 *
 * A class for computing force/moment of a sensor placed anywhere in 
 *  a kinematic chain; its position in the chain is defined wrt a certain link in the chain;
-* this class can be usefult to estimate the FT measurements of the sensor
+* this class can be useful to estimate the FT measurements of the sensor
 * 
 */
 class iDynInvSensor
@@ -1260,11 +1402,6 @@ protected:
 	unsigned int verbose;
 	/// a string with useful information if needed
 	std::string info;
-
-    /// the contact element containing description of external force, e.g. due to contact
-    ContactNewtonEuler * contact;
-    /// the link "hosting" the contact, i.e. the index of the link in the chain: the external forces are acting on this link
-    unsigned int lCont;
 
 public:
 
@@ -1305,7 +1442,8 @@ public:
 	/**
      * Compute forces and moments at the sensor frame; this method calls special Forward and Backward methods of
 	 * SensorLink, using Newton-Euler's formula applied in the link where the sensor is placed on; the link is 
-	 * automatically found, being specified by the index in the chain and the chain itself
+	 * automatically found, being specified by the index in the chain and the chain itself; 
+     * The case of a contact (ie external force) acting in the host link is not currently implemented.
      */
 	void computeSensorForceMoment();
 
@@ -1657,6 +1795,18 @@ public:
 	 * This method is called by iDynSensorNode.
 	 */
 	void computeWrenchFromSensorNewtonEuler();
+
+
+    /**
+	 * The main computation method: given the FT sensor measurements, and a known FT at a terminal link (base or end),
+     * compute forces moments and torques in the piece of iDynChain where a certain contact is applied. [experimental - do not use it]
+     * @param contact the iDynContact representing the contact in the chain
+     * @param FMsens the 6x1 vector with the force/moment measurement from the FT sensor 
+     * @param FMend the 6x1 vector with the known force/moment of the boundary link
+	 * @return true if the operation is successful, false otherwise (ie wrong vector size)
+	 */
+    bool computeExtContactFromSensorNewtonEuler(iDynContact *contact, yarp::sig::Vector &FMsens, yarp::sig::Vector &FMend);
+
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//  get methods, overloaded from iDyn

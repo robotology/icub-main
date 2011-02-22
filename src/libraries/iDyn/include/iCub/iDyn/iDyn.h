@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2010-2011 RobotCub Consortium
+ * Author: Serena Ivaldi, Matteo Fumagalli
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 /**
  * \defgroup iDyn iDyn 
  *    
@@ -75,6 +82,10 @@ namespace iDyn
 {
     void notImplemented(const unsigned int verbose);
     void notImplemented(const unsigned int verbose, const std::string &msg);
+    void workInProgress(const unsigned int verbose, const std::string &msg);
+    bool asWrench(yarp::sig::Vector &w, const yarp::sig::Vector &f, const yarp::sig::Vector &m);
+    yarp::sig::Vector asWrench(const yarp::sig::Vector &f, const yarp::sig::Vector &m);
+    bool asForceMoment(const yarp::sig::Vector &w, yarp::sig::Vector &f, yarp::sig::Vector &m);
 
     class OneLinkNewtonEuler;
     class BaseLinkNewtonEuler;
@@ -498,6 +509,7 @@ class iDynChain : public iKin::iKinChain
 	friend class iDynInvSensor;
 	friend class iDynSensor;
 	friend class RigidBodyTransformation;
+    friend class iDynContact;
 
 protected:
 	

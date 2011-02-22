@@ -1,5 +1,5 @@
 /* 
-* Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+* Copyright (C) 2010-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Serena Ivaldi, Matteo Fumagalli
 * email:   serena.ivaldi@iit.it, matteo.fumagalli@iit.it
 * website: www.robotcub.org

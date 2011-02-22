@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2010-2011 RobotCub Consortium
+ * Author: Serena Ivaldi, Matteo Fumagalli
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #ifndef __IDYNVOCABS_H__
 #define __IDYNVOCABS_H__
 

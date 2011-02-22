@@ -1,5 +1,5 @@
 /* 
-* Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+* Copyright (C) 2010-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Serena Ivaldi, Matteo Fumagalli
 * email:   serena.ivaldi@iit.it, matteo.fumagalli@iit.it
 * website: www.robotcub.org
@@ -48,6 +48,62 @@ void iCub::iDyn::notImplemented(const unsigned int verbose, const string &msg)
 {
     if(verbose) fprintf(stderr,"iDyn: error: not implemented \n %s \n",msg.c_str());
 }
+
+void iCub::iDyn::workInProgress(const unsigned int verbose, const std::string &msg)
+{
+    if(verbose) fprintf(stderr,"iDyn: warning: this method/class is still under development. Please do not use it! \n %s \n",msg.c_str());
+}
+
+bool iCub::iDyn::asWrench(Vector &w, const Vector &f, const Vector &m)
+{
+    w.resize(6); w.zero();
+    if((f.length()==3)||(m.length()==3))
+    {
+        w[0]=f[0]; w[1]=f[1]; w[2]=f[2];
+        w[3]=m[0]; w[4]=m[1]; w[5]=m[2];
+        return true;
+    }
+    else
+    {
+        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%ld,%ld) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
+        return false;
+    }
+}
+
+Vector iCub::iDyn::asWrench(const Vector &f, const Vector &m)
+{
+    Vector w(6); w.zero();
+    if((f.length()==3)||(m.length()==3))
+    {
+        w[0]=f[0]; w[1]=f[1]; w[2]=f[2];
+        w[3]=m[0]; w[4]=m[1]; w[5]=m[2];
+    }
+    else
+    {
+        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%ld,%ld) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
+    }
+    return w;
+}
+
+bool iCub::iDyn::asForceMoment(const Vector &w, Vector &f, Vector &m)
+{
+    f.resize(3); f.zero();
+    m.resize(3); m.zero();
+
+    if(w.length()==6)
+    {
+        f[0]=w[0]; f[1]=w[1]; f[2]=w[2];
+        m[0]=w[3]; m[1]=w[4]; m[2]=w[5];  
+        return true;
+    }
+    else
+    {
+        fprintf(stderr,"iDyn: error in calling asForceMoment(), wrong sized vector: (%ld) instead of (6). return force/moment set automatically as zero.\n",w.length());	
+        return false;
+    }
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 //================================

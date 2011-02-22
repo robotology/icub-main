@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2010-2011 RobotCub Consortium
+ * Author: Matteo Fumagalli
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 /**
  * \defgroup iDynTransform iDynTransform
  *  

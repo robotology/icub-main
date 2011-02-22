@@ -1,4 +1,4 @@
-# Copyright: (C) 2010 RobotCub Consortium
+# Copyright: (C) 2010-2011 RobotCub Consortium
 # Authors: Matteo Fumagalli, Serena Ivaldi
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
