@@ -1,18 +1,14 @@
+// Copyright (C) 2010 RobotCub Consortium
+// Author: Matteo Fumagalli
+// Date: first release 27/05/2010 
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+			
 /**
 @ingroup icub_module
 
 \defgroup demoForceControl demoForceControl
  
 Starts zero force control and impedance control interface on the iCub limbs. 
-Copyright (C) 2008 RobotCub Consortium
- 
-Author: Matteo Fumagalli
- 
-Date: first release 27/05/2010 
-
-Copyright (C) 2010 RobotCub Consortium
-
-CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 This module starts torqueControl and joint impedance position control 
 of the iCub limbs, using icub joint torque and impedance interface. Joint torques 
