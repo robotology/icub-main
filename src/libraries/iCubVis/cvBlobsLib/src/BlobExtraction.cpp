@@ -1,6 +1,7 @@
 
-// Copyright: Dave Grossman
-// Author: Dave Grossman
+// Copyright 2003 Dave Grossman, Francesc Pinyol and Ricard Borras
+// Authors: Dave Grossman, Francesc Pinyol and Ricard Borras
+// CopyPolicy: BSD license
 
 //***********************************************************//
 //* Blob analysis package  8 August 2003                    *//

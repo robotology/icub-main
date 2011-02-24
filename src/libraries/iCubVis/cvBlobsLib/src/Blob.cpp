@@ -1,3 +1,7 @@
+// Copyright 2005 Ricard Borras
+// Authors: Ricard Borras
+// CopyPolicy: BSD license
+
 /************************************************************************
   			Blob.cpp
   			

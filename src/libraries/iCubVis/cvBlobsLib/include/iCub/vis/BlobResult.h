@@ -1,3 +1,8 @@
+// Copyright 2005 Inspecta S.L.
+// Authors:  Inspecta S.L.
+// CopyPolicy: BSD license
+
+
 /************************************************************************
   			BlobResult.h
   			

@@ -1,3 +1,8 @@
+// Copyright 2003 Dave Grossman 
+// Authors:  Dave Grossman 
+// CopyPolicy: BSD license
+
+
 //***********************************************************//
 //* Blob analysis package  8 August 2003                    *//
 //* Version 1.0                                             *//
