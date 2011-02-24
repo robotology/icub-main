@@ -151,8 +151,8 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 
 ################ copying python scripts
 message(STATUS "Installing manager.py")
-install(FILES  app/default/scripts/manager.py app/default/scripts/icub-cluster-server.sh app/default/scripts/icub-cluster-run.sh COMPONENT scripts 
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+install(FILES  app/default/scripts/manager.py app/default/scripts/icub-cluster-server.sh app/default/scripts/icub-cluster-run.sh 
+				DESTINATION bin COMPONENT Core) 
 
 # add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
 # so we need to use ${CMAKE_CFG_INTDIR}
@@ -197,8 +197,8 @@ foreach(conf ${ICUB_CMAKE_SCRIPTS})
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
 				 
   # on the other hand we do need to install Find* script at install time
-  install(FILES  conf/${conf} COMPONENT scripts 
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/iCub/cmake/)
+  install(FILES  conf/${conf} DESTINATION share/iCub/cmake/ COMPONENT Development)
+	  
 endforeach(conf)
 
 ## add the "uninstall" target
@@ -207,8 +207,11 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake"
   IMMEDIATE @ONLY)
 
+include(${PROJECT_SOURCE_DIR}/conf/iCubPackage.cmake)
+  
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
 
+# temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI FALSE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT FALSE CACHE BOOL "Enable strict check of canbus protocol and firmware versions")

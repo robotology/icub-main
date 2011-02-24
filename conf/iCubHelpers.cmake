@@ -70,9 +70,9 @@ MACRO(icub_export_library target)
   ##### Append target to global list.
   icub_set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${target})
   # Install/export rules
-  install(TARGETS ${target} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib EXPORT icub-targets)
+  install(TARGETS ${target} EXPORT icub-targets ARCHIVE DESTINATION lib COMPONENT Development)
   export(TARGETS ${target} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
-        
+         
   #important wrap ${dependencies} with "" to allows storing a list of dependencies
   set_target_properties(${target} PROPERTIES DEPENDS "${dependencies}") 
         
@@ -141,7 +141,7 @@ MACRO(icub_export_library target)
     if (VERBOSE)
         message(STATUS "Target ${target} installing ${files} to ${destination}")
     endif()
-    install(FILES ${files} DESTINATION ${destination})
+    install(FILES ${files} DESTINATION ${destination} COMPONENT Development)
 
     set_target_properties(${target} PROPERTIES 
                         HEADERFILES
@@ -151,7 +151,7 @@ MACRO(icub_export_library target)
                         HEADERS_DESTINATION
                         ${destination})
   endif()
- 
+  
 ENDMACRO(icub_export_library)
 
 # 

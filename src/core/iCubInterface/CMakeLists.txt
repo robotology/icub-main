@@ -13,13 +13,13 @@ SET(folder_header ${folder_header} ${tmp})
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
                     ${iCubDev_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 if(ICUB_USE_INTERFACEGUI)
 	add_definitions(-D_USE_INTERFACEGUI)
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/iCubInterfaceGui/iCubInterfaceGuiLib)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/iCubInterfaceGui/iCubInterfaceGuiLib)
 endif(ICUB_USE_INTERFACEGUI)
 
 ADD_EXECUTABLE(iCubInterface ${folder_source} ${folder_header})
@@ -33,5 +33,5 @@ if(ICUB_USE_INTERFACEGUI)
 	TARGET_LINK_LIBRARIES(iCubInterface iCubInterfaceGuiLib)
 endif(ICUB_USE_INTERFACEGUI)
 
-INSTALL(TARGETS iCubInterface DESTINATION bin)
+INSTALL(TARGETS iCubInterface DESTINATION bin COMPONENT Core)
 

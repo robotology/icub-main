@@ -131,4 +131,4 @@ icub_export_library(iCubVis
                     FILES ${folder_public_headers}
 )
 
-install(TARGETS iCubVis DESTINATION lib)
+
