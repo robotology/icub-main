@@ -97,9 +97,12 @@ YARP libraries and OpenCV
  
 --numThreads \e threads
 - This parameter allows to control the maximum number of threads
-  allocated by parallelized OpenCV functions (if supported). The
-  default value is 0 meaning that a number of threads equal to
-  the number of available cores will be used.
+  allocated by parallelized OpenCV functions (if supported).
+  \e #  > 0 : assign # threads to OpenCV;
+  \e # == 0 : assign all threads to OpenCV;
+  \e #  < 0 : assign all threads but # to OpenCV;
+  The default value is -1 meaning that all threads equal to the
+  number of available cores BUT ONE will be used.
  
 --verbosity 
 - Enable the dump of log messages.
@@ -269,6 +272,32 @@ protected:
             delete featureErrors;
     }
 
+
+    /************************************************************************/
+#ifdef _MOTIONCUT_MULTI_THREADING_
+    int setNumThreads(const int n)
+    {
+        if (n>=0)
+        {
+            cvSetNumThreads(n);
+            return cvGetNumThreads();
+        }
+        else
+        {
+            cvSetNumThreads(0);
+            int m=cvGetNumThreads();
+
+            if (m+n>0)
+                cvSetNumThreads(m+n);
+            else
+                cvSetNumThreads(1);
+
+            return cvGetNumThreads();
+        }
+    }
+#endif
+
+
 public:
     /************************************************************************/
     ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
@@ -299,9 +328,7 @@ public:
         // if the OpenCV version supports multi-threading,
         // set the maximum number of threads available to OpenCV
     #ifdef _MOTIONCUT_MULTI_THREADING_
-        numThreads=rf.check("numThreads",Value(0)).asInt();
-        cvSetNumThreads(numThreads);
-        numThreads=cvGetNumThreads();
+        numThreads=setNumThreads(rf.check("numThreads",Value(-1)).asInt());
     #endif
 
         nodesPrev=NULL;
@@ -722,9 +749,7 @@ public:
                 else if (subcmd=="numThreads")
                 {
                 #ifdef _MOTIONCUT_MULTI_THREADING_
-                    numThreads=req.get(2).asInt();
-                    cvSetNumThreads(numThreads);
-                    numThreads=cvGetNumThreads();
+                    numThreads=setNumThreads(req.get(2).asInt());
                     reply.addString("ack");
                 #else
                     reply.addString("multi-threading not supported");
