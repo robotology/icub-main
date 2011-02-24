@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 2.6)
-
+#
+# Copyright (C) 2010 RobotCub Consortium
+# Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+#
+ 
 project(salience)
 
 set(CMAKE_MODULE_PATH ${YARP_DIR}/conf ${CMAKE_MODULE_PATH})
