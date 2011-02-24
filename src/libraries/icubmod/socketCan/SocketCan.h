@@ -6,14 +6,21 @@
  *
  * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a linux socketcan. 
  *
- * Copyright (C) 2008 RobotCub Consortium.
- *
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo
+ * email:  marco.randazzo@iit.it
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
  *
- * This file can be edited at src/modules/socketCan/SocketCan.h
- *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
  */
 
 ///
