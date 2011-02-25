@@ -273,8 +273,8 @@ protected:
     }
 
 
-    /************************************************************************/
 #ifdef _MOTIONCUT_MULTI_THREADING_
+    /************************************************************************/
     int setNumThreads(const int n)
     {
         if (n>=0)
@@ -285,10 +285,10 @@ protected:
         else
         {
             cvSetNumThreads(0);
-            int m=cvGetNumThreads();
+            int m=cvGetNumThreads()+n;
 
-            if (m+n>0)
-                cvSetNumThreads(m+n);
+            if (m>0)
+                cvSetNumThreads(m);
             else
                 cvSetNumThreads(1);
 
