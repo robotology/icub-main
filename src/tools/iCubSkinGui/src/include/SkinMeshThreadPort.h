@@ -29,19 +29,21 @@ using namespace yarp::dev;
 class SkinMeshThreadPort : public RateThread 
 {
 protected:
+	static const int MAX_SENSOR_NUM = 64;
+
 	BufferedPort<Bottle> skin_port;							
-	TouchSensor *sensor[16];
+	TouchSensor *sensor[MAX_SENSOR_NUM];
 
     yarp::os::Semaphore mutex;
 
-    int sensorsNum;
+    int sensorsNum;	
 
 public:
 	SkinMeshThreadPort(Searchable& config,int period=40) : RateThread(period),mutex(1)
     {
         sensorsNum=0;
 
-        for (int t=0; t<16; ++t)
+        for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             sensor[t]=NULL;
         }
@@ -88,7 +90,7 @@ public:
 
                 printf("%d %f\n",id,gain);
 
-                if (id>=0 && id<16)
+                if (id>=0 && id<MAX_SENSOR_NUM)
                 {
                     if (sensor[id])
                     {
@@ -111,7 +113,7 @@ public:
                 }
                 else
                 {
-                    printf("WARNING: %d is invalid triangle Id [0:15].\n",id);
+                    printf("WARNING: %d is invalid triangle Id [0:%d].\n",id, MAX_SENSOR_NUM-1);
                 }
             }
             else
@@ -125,7 +127,7 @@ public:
 
     ~SkinMeshThreadPort()
     {
-        for (int t=0; t<16; ++t)
+        for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) delete sensor[t];
         }
@@ -139,7 +141,7 @@ public:
     {
         mutex.wait();
 
-        for (int t=0; t<16; ++t)
+        for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->resize(width,height,40);
         }
@@ -151,7 +153,7 @@ public:
     {
         mutex.wait();
 
-        for (int t=0; t<16; ++t)
+        for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->eval(image);
         }
@@ -162,7 +164,7 @@ public:
     void draw(unsigned char *image)
     {
         //mutex.wait();
-        for (int t=0; t<16; ++t)
+        for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->draw(image);
         }        

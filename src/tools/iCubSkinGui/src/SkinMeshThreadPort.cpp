@@ -44,7 +44,7 @@ void SkinMeshThreadPort::run()
 		skin_value[i] = input->get(i).asDouble();
 
 		sensorId=i/12;
-		if (sensorId<16 && sensor[sensorId])
+		if (sensorId<MAX_SENSOR_NUM && sensor[sensorId])
 			sensor[sensorId]->setActivationFromPortData(skin_value[i],i%12);
 	}
 
