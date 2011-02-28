@@ -65,7 +65,7 @@ bool iCub::iDyn::asWrench(Vector &w, const Vector &f, const Vector &m)
     }
     else
     {
-        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%ld,%ld) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
+        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
         return false;
     }
 }
@@ -80,7 +80,7 @@ Vector iCub::iDyn::asWrench(const Vector &f, const Vector &m)
     }
     else
     {
-        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%ld,%ld) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
+        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
     }
     return w;
 }
@@ -98,7 +98,7 @@ bool iCub::iDyn::asForceMoment(const Vector &w, Vector &f, Vector &m)
     }
     else
     {
-        fprintf(stderr,"iDyn: error in calling asForceMoment(), wrong sized vector: (%ld) instead of (6). return force/moment set automatically as zero.\n",w.length());	
+        fprintf(stderr,"iDyn: error in calling asForceMoment(), wrong sized vector: (%d) instead of (6). return force/moment set automatically as zero.\n",w.length());	
         return false;
     }
 }

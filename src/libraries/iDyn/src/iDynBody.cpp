@@ -904,7 +904,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 
 	if(JAcols+JBcols!=J.cols())
 	{
-        fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%d instead is 6x%d \n",J.cols(),(JAcols+JBcols));
         fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF());
 		J.resize(6,JAcols+JBcols);
@@ -976,7 +976,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 
 	if(JAcols+JBcols!=J.cols())
 	{
-        fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%d instead is 6x%d \n",J.cols(),(JAcols+JBcols));
         fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
 		J.resize(6,JAcols+JBcols);
@@ -1258,7 +1258,7 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsign
 
 	if(JAcols+JBcols!=J.cols())
 	{
-        fprintf(stderr,"iDynNode error: Jacobian should be 6x%ld instead is 6x%ld \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%d instead is 6x%d \n",J.cols(),(JAcols+JBcols));
         fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
 		J.resize(6,JAcols+JBcols);
