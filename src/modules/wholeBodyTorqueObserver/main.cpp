@@ -299,6 +299,7 @@ private:
 	{
 		//---------------------PARTS-------------------------//
 		// Left_arm variables
+		ft_arm_left = 0;
 		allJnt = 0;
         int jnt=0;
         iencs_arm_left->getAxes(&jnt);
@@ -312,6 +313,7 @@ private:
 		allJnt+=jnt;
 
 		// Right_arm variables
+		ft_arm_right = 0;
 		jnt = 0;
         iencs_arm_right->getAxes(&jnt);
         encoders_arm_right.resize(jnt);
@@ -342,9 +344,11 @@ private:
 	{
 		//---------------------PARTS-------------------------//
 		// Left_arm variables
+		ft_leg_left = 0;
 		allJnt = 0;
         int jnt=0;
-        iencs_leg_left->getAxes(&jnt);
+        if (iencs_leg_left) iencs_leg_left->getAxes(&jnt);
+		else jnt = 6; //default value
         encoders_leg_left.resize(jnt);
         F_LLeg.resize(6,0.0);
         F_iDyn_LLeg.resize(6,0.0);
@@ -355,8 +359,10 @@ private:
 		allJnt+=jnt;
 
 		// Right_leg variables
+		ft_leg_right = 0;
 		jnt = 0;
-        iencs_leg_right->getAxes(&jnt);
+        if (iencs_leg_right) iencs_leg_right->getAxes(&jnt);
+		else jnt = 6; //default value
         encoders_leg_right.resize(jnt);
 		q_rleg.resize(7,0.0);
 		dq_rleg.resize(7,0.0);
@@ -389,6 +395,16 @@ public:
         first = true;
 		test = 0;
 		comp = 0;
+
+		//--------------INTERFACE INITIALIZATION-------------//
+		
+		iencs_arm_left = 0;
+		iencs_arm_right= 0;
+		iencs_head     = 0;
+		iencs_leg_left = 0;
+		iencs_leg_right= 0;
+		iencs_torso    = 0;
+
         //---------------------PORT--------------------------//
 		
 		port_inertial_thread=new BufferedPort<Vector>;
@@ -417,12 +433,12 @@ public:
 
 
 		//---------------------DEVICES--------------------------//
-        ddAL->view(iencs_arm_left);
-        ddAR->view(iencs_arm_right);
-		ddH->view(iencs_head);
-		ddLL->view(iencs_leg_left);
-        ddLR->view(iencs_leg_right);
-		ddT->view(iencs_torso);
+        if (ddAL) ddAL->view(iencs_arm_left);
+        if (ddAR) ddAR->view(iencs_arm_right);
+		if (ddH)  ddH->view(iencs_head);
+		if (ddLL) ddLL->view(iencs_leg_left);
+        if (ddLR) ddLR->view(iencs_leg_right);
+		if (ddT)  ddT->view(iencs_torso);
 		
         linEstUp =new AWLinEstimator(16,1.0);
         quadEstUp=new AWQuadEstimator(25,1.0);
@@ -460,8 +476,6 @@ public:
         port_perf_test->open("/wholeBodyTorqueObserver/performance/times:o");
         port_perf_test_ftRead->open("/wholeBodyTorqueObserver/performance/ftread:o");
 		port_compare_test->open("/wholeBodyTorqueObserver/performance/fterr:o");
-
-
     }
 
     bool threadInit()
@@ -543,8 +557,8 @@ public:
 
 		writeTorque(RATorques, 1, port_RATorques); //arm
 		writeTorque(LATorques, 1, port_LATorques); //arm
-		writeTorque(RLTorques, 2, port_RLTorques); //leg
-		writeTorque(LLTorques, 2, port_LLTorques); //leg
+		if (ddLR) writeTorque(RLTorques, 2, port_RLTorques); //leg
+		if (ddLL) writeTorque(LLTorques, 2, port_LLTorques); //leg
 		writeTorque(RATorques, 3, port_RWTorques); //wrist
 		writeTorque(LATorques, 3, port_LWTorques); //wrist
 		
@@ -732,8 +746,10 @@ public:
 
 			F_RArm = *ft_arm_right;
 			F_LArm = *ft_arm_left;
-			F_RLeg = *ft_leg_right;
-			F_LLeg = *ft_leg_left;
+			if (ft_leg_right) {F_RLeg = *ft_leg_right;}
+			else {F_RLeg.zero();}
+			if (ft_leg_left) {F_LLeg = *ft_leg_left;}
+			else {F_LLeg.zero();}
 
 			Offset_LArm = Offset_LArm + (F_LArm-F_iDyn_LArm);
 			Offset_RArm = Offset_RArm + (F_RArm-F_iDyn_RArm);
@@ -765,35 +781,40 @@ public:
 	{
 		bool b = true;
 
-		if (waitMeasure)
-			fprintf(stderr,"Trying to connect to left arm sensor... \n");
-		ft_arm_left  = port_ft_arm_left->read(waitMeasure);
-		if (waitMeasure)
+		// arms
+		if (ddAL)
 		{
-			fprintf(stderr,"done. \n");
-			fprintf(stderr,"Trying to connect to right arm sensor... \n");
+			if (waitMeasure) fprintf(stderr,"Trying to connect to left arm sensor...");
+			ft_arm_left  = port_ft_arm_left->read(waitMeasure);
+			if (waitMeasure) fprintf(stderr,"done. \n");
 		}
-		ft_arm_right = port_ft_arm_right->read(waitMeasure);
-		if (waitMeasure)
+
+		if (ddAR)
 		{
-			fprintf(stderr,"done. \n");
-			fprintf(stderr,"Trying to connect to left leg sensor... \n");
+			if (waitMeasure) fprintf(stderr,"Trying to connect to right arm sensor...");
+			ft_arm_right = port_ft_arm_right->read(waitMeasure);
+			if (waitMeasure) fprintf(stderr,"done. \n");
 		}
-		ft_leg_left  = port_ft_leg_left->read(waitMeasure);
-		if (waitMeasure)
+
+		// legs
+		if (ddLL)
 		{
-			fprintf(stderr,"done. \n");
-			fprintf(stderr,"Trying to connect to right leg sensot... \n");
+			if (waitMeasure) fprintf(stderr,"Trying to connect to left leg sensor...");
+			ft_leg_left  = port_ft_leg_left->read(waitMeasure);
+			if (waitMeasure) fprintf(stderr,"done. \n");
 		}
-        ft_leg_right = port_ft_leg_right->read(waitMeasure);
-		if (waitMeasure)
+		if (ddLR)
 		{
-			fprintf(stderr,"done. \n");
-			fprintf(stderr,"Trying to connect to intertial sensor.. \n");
+			if (waitMeasure) fprintf(stderr,"Trying to connect to right leg sensor...");
+			ft_leg_right = port_ft_leg_right->read(waitMeasure);
+			if (waitMeasure) fprintf(stderr,"done. \n");
 		}
+		
+		//inertial sensor
+		if (waitMeasure) fprintf(stderr,"Trying to connect to intertial sensor...");
 		inertial = port_inertial_thread->read(waitMeasure);
-		if (waitMeasure)
-			fprintf(stderr,"done. \n");
+		if (waitMeasure) fprintf(stderr,"done. \n");
+			
 		
 		if(test==VOCAB_TEST)
 		{
@@ -832,8 +853,16 @@ public:
 	bool getLowerEncodersSpeedAndAcceleration()
 		{
 			bool b = true;
-			b &= iencs_leg_left->getEncoders(encoders_leg_left.data());
-			b &= iencs_leg_right->getEncoders(encoders_leg_right.data());
+			if (iencs_leg_left)
+			{b &= iencs_leg_left->getEncoders(encoders_leg_left.data());}
+			else
+			{encoders_leg_left.zero();}
+
+			if (iencs_leg_right)
+			{b &= iencs_leg_right->getEncoders(encoders_leg_right.data());}
+			else
+			{encoders_leg_right.zero();}
+
 			b &= iencs_torso->getEncoders(encoders_torso.data());
 
 			for (int i=0;i<q_torso.length();i++)
@@ -1090,6 +1119,7 @@ private:
     Property OptionsLeftLeg;
     Property OptionsRightLeg;
     Property OptionsTorso;
+	bool     legs_enabled;
 
 	
 	dataFilter *port_inertial_input;
@@ -1114,6 +1144,7 @@ public:
         dd_left_leg=0;
         dd_right_leg=0;
         dd_torso=0;
+		legs_enabled = true;
     }
 
     virtual bool createDriver(PolyDriver *_dd)
@@ -1158,6 +1189,13 @@ public:
 			name = rf.find("name").asString();
 		else name = "wholeBodyTorqueObserver";
 */
+
+		//------------------CHECK IF LEGS ARE ENABLED-----------//
+		if (rf.check("no_legs"))
+		{
+			legs_enabled= false;
+			fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
+		}
 
 		//---------------------RATE-----------------------------//
 		if (rf.check("rate"))
@@ -1206,24 +1244,27 @@ public:
 			return false;
 		}
 
-		OptionsLeftLeg.put("device","remote_controlboard");
-		OptionsLeftLeg.put("local","/wholeBodyTorqueObserver/left_leg/client");
-		OptionsLeftLeg.put("remote","/icub/left_leg");
-		dd_left_leg = new PolyDriver(OptionsLeftLeg);
-		if (!createDriver(dd_left_leg))
+		if (legs_enabled)
 		{
-			fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
-			return false;
-		}
+			OptionsLeftLeg.put("device","remote_controlboard");
+			OptionsLeftLeg.put("local","/wholeBodyTorqueObserver/left_leg/client");
+			OptionsLeftLeg.put("remote","/icub/left_leg");
+			dd_left_leg = new PolyDriver(OptionsLeftLeg);
+			if (!createDriver(dd_left_leg))
+			{
+				fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
+				return false;
+			}
 
-		OptionsRightLeg.put("device","remote_controlboard");
-		OptionsRightLeg.put("local","/wholeBodyTorqueObserver/right_leg/client");
-		OptionsRightLeg.put("remote","/icub/right_leg");
-		dd_right_leg = new PolyDriver(OptionsRightLeg);
-		if (!createDriver(dd_right_leg))
-		{
-			fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
-			return false;
+			OptionsRightLeg.put("device","remote_controlboard");
+			OptionsRightLeg.put("local","/wholeBodyTorqueObserver/right_leg/client");
+			OptionsRightLeg.put("remote","/icub/right_leg");
+			dd_right_leg = new PolyDriver(OptionsRightLeg);
+			if (!createDriver(dd_right_leg))
+			{
+				fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
+				return false;
+			}
 		}
 
 		OptionsTorso.put("device","remote_controlboard");
