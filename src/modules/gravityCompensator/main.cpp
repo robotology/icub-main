@@ -31,6 +31,9 @@ http://eris.liralab.it/wiki/Force_Control
 - The parameter \e r identifies the rate the thread will work. If not
   specified \e 20ms is assumed. The minimum suggested rate is \e 20ms.
 
+--no_legs
+- This option disables the gravity compensation for the legs joints.
+
 \section portsa_sec Ports Accessed
 The port the service is listening to.
 
@@ -98,8 +101,7 @@ enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 int gravity_mode = GRAVITY_COMPENSATION_ON;
 
-// class inverseDynamics: class for reading from Vrow and providing FT on an output port
-class gravityCompensator: public RateThread
+class gravityCompensatorThread: public RateThread
 {
 private:
 
@@ -262,7 +264,8 @@ private:
 		// Left_arm variables
 		allJnt = 0;
         int jnt=0;
-        iencs_leg_left->getAxes(&jnt);
+        if (iencs_leg_left) iencs_leg_left->getAxes(&jnt);
+		else jnt = 6; //default value
         encoders_leg_left.resize(jnt);
         q_lleg.resize(7,0.0);
 		dq_lleg.resize(7,0.0);
@@ -271,7 +274,8 @@ private:
 
 		// Right_leg variables
 		jnt = 0;
-        iencs_leg_right->getAxes(&jnt);
+        if (iencs_leg_right) iencs_leg_right->getAxes(&jnt);
+		else jnt = 6; //default value
         encoders_leg_right.resize(jnt);
 		q_rleg.resize(7,0.0);
 		dq_rleg.resize(7,0.0);
@@ -336,8 +340,30 @@ private:
 	
 
 public:
-    gravityCompensator(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
+    gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
     {   
+
+		//--------------INTERFACE INITIALIZATION-------------//
+		iencs_arm_left      = 0;
+        iencs_arm_right		= 0;
+        iencs_head			= 0;
+	    iCtrlMode_arm_left  = 0;
+	    iCtrlMode_arm_right = 0;
+		iImp_arm_left		= 0;
+	    iTqs_arm_left		= 0;
+	    iImp_arm_right		= 0;
+		iTqs_arm_right		= 0;
+        iencs_leg_left		= 0;
+		iencs_leg_right		= 0;
+		iencs_torso			= 0;
+		iCtrlMode_leg_left	= 0;
+		iCtrlMode_leg_right = 0;
+		iImp_leg_left		= 0;
+		iTqs_leg_left		= 0;
+		iImp_leg_right		= 0;
+		iTqs_leg_right		= 0;
+
+	    //---------------------PORTS-------------------------//
 		port_inertial=new BufferedPort<Vector>;
 		port_inertial->open("/gravityCompensator/inertial:i");
 		Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
@@ -357,26 +383,27 @@ public:
 		right_leg_torques->open("/gravityCompensator/right_leg_torques:o");
 		//*offset_input = 0.0;
 
-		ddLA->view(iencs_arm_left);
-        ddRA->view(iencs_arm_right);
-		ddH->view(iencs_head);
-		ddLL->view(iencs_leg_left);
-        ddRL->view(iencs_leg_right);
-		ddT->view(iencs_torso);
+		//---------------------DEVICES--------------------------//
+		if (ddLA) ddLA->view(iencs_arm_left);
+        if (ddRA) ddRA->view(iencs_arm_right);
+		if (ddH)  ddH->view(iencs_head);
+		if (ddLL) ddLL->view(iencs_leg_left);
+        if (ddRL) ddRL->view(iencs_leg_right);
+		if (ddT)  ddT->view(iencs_torso);
 		
-		ddLA->view(iCtrlMode_arm_left);
-        ddRA->view(iCtrlMode_arm_right);
-		ddLA->view(iImp_arm_left);
-		ddLA->view(iTqs_arm_left);
-        ddRA->view(iImp_arm_right);
-		ddRA->view(iTqs_arm_right);
+		if (ddLA) ddLA->view(iCtrlMode_arm_left);
+        if (ddRA) ddRA->view(iCtrlMode_arm_right);
+		if (ddLA) ddLA->view(iImp_arm_left);
+		if (ddLA) ddLA->view(iTqs_arm_left);
+        if (ddRA) ddRA->view(iImp_arm_right);
+		if (ddRA) ddRA->view(iTqs_arm_right);
 
-		ddLL->view(iCtrlMode_leg_left);
-        ddRL->view(iCtrlMode_leg_right);
-		ddLL->view(iImp_leg_left);
-		ddLL->view(iTqs_leg_left);
-        ddRL->view(iImp_leg_right);
-		ddRL->view(iTqs_leg_right);	
+		if (ddLL) ddLL->view(iCtrlMode_leg_left);
+        if (ddRL) ddRL->view(iCtrlMode_leg_right);
+		if (ddLL) ddLL->view(iImp_leg_left);
+		if (ddLL) ddLL->view(iTqs_leg_left);
+		if (ddRL) ddRL->view(iImp_leg_right);
+		if (ddRL) ddRL->view(iTqs_leg_right);	
 		
         linEstUp =new AWLinEstimator(16,1.0);
         quadEstUp=new AWQuadEstimator(25,1.0);
@@ -476,8 +503,12 @@ public:
 	void getLowerEncodersSpeedAndAcceleration()
 		{
 			
-			iencs_leg_left->getEncoders(encoders_leg_left.data());
-			iencs_leg_right->getEncoders(encoders_leg_right.data());
+			if (iencs_leg_left)  iencs_leg_left->getEncoders(encoders_leg_left.data());
+			else encoders_leg_left.zero();
+
+			if (iencs_leg_right) iencs_leg_right->getEncoders(encoders_leg_right.data());
+			else encoders_leg_right.zero();
+
 			iencs_torso->getEncoders(encoders_torso.data());
 
 			for (int i=0;i<q_torso.length();i++)
@@ -657,21 +688,30 @@ public:
 		Matrix F_sens_low = icub.lowerTorso->estimateSensorsWrench(F_ext_low,false);
 		evalTorques();
 		
-		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
-		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
-		
-		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
-		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
-
-		left_arm_torques->prepare()  =  torques_LA;
-		left_arm_torques->write();
-		right_arm_torques->prepare() =  torques_RA;
-		right_arm_torques->write();
-		right_leg_torques->prepare() =  torques_RL;
-		right_leg_torques->write();
-		left_leg_torques->prepare()  =  torques_LL;
-		left_leg_torques->write();
-
+		if (iCtrlMode_arm_left)  
+		{
+			feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
+			left_arm_torques->prepare()  =  torques_LA;
+			left_arm_torques->write();
+		}
+		if (iCtrlMode_arm_right)
+		{
+			feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
+			right_arm_torques->prepare() =  torques_RA;
+			right_arm_torques->write();
+		}
+		if (iCtrlMode_leg_left)	
+		{
+			feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
+			right_leg_torques->prepare() =  torques_RL;
+			right_leg_torques->write();
+		}
+		if (iCtrlMode_leg_right)
+		{
+			feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
+			left_leg_torques->prepare()  =  torques_LL;
+			left_leg_torques->write();
+		}
     }
     void threadRelease()
     {
@@ -683,16 +723,16 @@ public:
 		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
 		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
         Time::delay(1.0);
-        if(left_arm_torques) {delete left_arm_torques; left_arm_torques = 0;}
-        if(right_arm_torques) {delete right_arm_torques; right_arm_torques = 0;}
-        if(left_leg_torques) {delete left_leg_torques; left_leg_torques = 0;}
-        if(right_leg_torques) {delete right_leg_torques; right_leg_torques = 0;}
+        if (left_arm_torques)  {delete left_arm_torques; left_arm_torques = 0;}
+        if (right_arm_torques) {delete right_arm_torques; right_arm_torques = 0;}
+        if (left_leg_torques)  {delete left_leg_torques; left_leg_torques = 0;}
+        if (right_leg_torques) {delete right_leg_torques; right_leg_torques = 0;}
 		
-		if(linEstUp) {delete linEstUp; linEstUp = 0;}
-		if(quadEstUp) {delete quadEstUp; quadEstUp = 0;}
-		if(linEstLow) {delete linEstLow; linEstLow = 0;}
-		if(quadEstLow) {delete quadEstLow; quadEstLow = 0;}
-		if(port_inertial) {delete port_inertial; port_inertial = 0;}
+		if (linEstUp)          {delete linEstUp; linEstUp = 0;}
+		if (quadEstUp)         {delete quadEstUp; quadEstUp = 0;}
+		if (linEstLow)         {delete linEstLow; linEstLow = 0;}
+		if (quadEstLow)        {delete quadEstLow; quadEstLow = 0;}
+		if (port_inertial)     {delete port_inertial; port_inertial = 0;}
     }   
 	void closePort(Contactable *_port)
 	{
@@ -704,7 +744,7 @@ class gravityModuleCompensator: public RFModule
 {
 private:
 	int rate;
-	gravityCompensator *g_comp;
+	gravityCompensatorThread *g_comp;
 
 	Property OptionsLeftArm;
     Property OptionsRightArm;
@@ -715,21 +755,27 @@ private:
 
     Port rpcPort;
 
-    gravityCompensator *gComp;
-
     PolyDriver *dd_left_arm;
     PolyDriver *dd_right_arm;
     PolyDriver *dd_head;
     PolyDriver *dd_left_leg;
     PolyDriver *dd_right_leg;
     PolyDriver *dd_torso;
-	
+
+	bool legs_enabled;
 	string m_side;
 	string m_part;
 
 public:
     gravityModuleCompensator()
     {
+		legs_enabled  = true;
+		dd_left_arm   = 0;
+		dd_right_arm  = 0;
+		dd_head       = 0;
+		dd_left_leg   = 0;
+		dd_right_leg  = 0;
+		dd_torso      = 0;
 		m_side = "right";
 		m_part = "arm";
     }
@@ -744,10 +790,10 @@ public:
         }
 
         
-		IEncoders  *encs;
-		IControlMode *ctrlMode;
-		IImpedanceControl *imp;
-		ITorqueControl *tqs;
+		IEncoders         *encs     = 0;
+		IControlMode      *ctrlMode = 0;
+		IImpedanceControl *imp      = 0;
+		ITorqueControl    *tqs      = 0;
 	
         bool ok = true;
         ok = ok & _dd->view(encs);
@@ -775,7 +821,12 @@ public:
             rate = rf.find("rate").asInt();
         else rate = 20;
 
-
+		//------------------CHECK IF LEGS ARE ENABLED-----------//
+		if (rf.check("no_legs"))
+		{
+			legs_enabled= false;
+			fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
+		}
         //---------------------DEVICES--------------------------//
         
 		OptionsHead.put("device","remote_controlboard");
@@ -812,26 +863,28 @@ public:
             return false;
         }
 
-		
-        OptionsLeftLeg.put("device","remote_controlboard");
-        OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
-        OptionsLeftLeg.put("remote","/icub/left_leg");
-        dd_left_leg = new PolyDriver(OptionsLeftLeg);
-        if (!createDriver(dd_left_leg))
-        {
-            fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
-            return false;
-        }
+		if (legs_enabled)
+		{
+			OptionsLeftLeg.put("device","remote_controlboard");
+			OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
+			OptionsLeftLeg.put("remote","/icub/left_leg");
+			dd_left_leg = new PolyDriver(OptionsLeftLeg);
+			if (!createDriver(dd_left_leg))
+			{
+				fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
+				return false;
+			}
 
-        OptionsRightLeg.put("device","remote_controlboard");
-        OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
-        OptionsRightLeg.put("remote","/icub/right_leg");
-        dd_right_leg = new PolyDriver(OptionsRightLeg);
-        if (!createDriver(dd_right_leg))
-        {
-            fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
-            return false;
-        }
+			OptionsRightLeg.put("device","remote_controlboard");
+			OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
+			OptionsRightLeg.put("remote","/icub/right_leg");
+			dd_right_leg = new PolyDriver(OptionsRightLeg);
+			if (!createDriver(dd_right_leg))
+			{
+				fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
+				return false;
+			}
+		}
 		
 		OptionsTorso.put("device","remote_controlboard");
 		OptionsTorso.put("local","/gravityCompensator/torso/client");
@@ -852,7 +905,7 @@ public:
 
         //--------------------------THREAD--------------------------
 
-        g_comp = new gravityCompensator(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso);
+        g_comp = new gravityCompensatorThread(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso);
         fprintf(stderr,"ft thread istantiated...\n");
         g_comp->start();
         fprintf(stderr,"thread started\n");
@@ -927,7 +980,9 @@ int main(int argc, char * argv[])
         cout << "Options:" << endl << endl;
         cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app: default wrechObserver/conf)" << endl;
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
-        cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"                          << endl;
+        cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"						  << endl;
+        cout << "\t--no_legs    this option disables the gravity compensation for the legs joints"								  << endl;
+
         return 0;
     }
 

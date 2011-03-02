@@ -48,34 +48,21 @@ http://eris.liralab.it/wiki/Force_Control
 
 \section parameters_sec Parameters
 
---name \e name 
-- The parameter \e name identifies the module's name; all the 
-  open ports will be tagged with the prefix <name>/. If not
-  specified \e /ftObs is assumed.
-
-  --robot
-- The parameter \e robot identifies the robot that is used. This parameter defines the
-  prefix of the ports of the device. As default \e icub is used. 
-
---part  
-- The parameter \e part identifies the part of the robot which is used. All the opened 
-  ports will deal with the part which is defined. the default value is \e left_arm 
-
 --rate \e r 
 - The parameter \e r identifies the rate the thread will work. If not
   specified \e 100ms is assumed. The minimum suggested rate is \e 20ms.
+
+--no_legs   
+- this option disables the dynamics computation for the legs joints
 
 \section portsa_sec Ports Accessed
 The port the service is listening to.
 
 \section portsc_sec Ports Created
  
-- \e <name>/<part>/FT:i (e.g. /ftObs/right_arm/FT:i) receives the input data 
+- \e <name>/<part>/FT:i (e.g. /wholeBodyTorqueObserver/right_arm/FT:i) receives the input data 
   vector.
  
-- \e <name>/<part>/wrench:o (e.g. /ftObs/right_arm/wrench:o) provides the estimated 
-  end-effector wrench.
-
 \section in_files_sec Input Data Files
 None.
 
@@ -92,19 +79,16 @@ Linux and Windows.
 By launching the following command: 
  
 \code 
-wholeBodyTorqueObserver --name ftObs --robot icub --part right_arm --rate 50  
+wholeBodyTorqueObserver --rate 50  
 \endcode 
  
-the module will create the listening port /ftObs/right_arm/FT:i for 
-the acquisition of data vector coming for istance from the right arm analog port.
-At the same time it will provide the estimated 
-external wrench at the end-effector to /ftObs/right_arm/wrench:o port. (use --help option to 
-see). 
+the module will create the listening port /wholeBodyTorqueObserver/right_arm/FT:i for 
+the acquisition of data vector coming for istance from the right arm analog port. 
  
 Try now the following: 
  
 \code 
-yarp connect /icub/right_arm/analog:o /ftObs/right_arm/FT:i
+yarp connect /icub/right_arm/analog:o /wholeBodyTorqueObserver/right_arm/FT:i
 \endcode 
  
 \author Matteo Fumagalli
@@ -1442,7 +1426,8 @@ int main(int argc, char * argv[])
         cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app: default wrechObserver/conf)" << endl;
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
         cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"                          << endl;
-        return 0;
+        cout << "\t--no_legs    this option disables the dynamics computation for the legs joints"								  << endl;    
+		return 0;
     }
 
     Network yarp;
