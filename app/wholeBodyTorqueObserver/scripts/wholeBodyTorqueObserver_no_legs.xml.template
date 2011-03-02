@@ -12,6 +12,7 @@
    	</module>
 	<module>
       		<name>gravityCompensator</name>
+			<parameters>--no_legs</parameters>
 			<node>icubsrv</node>
 			<stdio>icubsrv</stdio>
 			<tag>gravityCompensator</tag>
