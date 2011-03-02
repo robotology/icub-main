@@ -1997,25 +1997,18 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
             		for (int ch=0; ch<6; ch++)
 			        {
 				        unsigned int i=0;
-						bool full_scale_read=false;		
+				        res.startPacket();
+				        res._writeBuffer[0].setId(destId);
+				        res._writeBuffer[0].getData()[0]=0x18;
+				        res._writeBuffer[0].getData()[1]=ch;
+				        res._writeBuffer[0].setLen(2);
+				        res._writeMessages++;
+				        res.writePacket();
+				
 				        long int timeout=0;
-
+				        bool full_scale_read=false;
 				        do 
 				        {
-							//flush the CAN buffer
-							yarp::os::Time::delay(0.002);
-							res.read();
-
-							//sends the message: "get full scale"
-						    res.startPacket();
-							res._writeBuffer[0].setId(destId);
-							res._writeBuffer[0].getData()[0]=0x18;
-							res._writeBuffer[0].getData()[1]=ch;
-							res._writeBuffer[0].setLen(2);
-							res._writeMessages++;
-							res.writePacket();
-
-							//reads the answer
 					        res.read();
 					        for (i=0; i<res._readMessages; i++)
 					        {
@@ -2026,21 +2019,16 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 								        m.getData()[0]==0x18 &&
 								        m.getData()[1]==ch)
 								        {
-											//answer received
 									        analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
 									        full_scale_read=true;
 									        break;
 								        }
 					        }
-							if (full_scale_read) break;
-
-							//no answer received, try again (max 32 times) by flushing the buffer and sending a new request
-							fprintf(stderr, "No answers from force sensor (ch:%d). Retrying...\n", ch);
+					        yarp::os::Time::delay(0.002);
 					        timeout++;
 				        }
 				        while(timeout<32 && full_scale_read==false);
 
-						// If at least one fullscale is missing, display an error. The force sensor data will not be calibrated.
 				        if (full_scale_read==false) 
 							{							
 								fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
