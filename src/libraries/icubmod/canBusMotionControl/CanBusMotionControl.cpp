@@ -1997,18 +1997,25 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
             		for (int ch=0; ch<6; ch++)
 			        {
 				        unsigned int i=0;
-				        res.startPacket();
-				        res._writeBuffer[0].setId(destId);
-				        res._writeBuffer[0].getData()[0]=0x18;
-				        res._writeBuffer[0].getData()[1]=ch;
-				        res._writeBuffer[0].setLen(2);
-				        res._writeMessages++;
-				        res.writePacket();
-				
+						bool full_scale_read=false;		
 				        long int timeout=0;
-				        bool full_scale_read=false;
+
 				        do 
 				        {
+							//flush the CAN buffer
+							yarp::os::Time::delay(0.002);
+							res.read();
+
+							//sends the message: "get full scale"
+						    res.startPacket();
+							res._writeBuffer[0].setId(destId);
+							res._writeBuffer[0].getData()[0]=0x18;
+							res._writeBuffer[0].getData()[1]=ch;
+							res._writeBuffer[0].setLen(2);
+							res._writeMessages++;
+							res.writePacket();
+
+							//reads the answer
 					        res.read();
 					        for (i=0; i<res._readMessages; i++)
 					        {
@@ -2019,16 +2026,21 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 								        m.getData()[0]==0x18 &&
 								        m.getData()[1]==ch)
 								        {
+											//answer received
 									        analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
 									        full_scale_read=true;
 									        break;
 								        }
 					        }
-					        yarp::os::Time::delay(0.002);
+							if (full_scale_read) break;
+
+							//no answer received, try again (max 32 times) by flushing the buffer and sending a new request
+							fprintf(stderr, "No answers from force sensor (ch:%d). Retrying...\n", ch);
 					        timeout++;
 				        }
 				        while(timeout<32 && full_scale_read==false);
 
+						// If at least one fullscale is missing, display an error. The force sensor data will not be calibrated.
 				        if (full_scale_read==false) 
 							{							
 								fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
@@ -3055,7 +3067,9 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
   	if (!ENABLED(axis))
     {
 		//@@@ TODO: check here
-		// value = 0;
+		//*stiff = 0;
+		//*damp = 0;
+		//*off = 0;
         return true;
     }
  
@@ -3078,11 +3092,23 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
     _mutex.post();
     t->synch();
 
+	if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("getImpedanceRaw: message timed out\n");
+		//@@@ TODO: check here
+		//*stiff = 0;
+		//*damp = 0;
+		//*off = 0;
+        return false;
+    }
+
 	CanMessage *m=t->get(0);
     if (m==0)
     {
 		//@@@ TODO: check here
-		// value=0;
+		//*stiff = 0;
+		//*damp = 0;
+		//*off = 0;
         return false;
     }
 
@@ -3091,8 +3117,11 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 	*stiff= *((short *)(data));
 	data+=2;
 	*damp= *((short *)(data)); 
+#ifdef ICUB_CANPROTOCOL_STRICT
 	*damp/= 1000;
-    data+=2;
+#else
+#endif
+	data+=2;
 	*off= *((short *)(data));
 
 	t->clear();
@@ -3109,7 +3138,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
   	if (!ENABLED(axis))
     {
 		//@@@ TODO: check here
-		// value = 0;
+		//*off = 0;
         return true;
     }
  
@@ -3132,11 +3161,19 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
     _mutex.post();
     t->synch();
 
+	 if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("getImpedanceOffset: message timed out\n");
+		//@@@ TODO: check here
+		//*off=0;
+        return false;
+    }
+
 	CanMessage *m=t->get(0);
     if (m==0)
     {
 		//@@@ TODO: check here
-		// value=0;
+		//*off=0;
         return false;
     }
 
@@ -3165,7 +3202,11 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp, 
 		r.startPacket();
 		r.addMessage (CAN_SET_IMPEDANCE_PARAMS, axis);
 		*((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
+#ifdef ICUB_CANPROTOCOL_STRICT
 		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp*1000);
+#else
+		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp);
+#endif
 		*((short *)(r._writeBuffer[0].getData()+5)) = S_16(off);
 		*((short *)(r._writeBuffer[0].getData()+7)) = 0;
 		r._writeBuffer[0].setLen(8);
@@ -3347,6 +3388,14 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
     _mutex.post();
     t->synch();
 
+	if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("getTorquePid: message timed out\n");
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
+
 	CanMessage *m=t->get(0);
     if (m==0)
     {
@@ -3379,6 +3428,14 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
     t->setPending(r._writeMessages);
     _mutex.post();
     t->synch();
+
+	if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("getTorquePidLimits: message timed out\n");
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
 
 	m=t->get(0);
     if (m==0)
@@ -3703,6 +3760,14 @@ bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* v
     _mutex.post();
     t->synch();
 
+	if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("getParameterRaw: message timed out\n");
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
+
 	CanMessage *m=t->get(0);
     if (m==0)
     {
@@ -3753,6 +3818,14 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
     t->setPending(r._writeMessages);
     _mutex.post();
     t->synch();
+
+	if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("getDebugParameterRaw: message timed out\n");
+		//@@@ TODO: check here
+		// value=0;
+        return false;
+    }
 
 	CanMessage *m=t->get(0);
     if (m==0)
@@ -3814,6 +3887,16 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     t->setPending(r._writeMessages);
     _mutex.post();
     t->synch();
+
+	if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("getFirmwareVersion: message timed out\n");
+		fw_info->board_type= 0;
+		fw_info->fw_major= 0;
+		fw_info->fw_version= 0;
+		fw_info->fw_build= 0;
+        return false;
+    }
 
 	CanMessage *m=t->get(0);
     if (m==0)
