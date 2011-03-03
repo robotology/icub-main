@@ -1,4 +1,7 @@
 
+2011-03-03 Matteo Fumagalli <matteo.fumagalli@iit.it>
+	   * iDyn.cpp: modified kinematic parameter on iCubArmDyn and iCubArmNoTorsoDyn
+
 2010-11-09 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iDyn.h: now iDynLimb is public inherited from iDynChain
 
