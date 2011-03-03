@@ -6,32 +6,17 @@
         </dependencies>
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--from leftArmFT</parameters>
+      		<parameters>--from leftArmFT.ini</parameters>
 			<node>icubsrv</node>
 			<tag>left_arm_dfc</tag>
    	</module>
 
 	<module>
       		<name>demoForceControl</name>
-      		<parameters>--from rightArmFT</parameters>
+      		<parameters>--from rightArmFT.ini</parameters>
 			<node>icubsrv</node>
 			<tag>right_arm_dfc</tag>
    	</module>
-
-	<module>
-      		<name>demoForceControl</name>
-      		<parameters>--from leftArmFT</parameters>
-			<node>icubsrv</node>
-			<tag>left_leg_dfc</tag>
-   	</module>
-
-	<module>
-      		<name>demoForceControl</name>
-      		<parameters>--from rightArmFT</parameters>
-			<node>icubsrv</node>
-			<tag>right_leg_dfc</tag>
-   	</module>
-
 
 	<module>
       		<name>yarp rpc /demoForceControl/left_arm/rpc:i</name>
