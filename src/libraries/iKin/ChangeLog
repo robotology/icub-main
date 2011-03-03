@@ -1,4 +1,7 @@
 
+2011-03-03 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * DH parameters update
+
 2011-01-20 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * major update: now the translational part is always treated as nonlinear constraint
 
