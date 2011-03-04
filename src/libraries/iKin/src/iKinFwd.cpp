@@ -1286,7 +1286,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
     dispose();    
 
     type=opt.check("type",Value("right")).asString().c_str();
-    if (type!="right" && type!="left")
+    if ((type!="right") && (type!="left"))
     {
         fprintf(stderr,"Error: invalid handedness type specified!\n");
         return false;
