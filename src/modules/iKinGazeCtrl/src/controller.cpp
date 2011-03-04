@@ -24,19 +24,21 @@
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                        const string &_robotName, const string &_localName, const string &_configFile,
                        const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
-                       const double _eyeTiltMax, const double _minAbsVel, unsigned int _period) :
+                       const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
+                       const unsigned int _period) :
                        RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
                        commData(_commData),     robotName(_robotName),   localName(_localName),
                        configFile(_configFile), neckTime(_neckTime),     eyesTime(_eyesTime),
                        eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel),
-                       period(_period),         Ts(_period/1000.0),      printAccTime(0.0)
+                       headV2(_headV2),         period(_period),         Ts(_period/1000.0),
+                       printAccTime(0.0)
 {
     Robotable=(drvHead!=NULL);
 
     // Instantiate objects
-    neck=new iCubHeadCenter();
-    eyeL=new iCubEye("left");
-    eyeR=new iCubEye("right");
+    neck=new iCubHeadCenter(headV2?"right_v2":"right");
+    eyeL=new iCubEye(headV2?"left_v2":"left");
+    eyeR=new iCubEye(headV2?"right_v2":"right");
 
     // release links
     neck->releaseLink(0); eyeL->releaseLink(0); eyeR->releaseLink(0);

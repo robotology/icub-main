@@ -1020,7 +1020,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" eye
+    *              "right" eye. Further available options are
+    *              "left_v2" and "right_v2".
     */
     iCubEye(const std::string &_type);
 
@@ -1061,7 +1062,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" eye
+    *              "right" eye. Further available options are
+    *              "left_v2" and "right_v2".
     */
     iCubEyeNeckRef(const std::string &_type);
 
@@ -1088,6 +1090,13 @@ public:
     * Default constructor. 
     */
     iCubInertialSensor();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "v1" and "v2" 
+    *              hardware versions.
+    */
+    iCubInertialSensor(const std::string &_type);
 
     /**
     * Creates a new Inertial Sensor from an already existing object.

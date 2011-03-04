@@ -55,6 +55,7 @@ protected:
     string localName;
     string configFile;
     unsigned int period;
+    bool headV2;
     
     iCubEye  *eyeL;
     iCubEye  *eyeR;
@@ -84,7 +85,8 @@ protected:
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,
-              const string &_configFile, unsigned int _period);
+              const string &_configFile, const bool _headV2,
+              const unsigned int _period);
 
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void getPidOptions(Bottle &options);

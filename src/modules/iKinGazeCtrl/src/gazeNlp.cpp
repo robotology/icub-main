@@ -172,7 +172,10 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
 void iCubHeadCenter::allocate(const string &_type)
 {
     // change DH parameters
-    (*this)[getN()-2].setD(0.0);
+    if ((getType()=="right") || (getType()=="left"))
+        (*this)[getN()-2].setD(0.0);
+    else
+        (*this)[getN()-2].setD(0.0);
 
     // block last two links
     blockLink(getN()-2,0.0);

@@ -25,14 +25,15 @@
 
 /************************************************************************/
 Localizer::Localizer(exchangeData *_commData, const string &_localName,
-                     const string &_configFile, unsigned int _period) :
+                     const string &_configFile, const bool _headV2,
+                     const unsigned int _period) :
                      RateThread(_period), localName(_localName),
                      commData(_commData), configFile(_configFile),
-                     period(_period)
+                     headV2(_headV2),     period(_period)
 {
-    iCubHeadCenter eyeC;
-    eyeL=new iCubEye("left");
-    eyeR=new iCubEye("right");    
+    iCubHeadCenter eyeC(headV2?"right_v2":"right");
+    eyeL=new iCubEye(headV2?"left_v2":"left");
+    eyeR=new iCubEye(headV2?"right_v2":"right");
 
     // remove constraints on the links
     // we use the chains for logging purpose

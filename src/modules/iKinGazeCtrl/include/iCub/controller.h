@@ -75,6 +75,7 @@ protected:
     string configFile;
     unsigned int period;
     bool Robotable;
+    bool headV2;
     int nJointsTorso;
     int nJointsHead;
     double printAccTime;
@@ -94,7 +95,8 @@ public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                const string &_robotName, const string &_localName, const string &_configFile,
                const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
-               const double _eyeTiltMax, const double _minAbsVel, unsigned int _period);
+               const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
+               const unsigned int _period);
 
     void stopLimbsVel();
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }

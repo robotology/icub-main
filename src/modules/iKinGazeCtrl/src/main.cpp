@@ -156,6 +156,10 @@ Factors</a>.
   controller will implement a bang-bang approach whenever the
   velocity to be delivered goes under the minimum threshold.
  
+--headV2 
+- When this options is specified then the kinematic structure of
+  the hardware v2 of the head is referred.
+ 
 \section portsa_sec Ports Accessed
  
 The ports the module is connected to: e.g. 
@@ -526,6 +530,7 @@ public:
         double minAbsVel;
         bool   VOR;
         bool   Robotable;
+        bool   headV2;
         double ping_robot_tmo;
 
         Time::turboBoost();
@@ -541,6 +546,7 @@ public:
         eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
+        headV2=rf.check("headV2");
 
         // minAbsVel is given in absolute form
         // hence it must be positive
@@ -604,16 +610,16 @@ public:
         // create and start threads
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
                             localHeadName,configFile,neckTime,eyesTime,
-                            eyeTiltMin,eyeTiltMax,minAbsVel,10);
+                            eyeTiltMin,eyeTiltMax,minAbsVel,headV2,10);
 
-        loc=new Localizer(&commData,localHeadName,configFile,10);
+        loc=new Localizer(&commData,localHeadName,configFile,headV2,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
                                      localHeadName,configFile,eyeTiltMin,
-                                     eyeTiltMax,VOR,20);
+                                     eyeTiltMax,VOR,headV2,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
-                       localHeadName,configFile,eyeTiltMin,eyeTiltMax,20);
+                       localHeadName,configFile,eyeTiltMin,eyeTiltMax,headV2,20);
 
         // this switch-on order does matter !!
         eyesRefGen->start();
@@ -1029,6 +1035,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--eyeTiltMin     min: minimum eye tilt angle [deg]\n");
         fprintf(stdout,"\t--eyeTiltMax     max: maximum eye tilt angle [deg]\n");
         fprintf(stdout,"\t--minAbsVel      min: minimum absolute velocity that can be achieved [deg/s] (default 0.0)\n");
+        fprintf(stdout,"\t--headV2            : refer to the kinematics of the head v2\n");
 
         return 0;
     }

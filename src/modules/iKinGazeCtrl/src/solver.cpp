@@ -25,19 +25,20 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              exchangeData *_commData, const string &_robotName,
                              const string &_localName, const string &_configFile,
                              const double _eyeTiltMin, const double _eyeTiltMax,
-                             const bool _VOR, unsigned int _period) :
-                             RateThread(_period),     drvTorso(_drvTorso),   drvHead(_drvHead),
-                             commData(_commData),     robotName(_robotName), localName(_localName),
-                             configFile(_configFile), period(_period),       eyeTiltMin(_eyeTiltMin),
-                             eyeTiltMax(_eyeTiltMax), Ts(_period/1000.0)
+                             const bool _VOR, const bool _headV2,
+                             const unsigned int _period) :
+                             RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
+                             commData(_commData),     robotName(_robotName),   localName(_localName),
+                             configFile(_configFile), eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax),
+                             headV2(_headV2),         period(_period),         Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
     VOR=Robotable&&_VOR;
 
     // Instantiate objects
-    neck=new iCubHeadCenter();
-    eyeL=new iCubEye("left");
-    eyeR=new iCubEye("right");
+    neck=new iCubHeadCenter(headV2?"right_v2":"right");
+    eyeL=new iCubEye(headV2?"left_v2":"left");
+    eyeR=new iCubEye(headV2?"right_v2":"right");
 
     // remove constraints on the links: logging purpose
     inertialSensor.setAllConstraints(false);
@@ -390,19 +391,19 @@ void EyePinvRefGen::stopControl()
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
                const string &_localName, const string &_configFile, const double _eyeTiltMin,
-               const double _eyeTiltMax, unsigned int _period) :
+               const double _eyeTiltMax, const bool _headV2, const unsigned int _period) :
                RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
                commData(_commData),     eyesRefGen(_eyesRefGen), loc(_loc),
                ctrl(_ctrl),             localName(_localName),   configFile(_configFile),
-               eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), period(_period),
-               Ts(_period/1000.0)
+               eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), headV2(_headV2),
+               period(_period),         Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
 
     // Instantiate objects
-    neck=new iCubHeadCenter();
-    eyeL=new iCubEye("left");
-    eyeR=new iCubEye("right");
+    neck=new iCubHeadCenter(headV2?"right_v2":"right");
+    eyeL=new iCubEye(headV2?"left_v2":"left");
+    eyeR=new iCubEye(headV2?"right_v2":"right");
 
     // remove constraints on the links: logging purpose
     inertialSensor.setAllConstraints(false);

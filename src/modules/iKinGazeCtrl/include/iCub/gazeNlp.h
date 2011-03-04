@@ -51,6 +51,7 @@ protected:
 
 public:
     iCubHeadCenter()                           { allocate("right"); }
+    iCubHeadCenter(const string &_type)        { allocate(_type);   }
     iCubHeadCenter(const iCubHeadCenter &head) { clone(head);       }
 };
 

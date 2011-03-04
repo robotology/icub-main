@@ -1286,11 +1286,6 @@ bool iKinLimb::fromLinksProperties(const Property &option)
     dispose();    
 
     type=opt.check("type",Value("right")).asString().c_str();
-    if ((type!="right") && (type!="left"))
-    {
-        fprintf(stderr,"Error: invalid handedness type specified!\n");
-        return false;
-    }
 
     if (Bottle *bH0=opt.find("H0").asList())
     {
@@ -1377,10 +1372,6 @@ iKinLimb::~iKinLimb()
 void iKinLimb::allocate(const string &_type)
 {
     type=_type;
-
-    if ((type!="right") && (type!="left"))
-        type="right";
-
     configured=true;
 }
 
@@ -1644,6 +1635,28 @@ void iCubEye::allocate(const string &_type)
         pushLink(new iKinLink(    0.0,   0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
     }
+    else if (getType()=="left")
+    {
+        pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(  0.033,     0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,   0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink( -0.054,  0.0825, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,  -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
+    }
+    else if (getType()=="right_v2")
+    {
+        pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(  0.033,     0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,   0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink( -0.054,  0.0825, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,   0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
+    }
     else
     {
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
@@ -1736,7 +1749,14 @@ void iCubEyeNeckRef::allocate(const string &_type)
 /************************************************************************/
 iCubInertialSensor::iCubInertialSensor()
 {
-    allocate("right");
+    allocate("");
+}
+
+
+/************************************************************************/
+iCubInertialSensor::iCubInertialSensor(const string &_type)
+{
+    allocate(_type);
 }
 
 
@@ -1760,16 +1780,32 @@ void iCubInertialSensor::allocate(const string &_type)
     H0(3,3)=1.0;
     setH0(H0);
 
-    // links of torso and neck
-    pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
-    pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
-    pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
-    pushLink(new iKinLink(  0.033,     0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
-    pushLink(new iKinLink(    0.0,   0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
-    pushLink(new iKinLink( 0.0225,  0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
+    if (getType()=="v2")
+    {
+        // links of torso and neck
+        pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(  0.033,     0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,   0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink( 0.0225,  0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
+    
+        // virtual link that describes T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics )
+        pushLink(new iKinLink(    0.0,  0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
+    }
+    else
+    {
+        // links of torso and neck
+        pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(  0.033,     0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0,   0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink( 0.0225,  0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
 
-    // virtual link that describes T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics )
-    pushLink(new iKinLink(    0.0,  0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
+        // virtual link that describes T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics )
+        pushLink(new iKinLink(    0.0,  0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
+    }
 
     // block virtual links
     blockLink(6,0.0);
