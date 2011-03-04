@@ -266,9 +266,9 @@ class App:
             
             if running==0 and selected==1:
                 if node.display:
-                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h', ' start ', 'display']
+                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ', 'display']
                 else:
-                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h', ' start ']
+                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
                     
                 print 'Running',
                 print cmd
@@ -291,7 +291,7 @@ class App:
             running=i.next().get()
 
             if running==1 and selected==1 :
-                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h' ' stop']
+                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
                 print 'Running',
                 print cmd
                 ret=subprocess.Popen(cmd).wait()
@@ -308,7 +308,7 @@ class App:
         for node in self.cluster.nodes:
             selected=iS.next().get()
             if (selected):
-                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.h' ' kill']
+                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
                 print cmd
                 ret=subprocess.Popen(cmd).wait()
 
@@ -330,7 +330,7 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.h' ' start']
+            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' start']
             print 'Running',
             print cmd
             ret=subprocess.Popen(cmd).wait()
@@ -343,7 +343,7 @@ class App:
         print 'Stopping nameserver'
         self.checkNs()
         if self.nsFlag.get()==1:
-            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.h' ' stop']
+            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' stop']
             print 'Running',
             print cmd
             ret=subprocess.Popen(cmd).wait()
