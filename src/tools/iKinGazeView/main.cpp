@@ -172,7 +172,7 @@ using namespace yarp::math;
 using namespace iCub::ctrl;
 
 
-bool runViewer(Engine *ep);
+bool runViewer(Engine *ep, const bool headV2);
 
 
 class rxPort : public BufferedPort<Bottle>
