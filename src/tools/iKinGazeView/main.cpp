@@ -76,10 +76,14 @@ and MATLAB is in the path.
 - The parameter \e file specifies the file name used for 
   aligning eyes kinematic to image planes (see below).
  
+--headV2 
+- When this options is specified then the kinematic structure of
+  the hardware v2 of the head is referred.
+ 
 --visibility \e switch 
 - The parameter \e switch set MATLAB session visibility on/off 
-  (off by default). 
-  
+  (off by default).
+
 \section portsa_sec Ports Accessed
 The ports the module is connected to.
 
@@ -198,6 +202,7 @@ private:
     unsigned int          dim;
 
     int    period;
+    bool   headV2;
     string portName;
     string configFile;
     string visibility;
@@ -215,9 +220,10 @@ private:
     Vector xdOld;
 
 public:
-    GatewayThread(int _period, const string &_portName, const string &_configFile,
-                  const string &_visibility) : RateThread(_period), period(_period),
-                  portName(_portName), configFile(_configFile), visibility(_visibility)
+    GatewayThread(const int _period, const string &_portName, const string &_configFile,
+                  const bool _headV2, const string &_visibility) :
+                  RateThread(_period),     period(_period), portName(_portName),
+                  configFile(_configFile), headV2(_headV2), visibility(_visibility)
     {
         dim=9;
         N  =500;
@@ -336,7 +342,7 @@ public:
             return false;
         }
 
-        if (!runViewer(ep))
+        if (!runViewer(ep,headV2))
         {
             cerr << "Unable to locate MATLAB script" << endl;
             dispose();
@@ -474,22 +480,24 @@ public:
         Time::turboBoost();
 
         if (rf.check("name"))
-            portName=rf.find("name").asString();
+            portName=rf.find("name").asString().c_str();
         else
             portName="/iKinGazeView";
 
         if (rf.check("config"))
-            if ((configFile=rf.findFile(rf.find("config").asString()))=="")
+            if ((configFile=rf.findFile(rf.find("config").asString().c_str()))=="")
                 return false;
         else
             configFile.clear();
 
+        bool headV2=rf.check("headV2");
+
         if (rf.check("visibility"))
-            visibility=rf.find("visibility").asString();
+            visibility=rf.find("visibility").asString().c_str();
         else
             visibility="off";
 
-        thread=new GatewayThread(20,portName,configFile,visibility);
+        thread=new GatewayThread(20,portName,configFile,headV2,visibility);
         if (!thread->start())
         {
             delete thread;
@@ -520,12 +528,14 @@ public:
 
 
 
-bool runViewer(Engine *ep)
+bool runViewer(Engine *ep, const bool headV2)
 {
     char ret_string[10];
     char ok[]="ok";
 
-    string command="if exist('iKinGazeView.m','file'), disp('ok'); iKinGazeView, else disp('err'); end";
+    string command="if exist('iKinGazeView.m','file'), disp('ok'); iKinGazeView('";
+    command+=(headV2?"v2":"v1");
+    command+="'), else disp('err'); end";
 
     engOutputBuffer(ep,&ret_string[0],10);
     engEvalString(ep,command.c_str());
@@ -550,6 +560,7 @@ int main(int argc, char *argv[])
         cout << "Options:" << endl << endl;
         cout << "\t--name         name: port name (default /iKinGazeView)"                     << endl;
         cout << "\t--config       file: file name for aligning eyes kinematic to image planes" << endl;
+        cout << "\t--headV2           : refer to the kinematics of the head v2"                << endl;
         cout << "\t--visibility switch: set MATLAB session visibility on/off (default off)"    << endl;
 
         return 0;

@@ -192,7 +192,7 @@ private:
     double t0;
 
 public:
-    GatewayThread(int _period, const string &_portName, const string &_armType,
+    GatewayThread(const int _period, const string &_portName, const string &_armType,
                   const string &_visibility) :
                   RateThread(_period), period(_period), portName(_portName),
                   armType(_armType), visibility(_visibility)
@@ -384,17 +384,17 @@ public:
         Time::turboBoost();
 
         if (rf.check("name"))
-            portName=rf.find("name").asString();
+            portName=rf.find("name").asString().c_str();
         else
             portName="/iKinArmView";
 
         if (rf.check("arm"))
-            armType=rf.find("arm").asString();
+            armType=rf.find("arm").asString().c_str();
         else
             armType="right";
 
         if (rf.check("visibility"))
-            visibility=rf.find("visibility").asString();
+            visibility=rf.find("visibility").asString().c_str();
         else
             visibility="off";
 
