@@ -75,8 +75,8 @@ YARP libraries and OpenCV
   error threshold that allows to discriminate between background
   and independent moving nodes as result of a matching carried
   out on the windows whose size is determined by \e winSize
-  parameter. Usually very small values, such as 0.002%, have to
-  be used.
+  parameter. Usually very small values, such as 0.5%, have to be
+  used.
  
 --adjNodesThres \e min 
 - This parameter allows to filter out the salt-and-pepper noise
@@ -310,14 +310,14 @@ public:
         coverYratio=rf.check("coverYratio",Value(0.75)).asDouble();
         nodesStep=rf.check("nodesStep",Value(6)).asInt();
         winSize=rf.check("winSize",Value(15)).asInt();
-        recogThres=rf.check("recogThres",Value(0.002)).asDouble();
+        recogThres=rf.check("recogThres",Value(0.5)).asDouble();
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
         verbosity=rf.check("verbosity");
         inhibition=false;
 
-        recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
+        recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
 
         // thresholding 
         if (coverXratio>1.0)
@@ -728,7 +728,7 @@ public:
                 else if (subcmd=="recogThres")
                 {
                     recogThres=req.get(2).asDouble();
-                    recogThresAbs=recogThres*((256*256*winSize*winSize)/100.0);
+                    recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
                     reply.addString("ack");
                 }
                 else if (subcmd=="adjNodesThres")
