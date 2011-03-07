@@ -11,14 +11,14 @@
       
         <module>
             <name>motionCUT</name>
-            <parameters>--name motionCUT/left --recogThres 0.002</parameters>
+            <parameters>--name motionCUT/left</parameters>
             <node>pwrNode1</node>
             <tag>motionDetectorLeft</tag>
         </module>
    
         <module>
             <name>motionCUT</name>
-            <parameters>--name motionCUT/right --recogThres 0.002</parameters>
+            <parameters>--name motionCUT/right</parameters>
             <node>pwrNode2</node>
             <tag>motionDetectorRight</tag>
         </module>
