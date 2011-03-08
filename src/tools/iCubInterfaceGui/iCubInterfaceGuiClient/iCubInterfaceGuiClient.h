@@ -81,55 +81,9 @@ public:
 
         yarp::os::Time::delay(1.0);
 
+        mWaitConnection=true;
         mPort.open("/icubinterfacegui/client");
         
-        int att;
-        const int MAX_ATT=10;
-
-        // need connection
-        for (att=0; att<MAX_ATT; ++att)
-		{
-            if (yarp::os::NetworkBase::connect("/icubinterfacegui/client","/icubinterfacegui/server")) 
-            {            
-                break;
-            }
-
-            yarp::os::Time::delay(1.0);
-		}
-
-        if (att==MAX_ATT)
-        {
-            printf("ERROR: no connection\n");
-            return;
-        }
-
-        yarp::os::Bottle bot;
-        yarp::os::Bottle rep;
-        bot.addString("GET_CONF");
-        mPort.write(bot,rep);
-
-        //printf("%s\n",rep.toString().c_str());
-        //fflush(stdout);
-
-        for (int i=1; i<(int)rep.size(); ++i)
-        {
-            yarp::os::Bottle *list=rep.get(i).asList();
-
-            if (list)
-            {
-                mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(rep.get(i).asList())));
-            }
-        }
-
-        if (hasAlarm())
-        {
-            mRowLev0[mColumns.mColIcon]="(!)";
-        }
-        else
-        {
-            mRowLev0[mColumns.mColIcon]="";
-        }
-
         mThread=new iCubInterfaceGuiThread();
 
         mThread->mSigWindow.connect(sigc::mem_fun(*this,&iCubInterfaceGuiWindow::run));
@@ -152,6 +106,43 @@ public:
 
     void run()
     {
+        if (mPort.getOutputCount()<=0)
+        {
+            mWaitConnection=true;
+            return;
+        }
+
+        if (mWaitConnection)
+        {
+            mWaitConnection=false;
+
+            yarp::os::Bottle bot;
+            yarp::os::Bottle rep;
+            bot.addString("GET_CONF");
+            mPort.write(bot,rep);
+
+            for (int i=1; i<(int)rep.size(); ++i)
+            {
+                yarp::os::Bottle *list=rep.get(i).asList();
+
+                if (list)
+                {
+                    mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(rep.get(i).asList())));
+                }
+            }
+
+            if (hasAlarm())
+            {
+                mRowLev0[mColumns.mColIcon]="(!)";
+            }
+            else
+            {
+                mRowLev0[mColumns.mColIcon]="";
+            }
+            
+            return;
+        }
+
         yarp::os::Bottle bot;
         yarp::os::Bottle rep;
         bot.addString("GET_DATA");
@@ -211,6 +202,7 @@ protected:
 
     iCubInterfaceGuiThread* mThread;
 
+    bool mWaitConnection;
     yarp::os::RpcClient mPort;
     std::vector<iCubNetwork*> mNetworks;
 };
