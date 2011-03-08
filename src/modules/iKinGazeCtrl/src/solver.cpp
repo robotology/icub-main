@@ -665,7 +665,7 @@ Vector Solver::getGravityDirection(const Vector &gyro)
     q[3]=fbHead[0];
     q[4]=fbHead[1];
     q[5]=fbHead[2];
-    Matrix H=inertialSensor.getH(q)*R.transposed();
+    Matrix H=inertialSensor.getH(q)*R;
 
     // gravity is aligned along the z-axis
     Vector gDir=H.getCol(2);
