@@ -234,7 +234,7 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
 /************************************************************************/
 bool EyePinvRefGen::threadInit()
 {
-    if (Robotable)
+    if (Robotable && VOR)
     {
         port_inertial=new BufferedPort<Vector>;
         string portName=localName+"/inertial:i";
