@@ -76,7 +76,10 @@ YARP libraries and OpenCV
   and independent moving nodes as result of a matching carried
   out on the windows whose size is determined by \e winSize
   parameter. Usually very small values, such as 0.5%, have to be
-  used.
+  used. Indicatively, a value of 0.5% means that the two
+  templates for the matching must have a similarity measure of
+  99.5% to prevent the relative node from being recognized as
+  independent moving node.
  
 --adjNodesThres \e min 
 - This parameter allows to filter out the salt-and-pepper noise
