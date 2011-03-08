@@ -22,7 +22,7 @@ const char* iCubBLLChannel::mRowNames[]=
     "Status_messages_latency",         // Keep track of the time the last status message has been received (seconds)
     "!Status_messages_latency_timeout", // If status messages latency > threshold (5s) raise an error
     "Encoder_latency",                 // Keep track of the time the last encoder reading has been received        
-    "!Encoder_latency_timeout",         // If encoder latency > threshold (5s) raise an error
+    "Encoder_latency_timeout",         // If encoder latency > threshold (5s) raise an error
 
     // device generated
     "!Is_Fault_Ok",               // Status of the fault pin, general error
