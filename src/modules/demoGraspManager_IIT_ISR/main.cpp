@@ -373,6 +373,7 @@ protected:
     int state;
     int startup_context_id_left;
     int startup_context_id_right;
+    int startup_context_id_gaze;
 
     void getTorsoOptions(Bottle &b, const char *type, const int i, Vector &sw, Matrix &lim)
     {
@@ -1357,6 +1358,9 @@ public:
         drvHead->view(encHead);
         drvGazeCtrl->view(gazeCtrl);
 
+        gazeCtrl->storeContext(&startup_context_id_gaze);
+        gazeCtrl->blockNeckRoll(0.0);
+
         if (useLeftArm)
         {
             drvLeftArm->view(encArm);
@@ -1480,6 +1484,8 @@ public:
                     imode->setVelocityMode(j);
             }
         }
+
+        gazeCtrl->restoreContext(startup_context_id_gaze);
 
         close();
     }
