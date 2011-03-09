@@ -20,7 +20,7 @@ case "$1" in
 		
 		echo "Starting up yarp run for $ID"
 		$cmd "cp -f $YARP_DIR/bin/yarprun /tmp/yarprun"
-		$cmd "cd /tmp;./yarprun --server $ID &"
+		$cmd "cd /tmp;./yarprun --server $ID 2>&1 2>/tmp/yarprunserver.log &"
 		$cmd "echo \"`date` starting yarprun\" >> /tmp/yarprun.log"
 		echo "done!"
 		;;
