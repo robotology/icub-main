@@ -17,6 +17,12 @@ icub_app_install(${appname}
 				FILES ${conf}
 				DESTINATION conf)
 				
+icub_app_install(${appname}
+				FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/manager.py
+				destination scripts)
+				
+				
+				
 
 
 
