@@ -363,9 +363,9 @@ void Controller::run()
 
     // update joints angles
     fbHead=Int->integrate(v);
-    commData->get_q()=fbHead;
-    commData->get_torso()=fbTorso;
-    commData->get_v()=v;
+    commData->set_q(fbHead);
+    commData->set_torso(fbTorso);
+    commData->set_v(v);
 }
 
 

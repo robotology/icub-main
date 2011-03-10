@@ -95,6 +95,201 @@ void xdPort::run()
 
 
 /************************************************************************/
+exchangeData::exchangeData()
+{
+    isCtrlActive=false;
+    canCtrlBeDisabled=true;
+}
+
+
+/************************************************************************/
+void exchangeData::resize_v(const int sz, const double val)
+{
+    mutex[5].wait();
+    v.resize(sz,val);
+    mutex[5].post();
+}
+
+
+/************************************************************************/
+void exchangeData::resize_counterv(const int sz, const double val)
+{
+    mutex[6].wait();
+    counterv.resize(sz,val);
+    mutex[6].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_xd(const Vector &_xd)
+{
+    mutex[0].wait();
+    xd=_xd;
+    mutex[0].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_qd(const Vector &_qd)
+{
+    mutex[1].wait();
+    qd=_qd;
+    mutex[1].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_qd(const int i, const double val)
+{
+    mutex[1].wait();
+    qd[i]=val;
+    mutex[1].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_x(const Vector &_x)
+{
+    mutex[2].wait();
+    x=_x;
+    mutex[2].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_q(const Vector &_q)
+{
+    mutex[3].wait();
+    q=_q;
+    mutex[3].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_torso(const Vector &_torso)
+{
+    mutex[4].wait();
+    torso=_torso;
+    mutex[4].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_v(const Vector &_v)
+{
+    mutex[5].wait();
+    v=_v;
+    mutex[5].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_counterv(const Vector &_counterv)
+{
+    mutex[6].wait();
+    counterv=_counterv;
+    mutex[6].post();
+}
+
+
+/************************************************************************/
+void exchangeData::set_fpFrame(const Matrix &_S)
+{
+    mutex[7].wait();
+    S=_S;
+    mutex[7].post();
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_xd()
+{
+    mutex[0].wait();
+    Vector _xd=xd;
+    mutex[0].post();
+
+    return _xd;
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_qd()
+{
+    mutex[1].wait();
+    Vector _qd=qd;
+    mutex[1].post();
+
+    return _qd;
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_x()
+{
+    mutex[2].wait();
+    Vector _x=x;
+    mutex[2].post();
+
+    return _x;
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_q()
+{
+    mutex[3].wait();
+    Vector _q=q;
+    mutex[3].post();
+
+    return _q;
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_torso()
+{
+    mutex[4].wait();
+    Vector _torso=torso;
+    mutex[4].post();
+
+    return _torso;
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_v()
+{
+    mutex[5].wait();
+    Vector _v=v;
+    mutex[5].post();
+
+    return _v;
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_counterv()
+{
+    mutex[6].wait();
+    Vector _counterv=counterv;
+    mutex[6].post();
+
+    return _counterv;
+}
+
+
+/************************************************************************/
+Matrix exchangeData::get_fpFrame()
+{
+    mutex[7].wait();
+    Matrix _S=S;
+    mutex[7].post();
+
+    return _S;
+}
+
+
+/************************************************************************/
 bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
 {
     *Prj=NULL;

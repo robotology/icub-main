@@ -221,10 +221,9 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
             H1(i,3)=fp[i]-H1(i,3);
             H2(i,3)=fp[i]-H2(i,3);
         }
-    
-        fprelv=commData->get_v()[0]*cross(H0,2,H0,3)+
-               commData->get_v()[1]*cross(H1,2,H1,3)+
-               commData->get_v()[2]*cross(H2,2,H2,3);
+
+        Vector v=commData->get_v();
+        fprelv=v[0]*cross(H0,2,H0,3)+v[1]*cross(H1,2,H1,3)+v[2]*cross(H2,2,H2,3);
     }
 
     return -1.0*(pinv(eyesJ)*fprelv);
@@ -314,23 +313,29 @@ void EyePinvRefGen::run()
 
             // compensate neck rotation at eyes level
             if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
-                commData->get_counterv()=getEyesCounterVelocity(eyesJ,fp);
+                commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             else
-                commData->get_counterv()=0.0;
+            {
+                Vector zeros=commData->get_counterv(); zeros=0.0;
+                commData->set_counterv(zeros);
+            }
 
             // update reference
             qd=I->integrate(v+commData->get_counterv());
         }
         else
-            commData->get_counterv()=0.0;
+        {
+            Vector zeros=commData->get_counterv(); zeros=0.0;
+            commData->set_counterv(zeros);
+        }
 
         // set a new target position
-        commData->get_xd()=xd;
-        commData->get_x()=fp;
-        commData->get_qd()[3]=qd[0];
-        commData->get_qd()[4]=qd[1];
-        commData->get_qd()[5]=qd[2];
-        commData->get_fpFrame()=chainNeck->getH();
+        commData->set_xd(xd);
+        commData->set_x(fp);
+        commData->set_qd(3,qd[0]);
+        commData->set_qd(4,qd[1]);
+        commData->set_qd(5,qd[2]);
+        commData->set_fpFrame(chainNeck->getH());
     }
 }
 
@@ -716,14 +721,14 @@ bool Solver::threadInit()
     computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
     // init commData structure
-    commData->get_xd()=fp;
-    commData->get_qd()=fbHead;
-    commData->get_x()=fp;
-    commData->get_q()=fbHead;
-    commData->get_torso()=fbTorso;
-    commData->get_v().resize(fbHead.length(),0.0);
-    commData->get_counterv().resize(3,0.0);
-    commData->get_fpFrame()=chainNeck->getH();
+    commData->set_xd(fp);
+    commData->set_qd(fbHead);
+    commData->set_x(fp);
+    commData->set_q(fbHead);
+    commData->set_torso(fbTorso);
+    commData->resize_v(fbHead.length(),0.0);
+    commData->resize_counterv(3,0.0);
+    commData->set_fpFrame(chainNeck->getH());
 
     port_xd=new xdPort(fp,this);
     port_xd->useCallback();
@@ -759,7 +764,7 @@ void Solver::run()
     Vector &xd=port_xd->get_xdDelayed();
 
     // update the target straightaway 
-    commData->get_xd()=xd;
+    commData->set_xd(xd);
 
     bool torsoChanged=false;
 
@@ -831,9 +836,9 @@ void Solver::run()
         neckPos=invNeck->solve(neckPos,xd,*pgDir);
 
         // update neck pitch,roll,yaw        
-        commData->get_qd()[0]=neckPos[0];
-        commData->get_qd()[1]=neckPos[1];
-        commData->get_qd()[2]=neckPos[2];
+        commData->set_qd(0,neckPos[0]);
+        commData->set_qd(1,neckPos[1]);
+        commData->set_qd(2,neckPos[2]);
     }
 
     // latch quantities

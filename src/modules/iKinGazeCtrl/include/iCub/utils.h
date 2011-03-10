@@ -21,7 +21,7 @@
 
 #include <yarp/os/Thread.h>
 #include <yarp/os/Event.h>
-#include <yarp/os/Stamp.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
@@ -61,12 +61,12 @@ class xdPort : public BufferedPort<Bottle>,
 protected:
     void  *slv;
 
-    Event  syncEvent;
+    Event  syncEvent;    
     Vector xd;
     Vector xdDelayed;
     bool   isNew;
     bool   isNewDelayed;
-    bool   closing;
+    bool   closing;    
 
     virtual void onRead(Bottle &b);
     virtual void run();
@@ -88,6 +88,8 @@ public:
 class exchangeData
 {
 protected:
+    Semaphore mutex[8];
+
     Vector xd,qd;
     Vector x,q,torso;
     Vector v,counterv;
@@ -96,20 +98,30 @@ protected:
     bool   canCtrlBeDisabled;
 
 public:
-    exchangeData()
-    {
-        isCtrlActive=false;
-        canCtrlBeDisabled=true;
-    }
+    exchangeData();
 
-    Vector &get_xd()                { return xd;                }
-    Vector &get_qd()                { return qd;                }
-    Vector &get_x()                 { return x;                 }
-    Vector &get_q()                 { return q;                 }
-    Vector &get_torso()             { return torso;             }
-    Vector &get_v()                 { return v;                 }
-    Vector &get_counterv()          { return counterv;          }
-    Matrix &get_fpFrame()           { return S;                 }
+    void    resize_v(const int sz, const double val);
+    void    resize_counterv(const int sz, const double val);
+
+    void    set_xd(const Vector &_xd);
+    void    set_qd(const Vector &_qd);
+    void    set_qd(const int i, const double val);
+    void    set_x(const Vector &_x);
+    void    set_q(const Vector &_q);
+    void    set_torso(const Vector &_torso);
+    void    set_v(const Vector &_v);
+    void    set_counterv(const Vector &_counterv);
+    void    set_fpFrame(const Matrix &_S);
+
+    Vector  get_xd();
+    Vector  get_qd();
+    Vector  get_x();
+    Vector  get_q();
+    Vector  get_torso();
+    Vector  get_v();
+    Vector  get_counterv();
+    Matrix  get_fpFrame();
+                                                  
     bool   &get_isCtrlActive()      { return isCtrlActive;      }
     bool   &get_canCtrlBeDisabled() { return canCtrlBeDisabled; }
 };

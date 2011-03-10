@@ -178,19 +178,18 @@ void Localizer::setPidOptions(const Bottle &options)
 /************************************************************************/
 Vector Localizer::getCurAbsAngles()
 {
-    Vector fp(4);
-    fp[0]=commData->get_x()[0];
-    fp[1]=commData->get_x()[1];
-    fp[2]=commData->get_x()[2];
-    fp[3]=1.0;  // impose homogeneous coordinates
+    Vector fp=commData->get_x();
+    fp.push_back(1.0);  // impose homogeneous coordinates
 
     // get fp wrt head-centered system
     Vector fph=invEyeCAbsFrame*fp;
 
+    Vector q=commData->get_q();
     Vector ang(3);
+
     ang[0]=atan2(fph[0],fph[2]);
     ang[1]=-atan2(fph[1],fph[2]);
-    ang[2]=commData->get_q()[5];
+    ang[2]=q[5];
 
     return ang;
 }
@@ -206,8 +205,8 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
     Vector q(8);
     if (type=="rel")
     {
-        Vector &torso=commData->get_torso();
-        Vector &head=commData->get_q();
+        Vector torso=commData->get_torso();
+        Vector head=commData->get_q();
 
         q[0]=torso[0];
         q[1]=torso[1];
@@ -251,7 +250,7 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
     Vector fph, xd;
     if (type=="rel")
     {
-        Matrix &frame=commData->get_fpFrame();
+        Matrix frame=commData->get_fpFrame();
         fph=SE3inv(frame)*fp;       // get fp wrt relative head-centered frame
         xd=frame*(R*fph);           // apply rotation and retrieve fp wrt root frame
     }
@@ -281,8 +280,8 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 
     if (invPrj)
     {
-        Vector &torso=commData->get_torso();
-        Vector &head=commData->get_q();
+        Vector torso=commData->get_torso();
+        Vector head=commData->get_q();
 
         Vector q(8);
         q[0]=torso[0];
