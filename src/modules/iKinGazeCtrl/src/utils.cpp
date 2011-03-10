@@ -19,6 +19,15 @@
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
+#define MUTEX_XD        0
+#define MUTEX_QD        1
+#define MUTEX_X         2
+#define MUTEX_Q         3
+#define MUTEX_TORSO     4
+#define MUTEX_V         5
+#define MUTEX_COUNTERV  6
+#define MUTEX_FPFRAME   7
+
 
 /************************************************************************/
 xdPort::xdPort(const Vector &xd0, void *_slv)
@@ -105,108 +114,108 @@ exchangeData::exchangeData()
 /************************************************************************/
 void exchangeData::resize_v(const int sz, const double val)
 {
-    mutex[5].wait();
+    mutex[MUTEX_V].wait();
     v.resize(sz,val);
-    mutex[5].post();
+    mutex[MUTEX_V].post();
 }
 
 
 /************************************************************************/
 void exchangeData::resize_counterv(const int sz, const double val)
 {
-    mutex[6].wait();
+    mutex[MUTEX_COUNTERV].wait();
     counterv.resize(sz,val);
-    mutex[6].post();
+    mutex[MUTEX_COUNTERV].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_xd(const Vector &_xd)
 {
-    mutex[0].wait();
+    mutex[MUTEX_XD].wait();
     xd=_xd;
-    mutex[0].post();
+    mutex[MUTEX_XD].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_qd(const Vector &_qd)
 {
-    mutex[1].wait();
+    mutex[MUTEX_QD].wait();
     qd=_qd;
-    mutex[1].post();
+    mutex[MUTEX_QD].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_qd(const int i, const double val)
 {
-    mutex[1].wait();
+    mutex[MUTEX_QD].wait();
     qd[i]=val;
-    mutex[1].post();
+    mutex[MUTEX_QD].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_x(const Vector &_x)
 {
-    mutex[2].wait();
+    mutex[MUTEX_X].wait();
     x=_x;
-    mutex[2].post();
+    mutex[MUTEX_X].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_q(const Vector &_q)
 {
-    mutex[3].wait();
+    mutex[MUTEX_Q].wait();
     q=_q;
-    mutex[3].post();
+    mutex[MUTEX_Q].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_torso(const Vector &_torso)
 {
-    mutex[4].wait();
+    mutex[MUTEX_TORSO].wait();
     torso=_torso;
-    mutex[4].post();
+    mutex[MUTEX_TORSO].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_v(const Vector &_v)
 {
-    mutex[5].wait();
+    mutex[MUTEX_V].wait();
     v=_v;
-    mutex[5].post();
+    mutex[MUTEX_V].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_counterv(const Vector &_counterv)
 {
-    mutex[6].wait();
+    mutex[MUTEX_COUNTERV].wait();
     counterv=_counterv;
-    mutex[6].post();
+    mutex[MUTEX_COUNTERV].post();
 }
 
 
 /************************************************************************/
 void exchangeData::set_fpFrame(const Matrix &_S)
 {
-    mutex[7].wait();
+    mutex[MUTEX_FPFRAME].wait();
     S=_S;
-    mutex[7].post();
+    mutex[MUTEX_FPFRAME].post();
 }
 
 
 /************************************************************************/
 Vector exchangeData::get_xd()
 {
-    mutex[0].wait();
+    mutex[MUTEX_XD].wait();
     Vector _xd=xd;
-    mutex[0].post();
+    mutex[MUTEX_XD].post();
 
     return _xd;
 }
@@ -215,9 +224,9 @@ Vector exchangeData::get_xd()
 /************************************************************************/
 Vector exchangeData::get_qd()
 {
-    mutex[1].wait();
+    mutex[MUTEX_QD].wait();
     Vector _qd=qd;
-    mutex[1].post();
+    mutex[MUTEX_QD].post();
 
     return _qd;
 }
@@ -226,9 +235,9 @@ Vector exchangeData::get_qd()
 /************************************************************************/
 Vector exchangeData::get_x()
 {
-    mutex[2].wait();
+    mutex[MUTEX_X].wait();
     Vector _x=x;
-    mutex[2].post();
+    mutex[MUTEX_X].post();
 
     return _x;
 }
@@ -237,9 +246,9 @@ Vector exchangeData::get_x()
 /************************************************************************/
 Vector exchangeData::get_q()
 {
-    mutex[3].wait();
+    mutex[MUTEX_Q].wait();
     Vector _q=q;
-    mutex[3].post();
+    mutex[MUTEX_Q].post();
 
     return _q;
 }
@@ -248,9 +257,9 @@ Vector exchangeData::get_q()
 /************************************************************************/
 Vector exchangeData::get_torso()
 {
-    mutex[4].wait();
+    mutex[MUTEX_TORSO].wait();
     Vector _torso=torso;
-    mutex[4].post();
+    mutex[MUTEX_TORSO].post();
 
     return _torso;
 }
@@ -259,9 +268,9 @@ Vector exchangeData::get_torso()
 /************************************************************************/
 Vector exchangeData::get_v()
 {
-    mutex[5].wait();
+    mutex[MUTEX_V].wait();
     Vector _v=v;
-    mutex[5].post();
+    mutex[MUTEX_V].post();
 
     return _v;
 }
@@ -270,9 +279,9 @@ Vector exchangeData::get_v()
 /************************************************************************/
 Vector exchangeData::get_counterv()
 {
-    mutex[6].wait();
+    mutex[MUTEX_COUNTERV].wait();
     Vector _counterv=counterv;
-    mutex[6].post();
+    mutex[MUTEX_COUNTERV].post();
 
     return _counterv;
 }
@@ -281,9 +290,9 @@ Vector exchangeData::get_counterv()
 /************************************************************************/
 Matrix exchangeData::get_fpFrame()
 {
-    mutex[7].wait();
+    mutex[MUTEX_FPFRAME].wait();
     Matrix _S=S;
-    mutex[7].post();
+    mutex[MUTEX_FPFRAME].post();
 
     return _S;
 }
