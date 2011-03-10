@@ -166,7 +166,6 @@ public:
         config.fromConfigFile(filename);
         bool ret=true;
 
-        Value tmp;
         for(int k=0;k<LIMBS;k++)
             {
                 Bottle seqFile=config.findGroup(tags[k].c_str());
@@ -182,6 +181,8 @@ public:
                         Bottle &xtmp=seqFile.findGroup(tmp).findGroup("jointPositions");
                         Vector vect;
                         vect.resize(nj);
+                        if (nj!=xtmp.size())
+                            fprintf(stdout,"**** WARNING: mismatch of sizes in the input file!\n");
                         for(int l=0;l<xtmp.size();l++)
                             vect[l]=xtmp.get(l+1).asDouble();
                         sequences[k].push_back(vect);
