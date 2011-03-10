@@ -55,9 +55,9 @@ CameraCalibration EyeTableProjection::getCameraCalibration(Property& p) {
 }
 
 EyeTableProjection::EyeTableProjection(const ConstString& eye, Property& calibration,
-		const Vector* tabletop) :
-	SimpleHomography(getCameraCalibration(calibration), tabletop), eye(eye.c_str()), camera(eye),
-			safetyRadius(0.2) {
+		const Vector* tabletop, const bool headV2) :
+	SimpleHomography(getCameraCalibration(calibration), tabletop), eye(headV2?string(eye.c_str())+"_v2":eye.c_str()),
+            camera(eye), safetyRadius(0.2) {
 
 	if (eye != "right" && eye != "left") {
 		throw invalid_argument("You have to properly specify one of the eyes (\"left\" | \"right\"");

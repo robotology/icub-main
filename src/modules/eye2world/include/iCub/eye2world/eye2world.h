@@ -246,7 +246,8 @@ class Eye2world: public vislab::yarp::util::ThreadedRFModule {
 
 		WorkerThread(const vislab::yarp::util::OptionManager& moduleOptions,
 				const vislab::yarp::util::Contactables& ports, struct PortIds ids, std::map<
-						const std::string, ::yarp::os::Property*>& cameras, ::yarp::os::Property& table);
+						const std::string, ::yarp::os::Property*>& cameras, ::yarp::os::Property& table,
+                     const bool headV2);
 		~WorkerThread();
 		bool threadInit();
 		void threadRelease();
@@ -262,6 +263,7 @@ class Eye2world: public vislab::yarp::util::ThreadedRFModule {
 protected:
 	WorkerThread *workerThread;
 	virtual ::yarp::os::Thread* createWorkerThread();
+    bool headV2;
 
 public:
 	/**

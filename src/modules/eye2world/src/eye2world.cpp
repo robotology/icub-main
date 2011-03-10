@@ -80,6 +80,8 @@ bool Eye2world::configure(ResourceFinder &rf) {
 			"Output port providing 3D coordinates as Bottle(double:x, double:y, double:z)").asString());
 	dataPorts.add(id.Output_Coordinates3d, str, new BufferedPort<Bottle> );
 
+    headV2=rf.check("headV2");
+
 	Property config;
 	if (!config.fromConfigFile(calibrationFilename)) {
 		return false;
@@ -108,13 +110,13 @@ bool Eye2world::configure(ResourceFinder &rf) {
 }
 
 Thread* Eye2world::createWorkerThread() {
-	workerThread = new WorkerThread(moduleOptions, dataPorts, id, cameras, tabletopPosition);
+	workerThread = new WorkerThread(moduleOptions, dataPorts, id, cameras, tabletopPosition, headV2);
 	return workerThread;
 }
 
 Eye2world::WorkerThread::WorkerThread(const OptionManager& moduleOptions,
 		const Contactables& ports, struct PortIds ids, map<const string, Property*>& cams,
-		Property& table) :
+		Property& table, const bool headV2) :
 	RFWorkerThread(moduleOptions, ports) {
 
 	id = ids;
@@ -132,7 +134,7 @@ Eye2world::WorkerThread::WorkerThread(const OptionManager& moduleOptions,
 		const string key = itr->first;
 		Property calib = *itr->second;
 
-		projections[key] = new EyeTableProjection(key.c_str(), calib, &v);
+		projections[key] = new EyeTableProjection(key.c_str(), calib, &v, headV2);
 	}
 }
 

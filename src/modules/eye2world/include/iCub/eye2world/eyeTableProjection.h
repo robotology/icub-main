@@ -45,10 +45,11 @@ public:
 	 * @param eye The specifier of the the eye to use ("right" | "left").
 	 * @param calibration The calibration of the eye according to the configuration
 	 * 				files produced by the calibration modules for the eye cameras.
-	 * @param tabletop The relative offset of the tabletop to the reference frame of the robot.
+     * @param tabletop The relative offset of the tabletop to the reference frame of the robot. 
+     * @param headV2 true iff head v.2 is employed 
 	 */
 	EyeTableProjection(const ::yarp::os::ConstString& eye, ::yarp::os::Property& calibration,
-			const ::yarp::sig::Vector* tabletop = NULL);
+			const ::yarp::sig::Vector* tabletop = NULL, const bool headV2 = false);
 	/**
 	 * The destructor.
 	 */
