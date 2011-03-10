@@ -1168,7 +1168,7 @@ bool CartesianSolver::decodeDOF(const Vector &_dof)
     {
         if (_dof[i]>1.0)
             continue;
-        else if (_dof[i])
+        else if (_dof[i]!=0.0)
             prt->chn->releaseLink(i);
         else
             prt->chn->blockLink(i);
