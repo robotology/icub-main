@@ -67,13 +67,14 @@ bool eye2RootFrameTransformer::configure(ResourceFinder &rf)
     string eyeType=rf.find("eye").asString().c_str();
     string name=rf.find("name").asString().c_str();
     string stemNamePort="/"+name;
+    bool headV2=rf.check("headV2");
 
     _inputHeadPort.open((stemNamePort+"/head:i").c_str());
     _inputTorsoPort.open((stemNamePort+"/torso:i").c_str());
     _inputTargetPosPort.open((stemNamePort+"/targetPos:i").c_str());
     _outputTargetPosPort.open((stemNamePort+"/targetPos:o").c_str());
     
-    eye = new iCubEye(eyeType);
+    eye = new iCubEye(headV2?eyeType+"_v2":eyeType);
     eyeType = eye->getType();   // update eyeType
     cout<<"Working with the "<<eyeType<<" eye"<<endl;
 
@@ -86,7 +87,7 @@ bool eye2RootFrameTransformer::configure(ResourceFinder &rf)
     receivedHead = false;
     receivedTorso = false;
     receivedTargetPos = false;
-    isLeftEye=eyeType=="left";
+    isLeftEye=(eyeType=="left")||(eyeType=="left_v2");
 
     v.resize(8);
     eyeTargetPos.resize(4);
