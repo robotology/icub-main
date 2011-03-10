@@ -118,19 +118,18 @@ void SimpleHomography::project(const Vector& in, Vector& out) {
 	Vector p_c(3);
 	p_c[0] = (in[0] - cameraCalibration.cx) / cameraCalibration.fx; // x_c/z_c
 	p_c[1] = (in[1] - cameraCalibration.cy) / cameraCalibration.fy; // y_c/z_c
-	p_c[2] = 1; // z_c/z_c
+	p_c[2] = 1.0; // z_c/z_c
 
 	Vector p_t = H * p_c;
-	p_t.resize(p_t.length() + 1);
 
 	// points at the "additional offset plane"
 	p_t[0] = p_t[0] / p_t[2];
 	p_t[1] = p_t[1] / p_t[2];
-	p_t[2] = 0;
-	p_t[3] = 1;
+	p_t[2] = 0.0;
+    p_t.push_back(1.0);
 
 	out = T_rt * p_t;
-	out.resize(3);
+	out.pop_back();
 
 #ifdef DEBUG
 	printVector(p_c);
