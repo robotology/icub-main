@@ -82,6 +82,10 @@
  * - out &lt;PORT&gt; <br />
  *   specifies the output port name for the resulting 3D coordinates. <br />
  *   default: /out
+ *  
+ * - headV2 
+ *   when this options is specified then the kinematic structure of
+ *   the hardware v2 of the head is referred.
  *
  * 
  * \section portsa_sec Ports Accessed
