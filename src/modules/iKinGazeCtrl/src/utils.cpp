@@ -57,11 +57,11 @@ xdPort::~xdPort()
 /************************************************************************/
 void xdPort::onRead(Bottle &b)
 {
-    size_t bLen=b.size();
-    size_t xdLen=xd.length();
-    size_t n=bLen>xdLen ? xdLen : bLen;
+    int bLen=b.size();
+    int xdLen=xd.length();
+    int n=bLen>xdLen ? xdLen : bLen;
 
-    for (unsigned int i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
 
     isNew=true;
