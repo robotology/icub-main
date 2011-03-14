@@ -380,7 +380,7 @@ protected:
         if (b.check(type))
         {
             Bottle &grp=b.findGroup(type);
-            sw[i]=grp.get(1).asString()=="on"?1.0:0.0;
+            sw[i]=grp.get(1).asString().c_str()=="on"?1.0:0.0;
 
             if (grp.check("min","Getting minimum value"))
             {
@@ -440,7 +440,7 @@ protected:
                 orien[i]=grp.get(1+i).asDouble();
         }
 
-        impVelMode=b.check("impedance_velocity_mode",Value("off"),"Getting arm impedance-velocity-mode").asString()=="on"?true:false;
+        impVelMode=b.check("impedance_velocity_mode",Value("off"),"Getting arm impedance-velocity-mode").asString().c_str()=="on"?true:false;
 
         if (b.check("impedance_stiffness","Getting joints stiffness"))
         {
@@ -1137,9 +1137,9 @@ public:
         Bottle &bGeneral=rf.findGroup("general");
         bGeneral.setMonitor(rf.getMonitor());
         robot=bGeneral.check("robot",Value("icub"),"Getting robot name").asString().c_str();
-        useLeftArm=bGeneral.check("left_arm",Value("on"),"Getting left arm use flag").asString()=="on"?true:false;
-        useRightArm=bGeneral.check("right_arm",Value("on"),"Getting right arm use flag").asString()=="on"?true:false;
-        useNetwork=bGeneral.check("use_network",Value("off"),"Getting network enable").asString()=="on"?true:false;
+        useLeftArm=bGeneral.check("left_arm",Value("on"),"Getting left arm use flag").asString().c_str()=="on"?true:false;
+        useRightArm=bGeneral.check("right_arm",Value("on"),"Getting right arm use flag").asString().c_str()=="on"?true:false;
+        useNetwork=bGeneral.check("use_network",Value("off"),"Getting network enable").asString().c_str()=="on"?true:false;
         trajTime=bGeneral.check("traj_time",Value(2.0),"Getting trajectory time").asDouble();
         idleTmo=bGeneral.check("idle_tmo",Value(1e10),"Getting idle timeout").asDouble();        
         setRate(bGeneral.check("thread_period",Value(DEFAULT_THR_PER),"Getting thread period [ms]").asInt());
