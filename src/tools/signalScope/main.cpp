@@ -70,7 +70,7 @@ and MATLAB is in the path.
  
 --channel \e chn 
 - The parameter \e chn identifies the vector element to be 
-  acquired (first element by default).
+  acquired (first element by default, i.e. 1).
  
 --Fs \e Fs 
 - The parameter \e Fs specifies the sample rate in Hz (50 Hz by 
