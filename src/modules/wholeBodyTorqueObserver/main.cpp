@@ -481,13 +481,7 @@ public:
 			startRun = Time::now();
 			ftNew = 0;
 		}
-        static unsigned long int alive_counter = 0;
-        static double curr_time = Time::now();
-        if (Time::now() - curr_time > 60)
-        {
-            printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
-            curr_time = Time::now();
-        }
+
 		thread_status = STATUS_OK;
         if(readAndUpdate(false) == false)
 		{
@@ -1386,9 +1380,9 @@ public:
 	}
     bool updateModule() 
 	{
-	    static unsigned long int alive_counter = 0;
+	    /*static unsigned long int alive_counter = 0;
         static double curr_time = Time::now();
-        if (Time::now() - curr_time > 60)
+        if (Time::now() - curr_time > 60)*/
         {
             printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
