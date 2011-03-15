@@ -700,6 +700,7 @@ public:
 		{
 			if(Network::exists("/filtered/inertial:o"))
 			{
+				fprintf(stderr,"connection exists! starting calibration...\n");
 				
 				isCalibrated = true;
 				Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
@@ -723,6 +724,8 @@ public:
 				printf("torques: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", LATorques(0), LATorques(1), LATorques(2), LATorques(3), LATorques(4), LATorques(5), LATorques(6)); 
 				printf("inertial: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
 			}
+			else
+				fprintf(stderr,"waiting for connections from wholeBodyTorqueObserver...\n");
 		}
     }
     void threadRelease()
