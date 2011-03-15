@@ -485,13 +485,12 @@ public:
 			d2p0[0] = inertial_measurements[0];
 			d2p0[1] = inertial_measurements[1];
 			d2p0[2] = inertial_measurements[2];
-			w0 [0] = inertial_measurements[3];
-			w0 [1] = inertial_measurements[4];
-			w0 [2] = inertial_measurements[5];
-			dw0 [0] = inertial_measurements[6];
-			dw0 [1] = inertial_measurements[7];
-			dw0 [2] = inertial_measurements[8];
-			//dw0 = eval_domega(w0);
+			w0 [0] = 0;
+			w0 [1] = 0;
+			w0 [2] = 0;
+			dw0 [0] = 0;
+			dw0 [1] = 0;
+			dw0 [2] = 0;
 		}
 		
 		getUpperEncodersSpeedAndAcceleration();
