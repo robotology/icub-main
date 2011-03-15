@@ -1996,6 +1996,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                     //get the full scale values from the strain board
             		for (int ch=0; ch<6; ch++)
 			        {
+						analogSensor->getScaleFactor()[ch]=1e-9;
 				        unsigned int i=0;
 				        res.startPacket();
 				        res._writeBuffer[0].setId(destId);
