@@ -179,6 +179,7 @@ private:
 
 	Vector torques_LA,torques_RA,torques_LL,torques_RL;
 	Vector ampli_larm, ampli_rarm, ampli_lleg, ampli_rleg;
+	bool isCalibrated;
 	
     Vector evalVelUp(const Vector &x)
     {
@@ -362,11 +363,11 @@ public:
 		iTqs_leg_left		= 0;
 		iImp_leg_right		= 0;
 		iTqs_leg_right		= 0;
+		isCalibrated = false;
 
 	    //---------------------PORTS-------------------------//
 		port_inertial=new BufferedPort<Vector>;
 		port_inertial->open("/gravityCompensator/inertial:i");
-		Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
 
 		
 		additional_offset=new BufferedPort<Vector>;
@@ -603,26 +604,6 @@ public:
 
     bool threadInit()
     {       
-		setZeroJntAngVelAcc();
-		setUpperMeasure();
-		setLowerMeasure();
-
-		readAndUpdate(true);
-
-		Vector F_up(6);
-		F_up=0.0;
-		icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-		Matrix F_sens_up = icub.upperTorso->estimateSensorsWrench(F_ext_up,false);
-		icub.lowerTorso->setInertialMeasure(icub.upperTorso->getTorsoAngVel(),
-											icub.upperTorso->getTorsoAngAcc(),
-											icub.upperTorso->getTorsoLinAcc());
-		Matrix F_sens_low = icub.lowerTorso->estimateSensorsWrench(F_ext_low,false);
-		evalTorques();
-        Vector LATorques = icub.upperTorso->getTorques("left_arm");
-        printf("encoders: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", encoders_arm_left(0), encoders_arm_left(1), encoders_arm_left(2), encoders_arm_left(3), encoders_arm_left(4), encoders_arm_left(5), encoders_arm_left(6)); 
-        printf("torques: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", LATorques(0), LATorques(1), LATorques(2), LATorques(3), LATorques(4), LATorques(5), LATorques(6)); 
-        printf("inertial: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
- 
 		return true;
     }
 	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false)
@@ -672,45 +653,76 @@ public:
 	}
     void run()
     {  
+		if(isCalibrated==true)
+		{
 		
-		setUpperMeasure();
-		setLowerMeasure();
+			setUpperMeasure();
+			setLowerMeasure();
 
-		readAndUpdate(true);
+			readAndUpdate(true);
 
-		Vector F_up(6);
-		F_up=0.0;
-		icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-		Matrix F_sens_up = icub.upperTorso->estimateSensorsWrench(F_ext_up,false);
-		icub.lowerTorso->setInertialMeasure(icub.upperTorso->getTorsoAngVel(),
-											icub.upperTorso->getTorsoAngAcc(),
-											icub.upperTorso->getTorsoLinAcc());
-		Matrix F_sens_low = icub.lowerTorso->estimateSensorsWrench(F_ext_low,false);
-		evalTorques();
-		
-		if (iCtrlMode_arm_left)  
-		{
-			feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
-			left_arm_torques->prepare()  =  torques_LA;
-			left_arm_torques->write();
+			Vector F_up(6);
+			F_up=0.0;
+			icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+			Matrix F_sens_up = icub.upperTorso->estimateSensorsWrench(F_ext_up,false);
+			icub.lowerTorso->setInertialMeasure(icub.upperTorso->getTorsoAngVel(),
+												icub.upperTorso->getTorsoAngAcc(),
+												icub.upperTorso->getTorsoLinAcc());
+			Matrix F_sens_low = icub.lowerTorso->estimateSensorsWrench(F_ext_low,false);
+			evalTorques();
+			
+			if (iCtrlMode_arm_left)  
+			{
+				feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
+				left_arm_torques->prepare()  =  torques_LA;
+				left_arm_torques->write();
+			}
+			if (iCtrlMode_arm_right)
+			{
+				feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
+				right_arm_torques->prepare() =  torques_RA;
+				right_arm_torques->write();
+			}
+			if (iCtrlMode_leg_left)	
+			{
+				feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
+				right_leg_torques->prepare() =  torques_RL;
+				right_leg_torques->write();
+			}
+			if (iCtrlMode_leg_right)
+			{
+				feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
+				left_leg_torques->prepare()  =  torques_LL;
+				left_leg_torques->write();
+			}
 		}
-		if (iCtrlMode_arm_right)
+		else
 		{
-			feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
-			right_arm_torques->prepare() =  torques_RA;
-			right_arm_torques->write();
-		}
-		if (iCtrlMode_leg_left)	
-		{
-			feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
-			right_leg_torques->prepare() =  torques_RL;
-			right_leg_torques->write();
-		}
-		if (iCtrlMode_leg_right)
-		{
-			feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
-			left_leg_torques->prepare()  =  torques_LL;
-			left_leg_torques->write();
+			if(Network::exists("/filtered/inertial:o"))
+			{
+				
+				isCalibrated = true;
+				Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
+				setZeroJntAngVelAcc();
+				setUpperMeasure();
+				setLowerMeasure();
+
+				readAndUpdate(true);
+
+				Vector F_up(6);
+				F_up=0.0;
+				icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
+				Matrix F_sens_up = icub.upperTorso->estimateSensorsWrench(F_ext_up,false);
+				icub.lowerTorso->setInertialMeasure(icub.upperTorso->getTorsoAngVel(),
+													icub.upperTorso->getTorsoAngAcc(),
+													icub.upperTorso->getTorsoLinAcc());
+				Matrix F_sens_low = icub.lowerTorso->estimateSensorsWrench(F_ext_low,false);
+				evalTorques();
+				Vector LATorques = icub.upperTorso->getTorques("left_arm");
+				printf("encoders: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", encoders_arm_left(0), encoders_arm_left(1), encoders_arm_left(2), encoders_arm_left(3), encoders_arm_left(4), encoders_arm_left(5), encoders_arm_left(6)); 
+				printf("torques: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", LATorques(0), LATorques(1), LATorques(2), LATorques(3), LATorques(4), LATorques(5), LATorques(6)); 
+				printf("inertial: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
+			}
 		}
     }
     void threadRelease()
