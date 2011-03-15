@@ -700,7 +700,10 @@ public:
 			if(Network::exists("/filtered/inertial:o"))
 			{
 				fprintf(stderr,"connection exists! starting calibration...\n");
-				
+				//the following delay is required because even if the filtered port exists, may be the 
+				//low pass filtered values have not reached yet the correct value. 
+				Time::delay(1.0); 
+
 				isCalibrated = true;
 				Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
 				setZeroJntAngVelAcc();
@@ -724,7 +727,10 @@ public:
 				printf("inertial: %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
 			}
 			else
+			{
 				fprintf(stderr,"waiting for connections from wholeBodyTorqueObserver...\n");
+				Time::delay(1.0);
+			}
 		}
     }
     void threadRelease()
