@@ -1,5 +1,8 @@
 <cluster name="icub01" user="icub">
 
+<!-- specify type="yarpserver" or type="yarpserver3" to use the old or new nameserver default behavior is to use yarpserver3 -->
+<!-- nameserver namespace="/root" node="icubsrv" type="yarpserver"> </nameserver> -->
+<!-- nameserver namespace="/root" node="icubsrv" type="yarpserver3"> </nameserver> -->
 <nameserver namespace="/root" node="icubsrv"> </nameserver>
 
 <node display="true">icubsrv</node>

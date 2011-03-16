@@ -96,17 +96,19 @@ class RemoteExecWindow:
             i=i+1
 
 class Cluster:
-    def __init__(self, name, user, namespace, nsNode, nodes):
+    def __init__(self, name, user, namespace, nsNode, nsType, nodes):
         self.name=name
         self.user=user
         self.namespace=namespace
         self.nsNode=nsNode
         self.nodes=nodes
+        self.nsType=nsType
 
     def display(self):
         print "--- Cluster %s:" %self.name
         print "User is: %s" % self.user
         print "Nameserver %s " %self.namespace,
+        print "type: %s " %self.nsType,
         print "is on %s" % self.nsNode
 
         print "Nodes are:"
@@ -331,9 +333,14 @@ class App:
         self.checkNs()
         if self.nsFlag.get()==0:
             cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' start']
+	    if (self.cluster.nsType=='yarpserver3'):
+                cmd.append('yarpserver3')
+            elif(self.cluster.nsType=='yarpserver'):
+                 cmd.append('yarpserver')
+       		
             print 'Running',
             print cmd
-            ret=subprocess.Popen(cmd).wait()
+            #ret=subprocess.Popen(cmd).wait()
             time.sleep(0.5)
             self.checkNs()
         else:
@@ -370,6 +377,7 @@ if __name__ == '__main__':
         nameserver=cluster.getElementsByTagName("nameserver")[0]
         namespace=nameserver.getAttribute("namespace")
         namespaceNode=nameserver.getAttribute("node")
+	namespaceType=nameserver.getAttribute("type")
         nodes=cluster.getElementsByTagName("node")
 
         nodeList=[]
@@ -385,7 +393,7 @@ if __name__ == '__main__':
 
             nodeList.append(newNode)
 
-    cl=Cluster(name, user, namespace, namespaceNode, nodeList)
+    cl=Cluster(name, user, namespace, namespaceNode, namespaceType, nodeList)
     cl.display()
 
     root = Tk()
