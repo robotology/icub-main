@@ -13,13 +13,13 @@ case "$1" in
 			yarpserver) 
 				echo "Starting up yarp server"
 				$cmd "cp -f $YARP_DIR/bin/yarpserver /tmp/yarpserver"
-				$cmd "/tmp/yarpserver 2>&1 1>/dev/null &"
+				$cmd "/tmp/yarpserver >/dev/null 2>&1 &"
 				echo "done!"
 				;;
 			*) #yarpserver3 is the default
 				echo "Starting up yarp server"
 				$cmd "cp -f $YARP_DIR/bin/yarpserver3 /tmp/yarpserver3"
-				$cmd "/tmp/yarpserver3 --portdb /tmp/ports.db --subdb /tmp/subs.db 2>&1 1>/dev/null &"
+				$cmd "/tmp/yarpserver3 --portdb /tmp/ports.db --subdb /tmp/subs.db >/dev/null 2>&1 &"
 				echo "done!"
 				;;
 		esac
