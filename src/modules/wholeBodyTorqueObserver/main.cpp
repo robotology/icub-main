@@ -287,7 +287,7 @@ private:
 		allJnt = 0;
         int jnt=0;
         iencs_arm_left->getAxes(&jnt);
-        encoders_arm_left.resize(jnt);
+        encoders_arm_left.resize(jnt,0.0);
         F_LArm.resize(6,0.0);
         F_iDyn_LArm.resize(6,0.0);
         Offset_LArm.resize(6,0.0);
@@ -300,7 +300,7 @@ private:
 		ft_arm_right = 0;
 		jnt = 0;
         iencs_arm_right->getAxes(&jnt);
-        encoders_arm_right.resize(jnt);
+        encoders_arm_right.resize(jnt,0.0);
 		q_rarm.resize(7,0.0);
 		dq_rarm.resize(7,0.0);
 		d2q_rarm.resize(7,0.0);
@@ -312,7 +312,7 @@ private:
 		// Head variables
 		jnt = 0;
         iencs_head->getAxes(&jnt);
-        encoders_head.resize(jnt);
+        encoders_head.resize(jnt,0.0);
 		q_head.resize(3,0.0);
 		dq_head.resize(3,0.0);
 		d2q_head.resize(3,0.0);
@@ -333,13 +333,13 @@ private:
         int jnt=0;
         if (iencs_leg_left) iencs_leg_left->getAxes(&jnt);
 		else jnt = 6; //default value
-        encoders_leg_left.resize(jnt);
+        encoders_leg_left.resize(jnt,0.0);
         F_LLeg.resize(6,0.0);
         F_iDyn_LLeg.resize(6,0.0);
         Offset_LLeg.resize(6,0.0);
-		q_lleg.resize(7,0.0);
-		dq_lleg.resize(7,0.0);
-		d2q_lleg.resize(7,0.0);
+		q_lleg.resize(6,0.0);
+		dq_lleg.resize(6,0.0);
+		d2q_lleg.resize(6,0.0);
 		allJnt+=jnt;
 
 		// Right_leg variables
@@ -347,10 +347,10 @@ private:
 		jnt = 0;
         if (iencs_leg_right) iencs_leg_right->getAxes(&jnt);
 		else jnt = 6; //default value
-        encoders_leg_right.resize(jnt);
-		q_rleg.resize(7,0.0);
-		dq_rleg.resize(7,0.0);
-		d2q_rleg.resize(7,0.0);
+        encoders_leg_right.resize(jnt,0.0);
+		q_rleg.resize(6,0.0);
+		dq_rleg.resize(6,0.0);
+		d2q_rleg.resize(6,0.0);
         F_RLeg.resize(6,0.0);
         F_iDyn_RLeg.resize(6,0.0);
         Offset_RLeg.resize(6,0.0);
@@ -359,7 +359,7 @@ private:
 		// Head variables
 		jnt = 0;
         iencs_torso->getAxes(&jnt);
-        encoders_torso.resize(jnt);
+        encoders_torso.resize(jnt,0.0);
 		q_torso.resize(3,0.0);
 		dq_torso.resize(3,0.0);
 		d2q_torso.resize(3,0.0);
@@ -1427,7 +1427,10 @@ int main(int argc, char * argv[])
     Network yarp;
 
     if (!yarp.checkNetwork())
+	{
+		fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
+	}
 
     wholeBodyTorqueObserver obs;
 
