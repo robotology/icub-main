@@ -17,6 +17,7 @@
 ##Public License for more details
 
 # No longer looking for $ICUB_ROBOTNAME env variable
+# Modified to accept DISPLAY value in xlm
 	
 import xml.dom.minidom
 import subprocess
@@ -25,9 +26,10 @@ import time
 from Tkinter import *
 
 class Node:
-    def __init__(self, name, display):
+    def __init__(self, name, display, dispValue):
         self.name=name
         self.display=display
+	self.displayValue=dispValue;
         
 class RemoteExecWindow:
     def __init__(self, master, user, nodes):
@@ -267,8 +269,14 @@ class App:
             running=i.next().get()
             
             if running==0 and selected==1:
+		cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start '] 
+		print node.displayValue
                 if node.display:
-                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ', 'display']
+		    if (node.displayValue == ""):
+                    	cmd.append('display')
+		    else:
+			cmd.append('display ')
+			cmd.append(node.displayValue)
                 else:
                     cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
                     
@@ -385,11 +393,12 @@ if __name__ == '__main__':
 
             if (node.hasAttributes()):
                 a=node.getAttribute("display")
-                if a:
-                    newNode=Node(node.firstChild.data, True)
-                    
+                if ( a=="true" or a=="True" or a=="TRUE" ): 
+                    newNode=Node(node.firstChild.data, True, "")
+		else:
+		    newNode=Node(node.firstChild.data, True, a)
             else:
-                newNode=Node(node.firstChild.data, False)
+                newNode=Node(node.firstChild.data, False, "")
 
             nodeList.append(newNode)
 

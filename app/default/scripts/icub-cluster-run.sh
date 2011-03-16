@@ -11,18 +11,27 @@ cmd="bash -c";
 
 case "$1" in
 	start)
-		if [ k$2 == "kdisplay" ];
+		if [ "k$3" != "k" ];
+			then
+			disp=$3
+		else
+			disp=":0.0"
+		fi
+
+		if [ "k$2" == "kdisplay" ];
 			then
 			echo "enabling display on $ID"
-			export DISPLAY=:0.0
+			export DISPLAY=$disp
 			xhost +
+			echo "Display set to: $DISPLAY"
 		fi
 		
-		echo "Starting up yarp run for $ID"
-		$cmd "cp -f $YARP_DIR/bin/yarprun /tmp/yarprun"
-		$cmd "cd /tmp;./yarprun --server $ID 2>&1 2>/tmp/yarprunserver.log &"
-		$cmd "echo \"`date` starting yarprun\" >> /tmp/yarprun.log"
-		echo "done!"
+		
+		#echo "Starting up yarp run for $ID"
+		#$cmd "cp -f $YARP_DIR/bin/yarprun /tmp/yarprun"
+		#$cmd "cd /tmp;./yarprun --server $ID 2>&1 2>/tmp/yarprunserver.log &"
+		#$cmd "echo \"`date` starting yarprun\" >> /tmp/yarprun.log"
+		#echo "done!"
 		;;
 	
 	kill)

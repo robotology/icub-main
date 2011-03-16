@@ -3,9 +3,9 @@
 <!-- specify type="yarpserver" or type="yarpserver3" to use the old or new nameserver default behavior is to use yarpserver3 -->
 <!-- nameserver namespace="/root" node="icubsrv" type="yarpserver"> </nameserver> -->
 <!-- nameserver namespace="/root" node="icubsrv" type="yarpserver3"> </nameserver> -->
-<nameserver namespace="/root" node="icubsrv"> </nameserver>
+<nameserver namespace="/root" node="icubsrv" type="yarpserver"> </nameserver>
 
-<node display="true">icubsrv</node>
+<node display=":0.0">icubsrv</node>
 <node>pc104</node>
 
 </cluster>
