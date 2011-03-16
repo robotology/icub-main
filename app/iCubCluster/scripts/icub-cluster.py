@@ -340,7 +340,7 @@ class App:
        		
             print 'Running',
             print cmd
-            #ret=subprocess.Popen(cmd).wait()
+            ret=subprocess.Popen(cmd).wait()
             time.sleep(0.5)
             self.checkNs()
         else:
