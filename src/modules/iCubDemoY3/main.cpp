@@ -181,9 +181,9 @@ public:
                         Bottle &xtmp=seqFile.findGroup(tmp).findGroup("jointPositions");
                         Vector vect;
                         vect.resize(nj);
-                        if (nj!=xtmp.size())
-                            fprintf(stdout,"**** WARNING: mismatch of sizes in the input file!\n");
-                        for(int l=0;l<xtmp.size();l++)
+                        if (nj!=xtmp.size()-1)
+                            fprintf(stdout,"**** WARNING: mismatch of sizes in the input file! nj=%d, xtmp=%d \n", nj, xtmp.size());
+                        for(int l=0;l<xtmp.size()-1;l++)
                             vect[l]=xtmp.get(l+1).asDouble();
                         sequences[k].push_back(vect);
                     }
