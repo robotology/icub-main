@@ -270,7 +270,6 @@ class App:
             
             if running==0 and selected==1:
 		cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start '] 
-		print node.displayValue
                 if node.display:
 		    if (node.displayValue == ""):
                     	cmd.append('display')
