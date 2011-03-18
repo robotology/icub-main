@@ -1,0 +1,7 @@
+time 1.5
+[include RIGHTARM "crf/armRight"]
+[include LEFTARM "crf/armLeft"]
+[include RIGHTLEG "crf/legRight"]
+[include LEFTLEG "crf/legLeft"]
+[include TORSO "crf/torso"]
+[include HEAD "crf/head"]
