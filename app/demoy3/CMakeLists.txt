@@ -5,6 +5,7 @@ icub_app(${appname})
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml.template)
 file(GLOB positions ${CMAKE_CURRENT_SOURCE_DIR}/*)
 file(GLOB crf-files ${CMAKE_CURRENT_SOURCE_DIR}/crf/*)
+file(GLOB hannover-files ${CMAKE_CURRENT_SOURCE_DIR}/hannover/*)
 
 icub_app_install(${appname}
   FILES ${scripts}
@@ -13,6 +14,10 @@ icub_app_install(${appname}
 icub_app_install(${appname}
   FILES ${crf-files}
   DESTINATION crf)
+
+icub_app_install(${appname}
+  FILES ${hannover-files}
+  DESTINATION hannover)
 
 icub_app_install(${appname}
   FILES ${positions})
