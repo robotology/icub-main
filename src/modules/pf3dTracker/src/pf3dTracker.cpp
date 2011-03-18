@@ -392,7 +392,7 @@ bool PF3DTracker::open(Searchable& config)
     //
     trackedObjectColorTemplate = rf.findFile("trackedObjectColorTemplate");
     dataFileName = rf.findFile("trackedObjectTemp");
-    //TESTcout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<trackedObjectColorTemplate<<endl;
+    //cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<trackedObjectColorTemplate<<endl;
   
     failure=computeTemplateHistogram(trackedObjectColorTemplate,dataFileName);
     if(failure)
@@ -472,6 +472,9 @@ bool PF3DTracker::open(Searchable& config)
 
     //allocate memory for the particles;
     _particles=cvCreateMat(7,_nParticles,CV_32FC1);
+    //fill the memory with zeros, so that valgrind won't complain.
+    cvSetZero(_particles);
+
     //define ways of accessing the particles:
     _particles1 = cvCreateMatHeader( 1,_nParticles, CV_32FC1);
     cvInitMatHeader( _particles1, 1, _nParticles, CV_32FC1, _particles->data.ptr, _particles->step );
@@ -498,10 +501,13 @@ bool PF3DTracker::open(Searchable& config)
 
     //allocate memory for "noise"
     _noise=cvCreateMat(6,_nParticles,CV_32FC1);
+    cvSetZero(_noise);
     _noise1 = cvCreateMatHeader( 3,_nParticles, CV_32FC1);
     cvInitMatHeader( _noise1, 3, _nParticles, CV_32FC1, _noise->data.ptr, _noise->step );
+    cvSetZero(_noise1);
     _noise2 = cvCreateMatHeader( 3,_nParticles, CV_32FC1);
     cvInitMatHeader( _noise2, 3, _nParticles, CV_32FC1, _noise->data.ptr + _noise->step*3, _noise->step );
+    cvSetZero(_noise2);
 
     //resampling-related stuff.
     _nChildren = cvCreateMat(1,_nParticles,CV_32FC1);
@@ -535,6 +541,7 @@ bool PF3DTracker::open(Searchable& config)
 
     if(_initializationMethod=="3dEstimate")
     {
+        //cout<<"Initialization method = 3dEstimate."<<endl;
         //*************************************************************************
         //generate a set of random particles near the estimated initial 3D position
         //*************************************************************************
@@ -750,6 +757,8 @@ bool PF3DTracker::updateModule()
             {
                 if(_colorTransfPolicy==1)
                 {
+                  //TEST
+                  //cout<<"count= "<<count<<endl;
                   evaluateHypothesisPerspectiveFromRgbImage(_model3dPointsMat,(float)cvmGet(_particles,0,count),(float)cvmGet(_particles,1,count),(float)cvmGet(_particles,2,count),_modelHistogramMat,_rawImage,_perspectiveFx,_perspectiveFy, _perspectiveCx,_perspectiveCy,_inside_outside_difference_weight,likelihood);
                 }
                 else
@@ -912,7 +921,6 @@ bool PF3DTracker::updateModule()
                                       //this is intended to prevent that the particles collapse on the origin when you start the tracker.
           if(maxLikelihood>minimum_likelihood)
           {
-            //cout<<"T2\n";
             //fflush(stdout);
     
             //TODO non funziona ancora, credo: nelle particelle resamplate ci sono dei not-a-number.
@@ -923,7 +931,6 @@ bool PF3DTracker::updateModule()
           }
           else //I can't apply a resampling with all weights equal to 0!
           {
-            //cout<<"T3\n";
             //fflush(stdout);
     
             //TODO:CHECK that copying the whole thing creates no problems.
@@ -933,8 +940,17 @@ bool PF3DTracker::updateModule()
           }
     
             //cout<<"after resampling\n";
+/*            cout<<"Accessing the first column of _NewParticles after the resampling: "<<((float*)(_newParticles->data.ptr +  + _newParticles->step*0))[0]<<" ";
+            cout<<((float*)(_newParticles->data.ptr + _newParticles->step*1))[0]<<" ";
+            cout<<((float*)(_newParticles->data.ptr + _newParticles->step*2))[0]<<" ";
+            cout<<((float*)(_newParticles->data.ptr + _newParticles->step*3))[0]<<" ";
+            cout<<((float*)(_newParticles->data.ptr + _newParticles->step*4))[0]<<" ";
+            cout<<((float*)(_newParticles->data.ptr + _newParticles->step*5))[0]<<" ";
+            cout<<((float*)(_newParticles->data.ptr + _newParticles->step*6))[0]<<endl;*/
+            
             //printMat(_newParticles);
     
+          //printMat(_A);
     
           //the "good" particles now are in _newParticles
           //******************************************
@@ -942,16 +958,27 @@ bool PF3DTracker::updateModule()
           //******************************************
           cvMatMul(_A,_newParticles,_particles);
     
+/*          cout<<"First element of _particles after the multiplication (1): "<<((float*)(_particles->data.ptr + _particles->step*0))[0]<<endl;*/
     
           //the "good" particles now are in _particles
           //********************************************************
           //APPLY THE MOTION MODEL: 2.ADD THE EFFECT OF ACCELERATION
           //********************************************************
-    
+            mean = 0; //NEW
+            //cout<<"Noise generation parameters: mean= "<<mean<<", accelStDev= "<<_accelStDev<<endl;
+            //cout<<"_noise1 before generation: "<<((float*)(_noise1->data.ptr + _noise->step*0))[0]<<endl;
             cvRandArr( &rngState, _noise1, CV_RAND_NORMAL, cvScalar(mean), cvScalar(_accelStDev));
+            //cout<<"_noise1 after generation: "<<((float*)(_noise1->data.ptr + _noise->step*0))[0]<<endl;
+
             cvCopy(_noise1,_noise2);
             cvConvertScale( _noise1, _noise1, 0.5, 0 );//influence on the position is half that on speed.
+            //cout<<"_noise1 after rescaling: "<<((float*)(_noise1->data.ptr + _noise->step*0))[0]<<endl;
+
+            //cout<<"_noise2 after generation: "<<((float*)(_noise2->data.ptr + _noise->step*0))[0]<<endl;
+            
+            //cout<<"First element of _particles before addition of noise: "<<((float*)(_particles->data.ptr + _particles->step*0))[0]<<endl;
             cvAdd(_particles1to6,_noise,_particles1to6);//sum the influence of the noise to the previous status
+            //cout<<"First element of _particles after addition of noise: "<<((float*)(_particles->data.ptr + _particles->step*0))[0]<<endl;
             //used to be like this:
                 //       IPP32F NOISE[6*_NPARTICLES];
                 //       MEAN=0;
@@ -965,7 +992,7 @@ bool PF3DTracker::updateModule()
     
         }
     
-    
+
         //************************************
         //DRAW THE SAMPLED POINTS ON THE IMAGE
         //************************************
@@ -985,7 +1012,7 @@ bool PF3DTracker::updateModule()
         }
     
     
-    
+
         //******************************************
         //WRITE ESTIMATES TO THE SCREEN, SECOND PART
         //******************************************
@@ -1085,7 +1112,7 @@ bool PF3DTracker::updateModule()
         //_secondCpuClocks=ippGetCpuClocks();
         //_thirdCpuClocks=ippGetCpuClocks();
     
-    
+
         //*******************
         //acquire a new image
         //*******************
@@ -1112,6 +1139,7 @@ bool PF3DTracker::updateModule()
     {
 
     }
+
 
     return true; //continue. //in this case it means everything is fine.
 }
@@ -1654,6 +1682,7 @@ bool PF3DTracker::systematic_resampling(CvMat* oldParticlesState, CvMat* oldPart
             ((float*)(newParticlesState->data.ptr + newParticlesState->step*3))[npIndex]=((float*)(oldParticlesState->data.ptr + oldParticlesState->step*3))[cIndex-1];
             ((float*)(newParticlesState->data.ptr + newParticlesState->step*4))[npIndex]=((float*)(oldParticlesState->data.ptr + oldParticlesState->step*4))[cIndex-1];
             ((float*)(newParticlesState->data.ptr + newParticlesState->step*5))[npIndex]=((float*)(oldParticlesState->data.ptr + oldParticlesState->step*5))[cIndex-1];
+            ((float*)(newParticlesState->data.ptr + newParticlesState->step*6))[npIndex]=0; //initializing weight
             rIndex=rIndex+1;
             npIndex=npIndex+1;
         }
