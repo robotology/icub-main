@@ -20,11 +20,13 @@
       <tag>ikinhead</tag> 
     </module>
 
+    <!--
     <module>
       <name>iKinGazeCtrl</name>
       <node>icubbrain2</node>
       <tag>gazeCtrl</tag> 
     </module>
+    -->
 
 	<module>
       <name>yarpview</name>

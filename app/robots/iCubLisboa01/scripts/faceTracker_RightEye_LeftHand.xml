@@ -27,13 +27,15 @@
       <tag>ikinhead</tag> 
     </module>
 
+    <!--
     <module>
       <name>iKinGazeCtrl</name>
       <node>icubbrain2</node>
       <tag>gazeCtrl</tag> 
     </module>
+    -->
 
-	<module>
+    <module>
       <name>yarpview</name>
       <parameters>--name /faceViewer --out /faceViewer/click:o</parameters>
       <node>chico3</node>
