@@ -121,6 +121,7 @@ static SkinMeshThreadPort *gpSkinMeshThreadPort=NULL;
 static yarp::os::Semaphore gMutex(1);
 static int gbRunning=TRUE;
 static int gWidth=0,gHeight=0,gRowStride=0,gImageSize=0,gMapSize=0,gImageArea=0;
+static int gXpos=32,gYpos=32;
 static double *gpActivationMap=NULL;
 static guchar *gpImageBuff=NULL;
 static guint gTimer;
@@ -258,6 +259,9 @@ int main(int argc, char *argv[])
 
     gWidth =rf.find("width" ).asInt();
     gHeight=rf.find("height").asInt();
+    if (rf.check("xpos")) gXpos=rf.find("xpos").asInt();
+    if (rf.check("ypos")) gYpos=rf.find("ypos").asInt();
+
 	bool useCan = rf.check("useCan");
 	if (useCan==true) 
 	{
@@ -278,7 +282,7 @@ int main(int argc, char *argv[])
     gpActivationMap=new double[gImageArea];
     gpImageBuff=new guchar[gImageSize];
 
-    gtk_init (&argc, &argv);
+    gtk_init(&argc,&argv);
 	
     GtkWidget *pMainWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	std::string window_title="iCubSkinGui (robotPart: ";
@@ -301,7 +305,7 @@ int main(int argc, char *argv[])
     gTimer=g_timeout_add(50,(GSourceFunc)timer_handler,(gpointer)pMainWindow);
 
 	gtk_widget_show_all(pMainWindow);
-	gtk_window_move(GTK_WINDOW(pMainWindow),32,32);
+	gtk_window_move(GTK_WINDOW(pMainWindow),gXpos,gYpos);
 
 	if (TheadType==TYPE_CAN)
 	{
