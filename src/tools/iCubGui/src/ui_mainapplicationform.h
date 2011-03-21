@@ -111,6 +111,11 @@ public:
     {
         MainWindow->setName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(703, 818);
+        
+        int xpos=32,ypos=32;
+        if (config.check("xpos")) xpos=config.find("xpos").asInt();
+        if (config.check("ypos")) ypos=config.find("ypos").asInt();
+        MainWindow->move(xpos,ypos);
 
         fileNewAction = new QAction(MainWindow);
         fileNewAction->setName(QString::fromUtf8("fileNewAction"));
@@ -645,17 +650,6 @@ public:
 	
     void retranslateUi(QMainWindow *MainWindow)
     {                
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
     } // retranslateUi
 
 };
