@@ -3,7 +3,8 @@
 
     <dependencies>
       <port>/icub/camcalib/right/out</port>
-      <port>/icub/left_arm/state:o</port> 
+      <port>/icub/left_arm/state:o</port>
+      <port>/iKinGazeCtrl/head/angles:o</port> 
     </dependencies> 
 
     <module>
