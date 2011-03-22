@@ -223,7 +223,8 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::run()
 {
-    bool swOffCond=(norm(commData->get_qd()-fbHead)<GAZECTRL_MOTIONDONE_QTHRES*CTRL_DEG2RAD);
+    Vector new_qd=commData->get_qd();
+    bool swOffCond=(norm(new_qd-fbHead)<GAZECTRL_MOTIONDONE_QTHRES*CTRL_DEG2RAD);
 
     // verify control switching conditions
     if (commData->get_isCtrlActive())
@@ -240,14 +241,15 @@ void Controller::run()
     else if (!swOffCond)
     {
         // switch-on condition
-        commData->get_isCtrlActive()=(commData->get_qd()[0]!=qd[0]) || (commData->get_qd()[1]!=qd[1]) || (commData->get_qd()[2]!=qd[2]) ||
-                                     (commData->get_canCtrlBeDisabled() ? port_xd->get_new() : (norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES));
+        commData->get_isCtrlActive()=(new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
+                                     (commData->get_canCtrlBeDisabled() ?
+                                      port_xd->get_new() : (norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES));
     }
 
     // get data
     xd=commData->get_xd();
-    qd=commData->get_qd();
     fp=commData->get_x();
+    qd=new_qd;
 
     // Introduce the feedback within the control computation
     if (Robotable)
