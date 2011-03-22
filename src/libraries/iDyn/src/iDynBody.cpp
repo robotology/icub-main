@@ -452,7 +452,7 @@ Matrix iDynNode::getRBT(unsigned int iLimb) const
     }
     else
     {
-        if(verbose) fprintf(stderr,"iDynNode: error, could not getRBT() due to out of range index: %d , while we have %d limbs. \n", iLimb, rbtList.size() );
+        if(verbose) fprintf(stderr,"iDynNode: error, could not getRBT() due to out of range index: %d , while we have %d limbs. \n", iLimb, (int) (int)rbtList.size() );
         return Matrix(0,0);
     }
 }
@@ -837,7 +837,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChain)
     }
     else
     {
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,(int) rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -852,7 +852,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChain, unsigned int iLink)
     }
     else
     {
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain, (int)rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -863,7 +863,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
@@ -928,7 +928,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix.\n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix.\n",iChainA,iChainB,(int)rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@
@@ -1063,7 +1063,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
 		return Vector(0);
 	}
 	// - jacobian .. in the same limb @_@
@@ -1123,7 +1123,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
 		return Vector(0);
 	}
 	// - jacobian .. in the same limb @_@
@@ -1199,7 +1199,7 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChain, unsigned int iLink)
     }
     else
     {
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeCOMJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeCOMJacobian() due to out of range index: input limb has index %d > %d. Returning a null matrix. \n",iChain,(int)rbtList.size());
 		return Matrix(0,0);
     }
 }
@@ -1210,7 +1210,7 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsign
 	// - wrong limb index
 	if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
 	{ 
-		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,rbtList.size());
+		if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
 		return Matrix(0,0);
 	}
 	// - jacobian .. in the same limb @_@

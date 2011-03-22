@@ -25,7 +25,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace iCub::iKin;
 using namespace yarp::math;
-const int THREAD_RATE = 150;
+const int THREAD_RATE = 10;
 
 disparityProcessor::disparityProcessor():RateThread(THREAD_RATE){
     cout<< "initialisation process "<<endl;
