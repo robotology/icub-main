@@ -286,7 +286,7 @@ void EyePinvRefGen::run()
                 gyro=*_gyro;
 
         // get current target
-        Vector &xd=port_xd->get_xd();
+        Vector xd=port_xd->get_xd();
 
         // beware of too small vergence
         if (qd[2]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
@@ -761,7 +761,7 @@ void Solver::afterStart(bool s)
 void Solver::run()
 {
     // get the current target
-    Vector &xd=port_xd->get_xdDelayed();
+    Vector xd=port_xd->get_xdDelayed();
 
     // update the target straightaway 
     commData->set_xd(xd);

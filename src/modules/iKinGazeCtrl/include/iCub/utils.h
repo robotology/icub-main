@@ -61,25 +61,27 @@ class xdPort : public BufferedPort<Bottle>,
 protected:
     void  *slv;
 
-    Event  syncEvent;    
-    Vector xd;
-    Vector xdDelayed;
-    bool   isNew;
-    bool   isNewDelayed;
-    bool   closing;    
+    Semaphore mutex_0;
+    Semaphore mutex_1;
+    Event     syncEvent;
+    Vector    xd;
+    Vector    xdDelayed;
+    bool      isNew;
+    bool      isNewDelayed;
+    bool      closing;
 
     virtual void onRead(Bottle &b);
     virtual void run();
 
 public:
     xdPort(const Vector &xd0, void *_slv);
-    void set_xd(const Vector &_xd);
     ~xdPort();
 
     bool   &get_new()        { return isNew;        }
     bool   &get_newDelayed() { return isNewDelayed; }
-    Vector &get_xd()         { return xd;           }
-    Vector &get_xdDelayed()  { return xdDelayed;    }
+    void    set_xd(const Vector &_xd);
+    Vector  get_xd();
+    Vector  get_xdDelayed();
 };
 
 

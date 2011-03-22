@@ -61,10 +61,14 @@ void xdPort::onRead(Bottle &b)
     int xdLen=xd.length();
     int n=bLen>xdLen ? xdLen : bLen;
 
+    mutex_0.wait();
+
     for (int i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
 
     isNew=true;
+
+    mutex_0.post();
 
     syncEvent.signal();
 }
@@ -73,10 +77,36 @@ void xdPort::onRead(Bottle &b)
 /************************************************************************/
 void xdPort::set_xd(const Vector &_xd)
 {
+    mutex_0.wait();
+
     xd=_xd;
     isNew=true;
 
+    mutex_0.post();
+
     syncEvent.signal();
+}
+
+
+/************************************************************************/
+Vector xdPort::get_xd()
+{
+    mutex_0.wait();
+    Vector _xd=xd;
+    mutex_0.post();
+
+    return _xd;
+}
+
+
+/************************************************************************/
+Vector xdPort::get_xdDelayed()
+{
+    mutex_1.wait();
+    Vector _xdDelayed=xdDelayed;
+    mutex_1.post();
+
+    return _xdDelayed;
 }
 
 
@@ -97,8 +127,12 @@ void xdPort::run()
 
         Time::delay(timeDelay);
 
+        mutex_1.wait();
+
         xdDelayed=xd;
         isNewDelayed=true;
+
+        mutex_1.post();
     }
 }
 
