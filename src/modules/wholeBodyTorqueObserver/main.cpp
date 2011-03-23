@@ -569,6 +569,8 @@ public:
 			FM_sens_up = icub_sens.upperTorso->estimateSensorsWrench(F_ext_up,false);
 			icub_sens.lowerTorso->setInertialMeasure(icub_sens.upperTorso->getTorsoAngVel(),icub_sens.upperTorso->getTorsoAngAcc(),icub_sens.upperTorso->getTorsoLinAcc());
 			FM_sens_low = icub_sens.lowerTorso->estimateSensorsWrench(F_ext_low,false);
+			Vector F_ext_up_left=icub.upperTorso->left->getForceMomentEndEff()-icub_sens.upperTorso->left->getForceMomentEndEff();
+			Vector F_ext_up_right=icub.upperTorso->right->getForceMomentEndEff()-icub_sens.upperTorso->right->getForceMomentEndEff();
 
 			// send sensor measures, estimation etc to port
 			compareTest.clear();
@@ -592,6 +594,10 @@ public:
 				compareTest.addDouble(F_RLeg[i]);
 			for(int i=0; i<6;i++)
 				compareTest.addDouble(F_LLeg[i]);
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(F_ext_up_left[i]);
+			for(int i=0; i<6;i++)
+				compareTest.addDouble(F_ext_up_right[i]);
 
 			port_compare_test->prepare() = compareTest;
 			port_compare_test->write();
