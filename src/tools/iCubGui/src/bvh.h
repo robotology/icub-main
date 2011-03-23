@@ -53,12 +53,14 @@ using namespace yarp::os;
 #include "bvhnodeeye.h"
 #include "bvhnoderoot.h"
 
+#include "objectsthread.h"
+
 #define __YARP
 
 class BVH
 {
 public:
-    BVH();
+    BVH(ObjectsThread* objThread=NULL);
     bool Create(yarp::os::ResourceFinder& config);
     ~BVH();
    
@@ -118,7 +120,7 @@ public:
         // visual compensation
         glTranslated(0.0,3.5,0.0);
         
-        pRoot->draw(dEncBuffer,0);
+        pRoot->draw(dEncBuffer,NULL);
         
         glPopMatrix();
     }
@@ -134,6 +136,8 @@ public:
     BVHNode* bvhRead(yarp::os::ResourceFinder& config);
     BVHNode* bvhReadNode(yarp::os::ResourceFinder& config);
     BVHNode* pRoot;
+
+    ObjectsThread *mObjectsThread;
     
     // YARP
     

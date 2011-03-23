@@ -137,16 +137,16 @@ public:
     {
         mMutex.wait();
 
-        glPushMatrix();
-        glScaled(0.075,0.075,0.075);
-        glTranslated(0.0,3.5,0.0);
+        //glPushMatrix();
+        //glScaled(0.075,0.075,0.075);
+        //glTranslated(0.0,3.5,0.0);
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
             mObjects[i]->Draw();
         }
 
-        glPopMatrix();
+        //glPopMatrix();
 
         mMutex.post();
     }

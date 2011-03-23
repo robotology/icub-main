@@ -19,12 +19,16 @@
 #define BVHNODEROOT_H
 
 #include "bvhnoderpy_xyz.h"
+#include "objectsthread.h"
 
 class BVHNodeROOT : public BVHNodeRPY_XYZ
 {
 public:
-    BVHNodeROOT(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,iCubMesh* mesh=0) 
-        : BVHNodeRPY_XYZ(name,enc,yaw,pitch,roll,x,y,z,-180.0,180.0,mesh){}
+    BVHNodeROOT(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,iCubMesh* mesh,ObjectsThread* objThread) 
+        : BVHNodeRPY_XYZ(name,enc,yaw,pitch,roll,x,y,z,-180.0,180.0,mesh)
+    {
+        mObjectsThread=objThread;
+    }
         
     virtual void drawJoint(){}
         
@@ -48,6 +52,11 @@ public:
             glColor4f(0.9,0.8,0.7,1.0);
             pMesh->Draw();
         }
+
+        if (mObjectsThread)
+        {
+            mObjectsThread->draw();
+        }
     
         for (unsigned int i=0; i<children.count(); ++i)
         {
@@ -55,7 +64,10 @@ public:
         }
         
         glPopMatrix();
-    } 
+    }
+
+protected:
+    ObjectsThread *mObjectsThread;
 }; 
 
 #endif

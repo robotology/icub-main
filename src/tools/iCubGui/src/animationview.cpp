@@ -71,7 +71,7 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     setMouseTracking(true);
     setFocusPolicy(QWidget::StrongFocus);
 
-    pBVH=new BVH();
+    pBVH=new BVH(mObjectsThread);
 
     if (!pBVH->Create(config))
     {
@@ -203,7 +203,7 @@ void AnimationView::draw()
 
     pBVH->draw();
 
-    mObjectsThread->draw();
+    //mObjectsThread->draw();
 }
 
 void AnimationView::mouseMoveEvent(QMouseEvent* event)
