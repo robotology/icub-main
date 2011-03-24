@@ -176,6 +176,8 @@ private:
 	BufferedPort<Bottle> *port_LATorques;
 	BufferedPort<Bottle> *port_LLTorques;
 	BufferedPort<Bottle> *port_LWTorques;
+	BufferedPort<Vector> *port_external_wrench_RA;
+	BufferedPort<Vector> *port_external_wrench_LA;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;
@@ -214,7 +216,7 @@ private:
 	Vector all_q_low, all_dq_low, all_d2q_low;
 
     Vector w0,dw0,d2p0,Fend,Muend;
-    Vector F_LArm, F_RArm, F_iDyn_LArm, F_iDyn_RArm, Offset_LArm, Offset_RArm;
+    Vector F_LArm, F_RArm, F_iDyn_LArm, F_iDyn_RArm, Offset_LArm, Offset_RArm, F_ext_left_arm, F_ext_right_arm;
     Vector F_LLeg, F_RLeg, F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
 	Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
 	Vector inertial_measurements;
@@ -446,6 +448,8 @@ public:
 		F_ext_low = 0.0;
 		inertial_measurements.resize(12);
 		inertial_measurements.zero();
+		F_ext_left_arm.resize(6,0.0);
+		F_ext_right_arm.resize(6,0.0);
   
 		//--------------TEST VARIABLES----------------//
         startRun=0.0;
@@ -457,9 +461,13 @@ public:
         port_perf_test = new BufferedPort<Bottle>;
         port_perf_test_ftRead = new BufferedPort<Bottle>;
         port_compare_test = new BufferedPort<Bottle>;  
+        port_external_wrench_RA = new BufferedPort<Vector>;  
+        port_external_wrench_LA = new BufferedPort<Vector>;  
         port_perf_test->open("/wholeBodyTorqueObserver/performance/times:o");
         port_perf_test_ftRead->open("/wholeBodyTorqueObserver/performance/ftread:o");
 		port_compare_test->open("/wholeBodyTorqueObserver/performance/fterr:o");
+		port_external_wrench_RA->open("/wholeBodyTorqueObserver/right_arm/endEffectorWrench:o"); 
+		port_external_wrench_LA->open("/wholeBodyTorqueObserver/left_arm/endEffectorWrench:o"); 
     }
 
     bool threadInit()
@@ -540,6 +548,14 @@ public:
 		writeTorque(RATorques, 3, port_RWTorques); //wrist
 		writeTorque(LATorques, 3, port_LWTorques); //wrist
 		
+		F_ext_left_arm=icub.upperTorso->left->getForceMomentEndEff();//-icub_sens.upperTorso->left->getForceMomentEndEff();
+		F_ext_right_arm=icub.upperTorso->right->getForceMomentEndEff();//-icub_sens.upperTorso->right->getForceMomentEndEff();
+
+		port_external_wrench_RA->prepare() = F_ext_right_arm;
+		port_external_wrench_LA->prepare() = F_ext_left_arm;
+		port_external_wrench_RA->write();
+		port_external_wrench_LA->write();
+		
 		if(test==VOCAB_TEST)
 		{	
 			endRun = Time::now();
@@ -569,9 +585,7 @@ public:
 			FM_sens_up = icub_sens.upperTorso->estimateSensorsWrench(F_ext_up,false);
 			icub_sens.lowerTorso->setInertialMeasure(icub_sens.upperTorso->getTorsoAngVel(),icub_sens.upperTorso->getTorsoAngAcc(),icub_sens.upperTorso->getTorsoLinAcc());
 			FM_sens_low = icub_sens.lowerTorso->estimateSensorsWrench(F_ext_low,false);
-			Vector F_ext_up_left=icub.upperTorso->left->getForceMomentEndEff()-icub_sens.upperTorso->left->getForceMomentEndEff();
-			Vector F_ext_up_right=icub.upperTorso->right->getForceMomentEndEff()-icub_sens.upperTorso->right->getForceMomentEndEff();
-
+			
 			// send sensor measures, estimation etc to port
 			compareTest.clear();
 			compareTest.addInt(ftNew);
@@ -594,10 +608,6 @@ public:
 				compareTest.addDouble(F_RLeg[i]);
 			for(int i=0; i<6;i++)
 				compareTest.addDouble(F_LLeg[i]);
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(F_ext_up_left[i]);
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(F_ext_up_right[i]);
 
 			port_compare_test->prepare() = compareTest;
 			port_compare_test->write();
