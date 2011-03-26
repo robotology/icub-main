@@ -158,7 +158,6 @@ yarp connect /icub/right_arm/state:o /jointVel/pos:i
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
