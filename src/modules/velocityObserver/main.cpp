@@ -259,8 +259,6 @@ private:
     Port                  rpcPort;
 
 public:
-    velObserver() { }
-
     virtual bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
