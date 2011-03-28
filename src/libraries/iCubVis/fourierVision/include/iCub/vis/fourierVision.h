@@ -1,24 +1,17 @@
 /************************************************************************************************
 
-fourierVision - Computer Vision for the RobotCub iCub Humanoid Robot
+fourierVision
+
+A library of computer vision utilities for use with articulated stereo heads 
   
-Early code is based on Fourier segmentation, stereo, and optical flow techniques. 
-Most of the theory underlying this implementation can be found in:
+Most code is based on Fourier segmentation, stereo, and optical flow techniques. 
+The theory underlying this implementation can be found in:
  
-    Vernon, D. "Fourier Vision", Kluwer Academic Publishers, 2001
- 
-Later code is based on work done at Etisalat University College, UAE (www.euc.ae)
-in particular the colour segmentation and head servo control code.
+  D. Vernon, Fourier Vision – Segmentation and Velocity Measurement using the Fourier Transform,
+     Kluwer Academic Publishers, Norwell, Mass., 195 pages, 2001, (ISBN: 0-7923-7413-4), and
+     The Springer International Series in Engineering and Computer Science, Vol. 623 (ISBN: 978-0-7923-7413-8) 
 
-The most recent code is based on the log-polar transform developed at  
-LIRA-Lab, DIST, University of Genoa  (www.liralab.it).
-
-A version to allow use with the Yarp robot software platform (www.yarp.org)
-can be created by undeleting the #define YARP line.
-This version has to be compiled and linked with Cmake (the CMakeLists file is in the src directory)
-
-Yarp has been adopted by RobotCub consortium (www.robotcub.org and www.icub.org)
-as the platform on which to develop the cognitive systems software for the iCub.
+There is also some other code for blob analysis, colour segmentation, vergence control.
 
 This package was implemented by David Vernon
  

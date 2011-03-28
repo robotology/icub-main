@@ -1,36 +1,31 @@
 /************************************************************************************************
 
-eyeCub - Computer Vision for the RobotCub iCub Humanoid Robot
-       (and articulated stereo heads, generally)
+fourierVision
 
+A library of computer vision utilities for use with articulated stereo heads 
   
-Early code is based on Fourier segmentation, stereo, and optical flow techniques. 
-Most of the theory underlying this implementation can be found in:
+Most code is based on Fourier segmentation, stereo, and optical flow techniques. 
+The theory underlying this implementation can be found in:
  
-   Vernon, D. "Fourier Vision", Kluwer Academic Publishers, 2001
- 
-Later code is based on work done at Etisalt University College, UAE (www.euc.ac.ae)
-in particular the colour segmentation and head servo control code.
+  D. Vernon, Fourier Vision – Segmentation and Velocity Measurement using the Fourier Transform,
+     Kluwer Academic Publishers, Norwell, Mass., 195 pages, 2001, (ISBN: 0-7923-7413-4), and
+     The Springer International Series in Engineering and Computer Science, Vol. 623 (ISBN: 978-0-7923-7413-8) 
 
-The most recent code is based on the log-polar transform developed at  
-LIRA-Lab, DIST, University of Genoa  (www.liralab.it).
-
-Yarp has been adopted by RobotCub consortium (www.robotcub.org and www.icub.org)
-as the platform on which to develop the cognitive systems software for the iCub.
+There is also some other code for blob analysis, colour segmentation, vergence control.
 
 This package was implemented by David Vernon
  
 
-
 Audit Trail
 -----------
 
-17/07/07  Created library file fourierVision at VVV '07
-22/10/10  Fixed bug in rectify: force computation of transformation matrix upon first call  DV
+22/10/10  Fixed bug in rectify() to force the computation of transformation matrix upon first call  DV
+25/03/11  Added conditional compilation flag DVR to all the library to be compiled in isolation from the iCub repository
 
 *************************************************************************************************/
  
-
+// WARNING ... comment out when compiling in the iCub repository; the default if for standalone compilation
+//#define DVR 
  
 // System includes
 // ------------------------------------------------------------------------
@@ -49,15 +44,19 @@ Audit Trail
 // fourierVision includes
 // ------------------------------------------------------------------------
 
+#ifdef DVR
+#include <fourierVision.h>
+#else
 #include <iCub/vis/fourierVision.h>
+#endif
 
 
 // Log-Polar includes
 // ------------------------------------------------------------------------
 
-// this should be taken from logpolar library 
-//#include <iCub/vis/RC_DIST_FB_logpolar_mapper.h>
-
+#ifdef DVR
+#include <RC_DIST_FB_logpolar_mapper.h>
+#endif
 
 // Migrate _ftime function and _timeb structure to portable equivalents
 // --paulfitz
@@ -1506,8 +1505,7 @@ void erosion (DVimage *input_image, int radius, DVimage *output_image)
 }
 
 
-//#define ORIGINAL_LOGPOLAR
-#ifdef ORIGINAL_LOGPOLAR
+#ifdef DVR
 /****************************************************************
 * 
 *  Routine Name: log_polar_transform - compute the Log-Polar transform
