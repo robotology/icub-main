@@ -9,6 +9,8 @@ file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini
 file(GLOB models ${CMAKE_CURRENT_SOURCE_DIR}/conf/models/*.bmp
 		  		  ${CMAKE_CURRENT_SOURCE_DIR}/conf/models/*.csv)
 
+file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml)
+
 icub_app_install(${appname} 
 				FILES ${scripts}
 				DESTINATION scripts)
