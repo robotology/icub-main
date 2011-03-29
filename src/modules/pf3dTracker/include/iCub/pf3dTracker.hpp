@@ -65,6 +65,8 @@ class PF3DTracker : public Module
 
 private:
 
+int _numParticlesReceived;
+
 //parameters set during initialization.
 ConstString _inputVideoPortName;
 BufferedPort<ImageOf<PixelRgb> > _inputVideoPort;
@@ -72,6 +74,8 @@ ConstString _outputVideoPortName;
 BufferedPort<ImageOf<PixelRgb> > _outputVideoPort;
 ConstString _outputDataPortName;
 BufferedPort<Bottle> _outputDataPort;
+ConstString _inputParticlePortName;
+BufferedPort<Bottle> _inputParticlePort;
 ConstString _outputParticlePortName;
 BufferedPort<Bottle> _outputParticlePort;
 ConstString _outputAttentionPortName;
