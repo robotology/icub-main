@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 {
     Network yarp;  //set up yarp.
     PF3DTracker tracker; //instanciate the tracker.
-    tracker.setName("/PF3DTracker"); // set default name for the tracker.
+    tracker.setName("/pf3dTracker"); // set default name for the tracker.
     return tracker.runModule(argc,argv); //execute the tracker.
 }
 

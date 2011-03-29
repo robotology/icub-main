@@ -214,27 +214,32 @@ bool PF3DTracker::open(Searchable& config)
 
 
     _inputVideoPortName = botConfig.check("inputVideoPort",
-                                      Value("/PF3DTracker/videoIn"),
+                                      Value("/pf3dTracker/video:i"),
                                       "Input video port (string)").asString();
     _inputVideoPort.open(_inputVideoPortName);
 
     _outputVideoPortName = botConfig.check("outputVideoPort",
-                                       Value("/PF3DTracker/videoOut"),
+                                       Value("/pf3dTracker/video:o"),
                                        "Output video port (string)").asString();
     _outputVideoPort.open(_outputVideoPortName);
 
     _outputDataPortName = botConfig.check("outputDataPort",
-                                      Value("/PF3DTracker/dataOut"),
+                                      Value("/pf3dTracker/data:o"),
                                       "Output data port (string)").asString();
     _outputDataPort.open(_outputDataPortName);
 
+    _inputParticlePortName = botConfig.check("inputParticlePort",
+                                       Value("/pf3dTracker/particles:i"),
+                                       "Input particle port (string)").asString();
+    _inputParticlePort.open(_inputParticlePortName);
+
     _outputParticlePortName = botConfig.check("outputParticlePort",
-                                       Value("/PF3DTracker/particleOut"),
+                                       Value("/pf3dTracker/particles:o"),
                                        "Output particle port (string)").asString();
     _outputParticlePort.open(_outputParticlePortName);
 
     _outputAttentionPortName = botConfig.check("outputAttentionPort",
-                                       Value("/PF3DTracker/attentionOut"),
+                                       Value("/pf3dTracker/attention:o"),
                                        "Output attention port (string)").asString();
     _outputAttentionPort.open(_outputAttentionPortName);
 
@@ -266,7 +271,6 @@ bool PF3DTracker::open(Searchable& config)
     _nParticles = botConfig.check("nParticles",
                                     Value("1000"),
                                     "Number of particles used in the tracker (int)").asInt();
-
 
     _colorTransfPolicy = botConfig.check("colorTransfPolicy",
                                     Value("1"),
@@ -689,7 +693,8 @@ bool PF3DTracker::close()
     _inputVideoPort.close();
     _outputVideoPort.close();
     _outputDataPort.close();
-	_outputUVDataPort.close();
+    _outputUVDataPort.close();
+    _inputParticlePort.close();
     _outputParticlePort.close();
     _outputAttentionPort.close();
 
@@ -707,7 +712,8 @@ bool PF3DTracker::interruptModule()
     _inputVideoPort.interrupt();
     _outputVideoPort.interrupt();
     _outputDataPort.interrupt();
-	_outputUVDataPort.interrupt();
+    _outputUVDataPort.interrupt();
+    _inputParticlePort.interrupt();
     _outputParticlePort.interrupt();
     _outputAttentionPort.interrupt();
 
@@ -910,7 +916,17 @@ bool PF3DTracker::updateModule()
           cout<<"  "<<setiosflags(ios::fixed)<<setprecision(3)<<setw(8)<<weightedMeanZ/1000; //millimeters to meters
           cout<<"  "<<setiosflags(ios::fixed)<<setprecision(5)<<setw(8)<<maxLikelihood/exp((float)20.0); //normalizing likelihood
           cout<<"  "<<setw(5)<<_seeingObject;
-    
+
+
+         //------------------------------------------------------------martim
+         Bottle *particleInput=_inputParticlePort.read(false);
+         if(particleInput==NULL) _numParticlesReceived=0;
+         else _numParticlesReceived=(particleInput->get(0)).asInt();
+         if((unsigned int)_numParticlesReceived > _nParticles){
+           _numParticlesReceived=0;
+           cout<<"PROBLEM: Input particles are more than nParticles.\n";
+         }
+         //------------------------------------------------------------end martim
     
           //**********************
           //RESAMPLE THE PARTICLES
@@ -989,7 +1005,22 @@ bool PF3DTracker::updateModule()
                 //       ippsAdd_32f(noise+_nParticles*3, &_newParticles[3][0], &_particles[3][0], _nParticles*3);  //sum the second batch.
     
     
-    
+		//------------------------------------------------------------martim
+		// get particles from input
+		if(_numParticlesReceived > 0){
+			int topdownParticles = _nParticles - _numParticlesReceived;
+			for(count=0 ; count<_numParticlesReceived ; count++){
+				cvmSet(_particles,0,topdownParticles+count, (particleInput->get(1+count*3+0)).asDouble());
+				cvmSet(_particles,1,topdownParticles+count, (particleInput->get(1+count*3+1)).asDouble());
+				cvmSet(_particles,2,topdownParticles+count, (particleInput->get(1+count*3+2)).asDouble());
+				cvmSet(_particles,3,topdownParticles+count, 0);
+				cvmSet(_particles,4,topdownParticles+count, 0);
+				cvmSet(_particles,5,topdownParticles+count, 0);
+				cvmSet(_particles,6,topdownParticles+count, 0.8); //??
+			}
+			//num_bottomup_objects=(particleInput->get(1+count*3)).asInt();
+		}
+		//------------------------------------------------------------end martim
         }
     
 
@@ -1604,6 +1635,7 @@ bool PF3DTracker::systematic_resampling(CvMat* oldParticlesState, CvMat* oldPart
     int rIndex;  //index of the randomized array
     int cIndex;  //index of the cumulative weight array. cIndex -1 indicates which particle we think of resampling.
     int npIndex; //%new particle index, tells me how many particles have been created so far.
+    int numParticlesToGenerate = _nParticles - _numParticlesReceived; //martim
 
     //%N is the number of particles.
     //[lines, N] = size(oldParticlesWeight);
@@ -1625,7 +1657,7 @@ bool PF3DTracker::systematic_resampling(CvMat* oldParticlesState, CvMat* oldPart
 
     //%GENERATE N RANDOM VALUES
     //u = rand(1)/N; %random value [0,1/N)
-    u=1/(double)_nParticles*((double)rand()/(double)RAND_MAX);
+    u=1/(double)numParticlesToGenerate*((double)rand()/(double)RAND_MAX); //martim
 
     //%the randomized values are going to be u, u+1/N, u+2/N, etc.
     //%instread of accessing this vector, the elements are computed on the fly:
@@ -1668,10 +1700,10 @@ bool PF3DTracker::systematic_resampling(CvMat* oldParticlesState, CvMat* oldPart
     cIndex=1; //index of the cumulative weight array. cIndex -1 indicates which particle we think of resampling.
     npIndex=0; //new particle index, tells me how many particles have been created so far.
 
-    while(npIndex<_nParticles)
+    while(npIndex < numParticlesToGenerate) //martim
     {
         //siamo sicuri che deve essere >=? ??? !!! WARNING
-        if(((float*)(cumWeight->data.ptr))[cIndex]>=(double)rIndex/(double)_nParticles+u)
+        if(((float*)(cumWeight->data.ptr))[cIndex]>=(double)rIndex/(double)numParticlesToGenerate+u) //martim
         {
             //%particle cIndex-1 should be copied.
             //printf("replicating particle %d\n",cIndex-1);
