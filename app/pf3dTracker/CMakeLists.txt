@@ -10,6 +10,10 @@ file(GLOB models ${CMAKE_CURRENT_SOURCE_DIR}/conf/models/*.bmp
 		  		  ${CMAKE_CURRENT_SOURCE_DIR}/conf/models/*.csv)
 
 icub_app_install(${appname} 
+				FILES ${scripts}
+				DESTINATION scripts)
+
+icub_app_install(${appname} 
 				FILES ${conf}
 				DESTINATION conf
 				)
