@@ -12,7 +12,13 @@
                 <name>pf3dTracker</name>
                 <parameters>--from pf3dTracker.ini</parameters>
                 <node>icubbrain1</node>
-                <tag>PF3DTracker_tracker</tag>
+                <tag>pf3dTracker_tracker</tag>
+        </module>
+
+        <module>
+                <name>pf3dBottomup</name>
+                <node>icubbrain1</node>
+                <tag>pf3dBottomup</tag>
         </module>
    
         <module>
@@ -49,6 +55,16 @@
         <connection>
                 <from>/icub/torso/state:o</from>
                 <to>/l2rBall/torso:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/pf3dBottomup/particles:o</from>
+                <to>/pf3dTracker/particles:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/pf3dBottomup/video:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
