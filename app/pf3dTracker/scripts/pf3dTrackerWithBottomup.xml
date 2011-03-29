@@ -20,7 +20,7 @@
      
         <module>
                 <name>yarpview</name>
-                <parameters>--name /PF3DTracker_viewer --x 320 --y 0 --synch</parameters>
+                <parameters>--name /viewer --x 320 --y 0 --synch</parameters>
                 <node>chico3</node>
                 <tag>viewer</tag>
         </module>
@@ -42,7 +42,7 @@
         </connection>
         <connection>
                 <from>/pf3dTracker/video:o</from>
-                <to>viewer</to>
+                <to>/viewer</to>
                 <protocol>udp</protocol>
         </connection>
 
