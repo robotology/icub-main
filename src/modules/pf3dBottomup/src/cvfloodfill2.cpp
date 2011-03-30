@@ -7,6 +7,18 @@
 #include "cv.h"
 #include "cxmisc.h"
 
+#ifndef __BEGIN__
+#define __BEGIN__ __CV_BEGIN__
+#endif
+
+#ifndef __END__
+#define __END__ __CV_END__
+#endif
+
+#ifndef EXIT
+#define EXIT __CV_EXIT__
+#endif
+
 typedef struct CvFFillSegment
 {
     ushort y;
