@@ -922,7 +922,7 @@ bool PF3DTracker::updateModule()
          Bottle *particleInput=_inputParticlePort.read(false);
          if(particleInput==NULL) _numParticlesReceived=0;
          else _numParticlesReceived=(particleInput->get(0)).asInt();
-         if((unsigned int)_numParticlesReceived > _nParticles){
+         if(_numParticlesReceived > _nParticles){
            _numParticlesReceived=0;
            cout<<"PROBLEM: Input particles are more than nParticles.\n";
          }

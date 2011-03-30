@@ -35,10 +35,7 @@ bool pf3dBottomup::updateModule()
 	{
 		CvMemStorage* storage = cvCreateMemStorage(0);
 		CvSeq* contours = 0;
-		CvMoments moments;
-		CvPoint center;
 		double raio=0.03;
-		double m00,m01,m10,area;
 		int num_detected_objects;
 
 		if(_blur>0) cvSmooth(image,image, CV_GAUSSIAN, 0, 0, _blur, 0);
@@ -297,8 +294,8 @@ void pf3dBottomup::calc_hist_from_model_2D(string file, CvHistogram **objhist, i
 {
 	float max_val = 0.f;
 	float bins[35][10], *curbin;
-	int i, j, bin_w;
-	float kernFactor=0.1;
+	int i, j;
+	float kernFactor=0.1F;
 	IplImage *histmodel = 0, *histmask = 0, *histhue = 0, *histsat = 0, *histval = 0;
 	CvHistogram *hist;
 
@@ -328,17 +325,17 @@ void pf3dBottomup::calc_hist_from_model_2D(string file, CvHistogram **objhist, i
 			bins[i][j]=0;
 	for(i=0;i<dims[0];i++)
 		for(j=0;j<dims[1];j++){
-			bins[i][j]+=(1+kernFactor)*cvGetReal2D(hist->bins,i,j);
+			bins[i][j]+=(float)((1+kernFactor)*cvGetReal2D(hist->bins,i,j));
 			//hue e' circular
-			if(i>0) bins[i-1][j]+=kernFactor*cvGetReal2D(hist->bins,i,j); 
-			else bins[dims[0]-1][j]+=kernFactor*cvGetReal2D(hist->bins,i,j);
-			if(i<dims[0]-1) bins[i+1][j]+=kernFactor*cvGetReal2D(hist->bins,i,j); 
-			else bins[0][j]+=kernFactor*cvGetReal2D(hist->bins,i,j);
+			if(i>0) bins[i-1][j]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
+			else bins[dims[0]-1][j]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
+			if(i<dims[0]-1) bins[i+1][j]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
+			else bins[0][j]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
 			//saturacao nao e' circular
-			if(j>0) bins[i][j-1]+=kernFactor*cvGetReal2D(hist->bins,i,j);
-			if(j<dims[1]-1) bins[i][j+1]+=kernFactor*cvGetReal2D(hist->bins,i,j);
-			if(j>1) bins[i][j-2]+=kernFactor*cvGetReal2D(hist->bins,i,j);
-			if(j<dims[1]-2) bins[i][j+2]+=kernFactor*cvGetReal2D(hist->bins,i,j);
+			if(j>0) bins[i][j-1]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
+			if(j<dims[1]-1) bins[i][j+1]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
+			if(j>1) bins[i][j-2]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
+			if(j<dims[1]-2) bins[i][j+2]+=(float)(kernFactor*cvGetReal2D(hist->bins,i,j));
 		}
 	for(i=0;i<dims[0];i++)
 		for(j=0;j<dims[1];j++){
@@ -390,7 +387,7 @@ void pf3dBottomup::scale_space_segmentation(IplImage *img, ScaleSpace *ss, IplIm
 	int pmax=0;
 	int l,i,j,si,sj,aux;
 	int r=1;
-	IplImage *outgray, *outfloat, *floodmask, *allfloat;
+	IplImage *outgray, *outfloat, *floodmask;
 	float *data;
 	int step;
 	uchar *maxdata;
@@ -457,7 +454,6 @@ int pf3dBottomup::object_localization_simple(IplImage *segm, ObjectModel *model,
 	CvSeq* contours = 0;
 	CvMoments moments;
 	CvPoint center;
-	char texto[50];
 	double raio=0.03;
 	double m00,m01,m10,area;
 	double fx,fy,cx,cy;
@@ -474,7 +470,6 @@ int pf3dBottomup::object_localization_simple(IplImage *segm, ObjectModel *model,
 		area = fabs(cvContourArea( contours, CV_WHOLE_SEQ ));
 		if(area>300.0 * segm->width/640){ //threshold area ---> depends on image size....
 			double uu,vv,raiopx,xx,yy,zz;
-			CvRect box;
 
 			cvMoments(contours,&moments,0);
 			m00 = cvGetSpatialMoment( &moments, 0, 0);
@@ -482,7 +477,7 @@ int pf3dBottomup::object_localization_simple(IplImage *segm, ObjectModel *model,
 			m01 = cvGetSpatialMoment( &moments, 0, 1);
 			uu = m10/m00;
 			vv = m01/m00;
-			center = cvPoint(uu, vv);
+			center = cvPoint((int)uu, (int)vv);
 			raiopx = sqrt(1.0*area/PI);
 			zz = raio/( ((uu+raiopx-cx)/fx)-((uu-cx)/fx) ); //usar eixo vv tb? media
 			xx = zz*(uu-cx)/fx;
