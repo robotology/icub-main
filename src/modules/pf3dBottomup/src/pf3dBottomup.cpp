@@ -180,16 +180,10 @@ bool pf3dBottomup::open(Searchable& config)
 				Value(0.03),
 				"Radius of the sphere in case that is our object (double)").asDouble();
 
-	ResourceFinder rf2;
-	rf2.setDefaultContext("pf3dTracker/conf");
-	rf2.setDefaultConfigFile("pf3dTracker.ini");
-	rf2.configure("ICUB_ROOT", 0, NULL);
-
-	trackedObjectColorTemplate = rf2.findFile("trackedObjectColorTemplate");
-	if(trackedObjectColorTemplate==""){
-		cout<<"Couldnt find color model on pf3dTracker.ini, using the one on pf3dBottomup.ini\n";
-		trackedObjectColorTemplate = rf.findFile("trackedObjectColorTemplate");
-		if(trackedObjectColorTemplate=="") return false;
+	trackedObjectColorTemplate = rf.findFile("trackedObjectColorTemplate");
+	if(trackedObjectColorTemplate==""){ 
+		cout<<"Couldnt find color model specified in pf3dBottomup.ini\n";
+		return false;
 	}
 
 	// object model
