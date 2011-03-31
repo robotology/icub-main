@@ -1,0 +1,49 @@
+<application>
+<name>pf3dTracker + pf3dBottomup</name>
+
+        <dependencies>
+                <port>/icub/camcalib/left/out</port>
+        </dependencies>
+      
+        <module>
+                <name>pf3dTracker</name>
+                <parameters>--from pf3dTracker.ini</parameters>
+                <node>pwrNode1</node>
+                <tag>pf3dTracker</tag>
+        </module>
+
+        <module>
+                <name>pf3dBottomup</name>
+                <node>pwrNode1</node>
+                <tag>pf3dBottomup</tag>
+        </module>
+     
+        <module>
+                <name>yarpview</name>
+                <parameters>--name /viewer --x 320 --y 0 --synch</parameters>
+                <node>console</node>
+                <tag>viewer</tag>
+        </module>
+  
+        <connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/pf3dTracker/video:i</to>
+                <protocol>mcast</protocol>
+        </connection>
+        <connection>
+                <from>/pf3dBottomup/particles:o</from>
+                <to>/pf3dTracker/particles:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/pf3dBottomup/video:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/pf3dTracker/video:o</from>
+                <to>/viewer</to>
+                <protocol>udp</protocol>
+        </connection>
+
+</application>
