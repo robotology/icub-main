@@ -34,13 +34,14 @@ in $ICUB_DIR/src. If your comments or classes are not showing up, try
 running:
 
 \verbatim
+  cd $ICUB_ROOT/main
   doxygen conf/Doxyfile.txt
 \endverbatim
 
 locally on your repository, to figure out what's going on.
 The output can be browsed at doc/html/index.html.
 
-This page can be edited at $ICUB_DIR/src/doc/main.dox.
+This page can be edited at $ICUB_ROOT/main/src/doc/main.dox.
 
 *
 */
