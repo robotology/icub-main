@@ -9,7 +9,7 @@ position in the frame attached to the eye.
 
 Copyright (C) 2009 RobotCub Consortium
  
-Author: Matteo Taiana
+Author: Matteo Taiana, Ugo Pattacini
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -17,7 +17,8 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 ... 
  
 \section lib_sec Libraries 
-... 
+- YARP libraries. 
+\ref iKin "iKin" 
  
 \section parameters_sec Parameters
 ... 
