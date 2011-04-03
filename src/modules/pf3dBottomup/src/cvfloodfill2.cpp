@@ -120,7 +120,7 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
 				//Sauvola:
 				varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
 				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-				interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+				interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
 				//Alex:
 //				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
 //				interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
@@ -138,7 +138,7 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
 				//Sauvola:
 				varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
 				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-				interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+				interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
 				//Alex:
 //				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
 //				interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
@@ -213,7 +213,7 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
 								//Sauvola:
 								varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
 								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-								interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+								interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
 								//Alex:
 //								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
 //								interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
@@ -228,7 +228,7 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
 								//Sauvola:
 								varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
 								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-								interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+								interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
 								//Alex:
 //								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
 //								interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
