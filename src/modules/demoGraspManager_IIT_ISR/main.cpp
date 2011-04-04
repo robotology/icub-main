@@ -353,6 +353,7 @@ protected:
     bool rightArmImpVelMode;
 
     double trajTime;
+    double reachTol;
     double idleTimer, idleTmo;
     double hystThres;
     double sphereRadius, sphereTmo;
@@ -557,7 +558,8 @@ protected:
         fprintf(stdout,"*** Initializing %s controller ...\n",type.c_str());
 
         icart->setTrackingMode(false);
-        icart->setTrajTime(trajTime);        
+        icart->setTrajTime(trajTime);
+        icart->setInTargetTol(reachTol);
         icart->getDOF(dof);
 
         for (int j=0; j<sw.length(); j++)
@@ -1141,6 +1143,7 @@ public:
         useRightArm=bGeneral.check("right_arm",Value("on"),"Getting right arm use flag").asString()=="on"?true:false;
         useNetwork=bGeneral.check("use_network",Value("off"),"Getting network enable").asString()=="on"?true:false;
         trajTime=bGeneral.check("traj_time",Value(2.0),"Getting trajectory time").asDouble();
+        reachTol=bGeneral.check("reach_tol",Value(0.01),"Getting reaching tolerance").asDouble();
         idleTmo=bGeneral.check("idle_tmo",Value(1e10),"Getting idle timeout").asDouble();        
         setRate(bGeneral.check("thread_period",Value(DEFAULT_THR_PER),"Getting thread period [ms]").asInt());
 
