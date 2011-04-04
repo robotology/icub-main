@@ -1,0 +1,2 @@
+Builds the project in standalone mode, to avoid loading a huge number of unrelated 
+projects in the IDE.
