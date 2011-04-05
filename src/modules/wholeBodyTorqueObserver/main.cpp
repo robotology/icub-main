@@ -1428,6 +1428,7 @@ int main(int argc, char * argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
+	rf.setDefaultContext("wholeBodyTorqueObserver/conf");
     rf.configure("ICUB_ROOT",argc,argv);
 
     if (rf.check("help"))
