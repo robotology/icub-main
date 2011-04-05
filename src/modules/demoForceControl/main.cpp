@@ -723,6 +723,7 @@ int main(int argc, char * argv[])
     ResourceFinder rf;
     rf.setVerbose();
 
+	rf.setDefaultContext("demoForceControl/conf");
     rf.configure("ICUB_ROOT", argc, argv);
 
 	if (rf.check("help"))
