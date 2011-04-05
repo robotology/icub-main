@@ -65,11 +65,8 @@ INCLUDE_DIRECTORIES(${LM_LIB_DIR}/../include)
 # add our include files into our compiler's search path.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../include)
 
-#SET(LM_LIB ../../../libraries/learningMachine/standalone/liblearningMachine.a)
-#TARGET_LINK_LIBRARIES(${LM_LIB_DIR})
 LINK_DIRECTORIES(${LINK_DIRECTORIES} ${LM_LIB_DIR})
 SET(LM_LIB learningMachine)
-#SET(LM_LIB learningMachine)
 
 
 

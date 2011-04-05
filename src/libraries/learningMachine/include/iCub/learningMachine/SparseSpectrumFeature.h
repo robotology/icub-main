@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2007-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * author:  Arjan Gijsberts
  * email:   arjan.gijsberts@iit.it
  * website: www.robotcub.org
@@ -16,8 +16,8 @@
  * Public License for more details
  */
 
-#ifndef LM_RANDOMFEATURE__
-#define LM_RANDOMFEATURE__
+#ifndef LM_SPARSESPECTRUMFEATURE__
+#define LM_SPARSESPECTRUMFEATURE__
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
@@ -36,34 +36,37 @@ namespace learningmachine {
 /**
  * \ingroup icub_libLM_transformers
  *
- * Implementation of Random Feature preprocessing.
+ * Implementation of Sparse Spectrum preprocessing.
  *
- * \see iCub::learningmachine::SparseSpectrumFeature
+ * \see iCub::learningmachine::RandomFeature
  *
  * See:
- * Random Features for Large-Scale Kernel Machines. Ali Rahimi and Ben Recht.
- *   In Neural Information Processing Systems (NIPS) 2007.
+ * Sparse Spectrum Gaussian Process Regression. Miguel Lazaro-Gredilla,
+ *   Joaquin Quinonero-Candela, Carl Edward Rasmussen, and
+ *   Anibal R. Figueiras-Vidal. In Journal of Machine Learning Research (JMLR)
+ *   2010.
  *
  * \author Arjan Gijsberts
  *
  */
 
-class RandomFeature : public IFixedSizeTransformer {
+class SparseSpectrumFeature : public IFixedSizeTransformer {
 protected:
     /**
-     * Gamma parameter, analoguous to same parameter in RBF kernel.
+     * Noise parameter sigma.
      */
-    double gamma;
+    double sigma;
+
+    /**
+     * Characteristic length-scales ell, analoguous to same parameter in
+     * asymmetric RBF kernel.
+     */
+    Vector ell;
 
     /**
      * Projection matrix W.
      */
     Matrix W;
-
-    /**
-     * Bias vector b.
-     */
-    Vector b;
 
     /*
      * Inherited from ITransformer.
@@ -81,20 +84,22 @@ public:
      *
      * @param dom initial domain size
      * @param cod initial codomain size
-     * @param g initial value for \gamma
+     * @param sigma initial value for sigma
+     * @param ell initial value for \ell
      */
-    RandomFeature(int dom = 1, int cod = 1, double gamma = 1.);
+    //SparseSpectrumFeature(int dom = 1, int cod = 1, Vector* ell = (Vector*) 0x0);
+    SparseSpectrumFeature(int dom = 1, int cod = 1, double sigma = 1., Vector ell = Vector(0));
 
     /**
      * Destructor (empty).
      */
-    virtual ~RandomFeature() { }
+    virtual ~SparseSpectrumFeature() { }
 
     /*
      * Inherited from ITransformer.
      */
-    virtual RandomFeature* clone() {
-        return new RandomFeature(*this);
+    virtual SparseSpectrumFeature* clone() {
+        return new SparseSpectrumFeature(*this);
     }
 
     /*
@@ -133,21 +138,39 @@ public:
     virtual bool configure(Searchable &config);
 
     /**
-     * Accessor for the gamma parameter.
+     * Accessor for the sigma parameter.
      *
-     * @return gamma.
+     * @return sigma.
      */
-    virtual double getGamma() {
-        return this->gamma;
+    virtual double getSigma() {
+        return this->sigma;
     }
 
     /**
-     * Mutator for the gamma parameter.
+     * Mutator for the sigma parameter.
      *
-     * @param g the desired gamma.
+     * @param s the desired sigma.
      */
-    virtual void setGamma(double g) {
-        this->gamma = g;
+    virtual void setSigma(double s) {
+        this->sigma = s;
+    }
+
+    /**
+     * Accessor for the characteristic length-scales parameter ell.
+     *
+     * @return ell.
+     */
+    virtual double getEll() {
+        return this->ell;
+    }
+
+    /**
+     * Mutator for the characteristic length-scales parameter ell.
+     *
+     * @param ell the desired ell.
+     */
+    virtual void setEll(Vector& ell) {
+        this->ell = ell;
         // rebuild projection matrix
         this->reset();
     }

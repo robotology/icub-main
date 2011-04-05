@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2007-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * author:  Arjan Gijsberts
  * email:   arjan.gijsberts@iit.it
  * website: www.robotcub.org
@@ -22,75 +22,70 @@
 
 #include <yarp/math/Rand.h>
 
-#include "iCub/learningMachine/RandomFeature.h"
+#include "iCub/learningMachine/SparseSpectrumFeature.h"
 
-#define TWOPI 6.2831853071795862
+//#define TWOPI 6.2831853071795862
 
 using namespace yarp::math;
 
 namespace iCub {
 namespace learningmachine {
 
-RandomFeature::RandomFeature(int dom, int cod, double gamma) {
-    this->setName("RandomFeature");
+SparseSpectrumFeature::SparseSpectrumFeature(int dom, int cod, Vector ell) {
+    this->setName("SparseSpectrumFeature");
     this->setDomainSize(dom);
     this->setCoDomainSize(cod);
     // will initiate reset automatically
-    this->setGamma(gamma);
+    this->setEll(ell);
 }
 
-Vector RandomFeature::transform(const Vector& input) {
+Vector SparseSpectrumFeature::transform(const Vector& input) {
+    Vector output = Vector
     Vector output = this->IFixedSizeTransformer::transform(input);
 
     // python: x_f = numpy.cos(numpy.dot(self.W, x) + self.bias) / math.sqrt(self.nproj)
-    output = (this->W * input) + this->b;
-    double nprojsq = sqrt((double)this->getCoDomainSize());
-    for(int i = 0; i < output.size(); i++) {
+    output = (this->W * input);
+    //double nprojsq = sqrt((double)this->getCoDomainSize());
+    for(int i = 0; i < output.size(); i+=2) {
         output(i) = cos(output(i)) / nprojsq;
     }
     return output;
 }
 
-void RandomFeature::setDomainSize(int size) {
+void SparseSpectrumFeature::setDomainSize(int size) {
     // call method in base class
     this->IFixedSizeTransformer::setDomainSize(size);
     // rebuild projection matrix
     this->reset();
 }
 
-void RandomFeature::setCoDomainSize(int size) {
+void SparseSpectrumFeature::setCoDomainSize(int size) {
+    assert (size & 0x1 == 0);
     // call method in base class
     this->IFixedSizeTransformer::setCoDomainSize(size);
     // rebuild projection matrix
     this->reset();
 }
 
-void RandomFeature::reset() {
+void SparseSpectrumFeature::reset() {
     this->IFixedSizeTransformer::reset();
 
     // create pseudo random number generators
     yarp::math::RandnScalar prng_normal;
-    yarp::math::RandScalar prng_uniform;
 
     // create new projection matrix
     this->W.resize(this->getCoDomainSize(), this->getDomainSize());
-    double gammasq = sqrt(2 * this->gamma);
 
-    // python: self.W = math.sqrt(2 * self.gamma) * numpy.random.randn(self.nproj, self.n)
+    // fill projection matrix with random and scaled data
     for(int r = 0; r < this->W.rows(); r++) {
         for(int c = 0; c < this->W.cols(); c++) {
-            this->W(r, c) = gammasq * prng_normal.get();
+            this->W(r, c) = prng_normal.get() / self->ell[c];
         }
-    }
-
-    // python: self.bias = 2 * numpy.pi * numpy.random.rand(self.nproj)
-    this->b.resize(this->getCoDomainSize());
-    for(int i = 0; i < this->b.size(); i++) {
-        this->b(i) = TWOPI * prng_uniform.get();
     }
 }
 
-void RandomFeature::writeBottle(Bottle& bot) {
+void SparseSpectrumFeature::writeBottle(Bottle& bot) {
+    for(int )
     bot.addDouble(this->getGamma());
 
     // write bias b
@@ -112,7 +107,7 @@ void RandomFeature::writeBottle(Bottle& bot) {
     this->IFixedSizeTransformer::writeBottle(bot);
 }
 
-void RandomFeature::readBottle(Bottle& bot) {
+void SparseSpectrumFeature::readBottle(Bottle& bot) {
     // make sure to call the superclass's method
     this->IFixedSizeTransformer::readBottle(bot);
 
@@ -135,27 +130,61 @@ void RandomFeature::readBottle(Bottle& bot) {
 }
 
 
+void SparseSpectrumFeature::setEll(Vector& ell) {
+    Vector ls = Vector(this->getDomainSize());
+    ls = 1.;
+    for(unsigned int i = 0; i < min(ell.size(), ls.size()); i++) {
+        ls[i] = ell[i];
+    }
+    this->ell = ls;
+    // rebuild projection matrix
+    this->reset();
+}
 
-std::string RandomFeature::getInfo() {
+
+
+
+std::string SparseSpectrumFeature::getInfo() {
     std::ostringstream buffer;
     buffer << this->IFixedSizeTransformer::getInfo();
-    buffer << " gamma: " << this->gamma;
+    buffer << " sigma: " << this->sigma << " | ";
+    buffer << " ell: " << this->ell->toString();
     return buffer.str();
 }
 
-std::string RandomFeature::getConfigHelp() {
+std::string SparseSpectrumFeature::getConfigHelp() {
     std::ostringstream buffer;
     buffer << this->IFixedSizeTransformer::getConfigHelp();
-    buffer << "  gamma val             Set gamma parameter" << std::endl;
+    buffer << "  sigma val             Set sigma parameter" << std::endl;
+    buffer << "  ell (list)            Set lambda parameter" << std::endl;
     return buffer.str();
 }
 
-bool RandomFeature::configure(Searchable &config) {
+bool SparseSpectrumFeature::configure(Searchable &config) {
     bool success = this->IFixedSizeTransformer::configure(config);
 
-    // format: set gamma val
-    if(config.find("gamma").isDouble() || config.find("gamma").isInt()) {
-        this->setGamma(config.find("gamma").asDouble());
+    // format: set sigma val
+    if(config.find("sigma").isDouble() || config.find("sigma").isInt()) {
+        this->setSigma(config.find("sigma").asDouble());
+        success = true;
+    }
+
+    // format: set ell val | set ell (val ... val)
+    if(config.find("ell").isDouble() || config.find("ell").isInt()) {
+        Vector ls = Vector(this->getDomainSize());
+        ls = config.find("ell").asDouble();
+        this->setEll(ls);
+        success = true;
+    } else if(config.find("ell").isList()) {
+        Bottle* b = config.find("ell").asList();
+        assert(b != 0x0);
+        Vector ls = Vector(0);
+        for(int i = 0; i < b->size(); i++) {
+            if(b->get(i).isDouble() || b->get(i).isInt()) {
+                ls.push(b->get(i).asDouble());
+            }
+        }
+        this->setEll(ls);
         success = true;
     }
     return success;

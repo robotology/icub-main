@@ -18,6 +18,7 @@ SET(LM_HEADER
     include/iCub/learningMachine/IScaler.h
     include/iCub/learningMachine/ITransformer.h
     include/iCub/learningMachine/LinearScaler.h
+    #include/iCub/learningMachine/LinearGPRLearner.h
     include/iCub/learningMachine/LSSVMLearner.h
     include/iCub/learningMachine/MachineCatalogue.h
     include/iCub/learningMachine/MachinePortable.h
@@ -26,6 +27,7 @@ SET(LM_HEADER
     include/iCub/learningMachine/RandomFeature.h
     include/iCub/learningMachine/RLSLearner.h
     include/iCub/learningMachine/ScaleTransformer.h
+    #include/iCub/learningMachine/SparseSpectrumFeature.h
     include/iCub/learningMachine/Standardizer.h
     include/iCub/learningMachine/TransformerCatalogue.h
     include/iCub/learningMachine/TransformerPortable.h )
@@ -34,6 +36,7 @@ SET(LM_MACHINE_SRC
     src/DatasetRecorder.cpp
     src/DummyLearner.cpp
     src/IFixedSizeLearner.cpp
+    #src/LinearGPRLearner.cpp
     src/LSSVMLearner.cpp
     src/RLSLearner.cpp )
 
@@ -45,6 +48,7 @@ SET(LM_TRANSFORMER_SRC
     src/Normalizer.cpp
     src/RandomFeature.cpp
     src/ScaleTransformer.cpp
+    #src/SparseSpectrumFeature.cpp
     src/Standardizer.cpp )
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
