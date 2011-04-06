@@ -480,7 +480,9 @@ public:
     {
         mutex.wait();
         if (content->size()==1)
+        {
             if (content->get(0).isVocab() || content->get(0).isString())
+            {
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
                     clearMap();
@@ -488,6 +490,8 @@ public:
                     mutex.post();
                     return true;
                 }
+            }
+        }
 
         Property request(content->toString().c_str());
 
@@ -626,17 +630,21 @@ public:
     {
         mutex.wait();
         if (content->size()==1)
+        {
             if (content->get(0).isVocab() || content->get(0).isString())
+            {
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
                     items.clear();
-
+                
                     for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
                         items.addInt(it->first);
-
+                
                     mutex.post();
                     return true;
                 }
+            }
+        }
 
         deque<Condition> condList;
         deque<string>    opList;
