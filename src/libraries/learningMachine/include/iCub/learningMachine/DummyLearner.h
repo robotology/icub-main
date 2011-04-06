@@ -74,7 +74,7 @@ public:
     /**
      * Constructor.
      */
-    DummyLearner(int dom = 1, int cod = 1) : sampleCount(0), trainCount(0) {
+    DummyLearner(unsigned int dom = 1, unsigned int cod = 1) : sampleCount(0), trainCount(0) {
         this->setName("Dummy");
         inputs.resize(0);
         outputs.resize(0);

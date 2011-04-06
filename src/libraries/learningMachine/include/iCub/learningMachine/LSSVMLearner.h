@@ -181,7 +181,7 @@ public:
      * @param cod initial codomain size
      * @param c initial value for regularization parameter C
      */
-    LSSVMLearner(int dom = 1, int cod = 1, double c = 1.0);
+    LSSVMLearner(unsigned int dom = 1, unsigned int cod = 1, double c = 1.0);
 
     /**
      * Copy Constructor.
@@ -246,12 +246,12 @@ public:
     /*
      * Inherited from IFixedSizeLearner.
      */
-    void setDomainSize(int size);
+    void setDomainSize(unsigned int size);
 
     /*
      * Inherited from IFixedSizeLearner.
      */
-    void setCoDomainSize(int size);
+    void setCoDomainSize(unsigned int size);
 
     /*
      * Inherited from IConfig.

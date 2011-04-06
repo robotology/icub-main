@@ -260,7 +260,7 @@ public:
      * @param cod initial codomain size
      * @param lambda initial value for regularization parameter \lambda
      */
-    RLSLearner(int dom = 1, int cod = 1, double lambda = 1.0);
+    RLSLearner(unsigned int dom = 1, unsigned int cod = 1, double lambda = 1.0);
 
     /**
      * Copy constructor.
@@ -336,12 +336,12 @@ public:
     /*
      * Inherited from IFixedSizeLearner.
      */
-    void setDomainSize(int size);
+    void setDomainSize(unsigned int size);
 
     /*
      * Inherited from IFixedSizeLearner.
      */
-    void setCoDomainSize(int size);
+    void setCoDomainSize(unsigned int size);
 
     /**
      * Sets the regularization parameter lambda of all machines to a specified value.

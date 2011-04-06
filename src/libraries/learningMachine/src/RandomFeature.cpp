@@ -31,7 +31,7 @@ using namespace yarp::math;
 namespace iCub {
 namespace learningmachine {
 
-RandomFeature::RandomFeature(int dom, int cod, double gamma) {
+RandomFeature::RandomFeature(unsigned int dom, unsigned int cod, double gamma) {
     this->setName("RandomFeature");
     this->setDomainSize(dom);
     this->setCoDomainSize(cod);
@@ -51,14 +51,14 @@ Vector RandomFeature::transform(const Vector& input) {
     return output;
 }
 
-void RandomFeature::setDomainSize(int size) {
+void RandomFeature::setDomainSize(unsigned int size) {
     // call method in base class
     this->IFixedSizeTransformer::setDomainSize(size);
     // rebuild projection matrix
     this->reset();
 }
 
-void RandomFeature::setCoDomainSize(int size) {
+void RandomFeature::setCoDomainSize(unsigned int size) {
     // call method in base class
     this->IFixedSizeTransformer::setCoDomainSize(size);
     // rebuild projection matrix

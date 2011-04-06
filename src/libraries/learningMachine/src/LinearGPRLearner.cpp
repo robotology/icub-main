@@ -24,7 +24,7 @@
 namespace iCub {
 namespace learningmachine {
 
-RLSLearner::RLSLearner(int dom, int cod, double lambda) {
+RLSLearner::RLSLearner(unsigned int dom, unsigned int cod, double lambda) {
     this->setName("RLS");
     this->sampleCount = 0;
     // make sure to not use initialization list to constructor of base for
@@ -189,13 +189,13 @@ void RLSLearner::readBottle(Bottle& bot) {
     }
 }
 
-void RLSLearner::setDomainSize(int size) {
+void RLSLearner::setDomainSize(unsigned int size) {
     this->IFixedSizeLearner::setDomainSize(size);
 
     this->initAll();
 }
 
-void RLSLearner::setCoDomainSize(int size) {
+void RLSLearner::setCoDomainSize(unsigned int size) {
     this->IFixedSizeLearner::setCoDomainSize(size);
     this->initAll(this->getCoDomainSize());
 }

@@ -25,7 +25,7 @@
 namespace iCub {
 namespace learningmachine {
 
-ScaleTransformer::ScaleTransformer(int dom) : IFixedSizeTransformer(dom, dom) {
+ScaleTransformer::ScaleTransformer(unsigned int dom) : IFixedSizeTransformer(dom, dom) {
     this->setName("Scaler");
     this->setDomainSize(dom);
 }
@@ -96,14 +96,14 @@ Vector ScaleTransformer::transform(const Vector& input) {
     return output;
 }
 
-void ScaleTransformer::setDomainSize(int size) {
+void ScaleTransformer::setDomainSize(unsigned int size) {
     // domain size and codomain have to be equally sized
     this->IFixedSizeTransformer::setDomainSize(size);
     this->IFixedSizeTransformer::setCoDomainSize(size);
     this->reset();
 }
 
-void ScaleTransformer::setCoDomainSize(int size) {
+void ScaleTransformer::setCoDomainSize(unsigned int size) {
     // domain size and codomain have to be equally sized
     this->setDomainSize(size);
 }
@@ -136,7 +136,7 @@ std::string ScaleTransformer::getConfigHelp() {
 
 void ScaleTransformer::writeBottle(Bottle& bot) {
     // write all scalers
-    for(int i = 0; i < this->getDomainSize(); i++) {
+    for(unsigned int i = 0; i < this->getDomainSize(); i++) {
         bot.addString(this->getAt(i)->toString().c_str());
         bot.addString(this->getAt(i)->getName().c_str());
     }

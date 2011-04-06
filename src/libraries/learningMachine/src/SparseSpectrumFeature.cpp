@@ -31,7 +31,7 @@ using namespace yarp::math;
 namespace iCub {
 namespace learningmachine {
 
-SparseSpectrumFeature::SparseSpectrumFeature(int dom, int cod, Vector ell) {
+SparseSpectrumFeature::SparseSpectrumFeature(unsigned int dom, unsigned int cod, Vector ell) {
     this->setName("SparseSpectrumFeature");
     this->setDomainSize(dom);
     this->setCoDomainSize(cod);
@@ -52,14 +52,14 @@ Vector SparseSpectrumFeature::transform(const Vector& input) {
     return output;
 }
 
-void SparseSpectrumFeature::setDomainSize(int size) {
+void SparseSpectrumFeature::setDomainSize(unsigned int size) {
     // call method in base class
     this->IFixedSizeTransformer::setDomainSize(size);
     // rebuild projection matrix
     this->reset();
 }
 
-void SparseSpectrumFeature::setCoDomainSize(int size) {
+void SparseSpectrumFeature::setCoDomainSize(unsigned int size) {
     assert (size & 0x1 == 0);
     // call method in base class
     this->IFixedSizeTransformer::setCoDomainSize(size);

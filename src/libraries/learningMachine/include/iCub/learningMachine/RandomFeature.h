@@ -83,7 +83,7 @@ public:
      * @param cod initial codomain size
      * @param g initial value for \gamma
      */
-    RandomFeature(int dom = 1, int cod = 1, double gamma = 1.);
+    RandomFeature(unsigned int dom = 1, unsigned int cod = 1, double gamma = 1.);
 
     /**
      * Destructor (empty).
@@ -115,12 +115,12 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual void setDomainSize(int size);
+    virtual void setDomainSize(unsigned int size);
 
     /*
      * Inherited from IFixedSizeTransformer.
      */
-    virtual void setCoDomainSize(int size);
+    virtual void setCoDomainSize(unsigned int size);
 
     /*
      * Inherited from ITransformer.

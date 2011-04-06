@@ -87,8 +87,8 @@ public:
      * @param sigma initial value for sigma
      * @param ell initial value for \ell
      */
-    //SparseSpectrumFeature(int dom = 1, int cod = 1, Vector* ell = (Vector*) 0x0);
-    SparseSpectrumFeature(int dom = 1, int cod = 1, double sigma = 1., Vector ell = Vector(0));
+    //SparseSpectrumFeature(unsigned int dom = 1, unsigned int cod = 1, Vector* ell = (Vector*) 0x0);
+    SparseSpectrumFeature(unsigned int dom = 1, unsigned int cod = 1, double sigma = 1., Vector ell = Vector(0));
 
     /**
      * Destructor (empty).
@@ -120,12 +120,12 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual void setDomainSize(int size);
+    virtual void setDomainSize(unsigned int size);
 
     /*
      * Inherited from IFixedSizeTransformer.
      */
-    virtual void setCoDomainSize(int size);
+    virtual void setCoDomainSize(unsigned int size);
 
     /*
      * Inherited from ITransformer.

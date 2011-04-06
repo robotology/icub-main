@@ -109,7 +109,7 @@ public:
      *
      * @param dom initial domain/codomain size
      */
-    ScaleTransformer(int dom = 1);
+    ScaleTransformer(unsigned int dom = 1);
 
     /**
      * Copy constructor.
@@ -151,12 +151,12 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual void setDomainSize(int size);
+    virtual void setDomainSize(unsigned int size);
 
     /*
      * Inherited from ITransformer.
      */
-    virtual void setCoDomainSize(int size);
+    virtual void setCoDomainSize(unsigned int size);
 
     /*
      * Inherited from ITransformer.

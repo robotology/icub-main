@@ -43,12 +43,12 @@ protected:
     /**
      * The dimensionality of the input domain.
      */
-    int domainSize;
+    unsigned int domainSize;
 
     /**
      * The dimensionality of the output domain (codomain).
      */
-    int coDomainSize;
+    unsigned int coDomainSize;
 
     /**
      * Checks whether the input is of the desired dimensionality.
@@ -57,7 +57,7 @@ protected:
      * @return true if the dimensionality is correct
      */
     virtual bool checkDomainSize(const Vector& input) {
-        return (input.size() == this->getDomainSize());
+        return ((unsigned int) input.size() == this->getDomainSize());
     }
 
     /**
@@ -67,7 +67,7 @@ protected:
      * @return true if the dimensionality is correct
      */
     virtual bool checkCoDomainSize(const Vector& output) {
-        return (output.size() == this->getCoDomainSize());
+        return ((unsigned int) output.size() == this->getCoDomainSize());
     }
 
     /**
@@ -96,7 +96,7 @@ public:
      * @param dom the initial domain size
      * @param cod the initial codomain size
      */
-    IFixedSizeTransformer(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) { }
+    IFixedSizeTransformer(unsigned int dom = 1, unsigned int cod = 1) : domainSize(dom), coDomainSize(cod) { }
 
     /*
      * Inherited from ITransformer.
@@ -108,7 +108,7 @@ public:
      *
      * @return the size of the input domain
      */
-    int getDomainSize() {
+    unsigned int getDomainSize() {
         return this->domainSize;
     }
 
@@ -117,7 +117,7 @@ public:
      *
      * @return the size of the codomain
      */
-    int getCoDomainSize() {
+    unsigned int getCoDomainSize() {
         return this->coDomainSize;
     }
 
@@ -126,7 +126,7 @@ public:
      *
      * @param size the desired domain size
      */
-    virtual void setDomainSize(int size) {
+    virtual void setDomainSize(unsigned int size) {
         this->domainSize = size;
     }
 
@@ -135,7 +135,7 @@ public:
      *
      * @param size the desired codomain size
      */
-    virtual void setCoDomainSize(int size) {
+    virtual void setCoDomainSize(unsigned int size) {
         this->coDomainSize = size;
     }
 

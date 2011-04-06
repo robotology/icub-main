@@ -48,12 +48,12 @@ protected:
     /**
      * The dimensionality of the input domain.
      */
-    int domainSize;
+    unsigned int domainSize;
 
     /**
      * The dimensionality of the output domain (codomain).
      */
-    int coDomainSize;
+    unsigned int coDomainSize;
 
     /**
      * Checks whether the input is of the desired dimensionality.
@@ -97,7 +97,7 @@ public:
      * @param dom the initial domain size
      * @param cod the initial codomain size
      */
-    IFixedSizeLearner(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) { }
+    IFixedSizeLearner(unsigned int dom = 1, unsigned int cod = 1) : domainSize(dom), coDomainSize(cod) { }
 
     /*
      * Inherited from IMachineLearner.
@@ -114,28 +114,28 @@ public:
      *
      * @return the size of the input domain
      */
-    int getDomainSize() { return this->domainSize; }
+    unsigned int getDomainSize() { return this->domainSize; }
 
     /**
      * Returns the size (dimensionality) of the output domain (codomain).
      *
      * @return the size of the codomain
      */
-    int getCoDomainSize() { return this->coDomainSize; }
+    unsigned int getCoDomainSize() { return this->coDomainSize; }
 
     /**
      * Mutator for the domain size.
      *
      * @param size the desired domain size
      */
-    virtual void setDomainSize(int size) { this->domainSize = size; }
+    virtual void setDomainSize(unsigned int size) { this->domainSize = size; }
 
     /**
      * Mutator for the codomain size.
      *
      * @param size the desired codomain size
      */
-    virtual void setCoDomainSize(int size) {this->coDomainSize = size; }
+    virtual void setCoDomainSize(unsigned int size) {this->coDomainSize = size; }
 
     /*
      * Inherited from IMachineLearner.

@@ -27,7 +27,7 @@
 namespace iCub {
 namespace learningmachine {
 
-LSSVMLearner::LSSVMLearner(int dom, int cod, double c) {
+LSSVMLearner::LSSVMLearner(unsigned int dom, unsigned int cod, double c) {
     this->setName("LSSVM");
     this->kernel = new RBFKernel();
     // make sure to not use initialization list to constructor of base for
@@ -239,11 +239,11 @@ void LSSVMLearner::readBottle(Bottle& bot) {
     this->kernel->setGamma(bot.pop().asDouble());
 }
 
-void LSSVMLearner::setDomainSize(int size) {
+void LSSVMLearner::setDomainSize(unsigned int size) {
     this->IFixedSizeLearner::setDomainSize(size);
 }
 
-void LSSVMLearner::setCoDomainSize(int size) {
+void LSSVMLearner::setCoDomainSize(unsigned int size) {
     this->IFixedSizeLearner::setCoDomainSize(size);
     //this->initAll(this->getCoDomainSize());
 }
