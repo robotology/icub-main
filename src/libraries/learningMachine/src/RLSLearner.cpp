@@ -139,7 +139,7 @@ Vector RLSLearner::predict(const Vector& input) {
     Vector output(this->getCoDomainSize());
 
     // feed to machines
-    for(int c = 0; c < this->getCoDomainSize(); c++) {
+    for(unsigned int c = 0; c < this->getCoDomainSize(); c++) {
         output[c] = this->machines[c]->predict(input);
     }
 
@@ -172,7 +172,7 @@ std::string RLSLearner::getConfigHelp() {
 }
 
 void RLSLearner::writeBottle(Bottle& bot) {
-    for(int i = 0; i < this->getCoDomainSize(); i++) {
+    for(unsigned int i = 0; i < this->getCoDomainSize(); i++) {
         bot.addString(this->getAt(i)->toString().c_str());
     }
     bot.addInt(this->sampleCount);

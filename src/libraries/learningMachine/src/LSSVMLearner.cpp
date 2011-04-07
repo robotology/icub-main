@@ -112,7 +112,7 @@ void LSSVMLearner::train() {
     // compute LOO
     this->LOO = zeros(this->getCoDomainSize());
 
-    for(int i = 0; i < this->getCoDomainSize(); i++) {
+    for(unsigned int i = 0; i < this->getCoDomainSize(); i++) {
         Vector alphas_i = this->alphas.getCol(i);
         for(int j = 0; j < alphas_i.size(); j++) {
             double err = alphas_i(j) / Kinv(j, j);
@@ -195,7 +195,7 @@ void LSSVMLearner::writeBottle(Bottle& bot) {
 
     // write inputs
     for(unsigned int i = 0; i < this->inputs.size(); i++) {
-        for(int d = 0; d < this->getDomainSize(); d++) {
+        for(unsigned int d = 0; d < this->getDomainSize(); d++) {
             bot.addDouble(this->inputs[i](d));
         }
     }
