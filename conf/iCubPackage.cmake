@@ -9,6 +9,21 @@ SET(ICUB_ADD_PACKAGING FALSE CACHE BOOL "Add code to support packaging")
 ############ BEGIN CODE FOR PACKAGING
 IF (ICUB_ADD_PACKAGING)
 
+## yarp
+if (EXISTS($ENV{YARP_DIR}/bin/release))
+	file(GLOB YARP_EXECUTABLES $ENV{YARP_DIR}/bin/release/*.exe)
+else ()
+	file(GLOB YARP_EXECUTABLES $ENV{YARP_DIR}/bin/*.exe)
+endif()
+
+set(YARP_EXECUTABLES_CMAKE_PATH)
+foreach (yarpexe ${YARP_EXECUTABLES})
+	file(TO_CMAKE_PATH ${yarpexe} TMP)
+	set(YARP_EXECUTABLES_CMAKE_PATH ${YARP_EXECUTABLES_CMAKE_PATH} ${TMP})
+endforeach()
+
+INSTALL(FILES ${YARP_EXECUTABLES_CMAKE_PATH} DESTINATION bin COMPONENT YARP)
+
 file(TO_CMAKE_PATH ${ACE_INCLUDE_DIR} TMP)
 INSTALL(FILES  ${TMP}/lib/ACE.dll DESTINATION bin COMPONENT Runtime)
 INSTALL(FILES  ${TMP}/lib/ACEd.dll DESTINATION bin COMPONENT Runtime)
@@ -42,9 +57,13 @@ INCLUDE(InstallRequiredSystemLibraries)
 INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT Runtime)
 
 # Configuration for component "Development"
-SET(CPACK_COMPONENTS_ALL Applications Core Development Modules Runtime)
+SET(CPACK_COMPONENTS_ALL Applications Core Development Modules Runtime YARP)
 SET(CPACK_COMPONENT_DEVELOPMENT_DISPLAY_NAME "Development files")
 SET(CPACK_COMPONENT_DEVELOPMENT_DESCRIPTION "C++ headers, libraries and scripts")
+
+# Configuration for component "YARP"
+SET(CPACK_COMPONENT_YARP_DISPLAY_NAME "YARP runtimes")
+SET(CPACK_COMPONENT_YARP_DESCRIPTION "YARP executables and dlls (if any)")
 
 # Configuration for component "Runtime"
 SET(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "Runtime libraries")
