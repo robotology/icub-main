@@ -10,7 +10,7 @@ SET(ICUB_ADD_PACKAGING FALSE CACHE BOOL "Add code to support packaging")
 IF (ICUB_ADD_PACKAGING)
 
 ## yarp
-if (EXISTS($ENV{YARP_DIR}/bin/release))
+if ( EXISTS"$ENV{YARP_DIR}/bin/release" )
 	file(GLOB YARP_EXECUTABLES $ENV{YARP_DIR}/bin/release/*.exe)
 else ()
 	file(GLOB YARP_EXECUTABLES $ENV{YARP_DIR}/bin/*.exe)
