@@ -25,7 +25,7 @@ Audit Trail
 *************************************************************************************************/
  
 // WARNING ... comment out when compiling in the iCub repository; the default if for standalone compilation
-//#define DVR 
+// #define DVR 
  
 // System includes
 // ------------------------------------------------------------------------
@@ -94,7 +94,7 @@ static void portable_ftime(struct portable_timeb_ *data) {
  
 /************************************************************************************************
 
-eyecub classes method definitions
+DV classes method definitions
  
 	   DVimage
        DVhs_histogram
@@ -546,32 +546,33 @@ Stereo Segmentation Code
 * 
 *  Routine Name: optical_flow
 * 
-*      Purpose: Computer the instantaneous optical flow between two images using the cross power spectrum in 
-*            apodized windowed at a sample of points.
+*      Purpose: Compute the instantaneous optical flow between two images using the cross power spectrum in 
+*            an apodized window at a sample of points.
 *            If images are fused (e.g. using vergence control) this routine can also be used to compute the stereo disparity
 *                        
-*       Input: image1           - pointer to eyecub intensity image (INT); either image at t0 or left image 
-*            image2           - pointer to eyecub intensity image (INT); either image at t1 or right image
-*            window_size       - int parameter  
-*            sampling_period    - int parameter      
-*            sigma            - float parameter; standard_deviation of Gaussian                       
+*      Input: image1           - pointer to DVimage (INT); either image at t0 or left image 
+*             image2           - pointer to DVimage (INT); either image at t1 or right image
+*             window_size      - int parameter  
+*             sampling_period  - int parameter      
+*             sigma            - float parameter; standard_deviation of Gaussian      
+*             x1ROI, y1ROI, 
+*             x2ROI, y2ROI     - coordinates of top left and bottom right of region of interest
 *
-*      Output: flow_magnitude     - pointer to eyecub intensity image (FLOAT) with flow magnitude values
-*            flow_phase        - pointer to eyecub intensity image (FLOAT) with flow phase values
-*                             NB it is assumed that these image exists and is of the same dimensions
-*                             as the inputs
+*      Output: flow_magnitude  - pointer to DVimage (FLOAT) with flow magnitude values
+*              flow_phase      - pointer to DVimage (FLOAT) with flow phase values
+*                                NB it is assumed that these image exists and is of the same dimensions
+*                                as the inputs
 *
-*   Written By: David Vernon
-*        Date: July 10, 2006
-*     Verified: 
-*  Side Effects: 
-*     Examples: 
-* Modifications:
+* Written By: David Vernon
+* Date: July 10, 2006
+* Modifications: Forced non-zero results to facilitate subsequent interpolation  DV 30/3/2011
+*                Added region of interest processing DV 5/4/2011
 *
 *
 ****************************************************************/
  
 void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampling_period, float sigma, 
+                   int x1ROI, int y1ROI, int x2ROI, int y2ROI,
                    DVimage *flow_magnitude, DVimage *flow_phase)
 {
 
@@ -607,156 +608,151 @@ void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampli
    if (debug) printf("optical_flow: debug on \n");  
    if (debug) printf("window_size = %d; sampling_period = %d; standard_deviation = %f\n",window_size, sampling_period, sigma);  
  
-
-   /* create working images: windows and processed windows */
-
-   image1->get_size(&width,&height);
-
-   padded_image1 = new DVimage(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,DVINT);
-   padded_image2 = new DVimage(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,DVINT);
-
-   window1       = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
-   window2       = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
-   cps           = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
-   enhanced_cps  = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
-   gaussian      = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
- 
-
-   /* Generate a normalized 2D circular Gaussian image                   */
-   /* with size n pixels, centred at pixel n/2, and centre value of 1        */
-   /* sigma is the standard deviation of the Gaussian function             */
-
-   for (i=0; i<window_size; i++) {
-      for (j=0; j<window_size; j++) {
-
-         // gaussian_value = ( exp(-( (i-window_size/2)*(i-window_size/2) )/(2*sigma*sigma)) / (sigma*sqrt(2*3.14159))  ) *  
-         //                  ( exp(-( (j-window_size/2)*(j-window_size/2) )/(2*sigma*sigma)) / (sigma*sqrt(2*3.14159))  ); 
-
-         gaussian_value = (float)(( exp(-( (i-window_size/2)*(i-window_size/2) )/(2*sigma*sigma))  ) *  
-                          ( exp(-( (j-window_size/2)*(j-window_size/2) )/(2*sigma*sigma))  ) );   // maximum value = 1
-
-	      gaussian->put_pixel(i, j, gaussian_value); 
-      }
-   }
-
-   //dump_float_image(gaussian->fdata,window_size,window_size);
-
-   
-
-
-   /* initialize the flow field to zero */
-
-   flow_magnitude->initialize();
-   flow_phase->initialize();
-
- 
    if (image1 != NULL && image2 != NULL) {
 
-      /* input data is intensity image */
+      /* create working images: windows and processed windows */
 
       image1->get_size(&width,&height);
       depth = image1->get_image_mode();
-     
-      printf("width, height, depth = %d %d %d \n", width, height, depth);
 
-      /* copy the input image to a larger image, padding with zeros                           */
-      /* so that we can estimate the flow/disparity at points closer to the edge of the image */
+      //padded_image1 = new DVimage(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+      //padded_image2 = new DVimage(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+      padded_image1 = new DVimage(width+window_size,height+window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+      padded_image2 = new DVimage(width+window_size,height+window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
 
-      for (i=0; i< width+window_size/2; i++) {
-         for (j=0; j< height+window_size/2; j++) {
-            padded_image1->put_pixel(i,j, (unsigned char) 0);
-            padded_image2->put_pixel(i,j, (unsigned char) 0);
+      window1       = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+      window2       = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+      cps           = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
+      enhanced_cps  = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
+      gaussian      = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
+ 
+      /* Generate a normalized 2D circular Gaussian image                   */
+      /* with size n pixels, centred at pixel n/2, and centre value of 1        */
+      /* sigma is the standard deviation of the Gaussian function             */
+
+      for (i=0; i<window_size; i++) {
+         for (j=0; j<window_size; j++) {
+
+            // gaussian_value = ( exp(-( (i-window_size/2)*(i-window_size/2) )/(2*sigma*sigma)) / (sigma*sqrt(2*3.14159))  ) *  
+            //                  ( exp(-( (j-window_size/2)*(j-window_size/2) )/(2*sigma*sigma)) / (sigma*sqrt(2*3.14159))  ); 
+
+            gaussian_value = (float)(( exp(-( (i-window_size/2)*(i-window_size/2) )/(2*sigma*sigma))  ) *  
+                                     ( exp(-( (j-window_size/2)*(j-window_size/2) )/(2*sigma*sigma))  ) );   // maximum value = 1
+
+	         gaussian->put_pixel(i, j, gaussian_value); 
          }
       }
 
+      //dump_float_image(gaussian->fdata,window_size,window_size);
 
-      for (i=0; i< width; i++) {
-         for (j=0; j< height; j++) {
+ 
+      /* initialize the flow field to zero */
+
+      flow_magnitude->initialize();
+      flow_phase->initialize();
+
+     
+      // printf("width, height, depth = %d %d %d \n", width, height, depth);
+
+      /* copy the input image to a larger image, padding with zeros                           */
+      /* so that we can estimate the flow/disparity at points closer to the edge of the image */
+ 
+      padded_image1->initialize();
+      padded_image2->initialize();
+
+      for (i = x1ROI; i < x2ROI; i++) {
+         for (j = y1ROI; j < y2ROI; j++) {
 
             image1->get_pixel(i,j,&pixel_value, 0);
 
-				if (depth == COLOUR_IMAGE) {              // convert to grey-scale if necessary
-               temp = pixel_value;
-  				   image1->get_pixel(i,j,&pixel_value, 1);
-				   temp += pixel_value;
-				   image1->get_pixel(i,j,&pixel_value, 2);
-				   temp += pixel_value;
-				   temp = temp / 3;
-				   pixel_value = (unsigned char) temp;	
-				}
-            padded_image1->put_pixel(i+window_size/4,j+window_size/4, (unsigned char) pixel_value);
-
+			if (depth == COLOUR_IMAGE) {              // convert to grey-scale if necessary
+                temp = pixel_value;
+  			    image1->get_pixel(i,j,&pixel_value, 1);
+			    temp += pixel_value;
+			    image1->get_pixel(i,j,&pixel_value, 2);
+			    temp += pixel_value;
+			    temp = temp / 3;
+			    pixel_value = (unsigned char) temp;	
+			}
+            //padded_image1->put_pixel(i+window_size/4,j+window_size/4, (unsigned char) pixel_value);
+            padded_image1->put_pixel(i+window_size/2,j+window_size/2, (unsigned char) pixel_value);
 				      
             image2->get_pixel(i,j,&pixel_value, 0);
 
-				if (depth == COLOUR_IMAGE) {
-				   temp = pixel_value;
-  				   image2->get_pixel(i,j,&pixel_value, 1);
-				   temp += pixel_value;
-				   image2->get_pixel(i,j,&pixel_value, 2);
-				   temp += pixel_value;
-				   temp = temp / 3;
-				   pixel_value = (unsigned char) temp;	
-				}	
-            padded_image2->put_pixel(i+window_size/4,j+window_size/4, (unsigned char) pixel_value);
+			if (depth == COLOUR_IMAGE) {
+			   temp = pixel_value;
+               image2->get_pixel(i,j,&pixel_value, 1);
+			   temp += pixel_value;
+			   image2->get_pixel(i,j,&pixel_value, 2);
+			   temp += pixel_value;
+			   temp = temp / 3;
+			   pixel_value = (unsigned char) temp;	
+			}	
+            //padded_image2->put_pixel(i+window_size/4,j+window_size/4, (unsigned char) pixel_value);
+            padded_image2->put_pixel(i+window_size/2,j+window_size/2, (unsigned char) pixel_value);
 	
          }
       }
 
-      //dump_char_image(padded_image2->idata,width+window_size/2,height+window_size/2);
+      //for (i = x1ROI; i < x2ROI - window_size/2; i+=sampling_period) {
+      for (i = x1ROI; i < x2ROI; i+=sampling_period) {
 
-
-      for (i=0; i< width-window_size/2; i+=sampling_period) {
-
-	      if (debug) 
+      if (debug) 
          printf("optical flow: processing row %d of %d\n", i,width-window_size);
 
-         for (j=0; j< height-window_size/2; j+=sampling_period) {
+         //for (j = y1ROI; j < y2ROI - window_size/2; j+=sampling_period) {
+         for (j = y1ROI; j < y2ROI; j+=sampling_period) {
 
             for (p=0; p<window_size; p++) {
                for (q=0; q<window_size; q++) {
 
-				      gaussian->get_pixel(p,q,&gaussian_value);
+			      gaussian->get_pixel(p,q,&gaussian_value);
 
-				      padded_image1->get_pixel(i+p,j+q,&pixel_value, 0);
-				      temp = (float) pixel_value * gaussian_value;
+			      padded_image1->get_pixel(i+p,j+q,&pixel_value, 0);
+			      temp = (float) pixel_value * gaussian_value;
                   window1->put_pixel(p,q, (unsigned char) temp);
 
 				  				  
-				      padded_image2->get_pixel(i+p,j+q,&pixel_value, 0);		  
-				      temp = pixel_value * gaussian_value;
+			      padded_image2->get_pixel(i+p,j+q,&pixel_value, 0);		  
+			      temp = pixel_value * gaussian_value;
                   window2->put_pixel(p,q, (unsigned char) temp);
-
-			      }
-			   }
+               }
+		    }
        
             //dump_char_image(window1->idata,window_size,window_size);
 
             cross_power_spectrum (window2, window1, cps); // cps must exist, type FLOAT
 
+            /* Enhancing the maxima does not significantly improve the quality of the optical flow computation */
+            /* so we skip it                                                                                   */
+            /*
             filter_radius = 1;	 
-  		      enhance_local_maxima (cps, filter_radius, enhanced_cps); 	 
- 			   
-            //dump_float_image(enhanced_cps->fdata,window_size,window_size);
-
-            number_of_maxima = 2;
-            non_maxima_suppression_radius = 1;
-		      find_maxima (enhanced_cps, number_of_maxima, non_maxima_suppression_radius, maxima);  
-		      //find_maxima (cps, number_of_maxima, non_maxima_suppression_radius, maxima);  
+  		    enhance_local_maxima (cps, filter_radius, enhanced_cps); 	  
+            */
+            
+            number_of_maxima = 1;  // we only need to find the principal shift in the window
+            non_maxima_suppression_radius = 3;
+            //find_maxima (enhanced_cps, number_of_maxima, non_maxima_suppression_radius, maxima);  
+		    find_maxima (cps, number_of_maxima, non_maxima_suppression_radius, maxima);  
   			 
-		      p = maxima[0].x  - window_size/2;          
-		      q = maxima[0].y  - window_size/2;            
-		      temp = (float) sqrt((float)( p*p + q*q ));    
+            p = maxima[0].x  - window_size/2;          
+            q = maxima[0].y  - window_size/2;            
+		    temp = (float) sqrt((float)( p*p + q*q ));   
 
-            flow_magnitude->put_pixel(i+window_size/4,j+window_size/4,(float) temp); 
+            //flow_magnitude->put_pixel(i+window_size/4,j+window_size/4,(float) temp); 
+            flow_magnitude->put_pixel(i,j,(float) temp); 
 
-		      //printf("%d %d = %f, %d %d = %f\n",maxima[0].x ,maxima[0].y, maxima[0].value, maxima[1].x ,maxima[1].y, maxima[1].value);
+		    //printf("%d %d = %f, %d %d = %f\n",maxima[0].x ,maxima[0].y, maxima[0].value, maxima[1].x ,maxima[1].y, maxima[1].value);
 
-		      temp = (float) atan2((float)q, (float)p);
-            flow_phase->put_pixel(i+window_size/4,j+window_size/4,(float) temp); // put value in centre of window, offset by padding
+		    temp = (float) atan2((float)q, (float)p);
+            if (temp == 0)
+               temp = (float) 0.000001; // ensure non-zero result to facilitate possible subsequent interpolation
 
-		   }
-	   }
+            //flow_phase->put_pixel(i+window_size/4,j+window_size/4,(float) temp); // put value in centre of window, offset by padding
+            flow_phase->put_pixel(i,j,(float) temp); // put value in centre of window, offset by padding
+
+         }
+      }
    }
 
      
@@ -799,11 +795,11 @@ Motion Segmentation Code
 *            NB we don't perform any data validation (e.g. check that the images are the same size
 *            
 *                        
-*       Input: image1           - pointer to eyecub image; either image at t0 or left image 
-*            image2           - pointer to eyecub image; either image at t1 or right image
+*       Input: image1           - pointer to DVimage; either image at t0 or left image 
+*            image2           - pointer to DVimage; either image at t1 or right image
 *            threshold         - int parameter  
 *
-*      Output: output_image      - pointer to eyecub image with thresholded image difference
+*      Output: output_image      - pointer to DVimage with thresholded image difference
 *
 *   Written By: David Vernon
 *        Date: July 22, 2006
@@ -1018,14 +1014,14 @@ void rgb2hsi(unsigned char red, unsigned char green, unsigned char blue, float *
 * 
 *      Purpose: Segment an image based on the hue and saturation values of each pixel
 *                        
-*       Input: input_image     - pointer to eyecub intensity image (RGB) 
+*       Input: input_image     - pointer to DVimage (RGB) 
 *            hue           - float parameters specifying the required hue and saturation value
 *            saturation      
 *            hue_range      - float parameters specifying tolerance on hue
 *            saturation_range   and saturation value
 *                           
 *
-*      Output: output_image   - pointer to eyecub colour image with the segmented data
+*      Output: output_image   - pointer to DV colour image with the segmented data
 *                          NB it is assumed that this image exists and is of the same dimensions
 *                          as the inputs
 *
@@ -1154,7 +1150,7 @@ void colour_segmentation (DVimage *input_image, float hue, float saturation, flo
 * 
 *  Compute a 2-D hue-saturation historgram
 *                        
-*  Input: input_image     - pointer to eyecub intensity image (RGB) 
+*  Input: input_image     - pointer to DVimage (RGB) 
 *
 *  Output: hs_histogram   - pointer to a hue-saturation object
 *                           NB it is assumed that object exists 
@@ -1251,10 +1247,10 @@ void colour_histogram (DVimage *input_image, DVhs_histogram *hs)
 *            if a pixel value is non-zero then all of it neighbours within the structuring element radius
 *            are assigned that pixel value
 *                        
-*       Input: input_image    - pointer to eyecub intensity image (either COLOUR_IMAGE or GREYSCALE_IMAGE) 
+*       Input: input_image    - pointer to DVimage (either COLOUR_IMAGE or GREYSCALE_IMAGE) 
 *            radius        - int value specifying radius of the structuring element                     
 *
-*      Output: output_image   - pointer to dilated eyecub intensity image 
+*      Output: output_image   - pointer to dilated DVimage 
 *                          NB it is assumed that this image exists and is of the same dimensions
 *                          as the inputs
 *
@@ -1375,10 +1371,10 @@ void dilation (DVimage *input_image, int radius, DVimage *output_image)
 *            if a pixel and all its neighbours within the structuring element radius
 *            are non-zero, assigned that pixel value to the output
 *                        
-*       Input: input_image    - pointer to eyecub intensity image (either COLOUR_IMAGE or GREYSCALE_IMAGE) 
+*       Input: input_image    - pointer to DVimage (either COLOUR_IMAGE or GREYSCALE_IMAGE) 
 *            radius        - int value specifying radius of the structuring element                     
 *
-*      Output: output_image   - pointer to eroded eyecub intensity image 
+*      Output: output_image   - pointer to eroded DVimage 
 *                          NB it is assumed that this image exists and is of the same dimensions
 *                          as the inputs
 *
@@ -1511,11 +1507,11 @@ void erosion (DVimage *input_image, int radius, DVimage *output_image)
 *  Routine Name: log_polar_transform - compute the Log-Polar transform
 *            in both forward (Cartesian to Log-Polar) and backward (Log-Polar to Cartesian) directions
 *            
-*    Input: input     - pointer to eyecub intensity image 
+*    Input: input     - pointer to DVimage 
 *           direction - int, either CARTESIAN2LOGPOLAR or LOGPOLAR2CARTESIAN
 *           overlap   - float, overlap of receptive fields.
 *
-*    Output: output   - pointer to eyecub intensity image  
+*    Output: output   - pointer to DVimage  
 *                     NB it is assumed that this image exists 
 *                     The dimensions of the output log-polar / Cartesian image will be extracted directly from this image
 *
@@ -2401,6 +2397,7 @@ double log_magnitude(double a_r, double a_i);
    cross_power_spectrum (input_image_2, input_image_1, image_cps1);  
 
    enhance_local_maxima (image_cps1, filter_radius, image_cps2); 	 
+
 
    number_of_maxima = 2;
    find_maxima (image_cps2, number_of_maxima, non_maxima_suppression_radius, maxima);  
@@ -3326,10 +3323,10 @@ double log_magnitude(double a_r, double a_i);
 *            complex conjugate of G(w_x, w_y)
 *
 *            
-*       Input: input_1   - pointer to eyecub intensity image 
-*            input_2   - pointer to eyecub intensity image 
+*       Input: input_1   - pointer to DVimage 
+*            input_2   - pointer to DVimage 
 *
-*      Output: output   - pointer to eyecub intensity image representing cross power spectrum
+*      Output: output   - pointer to DVimage representing cross power spectrum
 *                     NB it is assumed that this image exists and is of the same dimensions
 *                     as the inputs
 *
@@ -3509,7 +3506,7 @@ void cross_power_spectrum (DVimage *input_image_1, DVimage *input_image_2, DVima
 *  Routine Name: find_maxima - find the first n maxima in an image
 *
 *            
-*       Input: input                     pointer to eyecub GREYSCALE image, either float or int
+*       Input: input                     pointer to DV GREYSCALE image, either float or int
 *            number_of_maxima_required      int
 *            non_maxima_suppression_radius   radius of region in which to supress other
 *                                    maxima in which a maximum has already been located
@@ -4067,15 +4064,12 @@ void sort_fourier_components
 * Modifications: Added arrow heads.  D.V. 9/1/97
 ****************************************************************/
  
-int plot_field(DVimage *f_mag, DVimage *f_phase, 
-            DVimage **plot_image, 
-				float scale_factor,
-            int colour)
+int plot_field(DVimage *f_mag, DVimage *f_phase, DVimage **plot_image, float scale_factor, int colour)
  
 { 
 
-#define ARROW_HEAD_SIZE (3.0)
-#define ARROW_HEAD_ANGLE (3.14159 / 3.0)
+#define ARROW_HEAD_SIZE (4.0)
+#define ARROW_HEAD_ANGLE (3.14159 / 4.0)
  
    int width, height;   
    float *f_m=NULL;   
@@ -4137,7 +4131,7 @@ int plot_field(DVimage *f_mag, DVimage *f_phase,
 
           if ((i2 >= 0) && (i2 < width) && (j2 >= 0) && (j2 < height)) {
 
-            draw_line(plot,width,i,j,i2,j2,colour);
+            //draw_line(plot,width,i,j,i2,j2,colour);
           
             /* add arrow head */
 
@@ -4148,7 +4142,7 @@ int plot_field(DVimage *f_mag, DVimage *f_phase,
             i3 = i2 + (int)(i_offset);
             j3 = j2 + (int)(j_offset);
 
-            draw_line(plot,width,i2,j2,i3,j3,colour);
+            //draw_line(plot,width,i2,j2,i3,j3,colour);
 
             theta = PIX(f_p,width,i,j) + 3.14159 - ARROW_HEAD_ANGLE;
             i_offset = ARROW_HEAD_SIZE * cos(theta);
@@ -4157,7 +4151,7 @@ int plot_field(DVimage *f_mag, DVimage *f_phase,
             i3 = i2 + (int)(i_offset);
             j3 = j2 + (int)(j_offset);
 
-            draw_line(plot,width,i2,j2,i3,j3,colour);
+            //draw_line(plot,width,i2,j2,i3,j3,colour);
  
           }
         }
@@ -4178,216 +4172,199 @@ int plot_field(DVimage *f_mag, DVimage *f_phase,
 }
 
 
-/******************************************************************************/
-/*                                                         */
-/* --- Function Name:  draw_line()                                 */
-/*                                                         */
-/* --- Functional Description: draw a line between two points on an image    */
-/*                                                         */
-/* --- Calling Procedure:                                        */
-/*                                                         */
-/*    draw_line(image, x_dimension, x1, y1, x2, y2, colour               */
-/*                                                         */
-/* --- Input Parameters:                                         */
-/*                                                         */
-/*    image : pointer to the a 1-D array of floats representing the 2-D     */
-/*          image (of x-dimension)                               */
-/*                                                         */
-/*    x_dimension : the width of  the image (in the x direction)          */
-/*                                                         */
-/*    x1, y1 : integers specifying the width and height                 */
-/*           position of the first point on the line                  */
-/*                                                         */
-/*    x2, y2 : integers specifying the width and height                 */
-/*           position of the last pointn on the line                  */
-/*                                                         */
-/*    colour : the grey-scale colour to use in drawing the line           */
-/*                                                         */
-/* --- Output Parameters:                                        */
-/*                                                         */
-/* --- Global Parameters: uses the PIX macro                          */
-/*                                                         */
-/* --- Local Variables: many!                                     */
-/*                                                         */
-/* --- Bugs:                                                  */
-/*                                                         */
-/* --- Author: David Vernon (based on code written by Sean O'Neill for      */
-/*          ESPRIT project IMU P-419 in 1986                        */
-/*                                                         */
-/* --- Revisions                                               */
-/*                                                         */
-/*    date:                                                  */
-/*    revision:                                               */
-/*    reason:                                                */
-/*                                                         */
-/******************************************************************************/
+/****************************************************************
+* 
+*   Routine Name: plot_field
+* 
+*   Written By: D. Vernon, Department of Computer Science, Maynooth College, Ireland
+*   Date: Nov 13, 1996
+*
+*   Modifications: 
+*
+*   - Added arrow heads.  D.V. 9/1/97
+*   - Use new draw_line() with capability to draw on RGB images DV  1/4/2011
+*     NB: the plot image MUST be a colour image
+*                
+****************************************************************/
+ 
+int plot_field(DVimage *f_mag, DVimage *f_phase, DVimage *plot_image, float scale_factor, int red, int green, int blue)
+ 
+{ 
 
-int draw_line(float *plot, int width, int x1, int y1, int x2, int y2, int colour)
+#define ARROW_HEAD_SIZE (4.0)
+#define ARROW_HEAD_ANGLE (3.14159 / 4.0)
+ 
+   int width, height, depth;   
+   unsigned char *plot=NULL;  
+   int   i, j, i2, j2, i3, j3;
+   double i_offset, j_offset, theta;
+   float magnitude_value;
+   float phase_value;
+   char debug;
+ 
+   /* set debug flag */
 
-{  
-   int x, y, r, count, diffx, diffy, y_inc, x_inc;
-   int param1, param2;
+	debug = FALSE;
+	if (debug) printf("plot_field: debug on \n");  
 
-   if (x1 == x2) {    /* if x1 = x2 then scan between y1 and y2 */
-     x=x1;
-     if (y1 < y2)
-       for (y=y1; y<=y2; y++)
-         PIX(plot,width,x,y) = (float) colour;
-     else
-       for (y=y2; y<=y1; y++)
-         PIX(plot,width,x,y) = (float) colour;
+	// find size of the images
+
+    f_mag->get_size(&width,&height);
+
+    depth = plot_image->get_image_mode();
+
+    if (depth != COLOUR_IMAGE) {
+       printf("plot_field: Error ... not plotting on a colour image\n");
+       return(0);
+    }
+
+	// allocate space
+
+	plot  =  (unsigned char *) malloc(sizeof(unsigned char) * width * height * depth);
+
+	// read the image
+
+    plot_image->read(plot);
+
+	if (debug) printf("plot_field: width %d  height %d depth %d\n", width, height, depth);
+	
+   /* Now draw vectors for all non-zero points in the magnitude image */
+
+
+   for (i=0; i<width; i++) {
+     for (j=0; j<height; j++) {
+        f_mag->get_pixel(i, j, &magnitude_value);
+        if (magnitude_value > 0) {
+
+          f_phase->get_pixel(i, j, &phase_value);
+
+          i_offset = magnitude_value * cos(phase_value) *
+              scale_factor;
+
+          j_offset = magnitude_value * sin(phase_value) *
+              scale_factor;
+
+          i2 = i + (int)(i_offset);
+          j2 = j + (int)(j_offset);
+
+          if ((i2 >= 0) && (i2 < width) && (j2 >= 0) && (j2 < height)) {
+
+            draw_line(plot, width, height, i, j, i2, j2, 
+                      red, red, green, green, blue, blue, // RGB values at start and end of line
+                      1.0, 1.0);                          // x and y scale values 
+
+            /* add arrow head */
+
+            theta = phase_value + 3.14159 + ARROW_HEAD_ANGLE;
+            i_offset = ARROW_HEAD_SIZE * cos(theta);
+            j_offset = ARROW_HEAD_SIZE * sin(theta);
+
+            i3 = i2 + (int)(i_offset);
+            j3 = j2 + (int)(j_offset);
+
+            draw_line(plot, width, height, i2, j2, i3, j3, 
+                      red, red, green, green, blue, blue, // RGB values at start and end of line
+                      1.0, 1.0);                                      // x and y scale values 
+
+            theta = phase_value + 3.14159 - ARROW_HEAD_ANGLE;
+            i_offset = ARROW_HEAD_SIZE * cos(theta);
+            j_offset = ARROW_HEAD_SIZE * sin(theta);;
+
+            i3 = i2 + (int)(i_offset);
+            j3 = j2 + (int)(j_offset);
+
+            draw_line(plot, width, height, i2, j2, i3, j3, 
+                      red, red, green, green, blue, blue, // RGB values at start and end of line
+                      1.0, 1.0);                                      // x and y scale values 
+
+          }
+        }
+      }
    }
-   else if (y1 == y2) { /* if y1 = y2 then scan between x1 and x2 */
-     y=y1;
-     if (x1 < x2)
-       for (x=x1; x<=x2; x++)
-         PIX(plot,width,x,y) = (float) colour;
-     else
-       for (x=x2; x<=x1; x++)
-         PIX(plot,width,x,y) = (float) colour;
-   }
-   else {
-     diffx = abs(x2-x1);
-     diffy = abs(y2-y1);
+ 
+  
+   plot_image->write(plot);
 
-     if (diffx >= diffy) {
-       count = param2 = diffx;
-       param1 = diffy;
-       if (x1 < x2) {
-         x = x1;
-         y = y1;
-         if (y1 < y2)
-            y_inc = 1;
-         else   
-            y_inc = -1;
-       }
-       else {
-         x = x2;
-         y = y2;
-         if (y2 < y1)
-            y_inc = 1;
-         else   
-            y_inc = -1;
-       }
-       r = count/2;
-       PIX(plot,width,x,y) = (float) colour;  /* first  position */
-       while (count--) {
-         x += 1; 
-         r += param1;
-         if (r >= param2) {
-            r -= param2;
-            y += y_inc;
-         }
-         PIX(plot,width,x,y) = (float) colour;  /* next position */
-       }
-     }
-     else {
-       count = param2 = diffy;
-       param1 = diffx;
-       if (y1 < y2) {
-         x = x1;
-         y = y1;
-         if (x1 < x2)
-            x_inc = 1;
-         else   
-            x_inc = -1;
-       }
-       else {
-         x = x2;
-         y = y2;
-         if (x2 < x1)
-            x_inc = 1;
-         else   
-            x_inc = -1;
-       }
-       r = count/2;
-       PIX(plot,width,x,y) = (float) colour;  /* first  position */
-       while (count--) {
-         y += 1; 
-         r += param1;
-         if (r >= param2) {
-            r -= param2;
-            x += x_inc;
-         }
-         PIX(plot,width,x,y) = (float) colour;  /* next position */
-       }
-     }
-   }
-   return 1;
+   /* free up all allocated space, i.e., release local image space */
+
+   free(plot);
+
+   return(TRUE);
+  
 }
 
 
-/*****************************************************************************/
-/*                                                         */
-/* ---  Subprogram Name:   int_draw_line()                           */
-/*                                                         */
-/* ---  Functional Description:                                   */
-/*                                                         */
-/*     This function draws a line in an intensity image, at a specified    */
-/*     shade                                                */
-/*                                                         */
-/* ---  Libraries and External Sub-Programs Referenced:                 */
-/*                                                         */
-/*                                                         */
-/* ---  Calling Procedure:                                       */
-/*                                                         */
-/*     int_draw_line(image,usx1,usy1,usx2,usy2,shade,scale_x,scale_y);     */
-/*                                                         */
-/* ---  Input Parameters:                                       */
-/*                                                         */
-/*     image ........ The intensity image.                          */
-/*     usx1,usy1 .... The co-ordinates of one end of the line.           */
-/*     usx2,usy2 .... The co-ordinates of the other end of the line.      */
-/*     shade ........ The shading factor at which the line is to be drawn.  */
-/*     scale_x,scale_y .. The scale factors to use for the co-ordinates.   */
-/*                                                         */
-/* ---  Output Parameters:                                       */
-/*                                                         */
-/*     image ........ The intensity image (with the line drawn).         */
-/*                                                         */
-/* ---  Global Parameters: none.                                  */
-/*                                                         */
-/* ---  Local Variables:                                        */
-/*                                                         */
-/*     x,y,r,count,diffx,diffy, y_inc, x_inc                        */
-/*     param1,param2                                          */
-/*     x1,y1,x2,y2                                            */
-/*                                                         */
-/* ---  Bugs:                                                */
-/*                                                         */
-/* ---  Author: Sean O'Niell, TCD.                                 */
-/*                                                         */
-/* ---  Revisions                                             */
-/*                                                         */
-/*     date:     17/12/86, Ken Dawson, tcd.                        */
-/*     revision:  Alterations to cope with scaling,shading and use with    */
-/*             intensity images.                               */
-/*     reason:                                               */
-/*                                                         */
-/*     date:      9/ 1/89, Ken Dawson, tcd.                        */
-/*     revision:  Inclusion of multiple shading levels.                */
-/*     reason:   To allow a basic representation of depth              */
-/*                                                         */
-/*     date:     22/ 5/89, Ken Dawson, tcd.                        */
-/*     revision:  Rewrite of entire routine - same functionality...       */
-/*     reason:   Correction of some apparent errors and making the code   */
-/*             into an understandable form.                       */
-/*                                                         */
-/*     date:     21/03/04, David Vernon                           */
-/*     revision:  Draw in colour in an RGB image                     */
-/*     reason:   Port to FLTK example program                       */
-/*                                                         */
-/*     date:     29/03/04, David Vernon                           */
-/*     revision:  check coordinate to make sure they within image bounds   */
-/*     reason:   Port to FLTK example program                       */
-/*                                                         */
-/*****************************************************************************/
+/*****************************************************************************
+ *  
+ * ---  Subprogram Name:   draw_line() 
+ * 
+ * ---  Functional Description:  
+ * 
+ *     This function draws a line in an intensity image, at a specified  
+ *     shade
+ * 
+ * ---  Libraries and External Sub-Programs Referenced: 
+ * 
+ *
+ * ---  Calling Procedure:
+ *
+ *      draw_line(image,usx1,usy1,usx2,usy2,shade,scale_x,scale_y);
+ *
+ * ---  Input Parameters:  
+ * 
+ *     image                 The intensity image
+ *     width, height, depth 
+ *     usx1, usy1            The co-ordinates of the start line
+ *     usx2, usy2            The co-ordinates of the end of the line
+ *     rshade1, rshade2      The red component of the line colour at start and end of the line
+ *     gshade1, gshade2      The green component of the line colour at start and end of the line
+ *     bshade1, bshade2      The blue component of the line colour at start and end of the line
+ *     scale_x,scale_y       The scale factors to use for the co-ordinates.
+ *
+ * ---  Output Parameters:
+ *
+ *     image ........ The intensity image (with the line drawn).
+ *
+ * ---  Global Parameters: none. 
+ * 
+ * ---  Local Variables:
+ * 
+ *     x,y,r,count,diffx,diffy, y_inc, x_inc 
+ *     param1,param2
+ *     x1,y1,x2,y2 
+ * 
+ * ---  Bugs:  
+ * 
+ * ---  Author: Sean O'Neill, TCD. 
+ *
+ * ---  Revisions
+ * 
+ *     date:     17/12/86, Ken Dawson, tcd. 
+ *     revision: Alterations to cope with scaling,shading and use with intensity images. 
+ *     reason:
+ *            
+ *     date:     9/ 1/89, Ken Dawson, tcd. 
+ *     revision: Inclusion of multiple shading levels. 
+ *     reason:   To allow a basic representation of depth 
+ *  
+ *     date:     22/ 5/89, Ken Dawson, tcd.
+ *     revision: Rewrite of entire routine - same functionality...
+ *     reason:   Correction of some apparent errors and making the code
+ *               into an understandable form.  
+ * 
+ *     date:     21/03/04, David Vernon 
+ *     revision: Draw in colour in an RGB image
+ *     reason:   Port to FLTK example program 
+ * 
+ *     date:     29/03/04, David Vernon 
+ *     revision: check coordinate to make sure they within image bounds
+ *     reason:   Port to FLTK example program 
+ *
+ *****************************************************************************/
 
-void int_draw_line(unsigned char *image, int width, int height, int usx1,int usy1,int usx2, int usy2, 
-				   int rshade1, int rshade2, int gshade1, int gshade2, int bshade1, int bshade2,
-				   double scale_x, double scale_y)
-
-
+void draw_line(unsigned char *image, int width, int height, int usx1,int usy1,int usx2, int usy2, 
+		       int rshade1, int rshade2, int gshade1, int gshade2, int bshade1, int bshade2,
+			   double scale_x, double scale_y)
 {
    double x1,y1,x2,y2,lengthx,lengthy,length,x_increment,y_increment,x,y,
 	   rshade_increment, gshade_increment, bshade_increment,
@@ -4431,19 +4408,172 @@ void int_draw_line(unsigned char *image, int width, int height, int usx1,int usy
    y = y1 + 0.5;
 
    for(i=0; (i < ((int) length)); i++) {
-    pixel(image, width, (int)x, (int)y, 0) = (unsigned char) rshade; // red shade
-	 pixel(image, width, (int)x, (int)y, 1) = (unsigned char) gshade; // green shade
-    pixel(image, width, (int)x, (int)y, 2) = (unsigned char) bshade; // blue shade
 
-    x = x + x_increment;
-    y = y + y_increment;
-    rshade = rshade + rshade_increment;
-	 gshade = gshade + gshade_increment;
-    bshade = bshade + bshade_increment;
+      pixel(image, width, (int)x, (int)y, 0) = (unsigned char) rshade; // red shade
+      pixel(image, width, (int)x, (int)y, 1) = (unsigned char) gshade; // green shade
+      pixel(image, width, (int)x, (int)y, 2) = (unsigned char) bshade; // blue shade
+
+      x = x + x_increment;
+      y = y + y_increment;
+      rshade = rshade + rshade_increment;
+	  gshade = gshade + gshade_increment;
+      bshade = bshade + bshade_increment;
    }
 }
 
  
+
+
+/****************************************************************
+* 
+*  Routine Name: interpolate2
+* 
+*  Purpose: create an output image by performing bi-linear interpolation
+*           between uniformly-sampled data.  Sampling period is assumed 
+*           to be the same in both x and y directions.
+*
+*  Input: sampled_image - uniformly sampled input data
+*
+*  Output: interpolated_image  - interpolated output data
+*
+*  Returns: TRUE (1) on success, FALSE (0) otherwise
+*
+*  Restrictions: Restrictions on data or input as applicable
+*  Written By: D. Vernon, Department of Computer Science, 
+*              Maynooth College, Ireland.
+*  Date: Jan 09, 1997
+*  Modifications: made last_i = width - first_i - grid_spacing
+*                 rather than searching for it.  Same for last_j
+*                 DV 12/12/00
+*
+****************************************************************/
+ 
+int interpolate2(DVimage *sampled_image, DVimage *interpolated_image)
+{
+   int   width, height;  
+   int   i, j, k, l, found, 
+         first_i, first_j, 
+         last_i, last_j, 
+         grid_spacing;
+   char  debug;
+   float a, b, c, d, p, q;
+   float pixel_value;
+   float pixel_value1;
+   float pixel_value2;
+   float pixel_value3;
+   float pixel_value4;
+
+   /* set debug flag */
+
+   debug = FALSE;
+   if (debug) printf("intpolate: debug on \n");  
+ 
+   // find size of the images
+
+   sampled_image->get_size(&width,&height);
+   
+   /* initialize output */
+
+   for (i=0; i<width; i++) 
+     for (j=0; j<height; j++) 
+        interpolated_image->put_pixel(i,j,(float)0.0);
+
+   /* find first point */
+
+   found = FALSE;
+   first_i = 0;
+   first_j = 0;
+   for (i=0; (i<width) && (!found); i++) 
+      for (j=0; (j<height) && (!found); j++) {
+         sampled_image->get_pixel(i,j,&pixel_value);
+
+         if (pixel_value > 0) {
+            found = TRUE;
+            first_i = i;
+            first_j = j;
+         }
+      }
+
+   if (!found) {
+     printf("interpolate: Error - no sample points");
+     return(FALSE);
+   }
+
+   /* find grid spacing */
+
+   if (width > height)
+      grid_spacing = width;
+   else 
+      grid_spacing = height;
+
+   for (i=0; i<width; i++) 
+     for (j=0; j<height; j++) {
+       sampled_image->get_pixel(i,j,&pixel_value);
+       if (pixel_value > 0) {
+         if (i != first_i && j != first_j) {
+            if (abs(i-first_i) < grid_spacing) {
+              grid_spacing = abs(i-first_i);
+            }
+
+            if (abs(j-first_j) < grid_spacing) {
+              grid_spacing = abs(j-first_j);
+            }
+         }
+       }
+     }
+
+   while (first_i - grid_spacing > 0)   
+     first_i = first_i - grid_spacing;
+
+   while (first_j - grid_spacing > 0)   
+     first_j = first_j - grid_spacing;
+
+   last_i = first_i;
+   last_j = first_j;
+
+   while (last_i + grid_spacing < width)   
+     last_i = last_i + grid_spacing;
+
+   while (last_j + grid_spacing < height)   
+     last_j = last_j + grid_spacing;
+
+   if (debug) 
+     printf("interpolate2: first_i,j = %d, %d; last_i,j = %d, %d; grid_spacing = %d", first_i, first_j, last_i, last_j, grid_spacing);
+
+   for (i=first_i; i<last_i; i+=grid_spacing) {
+     for (j=first_j; j<last_j; j+=grid_spacing) {
+
+       sampled_image->get_pixel(i,j,&pixel_value1);
+       sampled_image->get_pixel(i,j+grid_spacing,&pixel_value2);
+       sampled_image->get_pixel(i+grid_spacing,j,&pixel_value3);
+       sampled_image->get_pixel(i+grid_spacing,j+grid_spacing,&pixel_value4);
+
+       a = pixel_value3 - pixel_value1;
+       b = pixel_value2 - pixel_value1;
+       c = pixel_value4 
+          + pixel_value1
+          - pixel_value3
+          - pixel_value2;
+       d = pixel_value1;
+
+       if (debug) 
+         printf("interpolate: a = %f, b = %f, c = %f, d = %f\n", a, b, c, d);
+
+       for (k=i; k <= i+grid_spacing; k++) {
+         for (l=j; l<= j+grid_spacing; l++) {
+
+            p = (float)(k - i) / (float)grid_spacing;
+            q = (float)(l - j) / (float)grid_spacing;
+
+            interpolated_image->put_pixel(k, l, a*p + b*q + c*p*q + d);
+         }
+       }
+     }
+   }
+
+   return(TRUE);
+}
+
 
 
 /****************************************************************
@@ -4488,8 +4618,6 @@ int interpolate(DVimage *sampled_image, DVimage **interpolated_image)
 
    debug = FALSE;
    if (debug) printf("intpolate: debug on \n");  
-
-
  
  	// find size of the images
 
@@ -4509,9 +4637,9 @@ int interpolate(DVimage *sampled_image, DVimage **interpolated_image)
 
 	if (*interpolated_image != NULL) {
 		delete *interpolated_image;
-      *interpolated_image = NULL;
+        *interpolated_image = NULL;
 	}
-	*interpolated_image = new DVimage(width,height,GREYSCALE_IMAGE,NULL, NULL, DVFLOAT);
+	*interpolated_image = new DVimage(width, height, GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
 
 
    /* initialize output */
@@ -4625,18 +4753,16 @@ int interpolate(DVimage *sampled_image, DVimage **interpolated_image)
 }
 
 
-
-
  
 /****************************************************************
 * 
 *  Routine Name: mask_image - mask an image with a gradient-based mask pattern.
 *                                       
-*  Input: input_image   - pointer to eyecub intensity image 
+*  Input: input_image   - pointer to DVimage 
 *         mask_image    - pointer to a mask image: pixels with a gradient magnitude less than the threshold form the mask
 *         threshold       threshold for the gradient magnitude  (percentage of maximum gradient magnitude)
 *
-*  Output output        - pointer to eyecub intensity image representing gradient magnitude
+*  Output output        - pointer to DVimage representing gradient magnitude
 *                      
 *
 *  Written By: David Vernon
@@ -4799,10 +4925,10 @@ void mask_image (DVimage *input_image, DVimage *mask_image, DVimage *output_imag
 * 
 *      Purpose: filter an image to accentuate local maxima and suppress other image data
 *                        
-*       Input: input_image    - pointer to eyecub intensity image 
+*       Input: input_image    - pointer to DVimage 
 *            half_kernel_size  int
 *
-*      Output: output_image   - pointer to eyecub intensity image representing cross power spectrum
+*      Output: output_image   - pointer to DVimage representing cross power spectrum
 *                          NB it is assumed that this image exists and is of the same dimensions
 *                          as the inputs
 *
@@ -4853,6 +4979,7 @@ void enhance_local_maxima (DVimage *input_image, int half_kernel_size,
 	   //enhance_local_maxima_by_thinning(input, output, width, height);
  	   //enhance_local_maxima_by_suppression(input, output, width, height);
  	   enhance_local_maxima_by_filtering(input, half_kernel_size, output, width, height);
+ 	   //suppress_weak_maxima(output, half_kernel_size, output, width, height);
       
 	   if (dump_debug_image) {
         //dump_float_image(output, width, height);
@@ -4936,25 +5063,23 @@ int enhance_local_maxima_by_filtering(float *source_image, int half_kernel_size,
    /* scan image */
 
    for (i=i_low_limit; i<i_high_limit; i++) {
-     for (j=j_low_limit; j<j_high_limit; j++) {
+      for (j=j_low_limit; j<j_high_limit; j++) {
 
  
-       sum = 0;
+         sum = 0;
  
-       for (p=i-half_kernel_size; p<=i+half_kernel_size; p++) {
-		   for (q=j-half_kernel_size; q<=j+half_kernel_size; q++) {
-				sum+= PIX(f1,width,p,q);
+         for (p=i-half_kernel_size; p<=i+half_kernel_size; p++) {
+		    for (q=j-half_kernel_size; q<=j+half_kernel_size; q++) {
+			   sum+= PIX(f1,width,p,q);
 			}
 		 }
 		 PIX(f2,width,i,j) = PIX(f1,width,i,j) * sum / normalization;
-	  }
-	}
-
- 
+      }
+   }
 
    for (i=0; i<width; i++) 
-     for (j=0; j<height; j++) 
-        PIX(maxima_image,width,i,j) =  PIX(f2, width, i, j);
+      for (j=0; j<height; j++) 
+         PIX(maxima_image,width,i,j) =  PIX(f2, width, i, j);
 
 
    /* free up all allocated space, i.e., release local image space */
@@ -5297,6 +5422,86 @@ int enhance_local_maxima_by_suppression(float *source_image, float *maxima_image
  }
 
 
+
+/****************************************************************
+* 
+*  Routine Name: suppress_weak_maxima
+* 
+*  Input: source_image -  
+*         kernel_size  -  int: the radius of the filter kernel
+*
+*  Output: maxima_image  - image with local maxima enhanced
+*
+*  Returns: TRUE (1) on success, FALSE (0) otherwise
+*
+*  Restrictions: Restrictions on data or input as applicable
+*  Written By: D. Vernon 
+*  Date: April 4, 2011
+*  Modifications: 
+****************************************************************/
+
+int suppress_weak_maxima(float *source_image, int half_kernel_size, float *maxima_image, int width, int height)
+
+{
+   float *f1=NULL;
+   float *f2=NULL;
+ 
+   int i, j, p, q;
+   int i_low_limit, i_high_limit, j_low_limit, j_high_limit;
+   float sum, normalization, double_average;
+
+	// allocate space
+
+	f1  =  (float *) malloc(sizeof(float) * width * height);
+	f2  =  (float *) malloc(sizeof(float) * width * height);
+
+   /* initialize input */
+
+	for (i=0; i<width; i++) {
+	   for (j=0; j<height; j++) {
+          PIX(f1,width,i,j) =  PIX(source_image, width, i, j);
+		  PIX(f2,width,i,j) = 0;
+	   }
+	}
+
+   i_low_limit = (half_kernel_size);
+   i_high_limit = width- (half_kernel_size);
+   j_low_limit = (half_kernel_size);
+   j_high_limit = height-(half_kernel_size);
+
+   normalization = (2 * (float) half_kernel_size + 1) * (2 * (float) half_kernel_size + 1);
+
+   /* scan image */
+
+   for (i=i_low_limit; i<i_high_limit; i++) {
+      for (j=j_low_limit; j<j_high_limit; j++) {
+
+         sum = 0;
+ 
+         for (p=i-half_kernel_size; p<=i+half_kernel_size; p++) {
+		    for (q=j-half_kernel_size; q<=j+half_kernel_size; q++) {
+			   sum+= PIX(f1,width,p,q);
+			}
+		 }
+         double_average = 2* sum / normalization;
+         if (PIX(f1,width,i,j) > double_average) {
+            PIX(f2,width,i,j) = PIX(f1,width,i,j);
+         }
+      }
+   }
+
+   for (i=0; i<width; i++) 
+      for (j=0; j<height; j++) 
+         PIX(maxima_image,width,i,j) =  PIX(f2, width, i, j);
+
+   /* free up all allocated space, i.e., release local image space */
+
+   free(f1);
+   free(f2);
+
+   return(TRUE);
+
+ }
  
 /****************************************************************
 * 
@@ -5304,10 +5509,10 @@ int enhance_local_maxima_by_suppression(float *source_image, float *maxima_image
 * 
 *  Purpose: apodize an image by pixel-by-pixel multiplication with a Gaussian image
 *
-*  Input:  input_image          - pointer to eyecub image to be apodized
+*  Input:  input_image          - pointer to DVimage to be apodized
 *          std_dev              - float giving the standard deviation of the Gaussian 
 *
-*  Output: output_image         - pointer to apodized eyecub image 
+*  Output: output_image         - pointer to apodized DVimage 
 *
 *   Written By: David Vernon
 *        Date:  July 20, 2007
@@ -5442,7 +5647,7 @@ void gaussianApodization (DVimage *input_image, float std_dev, DVimage *output_i
 *  Machine Vision and Applications, Vol. 12, pp. 16-22.
 *
 *
-*  Input:  input_image_left     - pointer to eyecub images to be rectified
+*  Input:  input_image_left     - pointer to DVimages to be rectified
 *          input_image_right
 *
 *                                 intrinsic camera parameters for the left camera:
@@ -5463,7 +5668,7 @@ void gaussianApodization (DVimage *input_image, float std_dev, DVimage *output_i
 *          theta_y_right        - float: rotation of the camera about the Y axis relative to the gaze direction
 *                                 i.e. relative to the version angle NOT relative to the absolute Y zero direction
 *
-*  Output: output_image_left    - pointer to rectified eyecub images
+*  Output: output_image_left    - pointer to rectified DVimages
 *          output_image_right
 *
 *  Written By: David Vernon

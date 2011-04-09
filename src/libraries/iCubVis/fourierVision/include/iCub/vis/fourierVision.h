@@ -299,12 +299,15 @@ void exp_complex (double op1_r, double op1_i, double *result_r,  double *result_
 void bilinear_interpolation_complex (float x_offset, float y_offset,double v00_r, double v00_i, double v01_r, double v01_i, double v10_r, double v10_i, double v11_r, double v11_i, double *result_r,  double *result_i);
 void sort_fourier_components (float *ro1, float *io1, float *ro2, float *io2, float *po1, float *po2, int width, int height, int correct_phase, FILE *velocity_info_file, float *vel_x1, float *vel_y1, float *vel_x2, float *vel_y2);
 //void solve_for_phasors_and_attenuate_sss (double ft0_r, double ft0_i, double threshold, int filter_order, double v_max, double *f1_r, double *f1_i, double *phi1_r, double *phi1_i);
-int  plot_field(DVimage *f_mag, DVimage *f_phase, DVimage *gs_image, int gs_image_flag, DVimage **plot_image, float scale_factor, int colour, int superimpose);
+int  plot_field(DVimage *f_mag, DVimage *f_phase, DVimage *plot_image, float scale_factor, int red, int green, int blue);
 int  interpolate(DVimage *sampled_image, DVimage **interpolated_image);
+int  interpolate2(DVimage *sampled_image, DVimage *interpolated_image);
 void dump_float_image (float *o, int width, int height);
 void dump_int_image (int *o, int width, int height);
 void dump_char_image (unsigned char *o, int width, int height);
-int  draw_line(float *plot, int width, int x1, int y1, int x2, int y2, int colour);
+void draw_line(unsigned char *image, int width, int height, int usx1, int usy1, int usx2, int usy2, 
+	          int rshade1, int rshade2, int gshade1, int gshade2, int bshade1, int bshade2,
+			  double scale_x, double scale_y);
 void cross_power_spectrum (float *ri1, float *ii1, float *ri2, float *ii2, int width, int *x1, int *y1, int *x2, int *y2);
 void cross_power_spectrum (DVimage *input_image_1, DVimage *input_image_2, DVimage *output_image);
 void find_maxima (DVimage *input_image,  int number_of_maxima_required, int non_maxima_suppression_radius, maxima_data_type maxima[]);
@@ -312,6 +315,7 @@ void enhance_local_maxima(DVimage *input_image, int half_kernel_size, DVimage *o
 int  enhance_local_maxima_by_thinning(float *source_image, float *merged_image, int width, int height);
 int  enhance_local_maxima_by_suppression(float *source_image, float *maxima_image, int width, int height);
 int  enhance_local_maxima_by_filtering(float *source_image, int half_kernel_size, float *maxima_image, int width, int height);
+int  suppress_weak_maxima             (float *source_image, int half_kernel_size, float *maxima_image, int width, int height);
 void mask_image (DVimage *input_image, DVimage *mask_image,  DVimage *output_image, double threshold);
 void colour_histogram (DVimage *input_image, DVhs_histogram *hs);
 void gaussianApodization (DVimage *input_image, float std_dev, DVimage *output_image);
@@ -323,6 +327,8 @@ void rectify(DVimage *input_image_left, DVimage *input_image_right,
              float fx_right, float fy_right, float px_right, float py_right, float theta_y_right,
              DVimage *output_image_left,  DVimage *output_image_right);
 void pause(int milliseconds);
+void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampling_period, float sigma, int x1ROI, int y1ROI, int x2ROI,  int y2ROI, DVimage *flow_magnitude, DVimage *flow_phase);
+
 
 /*** Numerical Recipes in C prototypes ***/
 
