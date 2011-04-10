@@ -21,10 +21,11 @@ Audit Trail
 
 22/10/10  Fixed bug in rectify() to force the computation of transformation matrix upon first call  DV
 25/03/11  Added conditional compilation flag DVR to all the library to be compiled in isolation from the iCub repository
-
+10/04/11  Several updates to optical_flow (region of interest processing, extended padding, non-significant maxima suppression)
+ 
 *************************************************************************************************/
  
-// WARNING ... comment out when compiling in the iCub repository; the default if for standalone compilation
+// WARNING ... comment out when compiling in the iCub repository; the default is for standalone compilation
 // #define DVR 
  
 // System includes
@@ -565,10 +566,20 @@ Stereo Segmentation Code
 *
 * Written By: David Vernon
 * Date: July 10, 2006
-* Modifications: Forced non-zero results to facilitate subsequent interpolation  DV 30/3/2011
-*                Added region of interest processing DV 5/4/2011
+* Modifications: Forced non-zero results to facilitate subsequent interpolation                               
+*                DV 30/03/2011
 *
+*                Added region of interest processing 
+*                DV 05/04/2011
 *
+*                Extended padding from window_size/2 to window_size/2; flow is now computed right to the edges of the image
+*                DV 07/04/2011
+*
+*                Only register significant maxima, i.e. those twice as large as the next largest local maximum                             
+*                This suppresses flow around occluding boundaries and in regions which are relatively homogeneous 
+*                (even in the presence of noise)   
+*                DV 10/04/2011
+* 
 ****************************************************************/
  
 void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampling_period, float sigma, 
@@ -719,8 +730,6 @@ void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampli
                }
 		    }
        
-            //dump_char_image(window1->idata,window_size,window_size);
-
             cross_power_spectrum (window2, window1, cps); // cps must exist, type FLOAT
 
             /* Enhancing the maxima does not significantly improve the quality of the optical flow computation */
@@ -730,27 +739,31 @@ void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampli
   		    enhance_local_maxima (cps, filter_radius, enhanced_cps); 	  
             */
             
-            number_of_maxima = 1;  // we only need to find the principal shift in the window
+            number_of_maxima = 2;  // we only need to find the principal shift in the window
             non_maxima_suppression_radius = 3;
             //find_maxima (enhanced_cps, number_of_maxima, non_maxima_suppression_radius, maxima);  
 		    find_maxima (cps, number_of_maxima, non_maxima_suppression_radius, maxima);  
+		    
+            // printf("%d %d = %f, %d %d = %f\n",maxima[0].x ,maxima[0].y, maxima[0].value, maxima[1].x ,maxima[1].y, maxima[1].value);
   			 
-            p = maxima[0].x  - window_size/2;          
-            q = maxima[0].y  - window_size/2;            
-		    temp = (float) sqrt((float)( p*p + q*q ));   
+            if (maxima[0].value > 2*maxima[1].value) {
 
-            //flow_magnitude->put_pixel(i+window_size/4,j+window_size/4,(float) temp); 
-            flow_magnitude->put_pixel(i,j,(float) temp); 
+               // only register significant maxima
 
-		    //printf("%d %d = %f, %d %d = %f\n",maxima[0].x ,maxima[0].y, maxima[0].value, maxima[1].x ,maxima[1].y, maxima[1].value);
+               p = maxima[0].x  - window_size/2;          
+               q = maxima[0].y  - window_size/2;            
+		       temp = (float) sqrt((float)( p*p + q*q ));   
 
-		    temp = (float) atan2((float)q, (float)p);
-            if (temp == 0)
-               temp = (float) 0.000001; // ensure non-zero result to facilitate possible subsequent interpolation
+               //flow_magnitude->put_pixel(i+window_size/4,j+window_size/4,(float) temp); 
+               flow_magnitude->put_pixel(i,j,(float) temp); 
 
-            //flow_phase->put_pixel(i+window_size/4,j+window_size/4,(float) temp); // put value in centre of window, offset by padding
-            flow_phase->put_pixel(i,j,(float) temp); // put value in centre of window, offset by padding
+		       temp = (float) atan2((float)q, (float)p);
+               if (temp == 0)
+                  temp = (float) 0.000001; // ensure non-zero result to facilitate possible subsequent interpolation
 
+               //flow_phase->put_pixel(i+window_size/4,j+window_size/4,(float) temp); // put value in centre of window, offset by padding
+               flow_phase->put_pixel(i,j,(float) temp); // put value in centre of window, offset by padding
+            }
          }
       }
    }
@@ -4466,7 +4479,7 @@ int interpolate2(DVimage *sampled_image, DVimage *interpolated_image)
    /* set debug flag */
 
    debug = FALSE;
-   if (debug) printf("intpolate: debug on \n");  
+   if (debug) printf("interpolate: debug on \n");  
  
    // find size of the images
 
@@ -4495,7 +4508,7 @@ int interpolate2(DVimage *sampled_image, DVimage *interpolated_image)
       }
 
    if (!found) {
-     printf("interpolate: Error - no sample points");
+     printf("interpolate: no sample points\n");
      return(FALSE);
    }
 
@@ -4978,8 +4991,8 @@ void enhance_local_maxima (DVimage *input_image, int half_kernel_size,
  
 	   //enhance_local_maxima_by_thinning(input, output, width, height);
  	   //enhance_local_maxima_by_suppression(input, output, width, height);
- 	   enhance_local_maxima_by_filtering(input, half_kernel_size, output, width, height);
- 	   //suppress_weak_maxima(output, half_kernel_size, output, width, height);
+ 	   //enhance_local_maxima_by_filtering(input, half_kernel_size, output, width, height);
+ 	   suppress_weak_maxima(output, half_kernel_size, output, width, height);
       
 	   if (dump_debug_image) {
         //dump_float_image(output, width, height);
