@@ -1155,7 +1155,7 @@ bool ActionPrimitives::cmdHand(const Action &action)
         {
             int j=*itr-jHandMin;
 
-            if (j>=poss.length() || j>=vels.length())
+            if ((j>=poss.length()) || (j>=vels.length()))
                 break;
 
             posCtrl->setRefSpeed(*itr,vels[j]);
