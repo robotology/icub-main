@@ -45,7 +45,7 @@ bool CompensationThread::threadInit()
     fprintf(stderr, "THREAD INIT\n\n");
 
    /* initialize variables and create data-structures if needed */
-	MAX_DRIFT = 0.1f;								// the maximal drift that is being compensated every second
+	MAX_DRIFT = 0.2f;								// the maximal drift that is being compensated every second
 	CHANGE_PER_TIMESTEP = MAX_DRIFT/PERIOD;
 	readErrorCounter = 0;
 	state = calibration;
@@ -122,6 +122,8 @@ void CompensationThread::setSmoothFilter(bool value){
 bool CompensationThread::setSmoothFactor(float value){
 	if(value<0 || value>1)
 		return false;
+	if(value==1) 
+		value = 0.99f;	// otherwise with 1 the values don't update
 	smoothFactorSem.wait();
 	smoothFactor = value;
 	smoothFactorSem.post();
@@ -131,7 +133,7 @@ void CompensationThread::forceCalibration(){
 	stateSem.wait();
 	if(state != calibration){
 		state = calibration;
-		calibrationCounter = 0;	
+		calibrationCounter = 0;
 		calibrationRead = 0;
 	}
 	stateSem.post();
@@ -306,7 +308,7 @@ bool CompensationThread::readRawAndWriteCompensatedData(){
 		// smooth filter
 		if(smoothFilter){
 			smoothFactorSem.wait();
-			d = smoothFactor*d + (1-smoothFactor)*compensatedDataOld(i);
+			d = (1-smoothFactor)*d + smoothFactor*compensatedDataOld(i);
 			smoothFactorSem.post();
 			compensatedDataOld(i) = d;	// update old value
 		}
@@ -349,12 +351,15 @@ void CompensationThread::updateBaseline(){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
 			d = compensatedData(j);
 
-			if(d > 0.5) {
-				baselines[j]		+= CHANGE_PER_TIMESTEP;
-				mean_change			+= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
-			}else if(d < -0.5) {
-				baselines[j]		-= CHANGE_PER_TIMESTEP;
-				mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
+			//if(d > 0.5) {
+			//	baselines[j]		+= CHANGE_PER_TIMESTEP;
+			//	mean_change			+= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
+			//}else if(d < -0.5) {
+			//	baselines[j]		-= CHANGE_PER_TIMESTEP;
+			//	mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
+			//}
+			if(d>0.5 || d<-0.5){
+				baselines[j]		+= CHANGE_PER_TIMESTEP*d/touchThresholds[j];
 			}
 		}
     }
@@ -403,6 +408,12 @@ bool CompensationThread::getBinarization(){
 }
 bool CompensationThread::getSmoothFilter(){
 	return smoothFilter;
+}
+bool CompensationThread::isCalibrating(){
+	stateSem.wait();
+	bool res = state==calibration;
+	stateSem.post();
+	return res;
 }
 float CompensationThread::getSmoothFactor(){
 	return smoothFactor;

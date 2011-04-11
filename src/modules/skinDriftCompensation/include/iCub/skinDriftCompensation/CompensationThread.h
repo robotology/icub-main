@@ -62,6 +62,7 @@ public:
 	bool getBinarization();
 	bool getSmoothFilter();
 	float getSmoothFactor();
+	bool isCalibrating();
 
 
 private:

@@ -30,7 +30,7 @@ const float SkinDriftCompensation::SMOOTH_FACTOR_DEFAULT = 0.5;
 const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
 const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
 const string SkinDriftCompensation::HAND_DEFAULT = "right";
-const string SkinDriftCompensation::ZERO_UP_RAW_DATA_DEFAULT = "false";
+const string SkinDriftCompensation::ZERO_UP_RAW_DATA_DEFAULT = "notFound";
 const string SkinDriftCompensation::RPC_PORT_DEFAULT = "/rpc";
 
 // the order of the command in this list MUST correspond to the order of the enum SkinDriftCompensation::SkinDriftCompCommand
@@ -38,7 +38,7 @@ const string SkinDriftCompensation::COMMAND_LIST[]  = {
 	"forbid calibration",	"allow calibration",	"force calibration", 
 	"get percentile",		"set binarization",		"get binarization", 
 	"set smooth filter",	"get smooth filter",	"set smooth factor",	
-	"get smooth factor",	"help",					"quit"};
+	"get smooth factor",	"is calibrating",		"help",					"quit"};
 
 // the order in COMMAND_DESC must correspond to the order in COMMAND_LIST
 const string SkinDriftCompensation::COMMAND_DESC[]  = {
@@ -52,6 +52,7 @@ const string SkinDriftCompensation::COMMAND_DESC[]  = {
 	"get the smooth filter state (on, off)",
 	"set the value of the smooth factor (in [0,1])",
 	"get the smooth factor value",
+	"tell whether the skin calibration is in progress",
 	"get this list", 
 	"quit the module"};
 
@@ -256,6 +257,13 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
 		case get_smooth_factor:
 			reply.addDouble(myThread->getSmoothFactor());
+			return true;
+
+		case is_calibrating:
+			if(myThread->isCalibrating())
+				reply.addString("yes");
+			else
+				reply.addString("no");
 			return true;
 
 		default:

@@ -176,8 +176,8 @@ public:
 		forbid_calibration, allow_calibration,	force_calibration, 
 		get_percentile,		set_binarization,	get_binarization, 
 		set_smooth_filter,	get_smooth_filter,	set_smooth_factor, 
-		get_smooth_factor,	help,				quit, 
-		COMMANDS_COUNT} SkinDriftCompCommand;
+		get_smooth_factor,	is_calibrating,		help,				
+		quit, COMMANDS_COUNT} SkinDriftCompCommand;
    
 	bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
 	bool interruptModule();                       // interrupt, e.g., the ports 
