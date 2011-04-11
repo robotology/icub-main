@@ -37,12 +37,12 @@ from Tkinter import *
 import ctypes
 
 # a couple of constants
-PROCESS_TIMEOUT=5         #seconds
-PROCESS_POLL_INTERVAL=0.05 #seconds
+PROCESS_TIMEOUT=240           #seconds
+PROCESS_POLL_INTERVAL=0.05    #seconds
 
 ## ensure portable way to kill a process
 ## this works on python < 2.6 (which does not implement
-## kill() nor terminate()).
+## kill() or terminate()).
 def portableKill(theprocess):
     if os.name == 'posix':
         os.kill(theprocess.pid, signal.SIGKILL)
