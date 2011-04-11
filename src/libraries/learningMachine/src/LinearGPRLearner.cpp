@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2007-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * author:  Arjan Gijsberts
  * email:   arjan.gijsberts@iit.it
  * website: www.robotcub.org
@@ -19,12 +19,12 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "iCub/learningMachine/RLSLearner.h"
+#include "iCub/learningMachine/LinearGPRLearner.h"
 
 namespace iCub {
 namespace learningmachine {
 
-RLSLearner::RLSLearner(unsigned int dom, unsigned int cod, double lambda) {
+LinearGPRLearner::LinearGPRLearner(unsigned int dom, unsigned int cod, double lambda) {
     this->setName("RLS");
     this->sampleCount = 0;
     // make sure to not use initialization list to constructor of base for
@@ -35,7 +35,7 @@ RLSLearner::RLSLearner(unsigned int dom, unsigned int cod, double lambda) {
     this->setLambdaAll(lambda);
 }
 
-RLSLearner::RLSLearner(const RLSLearner& other)
+LinearGPRLearner::LinearGPRLearner(const LinearGPRLearner& other)
   : IFixedSizeLearner(other), sampleCount(other.sampleCount) {
     this->machines.resize(other.machines.size());
     for(unsigned int i = 0; i < other.machines.size(); i++) {
@@ -44,11 +44,11 @@ RLSLearner::RLSLearner(const RLSLearner& other)
 
 }
 
-RLSLearner::~RLSLearner() {
+LinearGPRLearner::~LinearGPRLearner() {
     this->deleteAll();
 }
 
-RLSLearner& RLSLearner::operator=(const RLSLearner& other) {
+LinearGPRLearner& LinearGPRLearner::operator=(const LinearGPRLearner& other) {
     if(this == &other) return *this; // handle self initialization
 
     this->IFixedSizeLearner::operator=(other);
@@ -62,11 +62,11 @@ RLSLearner& RLSLearner::operator=(const RLSLearner& other) {
     return *this;
 }
 
-void RLSLearner::deleteAll() {
+void LinearGPRLearner::deleteAll() {
     this->deleteAll(this->machines.size());
 }
 
-void RLSLearner::deleteAll(int size) {
+void LinearGPRLearner::deleteAll(int size) {
     for(unsigned int i = 0; i < this->machines.size(); i++) {
         this->deleteAt(i);
     }
@@ -74,18 +74,18 @@ void RLSLearner::deleteAll(int size) {
     this->machines.resize(size);
 }
 
-void RLSLearner::deleteAt(int index) {
+void LinearGPRLearner::deleteAt(int index) {
     assert(index < int(this->machines.size()));
 
     delete this->machines[index];
     this->machines[index] = (RLS*) 0;
 }
 
-void RLSLearner::initAll() {
+void LinearGPRLearner::initAll() {
     this->initAll(this->getCoDomainSize());
 }
 
-void RLSLearner::initAll(int size) {
+void LinearGPRLearner::initAll(int size) {
     // clear current vector and set to correct size
     this->deleteAll(size);
     // create new machines
@@ -94,19 +94,19 @@ void RLSLearner::initAll(int size) {
     }
 }
 
-void RLSLearner::setLambdaAll(double l) {
+void LinearGPRLearner::setLambdaAll(double l) {
     for(unsigned int i = 0; i < this->machines.size(); i++) {
         this->setLambdaAt(i, l);
     }
 }
 
-void RLSLearner::setLambdaAt(int index, double l) {
+void LinearGPRLearner::setLambdaAt(int index, double l) {
     RLS* machine = this->getAt(index);
     machine->setLambda(l);
     machine->reset();
 }
 
-RLS* RLSLearner::getAt(int index) {
+RLS* LinearGPRLearner::getAt(int index) {
     if(index >= 0 && index < int(this->machines.size())) {
         return this->machines[index];
     } else {
@@ -115,11 +115,11 @@ RLS* RLSLearner::getAt(int index) {
 }
 
 
-RLS* RLSLearner::createMachine() {
+RLS* LinearGPRLearner::createMachine() {
     return new RLS(this->getDomainSize());
 }
 
-void RLSLearner::feedSample(const Vector& input, const Vector& output) {
+void LinearGPRLearner::feedSample(const Vector& input, const Vector& output) {
     this->IFixedSizeLearner::feedSample(input, output);
 
     for(int c = 0; c < output.size(); c++) {
@@ -129,11 +129,11 @@ void RLSLearner::feedSample(const Vector& input, const Vector& output) {
     this->sampleCount++;
 }
 
-void RLSLearner::train() {
+void LinearGPRLearner::train() {
 
 }
 
-Vector RLSLearner::predict(const Vector& input) {
+Vector LinearGPRLearner::predict(const Vector& input) {
     this->checkDomainSize(input);
 
     Vector output(this->getCoDomainSize());
@@ -146,12 +146,12 @@ Vector RLSLearner::predict(const Vector& input) {
     return output;
 }
 
-void RLSLearner::reset() {
+void LinearGPRLearner::reset() {
     this->sampleCount = 0;
     this->initAll();
 }
 
-std::string RLSLearner::getInfo() {
+std::string LinearGPRLearner::getInfo() {
     std::ostringstream buffer;
     buffer << this->IFixedSizeLearner::getInfo();
     buffer << "Sample Count: " << this->sampleCount << std::endl;
@@ -164,14 +164,14 @@ std::string RLSLearner::getInfo() {
     return buffer.str();
 }
 
-std::string RLSLearner::getConfigHelp() {
+std::string LinearGPRLearner::getConfigHelp() {
     std::ostringstream buffer;
     buffer << this->IFixedSizeLearner::getConfigHelp();
     buffer << "  lambda idx|all val    Regularization parameter lambda" << std::endl;
     return buffer.str();
 }
 
-void RLSLearner::writeBottle(Bottle& bot) {
+void LinearGPRLearner::writeBottle(Bottle& bot) {
     for(int i = 0; i < this->getCoDomainSize(); i++) {
         bot.addString(this->getAt(i)->toString().c_str());
     }
@@ -180,7 +180,7 @@ void RLSLearner::writeBottle(Bottle& bot) {
     this->IFixedSizeLearner::writeBottle(bot);
 }
 
-void RLSLearner::readBottle(Bottle& bot) {
+void LinearGPRLearner::readBottle(Bottle& bot) {
     // make sure to call the superclass's method
     this->IFixedSizeLearner::readBottle(bot);
     this->sampleCount = bot.pop().asInt();
@@ -189,22 +189,22 @@ void RLSLearner::readBottle(Bottle& bot) {
     }
 }
 
-void RLSLearner::setDomainSize(unsigned int size) {
+void LinearGPRLearner::setDomainSize(unsigned int size) {
     this->IFixedSizeLearner::setDomainSize(size);
 
     this->initAll();
 }
 
-void RLSLearner::setCoDomainSize(unsigned int size) {
+void LinearGPRLearner::setCoDomainSize(unsigned int size) {
     this->IFixedSizeLearner::setCoDomainSize(size);
     this->initAll(this->getCoDomainSize());
 }
 
-/*bool RLSLearner::configureAt(Searchable& config) {
+/*bool LinearGPRLearner::configureAt(Searchable& config) {
     if(config.find("lambda")
 }*/
 
-bool RLSLearner::configure(Searchable& config) {
+bool LinearGPRLearner::configure(Searchable& config) {
     bool success = this->IFixedSizeLearner::configure(config);
 
     // format: set lambda (lambda1 .. lambdan)

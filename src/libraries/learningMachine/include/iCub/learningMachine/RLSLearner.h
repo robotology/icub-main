@@ -203,11 +203,20 @@ public:
 
 class RLSLearner : public IFixedSizeLearner {
 private:
+    /**
+     * Inverse of matrix A.
+     */
+    Matrix Ai;
 
     /**
-     * The vector of RLS machines; one for each output element.
+     * Vector b.
      */
-    std::vector<RLS*> machines;
+    Vector b;
+
+    /**
+     * Weight vector for the linear predictor.
+     */
+    Vector w;
 
     /**
      * number of samples during last training routine
@@ -215,42 +224,9 @@ private:
     int sampleCount;
 
     /**
-     * Resets the vector of machines and deletes each element.
+     * Regularization parameter.
      */
-    void deleteAll();
-
-    /**
-     * Resets the vector of machines to the given size and deletes each element.
-     *
-     * @param size the desired size of the vector after resetting.
-     */
-    void deleteAll(int size);
-
-    /**
-     * Deletes a machine at the given index.
-     *
-     * @param index the index of the element.
-     */
-    void deleteAt(int index);
-
-    /**
-     * Initiates the vector of machines and resets each element before doing that.
-     */
-    void initAll();
-
-    /**
-     * Initiates the vector of machines to the given size and resets each element before doing that.
-     *
-     * @param size the desired size of the vector after intiation.
-     */
-    void initAll(int size);
-
-    /**
-     * Creates a new machine according to the currently stored type specifier.
-     *
-     * @return a machine of the desired type.
-     */
-    RLS* createMachine();
+    double lambda;
 
 public:
     /**
@@ -294,7 +270,7 @@ public:
      * @return a pointer to the RLS at the given index
      * @throw runtime error if the index is out of bounds
      */
-    RLS* getAt(int index);
+    //RLS* getAt(int index);
 
     /*
      * Inherited from IMachineLearner.
@@ -344,19 +320,22 @@ public:
     void setCoDomainSize(unsigned int size);
 
     /**
-     * Sets the regularization parameter lambda of all machines to a specified value.
+     * Sets the regularization parameter \lambda to a specified value. This
+     * resets the machine.
      *
      * @param l the desired value.
      */
-    void setLambdaAll(double l);
+    void setLambda(double l);
 
     /**
-     * Sets the regularization parameter lambda of the machine at a given index to a specified value.
+     * Accessor for the regularization parameter \lambda.
      *
-     * @param index the index of the element.
-     * @param l the desired value.
+     * @returns the value of the parameter
      */
-    void setLambdaAt(int index, double l);
+    virtual double getLambda() {
+        return this->lambda;
+    }
+
 
     /*
      * Inherited from IConfig.

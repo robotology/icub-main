@@ -21,7 +21,7 @@ SET(LM_HEADER
     ../include/iCub/learningMachine/IMachineLearner.h
     ../include/iCub/learningMachine/IScaler.h
     ../include/iCub/learningMachine/ITransformer.h
-    #../include/iCub/learningMachine/LinearGPRLearner.h
+    ../include/iCub/learningMachine/LinearGPRLearner.h
     ../include/iCub/learningMachine/LinearScaler.h
     ../include/iCub/learningMachine/LSSVMLearner.h
     ../include/iCub/learningMachine/MachineCatalogue.h
@@ -40,7 +40,7 @@ SET(LM_MACHINE_SRC
     ../src/DatasetRecorder.cpp
     ../src/DummyLearner.cpp
     ../src/IFixedSizeLearner.cpp
-    #../src/LinearGPRLearner.cpp
+    ../src/LinearGPRLearner.cpp
     ../src/LSSVMLearner.cpp
     ../src/RLSLearner.cpp )
 

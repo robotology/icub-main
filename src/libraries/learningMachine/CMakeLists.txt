@@ -25,7 +25,7 @@ SET(LM_HEADER
     include/iCub/learningMachine/Normalizer.h
     include/iCub/learningMachine/PortableT.h
     include/iCub/learningMachine/RandomFeature.h
-    include/iCub/learningMachine/RLSLearner.h
+    #include/iCub/learningMachine/RLSLearner.h
     include/iCub/learningMachine/ScaleTransformer.h
     #include/iCub/learningMachine/SparseSpectrumFeature.h
     include/iCub/learningMachine/Standardizer.h
@@ -37,8 +37,8 @@ SET(LM_MACHINE_SRC
     src/DummyLearner.cpp
     src/IFixedSizeLearner.cpp
     #src/LinearGPRLearner.cpp
-    src/LSSVMLearner.cpp
-    src/RLSLearner.cpp )
+    src/LSSVMLearner.cpp )
+    #src/RLSLearner.cpp )
 
 SET(LM_TRANSFORMER_SRC
     src/FixedRangeScaler.cpp

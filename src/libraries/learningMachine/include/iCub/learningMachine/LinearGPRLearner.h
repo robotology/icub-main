@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2007-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * author:  Arjan Gijsberts
  * email:   arjan.gijsberts@iit.it
  * website: www.robotcub.org
@@ -207,7 +207,7 @@ private:
     /**
      * The vector of RLS machines; one for each output element.
      */
-    std::vector<RLS*> machines;
+    //std::vector<RLS*> machines;
 
     /**
      * number of samples during last training routine
@@ -217,40 +217,40 @@ private:
     /**
      * Resets the vector of machines and deletes each element.
      */
-    void deleteAll();
+    //void deleteAll();
 
     /**
      * Resets the vector of machines to the given size and deletes each element.
      *
      * @param size the desired size of the vector after resetting.
      */
-    void deleteAll(int size);
+    //void deleteAll(int size);
 
     /**
      * Deletes a machine at the given index.
      *
      * @param index the index of the element.
      */
-    void deleteAt(int index);
+    //void deleteAt(int index);
 
     /**
      * Initiates the vector of machines and resets each element before doing that.
      */
-    void initAll();
+    //void initAll();
 
     /**
      * Initiates the vector of machines to the given size and resets each element before doing that.
      *
      * @param size the desired size of the vector after intiation.
      */
-    void initAll(int size);
+    //void initAll(int size);
 
     /**
      * Creates a new machine according to the currently stored type specifier.
      *
      * @return a machine of the desired type.
      */
-    RLS* createMachine();
+    //RLS* createMachine();
 
 public:
     /**

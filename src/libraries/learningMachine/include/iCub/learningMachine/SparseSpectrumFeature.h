@@ -160,7 +160,7 @@ public:
      *
      * @return ell.
      */
-    virtual double getEll() {
+    virtual Vector& getEll() {
         return this->ell;
     }
 
@@ -169,11 +169,7 @@ public:
      *
      * @param ell the desired ell.
      */
-    virtual void setEll(Vector& ell) {
-        this->ell = ell;
-        // rebuild projection matrix
-        this->reset();
-    }
+    virtual void setEll(Vector& ell);
 
 };
 
