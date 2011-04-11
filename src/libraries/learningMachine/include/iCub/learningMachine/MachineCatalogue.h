@@ -34,7 +34,7 @@ namespace learningmachine {
 
 void registerMachines() {
     FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new DummyLearner());
-    FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new RLSLearner());
+    //FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new RLSLearner());
     FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new LSSVMLearner());
 #ifdef BUILD_LSSVMATLAS
     FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new LSSVMAtlasLearner());
