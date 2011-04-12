@@ -62,7 +62,7 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     ySelect=false;
     zSelect=false;
 
-    mObjectsThread=new ObjectsThread(config.find("objport").asString().c_str());
+    mObjectsManager=new ObjectsManager(config.find("objport").asString().c_str(),config.find("texport").asString().c_str());
     //printf("objport=%s\n",config.find("objport").asString().c_str());
 
     leftMouseButton=false;
@@ -71,7 +71,7 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     setMouseTracking(true);
     setFocusPolicy(QWidget::StrongFocus);
 
-    pBVH=new BVH(mObjectsThread);
+    pBVH=new BVH(mObjectsManager);
 
     if (!pBVH->Create(config))
     {
@@ -83,7 +83,7 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
 
 AnimationView::~AnimationView()
 {
-    if (mObjectsThread) delete mObjectsThread;
+    if (mObjectsManager) delete mObjectsManager;
 
     if (pBVH) delete pBVH;
 }
@@ -157,6 +157,8 @@ void AnimationView::initializeGL()
     glLightfv(GL_LIGHT1,GL_SPECULAR,specular1);
 
     glEnable(GL_NORMALIZE);
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    //glEnable(GL_TEXTURE_2D);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -195,13 +197,15 @@ void AnimationView::draw()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
     glShadeModel(GL_FLAT);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
     camera.setModelView();
   
     drawFloor();
 
     pBVH->draw();
+
+    glFlush();
 
     //mObjectsThread->draw();
 }

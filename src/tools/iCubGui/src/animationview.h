@@ -103,7 +103,7 @@ class AnimationView : public QGLWidget
 
     QTimer mTimer;
     BVH* pBVH;
-    ObjectsThread* mObjectsThread;
+    ObjectsManager* mObjectsManager;
 
     QPoint clickPos;           // holds the mouse click position for dragging
     QPoint returnPos;          // holds the mouse position to return to after dragging

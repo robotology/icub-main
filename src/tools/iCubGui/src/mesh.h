@@ -176,11 +176,13 @@ public:
         }
         objFile.close();
 
+        /*
         printf("mesh %s\n",fileName.ascii());
         printf("xmin %lf    xmax %lf\n",xmin,xmax);
         printf("ymin %lf    ymax %lf\n",ymin,ymax);
         printf("zmin %lf    zmax %lf\n",zmin,zmax);
         printf("********************\n");
+        */
     }
 
     ~iCubMesh()

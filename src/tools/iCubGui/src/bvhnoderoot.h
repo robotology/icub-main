@@ -24,10 +24,10 @@
 class BVHNodeROOT : public BVHNodeRPY_XYZ
 {
 public:
-    BVHNodeROOT(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,iCubMesh* mesh,ObjectsThread* objThread) 
+    BVHNodeROOT(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,iCubMesh* mesh,ObjectsManager* objManager) 
         : BVHNodeRPY_XYZ(name,enc,yaw,pitch,roll,x,y,z,-180.0,180.0,mesh)
     {
-        mObjectsThread=objThread;
+        mObjectsManager=objManager;
     }
         
     virtual void drawJoint(){}
@@ -53,9 +53,9 @@ public:
             pMesh->Draw();
         }
 
-        if (mObjectsThread)
+        if (mObjectsManager)
         {
-            mObjectsThread->draw();
+            mObjectsManager->draw();
         }
     
         for (unsigned int i=0; i<children.count(); ++i)
@@ -67,7 +67,7 @@ public:
     }
 
 protected:
-    ObjectsThread *mObjectsThread;
+    ObjectsManager *mObjectsManager;
 }; 
 
 #endif

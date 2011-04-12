@@ -25,10 +25,10 @@
 
 #include "bvh.h"
 
-BVH::BVH(ObjectsThread *objThread)
+BVH::BVH(ObjectsManager *objManager)
 {
     pRoot=NULL;
-    mObjectsThread=objThread;
+    mObjectsManager=objManager;
 }
 
 bool BVH::Create(yarp::os::ResourceFinder& config)
@@ -239,7 +239,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 			double e=token().toDouble();
 			double f=token().toDouble();
 			double g=token().toDouble();
-			node=new BVHNodeROOT(sName,a,b,c,d,e,f,g,pMesh,mObjectsThread); 
+			node=new BVHNodeROOT(sName,a,b,c,d,e,f,g,pMesh,mObjectsManager); 
 		}
 		break;
     case BVH_JOINT:

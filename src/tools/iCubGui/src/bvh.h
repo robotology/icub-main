@@ -60,7 +60,7 @@ using namespace yarp::os;
 class BVH
 {
 public:
-    BVH(ObjectsThread* objThread=NULL);
+    BVH(ObjectsManager* objManager=NULL);
     bool Create(yarp::os::ResourceFinder& config);
     ~BVH();
    
@@ -106,7 +106,7 @@ public:
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         glEnable(GL_LIGHT1);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
         glEnable(GL_COLOR_MATERIAL);
         glEnable(GL_LINE_SMOOTH);
      
@@ -137,7 +137,7 @@ public:
     BVHNode* bvhReadNode(yarp::os::ResourceFinder& config);
     BVHNode* pRoot;
 
-    ObjectsThread *mObjectsThread;
+    ObjectsManager *mObjectsManager;
     
     // YARP
     
