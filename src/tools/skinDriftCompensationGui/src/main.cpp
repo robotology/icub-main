@@ -1,4 +1,4 @@
-#include "icub/skinDriftCompensationGui/main.h"
+#include "iCub/skinDriftCompensationGui/main.h"
 
 
 static void on_window_destroy_event(GtkObject *object, gpointer user_data){
