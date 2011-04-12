@@ -205,8 +205,6 @@ void AnimationView::draw()
 
     pBVH->draw();
 
-    glFlush();
-
     //mObjectsThread->draw();
 }
 

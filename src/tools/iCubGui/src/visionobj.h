@@ -43,8 +43,10 @@ public:
               double rotx,double roty,double rotz,
               int r,int g,int b,double alpha)
     {   
+        mW=mH=0;
         nTexID=0;
         bTextured=false;
+        mTextureBuffer=NULL;
 
         mName=name;
        
@@ -79,18 +81,40 @@ public:
 
     void Draw()
     {
+        if (mTextureBuffer!=NULL)
+        {
+            glEnable(GL_TEXTURE_2D);
+            GLuint texture;
+            glGenTextures(1,&texture);
+            nTexID=texture;
+            bTextured=true;
+
+	        glBindTexture(GL_TEXTURE_2D,texture);
+	        gluBuild2DMipmaps(GL_TEXTURE_2D,3,mW,mH,GL_RGB,GL_UNSIGNED_BYTE,mTextureBuffer);
+	        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+	        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
+
+            delete [] mTextureBuffer;
+            mTextureBuffer=NULL;
+            glDisable(GL_TEXTURE_2D);
+        }
+        
         glPushMatrix();
 
-        glTranslated(mPosy,mPosz,mPosx);
+        glTranslated(mPosx,mPosy,mPosz);
         printw(0.0,0.0,1.2*mDimz,mName.c_str());
 
-        glRotated(mRotz,0.0,1.0,0.0);
-        glRotated(mRoty,1.0,0.0,0.0);
-        glRotated(mRotx,0.0,0.0,1.0);
+        glRotated(mRotz,0.0,0.0,1.0);
+        glRotated(mRoty,0.0,1.0,0.0);
+        glRotated(mRotx,1.0,0.0,0.0);
 
         //glColor4d(mR,mG,mB,1.0);
         glColor4d(mR,mG,mB,mAlpha);
-        glScaled(mDimy,mDimz,mDimx);
+
+        glPushMatrix();
+
+        glScaled(mDimx,mDimy,mDimz);
         //gluSphere(mEllipsoid,1.0,16,16);
         
         static GLfloat v0[3]={ 1.0, 1.0, 1.0};
@@ -105,82 +129,57 @@ public:
 
         if (bTextured)
         {
-            //glClearColor(0.0f,0.0f,0.0f,0.0f);
-            //glClear(GL_COLOR_BUFFER_BIT);
-            
             // setup texture mapping
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D,nTexID);
 
-            glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-            glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, 0 ? GL_MODULATE : GL_DECAL);
-
             glBegin(GL_QUADS);
-            glTexCoord2f(0.0,0.0);
-            glVertex3f(1.0,-1.0,-1.0);
-            //glVertex3fv(v2);
-            glTexCoord2f(1.0,0.0);
-            //glVertex3fv(v3);
-            glVertex3f(1.0, 1.0,-1.0);
-            glTexCoord2f(1.0,1.0);
-            //glVertex3fv(v0);
-            glVertex3f(1.0, 1.0, 1.0);
-            glTexCoord2f(0.0,1.0);
-            //glVertex3fv(v1);
-            glVertex3f(1.0,-1.0, 1.0);
+
+            glTexCoord2f(1.0,0.0); glVertex3fv(v0);
+            glTexCoord2f(0.0,0.0); glVertex3fv(v1); 
+            glTexCoord2f(0.0,1.0); glVertex3fv(v2);
+            glTexCoord2f(1.0,1.0); glVertex3fv(v3);
+
+            glTexCoord2f(0.0,0.0); glVertex3fv(v0);
+            glTexCoord2f(0.0,1.0); glVertex3fv(v3);
+            glTexCoord2f(1.0,1.0); glVertex3fv(v7);
+            glTexCoord2f(1.0,0.0); glVertex3fv(v4);
+
+            glTexCoord2f(1.0,0.0); glVertex3fv(v1);
+            glTexCoord2f(0.0,0.0); glVertex3fv(v5);
+            glTexCoord2f(0.0,1.0); glVertex3fv(v6);
+            glTexCoord2f(1.0,1.0); glVertex3fv(v2);        
+        
+            glTexCoord2f(0.0,1.0); glVertex3fv(v7);
+            glTexCoord2f(1.0,1.0); glVertex3fv(v6);
+            glTexCoord2f(1.0,0.0); glVertex3fv(v5);
+            glTexCoord2f(0.0,0.0); glVertex3fv(v4); 
+
+            glVertex3fv(v0);
+            glVertex3fv(v4);
+            glVertex3fv(v5);
+            glVertex3fv(v1);
+
+            glVertex3fv(v2);
+            glVertex3fv(v6);
+            glVertex3fv(v7);
+            glVertex3fv(v3);
 
             /*
-            glTexCoord2f(0.0,1.0);
-            glVertex3fv(v0);
-            glTexCoord2f(0.0,0.0);
-            glVertex3fv(v3);
-            glTexCoord2f(1.0,0.0);
-            glVertex3fv(v7);
-            glTexCoord2f(1.0,1.0);
-            glVertex3fv(v4);
+            glTexCoord2f(1.0,0.0); glVertex3fv(v0);
+            glTexCoord2f(1.0,1.0); glVertex3fv(v4);
+            glTexCoord2f(0.0,1.0); glVertex3fv(v5);
+            glTexCoord2f(0.0,0.0); glVertex3fv(v1);
 
-            glTexCoord2f(1.0,0.0);
-            glVertex3fv(v0);
-            glTexCoord2f(1.0,1.0);
-            glVertex3fv(v4);
-            glTexCoord2f(0.0,1.0);
-            glVertex3fv(v5);
-            glTexCoord2f(0.0,0.0);
-            glVertex3fv(v1);
-
-            glTexCoord2f(1.0,1.0);
-            glVertex3fv(v1);
-            glTexCoord2f(0.0,1.0);
-            glVertex3fv(v5);
-            glTexCoord2f(0.0,0.0);
-            glVertex3fv(v6);
-            glTexCoord2f(1.0,0.0);
-            glVertex3fv(v2);        
-        
-            glTexCoord2f(0.0,1.0);
-            glVertex3fv(v2);
-            glTexCoord2f(0.0,0.0);
-            glVertex3fv(v6);
-            glTexCoord2f(1.0,0.0);
-            glVertex3fv(v7);
-            glTexCoord2f(1.0,1.0);
-            glVertex3fv(v3);
-
-            glTexCoord2f(0.0,0.0);
-            glVertex3fv(v7);
-            glTexCoord2f(1.0,0.0);
-            glVertex3fv(v6);
-            glTexCoord2f(1.0,1.0);
-            glVertex3fv(v5);
-            glTexCoord2f(0.0,1.0);
-            glVertex3fv(v4); 
+            glTexCoord2f(0.0,1.0); glVertex3fv(v2);
+            glTexCoord2f(0.0,0.0); glVertex3fv(v6);
+            glTexCoord2f(1.0,0.0); glVertex3fv(v7);
+            glTexCoord2f(1.0,1.0); glVertex3fv(v3);
             */
+
             glEnd();
-            
-            //glDisable(GL_TEXTURE_2D);
+
+            glDisable(GL_TEXTURE_2D);
         }
         else
         {
@@ -219,6 +218,7 @@ public:
         }
 
         glPopMatrix();
+        glPopMatrix();
     }
 
     //-------------------------------------------------------------------------
@@ -240,10 +240,12 @@ public:
         //glFlush();
 	}
 
-    GLuint nTexID;
+    int mW,mH;
     bool bTextured;
+    unsigned char* mTextureBuffer;
     
 protected:
+    GLuint nTexID;
     std::string mName;
     double mDimx,mDimy,mDimz;
     double mPosx,mPosy,mPosz;

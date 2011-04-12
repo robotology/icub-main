@@ -131,9 +131,6 @@ public:
         for (xdim2=1; xdim2<xdim; xdim2*=2);
         for (ydim2=1; ydim2<ydim; ydim2*=2);
 
-        //xdim2=256;
-        //ydim2=256;
-
         unsigned char *buffer=new unsigned char[3*xdim2*ydim2];
         int index=0;
 
@@ -156,12 +153,22 @@ public:
                 double a0=1.0-a1;
 
                 int p00=c+x0+y0*xdim;
-                int p01=p00+xdim;
                 int p10=p00+1;
-                int p11=p01+1;
+       
+                if (x0==xdim-1) p10=p00;
+
+                int p01=p00+xdim;
+                int p11=p10+xdim;
+
+                if (y0==ydim-1)
+                {
+                    p01=p00;
+                    p11=p10;
+                }
 
                 double grey=a0*b0*double(texture[p00])+a0*b1*double(texture[p01])+a1*b0*double(texture[p10])+a1*b1*double(texture[p11]);
                 if (grey<0.0) grey=0.0; else if (grey>255.0) grey=255.0;
+
                 unsigned char G=(unsigned char)grey;
 
                 //printf("%d ",G);
@@ -177,21 +184,9 @@ public:
         {
             if (*mObjects[i]==objName)
             {
-                glEnable(GL_TEXTURE_2D);
-                GLuint texture;
-                glGenTextures(1,&texture);
-                mObjects[i]->nTexID=texture;
-                mObjects[i]->bTextured=true;
-
-	            glBindTexture(GL_TEXTURE_2D,texture);
-	            gluBuild2DMipmaps(GL_TEXTURE_2D,3,xdim2,ydim2,GL_RGB,GL_UNSIGNED_BYTE,buffer);
-	            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-	            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
-
-                delete [] buffer;
-
-                printf("Added texture %u to %s (%d x %d)\n",mObjects[i]->nTexID,objName.c_str(),xdim2,ydim2);
-
+                mObjects[i]->mW=xdim2;
+                mObjects[i]->mH=ydim2;
+                mObjects[i]->mTextureBuffer=buffer;
                 mMutex.post();
                 return;
             }
