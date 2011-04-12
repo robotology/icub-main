@@ -1871,12 +1871,13 @@ bool CanBusMotionControl::open (Searchable &config)
 
                 AnalogSensor *as=instantiateAnalog(config, analogId);
                 if (as!=0)
-					{
-						analogSensors.push_back(as);
-					}
+                    {
+                        analogSensors.push_back(as);
+                    }
             }
 
         }
+
     threadPool = new ThreadPool2(res.iBufferFactory);
 
     RateThread::setRate(p._polling_interval);

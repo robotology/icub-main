@@ -124,7 +124,15 @@ bool ThreadTable2::push(const yarp::dev::CanMessage &m)
     if (_replied>=BUF_SIZE)
         {
             unlock();
-            return false; //full, should not happen
+            //the message buffer is full -- this means that too many messages
+            //have been requested. Check the following calls:
+            //  t->setPending(r._writeMessages);
+            //  t->synch();
+            // the buffer should be large enough to match the worst case 
+            // i.e. the largest value of _writeMessages
+            // Increase BUF_SIZE accordingly.
+            fprintf(stderr, "Warning: buffer full in ThreadTable2, increase value of BUF_SIZE\n");
+            return false; 
         }
 
     _replies[_replied]=m;

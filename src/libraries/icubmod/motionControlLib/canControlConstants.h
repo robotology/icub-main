@@ -20,7 +20,11 @@
 #ifndef __CANCONTROLCONSTANTS__
 #define __CANCONTROLCONSTANTS__
 
-#define BUF_SIZE 2047
+// this constant determines the number of requests (messages)
+// that can be queued by a thread before waiting on synch().
+// the worst case is when a request is sent to all joints of a 
+// netowork, we use 50 to be conservative.
+const int BUF_SIZE=50;
 const int debug_mask = 0x20;
 
 /**
@@ -29,13 +33,15 @@ const int debug_mask = 0x20;
 const int CAN_MAX_CARDS= 16;
 const int ESD_MAX_CARDS= 16;
 
+// Max number of threads allowed to communicate with the
+// CanBusMotionControl object at the same time.
+// Since the thread table is allocated statically 
+// this value is a constant. 
 const int CANCONTROL_MAX_THREADS=500;
 
 /**
  * Max number of addressable cards in this implementation.
  */
 const int PLXCAN_MAX_CARDS= 16;
-const int MAX_THREADS=200;
-
 
 #endif

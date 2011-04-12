@@ -16,19 +16,21 @@ endif (ICUB_USE_INTERFACEGUI)
 
 IF (NOT SKIP_canmotioncontrol)
   ADD_DEFINITIONS(-D_REENTRANT)
+
+
+
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 
-  SET(server_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)
-  SET(server_header CanBusMotionControl.h ThreadTable2.h ThreadPool2.h)
+  SET(folder_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)
+  SET(folder_header CanBusMotionControl.h ThreadTable2.h ThreadPool2.h)
+  
+  SOURCE_GROUP("Source Files" FILES ${folder_source})
+  SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-  # LINK_LIBRARIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/libmotionControl.a)
-  #  SET(MOTIONCONTROL_LIBRARIES motionControl)
-  #  LINK_LIBRARIES(${MOTIONCONTROL_LIBRARIES})
-
-  ADD_LIBRARY(canmotioncontrol CanBusMotionControl.cpp CanBusMotionControl.h ThreadTable2.cpp ThreadPool2.cpp)
+  ADD_LIBRARY(canmotioncontrol ${folder_source} ${folder_header})
   TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
   
   icub_export_library(canmotioncontrol)
 
-  ENDIF (NOT SKIP_canmotioncontrol)
+ENDIF (NOT SKIP_canmotioncontrol)

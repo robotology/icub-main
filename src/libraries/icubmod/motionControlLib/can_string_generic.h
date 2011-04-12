@@ -23,9 +23,8 @@
 #include "messages.h"
 
 #include <yarp/dev/CanBusInterface.h>
+#include <string.h>
 #define MAX_STRINGS 4
-
-#include <ace/OS.h>
 
 class can_string_generic
 {
@@ -133,7 +132,7 @@ int can_string_generic::add_string(void* can_packet)
 
 	if (data[string_id].maybe_last_part)
 	{
-		data[string_id].current_length=ACE_OS::strlen(data[string_id].text_buffer);
+		data[string_id].current_length=strlen(data[string_id].text_buffer);
 
 		if (data[string_id].expected_length==data[string_id].current_length)
 			data[string_id].complete = true; //check me
