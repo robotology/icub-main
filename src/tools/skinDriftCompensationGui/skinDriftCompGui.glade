@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <interface>
-  <!--<requires lib="gtk+" version="2.14"/>
-   interface-naming-policy project-wide -->
+  <requires lib="gtk+" version="2.14"/>
+  <!-- interface-naming-policy project-wide -->
   <object class="GtkWindow" id="window">
     <property name="visible">True</property>
     <property name="title" translatable="yes">SkinDriftCompensation GUI</property>
@@ -12,7 +12,7 @@
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">10</property>
+        <property name="spacing">5</property>
         <child>
           <object class="GtkFrame" id="frame2">
             <property name="visible">True</property>
@@ -186,9 +186,29 @@
           </packing>
         </child>
         <child>
-          <object class="GtkStatusbar" id="statusBar">
+          <object class="GtkVBox" id="vbox4">
             <property name="visible">True</property>
-            <property name="spacing">2</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkStatusbar" id="statusbarFreq">
+                <property name="visible">True</property>
+                <property name="spacing">2</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkStatusbar" id="statusBar">
+                <property name="visible">True</property>
+                <property name="spacing">2</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>

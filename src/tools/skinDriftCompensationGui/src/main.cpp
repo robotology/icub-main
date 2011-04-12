@@ -1,69 +1,5 @@
-#include <string>
-#include <sstream>  
-#include <cstdarg>
+#include "icub/skinDriftCompensationGui/main.h"
 
-#include <gtk/gtk.h>
-
-#include <yarp/os/Time.h>
-#include <yarp/os/Port.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-
-using namespace std;
-using namespace yarp::os;
-
-GtkWindow               *window;
-GtkStatusbar			*statusBar;
-GtkProgressBar			*progBarCalib;
-GtkButton				*btnCalibration;
-Port					guiRpcPort;
-double					currentSmoothFactor;
-
-static void openDialog(const char* msg, GtkMessageType type){
-	GtkWidget* dialog = gtk_message_dialog_new (window,
-                                 GTK_DIALOG_DESTROY_WITH_PARENT,
-                                 type,
-                                 GTK_BUTTONS_CLOSE,
-                                 msg);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
-}
-
-static void setStatusBarText(string text){
-	guint contextId = gtk_statusbar_get_context_id(statusBar, text.c_str());
-	gtk_statusbar_push(statusBar, contextId, text.c_str());
-}
-
-static Bottle sendRpcCommand(bool responseExpected, int commandWordCount, const char* command, ...){
-	Bottle resp;
-	// check whether the port is connected
-	if(guiRpcPort.getOutputCount()==0){
-		openDialog((string("Connection to the rpc port of the skinDriftCompensation")
-			+ "module not available. Connect and try again.").c_str(), GTK_MESSAGE_ERROR);
-		return resp;
-	}
-
-	// create the bottle
-	Bottle b;
-	b.addString(command);
-
-	va_list ap;
-	va_start(ap, command);		// Requires the last fixed parameter (to get the address)		
-	for(int i=1;i<commandWordCount;i++){
-		const char* c = va_arg(ap, const char*); // Requires the type to cast to. Increments ap to the next argument.
-		b.addString(c);
-	}
-    va_end(ap);
-	
-	
-	//g_print("Going to send rpc msg: %s\n", b.toString().c_str());
-	if(responseExpected){		
-		guiRpcPort.write(b, resp);		
-	}else{
-		guiRpcPort.write(b);
-	}
-	return resp;
-}
 
 static void on_window_destroy_event(GtkObject *object, gpointer user_data){
 	guiRpcPort.interrupt();
@@ -197,6 +133,10 @@ static gboolean button_threshold(GtkToggleButton *widget, GdkEvent *ev, gpointer
 	openDialog(msg.str().c_str(), GTK_MESSAGE_INFO);
 	return false;
 }
+static gint update_frequency(gpointer data){
+	setStatusBarFreq(50.0);
+	return true;
+}
 int main (int argc, char *argv[])
 {	
 	GtkBuilder              *builder;	
@@ -222,6 +162,7 @@ int main (int argc, char *argv[])
 	btnBinarization = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "btnBinarization"));
 	scaleSmooth		= GTK_SCALE (gtk_builder_get_object (builder, "scaleSmooth"));
 	statusBar		= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusBar"));
+	statusBarFreq	= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusbarFreq"));
 	btnCalibration	= GTK_BUTTON (gtk_builder_get_object (builder, "btnCalibration"));
 	progBarCalib	= GTK_PROGRESS_BAR (gtk_builder_get_object (builder, "progressbarCalib"));
 	btnTouchThr		= GTK_BUTTON (gtk_builder_get_object (builder, "btnThreshold"));
@@ -270,8 +211,15 @@ int main (int argc, char *argv[])
 		reply = sendRpcCommand(true, 3, "get", "smooth", "factor");
 		currentSmoothFactor = reply.get(0).asDouble();
 		gtk_adjustment_set_value(scaleSmooth->range.adjustment, currentSmoothFactor);
-	}
 
+		// check whether the skin calibration is in process
+		reply = sendRpcCommand(true, 2, "is", "calibrating");
+		if(string(reply.toString().c_str()).compare("yes")==0){
+			gtk_widget_show(GTK_WIDGET(progBarCalib));
+			g_timeout_add(100, progressbar_calibration, NULL);
+			gtk_widget_set_sensitive(GTK_WIDGET(btnCalibration), false);
+		}
+	}
 
 
 	// connect all the callback functions (after the initialization, so as not to activate the callbacks)
@@ -281,6 +229,7 @@ int main (int argc, char *argv[])
 	g_signal_connect(btnCalibration, "button-press-event", G_CALLBACK(button_calibration), NULL);
 	g_signal_connect(btnTouchThr, "button-press-event", G_CALLBACK(button_threshold), NULL);
 	g_signal_connect(scaleSmooth, "change-value", G_CALLBACK(scale_smooth_value_changed), NULL);
+	gdk_threads_add_timeout_seconds(1, (update_frequency), NULL);
 
 	// free the memory used by the glade xml file
 	g_object_unref (G_OBJECT (builder));
