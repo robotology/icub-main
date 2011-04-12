@@ -229,7 +229,8 @@ int main (int argc, char *argv[])
 	g_signal_connect(btnCalibration, "button-press-event", G_CALLBACK(button_calibration), NULL);
 	g_signal_connect(btnTouchThr, "button-press-event", G_CALLBACK(button_threshold), NULL);
 	g_signal_connect(scaleSmooth, "change-value", G_CALLBACK(scale_smooth_value_changed), NULL);
-	gdk_threads_add_timeout_seconds(1, (update_frequency), NULL);
+	//gdk_threads_add_timeout_seconds(1, (update_frequency), NULL);
+    g_timeout_add(1000, (update_frequency), NULL);
 
 	// free the memory used by the glade xml file
 	g_object_unref (G_OBJECT (builder));

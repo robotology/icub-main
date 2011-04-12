@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include <gtk/gtk.h>
+//#include <gdk/gdk.h>
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Port.h>
