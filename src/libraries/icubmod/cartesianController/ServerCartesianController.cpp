@@ -1489,12 +1489,8 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     // exclude acceleration constraints by fixing
     // thresholds at high values
     for (int i=0; i<numDrv; i++)
-    {
-        Vector maxAcc(lJnt[i]);
-        maxAcc=CARTCTRL_MAX_ACCEL;
-
-        lVel[i]->setRefAccelerations(maxAcc.data());
-    }
+        for (int j=0; j<lJnt[i]; j++)
+            lVel[i]->setRefAcceleration(j,CARTCTRL_MAX_ACCEL);
 
     // create controller
     newController();
