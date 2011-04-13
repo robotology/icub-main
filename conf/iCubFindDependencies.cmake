@@ -94,7 +94,7 @@ if (GtkMM_FOUND)
    endif()
 
    # check version of GtkMM
-   if (NOT GtkMM_LEGACY)
+   if (NOT ICUB_GtkMM_LEGACY)
         message(STATUS "GtkMM is at least 2.14")
    else()
         message(STATUS "GtkMM is previous 2.14 (some modules will be skipped)")  
