@@ -69,6 +69,12 @@ if (OpenCV_FOUND)
   endif()
 endif()
 
+if (NOT GtkMM_VERSION_MAJOR)
+    message (STATUS "GtkMM version unknown, assuming 2.14")
+    set(GtkMM_VERSION_MAJOR 2)
+    set(GtkMM_VERSION_MINOR 14)
+endif()
+
 message(STATUS "GtkMM version is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
 
 if (GtkMM_FOUND)
