@@ -4991,8 +4991,8 @@ void enhance_local_maxima (DVimage *input_image, int half_kernel_size,
  
 	   //enhance_local_maxima_by_thinning(input, output, width, height);
  	   //enhance_local_maxima_by_suppression(input, output, width, height);
- 	   //enhance_local_maxima_by_filtering(input, half_kernel_size, output, width, height);
- 	   suppress_weak_maxima(output, half_kernel_size, output, width, height);
+ 	   enhance_local_maxima_by_filtering(input, half_kernel_size, output, width, height);
+ 	   //suppress_weak_maxima(output, half_kernel_size, output, width, height);
       
 	   if (dump_debug_image) {
         //dump_float_image(output, width, height);
