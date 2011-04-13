@@ -55,7 +55,7 @@ checkandset_dependency(IPP)
 
 checkandset_dependency(OpenCV)
 
-message(STATUS "OpenCV_VERSION is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
+message(STATUS "OpenCV version is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
 
 if (OpenCV_FOUND)
   # check version of openCV
@@ -69,7 +69,7 @@ if (OpenCV_FOUND)
   endif()
 endif()
 
-message(STATUS "GtkMM_VERSION is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
+message(STATUS "GtkMM version is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
 
 if (GtkMM_FOUND)
    set(GtkMM_FOUND FALSE)
