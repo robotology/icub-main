@@ -1,8 +1,10 @@
-/*!
-$Author: vislab $
-Changed in 14/03/07 by Júlio - email: jgomes@isr.ist.utl.pt
-Changes: nearest neighbourhood
-*/
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/*
+ * Copyright (C) 2007 Julio Gomes
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
 
 #include <iCub/vis/CFaceDetect.h>
 #include <stdio.h>

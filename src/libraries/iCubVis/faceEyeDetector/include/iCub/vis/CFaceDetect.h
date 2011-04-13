@@ -1,3 +1,11 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/*
+ * Copyright (C) 2007 Julio Gomes
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #include "cv.h"
 #include "cxcore.h"
 //<<<<<<< CFaceDetect.h
