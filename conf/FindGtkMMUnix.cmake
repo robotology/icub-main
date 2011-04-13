@@ -19,8 +19,9 @@
 FIND_PACKAGE(PkgConfig)
 
 if(PKG_CONFIG_FOUND)
-  PKG_CHECK_MODULES(GTKMM gtkmm-2.4 gtkmm>2.8)
+  PKG_CHECK_MODULES(GTKMM gtkmm-2.4>=2.8)
   PKG_CHECK_MODULES(GLADE libglademm-2.4)
+
 # Removed: can't see the difference with respect to prev. line
 # if you need gthread: use FindGthread.cmake instead.
 #  PKG_CHECK_MODULES(GTHREAD libglademm-2.4)
@@ -33,10 +34,10 @@ IF (GTKMM_FOUND)
   SET(GtkMM_LIBRARY_DIRS ${GTKMM_LIBDIR})
   SET(GtkMM_LIBRARIES  ${GTKMM_LIBRARIES})
   SET(GtkMM_C_FLAGS  ${GTKMM_CFLAGS})
-  SET(GtkMM_VERSION ${GTKMM_VERSION})
+  SET(GtkMM_VERSION ${GTKMM_gtkmm-2.4_VERSION})
 
   ### now break GtkMM_VERSION into MINOR and MAJOR
-  string(REPLACE "." ";" GTKMM_VERSION_LIST ${GTKMM_VERSION})
+  string(REPLACE "." ";" GTKMM_VERSION_LIST ${GtkMM_VERSION})
 
   list(GET GTKMM_VERSION_LIST 0 GtkMM_VERSION_MAJOR)
   list(GET GTKMM_VERSION_LIST 1 GtkMM_VERSION_MINOR)
