@@ -66,6 +66,31 @@ if (OpenCV_FOUND)
   endif()
 endif()
 
+message(STATUS "GtkMM_VERSION is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
+
+if (GtkMM_FOUND)
+   set(GtkMM_FOUND FALSE)
+
+   if ( ((GtkMM_VERSION_MAJOR GREATER 2) OR (GtkMM_VERSION_MAJOR EQUAL 2)) AND 
+        ((GtkMM_VERSION_MINOR GREATER 8) OR (GtkMM_VERSION_MINOR EQUAL 8)) )
+
+        set(GtkMM_FOUND TRUE)
+
+        if (GtkMM_VERSION_MINOR LESS 14)
+                set(ICUB_GtkMM_LEGACY true CACHE BOOL "Legacy version of GtkMM detected" FORCE)
+        else()
+                set(ICUB_GtkMM_LEGACY false CACHE BOOL "Legacy version of GtkMM detected" FORCE)
+        endif()
+   endif()
+
+   # check version of GtkMM
+   if (NOT GtkMM_LEGACY)
+        message(STATUS "GtkMM is at least 2.14")
+   else()
+        message(STATUS "GtkMM is previous 2.14")  
+   endif()
+endif()
+
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
     message(STATUS "found yarp math library")

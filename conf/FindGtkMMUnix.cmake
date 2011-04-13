@@ -7,19 +7,24 @@
 # GTKMM_LINK_FLAGS    - Files to link against to use GTKMM
 # GTKMM_LINK_DIR      - Directories containing libraries to use GTKMM
 # GtkMM_FOUND         - If false, don't try to use GTKMM
+# GtkMM_VERSION_MAJOR
+# GtkMM_VERSION_MINOR
 
 # gtkmm and libglademm seem to be coupled in FindGtkMMWin32.cmake
 # so mirror that behavior here
 
+# 13/04/2011: added variable to store version (GTKMM_VERSION is copied to GtkMM_VERSION)
+# Split GTKMM_VERSION into GtkMM_VERSION_MAJOR and GtkMM_VERSION_MAJOR
+
 FIND_PACKAGE(PkgConfig)
 
-IF(PKG_CONFIG_FOUND)
-  PKG_CHECK_MODULES(GTKMM gtkmm-2.4)
+if(PKG_CONFIG_FOUND)
+  PKG_CHECK_MODULES(GTKMM gtkmm-2.4 gtkmm>2.8)
   PKG_CHECK_MODULES(GLADE libglademm-2.4)
 # Removed: can't see the difference with respect to prev. line
 # if you need gthread: use FindGthread.cmake instead.
 #  PKG_CHECK_MODULES(GTHREAD libglademm-2.4)
-ENDIF(PKG_CONFIG_FOUND)
+endif(PKG_CONFIG_FOUND)
 
 IF (GTKMM_FOUND)
   MESSAGE(STATUS " pkg-config found gtkmm")
@@ -28,6 +33,14 @@ IF (GTKMM_FOUND)
   SET(GtkMM_LIBRARY_DIRS ${GTKMM_LIBDIR})
   SET(GtkMM_LIBRARIES  ${GTKMM_LIBRARIES})
   SET(GtkMM_C_FLAGS  ${GTKMM_CFLAGS})
+  SET(GtkMM_VERSION ${GTKMM_VERSION})
+
+  ### now break GtkMM_VERSION into MINOR and MAJOR
+  string(REPLACE "." ";" GTKMM_VERSION_LIST ${GTKMM_VERSION})
+
+  list(GET GTKMM_VERSION_LIST 0 GtkMM_VERSION_MAJOR)
+  list(GET GTKMM_VERSION_LIST 1 GtkMM_VERSION_MINOR)
+ 
 ELSE (GTKMM_FOUND)
   SET(GtkMM_FOUND FALSE)
   MESSAGE(STATUS " pkg-config could not find gtkmm")
@@ -40,6 +53,7 @@ IF (GLADE_FOUND)
     SET(GtkMM_LIBRARY_DIRS ${GTKMM_LIBDIR} ${GLADE_LIBDIR})
     SET(GtkMM_LIBRARIES  ${GTKMM_LIBRARIES} ${GLADE_LIBRARIES})
     SET(GtkMM_C_FLAGS  ${GTKMM_CFLAGS} ${GLADE_CFLAGS})
+
   ENDIF (GTKMM_FOUND)
 ELSE (GLADE_FOUND)
   MESSAGE(STATUS " pkg-config could not find glade")
