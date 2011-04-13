@@ -54,6 +54,9 @@ checkandset_dependency(IPOPT)
 checkandset_dependency(IPP)
 
 checkandset_dependency(OpenCV)
+
+message(STATUS "OpenCV_VERSION is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
+
 if (OpenCV_FOUND)
   # check version of openCV
   if (OpenCV_VERSION_MAJOR EQUAL 2)
