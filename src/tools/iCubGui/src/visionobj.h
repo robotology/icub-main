@@ -64,6 +64,8 @@ public:
 
     ~VisionObj()
     {
+        if (bTextured) glDeleteTextures(1,&nTexID);
+        bTextured=false;
         //if (mEllipsoid!=NULL) gluDeleteQuadric(mEllipsoid);                   
     }
     
@@ -84,6 +86,9 @@ public:
         if (mTextureBuffer!=NULL)
         {
             glEnable(GL_TEXTURE_2D);
+            
+            if (bTextured) glDeleteTextures(1,&nTexID);
+            
             GLuint texture;
             glGenTextures(1,&texture);
             nTexID=texture;
