@@ -234,19 +234,22 @@ void ObjectsManager::manage(yarp::os::Bottle &msg)
         else if (cmd=="delete")
         {
             std::string name(msg.get(1).asString().c_str());
+            
+            int size=(int)mObjects.size();
 
-            for (int i=0; i<(int)mObjects.size(); ++i)
+            for (int i=0; i<size; ++i)
             {
                 if ((*mObjects[i])==name)
                 {
                     if (mObjects[i]!=NULL) delete mObjects[i];
+                    mObjects[i]=NULL;
 
-                    for (int j=i+1; j<(int)mObjects.size(); ++j)
+                    for (int j=i; j<size-1; ++j)
                     {
-                        mObjects[j-1]=mObjects[j];
+                        mObjects[j]=mObjects[j+1];
                     }
-
-                    mObjects.resize(mObjects.size()-1);
+                    mObjects[size-1]=NULL;
+                    mObjects.resize(size-1);
 
                     break;
                 }
