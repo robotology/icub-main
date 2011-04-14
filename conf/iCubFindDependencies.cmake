@@ -53,23 +53,18 @@ if (OpenCV_FOUND)
   endif()
 endif()
 
-if (NOT GtkMM_VERSION_MAJOR)
-    message (STATUS "GtkMM version unknown, assuming 2.14")
-    set(GtkMM_VERSION_MAJOR 2)
-    set(GtkMM_VERSION_MINOR 14)
-endif()
-
-message(STATUS "GtkMM version is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
-
 if (GtkMM_FOUND)
-    set(GtkMM_FOUND FALSE)
+
+    message(STATUS "GtkMM version is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
+
+    if (NOT GtkMM_VERSION_MAJOR)
+        message (STATUS "GtkMM version unknown, assuming 2.14")
+        set(GtkMM_VERSION_MAJOR 2)
+        set(GtkMM_VERSION_MINOR 14)
+    endif()
 
    if (GtkMM_VERSION_MAJOR GREATER 2 OR GtkMM_VERSION_MAJOR EQUAL 2)
     if (GtkMM_VERSION_MINOR GREATER 8 OR GtkMM_VERSION_MINOR EQUAL 8)
-
-    	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
-        set(GtkMM_FOUND TRUE)
-    	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
 
         if (GtkMM_VERSION_MINOR LESS 14)
                 set(ICUB_GtkMM_LEGACY true CACHE BOOL "Legacy version of GtkMM detected" FORCE)

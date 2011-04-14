@@ -19,13 +19,7 @@
 FIND_PACKAGE(PkgConfig)
 
 if(PKG_CONFIG_FOUND)
-  PKG_CHECK_MODULES(GTKMM gtkmm-2.4=2.8.8)
-  if (GTKMM_FOUND)
-	set(GTKMM_gtkmm-2.4_VERSION 2.8.8)
-  else()
-      PKG_CHECK_MODULES(GTKMM gtkmm-2.4>2.8)
-  endif()
-
+  PKG_CHECK_MODULES(GTKMM gtkmm-2.4>=2.8.8)
   PKG_CHECK_MODULES(GLADE libglademm-2.4)
 
 # Removed: can't see the difference with respect to prev. line
@@ -40,7 +34,15 @@ IF (GTKMM_FOUND)
   SET(GtkMM_LIBRARY_DIRS ${GTKMM_LIBDIR})
   SET(GtkMM_LIBRARIES  ${GTKMM_LIBRARIES})
   SET(GtkMM_C_FLAGS  ${GTKMM_CFLAGS})
-  SET(GtkMM_VERSION ${GTKMM_gtkmm-2.4_VERSION})
+
+  if (GTKMM_gtkmm-2.4_VERSION)
+        set(GtkMM_VERSION ${GTKMM_gtkmm-2.4_VERSION})
+  elseif(GTKMM_VERSION)
+        set(GtkMM_VERSION ${GTKMM_VERSION})
+  else()
+        ## if everything else fail assume 2.8.8
+        set(GtkMM_VERSION 2.8.8)
+  endif()
 
   #  message(STATUS "GtkMM_VERSION:${GtkMM_VERSION}")
   ### now break GtkMM_VERSION into MINOR and MAJOR
