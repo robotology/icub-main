@@ -13,6 +13,11 @@
 # GtkMM_LIBRARIES      - Files to link against to use GTKMM
 # GtkMM_C_FLAGS        - Flags to pass to the C/C++ compiler for GTKMM.
 # GtkMM_FOUND          - If false, don't try to use GTKMM
+# GtkMM_VERSION        - version info
+# GtkMM_MAJOR_VERSION  - major version
+# GtkMM_MINOR_VERSION  - minor version
+
+## Added version info -- for now fake 14/04/11 Lorenzo Natale
 
 # prerequisite
 FIND_PACKAGE(GtkPlus REQUIRED)
@@ -191,10 +196,22 @@ else(PKG_CONFIG_FOUND AND NOT MSVC)
     SET (GTKMM_TMP_REL GTKMM_TMP_DBG-NOTFOUND CACHE INTERNAL "")
     SET (GTKMM_TMP GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
 	
-	set(GTKMM_C_FLAGS /wd4250 /wd4520)
+    set(GTKMM_C_FLAGS /wd4250 /wd4520)
 	
-	set(GtkMM_LIBRARIES ${GTKMM_LIBRARIES} CACHE STRING "Libraries for GtkMM")
-	set(GtkMM_INCLUDE_DIRS ${GTKMM_INCLUDE_DIRS} CACHE STRING "Include directories for GtkMM")
-	set(GtkMM_C_FLAGS ${GTKMM_C_FLAGS} CACHE STRING "C flags for GtkMM")
+    set(GtkMM_LIBRARIES ${GTKMM_LIBRARIES} CACHE STRING "Libraries for GtkMM")
+    set(GtkMM_INCLUDE_DIRS ${GTKMM_INCLUDE_DIRS} CACHE STRING "Include directories for GtkMM")
+    set(GtkMM_C_FLAGS ${GTKMM_C_FLAGS} CACHE STRING "C flags for GtkMM")
+
+    ### For now we propagate this value. Much better version check 
+    # can be done by checking gtkmmconfig.h, which defines 
+    # GTKMM_MAJOR_VERSION and GTK_MINOR_VERSION
+    set(GtkMM_VERSION ${GTKMMVER})
+    
+    ## split into major and minor
+    string(REPLACE "." ";" GTKMM_VERSION_LIST ${GtkMM_VERSION})
+
+    list(GET GTKMM_VERSION_LIST 0 GtkMM_VERSION_MAJOR)
+    list(GET GTKMM_VERSION_LIST 1 GtkMM_VERSION_MINOR)
+
 endif(PKG_CONFIG_FOUND AND NOT MSVC)
 
