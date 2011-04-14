@@ -58,9 +58,9 @@ if (GtkMM_FOUND)
     message(STATUS "GtkMM version is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
 
     if (NOT GtkMM_VERSION_MAJOR)
-        message (STATUS "GtkMM version unknown, assuming 2.14")
+        message (STATUS "GtkMM version unknown, assuming 2.8")
         set(GtkMM_VERSION_MAJOR 2)
-        set(GtkMM_VERSION_MINOR 14)
+        set(GtkMM_VERSION_MINOR 8)
     endif()
 
    if (GtkMM_VERSION_MAJOR GREATER 2 OR GtkMM_VERSION_MAJOR EQUAL 2)
