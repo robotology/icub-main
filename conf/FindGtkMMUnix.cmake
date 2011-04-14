@@ -19,7 +19,7 @@
 FIND_PACKAGE(PkgConfig)
 
 if(PKG_CONFIG_FOUND)
-  PKG_CHECK_MODULES(GTKMM gtkmm-2.4=2.8)
+  PKG_CHECK_MODULES(GTKMM gtkmm-2.4=2.8.8)
   if (GTKMM_FOUND)
 	set(GTKMM_gtkmm-2.4_VERSION 2.8.0)
   else()

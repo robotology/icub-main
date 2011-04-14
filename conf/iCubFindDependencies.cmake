@@ -41,7 +41,6 @@ find_package(IPP)
 message(STATUS "I have found the following libraries:")
 
 checkandset_dependency(GSL)
-checkandset_dependency(GtkMM)
 checkandset_dependency(Qt3)
 checkandset_dependency(GLUT)
 checkandset_dependency(OpenGL)
@@ -83,7 +82,9 @@ if (GtkMM_FOUND)
    if ( ((GtkMM_VERSION_MAJOR GREATER 2) OR (GtkMM_VERSION_MAJOR EQUAL 2)) AND 
         ((GtkMM_VERSION_MINOR GREATER 8) OR (GtkMM_VERSION_MINOR EQUAL 8)) )
 
+	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
         set(GtkMM_FOUND TRUE)
+	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
 
         if (GtkMM_VERSION_MINOR LESS 14)
                 set(ICUB_GtkMM_LEGACY true CACHE BOOL "Legacy version of GtkMM detected" FORCE)
@@ -98,9 +99,11 @@ if (GtkMM_FOUND)
         message(STATUS "GtkMM is at least 2.14")
    else()
         message(STATUS "GtkMM is previous 2.14 (some modules will be skipped)")  
-        message(Status "Setting ICUB_GtkMM_LEGACY true")
+        message(STATUS "Setting ICUB_GtkMM_LEGACY true")
    endif()
 endif()
+
+checkandset_dependency(GtkMM)
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
