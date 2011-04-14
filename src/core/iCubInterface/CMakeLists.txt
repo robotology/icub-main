@@ -24,13 +24,19 @@ endif(ICUB_USE_INTERFACEGUI)
 
 ADD_EXECUTABLE(iCubInterface ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(iCubInterface iCubDev 
+
+
+if(ICUB_USE_INTERFACEGUI)
+    TARGET_LINK_LIBRARIES(iCubInterface iCubDev 
+                                    ${YARP_LIBRARIES}
+                                    canLoaderLib 
+                                    icubmod
+                                    iCubInterfaceGuiLib)
+else
+    TARGET_LINK_LIBRARIES(iCubInterface iCubDev 
                                     ${YARP_LIBRARIES}
                                     canLoaderLib 
                                     icubmod)
-
-if(ICUB_USE_INTERFACEGUI)
-	TARGET_LINK_LIBRARIES(iCubInterface iCubInterfaceGuiLib)
 endif(ICUB_USE_INTERFACEGUI)
 
 INSTALL(TARGETS iCubInterface DESTINATION bin COMPONENT Core)
