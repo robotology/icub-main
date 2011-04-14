@@ -32,12 +32,12 @@ if(ICUB_USE_INTERFACEGUI)
                                     canLoaderLib 
                                     icubmod
                                     iCubInterfaceGuiLib)
-else
+else()
     TARGET_LINK_LIBRARIES(iCubInterface iCubDev 
                                     ${YARP_LIBRARIES}
                                     canLoaderLib 
                                     icubmod)
-endif(ICUB_USE_INTERFACEGUI)
+endif()
 
 INSTALL(TARGETS iCubInterface DESTINATION bin COMPONENT Core)
 
