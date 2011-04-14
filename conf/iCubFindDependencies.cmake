@@ -62,14 +62,14 @@ endif()
 message(STATUS "GtkMM version is ${GtkMM_VERSION_MAJOR}.${GtkMM_VERSION_MINOR}")
 
 if (GtkMM_FOUND)
-   set(GtkMM_FOUND FALSE)
+    set(GtkMM_FOUND FALSE)
 
-   if ( ((GtkMM_VERSION_MAJOR GREATER 2) OR (GtkMM_VERSION_MAJOR EQUAL 2)) AND 
-        ((GtkMM_VERSION_MINOR GREATER 8) OR (GtkMM_VERSION_MINOR EQUAL 8)) )
+   if (GtkMM_VERSION_MAJOR GREATER 2 OR GtkMM_VERSION_MAJOR EQUAL 2)
+    if (GtkMM_VERSION_MINOR GREATER 8 OR GtkMM_VERSION_MINOR EQUAL 8)
 
-	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
+    	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
         set(GtkMM_FOUND TRUE)
-	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
+    	message(STATUS "GtkMM_FOUND ${GtkMM_FOUND}")
 
         if (GtkMM_VERSION_MINOR LESS 14)
                 set(ICUB_GtkMM_LEGACY true CACHE BOOL "Legacy version of GtkMM detected" FORCE)
@@ -77,15 +77,17 @@ if (GtkMM_FOUND)
                 set(ICUB_GtkMM_LEGACY false CACHE BOOL "Legacy version of GtkMM detected" FORCE)
                 mark_as_advanced(ICUB_GtkMM_LEGACY)
         endif()
-   endif()
+     endif()
+    endif()
 
-   # check version of GtkMM
-   if (NOT ICUB_GtkMM_LEGACY)
+    # check version of GtkMM
+    if (NOT ICUB_GtkMM_LEGACY)
         message(STATUS "GtkMM is at least 2.14")
    else()
         message(STATUS "GtkMM is previous 2.14 (some modules will be skipped)")  
         message(STATUS "Setting ICUB_GtkMM_LEGACY true")
    endif()
+
 endif()
 
 message(STATUS "I have found the following libraries:")
