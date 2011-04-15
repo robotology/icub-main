@@ -1,3 +1,17 @@
+/*
+ * A bottom-up approach for generating particles for the "pf3dTracker" module
+ *
+ * Copyright (C) 2010 RobotCub Consortium
+ *
+ * Author: Martim Brandao
+ * Note: Should you use or reference my work on your own research, please let me know (mbrandao _AT_ isr.ist.utl.pt)
+ *
+ * Image sequence as input, N particles (3D position of balls) as output.
+ *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #include <iostream>
 #include <string>
 #include <sstream>
