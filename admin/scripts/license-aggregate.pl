@@ -6,9 +6,10 @@
 
 my $fname = shift @ARGV;
 my %good_licenses= ( # a list of "good" licenses
-		    "GPL20" => 1,
+            "GPL20" => 1,
             "GPL20 or later" => 1,
-            "BSD" => 1);
+            "BSD" => 1
+            "OPENCV"=> 1);
 my %authors=();
 
 open GOOD, ">licenses-good.txt";
