@@ -267,7 +267,7 @@ void ObjectsManager::manage(yarp::os::Bottle &msg)
 
         if (cmd=="reset")
         {
-            mObjects.clear();
+            bReset=true;
         }
         else if (cmd=="delete")
         {
