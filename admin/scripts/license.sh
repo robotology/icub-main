@@ -19,7 +19,7 @@ prefix_dir="./license_check/main/"
 prefix_dir="./main/src/"
 
 #`cd $prefix svn up`
-file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`
+file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "*.hpp" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`
 
 for f in $file_list
 do
