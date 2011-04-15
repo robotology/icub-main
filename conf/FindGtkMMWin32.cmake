@@ -78,7 +78,6 @@ else(PKG_CONFIG_FOUND AND NOT WIN32)
         "gdkmmconfig"
         "gdkmm"
         "pangomm"
-        "pangommconfig"
         "cairomm/cairomm"
         "atkmm"
         "libxml++config"
@@ -87,9 +86,14 @@ else(PKG_CONFIG_FOUND AND NOT WIN32)
         "glibmm"
         "sigc++config"
         "sigc++/sigc++"
-        "freetype/config/ftheader"
-    )
 
+     )
+
+    set(OPTIONAL_HEADERTOSEARCH
+            "pangommconfig"
+            "freetype/config/ftheader"
+    )
+                   
     # only new
     IF (GTKMMVER EQUAL "2.14.3")
         SET(HEADERTOSEARCH ${HEADERTOSEARCH} "giomm")
@@ -120,6 +124,16 @@ else(PKG_CONFIG_FOUND AND NOT WIN32)
     ENDFOREACH (i)
     LIST(APPEND GTKMM_INCLUDE_DIRS ${GTKPLUS_INCLUDE_DIR})
 
+    FOREACH (i ${OPTIONAL_HEADERTOSEARCH})
+        SET (GTKMM_TMP GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
+        FIND_PATH(GTKMM_TMP ${i}.h PATHS ${ALLSEARCHPATHS} PATH_SUFFIXES include)
+        IF (GTKMM_TMP)
+            LIST(APPEND GTKMM_INCLUDE_DIRS ${GTKMM_TMP})
+        ENDIF (GTKMM_TMP)
+    ENDFOREACH (i)
+    
+    LIST(APPEND GTKMM_INCLUDE_DIRS ${GTKPLUS_INCLUDE_DIR})
+    
     IF (MSVC_VERSION EQUAL 1400)
         SET(REGEX_GTKMM "[-](vc80[-])?")
     ELSE (MSVC_VERSION EQUAL 1400)
