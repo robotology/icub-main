@@ -1,6 +1,7 @@
 #
 # Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
 # Authors: David Vernon and Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
  
 set(PROJECTNAME logpolarTransform)
