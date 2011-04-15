@@ -46,6 +46,7 @@ public:
         mW=mH=0;
         nTexID=0;
         bTextured=false;
+        bDeleted=false;
         mTextureBuffer=NULL;
 
         mName=name;
@@ -247,6 +248,7 @@ public:
 
     int mW,mH;
     bool bTextured;
+    bool bDeleted;
     unsigned char* mTextureBuffer;
     
 protected:

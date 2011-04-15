@@ -96,6 +96,7 @@ public:
         paramsThread=new ParamsThread(this,paramsPortName);
         textureThread=new TextureThread(this,texPortName);
         mTextures=0;
+        bReset=false;
     }
 
     ~ObjectsManager()
@@ -199,20 +200,57 @@ public:
     {
         mMutex.wait();
 
-        //glPushMatrix();
-        //glScaled(0.075,0.075,0.075);
-        //glTranslated(0.0,3.5,0.0);
-
-        for (int i=0; i<(int)mObjects.size(); ++i)
+        if (bReset)
         {
-            mObjects[i]->Draw();
+            bReset=false;
+            
+            for (int i=0; i<(int)mObjects.size(); ++i)
+            {
+                delete mObjects[i];
+            }
+
+            mObjects.clear();
+
+            mMutex.post();
+            return;
         }
 
-        //glPopMatrix();
+        bool bPack=false;
+        for (int i=0; i<(int)mObjects.size(); ++i)
+        {
+            if (mObjects[i]->bDeleted)
+            {
+                delete mObjects[i];
+                mObjects[i]=NULL;
+                bPack=true;
+            }
+            else
+            {
+                mObjects[i]->Draw();
+            }
+        }
+
+        if (bPack)
+        {
+            int newsize=0;
+            int size=(int)mObjects.size();
+            
+            for (int i=0; i<size; ++i)
+            {
+                if (mObjects[i]!=NULL)
+                {
+                    mObjects[newsize++]=mObjects[i];
+                }
+            }
+
+            mObjects.resize(newsize);
+        }
+
         mMutex.post();
     }
     
 protected:
+    bool bReset;
     int mTextures;
     ParamsThread  *paramsThread;
     TextureThread *textureThread;
@@ -241,6 +279,7 @@ void ObjectsManager::manage(yarp::os::Bottle &msg)
             {
                 if ((*mObjects[i])==name)
                 {
+                    /*
                     if (mObjects[i]!=NULL) delete mObjects[i];
                     mObjects[i]=NULL;
 
@@ -250,7 +289,9 @@ void ObjectsManager::manage(yarp::os::Bottle &msg)
                     }
                     mObjects[size-1]=NULL;
                     mObjects.resize(size-1);
+                    */
 
+                    mObjects[i]->bDeleted=true;
                     break;
                 }
             }
