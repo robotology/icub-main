@@ -1,3 +1,9 @@
+#
+# Author: Giorgio Metta
+# Copyright (C) 2010 The RobotCub Consortium
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+#
+ 
 set(PROJECTNAME logpolarRemapper)
 project(${PROJECTNAME})
 
