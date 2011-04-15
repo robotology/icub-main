@@ -31,8 +31,7 @@ ENDIF (GTKPLUS_C_FLAG)
 
 FIND_PACKAGE(PkgConfig)
 
-IF(PKG_CONFIG_FOUND AND NOT MSVC)
-	message ("Still find package!")
+IF(PKG_CONFIG_FOUND AND NOT WIN32)
     PKG_CHECK_MODULES(GtkMM gtkmm-2.4)
     IF (GtkMM_FOUND)
         MESSAGE(STATUS " pkg-config found gtkmm")
@@ -40,7 +39,7 @@ IF(PKG_CONFIG_FOUND AND NOT MSVC)
         MESSAGE(STATUS " pkg-config could not find gtkmm")
     ENDIF (GtkMM_FOUND)
 
-else(PKG_CONFIG_FOUND AND NOT MSVC)
+else(PKG_CONFIG_FOUND AND NOT WIN32)
     SET(GTKMM_DIR $ENV{GTKMM_BASEPATH})
 
     # new vs. old style libraries detection (sort of fuzzy, temporary).
@@ -72,21 +71,23 @@ else(PKG_CONFIG_FOUND AND NOT MSVC)
     LIST(APPEND ALLSEARCHPATHS ${GTKMM_DIR}/lib)
 
     SET(HEADERTOSEARCH
-	    "libglademm"
-	    "libglademmconfig"
-	    "gtkmmconfig"
-	    "gtkmm"
-	    "gdkmmconfig"
-	    "gdkmm"
-	    "pangomm"
-	    "cairomm/cairomm"
-	    "atkmm"
-	    "libxml++config"
-	    "libxml++/libxml++"
-	    "glibmmconfig"
-	    "glibmm"
-	    "sigc++config"
-	    "sigc++/sigc++"
+        "libglademm"
+        "libglademmconfig"
+        "gtkmmconfig"
+        "gtkmm"
+        "gdkmmconfig"
+        "gdkmm"
+        "pangomm"
+        "pangommconfig"
+        "cairomm/cairomm"
+        "atkmm"
+        "libxml++config"
+        "libxml++/libxml++"
+        "glibmmconfig"
+        "glibmm"
+        "sigc++config"
+        "sigc++/sigc++"
+        "freetype/config/ftheader"
     )
 
     # only new
@@ -111,10 +112,10 @@ else(PKG_CONFIG_FOUND AND NOT MSVC)
         SET (GTKMM_TMP GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
         FIND_PATH(GTKMM_TMP ${i}.h PATHS ${ALLSEARCHPATHS} PATH_SUFFIXES include)
         IF (GTKMM_TMP)
-	        LIST(APPEND GTKMM_INCLUDE_DIRS ${GTKMM_TMP})
+            LIST(APPEND GTKMM_INCLUDE_DIRS ${GTKMM_TMP})
         ELSE (GTKMM_TMP)
-	        SET(GtkMM_FOUND FALSE)
-	        MESSAGE("Path for ${i}.h not found, GtkMM doesn't seem to be available")
+            SET(GtkMM_FOUND FALSE)
+            MESSAGE("FindGtkMMWin32: ${i}.h not found, GtkMM is not available")
         ENDIF (GTKMM_TMP)
     ENDFOREACH (i)
     LIST(APPEND GTKMM_INCLUDE_DIRS ${GTKPLUS_INCLUDE_DIR})
@@ -135,15 +136,15 @@ else(PKG_CONFIG_FOUND AND NOT MSVC)
 
     #### MM specific libraries, all here except gthread, see later
     SET(LIBTOSEARCH 
-	    "xml++"
-	    "atkmm"
-	    "glademm"
-	    "gtkmm"
-	    "gdkmm"
-	    "pangomm"
-	    "glibmm"
-	    "sigc"
-	    "cairomm"
+        "xml++"
+        "atkmm"
+        "glademm"
+        "gtkmm"
+        "gdkmm"
+        "pangomm"
+        "glibmm"
+        "sigc"
+        "cairomm"
     )
     # new version
     IF (GTKMMVER EQUAL "2.14.3")
@@ -183,7 +184,7 @@ else(PKG_CONFIG_FOUND AND NOT MSVC)
     FIND_LIBRARY(GTKMM_TMP_REL NAMES gthread-2.0 PATHS ${GTKMM_DIR}/lib)
     IF (GTKMM_TMP_REL)
         LIST(APPEND GTKMM_LIBRARIES optimized ${GTKMM_TMP_REL})
-	    LIST(APPEND GTKMM_LIBRARIES debug ${GTKMM_TMP_REL})
+        LIST(APPEND GTKMM_LIBRARIES debug ${GTKMM_TMP_REL})
     ELSE (GTKMM_TMP_REL)
         SET(GtkMM_FOUND FALSE)
         MESSAGE("Library gthread not found, GtkMM doesn't seem to be available")
@@ -213,5 +214,5 @@ else(PKG_CONFIG_FOUND AND NOT MSVC)
     list(GET GTKMM_VERSION_LIST 0 GtkMM_VERSION_MAJOR)
     list(GET GTKMM_VERSION_LIST 1 GtkMM_VERSION_MINOR)
 
-endif(PKG_CONFIG_FOUND AND NOT MSVC)
+endif(PKG_CONFIG_FOUND AND NOT WIN32)
 
