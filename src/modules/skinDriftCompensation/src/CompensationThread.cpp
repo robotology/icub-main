@@ -18,6 +18,7 @@
  */
 #include <yarp/os/Time.h>
 #include "math.h"
+#include "memory.h"
 #include "iCub/skinDriftCompensation/CompensationThread.h"
 
 #define FOR_ALL_PORTS(i) for(unsigned int i=0;i<portNum;i++)

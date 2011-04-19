@@ -19,7 +19,7 @@
 
 #include <sstream>			// string stream
 #include "iCub/skinDriftCompensation/SkinDriftCompensation.h"
-
+ 
 using namespace iCub::skinDriftCompensation;
 
 // module default values
@@ -128,8 +128,11 @@ bool SkinDriftCompensation::interruptModule()
 bool SkinDriftCompensation::close()
 {
 	/* stop the thread */
-	if(myThread)
+	if(myThread){
 		myThread->stop();
+        delete myThread;
+    }
+    
 
 	//compensatedTactileDataPort.close();
 	handlerPort.close();   

@@ -18,7 +18,7 @@
  */
 
 #include "iCub/skinDriftCompensation/SkinDriftCompensation.h" 
-
+ 
 using namespace iCub::skinDriftCompensation;
 
 int main(int argc, char * argv[])

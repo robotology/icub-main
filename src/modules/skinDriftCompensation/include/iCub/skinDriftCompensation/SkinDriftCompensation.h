@@ -1,4 +1,4 @@
-
+ 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete, Alexander Schmitz
@@ -210,11 +210,11 @@ private:
 	string robotName;
 
 	// names of the ports
-	string compensatedTactileDataPortName;
+	//string compensatedTactileDataPortName;
 	string handlerPortName;
 
 	/* class variables */
-	BufferedPort<Vector> compensatedTactileDataPort;	
+	//BufferedPort<Vector> compensatedTactileDataPort;	
 	Port handlerPort;									// a port to handle messages
 
 	bool calibrationAllowed;							// if false the thread is not allowed to run the calibration

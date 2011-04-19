@@ -275,7 +275,7 @@ void Compensator::updateBaseline(){
 			//	baselines[j]		-= CHANGE_PER_TIMESTEP;
 			//	mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
 			//}
-			if(abs(d)>0.5){
+			if(fabs(d)>0.5){
 				baselines[j]    += CHANGE_PER_TIMESTEP*d/touchThresholds[j];
                 mean_change     += CHANGE_PER_TIMESTEP*d/touchThresholds[j];
 			}
