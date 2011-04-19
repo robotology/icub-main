@@ -34,13 +34,18 @@
 
 
   <connection>
-    <from>/driftCompGuiRightHand/rpc:o</from>
-    <to>/rightHandSkinDriftComp/rpc</to>
+    <from>/driftCompGuiRight/rpc:o</from>
+    <to>/rightSkinDriftComp/rpc</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/rightHandSkinDriftComp/monitor</from>
-    <to>/driftCompGuiRightHand/monitor:i</to>
+    <from>/rightSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiRight/monitor:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/rightSkinDriftComp/info:o</from>
+    <to>/driftCompGuiRight/info:i</to>
     <protocol>tcp</protocol>
   </connection>
   
@@ -50,12 +55,12 @@
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/right_forearm_lower</from>
+    <from>/icub/skin/right_forearm_lower_comp</from>
     <to>/skinGui/right_forearm_lower:i</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/right_forearm_upper</from>
+    <from>/icub/skin/right_forearm_upper_comp</from>
     <to>/skinGui/right_forearm_upper:i</to>
     <protocol>tcp</protocol>
   </connection>

@@ -57,13 +57,18 @@
   
   
   <connection>
-    <from>/driftCompGuiLeftHand/rpc:o</from>
-    <to>/leftHandSkinDriftComp/rpc</to>
+    <from>/driftCompGuiLeft/rpc:o</from>
+    <to>/leftSkinDriftComp/rpc</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/leftHandSkinDriftComp/monitor</from>
-    <to>/driftCompGuiLeftHand/monitor:i</to>
+    <from>/leftSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiLeft/monitor:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/leftSkinDriftComp/info:o</from>
+    <to>/driftCompGuiLeft/info:i</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
@@ -72,32 +77,32 @@
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/left_forearm_lower</from>
+    <from>/icub/skin/left_forearm_lower_comp</from>
     <to>/skinGui/left_forearm_lower:i</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/left_forearm_upper</from>
+    <from>/icub/skin/left_forearm_upper_comp</from>
     <to>/skinGui/left_forearm_upper:i</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/left_arm_upper_internal</from>
+    <from>/icub/skin/left_arm_upper_internal_comp</from>
     <to>/skinGui/leftupperarm_upper_internal:i</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/left_arm_upper_external</from>
+    <from>/icub/skin/left_arm_upper_external_comp</from>
     <to>/skinGui/leftupperarm_upper_external:i</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/left_arm_upper_bottom</from>
+    <from>/icub/skin/left_arm_upper_bottom_comp</from>
     <to>/skinGui/leftupperarm_upper_bottom:i</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/icub/skin/left_arm_lower</from>
+    <from>/icub/skin/left_arm_lower_comp</from>
     <to>/skinGui/leftupperarm_lower:i</to>
     <protocol>tcp</protocol>
   </connection>
