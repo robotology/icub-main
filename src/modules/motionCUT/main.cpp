@@ -100,10 +100,10 @@ YARP libraries and OpenCV
  
 --numThreads \e threads
 - This parameter allows to control the maximum number of threads
-  allocated by parallelized OpenCV functions (if supported).
-  \e #  > 0 : assign # threads to OpenCV;
-  \e # == 0 : assign all threads to OpenCV;
-  \e #  < 0 : assign all threads but # to OpenCV;
+  allocated by parallelized OpenCV functions (if supported). \n
+  \e #  > 0 : assign # threads to OpenCV; \n
+  \e # == 0 : assign all threads to OpenCV; \n
+  \e #  < 0 : assign all threads but # to OpenCV; \n
   The default value is -1 meaning that all threads equal to the
   number of available cores BUT ONE will be used.
  
