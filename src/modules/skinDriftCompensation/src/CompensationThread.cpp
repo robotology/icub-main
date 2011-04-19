@@ -216,22 +216,23 @@ void CompensationThread::checkErrors(){
     }
 
     unsigned int taxInd, compInd;
-    double baseline;
-    if(doesBaselineExceed(compInd, taxInd, baseline)){
+    double baseline, initialBaseline;
+    if(doesBaselineExceed(compInd, taxInd, baseline, initialBaseline)){
         stringstream msg;
         msg<< "Baseline of the taxel "<< taxInd<< " of port "<< compensators[compInd]->getInputPortName()
-            << " saturated (baseline value="<< baseline<< ")! A skin calibration is suggested.";
+            << " saturated (current baseline="<< baseline<< "; initial baseline="<< initialBaseline<< 
+            ")! A skin calibration is suggested.";
         sendInfoMsg(msg.str());
-    }    
+    }
 }
 
-bool CompensationThread::doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline){
+bool CompensationThread::doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline, double &initialBaseline){
     stateSem.wait();
     CompensationThreadState currentState = state;
     stateSem.post();
     if(currentState==compensation){
         FOR_ALL_PORTS(i){        
-            if(compensators[i]->doesBaselineExceed(taxInd, baseline)){
+            if(compensators[i]->doesBaselineExceed(taxInd, baseline, initialBaseline)){
                 compInd = i;
                 return true;
             }

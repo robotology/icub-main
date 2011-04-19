@@ -292,7 +292,7 @@ void Compensator::updateBaseline(){
     }
 }
 
-bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline){
+bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline){
     vector<unsigned int>::iterator it;
 	for(unsigned int i=0; i<SKIN_DIM; i++){                
 	    if(baselines[i]<minBaseline || baselines[i]>MAX_SKIN-minBaseline){
@@ -301,6 +301,7 @@ bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline)
 			    //fprintf(stderr, "Baseline %d exceeds: %f\n", i, baselines[i]);
                 saturatedTaxels.push_back(i);
                 baseline = baselines[i];
+                initialBaseline = initialBaselines[i];
                 taxelIndex = i;
 			    return true;
             }

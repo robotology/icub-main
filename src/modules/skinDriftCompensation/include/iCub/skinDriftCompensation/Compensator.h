@@ -53,7 +53,7 @@ public:
 	void calibrationFinish();
     bool readRawAndWriteCompensatedData();
 	void updateBaseline();
-	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline);
+	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
 
 	void setBinarization(bool value);
 	void setSmoothFilter(bool value);

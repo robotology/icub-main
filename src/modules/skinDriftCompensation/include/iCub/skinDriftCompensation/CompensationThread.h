@@ -114,7 +114,7 @@ private:
 
 	/* class private methods */	
     void checkErrors();
-    bool doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline);
+    bool doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline, double &initialBaseline);
 	void sendMonitorData();
     void sendInfoMsg(string msg);
 
