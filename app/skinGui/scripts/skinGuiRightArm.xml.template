@@ -1,6 +1,19 @@
 <application>
   <name>Right Whole Arm</name>
   <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompRight.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompRightHand</tag>
+  </module>
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiRight.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompGuiRightHand</tag>
+  </module>
+  
+  <module>
     <name>iCubSkinGui</name>
     <parameters>--from rightforearm_upper.ini</parameters>
     <node>console</node>
@@ -14,12 +27,25 @@
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from righthand.ini</parameters>
+    <parameters>--from righthandcomp.ini --useCalibration</parameters>
     <node>console</node>
     <tag>RightHand</tag>
   </module>
+
+
   <connection>
-    <from>/icub/skin/right_hand</from>
+    <from>/driftCompGuiRightHand/rpc:o</from>
+    <to>/rightHandSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/rightHandSkinDriftComp/monitor</from>
+    <to>/driftCompGuiRightHand/monitor:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/right_hand_comp</from>
     <to>/skinGui/right_hand:i</to>
     <protocol>tcp</protocol>
   </connection>

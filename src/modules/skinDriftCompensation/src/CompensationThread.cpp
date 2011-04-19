@@ -20,6 +20,7 @@
 #include "math.h"
 #include "iCub/skinDriftCompensation/CompensationThread.h"
 
+#define FOR_ALL_PORTS(i) for(unsigned int i=0;i<portNum;i++)
 
 using namespace std;
 using namespace yarp::os;
@@ -27,17 +28,17 @@ using namespace yarp::sig;
 using namespace iCub::skinDriftCompensation;
 
 
-CompensationThread::CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, bool *calibrationAllowed, 
-									   bool zeroUpRawData, bool rightHand, int period, bool binarization, bool smoothFilter, 
-									   float smoothFactor)
-									   : RateThread(period), PERIOD(period), robotName(robotName), binarization(binarization),
-									   smoothFilter(smoothFilter), smoothFactor(smoothFactor)
+CompensationThread::CompensationThread(string name, ResourceFinder* rf, string robotName, float maxDrift, int addThreshold, 
+									   float minBaseline, bool zeroUpRawData, 
+									   int period, bool binarization, bool smoothFilter, float smoothFactor)
+									   : 
+										RateThread(period), moduleName(name), MAX_DRIFT(maxDrift), 
+											ADD_THRESHOLD(addThreshold), PERIOD(period), robotName(robotName), 
+											binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
 {
    this->rf								= rf;
    this->minBaseline					= minBaseline;
-   this->calibrationAllowed				= calibrationAllowed;
    this->zeroUpRawData					= zeroUpRawData;
-   this->rightHand						= rightHand;
 }
 
 bool CompensationThread::threadInit() 
@@ -45,77 +46,91 @@ bool CompensationThread::threadInit()
     fprintf(stderr, "THREAD INIT\n\n");
 
    /* initialize variables and create data-structures if needed */
-	MAX_DRIFT = 0.2f;								// the maximal drift that is being compensated every second
+	lastTimestamp = Time::now();
+	frequencyOld = 1.0/PERIOD;
+
 	CHANGE_PER_TIMESTEP = MAX_DRIFT/PERIOD;
 	readErrorCounter = 0;
 	state = calibration;
 	calibrationCounter = 0;
-	calibrationRead = 0;
+    CAL_SAMPLES = 1000*CAL_TIME/PERIOD; // samples needed for calibration
 
-	// open the output port
-	string compensatedTactileDataPortName;
-	if(rightHand){
-		compensatedTactileDataPortName		= "/"+ robotName+ "/skin/right_hand_comp";
-	}else{
-		compensatedTactileDataPortName		= "/"+ robotName+ "/skin/left_hand_comp";
-	}
-	if (!compensatedTactileDataPort.open(compensatedTactileDataPortName.c_str())) {
-		cout << "Unable to open port " << compensatedTactileDataPortName << endl;
-		return false;  // unable to open
-	}
-
-	// open the analog sensor interface for the skin
-	Property options;
-	options.put("robot",  robotName.c_str());
-	if(rightHand){
-		options.put("part",   "righthand");         //skin part that you want to control
-		options.put("local",  "/skinComp/right");
-		options.put("remote",  ("/"+robotName+"/skin/right_hand").c_str());
-	}else{
-		options.put("part",   "lefthand");          //skin part that you want to control
-		options.put("local",  "/skinComp/left");
-		options.put("remote",  ("/"+robotName+"/skin/left_hand").c_str());
-	}
-	options.put("device", "analogsensorclient");	//important! It’s different from remote_controlboard that you use to control motors!
-	 
-	// create a new device driver
-	tactileSensorDevice = new PolyDriver(options);
-	if (!tactileSensorDevice->isValid()){
-		printf("Device not available.  Here are the known devices:\n");
-		printf("%s", Drivers::factory().toString().c_str());
+    // open the output ports for the gui
+    string monitorPortName = "/" + moduleName + "/monitor:o";
+    string infoPortName = "/" + moduleName + "/info:o";
+	if(!monitorPort.open(monitorPortName.c_str())){
+		cout << "Unable to open port " << monitorPortName << endl;
 		return false;
 	}
-	// open the sensor interface	
-	bool ok = tactileSensorDevice->view(tactileSensor);
-	if (!ok) {
-		printf("Problems acquiring interfaces\n");
+    if(!infoPort.open(infoPortName.c_str())){
+		cout << "Unable to open port " << infoPortName << endl;
 		return false;
 	}
 
-	SKIN_DIM = tactileSensor->getChannels();
-	if(SKIN_DIM==0){
-		fprintf(stderr, "Error while reading the number of channels of the tactile sensor device\n");
-		SKIN_DIM = 192;
+	// open the input and output ports for the skin data
+    if(!rf->check("outputPorts") || !rf->check("inputPorts")){
+        cout<< "Input ports and/or output ports missing. Closing the module.\n";
+        return false;
+    }
+
+	Bottle* outputPortList = rf->find("outputPorts").asList();
+	Bottle* inputPortList = rf->find("inputPorts").asList();
+	portNum = outputPortList->size();
+	if(portNum<=0 || portNum!=inputPortList->size()){
+		cout<< "No input port specified or mismatching number of input and output ports ("
+			<< portNum<< "; "<< inputPortList->size()<< ")\n";
+		return false;
 	}
-	touchDetected.resize(SKIN_DIM);
-	touchThresholds.resize(SKIN_DIM);
-    baselines.resize(SKIN_DIM);
+	
+    compensators.resize(portNum);
+    SKIN_DIM = 0;
+    cout<< portNum<< " input ports found in the configuration file\n";
+    FOR_ALL_PORTS(i){
+		string outputPortName = outputPortList->get(i).asString().c_str();
+		string inputPortName = inputPortList->get(i).asString().c_str();
+        cout<< "\nInput port: "<< inputPortName<< " -> Output port: "<< outputPortName<< endl;
+        stringstream name;
+        name<< moduleName<< i;
+		compensators[i] = new Compensator(name.str(), robotName, outputPortName, inputPortName, 
+                         CHANGE_PER_TIMESTEP, ADD_THRESHOLD, minBaseline, zeroUpRawData, binarization, 
+                         smoothFilter, smoothFactor);
+        SKIN_DIM += compensators[i]->getNumTaxels();
+	}
+
+    // remove the compensators that did not open correctly
+    FOR_ALL_PORTS(i){
+        if(!compensators[i]->isWorking()){
+            fprintf(stderr, "[ERROR] Compensator %s did not open correctly. Removing the port.\n", 
+                compensators[i]->getName().c_str());
+            if(portNum==1){
+                fprintf(stderr, "No input port left. Stopping the thread\n");
+                return false;
+            }            
+            portNum--;
+            SKIN_DIM -= compensators[i]->getNumTaxels();
+            compensators.erase(compensators.begin()+i);
+            i--;
+        }
+    }	
+	    
 
 	return true;
 }
 
 
 void CompensationThread::setBinarization(bool value){
-	binarization = value;
+    binarization = value;
+    FOR_ALL_PORTS(i){
+	    compensators[i]->setBinarization(value);
+    }
 }
 void CompensationThread::setSmoothFilter(bool value){
 	if(smoothFilter != value){
 		stateSem.wait();
-		smoothFilter = value;
-		if(value){				
-			// set the old output value of the smooth filter to the last read, to get a smooth start
-			compensatedDataOld = compensatedData;			
-		}
+        smoothFilter = value;
+        FOR_ALL_PORTS(i){
+            compensators[i]->setSmoothFilter(value);
+        }
 		stateSem.post();
 	}
 }
@@ -124,9 +139,10 @@ bool CompensationThread::setSmoothFactor(float value){
 		return false;
 	if(value==1) 
 		value = 0.99f;	// otherwise with 1 the values don't update
-	smoothFactorSem.wait();
 	smoothFactor = value;
-	smoothFactorSem.post();
+    FOR_ALL_PORTS(i){
+        compensators[i]->setSmoothFactor(value);
+    }
 	return true;
 }
 void CompensationThread::forceCalibration(){
@@ -134,7 +150,6 @@ void CompensationThread::forceCalibration(){
 	if(state != calibration){
 		state = calibration;
 		calibrationCounter = 0;
-		calibrationRead = 0;
 	}
 	stateSem.post();
 }
@@ -145,261 +160,105 @@ void CompensationThread::run(){
 	if( state == compensation){
 		// It reads the raw data, computes the difference between the read values and the baseline 
 		// and outputs these values
-		if(readRawAndWriteCompensatedData()){
-			//If the read succeeded, update the baseline
-			updateBaseline();
-		}
-
-		//If calibration is allowed AND at least one baseline is less than minBaseline (or greater than 255-minBaseline)
-		if( (*calibrationAllowed)==true && doesBaselineExceed()){
-			state = calibration;
-			calibrationCounter = 0;	
-			calibrationRead = 0;
-		}
+        FOR_ALL_PORTS(i){
+		    if(compensators[i]->readRawAndWriteCompensatedData()){
+			    //If the read succeeded, update the baseline
+			    compensators[i]->updateBaseline();
+		    }
+        }
 	}
 	else if(state == calibration){
-		if(calibrationCounter==0)
-			calibrationInit();
-		
-		calibrationDataCollection();
+        FOR_ALL_PORTS(i){            
+		    if(calibrationCounter==0)
+			    compensators[i]->calibrationInit();
+    		
+		    compensators[i]->calibrationDataCollection();
 
-		if(calibrationCounter==PERIOD*CAL_TIME){
-			calibrationFinish();
-			state = compensation;
-		}
+		    if(calibrationCounter==CAL_SAMPLES){
+			    compensators[i]->calibrationFinish();
+			    state = compensation;
+		    }            
+        }
+        calibrationCounter++;
 	}
 	else{
 		stateSem.post();
-		fprintf(stderr, "\n[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
+        sendInfoMsg("[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
 		this->suspend();
 		return;
-	}
-
-	stateSem.post();
-
-
-	if(readErrorCounter >= MAX_READ_ERROR){    // read failed too many times in a row, so suspend the thread
-        fprintf(stderr, "[ERROR] %d successive errors reading the sensor data. Suspending the thread.", MAX_READ_ERROR);
-		this->suspend();
-    }
+    }	
+    stateSem.post();
+	sendMonitorData();    
+    checkErrors();
 }
 
-void CompensationThread::calibrationInit(){   
-	fprintf(stderr, "CALIBRATING.......................");
-	// take the semaphore so that the touchThreshold can't be read during the calibration phase
-	touchThresholdSem.wait();
+void CompensationThread::checkErrors(){
+    FOR_ALL_PORTS(i){
+        readErrorCounter = compensators[i]->getErrorCounter();
+        if(readErrorCounter >= MAX_READ_ERROR){    // read failed too many times in a row, remove the port
+            stringstream msg;
+            msg<< "[ERROR] "<< MAX_READ_ERROR<< " successive errors reading port "<< 
+                compensators[i]->getInputPortName()<< ". Closing compensator "<< compensators[i]->getName()<< ".\n";
+            sendInfoMsg(msg.str());
 
-	// send a command to the microcontroller for calibrating the skin sensors
-	if(robotName!="icubSim")	// this feature isn't implemented in the simulator and causes a runtime error
-		tactileSensor->calibrateSensor();
-	fprintf(stderr, "Chip calibration executed\n");
-
-	// initialize
-	start_sum.assign(SKIN_DIM, 0);
-	skin_empty.assign(SKIN_DIM, vector<int>(MAX_SKIN+1, 0));
-}
-
-void CompensationThread::calibrationDataCollection(){	
-	calibrationCounter++; 
-
-	Vector skin_values;
-	int err;
-	if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
-        readErrorCounter++;
-		fprintf(stderr, "Error reading tactile sensor: %d\n", err);
-		return;
-	}
-	
-	readErrorCounter = 0;
-	calibrationRead++;
-		
-	for (int j=0; j<SKIN_DIM; j++) {
-		if (zeroUpRawData==false)
-			skin_values[j] = MAX_SKIN - skin_values[j];
-		
-		if(skin_values[j]<0 || skin_values[j]>MAX_SKIN){
-			fprintf(stderr, "Error while reading the tactile data! Data out of range: %d\n", (int)skin_values[j]);
-		}
-		else{
-			skin_empty[j][int(skin_values[j])]++;
-			start_sum[j] += int(skin_values[j]);
-		}
-	}
-	
-}
-
-void CompensationThread::calibrationFinish(){
-	
-	//vector<float> standard_dev(SKIN_DIM, 0);
-	//get percentile
-	for (int i=0; i<SKIN_DIM; i++) {
-		//avg start value
-		baselines[i] = start_sum[i]/calibrationRead;
-		
-		//cumulative values
-		for (int j=1; j<=MAX_SKIN; j++) {
-			//standard_dev[i] += fabs(j-baselines[i]) * skin_empty[i][j];
-			skin_empty[i][j] += skin_empty[i][j-1] ;			
-		}
-		//standard_dev[i] /= (CAL_TIME*PERIOD);
-
-		//when do we cross the threshold?
-		for (int j=0; j<=MAX_SKIN; j++) {
-			if (skin_empty[i][j] > (calibrationRead*0.95)) {
-				touchThresholds[i] = max<double>(0.0, (double)j - baselines[i]);	// the threshold can not be less than zero
-				j = MAX_SKIN;
-			}
-		}
-	}
-	
-	// release the semaphore so that as of now the touchThreshold can be read
-	touchThresholdSem.post();
-
-	// set the "old output value" for the smoothing filter to the baseline value to get a smooth start
-	compensatedDataOld = baselines;
-
-	// print to console
-	fprintf(stderr, "\nBaselines:\n");
-	for (int i=0; i<SKIN_DIM; i++) {
-		if(!(i%12)) fprintf(stderr, "\n");
-		fprintf(stderr,"%4.1f ", baselines[i]);		
-	}
-
-	/*fprintf(stderr, "\nStandard dev:\n");
-	for (int i=0; i<SKIN_DIM; i++) {
-		if(!(i%12)) fprintf(stderr, "\n");
-		fprintf(stderr,"%3.1f ", standard_dev[i]);
-	}*/
-
-	fprintf(stderr,"\nThresholds (95 percentile):\n");
-	for (int i=0; i<SKIN_DIM; i++) {
-		if(!(i%12)) fprintf(stderr, "\n");
-		fprintf(stderr,"%3.1f ", touchThresholds[i]);		
-	}
-	fprintf(stderr,"\n");
-}
-
-bool CompensationThread::readRawAndWriteCompensatedData(){
-	Vector rawData;				// raw tactile data
-	if(tactileSensor->read(rawData)!=IAnalogSensor::AS_OK){
-        readErrorCounter++;
-		return false;
-	}
-	readErrorCounter = 0;    
-
-	if(rawData.size() != SKIN_DIM){
-		fprintf(stderr, "Unexpected size of the input array (raw tactile data): %d\n", rawData.size());
-		return false;
-	}
-	Vector& compensatedData2Send = compensatedTactileDataPort.prepare();
-    compensatedData2Send.clear();
-	compensatedData.clear();
-	
-	double d;
-	for(int i=0; i<SKIN_DIM; i++){
-		// baseline compensation
-		if( zeroUpRawData == false){
-			d = (double)( MAX_SKIN - rawData(i) - baselines[i]);
-		}else{
-			d = (double)(rawData(i) - baselines[i]);
-		}
-		compensatedData.push_back(d);	// save the data before applying filtering
-
-		// smooth filter
-		if(smoothFilter){
-			smoothFactorSem.wait();
-			d = (1-smoothFactor)*d + smoothFactor*compensatedDataOld(i);
-			smoothFactorSem.post();
-			compensatedDataOld(i) = d;	// update old value
-		}
-		
-        
-		if(d<0) 
-			d=0;		
-
-		// binarization filter
-		if(d > touchThresholds[i] + ADD_THRESHOLD){
-			touchDetected[i] = true;
-			if(binarization)
-				d = BIN_TOUCH;
-		}
-		else{
-			touchDetected[i] = false;
-			if(binarization)
-				d = BIN_NO_TOUCH;
-		}
-
-		compensatedData2Send.push_back(d);
-	}
-
-	if(compensatedData2Send.size() != SKIN_DIM){
-		fprintf(stderr, "Unexpected size of the output array (compensated tactile data): %d\n", compensatedData2Send.size());
-		return false;
-	}
-
-	compensatedTactileDataPort.write();
-	return true;
-}
-
-void CompensationThread::updateBaseline(){
-	float mean_change = 0;
-    int non_touching_taxels = 0;
-	double d; 
-
-    for(int j=0; j<SKIN_DIM; j++) {
-        if(!touchDetected[j]){
-			non_touching_taxels++;										//for changing the taxels where we detected touch
-			d = compensatedData(j);
-
-			//if(d > 0.5) {
-			//	baselines[j]		+= CHANGE_PER_TIMESTEP;
-			//	mean_change			+= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
-			//}else if(d < -0.5) {
-			//	baselines[j]		-= CHANGE_PER_TIMESTEP;
-			//	mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
-			//}
-			if(d>0.5 || d<-0.5){
-				baselines[j]		+= CHANGE_PER_TIMESTEP*d/touchThresholds[j];
-			}
-		}
-    }
-    
-    //for changing the taxels where we detected touch
-    if (non_touching_taxels > 0)
-        mean_change /= non_touching_taxels;
-    for(int j=0; j<SKIN_DIM; j++) {
-        if (touchDetected[j]) {
-            baselines[j]		+= mean_change;
+            if(portNum==1){
+                fprintf(stderr, "No input port left. Stopping the thread\n");
+		        this->suspend();
+                return;
+            }
+            
+            portNum--;
+            SKIN_DIM -= compensators[i]->getNumTaxels();            
+            compensators.erase(compensators.begin()+i);
+            i--;
         }
     }
+
+    unsigned int taxInd, compInd;
+    double baseline;
+    if(doesBaselineExceed(compInd, taxInd, baseline)){
+        stringstream msg;
+        msg<< "Baseline of the taxel "<< taxInd<< " of port "<< compensators[compInd]->getInputPortName()
+            << " saturated (baseline value="<< baseline<< ")! A skin calibration is suggested.";
+        sendInfoMsg(msg.str());
+    }    
 }
 
-bool CompensationThread::doesBaselineExceed(){
-	for(int i=0; i<SKIN_DIM; i++){
-		if(baselines[i]<(*minBaseline) || baselines[i]>MAX_SKIN-(*minBaseline)){
-			fprintf(stderr, "Baseline %d exceeds: %f\n", i, baselines[i]);
-			return true;
+bool CompensationThread::doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline){
+    stateSem.wait();
+    CompensationThreadState currentState = state;
+    stateSem.post();
+    if(currentState==compensation){
+        FOR_ALL_PORTS(i){        
+            if(compensators[i]->doesBaselineExceed(taxInd, baseline)){
+                compInd = i;
+                return true;
+            }
         }
-	}
-	return false;
+    }    
+    return false;
 }
-
-
 
 void CompensationThread::threadRelease() 
 {
-	/* close device driver and port */
-	if(tactileSensorDevice)
-		tactileSensorDevice->close();
+    FOR_ALL_PORTS(i){
+        delete compensators[i];
+    }
 
-	compensatedTactileDataPort.interrupt();
-	compensatedTactileDataPort.close();
+    monitorPort.interrupt();
+    infoPort.interrupt();
+    monitorPort.close();
+    infoPort.close();
 }
 
 Vector CompensationThread::getTouchThreshold(){
-	touchThresholdSem.wait();
-	Vector res = touchThresholds;
-	touchThresholdSem.post();
+    Vector res(SKIN_DIM);
+    int currentDim=0;
+    FOR_ALL_PORTS(i){
+	    Vector temp = compensators[i]->getTouchThreshold();
+        memcpy(res.data()+currentDim, temp.data(), temp.size()*sizeof(double));
+        currentDim += temp.size();
+    }
 	return res;
 }
 
@@ -418,8 +277,59 @@ bool CompensationThread::isCalibrating(){
 float CompensationThread::getSmoothFactor(){
 	return smoothFactor;
 }
-void CompensationThread::log(string s, bool endLine){
-	cout << "[SKIN DRIFT COMP THREAD]: " << s;
-	if(endLine)
-		cout << endl;
+// send the data on the monitor port
+void CompensationThread::sendMonitorData(){
+	// update the frequency
+	double currentTimestamp = Time::now();
+	double timeBetweenRead = currentTimestamp - lastTimestamp;
+	lastTimestamp = currentTimestamp;
+	frequency = 0.5*(1.0/timeBetweenRead) + 0.5*frequencyOld;	// moving average
+	frequencyOld = frequency;
+
+	// send the monitor data
+	Bottle &b = monitorPort.prepare();
+	b.clear();
+	b.addDouble(frequency); // data frequency
+    stateSem.wait();
+    if(state==compensation){
+        // for each taxel add how much the baseline has changed so far
+        FOR_ALL_PORTS(i){
+            Vector temp = compensators[i]->getCompensation();
+            for(int j=0; j<temp.size(); j++){
+                b.addDouble(temp[j]);
+            }
+        }
+    }
+    stateSem.post();
+	monitorPort.write();
+}
+
+void CompensationThread::sendInfoMsg(string msg){
+    printf(msg.c_str());
+    Bottle& b = infoPort.prepare();
+    b.clear();
+    b.addString(msg.c_str());
+    infoPort.write();
+}
+
+Bottle CompensationThread::getInfo(){
+    stringstream ss;
+    Bottle res;
+    if(this->getIterations()>1){    // check whether the thread has been initialized
+        ss<< "Name: "<< moduleName;
+        res.addString(ss.str().c_str());
+        ss.str(""); ss.clear();
+        ss<< "Robot Name: "<< robotName;
+        res.addString(ss.str().c_str());
+        ss.str(""); ss.clear();
+        ss<< "Input port num: "<< portNum;
+        res.addString(ss.str().c_str());
+        ss.str(""); ss.clear();
+        FOR_ALL_PORTS(i){
+            ss<< "- "<< i<< ") "<< compensators[i]->getInputPortName()<< " ("<< compensators[i]->getNumTaxels()<< " taxels)";
+            res.addString(ss.str().c_str());
+            ss.str(""); ss.clear();
+        }
+    }
+    return res;
 }

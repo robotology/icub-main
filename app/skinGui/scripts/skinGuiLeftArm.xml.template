@@ -1,6 +1,18 @@
 <application>
   <name>Left Whole Arm</name>
   <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompLeft.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompLeftHand</tag>
+  </module>
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiLeft.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompGuiLeftHand</tag>
+  </module>
+  <module>
     <name>iCubSkinGui</name>
     <parameters>--from leftupperarm_upper_bottom.ini</parameters>
     <node>console</node>
@@ -38,12 +50,24 @@
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from lefthand.ini</parameters>
+    <parameters>--from lefthand.ini --useCalibration</parameters>
     <node>console</node>
     <tag>LeftHand</tag>
   </module>
+  
+  
   <connection>
-    <from>/icub/skin/left_hand</from>
+    <from>/driftCompGuiLeftHand/rpc:o</from>
+    <to>/leftHandSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/leftHandSkinDriftComp/monitor</from>
+    <to>/driftCompGuiLeftHand/monitor:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_hand_comp</from>
     <to>/skinGui/left_hand:i</to>
     <protocol>tcp</protocol>
   </connection>

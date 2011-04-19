@@ -23,10 +23,11 @@
 using namespace iCub::skinDriftCompensation;
 
 // module default values
-const bool SkinDriftCompensation::CALIBRATION_ALLOWED_DEFAULT = false;
 const int SkinDriftCompensation::MIN_BASELINE_DEFAULT = 3;
+const int SkinDriftCompensation::ADD_THRESHOLD_DEFAULT = 2;
 const int SkinDriftCompensation::PERIOD_DEFAULT = 50;
 const float SkinDriftCompensation::SMOOTH_FACTOR_DEFAULT = 0.5;
+const float SkinDriftCompensation::MAX_DRIFT_DEFAULT = 0.2f;
 const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
 const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
 const string SkinDriftCompensation::HAND_DEFAULT = "right";
@@ -38,7 +39,8 @@ const string SkinDriftCompensation::COMMAND_LIST[]  = {
 	"forbid calibration",	"allow calibration",	"force calibration", 
 	"get percentile",		"set binarization",		"get binarization", 
 	"set smooth filter",	"get smooth filter",	"set smooth factor",	
-	"get smooth factor",	"is calibrating",		"help",					"quit"};
+	"get smooth factor",	"is calibrating",       "get info",		
+    "help",					"quit"};
 
 // the order in COMMAND_DESC must correspond to the order in COMMAND_LIST
 const string SkinDriftCompensation::COMMAND_DESC[]  = {
@@ -53,6 +55,7 @@ const string SkinDriftCompensation::COMMAND_DESC[]  = {
 	"set the value of the smooth factor (in [0,1])",
 	"get the smooth factor value",
 	"tell whether the skin calibration is in progress",
+    "get information about the module",
 	"get this list", 
 	"quit the module"};
 
@@ -67,16 +70,6 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	* specifically the port names which are dependent on the module name*/
 	setName(moduleName.c_str());
 
-	bool rightHand;
-	string hand			= rf.check("hand", Value(HAND_DEFAULT.c_str()), "Hand to take as reference (string)").asString().c_str();
-	if(hand.compare("right")==0){
-		rightHand = true;
-	}else if(hand.compare("left")==0){
-		rightHand = false;
-	}else{
-		return false;
-	}
-
 	/* get some other values from the configuration file */
 	float minBaseline		= (float)rf.check("minBaseline", Value(MIN_BASELINE_DEFAULT), 
 	   "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
@@ -86,6 +79,10 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	bool smoothFilter		= rf.check("smoothFilter");
 	float smoothFactor		= (float)rf.check("smoothFactor", Value(SMOOTH_FACTOR_DEFAULT), 
 	   "Determine the smoothing intensity (float in [0,1])").asDouble();
+	float maxDrift			= (float)rf.check("maxDrift", Value(MAX_DRIFT_DEFAULT), 
+	   "Max drift compensated every second (float)").asDouble();
+	int addThreshold		= (int)rf.check("addThreshold", Value(ADD_THRESHOLD_DEFAULT), 
+	   "Value added to all the touch thresholds (positive int)").asInt();
 	
 	bool zeroUpRawData = true;
 	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value(ZERO_UP_RAW_DATA_DEFAULT.c_str()), 
@@ -110,9 +107,8 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 
 	/* create the thread and pass pointers to the module parameters */
-	calibrationAllowed = CALIBRATION_ALLOWED_DEFAULT;
-	myThread = new CompensationThread(&rf, robotName, &minBaseline, &calibrationAllowed, 
-		zeroUpRawData, rightHand, period, binarization, smoothFilter, smoothFactor);
+	myThread = new CompensationThread(moduleName, &rf, robotName, maxDrift, addThreshold, minBaseline, 
+		zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
 	/* now start the thread to do the work */
 	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
@@ -168,12 +164,12 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 			return true;
 
 		case forbid_calibration:
-			calibrationAllowed = false;
-			break;
+            reply.addString("Command deprecated!");
+			return true;
 
 		case allow_calibration:
-			calibrationAllowed = true;
-			break;
+			reply.addString("Command deprecated!");
+			return true;
 
 		case force_calibration:
 			myThread->forceCalibration();
@@ -265,6 +261,10 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 			else
 				reply.addString("no");
 			return true;
+
+        case get_info:
+            reply.append(myThread->getInfo());
+            return true;
 
 		default:
 			reply.addString("ERROR: This command is known but it is not managed in the code.");

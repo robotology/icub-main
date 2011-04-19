@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include <yarp/sig/Vector.h>
@@ -30,6 +31,7 @@
 #include <yarp/dev/PolyDriver.h>
 
 #include <yarp/os/Network.h>	//temporary
+#include "iCub/skinDriftCompensation/Compensator.h"
 
 using namespace std;
 using namespace yarp::os; 
@@ -47,8 +49,9 @@ public:
 
 	/* class methods */
 
-	CompensationThread(ResourceFinder* rf, string robotName, float* minBaseline, bool *calibrationAllowed, 
-		bool zeroUpRawData, bool rightHand, int period, bool binarization, bool smoothFilter, float smoothFactor);
+	CompensationThread(string name, ResourceFinder* rf, string robotName, float maxDrift, int addThreshold, 
+		float minBaseline, bool zeroUpRawData, int period, 
+		bool binarization, bool smoothFilter, float smoothFactor);
 	bool threadInit();
 	void threadRelease();
 	void run(); 
@@ -63,71 +66,57 @@ public:
 	bool getSmoothFilter();
 	float getSmoothFactor();
 	bool isCalibrating();
+    Bottle getInfo();
 
 
 private:
 
 	/* class constants */	
-	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
-	static const int BIN_TOUCH = 100;			// output value of the binarization filter when touch is detected
-	static const int BIN_NO_TOUCH = 0;			// output value of the binarization filter when no touch is detected
 	static const int CAL_TIME = 5;				// calibration time in sec
 	static const int MAX_READ_ERROR = 100;		// max number of read errors before suspending the thread
-	const int PERIOD;
-	static const int ADD_THRESHOLD = 2;			// value added to the touch threshold of every taxel	
-
-	int SKIN_DIM;								// number of taxels (for the hand it is 192)
+	
+    int CAL_SAMPLES;                            // num of samples needed for calibration
+	const int PERIOD;							// thread period in ms
+	int ADD_THRESHOLD;							// value added to the touch threshold of every taxel	
+	unsigned int SKIN_DIM;						// number of taxels (for the hand it is 192)
 	float MAX_DRIFT;							// the maximal drift that is being compensated every second
 	float CHANGE_PER_TIMESTEP;					// the maximal drift that is being compensated every cycle	
 
 	/* class variables */
-	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
-	Vector touchThresholds;						// threshold for discriminating between "touch" and "no touch"
-	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold
-    Vector baselines;							// mean of the raw tactile data 
-												// (considering only the samples read when no touch is detected)
+	double frequency;
+	double frequencyOld;
+	double lastTimestamp;	
 	
 	// calibration variables
-	int calibrationCounter;						// count the calibration cycles
-	int calibrationRead;						// count the calibration reads succeeded (if no error occurs calibrationRead=calibrationCounter)
-	vector<float> start_sum;					// sum of the values read during the calibration
-    vector< vector<int> > skin_empty;			// distribution of the values read during the calibration
-	
+	int calibrationCounter;						// count the calibration cycles	
 	int readErrorCounter;						// it counts the number of successive errors
-	Vector compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
-	Vector compensatedDataOld;			    	// compensated tactile data of the previous step (used for smoothing filter)
-	IAnalogSensor *tactileSensor;				// interface for executing the tactile sensor calibration
-	PolyDriver* tactileSensorDevice;
 
 	ResourceFinder* rf;
 
 	// input parameters
+	string moduleName;
 	string robotName;
-	float *minBaseline;				// if the baseline value is less than this, then a calibration is executed (if allowed)
-	bool *calibrationAllowed;		// if false the thread is not allowed to run the calibration
+	float minBaseline;				// if the baseline value is less than this, then a calibration is executed (if allowed)
 	bool zeroUpRawData;				// if true the raw data are considered from zero up, otherwise from 255 down
-	bool rightHand;					// if true then calibrate the right hand, otherwise the left hand
 	bool binarization;				// if true binarize the compensated output value (0: no touch, 255: touch)
 	bool smoothFilter;				// if true the smooth filter is on, otherwise it is off
 	float smoothFactor;				// intensity of the smooth filter action
-	Semaphore smoothFactorSem;
+	unsigned int portNum;			// number of input ports (that is the same as the number of output ports)
+
+    vector<Compensator*> compensators;
 
 	/* ports */
-	BufferedPort<Vector> compensatedTactileDataPort;	// output port
+	BufferedPort<Bottle> monitorPort;				// monitoring output port (streaming)
+    BufferedPort<Bottle> infoPort;					// info output port
 
 	CompensationThreadState state;			// state of the thread (calibration, compensation)
 	Semaphore stateSem;
 
-	/* class private methods */
-	void log(string s, bool endLine=true);
-	
-	void calibrationInit();
-	void calibrationDataCollection();
-	void calibrationFinish();
-	bool readRawAndWriteCompensatedData();
-	void updateBaseline();
-	bool doesBaselineExceed();
-
+	/* class private methods */	
+    void checkErrors();
+    bool doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline);
+	void sendMonitorData();
+    void sendInfoMsg(string msg);
 
 };
 

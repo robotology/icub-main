@@ -1,3 +1,7 @@
+# Copyright (C) 2010 RobotCub Consortium
+# Authors: Andrea del Prete
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 cmake_minimum_required(VERSION 2.6)
 
 set(PROJECTNAME skinDriftCompensationGui)
@@ -8,10 +12,14 @@ set(CMAKE_MODULE_PATH ${YARP_MODULE_PATH} ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 set(CMAKE_INSTALL_PREFIX "$ENV{ICUB_DIR}" CACHE PATH "Install path prefix, pre-appended onto install directory." FORCE)
 
-FIND_PACKAGE(GtkPlus REQUIRED)
-
+#set up gthread
+FIND_PACKAGE(Gthread REQUIRED)
+ADD_DEFINITIONS(${GTHREAD_C_FLAGS})
+LINK_LIBRARIES(${Gthread_LIBRARIES})
+INCLUDE_DIRECTORIES(${Gthread_INCLUDE_DIRS})
 
 # set up to use GTK+
+FIND_PACKAGE(GtkPlus REQUIRED)
 ADD_DEFINITIONS(${GTKPLUS_C_FLAGS})
 LINK_LIBRARIES(${GtkPlus_LIBRARIES})
 LINK_DIRECTORIES(${GTKPLUS_LIBRARY_DIR})

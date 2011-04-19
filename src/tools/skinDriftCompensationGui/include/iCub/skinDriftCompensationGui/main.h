@@ -1,26 +1,70 @@
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Andrea Del Prete
+ * email:   andrea.delprete@iit.it
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
 #include <string>
-#include <sstream>  
+#include <sstream> 
+#include <iomanip>					// io manipulator (setw, setfill)
 #include <cstdarg>
-#include <cstdlib>
+//#include <cstdlib>
+#include <math.h>
+#include <vector>
 
 #include <gtk/gtk.h>
-//#include <gdk/gdk.h>
+#include <glib.h>
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Port.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 
 using namespace std;
 using namespace yarp::os;
 
+// main window
 GtkWindow               *window;
 GtkStatusbar			*statusBar;
 GtkStatusbar			*statusBarFreq;
+// first tab
 GtkProgressBar			*progBarCalib;
 GtkButton				*btnCalibration;
-Port					guiRpcPort;
-double					currentSmoothFactor;
+// second tab
+GtkTreeView             *treeBaselines;
+GtkListStore            *listStoreComp;
+// third tab
+GtkCurve                *curveComp;
+GtkLabel                *lblMaxY;
+GtkLabel                *lblMinY;
+// fourth tab
+GtkLabel                *lblInfo;
+
+// ports for communicating with the module
+Port					guiRpcPort;             // to send rpc command to the module
+BufferedPort<Bottle>	driftCompMonitorPort;   // for reading streaming data (frequency, drift)
+BufferedPort<Bottle>	driftCompInfoPort;      // for reading sporadic msgs (errors, warnings)
+
+double					currentSmoothFactor;    // current smooth factor value
+
+static double round(double value, int decimalDigit){
+	double q = pow(10.0, decimalDigit);
+	return double(int((value*q)+0.5))/q;
+}
 
 static void openDialog(const char* msg, GtkMessageType type){
 	GtkWidget* dialog = gtk_message_dialog_new (window,
@@ -37,10 +81,16 @@ static void setStatusBarText(string text){
 	gtk_statusbar_push(statusBar, contextId, text.c_str());
 }
 
-static void setStatusBarFreq(double freq){
-	stringstream text; text<< "Data frequency: "<< freq;
-	guint contextId = gtk_statusbar_get_context_id(statusBar, text.str().c_str());
-	gtk_statusbar_push(statusBar, contextId, text.str().c_str());
+static void setStatusBarFreq(bool freqUpdated, double freq){
+	stringstream text;
+	if(freqUpdated){
+		freq = round(freq, 2);
+		text<< "Skin data frequency: "<< freq;
+	}else{
+		text<< "Cannot read the frequency";
+	}
+	guint contextId = gtk_statusbar_get_context_id(statusBarFreq, text.str().c_str());
+	gtk_statusbar_push(statusBarFreq, contextId, text.str().c_str());
 }
 
 static Bottle sendRpcCommand(bool responseExpected, int commandWordCount, const char* command, ...){
