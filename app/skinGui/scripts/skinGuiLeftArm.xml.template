@@ -14,37 +14,37 @@
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from leftupperarm_upper_bottom.ini</parameters>
+    <parameters>--from leftupperarm_upper_bottom.ini --useCalibration</parameters>
     <node>console</node>
     <tag>LeftarmUpBot</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from leftupperarm_upper_internal.ini</parameters>
+    <parameters>--from leftupperarm_upper_internal.ini --useCalibration</parameters>
     <node>console</node>
     <tag>LeftarmUpInt</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from leftupperarm_upper_external.ini</parameters>
+    <parameters>--from leftupperarm_upper_external.ini --useCalibration</parameters>
     <node>console</node>
     <tag>LeftarmUpExt</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from leftupperarm_lower.ini</parameters>
+    <parameters>--from leftupperarm_lower.ini --useCalibration</parameters>
     <node>console</node>
     <tag>LeftarmLow</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from leftforearm_upper.ini</parameters>
+    <parameters>--from leftforearm_upper.ini --useCalibration</parameters>
     <node>console</node>
     <tag>LeftForearmUp</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from leftforearm_lower.ini</parameters>
+    <parameters>--from leftforearm_lower.ini --useCalibration</parameters>
     <node>console</node>
     <tag>LeftForearmLow</tag>
   </module>
