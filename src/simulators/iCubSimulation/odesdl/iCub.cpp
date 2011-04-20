@@ -256,9 +256,12 @@ void ICubSim::draw(){
 		reinitialized = false; 
 	}
 	
-   // glColor3d(1.0,1.0,1.0);
-   // glPushMatrix();LDEsetM(dGeomGetPosition(screenGeom),dGeomGetRotation(screenGeom));
-   // DrawBox(1.0,1.0,0.001,false,textured,15);glPopMatrix();
+    if (actScreen == "on")
+    {
+        glColor3d(1.0,1.0,1.0);
+        glPushMatrix();LDEsetM(dGeomGetPosition(screenGeom),dGeomGetRotation(screenGeom));
+        DrawBox(1.0,1.0,0.001,false,textured,15);glPopMatrix();
+    }
 
 
     //glColor3d(1.0,0.0,1.0);
@@ -747,130 +750,132 @@ void ICubSim::draw(){
 
 }
 void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
-	//Coordinates X Y Z using the 3D Cartesian coordinate system
-	dGeomSetPosition(geom_cube[0],0.0,0.05, 2); //reference on the z 
-	
-    //dGeomSetPosition(screenGeom,0.0,1.0,0.7);
+    //Coordinates X Y Z using the 3D Cartesian coordinate system
+    dGeomSetPosition(geom_cube[0],0.0,0.05, 2); //reference on the z 
 
-	if (actLegs == "off"){
-		dBodySetPosition (legs,   0.068, elev +0.002,  0.0);
-	}else{
-		//left lower body part
-		dBodySetPosition(leftLeg[0], 0.068, elev + 0.0021, 0.0); //FROM ODE Y, Z, X    
-		dBodySetPosition(leftLeg[1], 0.068, elev + 0.031, -0.0235);
-		dBodySetPosition(leftLeg[2], 0.068, elev + 0.031, -0.034);
-		dBodySetPosition(leftLeg[3], 0.068, elev + 0.244, -0.034);
-		dBodySetPosition(leftLeg[4], 0.068, elev + 0.468, -0.034);
-		dBodySetPosition(leftLeg[5], 0.0295, elev + 0.468, -0.034);
-		//right lower body part
-		dBodySetPosition(rightLeg[0], -0.068, elev + 0.0021, 0.0); 
-		dBodySetPosition(rightLeg[1], -0.068, elev + 0.031, -0.0235);
-		dBodySetPosition(rightLeg[2], -0.068, elev + 0.031, -0.034);
-		dBodySetPosition(rightLeg[3], -0.068, elev + 0.244, -0.034);
-		dBodySetPosition(rightLeg[4], -0.068, elev + 0.468, -0.034);
-		dBodySetPosition(rightLeg[5], -0.0295, elev + 0.468, -0.034);
-	}
-	if (actTorso == "off"){
-		dBodySetPosition (body_torso,   0.0, elev + 0.4912, -0.034);
-		dBodySetPosition (torso[4],   0.038, elev + 0.7414, -0.026);
-		dBodySetPosition (torso[5],   -0.038, elev +0.7414, -0.026);
-	}else{
-		dBodySetPosition (torso[0],   0.0, elev +0.4912, -0.034);
-		dBodySetPosition (torso[1],   0.0, elev +0.557, -0.04);
-		dBodySetPosition (torso[2],   0.0, elev +0.624, -0.034); 
-		dBodySetPosition (torso[3],   0.0, elev +0.6687, -0.026);
-		dBodySetPosition (torso[4],   0.038, elev +0.7414, -0.026);
-		dBodySetPosition (torso[5],   -0.038, elev +0.7414, -0.026);
-	}
-	if (actLArm == "off"){
-		dBodySetPosition (larm,   0.0815, elev +0.77, -0.026);
-	}else{
-	//left arm
-		dBodySetPosition (body[0],   0.0815, elev +0.77, -0.026);
-		dBodySetPosition (body[2],   0.117, elev +0.77, -0.026);
-		dBodySetPosition (body[4],   0.117, elev +0.692, -0.026);
-		dBodySetPosition (body[6],   0.117, elev +0.614, -0.026);
-		dBodySetPosition (body[8],   0.117, elev +0.544, -0.026);
-	}
-	if (actRArm == "off"){
-		dBodySetPosition (rarm,   -0.0815, elev +0.77, -0.026);
-	}else{
-		////right arm
-		dBodySetPosition (body[1],   -0.0815, elev +0.77, -0.026);
-		dBodySetPosition (body[3],   -0.117, elev +0.77, -0.026);
-		dBodySetPosition (body[5],   -0.117, elev +0.692, -0.026);
-		dBodySetPosition (body[7],   -0.117, elev +0.614, -0.026);
-		dBodySetPosition (body[9],   -0.117, elev +0.544, -0.026);
-	}
-	if (actLHand == "off"){
-		dBodySetPosition(l_hand,   0.117, elev + 0.439, -0.026);
-	}else{
-	//left hand fingers
-		dBodySetPosition (body[10],   0.117, elev +0.439, -0.026);
-		dBodySetPosition (body[12],   0.117, elev +0.399, -0.00325);
-		dBodySetPosition (body[13],   0.117, elev +0.399, -0.0195);
-		dBodySetPosition(lhandfingers0,0.117,elev +0.399, -0.043875);
-		dBodySetPosition (body[16],   0.117, elev +0.380, -0.00325);
-		dBodySetPosition (body[17],   0.117, elev +0.379, -0.0195);
-		dBodySetPosition(lhandfingers1,0.117,elev +0.380, -0.043875);
-		dBodySetPosition (body[20],   0.117, elev +0.356, -0.00325);
-		dBodySetPosition (body[21],   0.117, elev +0.353, -0.0195);
-		dBodySetPosition(lhandfingers2,0.117, elev +0.356, -0.043875);
-		dBodySetPosition (body[24],   0.117, elev +0.335, -0.00325);
-		dBodySetPosition (body[25],   0.117, elev +0.331, -0.0195);
-		dBodySetPosition(lhandfingers3,0.117, elev +0.335, -0.043875);
-		dBodySetPosition (body[28] , 0.117, elev +0.455,0.019); //left thumb1 
-		dBodySetPosition (body[29] , 0.117, elev +0.455,0.043); //left thumb2 
-		dBodySetPosition (body[30] , 0.117, elev +0.455,0.062); //left thumb3
-	}
-	if (actRHand == "off"){
-		dBodySetPosition(r_hand,   -0.117, elev +0.439, -0.026);
-	}else{
-		//right hand fingers
-		dBodySetPosition (body[11],   -0.117, elev +0.439, -0.026);
-		dBodySetPosition (body[31],   -0.117, elev +0.399, -0.00325);
-		dBodySetPosition (body[32],   -0.117, elev +0.399, -0.0195);
-		dBodySetPosition(rhandfingers0,-0.117,elev +0.399, -0.043875);
-		dBodySetPosition (body[35],   -0.117, elev +0.380, -0.00325);
-		dBodySetPosition (body[36],   -0.117, elev +0.379, -0.0195);
-		dBodySetPosition(rhandfingers1,-0.117,elev +0.380, -0.043875);
-		dBodySetPosition (body[39],   -0.117, elev +0.356, -0.00325);
-		dBodySetPosition (body[40],   -0.117, elev +0.353, -0.0195);
-		dBodySetPosition(rhandfingers2,-0.117, elev +0.356, -0.043875);
-		dBodySetPosition (body[43],   -0.117, elev +0.335, -0.00325);
-		dBodySetPosition (body[44],   -0.117, elev +0.331, -0.0195);
-		dBodySetPosition(rhandfingers3,-0.117, elev +0.335, -0.043875);
-		dBodySetPosition (body[47] , -0.117, elev +0.455,0.019); //left thumb1 
-		dBodySetPosition (body[48] , -0.117, elev +0.455,0.043); //left thumb2 
-		dBodySetPosition (body[49] , -0.117, elev +0.455,0.062); //left thumb3
-	}
-	if (actHead == "off"){
-		dBodySetPosition(head, -0.0, elev + 0.89,	-0.026);
-	}else{
-		dBodySetPosition (neck[0], -0.0, elev +0.815, -0.026);
-		dBodySetPosition (neck[1], -0.0, elev +0.845, -0.026);
-		dBodySetPosition (head, -0.0, elev +0.89, -0.026);
-		dBodySetPosition (eye, -0.0, elev +0.89,  -0.026);
-		dBodySetPosition (leye, -0.0, elev +0.89, -0.026);
-		dBodySetPosition (reye, -0.0, elev +0.89, -0.026);
-	}
-		//est eyelids position
-		dBodySetPosition (topEyeLid, 0.0, elev + 0.928,	0.035);
-		dBodySetPosition (bottomEyeLid, 0.0, elev + 0.928,	0.035);
-}
+    if (actScreen == "on")
+        dGeomSetPosition(screenGeom,0.0,1.0,0.7);
+
+    if (actLegs == "off"){
+        dBodySetPosition (legs,   0.068, elev +0.002,  0.0);
+    }else{
+        //left lower body part
+        dBodySetPosition(leftLeg[0], 0.068, elev + 0.0021, 0.0); //FROM ODE Y, Z, X    
+        dBodySetPosition(leftLeg[1], 0.068, elev + 0.031, -0.0235);
+        dBodySetPosition(leftLeg[2], 0.068, elev + 0.031, -0.034);
+        dBodySetPosition(leftLeg[3], 0.068, elev + 0.244, -0.034);
+        dBodySetPosition(leftLeg[4], 0.068, elev + 0.468, -0.034);
+        dBodySetPosition(leftLeg[5], 0.0295, elev + 0.468, -0.034);
+        //right lower body part
+        dBodySetPosition(rightLeg[0], -0.068, elev + 0.0021, 0.0); 
+        dBodySetPosition(rightLeg[1], -0.068, elev + 0.031, -0.0235);
+        dBodySetPosition(rightLeg[2], -0.068, elev + 0.031, -0.034);
+        dBodySetPosition(rightLeg[3], -0.068, elev + 0.244, -0.034);
+        dBodySetPosition(rightLeg[4], -0.068, elev + 0.468, -0.034);
+        dBodySetPosition(rightLeg[5], -0.0295, elev + 0.468, -0.034);
+    }
+    if (actTorso == "off"){
+        dBodySetPosition (body_torso,   0.0, elev + 0.4912, -0.034);
+        dBodySetPosition (torso[4],   0.038, elev + 0.7414, -0.026);
+        dBodySetPosition (torso[5],   -0.038, elev +0.7414, -0.026);
+    }else{
+        dBodySetPosition (torso[0],   0.0, elev +0.4912, -0.034);
+        dBodySetPosition (torso[1],   0.0, elev +0.557, -0.04);
+        dBodySetPosition (torso[2],   0.0, elev +0.624, -0.034); 
+        dBodySetPosition (torso[3],   0.0, elev +0.6687, -0.026);
+        dBodySetPosition (torso[4],   0.038, elev +0.7414, -0.026);
+        dBodySetPosition (torso[5],   -0.038, elev +0.7414, -0.026);
+    }
+    if (actLArm == "off"){
+        dBodySetPosition (larm,   0.0815, elev +0.77, -0.026);
+    }else{
+    //left arm
+        dBodySetPosition (body[0],   0.0815, elev +0.77, -0.026);
+        dBodySetPosition (body[2],   0.117, elev +0.77, -0.026);
+        dBodySetPosition (body[4],   0.117, elev +0.692, -0.026);
+        dBodySetPosition (body[6],   0.117, elev +0.614, -0.026);
+        dBodySetPosition (body[8],   0.117, elev +0.544, -0.026);
+    }
+    if (actRArm == "off"){
+        dBodySetPosition (rarm,   -0.0815, elev +0.77, -0.026);
+    }else{
+    ////right arm
+        dBodySetPosition (body[1],   -0.0815, elev +0.77, -0.026);
+        dBodySetPosition (body[3],   -0.117, elev +0.77, -0.026);
+        dBodySetPosition (body[5],   -0.117, elev +0.692, -0.026);
+        dBodySetPosition (body[7],   -0.117, elev +0.614, -0.026);
+        dBodySetPosition (body[9],   -0.117, elev +0.544, -0.026);
+    }
+    if (actLHand == "off"){
+        dBodySetPosition(l_hand,   0.117, elev + 0.439, -0.026);
+    }else{
+    //left hand fingers
+        dBodySetPosition (body[10],   0.117, elev +0.439, -0.026);
+        dBodySetPosition (body[12],   0.117, elev +0.399, -0.00325);
+        dBodySetPosition (body[13],   0.117, elev +0.399, -0.0195);
+        dBodySetPosition(lhandfingers0,0.117,elev +0.399, -0.043875);
+        dBodySetPosition (body[16],   0.117, elev +0.380, -0.00325);
+        dBodySetPosition (body[17],   0.117, elev +0.379, -0.0195);
+        dBodySetPosition(lhandfingers1,0.117,elev +0.380, -0.043875);
+        dBodySetPosition (body[20],   0.117, elev +0.356, -0.00325);
+        dBodySetPosition (body[21],   0.117, elev +0.353, -0.0195);
+        dBodySetPosition(lhandfingers2,0.117, elev +0.356, -0.043875);
+        dBodySetPosition (body[24],   0.117, elev +0.335, -0.00325);
+        dBodySetPosition (body[25],   0.117, elev +0.331, -0.0195);
+        dBodySetPosition(lhandfingers3,0.117, elev +0.335, -0.043875);
+        dBodySetPosition (body[28] , 0.117, elev +0.455,0.019); //left thumb1 
+        dBodySetPosition (body[29] , 0.117, elev +0.455,0.043); //left thumb2 
+        dBodySetPosition (body[30] , 0.117, elev +0.455,0.062); //left thumb3
+    }
+    if (actRHand == "off"){
+        dBodySetPosition(r_hand,   -0.117, elev +0.439, -0.026);
+    }else{
+    //right hand fingers
+        dBodySetPosition (body[11],   -0.117, elev +0.439, -0.026);
+        dBodySetPosition (body[31],   -0.117, elev +0.399, -0.00325);
+        dBodySetPosition (body[32],   -0.117, elev +0.399, -0.0195);
+        dBodySetPosition(rhandfingers0,-0.117,elev +0.399, -0.043875);
+        dBodySetPosition (body[35],   -0.117, elev +0.380, -0.00325);
+        dBodySetPosition (body[36],   -0.117, elev +0.379, -0.0195);
+        dBodySetPosition(rhandfingers1,-0.117,elev +0.380, -0.043875);
+        dBodySetPosition (body[39],   -0.117, elev +0.356, -0.00325);
+        dBodySetPosition (body[40],   -0.117, elev +0.353, -0.0195);
+        dBodySetPosition(rhandfingers2,-0.117, elev +0.356, -0.043875);
+        dBodySetPosition (body[43],   -0.117, elev +0.335, -0.00325);
+        dBodySetPosition (body[44],   -0.117, elev +0.331, -0.0195);
+        dBodySetPosition(rhandfingers3,-0.117, elev +0.335, -0.043875);
+        dBodySetPosition (body[47] , -0.117, elev +0.455,0.019); //left thumb1 
+        dBodySetPosition (body[48] , -0.117, elev +0.455,0.043); //left thumb2 
+        dBodySetPosition (body[49] , -0.117, elev +0.455,0.062); //left thumb3
+    }
+    if (actHead == "off"){
+        dBodySetPosition(head, -0.0, elev + 0.89,	-0.026);
+    }else{
+        dBodySetPosition (neck[0], -0.0, elev +0.815, -0.026);
+        dBodySetPosition (neck[1], -0.0, elev +0.845, -0.026);
+        dBodySetPosition (head, -0.0, elev +0.89, -0.026);
+        dBodySetPosition (eye, -0.0, elev +0.89,  -0.026);
+        dBodySetPosition (leye, -0.0, elev +0.89, -0.026);
+        dBodySetPosition (reye, -0.0, elev +0.89, -0.026);
+    }
+    //est eyelids position
+        dBodySetPosition (topEyeLid, 0.0, elev + 0.928,	0.035);
+        dBodySetPosition (bottomEyeLid, 0.0, elev + 0.928,	0.035);
+    }
 
 #define FLAGIFY(flags,name) name = flags.name?"on":"off"
 
 void ICubSim::activateiCubParts(RobotConfig& config) {
 
-	ConstString general = config.getFinder().findFile("general");
+    ConstString general = config.getFinder().findFile("general");
 
     Property options;
-	options.fromConfigFile(general.c_str());
+    options.fromConfigFile(general.c_str());
 
     RobotFlags& flags = config.getFlags();
 
     config.setFlags();
+    FLAGIFY(flags,actScreen);
     FLAGIFY(flags,actElevation);
     FLAGIFY(flags,actLegs);
     FLAGIFY(flags,actTorso);
@@ -884,44 +889,46 @@ void ICubSim::activateiCubParts(RobotConfig& config) {
     FLAGIFY(flags,actPressure);
     FLAGIFY(flags,actWorld);
     FLAGIFY(flags,actCover);
-	
-	if (actElevation == "off"){
-		elev = 0;
-	}else {
-		elev = 0.2; 
-	}
+
+    if (actElevation == "off"){
+        elev = 0;
+    }else {
+        elev = 0.2; 
+    }
 }
 
 void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
                     RobotConfig& config) {
     ResourceFinder& finder = config.getFinder();
-	activateiCubParts(config);
-	iCubHeadModel =  new Model();
-	topEyeLidModel =      new Model();
-	bottomEyeLidModel =   new Model();
+    activateiCubParts(config);
+    iCubHeadModel =  new Model();
+    topEyeLidModel =      new Model();
+    bottomEyeLidModel =   new Model();
 
-	iCubHeadModel->loadModelData(finder.findFile("data/model/iCub_Head.ms3d").c_str());
-	topEyeLidModel->loadModelData(finder.findFile("data/model/topEyeLid.ms3d").c_str());
-	bottomEyeLidModel->loadModelData(finder.findFile("data/model/bottomEyeLid.ms3d").c_str());
+    iCubHeadModel->loadModelData(finder.findFile("data/model/iCub_Head.ms3d").c_str());
+    topEyeLidModel->loadModelData(finder.findFile("data/model/topEyeLid.ms3d").c_str());
+    bottomEyeLidModel->loadModelData(finder.findFile("data/model/bottomEyeLid.ms3d").c_str());
 
-	//mass
-	dMass m, m2;
-	dMatrix3 Rtx;
-	//rotation matrises
-	dQuaternion q, q1, q2,q3,q4;
-	dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
-	dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
-	dQFromAxisAndAngle(q2,0,0,1,M_PI * 0.25);  //45 Degrees
-	dQFromAxisAndAngle(q3,0,1,0,M_PI * 0.0833);
-	dQFromAxisAndAngle(q4,1,0,0,M_PI * -0.25);  //45 Degrees
-	//init
-	iCub = dSimpleSpaceCreate(space);
-	dSpaceSetCleanup(iCub,0);
-	dMassSetZero(&m);
-	//the reference object
-	//body_cube[0] = dBodyCreate(world); dMassSetZero(&m); dMassSetBoxTotal (&m,0.1,0.1,0.005,0.1);dBodySetMass(body_cube[0],&m);
-	geom_cube[0] = dCreateBox(space,0.1,0.005,0.1); //dGeomSetBody(geom_cube[0],body_cube[0]); 
+    //mass
+    dMass m, m2;
+    dMatrix3 Rtx;
+    //rotation matrises
+    dQuaternion q, q1, q2,q3,q4;
+    dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
+    dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
+    dQFromAxisAndAngle(q2,0,0,1,M_PI * 0.25);  //45 Degrees
+    dQFromAxisAndAngle(q3,0,1,0,M_PI * 0.0833);
+    dQFromAxisAndAngle(q4,1,0,0,M_PI * -0.25);  //45 Degrees
+    //init
+    iCub = dSimpleSpaceCreate(space);
+    dSpaceSetCleanup(iCub,0);
+    dMassSetZero(&m);
+    //the reference object
+    //body_cube[0] = dBodyCreate(world); dMassSetZero(&m); dMassSetBoxTotal (&m,0.1,0.1,0.005,0.1);dBodySetMass(body_cube[0],&m);
+    geom_cube[0] = dCreateBox(space,0.1,0.005,0.1); //dGeomSetBody(geom_cube[0],body_cube[0]); 
 
+    if (actScreen == "on")
+        screenGeom = dCreateBox(space,1.0,1.0,0.01); //this will create a thin screen of width 1m height 1m and depth 0.01m
 
 	if (actLegs == "off"){//here we create legs as one body
 
