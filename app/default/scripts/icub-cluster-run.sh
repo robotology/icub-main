@@ -7,8 +7,6 @@
 
 ID=/`uname -n`
     
-cmd="bash -c"; 
-
 case "$1" in
 	start)
 		if [ "k$3" != "k" ];
@@ -28,23 +26,23 @@ case "$1" in
 		
 		
 		echo "Starting up yarp run for $ID"
-		$cmd "cp -f $YARP_DIR/bin/yarprun /tmp/yarprun"
-		$cmd "cd /tmp;./yarprun --server $ID 2>&1 2>/tmp/yarprunserver.log &"
-		$cmd "echo \"`date` starting yarprun\" >> /tmp/yarprun.log"
+		cp -f $YARP_DIR/bin/yarprun /tmp/yarprun
+		cd /tmp;./yarprun --server $ID 2>&1 2>/tmp/yarprunserver.log &
+		echo \"`date` starting yarprun\" >> /tmp/yarprun.log
 		echo "done!"
 		;;
 	
 	kill)
 		echo "Killing yarprun for $ID"
-		$cmd "killall -9 yarprun"
-		$cmd "echo \"`date` killed yarprun\" >> /tmp/yarprun.log"
+		killall -9 yarprun
+		echo \"`date` killed yarprun\" >> /tmp/yarprun.log
 		echo "done!"
 		;;
 
 	stop)
 		echo "Stopping yarp run for $ID"
-		$cmd "cd /tmp;./yarprun --exit --on $ID"
-		$cmd "echo \"`date` stopped yarprun\" >> /tmp/yarprun.log"
+		cd /tmp;./yarprun --exit --on $ID
+		echo \"`date` stopped yarprun\" >> /tmp/yarprun.log
 		echo "done!"
 		;;
 esac
