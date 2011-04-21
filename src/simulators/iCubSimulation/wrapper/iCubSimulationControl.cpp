@@ -70,29 +70,29 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     Searchable& p = config;
 
-	if (!p.check("GENERAL","section for general motor control parameters")) {
+    if (!p.check("GENERAL","section for general motor control parameters")) {
         fprintf(stderr, "Cannot understand configuration parameters\n");
         return false;
     }
-	
-	int TypeArm = p.findGroup("GENERAL").check("Type",Value(1),
+
+    int TypeArm = p.findGroup("GENERAL").check("Type",Value(1),
                                           "what did the user select?").asInt();
 
-	int numTOTjoints = p.findGroup("GENERAL").check("TotalJoints",Value(1),
+    int numTOTjoints = p.findGroup("GENERAL").check("TotalJoints",Value(1),
                                           "Number of total joints").asInt();
 
-	double velocity = p.findGroup("GENERAL").check("Vel",Value(1),
+    double velocity = p.findGroup("GENERAL").check("Vel",Value(1),
                                           "Default velocity").asDouble();
-	int i;
+    int i;
 
-	_mutex.wait();
-	partSelec = TypeArm;
-	
-	njoints = numTOTjoints;
+    _mutex.wait();
+    partSelec = TypeArm;
 
-	vel = velocity;
+    njoints = numTOTjoints;
 
-	angleToEncoder = allocAndCheck<double>(njoints);
+    vel = velocity;
+
+    angleToEncoder = allocAndCheck<double>(njoints);
     zeros = allocAndCheck<double>(njoints);
     
     limitsMin = allocAndCheck<double>(njoints);
@@ -121,31 +121,31 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     for(int i = 0;i<njoints;i++)
         motor_on[i] = false;
 
-	/////////////////////////
+    /////////////////////////
     /*   GENERAL           */
     /////////////////////////
 
-	Bottle& xtmp = p.findGroup("GENERAL").findGroup("AxisMap","a list of reordered indices for the axes");
+    Bottle& xtmp = p.findGroup("GENERAL").findGroup("AxisMap","a list of reordered indices for the axes");
     
-	if (xtmp.size() != njoints+1) {
+    if (xtmp.size() != njoints+1) {
         printf("AxisMap does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) axisMap[i-1] = xtmp.get(i).asInt();
 
-	 xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
-	if (xtmp.size() != njoints+1) {
+    xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
+    if (xtmp.size() != njoints+1) {
         printf("Encoder does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
-	if (xtmp.size() != njoints+1) {
+    if (xtmp.size() != njoints+1) {
         printf("Zeros does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
-	////////////////////////
+    ////////////////////////
     /*   LIMITS           */
     ////////////////////////
     xtmp = p.findGroup("LIMITS").findGroup("Max","access the joint limits max");
@@ -166,7 +166,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     for(int i =1;i<xtmp.size();i++)
         limitsMin[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
 
-	xtmp = p.findGroup("LIMITS").findGroup("error_tol","error tolerance during tracking");
+    xtmp = p.findGroup("LIMITS").findGroup("error_tol","error tolerance during tracking");
     if(xtmp.size() != njoints+1)
         {
             printf("Not enough error_tol\n");
@@ -176,37 +176,35 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         error_tol[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
 
 
-	for(int i =0;i<njoints;i++)
+    for(int i =0;i<njoints;i++)
     {
         current_pos[i] = 0.0;
-     	ErrorPos[i] = 0.0;
-		double v = 0.0;
-		if (v<limitsMin[i]) v = limitsMin[i];
-		if (v>limitsMax[i]) v = limitsMax[i];
-		//else v = next_pos[i];
+        ErrorPos[i] = 0.0;
+        double v = 0.0;     
+        if (v<limitsMin[i]) v = limitsMin[i];
+        if (v>limitsMax[i]) v = limitsMax[i];
+        //else v = next_pos[i];
         next_pos[i] = M_PI*(v/angleToEncoder[i])/180;//removed (v/angleToEncoder[i]-1)/180
-        next_vel[i] = 0.0;
-		input = 0;
+        next_vel[i] = 0.0;      
+        input = 0;
         inputs[i] = 0;
         vels[i] = 1;
    }
-	
 
-	ImplementPositionControl<iCubSimulationControl, IPositionControl>::
+    ImplementPositionControl<iCubSimulationControl, IPositionControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementVelocityControl<iCubSimulationControl, IVelocityControl>::
-		initialize(njoints, axisMap, angleToEncoder, zeros);
+        initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementPidControl<iCubSimulationControl, IPidControl>::
-		initialize(njoints, axisMap, angleToEncoder, zeros);
+        initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementEncoders<iCubSimulationControl, IEncoders>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-	ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
+    ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-	ImplementControlLimits<iCubSimulationControl, IControlLimits>::
+    ImplementControlLimits<iCubSimulationControl, IControlLimits>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-		
     velocityMode = false;
 
     if (!p.check("joint_device")) {
@@ -224,10 +222,10 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         return false;
     }
 
-	RateThread::start();
-	//_done.wait ();
-	_mutex.post();
-	_opened = true;
+    RateThread::start();
+    //_done.wait ();
+    _mutex.post();
+    _opened = true;
     return true;
 }
 
@@ -250,8 +248,8 @@ bool iCubSimulationControl::close (void)
         ImplementControlLimits<iCubSimulationControl, IControlLimits>::uninitialize(); /**/
     }
 
-	checkAndDestroy<double>(current_pos);
-	checkAndDestroy<double>(current_vel);
+    checkAndDestroy<double>(current_pos);
+    checkAndDestroy<double>(current_vel);
     checkAndDestroy<double>(next_pos);
     checkAndDestroy<double>(next_vel);
    // delete[] joint_dev;
@@ -274,8 +272,8 @@ bool iCubSimulationControl::close (void)
     
   //  delete[] jointNames;
 
-	_opened = false;
-	return true;
+    _opened = false;
+    return true;
 }
 
 void iCubSimulationControl::run() {
@@ -307,7 +305,6 @@ void iCubSimulationControl::run() {
                 else{
                     ctrl.setVelocity(next_vel[i]);
                 }
-				
             } else {
                 // no acceleration control right now, just velocity
                 ctrl.setControlParameters(vels[i],1);
@@ -349,7 +346,7 @@ bool iCubSimulationControl::setReferenceRaw (int j, double ref)
 {
     if(j<njoints)
         {
-	//		printf(" GETTING THE REFERENCE??? 1\n");
+        //printf(" GETTING THE REFERENCE??? 1\n");
             _mutex.wait();
             next_pos[j] = ref;
             _mutex.post();
@@ -449,7 +446,7 @@ bool iCubSimulationControl::setOffsetRaw(int axis, double v)
 
 bool iCubSimulationControl::disablePidRaw(int axis)
 {
-	return NOT_YET_IMPLEMENTED("disablePidRaw");
+    return NOT_YET_IMPLEMENTED("disablePidRaw");
 }
 
 bool iCubSimulationControl::setPositionModeRaw()
@@ -467,21 +464,21 @@ bool iCubSimulationControl::setVelocityModeRaw()
 bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
 {
     velocityMode = false;
-	if(axis<njoints)
-        {
-            _mutex.wait();
-			if(ref< limitsMin[axis])
-                next_pos[axis] = limitsMin[axis];
-			else if(ref > limitsMax[axis])
-                next_pos[axis] = limitsMax[axis];
-			else
-                next_pos[axis] = ref;
-            motor_on[axis]=true;
-				
-            printf("changed position %d to %f\n",axis,next_pos[axis]);
-            _mutex.post();
-            return true;
-        }
+    if(axis<njoints)
+    {
+        _mutex.wait();
+        if(ref< limitsMin[axis])
+            next_pos[axis] = limitsMin[axis];
+        else if(ref > limitsMax[axis])
+            next_pos[axis] = limitsMax[axis];
+        else
+            next_pos[axis] = ref;
+        motor_on[axis]=true;
+
+        printf("changed position %d to %f\n",axis,next_pos[axis]);
+        _mutex.post();
+        return true;
+    }
     printf("positionMoveRaw joint access too high %d \n",axis);
     return false;    
 }
@@ -490,17 +487,17 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
 {
     velocityMode = false;
       _mutex.wait();
- 	for(int i = 0; i<njoints; i++)
+    for(int i = 0; i<njoints; i++)
         {
             double ref = refs[i];
-			if(ref< limitsMin[i]){
+            if(ref< limitsMin[i]){
                 next_pos[i] = limitsMin[i];
-			}
-			else if(ref > limitsMax[i]){
+            }
+            else if(ref > limitsMax[i]){
                 next_pos[i] = limitsMax[i];
-			}
+            }
             else
-			 next_pos[i] = ref;
+            next_pos[i] = ref;
             motor_on[i]=true;
             printf("moving joint %d to pos %f\n",i,next_pos[i]);
         }
@@ -511,13 +508,13 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
 bool iCubSimulationControl::relativeMoveRaw(int j, double delta)
 {
     velocityMode = false;
-	return positionMoveRaw(j,next_pos[j]+delta);
+    return positionMoveRaw(j,next_pos[j]+delta);
 }
 
 bool iCubSimulationControl::relativeMoveRaw(const double *deltas)
 {
     velocityMode = false;
- 	for(int i = 0; i<njoints; i++) {
+    for(int i = 0; i<njoints; i++) {
         relativeMoveRaw(i,deltas[i]);
     }
     return true;
@@ -559,12 +556,12 @@ bool iCubSimulationControl::checkMotionDoneRaw(int axis, bool *ret)
 }
 bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
 {
-	if(j<njoints)
+    if(j<njoints)
         {
             _mutex.wait();
-			 vel = sp *180/M_PI ;
+            vel = sp *180/M_PI ;
              vels[j] = vel/20;
-			 printf("the velocity: %lf %lf\n",vel, sp );
+            printf("the velocity: %lf %lf\n",vel, sp );
             _mutex.post();
             return true;
         }
@@ -573,42 +570,42 @@ bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
 
 bool iCubSimulationControl::setRefSpeedsRaw(const double *spds)
 {
-	_mutex.wait();
-	for(int i = 0; i<njoints; i++)
+    _mutex.wait();
+    for(int i = 0; i<njoints; i++)
         {
              vel = spds[i]/20;
-			 
-	}
-	_mutex.post();
+
+    }
+    _mutex.post();
     return true;
 }
 bool iCubSimulationControl::setRefAccelerationRaw(int j, double acc)
 {
-	return NOT_YET_IMPLEMENTED("setRefAccelerationRaw");
+    return NOT_YET_IMPLEMENTED("setRefAccelerationRaw");
 }
 bool iCubSimulationControl::setRefAccelerationsRaw(const double *accs)
 {
-	return NOT_YET_IMPLEMENTED("setRefAccelerationsRaw");
+    return NOT_YET_IMPLEMENTED("setRefAccelerationsRaw");
 }
 bool iCubSimulationControl::getRefSpeedRaw(int j, double *ref)
 {
-	return NOT_YET_IMPLEMENTED("getRefSpeedRaw");
+    return NOT_YET_IMPLEMENTED("getRefSpeedRaw");
 }
 bool iCubSimulationControl::getRefSpeedsRaw(double *spds)
 {
-	return NOT_YET_IMPLEMENTED("getRefSpeedsRaw");
+    return NOT_YET_IMPLEMENTED("getRefSpeedsRaw");
 }
 bool iCubSimulationControl::getRefAccelerationRaw(int j, double *acc)
 {
-	return NOT_YET_IMPLEMENTED("getRefAccelerationRaw");
+    return NOT_YET_IMPLEMENTED("getRefAccelerationRaw");
 }
 bool iCubSimulationControl::getRefAccelerationsRaw(double *accs)
 {
-	return NOT_YET_IMPLEMENTED("getRefAccelerationsRaw");
+    return NOT_YET_IMPLEMENTED("getRefAccelerationsRaw");
 }
 bool iCubSimulationControl::stopRaw(int j)
 {
-	if(j<njoints)
+    if(j<njoints)
         {
             _mutex.wait();
             next_pos[j] = current_pos[j];
@@ -621,11 +618,11 @@ bool iCubSimulationControl::stopRaw(int j)
 }
 bool iCubSimulationControl::stopRaw()
 {
-	_mutex.wait();
-	for(int i=0;i<njoints;i++){
+    _mutex.wait();
+    for(int i=0;i<njoints;i++){
         next_pos[i] = current_pos[i];
         next_vel[i] = 0;
-	}
+    }
     _mutex.post();
     return true;
 }
@@ -634,7 +631,7 @@ bool iCubSimulationControl::stopRaw()
 bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
 {
     velocityMode = true;
-	if(axis<njoints) {
+    if(axis<njoints) {
         _mutex.wait();
         next_vel[axis] = sp;
         motor_on[axis] = true;
@@ -686,7 +683,7 @@ bool iCubSimulationControl::getEncodersRaw(double *v)
 
 bool iCubSimulationControl::getEncoderRaw(int axis, double *v)
 {
-	_mutex.wait();
+    _mutex.wait();
     *v = current_pos[axis];
     _mutex.post();
     return true;
@@ -703,7 +700,7 @@ bool iCubSimulationControl::getEncoderSpeedsRaw(double *v)
 
 bool iCubSimulationControl::getEncoderSpeedRaw(int j, double *v)
 {
-	_mutex.wait();
+    _mutex.wait();
     *v = current_vel[j] * 10;
     _mutex.post();
     return true;
@@ -735,7 +732,7 @@ bool iCubSimulationControl::disableAmpRaw(int axis)
 bool iCubSimulationControl::enableAmpRaw(int axis)
 {
    
-	if(axis<njoints)
+    if(axis<njoints)
         {
             _mutex.wait();
             motor_on[axis] = true;
@@ -776,7 +773,7 @@ bool iCubSimulationControl::doneRaw(int axis)
 
 bool iCubSimulationControl::getAmpStatusRaw(int *st)
 {
-	_mutex.wait();
+    _mutex.wait();
     for(int i =0;i<njoints;i++)
         st[i] = (int)motor_on[i];
     _mutex.post();
@@ -786,7 +783,7 @@ bool iCubSimulationControl::getAmpStatusRaw(int *st)
 bool iCubSimulationControl::getAmpStatusRaw(int i, int *st)
 {
     bool ret=false;
-	_mutex.wait();
+    _mutex.wait();
  
     if (i<njoints) 
     {
@@ -812,7 +809,7 @@ bool iCubSimulationControl::setLimitsRaw(int axis, double min, double max)
 
 bool iCubSimulationControl::getLimitsRaw(int axis, double *min, double *max)
 {
-	if(axis > -1 && axis < njoints){
+    if(axis > -1 && axis < njoints){
          *min = limitsMin[axis];
          *max = limitsMax[axis];
          return true;

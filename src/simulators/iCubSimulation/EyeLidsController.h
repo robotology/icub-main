@@ -32,7 +32,7 @@ class EyeLids
 public:
     EyeLids();
     ~EyeLids();
-	
+
     yarp::os::BufferedPort<yarp::os::Bottle> port;
 public:
     std::string portName;

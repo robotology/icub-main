@@ -37,7 +37,7 @@
 #include "RobotConfig.h"
 #include "WorldOp.h"
 
-#define DENSITY (1.0)		// density of all objects
+#define DENSITY (1.0)       // density of all objects
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
@@ -146,80 +146,80 @@ class worldSimData{
 public:	
 #define MAXNUM 100
 #define GPB 3// maximum number of geometries per body
-	double l_massobj0;
-	double l_massobj1;
-	double l_massobj2;
-	double l_massobj3;
-	
-	int OBJNUM;
-	int waitOBJ;
-	int S_OBJNUM;
+    double l_massobj0;
+    double l_massobj1;
+    double l_massobj2;
+    double l_massobj3;
+
+    int OBJNUM;
+    int waitOBJ;
+    int S_OBJNUM;
 
     int SPHNUM;
-	int waitSPH;
-	int S_SPHNUM;
-	
-	int cylOBJNUM;
-	int waitOBJ1;
-	int S_cylOBJNUM;
-	
-	int waitMOD;
-	int s_waitMOD;
-	int MODEL_NUM;
-	int s_MODEL_NUM;
-	
-	dReal color[100][3];
-	dReal s_color[100][3];
-	dReal color1[100][3];
-	dReal s_color1[100][3];
+    int waitSPH;
+    int S_SPHNUM;
+
+    int cylOBJNUM;
+    int waitOBJ1;
+    int S_cylOBJNUM;
+
+    int waitMOD;
+    int s_waitMOD;
+    int MODEL_NUM;
+    int s_MODEL_NUM;
+
+    dReal color[100][3];
+    dReal s_color[100][3];
+    dReal color1[100][3];
+    dReal s_color1[100][3];
     dReal color2[100][3];
-	dReal s_color2[100][3];
-	worldSimData();
+    dReal s_color2[100][3];
+    worldSimData();
 };
 
 class worldSim : public worldSimData {
 public:
-	static const bool textured = true;
+    static const bool textured = true;
     yarp::os::ConstString actWorld;
-	dTriMeshDataID TriData[100];
-	dTriMeshX trimesh[100];
+    dTriMeshDataID TriData[100];
+    dTriMeshX trimesh[100];
 
     dTriMeshDataID s_TriData[100];
-	dTriMeshX s_trimesh[100];
-	
+    dTriMeshX s_trimesh[100];
+
     // max number of objects
 #define numObjJoints 5 //define Joints
 
-	dJointID joint	[numObjJoints];
-	dReal	 speed [numObjJoints];
-	dJointID j;
+    dJointID joint	[numObjJoints];
+    dReal	 speed [numObjJoints];
+    dJointID j;
 
-	dBodyID tableBody[5];
-	dGeomID tableGeom[5];
+    dBodyID tableBody[5];
+    dGeomID tableGeom[5];
 
     dBodyID tempBody;
-	dGeomID tempGeom[2];
+    dGeomID tempGeom[2];
 
-	dBodyID ballBody;
-	dGeomID ballGeom;
+    dBodyID ballBody;
+    dGeomID ballGeom;
 
-	//init. encapsulated object - the Box
-	dGeomID box_part[14];
-	dGeomID box_geom[14];
-	dBodyID Box;
+    //init. encapsulated object - the Box
+    dGeomID box_part[14];
+    dGeomID box_geom[14];
+    dBodyID Box;
 
-	//Geometry group for the bodies of the Object
-	dSpaceID boxObj;
+    //Geometry group for the bodies of the Object
+    dSpaceID boxObj;
 
-	dBodyID box;
-	dGeomID boxgeom;
-	
-	bool WAITLOADING;
-	bool static_model;
+    dBodyID box;
+    dGeomID boxgeom;
+
+    bool WAITLOADING;
+    bool static_model;
     class MyObject : public WorldObject {
     public:
-        dBodyID boxbody;			// the body
-        dGeomID geom[GPB];		// geometries representing this body
+        dBodyID boxbody;        // the body
+        dGeomID geom[GPB];      // geometries representing this body
         dReal size[3];
 
         virtual dBodyID getBody() const { return boxbody; }
@@ -236,8 +236,8 @@ public:
 
     class MyObject1 : public WorldObject {
     public:
-        dBodyID cylbody;			// the body
-        dGeomID cylgeom[GPB];		// geometries representing this body
+        dBodyID cylbody;            // the body
+        dGeomID cylgeom[GPB];       // geometries representing this body
         dReal radius;
         dReal lenght;
 
@@ -257,8 +257,8 @@ public:
 
     class MyObject2 : public WorldObject {
     public:
-        dBodyID body;			// the body
-        dGeomID geom;  		// geometries representing this body
+        dBodyID body;       // the body
+        dGeomID geom;       // geometries representing this body
         virtual dBodyID getBody() const { return body; }
         virtual dGeomID getGeometry() const { return geom; }
         virtual bool create(const WorldOp& op, WorldResult& result, int idx);
@@ -272,8 +272,8 @@ public:
 
     class MyObject3 : public WorldObject {
     public:
-        dBodyID sphbody;			// the body
-        dGeomID sphgeom[GPB];		// geometries representing this body
+        dBodyID sphbody;            // the body
+        dGeomID sphgeom[GPB];       // geometries representing this body
         dReal radius;
         virtual dBodyID getBody() const { return sphbody; }
         virtual dGeomID getGeometry() const { return sphgeom[0]; }
@@ -290,22 +290,22 @@ public:
     std::string model_DIR;
 public:
 
-	void resetSpeeds();
-	void setJointSpeeds();
-	void syncAngles();
-	void ballDamping();
-	void draw();
-	void drawGeom(dGeomID g, const dReal *pos, const dReal *rot);//, float red  = 0.0f, float green = 128.5f, float blue = 255.0f);
+    void resetSpeeds();
+    void setJointSpeeds();
+    void syncAngles();
+    void ballDamping();
+    void draw();
+    void drawGeom(dGeomID g, const dReal *pos, const dReal *rot);//, float red  = 0.0f, float green = 128.5f, float blue = 255.0f);
     void setPosition(dReal agent1X, dReal agent1Z, dReal agent1Y );
-	void activateWorld(RobotConfig& config);
-	void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+    void activateWorld(RobotConfig& config);
+    void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
                RobotConfig& config);
-	void loadTexture(yarp::os::ConstString texture, int numTexture);
+    void loadTexture(yarp::os::ConstString texture, int numTexture);
 
 
-	~worldSim();
+    ~worldSim();
 
-	worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
+    worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
              RobotConfig& config);
 };
 

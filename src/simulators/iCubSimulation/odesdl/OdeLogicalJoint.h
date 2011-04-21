@@ -125,7 +125,7 @@ public:
 
 private:
     int number;
-	std::string unit;
+    std::string unit;
     dJointID *joint;
     dReal *speed;
     double speedSetpoint;

@@ -53,16 +53,15 @@ private:
     int t;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > port;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> cache, input;
-	
 public:
     TextureInput() {
         textureIndex = -1;
         lastData = -1000;
         t = 0;
     }
-	~TextureInput(){
-		port.close();
-	} 
+    ~TextureInput(){
+        port.close();
+    } 
     void setName( string module );
     bool open(yarp::os::Searchable& config);
     void apply(unsigned int *textures);

@@ -61,7 +61,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
     
     for (int arm = PART_ARM_LEFT; arm <= PART_ARM_RIGHT; arm++) {
         const char *armName = (arm==PART_ARM_LEFT)?"leftarm":"rightarm";
-		
+
         if (arm == PART_ARM_RIGHT && flags.actRArm){
             getController(arm,0).init(armName,"hinge",0,-1);
             getController(arm,1).init(armName,"hinge",1,+1);
@@ -71,7 +71,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
             getController(arm,5).init(armName,"universalAngle1",5,-1);
             getController(arm,6).init(armName,"universalAngle2",5,-1);
         }
-		
+
         if (arm == PART_ARM_LEFT && flags.actLArm){
             getController(arm,0).init(armName,"hinge",0,-1);
             getController(arm,1).init(armName,"hinge",1,-1);
@@ -80,7 +80,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
             getController(arm,4).init(armName,"hinge",4,+1);
             getController(arm,5).init(armName,"universalAngle1",5,+1);
             getController(arm,6).init(armName,"universalAngle2",5,-1);
-		
+
         }
         if (arm == PART_ARM_RIGHT && flags.actRHand){
             getController(arm,7).init(armName,"hinge",6,+1);
@@ -89,7 +89,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
 
             getController(arm,8).init(armName,"universalAngle1",22,-1);//thumb
             getController(arm,9).init(armName,"universalAngle2",22,-1);//thumb
-				
+
             getController(arm,10).init(armName,"hinge",23,-1);
             sub = getController(arm,10).nest(1);
             sub[0].init(armName,"hinge",24,-1);
@@ -103,7 +103,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
             getController(arm,14).init(armName,"hinge",15,-1);
             sub = getController(arm,14).nest(1);
             sub[0].init(armName,"hinge",19,-1);
-			     
+
             getController(arm,15).init(armName,"hinge",12,-1);//ring + pinky
             sub = getController(arm,15).nest(2);
             sub[0].init(armName,"hinge",16,-1);
@@ -120,7 +120,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
             */
             getController(arm,8).init(armName,"universalAngle1",22,+1);//thumb
             getController(arm,9).init(armName,"universalAngle2",22,-1);//thumb
-				
+
             getController(arm,10).init(armName,"hinge",23,+1);
             sub = getController(arm,10).nest(1);
             sub[0].init(armName,"hinge",24,+1);
@@ -134,7 +134,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
             getController(arm,14).init(armName,"hinge",15,+1);
             sub = getController(arm,14).nest(1);
             sub[0].init(armName,"hinge",19,+1);
-			     
+
             getController(arm,15).init(armName,"hinge",12,+1);//ring + pinky
             sub = getController(arm,15).nest(2);
             sub[0].init(armName,"hinge",16,+1);

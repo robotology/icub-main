@@ -35,14 +35,14 @@ public:
         at = 0;
     }
 
-	virtual void drawView(bool left, bool right, bool wide) {}
+    virtual void drawView(bool left, bool right, bool wide) {}
 
     virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& img);
 
     virtual void clearBuffer() {
     }
 
-	virtual void simLoop(int h,int w);
+    virtual void simLoop(int h,int w);
 
     virtual bool checkSync(bool reset) {
         return true;

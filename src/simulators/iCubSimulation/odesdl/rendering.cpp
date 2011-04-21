@@ -66,22 +66,22 @@ bool setup_opengl(ResourceFinder& finder){
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
     glEnable( GL_CULL_FACE );
-	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LESS);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);               // OpenGL light
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-	
+
     glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-	/// Some OpenGL settings
+    /// Some OpenGL settings
     GLfloat light_color[] = {1,1,1,1};  // colour
     glMaterialfv(GL_FRONT,GL_SHININESS,light_color); // colour
     glClearColor(0.0,0.0,0.0,0); // background color
 
-	/*	floor data/texture/crate.raw
+    /*	floor data/texture/crate.raw
 body1 data/texture/metal2.raw
 body2 data/texture/brushed-metal.raw
 skybox_up data/texture/face.raw
@@ -91,163 +91,162 @@ skybox_left data/texture/skybox/lt.raw
 skybox_right data/texture/skybox/rt.raw
 face data/texture/face.raw
 */
-	ConstString floor = finder.findFile("floor");
-	Texture[0] = LoadTextureRAW( floor.c_str(), false );
+    ConstString floor = finder.findFile("floor");
+    Texture[0] = LoadTextureRAW( floor.c_str(), false );
 
-	ConstString body1 = finder.findFile("body1");
-	Texture[1] = LoadTextureRAW( body1.c_str(), false );
-	
-	ConstString body2 = finder.findFile("body2");
-	Texture[2] = LoadTextureRAW( body2.c_str(), false );
-	
-	ConstString skybox_ft = finder.findFile("skybox_ft");
-	Texture[3] = LoadTextureRAW( skybox_ft.c_str(), false );
-	
-	ConstString skybox_bk = finder.findFile("skybox_bk");
-	Texture[4] = LoadTextureRAW( skybox_bk.c_str(), false );
+    ConstString body1 = finder.findFile("body1");
+    Texture[1] = LoadTextureRAW( body1.c_str(), false );
 
-	ConstString skybox_lt = finder.findFile("skybox_lt");
-	Texture[5] = LoadTextureRAW( skybox_lt.c_str(), false );
+    ConstString body2 = finder.findFile("body2");
+    Texture[2] = LoadTextureRAW( body2.c_str(), false );
 
-	ConstString skybox_rt = finder.findFile("skybox_rt");
-	Texture[6] = LoadTextureRAW( skybox_rt.c_str(), false );
+    ConstString skybox_ft = finder.findFile("skybox_ft");
+    Texture[3] = LoadTextureRAW( skybox_ft.c_str(), false );
 
-	ConstString skybox_up = finder.findFile("skybox_up");
-	Texture[7] = LoadTextureRAW( skybox_up.c_str(), false );
-	
-	ConstString face = finder.findFile("face");
-	Texture[8] = LoadTextureRAW( face.c_str(), false );
+    ConstString skybox_bk = finder.findFile("skybox_bk");
+    Texture[4] = LoadTextureRAW( skybox_bk.c_str(), false );
 
-	if (!Texture[1]){
-		printf("No texture loaded\n");
+    ConstString skybox_lt = finder.findFile("skybox_lt");
+    Texture[5] = LoadTextureRAW( skybox_lt.c_str(), false );
+
+    ConstString skybox_rt = finder.findFile("skybox_rt");
+    Texture[6] = LoadTextureRAW( skybox_rt.c_str(), false );
+
+    ConstString skybox_up = finder.findFile("skybox_up");
+    Texture[7] = LoadTextureRAW( skybox_up.c_str(), false );
+
+    ConstString face = finder.findFile("face");
+    Texture[8] = LoadTextureRAW( face.c_str(), false );
+
+    if (!Texture[1]){
+        printf("No texture loaded\n");
         return false;
-	}
+    }
     return true;
 }
 
 void DrawGround(bool wireframe){  
- glEnable(GL_TEXTURE_2D);
- if (wireframe)
- {
+    glEnable(GL_TEXTURE_2D);
+    if (wireframe)
+    {
 
-  for(float i = -500; i <= 500; i += 5)
-  {
-   glBegin(GL_LINES);
-   glVertex3f(-500, 0, i);     
-   glVertex3f(500, 0, i);
-   glVertex3f(i, 0,-500);       
-   glVertex3f(i, 0, 500);
-   glEnd();
-  }
- }
- else
- {
-  glBindTexture(GL_TEXTURE_2D, Texture[FLOOR]);
-  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, 0 ? GL_MODULATE : GL_DECAL);
-  
-  glBegin (GL_QUADS);
-  glNormal3f (0,0,1);
-  glTexCoord2f (-50.0f * 0.5f + 0.5f,-50.0f * 0.5f + 0.5f);//replaced from 50
-  glVertex3f (-50.0f, -50.0f, 0.0f);
-  glTexCoord2f (50.0f * 0.5f + 0.5f, -50.0f * 0.5f + 0.5f);
-  glVertex3f (50.0f, -50.0f, 0.0f);
-  glTexCoord2f (50.0f * 0.5f + 0.5f, 50.0f * 0.5f + 0.5f);
-  glVertex3f (50.0f, 50.0f, 0.0f);
-  glTexCoord2f (-50.0f * 0.5f + 0.5f, 50.0f * 0.5f + 0.5f);
-  glVertex3f (-50.0f, 50.0f, 0.0f);
-  glEnd();
+    for(float i = -500; i <= 500; i += 5)
+    {
+        glBegin(GL_LINES);
+        glVertex3f(-500, 0, i);     
+        glVertex3f(500, 0, i);
+        glVertex3f(i, 0,-500);       
+        glVertex3f(i, 0, 500);
+        glEnd();
+    }
+}
+    else
+    {
+        glBindTexture(GL_TEXTURE_2D, Texture[FLOOR]);
+        glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, 0 ? GL_MODULATE : GL_DECAL);
 
- }
+        glBegin (GL_QUADS);
+        glNormal3f (0,0,1);
+        glTexCoord2f (-50.0f * 0.5f + 0.5f,-50.0f * 0.5f + 0.5f);//replaced from 50
+        glVertex3f (-50.0f, -50.0f, 0.0f);
+        glTexCoord2f (50.0f * 0.5f + 0.5f, -50.0f * 0.5f + 0.5f);
+        glVertex3f (50.0f, -50.0f, 0.0f);
+        glTexCoord2f (50.0f * 0.5f + 0.5f, 50.0f * 0.5f + 0.5f);
+        glVertex3f (50.0f, 50.0f, 0.0f);
+        glTexCoord2f (-50.0f * 0.5f + 0.5f, 50.0f * 0.5f + 0.5f);
+        glVertex3f (-50.0f, 50.0f, 0.0f);
+        glEnd();
+    }
 }
 void drawSkyDome(float x, float y, float z, float width, float height, float length)
 {
- // Center the Skybox around the given x,y,z position
- x = x - width  / 2;
- y = y - height / 2;
- z = z - length / 2;
-float skyboxMaterial[]   = {1.0f,1.0f,1.0f,1.0f};   
-glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-glRotatef(180,0,0,1);
- // Draw Front side
- glBindTexture(GL_TEXTURE_2D, Texture[6]);
- glBegin(GL_QUADS); 
-  glMaterialfv(GL_FRONT, GL_AMBIENT, skyboxMaterial);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z+length);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z+length); 
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y,  z+length);
- glEnd();
+    // Center the Skybox around the given x,y,z position
+    x = x - width  / 2;
+    y = y - height / 2;
+    z = z - length / 2;
+    float skyboxMaterial[]   = {1.0f,1.0f,1.0f,1.0f};   
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glRotatef(180,0,0,1);
+    // Draw Front side
+    glBindTexture(GL_TEXTURE_2D, Texture[6]);
+    glBegin(GL_QUADS); 
+    glMaterialfv(GL_FRONT, GL_AMBIENT, skyboxMaterial);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z+length);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z+length); 
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y,  z+length);
+    glEnd();
 
- // Draw Back side
- glBindTexture(GL_TEXTURE_2D,  Texture[5]);
- glBegin(GL_QUADS);  
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z); 
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z);
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z);
- glEnd();
+    // Draw Back side
+    glBindTexture(GL_TEXTURE_2D,  Texture[5]);
+    glBegin(GL_QUADS);  
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z); 
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z);
+    glEnd();
 
- // Draw Left side
- glBindTexture(GL_TEXTURE_2D,  Texture[4]);
- glBegin(GL_QUADS);  
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z); 
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z+length); 
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z+length);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z);  
- glEnd();
+    // Draw Left side
+    glBindTexture(GL_TEXTURE_2D,  Texture[4]);
+    glBegin(GL_QUADS);  
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z); 
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z+length); 
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z+length);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z);  
+    glEnd();
 
- // Draw Right side
- glBindTexture(GL_TEXTURE_2D,  Texture[3]);
- glBegin(GL_QUADS);  
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y,  z);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z+length);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z+length); 
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z);
- glEnd();
+    // Draw Right side
+    glBindTexture(GL_TEXTURE_2D,  Texture[3]);
+    glBegin(GL_QUADS);  
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y,  z);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z+length);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z+length); 
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z);
+    glEnd();
 
- // Draw Up side
- glBindTexture(GL_TEXTURE_2D,  Texture[7]);
- glBegin(GL_QUADS);  
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y+height, z);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y+height, z+length); 
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z+length);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z);
- glEnd();
+    // Draw Up side
+    glBindTexture(GL_TEXTURE_2D,  Texture[7]);
+    glBegin(GL_QUADS);  
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y+height, z);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y+height, z+length); 
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z+length);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z);
+    glEnd();
 
- // Draw Down side
- glBindTexture(GL_TEXTURE_2D,  Texture[7]);
- glBegin(GL_QUADS);  
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y,  z+length); 
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y,  z);
- glEnd();
+    // Draw Down side
+    glBindTexture(GL_TEXTURE_2D,  Texture[7]);
+    glBegin(GL_QUADS);  
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y,  z+length); 
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y,  z);
+    glEnd();
 
-glDisable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE_2D);
 }
 
 void DrawBox(float width, float height, float length, bool wireframe, bool texture, int whichtexture){
-	if (whichtexture == 2){
-		glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	}else{
-		glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//blends the texture with the color of the object
-	}
-	if (wireframe) mode = GL_LINE_LOOP;
-	else mode = GL_QUADS;
-	
-	glPushMatrix();
+    if (whichtexture == 2){
+        glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    }else{
+        glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//blends the texture with the color of the object
+    }
+    if (wireframe) mode = GL_LINE_LOOP;
+    else mode = GL_QUADS;
+
+    glPushMatrix();
     glScalef(width/2,height/2,length/2);
-	if (texture){
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D,Texture[whichtexture]); 
-	}
-	else{
-		glDisable(GL_TEXTURE_2D);
-	}
+    if (texture){
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D,Texture[whichtexture]); 
+    }
+    else{
+        glDisable(GL_TEXTURE_2D);
+    }
     glBegin(mode);
     //face 1
     glNormal3i(-1, 1,-1);
@@ -328,77 +327,78 @@ void DrawBox(float width, float height, float length, bool wireframe, bool textu
     glTexCoord2i(0,0);
     glVertex3i(-1,-1, 1);
     glEnd();
-	glPopMatrix();
+    glPopMatrix();
 
-	glDisable(GL_TEXTURE_2D);
-	//glDisable( GL_BLEND ); 
+    glDisable(GL_TEXTURE_2D);
+    //glDisable( GL_BLEND ); 
 }
 
 void DrawSphere(float radius, bool wireframe, bool texture, int whichtexture){
-	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//makes the texture 
-	sphere = gluNewQuadric();
-	if (texture)
-	{
-		glEnable(GL_TEXTURE_2D);
-		gluQuadricTexture(sphere, true);
-		glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]);
-	}
-	else
-		glDisable(GL_TEXTURE_2D);
-
-	if (wireframe) 
-	{
-		gluQuadricDrawStyle(sphere, GLU_LINE);
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//makes the texture 
+    sphere = gluNewQuadric();
+    if (texture)
+    {
+        glEnable(GL_TEXTURE_2D);
+        gluQuadricTexture(sphere, true);
+        glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]);
     }
-	else
-		gluQuadricDrawStyle(sphere, GLU_FILL);
-	gluSphere(sphere, radius, 20,20);
+    else
+        glDisable(GL_TEXTURE_2D);
 
-	glDisable(GL_TEXTURE_2D);
+    if (wireframe) 
+    {
+        gluQuadricDrawStyle(sphere, GLU_LINE);
+    }
+    else
+        gluQuadricDrawStyle(sphere, GLU_FILL);
+    gluSphere(sphere, radius, 20,20);
+
+    glDisable(GL_TEXTURE_2D);
     gluDeleteQuadric(sphere);
 }
 void DrawCylinder(float radius, float length, bool wireframe, bool texture, int whichtexture){
-	//glEnable( GL_BLEND );
-	//glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//blends the texture with the color of the object
+    //glEnable( GL_BLEND );
+    //glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//blends the texture with the color of the object
 
-	cylinder = gluNewQuadric();
-	cap = gluNewQuadric();
+    cylinder = gluNewQuadric();
+    cap = gluNewQuadric();
 
     if (texture)
-	{
-		glEnable(GL_TEXTURE_2D);
-		gluQuadricTexture(cylinder, true);
-		gluQuadricTexture(cap, true);
-		glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]);
-	}
-	else
-		glDisable(GL_TEXTURE_2D);
-
-	if (wireframe) 
-	{
-		glTranslatef(0,0,-length/2);
-		gluQuadricDrawStyle(cylinder, GLU_LINE);
+    {
+        glEnable(GL_TEXTURE_2D);
+        gluQuadricTexture(cylinder, true);
+        gluQuadricTexture(cap, true);
+        glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]);
     }
-	else
-		glTranslatef(0,0,-length/2);
-		gluQuadricDrawStyle(cylinder, GLU_FILL);
-		gluCylinder(cylinder,radius,radius,length,20,3);
-	
-	glPushMatrix();
-	glRotatef(180.0,1,0,0);
-	gluDisk(cap,0,radius,20,10);
-	glPopMatrix();
+    else
+        glDisable(GL_TEXTURE_2D);
 
-	glPushMatrix();
-	glTranslatef(0,0,length);
-	gluDisk(cap,0,radius,20,10);
-	glPopMatrix();
+    if (wireframe) 
+    {
+        glTranslatef(0,0,-length/2);    
+        gluQuadricDrawStyle(cylinder, GLU_LINE);
+    }
+    else
+        glTranslatef(0,0,-length/2);
 
-	glDisable(GL_TEXTURE_2D);
-	gluDeleteQuadric(cylinder);
-	gluDeleteQuadric(cap);
-	
+    gluQuadricDrawStyle(cylinder, GLU_FILL);
+    gluCylinder(cylinder,radius,radius,length,20,3);
+
+    glPushMatrix();
+    glRotatef(180.0,1,0,0);
+    gluDisk(cap,0,radius,20,10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0,0,length);
+    gluDisk(cap,0,radius,20,10);
+    glPopMatrix();
+
+    glDisable(GL_TEXTURE_2D);
+    gluDeleteQuadric(cylinder);
+    gluDeleteQuadric(cap);
+
 }
 void LDEsetM(const dReal *pos,const dReal *R){
     float local_matrix[16];
@@ -423,7 +423,7 @@ void LDEsetM(const dReal *pos,const dReal *R){
 
 GLuint LoadTextureRAW( const char * filename, int wrap )
 {
-	glEnable( GL_TEXTURE_2D );
+    glEnable( GL_TEXTURE_2D );
     GLuint texture;
     int width, height;
     unsigned char * data;
@@ -443,22 +443,22 @@ GLuint LoadTextureRAW( const char * filename, int wrap )
     ret = fread( data, width * height * 3, 1, file );
     fclose( file );
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 
     // free buffer
     free( data );
-	glDisable( GL_TEXTURE_2D );
+    glDisable( GL_TEXTURE_2D );
     return texture;
-	//return 0;
+    //return 0;
 }
 
 void DrawVideo(VideoTexture *video) {
     // give opportunity to replace textures with video
-	video->apply( Texture );
+    video->apply( Texture );
 }
 
 void DrawX (dTriMeshX trim, int whichtexture){
@@ -469,11 +469,11 @@ void DrawX (dTriMeshX trim, int whichtexture){
 
     glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-	GL_LINEAR_MIPMAP_LINEAR);
+    GL_LINEAR_MIPMAP_LINEAR);
 
     glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
     glEnable(GL_TEXTURE_2D);
-	 glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]); 
+    glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]); 
     glDisable(GL_CULL_FACE);
     glBegin(GL_TRIANGLES);
     for (int i=0; i<(int) (trim->IndexCount) ; )
@@ -501,13 +501,13 @@ void DrawX (dTriMeshX trim, int whichtexture){
     }
     glEnd();
     glEnable( GL_CULL_FACE );
-	glDisable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE_2D);
 
 }
 
 void setupTexture(char *filename, int whichtexture){
     
-	Texture[whichtexture] = LoadBitmapTERMINAL(filename,  whichtexture);
+    Texture[whichtexture] = LoadBitmapTERMINAL(filename,  whichtexture);
 }
 
 int LoadBitmapTERMINAL(char *filename, int whichtexture)
@@ -516,12 +516,12 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     char temp1;
     long i;	
     SIMBITMAPINFOHEADER infoheader1;
-	//cout << " RENDERING NUMBER TEXTURE " << whichtexture << endl;
+    //cout << " RENDERING NUMBER TEXTURE " << whichtexture << endl;
     cout << "Loading texture " <<  " '" << filename << "' ";
     num_texture++; // The counter of the current texture is increased	
     if( (file1 = fopen(filename, "rb"))==NULL){ cout << "Cannot load/find texture file " << endl; return (0); }// Open the file for reading
-	cout << "......... OK! " << endl;
-	fseek(file1, 18, SEEK_CUR);  // start reading width & height 
+    cout << "......... OK! " << endl;
+    fseek(file1, 18, SEEK_CUR);  // start reading width & height 
 
     size_t ret=0;
     ret=fread(&infoheader1.biWidth, sizeof(int), 1, file1);
@@ -537,11 +537,11 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
 
     if (ret!=1)
         return 0;
-	
-	cout << "Texture Size " <<  infoheader1.biHeight << " " << infoheader1.biWidth << endl;
+
+    cout << "Texture Size " <<  infoheader1.biHeight << " " << infoheader1.biWidth << endl;
     if (infoheader1.biPlanes != 1) {
-	    printf("Planes from %s is not 1: %u\n", filename, infoheader1.biPlanes);
-	    return 0;
+        printf("Planes from %s is not 1: %u\n", filename, infoheader1.biPlanes);
+        return 0;
     }
     // read the bpp
     ret=fread(&infoheader1.biBitCount, sizeof(unsigned short int), 1, file1);
@@ -558,42 +558,42 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     // read the data.
     infoheader1.data = (char *) malloc(infoheader1.biWidth * infoheader1.biHeight * 6);
     if (infoheader1.data == NULL) {
-	    printf("Error allocating memory for color-corrected image data\n");
-	    return 0;
+        printf("Error allocating memory for color-corrected image data\n");
+        return 0;
     }
 
     if ((i = fread(infoheader1.data, infoheader1.biWidth * infoheader1.biHeight * 3, 1, file1)) != 1) {
-	    printf("Error reading image data from %s.\n", filename);
-	    return 0;
+        printf("Error reading image data from %s.\n", filename);
+        return 0;
     }
 
     for (i=0; i<(infoheader1.biWidth * infoheader1.biHeight * 3); i+=3) { // reverse all of the colors. (bgr -> rgb)
-	    temp1 = infoheader1.data[i];
-	    infoheader1.data[i] = infoheader1.data[i+2];
-	    infoheader1.data[i+2] = temp1;
+        temp1 = infoheader1.data[i];
+        infoheader1.data[i] = infoheader1.data[i+2];
+        infoheader1.data[i+2] = temp1;
     }
     fclose(file1); // Closes the file stream
 
     glBindTexture(GL_TEXTURE_2D, whichtexture);// Bind the ID texture specified by the 2nd parameter
 
-	cout << "Finished Binding texture "<< endl; 
+    cout << "Finished Binding texture "<< endl; 
     // The next commands sets the texture parameters
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // If the u,v coordinates overflow the range 0,1 the image is repeated
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // The magnification function ("linear" produces better results)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //The minifying function
-	cout << "Finished Setting parameters "<< endl; 
+    cout << "Finished Setting parameters "<< endl; 
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // We don't combine the color with the original surface color, use only the texture map.
-	cout << "Finished Setting glTexEnvf "<< endl; 
+    cout << "Finished Setting glTexEnvf "<< endl; 
     // Finally we define the 2d texture
     glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader1.biWidth, infoheader1.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
-	cout << "Finished Setting glTexImage2D "<< endl;
-	
-  	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader1.biWidth, infoheader1.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
+    cout << "Finished Setting glTexImage2D "<< endl;
+
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader1.biWidth, infoheader1.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
     cout << "Finished Setting gluBuild2DMipmaps "<< endl; 
     free(infoheader1.data); // Free the memory we used to load the texture
     
-	cout << "\nFisnished creating 3D Model................\n" << endl;
+    cout << "\nFisnished creating 3D Model................\n" << endl;
     return ( whichtexture ); // Returns the current texture OpenGL ID
 }
 

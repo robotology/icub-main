@@ -102,26 +102,26 @@ public:
      * window.
      *
      */
-	void simLoop(int h,int w);
+    void simLoop(int h,int w);
 
     bool checkSync(bool reset = false);
 
     virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& target);
 
 private:
-	static void draw();
+    static void draw();
 
-	static void setJointTorques();
+    static void setJointTorques();
 
-	static void setJointSpeed();
+    static void setJointSpeed();
 
-	static void printStats();
+    static void printStats();
 
-	static void handle_key_down(SDL_keysym* keysym);
+    static void handle_key_down(SDL_keysym* keysym);
 
-	static void handle_mouse_motion(SDL_MouseMotionEvent* mousemotion);
+    static void handle_mouse_motion(SDL_MouseMotionEvent* mousemotion);
 
-	static void process_events(void);
+    static void process_events(void);
 
     static void nearCallback (void *data, dGeomID o1, dGeomID o2);
 
@@ -132,21 +132,21 @@ private:
 
     static void inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean);
 
-	static void getAngles(const dReal *m, float& z, float& y, float& x);
+    static void getAngles(const dReal *m, float& z, float& y, float& x);
 
-	static void initViewpoint();
+    static void initViewpoint();
 
-	static void mouseMovement(float x, float y);
+    static void mouseMovement(float x, float y);
 
-	static void draw_screen();
+    static void draw_screen();
 
     static void retreiveInertialData(Bottle& inertialReport);
 
-	static Uint32 ODE_process(Uint32 interval, void *param);
+    static Uint32 ODE_process(Uint32 interval, void *param);
 
-	static int thread_func(void *unused);
+    static int thread_func(void *unused);
 
-	static void sighandler(int sig);
+    static void sighandler(int sig);
 
     //////////////////////////////
     //////////////////////////////

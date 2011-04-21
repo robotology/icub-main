@@ -64,7 +64,7 @@ bool VideoTexture::add(Searchable& config) {
             
             return true;
         }
-	}
+    }
     return false;
 }
 
@@ -122,7 +122,7 @@ void TextureInput::apply(unsigned int *textures) {
         t++;
         haveUpdate = true;
     }
-	if (haveUpdate && port.getInputCount()>0) {
+    if (haveUpdate && port.getInputCount()>0) {
         glBindTexture(GL_TEXTURE_2D, textures[textureIndex]);
         gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height,
                           GL_RGB, GL_UNSIGNED_BYTE, data);

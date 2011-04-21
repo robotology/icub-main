@@ -61,7 +61,7 @@ SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config,
     robot_flags(config.getFlags()),
     finder(config.getFinder()),
     sim(sim) {
-	Property options;       
+    Property options;       
     wrappedStep = NULL;
     stopped = false;
     extractImages = false;
@@ -229,7 +229,7 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
 
 yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
     printf("Creating interface for body part %s\n", name);
-	Property options;
+    Property options;
     ConstString part_file = finder.findFile(name);
     options.fromConfigFile(part_file.c_str());
     ConstString part_port = options.check("name",Value(1),"what did the user select?").asString();
@@ -255,10 +255,10 @@ void SimulatorModule::init()
         return;
     }
 
-	Property options;
+    Property options;
     if (robot_flags.actLArm || robot_flags.actLHand) {
-      	//start left arm device driver
-      	iCubLArm = createPart("left_arm");
+        //start left arm device driver
+        iCubLArm = createPart("left_arm");
     }
 
     if (robot_flags.actRArm || robot_flags.actRHand) {
@@ -267,18 +267,18 @@ void SimulatorModule::init()
     }
 
     if (robot_flags.actHead) {
-      	//start head device driver
-      	iCubHead = createPart("head");
+        //start head device driver
+        iCubHead = createPart("head");
     }
 
     if (robot_flags.actLegs) {
-      	//start left leg device driver
-      	iCubLLeg = createPart("left_leg");
+        //start left leg device driver
+        iCubLLeg = createPart("left_leg");
     }
 
     if (robot_flags.actLegs) {
-       	//start right leg device driver
-      	iCubRLeg = createPart("right_leg");
+        //start right leg device driver
+        iCubRLeg = createPart("right_leg");
     }
     if (robot_flags.actTorso) {
         //start torso device driver
@@ -289,8 +289,8 @@ void SimulatorModule::init()
 void SimulatorModule::initImagePorts() {
     Property options;
 
-	ConstString cameras = finder.findFile("cameras");
-	options.fromConfigFile(cameras.c_str());
+    ConstString cameras = finder.findFile("cameras");
+    options.fromConfigFile(cameras.c_str());
     
     ConstString nameExternal = 
         options.check("name_wide",
@@ -353,15 +353,15 @@ void SimulatorModule::initImagePorts() {
 
 
 bool SimulatorModule::open() {
-	cmdPort.setReader(*this);
+    cmdPort.setReader(*this);
     string world = moduleName + "/world";
     
     string tactileLeft = moduleName + "/skin/left_hand";
     string tactileRight = moduleName + "/skin/right_hand";
 
     string inertial = moduleName + "/inertial";
-	cmdPort.open( world.c_str() );
-	tactileLeftPort.open( tactileLeft.c_str() );
+    cmdPort.open( world.c_str() );
+    tactileLeftPort.open( tactileLeft.c_str() );
     tactileRightPort.open( tactileRight.c_str() );
     inertialPort.open( inertial.c_str() );
 
@@ -372,7 +372,7 @@ bool SimulatorModule::open() {
     if (failureToLaunch) return false;
 
     sim->init(this,&robot_config);
-	 
+
     w = 480;
     h = 640;
 
@@ -387,7 +387,7 @@ bool SimulatorModule::open() {
 bool SimulatorModule::runModule() {
 
     Time::delay(1); // there's some clash over keyboard on Windows
-	sim->simLoop(h,w);
+    sim->simLoop(h,w);
     return true;
 }
 
@@ -420,59 +420,59 @@ void SimulatorModule::displayStep(int pause) {
             order = "lwr";
         }
 
-	    for (int i=0; i<3; i++) {
+        for (int i=0; i<3; i++) {
             char ch = order[i];
             switch (ch) {
             case 'l':
                 if (needLeft) {
-				    sim->drawView(true,false,false);
+                    sim->drawView(true,false,false);
                     getImage();
-				    sendImage(portLeft);
-				    sim->clearBuffer();
+                    sendImage(portLeft);
+                    sim->clearBuffer();
                 }
 #ifndef OMIT_LOGPOLAR    
                 if (needLeftFov) {
-				    sim->drawView(true,false,false);
+                    sim->drawView(true,false,false);
                     getImage();
-				    sendImageFov(portLeftFov);
-				    sim->clearBuffer();
+                    sendImageFov(portLeftFov);
+                    sim->clearBuffer();
                 }
                 if (needLeftLog) {
-				    sim->drawView(true,false,false);
+                    sim->drawView(true,false,false);
                     getImage();
-				    sendImageLog(portLeftLog);
-				    sim->clearBuffer();
+                    sendImageLog(portLeftLog);
+                    sim->clearBuffer();
                 }
 #endif
                 break;
             case 'r':
-			    if (needRight) {
-				    sim->drawView(false,true,false);
+                if (needRight) {
+                    sim->drawView(false,true,false);
                     getImage();
-				    sendImage(portRight);
-				    sim->clearBuffer();
+                    sendImage(portRight);
+                    sim->clearBuffer();
                 }
 #ifndef OMIT_LOGPOLAR    
                 if (needRightFov) {
-				    sim->drawView(false,true,false);
+                    sim->drawView(false,true,false);
                     getImage();
-				    sendImageFov(portRightFov);
-				    sim->clearBuffer();
+                    sendImageFov(portRightFov);
+                    sim->clearBuffer();
                 }
                 if (needRightLog) {
-				    sim->drawView(false,true,false);
+                    sim->drawView(false,true,false);
                     getImage();
-				    sendImageLog(portRightLog);
-				    sim->clearBuffer();
+                    sendImageLog(portRightLog);
+                    sim->clearBuffer();
                 }
 #endif
                 break;
             case 'w':
                 if (needWide) {
-				    sim->drawView(false,false,true);
+                    sim->drawView(false,false,true);
                     getImage();
-				    sendImage(portWide);
-				    sim->clearBuffer();
+                    sendImage(portWide);
+                    sim->clearBuffer();
                 }
                 break;
             }

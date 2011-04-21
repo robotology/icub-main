@@ -132,7 +132,7 @@ void OdeLogicalJoint::init(const char *unit,
     else if (sunit=="leftleg") {
         joint = &(odeinit._iCub->LLegjoints[index]);
         if (hinged) {
-			speed = &(odeinit._iCub->LLeg_speed[index]);	
+            speed = &(odeinit._iCub->LLeg_speed[index]);	
         }
     }
     else if (sunit=="rightleg") {

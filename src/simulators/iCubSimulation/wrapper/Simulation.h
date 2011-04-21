@@ -48,7 +48,7 @@ public:
      * Render the requested view.  
      *
      */
-	virtual void drawView(bool left, bool right, bool wide) = 0;
+    virtual void drawView(bool left, bool right, bool wide) = 0;
 
 
     virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& img) = 0;
@@ -68,7 +68,7 @@ public:
      * window.
      *
      */
-	virtual void simLoop(int h,int w) = 0;
+    virtual void simLoop(int h,int w) = 0;
 
     virtual bool checkSync(bool reset = false) = 0;    
 };

@@ -45,7 +45,7 @@ public:
     std::string configure(int argc, char *argv[], std::string & moduleName);
     
     //yarp::os::ConstString find(const char *fileName);
-	//yarp::os::ConstString findPath(const char *key);
+    //yarp::os::ConstString findPath(const char *key);
     //bool isActive();
 
     //void deleteFinder();

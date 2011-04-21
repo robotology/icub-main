@@ -45,19 +45,19 @@ using namespace std;
  */
 class OdeInit {
 public:
-	double SimTime;
-	dWorldID world;
-	dSpaceID space;
-	dJointGroupID contactgroup;
-	dGeomID ground;
-	//dJointFeedback *feedback;
-	//dJointFeedback *feedback1;
-	//dJointFeedback *feedback_mat;
-	yarp::os::Semaphore mutex;
-	yarp::os::Semaphore mutexTexture;
-	ICubSim *_iCub;
-	worldSim *_wrld;
-	bool stop;
+    double SimTime;
+    dWorldID world;
+    dSpaceID space;
+    dJointGroupID contactgroup;
+    dGeomID ground;
+    //dJointFeedback *feedback;
+    //dJointFeedback *feedback1;
+    //dJointFeedback *feedback_mat;
+    yarp::os::Semaphore mutex;
+    yarp::os::Semaphore mutexTexture;
+    ICubSim *_iCub;
+    worldSim *_wrld;
+    bool stop;
     bool sync;
     string name;
 

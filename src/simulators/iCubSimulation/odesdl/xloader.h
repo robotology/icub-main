@@ -42,12 +42,12 @@ void dLoadMeshFromX( const char* filename, dTriMesh* trimesh );
 */
 
 struct dxTriMeshX {
-  float   *Vertices;
-  int     VertexCount;
-  int     *Indices;
-  int     IndexCount;
-  float     *MeshCoord;
-  int     MeshCoordCount;
+    float   *Vertices;
+    int     VertexCount;
+    int     *Indices;
+    int     IndexCount;
+    float     *MeshCoord;
+    int     MeshCoordCount;
 };
 
 typedef struct dxTriMeshX *dTriMeshX;

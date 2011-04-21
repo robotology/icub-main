@@ -112,10 +112,10 @@ void OdeSdlSimulation::printStats() {
     odeinit.SimTime = duration;
     //printf("duration: %.2lf\n",odeinit.SimTime);
     static double starting_time_stamp = 0;
-    //		test[0] = dBodyGetPosition(odeinit._iCub->body_cube[0])[0];
-    //		test[1] = dBodyGetPosition(odeinit._iCub->body_cube[0])[1];
-    //		test[2] = dBodyGetPosition(odeinit._iCub->body_cube[0])[2];
-    //		printf("test[0] %f  test[1] %f  test[2] %f\n",test[0],test[1],test[2]);
+    //test[0] = dBodyGetPosition(odeinit._iCub->body_cube[0])[0];
+    //test[1] = dBodyGetPosition(odeinit._iCub->body_cube[0])[1];
+    //test[2] = dBodyGetPosition(odeinit._iCub->body_cube[0])[2];
+    //printf("test[0] %f  test[1] %f  test[2] %f\n",test[0],test[1],test[2]);
     if( duration - starting_time_stamp >= 1){
         //printf("Frames: %.2lf   Duration: %.2lf   fps: %3.1f \n",frames,duration,FPS);
         starting_time_stamp = duration;
@@ -126,18 +126,18 @@ void OdeSdlSimulation::printStats() {
 
 void OdeSdlSimulation::handle_key_down(SDL_keysym* keysym) {
     switch (keysym->sym)
-		{
-		case SDLK_e:
-			break;
-		case SDLK_r:
-			break;
-		case SDLK_t:
-			break;
-		case SDLK_y:
-			break;
-		default:
-			break;
-		}
+    {
+        case SDLK_e:
+            break;
+        case SDLK_r:
+            break;
+        case SDLK_t:
+            break;
+        case SDLK_y:
+            break;
+        default:
+            break;
+    }
 }
 
 void OdeSdlSimulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion) {
@@ -190,14 +190,14 @@ void OdeSdlSimulation::process_events(void) {
     if(keystate[SDLK_q]){xrot += 1 * 0.1f;if (xrot >360) xrot -= 360 * 0.1f;}
     if(keystate[SDLK_z]){xrot -= 1 * 0.1f;if (xrot < -360) xrot += 360 * 0.1f;}
     if(keystate[SDLK_w]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f); 
-		xpos += float(sin(yrotrad))* 0.005f; ;zpos -= float(cos(yrotrad))* 0.005f; ypos -= float(sin(xrotrad))* 0.005f;}
+        xpos += float(sin(yrotrad))* 0.005f; ;zpos -= float(cos(yrotrad))* 0.005f; ypos -= float(sin(xrotrad))* 0.005f;}
     if(keystate[SDLK_s]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f); 
-		xpos -= float(sin(yrotrad))* 0.005f;zpos += float(cos(yrotrad))* 0.005f; ;ypos += float(sin(xrotrad))* 0.005f;}
+        xpos -= float(sin(yrotrad))* 0.005f;zpos += float(cos(yrotrad))* 0.005f; ;ypos += float(sin(xrotrad))* 0.005f;}
     if (keystate[SDLK_a]){yrotrad = (yrot / 180 * 3.141592654f);xpos -= float(cos(yrotrad)) * 0.008;zpos -= float(sin(yrotrad)) * 0.008; }
     if (keystate[SDLK_d]){yrotrad = (yrot / 180 * 3.141592654f);xpos += float(cos(yrotrad)) * 0.008;zpos += float(sin(yrotrad)) * 0.008;}
 
     if(keystate[SDLK_1]){initViewpoint();}
-		
+
     if (keystate[SDLK_5]){
 
         if ((odeinit._iCub->eyeLidRot) < 0.55) odeinit._iCub->eyeLidRot += 0.01;
@@ -211,39 +211,39 @@ void OdeSdlSimulation::process_events(void) {
     /* Grab all the events off the queue. */
     while (SDL_PollEvent(&event)){
         switch (event.type)
-			{
-			case SDL_VIDEORESIZE:
-				width = event.resize.w;
-				height = event.resize.h;
-				SDL_SetVideoMode(width,height,16,SDL_OPENGL | SDL_RESIZABLE);
+        {
+            case SDL_VIDEORESIZE:
+                width = event.resize.w;
+                height = event.resize.h;
+                SDL_SetVideoMode(width,height,16,SDL_OPENGL | SDL_RESIZABLE);
                 {
                     bool ok = setup_opengl(robot_config->getFinder());
                     if (!ok) {
                         odeinit.stop = true;
                     }
                 }
-				odeinit._iCub->reinitialized = true;
-				//draw_screen( );
-				break;
-			case SDL_KEYDOWN:
-				/* Handle key presses*/
-				handle_key_down(&event.key.keysym);
-				// SDL_GetKeyName(event.key.keysym.sym));
-				break;
-				break;
-			case SDL_MOUSEMOTION:
-				handle_mouse_motion(&event.motion);
-				mouse0_down_x = event.button.x;
-				mouse0_down_y = event.button.y;	
-				break;
-			case SDL_QUIT:
-				/* Handle quit requests (like Ctrl-c). */
+                odeinit._iCub->reinitialized = true;
+                //draw_screen( );
+                break;
+            case SDL_KEYDOWN:
+                /* Handle key presses*/
+                handle_key_down(&event.key.keysym);
+                // SDL_GetKeyName(event.key.keysym.sym));
+                break;
+                break;
+            case SDL_MOUSEMOTION:
+                handle_mouse_motion(&event.motion);
+                mouse0_down_x = event.button.x;
+                mouse0_down_y = event.button.y;	
+                break;
+            case SDL_QUIT:
+            /* Handle quit requests (like Ctrl-c). */
                 odeinit.stop = true;
-				break;
+            break;
 
-			case SDL_MOUSEBUTTONDOWN:
-				handle_mouse_motion(&event.motion);
-				switch (event.button.button)
+            case SDL_MOUSEBUTTONDOWN:
+                handle_mouse_motion(&event.motion);
+                switch (event.button.button)
                     {
                     case SDL_BUTTON_LEFT:
                         //deleteRay = false;
@@ -258,10 +258,10 @@ void OdeSdlSimulation::process_events(void) {
                         //this is not reached
                         break;
                     }
-				break;
-				break;
-			case SDL_MOUSEBUTTONUP:
-				switch (event.button.button)
+                break;
+                break;
+            case SDL_MOUSEBUTTONUP:
+                switch (event.button.button)
                     {
                     case SDL_BUTTON_LEFT:
                         //printf(" up\n");
@@ -277,8 +277,8 @@ void OdeSdlSimulation::process_events(void) {
                         //this is not reached either
                         break;
                     }
-				break;
-			}
+                break;
+            }
     }
 }
 
@@ -376,64 +376,64 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
 bool OdeSdlSimulation::isBodyTouchSensitive (dBodyID bodyID) {
     OdeInit& odeinit = OdeInit::get();
 
-	// check the smaller hand parts if the left hand is active.
-	if (odeinit._iCub->actLHand == "on") {	
-		if (bodyID == odeinit._iCub->body[10]) {
-			return true;
-		} else if (bodyID == odeinit._iCub->body[30]) {
-			return true;
-		} else if (bodyID == odeinit._iCub->body[24]) {
-			return true;
-		} else if	(bodyID == odeinit._iCub->body[25]) {
-			return true;
-		} else if	(bodyID == odeinit._iCub->lhandfingers3) {
-			return true;
-		}
-	} else { // check the whole left hand body if the hand is not active.
-		if (bodyID == odeinit._iCub->l_hand) {
-			return true;
-		}
-	}
+    // check the smaller hand parts if the left hand is active.
+    if (odeinit._iCub->actLHand == "on") {	
+        if (bodyID == odeinit._iCub->body[10]) {
+            return true;
+        } else if (bodyID == odeinit._iCub->body[30]) {
+            return true;
+        } else if (bodyID == odeinit._iCub->body[24]) {
+            return true;
+        } else if (bodyID == odeinit._iCub->body[25]) {
+            return true;
+        } else if	(bodyID == odeinit._iCub->lhandfingers3) {
+            return true;
+        }
+    } else { // check the whole left hand body if the hand is not active.
+        if (bodyID == odeinit._iCub->l_hand) {
+            return true;
+        }
+    }
 
-	// check the smaller hand parts if the right hand is active.
-	if (odeinit._iCub->actRHand == "on") {	
-		if (bodyID == odeinit._iCub->body[11]) {
-			return true;
-		} else if (bodyID == odeinit._iCub->body[49]) {
-			return true;
-		} else if (bodyID == odeinit._iCub->body[43]) {
-			return true;
-		} else if	(bodyID == odeinit._iCub->body[44]) {
-			return true;
-		} else if	(bodyID == odeinit._iCub->rhandfingers3) {
-			return true;
-		}
-	} else { // check the whole right hand body if the hand is not active.
-		if (bodyID == odeinit._iCub->r_hand) {
-			return true;
-		}
-	}
+    // check the smaller hand parts if the right hand is active.
+    if (odeinit._iCub->actRHand == "on") {	
+        if (bodyID == odeinit._iCub->body[11]) {
+            return true;
+        } else if (bodyID == odeinit._iCub->body[49]) {
+            return true;
+        } else if (bodyID == odeinit._iCub->body[43]) {
+            return true;
+        } else if	(bodyID == odeinit._iCub->body[44]) {
+            return true;
+        } else if	(bodyID == odeinit._iCub->rhandfingers3) {
+            return true;
+        }
+    } else { // check the whole right hand body if the hand is not active.
+        if (bodyID == odeinit._iCub->r_hand) {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 // this is a function to mimic the sensor data from the physical icub fingetip/palm sensors
 void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean) { 
     OdeInit& odeinit = OdeInit::get();
-	reportLeft.clear();
+    reportLeft.clear();
     reportRight.clear();
     int indicesLeft[6] = {24, 25, 26, 27, 30, 10};
     int indicesRight[6] = {43, 44, 45, 46, 49, 11};
 
     if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
-		double resultLeft=0, resultRight = 0;
+        double resultLeft=0, resultRight = 0;
         for (int x = 0; x < 6; x++){
             if (boolean){
                 resultLeft = odeinit._iCub->checkTouchSensor( indicesLeft[x] );
                 resultRight = odeinit._iCub->checkTouchSensor( indicesLeft[x] );
             }
             else{
-	            resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( indicesLeft[x] );
+                resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( indicesLeft[x] );
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued( indicesRight[x] );
             }
 
@@ -464,7 +464,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 }
             }
         }
-	}//end lhand on rhand on
+    }//end lhand on rhand on
     else if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "off" ){ 
         double resultLeft=0, resultRight = 0;
         for (int x = 0; x < 6; x++){
@@ -473,7 +473,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 resultRight = odeinit._iCub->checkTouchSensor( odeinit._iCub->r_hand );
             }
             else{
-	            resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( indicesLeft[x] );
+                resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( indicesLeft[x] );
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued(odeinit._iCub->r_hand);
             }
             if (x < 5){
@@ -512,7 +512,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 resultRight = odeinit._iCub->checkTouchSensor( indicesRight[x] );
             }
             else{
-	            resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( odeinit._iCub->l_hand );
+                resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( odeinit._iCub->l_hand );
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued( indicesRight[x] );
             }
             
@@ -552,7 +552,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 resultRight = odeinit._iCub->checkTouchSensor( odeinit._iCub->r_hand );
             }
             else{
-	            resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( odeinit._iCub->l_hand );
+                resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( odeinit._iCub->l_hand );
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued(odeinit._iCub->r_hand);
             }
             
@@ -631,7 +631,7 @@ void OdeSdlSimulation::draw_screen() {
     if (extractImages || odeinit._iCub->actVision == "on"){
         robot_streamer->sendVision();
     }
-		
+
     glViewport(0,0,width,height);
     glMatrixMode (GL_PROJECTION);
     glLoadIdentity();
@@ -695,7 +695,7 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     inertialReport.addDouble( -(sin(pitch) * cos(roll)) * 9.8 );
     inertialReport.addDouble( (sin(roll)) * 9.8 );
     inertialReport.addDouble( (cos(pitch) * cos(roll)) * 9.8 );
-		
+
     //Add angular velocity
     inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[2] / 10);
     inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[0] / 10);
@@ -712,7 +712,7 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     OdeInit& odeinit = OdeInit::get();
     //static clock_t startTimeODE= clock(), finishTimeODE= clock();
     //startTimeODE = clock();
-		
+
     odeinit.mutex.wait();
     nFeedbackStructs=0;
     dSpaceCollide(odeinit.space,0,&nearCallback);
@@ -786,7 +786,7 @@ void OdeSdlSimulation::sighandler(int sig) {
     OdeInit& odeinit = OdeInit::get();
     odeinit.stop = true;
     cout << "\nCAUGHT Ctrl-c" << endl;
-}	
+}
 
 void OdeSdlSimulation::simLoop(int h,int w) {
     OdeInit& odeinit = OdeInit::get();
@@ -816,7 +816,7 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     if (!ok) return;
     startTime = clock();
     odeinit.stop = false;
-		
+
     yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
     yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
 
@@ -866,8 +866,8 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     glViewport(0,0,320,240);
     glMatrixMode (GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective( 50, (float) 320/240, 0.04, 100.0 );
-	
+    gluPerspective( 50, (float) 320/240, 0.04, 100.0 ); 
+
     if (left){
         pos = dGeomGetPosition(odeinit._iCub->Leye1_geom);
         rot = dGeomGetRotation(odeinit._iCub->Leye1_geom);
@@ -935,7 +935,6 @@ void OdeSdlSimulation::clearBuffer() {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
 }
 
-	
 OdeSdlSimulation::OdeSdlSimulation() {
 }
 
@@ -954,7 +953,7 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     video->setName( moduleName ); 
     odeinit._iCub->eyeLidsPortName = moduleName;
     Property options;
-		
+
     ConstString videoconf = robot_config->getFinder().findFile("video");
         
     options.fromConfigFile(videoconf.c_str());
@@ -985,11 +984,11 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
     int h = 240;
     int p = 3;//320 240
 
-	char buf[ 320 * 240 * 3 ];
+    char buf[ 320 * 240 * 3 ];
     glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
     ImageOf<PixelRgb> img;
     img.setQuantum(1);
-	img.setExternal(buf,w,h);
+    img.setExternal(buf,w,h);
 
     // inefficient flip!
     target.resize(img);

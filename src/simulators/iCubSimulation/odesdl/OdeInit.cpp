@@ -30,29 +30,29 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
     
     dWorldSetGravity (world,0,-9.8,0);
     ground = dCreatePlane (space,0, 1, 0, 0);
-	//		feedback = new dJointFeedback;
-	//		feedback1 = new dJointFeedback;
-	//		feedback_mat = new dJointFeedback;
+    //feedback = new dJointFeedback;
+    //feedback1 = new dJointFeedback;
+    //feedback_mat = new dJointFeedback;
     _iCub = new ICubSim(world, space, 0,0,0, *robot_config);
     _wrld = new worldSim(world, space, 0,0,0, *robot_config);	
     
     _wrld->OBJNUM = 0;
-	_wrld->waitOBJ = 0;
-	_wrld->S_OBJNUM = 0;
-    
-  	_wrld->SPHNUM = 0;
-	_wrld->waitSPH = 0;
-	_wrld->S_SPHNUM = 0;
-		
-	_wrld->cylOBJNUM = 0;
-	_wrld->waitOBJ1 = 0;
-	_wrld->S_cylOBJNUM = 0;
-	
-	_wrld->waitMOD = 0;
-	_wrld->MODEL_NUM = 0;
+    _wrld->waitOBJ = 0;
+    _wrld->S_OBJNUM = 0;
 
-	_wrld->s_waitMOD = 0;
-	_wrld->s_MODEL_NUM = 0;
+    _wrld->SPHNUM = 0;
+    _wrld->waitSPH = 0;
+    _wrld->S_SPHNUM = 0;
+    	
+    _wrld->cylOBJNUM = 0;
+    _wrld->waitOBJ1 = 0;
+    _wrld->S_cylOBJNUM = 0;
+
+    _wrld->waitMOD = 0;
+    _wrld->MODEL_NUM = 0;
+
+    _wrld->s_waitMOD = 0;
+    _wrld->s_MODEL_NUM = 0;
 }
 
 OdeInit::~OdeInit() {

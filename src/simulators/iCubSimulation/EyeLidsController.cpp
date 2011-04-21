@@ -56,12 +56,12 @@ bool EyeLids::OpenPort()
 void EyeLids::checkPort()
 {
    if(port.getInputCount()>0)
-	{
+    {
         Bottle *bot = port.read(false);
-		if (bot!=NULL){
-	        eyeLidsRotation = (float)bot->get(0).asDouble();
+        if (bot!=NULL){
+        eyeLidsRotation = (float)bot->get(0).asDouble();
             bot->clear();
-		    printf("Message received: %s\n",bot->toString().c_str());
+            printf("Message received: %s\n",bot->toString().c_str());
         }    
     }
 }

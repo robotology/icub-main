@@ -46,7 +46,7 @@ namespace yarp{
 }
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
-	public yarp::os::RateThread, 
+    public yarp::os::RateThread, 
            public IPidControlRaw, 
             public IPositionControlRaw, 
             public IVelocityControlRaw, 
@@ -61,7 +61,7 @@ class yarp::dev::iCubSimulationControl :
             public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
             public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
             public ImplementControlLimits<iCubSimulationControl, IControlLimits>
-			/* */
+
 {
  private:
   iCubSimulationControl(const iCubSimulationControl&);
@@ -192,11 +192,11 @@ protected:
     bool _writerequested;
     bool _noreply;
     bool _opened;
-	
-	//current position of the joints
+
+    //current position of the joints
     double *current_pos;
 
-	//current velocity of the joints
+    //current velocity of the joints
     double *current_vel;
     
     //next position of the joints
@@ -208,12 +208,12 @@ protected:
     //semaphore access for synch with run function of webots
     int semaphoreNum;
 
-	int partSelec;
+    int partSelec;
     // number of joints/axes/controlled motors
     int njoints;
 
-	// velocity
-	double vel;
+    // velocity
+    double vel;
     
     //rate at which the position are updated im ms
     int positionUpdateRate;
@@ -228,9 +228,9 @@ protected:
     double *error_tol;
 
     bool *motor_on;
-	int *motor;
-	double ErrorPos[100];
-	int input;
+    int *motor;
+    double ErrorPos[100];
+    int input;
     int *inputs;  /* in fact we need an "input" flag for every joint */
     double *vels; /* in fact we need a velocity for every joint */
 

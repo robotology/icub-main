@@ -50,7 +50,7 @@ public:
     bool closeModule();
     bool interruptModule();
 
-	bool read(yarp::os::ConnectionReader& connection);
+    bool read(yarp::os::ConnectionReader& connection);
 
     bool respond(const yarp::os::Bottle &command, 
                  yarp::os::Bottle &reply);
@@ -95,13 +95,13 @@ private:
     yarp::sig::ImageOf<yarp::sig::PixelRgb> buffer;
 
     yarp::dev::PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;
-	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide;
 
 #ifndef OMIT_LOGPOLAR
-	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeftFov, portLeftLog, portRightFov, portRightLog ;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeftFov, portLeftLog, portRightFov, portRightLog ;
 #endif
     yarp::os::Port cmdPort;
-	yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort;
     yarp::os::BufferedPort<yarp::os::Bottle> tactileRightPort;
     yarp::os::BufferedPort<yarp::os::Bottle> tactilePort;
     yarp::os::BufferedPort<yarp::os::Bottle> inertialPort;
@@ -117,7 +117,7 @@ private:
 
     void init();
     void initImagePorts();
-	void initIcubParts();
+    void initIcubParts();
 
     yarp::dev::PolyDriver *createPart(const char *name);
 
