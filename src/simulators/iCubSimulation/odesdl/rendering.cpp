@@ -251,16 +251,16 @@ void DrawBox(float width, float height, float length, bool wireframe, bool textu
     glBegin(mode);
     //face 1
     glNormal3i(-1, 1,-1);
-    glTexCoord2i(0,1);
+    glTexCoord2i(1,1);
     glVertex3i(-1, 1,-1);
     glNormal3i( 1, 1,-1);
-    glTexCoord2i(1,1);
+    glTexCoord2i(0,1);
     glVertex3i( 1, 1,-1);
     glNormal3i( 1,-1,-1);
-    glTexCoord2i(1,0);
+    glTexCoord2i(0,0);
     glVertex3i( 1,-1,-1);
     glNormal3i(-1,-1,-1);
-    glTexCoord2i(0,0);
+    glTexCoord2i(1,0);
     glVertex3i(-1,-1,-1);
     //face 2
     glNormal3i(-1,-1,-1);
