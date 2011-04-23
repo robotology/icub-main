@@ -575,10 +575,10 @@ Stereo Segmentation Code
 *                Extended padding from window_size/2 to window_size/2; flow is now computed right to the edges of the image
 *                DV 07/04/2011
 *
-*                Only register significant maxima, i.e. those twice as large as the next largest local maximum                             
+*                Only register significant maxima corresponding to non-zero velocity.                             
 *                This suppresses flow around occluding boundaries and in regions which are relatively homogeneous 
 *                (even in the presence of noise)   
-*                DV 10/04/2011
+*                DV 23/04/2011
 * 
 ****************************************************************/
  
@@ -593,7 +593,7 @@ void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampli
    float temp;
    unsigned char pixel_value;
    float gaussian_value;
-   int p, q;
+   int p, q, r, s;
    char debug, dump_debug_image;
     
    DVimage *padded_image1 = NULL;
@@ -746,23 +746,54 @@ void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampli
 		    
             // printf("%d %d = %f, %d %d = %f\n",maxima[0].x ,maxima[0].y, maxima[0].value, maxima[1].x ,maxima[1].y, maxima[1].value);
   			 
-            if (maxima[0].value > 2*maxima[1].value) {
+            /*** only register significant maximimum for non-zero velocity   ***/
+            
+            p = maxima[0].x  - window_size/2;          
+            q = maxima[0].y  - window_size/2; 
+            r = maxima[1].x  - window_size/2;          
+            s = maxima[1].y  - window_size/2; 
 
-               // only register significant maxima
+            if ((p==0) && (q==0)) {
 
-               p = maxima[0].x  - window_size/2;          
-               q = maxima[0].y  - window_size/2;            
+               /* global maximum corresponds to zero velocity; this is probably a static background   */
+               /* choose the second maximum if it is significant, i.e. at least 50% of the global one */ 
+
+               if (maxima[0].value < 2*maxima[1].value) {
+		          temp = (float) sqrt((float)( r*r + s*s ));   
+                  flow_magnitude->put_pixel(i,j,(float) temp); 
+
+		          temp = (float) atan2((float)s, (float)r);
+                  if (temp == 0)  temp = (float) 0.000001; // ensure non-zero result to facilitate possible subsequent interpolation
+                  flow_phase->put_pixel(i,j,(float) temp); // put value in centre of window, offset by padding
+               }
+            }
+            else if ((r==0) && (s==0)) {
+
+               /* the second maximum corresponds to zero velocity; this is probably a static background */
+               /* so we accept the global maximum as significant without further qualification          */
+
 		       temp = (float) sqrt((float)( p*p + q*q ));   
-
-               //flow_magnitude->put_pixel(i+window_size/4,j+window_size/4,(float) temp); 
                flow_magnitude->put_pixel(i,j,(float) temp); 
 
 		       temp = (float) atan2((float)q, (float)p);
-               if (temp == 0)
-                  temp = (float) 0.000001; // ensure non-zero result to facilitate possible subsequent interpolation
-
-               //flow_phase->put_pixel(i+window_size/4,j+window_size/4,(float) temp); // put value in centre of window, offset by padding
+               if (temp == 0)  temp = (float) 0.000001; // ensure non-zero result to facilitate possible subsequent interpolation
                flow_phase->put_pixel(i,j,(float) temp); // put value in centre of window, offset by padding
+            }
+            else {
+
+               /* the remaining possibility is that both maxima correspond to non-zero velocities        */
+               /* (the fourth permutation that both maxima correspond to zero velocity is not possible)  */
+               /* so we accept the global maximum as significant if it is greater than 50% of the second */
+
+               if (maxima[0].value > 2*maxima[1].value) {
+         
+		          temp = (float) sqrt((float)( p*p + q*q ));   
+                  flow_magnitude->put_pixel(i,j,(float) temp); 
+
+		          temp = (float) atan2((float)q, (float)p);
+                  if (temp == 0)  temp = (float) 0.000001; // ensure non-zero result to facilitate possible subsequent interpolation
+                  flow_phase->put_pixel(i,j,(float) temp); // put value in centre of window, offset by padding
+               }
             }
          }
       }
