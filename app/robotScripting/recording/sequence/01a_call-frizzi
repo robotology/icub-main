@@ -1,0 +1,43 @@
+./recording/dumpHead start
+sleep 2
+./recording/dumpHead connect
+
+echo "ctpn time 2 off 0 pos (30 0 0)" | yarp rpc /ctpservice/torso/rpc
+echo "ctpn time 2 off 0 pos (0 0 -30)" | yarp rpc /ctpservice/head/rpc
+sleep 0
+echo "ctpn time 2 off 0 pos (-76.96 30.04 8.01 81.01 0.00 -0.00 -0.00 16.80 29.93 38.89 120.08 3.57 5.30 49.12 93.93 163.75)" | yarp rpc /ctpservice/left_arm/rpc
+
+
+echo "ctpn time 2 off 0 pos (30 0 0)" | yarp rpc /ctpservice/torso/rpc
+echo "ctpn time 2 off 0 pos (0 0 -30)" | yarp rpc /ctpservice/head/rpc
+sleep 0
+echo "ctpn time 2 off 0 pos (-76.96 30.04 8.01 81.01 0.00 -0.00 -0.00 16.80 29.93 38.89 120.08 3.57 5.30 49.12 93.93 163.75)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0
+
+./frizzi/icub-speak "Signor Frizzi! Signor Frizzi!" 10 &
+
+sleep 1
+
+echo "ctpn time 0.5 off 6 pos (-20.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpn time 0.5 off 6 pos (18.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpn time 0.5 off 6 pos (-20.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpn time 0.5 off 6 pos (18.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpq time 3 off 0 pos (-0.00 22.00 7.0 15.0 4.00 0.00 16.0 6 0 2 19 11 0 5 7 7)" | yarp rpc /ctpservice/left_arm/rpc
+
+./recording/dumpHead disconnect
+./recording/dumpHead stop
+
+
