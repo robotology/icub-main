@@ -394,7 +394,7 @@ private:
                 v.resize(b.size()-2);
 
                 for (int i=0; i<v.length(); i++)
-                    v[i]=b.get(i-2).asDouble();
+                    v[i]=b.get(i+2).asDouble();
 
                 return true;
             }
@@ -411,7 +411,6 @@ public:
         velPort=NULL;
         closing=false;
         firstRun=true;
-        mutex.wait();
     }
 
     void attachVelPort(Port *p)
@@ -429,6 +428,7 @@ public:
             fin.close();
 
         fin.open(fileName.c_str());
+        fin.seekg(0,ios_base::beg);
 
         if (fin.is_open())
         {
@@ -444,6 +444,12 @@ public:
     {
         closing=true;
         mutex.post();
+    }
+
+    void threadRelease()
+    {
+        if (fin.is_open())
+            fin.close();
     }
 
     void run()
@@ -478,12 +484,7 @@ public:
                 mutex.post();
             }
             else
-            {
                 fin.close();
-
-                if (!closing)
-                    mutex.wait();
-            }            
         }
     }
 };
@@ -706,7 +707,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("cptService/conf");
+    rf.setDefaultContext("ctpService/conf");
     rf.configure("ICUB_ROOT",argc,argv);
 
     if (rf.check("help"))
