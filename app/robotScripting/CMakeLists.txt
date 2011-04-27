@@ -26,7 +26,11 @@ icub_app_install(${appname}
 # frizzi (quirinale) demo scripting
 icub_app_install(${appname}
   FILES ${frizzi_collegamento}
-  DESTINATION quirinale)
+  DESTINATION frizzi/sequence)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/icub-speak
+  DESTINATION frizzi)
 
 
 
