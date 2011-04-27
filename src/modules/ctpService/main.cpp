@@ -32,6 +32,10 @@ the current encoders and compute the reference speed accordingly).
  - /ctpservice/local/{part}/state:i
  - /ctpservice/local/{part}/command:o
 
+- Output, to interface with the @ref icub_velocityControl 
+  module:
+ - /ctpservice/{part}/vc:o
+ 
 Here {part} is replaced with the robot part (see --part parameter)
 
 ctpservice is a default value that can be replaced with --name.
@@ -42,8 +46,12 @@ Incoming commands are the following:
 
 or 
 
-[ctpq] [time] TIME (seconds) [off] j [pos] list
-
+[ctpq] [time] TIME (seconds) [off] j [pos] list 
+ 
+or 
+ 
+[ctpf] filename (in dataDumper format)
+ 
 Example:
 This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
 [ctpn] [time] 1 [off] 5 [pos] (10 10 10)
@@ -83,7 +91,10 @@ Author: Lorenzo Natale
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
+#include <yarp/os/Thread.h>
+#include <yarp/os/Semaphore.h>
 
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -99,6 +110,7 @@ using namespace yarp::math;
 #define VCTP_OFFSET VOCAB3('o','f','f')
 #define VCTP_CMD_NOW VOCAB4('c','t','p','n')
 #define VCTP_CMD_QUEUE VOCAB4('c','t','p','q')
+#define VCTP_CMD_FILE VOCAB4('c','t','p','f')
 #define VCTP_POSITION VOCAB3('p','o','s')
 #define VCTP_WAIT VOCAB4('w','a','i','t')
 
@@ -121,7 +133,7 @@ public:
     Vector &getCmd() { return cmd; }
 };
 
-typedef std::deque<ActionItem *> ActionList;
+typedef deque<ActionItem *> ActionList;
 
 class Actions
 {
@@ -254,13 +266,13 @@ public:
         else
             drvOptions.put("device","remote_controlboard");
 
-        std::string name="/local/";
+        string name="/local/";
 
-        std::string remote=std::string("/")+std::string(options.find("robot").asString());
-        remote+=name+std::string(options.find("part").asString());
+        string remote=string("/")+string(options.find("robot").asString());
+        remote+=name+string(options.find("part").asString());
 
-        std::string local=std::string("/")+std::string(options.find("robot").asString());
-        local+=std::string("/")+std::string(options.find("part").asString());
+        string local=string("/")+string(options.find("robot").asString());
+        local+=string("/")+string(options.find("part").asString());
    
         drvOptions.put("remote",local.c_str());
         drvOptions.put("local",remote.c_str());
@@ -268,7 +280,7 @@ public:
 
         if (verbose)
         {
-            std::cout << "Driver options:\n" << drvOptions.toString().c_str();
+            cout << "Driver options:\n" << drvOptions.toString().c_str();
         }
 
         return ret;
@@ -356,14 +368,137 @@ public:
     }
 };
 
+class VelocityThread: public Thread
+{
+private:
+    Semaphore  mutex;
+    Port      *velPort;
+    ifstream   fin;
+    char       line[1024];
+    bool       closing;
+    bool       firstRun;
+
+    bool readLine(Vector &v, double &time)
+    {        
+        fin.getline(&line[0],sizeof(line),'\n');
+        string str(line);
+
+        if (str.length()!=0)
+        {
+            Bottle b;
+            b.fromString(str.c_str());
+
+            if (b.size()>2)
+            {
+                time=b.get(1).asDouble();
+                v.resize(b.size()-2);
+
+                for (int i=0; i<v.length(); i++)
+                    v[i]=b.get(i-2).asDouble();
+
+                return true;
+            }
+            else
+                return false;            
+        }
+        else
+            return false;
+    }
+
+public:
+    VelocityThread() : mutex(0)
+    {
+        velPort=NULL;
+        closing=false;
+        firstRun=true;
+        mutex.wait();
+    }
+
+    void attachVelPort(Port *p)
+    {
+        if (p)
+            velPort=p;
+    }
+
+    bool go(const string &fileName)
+    {
+        if (velPort==NULL)
+            return false;
+
+        if (fin.is_open())
+            fin.close();
+
+        fin.open(fileName.c_str());
+
+        if (fin.is_open())
+        {
+            firstRun=true;
+            mutex.post();
+            return true;
+        }
+        else
+            return false;
+    }
+
+    void onStop()
+    {
+        closing=true;
+        mutex.post();
+    }
+
+    void run()
+    {
+        Vector v1,v2;
+        double time1,time2;
+        bool   send=false;
+
+        while (!isStopping())
+        {
+            if (!closing)
+                mutex.wait();
+
+            if (firstRun)
+            {
+                send=readLine(v1,time1);
+                firstRun=false;
+            }            
+
+            if (send)
+            {
+                velPort->write(v1);
+                send=false;
+            }
+
+            if (readLine(v2,time2))
+            {
+                Time::delay(time2-time1);
+                v1=v2;
+                time1=time2;
+                send=true;
+                mutex.post();
+            }
+            else
+            {
+                fin.close();
+
+                if (!closing)
+                    mutex.wait();
+            }            
+        }
+    }
+};
+
 class scriptModule: public RFModule
 {
 protected:
-    Port          rpcPort;
-    std::string   name;
-    bool          verbose;
-    scriptPosPort posPort;
-    WorkingThread thread;
+    ResourceFinder *pRF;
+    Port            rpcPort;
+    string          name;
+    bool            verbose;
+    scriptPosPort   posPort;
+    Port            velPort;
+    WorkingThread   thread;
+    VelocityThread  velThread;
 
 public:
     scriptModule() 
@@ -386,6 +521,24 @@ public:
         bool ret=parsePosCmd(cmd, reply, &action);
         if (ret)
             posPort.queue(action);
+        return ret;
+    }
+
+    bool handle_ctp_file(const Bottle &cmd, Bottle &reply)
+    {
+        string fullFileName;
+        bool ret=false;
+
+        if (cmd.size()>1)
+        {
+            pRF->setDefault("file",cmd.get(1).asString().c_str());
+            fullFileName=pRF->findFile("file").c_str();
+            ret=!(fullFileName=="");
+        }
+
+        if (ret)
+            ret=velThread.go(fullFileName);
+
         return ret;
     }
 
@@ -442,15 +595,16 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
+        pRF=&rf;
+
         Time::turboBoost();
 
         if (rf.check("name"))
-            name=std::string("/")+rf.find("name").asString().c_str();
+            name=string("/")+rf.find("name").asString().c_str();
         else
             name="/ctpservice";
-        name+=std::string("/")+rf.find("part").asString().c_str()+"/rpc";
 
-        rpcPort.open(name.c_str());
+        rpcPort.open((name+string("/")+rf.find("part").asString().c_str()+"/rpc").c_str());
         attach(rpcPort);
 
         rf.find("part").asString();
@@ -480,6 +634,10 @@ public:
             cerr<<"Thread did not start, queue will not work"<<endl;
         }
 
+        velPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vc:o").c_str());
+        velThread.attachVelPort(&velPort);
+        velThread.start();
+
         return true;
     }
 
@@ -506,6 +664,11 @@ public:
                         ret=handle_ctp_queue(command, reply);
                         return ret;
                     }
+                case VCTP_CMD_FILE:
+                    {
+                        ret=handle_ctp_file(command, reply);
+                        return ret;
+                    }
                 case VCTP_WAIT:
                     {
                         ret=handle_wait(command, reply);
@@ -527,6 +690,10 @@ public:
         rpcPort.close();
         thread.stop();
 
+        velThread.stop();
+        velPort.interrupt();
+        velPort.close();
+
         return true;
     }
 
@@ -539,6 +706,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
+    rf.setDefaultContext("cptService/conf");
     rf.configure("ICUB_ROOT",argc,argv);
 
     if (rf.check("help"))
