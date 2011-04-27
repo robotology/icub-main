@@ -427,11 +427,11 @@ public:
         if (fin.is_open())
             fin.close();
 
-        fin.open(fileName.c_str());
-        fin.seekg(0,ios_base::beg);
+        fin.open(fileName.c_str());        
 
         if (fin.is_open())
         {
+            fin.seekg(0,ios_base::beg);
             firstRun=true;
             mutex.post();
             return true;
@@ -527,20 +527,11 @@ public:
 
     bool handle_ctp_file(const Bottle &cmd, Bottle &reply)
     {
-        string fullFileName;
-        bool ret=false;
+        if (cmd.size()<2)
+            return false;
 
-        if (cmd.size()>1)
-        {
-            pRF->setDefault("file",cmd.get(1).asString().c_str());
-            fullFileName=pRF->findFile("file").c_str();
-            ret=!(fullFileName=="");
-        }
-
-        if (ret)
-            ret=velThread.go(fullFileName);
-
-        return ret;
+        string fileName=string(pRF->getContextPath().c_str())+"/"+cmd.get(1).asString().c_str();
+        return velThread.go(fileName);
     }
 
     bool handle_wait(const Bottle &cmd, Bottle &reply)
