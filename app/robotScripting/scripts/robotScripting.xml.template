@@ -40,7 +40,7 @@
 
 <module>
    <name>ctpService</name>
-   <parameters>--robot icub --part head/parameters>
+   <parameters>--robot icub --part head </parameters>
    <node>icub1</node>
    <tag>head_ctp</tag>
 </module>
