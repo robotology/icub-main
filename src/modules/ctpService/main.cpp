@@ -537,46 +537,45 @@ public:
         double time1,time2;
         bool   send=false;
 
-
         while (!isStopping())
         {
 			if (!velInit)
 			{
-                if(checkInitConnection(velInitPort))
+                if (checkInitConnection(velInitPort))
                 {
                     burst(velInitPort, pRF);
                     velInit = true;  
                 }
                 else
-                    Time::delay(1);
+                    Time::delay(1.0);
 			}
 			else
 			{
-			if (!closing)
-				mutex.wait();
-
-			if (firstRun)
-			{
-				send=readLine(v1,time1);
-				firstRun=false;
-			}            
-
-			if (send)
-			{
-				velPort->write(v1);
-				send=false;
-			}
-
-			if (readLine(v2,time2))
-			{
-				Time::delay(time2-time1);
-				v1=v2;
-				time1=time2;
-				send=true;
-				mutex.post();
-			}
-			else
-				fin.close();
+    			if (!closing)
+    				mutex.wait();
+    
+    			if (firstRun)
+    			{
+    				send=readLine(v1,time1);
+    				firstRun=false;
+    			}            
+    
+    			if (send)
+    			{
+    				velPort->write(v1);
+    				send=false;
+    			}
+    
+    			if (readLine(v2,time2))
+    			{
+    				Time::delay(time2-time1);
+    				v1=v2;
+    				time1=time2;
+    				send=true;
+    				mutex.post();
+    			}
+    			else
+    				fin.close();
 			}
         }
     }
@@ -585,15 +584,15 @@ public:
 class scriptModule: public RFModule
 {
 protected:
-    ResourceFinder *pRF;
-    Port            rpcPort;
-    string          name;
-    bool            verbose;
-    scriptPosPort   posPort;
-    Port            velPort;
-    Port            velInitPort;
-    WorkingThread   thread;
-    VelocityThread  velThread;
+    Port           rpcPort;
+    string         name;
+    string         contextPath;
+    bool           verbose;
+    scriptPosPort  posPort;
+    Port           velPort;
+    Port           velInitPort;
+    WorkingThread  thread;
+    VelocityThread velThread;
 
 public:
     scriptModule() 
@@ -623,8 +622,8 @@ public:
     {
         if (cmd.size()<2)
             return false;
-
-        string fileName=string(pRF->getContextPath().c_str())+"/"+cmd.get(1).asString().c_str();
+        
+        string fileName=contextPath+"/"+cmd.get(1).asString().c_str();
         return velThread.go(fileName);
     }
 
@@ -681,14 +680,14 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        pRF=&rf;
-
         Time::turboBoost();
 
         if (rf.check("name"))
             name=string("/")+rf.find("name").asString().c_str();
         else
             name="/ctpservice";
+
+        contextPath=rf.getContextPath().c_str();
 
         rpcPort.open((name+string("/")+rf.find("part").asString().c_str()+"/rpc").c_str());
         attach(rpcPort);
@@ -724,10 +723,9 @@ public:
         velInitPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vcInit:o").c_str());
         velThread.attachVelPort(&velPort);
         velThread.attachVelInitPort(&velInitPort);
-        velThread.attachRF(pRF);
+        velThread.attachRF(&rf);
         cout << "***** starting the thread" << endl;
         velThread.start();
-
 
         return true;
     }
