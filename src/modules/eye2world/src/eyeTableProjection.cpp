@@ -105,7 +105,7 @@ void EyeTableProjection::project(const ::yarp::sig::Vector& in, ::yarp::sig::Vec
 		// Negative x values lie in front of the robot
 		out[0] = -safetyRadius;
 	} else if (len < safetyRadius) {
-		out = (out / len) * safetyRadius;
+		out = (safetyRadius/len) * out;
 	}
 }
 
