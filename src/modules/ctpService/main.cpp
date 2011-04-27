@@ -371,12 +371,16 @@ public:
 class VelocityThread: public Thread
 {
 private:
-    Semaphore  mutex;
-    Port      *velPort;
+    Semaphore      mutex;
+    Port           *velPort;
+    Port           *velInitPort;
+    ResourceFinder *pRF;
+    
     ifstream   fin;
     char       line[1024];
     bool       closing;
     bool       firstRun;
+    bool       velInit;
 
     bool readLine(Vector &v, double &time)
     {        
@@ -408,15 +412,28 @@ private:
 public:
     VelocityThread() : mutex(0)
     {
+        velInit = false;
         velPort=NULL;
+        velInitPort=NULL;
         closing=false;
         firstRun=true;
+    }
+
+    void attachRF(ResourceFinder *attachedRF)
+    {
+        pRF = attachedRF;
     }
 
     void attachVelPort(Port *p)
     {
         if (p)
             velPort=p;
+    }
+
+    void attachVelInitPort(Port *p)
+    {
+        if (p)
+            velInitPort=p;
     }
 
     bool go(const string &fileName)
@@ -452,39 +469,115 @@ public:
             fin.close();
     }
 
+    bool checkInitConnection(Port *p)
+    {
+
+        if(p->getOutputCount() > 0)
+        {   
+            cout << "***** got a connection" << endl;
+            return true;
+        }
+        else
+            return false;
+    }
+
+    void burst(Port *p, ResourceFinder *rf)
+    {
+        int i = 0;
+        bool cont = true;
+        while(cont)
+            {
+                char  numberId[64];
+                ConstString gainStr = "gain";
+                sprintf(numberId, "%d", i);
+                gainStr = gainStr + numberId;
+
+                Bottle b;
+                b.add("gain");
+                b.addInt(i);
+                if (rf->check(gainStr))
+                {
+                    b.addDouble(rf->find(gainStr).asDouble());
+                    p->write(b);
+			        Time::delay(0.1);
+                    i++;
+                }
+                else
+                    cont = false;
+            }                
+
+        i = 0;
+        cont = true;
+        while(cont)
+            {
+                
+                char  numberId[64];
+                ConstString svelStr = "svel";
+                sprintf(numberId, "%d", i);
+                svelStr = svelStr + numberId;
+
+                Bottle b;
+                b.add("svel");
+                b.addInt(i);
+                if (rf->check(svelStr))
+                {
+                    b.addDouble(rf->find(svelStr).asDouble());
+                    p->write(b);
+			        Time::delay(0.1);
+                    i++;
+                }
+                else
+                    cont = false;
+            }     
+    }
+
     void run()
     {
         Vector v1,v2;
         double time1,time2;
         bool   send=false;
 
+
         while (!isStopping())
         {
-            if (!closing)
-                mutex.wait();
+			if (!velInit)
+			{
+                if(checkInitConnection(velInitPort))
+                {
+                    burst(velInitPort, pRF);
+                    velInit = true;  
+                }
+                else
+                    Time::delay(1);
+			}
+			else
+			{
+			if (!closing)
+				mutex.wait();
 
-            if (firstRun)
-            {
-                send=readLine(v1,time1);
-                firstRun=false;
-            }            
+			if (firstRun)
+			{
+				send=readLine(v1,time1);
+				firstRun=false;
+			}            
 
-            if (send)
-            {
-                velPort->write(v1);
-                send=false;
-            }
+			if (send)
+			{
+				velPort->write(v1);
+				send=false;
+			}
 
-            if (readLine(v2,time2))
-            {
-                Time::delay(time2-time1);
-                v1=v2;
-                time1=time2;
-                send=true;
-                mutex.post();
-            }
-            else
-                fin.close();
+			if (readLine(v2,time2))
+			{
+				Time::delay(time2-time1);
+				v1=v2;
+				time1=time2;
+				send=true;
+				mutex.post();
+			}
+			else
+				fin.close();
+			}
         }
     }
 };
@@ -498,6 +591,7 @@ protected:
     bool            verbose;
     scriptPosPort   posPort;
     Port            velPort;
+    Port            velInitPort;
     WorkingThread   thread;
     VelocityThread  velThread;
 
@@ -627,8 +721,13 @@ public:
         }
 
         velPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vc:o").c_str());
+        velInitPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vcInit:o").c_str());
         velThread.attachVelPort(&velPort);
+        velThread.attachVelInitPort(&velInitPort);
+        velThread.attachRF(pRF);
+        cout << "***** starting the thread" << endl;
         velThread.start();
+
 
         return true;
     }
@@ -685,6 +784,9 @@ public:
         velThread.stop();
         velPort.interrupt();
         velPort.close();
+
+        velInitPort.interrupt();
+        velInitPort.close();
 
         return true;
     }
