@@ -26,14 +26,14 @@
 
 <module>
    <name>ctpService</name>
-   <parameters>--robot icub --part left_leg</parameters>
+   <parameters>--robot icub --part left_leg </parameters>
    <node>node1</node>
    <tag>left_leg_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
-   <parameters>--robot icub --part right_leg</parameters>
+   <parameters>--robot icub --part right_leg </parameters>
    <node>node1</node>
    <tag>right_leg_ctp</tag>
 </module>
@@ -55,42 +55,42 @@
 
 <module>
    <name>velocityControl</name>
-   <parameters>--robot icub --part right_arm</parameters>
+   <parameters>--robot icub --part right_arm --from velocityControl.ini</parameters>
    <node>node2</node>
    <tag>right_arm_vel</tag>
 </module>
 
 <module>
    <name>velocityControl</name>
-   <parameters>--robot icub --part left_arm</parameters>
+   <parameters>--robot icub --part left_arm --from velocityControl.ini</parameters>
    <node>node2</node>
    <tag>left_arm_vel</tag>
 </module>
 
 <module>
    <name>velocityControl</name>
-   <parameters>--robot icub --part left_leg</parameters>
+   <parameters>--robot icub --part left_leg --from velocityControl.ini</parameters>
    <node>node2</node>
    <tag>left_leg_vel</tag>
 </module>
 
 <module>
    <name>velocityControl</name>
-   <parameters>--robot icub --part right_leg</parameters>
+   <parameters>--robot icub --part right_leg --from velocityControl.ini</parameters>
    <node>node2</node>
    <tag>right_leg_vel</tag>
 </module>
 
 <module>
    <name>velocityControl</name>
-   <parameters>--robot icub --part head </parameters>
+   <parameters>--robot icub --part head --from velocityControl.ini</parameters>
    <node>node2</node>
    <tag>head_vel</tag>
 </module>
 
 <module>
    <name>velocityControl</name>
-   <parameters>--robot icub --part torso</parameters>
+   <parameters>--robot icub --part torso --from velocityControl.ini</parameters>
    <node>node2</node>
    <tag>torso_vel</tag>
 </module>
