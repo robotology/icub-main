@@ -97,37 +97,37 @@
 
 <connection>
       <from>/ctpservice/head/vc:o</from>
-      <to>/icub/vc/head/command</to>
+      <to>/icub/vc/head/fastCommand</to>
       <protocol>mcast</protocol>
 </connection>
 
 <connection>
       <from>/ctpservice/left_arm/vc:o</from>
-      <to>/icub/vc/left_arm/command</to>
+      <to>/icub/vc/left_arm/fastCommand</to>
       <protocol>mcast</protocol>
 </connection>
 
 <connection>
       <from>/ctpservice/right_arm/vc:o</from>
-      <to>/icub/vc/right_arm/command</to>
+      <to>/icub/vc/right_arm/fastCommand</to>
       <protocol>mcast</protocol>
 </connection>
 
 <connection>
       <from>/ctpservice/left_leg/vc:o</from>
-      <to>/icub/vc/left_leg/command</to>
+      <to>/icub/vc/left_leg/fastCommand</to>
       <protocol>mcast</protocol>
 </connection>
 
 <connection>
       <from>/ctpservice/right_leg/vc:o</from>
-      <to>/icub/vc/right_leg/command</to>
+      <to>/icub/vc/right_leg/fastCommand</to>
       <protocol>mcast</protocol>
 </connection>
 
 <connection>
       <from>/ctpservice/torso/vc:o</from>
-      <to>/icub/vc/torso/command</to>
+      <to>/icub/vc/torso/fastCommand</to>
       <protocol>mcast</protocol>
 </connection>
 
