@@ -94,6 +94,8 @@ Author: Lorenzo Natale
 #include <yarp/os/Thread.h>
 #include <yarp/os/Semaphore.h>
 
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
+
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -105,6 +107,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
+using namespace iCub::ctrl;
 
 #define VCTP_TIME VOCAB4('t','i','m','e')
 #define VCTP_OFFSET VOCAB3('o','f','f')
@@ -113,6 +116,9 @@ using namespace yarp::math;
 #define VCTP_CMD_FILE VOCAB4('c','t','p','f')
 #define VCTP_POSITION VOCAB3('p','o','s')
 #define VCTP_WAIT VOCAB4('w','a','i','t')
+
+#define VEL_FILT_SIZE   16
+#define VEL_FILT_THRES  1.0
 
 // Class for position control
 class ActionItem
@@ -371,7 +377,8 @@ public:
 class VelocityThread: public Thread
 {
 private:
-    Semaphore      mutex;
+    Semaphore       mutex;
+    AWLinEstimator  linEst;
     Port           *velPort;
     Port           *velInitPort;
     ResourceFinder *pRF;
@@ -382,92 +389,7 @@ private:
     bool       firstRun;
     bool       velInit;
 
-    bool readLine(Vector &v, double &time)
-    {        
-        fin.getline(&line[0],sizeof(line),'\n');
-        string str(line);
-
-        if (str.length()!=0)
-        {
-            Bottle b;
-            b.fromString(str.c_str());
-
-            if (b.size()>2)
-            {
-                time=b.get(1).asDouble();
-                v.resize(b.size()-2);
-
-                for (int i=0; i<v.length(); i++)
-                    v[i]=b.get(i+2).asDouble();
-
-                return true;
-            }
-            else
-                return false;            
-        }
-        else
-            return false;
-    }
-
-public:
-    VelocityThread() : mutex(0)
-    {
-        velInit = false;
-        velPort=NULL;
-        velInitPort=NULL;
-        closing=false;
-        firstRun=true;
-    }
-
-    void attachRF(ResourceFinder *attachedRF)
-    {
-        pRF = attachedRF;
-    }
-
-    void attachVelPort(Port *p)
-    {
-        if (p)
-            velPort=p;
-    }
-
-    void attachVelInitPort(Port *p)
-    {
-        if (p)
-            velInitPort=p;
-    }
-
-    bool go(const string &fileName)
-    {
-        if (velPort==NULL)
-            return false;
-
-        if (fin.is_open())
-            fin.close();
-
-        fin.open(fileName.c_str());        
-
-        if (fin.is_open())
-        {
-            fin.seekg(0,ios_base::beg);
-            firstRun=true;
-            mutex.post();
-            return true;
-        }
-        else
-            return false;
-    }
-
-    void onStop()
-    {
-        closing=true;
-        mutex.post();
-    }
-
-    void threadRelease()
-    {
-        if (fin.is_open())
-            fin.close();
-    }
+    unsigned int filtElemsCnt;
 
     bool checkInitConnection(Port *p)
     {
@@ -528,10 +450,125 @@ public:
         }     
     }
 
+    bool readLine(Vector &v, double &time)
+    {        
+        fin.getline(&line[0],sizeof(line),'\n');
+        string str(line);
+
+        if (str.length()!=0)
+        {
+            Bottle b;
+            b.fromString(str.c_str());
+
+            if (b.size()>2)
+            {
+                time=b.get(1).asDouble();
+                v.resize(b.size()-2);
+
+                for (int i=0; i<v.length(); i++)
+                    v[i]=b.get(i+2).asDouble();
+
+                return true;
+            }
+            else
+                return false;            
+        }
+        else
+            return false;
+    }
+
+    Vector formCommand(const Vector &p, const double t)
+    {
+        Vector res;
+
+        for (int i=0; i<p.length(); i++)
+        {
+            res.push_back(i);
+            res.push_back(p[i]);
+        }
+
+        AWPolyElement el;
+        el.data=p;
+        el.time=t;
+
+        Vector v=linEst.estimate(el);
+
+        if (++filtElemsCnt>VEL_FILT_SIZE)
+        {
+            for (int i=0; i<p.length(); i++)
+            {
+                res.push_back(1000.0+i);
+                res.push_back(v[i]);
+            }
+        }
+
+        return res;
+    }
+
+public:
+    VelocityThread() : mutex(0), linEst(VEL_FILT_SIZE,VEL_FILT_THRES)
+    {
+        velInit=false;
+        velPort=NULL;
+        velInitPort=NULL;
+        closing=false;
+        firstRun=true;
+    }
+
+    void attachRF(ResourceFinder *attachedRF)
+    {
+        pRF = attachedRF;
+    }
+
+    void attachVelPort(Port *p)
+    {
+        if (p)
+            velPort=p;
+    }
+
+    void attachVelInitPort(Port *p)
+    {
+        if (p)
+            velInitPort=p;
+    }
+
+    bool go(const string &fileName)
+    {
+        if (velPort==NULL)
+            return false;
+
+        if (fin.is_open())
+            fin.close();
+
+        fin.open(fileName.c_str());        
+
+        if (fin.is_open())
+        {
+            fin.seekg(0,ios_base::beg);
+            firstRun=true;
+            mutex.post();
+            return true;
+        }
+        else
+            return false;
+    }
+
+    void onStop()
+    {
+        closing=true;
+        mutex.post();
+    }
+
+    void threadRelease()
+    {
+        if (fin.is_open())
+            fin.close();
+    }
+
     void run()
     {
-        Vector v1,v2;
-        double time1,time2;
+        Vector p1,p2;
+        double time1,time2,t;
         bool   send=false;
 
         while (!isStopping())
@@ -541,7 +578,7 @@ public:
                 if (checkInitConnection(velInitPort))
                 {
                     initVelCtrl(velInitPort, pRF);
-                    velInit = true;  
+                    velInit = true;
                 }
                 else
                     Time::delay(1.0);
@@ -556,20 +593,25 @@ public:
                     Bottle c,r;
                     c.addString("run");
                     velInitPort->write(c,r);
-    				send=readLine(v1,time1);
+    				send=readLine(p1,time1);
+                    linEst.reset();
+                    t=0.0;
+                    filtElemsCnt=0;
     				firstRun=false;
     			}            
     
     			if (send)
     			{
-    				velPort->write(v1);
+    				velPort->write(formCommand(p1,t));
     				send=false;
     			}
     
-    			if (readLine(v2,time2))
+    			if (readLine(p2,time2))
     			{
-    				Time::delay(time2-time1);
-    				v1=v2;
+                    double dt=time2-time1;
+    				Time::delay(dt);
+                    t+=dt;
+    				p1=p2;
     				time1=time2;
     				send=true;
     				mutex.post();
