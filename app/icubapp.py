@@ -163,6 +163,10 @@ class App:
 	ret=subprocess.Popen(cmd);
 
 def searchManager():
+    # first look in PATH
+
+
+
     contexts=os.listdir('.')
     for c in contexts:
 	if (c=='default'):
@@ -223,6 +227,11 @@ class AutoScrollbar(Scrollbar):
     
 if __name__ == '__main__':
 
+    path=os.environ("PATH")
+    print papth
+
+    sys.exit(1) 
+    
     argc = len(sys.argv)
 
     confFile='app.txt'

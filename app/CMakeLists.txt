@@ -25,6 +25,7 @@ icub_app_install(app
 				ROOT
 				FILES "${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py;${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template"
 				DESTINATION app
+                FORCE_UPDATE
 				)
 #################################
 

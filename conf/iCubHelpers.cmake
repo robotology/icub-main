@@ -238,27 +238,33 @@ endmacro(icub_app)
 # 
 # Jan 2011: converted the macro to be a function, to avoid clashing with cmake variables defined outside.
 # Hopefully functions have local scope and will prevent clashes to happen in the future.
+#
+# April 2011: added FORCE_UPDATE flag to force update of files
+
 function(icub_app_install target)
   PARSE_ARGUMENTS(${target}
 	"FILES;DESTINATION"
-    "VERBOSE;ROOT"
+    "VERBOSE;ROOT;FORCE_UPDATE"
     ${ARGN}
     )
     
   set(dummy ${CMAKE_BINARY_DIR}/f-${target})
  
   set(VERBOSE ${${target}_VERBOSE})
+
   if(VERBOSE)
     MESSAGE(STATUS "*** Arguments for ${target}")
-    MESSAGE(STATUS "Files: ${${target}_FILES}")
-    MESSAGE(STATUS "Destination: ${${target}_DESTINATION}")
-    MESSAGE(STATUS "Option verbosity: ${${target}_VERBOSE}")
-	MESSAGE(STATUS "Option root: ${${target}_ROOT}")
+    MESSAGE(STATUS "FILES: ${${target}_FILES}")
+    MESSAGE(STATUS "DESTINATION: ${${target}_DESTINATION}")
+    MESSAGE(STATUS "Option VERBOSE: ${${target}_VERBOSE}")
+	MESSAGE(STATUS "Option ROOT: ${${target}_ROOT}")
+    MESSAGE(STATUS "Option FORCE_UPDATE ${${target}_FORCE_UPDATE}")
   endif(VERBOSE)
   
   set(files ${${target}_FILES})
   set(destination ${${target}_DESTINATION})
   set(root ${${target}_ROOT})
+  set(force ${${target}_FORCE_UPDATE})
   
   set(cmakefile ${CMAKE_BINARY_DIR}/app-${target}.cmake)
   
@@ -278,16 +284,25 @@ function(icub_app_install target)
   file(APPEND ${cmakefile} "foreach(f \${files})\n")
   file(APPEND ${cmakefile} "\tget_filename_component(fname \"\${f}\" NAME)\n")
   file(APPEND ${cmakefile} "\tif (NOT IS_DIRECTORY \"\${f}\")\n")
-  file(APPEND ${cmakefile} "\t\tif (NOT EXISTS \"${dapp}/\${fname}\")\n")
-  file(APPEND ${cmakefile} "\t\t\texecute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"\${f}\" \"${dapp}\")\n")
-  file(APPEND ${cmakefile} "\t\telse()\n")
-  file(APPEND ${cmakefile} "\t\t\texecute_process(COMMAND \"\${CMAKE_COMMAND}\" -E compare_files \"\${f}\" \"${dapp}/\${fname}\" RESULT_VARIABLE test_not_successful OUTPUT_QUIET ERROR_QUIET)\n")
-  file(APPEND ${cmakefile} "\t\t\tif ( test_not_successful )\n")
-  file(APPEND ${cmakefile} "\t\t\t\tmessage(\"Preserving locally modified file: ${dapp}/\${fname}\")\n")
-  file(APPEND ${cmakefile} "\t\t\t\tmessage(\"--> saving new file to: ${dapp}/\${fname}.new\")\n")
-  file(APPEND ${cmakefile} "\t\t\t\texecute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"\${f}\" \"${dapp}/\${fname}.new\")\n")
-  file(APPEND ${cmakefile} "\t\t\tendif()\n")
-  file(APPEND ${cmakefile} "\t\tendif()\n")
+  
+  if (force)
+    file(APPEND ${cmakefile} "\t\t\tmessage(\"Forcing update of: ${dapp}/\${fname}\")\n")
+    file(APPEND ${cmakefile} "\t\t\texecute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"\${f}\" \"${dapp}\")\n")
+  else(force)
+  
+    file(APPEND ${cmakefile} "\t\tif (NOT EXISTS \"${dapp}/\${fname}\")\n")
+    file(APPEND ${cmakefile} "\t\t\texecute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"\${f}\" \"${dapp}\")\n")
+    file(APPEND ${cmakefile} "\t\telse()\n")
+    file(APPEND ${cmakefile} "\t\t\texecute_process(COMMAND \"\${CMAKE_COMMAND}\" -E compare_files \"\${f}\" \"${dapp}/\${fname}\" RESULT_VARIABLE test_not_successful OUTPUT_QUIET ERROR_QUIET)\n")
+    file(APPEND ${cmakefile} "\t\t\tif ( test_not_successful )\n")
+    file(APPEND ${cmakefile} "\t\t\t\tmessage(\"Preserving locally modified file: ${dapp}/\${fname}\")\n")
+    file(APPEND ${cmakefile} "\t\t\t\tmessage(\"--> saving new file to: ${dapp}/\${fname}.new\")\n")
+    file(APPEND ${cmakefile} "\t\t\t\texecute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"\${f}\" \"${dapp}/\${fname}.new\")\n")
+    file(APPEND ${cmakefile} "\t\t\tendif()\n")
+    file(APPEND ${cmakefile} "\t\tendif()\n")
+  
+  endif(force)
+  
   file(APPEND ${cmakefile} "\tendif()\n")
   file(APPEND ${cmakefile} "endforeach(f \"\${files}\")\n\n")
 endfunction(icub_app_install)
