@@ -21,7 +21,7 @@
  
 @ingroup icub_tools
  
-This module returns the number of joysticks detected on the system.
+This module is used to check if one joystick is currently used.
  
 Copyright (C) 2011 RobotCub Consortium
  
@@ -31,7 +31,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
  
-This module returns the number of joysticks detected on the system.
+The module returns 1 to the O.S. if at least one axis/button of the default joystick is pressed, 0 otherwise (no axis/buttons pressed or no joysticks active).
 
 \section portsa_sec Ports Accessed
 None. 
@@ -72,17 +72,40 @@ int main( int argc, char **argv )
 		int joystick_num = SDL_NumJoysticks ();
 		if (joystick_num == 0)
 		{
-			fprintf ( stderr, "JoystickCheck: no joysticks found\n");
+			fprintf ( stderr, "JoystickCheck: no joysticks found.\n");
 			return 0;
 		}
-		else if (joystick_num == 1)
+		else if (joystick_num > 0)
 		{
-			fprintf ( stderr, "JoystickCheck: one joystick found \n");
-			return 1;
+			fprintf ( stderr, "JoystickCheck: (%d) joystick(s) found.\n",joystick_num);
+			int joy_id = 0;
+			SDL_Joystick* joy1 = SDL_JoystickOpen ( joy_id );
+			if ( joy1 == NULL )
+			{
+				printf ( "Could not open default joystick.\n" );
+				return 0;
+			}
+
+			int numAxes    = SDL_JoystickNumAxes    ( joy1 );
+			int numBalls   = SDL_JoystickNumBalls   ( joy1 );
+			int numHats    = SDL_JoystickNumHats    ( joy1 );
+			int numButtons = SDL_JoystickNumButtons ( joy1 );
+
+			for (int trial=0; trial < 10; trial++ )
+			{
+				SDL_JoystickUpdate ();
+				for ( int i=0; i < numAxes; ++i )
+				{
+					double rawMeasure = (double)SDL_JoystickGetAxis ( joy1, i );
+					if (rawMeasure >= 100 || rawMeasure <= -100)
+					{
+						printf ( "found one joystick currently in use.\n" );
+						return 1;
+					}
+				}
+			}
+			printf ( "no joysticks are currently used.\n" );
+			return 0;
 		}
-		else
-		{
-			fprintf ( stderr, "JoystickCheck: multiple (%d) joysticks found\n",joystick_num);
-			return joystick_num;
-		}
+
 }
