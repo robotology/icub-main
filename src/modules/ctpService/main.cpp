@@ -556,6 +556,9 @@ public:
     
     			if (firstRun)
     			{
+                    Bottle b;
+                    b.addString("run");
+                    velInitPort->write(b);
     				send=readLine(v1,time1);
     				firstRun=false;
     			}            
@@ -575,7 +578,12 @@ public:
     				mutex.post();
     			}
     			else
+                {
     				fin.close();
+                    Bottle b;
+                    b.addString("susp");
+                    velInitPort->write(b);
+                }
 			}
         }
     }
