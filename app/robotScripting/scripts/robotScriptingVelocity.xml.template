@@ -153,12 +153,12 @@
 
 <connection>
       <from>/ctpservice/left_leg/vcInit:o</from>
-      <to>/icub/vc/left_lwg/input</to>
+      <to>/icub/vc/left_leg/input</to>
 </connection>
 
 <connection>
       <from>/ctpservice/right_leg/vcInit:o</from>
-      <to>/icub/vc/right_lwg/input</to>
+      <to>/icub/vc/right_leg/input</to>
 </connection>
 
 </application>
