@@ -1,0 +1,33 @@
+echo "ctpn time 2 off 0 pos (30 0 0)" | yarp rpc /ctpservice/torso/rpc
+echo "ctpf data.log" | yarp rpc /ctpservice/head/rpc
+sleep 0
+
+echo "ctpn time 2 off 0 pos (-76.96 30.04 8.01 81.01 0.00 -0.00 -0.00 16.80 29.93 38.89 120.08 3.57 5.30 49.12 93.93 163.75)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0
+
+./budapest/icub-speak "Hello, my name is iCub. I was born and live in Genoa, Italy. And this is my family (he shows a group portrait of his lab). I’m the last of a kind of machines. We thought we might become smarter than you, or at least smarter than them (and we see a dog around). Although we are quite good at carrying out specific tasks, we’re lost at the minimal variation, and we we’re not good at interacting with our environment. Especially our human environment. Therefore we are of limited help now. We would have loved to be of more help. Instead, you had to adapt to us, rather than the other way around. Now we are trying a new road that will let us adapt to you. We want to become your “companions”. We want to take on the tasks that no human should be performing, or help you do what any human should be able to do (help in disabilities), or help with now intractable problems. We know that, in order to accomplish this, we have a lot to learn from you. Indeed, in a way I’m also one of the first of this new kind of machines. I’m actually helping raise the next generations of machines. Because no existing machine, even today’s most advanced robot, is capable of what is being prepared in labs like mine.”
+" 10 &
+
+sleep 1
+
+echo "ctpn time 0.5 off 6 pos (-20.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpn time 0.5 off 6 pos (18.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpn time 0.5 off 6 pos (-20.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpn time 0.5 off 6 pos (18.00 17.28 29.93 38.52 120.08 4.40 5.72 49.12 93.52 177.41)" | yarp rpc /ctpservice/left_arm/rpc
+
+sleep 0.5
+
+echo "ctpq time 3 off 0 pos (-0.00 22.00 7.0 15.0 4.00 0.00 16.0 6 0 2 19 11 0 5 7 7)" | yarp rpc /ctpservice/left_arm/rpc
+
+
+

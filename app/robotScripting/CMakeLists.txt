@@ -7,6 +7,7 @@ file(GLOB hannover_left ${CMAKE_CURRENT_SOURCE_DIR}/hannover/left/*)
 file(GLOB hannover_right ${CMAKE_CURRENT_SOURCE_DIR}/hannover/right/*)
 file(GLOB frizzi_collegamento ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/collegamento/*)
 file(GLOB recording ${CMAKE_CURRENT_SOURCE_DIR}/recording/sequence/*)
+file(GLOB budapest ${CMAKE_CURRENT_SOURCE_DIR}/budapest/sequence/*)
 
 icub_app_install(${appname} 
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripting.py)	
@@ -33,6 +34,15 @@ icub_app_install(${appname}
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/icub-speak
   DESTINATION frizzi)
 
+# budapest demo scripting
+icub_app_install(${appname}
+  FILES ${budapest}
+  DESTINATION budapest/sequence)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/budapest/icub-speak
+  DESTINATION budapest)
+  
 # recording demo scripting
 icub_app_install(${appname}
   FILES ${recording}
