@@ -117,7 +117,7 @@ using namespace iCub::ctrl;
 #define VCTP_POSITION VOCAB3('p','o','s')
 #define VCTP_WAIT VOCAB4('w','a','i','t')
 
-#define VEL_FILT_SIZE   16
+#define VEL_FILT_SIZE   10
 #define VEL_FILT_THRES  1.0
 
 // Class for position control
