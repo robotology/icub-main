@@ -5,7 +5,7 @@ echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
 echo "ctpn time 2.5 off 0 pos (-57.01 21.02 -13.83 73.36 82.00 -38.00 -28.24 6.35 -0.08 1.20 20.55 9.68 -0.23 5.58 16.12 2.34)" | yarp rpc /ctpservice/left_arm/rpc
 sleep 2.5
 
-./budapest/icub-speak "Hello, my name is iCub. I was born five years ago, thanks to the work of many European researchers. I guess some of them are with you today." 30 &
+./budapest/icub-speak "Hello, my name is i cub. I was born five years ago, thanks to the work of many European researchers. I guess some of them are with you today." 30 &
 
 # echo "set all hap"  | yarp rpc /icub/face/emotions/in
 echo "ctpq time 0.5 off 6 pos (13)" | yarp rpc /ctpservice/left_arm/rpc

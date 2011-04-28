@@ -3,7 +3,7 @@
 echo $2
 testo="$1"
 # espeak -v en-us -s 150 -p 110 "$testo" &
-echo "$testo" | festival --batch --tts &
+echo "$testo" | festival --batch --tts --language "english" &
 sp_pid=$!
 
 WAIT_DT=1

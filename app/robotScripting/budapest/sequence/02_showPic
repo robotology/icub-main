@@ -5,7 +5,7 @@
 
 echo "ctpf dataRightArmGrasp.log" | yarp rpc /ctpservice/right_arm/rpc
 
-sleep 30
+sleep 25
 
 
 
