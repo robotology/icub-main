@@ -1,4 +1,4 @@
-./recording/controGaze start
+./recording/controlGaze start
 ./recording/dumpHead start
 sleep 2
 ./recording/dumpHead connect
@@ -16,7 +16,7 @@ echo "ctpn time 2 off 0 pos (-76.96 30.04 8.01 81.01 0.00 -0.00 -0.00 16.80 29.9
 
 sleep 0
 
-./frizzi/icub-speak "Signor Frizzi! Signor Frizzi!" 10 &
+./recording/icub-speak "Signor Frizzi! Signor Frizzi!" 10 &
 
 sleep 1
 
@@ -38,7 +38,8 @@ sleep 0.5
 
 echo "ctpq time 3 off 0 pos (-0.00 22.00 7.0 15.0 4.00 0.00 16.0 6 0 2 19 11 0 5 7 7)" | yarp rpc /ctpservice/left_arm/rpc
 
+./recording/controlGaze stop
 ./recording/dumpHead disconnect
 ./recording/dumpHead stop
-./recording/controGaze stop
+
 

@@ -5,7 +5,7 @@ MYSHELL="bash -c"
 case "$1" in
 
  	start)
-		echo "0.5 0.0 0.35" | yarp write ... /iKinGazeCtrl/head/xd:i
+		echo "-0.5 0.0 0.35" | yarp write ... /iKinGazeCtrl/head/xd:i
 		echo "set track 1" | yarp rpc /iKinGazeCtrl/head/rpc
 		;;
  	stop)
