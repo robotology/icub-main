@@ -49,7 +49,7 @@ icub_app_install(${appname}
   DESTINATION recording/sequence)
 
 icub_app_install(${appname}
-  FILES ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/icub-speak
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/icub-speak
   DESTINATION recording)
 
 icub_app_install(${appname}
