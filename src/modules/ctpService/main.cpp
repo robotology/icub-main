@@ -481,54 +481,51 @@ public:
             return false;
     }
 
-    void burst(Port *p, ResourceFinder *rf)
+    void initVelCtrl(Port *p, ResourceFinder *rf)
     {
         int i = 0;
         bool cont = true;
-        while(cont)
-            {
-                char  numberId[64];
-                ConstString gainStr = "gain";
-                sprintf(numberId, "%d", i);
-                gainStr = gainStr + numberId;
+        char numberId[64];
 
-                Bottle b;
-                b.add("gain");
-                b.addInt(i);
-                if (rf->check(gainStr))
-                {
-                    b.addDouble(rf->find(gainStr).asDouble());
-                    p->write(b);
-			        Time::delay(0.1);
-                    i++;
-                }
-                else
-                    cont = false;
-            }                
+        while(cont)
+        {
+            ConstString gainStr = "gain";
+            sprintf(numberId, "%d", i);
+            gainStr = gainStr + numberId;
+
+            Bottle c,r;
+            c.add("gain");
+            c.addInt(i);
+            if (rf->check(gainStr))
+            {
+                c.addDouble(rf->find(gainStr).asDouble());
+                p->write(c,r);
+                i++;
+            }
+            else
+                cont = false;
+        }                
 
         i = 0;
         cont = true;
         while(cont)
-            {
-                
-                char  numberId[64];
-                ConstString svelStr = "svel";
-                sprintf(numberId, "%d", i);
-                svelStr = svelStr + numberId;
+        {
+            ConstString svelStr = "svel";
+            sprintf(numberId, "%d", i);
+            svelStr = svelStr + numberId;
 
-                Bottle b;
-                b.add("svel");
-                b.addInt(i);
-                if (rf->check(svelStr))
-                {
-                    b.addDouble(rf->find(svelStr).asDouble());
-                    p->write(b);
-			        Time::delay(0.1);
-                    i++;
-                }
-                else
-                    cont = false;
-            }     
+            Bottle c,r;
+            c.add("svel");
+            c.addInt(i);
+            if (rf->check(svelStr))
+            {
+                c.addDouble(rf->find(svelStr).asDouble());
+                p->write(c,r);
+                i++;
+            }
+            else
+                cont = false;
+        }     
     }
 
     void run()
@@ -543,7 +540,7 @@ public:
 			{
                 if (checkInitConnection(velInitPort))
                 {
-                    burst(velInitPort, pRF);
+                    initVelCtrl(velInitPort, pRF);
                     velInit = true;  
                 }
                 else
@@ -556,9 +553,9 @@ public:
     
     			if (firstRun)
     			{
-                    Bottle b;
-                    b.addString("run");
-                    velInitPort->write(b);
+                    Bottle c,r;
+                    c.addString("run");
+                    velInitPort->write(c,r);
     				send=readLine(v1,time1);
     				firstRun=false;
     			}            
@@ -580,9 +577,9 @@ public:
     			else
                 {
     				fin.close();
-                    Bottle b;
-                    b.addString("susp");
-                    velInitPort->write(b);
+                    Bottle c,r;
+                    c.addString("susp");
+                    velInitPort->write(c,r);
                 }
 			}
         }
