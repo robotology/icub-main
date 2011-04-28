@@ -60,6 +60,7 @@ Windows, Linux
 int main( int argc, char **argv ) 
 {
 		// start SDL subsystem
+		SDL_JoystickEventState ( SDL_QUERY );
 		if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK ) < 0 )
 		{
 			fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
