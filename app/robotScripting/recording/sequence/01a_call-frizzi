@@ -1,3 +1,4 @@
+./recording/controGaze start
 ./recording/dumpHead start
 sleep 2
 ./recording/dumpHead connect
@@ -39,5 +40,5 @@ echo "ctpq time 3 off 0 pos (-0.00 22.00 7.0 15.0 4.00 0.00 16.0 6 0 2 19 11 0 5
 
 ./recording/dumpHead disconnect
 ./recording/dumpHead stop
-
+./recording/controGaze stop
 
