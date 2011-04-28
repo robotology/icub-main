@@ -27,6 +27,7 @@ endif(ICUB_USE_GtkPlus)
 
 if(ICUB_USE_SDL)
 	add_subdirectory(joystickCtrl)
+	add_subdirectory(joystickCheck)
 else(ICUB_USE_SDL)
 	message(STATUS "SDL not selected, skipping joystickCtrl")
 endif(ICUB_USE_SDL)
