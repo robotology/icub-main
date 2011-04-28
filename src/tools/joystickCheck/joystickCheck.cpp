@@ -56,17 +56,17 @@ Windows, Linux
 
 #include <iostream>
 #include <SDL.h>
+#include <yarp/os/Time.h>
 
 int main( int argc, char **argv ) 
 {
 		// start SDL subsystem
-		SDL_JoystickEventState ( SDL_QUERY );
-		if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK ) < 0 )
+		if ( SDL_InitSubSystem ( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 )
 		{
 			fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
 			return -1;
 		}
-
+		SDL_JoystickEventState ( SDL_ENABLE );
 		// get the list of available joysticks
 		fprintf ( stderr, "\n");
 		int joy_id=0;
@@ -92,19 +92,58 @@ int main( int argc, char **argv )
 			int numHats    = SDL_JoystickNumHats    ( joy1 );
 			int numButtons = SDL_JoystickNumButtons ( joy1 );
 
-			for (int trial=0; trial < 10; trial++ )
+                        int rawMeasure [20];
+
+                       SDL_Event event;
+                       for (int trial=0; trial < 100; trial++ )
+                       {  
+                        //   yarp::os::Time::delay(0.010);//remove me?
+                            while(SDL_PollEvent(&event))
+                            {
+                                switch(event.type)
+                                    {  
+                                        case SDL_JOYAXISMOTION:
+                                        //printf ( "event found axis %d %d \n", event.jaxis.axis ,event.jaxis.value);
+                                        break;
+                                    }
+                             }
+                       }
+
+                       for (int trial=0; trial < 1000; trial++ )
+                       {  
+                            yarp::os::Time::delay(0.010);
+                            while(SDL_PollEvent(&event))
+                            {
+                                switch(event.type)
+                                    {  
+                                        case SDL_JOYAXISMOTION:
+                                       // printf ( "event found axis %d %d \n", event.jaxis.axis ,event.jaxis.value);
+                                        if ( ( event.jaxis.value < -20000 ) || (event.jaxis.value > 20000 ) )
+                                        {  
+                                		printf ( "joysticks activity detected.\n" );                                           
+                                                return 1;
+                                        }
+                                        break;
+                                    }
+                             }
+                       }
+
+                        printf ( "stop here.\n" );
+                        /*for (int trial=0; trial < 100; trial++ )
 			{
-				SDL_JoystickUpdate ();
+                                yarp::os::Time::delay(0.010);
+				SDL_JoystickUpdate ();                      
 				for ( int i=0; i < numAxes; ++i )
 				{
-					double rawMeasure = (double)SDL_JoystickGetAxis ( joy1, i );
-					if (rawMeasure >= 100 || rawMeasure <= -100)
-					{
+					rawMeasure[i] = SDL_JoystickGetAxis ( joy1, i );
+                                        printf ( "%d %d %d\n",trial,i,rawMeasure[i] );
+                                }
+        			if (rawMeasure[2] && rawMeasure[5] >= 20000)
+				{
 						printf ( "found one joystick currently in use.\n" );
 						return 1;
-					}
 				}
-			}
+			}*/
 			printf ( "no joysticks are currently used.\n" );
 			return 0;
 		}
