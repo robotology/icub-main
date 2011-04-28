@@ -2,7 +2,7 @@
 joystickCheck
 if [ "$?" -eq "1" ]; then
     echo "joystick boot requested"
-    yarp server
+    yarp server &
     sleep 2
     iCubInterface --context iKart --config conf/iKart.ini &
     sleep 2
