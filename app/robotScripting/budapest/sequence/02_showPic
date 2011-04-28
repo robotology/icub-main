@@ -1,0 +1,13 @@
+
+
+
+./recording/icub-speak "I live in Genoa and I have family members in a number of labs across the world, where I am an experimental platform, and these are my friends. I like being around people, and I would love to be of more help to them. But like most machines of my generation, I can't." 60 &
+
+echo "ctpf dataRightArmGrasp.log" | yarp rpc /ctpservice/right_arm/rpc
+
+sleep 30
+
+
+
+
+
