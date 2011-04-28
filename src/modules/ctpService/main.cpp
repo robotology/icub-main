@@ -602,7 +602,8 @@ public:
     
     			if (send)
     			{
-    				velPort->write(formCommand(p1,t));
+                    Vector cmd=formCommand(p1,t);
+    				velPort->write(cmd);
     				send=false;
     			}
     
