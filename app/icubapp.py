@@ -164,8 +164,16 @@ class App:
 
 def searchManager():
     # first look in PATH
-
-
+    path=os.getenv("PATH")
+    
+    path_dirs=path.split(';')
+    
+    for pdir in path_dirs:
+        files=os.listdir(pdir)
+        for f in files:
+		    if isManagerPy(f):
+			ret=os.path.join(pdir, f)
+			return ret
 
     contexts=os.listdir('.')
     for c in contexts:
@@ -227,11 +235,6 @@ class AutoScrollbar(Scrollbar):
     
 if __name__ == '__main__':
 
-    path=os.environ("PATH")
-    print papth
-
-    sys.exit(1) 
-    
     argc = len(sys.argv)
 
     confFile='app.txt'
@@ -257,6 +260,8 @@ if __name__ == '__main__':
         
     applications=searchApplications(config.applications)
     managerPath=searchManager()
+    print 'Manager was found at:',
+    print managerPath    
 
     root = Tk()
 
