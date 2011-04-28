@@ -6,6 +6,7 @@ file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml.template)
 file(GLOB hannover_left ${CMAKE_CURRENT_SOURCE_DIR}/hannover/left/*)
 file(GLOB hannover_right ${CMAKE_CURRENT_SOURCE_DIR}/hannover/right/*)
 file(GLOB frizzi_collegamento ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/collegamento/*)
+file(GLOB recording ${CMAKE_CURRENT_SOURCE_DIR}/recording/sequence/*)
 
 icub_app_install(${appname} 
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripting.py)	
@@ -32,5 +33,27 @@ icub_app_install(${appname}
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/icub-speak
   DESTINATION frizzi)
 
+# recording demo scripting
+icub_app_install(${appname}
+  FILES ${recording}
+  DESTINATION recording/sequence)
 
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/icub-speak
+  DESTINATION recording)
 
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpHead
+  DESTINATION recording)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpLeftArm
+  DESTINATION recording)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpRightArm
+  DESTINATION recording)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpTorso
+  DESTINATION recording)
