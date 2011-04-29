@@ -54,6 +54,7 @@ public:
     void doGrab();
     void doRotate();
     void doDelete();
+    void doColor();
     void apply();
 };
 
@@ -329,7 +330,23 @@ void OdeLink::doRotate() {
     odeinit.mutex.post();
     result.setOk();
 }
-
+void OdeLink::doColor() {
+    OdeInit& odeinit = OdeInit::get();
+    if (!checkObject()) return;
+    if (op.color.isValid()) {
+        if (store->colors!=NULL) {
+            store->colors[op.index.index-1][0] = op.color.get(0);
+            store->colors[op.index.index-1][1] = op.color.get(1);
+            store->colors[op.index.index-1][2] = op.color.get(2);
+           
+        }
+    }
+    if (object==NULL) {
+        result.setFail("no geometry found");
+        return;
+    }
+    result.setOk();
+}
 void OdeLink::doDelete() {
     OdeInit& odeinit = OdeInit::get();
 
@@ -372,6 +389,9 @@ void OdeLink::apply() {
         break;
     case WORLD_OP_DEL:
         doDelete();
+        break;
+    case WORLD_OP_COL:
+        doColor();
         break;
     default:
         result.setFail("unrecognized command");

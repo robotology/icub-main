@@ -230,6 +230,15 @@ bool doGet(ManagerState& state) {
     return !state.failed;
 }
 
+bool doColor(ManagerState& state) {
+        consumeObject(state);
+        state.consume(state.op.color,"color");
+        if (!state.failed) {
+            state.manager.apply(state.op,state.result);
+        }
+        return !state.failed;
+    }
+
 bool doSet(ManagerState& state) {
     consumeObject(state);
     if (state.op.parameter.get()) {
@@ -331,6 +340,9 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
         break;
     case WORLD_OP_DEL:
         doDelete(state);
+        break;
+    case WORLD_OP_COL:
+        doColor(state);
         break;
     default:
         state.failed = true;

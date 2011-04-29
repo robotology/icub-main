@@ -68,6 +68,7 @@ public:
     virtual WorldObject& get(int index) = 0;
     virtual const WorldObject& get(int index) const = 0;
 
+
     virtual bool create(const WorldOp& op, WorldResult& result) {
         if (counter==NULL) return false;
 

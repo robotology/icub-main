@@ -33,6 +33,7 @@ enum WORLD_OP {
     WORLD_OP_GRAB = VOCAB4('g','r','a','b'),
     WORLD_OP_ROT = VOCAB3('r','o','t'),
     WORLD_OP_DEL = VOCAB3('d','e','l'),
+    WORLD_OP_COL = VOCAB3('c','o','l'),
 };
 
 class WorldOpDatum {
