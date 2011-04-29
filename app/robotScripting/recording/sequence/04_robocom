@@ -1,0 +1,40 @@
+./recording/controlGaze start
+./recording/dumpHead start
+./recording/dumpRightArm start
+./recording/dumpLeftArm start
+sleep 2.5
+./recording/dumpHead connect
+./recording/dumpRightArm connect
+./recording/dumpLeftArm connect
+
+./recording/icub-speak "Now, the Robo Com consortium is going to try something completely different. Something that will allow us to adapt to your needs. We want future systems to become your companions" 18 &
+
+
+sleep 5
+
+sleep 6
+
+echo "ctpn time 2 off 7 pos (17.20 60.94 46.01 71.38 0.95 0.18 90.05 113.84 230.96)" | yarp rpc /ctpservice/right_arm/rpc
+
+sleep 3
+
+./recording/icub-speak "and take on tasks that no human should be performing, like dangerous or heavy jobs. We might help you do what any human should be performing, like living an independent life. Just think of elderly people, or people with disabilities. One day we may even help in a nuclear crisis, like the one unfolding today in Fukushima." 78 &
+
+sleep 3
+
+echo "ctpn time 2 off 7 pos (17.20 0.94 6.01 1.38 0.95 0.18 0.05 0.84 0.96)" | yarp rpc /ctpservice/right_arm/rpc
+
+
+sleep 20
+
+./recording/controlGaze stop
+./recording/dumpHead disconnect
+./recording/dumpHead stop
+./recording/dumpRightArm disconnect
+./recording/dumpRightArm stop
+./recording/dumpLeftArm disconnect
+./recording/dumpLeftArm stop
+
+
+
+
