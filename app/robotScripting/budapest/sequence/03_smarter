@@ -1,0 +1,18 @@
+./recording/icub-speak "You see, we have always considered that we might become smarter than you, or at least smarter than them. We are quite good at carrying out specific tasks. Indeed, many of us are extremely useful. However, unlike you and them, we are lost at the minimal variation, and we are not good at interacting with our environment. Especially a human environment! The problem is you have to adapt to us, rather than the other way around." 96 &
+
+echo "ctpf dataRightArmGrasp.log" | yarp rpc /ctpservice/right_arm/rpc
+echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
+sleep 10 
+echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
+
+sleep 22
+
+./recording/controlGaze stop
+./recording/dumpHead disconnect
+./recording/dumpHead stop
+./recording/dumpRightArm disconnect
+./recording/dumpRightArm stop
+
+
+
+
