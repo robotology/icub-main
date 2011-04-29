@@ -2,8 +2,8 @@ sleep 2.5
 
 
 echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
-echo "ctpf dataRightArmHello.log" | yarp rpc /ctpservice/right_arm/rpc
-echo "ctpf dataLeftArmHello.log" | yarp rpc /ctpservice/left_arm/rpc
+echo "ctpf dataRightArmHelloSeat.log" | yarp rpc /ctpservice/right_arm/rpc
+echo "ctpf dataLeftArmHelloSeat.log" | yarp rpc /ctpservice/left_arm/rpc
 sleep 2.5
 
 ./budapest/icub-speak "Hello, my name is i cub. I was born five years ago, thanks to the work of many European researchers. I guess some of them are with you today." 30 &
