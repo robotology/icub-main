@@ -8,8 +8,9 @@ echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
 sleep 10 
 echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
 
-sleep 10
+sleep 12
 
+echo "ctpn time 3 off 7 pos (9.20 30.94 0.01 0.38 0.95 0.18 0.05 0.84 0.96)" | yarp rpc /ctpservice/right_arm/rpc
 
 
 

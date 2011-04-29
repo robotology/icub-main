@@ -9,7 +9,7 @@ sleep 2.5
 
 ./recording/icub-speak "I live in Genoa and I have family members in a number of labs across the world, where I am an experimental platform, and these are my friends. I like being around people, and I would love to give more help to them. But like most machines of my generation, I can't." 60 &
 
-echo "ctpn time 3 off 7 pos (13.20 65.94 33.01 66.38 59.95 74.18 60.05 73.84 200.96)" | yarp rpc /ctpservice/right_arm/rpc
+echo "ctpn time 3 off 7 pos (9.20 90.94 30.01 60.38 64.95 83.18 61.05 66.84 170.96)" | yarp rpc /ctpservice/right_arm/rpc
 
 sleep 20
 
