@@ -1,9 +1,12 @@
 ./recording/controlGaze start
 ./recording/dumpHead start
 ./recording/dumpRightArm start
+./recording/dumpLeftArm start
 sleep 2.5
 ./recording/dumpHead connect
 ./recording/dumpRightArm connect
+./recording/dumpLeftArm connect
+
 
 
 
@@ -13,9 +16,11 @@ echo "ctpn time 3 off 7 pos (9.20 90.94 30.01 60.38 64.95 83.18 61.05 66.84 170.
 
 sleep 20
 
+
 ./recording/controlGaze stop
 ./recording/dumpHead disconnect
 ./recording/dumpHead stop
 ./recording/dumpRightArm disconnect
 ./recording/dumpRightArm stop
-
+./recording/dumpLeftArm disconnect
+./recording/dumpLeftArm stop
