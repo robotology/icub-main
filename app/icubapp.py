@@ -40,7 +40,7 @@ import os
 import sys
 import subprocess
 from Tkinter import *
-
+        
 def fileExists(f):
     try:
         file=open(f)
@@ -166,7 +166,10 @@ def searchManager():
     # first look in PATH
     path=os.getenv("PATH")
     
-    path_dirs=path.split(';')
+    if os.name == 'posix':
+       path_dirs=path.split(':')
+    elif os.name == 'nt':
+        path_dirs=path.split(';')
     
     for pdir in path_dirs:
         files=os.listdir(pdir)
