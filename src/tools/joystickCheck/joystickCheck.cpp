@@ -92,8 +92,6 @@ int main( int argc, char **argv )
 			int numHats    = SDL_JoystickNumHats    ( joy1 );
 			int numButtons = SDL_JoystickNumButtons ( joy1 );
 
-                        int rawMeasure [20];
-
                        SDL_Event event;
                        for (int trial=0; trial < 100; trial++ )
                        {  
@@ -148,4 +146,5 @@ int main( int argc, char **argv )
 			return 0;
 		}
 
+        return 0;   // pattacini: to prevent MSVC from warning up
 }
