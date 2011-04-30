@@ -32,14 +32,14 @@
   
         <module>
                 <name>yarpview</name>
-                <parameters>--name /motionViewerLeft --x 0 --y 0 --synch</parameters>
+                <parameters>--name /motionViewerLeft --x 0 --y 0 --RefreshTime 50</parameters>
                 <node>console</node>
                 <tag>motionDetectorViewerLeft</tag>
         </module>
   
         <module>
                 <name>yarpview</name>
-                <parameters>--name /motionViewerRight --x 320 --y 0 --synch</parameters>
+                <parameters>--name /motionViewerRight --x 320 --y 0 --RefreshTime 50</parameters>
                 <node>console</node>
                 <tag>motionDetectorViewerRight</tag>
         </module>

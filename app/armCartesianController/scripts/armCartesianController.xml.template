@@ -19,14 +19,14 @@
 
   <module>
       <name>yarpview</name>
-      <parameters>--name /viewer/inputGrasp/img:i --synch --out /viewer/inputGrasp/click:o</parameters>
+      <parameters>--name /viewer/inputGrasp/img:i --RefreshTime 50 --out /viewer/inputGrasp/click:o</parameters>
       <node>console</node>
       <tag>inputGraspViewer</tag>
   </module>
 
   <module>
       <name>yarpview</name>
-      <parameters>--name /viewer/inputGaze/img:i --synch --out /viewer/inputGaze/click:o</parameters>
+      <parameters>--name /viewer/inputGaze/img:i --RefreshTime 50 --out /viewer/inputGaze/click:o</parameters>
       <node>console</node>
       <tag>inputGazeViewer</tag>
   </module>
