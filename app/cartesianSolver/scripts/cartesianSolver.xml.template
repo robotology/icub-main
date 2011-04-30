@@ -53,4 +53,10 @@
                 <tag>gazeController</tag>
         </module>
 
+        <connection>
+                <from>/icubinterfacegui/client</from>
+                <to>/icubinterfacegui/server</to>
+                <protocol>tcp</protocol>
+        </connection>
+
 </application>
