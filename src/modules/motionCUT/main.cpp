@@ -178,7 +178,7 @@ Linux and Windows.
 #include <deque>
 
 // check if OpenCV supports multi-threading
-#if CV_MAJOR_VERSION > 0
+#if (CV_MAJOR_VERSION > 0)
     #define _MOTIONCUT_MULTI_THREADING_
 #endif
 
@@ -888,7 +888,10 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        fprintf(stdout,"Options:\n");
+        fprintf(stdout,"\n");
+        fprintf(stdout,"This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
+        fprintf(stdout,"\n");
+        fprintf(stdout,"Available options:\n");
         fprintf(stdout,"\t--name              <string>\n");
         fprintf(stdout,"\t--coverXratio       <double>\n");
         fprintf(stdout,"\t--coverYratio       <double>\n");
@@ -902,6 +905,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--numThreads        <int>\n");
     #endif
         fprintf(stdout,"\t--verbosity           -\n");
+        fprintf(stdout,"\n");
         
         return 0;
     }
