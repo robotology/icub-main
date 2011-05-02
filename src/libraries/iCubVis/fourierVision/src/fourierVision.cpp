@@ -4539,7 +4539,7 @@ int interpolate2(DVimage *sampled_image, DVimage *interpolated_image)
       }
 
    if (!found) {
-     printf("interpolate: no sample points\n");
+     if (debug) printf("interpolate: no sample points\n");
      return(FALSE);
    }
 
