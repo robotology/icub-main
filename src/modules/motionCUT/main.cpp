@@ -891,7 +891,13 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         fprintf(stdout,"\n");
-        fprintf(stdout,"This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
+        
+        #ifdef CV_MAJOR_VERSION
+            fprintf(stdout,"This module has been compiled with OpenCV %d.%d\n", CV_MAJOR_VERSION, CV_MINOR_VERSION);
+        #else
+            fprintf(stdout,"This module has been compiled with an unknown version of OpenCV (probably < 1.0) \n");
+        #endif
+        
         fprintf(stdout,"\n");
         fprintf(stdout,"Available options:\n");
         fprintf(stdout,"\t--name              <string>\n");
