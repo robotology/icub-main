@@ -12,7 +12,6 @@ file(GLOB folder_source
     faceEyeDetector/src/*.c
     faceTracker/src/*.c
     fastFilt/src/*.c
-    fourierVision/src/*.c
     #optFlow/src/*.c
     salience/src/*.c
     spMap/src/*.c
@@ -24,7 +23,6 @@ file(GLOB folder_source
     faceEyeDetector/src/*.cc
     faceTracker/src/*.cc
     fastFilt/src/*.cc
-    fourierVision/src/*.cc
     #optFlow/src/*.cc
     salience/src/*.cc
     spMap/src/*.cc
@@ -36,7 +34,6 @@ file(GLOB folder_source
     faceEyeDetector/src/*.cpp
     faceTracker/src/*.cpp
     fastFilt/src/*.cpp
-    fourierVision/src/*.cpp
     #optFlow/src/*.cpp
     salience/src/*.cpp
     spMap/src/*.cpp
@@ -50,7 +47,6 @@ file(GLOB folder_public_headers
     faceEyeDetector/include/iCub/vis/*.h
     faceTracker/include/iCub/vis/*.h
     fastFilt/include/iCub/vis/*.h
-    fourierVision/include/iCub/vis/*.h
     optFlow/include/iCub/vis/*.h
     salience/include/iCub/vis/*.h
     spMap/include/iCub/vis/*.h
@@ -64,7 +60,6 @@ file(GLOB folder_private_headers
     faceEyeDetector/include/private/*.h
     faceTracker/include/private/*.h
     fastFilt/include/private/*.h
-    fourierVision/include/private/*.h
     #optFlow/include/private/*.h
     salience/include/private/*.h
     spMap/include/private/*.h
@@ -83,7 +78,6 @@ set(iCubVis_INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/faceEyeDetector/include
     ${PROJECT_SOURCE_DIR}/faceTracker/include
     ${PROJECT_SOURCE_DIR}/fastFilt/include
-    ${PROJECT_SOURCE_DIR}/fourierVision/include
     #${PROJECT_SOURCE_DIR}/optFlow/include
     ${PROJECT_SOURCE_DIR}/salience/include
     ${PROJECT_SOURCE_DIR}/spMap/include
@@ -98,7 +92,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/faceEyeDetector/include
     ${PROJECT_SOURCE_DIR}/faceTracker/include
     ${PROJECT_SOURCE_DIR}/fastFilt/include
-    ${PROJECT_SOURCE_DIR}/fourierVision/include
     ${PROJECT_SOURCE_DIR}/optFlow/include
     ${PROJECT_SOURCE_DIR}/salience/include
     ${PROJECT_SOURCE_DIR}/spMap/include
@@ -112,7 +105,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/faceEyeDetector/include/private
     ${PROJECT_SOURCE_DIR}/faceTracker/include/private
     ${PROJECT_SOURCE_DIR}/fastFilt/include/private
-    ${PROJECT_SOURCE_DIR}/fourierVision/include/private
     ${PROJECT_SOURCE_DIR}/optFlow/include/private
     ${PROJECT_SOURCE_DIR}/salience/include/private
     ${PROJECT_SOURCE_DIR}/spMap/include/private
