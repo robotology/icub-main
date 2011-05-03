@@ -178,8 +178,10 @@ Linux and Windows.
 #include <deque>
 
 // check if OpenCV supports multi-threading
-#if (CV_MAJOR_VERSION > 0)
-    #define _MOTIONCUT_MULTI_THREADING_
+#ifdef (CV_MAJOR_VERSION)
+    #if (CV_MAJOR_VERSION > 0)
+        #define _MOTIONCUT_MULTI_THREADING_
+    #endif
 #endif
 
 // in BGR format
