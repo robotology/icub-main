@@ -15,6 +15,11 @@ echo -n | tee licenses-all.txt
 #rm -rf license_check
 #svn export . license_check
 
+rm licenses-all.txt
+rm licenses-authors.txt
+rm licenses-bad.txt
+rm licenses-good.txt 
+
 prefix_dir="./license_check/main/"
 prefix_dir="./main/src/"
 
