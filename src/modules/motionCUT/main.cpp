@@ -100,7 +100,8 @@ YARP libraries and OpenCV
  
 --numThreads \e threads
 - This parameter allows to control the maximum number of threads
-  allocated by parallelized OpenCV functions (if supported). \n
+  allocated by parallelized OpenCV functions. This option is
+  available only if the OpenMP layer is supported.\n
   \e #  > 0 : assign # threads to OpenCV; \n
   \e # == 0 : assign all threads to OpenCV; \n
   \e #  < 0 : assign all threads but # to OpenCV; \n
@@ -177,10 +178,13 @@ Linux and Windows.
 #include <set>
 #include <deque>
 
-// check if OpenCV supports multi-threading
 #ifdef CV_MAJOR_VERSION
-    #if (CV_MAJOR_VERSION > 0)
-        #define _MOTIONCUT_MULTI_THREADING_
+    // check if OpenCV supports OpenMP multi-threading
+    #if (CV_MAJOR_VERSION>0) && (CV_MAJOR_VERSION<3)
+        #define _MOTIONCUT_MULTITHREADING_OPENMP
+    #endif
+    #if (CV_MAJOR_VERSION==2) && (CV_MINOR_VERSION>0)
+        #undef _MOTIONCUT_MULTITHREADING_OPENMP
     #endif
 #endif
 
@@ -234,7 +238,7 @@ protected:
     int nodesX;
     int nodesY;
 
-#ifdef _MOTIONCUT_MULTI_THREADING_
+#ifdef _MOTIONCUT_MULTITHREADING_OPENMP
     int numThreads;
 #endif
 
@@ -278,7 +282,7 @@ protected:
     }
 
 
-#ifdef _MOTIONCUT_MULTI_THREADING_
+#ifdef _MOTIONCUT_MULTITHREADING_OPENMP
     /************************************************************************/
     int setNumThreads(const int n)
     {
@@ -330,9 +334,9 @@ public:
         if (coverYratio>1.0)
             coverYratio=1.0;
 
-        // if the OpenCV version supports multi-threading,
+        // if the OpenCV version supports OpenMP multi-threading,
         // set the maximum number of threads available to OpenCV
-    #ifdef _MOTIONCUT_MULTI_THREADING_
+    #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
         numThreads=setNumThreads(rf.check("numThreads",Value(-1)).asInt());
     #endif
 
@@ -372,10 +376,10 @@ public:
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
             
-        #ifdef _MOTIONCUT_MULTI_THREADING_
+        #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             fprintf(stdout,"numThreads        = %d\n",numThreads);
         #else
-            fprintf(stdout,"numThreads        = OpenCV version does not support multi-threading");
+            fprintf(stdout,"numThreads        = OpenCV version does not support OpenMP multi-threading");
         #endif
             
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
@@ -753,11 +757,11 @@ public:
                 }
                 else if (subcmd=="numThreads")
                 {
-                #ifdef _MOTIONCUT_MULTI_THREADING_
+                #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
                     numThreads=setNumThreads(req.get(2).asInt());
                     reply.addString("ack");
                 #else
-                    reply.addString("multi-threading not supported");
+                    reply.addString("OpenMP multi-threading not supported");
                 #endif
                 }
                 else if (subcmd=="verbosity")
@@ -791,10 +795,10 @@ public:
                 else if (subcmd=="framesPersistence")
                     reply.addInt(framesPersistence);
                 else if (subcmd=="numThreads")
-                #ifdef _MOTIONCUT_MULTI_THREADING_
+                #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
                     reply.addInt(numThreads);
                 #else
-                    reply.addString("multi-threading not supported");
+                    reply.addString("OpenMP multi-threading not supported");
                 #endif
                 else if (subcmd=="verbosity")
                     reply.addString(verbosity?"on":"off");
@@ -891,13 +895,11 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         fprintf(stdout,"\n");
-        
-        #ifdef CV_MAJOR_VERSION
-            fprintf(stdout,"This module has been compiled with OpenCV %d.%d\n", CV_MAJOR_VERSION, CV_MINOR_VERSION);
-        #else
-            fprintf(stdout,"This module has been compiled with an unknown version of OpenCV (probably < 1.0) \n");
-        #endif
-        
+    #ifdef CV_MAJOR_VERSION
+        fprintf(stdout,"This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
+    #else
+        fprintf(stdout,"This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
+    #endif        
         fprintf(stdout,"\n");
         fprintf(stdout,"Available options:\n");
         fprintf(stdout,"\t--name              <string>\n");
@@ -909,7 +911,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--adjNodesThres     <int>\n");
         fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
         fprintf(stdout,"\t--framesPersistence <int>\n");
-    #ifdef _MOTIONCUT_MULTI_THREADING_
+    #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
         fprintf(stdout,"\t--numThreads        <int>\n");
     #endif
         fprintf(stdout,"\t--verbosity           -\n");
