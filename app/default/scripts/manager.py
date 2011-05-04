@@ -596,9 +596,8 @@ class App:
             print "Sorry some dependencies were not met, cannot stop the application"
             return
 
-        for mod in self.application.modules:
-            cmd=['yarp', 'run', '--on', '/'+mod.node, '--sigterm', mod.tag]
-            ret=self.spawnProcess(cmd)
+        for mod in self.modules:
+            self.quitModule(mod)
 
     def killModules(self):
         print "-- Stopping modules"
@@ -609,9 +608,8 @@ class App:
             print "Sorry some dependencies were not met, cannot stop the application"
             return
 
-        for mod in self.application.modules:
-            cmd=['yarp', 'run', '--on', '/'+mod.node, '--kill', mod.tag, '9']
-            ret=self.spawnProcess(cmd)
+        for mod in self.modules:
+            self.killModule(mod)
 
     def checkDeps(self):
         #print "-- Checking port dependencies:"
