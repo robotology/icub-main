@@ -216,4 +216,5 @@ add_custom_target(uninstall
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT FALSE CACHE BOOL "Enable strict check of canbus protocol and firmware versions")
 
-###
+######
+
