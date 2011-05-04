@@ -522,11 +522,11 @@ class App:
         ret=self.spawnProcess(cmd)
 
     def runModule(self, mod):
-        ret=self.checkDeps()
+        #ret=self.checkDeps()
 
-        if not ret:
-            print "Sorry some dependencies were not met, cannot run the application"
-            return
+        #if not ret:
+            #print "Sorry some dependencies were not met, cannot run the application"
+            #return
 
         self.checkModule(mod)
 
@@ -577,10 +577,10 @@ class App:
     def runModules(self):
         print "-- Running modules"
 
-        ret=self.checkDeps()
-        if not ret:
-            print "Sorry some dependencies were not met, cannot run the application"
-            return
+        #ret=self.checkDeps()
+        #if not ret:
+            #print "Sorry some dependencies were not met, cannot run the application"
+            #return
 
         self.checkModules()
 
@@ -590,11 +590,11 @@ class App:
     def quitModules(self):
         print "-- Quitting modules"
 
-        ret=self.checkDeps()
+        #ret=self.checkDeps()
 
-        if not ret:
-            print "Sorry some dependencies were not met, cannot stop the application"
-            return
+        #if not ret:
+            #print "Sorry some dependencies were not met, cannot stop the application"
+            #return
 
         for mod in self.modules:
             self.quitModule(mod)
@@ -602,17 +602,17 @@ class App:
     def killModules(self):
         print "-- Stopping modules"
 
-        ret=self.checkDeps()
+        #ret=self.checkDeps()
 
-        if not ret:
-            print "Sorry some dependencies were not met, cannot stop the application"
-            return
+        #if not ret:
+            #print "Sorry some dependencies were not met, cannot stop the application"
+            #return
 
         for mod in self.modules:
             self.killModule(mod)
 
     def checkDeps(self):
-        #print "-- Checking port dependencies:"
+        print "-- Checking port dependencies:"
 
         dependenciesFlag=True
 
