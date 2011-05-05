@@ -1,3 +1,9 @@
+/**
+* Copyright: (C) 2009 RobotCub Consortium
+* Authors: Matteo Taiana
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*/
+
 //good combinations:
 // _nParticles | stDev | inside_outside | nPixels
 //	800       100	       1.5	    50

@@ -1,3 +1,9 @@
+/**
+* Copyright: (C) 2011 RobotCub Consortium
+* Authors: Matteo Taiana
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*/
+
 #define COLOR_RED "\033[1;31m"
 #define COLOR_BLUE "\033[1;34m"
 #define COLOR_GREEN "\033[1;32m"

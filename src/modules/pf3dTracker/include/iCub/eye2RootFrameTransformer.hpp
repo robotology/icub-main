@@ -1,4 +1,10 @@
 
+/**
+* Copyright: (C) 2011 RobotCub Consortium
+* Authors: Matteo Taiana, Ugo Pattacini
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*/
+
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/ConstString.h>

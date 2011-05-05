@@ -1,3 +1,9 @@
+/**
+* Copyright: (C) 2009 RobotCub Consortium
+* Authors: Matteo Taiana
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*/
+
 #include <iostream>
 #include <string>
 #include <sstream>

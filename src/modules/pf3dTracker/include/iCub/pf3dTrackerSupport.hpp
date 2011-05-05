@@ -1,3 +1,10 @@
+/**
+* Copyright: (C) 2009 RobotCub Consortium
+* Authors: Matteo Taiana, Ugo Pattacini
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*/
+
+
 #ifndef _PF3DTRACKERSUPPORT_
 #define _PF3DTRACKERSUPPORT_
 #include <string>
