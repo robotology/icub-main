@@ -739,10 +739,11 @@ public:
 		
 		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
 		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
-		
 		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
 		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
-        Time::delay(1.0);
+        
+		Time::delay(0.5);
+
         if (left_arm_torques)  {delete left_arm_torques; left_arm_torques = 0;}
         if (right_arm_torques) {delete right_arm_torques; right_arm_torques = 0;}
         if (left_leg_torques)  {delete left_leg_torques; left_leg_torques = 0;}
@@ -752,7 +753,21 @@ public:
 		if (quadEstUp)         {delete quadEstUp; quadEstUp = 0;}
 		if (linEstLow)         {delete linEstLow; linEstLow = 0;}
 		if (quadEstLow)        {delete quadEstLow; quadEstLow = 0;}
-		if (port_inertial)     {delete port_inertial; port_inertial = 0;}
+		
+		//closing ports
+		port_inertial->interrupt();
+		additional_offset->interrupt();
+		left_arm_torques->interrupt();
+	    right_arm_torques->interrupt();
+        left_leg_torques->interrupt();
+	    right_leg_torques->interrupt();
+		port_inertial->close();
+		additional_offset->close();
+		left_arm_torques->close();
+	    right_arm_torques->close();
+        left_leg_torques->close();
+	    right_leg_torques->close();
+
     }   
 	void closePort(Contactable *_port)
 	{
@@ -977,9 +992,10 @@ public:
             g_comp->stop();
             delete g_comp; g_comp = 0;
         }
-
+	
+		//closing ports
         rpcPort.interrupt();
-        rpcPort.close();
+		rpcPort.close();
 
         return true;
     }
