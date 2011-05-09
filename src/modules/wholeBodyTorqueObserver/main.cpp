@@ -645,24 +645,28 @@ public:
 			InertialEst = 0;
 		}
 
-		fprintf(stderr, "Closing the RATorques\n");
+		fprintf(stderr, "Closing RATorques port\n");
 		closePort(port_RATorques);
-		fprintf(stderr, "Closing the LATorques\n");
+		fprintf(stderr, "Closing LATorques port\n");
 		closePort(port_LATorques);
-		fprintf(stderr, "Closing the RLTorques\n");
+		fprintf(stderr, "Closing RLTorques port\n");
 		closePort(port_RLTorques);
-		fprintf(stderr, "Closing the LLTorques\n");
+		fprintf(stderr, "Closing LLTorques port\n");
 		closePort(port_LLTorques);
-		fprintf(stderr, "Closing the RWTorques\n");
+		fprintf(stderr, "Closing RWTorques port\n");
 		closePort(port_RWTorques);
-		fprintf(stderr, "Closing the LWTorques\n");
+		fprintf(stderr, "Closing LWTorques port\n");
 		closePort(port_LWTorques);
+		fprintf(stderr, "Closing external_wrench_RA port\n");
+		closePort(port_external_wrench_RA);
+		fprintf(stderr, "Closing external_wrench_LA port\n");	
+		closePort(port_external_wrench_LA);
 
-		fprintf(stderr, "Closing the inertial\n");
+		fprintf(stderr, "Closing inertial port\n");
 		closePort(port_inertial_thread);
-		fprintf(stderr, "Closing the ft_arm_right\n");
+		fprintf(stderr, "Closing ft_arm_right port\n");
 		closePort(port_ft_arm_right);
-		fprintf(stderr, "Closing the ft_arm_left\n");
+		fprintf(stderr, "Closing ft_arm_left port\n");
 		closePort(port_ft_arm_left);
 
 	  
