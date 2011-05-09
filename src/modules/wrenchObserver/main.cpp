@@ -142,8 +142,8 @@ using namespace std;
 class inverseDynamics: public RateThread
 {
 private:
-    PolyDriver *dd;
-    PolyDriver *tt;
+    PolyDriver *limbDriver;
+    PolyDriver *torsoDriver;
     IEncoders  *iencs;
     IEncoders  *tencs;
 
@@ -199,7 +199,7 @@ private:
 
 public:
     inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt,
-                    const string &_part, const string &_name) : RateThread(_rate), dd(_dd), tt(_tt)
+                    const string &_part, const string &_name) : RateThread(_rate), limbDriver(_dd), torsoDriver(_tt)
     {        
         part = _part.c_str();
         first = true;
@@ -213,11 +213,11 @@ public:
         port_FT=new BufferedPort<Vector>;
 		port_FT->open((port+"/FT:i").c_str());
 
-        dd->view(iencs);
-        if (tt)
-            tt->view(tencs);
+        limbDriver->view(iencs);
+        if (torsoDriver)
+            torsoDriver->view(tencs);
 
-        if (tt)
+        if (torsoDriver)
         {
             if (part=="left_arm")
 			{
@@ -252,7 +252,7 @@ public:
         IS.resize(3,3);  IS.zero();
         ms = 0.0;
 
-        if (tt)
+        if (torsoDriver)
         {
             if (part=="left_arm")
                 sens = new iDynInvSensorArm(chain,"left",DYNAMIC);
@@ -277,7 +277,7 @@ public:
         iencs->getAxes(&jnt1);
         encoders.resize(jnt1);
 
-        if (tt)
+        if (torsoDriver)
         {
             tencs->getAxes(&jnt2);
             encodersT.resize(jnt2);
@@ -430,15 +430,15 @@ private:
 
     inverseDynamics *inv_dyn;
 
-    PolyDriver *dd;
-    PolyDriver *tt;
+    PolyDriver *limbDriver;
+    PolyDriver *torsoDriver;
 
 public:
     wrenchObserver()
     {
         inv_dyn=0;
-        dd=0;
-        tt=0;
+        limbDriver=0;
+        torsoDriver=0;
     }
 
     virtual bool createDriver(PolyDriver *_dd)
@@ -525,8 +525,8 @@ public:
             OptionsTorso.put("local",(fwdSlash+name+fwdSlash+part+"/torso/client").c_str());
             OptionsTorso.put("remote","/icub/torso");
 
-            tt = new PolyDriver(OptionsTorso);
-            if (!createDriver(tt))
+            torsoDriver = new PolyDriver(OptionsTorso);
+            if (!createDriver(torsoDriver))
             {
                 fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
                 return false;
@@ -540,8 +540,8 @@ public:
         OptionsLimb.put("device","remote_controlboard");
         OptionsLimb.put("local",(fwdSlash+name+fwdSlash+part+"/client").c_str());
         OptionsLimb.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
-        dd = new PolyDriver(OptionsLimb);
-        if (!createDriver(dd))
+        limbDriver = new PolyDriver(OptionsLimb);
+        if (!createDriver(limbDriver))
         {
             fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
             return false;
@@ -550,14 +550,14 @@ public:
         //--------------------------THREAD--------------------------
         if (part=="left_arm" || part=="right_arm")
         {
-            inv_dyn = new inverseDynamics(rate,  dd, tt, part.c_str(), name.c_str());
+            inv_dyn = new inverseDynamics(rate,  limbDriver, torsoDriver, part.c_str(), name.c_str());
             fprintf(stderr,"ft thread istantiated...\n");
             inv_dyn->start();
             fprintf(stderr,"thread started\n");
         }
         else if (part=="left_leg" || part=="right_leg")
         {
-            inv_dyn = new inverseDynamics(rate,  dd, NULL, part.c_str(), name.c_str());
+            inv_dyn = new inverseDynamics(rate,  limbDriver, NULL, part.c_str(), name.c_str());
             fprintf(stderr,"ft thread istantiated...\n");
             inv_dyn->start();
             fprintf(stderr,"thread started\n");
@@ -581,10 +581,17 @@ public:
             inv_dyn=0;
         }
 
-        if (dd)
+		// close the two polydrivers
+        if (limbDriver)
         {
-            delete dd;
-            dd=0;
+            delete limbDriver;
+            limbDriver=0;
+        }
+
+		if (torsoDriver)
+        {
+            delete torsoDriver;
+            torsoDriver=0;
         }
 
         return true;
