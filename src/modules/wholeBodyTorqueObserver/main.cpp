@@ -668,7 +668,10 @@ public:
 		closePort(port_ft_arm_right);
 		fprintf(stderr, "Closing ft_arm_left port\n");
 		closePort(port_ft_arm_left);
-
+		fprintf(stderr, "Closing ft_leg_right port\n");
+		closePort(port_ft_leg_right);
+		fprintf(stderr, "Closing ft_leg_left port\n");
+		closePort(port_ft_leg_left);
 	  
 //#if PERFORMANCE_TEST
 	  
