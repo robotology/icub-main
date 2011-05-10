@@ -32,10 +32,9 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 \section intro_sec Description
  
 This module uses the OpenCV Haar detector in order to find a 
-face in front of the robot. Once detected it sends out data to 
-control the head motion for tracking through the iKinGazeCtrl 
-module and also to move the hand to point at the gazing location
-through the iKinArmCtrl module. 
+face in front of the robot. Once detected it controls the head
+motion for tracking the face and also to move the hand to point 
+at the gazing location. 
  
 The robot will gaze around until it will find a face and then it 
 will remain on the last detected face (even in presence of more 
@@ -53,6 +52,10 @@ than one).
 - The parameter \e modName identifies the stem-name of the open 
   ports.
  
+--robot \e name 
+- The parameter \e name selects the robot name to connect to; if
+  not specified \e icub is assumed.
+ 
 --period \e T 
 - The integer \e T specifies the module period in [ms].
  
@@ -62,7 +65,7 @@ than one).
  
 --arm \e sel 
 - The parameter \e sel selects the arm used for pointing: it can
-  be "left" or "right".
+  be "left", "right" or even "none".
  
 --eyeDist \e d 
 - The double \e d specifies the fixed distance of the recognized
@@ -82,29 +85,18 @@ than one).
  
 /icub/cam/left 
 /icub/cam/right 
-/iKinGazeCtrl/head/x:o 
-/eyeTriangulation/rpc 
+/icub/cartesianController/left_arm/* 
+/icub/cartesianController/right_arm/* 
+/iKinGazeCtrl/* 
 /icub/face/emotions/in 
 
 \section portsc_sec Ports Created 
  
 - \e /faceTracker/img:i receives the image.
  
-- \e /faceTracker/gazeat:o sends out the target 3-d component of
-  the new fixation point (to be connected to the iKinGazeCtrl
-  module).
- 
-- \e /faceTracker/reach:o sends out the target 3-d component of 
-  the new fixation point (to be connected to the iKinArmCtrl
-  module for reaching purpose).
- 
 - \e /faceTracker/img:o sends out the image acquired from the 
   left camera with a superimposed rectangle which identifies the
   detected face (to be connected to a viewer).
- 
-- \e /faceTracker/get3D:rpc sends a request to the \ref 
-  icub_iKinHead module in order to retrieve the 3d location of
-  the face, knowing the its 2d location in the image plane.
  
 - \e /faceTracker/topdown:i receives as input the couple u-v 
   identifying a point where to direct the gaze that is selected
@@ -130,9 +122,15 @@ Windows, Linux
 #include <yarp/os/Port.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
+#include <yarp/dev/Drivers.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/dev/GazeControl.h>
+#include <yarp/dev/CartesianControl.h>
+#include <yarp/dev/PolyDriver.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/ImageFile.h>
+#include <yarp/math/Rand.h>
 
 #include <cv.h>
 #include <highgui.h>
@@ -148,13 +146,16 @@ Windows, Linux
 #define STATE_TRACK                 1
 #define STATE_TOPDOWN               2
                                
-#define GAZE_X_MIN                  -0.50
-#define GAZE_X_MAX                  -0.20
-#define GAZE_Y_MIN                  -0.40
-#define GAZE_Y_MAX                  0.40
-#define GAZE_Z_MIN                  0.45
-#define GAZE_Z_MAX                  0.50
-#define GAZE_DELTA_MAX              0.05
+#define GAZE_REST_AZI               0.0
+#define GAZE_REST_ELE               0.0
+#define GAZE_REST_VER               5.0
+
+#define GAZE_AZI_MIN                -20.0
+#define GAZE_AZI_MAX                20.0
+#define GAZE_ELE_MIN                0.0
+#define GAZE_ELE_MAX                20.0
+#define GAZE_VER_MIN                2.0
+#define GAZE_VER_MAX                20.0
                                
 #define GAZE_TIMER_MAX              1.50
 #define GAZE_TIMER_MIN              0.80
@@ -170,39 +171,41 @@ Windows, Linux
 #define REACH_OFFS_Z                -0.1
 
 #define FACE_EXPR_SEARCH            "shy"
-#define FACE_EXPR_FOUND             "sur"
+#define FACE_EXPR_FOUND             "hap"
 #define FACE_EXPR_TRACK             "hap"
-#define FACE_EXPR_TOPDOWN           "cun"
+#define FACE_EXPR_TOPDOWN           "shy"
 #define FACE_EXPR_TIMEOUT           2.0
 
-#define PICKTIMER(x)                (((double)rand()/(double)RAND_MAX)*(x))
-#define PICKRAND(x)                 ((2.0*((double)rand()/(double)RAND_MAX)-1.0)*(x))
 #define SAT(x,_min,_max)            ((x)>(_max)?(_max):((x)<(_min)?(_min):(x)))
 #define ARMISTRACKING(state)        ((state)>=1)
+
+YARP_DECLARE_DEVICES(icubmod)
 
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
+using namespace yarp::dev;
 using namespace yarp::sig;
+using namespace yarp::math;
 
 
 class trackThread : public RateThread
 {
 protected:
     int state;
-    string name;
     string eye;
     string arm;
-    unsigned int period;
     double eyeDist;
     double holdoff;
     double timer, timerThres, t0;
 
-    BufferedPort<ImageOf<PixelBgr> > *portImgIn,  *portImgOut;
-    BufferedPort<Vector>             *portGazeAt, *portReachPoint;
-    BufferedPort<Bottle>             *portTopDown;
-    Port                             *portGet3D;
-    Port                             *portSetFace;
+    BufferedPort<ImageOf<PixelBgr> > portImgIn, portImgOut;
+    BufferedPort<Bottle>             portTopDown;
+    Port                             portSetFace;
+
+    PolyDriver clientGaze, clientArm;
+    IGazeControl      *igaze;
+    ICartesianControl *iarm;
 
     ResourceFinder &rf;
 
@@ -212,74 +215,69 @@ protected:
     int centroidUpdate;
     int armCmdState;
 
+    int startup_gazeContext_id;
+    int startup_armContext_id;
+
     bool enableFaceExprTrack;
     bool queuedFaceExprFlag;
     string queuedFaceExprState;
 
-    Vector fp;
-
 public:
-    trackThread(ResourceFinder &_rf) : RateThread(50), rf(_rf)
-    { }
+    trackThread(ResourceFinder &_rf) : RateThread(50), rf(_rf) { }
 
     virtual bool threadInit()
     {
-        name=rf.check("name",Value("faceTracker")).asString().c_str();
-        period=rf.check("period",Value(50)).asInt();
+        string name=rf.check("name",Value("faceTracker")).asString().c_str();
+        string robot=rf.check("robot",Value("icub")).asString().c_str();
+        int period=rf.check("period",Value(50)).asInt();
         eye=rf.check("eye",Value("left")).asString().c_str();
         arm=rf.check("arm",Value("right")).asString().c_str();
         eyeDist=rf.check("eyeDist",Value(1.0)).asDouble();
         holdoff=rf.check("holdoff",Value(3.0)).asDouble();
 
-        portImgIn=new BufferedPort<ImageOf<PixelBgr> >;
-        string portInName="/"+name+"/img:i";
-        portImgIn->open(portInName.c_str());
+        Property optGaze("(device gazecontrollerclient)");
+        optGaze.put("remote","/iKinGazeCtrl");
+        optGaze.put("local",("/"+name+"/gaze_client").c_str());
 
-        portImgOut=new BufferedPort<ImageOf<PixelBgr> >;
-        string portOutName="/"+name+"/img:o";
-        portImgOut->open(portOutName.c_str());
+        if (!clientGaze.open(optGaze))
+            return false;
 
-        portReachPoint=new BufferedPort<Vector>;
-        string portReachPointName="/"+name+"/reach:o";
-        portReachPoint->open(portReachPointName.c_str());
+        clientGaze.view(igaze);
+        igaze->storeContext(&startup_gazeContext_id);
+        igaze->blockNeckRoll(0.0);
 
-        portGazeAt=new BufferedPort<Vector>;
-        string portGazeAtName="/"+name+"/gazeat:o";
-        portGazeAt->open(portGazeAtName.c_str());
-
-        portGet3D=new Port;
-        string portGet3DName="/"+name+"/get3D:rpc";
-        portGet3D->open(portGet3DName.c_str());
-
-        portTopDown=new BufferedPort<Bottle>;
-        string portTopDownName="/"+name+"/topdown:i";
-        portTopDown->open(portTopDownName.c_str());
-
-        portSetFace=new Port;
-        string portSetFaceName="/"+name+"/setFace:rpc";
-        portSetFace->open(portSetFaceName.c_str());
-
-        ConstString descPath=rf.findFile("descriptor");
-
-        if (!fd.init(descPath.c_str()))
+        if (arm!="none")
         {
-            cout << "Cannot load descriptor" << endl;        
+            Property optArm("(device cartesiancontrollerclient)");
+            optArm.put("remote",("/"+robot+"/cartesianController/"+arm+"_arm").c_str());
+            optArm.put("local",("/"+name+"/arm_client").c_str());
+    
+            if (!clientArm.open(optArm))
+                return false;
+    
+            clientArm.view(iarm);
+            iarm->storeContext(&startup_armContext_id);
+        }
+
+        portImgIn.open(("/"+name+"/img:i").c_str());
+        portImgOut.open(("/"+name+"/img:o").c_str());
+        portTopDown.open(("/"+name+"/topdown:i").c_str());
+        portSetFace.open(("/"+name+"/setFace:rpc").c_str());
+
+        if (!fd.init(rf.findFile("descriptor").c_str()))
+        {
+            fprintf(stdout,"Cannot load descriptor!\n");
             return false;
         }
 
-        srand((unsigned int)time(NULL));
+        Rand::init();
 
         resetState();
         armCmdState=0;
-
         queuedFaceExprFlag=false;
 
-        fp.resize(3);
-        fp[0]=GAZE_X_MAX;
-        fp[1]=0.0;
-        fp[2]=GAZE_Z_MAX;
-
         setRate(period);
+        cvSetNumThreads(1);
 
         t0=Time::now();
 
@@ -289,25 +287,12 @@ public:
     virtual void run()
     {
         // top-down input: handled at the highest priority
-        if (Bottle *topDownInput=portTopDown->read(false))
+        if (Bottle *topDownInput=portTopDown.read(false))
         {
-            Bottle cmd, reply;
-            cmd.addString("get");
-            cmd.addString("3dpoint");
-            cmd.addString(eye.c_str());
-            cmd.addDouble(topDownInput->get(0).asInt());
-            cmd.addDouble(topDownInput->get(1).asInt());
-            cmd.addDouble(eyeDist);
-
-            if (portGet3D->write(cmd,reply))
-            {
-                fp[0]=reply.get(0).asDouble();
-                fp[1]=reply.get(1).asDouble();
-                fp[2]=reply.get(2).asDouble();
-
-                portGazeAt->prepare()=fp;
-                portGazeAt->write();
-            }
+            Vector px(2);
+            px[0]=topDownInput->get(0).asInt();
+            px[1]=topDownInput->get(1).asInt();
+            igaze->lookAtMonoPixel(eye=="left"?0:1,px,eyeDist);
 
             armRest();
             setFace(FACE_EXPR_TOPDOWN);
@@ -315,6 +300,8 @@ public:
             state=STATE_TOPDOWN;
             centroidUpdate=0;
             t0=Time::now();
+
+            fprintf(stdout,"Top-Down gazing at: (%d,%d) pixel\n",(int)px[0],(int)px[1]);
         }
 
         if (state==STATE_TOPDOWN)
@@ -322,28 +309,28 @@ public:
                 resetState();
 
         // get inputs
-        ImageOf<PixelBgr> *pImgIn=portImgIn->read(false);        
+        ImageOf<PixelBgr> *pImgIn=portImgIn.read(false);        
 
         // seek for faces
-        if (state==STATE_SEARCH && timer>timerThres)
+        if ((state==STATE_SEARCH) && (timer>timerThres))
         {            
-            fp[0]=SAT(fp[0]+PICKRAND(GAZE_DELTA_MAX),GAZE_X_MIN,GAZE_X_MAX);
-            fp[1]=SAT(fp[1]+PICKRAND(GAZE_DELTA_MAX),GAZE_Y_MIN,GAZE_Y_MAX);
-            fp[2]=SAT(fp[2]+PICKRAND(GAZE_DELTA_MAX),GAZE_Z_MIN,GAZE_Z_MAX);
+            Vector ang(3);
+            ang[0]=Rand::scalar(GAZE_AZI_MIN,GAZE_AZI_MAX);
+            ang[1]=Rand::scalar(GAZE_ELE_MIN,GAZE_ELE_MAX);
+            ang[2]=Rand::scalar(GAZE_VER_MIN,GAZE_VER_MAX);
 
-            portGazeAt->prepare()=fp;
-            portGazeAt->write();
+            igaze->lookAtAbsAngles(ang);
 
-            timerThres=SAT(PICKTIMER(GAZE_TIMER_MAX),GAZE_TIMER_MIN,GAZE_TIMER_MAX);
+            timerThres=Rand::scalar(GAZE_TIMER_MIN,GAZE_TIMER_MAX);
             t0=Time::now();
 
-            cout << "Gazing at: " << fp.toString() << endl;
+            fprintf(stdout,"Gazing at: (%.1f,%.1f,%.1f) deg\n",ang[0],ang[1],ang[2]);
         }
 
         // process camera image
         if (pImgIn)
         {            
-            ImageOf<PixelBgr> &imgOut=portImgOut->prepare();
+            ImageOf<PixelBgr> &imgOut=portImgOut.prepare();
             imgOut=*pImgIn;
             IplImage *pVideoFrame=(IplImage*)imgOut.getIplImage();
 
@@ -386,33 +373,20 @@ public:
                     resetState(true);
             }
 
-            portImgOut->write();
+            portImgOut.write();
         }
 
         // send centroid and command arm
         if (centroidUpdate)
         {
-            Bottle cmd, reply;
-            cmd.addString("get");
-            cmd.addString("3dpoint");
-            cmd.addString(eye.c_str());
-            cmd.addDouble(faceCentroid.x);
-            cmd.addDouble(faceCentroid.y);
-            cmd.addDouble(eyeDist);
+            Vector px(2);
+            px[0]=faceCentroid.x;
+            px[1]=faceCentroid.y;
+            igaze->lookAtMonoPixel(eye=="left"?0:1,px,eyeDist);
 
-            if (portGet3D->write(cmd,reply))
-            {
-                fp[0]=reply.get(0).asDouble();
-                fp[1]=reply.get(1).asDouble();
-                fp[2]=reply.get(2).asDouble();
+            armTrack();
 
-                portGazeAt->prepare()=fp;
-                portGazeAt->write();
-
-                armTrack();
-            }
-
-            centroidUpdate=0;
+            centroidUpdate=0;            
         }
 
         faceExprHandling();
@@ -425,12 +399,12 @@ public:
         if (dumpLost)
         {
             armRest();    
-            cout << "face lost" << endl;
+            fprintf(stdout,"Face lost!\n");
         }
 
         setFace(FACE_EXPR_SEARCH);
 
-        timerThres=SAT(PICKTIMER(GAZE_TIMER_MAX),GAZE_TIMER_MIN,GAZE_TIMER_MAX);
+        timerThres=Rand::scalar(GAZE_TIMER_MIN,GAZE_TIMER_MAX);
         t0=Time::now();
         centroidUpdate=0;
         state=STATE_SEARCH;        
@@ -438,46 +412,53 @@ public:
 
     void armTrack()
     {
-        if (ARMISTRACKING(armCmdState))
+        if (arm!="none")
         {
-            Vector fpSat=fp;
-            if (fpSat[0]>REACH_X_MAX)
-                fpSat[0]=REACH_X_MAX;
-
-            fpSat[2]+=REACH_OFFS_Z;
-
-            portReachPoint->prepare()=fpSat;
-            portReachPoint->write();
+            if (ARMISTRACKING(armCmdState))
+            {
+                Vector fp;
+                igaze->getFixationPoint(fp);
+    
+                if (fp[0]>REACH_X_MAX)
+                    fp[0]=REACH_X_MAX;
+    
+                fp[2]+=REACH_OFFS_Z;
+    
+                iarm->goToPosition(fp);
+    
+                fprintf(stdout,"Reaching for: (%.1f,%.1f,%.1f) m\n",fp[0],fp[1],fp[2]);
+            }
+            else
+                armCmdState++;
         }
-        else
-            armCmdState++;
     }
 
     void armRest()
     {
-        Vector &x=portReachPoint->prepare();
-        x.resize(3);
-
-        x[0]=REACH_REST_X;
-        x[1]=REACH_REST_Y;
-        x[2]=REACH_REST_Z;
-
-        if (arm=="left")
-            x[1]=-x[1];
-
-        portReachPoint->write();
-
-        armCmdState=0;
+        if (arm!="none")
+        {
+            Vector x(3);
+            x[0]=REACH_REST_X;
+            x[1]=REACH_REST_Y;
+            x[2]=REACH_REST_Z;
+    
+            if (arm=="left")
+                x[1]=-x[1];
+    
+            iarm->goToPosition(x);
+    
+            armCmdState=0;
+        }
     }
 
     void gazeRest()
     {
-        fp[0]=GAZE_REST_X;
-        fp[1]=GAZE_REST_Y;
-        fp[2]=GAZE_REST_Z;
+        Vector ang(3);
+        ang[0]=GAZE_REST_AZI;
+        ang[1]=GAZE_REST_ELE;
+        ang[2]=GAZE_REST_VER;
 
-        portGazeAt->prepare()=fp;
-        portGazeAt->write();
+        igaze->lookAtAbsAngles(ang);
     }
 
     CvPoint getCentroid(CvRect *pRect, const bool centroidUpdateFlag=true)
@@ -550,7 +531,7 @@ public:
         cmd.addVocab(Vocab::encode("all"));
         cmd.addVocab(Vocab::encode(state.c_str()));
 
-        portSetFace->write(cmd,reply);
+        portSetFace.write(cmd,reply);
     }
 
     virtual void threadRelease()
@@ -558,29 +539,24 @@ public:
         armRest();
         gazeRest();
 
-        portImgIn->interrupt();
-        portImgOut->interrupt();
-        portReachPoint->interrupt();
-        portGazeAt->interrupt();
-        portGet3D->interrupt();
-        portTopDown->interrupt();
-        portSetFace->interrupt();
+        igaze->restoreContext(startup_gazeContext_id);
+        clientGaze.close();
 
-        portImgIn->close();
-        portImgOut->close();
-        portReachPoint->close();
-        portGazeAt->close();
-        portGet3D->close();
-        portTopDown->close();
-        portSetFace->close();
+        if (arm!="none")
+        {
+            iarm->restoreContext(startup_armContext_id);
+            clientArm.close();
+        }
 
-        delete portImgIn;
-        delete portImgOut;
-        delete portReachPoint;
-        delete portGazeAt;
-        delete portGet3D;
-        delete portTopDown;
-        delete portSetFace;
+        portImgIn.interrupt();
+        portImgOut.interrupt();
+        portTopDown.interrupt();
+        portSetFace.interrupt();
+
+        portImgIn.close();
+        portImgOut.close();
+        portTopDown.close();
+        portSetFace.close();
     }
 };
 
@@ -591,8 +567,6 @@ protected:
     trackThread *thr;
 
 public:
-    trackModule() { }
-
     virtual bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
@@ -622,6 +596,8 @@ public:
 
 int main(int argc, char *argv[])
 {
+    YARP_REGISTER_DEVICES(icubmod)
+
     Network yarp;
 
     if (!yarp.checkNetwork())

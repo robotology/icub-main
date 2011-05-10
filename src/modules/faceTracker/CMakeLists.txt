@@ -20,7 +20,8 @@ INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS}
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${OpenCV_LIBRARIES}
+TARGET_LINK_LIBRARIES(${PROJECTNAME} icubmod
+                                     ${OpenCV_LIBRARIES}
                                      ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)

@@ -16,16 +16,11 @@ a click on a viewer.
 
 \section dep_sec Dependencies
 Assumes \ref icub_iCubInterface is running, and that the head and
-the specified arm are instantiated.
+the specified arm are instantiated correctly along with the corresponding
+cartesian controllers.
 
 \section int_sec Instantiated Modules
 - \ref faceTracker "faceTracker"
-
-- \ref iKinGazeCtrl "iKinGazeCtrl"
-
-- \ref icub_iKinHead "iKinHead"
-
-- \ref iKinArmCtrl "iKinArmCtrl"
 
 \section config_sec Configuration Files
 The file ./conf/haarcascade_frontalface_default.xml is used to provide
