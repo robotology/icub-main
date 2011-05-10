@@ -577,6 +577,7 @@ public:
 
 		if (inv_dyn)
         {
+			inv_dyn->stop();
             delete inv_dyn;
             inv_dyn=0;
         }
