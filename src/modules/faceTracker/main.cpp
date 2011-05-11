@@ -273,7 +273,6 @@ public:
         queuedFaceExprFlag=false;
 
         setRate(period);
-        cvSetNumThreads(1);
 
         t0=Time::now();
 
