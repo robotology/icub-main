@@ -106,7 +106,9 @@ YARP libraries and OpenCV
 --numThreads \e threads
 - This parameter allows to control the maximum number of threads
   allocated by parallelized OpenCV functions. This option is
-  available only if the OpenMP layer is supported.\n
+  available only if the OpenMP layer is supported. By contrast,
+  the TBB layer automatically determines the number of
+  threads.\n
   \e #  > 0 : assign # threads to OpenCV; \n
   \e # == 0 : assign all threads to OpenCV; \n
   \e #  < 0 : assign all threads but # to OpenCV; \n
@@ -286,7 +288,6 @@ protected:
             delete featureErrors;
     }
 
-
 #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
     /************************************************************************/
     int setNumThreads(const int n)
@@ -310,7 +311,6 @@ protected:
         }
     }
 #endif
-
 
 public:
     /************************************************************************/
