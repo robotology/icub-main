@@ -160,10 +160,6 @@ Windows, Linux
 #define GAZE_TIMER_MAX              1.50
 #define GAZE_TIMER_MIN              0.80
 
-#define GAZE_REST_X                 -0.5
-#define GAZE_REST_Y                 0.0
-#define GAZE_REST_Z                 0.35
-
 #define REACH_X_MAX                 -0.1
 #define REACH_REST_X                -0.28
 #define REACH_REST_Y                0.1     // given for the right arm
