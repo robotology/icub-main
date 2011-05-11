@@ -1423,7 +1423,7 @@ public:
 		}
 		else
 		{
-			fprintf(stderr,"wholeObserver module was closed successfully! \n");    
+			fprintf(stderr,"wholeBodyTorqueObserver module was closed successfully! \n");    
 			return true;
 		}
 			
