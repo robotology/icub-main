@@ -204,6 +204,8 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     for (k =0; k < 4; k++)
     {
         //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
+		iEncoders->getEncoders(pos);
+		fprintf(stderr, "ARMCALIB[%d]: calibrating shoulder (j:%d) current enc values: %.2f %.2f %.2f %.2f\n", canID, k, pos[0], pos[1], pos[2], pos[3]);
         calibrateJoint(shoulderSetOfJoints[k]);
     }
     Time::delay(1.0);
@@ -351,7 +353,7 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
     {
 		iEncoders->getEncoder(j, &ang);
 		delta = fabs(ang-pos[j]);
-		fprintf(stderr, "ARMCALIB[%d] (joint %d) curr:%f des:%f -> delta:%f\n", canID, j, ang, pos[j], delta);
+		fprintf(stderr, "ARMCALIB[%d] (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, pos[j], delta);
 		if (delta<POSITION_THRESHOLD)
 		{
 			fprintf(stderr, "ARMCALIB[%d] (joint %d) completed! delta:%f\n", canID, j,delta);
