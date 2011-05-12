@@ -203,6 +203,7 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 	int shoulderSetOfJoints[] = {0, 1 , 2, 3};
     for (k =0; k < 4; k++)
     {
+        Time::delay(0.040);
         //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
 		iEncoders->getEncoders(pos);
 		fprintf(stderr, "ARMCALIB[%d]: calibrating shoulder (j:%d) current enc values: %.2f %.2f %.2f %.2f\n", canID, k, pos[0], pos[1], pos[2], pos[3]);
