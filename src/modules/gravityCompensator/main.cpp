@@ -100,6 +100,7 @@ using namespace std;
 enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 int gravity_mode = GRAVITY_COMPENSATION_ON;
+enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 
 class gravityCompensatorThread: public RateThread
 {
@@ -124,7 +125,7 @@ private:
 	ITorqueControl *iTqs_arm_left;
 	IImpedanceControl *iImp_arm_right;
 	ITorqueControl *iTqs_arm_right;
-	
+	thread_status_enum thread_status;	
 	
     PolyDriver *ddLL;
     PolyDriver *ddRL;
@@ -603,8 +604,15 @@ public:
 
     bool threadInit()
     {       
+		thread_status = STATUS_OK;
 		return true;
     }
+
+	inline thread_status_enum getThreadStatus() 
+	{
+		return thread_status;
+	}
+
 	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false)
 	{
 		int ctrl_mode = 0;
@@ -652,6 +660,14 @@ public:
 	}
     void run()
     {  
+		thread_status = STATUS_OK;
+        if(iencs_head->getEncoders(encoders_head.data()) == false)
+		{
+			printf ("gravityCompensator thread lost connection with iCubInterface.\n");
+			thread_status = STATUS_DISCONNECTED;
+			return;
+		}
+
 		if(isCalibrated==true)
 		{
 		
@@ -1001,7 +1017,33 @@ public:
     }
 
     double getPeriod()  { return 1.0;  }
-    bool updateModule() { return true; }
+    bool updateModule()
+	{
+	    static unsigned long int alive_counter = 0;
+        static double curr_time = Time::now();
+        if (Time::now() - curr_time > 60)
+        {
+            printf ("gravityCompensator is alive! running for %ld mins.\n",++alive_counter);
+            curr_time = Time::now();
+        }
+
+		if (g_comp==0) return false;
+
+		thread_status_enum thread_status = g_comp->getThreadStatus();
+
+		if (thread_status==STATUS_OK)
+			return true;
+		else if (thread_status==STATUS_DISCONNECTED)
+		{
+			printf ("gravityCompensator module lost connection with iCubInterface, now closing...\n");
+			return false;
+		}
+		else
+		{
+			fprintf(stderr,"gravityCompensator module was closed successfully! \n");    
+			return true;
+		}
+	}
 };
 
 
