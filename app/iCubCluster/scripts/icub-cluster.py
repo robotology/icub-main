@@ -290,7 +290,7 @@ class App:
                     
                 print 'Running',
                 print cmd
-                #ret=subprocess.Popen(cmd).wait()
+                ret=subprocess.Popen(cmd).wait()
             else:
                 print node.name,
                 print ' already running skipping'
