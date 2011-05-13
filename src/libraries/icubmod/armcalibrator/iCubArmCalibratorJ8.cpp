@@ -37,8 +37,10 @@ iCubArmCalibratorJ8::iCubArmCalibratorJ8()
 	original_pid = NULL;
     limited_pid = NULL;
 	maxPWM = NULL;
-    pos = NULL;
-    vel = NULL;
+    currPos = NULL;
+    currVel = NULL;
+	zeroPos = NULL;
+    zeroVel = NULL;
     homeVel=0;
     homePos=0;
 }
@@ -73,9 +75,10 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     param3 = new double[nj];
 	maxPWM = new int[nj];
 
-    pos = new double[nj];
-    vel = new double[nj];
-
+    zeroPos = new double[nj];
+    zeroVel = new double[nj];
+	currPos = new double[nj];
+    currVel = new double[nj];
     homePos = new double[nj];
     homeVel = new double[nj];
 
@@ -102,13 +105,13 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
    xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
    ACE_ASSERT (xtmp.size() == nj+1);
    for (i = 1; i < xtmp.size(); i++)
-        pos[i-1] = xtmp.get(i).asDouble();
+        zeroPos[i-1] = xtmp.get(i).asDouble();
    
    xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
    ACE_ASSERT (xtmp.size() == nj+1);
   
    for (i = 1; i < xtmp.size(); i++)
-        vel[i-1] = xtmp.get(i).asDouble();
+        zeroVel[i-1] = xtmp.get(i).asDouble();
    
    xtmp = p.findGroup("HOME").findGroup("PositionHome");
    ACE_ASSERT (xtmp.size() == nj+1);
@@ -155,10 +158,15 @@ bool iCubArmCalibratorJ8::close ()
     if (limited_pid != NULL) delete [] limited_pid;
 	limited_pid = NULL;
 
-    if (pos != NULL) delete[] pos;
-    pos = NULL;
-    if (vel != NULL) delete[] vel;
-    vel = NULL;
+    if (currPos != NULL) delete[] currPos;
+    currPos = NULL;
+    if (currVel != NULL) delete[] currVel;
+    currVel = NULL;
+
+	if (zeroPos != NULL) delete[] zeroPos;
+    zeroPos = NULL;
+    if (zeroVel != NULL) delete[] zeroVel;
+    zeroVel = NULL;
 
     if (homePos != NULL) delete[] homePos;
     homePos = NULL;
@@ -203,10 +211,10 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 	int shoulderSetOfJoints[] = {0, 1 , 2, 3};
     for (k =0; k < 4; k++)
     {
-        //  Time::delay(0.040);
+        Time::delay(0.040);
         //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
-        //	iEncoders->getEncoders(pos);
-		fprintf(stderr, "ARMCALIB[%d]: calibrating shoulder (j:%d) current enc values: %.2f %.2f %.2f %.2f\n", canID, k, pos[0], pos[1], pos[2], pos[3]);
+        iEncoders->getEncoders(currPos);
+		fprintf(stderr, "ARMCALIB[%d]: calibrating shoulder (j:%d) current enc values: %.2f %.2f %.2f %.2f\n", canID, k, currPos[0], currPos[1], currPos[2], currPos[3]);
         calibrateJoint(shoulderSetOfJoints[k]);
     }
     Time::delay(1.0);
@@ -318,8 +326,8 @@ void iCubArmCalibratorJ8::goToZero(int j)
     if (abortCalib)
         return;
 	iControlMode->setPositionMode(j);
-    iPosition->setRefSpeed(j, vel[j]);
-    iPosition->positionMove(j, pos[j]);
+    iPosition->setRefSpeed(j, zeroVel[j]);
+    iPosition->positionMove(j, zeroPos[j]);
 }
 
 void iCubArmCalibratorJ8::checkGoneToZero(int j)
@@ -353,8 +361,8 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
     while ( (!finished) && (!abortCalib))
     {
 		iEncoders->getEncoder(j, &ang);
-		delta = fabs(ang-pos[j]);
-		fprintf(stderr, "ARMCALIB[%d] (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, pos[j], delta);
+		delta = fabs(ang-zeroPos[j]);
+		fprintf(stderr, "ARMCALIB[%d] (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, zeroPos[j], delta);
 		if (delta<POSITION_THRESHOLD)
 		{
 			fprintf(stderr, "ARMCALIB[%d] (joint %d) completed! delta:%f\n", canID, j,delta);
