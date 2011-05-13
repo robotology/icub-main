@@ -1535,7 +1535,7 @@ bool ServerCartesianController::pingSolver()
 
     bool ok=Network::exists(portSlvName.c_str(),true);
 
-    fprintf(stdout,"%s\n",ok?"ok":"failed");
+    fprintf(stdout,"%s\n",ok?"ready":"not yet");
 
     return ok;
 }
