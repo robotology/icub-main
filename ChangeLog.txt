@@ -1,4 +1,9 @@
-
+2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
+    * app/iCubCluster/scripts/icub-cluster.py:
+    * app/iCubCluster/scripts/cluster-config.xml.template
+    Improved support for setting the value of the DISPLAY variable. Handle default
+    for backward compatibility. Print short error message when executed with incorrect 
+    number of parameters. Fixed template xml.
 
 2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
     * Starting log. Previous changes logged in root of repository ChangeLog.txt

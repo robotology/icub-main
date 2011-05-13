@@ -5,6 +5,8 @@
 <!-- nameserver namespace="/root" node="icubsrv" type="yarpserver3"> </nameserver> -->
 <nameserver namespace="/root" node="icubsrv" type="yarpserver"> </nameserver>
 
+<!-- specify nodes, if you want to enable display on desktop please specify which desktop to use
+this is usually the value of the DISPLAY variable when logged on -->
 <node display=":0.0">icubsrv</node>
 <node>pc104</node>
 

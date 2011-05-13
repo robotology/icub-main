@@ -657,7 +657,7 @@ class AutoScrollbar(Scrollbar):
         raise TclError, "cannot use place with this widget"
 
 def printUsage(scriptName):
-    print "manager.py: python gui for parsing applications xml files"
+    print scriptName, ": python gui for parsing applications xml files"
     print "Usage:"
     print scriptName, 
     print "app.xml"
@@ -678,7 +678,7 @@ if __name__ == '__main__':
     argc = len(sys.argv)
 
     if (argc!=2):
-        printUsage(sys.argv[0])
+        printUsage("manager.py")
         sys.exit(1)
 
     appFile = sys.argv[1]

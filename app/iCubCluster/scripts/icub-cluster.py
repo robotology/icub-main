@@ -115,11 +115,13 @@ class Cluster:
 
         print "Nodes are:"
         for node in self.nodes:
+            print node.name,
             if (node.display):
-                print node.name,
-                print " (enable local display)"
+                print "local display on", 
+                print node.displayValue
             else:
-                print node.name
+                print " local display disabled"
+                
     
         print "------------"
 
@@ -181,8 +183,8 @@ class App:
         tmpFrame=Frame(tmpFrame1)
 
         Label(tmpFrame, text="Name").grid(row=0, column=1)
-        Label(tmpFrame, text="On/Off").grid(row=0, column=2)
-        Label(tmpFrame, text="Desktop").grid(row=0, column=3)
+        Label(tmpFrame, text="Display").grid(row=0, column=2)
+        Label(tmpFrame, text="On/Off").grid(row=0, column=3)
         Label(tmpFrame, text="Select").grid(row=0, column=4)
         
         tmpFrame.grid(row=1, column=0)
@@ -198,22 +200,27 @@ class App:
             r=r+1
             tmp.grid(row=r, column=1)
             self.clusterNodes.append(tmp)
+
+            #v=IntVar()
+
+            v=StringVar()
+            if node.display:
+                v.set(node.displayValue)
+                self.dispFlag.append(1)
+            else:
+                v.set("none")
+                self.dispFlag.append(0)
+                
+            check=Entry(tmpFrame, textvariable=v, width=8, justify="center")
+            #Checkbutton(tmpFrame, variable=v)
+            check.config(state=DISABLED, disabledforeground="#000000")
+            check.grid(row=r, column=2)
+            
             v=IntVar()
             check=Checkbutton(tmpFrame, variable=v)
             check.config(state=DISABLED,disabledforeground="#00A000")
             self.values.append(v)
-            check.grid(row=r, column=2)
 
-            v=IntVar()
-
-            if node.display:
-                v.set(1)
-            else:
-                v.set(0)
-                
-            check=Checkbutton(tmpFrame, variable=v)
-            check.config(state=DISABLED, disabledforeground="#00A000")
-            self.dispFlag.append(v)
             check.grid(row=r, column=3)
 
             v=IntVar()
@@ -223,6 +230,8 @@ class App:
 #           check.config(state=ENABLED, disabledforeground="#00A000")
             self.selected.append(v)
             check.grid(row=r, column=4)
+
+            
 
         tmpFrame=Frame(tmpFrame1)
         tmpFrame.grid(row=1, column=1)
@@ -281,7 +290,7 @@ class App:
                     
                 print 'Running',
                 print cmd
-                ret=subprocess.Popen(cmd).wait()
+                #ret=subprocess.Popen(cmd).wait()
             else:
                 print node.name,
                 print ' already running skipping'
@@ -366,9 +375,24 @@ class App:
         else:
             print 'Nameserver was not running'
 
+            
+def printUsage(scriptName):
+    print scriptName, ": python gui for managing yarprun servers (Linux only)"
+    print "Usage:"
+    print scriptName, 
+    print "cluster-config.xml"
+    print "cluster-config.xml: cluster configuration file."
+    print "To learn how to write a valid cluster-config.xml see template in app/iCubCluster/scripts"
+
+    
 if __name__ == '__main__':
 
+    #first check arguments
     argc = len(sys.argv)
+
+    if (argc!=2):
+        printUsage("icub-cluster.py")
+        sys.exit(1)
 
     configFilename=sys.argv[1]
         
@@ -392,8 +416,9 @@ if __name__ == '__main__':
 
             if (node.hasAttributes()):
                 a=node.getAttribute("display")
-                if ( a=="true" or a=="True" or a=="TRUE" ): 
-                    newNode=Node(node.firstChild.data, True, "")
+                # handle default values for variable (for backward compatibility)
+                if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"): 
+                    newNode=Node(node.firstChild.data, True, ":0.0")
 		else:
 		    newNode=Node(node.firstChild.data, True, a)
             else:
