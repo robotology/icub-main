@@ -1001,14 +1001,21 @@ public:
 
     bool close()
     {
-		/*if(g_comp->isRunning()) { g_comp->stop(); delete g_comp; g_comp = 0;}
-		if(dd) { delete dd; dd = 0;}*/
-        if(g_comp)
+		//stop thread 
+		if(g_comp)
         {
             g_comp->stop();
             delete g_comp; g_comp = 0;
         }
-	
+		
+		//closing interfaces
+		if (dd_left_arm)	{delete dd_left_arm;  dd_left_arm=0;  }
+		if (dd_right_arm)	{delete dd_right_arm; dd_right_arm=0; }
+		if (dd_left_leg)	{delete dd_left_leg;  dd_left_leg=0;  }
+		if (dd_right_leg)	{delete dd_right_leg; dd_right_leg=0; }
+		if (dd_head)	    {delete dd_head;      dd_head=0;      }
+		if (dd_torso)	    {delete dd_torso;     dd_torso=0;     }
+
 		//closing ports
         rpcPort.interrupt();
 		rpcPort.close();
