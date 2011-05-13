@@ -14,10 +14,11 @@ endif(COMMAND cmake_policy)
 project(iCub)
 
 #### Find YARP
-find_package(YARP REQUIRED)
+# find yarp, accept all versions
+#find_package(YARP REQUIRED)
 
-## request particular version (to be enabled)
-#find_package(YARP 2.3.2 REQUIRED)
+## find yarp request particular version
+find_package(YARP 2.3.3 REQUIRED)
 
 if (YARP_FOUND)
    if (YARP_HAS_MATH_LIB)
@@ -214,7 +215,7 @@ add_custom_target(uninstall
 
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
-set(ICUB_CANPROTOCOL_STRICT FALSE CACHE BOOL "Enable strict check of canbus protocol and firmware versions")
+set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions")
 
 ######
 

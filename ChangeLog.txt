@@ -1,4 +1,11 @@
 2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
+    * CMakeLists.txt:
+    - enable strict check of YARP version
+    now requires YARP version 2.3.3
+    
+    - ICUB_CANPROTOCOL_STRICT now default is true
+    
+2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
     * app/iCubCluster/scripts/icub-cluster.py:
     * app/iCubCluster/scripts/cluster-config.xml.template
     Improved support for setting the value of the DISPLAY variable. Handle default
