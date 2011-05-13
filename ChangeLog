@@ -1,3 +1,6 @@
+2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
+    * Now logging changes of main in main/ChangeLog
+
 2011-04-02 Lorenzo Natale <lorenzo.natale@iit.it>
 	* main/app/icub-app.py
 	* main/app/default/scripts/manager.py
