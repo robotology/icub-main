@@ -7,11 +7,13 @@ file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 
 icub_app_install(${appname} 
 				FILES ${scripts}
-				DESTINATION scripts)
+				DESTINATION scripts
+				FORCE_UPDATE)
 
 icub_app_install(${appname} 
 				FILES ${conf}
-				DESTINATION conf)
+				DESTINATION conf
+				FORCE_UPDATE)
 				
 
 				
