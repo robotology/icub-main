@@ -760,6 +760,15 @@ public:
         
 		Time::delay(0.5);
 
+	/*	left_arm_torques->interrupt();
+	    right_arm_torques->interrupt();
+        left_leg_torques->interrupt();
+	    right_leg_torques->interrupt();*/
+	/*	left_arm_torques->close();
+	    right_arm_torques->close();
+        left_leg_torques->close();
+	    right_leg_torques->close();*/
+
         if (left_arm_torques)  {delete left_arm_torques; left_arm_torques = 0;}
         if (right_arm_torques) {delete right_arm_torques; right_arm_torques = 0;}
         if (left_leg_torques)  {delete left_leg_torques; left_leg_torques = 0;}
@@ -773,16 +782,8 @@ public:
 		//closing ports
 		port_inertial->interrupt();
 		additional_offset->interrupt();
-		left_arm_torques->interrupt();
-	    right_arm_torques->interrupt();
-        left_leg_torques->interrupt();
-	    right_leg_torques->interrupt();
 		port_inertial->close();
 		additional_offset->close();
-		left_arm_torques->close();
-	    right_arm_torques->close();
-        left_leg_torques->close();
-	    right_leg_torques->close();
 
     }   
 	void closePort(Contactable *_port)
