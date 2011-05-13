@@ -1,0 +1,7 @@
+
+
+2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
+    * Starting log. Previous changes logged in root of repository ChangeLog.txt
+    
+    
+    
