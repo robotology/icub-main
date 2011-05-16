@@ -304,8 +304,8 @@ public:
     */
     virtual ~iKinLink() { }
 
-    /****** void methods for iDyn *******/
-    /** set **/
+    // void methods for iDyn
+    // set
     virtual double setDAng(const double)                                          { notImplemented(verbose); return 0.0;   }
     virtual double setD2Ang(const double)                                         { notImplemented(verbose); return 0.0;   }
     virtual void   setPosVelAcc(const double, const double, const double)         { notImplemented(verbose);               }
@@ -323,7 +323,7 @@ public:
     virtual bool   setMoment(const yarp::sig::Vector&)                            { notImplemented(verbose); return false; }
     virtual void   setTorque(const double)                                        { notImplemented(verbose);               }
 
-    /** get **/
+    // get
     virtual yarp::sig::Matrix getInertia() const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
     virtual double            getMass()	   const { notImplemented(verbose); return 0.0;                                }
     virtual double            getIm()      const { notImplemented(verbose); return 0.0;                                }
