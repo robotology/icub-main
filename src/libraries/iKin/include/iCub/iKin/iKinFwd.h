@@ -306,22 +306,22 @@ public:
 
     /****** void methods for iDyn *******/
     /** set **/
-    virtual double setDAng(const double _dteta)                                               { notImplemented(verbose); return 0.0;   }
-    virtual double setD2Ang(const double _ddteta)                                             { notImplemented(verbose); return 0.0;   }
-    virtual void   setPosVelAcc(const double _teta,const double _dteta,const double _ddteta)  { notImplemented(verbose);               }
-    virtual bool   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
-                                        const yarp::sig::Matrix &_I, const double _kr,
-                                        const double _Fv, const double _Fs, const double _Im) { notImplemented(verbose); return false; }
-    virtual bool   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
-                                        const yarp::sig::Matrix &_I)                          { notImplemented(verbose); return false; }
-    virtual bool   setStaticParameters(const double _m, const yarp::sig::Matrix &_HC)         { notImplemented(verbose); return false; }
-    virtual bool   setInertia(const yarp::sig::Matrix &_I)                                    { notImplemented(verbose); return false; }
-    virtual void   setMass(const double _m)                                                   { notImplemented(verbose);               }
-    virtual bool   setCOM(const yarp::sig::Matrix &_HC)	                                      { notImplemented(verbose); return false; }
-    virtual bool   setCOM(const yarp::sig::Vector &_rC)	                                      { notImplemented(verbose); return false; }
-    virtual bool   setForce(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu)        { notImplemented(verbose); return false; }
-    virtual bool   setMoment(const yarp::sig::Vector &_Mu)                                    { notImplemented(verbose); return false; }
-    virtual void   setTorque(const double _Tau)                                               { notImplemented(verbose);               }
+    virtual double setDAng(const double)                                          { notImplemented(verbose); return 0.0;   }
+    virtual double setD2Ang(const double)                                         { notImplemented(verbose); return 0.0;   }
+    virtual void   setPosVelAcc(const double, const double, const double)         { notImplemented(verbose);               }
+    virtual bool   setDynamicParameters(const double, const yarp::sig::Matrix&,
+                                        const yarp::sig::Matrix&, const double,
+                                        const double, const double, const double) { notImplemented(verbose); return false; }
+    virtual bool   setDynamicParameters(const double, const yarp::sig::Matrix&,
+                                        const yarp::sig::Matrix&)                 { notImplemented(verbose); return false; }
+    virtual bool   setStaticParameters(const double, const yarp::sig::Matrix&)    { notImplemented(verbose); return false; }
+    virtual bool   setInertia(const yarp::sig::Matrix &)                          { notImplemented(verbose); return false; }
+    virtual void   setMass(const double)                                          { notImplemented(verbose);               }
+    virtual bool   setCOM(const yarp::sig::Matrix&)	                              { notImplemented(verbose); return false; }
+    virtual bool   setCOM(const yarp::sig::Vector&)	                              { notImplemented(verbose); return false; }
+    virtual bool   setForce(const yarp::sig::Vector&, const yarp::sig::Vector&)   { notImplemented(verbose); return false; }
+    virtual bool   setMoment(const yarp::sig::Vector&)                            { notImplemented(verbose); return false; }
+    virtual void   setTorque(const double)                                        { notImplemented(verbose);               }
 
     /** get **/
     virtual yarp::sig::Matrix getInertia() const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
@@ -912,7 +912,7 @@ public:
     * @note This method is empty in iKinLimb because it's 
     * limb-specific: see the implementations for iCubLimbs. 
     */
-    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim) { notImplemented(verbose); return true; }
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*>&) { notImplemented(verbose); return true; }
 
     /**
     * Destructor. 
