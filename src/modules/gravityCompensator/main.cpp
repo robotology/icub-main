@@ -628,7 +628,6 @@ public:
 		{
 			for(int i=0;i<ctrlJnt;i++)
 			{
-				fprintf(stderr,"Setting gravity compensation offset to zero (joint %d)\n", i);
 				iImp->setImpedanceOffset(i,0.0);
 				iTqs->setRefTorque(i,0.0);
 			}
@@ -769,12 +768,22 @@ public:
     {
 		Vector Z(10);Z=0.0;
 		
+		fprintf(stderr,"Setting gravity compensation offset to zero, left arm\n");
 		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
+		fprintf(stderr,"Setting gravity compensation offset to zero, right arm\n");
 		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
 		
 		//In the following two lines: feedFwdGravityControl is execute only if legs are enabled
-		if (iCtrlMode_leg_left)	 feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
-		if (iCtrlMode_leg_right) feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
+		if (iCtrlMode_leg_left)	 
+		{
+			fprintf(stderr,"Setting gravity compensation offset to zero, left leg\n");
+			feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
+		}
+		if (iCtrlMode_leg_right)
+		{
+			fprintf(stderr,"Setting gravity compensation offset to zero, right leg\n");
+			feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
+		}
         
 		Time::delay(0.5);
 
