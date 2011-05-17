@@ -23,18 +23,18 @@ SET(ICUB_REQYARP_VERSION_PATCH "3")
 ## find_package does not work as expected in version 2.6.0
 
 if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
-	# find yarp, accept all versions
-        find_package(YARP REQUIRED)
-        
-        message(STATUS "YARP is version: ${YARP_VERSION_MAJOR}.${YARP_VERSION_MINOR}.${YARP_VERSION_PATCH}")
+        # find yarp, accept all versions
+        find_package(YARP REQUIRED)       
         if (YARP_VERSION_MAJOR LESS ICUB_REQYARP_VERSION_MAJOR OR YARP_VERSION_MINOR LESS ICUB_REQYARP_VERSION OR YARP_VERSION_PATCH LESS ICUB_REQYARP_VERSION_PATCH)
            message(FATAL_ERROR "YARP version is not compatible, please update YARP")
         endif()
 else()
         ## find yarp request particular version
-        find_package(YARP ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATH})
+        find_package(YARP ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATH} REQUIRED)
 endif()
 
+message(STATUS "YARP is version: ${YARP_VERSION_MAJOR}.${YARP_VERSION_MINOR}.${YARP_VERSION_PATCH}")
+ 
 if (YARP_FOUND)
    if (YARP_HAS_MATH_LIB)
      set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
