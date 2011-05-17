@@ -615,9 +615,30 @@ public:
 
 	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false)
 	{
-		int ctrl_mode = 0;
+		//check if interfaces are still up (icubinterface running)  
+		if (iCtrlMode == 0) 
+			{fprintf(stderr,"ControlMode interface already closed, unable to reset compensation offset.\n");    return;}
+		if (iTqs == 0)      
+			{fprintf(stderr,"TorqueControl interface already closed, unable to reset compensation offset.\n");  return;}
+		if (iImp == 0)     
+			{fprintf(stderr,"Impedance interface already closed, unable to reset compensation offset.\n");      return;}
+	
+		//set to zero all the offsets if the module is closing
+		if(releasing)
+		{
+			for(int i=0;i<ctrlJnt;i++)
+			{
+				fprintf(stderr,"Setting gravity compensation offset to zero (joint %d)\n", i);
+				iImp->setImpedanceOffset(i,0.0);
+				iTqs->setRefTorque(i,0.0);
+			}
+			return;
+		}
+
+		//set the appropriate feedforward term (normal operation)
 		for(int i=0;i<ctrlJnt;i++)
 		{
+			int ctrl_mode = 0;
 			iCtrlMode->getControlMode(i,&ctrl_mode);
 			switch(ctrl_mode)
 			{
@@ -650,14 +671,9 @@ public:
 				default:
 					break;
 			}
-			if(releasing)
-			{
-                fprintf(stderr,"releasing... \n");
-				iImp->setImpedanceOffset(i,0.0);
-				iTqs->setRefTorque(i,0.0);
-			}
 		}
 	}
+
     void run()
     {  
 		thread_status = STATUS_OK;
@@ -755,8 +771,10 @@ public:
 		
 		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
 		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
-		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
-		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
+		
+		//In the following two lines: feedFwdGravityControl is execute only if legs are enabled
+		if (iCtrlMode_leg_left)	 feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
+		if (iCtrlMode_leg_right) feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
         
 		Time::delay(0.5);
 
@@ -781,8 +799,8 @@ public:
 		
 		//closing ports
 		port_inertial->interrupt();
-		additional_offset->interrupt();
 		port_inertial->close();
+		additional_offset->interrupt();
 		additional_offset->close();
 
     }   
