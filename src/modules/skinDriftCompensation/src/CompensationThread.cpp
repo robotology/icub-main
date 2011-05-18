@@ -209,7 +209,7 @@ void CompensationThread::checkErrors(){
             }
             
             portNum--;
-            SKIN_DIM -= compensators[i]->getNumTaxels();            
+            SKIN_DIM -= compensators[i]->getNumTaxels();    // remove the taxel from the total count
             compensators.erase(compensators.begin()+i);
             i--;
         }
@@ -231,7 +231,7 @@ bool CompensationThread::doesBaselineExceed(unsigned int &compInd, unsigned int 
     CompensationThreadState currentState = state;
     stateSem.post();
     if(currentState==compensation){
-        FOR_ALL_PORTS(i){        
+        FOR_ALL_PORTS(i){
             if(compensators[i]->doesBaselineExceed(taxInd, baseline, initialBaseline)){
                 compInd = i;
                 return true;
@@ -292,9 +292,10 @@ void CompensationThread::sendMonitorData(){
 	Bottle &b = monitorPort.prepare();
 	b.clear();
 	b.addDouble(frequency); // data frequency
+    
     stateSem.wait();
-    if(state==compensation){
-        // for each taxel add how much the baseline has changed so far
+    if(state==compensation){    // during calibration don't send this data
+        // for each taxel add how much the baseline has changed so far (i.e. the drift)
         FOR_ALL_PORTS(i){
             Vector temp = compensators[i]->getCompensation();
             for(int j=0; j<temp.size(); j++){
@@ -306,7 +307,8 @@ void CompensationThread::sendMonitorData(){
 	monitorPort.write();
 }
 
-void CompensationThread::sendInfoMsg(string msg){
+void CompensationThread::sendInfoMsg(string msg){    
+    printf("\n");
     printf("%s", msg.c_str());
     Bottle& b = infoPort.prepare();
     b.clear();
@@ -315,22 +317,18 @@ void CompensationThread::sendInfoMsg(string msg){
 }
 
 Bottle CompensationThread::getInfo(){
-    stringstream ss;
     Bottle res;
     if(this->getIterations()>1){    // check whether the thread has been initialized
-        ss<< "Name: "<< moduleName;
-        res.addString(ss.str().c_str());
-        ss.str(""); ss.clear();
-        ss<< "Robot Name: "<< robotName;
-        res.addString(ss.str().c_str());
-        ss.str(""); ss.clear();
-        ss<< "Input port num: "<< portNum;
-        res.addString(ss.str().c_str());
-        ss.str(""); ss.clear();
+        Bottle& nameB = res.addList();
+		nameB.addString("Name: "); 
+		nameB.addString(moduleName.c_str());
+		Bottle& robotB = res.addList();
+        robotB.addString("Robot Name: "); 
+		robotB.addString(robotName.c_str());        
+        Bottle& portB = res.addList();
         FOR_ALL_PORTS(i){
-            ss<< "- "<< i<< ") "<< compensators[i]->getInputPortName()<< " ("<< compensators[i]->getNumTaxels()<< " taxels)";
-            res.addString(ss.str().c_str());
-            ss.str(""); ss.clear();
+            portB.addString(compensators[i]->getInputPortName().c_str());
+			portB.addInt(compensators[i]->getNumTaxels());
         }
     }
     return res;

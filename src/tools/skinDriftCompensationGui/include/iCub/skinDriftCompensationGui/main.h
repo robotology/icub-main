@@ -44,13 +44,20 @@ GtkStatusbar			*statusBarFreq;
 // first tab
 GtkProgressBar			*progBarCalib;
 GtkButton				*btnCalibration;
+GtkToggleButton			*btnSmooth;
+GtkToggleButton			*btnBinarization;
+GtkScale				*scaleSmooth;	
+GtkTextView             *tvLog;
+GtkTextBuffer           *tbLog;
 // second tab
 GtkTreeView             *treeBaselines;
-GtkListStore            *listStoreComp;
+GtkTreeStore            *treeStoreComp;
 // third tab
 GtkCurve                *curveComp;
 GtkLabel                *lblMaxY;
 GtkLabel                *lblMinY;
+GtkLabel                *lblMaxX;
+GtkLabel                *lblMinX;
 // fourth tab
 GtkLabel                *lblInfo;
 
@@ -59,7 +66,20 @@ Port					guiRpcPort;             // to send rpc command to the module
 BufferedPort<Bottle>	driftCompMonitorPort;   // for reading streaming data (frequency, drift)
 BufferedPort<Bottle>	driftCompInfoPort;      // for reading sporadic msgs (errors, warnings)
 
+vector<string>			portNames;				// names of the skin input ports
+vector<unsigned int>	portDim;				// number of taxels of the input ports
 double					currentSmoothFactor;    // current smooth factor value
+bool                    initDone;               // true if the gui has been initialized
+
+void initGuiStatus();
+
+static void printLog(string text){
+    text = text + "\n";
+    GtkTextIter tbIter;    
+    gtk_text_buffer_get_end_iter(tbLog, &tbIter);
+    gtk_text_buffer_insert(tbLog, &tbIter, text.c_str(), text.length());
+    gtk_text_view_scroll_to_iter(tvLog, &tbIter, 0.0, false, 0.0, 0.0);
+}
 
 static double round(double value, int decimalDigit){
 	double q = pow(10.0, decimalDigit);

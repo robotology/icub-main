@@ -17,7 +17,7 @@
  */
 #include "iCub/skinDriftCompensationGui/guiCallback.h"
 
-void initGuiStatus(GtkToggleButton* btnSmooth, GtkToggleButton* btnBinarization, GtkScale* scaleSmooth){
+void initGuiStatus(){
     Bottle reply = sendRpcCommand(true, 2, "get", "binarization");
 	if(string(reply.toString().c_str()).compare("on") == 0){
 		gtk_toggle_button_set_active(btnBinarization, true);
@@ -47,12 +47,26 @@ void initGuiStatus(GtkToggleButton* btnSmooth, GtkToggleButton* btnBinarization,
 
     // get module information
     reply = sendRpcCommand(true, 2, "get", "info");
-    string s = reply.get(0).toString().c_str();
-    for(int i=1;i<reply.size();i++){
-        s += "\n";
-        s += reply.get(i).toString().c_str();
+    stringstream ss; 
+	ss<< reply.get(0).toString().c_str()<< endl;
+	ss<< reply.get(1).toString().c_str()<< "\nInput ports:";
+	Bottle* portList = reply.get(2).asList();
+	portNames.resize(portList->size()/2);
+	portDim.resize(portList->size()/2);
+    int numTaxels = 0;
+    for(unsigned int i=0;i<portDim.size();i++){
+		portNames[i] = portList->get(i*2).toString().c_str();
+		portDim[i] = portList->get(i*2+1).asInt();
+        numTaxels += portDim[i];
+        ss<< "\n - "<< portNames[i]<< " ("<< portDim[i]<< " taxels)";
     }
-    gtk_label_set_text(lblInfo, s.c_str());
+    gtk_label_set_text(lblInfo, ss.str().c_str());
+
+    // set plot max X axis labels
+    int numTriangles = numTaxels/16;
+    ss.str("");
+    ss<< numTriangles;
+    gtk_label_set_text(lblMaxX, ss.str().c_str());
 }
 
 bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], string &guiName, unsigned int& gXpos, unsigned int& gYpos){    
@@ -90,7 +104,9 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 	}
     driftCompInfoPort.setStrict();
 	
-	if(!yarp.connect(guiRpcPortName.c_str(), driftCompRpcPortName.c_str())){
+    // automatic connections removed because they gave problems when running the gui 
+    // just after the skinDriftCompensation module (using manager.py)
+	/*if(!yarp.connect(guiRpcPortName.c_str(), driftCompRpcPortName.c_str())){
 		string msg = string("Unable to connect to skinDriftCompensation rpc port: ") 
 			+ driftCompRpcPortName.c_str() + ". Connect later.";
 		openDialog(msg.c_str(), GTK_MESSAGE_WARNING);
@@ -104,18 +120,16 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 		string msg = string("Unable to connect to skinDriftCompensation info port: ") 
 			+ driftCompInfoPortName.c_str() + ". Connect later.";
 		openDialog(msg.c_str(), GTK_MESSAGE_WARNING);
-	}
+	}*/
     return true;
 }
 
 
 int main (int argc, char *argv[])
 {		
-	GtkBuilder              *builder;	
-	GtkToggleButton			*btnSmooth;
-	GtkToggleButton			*btnBinarization;
-	GtkScale				*scaleSmooth;	
+	GtkBuilder              *builder;		
 	GtkButton				*btnTouchThr;
+    GtkButton				*btnClearLog;
 	GError					*error = NULL;
 
     Network yarp;
@@ -131,11 +145,13 @@ int main (int argc, char *argv[])
 		
 	if(!initNetwork(yarp, rf, argc, argv, guiName, gXpos, gYpos))
         return 0;
+
 	rf.setDefault("gladeFile", "skinDriftCompGui.glade");
 	ConstString gladeFile = rf.findFile("gladeFile");
 	
 	if( !gtk_builder_add_from_file (builder, gladeFile.c_str(), &error)){
 		g_warning( "%s", error->message );
+		clean_exit();
         return 0;
 	}
 
@@ -143,23 +159,33 @@ int main (int argc, char *argv[])
 	window			= GTK_WINDOW (gtk_builder_get_object (builder, "window"));
 	btnSmooth		= GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "btnSmooth"));
 	btnBinarization = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "btnBinarization"));
-	scaleSmooth		= GTK_SCALE (gtk_builder_get_object (builder, "scaleSmooth"));
-	statusBar		= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusBar"));
-	statusBarFreq	= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusbarFreq"));
+    btnClearLog     = GTK_BUTTON (gtk_builder_get_object (builder, "btnClearLog"));
+	scaleSmooth		= GTK_SCALE (gtk_builder_get_object (builder, "scaleSmooth"));	
 	btnCalibration	= GTK_BUTTON (gtk_builder_get_object (builder, "btnCalibration"));
 	progBarCalib	= GTK_PROGRESS_BAR (gtk_builder_get_object (builder, "progressbarCalib"));
 	btnTouchThr		= GTK_BUTTON (gtk_builder_get_object (builder, "btnThreshold"));
+    tbLog           = GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbufferLog"));
+    tvLog           = GTK_TEXT_VIEW (gtk_builder_get_object (builder, "textviewLog"));
     lblInfo         = GTK_LABEL (gtk_builder_get_object (builder, "labelInfo"));
     treeBaselines   = GTK_TREE_VIEW (gtk_builder_get_object (builder, "treeview"));
-    listStoreComp   = GTK_LIST_STORE (gtk_builder_get_object (builder, "liststore"));
+    treeStoreComp   = GTK_TREE_STORE (gtk_builder_get_object (builder, "treestore"));
     curveComp       = GTK_CURVE (gtk_builder_get_object (builder, "curve"));
     lblMaxY         = GTK_LABEL (gtk_builder_get_object (builder, "lblMaxY"));
     lblMinY         = GTK_LABEL (gtk_builder_get_object (builder, "lblMinY"));
+    lblMaxX         = GTK_LABEL (gtk_builder_get_object (builder, "lblMaxX"));
+    lblMinX         = GTK_LABEL (gtk_builder_get_object (builder, "lblMinX"));    
+    statusBar		= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusBar"));
+	statusBarFreq	= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusbarFreq"));
 
 	// if the rpc port is connected, then initialize the gui status
+    initDone = false;
 	if(guiRpcPort.getOutputCount()>0){
-		initGuiStatus(btnSmooth, btnBinarization, scaleSmooth);
-	}
+		initGuiStatus();
+        initDone = true;
+        printLog("GUI connected!");
+	}else
+        printLog("GUI not connected. Connect it to the module to make it work.");
+    // otherwise the gui will try to initialize every timeout (i.e. 2 seconds)
 
 	// connect all the callback functions (after the initialization, so as not to activate the callbacks)
 	g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy_event), NULL);
@@ -167,6 +193,7 @@ int main (int argc, char *argv[])
 	g_signal_connect(btnBinarization, "button-press-event", G_CALLBACK(toggle_button_binarization), NULL);
 	g_signal_connect(btnCalibration, "button-press-event", G_CALLBACK(button_calibration), NULL);
 	g_signal_connect(btnTouchThr, "button-press-event", G_CALLBACK(button_threshold), NULL);
+    g_signal_connect(btnClearLog, "button-press-event", G_CALLBACK(button_clear_log), NULL);
 	g_signal_connect(scaleSmooth, "change-value", G_CALLBACK(scale_smooth_value_changed), NULL);
 	gdk_threads_add_timeout(2000, (periodic_timeout), NULL);   // thread safe version of "g_timeout_add()
 

@@ -147,12 +147,13 @@ void Compensator::calibrationFinish(){
 		//when do we cross the threshold?
 		for (int j=0; j<=MAX_SKIN; j++) {
 			if (skin_empty[i][j] > (calibrationRead*0.95)) {
-				touchThresholds[i] = max<double>(MIN_TOUCH_THR, (double)j - baselines[i]);	// the threshold can not be less than X
-				j = MAX_SKIN;
+                // the threshold can not be less than MIN_TOUCH_THR
+				touchThresholds[i] = max<double>(MIN_TOUCH_THR, (double)j - baselines[i]);
+				j = MAX_SKIN;   // break
 			}
 		}
 	}
-    // store the initial baseline to compute the drift compensated
+    // store the initial baseline to compute the drift compensated later
     initialBaselines = baselines;
 	
 	// release the semaphore so that as of now the touchThreshold can be read
@@ -186,8 +187,12 @@ bool Compensator::readInputData(Vector& skin_values){
     int err;
     if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
         readErrorCounter++;
-        err=tactileSensor->read(skin_values);
-        //fprintf(stderr, "[%s]: Error %d reading tactile sensor.\n", compensatedTactileDataPort.getName().c_str(), err);
+        if(err == IAnalogSensor::AS_TIMEOUT)
+            fprintf(stderr, "[%s]: Timeout error reading tactile sensor.\n", compensatedTactileDataPort.getName().c_str(), err);
+        else if(err == IAnalogSensor::AS_OVF)
+            fprintf(stderr, "[%s]: Ovf error reading tactile sensor.\n", compensatedTactileDataPort.getName().c_str(), err);
+        else if(err == IAnalogSensor::AS_ERROR)
+            fprintf(stderr, "[%s]: Generic error reading tactile sensor.\n", compensatedTactileDataPort.getName().c_str(), err);
 	    return false;
     }
 
@@ -196,6 +201,7 @@ bool Compensator::readInputData(Vector& skin_values){
         fprintf(stderr, "Unexpected size of the input array (raw tactile data): %d\n", skin_values.size());
         return false;
     }
+    
 
     readErrorCounter = 0;
     return true;
@@ -210,8 +216,8 @@ bool Compensator::readRawAndWriteCompensatedData(){
         return false;
 	
 	Vector& compensatedData2Send = compensatedTactileDataPort.prepare();
-    compensatedData2Send.clear();
-	compensatedData.clear();
+    compensatedData2Send.clear();   // local variable with data to send
+	compensatedData.clear();        // global variable with data to store
 	
 	double d;
 	for(unsigned int i=0; i<SKIN_DIM; i++){
@@ -223,29 +229,31 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	    }
 	    compensatedData.push_back(d);	// save the data before applying filtering
 
-	    // smooth filter
-	    if(smoothFilter){
+        // detect touch (before applying filtering, so the compensation algorithm is not affected by the filters)
+        if(d > touchThresholds[i] + ADD_THRESHOLD){
+		    touchDetected[i] = true;
+	    }else{
+		    touchDetected[i] = false;
+	    }	   
+
+        // smooth filter
+        if(smoothFilter){
 		    smoothFactorSem.wait();
 		    d = (1-smoothFactor)*d + smoothFactor*compensatedDataOld(i);
 		    smoothFactorSem.post();
 		    compensatedDataOld(i) = d;	// update old value
 	    }
-		        
-	    if(d<0) 
-		    d=0;		
 
 	    // binarization filter
-	    if(d > touchThresholds[i] + ADD_THRESHOLD){
-		    touchDetected[i] = true;
-		    if(binarization)
+        if(binarization){
+            // here we don't use the touchDetected array because, if the smooth filter is on,
+            // we want to use the filtered values
+	        if(d > touchThresholds[i] + ADD_THRESHOLD)
 			    d = BIN_TOUCH;
-	    }
-	    else{
-		    touchDetected[i] = false;
-		    if(binarization)
-			    d = BIN_NO_TOUCH;
-	    }
-
+	        else
+		        d = BIN_NO_TOUCH;
+        }else if(d<0) // if negative, set it to zero
+		    d=0;
 	    compensatedData2Send.push_back(d);
 	}
 
@@ -259,8 +267,8 @@ bool Compensator::readRawAndWriteCompensatedData(){
 }
 
 void Compensator::updateBaseline(){
-	double mean_change = 0;
-    int non_touching_taxels = 0;
+	double mean_change = 0, change;
+    unsigned int non_touching_taxels = 0;
 	double d; 
 
     for(unsigned int j=0; j<SKIN_DIM; j++) {
@@ -268,6 +276,7 @@ void Compensator::updateBaseline(){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
 			d = compensatedData(j);
 
+            // old algorithm
 			//if(d > 0.5) {
 			//	baselines[j]		+= CHANGE_PER_TIMESTEP;
 			//	mean_change			+= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
@@ -275,19 +284,23 @@ void Compensator::updateBaseline(){
 			//	baselines[j]		-= CHANGE_PER_TIMESTEP;
 			//	mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
 			//}
+
+            // new algorithm
 			if(fabs(d)>0.5){
-				baselines[j]    += CHANGE_PER_TIMESTEP*d/touchThresholds[j];
-                mean_change     += CHANGE_PER_TIMESTEP*d/touchThresholds[j];
+                change          = CHANGE_PER_TIMESTEP*d/touchThresholds[j];
+				baselines[j]    += change;
+                mean_change     += change;
 			}
 		}
     }
     
-    //for changing the taxels where we detected touch
-    if (non_touching_taxels > 0)
+    //for compensating the taxels where we detected touch
+    if (non_touching_taxels>0 && non_touching_taxels<SKIN_DIM && mean_change!=0){
         mean_change /= non_touching_taxels;
-    for(unsigned int j=0; j<SKIN_DIM; j++) {
-        if (touchDetected[j]) {
-            baselines[j]		+= mean_change;
+        for(unsigned int j=0; j<SKIN_DIM; j++) {
+            if (touchDetected[j]) {
+                baselines[j]		+= mean_change;
+            }
         }
     }
 }

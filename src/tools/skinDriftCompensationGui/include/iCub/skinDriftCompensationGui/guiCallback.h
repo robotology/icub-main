@@ -17,7 +17,8 @@
  */
 #include "iCub/skinDriftCompensationGui/main.h"
 
-static void on_window_destroy_event(GtkObject *object, gpointer user_data){
+
+static void clean_exit(){
 	guiRpcPort.interrupt();
 	driftCompMonitorPort.interrupt();
     driftCompInfoPort.interrupt();
@@ -25,6 +26,10 @@ static void on_window_destroy_event(GtkObject *object, gpointer user_data){
 	guiRpcPort.close();
 	driftCompMonitorPort.close();    
     driftCompInfoPort.close();
+}
+
+static void on_window_destroy_event(GtkObject *object, gpointer user_data){
+	clean_exit();
 	gtk_main_quit();
 }
 
@@ -129,6 +134,7 @@ static gint progressbar_calibration(gpointer data){
 	gtk_widget_hide(GTK_WIDGET(progBarCalib));
 	gtk_widget_set_sensitive(GTK_WIDGET(btnCalibration), true);
 	setStatusBarText("Calibration done");
+    printLog("Calibration done!");
 	return false;
 }
 static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpointer data){	
@@ -143,19 +149,25 @@ static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpoin
 static gboolean button_threshold(GtkToggleButton *widget, GdkEvent *ev, gpointer data){
 	//printf("Button callback thread: %p\n", g_thread_self());
 	Bottle touchThr = sendRpcCommand(true, 2, "get", "percentile");
-    for(int j=0; j<=(touchThr.size()-1)/(16*12); j++){
+	int index = 0;
+    for(unsigned int j=0; j<portDim.size(); j++){
 	    stringstream msg;
-        //msg<< "touchThr size: "<< touchThr.size()<< "\n";
-	    for(int i=j*16*12; i< min(touchThr.size(), 16*12*(j+1)); i++){            
+		msg<< "Thresholds for port "<< portNames[j]<< ":\n";
+	    for(unsigned int i=0; i<portDim[j]; i++){            
 		    if(i%12==0){
 			    if(i!=0)
 				    msg<< "\n";
 			    msg<< "TR"<< i/12<< ":\t";
 		    }
-		    msg << int(touchThr.get(i).asDouble())<< ";\t";
+		    msg << int(touchThr.get(index).asDouble())<< ";\t";
+			index++;
 	    }
 	    openDialog(msg.str().c_str(), GTK_MESSAGE_INFO);
     }
+	return false;
+}
+static gboolean button_clear_log(GtkToggleButton *widget, GdkEvent *ev, gpointer data){
+	gtk_text_buffer_set_text(tbLog, "", 0);
 	return false;
 }
 
@@ -163,60 +175,107 @@ static gboolean button_threshold(GtkToggleButton *widget, GdkEvent *ev, gpointer
 
 static gint periodic_timeout(gpointer data){    
 	//printf("Timeout thread: %p\n", g_thread_self());
+
+    // if the gui has not been initialized yet
+    if(!initDone){
+        // if the rpc port is connected, then initialize the gui status
+        if(guiRpcPort.getOutputCount()>0){
+		    initGuiStatus();
+            initDone = true;
+            printLog("GUI connected!");
+	    }else
+            return true;
+    }
+
 	if(driftCompMonitorPort.getInputCount()>0){
 		Bottle* b = driftCompMonitorPort.read(false);
 		if(b){
             //set the frequency
-			double freq = b->get(0).asDouble();	
-			setStatusBarFreq(true, freq);            
+			double freq = b->get(0).asDouble();
+			setStatusBarFreq(true, freq);
 
             // set the drift
             const int numTax = b->size()-1;
+            const int numTr = numTax/12;
             if(numTax>0){
                 // draw the drift plot
-                vector<gfloat> compensations(numTax);
-                gfloat maxY=0, minY=0;
-                for(int i=1; i<=numTax; i++){
-                    compensations[i-1] = (gfloat) b->get(i).asDouble();
-                    if(compensations[i-1]>maxY)
-                        maxY = compensations[i-1];
-                    else if(compensations[i-1]<minY)
-                        minY = compensations[i-1];
+                vector<gfloat> driftPerTr(numTax/12);
+                gdouble maxY=0, minY=0, sumTr, meanTr;
+                for(int i=0; i<numTr; i++){
+					sumTr=0;
+					for(int j=0; j<12; j++){
+						sumTr += (gfloat) b->get(i*12+j+1).asDouble();
+					}
+					meanTr = sumTr/12.0;
+					driftPerTr[i] = (gfloat)round(meanTr, 2);
+                    if(meanTr>maxY)
+                        maxY = meanTr;
+                    else if(meanTr<minY)
+                        minY = meanTr;
                 }
-                gtk_curve_set_range(curveComp, 0, (gfloat)numTax, minY, maxY);
-                gtk_curve_set_vector(curveComp, numTax, &compensations[0]);                
+                gtk_curve_set_range(curveComp, 0, (gfloat)(numTr), (gfloat)(minY-1), (gfloat)(maxY+1));
+                gtk_curve_set_vector(curveComp, numTr, &driftPerTr[0]);                
                 stringstream maxYS; maxYS<< maxY;
                 gtk_label_set_text(lblMaxY, maxYS.str().c_str());
                 stringstream minYS; minYS<< minY;
                 gtk_label_set_text(lblMinY, minYS.str().c_str());
+                               
 
+				GtkTreeIter iterPort, iterTr, iterTax;
+				gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
+				if(!valid){
+					// create the drift list
+					for(unsigned int i=0; i<portNames.size(); i++){
+						gtk_tree_store_append(treeStoreComp, &iterPort, NULL);
+						for(unsigned int j=0; j<portDim[i]/12; j++){
+							gtk_tree_store_append(treeStoreComp, &iterTr, &iterPort);
+							for(int k=0; k<12; k++){
+								gtk_tree_store_append(treeStoreComp, &iterTax, &iterTr);
+							}
+						}
+					}
+					gtk_tree_view_set_model(treeBaselines, GTK_TREE_MODEL( treeStoreComp));
+					gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
+				}
+				
                 // update the drift list
-                gtk_list_store_clear(listStoreComp);
-                GtkTreeIter iter;
-                double sum, mean;
-                for(int i=0; i<numTax/12; i++){                    
-                    sum=0;
-                    for(int j=0; j<12; j++){
-                        sum += b->get(i+1).asDouble();
-                    }
-                    mean = round(sum/12.0, 1);
+                gdouble sumPort, meanPort;
+				stringstream trS, taxS;
+				int index=1, portIndex=0;				
+				for(unsigned int i=0; i<portNames.size(); i++){		
+					sumPort = 0;
+					for(unsigned int j=0; j<portDim[i]/12; j++){						
+						meanTr = driftPerTr[portIndex];
+						portIndex++;
+						sumPort += meanTr;
+						trS.str(""); trS<<j;
+						gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTr, &iterPort, j);
+						gtk_tree_store_set((treeStoreComp), &iterTr, 1, trS.str().c_str(), 3, meanTr, -1);
+						for(int k=0; k<12; k++){
+							gdouble drift = round(b->get(index).asDouble(), 2);
+							index++;
+							taxS.str(""); taxS<<k;
+							if(gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTax, &iterTr, k))
+								gtk_tree_store_set((treeStoreComp), &iterTax, 2, taxS.str().c_str(), 3, drift, -1);
+						}					
+					}
 
-                    gtk_list_store_append(listStoreComp, &iter);
-                    stringstream ssTr; ssTr<<i;
-                    stringstream ssDrift; ssDrift<<mean;
-                    gtk_list_store_set(listStoreComp, &iter, 0, ssTr.str().c_str(), 1, ssDrift.str().c_str(), -1);                    
-                }
-                gtk_tree_view_set_model(treeBaselines, GTK_TREE_MODEL( listStoreComp));
+					meanPort = sumPort/(portDim[i]/12);
+					gtk_tree_store_set((treeStoreComp), &iterPort, 0, portNames[i].c_str(), 3, meanPort, -1);
+					gtk_tree_model_iter_next(GTK_TREE_MODEL(treeStoreComp), &iterPort);
+				}
             }
 		}else
 			setStatusBarFreq(false, 0);
 	}else
 		setStatusBarFreq(false, 0);
 
-    // check if there is a message on the info port
+    // check if there are messages on the info port
     Bottle* infoMsg = driftCompInfoPort.read(false);
-    if(infoMsg){
-        openDialog(infoMsg->toString(), GTK_MESSAGE_INFO);
+    while(infoMsg){
+        //openDialog(infoMsg->toString(), GTK_MESSAGE_INFO);
+        printLog(infoMsg->toString().c_str());
+        infoMsg = driftCompInfoPort.read(false);
     }
 
 	return true;
