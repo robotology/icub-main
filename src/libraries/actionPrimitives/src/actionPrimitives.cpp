@@ -1847,7 +1847,7 @@ void ActionPrimitivesLayer2::run()
     forceExternal[0]=wrenchExternal[0];
     forceExternal[1]=wrenchExternal[1];
     forceExternal[2]=wrenchExternal[2];
-	const double forceExternalAbs=norm(forceExternal);
+    const double forceExternalAbs=norm(forceExternal);
 
     // stop the arm iff contact detected while reaching
     if (!armMoveDone && contactDetectionOn && (forceExternalAbs>ext_force_thres))
