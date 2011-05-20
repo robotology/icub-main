@@ -121,7 +121,12 @@ bool ClientCartesianController::open(Searchable &config)
         return false;
     }
     else
+    {
+        fprintf(stdout,"Error: unable to connect to server!\n");
+        close();
+
         return false;
+    }
 }
 
 
