@@ -1847,7 +1847,14 @@ void ActionPrimitivesLayer2::run()
     forceExternal[0]=wrenchExternal[0];
     forceExternal[1]=wrenchExternal[1];
     forceExternal[2]=wrenchExternal[2];
-    const double forceExternalAbs=norm(forceExternal);
+	const double forceExternalAbs=norm(forceExternal);
+
+#ifdef DEBUG_FORCESENS
+	// Debug only, normally off!
+	// A useful test point to verify if the force sensor is correctly working
+	if (dynArm->getType()=="right") 
+		printf ("0:%f 1:%f 2:%f N:%f \n", forceExternal[0], forceExternal[1], forceExternal[2], forceExternalAbs);
+#endif
 
     // stop the arm iff contact detected while reaching
     if (!armMoveDone && contactDetectionOn && (forceExternalAbs>ext_force_thres))
