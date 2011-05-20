@@ -71,6 +71,29 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
 
     return false;
 }
+
+//generic function that check is key1 is present in input bottle and that the result has size elements
+// return true/false
+bool validate(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+{
+    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
+    if (tmp.isNull())
+    {
+        fprintf(stderr, "%s not found\n", key1.c_str());
+        return false;
+    }
+
+    if(tmp.size()!=size)
+    {
+        fprintf(stderr, "%s incorrect number of entries\n", key1.c_str());
+        return false;
+    }
+
+    out=tmp;
+
+    return true;
+}
+
 static can_string_generic cstring[CAN_MAX_CARDS];
 
 ///
@@ -895,15 +918,14 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     alloc(nj);
 
     ///// CAN PARAMETERS
-    Bottle& can = p.findGroup("CAN");
+    Bottle& canGroup = p.findGroup("CAN");
 
-    if (can.check("CanForcedDeviceNum"))
+    if (canGroup.check("CanForcedDeviceNum"))
     {
-        _networkN=can.find("CanForcedDeviceNum").asInt();
+        _networkN=canGroup.find("CanForcedDeviceNum").asInt();
     }
     else
-        _networkN=can.check("CanDeviceNum",Value(-1),
-        "numeric identifier of device").asInt();
+        _networkN=canGroup.check("CanDeviceNum",Value(-1), "numeric identifier of device").asInt();
 
     //    std::cout<<can.toString();
     if (_networkN<0)
@@ -912,106 +934,118 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
 
-    _my_address=can.check("CanMyAddress",Value(0),
-                          "numeric identifier of my address").asInt();
+    _my_address=canGroup.check("CanMyAddress",Value(0),
+                                 "numeric identifier of my address").asInt();
 
-    _polling_interval=can.check("CanPollingInterval",Value(20),
-                                "polling period").asInt();
+    _polling_interval=canGroup.check("CanPollingInterval",Value(20),
+                                        "polling period").asInt();
     
-    _timeout=can.check("CanTimeout",Value(20),"timeout period").asInt();
+    _timeout=canGroup.check("CanTimeout",Value(20),"timeout period").asInt();
 
-    _txTimeout=can.check("CanTxTimeout", Value(20), "tx timeout").asInt();
-    _rxTimeout=can.check("CanRxTimeout", Value(20), "rx timeout").asInt();
+    _txTimeout=canGroup.check("CanTxTimeout", Value(20), "tx timeout").asInt();
+    _rxTimeout=canGroup.check("CanRxTimeout", Value(20), "rx timeout").asInt();
 
     // default values for CanTxQueueSize/CanRxQueueSize should be the 
     // maximum, difficult to pick a correct value, let the driver 
     // decide on this
-    if (can.check("CanTxQueueSize"))
-        _txQueueSize=can.find("CanTxQueueSize").asInt();
+    if (canGroup.check("CanTxQueueSize"))
+        _txQueueSize=canGroup.find("CanTxQueueSize").asInt();
     else
         _txQueueSize=-1;
 
-    if (can.check("CanRxQueueSize"))
-        _rxQueueSize=can.find("CanRxQueueSize").asInt();
+    if (canGroup.check("CanRxQueueSize"))
+        _rxQueueSize=canGroup.find("CanRxQueueSize").asInt();
     else
         _rxQueueSize=-1;
 
-    Bottle xtmp = can.findGroup("CanAddresses",
-        "a list of numeric identifiers");
-    for (i = 1; i < xtmp.size(); i++) {
-        _destinations[i-1] = (unsigned char)(xtmp.get(i).asInt());
+    Bottle &canAddresses = canGroup.findGroup("CanAddresses",
+                                         "a list of numeric identifiers");
+    if (canAddresses.isNull())
+    {
+        fprintf(stderr, "Error: CanAddresses group not found in config file\n");
+        return false;
+    }
+    for (i = 1; i < canAddresses.size(); i++) {
+        _destinations[i-1] = (unsigned char)(canAddresses.get(i).asInt());
     }
 
     ////// GENERAL
-    xtmp = p.findGroup("GENERAL").findGroup("AxisMap","a list of reordered indices for the axes");
-    if (xtmp.size() != nj+1) {
-        printf("AxisMap does not have the right number of entries\n");
+    Bottle& general = p.findGroup("GENERAL");
+
+    Bottle xtmp;
+    if (!validate(general, xtmp, "AxisMap", "a list of reordered indices for the axes", nj+1))
         return false;
-    }
-    for (i = 1; i < xtmp.size(); i++) _axisMap[i-1] = xtmp.get(i).asInt();
+       
+    for (i = 1; i < xtmp.size(); i++)
+        _axisMap[i-1] = xtmp.get(i).asInt();
     
-	xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
-    if (xtmp.size() != nj+1) {
-        printf("Encoder does not have the right number of entries\n");
+    if (!validate(general, xtmp, "Encoder", "a list of scales for the encoders", nj+1))
         return false;
-    }
-    for (i = 1; i < xtmp.size(); i++) _angleToEncoder[i-1] = xtmp.get(i).asDouble();
+
+	int test = xtmp.size();
+    for (i = 1; i < xtmp.size(); i++) 
+        _angleToEncoder[i-1] = xtmp.get(i).asDouble();
     
-	xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
-    if (xtmp.size() != nj+1) {
-        printf("Zeros does not have the right number of entries\n");
+    if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", nj+1))
         return false;
-    }
-    for (i = 1; i < xtmp.size(); i++) _zeros[i-1] = xtmp.get(i).asDouble();
+
+    for (i = 1; i < xtmp.size(); i++) 
+        _zeros[i-1] = xtmp.get(i).asDouble();
     
-	xtmp = p.findGroup("GENERAL").findGroup("TorqueId","a list of associated joint torque sensor ids");
-    if (xtmp.size() != nj+1)
-	{
-		printf("TorqueId does not have the right number of entries. Using default value = 0 (disabled)\n");
-        for(i=1;i<nj+1; i++) _torqueSensorId[i-1] = 0;   
+    if (!validate(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", nj+1))
+    {
+        fprintf(stderr, "Using default value = 0 (disabled)\n");
+        for(i=1;i<nj+1; i++) 
+            _torqueSensorId[i-1] = 0;   
     }
     else
-	{
-		for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
-	}
+    {
+        for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
+    }
     
-	xtmp = p.findGroup("GENERAL").findGroup("TorqueChan","a list of associated joint torque sensor channels");
-    if (xtmp.size() != nj+1)
-	{
-        printf("TorqueChan does not have the right number of entries. Using default value = 0 (disabled)\n");
-        for(i=1;i<nj+1; i++) _torqueSensorChan[i-1] = 0;   
-    }
-	else
-	{
-		for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
-	}
-
-	xtmp = p.findGroup("GENERAL").findGroup("TorqueMax","full scale value for a joint torque sensor");
-    if (xtmp.size() != nj+1)
-	{
-        printf("TorqueMax does not have the right number of entries. Using default value = 0\n");
+    if (!validate(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", nj+1))
+    {
+        fprintf(stderr, "Using default value = 0 (disabled)\n");
         for(i=1;i<nj+1; i++) 
-			{
-				_maxTorque[i-1] = 0;
-				_newtonsToSensor[i-1]=1;
-			}
+            _torqueSensorChan[i-1] = 0;   
     }
-	else
-	{
-		for (i = 1; i < xtmp.size(); i++) 
-			{
-				_maxTorque[i-1] = xtmp.get(i).asInt();
-				_newtonsToSensor[i-1] = double(0x8000)/double(_maxTorque[i-1]);
-			}
-	}
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
+    }
 
-	////// PIDS
+    if (!validate(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", nj+1))
+    {
+        fprintf(stderr, "Using default value = 0\n");
+        for(i=1;i<nj+1; i++) 
+        {
+                _maxTorque[i-1] = 0;
+                _newtonsToSensor[i-1]=1;
+        }
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++) 
+        {
+                _maxTorque[i-1] = xtmp.get(i).asInt();
+                _newtonsToSensor[i-1] = double(0x8000)/double(_maxTorque[i-1]);
+        }
+    }
+
+    ////// PIDS
+    Bottle &pidsGroup=p.findGroup("PIDS", "PID parameters");
+    if (pidsGroup.isNull()) {
+            fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
+            return false;
+    }
+
     int j=0;
     for(j=0;j<nj;j++)
     {
         char tmp[80];
         sprintf(tmp, "Pid%d", j); 
-        xtmp = p.findGroup("PIDS","PID parameters").findGroup(tmp);
+
+        Bottle &xtmp = pidsGroup.findGroup(tmp);
         _pids[j].kp = xtmp.get(1).asDouble();
         _pids[j].kd = xtmp.get(2).asDouble();
         _pids[j].ki = xtmp.get(3).asDouble();
@@ -1022,143 +1056,137 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         _pids[j].scale = xtmp.get(6).asDouble();
         _pids[j].offset = xtmp.get(7).asDouble();
     }
-	
-	////// DEBUG PARAMETERS
-	if (p.check("DEBUG_PARAMETERS","DEBUG parameters")==true)
-	{
-		printf("DEBUG parameters section found\n");
-		for(j=0;j<nj;j++)
-		{
-			char tmp[80];
-			sprintf(tmp, "Debug%d", j); 
-			if (p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").check(tmp)==true)
-			{
-				xtmp = p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").findGroup(tmp);	
-				_debug_params[j].enabled=true;
-				for (int par=0; par<8; par++) {_debug_params[j].data[par] = xtmp.get(par+1).asDouble();}
-			}
-		}
-	}
-	else
-	{
-		printf("Debug parameters section NOT enabled, skipping...\n");
-		//note: by default the _debug_params[j] constructor puts _debug_params[j].enabled=false;
-	}
 
-	////// TORQUE PIDS
-	if (p.check("TORQUE_PIDS","TORQUE_PID parameters")==true)
-	{
-		printf("Torque Pids section found\n");
-		_tpidsEnabled=true;
-		for(j=0;j<nj;j++)
-		{
-			char tmp[80];
-			sprintf(tmp, "TPid%d", j); 
-			xtmp = p.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(tmp);	
+    ////// DEBUG PARAMETERS
+    if (p.check("DEBUG_PARAMETERS","DEBUG parameters")==true)
+    {
+        printf("DEBUG parameters section found\n");
+        for(j=0;j<nj;j++)
+        {
+            char tmp[80];
+            sprintf(tmp, "Debug%d", j);
+            if (p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").check(tmp)==true)
+            {
+                xtmp = p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").findGroup(tmp);
+                _debug_params[j].enabled=true;
+                for (int par=0; par<8; par++) {_debug_params[j].data[par] = xtmp.get(par+1).asDouble();}
+            }
+        }   
+    }
+    else
+    {
+        fprintf(stderr, "Debug parameters section NOT enabled, skipping...\n");
+        //note: by default the _debug_params[j] constructor puts _debug_params[j].enabled=false;
+    }
 
-			_tpids[j].kp = xtmp.get(1).asDouble();
-			_tpids[j].kd = xtmp.get(2).asDouble();
-			_tpids[j].ki = xtmp.get(3).asDouble();
+    ////// TORQUE PIDS
+    if (p.check("TORQUE_PIDS","TORQUE_PID parameters")==true)
+    {
+        printf("Torque Pids section found\n");
+        _tpidsEnabled=true;
+        for(j=0;j<nj;j++)
+        {
+            char tmp[80];
+            sprintf(tmp, "TPid%d", j); 
+            Bottle &xtmp = p.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(tmp);	
 
-			_tpids[j].max_int = xtmp.get(4).asDouble();
-			_tpids[j].max_output = xtmp.get(5).asDouble();
+            _tpids[j].kp = xtmp.get(1).asDouble();
+            _tpids[j].kd = xtmp.get(2).asDouble();
+            _tpids[j].ki = xtmp.get(3).asDouble();
 
-			_tpids[j].scale = xtmp.get(6).asDouble();
-			_tpids[j].offset = xtmp.get(7).asDouble();
-		}
-	}
-	else
-	{
-		printf("Torque Pids section NOT enabled, skipping...\n");
-	}
+            _tpids[j].max_int = xtmp.get(4).asDouble();
+            _tpids[j].max_output = xtmp.get(5).asDouble();
 
-	////// IMPEDANCE PIDS
-	if (p.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
-	{
-		printf("IMPEDANCE parameters section found\n");
-		for(j=0;j<nj;j++)
-		{
-			char tmp[80];
-			sprintf(tmp, "Imp%d", j); 
-			if (p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(tmp)==true)
-			{
-				xtmp = p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(tmp);	
-				_impedance_params[j].enabled=true;
-				_impedance_params[j].stiffness = xtmp.get(1).asDouble();
-				_impedance_params[j].damping   = xtmp.get(2).asDouble();
-			}
-		}
-	}
-	else
-	{
-		printf("Impedance section NOT enabled, skipping...\n");
-	}
+            _tpids[j].scale = xtmp.get(6).asDouble();
+            _tpids[j].offset = xtmp.get(7).asDouble();
+        }   
+    }
+    else
+    {
+        fprintf(stderr, "Torque Pids section NOT enabled, skipping...\n");
+    }
+
+    ////// IMPEDANCE PIDS
+    if (p.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
+    {
+        fprintf(stderr, "IMPEDANCE parameters section found\n");
+        for(j=0;j<nj;j++)
+        {
+            char tmp[80];
+            sprintf(tmp, "Imp%d", j); 
+            if (p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(tmp)==true)
+            {
+                xtmp = p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(tmp);	
+                _impedance_params[j].enabled=true;
+                _impedance_params[j].stiffness = xtmp.get(1).asDouble();
+                _impedance_params[j].damping   = xtmp.get(2).asDouble();
+            }
+        }
+    }
+    else
+    {
+        printf("Impedance section NOT enabled, skipping...\n");
+    }
 
     /////// LIMITS
-    xtmp = p.findGroup("LIMITS").findGroup("Currents",
-        "a list of current limits");
-    if (xtmp.size() != nj+1) {
-        printf("Currents does not have the right number of entries\n");
+    Bottle &limits=p.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        fprintf(stderr, "Group LIMITS not found in configuration file\n");
         return false;
     }
+
+    if (!validate(limits, xtmp, "Currents","a list of current limits", nj+1))
+        return false;
+
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("LIMITS").findGroup("Max","a list of maximum angles (in degrees)");
-    if (xtmp.size() != nj+1) {
-        printf("Max does not have the right number of entries\n");
+    if (!validate(limits, xtmp, "Max","a list of maximum angles (in degrees)", nj+1))
         return false;
-    }
+
     for(i=1;i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("LIMITS").findGroup("Min","a list of minimum angles (in degrees)");
-    if (xtmp.size() != nj+1) {
-        printf("Min does not have the right number of entries\n");
+    if (!validate(limits, xtmp, "Min","a list of minimum angles (in degrees)", nj+1))
         return false;
-    }
+  
     for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
     /////// [VELOCITY]
-    if (p.check("VELOCITY"))
+    Bottle &velocityGroup=p.findGroup("VELOCITY");
+    if (!velocityGroup.isNull())
         {
             /////// Shifts
-            xtmp = p.findGroup("VELOCITY").findGroup("Shifts",
-                                                     "a list of shifts to be used in the vmo control");
-
-            if (xtmp.size() != nj+1) {
-                fprintf(stderr, "[VELOCITY] Shifts do not have the right number of entries. Using default Shifts=4\n");
+            if (!validate(velocityGroup, xtmp, "Shifts", "a list of shifts to be used in the vmo control", nj+1))
+            {
+                fprintf(stderr, "Using default Shifts=4\n");
                 for(i=1;i<nj+1; i++)
                     _velocityShifts[i-1] = 4;   //Default value
             }
             else
-                {
-                    for(i=1;i<xtmp.size(); i++) 
-                        _velocityShifts[i-1]=xtmp.get(i).asInt();
-                }
+            {
+                for(i=1;i<xtmp.size(); i++) 
+                    _velocityShifts[i-1]=xtmp.get(i).asInt();
+            }
 
             /////// Timeout
             xtmp.clear();
-            xtmp = p.findGroup("VELOCITY").findGroup("Timeout",
-                                                     "a list of timeout to be used in the vmo control");
-            
-            if (xtmp.size() != nj+1) 
-                {
-                    fprintf(stderr, "[VELOCITY] Timeout do not have the right number of entries. Using default Timeout=1000, i.e 1s\n");
+            if (!validate(velocityGroup, xtmp, "Timeout", "a list of timeout to be used in the vmo control", nj+1))
+            {
+                    fprintf(stderr, "Using default Timeout=1000, i.e 1s\n");
                     for(i=1;i<nj+1; i++)
                         _velocityTimeout[i-1] = 1000;   //Default value
-                }
+            }
             else
                 {
                     for(i=1;i<xtmp.size(); i++) 
                         _velocityTimeout[i-1]=xtmp.get(i).asInt();
                 }
 
-	        /////// Joint Speed Estimation
-			xtmp.clear();
-            xtmp = p.findGroup("VELOCITY").findGroup("JNT_speed_estimation",
-                                                     "a list of shift factors used by the firmware joint speed estimator");
-			if (xtmp.size() != nj+1) 
-                {
-                    fprintf(stderr, "[VELOCITY] JNT_speed_estimation do not have the right number of entries. Using default value=5\n");
+            /////// Joint Speed Estimation
+            xtmp.clear();
+            if (!validate(velocityGroup, xtmp, "JNT_speed_estimation", "a list of shift factors used by the firmware joint speed estimator", nj+1))
+            {
+                    fprintf(stderr, "Using default value=5\n");
                     for(i=1;i<nj+1; i++)
                         _estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
                 }
@@ -1168,13 +1196,11 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                         _estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
                 }
 
-			/////// Motor Speed Estimation
-			xtmp.clear();
-            xtmp = p.findGroup("VELOCITY").findGroup("MOT_speed_estimation",
-                                                     "a list of shift factors used by the firmware motor speed estimator");
-			if (xtmp.size() != nj+1) 
+            /////// Motor Speed Estimation
+            xtmp.clear();
+            if (!validate(velocityGroup, xtmp, "MOT_speed_estimation", "a list of shift factors used by the firmware motor speed estimator", nj+1))
                 {
-                    fprintf(stderr, "[VELOCITY] MOT_speed_estimation do not have the right number of entries. Using default value=5\n");
+                    fprintf(stderr, "Using default value=5\n");
                     for(i=1;i<nj+1; i++)
                         _estim_params[i-1].mot_Vel_estimator_shift = 5;   //Default value
                 }
@@ -1184,29 +1210,25 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                         _estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
                 }
 
-			/////// Joint Acceleration Estimation
-			xtmp.clear();
-            xtmp = p.findGroup("VELOCITY").findGroup("JNT_accel_estimation",
-                                                     "a list of shift factors used by the firmware joint speed estimator");
-			if (xtmp.size() != nj+1) 
-                {
-                    fprintf(stderr, "[VELOCITY] JNT_accel_estimation do not have the right number of entries. Using default value=5\n");
+            /////// Joint Acceleration Estimation
+            xtmp.clear();
+            if (!validate(velocityGroup, xtmp, "JNT_accel_estimation", "a list of shift factors used by the firmware joint speed estimator", nj+1))
+            {
+                    fprintf(stderr, "Using default value=5\n");
                     for(i=1;i<nj+1; i++)
                         _estim_params[i-1].jnt_Acc_estimator_shift = 5;   //Default value
-                }
+            }
             else
                 {
                     for(i=1;i<xtmp.size(); i++) 
                         _estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
                 }
 
-			/////// Motor Acceleration Estimation
-			xtmp.clear();
-            xtmp = p.findGroup("VELOCITY").findGroup("MOT_accel_estimation",
-                                                     "a list of shift factors used by the firmware motor speed estimator");
-			if (xtmp.size() != nj+1) 
+            /////// Motor Acceleration Estimation
+            xtmp.clear();
+            if (!validate(velocityGroup, xtmp, "MOT_accel_estimation", "a list of shift factors used by the firmware motor speed estimator", nj+1))
                 {
-                    fprintf(stderr, "[VELOCITY] MOT_accel_estimation do not have the right number of entries. Using default value=5\n");
+                    fprintf(stderr, "Using default value=5\n");
                     for(i=1;i<nj+1; i++)
                         _estim_params[i-1].mot_Acc_estimator_shift = 5;   //Default value
                 }
@@ -1227,48 +1249,62 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         for(i=1;i<nj+1; i++)
             _velocityTimeout[i-1] = 1000;   //Default value
 
-		fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
+        fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
         for(i=1;i<nj+1; i++)
-		{
-			_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
-			_estim_params[i-1].jnt_Acc_estimator_shift = 5;   
-			_estim_params[i-1].mot_Vel_estimator_shift = 5;   
-			_estim_params[i-1].mot_Acc_estimator_shift = 5;  
-		}
+        {
+            _estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
+            _estim_params[i-1].jnt_Acc_estimator_shift = 5;   
+            _estim_params[i-1].mot_Vel_estimator_shift = 5;   
+            _estim_params[i-1].mot_Acc_estimator_shift = 5;  
+        }
     }
 
-    xtmp=p.findGroup("CAN").findGroup("broadcast_pos");
-    bool ret=setBroadCastMask(xtmp, CAN_BCAST_POSITION);
-    xtmp=p.findGroup("CAN").findGroup("broadcast_pid");
-    ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_PID_VAL);
-    xtmp=p.findGroup("CAN").findGroup("broadcast_fault");
-    ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_STATUS);
-    xtmp=p.findGroup("CAN").findGroup("broadcast_current");
-    ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_CURRENT);
-    xtmp=p.findGroup("CAN").findGroup("broadcast_overflow");
-    ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_OVERFLOW);
-    xtmp=p.findGroup("CAN").findGroup("broadcast_canprint");
-    ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_PRINT);
-    xtmp=p.findGroup("CAN").findGroup("broadcast_vel_acc");
-    ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_VELOCITY);
+    bool ret=true;
+    if (!canGroup.findGroup("broadcast_pos").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_pos");
+        ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_POSITION);
+    }
 
-	xtmp=p.findGroup("CAN").findGroup("broadcast_pid_err");
-	setBroadCastMask(xtmp, CAN_BCAST_PID_ERROR); //@@@ not checking return value in order to keep this option not mandatory
+    if (!canGroup.findGroup("broadcast_pid").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_pid");
+        ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_PID_VAL);
+    }
+    if (!canGroup.findGroup("broadcast_fault").isNull())
+    {
+         xtmp=canGroup.findGroup("broadcast_fault");
+         ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_STATUS);
+     }
+    if (!canGroup.findGroup("broadcast_current").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_current");
+        ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_CURRENT);
+    }
+    if (!canGroup.findGroup("broadcast_overflow").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_overflow");
+        ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_OVERFLOW);
+    }
+    if (!canGroup.findGroup("broadcast_canprint").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_canprint");
+        ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_PRINT);
+    }
+    if (!canGroup.findGroup("broadcast_vel_acc").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_vel_acc");
+        ret=ret&&setBroadCastMask(xtmp, CAN_BCAST_VELOCITY);
+    }
 
+    if (!canGroup.findGroup("broadcast_pid_err").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_pid_err");
+        setBroadCastMask(xtmp, CAN_BCAST_PID_ERROR); //@@@ not checking return value in order to keep this option not mandatory
+    }
+   
     if (!ret)
         fprintf(stderr, "Invalid configuration file, check broadcast_* parameters\n");
-    
-    //if (p.findGroup("CAN").find("broadcast_pos").asInt() == 1) broadcast_mask |= (1<<(CAN_BCAST_POSITION-1));
-    //if (p.findGroup("CAN").find("broadcast_pid").asInt() == 1) broadcast_mask |= (1<<(CAN_BCAST_PID_VAL-1));
-    //if (p.findGroup("CAN").find("broadcast_fault").asInt() == 1) broadcast_mask |= (1<<(CAN_BCAST_STATUS-1));
-    //if (p.findGroup("CAN").find("broadcast_current").asInt() == 1) broadcast_mask |= (1<<(CAN_BCAST_CURRENT-1));
-    //if (p.findGroup("CAN").find("broadcast_overflow").asInt() == 1) broadcast_mask |= (1<<(CAN_BCAST_OVERFLOW-1));
-   // if (p.findGroup("CAN").find("broadcast_canprint").asInt() == 1) broadcast_mask |= (1<<(CAN_BCAST_PRINT-1));
-    //if (p.findGroup("CAN").find("broadcast_vel_acc").asInt() == 1) broadcast_mask |= (1<<(CAN_BCAST_VELOCITY-1));
-
-    // _broadcast_mask=broadcast_mask;
-
-
 
     return ret;
 }
@@ -1281,15 +1317,15 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _angleToEncoder=0;
     _zeros=0;
     _pids=0;
-	_tpids=0;
-	_tpidsEnabled=false;
+    _tpids=0;
+    _tpidsEnabled=false;
     _limitsMax=0;
     _limitsMin=0;
     _currentLimits=0;
     _velocityShifts=0;
     _velocityTimeout=0;
-    _torqueSensorId=0;						
-	_torqueSensorChan=0;	
+    _torqueSensorId=0;
+	_torqueSensorChan=0;
 	_maxTorque=0;
 	_newtonsToSensor=0;
 	_debug_params=0;
@@ -1798,9 +1834,10 @@ bool CanBusMotionControl::open (Searchable &config)
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
-	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
-	_axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
-	ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
+    ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
+    _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, 
+p._newtonsToSensor);
+    ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap);
 
@@ -1861,7 +1898,7 @@ bool CanBusMotionControl::open (Searchable &config)
         disablePid(i);
         disableAmp(i);
     }
-    Bottle analogList=config.findGroup("analog").tail();
+    const Bottle &analogList=config.findGroup("analog").tail();
     //    if (analogList!=0)
         if (analogList.size()>0)
         {
@@ -1920,7 +1957,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
     //std::string groupName=std::string("ANALOG-");
     //groupName+=deviceid;
     //Bottle analogConfig=config.findGroup(groupName.c_str());
-    Bottle analogConfig=config.findGroup(deviceid.c_str());
+    Bottle &analogConfig=config.findGroup(deviceid.c_str());
     if (analogConfig.size()>0)
     {
         fprintf(stderr, "--> Initializing analog device %s\n", deviceid.c_str());

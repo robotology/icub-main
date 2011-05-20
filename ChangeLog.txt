@@ -1,3 +1,7 @@
+2011-05-17 Randazzo Marco <marco.randazzo@iit.it>
+    * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
+    released new version of CanBusMotionControl with improved parsing of .ini files (by LorenzoNatale)
+
 2011-05-17 Lorenzo Natale <lorenzo.natale@iit.it>
     * CMakeLists.txt:
     - workaround for cmake 2.6.0 in checking YARP version
@@ -18,6 +22,4 @@
 
 2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
     * Starting log. Previous changes logged in root of repository ChangeLog.txt
-    
-    
-    
+
