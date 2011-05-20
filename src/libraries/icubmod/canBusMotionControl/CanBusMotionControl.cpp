@@ -3144,12 +3144,8 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 	*stiff= *((short *)(data));
 	data+=2;
 	*damp= *((short *)(data)); 
-#ifdef ICUB_CANPROTOCOL_STRICT
+
 	*damp/= 1000;
-#else
-#endif
-	data+=2;
-	*off= *((short *)(data));
 
 	t->clear();
 
@@ -3229,12 +3225,7 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp, 
 		r.startPacket();
 		r.addMessage (CAN_SET_IMPEDANCE_PARAMS, axis);
 		*((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
-#ifdef ICUB_CANPROTOCOL_STRICT
 		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp*1000);
-#else
-		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp);
-#endif
-		*((short *)(r._writeBuffer[0].getData()+5)) = S_16(off);
 		*((short *)(r._writeBuffer[0].getData()+7)) = 0;
 		r._writeBuffer[0].setLen(8);
 		r.writePacket();
