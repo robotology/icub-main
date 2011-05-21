@@ -19,7 +19,7 @@ if strcmpi(armType,'right')
     P{3}.A =-0.0233647; P{3}.D =-0.1433;  P{3}.alpha =pi/2;  P{3}.offset =-pi/2-15*pi/180;
     P{4}.A =0;          P{4}.D =-0.10774; P{4}.alpha =pi/2;  P{4}.offset =-pi/2;
     P{5}.A =0;          P{5}.D =0;        P{5}.alpha =-pi/2; P{5}.offset =-pi/2;
-    P{6}.A =0;          P{6}.D =-0.15228; P{6}.alpha =-pi/2; P{6}.offset =-pi/2-15*pi/180;
+    P{6}.A =-0.015;     P{6}.D =-0.15228; P{6}.alpha =-pi/2; P{6}.offset =-pi/2-15*pi/180;
     P{7}.A =0.015;      P{7}.D =0;        P{7}.alpha =pi/2;  P{7}.offset =0;
     P{8}.A =0;          P{8}.D =-0.1373;  P{8}.alpha =pi/2;  P{8}.offset =-pi/2;
     P{9}.A =0;          P{9}.D =0;        P{9}.alpha =pi/2;  P{9}.offset =pi/2;
@@ -30,7 +30,7 @@ else
     P{3}.A =0.0233647;  P{3}.D =-0.1433;  P{3}.alpha =-pi/2; P{3}.offset =pi/2+15*pi/180;
     P{4}.A =0;          P{4}.D =0.10774;  P{4}.alpha =-pi/2; P{4}.offset =pi/2;
     P{5}.A =0;          P{5}.D =0;        P{5}.alpha =pi/2;  P{5}.offset =-pi/2;
-    P{6}.A =0;          P{6}.D =0.15228;  P{6}.alpha =-pi/2; P{6}.offset =pi/2-15*pi/180;
+    P{6}.A =0.015;      P{6}.D =0.15228;  P{6}.alpha =-pi/2; P{6}.offset =pi/2-15*pi/180;
     P{7}.A =-0.015;     P{7}.D =0;        P{7}.alpha =pi/2;  P{7}.offset =0;
     P{8}.A =0;          P{8}.D =0.1373;   P{8}.alpha =pi/2;  P{8}.offset =-pi/2;
     P{9}.A =0;          P{9}.D =0;        P{9}.alpha =pi/2;  P{9}.offset =pi/2;
