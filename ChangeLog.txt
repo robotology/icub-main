@@ -1,3 +1,16 @@
+2011-05-26 Randazzo Marco <marco.randazzo@iit.it>
+	* main/src/core/iCubInterface/ControlBoardWrapper2.cpp
+	* main/src/core/iCubInterface/ControlBoardWrapper2.h
+    * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
+	* main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
+	- The following methods of yarp::dev::IImpedanceControl have been deprecated:
+	bool getImpedance(int j, double *stiffness, double *damping, double *offset)
+	bool setImpedance(int j, double stiffness,  double damping,  double offset)
+	Instead, use the new methods:
+	bool getImpedance(int j, double *stiffness, double *damping)
+	bool setImpedance(int j, double stiffness,  double damping)
+	THIS MODIFICATION REQUIRES A YARP UPDATE
+	
 2011-05-17 Randazzo Marco <marco.randazzo@iit.it>
     * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
     released new version of CanBusMotionControl with improved parsing of .ini files (by LorenzoNatale)

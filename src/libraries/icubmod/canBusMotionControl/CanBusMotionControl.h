@@ -424,7 +424,12 @@ class firmwareVersionHelper
 			{
 				if (infos[j].fw_build<LAST_BLL_BUILD) 
 				{
-					printMessagePleaseUpgrade();
+					printMessagePleaseUpgradeFirmware();
+					return true;
+				}
+				if (infos[j].fw_build>LAST_BLL_BUILD)
+				{
+					printMessagePleaseUpgradeiCub();
 					return true;
 				}
 			}
@@ -433,7 +438,12 @@ class firmwareVersionHelper
 			{
 				if (infos[j].fw_build<LAST_MC4_BUILD) 
 				{
-					printMessagePleaseUpgrade();
+					printMessagePleaseUpgradeFirmware();
+					return true;
+				}
+				if (infos[j].fw_build>LAST_MC4_BUILD) 
+				{
+					printMessagePleaseUpgradeiCub();
 					return true;
 				}
 			}
@@ -453,15 +463,31 @@ class firmwareVersionHelper
 		fprintf(stderr,"**********************************\n");
 		fprintf(stderr,"\n");
 	}
-	inline void printMessagePleaseUpgrade()
+	inline void printMessagePleaseUpgradeFirmware()
 	{
 		fprintf(stderr,"\n");
 		fprintf(stderr,"###################################################################################\n");
 		fprintf(stderr,"###################################################################################\n");
 		fprintf(stderr,"\n");
 		fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
-		fprintf(stderr,"  available firmware version. Upgrading your iCub firmware is highly recommended.\n");
+		fprintf(stderr,"  available firmware version, altought it is still compatible with it.\n");
+		fprintf(stderr,"  Upgrading your iCub firmware is highly recommended.\n");
 		fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"\n");
+	}
+	inline void printMessagePleaseUpgradeiCub()
+	{
+		fprintf(stderr,"\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"\n");
+		fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
+		fprintf(stderr,"  which is newer than the recommended version, altought it is still compatible with it.\n");
+		fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
+		fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.");
 		fprintf(stderr,"\n");
 		fprintf(stderr,"###################################################################################\n");
 		fprintf(stderr,"###################################################################################\n");
@@ -752,8 +778,8 @@ public:
 
 	//
     /// IMPEDANCE CONTROL INTERFACE RAW
-    virtual bool getImpedanceRaw(int j, double *stiff, double *damp, double *offs);  
-    virtual bool setImpedanceRaw(int j, double  stiff, double  damp, double  offs);   
+    virtual bool getImpedanceRaw(int j, double *stiff, double *damp);  
+    virtual bool setImpedanceRaw(int j, double  stiff, double  damp);   
     virtual bool getImpedanceOffsetRaw(int j, double *offs);  
     virtual bool setImpedanceOffsetRaw(int j, double  offs);   
 

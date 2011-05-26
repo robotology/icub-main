@@ -252,8 +252,7 @@ void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
 						Bottle& b = *(cmd.get(4).asList());
 						double stiff = b.get(0).asDouble();
 						double damp = b.get(1).asDouble();
-						double offs = b.get(2).asDouble();
-						*ok = iImpedance->setImpedance(cmd.get(3).asInt(),stiff,damp,offs);
+						*ok = iImpedance->setImpedance(cmd.get(3).asInt(),stiff,damp);
 						*rec=true;
 					}
 					break;
@@ -282,11 +281,10 @@ void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
 				{
                 case VOCAB_IMP_PARAM:
 					{
-						*ok = iImpedance->getImpedance(cmd.get(3).asInt(),&stiff, &damp, &offs);
+						*ok = iImpedance->getImpedance(cmd.get(3).asInt(),&stiff, &damp);
 						Bottle& b = response.addList();
 						b.addDouble(stiff);       
 						b.addDouble(damp);
-						b.addDouble(offs);
 						*rec=true;
 					}
 					break;

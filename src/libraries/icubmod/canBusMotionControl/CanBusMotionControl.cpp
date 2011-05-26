@@ -1920,8 +1920,6 @@ p._newtonsToSensor);
     RateThread::setRate(p._polling_interval);
     RateThread::start();
 
-#ifdef ICUB_CANPROTOCOL_STRICT
-	////////////////////////////
 	//get firmware versions
 	firmware_info* info = new firmware_info[p._njoints];
 	can_protocol_info icub_interface_protocol;
@@ -1934,6 +1932,9 @@ p._newtonsToSensor);
 	}
 	_firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info, icub_interface_protocol);
 	_firmwareVersionHelper->printFirmwareVersions();
+
+#ifdef ICUB_CANPROTOCOL_STRICT
+	////////////////////////////
 	if (!_firmwareVersionHelper->checkFirmwareVersions())
 	{
 		RateThread::stop();
@@ -1942,6 +1943,10 @@ p._newtonsToSensor);
 		return false;
 	}
 	/////////////////////////////////
+#else
+	fprintf(stderr,"*********************************************************************************\n
+					**** WARNING: ICUB_CANPROTOCOL_STRICT not defined, skipping firmware check! *****\n
+					*********************************************************************************\n");
 #endif
 
     _opened = true;
@@ -3085,7 +3090,7 @@ bool CanBusMotionControl::setPidRaw (int axis, const Pid &pid)
     return true;
 }
 
-bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp, double *off)
+bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp)
 {
 	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
@@ -3096,7 +3101,6 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 		//@@@ TODO: check here
 		//*stiff = 0;
 		//*damp = 0;
-		//*off = 0;
         return true;
     }
  
@@ -3125,7 +3129,6 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 		//@@@ TODO: check here
 		//*stiff = 0;
 		//*damp = 0;
-		//*off = 0;
         return false;
     }
 
@@ -3135,7 +3138,6 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 		//@@@ TODO: check here
 		//*stiff = 0;
 		//*damp = 0;
-		//*off = 0;
         return false;
     }
 
@@ -3209,7 +3211,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
 	return true;
 }
 
-bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp, double off)
+bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
 {
 	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
@@ -3226,7 +3228,8 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp, 
 		r.addMessage (CAN_SET_IMPEDANCE_PARAMS, axis);
 		*((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
 		*((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp*1000);
-		*((short *)(r._writeBuffer[0].getData()+7)) = 0;
+		*((short *)(r._writeBuffer[0].getData()+5)) = S_16(0);
+		*((char  *)(r._writeBuffer[0].getData()+7)) = 0;
 		r._writeBuffer[0].setLen(8);
 		r.writePacket();
     _mutex.post();

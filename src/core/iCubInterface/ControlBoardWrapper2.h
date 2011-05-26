@@ -2022,6 +2022,7 @@ public:
         return false;
     }
 
+	//DEPRECATED
 	virtual bool setImpedance(int j, double stiff, double damp, double offset)
     {
         int off=device.lut[j].offset;
@@ -2034,6 +2035,23 @@ public:
         if (p->iImpedance)
         {
             return p->iImpedance->setImpedance(off+base, stiff, damp, offset);
+        }        
+        
+        return false;
+    }
+
+	virtual bool setImpedance(int j, double stiff, double damp)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iImpedance)
+        {
+            return p->iImpedance->setImpedance(off+base, stiff, damp);
         }        
         
         return false;
@@ -2296,6 +2314,24 @@ public:
         return false;
     }
 
+	virtual bool getImpedance(int j, double* stiff, double* damp)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iImpedance)
+        {
+            return p->iImpedance->getImpedance(off+base, stiff, damp);
+        }        
+
+        return false;
+    }
+
+	//DEPRECATED
 	virtual bool getImpedance(int j, double* stiff, double* damp, double* offset)
     {
         int off=device.lut[j].offset;
