@@ -490,13 +490,13 @@ public:
 		getMode(p,&checkMode);
 		int axis = p.get(2).asInt();
 		double stiffness =  p.get(3).asDouble();
-		double dumping =  p.get(4).asDouble();
-		iimp->setImpedance(axis,stiffness,dumping,0.0);		
+		double damping =  p.get(4).asDouble();
+		iimp->setImpedance(axis,stiffness,damping);		
 		return true;
 	}
 	bool setImpedance(int j, double stiffness, double damping)
 	{
-		iimp->setImpedance(j,stiffness,damping,0.0);		
+		iimp->setImpedance(j,stiffness,damping);		
 		return true;
 	}
 	bool command(const Bottle &p)
