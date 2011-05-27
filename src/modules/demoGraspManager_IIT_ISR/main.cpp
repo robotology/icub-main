@@ -1315,7 +1315,7 @@ public:
                 for (int j=0; j<len; j++)
                 {
                     imode->setImpedanceVelocityMode(j);
-                    iimp->setImpedance(j,leftArmJointsStiffness[j],leftArmJointsDamping[j],0.0);
+                    iimp->setImpedance(j,leftArmJointsStiffness[j],leftArmJointsDamping[j]);
                 }
             }
         }
@@ -1343,7 +1343,7 @@ public:
                 for (int j=0; j<len; j++)
                 {
                     imode->setImpedanceVelocityMode(j);
-                    iimp->setImpedance(j,rightArmJointsStiffness[j],rightArmJointsDamping[j],0.0);
+                    iimp->setImpedance(j,rightArmJointsStiffness[j],rightArmJointsDamping[j]);
                 }
             }
         }
