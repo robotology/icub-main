@@ -1,7 +1,7 @@
 <application>
 <name>Cameras</name>
 <dependencies>
-      <port>/root</port>
+      <port>/iCubParis01</port>
 </dependencies> 
 <module>
       <name>icubmoddev</name>
