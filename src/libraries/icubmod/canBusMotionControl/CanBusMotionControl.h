@@ -485,7 +485,7 @@ class firmwareVersionHelper
 		fprintf(stderr,"###################################################################################\n");
 		fprintf(stderr,"\n");
 		fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
-		fprintf(stderr,"  which is newer than the recommended version, altought it is still compatible with it.\n");
+		fprintf(stderr,"  which is newer than the recommended version, although it is still compatible with it.\n");
 		fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
 		fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.");
 		fprintf(stderr,"\n");
