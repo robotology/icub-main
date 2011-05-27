@@ -1944,9 +1944,9 @@ p._newtonsToSensor);
 	}
 	/////////////////////////////////
 #else
-	fprintf(stderr,"*********************************************************************************\n
-					**** WARNING: ICUB_CANPROTOCOL_STRICT not defined, skipping firmware check! *****\n
-					*********************************************************************************\n");
+	fprintf(stderr,"*********************************************************************************\n");
+	fprintf(stderr,"**** WARNING: ICUB_CANPROTOCOL_STRICT not defined, skipping firmware check! *****\n");
+	fprintf(stderr,"*********************************************************************************\n");
 #endif
 
     _opened = true;
