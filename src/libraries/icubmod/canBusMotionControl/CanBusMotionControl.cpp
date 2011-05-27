@@ -1865,7 +1865,7 @@ p._newtonsToSensor);
 	for (int j=0; j<p._njoints; j++)
 		if (p._impedance_params[j].enabled==true)
 		{
-			setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping,0);
+			setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping);
 		}
 
     int i;
