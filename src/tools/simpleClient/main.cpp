@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
                 Vocab::decode(VOCAB_TRQS).c_str());
 
 			printf("IImpedanceControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_IMPEDANCE).c_str());
-            printf("	[set] [%s] <int> <float> <float> <float>\n", 
+            printf("	[set] [%s] <int> <float> <float> \n", 
                 Vocab::decode(VOCAB_IMP_PARAM).c_str());
             printf("	[set] [%s] <int> <float>\n\n", 
                 Vocab::decode(VOCAB_IMP_OFFSET).c_str());
@@ -919,7 +919,7 @@ void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
                     {
 					case VOCAB_IMP_PARAM: 
                         {
-                            *ok = iimp->setImpedance(cmd.get(3).asInt(), cmd.get(4).asDouble(),cmd.get(5).asDouble(),cmd.get(6).asDouble());
+                            *ok = iimp->setImpedance(cmd.get(3).asInt(), cmd.get(4).asDouble(),cmd.get(5).asDouble());
                         }
                         break;
 					case VOCAB_IMP_OFFSET: 
