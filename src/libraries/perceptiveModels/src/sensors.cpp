@@ -16,4 +16,40 @@
  * Public License for more details
 */
 
+#include <yarp/dev/ControlBoardInterfaces.h>
+#include <iCub/perception/perceptiveModels.h>
+
+using namespace std;
+using namespace yarp::os;
+using namespace yarp::dev;
+using namespace yarp::sig;
+using namespace iCub::perception;
+
+
+/************************************************************************/
+SensorInterface::SensorInterface(void *interface, const string &type, const int idx)
+{
+    this->inteface=inteface;
+    this->type=type;
+    this->idx=idx;
+}
+
+
+/************************************************************************/
+bool SensorInterface::getInput(Value &val)
+{
+    if (type=="ipos")
+    {
+        Vactor data();
+        static_cast<IPositionControl*>(interface)->getEncoders(data.value());
+        return true;
+    }
+    else if (type=="ivel")
+    {
+        return true;
+    }
+    else
+        return false;
+}
+
 

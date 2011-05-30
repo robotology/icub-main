@@ -38,6 +38,13 @@
 #ifndef __PERCEPTIVEMODELS_H__
 #define __PERCEPTIVEMODELS_H__
 
+#include <string>
+
+#include <yarp/os/Value.h>
+#include <yarp/os/Property.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/sig/Vector.h>
+
 
 namespace iCub
 {
@@ -62,6 +69,34 @@ public:
 */
 class Sensor
 {
+public:
+    virtual bool getInput(yarp::os::Value &val) = 0;
+};
+
+
+class SensorInterface : public Sensor
+{
+protected:
+    void *interface;
+    std::string type;
+    int idx;
+
+public:
+    SensorInterface(void *interface, const std::string &type, const int idx);
+    bool getInput(yarp::os::Value &val);
+};
+
+
+class SensorPort : public Sensor
+{
+protected:    
+    yarp::os::BufferedPort<yarp::sig::Vector> *port;
+    yarp::os::Value val;
+    int idx;
+
+public:
+    SensorPort(yarp::os::BufferedPort<yarp::sig::Vector> *port, const int idx);
+    bool getInput(yarp::os::Value &val);
 };
 
 
