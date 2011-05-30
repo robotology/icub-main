@@ -136,7 +136,6 @@ bool ClientCartesianController::close()
     if (closed)
         return true;
 
-    stopControl();
     deleteContexts();
 
     portCmd.interrupt();

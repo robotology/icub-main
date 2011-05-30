@@ -119,7 +119,6 @@ bool ClientGazeController::close()
     if (closed)
         return true;
 
-    stopControl();
     deleteContexts();
 
     portCmdFp.interrupt();
