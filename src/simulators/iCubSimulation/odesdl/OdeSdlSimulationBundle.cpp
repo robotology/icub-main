@@ -18,10 +18,10 @@
 * Public License for more details
 */
 
+#include "iCubLogicalJoints.h"
 #include "OdeSdlSimulationBundle.h"
 
 #include "OdeInit.h" 
-#include "iCubLogicalJoints.h"
 #include "iCub_Sim.h"
 #include "OdeWorldManager.h"
 

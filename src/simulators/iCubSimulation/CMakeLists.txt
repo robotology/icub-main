@@ -42,7 +42,11 @@ IF (ICUB_SIM_ENABLE_ODESDL)
   IF (APPLE)
     ADD_DEFINITIONS(-DHAVE_APPLE_OPENGL_FRAMEWORK)
     ## add SDLMain.m and SDLMain.h required for Mac OS platform
-    LIST( APPEND folder_source ${SDL_INCLUDE_DIR}/SDLMain.m )
+    IF (EXISTS "${SDL_INCLUDE_DIR}/SDLMain.m")
+      LIST( APPEND folder_source ${SDL_INCLUDE_DIR}/SDLMain.m )
+    ELSE ()
+      LINK_LIBRARIES(SDLmain)
+    ENDIF ()
   ENDIF (APPLE)
 
   IF (NOT DEFINED USE_ODE_DOUBLE)
@@ -60,6 +64,8 @@ IF (ICUB_SIM_ENABLE_ODESDL)
 
   IF (USE_ODE_DOUBLE)
     ADD_DEFINITIONS(-DdDOUBLE)
+  ELSE ()
+    ADD_DEFINITIONS(-DdSINGLE)
   ENDIF (USE_ODE_DOUBLE)
   
   # If glut is set up, we can turn this on

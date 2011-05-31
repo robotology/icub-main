@@ -146,6 +146,11 @@
 #include "FakeSimulationBundle.h"
 #endif
 
+// Needed on OSX, to hijack main()
+#ifdef ICUB_SIM_ENABLE_ODESDL
+//#include "SDL.h" 
+#endif
+
 int main(int argc, char** argv) {
     yarp::os::Network yarp;
     if (!yarp.checkNetwork())
