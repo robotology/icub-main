@@ -17,26 +17,30 @@
 */
 
 /**
- * \defgroup PerceptiveModels perceptiveModels
+ * @defgroup PerceptiveModels perceptiveModels
  *  
  * @ingroup icub_libraries 
  *  
- * Abstract layers for dealing with perceptive models framework.
+ * Abstract layers for dealing with perceptive models framework. 
+ *  
+ * @defgroup Sensors Sensors 
+ *  
+ * @ingroup PerceptiveModels
  *
- * \author Ugo Pattacini 
+ * @author Ugo Pattacini 
  *  
  * Copyright (C) 2011 RobotCub Consortium
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
  *
- * \section intro_sec Description
+ * @section intro_sec Description
  *
  * ... 
  *  
  */ 
 
-#ifndef __PERCEPTIVEMODELS_H__
-#define __PERCEPTIVEMODELS_H__
+#ifndef __PERCEPTIVEMODELS_SENSORS_H__
+#define __PERCEPTIVEMODELS_SENSORS_H__
 
 #include <string>
 
@@ -50,19 +54,8 @@ namespace iCub
 namespace perception
 {
 
-/**
-* \ingroup PerceptiveModels
-*
-*/
-class EventCallback
-{
-public:
-    virtual void exec() = 0;
-};
-
-
-/**
-* \ingroup PerceptiveModels
+/** 
+* @ingroup Sensors
 *  
 */
 class Sensor
@@ -78,6 +71,10 @@ public:
 };
 
 
+/**
+* @ingroup Sensors
+*  
+*/
 class SensorInterface : public Sensor
 {
 protected:
@@ -91,6 +88,10 @@ public:
 };
 
 
+/**
+* @ingroup Sensors
+*  
+*/
 class SensorPort : public Sensor
 {
 protected:

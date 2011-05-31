@@ -17,26 +17,26 @@
 */
 
 /**
- * \defgroup PerceptiveModels perceptiveModels
+ * @defgroup Models Models
  *  
- * @ingroup icub_libraries 
+ * @ingroup PerceptiveModels 
  *  
  * Abstract layers for dealing with perceptive models framework.
  *
- * \author Ugo Pattacini 
+ * @author Ugo Pattacini 
  *  
  * Copyright (C) 2011 RobotCub Consortium
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
  *
- * \section intro_sec Description
+ * @section intro_sec Description
  *
  * ... 
  *  
  */ 
 
-#ifndef __PERCEPTIVEMODELS_H__
-#define __PERCEPTIVEMODELS_H__
+#ifndef __PERCEPTIVEMODELS_MODELS_H__
+#define __PERCEPTIVEMODELS_MODELS_H__
 
 #include <string>
 
@@ -49,59 +49,6 @@ namespace iCub
 
 namespace perception
 {
-
-/**
-* \ingroup PerceptiveModels
-*
-*/
-class EventCallback
-{
-public:
-    virtual void exec() = 0;
-};
-
-
-/**
-* \ingroup PerceptiveModels
-*  
-*/
-class Sensor
-{
-protected:
-    void *implementation;
-    bool configured;
-
-public:
-    Sensor() : implementation(NULL), configured(false) { }
-    virtual bool configure(void *implementation, const yarp::os::Property &options)=0;
-    virtual bool getInput(yarp::os::Value &val)=0 const;
-};
-
-
-class SensorInterface : public Sensor
-{
-protected:
-    std::string type;
-    int size;
-    int idx;
-
-public:
-    bool configure(void *implementation, const yarp::os::Property &options);
-    bool getInput(yarp::os::Value &val) const;
-};
-
-
-class SensorPort : public Sensor
-{
-protected:
-    mutable yarp::os::Value val;
-    int idx;
-
-public:
-    SensorPort();
-    bool configure(void *implementation, const yarp::os::Property &options);
-    bool getInput(yarp::os::Value &val) const;
-};
 
 
 }

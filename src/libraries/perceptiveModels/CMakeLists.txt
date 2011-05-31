@@ -2,8 +2,13 @@ SET(PROJECTNAME perceptiveModels)
 
 PROJECT(${PROJECTNAME})
 
-SET(folder_source src/sensors.cpp src/nodes.cpp src/models.cpp)
-SET(folder_header include/iCub/perception/perceptiveModels.h)
+SET(folder_source src/sensors.cpp
+                  src/nodes.cpp
+                  src/models.cpp)
+
+SET(folder_header include/iCub/perception/sensors.h
+                  include/iCub/perception/nodes.h
+                  include/iCub/perception/models.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})

@@ -23,7 +23,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/perception/perceptiveModels.h>
+#include <iCub/perception/sensors.h>
 
 using namespace std;
 using namespace yarp::os;
