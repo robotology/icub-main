@@ -41,9 +41,17 @@ IF (ICUB_SIM_ENABLE_ODESDL)
 
   IF (APPLE)
     ADD_DEFINITIONS(-DHAVE_APPLE_OPENGL_FRAMEWORK)
+    MESSAGE(STATUS ${SDL_VERSION})
     ## add SDLMain.m and SDLMain.h required for Mac OS platform
-    IF (EXISTS "${SDL_INCLUDE_DIR}/SDLMain.m")
-      LIST( APPEND folder_source ${SDL_INCLUDE_DIR}/SDLMain.m )
+    SET(SDL_MAIN_M "${SDL_INCLUDE_DIR}/SDLMain.m")
+
+    IF (NOT EXISTS "${SDL_MAIN_M}")
+      file(GLOB_RECURSE SDL_MAIN_M /usr/local/Cellar/sdl/*.m)
+    ENDIF ()
+
+    IF (EXISTS "${SDL_MAIN_M}")
+      MESSAGE(STATUS "Using ${SDL_MAIN_M}")
+      LIST( APPEND folder_source ${SDL_MAIN_M})
     ELSE ()
       MESSAGE(FATAL_ERROR "On OSX, SDLMain.m is needed.  Yes, it is annoying.")
     ENDIF ()
