@@ -45,7 +45,7 @@ IF (ICUB_SIM_ENABLE_ODESDL)
     IF (EXISTS "${SDL_INCLUDE_DIR}/SDLMain.m")
       LIST( APPEND folder_source ${SDL_INCLUDE_DIR}/SDLMain.m )
     ELSE ()
-      LINK_LIBRARIES(SDLmain)
+      MESSAGE(FATAL_ERROR "On OSX, SDLMain.m is needed.  Yes, it is annoying.")
     ENDIF ()
   ENDIF (APPLE)
 

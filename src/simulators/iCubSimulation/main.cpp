@@ -148,7 +148,7 @@
 
 // Needed on OSX, to hijack main()
 #ifdef ICUB_SIM_ENABLE_ODESDL
-//#include "SDL.h" 
+#include "SDL.h" 
 #endif
 
 int main(int argc, char** argv) {
