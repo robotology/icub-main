@@ -18,9 +18,9 @@
 * Public License for more details
 */
 
+#include "FakeLogicalJoints.h"
 #include "FakeSimulationBundle.h"
 
-#include "FakeLogicalJoints.h"
 #include "FakeWorldManager.h"
 #include "FakeSimulation.h"
 
