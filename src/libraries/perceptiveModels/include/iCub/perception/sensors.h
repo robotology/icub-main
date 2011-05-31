@@ -66,8 +66,8 @@ protected:
 
 public:
     Sensor() : implementation(NULL), configured(false) { }
-    virtual bool configure(void *implementation, const yarp::os::Property &options)=0;
-    virtual bool getInput(yarp::os::Value &val)=0 const;
+    virtual void configure(void *implementation, const yarp::os::Property &options) = 0;
+    virtual bool getInput(yarp::os::Value &in) const = 0;
 };
 
 
@@ -83,8 +83,8 @@ protected:
     int idx;
 
 public:
-    bool configure(void *implementation, const yarp::os::Property &options);
-    bool getInput(yarp::os::Value &val) const;
+    void configure(void *implementation, const yarp::os::Property &options);
+    bool getInput(yarp::os::Value &in) const;
 };
 
 
@@ -100,8 +100,8 @@ protected:
 
 public:
     SensorPort();
-    bool configure(void *implementation, const yarp::os::Property &options);
-    bool getInput(yarp::os::Value &val) const;
+    void configure(void *implementation, const yarp::os::Property &options);
+    bool getInput(yarp::os::Value &in) const;
 };
 
 

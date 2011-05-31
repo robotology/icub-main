@@ -38,10 +38,12 @@
 #ifndef __PERCEPTIVEMODELS_NODES_H__
 #define __PERCEPTIVEMODELS_NODES_H__
 
-#include <string>
+#include <map>
 
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
+
+#include <iCub/perception/sensors.h>
 
 
 namespace iCub
@@ -58,6 +60,31 @@ class EventCallback
 {
 public:
     virtual void exec() = 0;
+};
+
+
+/**
+* @ingroup Nodes
+*
+*/
+class Node
+{
+protected:
+    std::string name;
+    Sensor *sensor;
+
+    std::map<std::string,Node*> neighbor;
+
+public:
+    Node();
+    void  attachSensor(const Sensor &sensor);
+    void  addNeighbor(const Node &node);
+    bool  removeNeighbor(const std::string &name);
+    Node* getNeighbor(const std::string &name) const;
+
+    virtual bool configure(const yarp::os::Property &options);
+    virtual bool calib(const yarp::os::Property &options);
+    virtual bool getOutput(yarp::os::Value &out) const = 0;
 };
 
 

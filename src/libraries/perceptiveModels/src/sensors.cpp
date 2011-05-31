@@ -33,7 +33,7 @@ using namespace iCub::perception;
 
 
 /************************************************************************/
-bool SensorInterface::configure(void *implementation, const Property &options)
+void SensorInterface::configure(void *implementation, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
 
@@ -47,12 +47,12 @@ bool SensorInterface::configure(void *implementation, const Property &options)
     size=options.find("size").asInt();
     idx=options.find("idx").asInt();
 
-    return configured=true;
+    configured=true;
 }
 
 
 /************************************************************************/
-bool SensorInterface::getInput(Value &val) const
+bool SensorInterface::getInput(Value &in) const
 {
     if (!configured)
         return false;
@@ -62,14 +62,14 @@ bool SensorInterface::getInput(Value &val) const
     if (type=="pos")
     {        
         static_cast<IPositionControl*>(implementation)->getEncoders(vect.data());
-        val=Value(vect[idx]);
+        in=Value(vect[idx]);
 
         return true;
     }
     else if (type=="vel")
     {
         static_cast<IVelocityControl*>(implementation)->getEncoders(vect.data());
-        val=Value(vect[idx]);
+        in=Value(vect[idx]);
 
         return true;
     }
@@ -86,7 +86,7 @@ SensorPort::SensorPort()
 
 
 /************************************************************************/
-bool SensorPort::configure(void *implementation, const Property &options)
+void SensorPort::configure(void *implementation, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
 
@@ -96,21 +96,21 @@ bool SensorPort::configure(void *implementation, const Property &options)
     this->implementation=implementation;
     idx=options.find("idx").asInt();
 
-    return configured=true;
+    configured=true;
 }
 
 
 /************************************************************************/
-bool SensorPort::getInput(Value &val) const
+bool SensorPort::getInput(Value &in) const
 {
     if (!configured)
         return false;
 
     Bottle *data=static_cast<BufferedPort<Bottle>*>(implementation)->read(false);
     if (data!=NULL)
-        this->val=data->get(idx);
+        val=data->get(idx);
 
-    val=this->val;
+    in=val;
 
     return true;
 }
