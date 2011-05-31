@@ -42,8 +42,6 @@
 
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/sig/Vector.h>
 
 
 namespace iCub
@@ -69,34 +67,40 @@ public:
 */
 class Sensor
 {
+protected:
+    void *implementation;
+    bool configured;
+
 public:
-    virtual bool getInput(yarp::os::Value &val) = 0;
+    Sensor() : implementation(NULL), configured(false) { }
+    virtual bool configure(void *implementation, const yarp::os::Property &options)=0;
+    virtual bool getInput(yarp::os::Value &val)=0 const;
 };
 
 
 class SensorInterface : public Sensor
 {
 protected:
-    void *interface;
     std::string type;
+    int size;
     int idx;
 
 public:
-    SensorInterface(void *interface, const std::string &type, const int idx);
-    bool getInput(yarp::os::Value &val);
+    bool configure(void *implementation, const yarp::os::Property &options);
+    bool getInput(yarp::os::Value &val) const;
 };
 
 
 class SensorPort : public Sensor
 {
-protected:    
-    yarp::os::BufferedPort<yarp::sig::Vector> *port;
-    yarp::os::Value val;
+protected:
+    mutable yarp::os::Value val;
     int idx;
 
 public:
-    SensorPort(yarp::os::BufferedPort<yarp::sig::Vector> *port, const int idx);
-    bool getInput(yarp::os::Value &val);
+    SensorPort();
+    bool configure(void *implementation, const yarp::os::Property &options);
+    bool getInput(yarp::os::Value &val) const;
 };
 
 
