@@ -33,16 +33,27 @@ using namespace iCub::perception;
 
 
 /************************************************************************/
-void SensorInterface::configure(void *implementation, const Property &options)
+Sensor::Sensor()
+{
+    name="";
+    source=NULL;
+    configured=false;    
+}
+
+
+/************************************************************************/
+void SensorInterface::configure(void *source, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
 
-    ACE_ASSERT(implementation!=NULL);
+    ACE_ASSERT(source!=NULL);
+    ACE_ASSERT(options.check("name"));
     ACE_ASSERT(options.check("type"));
     ACE_ASSERT(options.check("size"));
     ACE_ASSERT(options.check("idx"));
 
-    this->implementation=implementation;
+    this->source=source;
+    name=options.find("name").asString().c_str();
     type=options.find("type").asString().c_str();
     size=options.find("size").asInt();
     idx=options.find("idx").asInt();
@@ -55,20 +66,12 @@ void SensorInterface::configure(void *implementation, const Property &options)
 bool SensorInterface::getInput(Value &in) const
 {
     if (!configured)
-        return false;
-
-    Vactor vect(size);
+        return false;    
 
     if (type=="pos")
-    {        
-        static_cast<IPositionControl*>(implementation)->getEncoders(vect.data());
-        in=Value(vect[idx]);
-
-        return true;
-    }
-    else if (type=="vel")
     {
-        static_cast<IVelocityControl*>(implementation)->getEncoders(vect.data());
+        Vactor vect(size);
+        static_cast<IPositionControl*>(source)->getEncoders(vect.data());
         in=Value(vect[idx]);
 
         return true;
@@ -79,21 +82,16 @@ bool SensorInterface::getInput(Value &in) const
 
 
 /************************************************************************/
-SensorPort::SensorPort()
-{
-    val=Value;
-}
-
-
-/************************************************************************/
-void SensorPort::configure(void *implementation, const Property &options)
+void SensorPort::configure(void *source, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
 
-    ACE_ASSERT(implementation!=NULL);
+    ACE_ASSERT(source!=NULL);
+    ACE_ASSERT(options.check("name"));
     ACE_ASSERT(options.check("idx"));
 
-    this->implementation=implementation;
+    this->source=source;
+    name=options.find("name").asString().c_str();
     idx=options.find("idx").asInt();
 
     configured=true;
@@ -103,16 +101,18 @@ void SensorPort::configure(void *implementation, const Property &options)
 /************************************************************************/
 bool SensorPort::getInput(Value &in) const
 {
-    if (!configured)
+    if (configured)
+    {
+        Bottle *data=static_cast<BufferedPort<Bottle>*>(source)->read(false);
+        if (data!=NULL)
+            val=data->get(idx);
+
+        in=val;
+
+        return true;
+    }
+    else
         return false;
-
-    Bottle *data=static_cast<BufferedPort<Bottle>*>(implementation)->read(false);
-    if (data!=NULL)
-        val=data->get(idx);
-
-    in=val;
-
-    return true;
 }
 
 

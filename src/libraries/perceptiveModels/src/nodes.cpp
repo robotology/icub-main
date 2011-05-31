@@ -16,4 +16,68 @@
  * Public License for more details
 */
 
+#include <iCub/perception/nodes.h>
+
+using namespace std;
+using namespace yarp::os;
+using namespace iCub::perception;
+
+
+/************************************************************************/
+EventCallback::EventCallback()
+{
+    name="";
+}
+
+
+/************************************************************************/
+Node::Node()
+{
+    name="";
+}
+
+
+/************************************************************************/
+void Node::attachSensor(const Sensor &sensor)
+{
+    sensors[sensor.getName()]=&sensor;
+}
+
+
+/************************************************************************/
+void Node::attachCallback(const EventCallback &callback)
+{
+    callbacks[callback.getName()]=&callback;
+}
+
+
+/************************************************************************/
+void Node::addNeighbor(const Node &node)
+{
+    neighbors[node.getName()]=&node;
+}
+
+
+/************************************************************************/
+bool Node::removeNeighbor(const string &name)
+{
+    map<string,Node*>::iterator it=neighbors.find(name);
+    if (it!=neighbors.end())
+    {
+        neighbors.erase(it);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+Node* Node::getNeighbor(const string &name) const
+{
+    map<string,Node*>::const_iterator it=neighbors.find(name);
+    return (it!=neighbors.end()?it->second:NULL);
+}
+
+
 

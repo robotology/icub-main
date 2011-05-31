@@ -61,13 +61,15 @@ namespace perception
 class Sensor
 {
 protected:
-    void *implementation;
+    std::string name;
+    void *source;
     bool configured;
 
 public:
-    Sensor() : implementation(NULL), configured(false) { }
-    virtual void configure(void *implementation, const yarp::os::Property &options) = 0;
+    Sensor();
+    virtual void configure(void *source, const yarp::os::Property &options) = 0;
     virtual bool getInput(yarp::os::Value &in) const = 0;
+    std::string getName() const { return name; }
 };
 
 
@@ -83,7 +85,7 @@ protected:
     int idx;
 
 public:
-    void configure(void *implementation, const yarp::os::Property &options);
+    void configure(void *source, const yarp::os::Property &options);
     bool getInput(yarp::os::Value &in) const;
 };
 
@@ -99,8 +101,7 @@ protected:
     int idx;
 
 public:
-    SensorPort();
-    void configure(void *implementation, const yarp::os::Property &options);
+    void configure(void *source, const yarp::os::Property &options);
     bool getInput(yarp::os::Value &in) const;
 };
 

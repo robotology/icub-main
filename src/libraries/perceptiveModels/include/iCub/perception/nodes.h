@@ -58,8 +58,13 @@ namespace perception
 */
 class EventCallback
 {
+protected:
+    std::string name;
+
 public:
-    virtual void exec() = 0;
+    EventCallback();
+    std::string getName() const { return name; }
+    virtual void execute() = 0;
 };
 
 
@@ -71,19 +76,23 @@ class Node
 {
 protected:
     std::string name;
-    Sensor *sensor;
 
-    std::map<std::string,Node*> neighbor;
+    std::map<std::string,Sensor*>        sensors;
+    std::map<std::string,EventCallback*> callbacks;
+    std::map<std::string,Node*>          neighbors;
 
 public:
     Node();
     void  attachSensor(const Sensor &sensor);
+    void  attachCallback(const EventCallback &callback);
     void  addNeighbor(const Node &node);
     bool  removeNeighbor(const std::string &name);
     Node* getNeighbor(const std::string &name) const;
 
-    virtual bool configure(const yarp::os::Property &options);
-    virtual bool calib(const yarp::os::Property &options);
+    std::string getName() const { return name; }
+
+    virtual bool configure(const yarp::os::Property &options) = 0;
+    virtual bool calib(const yarp::os::Property &options) = 0;
     virtual bool getOutput(yarp::os::Value &out) const = 0;
 };
 
