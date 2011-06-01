@@ -63,8 +63,8 @@ public:
     Model();
     std::string getName() const { return name; }
 
-    virtual void configure(const yarp::os::Property &options) = 0;
-    virtual bool save() = 0;
+    virtual bool fromProperty(const yarp::os::Property &options) = 0;
+    virtual bool toProperty(yarp::os::Property &options) const = 0;
 };
 
 

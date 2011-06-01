@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <ace/Assert.h>
+#include <assert.h>
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
@@ -46,17 +46,17 @@ void SensorInterface::configure(void *source, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
 
-    ACE_ASSERT(source!=NULL);
-    ACE_ASSERT(options.check("name"));
-    ACE_ASSERT(options.check("type"));
-    ACE_ASSERT(options.check("size"));
-    ACE_ASSERT(options.check("idx"));
+    assert(source!=NULL);
+    assert(opt.check("name"));
+    assert(opt.check("type"));
+    assert(opt.check("size"));
+    assert(opt.check("idx"));
 
     this->source=source;
-    name=options.find("name").asString().c_str();
-    type=options.find("type").asString().c_str();
-    size=options.find("size").asInt();
-    idx=options.find("idx").asInt();
+    name=opt.find("name").asString().c_str();
+    type=opt.find("type").asString().c_str();
+    size=opt.find("size").asInt();
+    idx=opt.find("idx").asInt();
 
     configured=true;
 }
@@ -86,13 +86,13 @@ void SensorPort::configure(void *source, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
 
-    ACE_ASSERT(source!=NULL);
-    ACE_ASSERT(options.check("name"));
-    ACE_ASSERT(options.check("idx"));
+    assert(source!=NULL);
+    assert(opt.check("name"));
+    assert(opt.check("idx"));
 
     this->source=source;
-    name=options.find("name").asString().c_str();
-    idx=options.find("idx").asInt();
+    name=opt.find("name").asString().c_str();
+    idx=opt.find("idx").asInt();
 
     configured=true;
 }

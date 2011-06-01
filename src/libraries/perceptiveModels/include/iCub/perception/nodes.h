@@ -89,11 +89,11 @@ public:
     void  attachCallback(const EventCallback &callback);
     void  addNeighbor(const Node &node);
     bool  removeNeighbor(const std::string &name);
-    Node* getNeighbor(const std::string &name) const;    
+    Node* getNeighbor(const std::string &name) const;
 
-    virtual bool configure(const yarp::os::Property &options) = 0;
-    virtual bool save(const yarp::os::Property &options) = 0;
-    virtual bool calib(const yarp::os::Property &options) = 0;
+    virtual bool fromProperty(const yarp::os::Property &options) = 0;
+    virtual bool toProperty(yarp::os::Property &options) const = 0;
+    virtual bool calibrate(const yarp::os::Property &options) = 0;
     virtual bool getOutput(yarp::os::Value &out) const = 0;
 };
 

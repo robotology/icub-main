@@ -16,7 +16,40 @@
  * Public License for more details
 */
 
+#include <assert.h>
+
 #include <iCub/perception/springyFingers.h>
 
+using namespace std;
+using namespace yarp::os;
+using namespace yarp::sig;
+
+
+/************************************************************************/
+bool SpringyFinger::fromProperty(const yarp::os::Property &options)
+{
+    Property &opt=const_cast<Property&>(options);
+
+    assert(options.check("name"));
+    name=options.find("name").asString().c_str();
+
+    if (name=="thumb")
+    {
+    }
+    else if (name=="index")
+    {
+    }
+    else if (name=="middle")
+    {
+    }
+    else if (name=="ring")
+    {
+    }
+    else if (name=="little")
+    {
+    }
+    else
+        return false;
+}
 
 
