@@ -17,7 +17,7 @@
 */
 
 /**
- * @defgroup Models Models
+ * @defgroup SpringyFingers springyFingers
  *  
  * @ingroup PerceptiveModels 
  *  
@@ -35,13 +35,10 @@
  *  
  */ 
 
-#ifndef __PERCEPTIVEMODELS_MODELS_H__
-#define __PERCEPTIVEMODELS_MODELS_H__
+#ifndef __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
+#define __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
 
-#include <string>
-
-#include <yarp/os/Value.h>
-#include <yarp/os/Property.h>
+#include <iCub/perception/nodes.h>
 
 
 namespace iCub
@@ -51,20 +48,15 @@ namespace perception
 {
 
 /**
-* @ingroup Models
+* @ingroup SpringyFingers
 *
 */
-class Model
+class SpringyFinger : public Node
 {
 protected:
-    std::string name;
 
 public:
-    Model();
-    std::string getName() const { return name; }
-
-    virtual void configure(const yarp::os::Property &options) = 0;
-    virtual bool save() = 0;
+    SpringyFinger();
 };
 
 

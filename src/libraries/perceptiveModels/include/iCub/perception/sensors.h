@@ -67,9 +67,9 @@ protected:
 
 public:
     Sensor();
-    virtual void configure(void *source, const yarp::os::Property &options) = 0;
-    virtual bool getInput(yarp::os::Value &in) const = 0;
     std::string getName() const { return name; }
+    virtual void configure(void *source, const yarp::os::Property &options) = 0;
+    virtual bool getInput(yarp::os::Value &in) const = 0;    
 };
 
 
