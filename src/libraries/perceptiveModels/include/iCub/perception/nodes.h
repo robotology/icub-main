@@ -16,7 +16,8 @@
  * Public License for more details
 */
 
-/**
+/** 
+ * @note UNDER DEVELOPMENT   
  * @defgroup Nodes Nodes
  *  
  * @ingroup PerceptiveModels 
