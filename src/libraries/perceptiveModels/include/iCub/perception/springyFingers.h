@@ -38,13 +38,12 @@
 #ifndef __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
 #define __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
 
-#include <map>
-
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
+#include <yarp/sig/Vector.h>
 
-#include <iCub/learningMachine/LSSVMLearner.h>
 #include <iCub/learningMachine/FixedRangeScaler.h>
+#include <iCub/learningMachine/LSSVMLearner.h>
 #include <iCub/perception/nodes.h>
 
 
@@ -61,12 +60,17 @@ namespace perception
 class SpringyFinger : public Node
 {
 protected:
-    std::map<std::string,iCub::learningmachine::FixedRangeScaler> scalers;
-    std::map<std::string,iCub::learningmachine::LSSVMLearner>     lssvms;
+    double threshold;
+    iCub::learningmachine::FixedRangeScaler scaler;
+    iCub::learningmachine::LSSVMLearner     lssvm;
+
+    bool getData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
 
 public:
+    SpringyFinger();
+
     bool fromProperty(const yarp::os::Property &options);
-    bool toProperty(yarp::os::Property &options) const;
+    void toProperty(yarp::os::Property &options) const;
     bool calibrate(const yarp::os::Property &options);
     bool getOutput(yarp::os::Value &out) const;
 };
