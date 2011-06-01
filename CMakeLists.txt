@@ -19,17 +19,16 @@ SET(ICUB_REQYARP_VERSION_MAJOR "2")
 SET(ICUB_REQYARP_VERSION_MINOR "3")
 SET(ICUB_REQYARP_VERSION_PATCH "4")
 
-## avoid checking specific versions of YARP with cmake 2.6.0
-## find_package does not work as expected in version 2.6.0
-
+## avoid checking specific versions of YARP with CMake 2.6.0
+## this is because find_package does not work as expected with CMake 2.6.0
 if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
-        # find yarp, accept all versions
+        # find yarp, accept all versions, then manually check YARP version
         find_package(YARP REQUIRED)       
         if (YARP_VERSION_MAJOR LESS ICUB_REQYARP_VERSION_MAJOR OR YARP_VERSION_MINOR LESS ICUB_REQYARP_VERSION OR YARP_VERSION_PATCH LESS ICUB_REQYARP_VERSION_PATCH)
            message(FATAL_ERROR "YARP version is not compatible, please update YARP")
         endif()
 else()
-        ## find yarp request particular version
+        ## rely on find_package to request a particular version of YARPf
         find_package(YARP ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATH} REQUIRED)
 endif()
 
@@ -48,10 +47,15 @@ else (YARP_FOUND)
   message(FATAL_ERROR "Cannot find YARP")
 endif (YARP_FOUND)
 
-########## add yarp definitions
+
+############# Options and definitions
+# Important: all these have to come before all calls to add_subdirectory()
+# otherwise code inside these directory will not be aware of the options.
+#
+# add yarp definitions
 add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
 
-### pick up yarp's cmake scripts
+# pick up yarp's cmake scripts
 set(CMAKE_MODULE_PATH ${YARP_MODULE_PATH} ${CMAKE_MODULE_PATH})
 
 # Pick up our scripts - they are all in the conf subdirectory
@@ -111,7 +115,7 @@ else(BUILD_MATLAB_BASED_TOOLS)
     set(MATLAB_LIBRARIES "")
 endif(BUILD_MATLAB_BASED_TOOLS)
 
-#### enable testing
+### enable testing
 include (CTest)
 
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
@@ -124,7 +128,6 @@ make_directory(${LIBRARY_OUTPUT_PATH})
 make_directory(${EXECUTABLE_OUTPUT_PATH})
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
-##########################################
 
 set_property(GLOBAL PROPERTY ICUB_INCLUDE_DIRS)
 set_property(GLOBAL PROPERTY ICUB_TARGETS)
@@ -136,16 +139,23 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-install-includes.cmake "")
 
+# Some options: mostly cache variables
 set(ICUB_EXPERIMENTAL_APP_INSTALL TRUE CACHE BOOL "Turn on app install experimental feature")
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
 SET(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE TYPE PATH)
+
+# temporary options for debugging/testing new functionalities
+set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
+set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
+
+###################### End options and definitions
 
 ########### populate applications
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
     add_subdirectory(app)
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 
-# Create everything needed to build our executable.
+# Create everything needed to build our executables.
 add_subdirectory(src)
 
 ############ generate custom target that exports all applications
@@ -227,10 +237,6 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubPackage.cmake)
   
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
-
-# temporary options for debugging/testing new functionalities
-set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
-set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
 
 ######
 

@@ -25,6 +25,17 @@ import os
 import time
 from Tkinter import *
 
+
+class Util:
+	@staticmethod
+	def getSshCmd(user, host):
+		cmd = ['ssh', '-f']
+		if user == "":
+			return cmd + [host]
+		else:
+			return cmd + [user + '@' + host]
+
+
 class Node:
     def __init__(self, name, display, dispValue):
         self.name=name
@@ -92,7 +103,7 @@ class RemoteExecWindow:
         for chk in self.nodesChk:
             if (chk.get()):
                 node=self.nodes[i].name
-                cmd=['ssh', '-f', self.user.get()+'@'+node, remoteCmd]
+                cmd = Util.getSshCmd(self.user.get(), node) + [remoteCmd]
                 print cmd
                 subprocess.Popen(cmd).wait()
             i=i+1
@@ -278,7 +289,9 @@ class App:
             running=i.next().get()
             
             if running==0 and selected==1:
-		cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start '] 
+		#cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start '] 
+                cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' start ']
+
                 if node.display:
 		    if (node.displayValue == ""):
                     	cmd.append('display')
@@ -286,7 +299,8 @@ class App:
 			cmd.append('display ')
 			cmd.append(node.displayValue)
                 else:
-                    cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
+                    cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' start ']
+#                   cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
                     
                 print 'Running',
                 print cmd
@@ -309,7 +323,8 @@ class App:
             running=i.next().get()
 
             if running==1 and selected==1 :
-                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
+                #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
+                cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' stop']
                 print 'Running',
                 print cmd
                 ret=subprocess.Popen(cmd).wait()
@@ -326,7 +341,8 @@ class App:
         for node in self.cluster.nodes:
             selected=iS.next().get()
             if (selected):
-                cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
+                #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
+                cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' kill']
                 print cmd
                 ret=subprocess.Popen(cmd).wait()
 
@@ -348,7 +364,8 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' start']
+            #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' start']
+            cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' start']
 	    if (self.cluster.nsType=='yarpserver3'):
                 cmd.append('yarpserver3')
             elif(self.cluster.nsType=='yarpserver'):
@@ -366,7 +383,8 @@ class App:
         print 'Stopping nameserver'
         self.checkNs()
         if self.nsFlag.get()==1:
-            cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' stop']
+            #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' stop']
+            cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' stop']
             print 'Running',
             print cmd
             ret=subprocess.Popen(cmd).wait()

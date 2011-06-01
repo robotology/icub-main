@@ -1,3 +1,7 @@
+2011-06-1 Lorenzo Natale <lorenzo.natale@iit.it>
+    * CMakeLists.txt: fix bug reported by Lars Schillingmann
+    some options at the end of the file moved before calls to add_subdirectory().
+    
 2011-05-26 Lorenzo Natale <lorenzo.natale@iit.it>
     * CMakeLists.txt: iCub now requires YARP 2.3.4
 
