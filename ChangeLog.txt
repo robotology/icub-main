@@ -1,4 +1,8 @@
 2011-06-1 Lorenzo Natale <lorenzo.natale@iit.it>
+    * app/iCubCluster/icub-cluster.py: patch from Lars Schillingmann to 
+    allow ssh user to be controlled by ~/.ssh/config
+    
+2011-06-1 Lorenzo Natale <lorenzo.natale@iit.it>
     * CMakeLists.txt: fix bug reported by Lars Schillingmann
     some options at the end of the file moved before calls to add_subdirectory().
     
