@@ -144,7 +144,8 @@ private:
 
     static Uint32 ODE_process(Uint32 interval, void *param);
 
-    static int thread_func(void *unused);
+    //static int thread_func(void *unused);
+    static int thread_ode(void *unused);
 
     static void sighandler(int sig);
 

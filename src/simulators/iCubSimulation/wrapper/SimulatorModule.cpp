@@ -394,7 +394,8 @@ bool SimulatorModule::runModule() {
 
 
 void SimulatorModule::displayStep(int pause) {
-    if (sim->checkSync()){
+    //if (sim->checkSync())
+    {
         bool needLeft = (portLeft.getOutputCount()>0);
         bool needRight = (portRight.getOutputCount()>0);
         bool needWide = (portWide.getOutputCount()>0);
@@ -492,7 +493,7 @@ void SimulatorModule::displayStep(int pause) {
         if (target>now) {
             Time::delay(target-now);
         }
-        sim->checkSync(true);
+        //sim->checkSync(true);
     }
 }
 

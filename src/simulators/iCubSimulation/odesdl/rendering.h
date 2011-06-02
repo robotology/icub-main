@@ -56,6 +56,21 @@ typedef struct                       /**** BMP file info structure ****/
     unsigned int   biClrImportant;   /* Number of important colors */
     char *data;
     } SIMBITMAPINFOHEADER;
+
+typedef struct vector_s
+{
+    float   x,
+            y,
+            z;
+} vector_t;
+
+typedef struct vertex_s
+{
+    float   x,
+            y,
+            z;
+} vertex_t;
+
 extern unsigned int Texture[200];
 
 void setupTexture(char *filename, int whichtexture);
@@ -68,7 +83,6 @@ void DrawCylinder(float radius, float length, bool wireframe, bool texture,int w
 void LDEsetM(const dReal *pos,const dReal *R);
 GLuint LoadTextureRAW( const char * filename, int wrap );
 void drawSkyDome(float x, float y, float z, float width, float height, float length);
-//void CreateCylinder(dReal length, dReal radius);
 void DrawX (dTriMeshX trimesh, int whichtexture);
 int LoadBitmapTERMINAL(char *filename, int whichtexture);
 

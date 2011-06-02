@@ -41,11 +41,11 @@ worldSimData::worldSimData() {
 }
 
 void worldSim::resetSpeeds() {
-    int x;
+//    int x;
     // joint speeds
-    for(x = 0; x < numObjJoints; x++) {
+    //for(x = 0; x < numObjJoints; x++) {
         //speed[x] = 0.0;
-    }
+    //}
 }
 
 void worldSim::syncAngles() {
@@ -87,7 +87,7 @@ void worldSim::draw(){
         glPushMatrix();LDEsetM(dGeomGetPosition(tableGeom[4]),dGeomGetRotation(tableGeom[4]));
         DrawBox(0.7,0.03,0.4,false,textured,2);glPopMatrix();
 
-        glColor3d(0.8,0.0,0.0);
+        /*glColor3d(0.8,0.0,0.0);
         glPushMatrix();LDEsetM(dGeomGetPosition(box_part[0]),dGeomGetRotation(box_part[0]));
         DrawBox(0.01,0.01,0.1,false,textured,2);glPopMatrix();
 
@@ -123,11 +123,11 @@ void worldSim::draw(){
 
         glPushMatrix();LDEsetM(dGeomGetPosition(box_part[11]),dGeomGetRotation(box_part[11]));
         DrawBox(0.1,0.01,0.01,false,textured,2);glPopMatrix();
-
+        */
         glColor3d(0.0,0.0,0.8);
         glPushMatrix(); LDEsetM(dBodyGetPosition(ballBody),dBodyGetRotation(ballBody));
         DrawSphere(0.04,false,textured,2);glPopMatrix();	
-
+        
     }
 
     for (int i=0; i<OBJNUM; i++) {
@@ -179,15 +179,15 @@ void worldSim::draw(){
 
 void worldSim::loadTexture(ConstString texture, int numTexture){
 
-    cout << " NUMBER TEXTURE " << numTexture << endl;
+   // cout << " NUMBER TEXTURE " << numTexture << endl;
     ConstString tmptext = (char *) model_DIR.c_str();
     texture = tmptext + "/"+ texture;
     setupTexture( (char* ) texture.c_str(), numTexture );
 }
 
 void worldSim::setPosition(dReal agent1X, dReal agent1Y, dReal agent1Z ) {
-        dBodySetPosition(tempBody,-0.0,0.2, -100);  
-        dGeomSetPosition(tempGeom[1],-0.4,0.2, -100);
+        //dBodySetPosition(tempBody,-0.0,0.2, -100);  
+        //dGeomSetPosition(tempGeom[1],-0.4,0.2, -100);
     if (actWorld == "on"){
         dGeomSetPosition(tableGeom[0],0.3,0.25,0.3);
         dGeomSetPosition(tableGeom[1],-0.3,0.25,0.3);
@@ -195,7 +195,7 @@ void worldSim::setPosition(dReal agent1X, dReal agent1Y, dReal agent1Z ) {
         dGeomSetPosition(tableGeom[3],-0.3,0.25,0.6);
         dGeomSetPosition(tableGeom[4],0.0,0.5,0.45);
 
-        dBodySetPosition(Box,0.05,0.55, 0.35);
+        //dBodySetPosition(Box,0.05,0.6, 0.55);
 
         dBodySetPosition(ballBody,-0.15,0.65, 0.35);
     }
@@ -209,7 +209,6 @@ void worldSim::activateWorld(RobotConfig& config) {
     ConstString general = finder.findFile("general");
     options.fromConfigFile(general.c_str());
 
-    //readConfig(options,"conf/iCub_parts_activation.ini");
     actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
 }
 
@@ -226,10 +225,10 @@ void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     boxObj = dSimpleSpaceCreate(space);
     dSpaceSetCleanup(boxObj,0);
 
-    tempBody = dBodyCreate (world);
-    tempGeom[0] = dCreateBox (space,0.1,0.1,0.1);
-    dGeomSetBody(tempGeom[0],tempBody);
-    tempGeom[1] = dCreateBox (space,0.1,0.1,0.1);
+    //tempBody = dBodyCreate (world);
+    //tempGeom[0] = dCreateBox (space,0.1,0.1,0.1);
+    //dGeomSetBody(tempGeom[0],tempBody);
+    //tempGeom[1] = dCreateBox (space,0.1,0.1,0.1);
 
     if (actWorld == "on"){
         dMass m, m2;
@@ -246,68 +245,69 @@ void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dMassSetZero(&m);
         dMassSetZero(&m2);
 
-        Box = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        box_part[0] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.05, 0.1, 0.01,0.01);
+        /*Box = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+        box_part[0] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.01, 0.1, 0.01,0.01);
         dGeomSetBody (box_part[0],Box);
         dGeomSetOffsetPosition(box_part[0],-0.05-m2.c[0], -m2.c[0], -m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[1] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.05, 0.01,0.01,0.1);
+        box_part[1] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.01, 0.01,0.01,0.1);
         dGeomSetBody (box_part[1],Box);
         dGeomSetOffsetPosition(box_part[1],0.05-m2.c[0], -m2.c[0], -m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[2] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.05, 0.1,0.01,0.01);
+        box_part[2] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.01, 0.1,0.01,0.01);
         dGeomSetBody (box_part[2],Box);
         dGeomSetOffsetPosition(box_part[2],-m2.c[0], -m2.c[0], 0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[3] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.05, 0.1,0.01,0.01);
+        box_part[3] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.01, 0.1,0.01,0.01);
         dGeomSetBody (box_part[3],Box);
         dGeomSetOffsetPosition(box_part[3],-m2.c[0], -m2.c[0], -0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[4] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.05, 0.01,0.1,0.01);
+        box_part[4] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.01, 0.01,0.1,0.01);
         dGeomSetBody (box_part[4],Box);
         dGeomSetOffsetPosition(box_part[4],-0.05-m2.c[0], 0.045-m2.c[0], -0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[5] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.05, 0.01,0.1,0.01);
+        box_part[5] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.01, 0.01,0.1,0.01);
         dGeomSetBody (box_part[5],Box);
         dGeomSetOffsetPosition(box_part[5],-0.05-m2.c[0], 0.045-m2.c[0], 0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[6] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.05, 0.01,0.1, 0.01);
+        box_part[6] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.01, 0.01,0.1, 0.01);
         dGeomSetBody (box_part[6],Box);
         dGeomSetOffsetPosition(box_part[6],0.05-m2.c[0], 0.045-m2.c[0], -0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[7] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.05, 0.01,0.1, 0.01);
+        box_part[7] = dCreateBox (boxObj, 0.01,0.1,0.01); dMassSetBoxTotal(&m2,0.01, 0.01,0.1, 0.01);
         dGeomSetBody (box_part[7],Box);
         dGeomSetOffsetPosition(box_part[7],0.05-m2.c[0], 0.045-m2.c[0], 0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[8] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.05, 0.1, 0.01,0.01);
+        box_part[8] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.015, 0.1, 0.01,0.01);
         dGeomSetBody (box_part[8],Box);
         dGeomSetOffsetPosition(box_part[8],-0.05-m2.c[0], 0.1-m2.c[0], -m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[9] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.05, 0.01,0.01,0.1);
+        box_part[9] = dCreateBox (boxObj,0.01,0.01,0.1); dMassSetBoxTotal(&m2,0.01, 0.01,0.01,0.1);
         dGeomSetBody (box_part[9],Box);
         dGeomSetOffsetPosition(box_part[9],0.05-m2.c[0], 0.1-m2.c[0], -m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[10] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.05, 0.1,0.01,0.01);
+        box_part[10] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.01, 0.1,0.01,0.01);
         dGeomSetBody (box_part[10],Box);
         dGeomSetOffsetPosition(box_part[10],-m2.c[0], 0.1-m2.c[0], 0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        box_part[11] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.05, 0.1,0.01,0.01);
+        box_part[11] = dCreateBox (boxObj,0.1,0.01,0.01); dMassSetBoxTotal(&m2,0.01, 0.1,0.01,0.01);
         dGeomSetBody (box_part[11],Box);
         dGeomSetOffsetPosition(box_part[11],-m2.c[0], 0.1-m2.c[0], -0.045-m2.c[0]);
         dMassAdd (&m, &m2);
 
         dBodySetMass(Box,&m);
+        */
         /*-----------------Add independent objects to the space-------------*/
 
         /*---------------Independed encapsulated object position -------------*/
@@ -328,9 +328,9 @@ worldSim::~worldSim() {
         for (int i=0; i<5; i++){
             dGeomDestroy(tableGeom[i]);
         }
-        for (int i=0; i<12; i++){
-            dGeomDestroy(box_part[i]);
-        }
+        //for (int i=0; i<12; i++){
+        //    dGeomDestroy(box_part[i]);
+        //}
         dGeomDestroy(ballGeom);
     }
     dSpaceDestroy (boxObj);

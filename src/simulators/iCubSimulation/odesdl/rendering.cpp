@@ -42,7 +42,7 @@ using namespace std;
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 1.0f };
 const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat light_position[] = { 0.0f, 5.0f, 5.0f, 0.0f };
+const GLfloat light_position[] = { 0.0f, 50.0f, 5.0f, 1.0f };
 
 GLenum mode;
 GLuint nicetexture;
@@ -62,35 +62,28 @@ static GLuint FindTextureRAW(const char *str, bool flag) {
 //Function to setup OpenGl
 bool setup_opengl(ResourceFinder& finder){
     glShadeModel( GL_SMOOTH );
-    /* Culling. */
+
+    // Culling
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
     glEnable( GL_CULL_FACE );
     glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_LESS);
+    glDepthFunc(GL_LESS);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);               // OpenGL light
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-
+    
     glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    //glLightfv(GL_LIGHT1, GL_POSITION, light_position );
     /// Some OpenGL settings
-    GLfloat light_color[] = {1,1,1,1};  // colour
-    glMaterialfv(GL_FRONT,GL_SHININESS,light_color); // colour
+    GLfloat light_color[] = {0.0,0.0,0.0,1.0};  // colour
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, light_color);
+    //glMaterialfv(GL_FRONT,GL_DIFFUSE,light_color); // colour
     glClearColor(0.0,0.0,0.0,0); // background color
 
-    /*	floor data/texture/crate.raw
-body1 data/texture/metal2.raw
-body2 data/texture/brushed-metal.raw
-skybox_up data/texture/face.raw
-skybox_front data/texture/skybox/ft.raw
-skybox_back data/texture/skybox/bk.raw
-skybox_left data/texture/skybox/lt.raw
-skybox_right data/texture/skybox/rt.raw
-face data/texture/face.raw
-*/
     ConstString floor = finder.findFile("floor");
     Texture[0] = LoadTextureRAW( floor.c_str(), false );
 
@@ -230,12 +223,11 @@ void drawSkyDome(float x, float y, float z, float width, float height, float len
 }
 
 void DrawBox(float width, float height, float length, bool wireframe, bool texture, int whichtexture){
-    if (whichtexture == 2){
-        glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    }else{
-        glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//blends the texture with the color of the object
-    }
-    if (wireframe) mode = GL_LINE_LOOP;
+    
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//blends the texture with the color of the object
+    
+    if (wireframe) 
+        mode = GL_LINE_LOOP;
     else mode = GL_QUADS;
 
     glPushMatrix();
@@ -351,6 +343,7 @@ void DrawSphere(float radius, bool wireframe, bool texture, int whichtexture){
     }
     else
         gluQuadricDrawStyle(sphere, GLU_FILL);
+
     gluSphere(sphere, radius, 20,20);
 
     glDisable(GL_TEXTURE_2D);
@@ -395,10 +388,13 @@ void DrawCylinder(float radius, float length, bool wireframe, bool texture, int 
     gluDisk(cap,0,radius,20,10);
     glPopMatrix();
 
+    //glPushMatrix();
+    //glLoadIdentity();
+    glTranslatef(0,0,length/2);
+    //glPopMatrix();
     glDisable(GL_TEXTURE_2D);
     gluDeleteQuadric(cylinder);
     gluDeleteQuadric(cap);
-
 }
 void LDEsetM(const dReal *pos,const dReal *R){
     float local_matrix[16];
@@ -463,46 +459,45 @@ void DrawVideo(VideoTexture *video) {
 
 void DrawX (dTriMeshX trim, int whichtexture){
 
-    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-    GL_LINEAR_MIPMAP_LINEAR);
-
-    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]); 
-    glDisable(GL_CULL_FACE);
+    glDisable( GL_CULL_FACE );
+
+    float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
+
+    glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]);
+
     glBegin(GL_TRIANGLES);
-    for (int i=0; i<(int) (trim->IndexCount) ; )
+    for (int i=0; i<(int) (trim->IndexCount); )
     {
           // vertices: 3d vertices (no_vertices * 3)
           // indices: no_polygons * 3
           // meshcoord: no_polygons * 3 * 2
-          // Coordinates of the first u,v texture
-          glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
-          // Coordinates of the first vertex
-          glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
-          i++;
-
-          // Coordinates of the first u,v texture  
-          glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
-          // Coordinates of the second vertex
-          glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
-          i++;
 
           // Coordinates of the first u,v texture
-          glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
-          // Coordinates of the Third vertex
-          glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
-          i++;
+        glNormal3f( trim->NormCoord[trim->Indices[i] * 3 + 0], trim->NormCoord[trim->Indices[i] * 3 + 1], trim->NormCoord[trim->Indices[i] * 3 + 2 ]);//Normals
+        glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
+        // Coordinates of the first vertex
+        glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
+        i++;
+
+        // Coordinates of the first u,v texture  
+        glNormal3f( trim->NormCoord[trim->Indices[i] * 3 + 0], trim->NormCoord[trim->Indices[i] * 3 + 1], trim->NormCoord[trim->Indices[i] * 3 + 2 ]);
+        glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
+        // Coordinates of the second vertex
+        glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
+        i++;
+
+        // Coordinates of the first u,v texture
+        glNormal3f( trim->NormCoord[trim->Indices[i] * 3 + 0], trim->NormCoord[trim->Indices[i] * 3 + 1], trim->NormCoord[trim->Indices[i] * 3 + 2 ]);
+        glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
+        // Coordinates of the Third vertex
+        glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
+        i++;
     }
     glEnd();
     glEnable( GL_CULL_FACE );
     glDisable(GL_TEXTURE_2D);
-
 }
 
 void setupTexture(char *filename, int whichtexture){
@@ -512,6 +507,16 @@ void setupTexture(char *filename, int whichtexture){
 
 int LoadBitmapTERMINAL(char *filename, int whichtexture)
 {
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+    // The next commands sets the texture parameters
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // If the u,v coordinates overflow the range 0,1 the image is repeated
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // The magnification function ("linear" produces better results)
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //The minifying function
+    glEnable(GL_TEXTURE_2D);
+
+    //GLuint texture;
     FILE * file1;
     char temp1;
     long i;	
@@ -574,14 +579,10 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     }
     fclose(file1); // Closes the file stream
 
-    glBindTexture(GL_TEXTURE_2D, whichtexture);// Bind the ID texture specified by the 2nd parameter
+    //glGenTextures(1, &texture);
+   glBindTexture(GL_TEXTURE_2D, whichtexture);// Bind the ID texture specified by the 2nd parameter
 
     cout << "Finished Binding texture "<< endl; 
-    // The next commands sets the texture parameters
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // If the u,v coordinates overflow the range 0,1 the image is repeated
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // The magnification function ("linear" produces better results)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //The minifying function
     cout << "Finished Setting parameters "<< endl; 
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // We don't combine the color with the original surface color, use only the texture map.
     cout << "Finished Setting glTexEnvf "<< endl; 
@@ -590,12 +591,11 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     cout << "Finished Setting glTexImage2D "<< endl;
 
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader1.biWidth, infoheader1.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
+    
     cout << "Finished Setting gluBuild2DMipmaps "<< endl; 
     free(infoheader1.data); // Free the memory we used to load the texture
     
     cout << "\nFisnished creating 3D Model................\n" << endl;
+    //glDisable(GL_TEXTURE_2D);
     return ( whichtexture ); // Returns the current texture OpenGL ID
 }
-
-
-

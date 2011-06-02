@@ -30,7 +30,7 @@
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
+//#include <yarp/os/RateThread.h>
 #include <yarp/sig/Image.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
@@ -46,21 +46,21 @@ namespace yarp{
 }
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
-    public yarp::os::RateThread, 
-           public IPidControlRaw, 
-            public IPositionControlRaw, 
-            public IVelocityControlRaw, 
-            public IEncodersRaw, 
-            public IAmplifierControlRaw,
-            public IControlCalibrationRaw,
-            public IControlLimitsRaw,
-            public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
-            public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
-            public ImplementPidControl<iCubSimulationControl, IPidControl>,
-            public ImplementEncoders<iCubSimulationControl, IEncoders>,
-            public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
-            public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
-            public ImplementControlLimits<iCubSimulationControl, IControlLimits>
+    //public yarp::os::RateThread, 
+    public IPidControlRaw, 
+    public IPositionControlRaw, 
+    public IVelocityControlRaw, 
+    public IEncodersRaw, 
+    public IAmplifierControlRaw,
+    public IControlCalibrationRaw,
+    public IControlLimitsRaw,
+    public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
+    public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
+    public ImplementPidControl<iCubSimulationControl, IPidControl>,
+    public ImplementEncoders<iCubSimulationControl, IEncoders>,
+    public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
+    public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
+    public ImplementControlLimits<iCubSimulationControl, IControlLimits>
 
 {
  private:
@@ -132,6 +132,7 @@ class yarp::dev::iCubSimulationControl :
   virtual bool getRefAccelerationsRaw(double *accs);
   virtual bool stopRaw(int j);
   virtual bool stopRaw();/**/
+
   //
   /////////////////////////////// END Position Control INTERFACE
 
@@ -180,7 +181,10 @@ class yarp::dev::iCubSimulationControl :
   virtual bool getLimitsRaw(int axis, double *min, double *max);
 
   /////// RateThread
-  void run(void);
+  //void run(void);
+
+  /////// Joint steps
+  void jointStep();
 
 protected:
     yarp::dev::PolyDriver joints;
@@ -216,7 +220,8 @@ protected:
     double vel;
     
     //rate at which the position are updated im ms
-    int positionUpdateRate;
+    //int positionUpdateRate;
+    static const int positionUpdateRate = 100;
 
     //axis remapping lookup-table
     int *axisMap;                              

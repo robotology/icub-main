@@ -32,11 +32,14 @@
 #include "world.h"
 #include <time.h>
 #include <yarp/os/Semaphore.h>
+#include "iCubLogicalJoints.h"
+#include "iCubSimulationControl.h"
 //#include <vector>
 
 #include "RobotConfig.h"
 
 using namespace std;
+using namespace yarp::dev;
 
 /**
  *
@@ -60,6 +63,7 @@ public:
     bool stop;
     bool sync;
     string name;
+    iCubSimulationControl **_controls;
 
     void setName( string module ){
         name = module;
@@ -70,7 +74,10 @@ public:
 
     ~OdeInit();
 
+    void setSimulationControl(iCubSimulationControl *control, int part);
+    void removeSimulationControl(int part);
     static OdeInit& init(RobotConfig *config);
+    void sendHomePos();
 
     static OdeInit& get();
 
@@ -78,7 +85,6 @@ public:
 
 private:
     OdeInit(RobotConfig *config);
-
     static OdeInit *_odeinit;
 
     RobotConfig *robot_config;

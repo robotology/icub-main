@@ -43,6 +43,9 @@ void RobotConfig::setFlags() {
     ConstString actElevation = options.findGroup("SETUP").check("elevation",Value(1),"what did the user select?").asString();
     FLAGIFY(flags,actElevation);
 
+    ConstString actStartHomePos = options.findGroup("SETUP").check("startHomePos",Value(1),"what did the user select?").asString();
+    FLAGIFY(flags, actStartHomePos);
+
     ConstString actLegs = options.findGroup("PARTS").check("legs",Value(1),"what did the user select?").asString();
     FLAGIFY(flags,actLegs);
     ConstString actTorso = options.findGroup("PARTS").check("torso",Value(1),"what did the user select?").asString();
@@ -67,15 +70,28 @@ void RobotConfig::setFlags() {
 
     ConstString actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
     FLAGIFY(flags,actWorld);
-    ConstString actCover = options.findGroup("RENDER").check("cover",Value(1),"What did the user select?").asString();
-    FLAGIFY(flags,actCover);
     ConstString actScreen = options.findGroup("RENDER").check("screen",Value(1),"What did the user select?").asString();
     FLAGIFY(flags,actScreen);
+    ConstString actHeadCover = options.findGroup("RENDER").check("head_cover",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actHeadCover);
+    
+    ConstString actLegsCovers = options.findGroup("RENDER").check("legs_covers",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actLegsCovers);
+    
+    ConstString actLeftArmCovers = options.findGroup("RENDER").check("left_arm_covers",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actLeftArmCovers);
+
+    ConstString actRightArmCovers = options.findGroup("RENDER").check("right_arm_covers",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actRightArmCovers);
+
+    ConstString actTorsoCovers = options.findGroup("RENDER").check("torso_covers",Value(1),"What did the user select?").asString();
+    FLAGIFY(flags,actTorsoCovers);
 
     flags.valid = true;
 
         cout << "The iCub simulator will start with the following configuration: " << endl << endl <<
         "Elevation : " << actElevation << endl <<
+        "startHomePos : " << actStartHomePos << endl <<
         "Legs : " << actLegs << endl <<
         "Torso : " << actTorso << endl <<
         "Left arm : " << actLArm << endl <<
@@ -87,6 +103,10 @@ void RobotConfig::setFlags() {
         "Pressure sensors: " << actPressure << endl <<
         "Cameras :" << actVision << endl  <<
         "Objects : " << actWorld << endl <<
-        "Cover : " << actCover << endl <<
+        "Head Cover : " << actHeadCover << endl <<
+        "Legs Cover : " << actLegsCovers << endl <<
+        "Left arm Covers : " << actLeftArmCovers << endl <<
+        "Right arm Covers : " << actRightArmCovers << endl <<
+        "Torso Cover : " << actTorsoCovers << endl <<
         "Screen : " << actScreen << endl << endl;
 }

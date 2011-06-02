@@ -34,7 +34,12 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
     //feedback1 = new dJointFeedback;
     //feedback_mat = new dJointFeedback;
     _iCub = new ICubSim(world, space, 0,0,0, *robot_config);
-    _wrld = new worldSim(world, space, 0,0,0, *robot_config);	
+    _wrld = new worldSim(world, space, 0,0,0, *robot_config);
+    _controls = new iCubSimulationControl*[MAX_PART];
+    for (int i=0; i<MAX_PART; i++) 
+    { 
+        _controls[i] = NULL; 
+    } // initialize at NULL
     
     _wrld->OBJNUM = 0;
     _wrld->waitOBJ = 0;
@@ -43,7 +48,7 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
     _wrld->SPHNUM = 0;
     _wrld->waitSPH = 0;
     _wrld->S_SPHNUM = 0;
-    	
+    
     _wrld->cylOBJNUM = 0;
     _wrld->waitOBJ1 = 0;
     _wrld->S_cylOBJNUM = 0;
@@ -53,11 +58,14 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
 
     _wrld->s_waitMOD = 0;
     _wrld->s_MODEL_NUM = 0;
+
+    
 }
 
 OdeInit::~OdeInit() {
     delete _wrld;    
     delete _iCub;
+    delete[] _controls;
     
     dGeomDestroy(ground);
     dJointGroupDestroy(contactgroup);
@@ -70,6 +78,44 @@ OdeInit& OdeInit::init(RobotConfig *config) {
         _odeinit=new OdeInit(config);
     }
     return *_odeinit;
+}
+void OdeInit::setSimulationControl(iCubSimulationControl *control, int part){
+    if (_controls != NULL) {
+        _controls[part] = control;
+    }
+}
+
+void OdeInit::sendHomePos()
+{
+    double refs[16] = {0,0,0,0,0,0,0,0,0,0,0,10*M_PI/180,10*M_PI/180,10*M_PI/180,10*M_PI/180,10*M_PI/180};
+    if (_wrld->actWorld == "on")
+    {
+       refs[0] = -0*M_PI/180;
+       refs[1] = 80*M_PI/180;
+       refs[3] = 50*M_PI/180;
+       refs[8] = 20*M_PI/180; 
+       refs[9] = 20*M_PI/180; 
+       refs[10] = 20*M_PI/180;
+    }else
+    {   
+       refs[0] = -25*M_PI/180;
+       refs[1] = 20*M_PI/180;
+       refs[3] = 50*M_PI/180;
+       refs[8] = 20*M_PI/180; 
+       refs[9] = 20*M_PI/180; 
+       refs[10] = 20*M_PI/180;
+    }
+
+    if (_iCub->actLArm == "on" || _iCub->actLHand == "on")
+        _controls[1]->positionMoveRaw(refs);
+    if (_iCub->actRArm == "on" || _iCub->actRHand == "on")
+        _controls[2]->positionMoveRaw(refs);
+}
+
+void OdeInit::removeSimulationControl(int part){
+    if (_controls != NULL) {
+        _controls[part] = NULL;
+    }
 }
 
 OdeInit& OdeInit::get() {

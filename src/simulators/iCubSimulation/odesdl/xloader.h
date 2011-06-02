@@ -48,6 +48,8 @@ struct dxTriMeshX {
     int     IndexCount;
     float     *MeshCoord;
     int     MeshCoordCount;
+    float   *NormCoord;
+    int     NormCount;
 };
 
 typedef struct dxTriMeshX *dTriMeshX;

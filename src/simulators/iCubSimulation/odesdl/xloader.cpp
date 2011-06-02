@@ -37,7 +37,8 @@ const float ModelScale = 1.01;
 dxTriMeshX *dLoadMeshFromX(const char* FileName)
 {
     dxTriMeshX *tmpTriMesh = new dxTriMeshX;
-    char word[256];
+    char buff[256];
+    char* word = buff;
     char*  symbol;
     int  indexCount;
     char *p;
@@ -54,7 +55,10 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
     else {
         printf("Loading mesh data from '%s' ", FileName);
     
-        while((symbol = fgets(word, 256, in)) != (char*) NULL) { // Read till the end of file
+        while((symbol = fgets(buff, 256, in)) != (char*) NULL) { // Read till the end of file
+            word = buff;
+            while (word[0]==' ' || word[0]=='\t')
+                word=word+1;
             if (strcmp(word, "template") == 0) {
                 ret=fscanf(in, "%s", word);
                 ret=fscanf(in, "%s", word);
@@ -124,7 +128,10 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
     else {
         printf("Loading texture coordinate from '%s' ", FileName);
         j=0;
-        while((symbol = fgets(word, 256, in)) != (char*) NULL) {
+        while((symbol = fgets(buff, 256, in)) != (char*) NULL) {
+            word = buff;
+            while (word[0]==' ' || word[0]=='\t')
+                word=word+1;
             if (strncmp(word, "MeshTextureCoords", 17) == 0){	
                 ret=fscanf(in, "%d", &(tmpTriMesh->MeshCoordCount));
                 if (fgets(word, 256, in)==NULL)
@@ -152,6 +159,45 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
     }
 
     fclose(in);
+    //now load normals
+    if ((in = fopen(FileName, "r")) == NULL) {
+        printf ("Can't open the file '%s'\n", FileName);
+        return 0;
+    }
+    else {
+        printf("Loading normals from '%s' ", FileName);
+        j=0;
+        while((symbol = fgets(buff, 256, in)) != (char*) NULL) {
+            word = buff;
+            while (word[0]==' ' || word[0]=='\t')
+                word=word+1;
+            if (strncmp(word, "MeshNormals", 11) == 0){	
+                ret=fscanf(in, "%d", &(tmpTriMesh->NormCount));
+                if (fgets(word, 256, in)==NULL)
+                    return 0; // consume newline
+
+            tmpTriMesh->NormCoord = (float *)malloc(tmpTriMesh->NormCount*3 * sizeof(float));
+            printf("...");
+            for (i = 0; i < tmpTriMesh->NormCount; i++) {	
+                if (fgets(word, 256, in)==0)
+                    return 0;
+
+                p = strtok(word, ",;");
+                while (p != NULL) {
+                    ret = sscanf(p, "%lf", &dblval);
+                    if(ret > 0) {
+                        tmpTriMesh->NormCoord[j] = dblval ;//* ModelScale;		
+                        j++;	
+                    }
+                    p = strtok(NULL, ",;");
+                    }
+                }
+                printf("...");
+            }
+        }printf("... OK!\n");
+    }
+
+    fclose(in);
     return tmpTriMesh;
 }
 void dTriMeshXDestroy(dTriMeshX TriMesh)
@@ -159,5 +205,6 @@ void dTriMeshXDestroy(dTriMeshX TriMesh)
     free (TriMesh->Vertices);
     free (TriMesh->Indices);
     free (TriMesh->MeshCoord);
+    free (TriMesh->NormCoord);
     free (TriMesh);
 }

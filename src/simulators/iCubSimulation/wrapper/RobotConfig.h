@@ -27,8 +27,7 @@
 class RobotFlags {
 public:
     bool valid;
-    bool actElevation, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actCover, actWorld, actPressure, actScreen;
-    
+    bool actElevation, actStartHomePos , actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers;
     RobotFlags() {
         valid = false;
     }

@@ -29,6 +29,14 @@ using namespace yarp::sig;
 Semaphore ODE_access(1);
 
 // locals
+// NOTE that we use (long) instead of (clock_t), because on MacOS, (clock_t) is unsigned, while we need negative numbers
+static long gl_frame_length = 1000/30; // update opengl and vision stream at 30 Hz
+static long ode_step_length = 10;      // target duration of the ODE step in CPU time (set to 0 to go as fast as possible, set to dstep*1000 to go realtime)
+static double dstep = 10.0/1000.0;     // step size in ODE's dWorldStep in seconds
+
+static bool glrun; // draw gl
+static bool simrun; // run simulator thread
+
 static int stop = 0;
 static int v = 0;
 
@@ -63,10 +71,10 @@ static float zoom = 0;
 static float xpos = 0, ypos = 0, zpos = 0, xrot = 0, yrot = 0, angle=0.0;
 static float lastx, lasty;
 static float xrotrad = 0, yrotrad = 0;
-static clock_t startTime, finishTime;
+static long startTime, finishTime;
 static double duration, frames, FPS,seconds, TimestepManager;
 static float test[3];
-static SDL_TimerID id;
+//static SDL_TimerID id;
 static Uint32          colorkey;
 static SDL_Surface     *image;
 static bool extractImages = false;
@@ -104,11 +112,11 @@ void OdeSdlSimulation::setJointSpeed() {
 void OdeSdlSimulation::printStats() {
     OdeInit& odeinit = OdeInit::get();
 
-    finishTime = clock() ;
+    finishTime = (long) clock() ;
     duration += (double)(finishTime - startTime) / CLOCKS_PER_SEC ;
     frames ++ ;
     FPS = frames / duration ;
-    startTime = clock() ;
+    startTime = (long) clock() ;
     odeinit.SimTime = duration;
     //printf("duration: %.2lf\n",odeinit.SimTime);
     static double starting_time_stamp = 0;
@@ -134,6 +142,10 @@ void OdeSdlSimulation::handle_key_down(SDL_keysym* keysym) {
         case SDLK_t:
             break;
         case SDLK_y:
+            break;
+        case SDLK_SPACE:
+            printf("SPACEBAR pressed! Press spacebar again to disable/enable drawing.\n");
+            glrun = !glrun;
             break;
         default:
             break;
@@ -207,7 +219,10 @@ void OdeSdlSimulation::process_events(void) {
         if ((odeinit._iCub->eyeLidRot) > 0.01) odeinit._iCub->eyeLidRot -= 0.01;
         cout<<odeinit._iCub->eyeLidRot<<endl;
     }
-
+    if (keystate[SDLK_h])
+    {
+        odeinit.sendHomePos();
+    }
     /* Grab all the events off the queue. */
     while (SDL_PollEvent(&event)){
         switch (event.type)
@@ -307,8 +322,8 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
         contact[i].surface.mode = dContactSlip1| dContactSlip2| dContactBounce | dContactSoftCFM;
         contact[i].surface.mu = dInfinity;
         contact[i].surface.mu2 = 0;
-        contact[i].surface.bounce = 0.1;
-        contact[i].surface.bounce_vel = 0.1;
+        contact[i].surface.bounce = 0.01;
+        contact[i].surface.bounce_vel = 0.01;
         contact[i].surface.slip1 = (dReal)0.000001;
         contact[i].surface.slip2 = (dReal)0.000001;
         contact[i].surface.soft_cfm = 0.0001;
@@ -330,6 +345,7 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
                 dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs])); 
                 nFeedbackStructs++;
             }
+            //fprintf(stdout,"colllliiiissssiiiiooon: %d %d\n", dGeomGetClass (o1), dGeomGetClass (o2));
         }
     }
 }
@@ -707,6 +723,21 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     inertialReport.addDouble(0.0);
 
 }
+int OdeSdlSimulation::thread_ode(void *unused) {
+    //SLD_AddTimer freezes the system if delay is too short. Instead use a while loop that waits if there was time left after the computation of ODE_process
+    long prevTime = (long) clock();
+    long timeLeft;
+    simrun = true;
+    while (simrun) {
+        ODE_process(1, (void*)1);
+        // check for oderate
+        timeLeft = (prevTime - (long) clock()) + ode_step_length;
+        if (timeLeft > 0) // wait if there is still time left in this frame
+            SDL_Delay(timeLeft);
+        prevTime = (long) clock();
+    }
+    return(0);
+}
 
 Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     OdeInit& odeinit = OdeInit::get();
@@ -716,7 +747,14 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     odeinit.mutex.wait();
     nFeedbackStructs=0;
     dSpaceCollide(odeinit.space,0,&nearCallback);
-    dWorldStep(odeinit.world, 0.01); // TIMESTEP
+    //dWorldStep(odeinit.world, 0.01); // TIMESTEP
+    dWorldStep(odeinit.world, dstep);
+    // do 1 TIMESTEP in controllers (ok to run at same rate as ODE: 1 iteration takes about 300 times less computation time than dWorldStep)
+    for (int ipart = 0; ipart<MAX_PART; ipart++) {
+        if (odeinit._controls[ipart] != NULL) {
+            odeinit._controls[ipart]->jointStep();
+        }
+    }
     odeinit.sync = true;
     odeinit.mutex.post();
 
@@ -752,7 +790,7 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
 }
 
 
-int OdeSdlSimulation::thread_func(void *unused) {
+/*int OdeSdlSimulation::thread_func(void *unused) {
     // this needs to be kept synchronized with the timestep in
     // dWorldStep, in order to get correct world clock time
     //  --paulfitz
@@ -761,6 +799,7 @@ int OdeSdlSimulation::thread_func(void *unused) {
 
     return(0);
 }
+*/
 /*
   static void SPS()     
   {
@@ -802,11 +841,11 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     SDL_FreeSurface(image);
     SDL_WM_SetCaption("iCub Simulator", "image");
 
-    SDL_Thread *thread;
+    //SDL_Thread *thread;
+    SDL_Thread *ode_thread = SDL_CreateThread(thread_ode, NULL);
+    //thread = SDL_CreateThread(thread_func, NULL);
 
-    thread = SDL_CreateThread(thread_func, NULL);
-
-    if ( thread == NULL ) {
+    if ( ode_thread == NULL ) {
         fprintf(stderr, "Unable to create thread: %s\n", SDL_GetError());
         return;
     }
@@ -814,22 +853,41 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     initViewpoint();
     bool ok = setup_opengl(robot_config->getFinder());
     if (!ok) return;
-    startTime = clock();
+    startTime = (long) clock();
     odeinit.stop = false;
 
     yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
     yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
 
+    glrun = true;
     odeinit._wrld->WAITLOADING = false;
     odeinit._wrld->static_model = false;
+    long prevTime = (long) clock();
+    long timeLeft;
+    
+    if (odeinit._iCub->actStartHomePos == "on")
+        odeinit.sendHomePos();
+
     while(!odeinit.stop) {
         /* Process incoming events. */
         process_events();
         /* Draw the screen. */
         if ( !odeinit._wrld->WAITLOADING ){
-            odeinit.mutexTexture.wait();
-            draw_screen();  
-            odeinit.mutexTexture.post();
+            if (glrun) {
+                odeinit.mutexTexture.wait();
+                draw_screen();  
+                odeinit.mutexTexture.post();
+                // check for framerate
+                timeLeft = (prevTime - (long) clock()) + gl_frame_length;
+                //cout << "check for framerate " << timeLeft << endl;
+                if (timeLeft > 0) 
+                { // if there is still time left in this frame, just wait
+                    SDL_Delay(timeLeft);
+                }
+                prevTime = (long) clock();
+            } else {
+                SDL_Delay(100);
+            }
         }
         else{
             glFinish();
@@ -846,18 +904,14 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     }     
     printf("\n\nStopping SDL and ODE threads...\n");
     //stop the timer
-    SDL_RemoveTimer(id);
+    //SDL_RemoveTimer(id);
     //Stop the thread
     //SDL_KillThread( thread );
-    SDL_WaitThread( thread, NULL );
+    simrun = false;
+    //SDL_WaitThread( thread, NULL );
+    SDL_WaitThread( ode_thread, NULL );
     //SDL_Quit();
 }
-
-
-
-//////////////////////////////
-//////////////////////////////
-//////////////////////////////
 
 void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     OdeInit& odeinit = OdeInit::get();
@@ -865,46 +919,46 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     const dReal *rot;
     glViewport(0,0,320,240);
     glMatrixMode (GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective( 50, (float) 320/240, 0.04, 100.0 ); 
-
+    
     if (left){
+        glLoadIdentity();
+        gluPerspective( 57.32, (float) 320/240, 0.04, 100.0 );//55.8
         pos = dGeomGetPosition(odeinit._iCub->Leye1_geom);
         rot = dGeomGetRotation(odeinit._iCub->Leye1_geom);
-        float zoomFactor = 51.0f;//51 with gluPerspective 0.1
-        zoom = 0.023;
         glMatrixMode (GL_MODELVIEW);
         glLoadIdentity();
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
         gluLookAt(
-                  pos[0]  - rot[2]/ zoomFactor,
-                  pos[1]  - rot[6]/ zoomFactor,
-                  (pos[2]+zoom) - rot[10]/ zoomFactor,
                   pos[0],
                   pos[1],
-                  (pos[2]+zoom),
+                  pos[2],
+                  pos[0]  + rot[2],
+                  pos[1]  + rot[6],
+                  pos[2] + rot[10],
                   -rot[4], 1, 0
                   );
     }
     if (right){
+        glLoadIdentity();
+        gluPerspective( 56.40, (float) 320/240, 0.04, 100.0 );//55.8
         pos = dGeomGetPosition(odeinit._iCub->Reye1_geom);
         rot = dGeomGetRotation(odeinit._iCub->Reye1_geom);
-        float zoomFactor = 51.0f;//51 with gluPerspective 0.1
-        zoom = 0.023;
         glMatrixMode (GL_MODELVIEW);
         glLoadIdentity();
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
         gluLookAt(
-                  pos[0]  - rot[2]/ zoomFactor,
-                  pos[1]  - rot[6]/ zoomFactor,
-                  (pos[2]+zoom) - rot[10]/ zoomFactor,
                   pos[0],
                   pos[1],
-                  (pos[2]+zoom),
+                  pos[2],
+                  pos[0]  + rot[2],
+                  pos[1]  + rot[6],
+                  pos[2] + rot[10],
                   -rot[4], 1, 0
                   );
     }	
     if (wide){
+        glLoadIdentity();
+        gluPerspective( 55.8, (float) 320/240, 0.04, 100.0 );
         glMatrixMode (GL_MODELVIEW);
         glLoadIdentity();
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -914,10 +968,6 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     }
 
     //draw the ground
-
-    /* What is the relationship between this code and that in
-       draw_screen? */
-
     glColor3d(0.5,0.5,1);
     glEnable(GL_TEXTURE_2D);
     glPushMatrix();
@@ -926,7 +976,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     DrawGround(false);     
     glPopMatrix();
     glDisable(GL_TEXTURE_2D);
-    draw();
+    draw();//robot
     glEnable(GL_TEXTURE_2D);
     drawSkyDome(0,0,0,50,50,50); // Draw the Skybox	
 }
@@ -999,6 +1049,6 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
             target(x,y) = img(x,hh-1-y);
         }
     }
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     return true;
 }
