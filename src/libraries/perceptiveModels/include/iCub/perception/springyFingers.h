@@ -45,7 +45,9 @@
 
 #include <iCub/learningMachine/FixedRangeScaler.h>
 #include <iCub/learningMachine/LSSVMLearner.h>
+#include <iCub/perception/sensors.h>
 #include <iCub/perception/nodes.h>
+#include <iCub/perception/models.h>
 
 
 namespace iCub
@@ -69,6 +71,27 @@ protected:
 
 public:
     SpringyFinger();
+
+    bool fromProperty(const yarp::os::Property &options);
+    void toProperty(yarp::os::Property &options) const;
+    bool calibrate(const yarp::os::Property &options);
+    bool getOutput(yarp::os::Value &out) const;
+};
+
+
+/**
+* @ingroup SpringyFingers
+*
+*/
+class SpringyFingersModel : public Model
+{
+protected:
+    SensorInterface sensIF[5];
+    SensorPort      sensPort[9];
+    SpringyFinger   thumb,index,middle,ring,little;
+
+public:
+    SpringyFingersModel();
 
     bool fromProperty(const yarp::os::Property &options);
     void toProperty(yarp::os::Property &options) const;

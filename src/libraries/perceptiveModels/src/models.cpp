@@ -16,4 +16,18 @@
  * Public License for more details
 */
 
+#include <iCub/perception/models.h>
+
+using namespace std;
+using namespace yarp::os;
+using namespace iCub::perception;
+
+
+/************************************************************************/
+Model::Model()
+{
+    name="";
+}
+
+
 
