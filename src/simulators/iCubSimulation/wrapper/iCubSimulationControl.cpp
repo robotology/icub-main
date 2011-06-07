@@ -570,7 +570,7 @@ bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
         {
             _mutex.wait();
             vel = sp *180/M_PI ;
-             vels[j] = vel/20;
+            vels[j] = vel/20;
             printf("setting joint %d of part %d to reference velocity %f\n",j,partSelec,vels[j]);
             _mutex.post();
             return true;
@@ -583,7 +583,8 @@ bool iCubSimulationControl::setRefSpeedsRaw(const double *spds)
     _mutex.wait();
     for(int i = 0; i<njoints; i++)
     {
-        vels[i] = spds[i]/20;
+        vels[i] = (spds[i]*180/M_PI)/20;
+        //vels[i] = spds[i]/20;
         printf("setting joint %d of part %d to reference velocity %f\n",i,partSelec,vels[i]);
     }
     _mutex.post();
