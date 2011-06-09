@@ -2,3 +2,17 @@ These examples are hidden here *on purpose*. We should not in any way
 give the impression that this is the proper way to use the 
 learningMachine functionality. There are learningMachine modules for 
 a reason and they should be used.
+
+Ugo Pattacini: the comment above outlines the position of the author
+of this framework, however there exist of course cases where the resort
+to the library and not to the modules corresponds to a definetely better
+software design. Therefore, despite the fact that the modules available
+under main/src/modules/learningMachine should cover the majority of the
+user's needs, please judge with care.
+
+Example of case where the use of the library in lieu of the modules is
+commendable: the development of an own library that encorporates the
+learningMachine functionality so that the final product is self-contained
+and thus it is not required to launch the learning modules externally.
+
+  
