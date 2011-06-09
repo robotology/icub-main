@@ -29,6 +29,7 @@
 #include <GL/glu.h>
 #endif
 
+/*
 class ParamsThread;
 class TextureThread;
 class ObjectsManager;
@@ -86,21 +87,26 @@ protected:
     yarp::os::BufferedPort< yarp::sig::VectorOf<unsigned char> > mPort;
     ObjectsManager *mObjManager;
 };
+*/
 
 class ObjectsManager
 {
 public:
-    ObjectsManager(const char *paramsPortName,const char *texPortName)
+    ObjectsManager(const char *objPortName,const char *texPortName)
     {
-        paramsThread=new ParamsThread(this,paramsPortName);
-        textureThread=new TextureThread(this,texPortName);
         bReset=false;
+
+        mObjPort.open(objPortName);
+        mTexPort.open(texPortName);
     }
 
     ~ObjectsManager()
     {
-        delete paramsThread;
-        delete textureThread;
+        mObjPort.interrupt();
+        mObjPort.close();
+        
+        mTexPort.interrupt();
+        mTexPort.close();
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
@@ -108,12 +114,150 @@ public:
         }
     }
 
-    inline void manage(yarp::os::Bottle &msg);
+    inline void manage(yarp::os::Bottle *msg);
+    inline void manage(yarp::sig::VectorOf<unsigned char> *img);
 
-    inline void manage(yarp::sig::VectorOf<unsigned char> *img)
+    void draw()
     {
-        mMutex.lock();
+        // objects
+        yarp::os::Bottle *botObj;
+        do
+        {
+            if (botObj=mObjPort.read(false))
+            {
+                manage(botObj);
+            }
+        }
+        while (botObj);
 
+        yarp::sig::VectorOf<unsigned char> *imgTex;
+        do
+        {
+            if (imgTex=mTexPort.read(false))
+            {
+                manage(imgTex);
+            }
+        }
+        while (imgTex);
+
+        if (bReset)
+        {
+            bReset=false;
+            
+            for (int i=0; i<(int)mObjects.size(); ++i)
+            {
+                delete mObjects[i];
+            }
+
+            mObjects.clear();
+            return;
+        }
+
+        bool bPack=false;
+        for (int i=0; i<(int)mObjects.size(); ++i)
+        {
+            if (mObjects[i]->bDeleted)
+            {
+                delete mObjects[i];
+                mObjects[i]=NULL;
+                bPack=true;
+            }
+            else
+            {
+                mObjects[i]->Draw();
+            }
+        }
+
+        if (bPack)
+        {
+            int newsize=0;
+            int size=(int)mObjects.size();
+            
+            for (int i=0; i<size; ++i)
+            {
+                if (mObjects[i]!=NULL)
+                {
+                    mObjects[newsize++]=mObjects[i];
+                }
+            }
+
+            mObjects.resize(newsize);
+        }
+    }
+    
+protected:
+    bool bReset;
+    std::vector<VisionObj*> mObjects;
+
+    yarp::os::BufferedPort<yarp::os::Bottle> mObjPort;
+    yarp::os::BufferedPort<yarp::sig::VectorOf<unsigned char> > mTexPort;
+};
+
+    void ObjectsManager::manage(yarp::os::Bottle *msg)
+    {
+        yarp::os::ConstString cmd=msg->get(0).asString();
+
+        if (cmd=="reset")
+        {
+            bReset=true;
+        }
+        else if (cmd=="delete")
+        {
+            std::string name(msg->get(1).asString().c_str());
+            
+            int size=(int)mObjects.size();
+
+            for (int i=0; i<size; ++i)
+            {
+                if ((*mObjects[i])==name)
+                {
+                    mObjects[i]->bDeleted=true;
+                    break;
+                }
+            }
+        }
+        else if (cmd=="object")
+        {
+            std::string name(msg->get(1).asString().c_str());
+
+            double dx=msg->get(2).asDouble();
+            double dy=msg->get(3).asDouble();
+            double dz=msg->get(4).asDouble();
+
+            double px=msg->get(5).asDouble();
+            double py=msg->get(6).asDouble();
+            double pz=msg->get(7).asDouble();
+
+            double rx=msg->get(8).asDouble();
+            double ry=msg->get(9).asDouble();
+            double rz=msg->get(10).asDouble();
+
+            int R=msg->get(11).asInt();
+            int G=msg->get(12).asInt();
+            int B=msg->get(13).asInt();
+            double alpha=msg->get(14).asDouble();
+
+            bool found=false;
+
+            for (int i=0; i<(int)mObjects.size(); ++i)
+            {
+                if (*mObjects[i]==name)
+                {
+                    found=true;
+                    mObjects[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha);
+                }
+            }
+
+            if (!found)
+            {
+                printf("Added object %s\n",name.c_str());
+                mObjects.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha));
+            }
+        }
+    }
+
+    void ObjectsManager::manage(yarp::sig::VectorOf<unsigned char> *img)
+    {
         yarp::sig::VectorOf<unsigned char> &texture=*img;
 
         int xdim=texture[0];
@@ -170,8 +314,6 @@ public:
 
                 unsigned char G=(unsigned char)grey;
 
-                //printf("%d ",G);
-
                 buffer[index++]=G;
                 buffer[index++]=G;
                 buffer[index++]=G;
@@ -186,179 +328,8 @@ public:
                 mObjects[i]->mW=xdim2;
                 mObjects[i]->mH=ydim2;
                 mObjects[i]->mTextureBuffer=buffer;
-                mMutex.unlock();
                 return;
             }
         }
-
-        mMutex.unlock();
     }
-
-    void draw()
-    {
-        mMutex.lock();
-
-        if (bReset)
-        {
-            bReset=false;
-            
-            for (int i=0; i<(int)mObjects.size(); ++i)
-            {
-                delete mObjects[i];
-            }
-
-            mObjects.clear();
-
-            mMutex.unlock();
-            return;
-        }
-
-        bool bPack=false;
-        for (int i=0; i<(int)mObjects.size(); ++i)
-        {
-            if (mObjects[i]->bDeleted)
-            {
-                delete mObjects[i];
-                mObjects[i]=NULL;
-                bPack=true;
-            }
-            else
-            {
-                mObjects[i]->Draw();
-            }
-        }
-
-        if (bPack)
-        {
-            int newsize=0;
-            int size=(int)mObjects.size();
-            
-            for (int i=0; i<size; ++i)
-            {
-                if (mObjects[i]!=NULL)
-                {
-                    mObjects[newsize++]=mObjects[i];
-                }
-            }
-
-            mObjects.resize(newsize);
-        }
-
-        mMutex.unlock();
-    }
-    
-protected:
-    bool bReset;
-    ParamsThread  *paramsThread;
-    TextureThread *textureThread;
-
-    QMutex mMutex;
-    std::vector<VisionObj*> mObjects;
-};
-
-void ObjectsManager::manage(yarp::os::Bottle &msg)
-    {
-        mMutex.lock();
-
-        yarp::os::ConstString cmd=msg.get(0).asString();
-
-        if (cmd=="reset")
-        {
-            bReset=true;
-        }
-        else if (cmd=="delete")
-        {
-            std::string name(msg.get(1).asString().c_str());
-            
-            int size=(int)mObjects.size();
-
-            for (int i=0; i<size; ++i)
-            {
-                if ((*mObjects[i])==name)
-                {
-                    /*
-                    if (mObjects[i]!=NULL) delete mObjects[i];
-                    mObjects[i]=NULL;
-
-                    for (int j=i; j<size-1; ++j)
-                    {
-                        mObjects[j]=mObjects[j+1];
-                    }
-                    mObjects[size-1]=NULL;
-                    mObjects.resize(size-1);
-                    */
-
-                    mObjects[i]->bDeleted=true;
-                    break;
-                }
-            }
-        }
-        else if (cmd=="object")
-        {
-            std::string name(msg.get(1).asString().c_str());
-
-            double dx=msg.get(2).asDouble();
-            double dy=msg.get(3).asDouble();
-            double dz=msg.get(4).asDouble();
-
-            double px=msg.get(5).asDouble();
-            double py=msg.get(6).asDouble();
-            double pz=msg.get(7).asDouble();
-
-            double rx=msg.get(8).asDouble();
-            double ry=msg.get(9).asDouble();
-            double rz=msg.get(10).asDouble();
-
-            int R=msg.get(11).asInt();
-            int G=msg.get(12).asInt();
-            int B=msg.get(13).asInt();
-            double alpha=msg.get(14).asDouble();
-
-            bool found=false;
-
-            for (int i=0; i<(int)mObjects.size(); ++i)
-            {
-                if (*mObjects[i]==name)
-                {
-                    found=true;
-                    mObjects[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha);
-                }
-            }
-
-            if (!found)
-            {
-                printf("Added object %s\n",name.c_str());
-                mObjects.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha));
-            }
-        }
-
-        mMutex.unlock();
-    }
-
-    void TextureThread::run()
-    {
-        yarp::sig::VectorOf<unsigned char> *img;
-            
-        while (mRunning)
-        {
-            if ((img=mPort.read())!=NULL)
-            {
-                mObjManager->manage(img);
-            }
-        }
-    }
-
-    void ParamsThread::run()
-    {
-        yarp::os::Bottle msg;
-            
-        while (mRunning)
-        {
-            if (mPort.read(msg))
-            {
-                mObjManager->manage(msg);
-            }
-        }
-    }
-
 #endif
