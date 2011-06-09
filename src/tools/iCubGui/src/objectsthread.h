@@ -21,7 +21,6 @@
 #include <qstring.h>
 #include <qthread.h>
 #include <vector>
-#include <yarp/os/Semaphore.h>
 #include <yarp/sig/Vector.h>
 
 #ifdef __APPLE__
@@ -91,11 +90,10 @@ protected:
 class ObjectsManager
 {
 public:
-    ObjectsManager(const char *paramsPortName,const char *texPortName) : mMutex(1)
+    ObjectsManager(const char *paramsPortName,const char *texPortName)
     {
         paramsThread=new ParamsThread(this,paramsPortName);
         textureThread=new TextureThread(this,texPortName);
-        mTextures=0;
         bReset=false;
     }
 
@@ -114,7 +112,7 @@ public:
 
     inline void manage(yarp::sig::VectorOf<unsigned char> *img)
     {
-        mMutex.wait();
+        mMutex.lock();
 
         yarp::sig::VectorOf<unsigned char> &texture=*img;
 
@@ -188,17 +186,17 @@ public:
                 mObjects[i]->mW=xdim2;
                 mObjects[i]->mH=ydim2;
                 mObjects[i]->mTextureBuffer=buffer;
-                mMutex.post();
+                mMutex.unlock();
                 return;
             }
         }
 
-        mMutex.post();
+        mMutex.unlock();
     }
 
     void draw()
     {
-        mMutex.wait();
+        mMutex.lock();
 
         if (bReset)
         {
@@ -211,7 +209,7 @@ public:
 
             mObjects.clear();
 
-            mMutex.post();
+            mMutex.unlock();
             return;
         }
 
@@ -246,22 +244,21 @@ public:
             mObjects.resize(newsize);
         }
 
-        mMutex.post();
+        mMutex.unlock();
     }
     
 protected:
     bool bReset;
-    int mTextures;
     ParamsThread  *paramsThread;
     TextureThread *textureThread;
 
-    yarp::os::Semaphore mMutex;
+    QMutex mMutex;
     std::vector<VisionObj*> mObjects;
 };
 
 void ObjectsManager::manage(yarp::os::Bottle &msg)
     {
-        mMutex.wait();
+        mMutex.lock();
 
         yarp::os::ConstString cmd=msg.get(0).asString();
 
@@ -335,7 +332,7 @@ void ObjectsManager::manage(yarp::os::Bottle &msg)
             }
         }
 
-        mMutex.post();
+        mMutex.unlock();
     }
 
     void TextureThread::run()
