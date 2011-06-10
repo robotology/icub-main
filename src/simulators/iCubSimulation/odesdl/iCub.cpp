@@ -31,6 +31,7 @@
 #include <yarp/os/Bottle.h>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 
 #include "iCub.h"
