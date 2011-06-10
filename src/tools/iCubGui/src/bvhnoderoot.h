@@ -52,17 +52,17 @@ public:
             glColor4f(0.9,0.8,0.7,1.0);
             pMesh->Draw();
         }
-
-        if (mObjectsManager)
-        {
-            mObjectsManager->draw();
-        }
     
         for (unsigned int i=0; i<children.count(); ++i)
         {
             children[i]->draw(encoders,pSelected);
         }
         
+        if (mObjectsManager)
+        {
+            mObjectsManager->draw();
+        }
+
         glPopMatrix();
     }
 
