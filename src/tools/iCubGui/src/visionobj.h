@@ -118,20 +118,9 @@ public:
         //glColor4d(mR,mG,mB,1.0);
         glColor4d(mR,mG,mB,mAlpha);
 
-        glPushMatrix();
-
-        glScaled(mDimx,mDimy,mDimz);
+        //glPushMatrix();
+        //glScaled(mDimx,mDimy,mDimz);
         //gluSphere(mEllipsoid,1.0,16,16);
-        
-        static GLfloat v0[3]={ 1.0, 1.0, 1.0};
-        static GLfloat v1[3]={ 1.0,-1.0, 1.0};
-        static GLfloat v2[3]={ 1.0,-1.0,-1.0};
-        static GLfloat v3[3]={ 1.0, 1.0,-1.0};
-
-        static GLfloat v4[3]={-1.0, 1.0, 1.0};
-        static GLfloat v5[3]={-1.0,-1.0, 1.0};
-        static GLfloat v6[3]={-1.0,-1.0,-1.0};
-        static GLfloat v7[3]={-1.0, 1.0,-1.0};
 
         if (bTextured)
         {
@@ -141,35 +130,35 @@ public:
 
             glBegin(GL_QUADS);
 
-            glTexCoord2f(1.0,0.0); glVertex3fv(v0);
-            glTexCoord2f(0.0,0.0); glVertex3fv(v1); 
-            glTexCoord2f(0.0,1.0); glVertex3fv(v2);
-            glTexCoord2f(1.0,1.0); glVertex3fv(v3);
+            glTexCoord2f(1.0,0.0); glVertex3f( mDimx, mDimy, mDimz);
+            glTexCoord2f(0.0,0.0); glVertex3f( mDimx,-mDimy, mDimz); 
+            glTexCoord2f(0.0,1.0); glVertex3f( mDimx,-mDimy,-mDimz);
+            glTexCoord2f(1.0,1.0); glVertex3f( mDimx, mDimy,-mDimz);
 
-            glTexCoord2f(0.0,0.0); glVertex3fv(v0);
-            glTexCoord2f(0.0,1.0); glVertex3fv(v3);
-            glTexCoord2f(1.0,1.0); glVertex3fv(v7);
-            glTexCoord2f(1.0,0.0); glVertex3fv(v4);
+            glTexCoord2f(0.0,0.0); glVertex3f( mDimx, mDimy, mDimz);
+            glTexCoord2f(0.0,1.0); glVertex3f( mDimx, mDimy,-mDimz);
+            glTexCoord2f(1.0,1.0); glVertex3f(-mDimx, mDimy,-mDimz);
+            glTexCoord2f(1.0,0.0); glVertex3f(-mDimx, mDimy, mDimz);
 
-            glTexCoord2f(1.0,0.0); glVertex3fv(v1);
-            glTexCoord2f(0.0,0.0); glVertex3fv(v5);
-            glTexCoord2f(0.0,1.0); glVertex3fv(v6);
-            glTexCoord2f(1.0,1.0); glVertex3fv(v2);        
+            glTexCoord2f(1.0,0.0); glVertex3f( mDimx,-mDimy, mDimz);
+            glTexCoord2f(0.0,0.0); glVertex3f(-mDimx,-mDimy, mDimz);
+            glTexCoord2f(0.0,1.0); glVertex3f(-mDimx,-mDimy,-mDimz);
+            glTexCoord2f(1.0,1.0); glVertex3f( mDimx,-mDimy,-mDimz);        
         
-            glTexCoord2f(0.0,1.0); glVertex3fv(v7);
-            glTexCoord2f(1.0,1.0); glVertex3fv(v6);
-            glTexCoord2f(1.0,0.0); glVertex3fv(v5);
-            glTexCoord2f(0.0,0.0); glVertex3fv(v4); 
+            glTexCoord2f(0.0,1.0); glVertex3f(-mDimx, mDimy,-mDimz);
+            glTexCoord2f(1.0,1.0); glVertex3f(-mDimx,-mDimy,-mDimz);
+            glTexCoord2f(1.0,0.0); glVertex3f(-mDimx,-mDimy, mDimz);
+            glTexCoord2f(0.0,0.0); glVertex3f(-mDimx, mDimy, mDimz); 
 
-            glVertex3fv(v0);
-            glVertex3fv(v4);
-            glVertex3fv(v5);
-            glVertex3fv(v1);
+            glVertex3f( mDimx, mDimy, mDimz);
+            glVertex3f(-mDimx, mDimy, mDimz);
+            glVertex3f(-mDimx,-mDimy, mDimz);
+            glVertex3f( mDimx,-mDimy, mDimz);
 
-            glVertex3fv(v2);
-            glVertex3fv(v6);
-            glVertex3fv(v7);
-            glVertex3fv(v3);
+            glVertex3f( mDimx,-mDimy,-mDimz);
+            glVertex3f(-mDimx,-mDimy,-mDimz);
+            glVertex3f(-mDimx, mDimy,-mDimz);
+            glVertex3f( mDimx, mDimy,-mDimz);
 
             /*
             glTexCoord2f(1.0,0.0); glVertex3fv(v0);
@@ -190,40 +179,40 @@ public:
         else
         {
             glBegin(GL_QUADS);
-            glVertex3fv(v0);
-            glVertex3fv(v1);
-            glVertex3fv(v2);
-            glVertex3fv(v3);
+            glVertex3f( mDimx, mDimy, mDimz);
+            glVertex3f( mDimx,-mDimy, mDimz);
+            glVertex3f( mDimx,-mDimy,-mDimz);
+            glVertex3f( mDimx, mDimy,-mDimz);
             
-            glVertex3fv(v0);
-            glVertex3fv(v3);
-            glVertex3fv(v7);
-            glVertex3fv(v4);
+            glVertex3f( mDimx, mDimy, mDimz);
+            glVertex3f( mDimx, mDimy,-mDimz);
+            glVertex3f(-mDimx, mDimy,-mDimz);
+            glVertex3f(-mDimx, mDimy, mDimz);
 
-            glVertex3fv(v0);
-            glVertex3fv(v4);
-            glVertex3fv(v5);
-            glVertex3fv(v1);
+            glVertex3f( mDimx, mDimy, mDimz);
+            glVertex3f(-mDimx, mDimy, mDimz);
+            glVertex3f(-mDimx,-mDimy, mDimz);
+            glVertex3f( mDimx,-mDimy, mDimz);
 
-            glVertex3fv(v1);
-            glVertex3fv(v5);
-            glVertex3fv(v6);
-            glVertex3fv(v2);        
+            glVertex3f( mDimx,-mDimy, mDimz);
+            glVertex3f(-mDimx,-mDimy, mDimz);
+            glVertex3f(-mDimx,-mDimy,-mDimz);
+            glVertex3f( mDimx,-mDimy,-mDimz);        
         
-            glVertex3fv(v2);
-            glVertex3fv(v6);
-            glVertex3fv(v7);
-            glVertex3fv(v3);
+            glVertex3f( mDimx,-mDimy,-mDimz);
+            glVertex3f(-mDimx,-mDimy,-mDimz);
+            glVertex3f(-mDimx, mDimy,-mDimz);
+            glVertex3f( mDimx, mDimy,-mDimz);
 
-            glVertex3fv(v7);
-            glVertex3fv(v6);
-            glVertex3fv(v5);
-            glVertex3fv(v4); 
+            glVertex3f(-mDimx, mDimy,-mDimz);
+            glVertex3f(-mDimx,-mDimy,-mDimz);
+            glVertex3f(-mDimx,-mDimy, mDimz);
+            glVertex3f(-mDimx, mDimy, mDimz); 
             
             glEnd();
         }
 
-        glPopMatrix();
+        //glPopMatrix();
         glPopMatrix();
     }
 
