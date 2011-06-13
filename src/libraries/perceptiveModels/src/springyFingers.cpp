@@ -363,41 +363,41 @@ bool SpringyFingersModel::calibrate(const Property &options)
         {
             case Vocab::encode("thumb"):
             {
-                cycleFinger(finger[0],10,qmin,qmax);
+                calibrateFinger(fingers[0],10,qmin,qmax);
                 break;
             }
 
             case Vocab::encode("index"):
             {
-                cycleFinger(finger[1],12,qmin,qmax);
+                calibrateFinger(fingers[1],12,qmin,qmax);
                 break;
             }
 
             case Vocab::encode("middle"):
             {
-                cycleFinger(finger[2],14,qmin,qmax);
+                calibrateFinger(fingers[2],14,qmin,qmax);
                 break;
             }
 
             case Vocab::encode("ring"):
             {
-                cycleFinger(finger[3],15,qmin,qmax);
+                calibrateFinger(fingers[3],15,qmin,qmax);
                 break;
             }
 
             case Vocab::encode("little"):
             {
-                cycleFinger(finger[4],15,qmin,qmax);
+                calibrateFinger(fingers[4],15,qmin,qmax);
                 break;
             }
 
             default:
             {
-                cycleFinger(finger[0],10,qmin,qmax);
-                cycleFinger(finger[1],12,qmin,qmax);
-                cycleFinger(finger[2],14,qmin,qmax);
-                cycleFinger(finger[3],15,qmin,qmax);
-                cycleFinger(finger[4],15,qmin,qmax);
+                calibrateFinger(fingers[0],10,qmin,qmax);
+                calibrateFinger(fingers[1],12,qmin,qmax);
+                calibrateFinger(fingers[2],14,qmin,qmax);
+                calibrateFinger(fingers[3],15,qmin,qmax);
+                calibrateFinger(fingers[4],15,qmin,qmax);
                 break;
             }
         }
@@ -422,6 +422,50 @@ bool SpringyFingersModel::getOutput(Value &out) const
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint,
+                                          const Vector &qmin, const Vector &qmax)
+{
+    double margin=0.1*(qmax[joint]-qmin[joint]);
+    double min=qmin[joint]+margin;
+    double max=qmax[joint]-margin;
+
+    IEncoders        *ienc; driver.view(ienc);
+    IPositionControl *ipos; driver.view(ipos);
+    double *val=&min;
+
+    Property reset("(reset)");
+    Property feed("(feed)");
+    Property train("(train)");
+
+    finger.calibrate(reset);
+
+    for (int i=0; i<5; i++)
+    {
+        ipos->positionMove(joint,&val);
+
+        bool done=false;
+        while (!done)
+        {
+            finger.calibrate(feed);
+
+            double fb;
+            ienc->getEncoder(joint,&fb);
+            done=fabs(val-fb)<5.0;
+
+            Time::delay(0.02);
+        }
+
+        if (val==&min)
+            val=&max;
+        else
+            val=&min;
+    }
+
+    finger.calibrate(train);
 }
 
 

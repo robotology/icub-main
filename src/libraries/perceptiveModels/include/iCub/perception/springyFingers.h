@@ -99,6 +99,8 @@ protected:
     yarp::os::BufferedPort<yarp::sig::Bottle> port;
     yarp::dev::PolyDriver                     driver;
 
+    void calibrateFinger(SpringyFinger &finger, const int joint, const yarp::sig::Vector &qmin,
+                         const yarp::sig::Vector &qmax);
     void close();
 
 public:
