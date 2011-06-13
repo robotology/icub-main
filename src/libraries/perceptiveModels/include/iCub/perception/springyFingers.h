@@ -42,7 +42,6 @@
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/sig/Vector.h>
 
@@ -89,16 +88,16 @@ public:
 class SpringyFingersModel : public Model
 {
 protected:
+    std::string type;
+    std::string robot;
+
     SensorInterface sensIF[5];
     SensorPort      sensPort[12];
     SpringyFinger   fingers[5];
     bool configured;
 
-    yarp::dev::PolyDriver      driver;
-    yarp::dev::IControlLimits *limits;
-    yarp::dev::IEncoders      *encoders;
-
     yarp::os::BufferedPort<yarp::sig::Bottle> port;
+    yarp::dev::PolyDriver                     driver;
 
     void close();
 
