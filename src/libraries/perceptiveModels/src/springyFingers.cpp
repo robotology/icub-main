@@ -18,6 +18,8 @@
 
 #include <assert.h>
 
+#include <yarp/os/Network.h>
+
 #include <iCub/ctrl/math.h>
 #include <iCub/perception/springyFingers.h>
 
@@ -168,6 +170,153 @@ bool SpringyFinger::calibrate(const Property &options)
         lssvm.train();
 
     return true;
+}
+
+
+/************************************************************************/
+SpringyFingersModel::SpringyFingersModel()
+{
+    configured=false;
+}
+
+
+/************************************************************************/
+bool SpringyFingersModel::fromProperty(const Property &options)
+{
+    if (configured)
+        close();
+
+    Property &opt=const_cast<Property&>(options);
+    assert(opt.check("name"));
+    assert(opt.check("type"));
+    name=opt.find("name").asString().c_str();
+    string robot=opt.check("robot",Value("icub")).asString().c_str();
+    string type=opt.find("type").asString().c_str();
+
+    string part_motor=string("/"+type+"_arm");
+    string part_analog=string("/"+type+"_hand");
+
+    Property prop;
+    prop.put("robot",robot.c_str());
+    prop.put("remote",("/"+robot+part_motor).c_str());
+    prop.put("local",("/"+name+part_motor).c_str());
+    if (!driver.open(prop))
+        return false;
+
+    driver.view(limits);
+    driver.view(encoders);
+
+    port.open(("/"+name+part_analog+"/analog:i").c_str());
+    if (!Network::connect(port.name.c_str(),("/"+robot+part_analog+"/analog:o").c_str(),"udp"))
+    {
+        port.close();
+        return false;
+    }
+
+    // configure interface-based sensors
+    Property propGen;
+    propThumb.put("name","In_0");
+    propGen.put("type","pos");
+    propGen.put("size",16);
+
+    Property propThumb=propGen;  propThumb.put("index",10);
+    Property propIndex=propGen;  propIndex.put("index",12);
+    Property propMiddle=propGen; propMiddle.put("index",14);
+    Property propRing=propGen;   propRing.put("index",15);
+    Property propLittle=propGen; propLittle.put("index",15);
+
+    sensIF[0].configure(encoders,propThumb);
+    sensIF[1].configure(encoders,propIndex);
+    sensIF[2].configure(encoders,propMiddle);
+    sensIF[3].configure(encoders,propRing);
+    sensIF[4].configure(encoders,propLittle);
+
+    // configure port-based sensors
+    Property thumb_mp("(name Out_0) (index 1)");
+    Property thumb_ip("(name Out_1) (index 2)");
+    Property index_mp("(name Out_0) (index 4)");
+    Property index_ip("(name Out_1) (index 5)");
+    Property middle_mp("(name Out_0) (index 7)");
+    Property middle_ip("(name Out_1) (index 8)");
+    Property ring_mp("(name Out_0) (index 9)");
+    Property ring_pip("(name Out_1) (index 10)");
+    Property ring_dip("(name Out_2) (index 11)");
+    Property little_mp("(name Out_0) (index 12)");
+    Property little_pip("(name Out_1) (index 13)");
+    Property little_dip("(name Out_2) (index 14)");
+
+    sensPort[0].configure(&port,thumb_mp);
+    sensPort[1].configure(&port,thumb_ip);
+    sensPort[2].configure(&port,index_mp);
+    sensPort[3].configure(&port,index_ip);
+    sensPort[4].configure(&port,middle_mp);
+    sensPort[5].configure(&port,middle_ip);
+    sensPort[6].configure(&port,ring_mp);
+    sensPort[7].configure(&port,ring_pip);
+    sensPort[8].configure(&port,ring_dip);
+    sensPort[9].configure(&port,little_mp);
+    sensPort[10].configure(&port,little_pip);
+    sensPort[11].configure(&port,little_dip);
+
+    // configure fingers
+    Property thumb(opt.findGroup("thumb").toString().c_str());
+    Property index(opt.findGroup("index").toString().c_str());
+    Property middle(opt.findGroup("middle").toString().c_str());
+    Property ring(opt.findGroup("ring").toString().c_str());
+    Property little(opt.findGroup("little").toString().c_str());
+
+    fingers[0].fromProperty(thumb);
+    fingers[1].fromProperty(index);
+    fingers[2].fromProperty(middle);
+    fingers[3].fromProperty(ring);
+    fingers[4].fromProperty(little);
+
+    // attach sensors to fingers
+    fingers[0].attachSensor(sensIF[0]);
+    fingers[0].attachSensor(sensPort[0]);
+    fingers[0].attachSensor(sensPort[1]);
+
+    fingers[1].attachSensor(sensIF[1]);
+    fingers[1].attachSensor(sensPort[2]);
+    fingers[1].attachSensor(sensPort[3]);
+
+    fingers[2].attachSensor(sensIF[2]);
+    fingers[2].attachSensor(sensPort[4]);
+    fingers[2].attachSensor(sensPort[5]);
+
+    fingers[3].attachSensor(sensIF[3]);
+    fingers[3].attachSensor(sensPort[6]);
+    fingers[3].attachSensor(sensPort[7]);
+    fingers[3].attachSensor(sensPort[8]);
+
+    fingers[4].attachSensor(sensIF[4]);
+    fingers[4].attachSensor(sensPort[9]);
+    fingers[4].attachSensor(sensPort[10]);
+    fingers[4].attachSensor(sensPort[11]);
+
+    return configured=true;
+}
+
+
+/************************************************************************/
+void SpringyFingersModel::close()
+{
+    if (configured)
+    {
+        driver.close();
+
+        port.interrupt();
+        port.close();
+
+        configured=false;
+    }
+}
+
+
+/************************************************************************/
+SpringyFingersModel::~SpringyFingersModel()
+{
+    close();
 }
 
 

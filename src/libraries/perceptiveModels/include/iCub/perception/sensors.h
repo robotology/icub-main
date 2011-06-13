@@ -63,8 +63,8 @@ class Sensor
 {
 protected:
     std::string name;
-    void *source;
     bool configured;
+    void *source;
 
 public:
     Sensor();
@@ -84,7 +84,7 @@ class SensorInterface : public Sensor
 protected:
     std::string type;
     int size;
-    int idx;
+    int index;
 
 public:
     void configure(void *source, const yarp::os::Property &options);
@@ -100,7 +100,7 @@ class SensorPort : public Sensor
 {
 protected:
     mutable yarp::os::Value val;
-    int idx;
+    int index;
 
 public:
     void configure(void *source, const yarp::os::Property &options);

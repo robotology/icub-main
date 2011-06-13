@@ -50,13 +50,13 @@ void SensorInterface::configure(void *source, const Property &options)
     assert(opt.check("name"));
     assert(opt.check("type"));
     assert(opt.check("size"));
-    assert(opt.check("idx"));
+    assert(opt.check("index"));
 
     this->source=source;
     name=opt.find("name").asString().c_str();
     type=opt.find("type").asString().c_str();
     size=opt.find("size").asInt();
-    idx=opt.find("idx").asInt();
+    index=opt.find("index").asInt();
 
     configured=true;
 }
@@ -72,7 +72,7 @@ bool SensorInterface::getInput(Value &in) const
     {
         Vactor vect(size);
         static_cast<IPositionControl*>(source)->getEncoders(vect.data());
-        in=Value(vect[idx]);
+        in=Value(vect[index]);
 
         return true;
     }
@@ -88,11 +88,11 @@ void SensorPort::configure(void *source, const Property &options)
 
     assert(source!=NULL);
     assert(opt.check("name"));
-    assert(opt.check("idx"));
+    assert(opt.check("index"));
 
     this->source=source;
     name=opt.find("name").asString().c_str();
-    idx=opt.find("idx").asInt();
+    index=opt.find("index").asInt();
 
     configured=true;
 }
@@ -105,7 +105,7 @@ bool SensorPort::getInput(Value &in) const
     {
         Bottle *data=static_cast<BufferedPort<Bottle>*>(source)->read(false);
         if (data!=NULL)
-            val=data->get(idx);
+            val=data->get(index);
 
         in=val;
 
