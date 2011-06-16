@@ -378,7 +378,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
         {
             calibrateFinger(fingers[4],15,qmin,qmax);
         }
-        else
+        else if (tag=="all")
         {
             calibrateFinger(fingers[0],10,qmin,qmax);
             calibrateFinger(fingers[1],12,qmin,qmax);
@@ -386,6 +386,8 @@ bool SpringyFingersModel::calibrate(const Property &options)
             calibrateFinger(fingers[3],15,qmin,qmax);
             calibrateFinger(fingers[4],15,qmin,qmax);
         }
+        else
+            return false;
 
         // steer the hand back to the original configuration
         for (int j=7; j<nAxes; j++)
