@@ -10,6 +10,7 @@ export ARCHFILE_LINUX=$MODULE-src-$REL.tar.gz
 export ARCHFILE_WINDOWS=$MODULE-src-$REL.zip
 export DEPFILE=$MODULE-dep-$REL.txt
 export URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
+export TAG_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub$REL
 
 mkdir $SOURCE_TMP_DIR
 cd $SOURCE_TMP_DIR
@@ -20,9 +21,9 @@ echo "Built on `date`" >> $versionFile
 echo "See $DEPFILE for list of library dependencies." >> $versionFile
 
 ########### Linux
-echo "Checkout code from $URL"
+echo "Checkout code from $TAG_URL"
 
-svn export $URL
+svn export $TAG_URL
 
 #store this file for later upload
 cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
@@ -42,7 +43,7 @@ echo "Done Linux"
 ########### Windows
 echo "Checkout code from $URL"
 
-svn export $URL --native-eol CRLF
+svn export $TAG_URL --native-eol CRLF
 
 #store this file for later upload
 cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
