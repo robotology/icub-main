@@ -1,17 +1,23 @@
 == YARP VERSION ==
 
-This snapshot was released with yarp 2.3.3
-
+This snapshot was released with yarp 2.3.4
 
 == iCub Linux Dependencies ==
+Operating system: Linux Debian 5.0 (Lenny)
+
+CMake Version: cmake version 2.8.2
 
 Installed packages:
 
-libace-dev
+ace version 6.0.1 from ace web site, compiled locally
+ipopt version 3.8.1 from ipopt web site, compiled locally
+
 libgsl0-dev
 libncurses5-dev
 libgtkmm-2.4-dev
 libcv-dev
+
+libqt3-mt-dev
 
 Simulator related packages:
 libglut3
@@ -20,19 +26,19 @@ libsdl1.2-dev
 
 ode 0.11 from sourceforge
 
-
-Environment:
-ICUB_DIR=/home/babybot/svn/iCub
-YARP_DIR=/home/babybot/svn/yarp2
-ICUB_ROOT=/home/babybot/svn/iCub
-YARP_ROOT=/home/babybot/svn/yarp2
-ACE_ROOT undefined
+Environment variables present on server::
+ICUB_DIR=
+YARP_DIR=
+ICUB_ROOT=/home/babybot/svn/iCub-for-testing
+YARP_ROOT=/home/babybot/svn/yarp2-for-testing
+ACE_ROOT=/home/babybot/ACE-6.0.1
 ODE_DIR=/home/babybot/ode-0.11
 SDLDIR undefined
 OPENCV_DIR undefined
 GSL_DIR undefined
 GTK_BASEPATH undefined
 GTKMM_BASEPATH undefined
+IPOPT_DIR=/home/babybot/Ipopt-3.8.1/build
 # YARP_DIR = where YARP is compiled, should contain YARPConfig.cmake
 # ICUB_DIR = where iCub is compiled, should contain ICUBConfig.cmake
 # YARP_ROOT = source code for YARP
@@ -43,31 +49,35 @@ GTKMM_BASEPATH undefined
 # ODE_DIR = where ode was compiled (if not using precompiled debian package)
 # SDLDIR = where sdl was compiled (if not using precompiled debian package)
 # GTKMM_BASEPATH/GTK_BASEPATH = where gtk/gtkmm was compiled or installed (if not using precompiled debian package)
+# IPOPT_DIR = where ipopt was installed
 
 == iCub Windows dependencies ==
+Operating system: WinXP
+
+CMake Version: cmake version 2.8.2
 
 Installed packages:
 
-ace version 5.5.5 from ace web site, compiled locally
-opencv version 1.0, precompiled from sourceforge
-gsl version 0.8, compiled locally
+ace version 5.8.0 precompiled from icub web site
+ode 0.11 from sourceforge
+SDL 1.2.13
+GSL 1.8 precompiled from icub web site
+opencv 1.0 win32 binaries sourceforge
+gtkmm from win32 binaries from icub web site
 
-ode 0.11 from sourceforge, compiled locally
-sdl 1.2.13 from SDL website, compiled locally
-gtk/gtkmm from distribution package from gnome website
-
-Environment:
-ICUB_DIR=C:\cygwin\home\babybot\svn\iCub
-YARP_DIR=C:\cygwin\home\babybot\svn\yarp2\build\msvc
-ICUB_ROOT=C:\cygwin\home\babybot\svn\iCub
-YARP_ROOT=C:\cygwin\home\babybot\svn\yarp2
-ACE_ROOT=C:\cygwin\home\babybot\ACE_wrappers
-ODE_DIR=C:/ode
-SLDDIR=C:/SDL-1.2.13
+Environment variables present on server::
+ICUB_DIR=
+YARP_DIR=C:/cygwin/home/babybot/svn/yarp2-for-testing/build-for-icub-continuous
+ICUB_ROOT=C:/cygwin/home/babybot/svn/iCub-for-testing
+YARP_ROOT=C:/cygwin/home/babybot/svn/yarp2-for-testing
+ACE_ROOT=C:/ace-5.8.0
+ODE_DIR=C:/ode-0.11.1
+SLDDIR=c:/SDL-1.2.13
 OPENCV_DIR undefined
 GSL_DIR=c:\gsl\gsl-1.8-win
 GTK_BASEPATH=C:\GTKMM
 GTKMM_BASEPATH=C:\GTKMM
+IPOPT_DIR=C:\Ipopt-3.7.0-win32-msvc8-yarp
 # YARP_DIR = where YARP is compiled, should contain YARPConfig.cmake
 # ICUB_DIR = where iCub is compiled, should contain ICUBConfig.cmake
 # YARP_ROOT = source code for YARP
@@ -77,7 +87,8 @@ GTKMM_BASEPATH=C:\GTKMM
 # OPENCV_DIR = where OPENCV was compiled (if not using precompiled debian package)
 # ODE_DIR = where ode was compiled (if not using precompiled debian package)
 # SDLDIR = where sdl was compiled (if not using precompiled debian package)
-# GTKMM_BASEPATH/GTK_BASEPATH = where gtk/gtkmm was compiled or installed (if not using 
-precompiled debian package)
+# GTKMM_BASEPATH/GTK_BASEPATH = where gtk/gtkmm was compiled or installed (if not using precompiled debian package)
+# IPOPT_DIR = where ipopt was installed
+
 
 

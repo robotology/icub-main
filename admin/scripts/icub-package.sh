@@ -5,7 +5,7 @@
 
 export SOURCE_TMP_DIR=./package-tmp
 export MODULE=iCub
-export REL=1.1.0
+export REL=1.1.1
 export ARCHFILE_LINUX=$MODULE-src-$REL.tar.gz
 export ARCHFILE_WINDOWS=$MODULE-src-$REL.zip
 export DEPFILE=$MODULE-dep-$REL.txt
