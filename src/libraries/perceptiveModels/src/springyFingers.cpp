@@ -19,6 +19,7 @@
 #include <assert.h>
 
 #include <yarp/os/Network.h>
+#include <yarp/os/Time.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
 #include <iCub/ctrl/math.h>
@@ -26,6 +27,7 @@
 
 using namespace std;
 using namespace yarp::os;
+using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace iCub::ctrl;
 using namespace iCub::learningmachine;
@@ -50,7 +52,7 @@ bool SpringyFinger::fromProperty(const Property &options)
     Property &opt=const_cast<Property&>(options);
     assert(opt.check("name"));
     name=opt.find("name").asString().c_str();
-    threshold=opt.check("thres",Value(0.0)).asDouble();
+    threshold=opt.check("threshold",Value(0.0)).asDouble();
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(360.0);
@@ -78,7 +80,7 @@ void SpringyFinger::toProperty(Property &options) const
 {
     options.clear();
     options.put("name",name.c_str());
-    options.put("thres",threshold);
+    options.put("threshold",threshold);
     options.put("scaler",scaler.toString().c_str());
     options.put("lssvm",lssvm.toString().c_str());
 }
@@ -103,7 +105,7 @@ bool SpringyFinger::getData(Vector &in, Vector &out) const
     if (!ok)
         return false;
 
-    Value val_in, val_out(3);
+    Value val_in, val_out[3];
     In_0->second->getInput(val_in);
     Out_0->second->getInput(val_out[0]);
     Out_1->second->getInput(val_out[1]);
@@ -132,7 +134,7 @@ bool SpringyFinger::getOutput(Value &out) const
     if (!getData(i,o))
         return false;
 
-    i[0]=scaler.transform(i[0].asDouble());
+    i[0]=scaler.transform(i[0]);
     Vector pred=lssvm.predict(i);
 
     for (int j=0; j<pred.length(); j++)
@@ -140,7 +142,7 @@ bool SpringyFinger::getOutput(Value &out) const
 
     Property prop;
     prop.put("prediction",Value(pred.toString().c_str()));
-    prop.put("out",Value(norm(o-pred)>thres?1:0));
+    prop.put("out",Value(norm(o-pred)>threshold?1:0));
 
     out=Value(prop.toString().c_str());
 
@@ -209,7 +211,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
         return false;
 
     port.open(("/"+name+part_analog+"/analog:i").c_str());
-    if (!Network::connect(port.name.c_str(),("/"+robot+part_analog+"/analog:o").c_str(),"udp"))
+    if (!Network::connect(port.getName().c_str(),("/"+robot+part_analog+"/analog:o").c_str(),"udp"))
     {
         port.close();
         return false;
@@ -220,8 +222,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
 
     // configure interface-based sensors
     Property propGen;
-    propThumb.put("name","In_0");
-    propGen.put("type","pos");
+    propGen.put("name","In_0");
     propGen.put("size",nAxes);
 
     Property propThumb=propGen;  propThumb.put("index",10);
@@ -230,7 +231,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property propRing=propGen;   propRing.put("index",15);
     Property propLittle=propGen; propLittle.put("index",15);
 
-    void *pIF=static_cast(void*)<ienc>;
+    void *pIF=static_cast<void*>(ienc);
     sensIF[0].configure(pIF,propThumb);
     sensIF[1].configure(pIF,propIndex);
     sensIF[2].configure(pIF,propMiddle);
@@ -251,8 +252,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property little_pip("(name Out_1) (index 13)");
     Property little_dip("(name Out_2) (index 14)");
 
-    void *pPort=static_cast(void*)<&port>;
-
+    void *pPort=static_cast<void*>(&port);
     sensPort[0].configure(&pPort,thumb_mp);
     sensPort[1].configure(&pPort,thumb_ip);
     sensPort[2].configure(&pPort,index_mp);
@@ -338,7 +338,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
 {
     if (configured)
     {
-        ILimits          *ilim; driver.view(ilim);
+        IControlLimits   *ilim; driver.view(ilim);
         IEncoders        *ienc; driver.view(ienc);
         IPositionControl *ipos; driver.view(ipos);
 
@@ -358,48 +358,34 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         // proceed with the calibration
         Property &opt=const_cast<Property&>(options);
-        Vocab tag=opt.check("finger",Value(Vocab::encode("all"),true)).asVocab();
-        switch (tag)
+        string tag=opt.check("finger",Value("all")).asString().c_str();
+        if (tag=="thumb")
         {
-            case Vocab::encode("thumb"):
-            {
-                calibrateFinger(fingers[0],10,qmin,qmax);
-                break;
-            }
-
-            case Vocab::encode("index"):
-            {
-                calibrateFinger(fingers[1],12,qmin,qmax);
-                break;
-            }
-
-            case Vocab::encode("middle"):
-            {
-                calibrateFinger(fingers[2],14,qmin,qmax);
-                break;
-            }
-
-            case Vocab::encode("ring"):
-            {
-                calibrateFinger(fingers[3],15,qmin,qmax);
-                break;
-            }
-
-            case Vocab::encode("little"):
-            {
-                calibrateFinger(fingers[4],15,qmin,qmax);
-                break;
-            }
-
-            default:
-            {
-                calibrateFinger(fingers[0],10,qmin,qmax);
-                calibrateFinger(fingers[1],12,qmin,qmax);
-                calibrateFinger(fingers[2],14,qmin,qmax);
-                calibrateFinger(fingers[3],15,qmin,qmax);
-                calibrateFinger(fingers[4],15,qmin,qmax);
-                break;
-            }
+            calibrateFinger(fingers[0],10,qmin,qmax);
+        }
+        else if (tag=="index")
+        {
+            calibrateFinger(fingers[1],12,qmin,qmax);
+        }
+        else if (tag=="middle")
+        {
+            calibrateFinger(fingers[2],14,qmin,qmax);
+        }
+        else if (tag=="ring")
+        {
+            calibrateFinger(fingers[3],15,qmin,qmax);
+        }
+        else if (tag=="little")
+        {
+            calibrateFinger(fingers[4],15,qmin,qmax);
+        }
+        else
+        {
+            calibrateFinger(fingers[0],10,qmin,qmax);
+            calibrateFinger(fingers[1],12,qmin,qmax);
+            calibrateFinger(fingers[2],14,qmin,qmax);
+            calibrateFinger(fingers[3],15,qmin,qmax);
+            calibrateFinger(fingers[4],15,qmin,qmax);
         }
 
         // steer the hand back to the original configuration
@@ -445,7 +431,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 
     for (int i=0; i<5; i++)
     {
-        ipos->positionMove(joint,&val);
+        ipos->positionMove(joint,*val);
 
         bool done=false;
         while (!done)
@@ -454,7 +440,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 
             double fb;
             ienc->getEncoder(joint,&fb);
-            done=fabs(val-fb)<5.0;
+            done=fabs(*val-fb)<5.0;
 
             Time::delay(0.02);
         }

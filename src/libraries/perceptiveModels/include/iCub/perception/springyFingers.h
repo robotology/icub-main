@@ -66,8 +66,8 @@ class SpringyFinger : public Node
 {
 protected:
     double threshold;
-    iCub::learningmachine::FixedRangeScaler scaler;
-    iCub::learningmachine::LSSVMLearner     lssvm;
+    mutable iCub::learningmachine::FixedRangeScaler scaler;
+    mutable iCub::learningmachine::LSSVMLearner     lssvm;
 
     bool getData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
 
@@ -96,8 +96,8 @@ protected:
     SpringyFinger   fingers[5];
     bool configured;
 
-    yarp::os::BufferedPort<yarp::sig::Bottle> port;
-    yarp::dev::PolyDriver                     driver;
+    yarp::os::BufferedPort<yarp::os::Bottle> port;
+    yarp::dev::PolyDriver                    driver;
 
     void calibrateFinger(SpringyFinger &finger, const int joint, const yarp::sig::Vector &qmin,
                          const yarp::sig::Vector &qmax);

@@ -48,13 +48,11 @@ void SensorInterface::configure(void *source, const Property &options)
 
     assert(source!=NULL);
     assert(opt.check("name"));
-    assert(opt.check("type"));
     assert(opt.check("size"));
     assert(opt.check("index"));
 
     this->source=source;
     name=opt.find("name").asString().c_str();
-    type=opt.find("type").asString().c_str();
     size=opt.find("size").asInt();
     index=opt.find("index").asInt();
 
@@ -68,16 +66,11 @@ bool SensorInterface::getInput(Value &in) const
     if (!configured)
         return false;    
 
-    if (type=="pos")
-    {
-        Vactor vect(size);
-        static_cast<IPositionControl*>(source)->getEncoders(vect.data());
-        in=Value(vect[index]);
+    Vector vect(size);
+    static_cast<IEncoders*>(source)->getEncoders(vect.data());
+    in=Value(vect[index]);
 
-        return true;
-    }
-    else
-        return false;
+    return true;
 }
 
 

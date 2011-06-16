@@ -86,9 +86,9 @@ public:
     Node();
     std::string getName() const { return name; }
 
-    void  attachSensor(const Sensor &sensor);
-    void  attachCallback(const EventCallback &callback);
-    void  addNeighbor(const Node &node);
+    void  attachSensor(Sensor &sensor);
+    void  attachCallback(EventCallback &callback);
+    void  addNeighbor(Node &node);
     bool  removeNeighbor(const std::string &name);
     Node* getNeighbor(const std::string &name) const;
 

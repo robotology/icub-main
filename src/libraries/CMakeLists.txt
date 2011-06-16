@@ -23,5 +23,6 @@ add_subdirectory(iDyn)
 add_subdirectory(actionPrimitives)
 add_subdirectory(learningMachine)
 add_subdirectory(icubmod)
+add_subdirectory(perceptiveModels)
 
 

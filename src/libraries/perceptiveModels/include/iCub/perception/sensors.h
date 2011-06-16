@@ -82,7 +82,6 @@ public:
 class SensorInterface : public Sensor
 {
 protected:
-    std::string type;
     int size;
     int index;
 

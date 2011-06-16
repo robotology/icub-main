@@ -38,21 +38,21 @@ Node::Node()
 
 
 /************************************************************************/
-void Node::attachSensor(const Sensor &sensor)
+void Node::attachSensor(Sensor &sensor)
 {
     sensors[sensor.getName()]=&sensor;
 }
 
 
 /************************************************************************/
-void Node::attachCallback(const EventCallback &callback)
+void Node::attachCallback(EventCallback &callback)
 {
     callbacks[callback.getName()]=&callback;
 }
 
 
 /************************************************************************/
-void Node::addNeighbor(const Node &node)
+void Node::addNeighbor(Node &node)
 {
     neighbors[node.getName()]=&node;
 }
