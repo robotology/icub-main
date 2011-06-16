@@ -19,7 +19,8 @@
    	</module>
 
 	<module>
-      		<name>yarp rpc /demoForceControl/left_arm/rpc:i</name>
+      		<name>yarp</name>
+			<parameters>rpc /demoForceControl/left_arm/rpc:i</parameters>
 			<node display="true">icubsrv</node>
 			<tag>left_arm_rpc</tag>
 			<stdio>icubsrv</stdio>
@@ -27,7 +28,8 @@
 
 	
 	<module>
-      		<name>yarp rpc /demoForceControl/right_arm/rpc:i</name>
+	     	<name>yarp</name>
+      		<parameters>rpc /demoForceControl/right_arm/rpc:i</parameters>
 			<node display="true">icubsrv</node>
 			<tag>right_arm_rpc</tag>
 			<stdio>icubsrv</stdio>
