@@ -65,15 +65,12 @@ namespace perception
 class SpringyFinger : public Node
 {
 protected:
-    double threshold;
     mutable iCub::learningmachine::FixedRangeScaler scaler;
     mutable iCub::learningmachine::LSSVMLearner     lssvm;
 
     bool getData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
 
 public:
-    SpringyFinger();
-
     bool fromProperty(const yarp::os::Property &options);
     void toProperty(yarp::os::Property &options) const;
     bool calibrate(const yarp::os::Property &options);

@@ -35,13 +35,6 @@ using namespace iCub::perception;
 
 
 /************************************************************************/
-SpringyFinger::SpringyFinger()
-{
-    threshold=0.0;
-}
-
-
-/************************************************************************/
 bool SpringyFinger::fromProperty(const Property &options)
 {
     sensors.clear();
@@ -52,7 +45,6 @@ bool SpringyFinger::fromProperty(const Property &options)
     Property &opt=const_cast<Property&>(options);
     assert(opt.check("name"));
     name=opt.find("name").asString().c_str();
-    threshold=opt.check("threshold",Value(0.0)).asDouble();
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(360.0);
@@ -80,7 +72,6 @@ void SpringyFinger::toProperty(Property &options) const
 {
     options.clear();
     options.put("name",name.c_str());
-    options.put("threshold",threshold);
     options.put("scaler",scaler.toString().c_str());
     options.put("lssvm",lssvm.toString().c_str());
 }
@@ -140,11 +131,7 @@ bool SpringyFinger::getOutput(Value &out) const
     for (int j=0; j<pred.length(); j++)
         pred[j]=scaler.unTransform(pred[j]);
 
-    Property prop;
-    prop.put("prediction",Value(pred.toString().c_str()));
-    prop.put("out",Value(norm(o-pred)>threshold?1:0));
-
-    out.fromString(("("+string(prop.toString().c_str())+")").c_str());
+    out=Value(norm(o-pred));
 
     return true;
 }
@@ -412,32 +399,14 @@ bool SpringyFingersModel::getOutput(Value &out) const
         fingers[3].getOutput(val[3]);
         fingers[4].getOutput(val[4]);
         
-        Property prop[5];
-        prop[0].fromString(val[0].asList()->toString().c_str());
-        prop[1].fromString(val[1].asList()->toString().c_str());
-        prop[2].fromString(val[2].asList()->toString().c_str());
-        prop[3].fromString(val[3].asList()->toString().c_str());
-        prop[4].fromString(val[4].asList()->toString().c_str());
-                
-        Bottle bPred;
-        bPred.addDouble(prop[0].find("prediction").asDouble());
-        bPred.addDouble(prop[1].find("prediction").asDouble());
-        bPred.addDouble(prop[2].find("prediction").asDouble());
-        bPred.addDouble(prop[3].find("prediction").asDouble());
-        bPred.addDouble(prop[4].find("prediction").asDouble());
+        Bottle bOut; Bottle &ins=bOut.addList();
+        ins.addDouble(val[0].asDouble());
+        ins.addDouble(val[1].asDouble());
+        ins.addDouble(val[2].asDouble());
+        ins.addDouble(val[3].asDouble());
+        ins.addDouble(val[4].asDouble());
 
-        Bottle bOut;
-        bOut.addInt(prop[0].find("out").asInt());
-        bOut.addInt(prop[1].find("out").asInt());
-        bOut.addInt(prop[2].find("out").asInt());
-        bOut.addInt(prop[3].find("out").asInt());
-        bOut.addInt(prop[4].find("out").asInt());
-
-        Property propOut;
-        propOut.put("prediction",bPred.toString().c_str());
-        propOut.put("out",bOut.toString().c_str());
-
-        out.fromString(("("+string(propOut.toString().c_str())+")").c_str());
+        out.fromString(bOut.toString().c_str());
 
         return true;
     }
