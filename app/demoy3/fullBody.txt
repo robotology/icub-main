@@ -1,0 +1,7 @@
+time 3
+[include RIGHTARM "armRight1"]
+[include LEFTARM "armLeft1"]
+[include RIGHTLEG "rightLegRemap"]
+[include LEFTLEG "leftLegRemap"]
+[include TORSO "torsoRemap"]
+[include HEAD "headRemap"]

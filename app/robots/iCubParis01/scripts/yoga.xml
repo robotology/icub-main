@@ -1,0 +1,19 @@
+<application>
+  <name>Yoga Demo</name>
+  <dependencies>
+      	<port>/iCubParis01</port>
+	<port>/icub/right_arm/state:o</port>
+	<port>/icub/left_arm/state:o</port>
+	<port>/icub/left_leg/state:o</port>
+	<port>/icub/right_leg/state:o</port>	
+	<port>/icub/torso/state:o</port>f
+	<port>/icub/head/state:o</port>f
+  </dependencies>
+
+  <module> 
+	<name>iCubDemoY3</name>
+	<stdio>icubsrv</stdio>
+	<node>icubsrv</node>
+	<tag>yoga-classic</tag>
+  </module>
+</application>

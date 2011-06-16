@@ -1,0 +1,7 @@
+time 1.8
+[include RIGHTARM "twoHandsMais.posright_arm"]
+[include LEFTARM "twoHandsMais.posleft_arm"]
+[include RIGHTLEG "twoHandsMais.posright_leg"]
+[include LEFTLEG "twoHandsMais.posleft_leg"]
+[include TORSO "twoHandsMais.postorso"]
+[include HEAD "twoHandsMais.poshead"]

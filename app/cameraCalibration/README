@@ -1,0 +1,36 @@
+cameraCalibrationLeft.xml.template
+cameraCalibrationRight.xml.template
+
+This application demonstates the use of the camCalibConf module to calibrate
+the left and right cameras of the iCub head and writes the intrinsic camera
+parameters to a single calibration file icubEyes.ini
+ 
+Both applications should be run to calibrate the cameras.  The Left version
+writes that intrinsic camera parameters to a specific Group in the configuration file.
+The Group name is specified as a command line parameter: 
+CAMERA_CALIBRATION_CONFIGURATION_LEFT
+
+Similarly, The Right version writes that intrinsic camera parameters to a 
+specific Group in the configuration file. The Group name is also specified 
+as a command line parameter: CAMERA_CALIBRATION_CONFIGURATION_RIGHT
+
+Any existing instrinsic camera parameters in either of these two groups in 
+icubEyes.ini are overwritten by the calibration process.  Make a backup if you are 
+unsure of the calibration procedure.
+
+Edit the xml.template files to suit your own platform.  You will need to change at least
+the node name (icub1 in the template).  You may also want to change Group names
+depending on the applications and modules with which you will use the resultant
+configuration file. 
+
+You should also make sure that the port dependencies are satisfied.
+Note that the application has two port dependencies:
+
+/icub/cam/left 
+/icub/cam/right 
+
+which stream images from the iCub cameras.
+
+For convenience, a chessboard calibration image is provided in the 
+$ICUB_ROOT/app/cameraCalibration/data directory. This calibration image matches
+the calibration pattern parameters in the icubEyes.ini configuration file.

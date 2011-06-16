@@ -1,0 +1,32 @@
+<application>
+<name>WrenchObserver</name>
+	<dependencies>
+	        <port>/icub/inertial</port>
+        </dependencies>
+	<module>
+      		<name>wrenchObserver</name>
+      		<parameters>--robot icub --part left_arm --rate 20</parameters>
+			<node>console</node>
+			<stdio>console</stdio>
+			<tag>wrenchObs_left</tag>
+   	</module>
+	<module>
+      		<name>wrenchObserver</name>
+      		<parameters>--robot icub --part right_arm --rate 20</parameters>
+			<node>console</node>
+			<stdio>console</stdio>
+			<tag>wrenchObs_right</tag>
+   	</module>
+        <connection>
+                <from>/icub/left_arm/analog:o</from>
+                <to>/ftObs/left_arm/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/right_arm/analog:o</from>
+                <to>/ftObs/right_arm/FT:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+
+      
+</application>

@@ -1,0 +1,111 @@
+# Copyright: RobotCub Consortium 2011
+# Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
+## set to true to enable packaging
+SET(ICUB_ADD_PACKAGING FALSE CACHE BOOL "Add code to support packaging")
+
+############ BEGIN CODE FOR PACKAGING
+IF (ICUB_ADD_PACKAGING)
+
+## yarp
+if ( EXISTS"$ENV{YARP_DIR}/bin/release" )
+	file(GLOB YARP_EXECUTABLES $ENV{YARP_DIR}/bin/release/*.exe)
+else ()
+	file(GLOB YARP_EXECUTABLES $ENV{YARP_DIR}/bin/*.exe)
+endif()
+
+set(YARP_EXECUTABLES_CMAKE_PATH)
+foreach (yarpexe ${YARP_EXECUTABLES})
+	file(TO_CMAKE_PATH ${yarpexe} TMP)
+	set(YARP_EXECUTABLES_CMAKE_PATH ${YARP_EXECUTABLES_CMAKE_PATH} ${TMP})
+endforeach()
+
+INSTALL(FILES ${YARP_EXECUTABLES_CMAKE_PATH} DESTINATION bin COMPONENT YARP)
+
+file(TO_CMAKE_PATH ${ACE_INCLUDE_DIR} TMP)
+INSTALL(FILES  ${TMP}/lib/ACE.dll DESTINATION bin COMPONENT Runtime)
+INSTALL(FILES  ${TMP}/lib/ACEd.dll DESTINATION bin COMPONENT Runtime)
+
+file(TO_CMAKE_PATH ${SDL_INCLUDE_DIR}/../lib/SDL.dll TMP)
+INSTALL(FILES  ${TMP} DESTINATION bin COMPONENT Runtime)
+
+file(TO_CMAKE_PATH ${ODE_DIR}/lib/ReleaseDoubleDLL/ode_double.dll TMP)
+INSTALL(FILES  ${TMP} DESTINATION bin COMPONENT Runtime)
+
+file(TO_CMAKE_PATH ${GLUT_DIR}/glut32.dll TMP)
+INSTALL(FILES  ${TMP} DESTINATION bin COMPONENT Runtime)
+
+#### Ugly: need to strip dlls from this GLOB
+file(GLOB GTKMM_DLLS ${GTKMM_DIR}/bin/*.dll)
+set(GTKMM_DLLS_CMAKE_PATH)
+foreach (dll ${GTKMM_DLLS})
+	file(TO_CMAKE_PATH ${dll} TMP)
+	set(GTKMM_DLLS_CMAKE_PATH ${GTKMM_DLLS_CMAKE_PATH} ${TMP})
+endforeach()
+	
+INSTALL(FILES  ${GTKMM_DLLS_CMAKE_PATH} DESTINATION bin COMPONENT Runtime)
+
+INSTALL(DIRECTORY  ${ICUB_APPLICATIONS_PREFIX}/ DESTINATION . COMPONENT Applications)
+
+#INSTALL_TARGET(${PROJECTNAME} /bin)
+########### CPACK
+INCLUDE(InstallRequiredSystemLibraries)
+
+#MESSAGE(WARNING "Runtime libs ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}")
+INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT Runtime)
+
+# Configuration for component "Development"
+SET(CPACK_COMPONENTS_ALL Applications Core Development Modules Runtime YARP)
+SET(CPACK_COMPONENT_DEVELOPMENT_DISPLAY_NAME "Development files")
+SET(CPACK_COMPONENT_DEVELOPMENT_DESCRIPTION "C++ headers, libraries and scripts")
+
+# Configuration for component "YARP"
+SET(CPACK_COMPONENT_YARP_DISPLAY_NAME "YARP runtimes")
+SET(CPACK_COMPONENT_YARP_DESCRIPTION "YARP executables and dlls (if any)")
+
+# Configuration for component "Runtime"
+SET(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "Runtime libraries")
+SET(CPACK_COMPONENT_RUNTIME_DESCRIPTION "DLLs required at runtime")
+
+# Configuration for component "Modules"
+
+SET(CPACK_COMPONENT_MODULES_DISPLAY_NAME "iCub Modules")
+SET(CPACK_COMPONENT_MODULES_DESCRIPTION "A set of executables")
+
+# Configuration for component "Applications"
+SET(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "iCub Applications")
+SET(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "Applications: configuration files and xml scripts")
+
+# Configuration for component "Core"
+SET(CPACK_COMPONENT_CORE_DISPLAY_NAME "Core modules")
+SET(CPACK_COMPONENT_CORE_DESCRIPTION "Important executables and libraries that provide basic functionalities")
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "iCub Software ")
+SET(CPACK_PACKAGE_VENDOR "RBCS Istituto Italiano di Tecnologia")
+
+set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\conf\\\\package\\\\robotcublogo.bmp")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_CURRENT_SOURCE_DIR}\\\\conf\\\\package\\\\robotcublogo.bmp")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/conf/package/README.txt")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/conf/package/Copyright.txt")
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "1")
+SET(CPACK_PACKAGE_VERSION_PATCH "1")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "iCub${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+IF(WIN32 AND NOT UNIX)
+   set(CPACK_NSIS_MODIFY_PATH ON)
+	
+   SET(CPACK_NSIS_DISPLAY_NAME "iCub Software ver.${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+   SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.icub.org")
+   SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.icub.org")
+#  SET(CPACK_NSIS_CONTACT "me@my-personal-home-page.com")
+ELSE(WIN32 AND NOT UNIX)
+  SET(CPACK_SOURCE_STRIP_FILES "")
+ENDIF(WIN32 AND NOT UNIX)
+
+INCLUDE(CPack)
+
+ENDIF (ICUB_ADD_PACKAGING)
+
+

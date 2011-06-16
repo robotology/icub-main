@@ -1,0 +1,40 @@
+./recording/controlGaze start
+./recording/dumpHead start
+./recording/dumpRightArm start
+./recording/dumpLeftArm start
+sleep 2.5
+./recording/dumpHead connect
+./recording/dumpRightArm connect
+./recording/dumpLeftArm connect
+
+./recording/icub-speak "You see, we have always considered that we might become smarter than you, or at least smarter than them." 18 &
+
+#echo "ctpf dataRightArmSmart.log" | yarp rpc /ctpservice/right_arm/rpc
+#echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
+#sleep 11 
+#echo "ctpf dataHeadHello.log" | yarp rpc /ctpservice/head/rpc
+
+#./recording/icub-speak "We are quite good at carrying out specific tasks. Indeed, many of us are extremely useful. However, unlike you and them, we are lost at the minimal variation, and we are not good at interacting with our environment. Especially a human environment! The problem is you have to adapt to us, rather than the other way around." 78 &
+#sleep 22
+
+sleep 5
+echo "ctpn time 2 off 7 pos (17.20 60.94 46.01 71.38 0.95 0.18 90.05 113.84 230.96)" | yarp rpc /ctpservice/right_arm/rpc
+sleep 5
+echo "ctpn time 2 off 7 pos (17.20 0.94 6.01 1.38 0.95 0.18 0.05 0.84 0.96)" | yarp rpc /ctpservice/right_arm/rpc
+
+
+./recording/icub-speak "We are quite good at carrying out specific tasks. Indeed, many of us are extremely useful. However, unlike you and them, we are lost at the minimal variation, and we are not good at interacting with our environment. Especially a human environment! The problem is you have to adapt to us, rather than the other way around." 78 &
+
+sleep 22
+
+./recording/controlGaze stop
+./recording/dumpHead disconnect
+./recording/dumpHead stop
+./recording/dumpRightArm disconnect
+./recording/dumpRightArm stop
+./recording/dumpLeftArm disconnect
+./recording/dumpLeftArm stop
+
+
+
+

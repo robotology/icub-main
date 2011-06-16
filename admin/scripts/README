@@ -1,0 +1,7 @@
+The following packages are required by the scripts:
+
+apt-get install realpath timeout rsync cmake
+
+and the following for the code:
+
+apt-get install g++ cvs libace-dev libgsl-dev emacs libgtkmm-2.4-dev libcv-dev

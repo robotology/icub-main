@@ -1,0 +1,9 @@
+[NAME]
+Main
+
+[APPLICATIONS]
+# use * or leave empty to mean everything
+cartesianSolver
+
+
+

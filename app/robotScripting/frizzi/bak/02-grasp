@@ -1,0 +1,5 @@
+echo "set all hap"  | yarp rpc /icub/face/emotions/in
+echo "ctpn time 3 off 0 pos (-50.69 12.66 3.77 88.14 -84.19 -9.00 15.60 8.47 43.83 62.61 122.09 0.29 -0.23 2.55 3.95 -6.46)" | yarp rpc /ctpservice/left_arm/rpc
+echo "ctpn time 3 off 0 pos (-18 0 24 10 -1 14)" | yarp rpc /ctpservice/head/rpc
+
+ 

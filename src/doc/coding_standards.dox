@@ -1,0 +1,37 @@
+
+/**
+  * \page coding_standards Coding standards
+
+The standards for iCub code are given in the latter part of <a
+href="http://www.robotcub.org/index.php/robotcub/more_information/deliverables/deliverable_8_2_pdf">deliverable 8.2</a>.
+
+A lot of our code does not currently meet that standard.  Some key points:
+
+ - Code should compile in both Windows and Linux
+
+ - Do not use tabs to indent.  If you are using Microsoft Visual C++
+turn off the tabs option (go to Option->Tabs and click the "insert
+spaces" radio button.  The standard says you can use 3 or 4 spaces;
+for compatibility with YARP coding, I suggest 4.  Those using emacs
+are encouraged to include the following line at the top of their code:
+
+\code
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+\endcode
+
+ - Ideally, include files should be within an iCub subdirectory so they
+can be included as:
+
+\code
+#include <iCub/YourHeaderFile.h>
+\endcode
+
+ - The names of directories in the repository should be capitalizedLikeThis.
+   Most are not at the time of writing (this is a recent decision),
+   but that will change.
+
+This page can be edited at src/doc/coding_standards.dox.
+
+*
+*/
+

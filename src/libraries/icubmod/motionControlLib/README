@@ -1,0 +1,6 @@
+This lib groups classes and header files that are used within various 
+can bus modules (e.g. plxCanMotionControl, esdMotionControl2 or 
+canBusMotionControl). Created to avoid dangerous duplications, mostly
+by moving files and renaming things here and there. It can be improved.
+
+Feb 08 -- Lorenzo

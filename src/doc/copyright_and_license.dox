@@ -1,0 +1,52 @@
+
+/**
+  * \page copyright_and_license Copyright and license
+
+The standards for iCub copyright and licensing are given in 
+<a href="http://www.robotcub.org/index.php/robotcub/more_information/deliverables/deliverable_8_2_pdf">deliverable 8.2</a>.
+
+All source files in the iCub repository should give a copyright
+notice and license information. The recommended language is:
+\verbatim
+/* 
+ * Copyright (C) <year> RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author <name of author>
+ * email:   <firstname.secondname>@robotcub.org
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+\endverbatim
+
+If you have code for which you are not the copyright holder, but which
+is redistributable under terms that are compatible with the GPL, you
+may want to include it in the iCub repository.  It is not clear 
+whether this is permitted.  I describe here the procedure used
+in YARP (as opposed to iCub) for such code.  This does not imply 
+the existence of a policy about such code for iCub.
+The absolute minimum that would need to be present in each source file is:
+ - A copyright statement with author name and year.  Don't forget the year.
+ - A license statement that is compatible with the GPL.
+
+For YARP, the form of these statements was at a minimum:
+\verbatim
+/*
+ * Copyright (C) 2007 Author McAuthor
+ * CopyPolicy: Released under the terms of <the license name>
+ */
+\endverbatim
+The CopyPolicy line is useful to add for semi-automated license reviews of 
+material in the repository.
+
+*
+*/
+
