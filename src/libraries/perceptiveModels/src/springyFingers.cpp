@@ -144,7 +144,7 @@ bool SpringyFinger::getOutput(Value &out) const
     prop.put("prediction",Value(pred.toString().c_str()));
     prop.put("out",Value(norm(o-pred)>threshold?1:0));
 
-    out=Value(("("+string(prop.toString().c_str())+")").c_str());
+    out.fromString(("("+string(prop.toString().c_str())+")").c_str());
 
     return true;
 }
@@ -419,14 +419,25 @@ bool SpringyFingersModel::getOutput(Value &out) const
         prop[3].fromString(val[3].asList()->toString().c_str());
         prop[4].fromString(val[4].asList()->toString().c_str());
                 
-        Bottle b1; Bottle &b2=b1.addList();
-        b2.addInt(prop[0].find("out").asInt());
-        b2.addInt(prop[1].find("out").asInt());
-        b2.addInt(prop[2].find("out").asInt());
-        b2.addInt(prop[3].find("out").asInt());
-        b2.addInt(prop[4].find("out").asInt());
+        Bottle bPred;
+        bPred.addDouble(prop[0].find("prediction").asDouble());
+        bPred.addDouble(prop[1].find("prediction").asDouble());
+        bPred.addDouble(prop[2].find("prediction").asDouble());
+        bPred.addDouble(prop[3].find("prediction").asDouble());
+        bPred.addDouble(prop[4].find("prediction").asDouble());
 
-        out.fromString(b2.toString().c_str());
+        Bottle bOut;
+        bOut.addInt(prop[0].find("out").asInt());
+        bOut.addInt(prop[1].find("out").asInt());
+        bOut.addInt(prop[2].find("out").asInt());
+        bOut.addInt(prop[3].find("out").asInt());
+        bOut.addInt(prop[4].find("out").asInt());
+
+        Property propOut;
+        propOut.put("prediction",bPred.toString().c_str());
+        propOut.put("out",bOut.toString().c_str());
+
+        out.fromString(("("+string(propOut.toString().c_str())+")").c_str());
 
         return true;
     }
