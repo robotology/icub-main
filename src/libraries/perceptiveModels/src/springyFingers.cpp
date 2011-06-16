@@ -144,7 +144,7 @@ bool SpringyFinger::getOutput(Value &out) const
     prop.put("prediction",Value(pred.toString().c_str()));
     prop.put("out",Value(norm(o-pred)>threshold?1:0));
 
-    out=Value(prop.toString().c_str());
+    out=Value(("("+string(prop.toString().c_str())+")").c_str());
 
     return true;
 }
@@ -313,22 +313,21 @@ void SpringyFingersModel::toProperty(Property &options) const
 
     if (configured)
     {
-        Property thumb,index,middle,ring,little;
-
-        fingers[0].toProperty(thumb);
-        fingers[1].toProperty(index);
-        fingers[2].toProperty(middle);
-        fingers[3].toProperty(ring);
-        fingers[4].toProperty(little);
+        Property prop[5];
+        fingers[0].toProperty(prop[0]);
+        fingers[1].toProperty(prop[1]);
+        fingers[2].toProperty(prop[2]);
+        fingers[3].toProperty(prop[3]);
+        fingers[4].toProperty(prop[4]);
 
         options.put("name",name.c_str());
         options.put("type",type.c_str());
         options.put("robot",robot.c_str());
-        options.put("thumb",thumb.toString().c_str());
-        options.put("index",index.toString().c_str());
-        options.put("middle",middle.toString().c_str());
-        options.put("ring",ring.toString().c_str());
-        options.put("little",little.toString().c_str());
+        options.put("thumb",prop[0].toString().c_str());
+        options.put("index",prop[1].toString().c_str());
+        options.put("middle",prop[2].toString().c_str());
+        options.put("ring",prop[3].toString().c_str());
+        options.put("little",prop[4].toString().c_str());
     }
 }
 
@@ -404,6 +403,29 @@ bool SpringyFingersModel::getOutput(Value &out) const
 {
     if (configured)
     {
+        Value val[5];
+        fingers[0].getOutput(val[0]);
+        fingers[1].getOutput(val[1]);
+        fingers[2].getOutput(val[2]);
+        fingers[3].getOutput(val[3]);
+        fingers[4].getOutput(val[4]);
+        
+        Property prop[5];
+        prop[0].fromString(val[0].asList()->toString().c_str());
+        prop[1].fromString(val[1].asList()->toString().c_str());
+        prop[2].fromString(val[2].asList()->toString().c_str());
+        prop[3].fromString(val[3].asList()->toString().c_str());
+        prop[4].fromString(val[4].asList()->toString().c_str());
+                
+        Bottle b1; Bottle &b2=b1.addList();
+        b2.addInt(prop[0].find("out").asInt());
+        b2.addInt(prop[1].find("out").asInt());
+        b2.addInt(prop[2].find("out").asInt());
+        b2.addInt(prop[3].find("out").asInt());
+        b2.addInt(prop[4].find("out").asInt());
+
+        out.fromString(b2.toString().c_str());
+
         return true;
     }
     else
