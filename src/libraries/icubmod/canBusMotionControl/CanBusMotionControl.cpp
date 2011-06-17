@@ -471,6 +471,14 @@ void CanBackDoor::onRead(Bottle &b)
 			dval[4] = 0;
 			dval[5] = 0; 
 		break;
+		case 4:
+			dval[0] = b.get(1).asDouble(); //torso yaw (respect gravity)
+			dval[1] = b.get(2).asDouble(); //torso roll (lateral movement)
+			dval[2] = b.get(3).asDouble(); //torso pitch (front-back movement)
+			dval[3] = 0;
+			dval[4] = 0;
+			dval[5] = 0; 
+		break;
 		default:
 			fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName().c_str());
 			return;
