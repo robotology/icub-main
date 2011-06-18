@@ -94,6 +94,7 @@ using namespace yarp::sig;
 using namespace yarp::math;
 
 #define PRINT_STATUS_PER 0.1
+#define MAX_AXES         32
 
 enum { JTYPE_UNDEF=-1, JTYPE_POLAR=0, JTYPE_CARTESIAN=1, JTYPE_CONSTANT=2, JTYPE_STRING=3 };
 
@@ -345,14 +346,9 @@ public:
 		fprintf ( stderr, "\n");
 
 		// check: selected joint MUST have at least one axis
-		if (numAxes>0) 
+		if (numAxes<=0) 
 		{
-			rawAxes=new double [numAxes];
-			outAxes=new double [numAxes];
-		}
-		else
-		{
-			fprintf ( stderr, "Error: selected joystick has 0 Axes?!\n" );
+			fprintf ( stderr, "Error: selected joystick has %d Axes?!\n",numAxes );
 			return false;
 		}
 
@@ -373,6 +369,9 @@ public:
 				fprintf ( stderr, "Ovveriding the number of axes specified in the configuration file. Using %d axes.\n",numAxes);
 			}
 		}
+
+		rawAxes=new double [MAX_AXES];
+		outAxes=new double [MAX_AXES];
 
 		/*
 		// check: selected joint MUST have at least one button
