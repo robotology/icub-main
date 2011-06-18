@@ -166,23 +166,28 @@ private:
     Vector *ft_arm_left;
     Vector *ft_arm_right;
     Vector *inertial;
-    BufferedPort<Vector> *port_ft_arm_left;
+    
+	//input ports
+	BufferedPort<Vector> *port_ft_arm_left;
     BufferedPort<Vector> *port_ft_arm_right;
+	BufferedPort<Vector> *port_ft_leg_left;
+    BufferedPort<Vector> *port_ft_leg_right;
 	BufferedPort<Vector> *port_inertial_thread;
 
+	//output ports
 	BufferedPort<Bottle> *port_RATorques;
 	BufferedPort<Bottle> *port_RLTorques;
 	BufferedPort<Bottle> *port_RWTorques;
 	BufferedPort<Bottle> *port_LATorques;
 	BufferedPort<Bottle> *port_LLTorques;
 	BufferedPort<Bottle> *port_LWTorques;
+	BufferedPort<Bottle> *port_TOTorques;
 	BufferedPort<Vector> *port_external_wrench_RA;
 	BufferedPort<Vector> *port_external_wrench_LA;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;
-    BufferedPort<Vector> *port_ft_leg_left;
-    BufferedPort<Vector> *port_ft_leg_right;
+
     bool first;
 	thread_status_enum thread_status;
 
@@ -404,6 +409,7 @@ public:
 		port_LLTorques = new BufferedPort<Bottle>;
 		port_RWTorques = new BufferedPort<Bottle>;
 		port_LWTorques = new BufferedPort<Bottle>;
+		port_TOTorques = new BufferedPort<Bottle>;
 
         port_inertial_thread->open("/wholeBodyTorqueObserver/inertial:i");
 		port_ft_arm_left->open("/wholeBodyTorqueObserver/left_arm/FT:i");
@@ -416,6 +422,7 @@ public:
 		port_LLTorques->open("/wholeBodyTorqueObserver/left_leg/Torques:o");
 		port_RWTorques->open("/wholeBodyTorqueObserver/right_wrist/Torques:o");
 		port_LWTorques->open("/wholeBodyTorqueObserver/left_wrist/Torques:o");
+		port_TOTorques->open("/wholeBodyTorqueObserver/torso/Torques:o");
 
 
 		//---------------------DEVICES--------------------------//
@@ -539,10 +546,11 @@ public:
 		
 		Vector LLTorques = icub.lowerTorso->getTorques("left_leg");
 		Vector RLTorques = icub.lowerTorso->getTorques("right_leg");
-		Vector TSTorques = icub.lowerTorso->getTorques("torso");
+		Vector TOTorques = icub.lowerTorso->getTorques("torso");
 
 		writeTorque(RATorques, 1, port_RATorques); //arm
 		writeTorque(LATorques, 1, port_LATorques); //arm
+		writeTorque(TOTorques, 4, port_TOTorques); //torso
 		if (ddLR) writeTorque(RLTorques, 2, port_RLTorques); //leg
 		if (ddLL) writeTorque(LLTorques, 2, port_LLTorques); //leg
 		writeTorque(RATorques, 3, port_RWTorques); //wrist
@@ -657,6 +665,8 @@ public:
 		closePort(port_RWTorques);
 		fprintf(stderr, "Closing LWTorques port\n");
 		closePort(port_LWTorques);
+		fprintf(stderr, "Closing TOTorques port\n");
+		closePort(port_TOTorques);
 		fprintf(stderr, "Closing external_wrench_RA port\n");
 		closePort(port_external_wrench_RA);
 		fprintf(stderr, "Closing external_wrench_LA port\n");	
