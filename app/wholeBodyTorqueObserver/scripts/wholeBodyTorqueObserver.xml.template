@@ -69,6 +69,11 @@
                 <to>/icub/joint_vsens/right_wrist:i</to>
                 <protocol>udp</protocol>
         </connection>
+		<connection>
+                <from>/wholeBodyTorqueObserver/torso/Torques:o</from>
+                <to>/icub/joint_vsens/torso:i</to>
+                <protocol>udp</protocol>
+        </connection>
         <connection>
                 <from>/wholeBodyTorqueObserver/left_leg/Torques:o</from>
                 <to>/icub/joint_vsens/left_leg:i</to>
