@@ -206,54 +206,54 @@ public:
     ServerCartesianController();
     ServerCartesianController(yarp::os::Searchable &config);
 
-    virtual bool open(yarp::os::Searchable &config);
-    virtual bool close();
+    bool open(yarp::os::Searchable &config);
+    bool close();
 
-    virtual bool pingSolver();
-    virtual bool connectToSolver();
+    bool pingSolver();
+    bool connectToSolver();
 
-    virtual bool attachAll(const yarp::dev::PolyDriverList &p);
-    virtual bool detachAll();
+    bool attachAll(const yarp::dev::PolyDriverList &p);
+    bool detachAll();
 
-    virtual bool setTrackingMode(const bool f);
-    virtual bool getTrackingMode(bool *f);
-    virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-    virtual bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o);
-    virtual bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
-    virtual bool goToPosition(const yarp::sig::Vector &xd, const double t=0.0);
-    virtual bool goToPoseSync(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
-    virtual bool goToPositionSync(const yarp::sig::Vector &xd, const double t=0.0);
-    virtual bool getDesired(yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
-    virtual bool askForPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, yarp::sig::Vector &xdhat,
-                            yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
-    virtual bool askForPose(const yarp::sig::Vector &q0, const yarp::sig::Vector &xd, const yarp::sig::Vector &od,
-                            yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
-    virtual bool askForPosition(const yarp::sig::Vector &xd, yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat,
-                                yarp::sig::Vector &qdhat);
-    virtual bool askForPosition(const yarp::sig::Vector &q0, const yarp::sig::Vector &xd, yarp::sig::Vector &xdhat,
-                                yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
-    virtual bool getDOF(yarp::sig::Vector &curDof);
-    virtual bool setDOF(const yarp::sig::Vector &newDof, yarp::sig::Vector &curDof);
-    virtual bool getRestPos(yarp::sig::Vector &curRestPos);
-    virtual bool setRestPos(const yarp::sig::Vector &newRestPos, yarp::sig::Vector &curRestPos);
-    virtual bool getRestWeights(yarp::sig::Vector &curRestWeights);
-    virtual bool setRestWeights(const yarp::sig::Vector &newRestWeights, yarp::sig::Vector &curRestWeights);
-    virtual bool getLimits(const int axis, double *min, double *max);
-    virtual bool setLimits(const int axis, const double min, const double max);
-    virtual bool getTrajTime(double *t);
-    virtual bool setTrajTime(const double t);
-    virtual bool getInTargetTol(double *tol);
-    virtual bool setInTargetTol(const double tol);
-    virtual bool getJointsVelocities(yarp::sig::Vector &qdot);
-    virtual bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
-    virtual bool setTaskVelocities(const yarp::sig::Vector &xdot, const yarp::sig::Vector &odot);
-    virtual bool checkMotionDone(bool *f);
-    virtual bool waitMotionDone(const double period=0.1, const double timeout=0.0);
-    virtual bool stopControl();
-    virtual bool storeContext(int *id);
-    virtual bool restoreContext(const int id);
+    bool setTrackingMode(const bool f);
+    bool getTrackingMode(bool *f);
+    bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
+    bool goToPosition(const yarp::sig::Vector &xd, const double t=0.0);
+    bool goToPoseSync(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
+    bool goToPositionSync(const yarp::sig::Vector &xd, const double t=0.0);
+    bool getDesired(yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
+    bool askForPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, yarp::sig::Vector &xdhat,
+                    yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
+    bool askForPose(const yarp::sig::Vector &q0, const yarp::sig::Vector &xd, const yarp::sig::Vector &od,
+                    yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
+    bool askForPosition(const yarp::sig::Vector &xd, yarp::sig::Vector &xdhat, yarp::sig::Vector &odhat,
+                        yarp::sig::Vector &qdhat);
+    bool askForPosition(const yarp::sig::Vector &q0, const yarp::sig::Vector &xd, yarp::sig::Vector &xdhat,
+                        yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
+    bool getDOF(yarp::sig::Vector &curDof);
+    bool setDOF(const yarp::sig::Vector &newDof, yarp::sig::Vector &curDof);
+    bool getRestPos(yarp::sig::Vector &curRestPos);
+    bool setRestPos(const yarp::sig::Vector &newRestPos, yarp::sig::Vector &curRestPos);
+    bool getRestWeights(yarp::sig::Vector &curRestWeights);
+    bool setRestWeights(const yarp::sig::Vector &newRestWeights, yarp::sig::Vector &curRestWeights);
+    bool getLimits(const int axis, double *min, double *max);
+    bool setLimits(const int axis, const double min, const double max);
+    bool getTrajTime(double *t);
+    bool setTrajTime(const double t);
+    bool getInTargetTol(double *tol);
+    bool setInTargetTol(const double tol);
+    bool getJointsVelocities(yarp::sig::Vector &qdot);
+    bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
+    bool setTaskVelocities(const yarp::sig::Vector &xdot, const yarp::sig::Vector &odot);
+    bool checkMotionDone(bool *f);
+    bool waitMotionDone(const double period=0.1, const double timeout=0.0);
+    bool stopControl();
+    bool storeContext(int *id);
+    bool restoreContext(const int id);
 
-    virtual yarp::os::Stamp getLastInputStamp();
+    yarp::os::Stamp getLastInputStamp();
 
     virtual ~ServerCartesianController();
 };
