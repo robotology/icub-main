@@ -23,7 +23,6 @@
 #define PID_SAT(x,L,H)      ((x)>(H)?(H):((x)<(L)?(L):(x)))
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;

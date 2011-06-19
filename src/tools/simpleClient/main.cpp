@@ -42,7 +42,6 @@
 
 using namespace yarp::dev;
 using namespace yarp::os;
-using namespace yarp;
 
 #define VOCAB_HELP VOCAB4('h','e','l','p')
 #define VOCAB_QUIT VOCAB4('q','u','i','t')

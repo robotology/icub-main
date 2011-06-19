@@ -200,7 +200,6 @@ Linux and Windows.
 #define NODE_ON     cvScalar(0,255,0)
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 

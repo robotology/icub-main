@@ -75,7 +75,6 @@ Windows, Linux
 #define CYCLE   0x01
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;

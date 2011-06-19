@@ -45,7 +45,6 @@
 #define NECKSOLVER_RESTORINGANGLE_SAG       5.0     // [deg]
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

@@ -95,7 +95,6 @@ This file can be edited at \in src/iCubDemoY3/main.cpp.
 
 using namespace yarp::dev;
 using namespace yarp::os;
-using namespace yarp;
 using namespace yarp::sig;
 using namespace std;
 

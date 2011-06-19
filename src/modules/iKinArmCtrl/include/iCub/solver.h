@@ -38,7 +38,6 @@
 #define SHOULDER_MAXABDUCTION   (100.0*CTRL_DEG2RAD)
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

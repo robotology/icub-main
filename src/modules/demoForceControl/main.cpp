@@ -120,7 +120,6 @@ This file can be edited at main/src/modules/demoForceControl/main.cpp.
 #define VOCAB_HELP VOCAB4('h','e','l','p')
 #define VOCAB_QUIT VOCAB4('q','u','i','t')
 
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;

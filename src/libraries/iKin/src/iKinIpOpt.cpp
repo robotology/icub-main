@@ -22,7 +22,6 @@
 #define IKINIPOPT_DEFAULT_LWBOUNDINF    (-1e9)
 #define IKINIPOPT_DEFAULT_UPBOUNDINF    (+1e9)
 
-using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;

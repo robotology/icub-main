@@ -37,7 +37,6 @@
 #define GAZECTRL_MOTIONSTART_XTHRES     1e-3    // [m]
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

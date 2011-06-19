@@ -143,7 +143,6 @@ This file can be edited at src/camExtrinsicsCalib/camExtrinsicsCalib.cpp.
 #include <math.h>
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 

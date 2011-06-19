@@ -161,7 +161,6 @@ Windows, Linux
 #include <string>
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace iCub::iKin;
 

@@ -20,7 +20,6 @@
 #include <iCub/iKin/iKinInv.h>
 #include <iCub/iKin/iKinHlp.h>
 
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace iCub::iKin;

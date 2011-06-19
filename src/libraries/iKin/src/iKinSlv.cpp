@@ -33,7 +33,6 @@
 #define CARTSLV_UNCTRLEDJNTS_THRES          0.1     // [deg]
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;

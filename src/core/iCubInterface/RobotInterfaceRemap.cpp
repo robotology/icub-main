@@ -24,7 +24,6 @@
 
 using namespace yarp::dev;
 using namespace yarp::os;
-using namespace yarp;
 using namespace std;
 
 inline void printNoDeviceFound(const char *str)

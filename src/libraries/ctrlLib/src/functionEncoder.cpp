@@ -21,7 +21,6 @@
 
 #define WAVELET_LUP_SIZE    57
 
-using namespace yarp;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;

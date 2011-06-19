@@ -169,7 +169,6 @@ yarp connect /icub/right_arm/state:o /jointVel/pos:i
 #include <string>
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace iCub::ctrl;

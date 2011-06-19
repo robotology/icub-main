@@ -33,7 +33,6 @@
 #define CARTCTRL_DEFAULT_TMO    0.1 // [s]
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

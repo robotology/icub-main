@@ -381,7 +381,6 @@ background. Just connect the ports with the viewer and play.
 #include <map>
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

@@ -30,8 +30,6 @@
 #include "iCub/learningMachine/IFixedSizeLearner.h"
 
 
-using namespace yarp;
-
 namespace iCub {
 namespace learningmachine {
 

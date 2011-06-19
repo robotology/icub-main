@@ -47,7 +47,6 @@
 #define ACTIONPRIM_BALANCEARM_LENGTH                0.04    // [m]
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

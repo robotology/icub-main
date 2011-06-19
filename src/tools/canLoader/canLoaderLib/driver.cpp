@@ -12,7 +12,6 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Bottle.h>
 
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 

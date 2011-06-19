@@ -39,7 +39,6 @@
 #define CARTCTRL_CONNECT_TMO                5e3     // [ms]
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

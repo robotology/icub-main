@@ -23,7 +23,6 @@
 #include <iomanip>
 
 using namespace std;
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;

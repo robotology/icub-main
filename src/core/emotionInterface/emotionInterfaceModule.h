@@ -22,7 +22,6 @@
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
