@@ -52,7 +52,7 @@ bool SensorInterface::configure(void *source, const Property &options)
     size=opt.find("size").asInt();
     index=opt.find("index").asInt();
 
-    configured=true;
+    return configured=true;
 }
 
 
@@ -81,7 +81,7 @@ bool SensorPort::configure(void *source, const Property &options)
     name=opt.find("name").asString().c_str();
     index=opt.find("index").asInt();
 
-    configured=true;
+    return configured=true;
 }
 
 

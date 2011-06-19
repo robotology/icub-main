@@ -178,7 +178,7 @@ SpringyFingersModel::SpringyFingersModel()
 bool SpringyFingersModel::fromProperty(const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
-    if (!opt.check("name") || opt.check("type"))
+    if (!opt.check("name") || !opt.check("type"))
         return false;
 
     if (configured)
@@ -219,13 +219,13 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property propRing=propGen;   propRing.put(  "index",15);
     Property propLittle=propGen; propLittle.put("index",15);
 
-    bool ok=true;
+    bool sensors_ok=true;
     void *pIF=static_cast<void*>(ienc);
-    ok&=sensIF[0].configure(pIF,propThumb);
-    ok&=sensIF[1].configure(pIF,propIndex);
-    ok&=sensIF[2].configure(pIF,propMiddle);
-    ok&=sensIF[3].configure(pIF,propRing);
-    ok&=sensIF[4].configure(pIF,propLittle);
+    sensors_ok&=sensIF[0].configure(pIF,propThumb);
+    sensors_ok&=sensIF[1].configure(pIF,propIndex);
+    sensors_ok&=sensIF[2].configure(pIF,propMiddle);
+    sensors_ok&=sensIF[3].configure(pIF,propRing);
+    sensors_ok&=sensIF[4].configure(pIF,propLittle);
 
     // configure port-based sensors
     Property thumb_mp(  "(name Out_0) (index 1)" );
@@ -242,20 +242,20 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property little_dip("(name Out_2) (index 14)");
 
     void *pPort=static_cast<void*>(&port);
-    ok&=sensPort[0].configure(&pPort,thumb_mp);
-    ok&=sensPort[1].configure(&pPort,thumb_ip);
-    ok&=sensPort[2].configure(&pPort,index_mp);
-    ok&=sensPort[3].configure(&pPort,index_ip);
-    ok&=sensPort[4].configure(&pPort,middle_mp);
-    ok&=sensPort[5].configure(&pPort,middle_ip);
-    ok&=sensPort[6].configure(&pPort,ring_mp);
-    ok&=sensPort[7].configure(&pPort,ring_pip);
-    ok&=sensPort[8].configure(&pPort,ring_dip);
-    ok&=sensPort[9].configure(&pPort,little_mp);
-    ok&=sensPort[10].configure(&pPort,little_pip);
-    ok&=sensPort[11].configure(&pPort,little_dip);
+    sensors_ok&=sensPort[0].configure(&pPort,thumb_mp);
+    sensors_ok&=sensPort[1].configure(&pPort,thumb_ip);
+    sensors_ok&=sensPort[2].configure(&pPort,index_mp);
+    sensors_ok&=sensPort[3].configure(&pPort,index_ip);
+    sensors_ok&=sensPort[4].configure(&pPort,middle_mp);
+    sensors_ok&=sensPort[5].configure(&pPort,middle_ip);
+    sensors_ok&=sensPort[6].configure(&pPort,ring_mp);
+    sensors_ok&=sensPort[7].configure(&pPort,ring_pip);
+    sensors_ok&=sensPort[8].configure(&pPort,ring_dip);
+    sensors_ok&=sensPort[9].configure(&pPort,little_mp);
+    sensors_ok&=sensPort[10].configure(&pPort,little_pip);
+    sensors_ok&=sensPort[11].configure(&pPort,little_dip);
 
-    if (!ok)
+    if (!sensors_ok)
     {
         close();
         return false;
@@ -268,11 +268,18 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property ring(opt.findGroup("ring").toString().c_str());
     Property little(opt.findGroup("little").toString().c_str());
 
-    fingers[0].fromProperty(thumb);
-    fingers[1].fromProperty(index);
-    fingers[2].fromProperty(middle);
-    fingers[3].fromProperty(ring);
-    fingers[4].fromProperty(little);
+    bool fingers_ok=true;
+    fingers_ok&=fingers[0].fromProperty(thumb);
+    fingers_ok&=fingers[1].fromProperty(index);
+    fingers_ok&=fingers[2].fromProperty(middle);
+    fingers_ok&=fingers[3].fromProperty(ring);
+    fingers_ok&=fingers[4].fromProperty(little);
+
+    if (!fingers_ok)
+    {
+        close();
+        return false;
+    }
 
     // attach sensors to fingers
     fingers[0].attachSensor(sensIF[0]);
