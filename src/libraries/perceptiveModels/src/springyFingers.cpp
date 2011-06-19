@@ -338,7 +338,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
         {            
             ilim->getLimits(j,&qmin[j],&qmax[j]);
             ipos->setRefAcceleration(j,1e9);
-            ipos->setRefSpeed(j,20.0);
+            ipos->setRefSpeed(j,30.0);
             ipos->positionMove(j,qmin[j]);
         }
 
@@ -426,7 +426,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     IEncoders        *ienc; driver.view(ienc);
     IPositionControl *ipos; driver.view(ipos);
     double *val=&min;
-    double timeout=(max-min)/20.0;
+    double timeout=(max-min)/30.0;
 
     Property reset("(reset)");
     Property feed("(feed)");
