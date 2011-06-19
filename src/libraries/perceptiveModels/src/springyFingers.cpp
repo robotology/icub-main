@@ -191,7 +191,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     string part_analog=string("/"+type+"_hand");
 
     Property prop;
-    prop.put("robot",robot.c_str());
+    prop.put("device","remote_controlboard");
     prop.put("remote",("/"+robot+part_motor).c_str());
     prop.put("local",("/"+name+part_motor).c_str());
     if (!driver.open(prop))
