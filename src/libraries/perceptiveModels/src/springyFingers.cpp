@@ -16,8 +16,6 @@
  * Public License for more details
 */
 
-#include <assert.h>
-
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -37,13 +35,15 @@ using namespace iCub::perception;
 /************************************************************************/
 bool SpringyFinger::fromProperty(const Property &options)
 {
+    Property &opt=const_cast<Property&>(options);
+    if (!opt.check("name"))
+        return false;
+
     sensors.clear();
     callbacks.clear();
     neighbors.clear();
     lssvm.reset();
 
-    Property &opt=const_cast<Property&>(options);
-    assert(opt.check("name"));
     name=opt.find("name").asString().c_str();
 
     scaler.setLowerBoundIn(0.0);
@@ -177,12 +177,13 @@ SpringyFingersModel::SpringyFingersModel()
 /************************************************************************/
 bool SpringyFingersModel::fromProperty(const Property &options)
 {
+    Property &opt=const_cast<Property&>(options);
+    if (!opt.check("name") || opt.check("type"))
+        return false;
+
     if (configured)
         close();
 
-    Property &opt=const_cast<Property&>(options);
-    assert(opt.check("name"));
-    assert(opt.check("type"));
     name=opt.find("name").asString().c_str();
     type=opt.find("type").asString().c_str();
     robot=opt.check("robot",Value("icub")).asString().c_str();
@@ -200,7 +201,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     port.open(("/"+name+part_analog+"/analog:i").c_str());
     if (!Network::connect(port.getName().c_str(),("/"+robot+part_analog+"/analog:o").c_str(),"udp"))
     {
-        port.close();
+        close();
         return false;
     }
 
@@ -218,12 +219,13 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property propRing=propGen;   propRing.put(  "index",15);
     Property propLittle=propGen; propLittle.put("index",15);
 
+    bool ok=true;
     void *pIF=static_cast<void*>(ienc);
-    sensIF[0].configure(pIF,propThumb);
-    sensIF[1].configure(pIF,propIndex);
-    sensIF[2].configure(pIF,propMiddle);
-    sensIF[3].configure(pIF,propRing);
-    sensIF[4].configure(pIF,propLittle);
+    ok&=sensIF[0].configure(pIF,propThumb);
+    ok&=sensIF[1].configure(pIF,propIndex);
+    ok&=sensIF[2].configure(pIF,propMiddle);
+    ok&=sensIF[3].configure(pIF,propRing);
+    ok&=sensIF[4].configure(pIF,propLittle);
 
     // configure port-based sensors
     Property thumb_mp(  "(name Out_0) (index 1)" );
@@ -240,18 +242,24 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property little_dip("(name Out_2) (index 14)");
 
     void *pPort=static_cast<void*>(&port);
-    sensPort[0].configure(&pPort,thumb_mp);
-    sensPort[1].configure(&pPort,thumb_ip);
-    sensPort[2].configure(&pPort,index_mp);
-    sensPort[3].configure(&pPort,index_ip);
-    sensPort[4].configure(&pPort,middle_mp);
-    sensPort[5].configure(&pPort,middle_ip);
-    sensPort[6].configure(&pPort,ring_mp);
-    sensPort[7].configure(&pPort,ring_pip);
-    sensPort[8].configure(&pPort,ring_dip);
-    sensPort[9].configure(&pPort,little_mp);
-    sensPort[10].configure(&pPort,little_pip);
-    sensPort[11].configure(&pPort,little_dip);
+    ok&=sensPort[0].configure(&pPort,thumb_mp);
+    ok&=sensPort[1].configure(&pPort,thumb_ip);
+    ok&=sensPort[2].configure(&pPort,index_mp);
+    ok&=sensPort[3].configure(&pPort,index_ip);
+    ok&=sensPort[4].configure(&pPort,middle_mp);
+    ok&=sensPort[5].configure(&pPort,middle_ip);
+    ok&=sensPort[6].configure(&pPort,ring_mp);
+    ok&=sensPort[7].configure(&pPort,ring_pip);
+    ok&=sensPort[8].configure(&pPort,ring_dip);
+    ok&=sensPort[9].configure(&pPort,little_mp);
+    ok&=sensPort[10].configure(&pPort,little_pip);
+    ok&=sensPort[11].configure(&pPort,little_dip);
+
+    if (!ok)
+    {
+        close();
+        return false;
+    }
 
     // configure fingers
     Property thumb(opt.findGroup("thumb").toString().c_str());
@@ -464,15 +472,12 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 /************************************************************************/
 void SpringyFingersModel::close()
 {
-    if (configured)
-    {
-        driver.close();
+    driver.close();
 
-        port.interrupt();
-        port.close();
+    port.interrupt();
+    port.close();
 
-        configured=false;
-    }
+    configured=false;
 }
 
 

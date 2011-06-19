@@ -69,7 +69,7 @@ protected:
 public:
     Sensor();
     std::string getName() const { return name; }
-    virtual void configure(void *source, const yarp::os::Property &options) = 0;
+    virtual bool configure(void *source, const yarp::os::Property &options) = 0;
     virtual bool getInput(yarp::os::Value &in) const = 0;
     virtual ~Sensor() { }
 };
@@ -86,7 +86,7 @@ protected:
     int index;
 
 public:
-    void configure(void *source, const yarp::os::Property &options);
+    bool configure(void *source, const yarp::os::Property &options);
     bool getInput(yarp::os::Value &in) const;
 };
 
@@ -102,7 +102,7 @@ protected:
     int index;
 
 public:
-    void configure(void *source, const yarp::os::Property &options);
+    bool configure(void *source, const yarp::os::Property &options);
     bool getInput(yarp::os::Value &in) const;
 };
 

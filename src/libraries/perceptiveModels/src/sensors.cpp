@@ -16,8 +16,6 @@
  * Public License for more details
 */
 
-#include <assert.h>
-
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -42,14 +40,12 @@ Sensor::Sensor()
 
 
 /************************************************************************/
-void SensorInterface::configure(void *source, const Property &options)
+bool SensorInterface::configure(void *source, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
-
-    assert(source!=NULL);
-    assert(opt.check("name"));
-    assert(opt.check("size"));
-    assert(opt.check("index"));
+    if ((source==NULL) || !opt.check("name") ||
+        !opt.check("size") || !opt.check("index"))
+        return false;
 
     this->source=source;
     name=opt.find("name").asString().c_str();
@@ -75,13 +71,11 @@ bool SensorInterface::getInput(Value &in) const
 
 
 /************************************************************************/
-void SensorPort::configure(void *source, const Property &options)
+bool SensorPort::configure(void *source, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
-
-    assert(source!=NULL);
-    assert(opt.check("name"));
-    assert(opt.check("index"));
+    if ((source==NULL) || !opt.check("name") || !opt.check("index"))
+        return false;
 
     this->source=source;
     name=opt.find("name").asString().c_str();
