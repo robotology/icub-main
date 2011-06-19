@@ -212,10 +212,10 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     propGen.put("name","In_0");
     propGen.put("size",nAxes);
 
-    Property propThumb=propGen;  propThumb.put("index",10);
-    Property propIndex=propGen;  propIndex.put("index",12);
+    Property propThumb=propGen;  propThumb.put( "index",10);
+    Property propIndex=propGen;  propIndex.put( "index",12);
     Property propMiddle=propGen; propMiddle.put("index",14);
-    Property propRing=propGen;   propRing.put("index",15);
+    Property propRing=propGen;   propRing.put(  "index",15);
     Property propLittle=propGen; propLittle.put("index",15);
 
     void *pIF=static_cast<void*>(ienc);
@@ -226,16 +226,16 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     sensIF[4].configure(pIF,propLittle);
 
     // configure port-based sensors
-    Property thumb_mp("(name Out_0) (index 1)");
-    Property thumb_ip("(name Out_1) (index 2)");
-    Property index_mp("(name Out_0) (index 4)");
-    Property index_ip("(name Out_1) (index 5)");
-    Property middle_mp("(name Out_0) (index 7)");
-    Property middle_ip("(name Out_1) (index 8)");
-    Property ring_mp("(name Out_0) (index 9)");
-    Property ring_pip("(name Out_1) (index 10)");
-    Property ring_dip("(name Out_2) (index 11)");
-    Property little_mp("(name Out_0) (index 12)");
+    Property thumb_mp(  "(name Out_0) (index 1)" );
+    Property thumb_ip(  "(name Out_1) (index 2)" );
+    Property index_mp(  "(name Out_0) (index 4)" );
+    Property index_ip(  "(name Out_1) (index 5)" );
+    Property middle_mp( "(name Out_0) (index 7)" );
+    Property middle_ip( "(name Out_1) (index 8)" );
+    Property ring_mp(   "(name Out_0) (index 9)" );
+    Property ring_pip(  "(name Out_1) (index 10)");
+    Property ring_dip(  "(name Out_2) (index 11)");
+    Property little_mp( "(name Out_0) (index 12)");
     Property little_pip("(name Out_1) (index 13)");
     Property little_dip("(name Out_2) (index 14)");
 
