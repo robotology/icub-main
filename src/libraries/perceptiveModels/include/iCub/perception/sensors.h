@@ -98,7 +98,6 @@ public:
 class SensorPort : public Sensor
 {
 protected:
-    mutable yarp::os::Value val;
     int index;
 
 public:

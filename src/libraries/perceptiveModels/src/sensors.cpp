@@ -90,11 +90,12 @@ bool SensorPort::getInput(Value &in) const
 {
     if (configured)
     {
-        Bottle *data=static_cast<BufferedPort<Bottle>*>(source)->read(false);
-        if (data!=NULL)
-            val=Value(data->get(index).asDouble());
+        BufferedPort<Bottle> *pPort=static_cast<BufferedPort<Bottle>*>(source);
 
-        in=val;
+        if (Bottle *data=pPort->read(false))
+            in=Value(data->get(index).asDouble());
+        else if (Bottle *data=pPort->lastRead())
+            in=Value(data->get(index).asDouble());
 
         return true;
     }

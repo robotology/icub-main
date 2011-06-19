@@ -48,6 +48,8 @@ bool SpringyFinger::fromProperty(const Property &options)
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(360.0);
+    scaler.setLowerBoundOut(-1.0);
+    scaler.setUpperBoundOut(1.0);
     lssvm.setDomainSize(1);
 
     if ((name=="thumb") || (name=="index") || (name=="middle"))
@@ -481,7 +483,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
             double fb;
             ienc->getEncoder(joint,&fb);
 
-            if (fabs(fb-fbOld)>1.0)
+            if (fabs(fb-fbOld)>0.5)
                 finger.calibrate(feed);
 
             done=(fabs(*val-fb)<5.0)||(Time::now()-t0>timeout);
