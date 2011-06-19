@@ -468,7 +468,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
         double t0=Time::now();
         while (!done)
         {
-            Time::delay(0.02);
+            Time::delay(0.01);
 
             double fb;
             ienc->getEncoder(joint,&fb);
