@@ -21,6 +21,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 
+#include <iCub/perception/private/ports.h>
 #include <iCub/perception/sensors.h>
 
 using namespace std;
@@ -90,12 +91,7 @@ bool SensorPort::getInput(Value &in) const
 {
     if (configured)
     {
-        BufferedPort<Bottle> *pPort=static_cast<BufferedPort<Bottle>*>(source);
-
-        if (Bottle *data=pPort->read(false))
-            in=Value(data->get(index).asDouble());
-        else if (Bottle *data=pPort->lastRead())
-            in=Value(data->get(index).asDouble());
+        in=static_cast<iCub::perception::Port*>(source)->getValue(index);
 
         return true;
     }

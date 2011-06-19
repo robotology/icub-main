@@ -21,6 +21,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 
 #include <iCub/ctrl/math.h>
+#include <iCub/perception/private/ports.h>
 #include <iCub/perception/springyFingers.h>
 
 using namespace std;
@@ -175,6 +176,7 @@ bool SpringyFinger::calibrate(const Property &options)
 /************************************************************************/
 SpringyFingersModel::SpringyFingersModel()
 {
+    port=new iCub::perception::Port;
     configured=false;
 }
 
@@ -202,9 +204,9 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     prop.put("local",("/"+name+part_motor).c_str());
     if (!driver.open(prop))
         return false;
-
-    port.open(("/"+name+part_analog+"/analog:i").c_str());
-    if (!Network::connect(("/"+robot+part_analog+"/analog:o").c_str(),port.getName().c_str(),"udp"))
+    
+    port->open(("/"+name+part_analog+"/analog:i").c_str());
+    if (!Network::connect(("/"+robot+part_analog+"/analog:o").c_str(),port->getName().c_str(),"udp"))
     {
         close();
         return false;
@@ -246,7 +248,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property little_pip("(name Out_1) (index 13)");
     Property little_dip("(name Out_2) (index 14)");
 
-    void *pPort=static_cast<void*>(&port);
+    void *pPort=static_cast<void*>(port);
     sensors_ok&=sensPort[0].configure(pPort,thumb_mp);
     sensors_ok&=sensPort[1].configure(pPort,thumb_ip);
     sensors_ok&=sensPort[2].configure(pPort,index_mp);
@@ -505,8 +507,8 @@ void SpringyFingersModel::close()
 {
     driver.close();
 
-    port.interrupt();
-    port.close();
+    port->interrupt();
+    port->close();
 
     configured=false;
 }
@@ -516,6 +518,7 @@ void SpringyFingersModel::close()
 SpringyFingersModel::~SpringyFingersModel()
 {
     close();
+    delete port;
 }
 
 

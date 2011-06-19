@@ -97,8 +97,8 @@ protected:
     SpringyFinger   fingers[5];
     bool configured;
 
-    yarp::os::BufferedPort<yarp::os::Bottle> port;
-    yarp::dev::PolyDriver                    driver;
+    yarp::os::BufferedPort<yarp::os::Bottle> *port;
+    yarp::dev::PolyDriver                     driver;
 
     void calibrateFinger(SpringyFinger &finger, const int joint, const yarp::sig::Vector &qmin,
                          const yarp::sig::Vector &qmax);
