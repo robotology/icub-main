@@ -361,8 +361,10 @@ bool SpringyFingersModel::calibrate(const Property &options)
         for (int j=7; j<nAxes; j++)
         {            
             ilim->getLimits(j,&qmin[j],&qmax[j]);
+
             ipos->getRefAcceleration(j,&acc[j]);
             ipos->getRefSpeed(j,&vel[j]);
+
             ipos->setRefAcceleration(j,1e9);
             ipos->setRefSpeed(j,30.0);
             ipos->positionMove(j,qmin[j]);
