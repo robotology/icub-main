@@ -354,13 +354,15 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         // latch the hand configuration
         int nAxes; ienc->getAxes(&nAxes);
-        Vector q0(nAxes),qmin(nAxes),qmax(nAxes);
+        Vector q0(nAxes),qmin(nAxes),qmax(nAxes),vel(nAxes),acc(nAxes);
         ienc->getEncoders(q0.data());
 
         // steer the hand to a suitable starting configuration
         for (int j=7; j<nAxes; j++)
         {            
             ilim->getLimits(j,&qmin[j],&qmax[j]);
+            ipos->getRefAcceleration(j,&acc[j]);
+            ipos->getRefSpeed(j,&vel[j]);
             ipos->setRefAcceleration(j,1e9);
             ipos->setRefSpeed(j,30.0);
             ipos->positionMove(j,qmin[j]);
@@ -402,7 +404,11 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         // steer the hand back to the original configuration
         for (int j=7; j<nAxes; j++)
+        {
+            ipos->setRefAcceleration(j,acc[j]);
+            ipos->setRefSpeed(j,vel[j]);
             ipos->positionMove(j,q0[j]);
+        }
 
         return true;
     }
