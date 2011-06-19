@@ -464,16 +464,20 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
         ipos->positionMove(joint,*val);
 
         bool done=false;
+        double fbOld=1e9;
         double t0=Time::now();
         while (!done)
         {
-            finger.calibrate(feed);
+            Time::delay(0.02);
 
             double fb;
             ienc->getEncoder(joint,&fb);
-            done=(fabs(*val-fb)<5.0)||(Time::now()-t0>timeout);
 
-            Time::delay(0.02);
+            if (fabs(fb-fbOld)>1.0)
+                finger.calibrate(feed);
+
+            done=(fabs(*val-fb)<5.0)||(Time::now()-t0>timeout);
+            fbOld=fb;
         }
 
         if (val==&min)
