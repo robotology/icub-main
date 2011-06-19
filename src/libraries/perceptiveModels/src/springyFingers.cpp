@@ -426,6 +426,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     IEncoders        *ienc; driver.view(ienc);
     IPositionControl *ipos; driver.view(ipos);
     double *val=&min;
+    double timeout=(max-min)/20.0;
 
     Property reset("(reset)");
     Property feed("(feed)");
@@ -438,13 +439,14 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
         ipos->positionMove(joint,*val);
 
         bool done=false;
+        double t0=Time::now();
         while (!done)
         {
             finger.calibrate(feed);
 
             double fb;
             ienc->getEncoder(joint,&fb);
-            done=fabs(*val-fb)<5.0;
+            done=(fabs(*val-fb)<5.0)||(Time::now()-t0>timeout);
 
             Time::delay(0.02);
         }
