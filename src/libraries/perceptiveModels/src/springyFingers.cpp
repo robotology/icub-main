@@ -202,7 +202,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
         return false;
 
     port.open(("/"+name+part_analog+"/analog:i").c_str());
-    if (!Network::connect(port.getName().c_str(),("/"+robot+part_analog+"/analog:o").c_str(),"udp"))
+    if (!Network::connect(("/"+robot+part_analog+"/analog:o").c_str(),port.getName().c_str(),"udp"))
     {
         close();
         return false;

@@ -92,7 +92,7 @@ bool SensorPort::getInput(Value &in) const
     {
         Bottle *data=static_cast<BufferedPort<Bottle>*>(source)->read(false);
         if (data!=NULL)
-            val=data->get(index);
+            val=Value(data->get(index).asDouble());
 
         in=val;
 
