@@ -57,11 +57,13 @@ bool SpringyFinger::fromProperty(const Property &options)
     else
         return false;
 
+    calibratingVelocity=opt.check("calib_vel",Value(30.0)).asDouble();
+
     if (opt.check("scaler"))
         scaler.fromString(opt.find("scaler").asString().c_str());
 
     if (opt.check("lssvm"))
-        lssvm.fromString(opt.find("lssvm").asString().c_str());
+        lssvm.fromString(opt.find("lssvm").asString().c_str());    
 
     return true;
 }
@@ -72,6 +74,7 @@ void SpringyFinger::toProperty(Property &options) const
 {
     options.clear();
     options.put("name",name.c_str());
+    options.put("calib_vel",calibratingVelocity);
     options.put("scaler",scaler.toString().c_str());
     options.put("lssvm",lssvm.toString().c_str());
 }
@@ -281,6 +284,12 @@ bool SpringyFingersModel::fromProperty(const Property &options)
         return false;
     }
 
+    if (!ring.check("calib_vel"))
+        fingers[3].setCalibVel(60.0);
+
+    if (!little.check("calib_vel"))
+        fingers[4].setCalibVel(60.0);
+
     // attach sensors to fingers
     fingers[0].attachSensor(sensIF[0]);
     fingers[0].attachSensor(sensPort[0]);
@@ -441,13 +450,14 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     IEncoders        *ienc; driver.view(ienc);
     IPositionControl *ipos; driver.view(ipos);
     double *val=&min;
-    double timeout=(max-min)/20.0;
+    double timeout=2.0*(max-min)/finger.getCalibVel();
 
     Property reset("(reset)");
     Property feed("(feed)");
     Property train("(train)");
 
     finger.calibrate(reset);
+    ipos->setRefSpeed(joint,finger.getCalibVel());
 
     for (int i=0; i<5; i++)
     {
