@@ -152,8 +152,7 @@ public:
                         finger->getName().c_str(),data.toString().c_str(),out.toString().c_str());
             }
             
-            double fb;
-            ienc->getEncoder(joint,&fb);
+            double fb; ienc->getEncoder(joint,&fb);
             if (fabs(*val-fb)<5.0)
             {
                 if (val==&min)
