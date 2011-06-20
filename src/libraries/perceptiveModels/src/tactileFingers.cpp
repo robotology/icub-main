@@ -60,6 +60,14 @@ void TactileFinger::toProperty(Property &options) const
 
 
 /************************************************************************/
+bool TactileFinger::calibrate(const Property &options)
+{
+    // not available
+    return false;
+}
+
+
+/************************************************************************/
 bool TactileFinger::getSensorsData(Value &data) const
 {    
     Vector in(12);
@@ -259,6 +267,14 @@ void TactileFingersModel::toProperty(Property &options) const
         options.put("ring",prop[3].toString().c_str());
         options.put("little",prop[4].toString().c_str());
     }
+}
+
+
+/************************************************************************/
+bool TactileFingersModel::calibrate(const Property &options)
+{
+    printMessage(1,"configuration not available\n");
+    return false;
 }
 
 

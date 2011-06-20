@@ -50,6 +50,7 @@ Windows, Linux
 #include <yarp/dev/ControlBoardInterfaces.h>
 
 #include <iCub/perception/springyFingers.h>
+#include <iCub/perception/tactileFingers.h>
 
 using namespace std;
 using namespace yarp::os;
@@ -59,7 +60,7 @@ using namespace iCub::perception;
 
 class ExampleModule: public RFModule
 {
-	SpringyFingersModel model;
+	Model *model;
     PolyDriver driver;
     bool calibrate;
 
@@ -75,10 +76,11 @@ public:
     bool configure(ResourceFinder &rf)
     {
         string name=rf.find("name").asString().c_str();
+        string hand=rf.find("hand").asString().c_str();
         string type=rf.find("type").asString().c_str();
 
         Property driverOpt("(device remote_controlboard)");
-        driverOpt.put("remote",("/icub/"+type+"_arm").c_str());
+        driverOpt.put("remote",("/icub/"+hand+"_arm").c_str());
         driverOpt.put("local",("/"+name).c_str());
         if (!driver.open(driverOpt))
             return false;
@@ -98,7 +100,7 @@ public:
 
         Property genOpt;
         genOpt.put("name",(name+"/springy").c_str());
-        genOpt.put("type",type.c_str());
+        genOpt.put("type",hand.c_str());
         genOpt.put("verbose",1);
         string general(genOpt.toString().c_str());
         string thumb( "(thumb  (name thumb))");
@@ -110,7 +112,18 @@ public:
 		Property options((general+" "+thumb+" "+index+" "+middle+" "+ring+" "+little).c_str());
 		fprintf(stdout,"configuring options: %s\n",options.toString().c_str());
 
-        return model.fromProperty(options);
+        if (type=="springy")
+            model=new SpringyFingersModel;
+        else
+            model=new TactileFingersModel;
+
+        if (model->fromProperty(options))
+            return true;
+        else
+        {
+            delete model;
+            return false;
+        }
     }
 
     bool close()
@@ -118,7 +131,7 @@ public:
         driver.close();
 
 		Property options;
-		model.toProperty(options);
+		model->toProperty(options);
 		fprintf(stdout,"saving options: %s\n",options.toString().c_str());
         
         return true;
@@ -134,7 +147,7 @@ public:
         if (calibrate)
         {
             Property options("(finger index)");
-            model.calibrate(options);
+            model->calibrate(options);
             calibrate=false;
 
             ipos->setRefAcceleration(joint,1e9);
@@ -143,7 +156,7 @@ public:
         }
         else
         {
-            if (Node *finger=model.getNode("index"))
+            if (Node *finger=model->getNode("index"))
             {
                 Value data; finger->getSensorsData(data);
                 Value out;  finger->getOutput(out);
@@ -181,7 +194,8 @@ int main(int argc, char *argv[])
     rf.setDefaultContext("perceptiveModelsExample/conf");
     rf.setDefaultConfigFile("config.ini");
     rf.setDefault("name","percex");
-    rf.setDefault("type","right");
+    rf.setDefault("hand","right");
+    rf.setDefault("type","springy");
     rf.configure("ICUB_ROOT",argc,argv);
 
     ExampleModule mod;
