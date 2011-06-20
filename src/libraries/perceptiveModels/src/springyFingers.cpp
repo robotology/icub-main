@@ -56,8 +56,8 @@ bool SpringyFinger::fromProperty(const Property &options)
     scaler.setUpperBoundOut(1.0);
 
     lssvm.setDomainSize(1);
-    lssvm.setC(2.0);
-    lssvm.getKernel()->setGamma(32.0);
+    lssvm.setC(4.0);
+    lssvm.getKernel()->setGamma(16.0);
 
     if ((name=="thumb") || (name=="index") || (name=="middle"))
         lssvm.setCoDomainSize(2);

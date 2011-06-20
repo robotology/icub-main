@@ -126,7 +126,7 @@ public:
 
     double getPeriod()
 	{
-		return 0.25;
+		return 0.1;
 	}
 
     bool updateModule()
@@ -145,8 +145,8 @@ public:
         {
             Node *finger=model.getNode("index");
             Value data; finger->getSensorsData(data);
-            Value out; model.getOutput(out);
-            fprintf(stdout,"%s sensors data = %s\nmodel output = %s\n\n",
+            Value out;  finger->getOutput(out);
+            fprintf(stdout,"%s sensors data = %s; output = %s\n",
                     finger->getName().c_str(),data.toString().c_str(),out.toString().c_str());
             
             double fb;
