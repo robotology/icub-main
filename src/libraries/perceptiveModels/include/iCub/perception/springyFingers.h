@@ -67,7 +67,7 @@ class SpringyFinger : public Node
 protected:
     mutable iCub::learningmachine::FixedRangeScaler scaler;
     mutable iCub::learningmachine::LSSVMLearner     lssvm;
-    double  calibratingVelocity;    
+    double  calibratingVelocity;
 
 public:
     bool fromProperty(const yarp::os::Property &options);
@@ -88,7 +88,7 @@ public:
 */
 class SpringyFingersModel : public virtual Model
 {
-protected:
+private:
     std::string type;
     std::string robot;
     int verbose;
