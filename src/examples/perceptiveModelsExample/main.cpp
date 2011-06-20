@@ -81,6 +81,22 @@ public:
         string type=rf.find("type").asString().c_str();
         fingerName=rf.find("finger").asString().c_str();
 
+        if (fingerName=="thumb")
+            joint=10;
+        else if (fingerName=="index")
+            joint=12;
+        else if (fingerName=="middle")
+            joint=14;
+        else if (fingerName=="ring")
+            joint=15;
+        else if (fingerName=="little")
+            joint=15;
+        else
+        {
+            fprintf(stdout,"unknown finger!\n");
+            return false;
+        }
+
         Property driverOpt("(device remote_controlboard)");
         driverOpt.put("remote",("/icub/"+hand+"_arm").c_str());
         driverOpt.put("local",("/"+name).c_str());
@@ -92,17 +108,6 @@ public:
 
         IControlLimits *ilim;
         driver.view(ilim);
-
-        if (fingerName=="thumb")
-            joint=10;
-        else if (fingerName=="index")
-            joint=12;
-        else if (fingerName=="middle")
-            joint=14;
-        else if (fingerName=="ring")
-            joint=15;
-        else if (fingerName=="little")
-            joint=15;
 
         ilim->getLimits(joint,&min,&max);
         double margin=0.1*(max-min);
@@ -130,7 +135,7 @@ public:
             model=new TactileFingersModel;
         else
         {
-            fprintf(stdout,"unknown model type\n");
+            fprintf(stdout,"unknown model type!\n");
             return false;
         }
 
@@ -169,7 +174,12 @@ public:
             calibrate=false;
 
             ipos->setRefAcceleration(joint,1e9);
-            ipos->setRefSpeed(joint,30.0);
+
+            if ((fingerName=="ring")||(fingerName=="little"))
+                ipos->setRefSpeed(joint,60.0);
+            else
+                ipos->setRefSpeed(joint,30.0);
+
             ipos->positionMove(joint,*val);            
         }
         else
