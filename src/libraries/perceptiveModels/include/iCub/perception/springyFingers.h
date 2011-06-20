@@ -67,14 +67,14 @@ class SpringyFinger : public Node
 protected:
     mutable iCub::learningmachine::FixedRangeScaler scaler;
     mutable iCub::learningmachine::LSSVMLearner     lssvm;
-    double  calibratingVelocity;
-
-    bool getData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
+    double  calibratingVelocity;    
 
 public:
     bool fromProperty(const yarp::os::Property &options);
     void toProperty(yarp::os::Property &options) const;
     bool calibrate(const yarp::os::Property &options);
+    bool getSensorsData(yarp::os::Value &data) const;
+    bool extractSensorsData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
     bool getOutput(yarp::os::Value &out) const;
 
     void   setCalibVel(const double vel) { calibratingVelocity=vel;    }

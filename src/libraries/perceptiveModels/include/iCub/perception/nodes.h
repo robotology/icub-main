@@ -95,6 +95,7 @@ public:
     virtual bool fromProperty(const yarp::os::Property &options) = 0;
     virtual void toProperty(yarp::os::Property &options) const = 0;
     virtual bool calibrate(const yarp::os::Property &options) = 0;
+    virtual bool getSensorsData(yarp::os::Value &data) const = 0;
     virtual bool getOutput(yarp::os::Value &out) const = 0;
 
     virtual ~Node() { }

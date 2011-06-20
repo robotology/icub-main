@@ -30,4 +30,18 @@ Model::Model()
 }
 
 
+/************************************************************************/
+void Model::attachNode(Node &node)
+{
+    nodes[node.getName()]=&node;
+}
+
+
+/************************************************************************/
+Node* Model::getNode(const string &name) const
+{
+    map<string,Node*>::const_iterator it=nodes.find(name);
+    return (it!=nodes.end()?it->second:NULL);
+}
+
 

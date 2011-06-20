@@ -145,7 +145,12 @@ public:
         {
             Value out;
             model.getOutput(out);
-            fprintf(stdout,"out = %s\n",out.toString().c_str());
+            fprintf(stdout,"model output = %s\n",out.toString().c_str());
+            
+            Node *finger=model.getNode("index");
+            Value data; finger->getSensorsData(data);
+            fprintf(stdout,"%s sensors data = %s\n",
+                    finger->getName().c_str(),data.toString().c_str());
 
             double fb;
             ienc->getEncoder(joint,&fb);

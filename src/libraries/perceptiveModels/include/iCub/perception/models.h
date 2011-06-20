@@ -40,9 +40,12 @@
 #define __PERCEPTIVEMODELS_MODELS_H__
 
 #include <string>
+#include <map>
 
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
+
+#include <iCub/perception/nodes.h>
 
 
 namespace iCub
@@ -60,9 +63,14 @@ class Model
 protected:
     std::string name;
 
+    std::map<std::string,Node*> nodes;
+
 public:
     Model();
     std::string getName() const { return name; }
+
+    void attachNode(Node &node);
+    Node* getNode(const std::string &name) const;
 
     virtual bool fromProperty(const yarp::os::Property &options) = 0;
     virtual void toProperty(yarp::os::Property &options) const = 0;

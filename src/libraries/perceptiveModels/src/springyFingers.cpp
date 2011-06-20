@@ -90,7 +90,7 @@ void SpringyFinger::toProperty(Property &options) const
 
 
 /************************************************************************/
-bool SpringyFinger::getData(Vector &in, Vector &out) const
+bool SpringyFinger::getSensorsData(Value &data) const
 {
     map<string,Sensor*>::const_iterator In_0=sensors.find("In_0");
     map<string,Sensor*>::const_iterator Out_0=sensors.find("Out_0");
@@ -113,10 +113,10 @@ bool SpringyFinger::getData(Vector &in, Vector &out) const
     Out_0->second->getInput(val_out[0]);
     Out_1->second->getInput(val_out[1]);
 
-    in.resize(lssvm.getDomainSize());
+    Vector in(lssvm.getDomainSize());
     in[0]=val_in.asDouble();
 
-    out.resize(lssvm.getCoDomainSize());
+    Vector out(lssvm.getCoDomainSize());
     out[0]=val_out[0].asDouble();
     out[1]=val_out[1].asDouble();
 
@@ -126,7 +126,36 @@ bool SpringyFinger::getData(Vector &in, Vector &out) const
         out[2]=val_out[2].asDouble();
     }
 
+    Property prop;
+    prop.put("in",("("+string(in.toString().c_str())+")").c_str());
+    prop.put("out",("("+string(out.toString().c_str())+")").c_str());
+    data.fromString(("("+string(prop.toString().c_str())+")").c_str());
+
     return true;
+}
+
+
+/************************************************************************/
+bool SpringyFinger::extractSensorsData(Vector &in, Vector &out) const
+{
+    Value data;
+    if (getSensorsData(data))
+    {
+        Property prop(data.asList()->toString().c_str());
+        Bottle *b;
+
+        b=prop.find("in").asList(); in.resize(b->size());
+        for (int i=0; i<in.length(); i++)
+            in[i]=b->get(i).asDouble();
+
+        b=prop.find("out").asList(); out.resize(b->size());
+        for (int i=0; i<out.length(); i++)
+            out[i]=b->get(i).asDouble();
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
@@ -134,7 +163,7 @@ bool SpringyFinger::getData(Vector &in, Vector &out) const
 bool SpringyFinger::getOutput(Value &out) const
 {
     Vector i,o;
-    if (!getData(i,o))
+    if (!extractSensorsData(i,o))
         return false;
 
     i[0]=scaler.transform(i[0]);
@@ -160,7 +189,7 @@ bool SpringyFinger::calibrate(const Property &options)
     if (opt.check("feed"))
     {
         Vector in,out;
-        if (getData(in,out))
+        if (extractSensorsData(in,out))
         {
             in[0]=scaler.transform(in[0]);
             for (int i=0; i<out.length(); i++)
@@ -349,6 +378,12 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     fingers[4].attachSensor(sensPort[9]);
     fingers[4].attachSensor(sensPort[10]);
     fingers[4].attachSensor(sensPort[11]);
+
+    attachNode(fingers[0]);
+    attachNode(fingers[1]);
+    attachNode(fingers[2]);
+    attachNode(fingers[3]);
+    attachNode(fingers[4]);
 
     printMessage(1,"configuration complete\n");
     return configured=true;
@@ -547,6 +582,8 @@ void SpringyFingersModel::close()
 
     port->interrupt();
     port->close();
+
+    nodes.clear();
 
     configured=false;
 }
