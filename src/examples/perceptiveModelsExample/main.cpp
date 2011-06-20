@@ -143,11 +143,14 @@ public:
         }
         else
         {
-            Node *finger=model.getNode("index");
-            Value data; finger->getSensorsData(data);
-            Value out;  finger->getOutput(out);
-            fprintf(stdout,"%s sensors data = %s; output = %s\n",
-                    finger->getName().c_str(),data.toString().c_str(),out.toString().c_str());
+            if (Node *finger=model.getNode("index"))
+            {
+                Value data; finger->getSensorsData(data);
+                Value out;  finger->getOutput(out);
+
+                fprintf(stdout,"%s sensors data = %s; output = %s\n",
+                        finger->getName().c_str(),data.toString().c_str(),out.toString().c_str());
+            }
             
             double fb;
             ienc->getEncoder(joint,&fb);
