@@ -46,30 +46,66 @@ Windows, Linux
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/RFModule.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
 
 #include <iCub/perception/springyFingers.h>
 
 using namespace std;
 using namespace yarp::os;
+using namespace yarp::dev;
 using namespace iCub::perception;
 
 
 class ExampleModule: public RFModule
 {
 	SpringyFingersModel model;
+    PolyDriver driver;
     bool calibrate;
+
+    IPositionControl *ipos;
+    IEncoders        *ienc;
+
+    double min,max,*val;
+    int joint;
 
 public:
     ExampleModule() : calibrate(true) { }
 
     bool configure(ResourceFinder &rf)
     {
-        string general("(name percEx) (type right) (verbose 1)");
-        string thumb(  "(thumb        (name thumb))");
-        string index(  "(index        (name index))");
-        string middle( "(middle       (name middle))");
-        string ring(   "(ring         (name ring))");
-        string little( "(little       (name little))");
+        string name=rf.find("name").asString().c_str();
+        string type=rf.find("type").asString().c_str();
+
+        Property driverOpt("(device remote_controlboard)");
+        driverOpt.put("remote",("/icub/"+type+"_arm").c_str());
+        driverOpt.put("local",("/"+name).c_str());
+        if (!driver.open(driverOpt))
+            return false;
+
+        driver.view(ipos);
+        driver.view(ienc);
+
+        IControlLimits *ilim;
+        driver.view(ilim);
+
+        joint=12;   // index joint
+        ilim->getLimits(joint,&min,&max);
+        double margin=0.1*(max-min);
+        min=min+margin;
+        max=max-margin;
+        val=&min;
+
+        Property genOpt;
+        genOpt.put("name",(name+"/springy").c_str());
+        genOpt.put("type",type.c_str());
+        genOpt.put("verbose",1);
+        string general(genOpt.toString().c_str());
+        string thumb( "(thumb  (name thumb))");
+        string index( "(index  (name index))");
+        string middle("(middle (name middle))");
+        string ring(  "(ring   (name ring))");
+        string little("(little (name little))");
 
 		Property options((general+" "+thumb+" "+index+" "+middle+" "+ring+" "+little).c_str());
 		fprintf(stdout,"configuring options: %s\n",options.toString().c_str());
@@ -79,6 +115,8 @@ public:
 
     bool close()
     {
+        driver.close();
+
 		Property options;
 		model.toProperty(options);
 		fprintf(stdout,"saving options: %s\n",options.toString().c_str());
@@ -98,12 +136,28 @@ public:
             Property options("(finger index)");
             model.calibrate(options);
             calibrate=false;
+
+            ipos->setRefAcceleration(joint,1e9);
+            ipos->setRefSpeed(joint,30.0);
+            ipos->positionMove(joint,*val);            
         }
         else
         {
             Value out;
             model.getOutput(out);
             fprintf(stdout,"out = %s\n",out.toString().c_str());
+
+            double fb;
+            ienc->getEncoder(joint,&fb);
+            if (fabs(*val-fb)<5.0)
+            {
+                if (val==&min)
+                    val=&max;
+                else
+                    val=&min;
+
+                ipos->positionMove(joint,*val);
+            }
         }
 
 		return true;
@@ -122,6 +176,8 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultContext("perceptiveModelsExample/conf");
     rf.setDefaultConfigFile("config.ini");
+    rf.setDefault("name","percex");
+    rf.setDefault("type","right");
     rf.configure("ICUB_ROOT",argc,argv);
 
     ExampleModule mod;
