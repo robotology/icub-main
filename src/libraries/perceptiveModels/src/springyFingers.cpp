@@ -127,8 +127,10 @@ bool SpringyFinger::getSensorsData(Value &data) const
     }
 
     Property prop;
-    prop.put("in",("("+string(in.toString().c_str())+")").c_str());
-    prop.put("out",("("+string(out.toString().c_str())+")").c_str());
+    Value i; i.fromString(("("+string(in.toString().c_str())+")").c_str());
+    Value o; o.fromString(("("+string(out.toString().c_str())+")").c_str());
+    prop.put("in",i);
+    prop.put("out",o);
     data.fromString(("("+string(prop.toString().c_str())+")").c_str());
 
     return true;
@@ -190,7 +192,7 @@ bool SpringyFinger::calibrate(const Property &options)
     {
         Vector in,out;
         if (extractSensorsData(in,out))
-        {
+        {            
             in[0]=scaler.transform(in[0]);
             for (int i=0; i<out.length(); i++)
                 out[i]=scaler.transform(out[i]);
