@@ -64,7 +64,7 @@ public:
 
     bool configure(ResourceFinder &rf)
     {
-        string general("(name percEx) (type right)");
+        string general("(name percEx) (type right) (verbose 1)");
         string thumb(  "(thumb        (name thumb))");
         string index(  "(index        (name index))");
         string middle( "(middle       (name middle))");

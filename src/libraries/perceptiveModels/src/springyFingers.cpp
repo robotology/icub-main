@@ -52,7 +52,7 @@ bool SpringyFinger::fromProperty(const Property &options)
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(360.0);
-    scaler.setLowerBoundOut(-1.0);
+    scaler.setLowerBoundOut(0.0);
     scaler.setUpperBoundOut(1.0);
     lssvm.setDomainSize(1);
 
