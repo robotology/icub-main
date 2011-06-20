@@ -99,7 +99,7 @@ public:
         val=&min;
 
         Property genOpt;
-        genOpt.put("name",(name+"/springy").c_str());
+        genOpt.put("name",(name+"/"+type).c_str());
         genOpt.put("type",hand.c_str());
         genOpt.put("verbose",1);
         string general(genOpt.toString().c_str());
@@ -114,8 +114,13 @@ public:
 
         if (type=="springy")
             model=new SpringyFingersModel;
-        else
+        else if (type=="tactile")
             model=new TactileFingersModel;
+        else
+        {
+            fprintf(stdout,"unknown model type\n");
+            return false;
+        }
 
         if (model->fromProperty(options))
             return true;
