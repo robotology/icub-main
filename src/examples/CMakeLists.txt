@@ -9,4 +9,5 @@ add_subdirectory(sharksWithLasers)
 add_subdirectory(takeOverTheWorld)
 add_subdirectory(actionPrimitivesExample)
 add_subdirectory(logpolarConvertExample)
+add_subdirectory(perceptiveModelsExample)
 

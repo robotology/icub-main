@@ -175,7 +175,7 @@ using namespace yarp::math;
 using namespace iCub::action;
 
 
-class exampleModule: public RFModule
+class ExampleModule: public RFModule
 {
 protected:
     string partUsed;
@@ -202,7 +202,7 @@ protected:
     bool firstRun;
 
 public:
-    exampleModule()
+    ExampleModule()
 	{		        
         graspOrienL.resize(4);    graspOrienR.resize(4);
         graspDispL.resize(4);     graspDispR.resize(3);
@@ -583,7 +583,7 @@ int main(int argc, char *argv[])
     rf.setDefault("name","actionPrimitivesMod");
     rf.configure("ICUB_ROOT",argc,argv);
 
-    exampleModule mod;
+    ExampleModule mod;
 
     return mod.runModule(rf);
 }
