@@ -63,6 +63,7 @@ class ExampleModule: public RFModule
 	Model *model;
     PolyDriver driver;
     bool calibrate;
+    string fingerName;
 
     IPositionControl *ipos;
     IEncoders        *ienc;
@@ -78,6 +79,7 @@ public:
         string name=rf.find("name").asString().c_str();
         string hand=rf.find("hand").asString().c_str();
         string type=rf.find("type").asString().c_str();
+        fingerName=rf.find("finger").asString().c_str();
 
         Property driverOpt("(device remote_controlboard)");
         driverOpt.put("remote",("/icub/"+hand+"_arm").c_str());
@@ -91,7 +93,17 @@ public:
         IControlLimits *ilim;
         driver.view(ilim);
 
-        joint=12;   // index joint
+        if (fingerName=="thumb")
+            joint=10;
+        else if (fingerName=="index")
+            joint=12;
+        else if (fingerName=="middle")
+            joint=14;
+        else if (fingerName=="ring")
+            joint=15;
+        else if (fingerName=="little")
+            joint=15;
+
         ilim->getLimits(joint,&min,&max);
         double margin=0.1*(max-min);
         min=min+margin;
@@ -151,7 +163,8 @@ public:
 	{
         if (calibrate)
         {
-            Property options("(finger index)");
+            Property options;
+            options.put("finger",fingerName.c_str());
             model->calibrate(options);
             calibrate=false;
 
@@ -161,7 +174,7 @@ public:
         }
         else
         {
-            if (Node *finger=model->getNode("index"))
+            if (Node *finger=model->getNode(fingerName))
             {
                 Value data; finger->getSensorsData(data);
                 Value out;  finger->getOutput(out);
@@ -201,6 +214,7 @@ int main(int argc, char *argv[])
     rf.setDefault("name","percex");
     rf.setDefault("hand","right");
     rf.setDefault("type","springy");
+    rf.setDefault("finger","index");
     rf.configure("ICUB_ROOT",argc,argv);
 
     ExampleModule mod;
