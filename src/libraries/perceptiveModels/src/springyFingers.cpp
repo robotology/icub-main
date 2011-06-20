@@ -527,11 +527,23 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     double margin=0.1*(qmax[joint]-qmin[joint]);
     double min=qmin[joint]+margin;
     double max=qmax[joint]-margin;
+    double tol_min=5.0;
+    double tol_max=5.0;
 
     IEncoders        *ienc; driver.view(ienc);
     IPositionControl *ipos; driver.view(ipos);
     double *val=&min;
+    double *tol=&tol_min;
     double timeout=2.0*(max-min)/finger.getCalibVel();
+
+    // workaround
+    if ((finger.getName()=="ring") || (finger.getName()=="little"))
+    {
+        min=30.0;
+        max=180.0;
+        tol_min=20.0;
+        tol_max=50.0;
+    }
 
     Property reset("(reset)");
     Property feed("(feed)");
@@ -560,14 +572,20 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
                 finger.calibrate(feed);
             }
 
-            done=(fabs(*val-fb)<5.0)||(Time::now()-t0>timeout);
+            done=(fabs(*val-fb)<*tol)||(Time::now()-t0>timeout);
             fbOld=fb;
         }
 
         if (val==&min)
+        {
             val=&max;
+            tol=&tol_max;
+        }
         else
+        {
             val=&min;
+            tol=&tol_min;
+        }
     }
 
     printMessage(1,"training finger %s ...\n",finger.getName().c_str());    
