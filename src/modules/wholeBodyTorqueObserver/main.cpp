@@ -183,6 +183,7 @@ private:
 	BufferedPort<Bottle> *port_TOTorques;
 	BufferedPort<Vector> *port_external_wrench_RA;
 	BufferedPort<Vector> *port_external_wrench_LA;
+	BufferedPort<Vector> *port_external_wrench_TO;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;
@@ -220,7 +221,7 @@ private:
 	Vector all_q_low, all_dq_low, all_d2q_low;
 
     Vector w0,dw0,d2p0,Fend,Muend;
-    Vector F_LArm, F_RArm, F_iDyn_LArm, F_iDyn_RArm, Offset_LArm, Offset_RArm, F_ext_left_arm, F_ext_right_arm;
+    Vector F_LArm, F_RArm, F_iDyn_LArm, F_iDyn_RArm, Offset_LArm, Offset_RArm, F_ext_left_arm, F_ext_right_arm, F_ext_torso;
     Vector F_LLeg, F_RLeg, F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
 	Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
 	Vector inertial_measurements;
@@ -469,11 +470,13 @@ public:
         port_compare_test = new BufferedPort<Bottle>;  
         port_external_wrench_RA = new BufferedPort<Vector>;  
         port_external_wrench_LA = new BufferedPort<Vector>;  
+		port_external_wrench_TO = new BufferedPort<Vector>;  
         port_perf_test->open("/wholeBodyTorqueObserver/performance/times:o");
         port_perf_test_ftRead->open("/wholeBodyTorqueObserver/performance/ftread:o");
 		port_compare_test->open("/wholeBodyTorqueObserver/performance/fterr:o");
 		port_external_wrench_RA->open("/wholeBodyTorqueObserver/right_arm/endEffectorWrench:o"); 
 		port_external_wrench_LA->open("/wholeBodyTorqueObserver/left_arm/endEffectorWrench:o"); 
+		port_external_wrench_TO->open("/wholeBodyTorqueObserver/torso/Wrench:o"); 
     }
 
     bool threadInit()
@@ -530,6 +533,21 @@ public:
 		icub.lowerTorso->setInertialMeasure(icub.upperTorso->getTorsoAngVel(), 
 											icub.upperTorso->getTorsoAngAcc(),
 											icub.upperTorso->getTorsoLinAcc());
+
+		Vector torso_F=icub.upperTorso->getTorsoForce();
+		Vector torso_M=icub.upperTorso->getTorsoMoment();
+
+		F_up[0]=torso_F[0];
+		F_up[1]=torso_F[1];
+		F_up[2]=torso_F[2];
+		F_up[3]=torso_M[0];
+		F_up[4]=torso_M[1];
+		F_up[5]=torso_M[2];
+		F_ext_torso=F_up;
+
+		//fprintf (stderr,"FUP: %s %s \n",torso_F.toString().c_str(),torso_M.toString().c_str());
+		F_up.zero(); //comment this line to enable torso
+
 		icub.lowerTorso->setSensorMeasurement(F_RLeg,F_LLeg,F_up);
 		icub.lowerTorso->solveKinematics();
 		icub.lowerTorso->solveWrench();
@@ -558,10 +576,13 @@ public:
 		F_ext_left_arm=icub.upperTorso->left->getForceMomentEndEff();//-icub_sens.upperTorso->left->getForceMomentEndEff();
 		F_ext_right_arm=icub.upperTorso->right->getForceMomentEndEff();//-icub_sens.upperTorso->right->getForceMomentEndEff();
 
+		port_external_wrench_TO->prepare() = F_up;
 		port_external_wrench_RA->prepare() = F_ext_right_arm;
 		port_external_wrench_LA->prepare() = F_ext_left_arm;
 		port_external_wrench_RA->write();
 		port_external_wrench_LA->write();
+		port_external_wrench_TO->write();
+
 		
 		if(test==VOCAB_TEST)
 		{	
@@ -670,6 +691,8 @@ public:
 		closePort(port_external_wrench_RA);
 		fprintf(stderr, "Closing external_wrench_LA port\n");	
 		closePort(port_external_wrench_LA);
+		fprintf(stderr, "Closing external_wrench_TO port\n");	
+		closePort(port_external_wrench_TO);
 
 		fprintf(stderr, "Closing inertial port\n");
 		closePort(port_inertial_thread);
