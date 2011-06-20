@@ -16,6 +16,9 @@
  * Public License for more details
 */
 
+#include <stdio.h>
+#include <stdarg.h>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -182,11 +185,33 @@ SpringyFingersModel::SpringyFingersModel()
 
 
 /************************************************************************/
+int SpringyFingersModel::printMessage(const int level, const char *format, ...) const
+{
+    if (verbose>=level)
+    {
+        fprintf(stdout,"*** %s: ",name.c_str());
+    
+        va_list ap;
+        va_start(ap,format);
+        int ret=vfprintf(stdout,format,ap);
+        va_end(ap);
+        
+        return ret;
+    }
+    else
+        return -1;
+}
+
+
+/************************************************************************/
 bool SpringyFingersModel::fromProperty(const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
     if (!opt.check("name") || !opt.check("type"))
+    {
+        printMessage(1,"missing mandatory options \"name\" and/or \"type\"\n");
         return false;
+    }
 
     if (configured)
         close();
@@ -194,6 +219,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     name=opt.find("name").asString().c_str();
     type=opt.find("type").asString().c_str();
     robot=opt.check("robot",Value("icub")).asString().c_str();
+    verbose=opt.check("verbose",Value(0)).asInt();
 
     string part_motor=string("/"+type+"_arm");
     string part_analog=string("/"+type+"_hand");
@@ -206,8 +232,10 @@ bool SpringyFingersModel::fromProperty(const Property &options)
         return false;
     
     port->open(("/"+name+part_analog+"/analog:i").c_str());
-    if (!Network::connect(("/"+robot+part_analog+"/analog:o").c_str(),port->getName().c_str(),"udp"))
+    string analogPortName(("/"+robot+part_analog+"/analog:o").c_str());
+    if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),"udp"))
     {
+        printMessage(1,"unable to connect to %s\n",analogPortName.c_str());
         close();
         return false;
     }
@@ -215,7 +243,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     IEncoders *ienc; driver.view(ienc);
     int nAxes; ienc->getAxes(&nAxes);
 
-    // configure interface-based sensors
+    printMessage(1,"configuring interface-based sensors ...\n");
     Property propGen;
     propGen.put("name","In_0");
     propGen.put("size",nAxes);
@@ -234,7 +262,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     sensors_ok&=sensIF[3].configure(pIF,propRing);
     sensors_ok&=sensIF[4].configure(pIF,propLittle);
 
-    // configure port-based sensors
+    printMessage(1,"configuring port-based sensors ...\n");
     Property thumb_mp(  "(name Out_0) (index 1)" );
     Property thumb_ip(  "(name Out_1) (index 2)" );
     Property index_mp(  "(name Out_0) (index 4)" );
@@ -264,11 +292,12 @@ bool SpringyFingersModel::fromProperty(const Property &options)
 
     if (!sensors_ok)
     {
+        printMessage(1,"some errors occured\n");
         close();
         return false;
     }
 
-    // configure fingers
+    printMessage(1,"configuring fingers ...\n");
     Property thumb(opt.findGroup("thumb").toString().c_str());
     Property index(opt.findGroup("index").toString().c_str());
     Property middle(opt.findGroup("middle").toString().c_str());
@@ -284,6 +313,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
 
     if (!fingers_ok)
     {
+        printMessage(1,"some errors occured\n");
         close();
         return false;
     }
@@ -294,7 +324,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     if (!little.check("calib_vel"))
         fingers[4].setCalibVel(60.0);
 
-    // attach sensors to fingers
+    printMessage(1,"attaching sensors to fingers ...\n");
     fingers[0].attachSensor(sensIF[0]);
     fingers[0].attachSensor(sensPort[0]);
     fingers[0].attachSensor(sensPort[1]);
@@ -317,6 +347,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     fingers[4].attachSensor(sensPort[10]);
     fingers[4].attachSensor(sensPort[11]);
 
+    printMessage(1,"configuration complete\n");
     return configured=true;
 }
 
@@ -338,6 +369,7 @@ void SpringyFingersModel::toProperty(Property &options) const
         options.put("name",name.c_str());
         options.put("type",type.c_str());
         options.put("robot",robot.c_str());
+        options.put("verbose",verbose);
         options.put("thumb",prop[0].toString().c_str());
         options.put("index",prop[1].toString().c_str());
         options.put("middle",prop[2].toString().c_str());
@@ -356,12 +388,10 @@ bool SpringyFingersModel::calibrate(const Property &options)
         IEncoders        *ienc; driver.view(ienc);
         IPositionControl *ipos; driver.view(ipos);
 
-        // latch the hand configuration
         int nAxes; ienc->getAxes(&nAxes);
-        Vector q0(nAxes),qmin(nAxes),qmax(nAxes),vel(nAxes),acc(nAxes);
-        ienc->getEncoders(q0.data());
+        Vector qmin(nAxes),qmax(nAxes),vel(nAxes),acc(nAxes);
 
-        // steer the hand to a suitable starting configuration
+        printMessage(1,"steering the hand to a suitable starting configuration\n");
         for (int j=7; j<nAxes; j++)
         {            
             ilim->getLimits(j,&qmin[j],&qmax[j]);
@@ -370,11 +400,11 @@ bool SpringyFingersModel::calibrate(const Property &options)
             ipos->getRefSpeed(j,&vel[j]);
 
             ipos->setRefAcceleration(j,1e9);
-            ipos->setRefSpeed(j,30.0);
+            ipos->setRefSpeed(j,60.0);
             ipos->positionMove(j,qmin[j]);
         }
 
-        // proceed with the calibration
+        printMessage(1,"proceeding with the calibration\n");
         Property &opt=const_cast<Property&>(options);
         string tag=opt.check("finger",Value("all")).asString().c_str();
         if (tag=="thumb")
@@ -408,12 +438,10 @@ bool SpringyFingersModel::calibrate(const Property &options)
         else
             return false;
 
-        // steer the hand back to the original configuration
         for (int j=7; j<nAxes; j++)
         {
             ipos->setRefAcceleration(j,acc[j]);
             ipos->setRefSpeed(j,vel[j]);
-            ipos->positionMove(j,q0[j]);
         }
 
         return true;
@@ -455,6 +483,7 @@ bool SpringyFingersModel::getOutput(Value &out) const
 void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint,
                                           const Vector &qmin, const Vector &qmax)
 {
+    printMessage(1,"calibrating finger %s ...\n",finger.getName().c_str());
     double margin=0.1*(qmax[joint]-qmin[joint]);
     double min=qmin[joint]+margin;
     double max=qmax[joint]-margin;
@@ -486,7 +515,10 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
             ienc->getEncoder(joint,&fb);
 
             if (fabs(fb-fbOld)>0.5)
+            {
+                printMessage(1,"feeding finger %s\n",finger.getName().c_str());
                 finger.calibrate(feed);
+            }
 
             done=(fabs(*val-fb)<5.0)||(Time::now()-t0>timeout);
             fbOld=fb;
@@ -498,13 +530,16 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
             val=&min;
     }
 
+    printMessage(1,"training finger %s ...\n",finger.getName().c_str());    
     finger.calibrate(train);
+    printMessage(1,"done\n");
 }
 
 
 /************************************************************************/
 void SpringyFingersModel::close()
 {
+    printMessage(1,"closing ...\n");
     driver.close();
 
     port->interrupt();

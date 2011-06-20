@@ -86,11 +86,12 @@ public:
 * @ingroup SpringyFingers
 *
 */
-class SpringyFingersModel : public Model
+class SpringyFingersModel : public virtual Model
 {
 protected:
     std::string type;
     std::string robot;
+    int verbose;
 
     SensorInterface sensIF[5];
     SensorPort      sensPort[12];
@@ -100,6 +101,7 @@ protected:
     yarp::os::BufferedPort<yarp::os::Bottle> *port;
     yarp::dev::PolyDriver                     driver;
 
+    int printMessage(const int level, const char *format, ...) const;
     void calibrateFinger(SpringyFinger &finger, const int joint, const yarp::sig::Vector &qmin,
                          const yarp::sig::Vector &qmax);
     void close();
