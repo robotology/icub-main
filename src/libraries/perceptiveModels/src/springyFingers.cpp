@@ -54,7 +54,10 @@ bool SpringyFinger::fromProperty(const Property &options)
     scaler.setUpperBoundIn(360.0);
     scaler.setLowerBoundOut(0.0);
     scaler.setUpperBoundOut(1.0);
+
     lssvm.setDomainSize(1);
+    lssvm.setC(2.0);
+    lssvm.getKernel()->setGamma(32.0);
 
     if ((name=="thumb") || (name=="index") || (name=="middle"))
         lssvm.setCoDomainSize(2);
@@ -69,7 +72,7 @@ bool SpringyFinger::fromProperty(const Property &options)
         scaler.fromString(opt.find("scaler").asString().c_str());
 
     if (opt.check("lssvm"))
-        lssvm.fromString(opt.find("lssvm").asString().c_str());    
+        lssvm.fromString(opt.find("lssvm").asString().c_str());
 
     return true;
 }
@@ -516,7 +519,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 
             if (fabs(fb-fbOld)>0.5)
             {
-                printMessage(1,"feeding finger %s\n",finger.getName().c_str());
+                printMessage(2,"feeding finger %s\n",finger.getName().c_str());
                 finger.calibrate(feed);
             }
 
