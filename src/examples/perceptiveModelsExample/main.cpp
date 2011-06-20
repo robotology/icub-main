@@ -143,15 +143,12 @@ public:
         }
         else
         {
-            Value out;
-            model.getOutput(out);
-            fprintf(stdout,"model output = %s\n",out.toString().c_str());
-            
             Node *finger=model.getNode("index");
             Value data; finger->getSensorsData(data);
-            fprintf(stdout,"%s sensors data = %s\n",
-                    finger->getName().c_str(),data.toString().c_str());
-
+            Value out; model.getOutput(out);
+            fprintf(stdout,"%s sensors data = %s\nmodel output = %s\n\n",
+                    finger->getName().c_str(),data.toString().c_str(),out.toString().c_str());
+            
             double fb;
             ienc->getEncoder(joint,&fb);
             if (fabs(*val-fb)<5.0)
