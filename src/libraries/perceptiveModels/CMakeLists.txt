@@ -10,14 +10,16 @@ SET(folder_source src/ports.cpp
                   src/sensors.cpp
                   src/nodes.cpp
                   src/models.cpp
-				  src/springyFingers.cpp)
+				  src/springyFingers.cpp
+				  src/tactileFingers.cpp)
 
 SET(folder_header_private include/iCub/perception/private/ports.h)				  
 				  
 SET(folder_header include/iCub/perception/sensors.h
                   include/iCub/perception/nodes.h
                   include/iCub/perception/models.h
-				  include/iCub/perception/springyFingers.h)
+				  include/iCub/perception/springyFingers.h
+				  include/iCub/perception/tactileFingers.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header_private} ${folder_header})

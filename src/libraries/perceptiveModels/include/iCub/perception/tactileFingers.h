@@ -18,7 +18,7 @@
 
 /** 
  * @note UNDER DEVELOPMENT   
- * @defgroup SpringyFingers springyFingers
+ * @defgroup TactileFingers tactileFingers
  *  
  * @ingroup PerceptiveModels 
  *  
@@ -36,17 +36,14 @@
  *  
  */ 
 
-#ifndef __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
-#define __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
+#ifndef __PERCEPTIVEMODELS_TACTILEFINGERS_H__
+#define __PERCEPTIVEMODELS_TACTILEFINGERS_H__
 
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/dev/PolyDriver.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/learningMachine/FixedRangeScaler.h>
-#include <iCub/learningMachine/LSSVMLearner.h>
 #include <iCub/perception/sensors.h>
 #include <iCub/perception/nodes.h>
 #include <iCub/perception/models.h>
@@ -59,63 +56,60 @@ namespace perception
 {
 
 /**
-* @ingroup SpringyFingers
+* @ingroup TactileFingers
 *
 */
-class SpringyFinger : public Node
+class TactileFinger : public Node
 {
 protected:
-    mutable iCub::learningmachine::FixedRangeScaler scaler;
-    mutable iCub::learningmachine::LSSVMLearner     lssvm;
-    double  calibratingVelocity;
+    bool directLogic;
 
-    bool extractSensorsData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
+    bool extractSensorsData(yarp::sig::Vector &in) const;
 
 public:
     bool fromProperty(const yarp::os::Property &options);
-    void toProperty(yarp::os::Property &options) const;
-    bool calibrate(const yarp::os::Property &options);
+    void toProperty(yarp::os::Property &options) const;    
     bool getSensorsData(yarp::os::Value &data) const;
     bool getOutput(yarp::os::Value &out) const;
 
-    void   setCalibVel(const double vel) { calibratingVelocity=vel;    }
-    double getCalibVel() const           { return calibratingVelocity; }
+    // not implemented
+    bool calibrate(const yarp::os::Property &options) { return false; }
+
+    bool isDirectLogic() const { return directLogic; }
 };
 
 
 /**
-* @ingroup SpringyFingers
+* @ingroup TactileFingers
 *
 */
-class SpringyFingersModel : public virtual Model
+class TactileFingersModel : public virtual Model
 {
 private:
     std::string type;
     std::string robot;
     int verbose;
 
-    SensorInterface sensIF[5];
-    SensorPort      sensPort[12];
-    SpringyFinger   fingers[5];
+    SensorPort    sensPort[60];
+    TactileFinger fingers[5];
     bool configured;
 
     yarp::os::BufferedPort<yarp::os::Bottle> *port;
-    yarp::dev::PolyDriver                     driver;
 
     int printMessage(const int level, const char *format, ...) const;
-    void calibrateFinger(SpringyFinger &finger, const int joint, const yarp::sig::Vector &qmin,
-                         const yarp::sig::Vector &qmax);
     void close();
 
 public:
-    SpringyFingersModel();
+    TactileFingersModel();
 
     bool fromProperty(const yarp::os::Property &options);
-    void toProperty(yarp::os::Property &options) const;
-    bool calibrate(const yarp::os::Property &options);
+    void toProperty(yarp::os::Property &options) const;    
     bool getOutput(yarp::os::Value &out) const;
 
-    virtual ~SpringyFingersModel();
+    // not implemented
+    bool calibrate(const yarp::os::Property &options) { return false; }
+
+    virtual ~TactileFingersModel();
 };
 
 
