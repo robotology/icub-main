@@ -128,7 +128,7 @@ bool TactileFinger::getOutput(Value &out) const
             min=i[j];
     }
 
-    out=Value(directLogic?min:max);
+    out=Value(directLogic?(255.0-min):max);
 
     return true;
 }
