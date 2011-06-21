@@ -219,8 +219,6 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("perceptiveModelsExample/conf");
-    rf.setDefaultConfigFile("config.ini");
     rf.setDefault("name","percex");
     rf.setDefault("hand","right");
     rf.setDefault("type","springy");
