@@ -72,13 +72,14 @@ The following key-value pairs can be specified as command-line parameters by pre
     specifies the name of the robot (used only to distiguish the simulator and the real robot)
 
 <b>Configuration File Parameters </b>
+
  The following key-value pairs can be specified as parameters in the configuration file 
  (they can also be specified as command-line parameters if you so wish). 
  The value part can be changed to suit your needs; the default values are shown below.
- - \c inputPorts \c \n
+ - \c inputPorts \c emptyList \n
    list of the input ports from which the module has to read the tactile data.
    For each input port there has to be a corresponding output port specified in the "outputPorts" parameter.
- - \c outputPorts \c \n
+ - \c outputPorts \c emptyList \n
    list of the output ports on which the module has to write the compensated tactile data.
    For each output port there has to be a corresponding input port specified in the "inputPorts" parameter.
  - \c period \c 20 \n
@@ -87,11 +88,11 @@ The following key-value pairs can be specified as command-line parameters by pre
    if the baseline of one sensor (at least) reaches this value, then a warning message is sent on the info output port.
  - \c zeroUpRawData \c false \n
    if true the input tactile data are considered from zero up, otherwise from 255 down
- - \c binarization \c \n
+ - \c binarization \c not active\n
    if specified the output tactile data are binarized: 0 indicates no touch, whereas 100 indicates touch
- - \c smoothFilter \c \n
+ - \c smoothFilter \c not active\n
    if specified the output tactile data are filtered with an exponential moving average (where alpha is the smooth factor):
-		y(t) = alpha*x(t) + (1-alpha)*y(t-1)
+    \t- y(t) = alpha*x(t) + (1-alpha)*y(t-1)
  - \c smoothFactor \c 0.5 \n
    alpha value of the smoothing filter, in [0, 1] where 1 is no smoothing at all and 0 is the max smoothing possible.
 
@@ -100,45 +101,41 @@ The following key-value pairs can be specified as command-line parameters by pre
 \section portsa_sec Ports Accessed
 All the ports listed in the "inputPorts" parameter and the corresponding rpc ports.
 For instance if in the "inputPorts" parameter it is specified the port
-- /icub/skin/right_hand 
+- /icub/skin/right_hand \n
 then also the port
-- /icub/skin/right_hand/rpc:i
+- /icub/skin/right_hand/rpc:i \n
 will be accessed.
 
 
 \section portsc_sec Ports Created
 <b>Output ports </b>
 - Every port specified in the "outputPorts" parameter: outputs a yarp::os::Vector containing the compensated tactile data.
-- "/"+moduleName+"/monitor:o": outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
+- "/"+moduleName+"/monitor:o": \n 
+    outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
     (used to communicate with the SkinDriftCompensationGui). The first value is the data frequency, while
     all the following ones represent the drift compensated so far for each taxel.
-- "/"+moduleName+"/info:o": outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
+- "/"+moduleName+"/info:o": \n 
+    outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
     such as warning or error messages (used to communicate with the SkinDriftCompensationGui). Possible messages may regard 
-    an error in the sensor reading or an excessive drift of the baseline of a taxel.
+    an error in the sensor reading or an excessive drift of the baseline of a taxel.\n
+
 <b>Input ports</b>
 - For each port specified in the "inputPorts" parameter a local port is created with the name
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
-
-
-<b>Input ports: </b>
-All the port names listed below will be prefixed by \c /moduleName or whatever else is specified by the name parameter.\n
-- /skinComp/right  or  /skinComp/left :
-	port used by the IAnalogSensor interface for connecting with the sensors for reading the raw sensor data 
-	and sending calibration signals to the microprocessor
-- /rpc:i: input port to control the module (alternatively the skinDriftCompensationGui can be used). 
+- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the skinDriftCompensationGui can be used). 
     This port accepts a yarp::os::Bottle that contains one of these commands:
-	- “force calibration”: force the sensor calibration
-	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
-	- "set binarization": enable or disable the binarization (specifying the value on/off)
-    - "get binarization": "get the binarization filter state (on, off)
-	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
-    - "get smooth filter": get the smooth filter state (on, off)
-	- "set smooth factor": set the value of the smooth factor (in [0,1])
-    - "get smooth factor": get the smooth factor value
-    - "is calibrating": tell whether the skin calibration is in progress
-    - "get info": get information about the module (module name, robot name, input ports, num of taxels)
-	- "help": get a list of the commands accepted by this module
-	- "quit": quit the module
+    \t- “force calibration”: force the sensor calibration
+    \t- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
+    \t- "set binarization": enable or disable the binarization (specifying the value on/off)
+    \t- "get binarization": "get the binarization filter state (on, off)
+    \t- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
+    \t- "get smooth filter": get the smooth filter state (on, off)
+    \t- "set smooth factor": set the value of the smooth factor (in [0,1])
+    \t- "get smooth factor": get the smooth factor value
+    \t- "is calibrating": tell whether the skin calibration is in progress
+    \t- "get info": get information about the module (module name, robot name, input ports, num of taxels)
+    \t- "help": get a list of the commands accepted by this module
+    \t- "quit": quit the module
 
 \section in_files_sec Input Data Files
 None.
