@@ -116,12 +116,6 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-//performance test 
-//--------------------------------------
-#define VOCAB_TEST VOCAB4('t','e','s','t')
-#define VOCAB_COMP VOCAB4('c','o','m','p')
-//--------------------------------------
-
 #define MAX_JN 12
 #define MAX_FILTER_ORDER 6
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
@@ -226,24 +220,9 @@ private:
 	Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
 	Vector inertial_measurements;
 
-	int test;
-    double startRun;
-    double endRun;
-    double startCompute;
-    double endCompute;
-    double ftRead;
-    double ftCur;
-    int ftNew;
-    //ports for sending information
-    BufferedPort<Bottle> *port_perf_test;
-    BufferedPort<Bottle> *port_perf_test_ftRead;
-    Bottle infoTest;
-
     // icub model
 	int comp;
     Matrix FM_sens_up,FM_sens_low;
-    BufferedPort<Bottle> *port_compare_test;
-    Bottle compareTest;
 
     Vector evalVelUp(const Vector &x)
     {
@@ -384,8 +363,6 @@ public:
     inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT)
     {        
         first = true;
-		test = 0;
-		comp = 0;
 
 		//--------------INTERFACE INITIALIZATION-------------//
 		
@@ -410,6 +387,9 @@ public:
 		port_RWTorques = new BufferedPort<Bottle>;
 		port_LWTorques = new BufferedPort<Bottle>;
 		port_TOTorques = new BufferedPort<Bottle>;
+        port_external_wrench_RA = new BufferedPort<Vector>;  
+        port_external_wrench_LA = new BufferedPort<Vector>;  
+		port_external_wrench_TO = new BufferedPort<Vector>;  
 
         port_inertial_thread->open("/wholeBodyTorqueObserver/inertial:i");
 		port_ft_arm_left->open("/wholeBodyTorqueObserver/left_arm/FT:i");
@@ -423,7 +403,9 @@ public:
 		port_RWTorques->open("/wholeBodyTorqueObserver/right_wrist/Torques:o");
 		port_LWTorques->open("/wholeBodyTorqueObserver/left_wrist/Torques:o");
 		port_TOTorques->open("/wholeBodyTorqueObserver/torso/Torques:o");
-
+		port_external_wrench_RA->open("/wholeBodyTorqueObserver/right_arm/endEffectorWrench:o"); 
+		port_external_wrench_LA->open("/wholeBodyTorqueObserver/left_arm/endEffectorWrench:o"); 
+		port_external_wrench_TO->open("/wholeBodyTorqueObserver/torso/Wrench:o");
 
 		//---------------------DEVICES--------------------------//
         if (ddAL) ddAL->view(iencs_arm_left);
@@ -456,27 +438,7 @@ public:
 		inertial_measurements.resize(12);
 		inertial_measurements.zero();
 		F_ext_left_arm.resize(6,0.0);
-		F_ext_right_arm.resize(6,0.0);
-  
-		//--------------TEST VARIABLES----------------//
-        startRun=0.0;
-        endRun=0.0;
-        startCompute=0.0;
-        endCompute=0.0;
-        ftRead=0.0;
-
-        port_perf_test = new BufferedPort<Bottle>;
-        port_perf_test_ftRead = new BufferedPort<Bottle>;
-        port_compare_test = new BufferedPort<Bottle>;  
-        port_external_wrench_RA = new BufferedPort<Vector>;  
-        port_external_wrench_LA = new BufferedPort<Vector>;  
-		port_external_wrench_TO = new BufferedPort<Vector>;  
-        port_perf_test->open("/wholeBodyTorqueObserver/performance/times:o");
-        port_perf_test_ftRead->open("/wholeBodyTorqueObserver/performance/ftread:o");
-		port_compare_test->open("/wholeBodyTorqueObserver/performance/fterr:o");
-		port_external_wrench_RA->open("/wholeBodyTorqueObserver/right_arm/endEffectorWrench:o"); 
-		port_external_wrench_LA->open("/wholeBodyTorqueObserver/left_arm/endEffectorWrench:o"); 
-		port_external_wrench_TO->open("/wholeBodyTorqueObserver/torso/Wrench:o"); 
+		F_ext_right_arm.resize(6,0.0); 
     }
 
     bool threadInit()
@@ -493,12 +455,6 @@ public:
 
     void run()
     {   
-		if(test==VOCAB_TEST)
-		{
-			startRun = Time::now();
-			ftNew = 0;
-		}
-
 		thread_status = STATUS_OK;
         if(readAndUpdate(false) == false)
 		{
@@ -516,8 +472,6 @@ public:
 
 		Vector F_up(6);
 		F_up=0.0;
-		if(test==VOCAB_TEST)
-			startCompute = Time::now();
 		///////////////////////////////////////////////////////
 		// TO CHECK
 		////////////////////////////////////////////////////////
@@ -552,22 +506,24 @@ public:
 		icub.lowerTorso->solveKinematics();
 		icub.lowerTorso->solveWrench();
 
-
-
-		if(test==VOCAB_TEST)
-			endCompute = Time::now();
-
 		Vector LATorques = icub.upperTorso->getTorques("left_arm");
 		Vector RATorques = icub.upperTorso->getTorques("right_arm");
 		Vector HDTorques = icub.upperTorso->getTorques("head");
 		
 		Vector LLTorques = icub.lowerTorso->getTorques("left_leg");
 		Vector RLTorques = icub.lowerTorso->getTorques("right_leg");
-		Vector TOTorques = icub.lowerTorso->getTorques("torso");
+		Vector tmp       = icub.lowerTorso->getTorques("torso");
+		Vector TOTorques(3);
+	
+		TOTorques[0] = tmp [2];
+		TOTorques[1] = tmp [1];
+		TOTorques[2] = tmp [0];
 
 		writeTorque(RATorques, 1, port_RATorques); //arm
 		writeTorque(LATorques, 1, port_LATorques); //arm
 		writeTorque(TOTorques, 4, port_TOTorques); //torso
+		//fprintf (stderr,"TORSO: %s \n",TOTorques.toString().c_str());
+		
 		if (ddLR) writeTorque(RLTorques, 2, port_RLTorques); //leg
 		if (ddLL) writeTorque(LLTorques, 2, port_LLTorques); //leg
 		writeTorque(RATorques, 3, port_RWTorques); //wrist
@@ -581,70 +537,12 @@ public:
 		port_external_wrench_LA->prepare() = F_ext_left_arm;
 		port_external_wrench_RA->write();
 		port_external_wrench_LA->write();
-		port_external_wrench_TO->write();
-
-		
-		if(test==VOCAB_TEST)
-		{	
-			endRun = Time::now();
-			//now we send everything to a specific port
-			infoTest.clear();
-			infoTest.addInt(ftNew); // if there's a new ft value or not
-			infoTest.addDouble(startRun);
-			infoTest.addDouble(endRun-startRun);
-			infoTest.addDouble(endCompute-startCompute);
-			port_perf_test->prepare() = infoTest;
-			port_perf_test->write();
-
-			infoTest.clear();
-			infoTest.addInt(ftNew);
-			infoTest.addDouble(startRun);
-			infoTest.addDouble(endRun-ftCur);
-			infoTest.addDouble(ftCur-ftRead);
-			port_perf_test_ftRead->prepare() = infoTest;
-			port_perf_test_ftRead->write();
-		}
-		if(comp==VOCAB_COMP)
-		{
-			// computations are performed here: because they are extra computations which must not be included in 
-			// the count of thread rate and computation time (that part is only for whole body torque observer)
-		    
-			icub_sens.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-			FM_sens_up = icub_sens.upperTorso->estimateSensorsWrench(F_ext_up,false);
-			icub_sens.lowerTorso->setInertialMeasure(icub_sens.upperTorso->getTorsoAngVel(),icub_sens.upperTorso->getTorsoAngAcc(),icub_sens.upperTorso->getTorsoLinAcc());
-			FM_sens_low = icub_sens.lowerTorso->estimateSensorsWrench(F_ext_low,false);
-			
-			// send sensor measures, estimation etc to port
-			compareTest.clear();
-			compareTest.addInt(ftNew);
-			compareTest.addDouble(startRun);
-			//the FT sensor wrench estimated by the model: note the -1.0 before is necessary!
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(-(FM_sens_up.getCol(0))[i]); //RA
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(-(FM_sens_up.getCol(1))[i]); //LA
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(-(FM_sens_low.getCol(0))[i]); //RL
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(-(FM_sens_low.getCol(1))[i]); //LL
-			//the real FT sensor wrench (measured)
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(F_RArm[i]);
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(F_LArm[i]);
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(F_RLeg[i]);
-			for(int i=0; i<6;i++)
-				compareTest.addDouble(F_LLeg[i]);
-
-			port_compare_test->prepare() = compareTest;
-			port_compare_test->write();
-		}
-    }
+		port_external_wrench_TO->write();	
+	}
 
     void threadRelease()
     {
-		fprintf(stderr, "Closing the linest\n");
+		fprintf(stderr, "Closing the linear estimator\n");
 		if(linEstUp)
 		{
 			delete linEstUp;
@@ -655,7 +553,7 @@ public:
 			delete linEstLow;
 			linEstLow = 0;
 		}
-		fprintf(stderr, "Closing the quadEst\n");
+		fprintf(stderr, "Closing the quadratic estimator\n");
 		if(quadEstUp)
 		{
 			delete quadEstUp;
@@ -666,7 +564,7 @@ public:
 			delete quadEstLow;
 			quadEstLow = 0;
 		}
-		fprintf(stderr, "Closing the InertialEest\n");
+		fprintf(stderr, "Closing the inertial estimator\n");
 		if(InertialEst)
 		{
 			delete InertialEst;
@@ -703,23 +601,7 @@ public:
 		fprintf(stderr, "Closing ft_leg_right port\n");
 		closePort(port_ft_leg_right);
 		fprintf(stderr, "Closing ft_leg_left port\n");
-		closePort(port_ft_leg_left);
-	  
-//#if PERFORMANCE_TEST
-	  
-		fprintf(stderr, "Closing the performance test port - times\n");
-		closePort(port_perf_test);
-		fprintf(stderr, "Closing the performance test port - ftread\n");
-		closePort(port_perf_test_ftRead);
-	
-//#endif
-
-//#if COMPARE_TEST
-	 
-		fprintf(stderr, "Closing the compare test port - fterr\n");
-		closePort(port_compare_test);
-	  
-//#endif
+		closePort(port_ft_leg_left);	  
     }   
 
 	void closePort(Contactable *_port)
@@ -789,6 +671,7 @@ public:
 			Offset_LLeg = Offset_LLeg + (F_LLeg-F_iDyn_LLeg);
 			Offset_RLeg = Offset_RLeg + (F_RLeg-F_iDyn_RLeg);
 		}
+
 		fprintf(stderr,"!\n");
 		fprintf(stderr, "Ntrials: %d\n", Ntrials);
 		fprintf(stderr, "F_LArm: %s\n", F_LArm.toString().c_str());
@@ -848,19 +731,6 @@ public:
 		inertial = port_inertial_thread->read(waitMeasure);
 		if (waitMeasure) fprintf(stderr,"done. \n");
 			
-		
-		if(test==VOCAB_TEST)
-		{
-			ftCur=Time::now();
-			if((ft_arm_left!=NULL)&&(ft_arm_right!=NULL)&&(ft_leg_left!=NULL)&&(ft_leg_right!=NULL))
-			{
-				ftNew=1;
-				ftRead=ftCur;
-			}
-			else
-				ftNew=0;
-		}
-
 		int sz = 0;
 		if(inertial!=0)
 		{
@@ -994,19 +864,6 @@ public:
 			icub.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
 			icub.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
 			icub.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
-
-			if(comp==VOCAB_COMP)
-			{
-				icub_sens.lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
-				icub_sens.lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
-				icub_sens.lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
-				icub_sens.lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
-				icub_sens.lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
-				icub_sens.lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
-				icub_sens.lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
-				icub_sens.lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
-				icub_sens.lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
-			}
 		}
 		else
 		{
@@ -1038,20 +895,6 @@ public:
 			icub.upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
 			icub.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
 			icub.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-
-			if(comp==VOCAB_COMP)
-			{
-				icub_sens.upperTorso->setAng("head",CTRL_DEG2RAD * q_head);
-				icub_sens.upperTorso->setAng("left_arm",CTRL_DEG2RAD * q_larm);
-				icub_sens.upperTorso->setAng("right_arm",CTRL_DEG2RAD * q_rarm);
-				icub_sens.upperTorso->setDAng("head",CTRL_DEG2RAD * dq_head);
-				icub_sens.upperTorso->setDAng("left_arm",CTRL_DEG2RAD * dq_larm);
-				icub_sens.upperTorso->setDAng("right_arm",CTRL_DEG2RAD * dq_rarm);
-				icub_sens.upperTorso->setD2Ang("head",CTRL_DEG2RAD * d2q_head);
-				icub_sens.upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
-				icub_sens.upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
-				icub_sens.upperTorso->setInertialMeasure(w0,dw0,d2p0);
-			}
 		}
 		else
 		{
@@ -1085,17 +928,7 @@ public:
 		d2q_torso=0.0;
 	}
 
-    void setPerformanceTest(int _test)
-    {
-        test = _test;
-    }
-
-    void setModelTest(int _comp)
-    {
-        comp = _comp;
-    }
 };
-// class dataCollector: class for reading from Vrow and providing for FT values on an output port
 
 class dataFilter : public BufferedPort<Bottle>
 {
@@ -1318,39 +1151,8 @@ public:
 		fprintf(stderr,"ft thread istantiated...\n");
         Time::delay(5.0);
 
-        //--------------------PERFORMANCE----------------------//
-
-        int performance = 0;
-		if (rf.check("performance"))
-		{
-            if(rf.find("performance").asInt()==1)
-            {
-                performance = VOCAB_TEST;
-                fprintf(stderr,"performance = VOCAB_TEST...\n");
-            }
-            inv_dyn->setPerformanceTest(performance);
-			fprintf(stderr,"performance evaluation during cycles...\n");
-		}
-
-        //--------------------COMPARISON----------------------//
-
-        int comparison = 0;
-		if (rf.check("comparison"))
-		{
-            if(rf.find("comparison").asInt()==1)
-            {
-                comparison = VOCAB_COMP;
-                fprintf(stderr,"comparison = VOCAB_COMP...\n");
-            }
-            inv_dyn->setModelTest(comparison);
-
-			fprintf(stderr,"model evaluation during cycles...\n", rate);
-		}
-
-
 		inv_dyn->start();
 		fprintf(stderr,"thread started\n");
-
 		return true;
     }
 
@@ -1368,7 +1170,7 @@ public:
 		  }
 
 		fprintf(stderr,"interrupting the filtered port \n");     
-		port_filtered.interrupt();
+		port_filtered.interrupt(); //CHECK THIS, SOMETIMES IT SEEMS TO BLOCK THE PORT
 		fprintf(stderr,"closing the filtered port \n");     
 		port_filtered.close();
 
