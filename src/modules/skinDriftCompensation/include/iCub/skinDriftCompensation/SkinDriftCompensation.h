@@ -49,7 +49,7 @@ The binarization filter can be used for stressing the touch detection, especiall
 The smoothing filter performs an exponential moving average in order to reduce the sensor noise.
 The intensity of the filter can be tuned by setting the parameter alpha, also called "smoothing factor".
 The smoothed output is a weighted average of the current input and the previous output:
-y(t) = alpha*x(t) + (1-alpha)*y(t-1)
+y(t) = (1-alpha)*x(t) + alpha*y(t-1)
 
 
 \section lib_sec Libraries
@@ -61,14 +61,14 @@ YARP.
 <b>Command-line Parameters</b> 
 
 The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
-(e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below.
- - \c from \c driftCompLeft.ini \n 
+(e.g. --from file.ini). The value part can be changed to suit your needs; the default values are shown below.
+ - \c from \c [driftCompLeft.ini] \n 
    specifies the configuration file
- - \c context \c skinGui/conf \n
+ - \c context \c [skinGui/conf] \n
     specifies the sub-path from \c $ICUB_ROOT/app to the configuration file
- - \c name \c skinDriftCompensation \n   
+ - \c name \c [skinDriftCompensation] \n   
     specifies the name of the module (used to form the stem of module port names)  
- - \c robot \c icub \n          
+ - \c robot \c [icub] \n          
     specifies the name of the robot (used only to distiguish the simulator and the real robot)
 
 <b>Configuration File Parameters </b>
@@ -76,25 +76,25 @@ The following key-value pairs can be specified as command-line parameters by pre
  The following key-value pairs can be specified as parameters in the configuration file 
  (they can also be specified as command-line parameters if you so wish). 
  The value part can be changed to suit your needs; the default values are shown below.
- - \c inputPorts \c emptyList \n
+ - \c inputPorts \c [emptyList] \n
    list of the input ports from which the module has to read the tactile data.
    For each input port there has to be a corresponding output port specified in the "outputPorts" parameter.
- - \c outputPorts \c emptyList \n
+ - \c outputPorts \c [emptyList] \n
    list of the output ports on which the module has to write the compensated tactile data.
    For each output port there has to be a corresponding input port specified in the "inputPorts" parameter.
- - \c period \c 20 \n
+ - \c period \c [20] \n
    period of the compensating thread expressed in ms.
- - \c minBaseline \c 3 \n  
+ - \c minBaseline \c [3] \n  
    if the baseline of one sensor (at least) reaches this value, then a warning message is sent on the info output port.
- - \c zeroUpRawData \c false \n
+ - \c zeroUpRawData \c [false] \n
    if true the input tactile data are considered from zero up, otherwise from 255 down
- - \c binarization \c not active\n
+ - \c binarization \c [not active]\n
    if specified the output tactile data are binarized: 0 indicates no touch, whereas 100 indicates touch
- - \c smoothFilter \c not active\n
+ - \c smoothFilter \c [not active]\n
    if specified the output tactile data are filtered with an exponential moving average (where alpha is the smooth factor):
-    \t- y(t) = alpha*x(t) + (1-alpha)*y(t-1)
- - \c smoothFactor \c 0.5 \n
-   alpha value of the smoothing filter, in [0, 1] where 1 is no smoothing at all and 0 is the max smoothing possible.
+    \t- y(t) = (1-alpha)*x(t) + alpha*y(t-1)
+ - \c smoothFactor \c [0.5] \n
+   alpha value of the smoothing filter, in [0, 1] where 0 is no smoothing at all and 1 is the max smoothing possible.
 
  
 
@@ -124,18 +124,18 @@ will be accessed.
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
 - "/"+moduleName+"/rpc:i": input port to control the module (alternatively the skinDriftCompensationGui can be used). 
     This port accepts a yarp::os::Bottle that contains one of these commands:
-    \t- “force calibration”: force the sensor calibration
-    \t- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
-    \t- "set binarization": enable or disable the binarization (specifying the value on/off)
-    \t- "get binarization": "get the binarization filter state (on, off)
-    \t- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
-    \t- "get smooth filter": get the smooth filter state (on, off)
-    \t- "set smooth factor": set the value of the smooth factor (in [0,1])
-    \t- "get smooth factor": get the smooth factor value
-    \t- "is calibrating": tell whether the skin calibration is in progress
-    \t- "get info": get information about the module (module name, robot name, input ports, num of taxels)
-    \t- "help": get a list of the commands accepted by this module
-    \t- "quit": quit the module
+	- “force calibration”: force the sensor calibration
+	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
+	- "set binarization": enable or disable the binarization (specifying the value on/off)
+	- "get binarization": "get the binarization filter state (on, off)
+	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
+	- "get smooth filter": get the smooth filter state (on, off)
+	- "set smooth factor": set the value of the smooth factor (in [0,1])
+	- "get smooth factor": get the smooth factor value
+	- "is calibrating": tell whether the skin calibration is in progress
+	- "get info": get information about the module (module name, robot name, input ports, num of taxels)
+	- "help": get a list of the commands accepted by this module
+	- "quit": quit the module
 
 \section in_files_sec Input Data Files
 None.
