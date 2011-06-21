@@ -112,6 +112,11 @@ public:
         {
             if (mObjects[i]!=NULL) delete mObjects[i];
         }
+
+        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        {
+            if (mTrajectories[i]!=NULL) delete mTrajectories[i];
+        }
     }
 
     inline void manage(yarp::os::Bottle *msg);
@@ -150,6 +155,14 @@ public:
             }
 
             mObjects.clear();
+
+            for (int i=0; i<(int)mTrajectories.size(); ++i)
+            {
+                delete mTrajectories[i];
+            }
+
+            mTrajectories.clear();
+
             return;
         }
 
@@ -164,7 +177,7 @@ public:
             }
             else
             {
-                mObjects[i]->Draw();
+                mObjects[i]->draw();
             }
         }
 
@@ -183,11 +196,43 @@ public:
 
             mObjects.resize(newsize);
         }
+
+        bPack=false;
+        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        {
+            if (mTrajectories[i]->bDeleted)
+            {
+                delete mTrajectories[i];
+                mTrajectories[i]=NULL;
+                bPack=true;
+            }
+            else
+            {
+                mTrajectories[i]->draw();
+            }
+        }
+
+        if (bPack)
+        {
+            int newsize=0;
+            int size=(int)mTrajectories.size();
+            
+            for (int i=0; i<size; ++i)
+            {
+                if (mTrajectories[i]!=NULL)
+                {
+                    mTrajectories[newsize++]=mTrajectories[i];
+                }
+            }
+
+            mTrajectories.resize(newsize);
+        }
     }
     
 protected:
     bool bReset;
     std::vector<VisionObj*> mObjects;
+    std::vector<TrajectoryObj*> mTrajectories;
 
     yarp::os::BufferedPort<yarp::os::Bottle> mObjPort;
     yarp::os::BufferedPort<yarp::sig::VectorOf<unsigned char> > mTexPort;
@@ -195,6 +240,12 @@ protected:
 
     void ObjectsManager::manage(yarp::os::Bottle *msg)
     {
+        /*
+        FILE *logf=fopen("log.txt","a");
+        fprintf(logf,"%s\n",msg->toString().c_str());
+        fflush(logf);
+        fclose(logf);
+        */
         yarp::os::ConstString cmd=msg->get(0).asString();
 
         if (cmd=="reset")
@@ -206,12 +257,21 @@ protected:
             std::string name(msg->get(1).asString().c_str());
             
             int size=(int)mObjects.size();
-
             for (int i=0; i<size; ++i)
             {
                 if ((*mObjects[i])==name)
                 {
                     mObjects[i]->bDeleted=true;
+                    break;
+                }
+            }
+
+            size=(int)mTrajectories.size();
+            for (int i=0; i<size; ++i)
+            {
+                if ((*mTrajectories[i])==name)
+                {
+                    mTrajectories[i]->bDeleted=true;
                     break;
                 }
             }
@@ -237,21 +297,62 @@ protected:
             int B=msg->get(13).asInt();
             double alpha=msg->get(14).asDouble();
 
-            bool found=false;
-
             for (int i=0; i<(int)mObjects.size(); ++i)
             {
                 if (*mObjects[i]==name)
                 {
-                    found=true;
                     mObjects[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha);
+                    return;
                 }
             }
 
-            if (!found)
+            printf("Added object %s\n",name.c_str());
+            mObjects.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha));
+        }
+        else if (cmd=="trajectory")
+        {
+            //TrajectoryObj(std::string name,int bufflen,double persistence,int r,int g,int b,double alpha,GLfloat width)
+
+            std::string name(msg->get(1).asString().c_str());
+            std::string label(msg->get(2).asString().c_str());
+
+            int bufflen=msg->get(3).asInt();
+            double persistence=msg->get(4).asDouble();
+
+            int R=msg->get(5).asInt();
+            int G=msg->get(6).asInt();
+            int B=msg->get(7).asInt();
+
+            double alpha=msg->get(8).asDouble();
+            GLfloat width=(GLfloat)msg->get(9).asDouble();
+
+            for (int i=0; i<(int)mTrajectories.size(); ++i)
             {
-                printf("Added object %s\n",name.c_str());
-                mObjects.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha));
+                if (*mTrajectories[i]==name)
+                {
+                    delete mTrajectories[i];
+                    mTrajectories[i]=new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width);
+                    return;
+                }
+            }
+
+            mTrajectories.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width));
+        }
+        else if (cmd=="addpoint")
+        {
+            std::string name(msg->get(1).asString().c_str());
+
+            double x=msg->get(2).asDouble();
+            double y=msg->get(3).asDouble();
+            double z=msg->get(4).asDouble();
+
+            for (int i=0; i<(int)mTrajectories.size(); ++i)
+            {
+                if (*mTrajectories[i]==name)
+                {
+                    mTrajectories[i]->update(x,y,z);
+                    return;
+                }
             }
         }
     }

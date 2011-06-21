@@ -19,6 +19,7 @@
 #define VISIONOBJ_H
 
 #include <qstring.h>
+#include <yarp/os/Time.h>
 
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
@@ -33,6 +34,117 @@
 #include <stdlib.h>   //  for malloc
 
 //GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_24;
+
+//-------------------------------------------------------------------------
+//  Draws a string at the specified coordinates.
+//-------------------------------------------------------------------------
+inline void printw(float x,float y,float z,const char* text)
+{
+    //glClear(GL_COLOR_BUFFER_BIT);
+
+    //  Specify the raster position for pixel operations.
+    glRasterPos3f(x,y,z);
+
+    //  Draw the characters one by one
+    for (int i=0; text[i]!='\0'; ++i)
+    {
+        glutBitmapCharacter(GLUT_BITMAP_9_BY_15,text[i]);
+    }
+
+    //glFlush();
+}
+
+class TrajectoryObj
+{
+public:
+    TrajectoryObj(std::string name,std::string label,int bufflen,double persistence,int r,int g,int b,double alpha,GLfloat width)
+    {
+        mName=name;
+        mLabel=label;
+        mR=double(r)/255.0; mG=double(g)/255.0; mB=double(b)/255.0;
+        mAlpha=alpha;
+        mWidth=width;
+        mPersistence=persistence;
+
+        mBufflen=bufflen;
+
+        mIndex=0;
+        mFull=false;
+        bDeleted=false;
+
+        mX=new double[mBufflen];
+        mY=new double[mBufflen];
+        mZ=new double[mBufflen];
+        mT=new double[mBufflen];
+    }
+
+    void update(double x,double y,double z)
+    {
+        mX[mIndex]=x;
+        mY[mIndex]=y;
+        mZ[mIndex]=z;
+        mT[mIndex]=yarp::os::Time::now();
+
+        if (++mIndex==mBufflen)
+        {
+            mIndex=0;
+            mFull=true;
+        }
+    }
+
+    void draw()
+    {        
+        glColor4f(mR,mG,mB,1.0);
+        glLineWidth(3.0);
+        
+        double now=yarp::os::Time::now();
+
+        glBegin(GL_LINE_STRIP);
+        if (mFull)
+        {
+            for (int i=mIndex; i<mBufflen; ++i)
+            {
+                if (now-mT[i]<mPersistence) glVertex3d(mX[i],mY[i],mZ[i]);
+            }
+        }
+        for (int i=0; i<mIndex; ++i)
+        {
+            if (now-mT[i]<mPersistence) glVertex3d(mX[i],mY[i],mZ[i]);
+        }
+        glEnd();
+
+        printw(mX[mIndex-1],mY[mIndex-1],mZ[mIndex-1]+50.0,mLabel.c_str());
+    }
+
+    bool operator==(std::string &name)
+    {
+        return mName==name;
+    }
+
+    ~TrajectoryObj()
+    {
+        delete [] mX;
+        delete [] mY;
+        delete [] mZ;
+        delete [] mT;
+    }
+
+    bool bDeleted;
+
+protected:
+    int mIndex;
+    bool mFull;
+    int mBufflen;
+    double mPersistence;
+    double *mX;
+    double *mY;
+    double *mZ;
+    double *mT;
+    std::string mName;
+    std::string mLabel;
+    double mR,mG,mB,mAlpha;
+    GLfloat mWidth;
+};
 
 class VisionObj
 {
@@ -82,7 +194,7 @@ public:
         mAlpha=alpha;
     }
 
-    void Draw()
+    void draw()
     {
         if (mTextureBuffer!=NULL)
         {
@@ -215,25 +327,6 @@ public:
         //glPopMatrix();
         glPopMatrix();
     }
-
-    //-------------------------------------------------------------------------
-    //  Draws a string at the specified coordinates.
-    //-------------------------------------------------------------------------
-    void printw(float x, float y, float z,const char* text)
-    {
-        //glClear (GL_COLOR_BUFFER_BIT);
-
-	    //  Specify the raster position for pixel operations.
-	    glRasterPos3f (x, y, z);
-	 
-	    //  Draw the characters one by one
-	    for (int i=0; text[i]!='\0'; ++i)
-        {
-	        glutBitmapCharacter(GLUT_BITMAP_9_BY_15,text[i]);
-        }
-
-        //glFlush();
-	}
 
     int mW,mH;
     bool bTextured;
