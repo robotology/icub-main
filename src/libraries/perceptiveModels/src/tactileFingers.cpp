@@ -118,17 +118,11 @@ bool TactileFinger::getOutput(Value &out) const
     if (!extractSensorsData(i))
         return false;
 
-    double min=1e9;
-    double max=-1e9;
+    double ret=0.0;
     for (int j=0; j<i.length(); j++)
-    {
-        if (i[j]>max)
-            max=i[j];
-        else if (i[j]<min)
-            min=i[j];
-    }
+        ret=std::max(ret,directLogic?(255.0-i[j]):i[j]);
 
-    out=Value(directLogic?(255.0-min):max);
+    out=Value(ret);
 
     return true;
 }
