@@ -15,6 +15,70 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
+/**
+ *
+ * @ingroup icub_tools
+ * @ingroup icub_guis
+ * \defgroup icub_skinDriftCompensationGui skinDriftCompensationGui
+ *
+ * A simple graphical interface for controlling and monitoring an instance of the \ref skinDriftCompensation module.
+ * This GUI needs at least the version 2.14 of GtkPlus.
+ *
+ * \section intro_sec Description
+ *
+ * This GUI can be used for the following pouposes:
+ *
+ * - calibrate the skin
+ * - see the touch threshold of each skin taxels
+ * - turn on/off the binarization filter
+ * - turn on/off the smooth filter
+ * - tune the smooth factor of the smooth filter
+ * - monitor the skin data frequency
+ * - monitor the drift of each skin taxel
+ * - get warning and error messages related to the skin
+ * - see all the ports read by the interested \ref skinDriftCompensation module 
+ *
+ * \section parameters_sec Parameters
+ * 
+ * \code
+ * --name: name of the gui (used to form port names)
+ * --from: configuration file
+ * --context: directory where to search the configuration file (specified from $ICUB_ROOT/app)
+ * --xpos: position of the gui on the screen on the x axis expressed in pixel 
+ * --ypos: position of the gui on the screen on the y axis expressed in pixel 
+ * \endcode
+ * Example:
+ * \code
+ * skinDriftCompensationGui --name skinCompGuiLeft --from compGuiLeft.ini --context skinGui/conf
+ * \endcode
+ *
+ * \section portsa_sec Ports Accessed
+ * None
+ *
+ * \section portsc_sec Ports Created
+ * Three ports are created for communicating with the \ref skinDriftCompensation module.
+ * The port names are:
+ * - "/" + guiName + "/rpc:o"
+ * - "/" + guiName + "/monitor:i"
+ * - "/" + guiName + "/info:i"
+ * These ports should be externally connected to the corresponding \ref skinDriftCompensation ports.
+ * 
+ * \section conf_file_sec Configuration Files
+ *
+ * None.
+ *
+ * \section tested_os_sec Tested OS
+ * Linux and Windows.
+ *
+ * \author Andrea Del Prete (andrea.delprete@iit.it)
+ *
+ *Copyright (C) 2008 RobotCub Consortium
+ *
+ *CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ *This file can be edited at main/src/tools/skinDriftCompensationGui/src/main.cpp.
+ **/
+
 #include "iCub/skinDriftCompensationGui/guiCallback.h"
 
 void initGuiStatus(){
