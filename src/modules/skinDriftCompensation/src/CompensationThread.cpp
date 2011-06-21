@@ -56,9 +56,9 @@ bool CompensationThread::threadInit()
 	calibrationCounter = 0;
     CAL_SAMPLES = 1000*CAL_TIME/PERIOD; // samples needed for calibration
 
-    // open the output ports for the gui
-    string monitorPortName = "/" + moduleName + "/monitor:o";
-    string infoPortName = "/" + moduleName + "/info:o";
+    // open the output ports for communicating with the gui
+    string monitorPortName = "/" + moduleName + "/monitor:o";   // output streaming data
+    string infoPortName = "/" + moduleName + "/info:o";         // output occasional data
 	if(!monitorPort.open(monitorPortName.c_str())){
 		cout << "Unable to open port " << monitorPortName << endl;
 		return false;
@@ -79,7 +79,7 @@ bool CompensationThread::threadInit()
 	portNum = outputPortList->size();
 	if(portNum<=0 || portNum!=inputPortList->size()){
 		cout<< "No input port specified or mismatching number of input and output ports ("
-			<< portNum<< "; "<< inputPortList->size()<< ")\n";
+			<< portNum<< " out ports; "<< inputPortList->size()<< " in ports)\n";
 		return false;
 	}
 	

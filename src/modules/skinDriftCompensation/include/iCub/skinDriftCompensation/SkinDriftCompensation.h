@@ -23,23 +23,23 @@
 @ingroup icub_module
 \defgroup icub_skinDriftCompensation skinDriftCompensation
 
-This module reads the raw tactile sensor values, compensates the drift of the sensors 
-and writes the compensated values on its output port.
-Optionally, it also can apply a smoothing filter and/or a binarization filter to the data.
+This module reads the raw tactile sensor values, compensates the (thermal) drift of the sensors (basically it is a low pass filter)
+and writes the compensated values on output ports.
+The module can manage many input ports at the same time (see parameter "inputPorts").
+For each input port the compensated tactile data are written on the corresponding output port (see parameter "outputPorts").
+Optionally, the module also can apply a smoothing filter and/or a binarization filter to the data.
 
 
 \section intro_sec Description
-When launched the module executes the sensors calibration (composed by a "big" calibration and a "small" calibration), 
-assuming that the sensors are not in contact with anything during this phase. 
-The big calibration is performed by sending a message to the icubInterface. 
-The small calibration gathers the sensors data for 5 sec, computes the mean (called baseline) and the 95 percentile 
-(that will be used as touch threshold for the raw data) for every taxel.
+When launched the module executes the sensors calibration, assuming that the sensors are not in contact 
+with anything during this phase. 
+The calibration reset the taxel baselines, gathers the sensors data for 5 sec, computes the mean (i.e. the baseline) 
+and the 95 percentile (i.e. the touch threshold) for every taxel.
+
 After the calibration the module starts reading the raw data, computing the difference between the read values 
 and the baseline, and outputs the results. 
-If no touch is detected (i.e. the compensated values are under the touch threshold) then the baseline is updated.
-If the automatic calibration is allowed, when the touch threshold almost reaches one of the two limits 
-(either 0 or 255), then the big and small calibrations are executed.
-By default the automatic calibration is forbidden.
+If no touch is detected (i.e. the compensated values are under the touch threshold) then the baseline is updated
+in order to follow the drift.
 
 The binarization filter is really simple.
 Every taxel has a touch threshold, given by its 95% percentile plus a safety threshold equals to 2.
@@ -62,61 +62,83 @@ YARP.
 
 The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
 (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below.
- - \c from \c skinDriftCompensationLeft.ini \n 
+ - \c from \c driftCompLeft.ini \n 
    specifies the configuration file
- - \c context \c graspingDemo/conf \n
+ - \c context \c skinGui/conf \n
     specifies the sub-path from \c $ICUB_ROOT/app to the configuration file
  - \c name \c skinDriftCompensation \n   
     specifies the name of the module (used to form the stem of module port names)  
  - \c robot \c icub \n          
-    specifies the name of the robot (used to form the root of robot port names)
+    specifies the name of the robot (used only to distiguish the simulator and the real robot)
 
 <b>Configuration File Parameters </b>
  The following key-value pairs can be specified as parameters in the configuration file 
  (they can also be specified as command-line parameters if you so wish). 
  The value part can be changed to suit your needs; the default values are shown below.
- - \c hand \c right \n    
-   specifies which hand sensors has to be read
+ - \c inputPorts \c \n
+   list of the input ports from which the module has to read the tactile data.
+   For each input port there has to be a corresponding output port specified in the "outputPorts" parameter.
+ - \c outputPorts \c \n
+   list of the output ports on which the module has to write the compensated tactile data.
+   For each output port there has to be a corresponding input port specified in the "inputPorts" parameter.
+ - \c period \c 20 \n
+   period of the compensating thread expressed in ms.
  - \c minBaseline \c 3 \n  
-   if the baseline of one sensor (at least) reaches this value, then the calibration is executed (if allowed)
+   if the baseline of one sensor (at least) reaches this value, then a warning message is sent on the info output port.
  - \c zeroUpRawData \c false \n
-   if true the raw data are considered from zero up, otherwise from 255 down
- - \c binarization \c false \n
-   if true the output tactile data are binarized: 0 indicates no touch, whereas 100 indicates touch
- - \c smoothFilter \c false \n
-   if true the output tactile data are filtered with an exponential moving average:
+   if true the input tactile data are considered from zero up, otherwise from 255 down
+ - \c binarization \c \n
+   if specified the output tactile data are binarized: 0 indicates no touch, whereas 100 indicates touch
+ - \c smoothFilter \c \n
+   if specified the output tactile data are filtered with an exponential moving average (where alpha is the smooth factor):
 		y(t) = alpha*x(t) + (1-alpha)*y(t-1)
  - \c smoothFactor \c 0.5 \n
-   alfa value of the smoothing filter
+   alpha value of the smoothing filter, in [0, 1] where 1 is no smoothing at all and 0 is the max smoothing possible.
 
  
 
 \section portsa_sec Ports Accessed
-- /icub/skin/right_hand  or  /icub/skin/left_hand
-- /icub/skin/right_hand/rpc:i  or  /icub/skin/left_hand/rpc:i
+All the ports listed in the "inputPorts" parameter and the corresponding rpc ports.
+For instance if in the "inputPorts" parameter it is specified the port
+- /icub/skin/right_hand 
+then also the port
+- /icub/skin/right_hand/rpc:i
+will be accessed.
 
 
 \section portsc_sec Ports Created
 <b>Output ports </b>
-- /icub/skin/left_hand_comp  or  /icub/skin/right_hand_comp: 
-	yarp::os::Vector output port streaming the compensated tactile data
+- Every port specified in the "outputPorts" parameter: outputs a yarp::os::Vector containing the compensated tactile data.
+- "/"+moduleName+"/monitor:o": outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
+    (used to communicate with the SkinDriftCompensationGui). The first value is the data frequency, while
+    all the following ones represent the drift compensated so far for each taxel.
+- "/"+moduleName+"/info:o": outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
+    such as warning or error messages (used to communicate with the SkinDriftCompensationGui). Possible messages may regard 
+    an error in the sensor reading or an excessive drift of the baseline of a taxel.
+<b>Input ports</b>
+- For each port specified in the "inputPorts" parameter a local port is created with the name
+  "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
+
 
 <b>Input ports: </b>
 All the port names listed below will be prefixed by \c /moduleName or whatever else is specified by the name parameter.\n
 - /skinComp/right  or  /skinComp/left :
 	port used by the IAnalogSensor interface for connecting with the sensors for reading the raw sensor data 
 	and sending calibration signals to the microprocessor
-- /rpc:i: input ports to control the module, accepts a yarp::os::Bottle which contains one of these commands:
-	- “forbid calibration”: prevent the module from executing the automatic sensor calibration
-	- “allow calibration”: enable the automatic sensor calibration
+- /rpc:i: input port to control the module (alternatively the skinDriftCompensationGui can be used). 
+    This port accepts a yarp::os::Bottle that contains one of these commands:
 	- “force calibration”: force the sensor calibration
 	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
 	- "set binarization": enable or disable the binarization (specifying the value on/off)
+    - "get binarization": "get the binarization filter state (on, off)
 	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
+    - "get smooth filter": get the smooth filter state (on, off)
 	- "set smooth factor": set the value of the smooth factor (in [0,1])
+    - "get smooth factor": get the smooth factor value
+    - "is calibrating": tell whether the skin calibration is in progress
+    - "get info": get information about the module (module name, robot name, input ports, num of taxels)
 	- "help": get a list of the commands accepted by this module
 	- "quit": quit the module
-
 
 \section in_files_sec Input Data Files
 None.
@@ -135,10 +157,10 @@ Linux and Windows.
 
 
 \section example_sec Example Instantiation of the Module
-skinDriftCompensation --context graspingDemo/conf --from skinDriftCompensationRight.ini
+skinDriftCompensation --context skinGui/conf --from driftCompRight.ini
 
 
-\author Andrea Del Prete, Alexander Schmitz
+\author Andrea Del Prete (andrea.delprete@iit.it), Alexander Schmitz
 
 Copyright (C) 2008 RobotCub Consortium
 

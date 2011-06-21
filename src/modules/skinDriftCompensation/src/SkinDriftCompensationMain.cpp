@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
    /* prepare and configure the resource finder */
    ResourceFinder rf;
    rf.setVerbose(false);
-   rf.setDefaultConfigFile("SkinDriftCompensationLeftSim.ini");		//overridden by --from parameter
+   rf.setDefaultConfigFile("driftCompLeft.ini");		//overridden by --from parameter
    rf.setDefaultContext("skinGui/conf");							//overridden by --context parameter
    rf.configure("ICUB_ROOT", argc, argv);
  
