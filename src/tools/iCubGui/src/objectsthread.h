@@ -29,66 +29,6 @@
 #include <GL/glu.h>
 #endif
 
-/*
-class ParamsThread;
-class TextureThread;
-class ObjectsManager;
-
-class ParamsThread : public QThread
-{
-public:
-    ParamsThread(ObjectsManager *objManager,const char *portName)
-    {
-        mRunning=true;
-        mObjManager=objManager;
-        mPort.open(portName);
-        
-        start();
-    }
-
-    inline void run();
-
-    ~ParamsThread()
-    {
-        mRunning=false;
-        mPort.interrupt();
-        mPort.close();
-    }
-
-protected:
-    bool mRunning;
-    yarp::os::Port mPort;
-    ObjectsManager *mObjManager;
-};
-
-class TextureThread : public QThread
-{
-public:
-    TextureThread(ObjectsManager *objManager,const char *portName)
-    {
-        mRunning=true;
-        mObjManager=objManager;
-        mPort.open(portName);
-        
-        start();
-    }
-
-    inline void run();
-
-    ~TextureThread()
-    {
-        mRunning=false;
-        mPort.interrupt();
-        mPort.close();
-    }
-
-protected:
-    bool mRunning;
-    yarp::os::BufferedPort< yarp::sig::VectorOf<unsigned char> > mPort;
-    ObjectsManager *mObjManager;
-};
-*/
-
 class ObjectsManager
 {
 public:
@@ -98,6 +38,9 @@ public:
 
         mObjPort.open(objPortName);
         mTexPort.open(texPortName);
+
+        mObjPort.setStrict();
+        mTexPort.setStrict();
     }
 
     ~ObjectsManager()
@@ -110,12 +53,12 @@ public:
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
-            if (mObjects[i]!=NULL) delete mObjects[i];
+            if (mObjects[i]) delete mObjects[i];
         }
 
         for (int i=0; i<(int)mTrajectories.size(); ++i)
         {
-            if (mTrajectories[i]!=NULL) delete mTrajectories[i];
+            if (mTrajectories[i]) delete mTrajectories[i];
         }
     }
 
@@ -128,20 +71,15 @@ public:
         yarp::os::Bottle *botObj;
         do
         {
-            if (botObj=mObjPort.read(false))
-            {
-                manage(botObj);
-            }
+            if (botObj=mObjPort.read(false)) manage(botObj);
         }
         while (botObj);
 
+        // textures
         yarp::sig::VectorOf<unsigned char> *imgTex;
         do
         {
-            if (imgTex=mTexPort.read(false))
-            {
-                manage(imgTex);
-            }
+            if (imgTex=mTexPort.read(false)) manage(imgTex);
         }
         while (imgTex);
 
@@ -149,18 +87,10 @@ public:
         {
             bReset=false;
             
-            for (int i=0; i<(int)mObjects.size(); ++i)
-            {
-                delete mObjects[i];
-            }
-
+            for (int i=0; i<(int)mObjects.size(); ++i) delete mObjects[i];
             mObjects.clear();
 
-            for (int i=0; i<(int)mTrajectories.size(); ++i)
-            {
-                delete mTrajectories[i];
-            }
-
+            for (int i=0; i<(int)mTrajectories.size(); ++i) delete mTrajectories[i];
             mTrajectories.clear();
 
             return;
@@ -185,15 +115,10 @@ public:
         {
             int newsize=0;
             int size=(int)mObjects.size();
-            
             for (int i=0; i<size; ++i)
             {
-                if (mObjects[i]!=NULL)
-                {
-                    mObjects[newsize++]=mObjects[i];
-                }
+                if (mObjects[i]!=NULL) mObjects[newsize++]=mObjects[i];
             }
-
             mObjects.resize(newsize);
         }
 
@@ -216,15 +141,10 @@ public:
         {
             int newsize=0;
             int size=(int)mTrajectories.size();
-            
             for (int i=0; i<size; ++i)
             {
-                if (mTrajectories[i]!=NULL)
-                {
-                    mTrajectories[newsize++]=mTrajectories[i];
-                }
+                if (mTrajectories[i]!=NULL) mTrajectories[newsize++]=mTrajectories[i];
             }
-
             mTrajectories.resize(newsize);
         }
     }
@@ -238,199 +158,191 @@ protected:
     yarp::os::BufferedPort<yarp::sig::VectorOf<unsigned char> > mTexPort;
 };
 
-    void ObjectsManager::manage(yarp::os::Bottle *msg)
+void ObjectsManager::manage(yarp::os::Bottle *msg)
+{
+    yarp::os::ConstString cmd=msg->get(0).asString();
+
+    if (cmd=="reset")
     {
-        /*
-        FILE *logf=fopen("log.txt","a");
-        fprintf(logf,"%s\n",msg->toString().c_str());
-        fflush(logf);
-        fclose(logf);
-        */
-        yarp::os::ConstString cmd=msg->get(0).asString();
-
-        if (cmd=="reset")
-        {
-            bReset=true;
-        }
-        else if (cmd=="delete")
-        {
-            std::string name(msg->get(1).asString().c_str());
-            
-            int size=(int)mObjects.size();
-            for (int i=0; i<size; ++i)
-            {
-                if ((*mObjects[i])==name)
-                {
-                    mObjects[i]->bDeleted=true;
-                    break;
-                }
-            }
-
-            size=(int)mTrajectories.size();
-            for (int i=0; i<size; ++i)
-            {
-                if ((*mTrajectories[i])==name)
-                {
-                    mTrajectories[i]->bDeleted=true;
-                    break;
-                }
-            }
-        }
-        else if (cmd=="object")
-        {
-            std::string name(msg->get(1).asString().c_str());
-
-            double dx=msg->get(2).asDouble();
-            double dy=msg->get(3).asDouble();
-            double dz=msg->get(4).asDouble();
-
-            double px=msg->get(5).asDouble();
-            double py=msg->get(6).asDouble();
-            double pz=msg->get(7).asDouble();
-
-            double rx=msg->get(8).asDouble();
-            double ry=msg->get(9).asDouble();
-            double rz=msg->get(10).asDouble();
-
-            int R=msg->get(11).asInt();
-            int G=msg->get(12).asInt();
-            int B=msg->get(13).asInt();
-            double alpha=msg->get(14).asDouble();
-
-            for (int i=0; i<(int)mObjects.size(); ++i)
-            {
-                if (*mObjects[i]==name)
-                {
-                    mObjects[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha);
-                    return;
-                }
-            }
-
-            printf("Added object %s\n",name.c_str());
-            mObjects.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha));
-        }
-        else if (cmd=="trajectory")
-        {
-            //TrajectoryObj(std::string name,int bufflen,double persistence,int r,int g,int b,double alpha,GLfloat width)
-
-            std::string name(msg->get(1).asString().c_str());
-            std::string label(msg->get(2).asString().c_str());
-
-            int bufflen=msg->get(3).asInt();
-            double persistence=msg->get(4).asDouble();
-
-            int R=msg->get(5).asInt();
-            int G=msg->get(6).asInt();
-            int B=msg->get(7).asInt();
-
-            double alpha=msg->get(8).asDouble();
-            GLfloat width=(GLfloat)msg->get(9).asDouble();
-
-            for (int i=0; i<(int)mTrajectories.size(); ++i)
-            {
-                if (*mTrajectories[i]==name)
-                {
-                    delete mTrajectories[i];
-                    mTrajectories[i]=new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width);
-                    return;
-                }
-            }
-
-            mTrajectories.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width));
-        }
-        else if (cmd=="addpoint")
-        {
-            std::string name(msg->get(1).asString().c_str());
-
-            double x=msg->get(2).asDouble();
-            double y=msg->get(3).asDouble();
-            double z=msg->get(4).asDouble();
-
-            for (int i=0; i<(int)mTrajectories.size(); ++i)
-            {
-                if (*mTrajectories[i]==name)
-                {
-                    mTrajectories[i]->update(x,y,z);
-                    return;
-                }
-            }
-        }
+        bReset=true;
+        return;
     }
 
-    void ObjectsManager::manage(yarp::sig::VectorOf<unsigned char> *img)
+    if (cmd=="delete")
     {
-        yarp::sig::VectorOf<unsigned char> &texture=*img;
-
-        int xdim=texture[0];
-        int ydim=texture[1];
-        std::string objName;
-
-        int c;
-        for (c=2; texture[c]; ++c)
+        std::string name(msg->get(1).asString().c_str());
+        
+        for (int i=0; i<(int)mObjects.size(); ++i)
         {
-            objName+=texture[c];
+            if (*mObjects[i]==name) mObjects[i]->bDeleted=true;
         }
 
-        int xdim2,ydim2;
-        for (xdim2=1; xdim2<xdim; xdim2*=2);
-        for (ydim2=1; ydim2<ydim; ydim2*=2);
-
-        unsigned char *buffer=new unsigned char[3*xdim2*ydim2];
-        int index=0;
-
-        for (int y=0; y<ydim2; ++y)
+        for (int i=0; i<(int)mTrajectories.size(); ++i)
         {
-            double v=double(y)/double(ydim2);
-            double oy=v*double(ydim);
-
-            int y0=int(oy);
-            double b1=oy-double(y0);
-            double b0=1.0-b1;
-
-            for (int x=0; x<xdim2; ++x)
-            {
-                double u=double(x)/double(xdim2);
-                double ox=u*double(xdim);
-
-                int x0=int(ox);
-                double a1=ox-double(x0);
-                double a0=1.0-a1;
-
-                int p00=c+x0+y0*xdim;
-                int p10=p00+1;
-       
-                if (x0==xdim-1) p10=p00;
-
-                int p01=p00+xdim;
-                int p11=p10+xdim;
-
-                if (y0==ydim-1)
-                {
-                    p01=p00;
-                    p11=p10;
-                }
-
-                double grey=a0*b0*double(texture[p00])+a0*b1*double(texture[p01])+a1*b0*double(texture[p10])+a1*b1*double(texture[p11]);
-                if (grey<0.0) grey=0.0; else if (grey>255.0) grey=255.0;
-
-                unsigned char G=(unsigned char)grey;
-
-                buffer[index++]=G;
-                buffer[index++]=G;
-                buffer[index++]=G;
-                //buffer[index++]=255;
-            }
+            if (*mTrajectories[i]==name) mTrajectories[i]->bDeleted=true;
         }
+
+        return;
+    }
+    
+    if (cmd=="object")
+    {
+        std::string name(msg->get(1).asString().c_str());
+
+        double dx=msg->get(2).asDouble();
+        double dy=msg->get(3).asDouble();
+        double dz=msg->get(4).asDouble();
+
+        double px=msg->get(5).asDouble();
+        double py=msg->get(6).asDouble();
+        double pz=msg->get(7).asDouble();
+
+        double rx=msg->get(8).asDouble();
+        double ry=msg->get(9).asDouble();
+        double rz=msg->get(10).asDouble();
+
+        int R=msg->get(11).asInt();
+        int G=msg->get(12).asInt();
+        int B=msg->get(13).asInt();
+        double alpha=msg->get(14).asDouble();
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
-            if (*mObjects[i]==objName)
+            if (*mObjects[i]==name)
             {
-                mObjects[i]->mW=xdim2;
-                mObjects[i]->mH=ydim2;
-                mObjects[i]->mTextureBuffer=buffer;
+                mObjects[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha);
                 return;
             }
         }
+
+        mObjects.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha));
+        
+        return;
     }
+    
+    if (cmd=="trajectory")
+    {
+        std::string name(msg->get(1).asString().c_str());
+        std::string label(msg->get(2).asString().c_str());
+
+        int bufflen=msg->get(3).asInt();
+        double persistence=msg->get(4).asDouble();
+
+        int R=msg->get(5).asInt();
+        int G=msg->get(6).asInt();
+        int B=msg->get(7).asInt();
+
+        double alpha=msg->get(8).asDouble();
+        GLfloat width=(GLfloat)msg->get(9).asDouble();
+
+        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        {
+            if (*mTrajectories[i]==name)
+            {
+                mTrajectories[i]->set(label,bufflen,persistence,R,G,B,alpha,width);
+                return;
+            }
+        }
+
+        mTrajectories.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width));
+
+        return;
+    }
+    
+    if (cmd=="addpoint")
+    {
+        std::string name(msg->get(1).asString().c_str());
+
+        double x=msg->get(2).asDouble();
+        double y=msg->get(3).asDouble();
+        double z=msg->get(4).asDouble();
+
+        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        {
+            if (*mTrajectories[i]==name)
+            {
+                mTrajectories[i]->update(x,y,z);
+                return;
+            }
+        }
+
+        return;
+    }
+}
+
+void ObjectsManager::manage(yarp::sig::VectorOf<unsigned char> *img)
+{
+    yarp::sig::VectorOf<unsigned char> &texture=*img;
+
+    int xdim=texture[0];
+    int ydim=texture[1];
+    std::string objName;
+
+    int c;
+    for (c=2; texture[c]; ++c)
+    {
+        objName+=texture[c];
+    }
+
+    int xdim2,ydim2;
+    for (xdim2=1; xdim2<xdim; xdim2*=2);
+    for (ydim2=1; ydim2<ydim; ydim2*=2);
+
+    unsigned char *buffer=new unsigned char[3*xdim2*ydim2];
+    int index=0;
+
+    for (int y=0; y<ydim2; ++y)
+    {
+        double v=double(y)/double(ydim2);
+        double oy=v*double(ydim);
+
+        int y0=int(oy);
+        double b1=oy-double(y0);
+        double b0=1.0-b1;
+
+        for (int x=0; x<xdim2; ++x)
+        {
+            double u=double(x)/double(xdim2);
+            double ox=u*double(xdim);
+
+            int x0=int(ox);
+            double a1=ox-double(x0);
+            double a0=1.0-a1;
+
+            int p00=c+x0+y0*xdim;
+            int p10=p00+1;
+
+            if (x0==xdim-1) p10=p00;
+
+            int p01=p00+xdim;
+            int p11=p10+xdim;
+
+            if (y0==ydim-1)
+            {
+                p01=p00;
+                p11=p10;
+            }
+
+            double grey=a0*b0*double(texture[p00])+a0*b1*double(texture[p01])+a1*b0*double(texture[p10])+a1*b1*double(texture[p11]);
+            if (grey<0.0) grey=0.0; else if (grey>255.0) grey=255.0;
+
+            unsigned char G=(unsigned char)grey;
+
+            buffer[index++]=G;
+            buffer[index++]=G;
+            buffer[index++]=G;
+        }
+    }
+
+    for (int i=0; i<(int)mObjects.size(); ++i)
+    {
+        if (*mObjects[i]==objName)
+        {
+            mObjects[i]->mW=xdim2;
+            mObjects[i]->mH=ydim2;
+            mObjects[i]->mTextureBuffer=buffer;
+            return;
+        }
+    }
+}
 #endif

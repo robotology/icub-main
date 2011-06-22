@@ -44,27 +44,8 @@ class qavimator : public QMainWindow, Ui::MainWindow
 
   protected slots:
     void readSettings();
-    void configChanged();
-
-    /*
-    void partClicked(BVHNode* node);
-    void partDragged(BVHNode* node,double changeX,double changeY,double changeZ);
-    void propClicked(Prop* prop);
-    void propDragged(Prop* prop,double x,double y,double z);
-    void propScaled(Prop* prop,double x,double y,double z);
-    void propRotated(Prop* prop,double x,double y,double z);
-    */
-    
+    void configChanged();    
     void backgroundClicked();
-
-    /*
-    void frameTimeout();
-    
-    void setCurrentFrame(int frame);
-
-    void selectAnimation(Animation* animation);
-    void clearProps();
-    */
     
     // autoconnection from designer UI
 
@@ -86,35 +67,7 @@ class qavimator : public QMainWindow, Ui::MainWindow
     void on_resetCameraAction_triggered();
 
     // ------- UI Element Slots --------
-    //void on_selectAnimationCombo_activated(int);
-    void on_figureCombo_activated(int);
-    void on_scaleSpin_valueChanged(int newValue);
-    //void on_editPartCombo_activated(int);
-    void on_xRotationEdit_returnPressed();
-    void on_xRotationEdit_lostFocus();
-    void on_xRotationSlider_valueChanged(int);
-    void on_yRotationEdit_returnPressed();
-    void on_yRotationEdit_lostFocus();
-    void on_yRotationSlider_valueChanged(int);
-    void on_zRotationEdit_returnPressed();
-    void on_zRotationEdit_lostFocus();
-    void on_zRotationSlider_valueChanged(int);
-    void on_xPositionEdit_returnPressed();
-    void on_xPositionEdit_lostFocus();
-    void on_xPositionSlider_valueChanged(int);
-    void on_yPositionEdit_returnPressed();
-    void on_yPositionEdit_lostFocus();
-    void on_yPositionSlider_valueChanged(int);
-    void on_zPositionEdit_returnPressed();
-    void on_zPositionEdit_lostFocus();
-    void on_zPositionSlider_valueChanged(int);
-
-    //void on_currentFrameSlider_valueChanged(int newValue);
     void on_playButton_clicked();
-    //void on_keyframeButton_toggled(bool on);
-    //void on_loopInSpinBox_valueChanged(int newValue);
-    //void on_loopOutSpinBox_valueChanged(int newValue);
-    //void on_framesSpin_valueChanged(int num);
     void on_fpsSpin_valueChanged(int num);
     // end autoconnection from designer UI
 
@@ -125,40 +78,14 @@ class qavimator : public QMainWindow, Ui::MainWindow
     void fileNew();
     void fileOpen();
     void fileOpen(const QString& fileName);
-    // "add" a new file without clearing the old one(s)
-    //void fileAdd();
-    //void fileAdd(const QString& fileName);
     void fileSave();
     void fileSaveAs();
-    //void fileExportForSecondLife();
-    //void fileLoadProps();
-    //void fileSaveProps();
     void fileExit();
-
-    //void editCut();
-    //void editCopy();
-    //void editPaste();
-    //void editOptimizeBVH();
-
-    //void showSkeleton(bool on);
     void setJointLimits(bool on);
-    //void setLoop(bool on);
-    //void setProtectFirstFrame(bool on);
     void showTimeline(bool state);
     void configure();
 
     void helpAbout();
-
-    //void animationChanged(int which);
-    //void setAvatarShape(int shape);
-    void setAvatarScale(int percent);
-    void partChoice();
-    void rotationValue();
-    void rotationSlider();
-    void positionValue();
-    void positionSlider();
-
-    //void frameSlider(int position);
     void nextPlaystate();
     
 	int nFPS;
@@ -188,61 +115,24 @@ class qavimator : public QMainWindow, Ui::MainWindow
     void enableInputs(bool state);
 
     void updateFps();
-    //void updateKeyBtn();
     void updateInputs();
-    //void updatePropSpins(const Prop* prop);
-
-    // calculates the longest running time of all loaded animations, returns it
-    // and stores it in longestRunningTime member variable
-    //double calculateLongestRunningTime();
-
-    void setX(float x);
-    void setY(float y);
-    void setZ(float z);
-
-    float getX();
-    float getY();
-    float getZ();
-
-    void setXPos(float x);
-    void setYPos(float y);
-    void setZPos(float z);
-
-    float getXPos();
-    float getYPos();
-    float getZPos();
 
     QString currentFile;
     QStringList openFiles;
     // last path used for open or save
     QString lastPath;
-    //QTimer timer;
-    // list of animation ids mapped to combo box indexes
-    //QList<Animation*> animationIds;
 
     // mapping of combo box indexes to node ids
     QList<int> nodeMapping;
 
-    //BVHNode* currentPart;
-
     // icons for play button
     QIconSet playIcon;
-    //QIcon loopIcon;
     QIconSet stopIcon;
 
     // holds the current playing status
     PlayState playstate;
 
-    //bool loop;
     bool jointLimits;
-    //bool frameDataValid;
-    // if set the first frame of an animation is protected
-    //bool protectFirstFrame;
-    // will be true if a frame is protected
-    //bool protect;
-
-    // holds the longest running time of all currently opened animations
-    //double longestRunningTime;
 };
 
 #endif

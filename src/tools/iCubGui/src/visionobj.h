@@ -35,34 +35,50 @@
 
 //GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_24;
 
-//-------------------------------------------------------------------------
-//  Draws a string at the specified coordinates.
-//-------------------------------------------------------------------------
-inline void printw(float x,float y,float z,const char* text)
+class GuiObj
 {
-    //glClear(GL_COLOR_BUFFER_BIT);
-
-    //  Specify the raster position for pixel operations.
-    glRasterPos3f(x,y,z);
-
-    //  Draw the characters one by one
-    for (int i=0; text[i]!='\0'; ++i)
+public:
+    GuiObj(std::string& name,int r,int g,int b,double alpha)
     {
-        glutBitmapCharacter(GLUT_BITMAP_9_BY_15,text[i]);
+        mName=name;
+        mR=double(r)/255.0; mG=double(g)/255.0; mB=double(b)/255.0;
+        mAlpha=alpha;
+        bDeleted=false;
+    }
+    
+    virtual ~GuiObj(){}
+    virtual void draw()=0;
+    
+    bool operator==(std::string &name)
+    {
+        return mName==name;
     }
 
-    //glFlush();
-}
+    bool bDeleted;
 
-class TrajectoryObj
+protected:
+    void printw(float x,float y,float z,const char* text)
+    {
+        //glClear(GL_COLOR_BUFFER_BIT);
+        glRasterPos3f(x,y,z);
+        for (int i=0; text[i]!='\0'; ++i)
+        {
+            glutBitmapCharacter(GLUT_BITMAP_9_BY_15,text[i]);
+        }
+        //glFlush();
+    }
+
+    std::string mName;
+    double mR,mG,mB,mAlpha;
+};
+
+class TrajectoryObj : public GuiObj
 {
 public:
     TrajectoryObj(std::string name,std::string label,int bufflen,double persistence,int r,int g,int b,double alpha,GLfloat width)
+        : GuiObj(name,r,g,b,alpha)
     {
-        mName=name;
         mLabel=label;
-        mR=double(r)/255.0; mG=double(g)/255.0; mB=double(b)/255.0;
-        mAlpha=alpha;
         mWidth=width;
         mPersistence=persistence;
 
@@ -70,7 +86,6 @@ public:
 
         mIndex=0;
         mFull=false;
-        bDeleted=false;
 
         mX=new double[mBufflen];
         mY=new double[mBufflen];
@@ -78,6 +93,50 @@ public:
         mT=new double[mBufflen];
     }
 
+    void set(std::string& label,int bufflen,double persistence,int r,int g,int b,double alpha,double width)
+    {
+        mLabel=label;
+        mWidth=width;
+        mPersistence=persistence;
+        mR=double(r)/255.0; mG=double(g)/255.0; mB=double(b)/255.0;
+        mAlpha=alpha;
+
+        if (mBufflen==bufflen) return;
+
+        double *tX=new double[bufflen];
+        double *tY=new double[bufflen];
+        double *tZ=new double[bufflen];
+        double *tT=new double[bufflen];
+
+        int n=bufflen<mBufflen?bufflen:mBufflen;
+
+        for (int i=0; i<n; ++n)
+        {
+            tX[i]=mX[(mIndex+i)%mBufflen];
+            tY[i]=mY[(mIndex+i)%mBufflen];
+            tZ[i]=mZ[(mIndex+i)%mBufflen];
+            tT[i]=mT[(mIndex+i)%mBufflen];
+        }
+
+        delete [] mX; mX=tX;
+        delete [] mY; mY=tY;
+        delete [] mZ; mZ=tZ;
+        delete [] mT; mT=tT;
+
+        if (mFull)
+        {
+            if (bufflen>mBufflen) mFull=false;
+        }
+        else
+        {
+            if (bufflen<=mIndex) mFull=true; 
+        }
+
+        mIndex=0;
+
+        mBufflen=bufflen;
+    }
+    
     void update(double x,double y,double z)
     {
         mX[mIndex]=x;
@@ -116,11 +175,6 @@ public:
         printw(mX[mIndex-1],mY[mIndex-1],mZ[mIndex-1]+50.0,mLabel.c_str());
     }
 
-    bool operator==(std::string &name)
-    {
-        return mName==name;
-    }
-
     ~TrajectoryObj()
     {
         delete [] mX;
@@ -128,8 +182,6 @@ public:
         delete [] mZ;
         delete [] mT;
     }
-
-    bool bDeleted;
 
 protected:
     int mIndex;
@@ -140,13 +192,11 @@ protected:
     double *mY;
     double *mZ;
     double *mT;
-    std::string mName;
     std::string mLabel;
-    double mR,mG,mB,mAlpha;
     GLfloat mWidth;
 };
 
-class VisionObj
+class VisionObj : public GuiObj
 {
 public:
     VisionObj(std::string name,
@@ -154,32 +204,20 @@ public:
               double posx,double posy,double posz,
               double rotx,double roty,double rotz,
               int r,int g,int b,double alpha)
+        : GuiObj(name,r,g,b,alpha)
     {   
         mW=mH=0;
         nTexID=0;
         bTextured=false;
-        bDeleted=false;
         mTextureBuffer=NULL;
-
-        mName=name;
        
         set(dimx,dimy,dimz,posx,posy,posz,rotx,roty,rotz,r,g,b,alpha);
-
-        //mEllipsoid=gluNewQuadric();
-
-        //glClearColor(0.0,0.0,0.0,0.0);
-    }
-
-    bool operator==(std::string &name)
-    {
-        return mName==name;
     }
 
     ~VisionObj()
     {
         if (bTextured) glDeleteTextures(1,&nTexID);
-        bTextured=false;
-        //if (mEllipsoid!=NULL) gluDeleteQuadric(mEllipsoid);                   
+        bTextured=false;               
     }
     
     void set(double dimx,double dimy,double dimz,
@@ -227,16 +265,10 @@ public:
         glRotated(mRoty,0.0,1.0,0.0);
         glRotated(mRotx,1.0,0.0,0.0);
 
-        //glColor4d(mR,mG,mB,1.0);
         glColor4d(mR,mG,mB,mAlpha);
-
-        //glPushMatrix();
-        //glScaled(mDimx,mDimy,mDimz);
-        //gluSphere(mEllipsoid,1.0,16,16);
 
         if (bTextured)
         {
-            // setup texture mapping
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D,nTexID);
 
@@ -271,18 +303,6 @@ public:
             glVertex3f(-mDimx,-mDimy,-mDimz);
             glVertex3f(-mDimx, mDimy,-mDimz);
             glVertex3f( mDimx, mDimy,-mDimz);
-
-            /*
-            glTexCoord2f(1.0,0.0); glVertex3fv(v0);
-            glTexCoord2f(1.0,1.0); glVertex3fv(v4);
-            glTexCoord2f(0.0,1.0); glVertex3fv(v5);
-            glTexCoord2f(0.0,0.0); glVertex3fv(v1);
-
-            glTexCoord2f(0.0,1.0); glVertex3fv(v2);
-            glTexCoord2f(0.0,0.0); glVertex3fv(v6);
-            glTexCoord2f(1.0,0.0); glVertex3fv(v7);
-            glTexCoord2f(1.0,1.0); glVertex3fv(v3);
-            */
 
             glEnd();
 
@@ -324,24 +344,18 @@ public:
             glEnd();
         }
 
-        //glPopMatrix();
         glPopMatrix();
     }
 
     int mW,mH;
     bool bTextured;
-    bool bDeleted;
     unsigned char* mTextureBuffer;
     
 protected:
     GLuint nTexID;
-    std::string mName;
     double mDimx,mDimy,mDimz;
     double mPosx,mPosy,mPosz;
     double mRotx,mRoty,mRotz;
-    double mR,mG,mB,mAlpha;
-
-    //GLUquadricObj *mEllipsoid;
 };
 
 #endif
