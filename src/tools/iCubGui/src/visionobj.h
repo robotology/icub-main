@@ -154,7 +154,7 @@ public:
     void draw()
     {        
         glColor4f(mR,mG,mB,1.0);
-        glLineWidth(3.0);
+        glLineWidth(mWidth);
         
         double now=yarp::os::Time::now();
 
