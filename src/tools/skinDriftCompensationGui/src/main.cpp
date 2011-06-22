@@ -21,7 +21,7 @@
  * @ingroup icub_guis
  * \defgroup icub_skinDriftCompensationGui skinDriftCompensationGui
  *
- * A simple graphical interface for controlling and monitoring an instance of the \ref skinDriftCompensation module.
+ * A simple graphical interface for controlling and monitoring an instance of the \ref icub_skinDriftCompensation module.
  * This GUI needs at least the version 2.14 of GtkPlus.
  *
  * \section intro_sec Description
@@ -36,7 +36,7 @@
  * - monitor the skin data frequency
  * - monitor the drift of each skin taxel
  * - get warning and error messages related to the skin
- * - see all the ports read by the interested \ref skinDriftCompensation module 
+ * - see all the ports read by the interested \ref icub_skinDriftCompensation module 
  *
  * \section parameters_sec Parameters
  * 
@@ -56,12 +56,12 @@
  * None
  *
  * \section portsc_sec Ports Created
- * Three ports are created for communicating with the \ref skinDriftCompensation module.
+ * Three ports are created for communicating with the \ref icub_skinDriftCompensation module.
  * The port names are:
  * - "/" + guiName + "/rpc:o"
  * - "/" + guiName + "/monitor:i"
  * - "/" + guiName + "/info:i"
- * These ports should be externally connected to the corresponding \ref skinDriftCompensation ports.
+ * \n These ports should be externally connected to the corresponding \ref icub_skinDriftCompensation ports.
  * 
  * \section conf_file_sec Configuration Files
  *
