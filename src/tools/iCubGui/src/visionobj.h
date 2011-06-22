@@ -59,13 +59,13 @@ public:
 protected:
     void printw(float x,float y,float z,const char* text)
     {
-        //glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_LIGHTING);
         glRasterPos3f(x,y,z);
         for (int i=0; text[i]!='\0'; ++i)
         {
             glutBitmapCharacter(GLUT_BITMAP_9_BY_15,text[i]);
         }
-        //glFlush();
+        glEnable(GL_LIGHTING);
     }
 
     std::string mName;
