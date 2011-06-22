@@ -101,9 +101,11 @@ The following key-value pairs can be specified as command-line parameters by pre
 \section portsa_sec Ports Accessed
 All the ports listed in the "inputPorts" parameter and the corresponding rpc ports.
 For instance if in the "inputPorts" parameter it is specified the port
-- /icub/skin/right_hand \n
+- /icub/skin/right_hand
+.
 then also the port
-- /icub/skin/right_hand/rpc:i \n
+- /icub/skin/right_hand/rpc:i
+.
 will be accessed.
 
 
@@ -127,7 +129,7 @@ will be accessed.
 	- “force calibration”: force the sensor calibration
 	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
 	- "set binarization": enable or disable the binarization (specifying the value on/off)
-	- "get binarization": "get the binarization filter state (on, off)
+	- "get binarization": get the binarization filter state (on, off)
 	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
 	- "get smooth filter": get the smooth filter state (on, off)
 	- "set smooth factor": set the value of the smooth factor (in [0,1])
