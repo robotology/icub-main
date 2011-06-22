@@ -112,7 +112,7 @@ will be accessed.
 - Every port specified in the "outputPorts" parameter: outputs a yarp::os::Vector containing the compensated tactile data.
 - "/"+moduleName+"/monitor:o": \n 
     outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
-    (used to communicate with the SkinDriftCompensationGui). The first value is the data frequency, while
+    (used to communicate with the \ref icub_skinDriftCompensationGui). The first value is the data frequency, while
     all the following ones represent the drift compensated so far for each taxel.
 - "/"+moduleName+"/info:o": \n 
     outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
@@ -122,7 +122,7 @@ will be accessed.
 <b>Input ports</b>
 - For each port specified in the "inputPorts" parameter a local port is created with the name
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
-- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the skinDriftCompensationGui can be used). 
+- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinDriftCompensationGui can be used). 
     This port accepts a yarp::os::Bottle that contains one of these commands:
 	- “force calibration”: force the sensor calibration
 	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
