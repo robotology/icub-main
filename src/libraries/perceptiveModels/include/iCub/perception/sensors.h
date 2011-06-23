@@ -22,6 +22,11 @@
  *  
  * Abstract layers for dealing with perceptive models framework. 
  *  
+ * @section framework_intro_sec Description 
+ *  
+ * ... 
+ *  
+ *  
  * @defgroup Sensors Sensors 
  * @ingroup PerceptiveModels
  *
@@ -31,7 +36,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
  *
- * @section intro_sec Description
+ * @section sensors_intro_sec Description
  *
  * ... 
  *  
