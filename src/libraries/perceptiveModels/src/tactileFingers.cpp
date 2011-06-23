@@ -175,7 +175,6 @@ bool TactileFingersModel::fromProperty(const Property &options)
     verbose=opt.check("verbose",Value(0)).asInt();
 
     port->open(("/"+name+"/"+type+"_hand:i").c_str());
-
     string skinPortName(("/"+robot+"/skin/"+type+"_hand").c_str());
     if (compensation)
         skinPortName+="_comp";
