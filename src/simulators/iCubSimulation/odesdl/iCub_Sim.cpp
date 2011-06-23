@@ -1008,7 +1008,7 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
         
     options.fromConfigFile(videoconf.c_str());
 
-    Bottle textures = options.findGroup("textures").tail();
+    Bottle textures = *options.find("textures").asList();
     for (int i=0; i<textures.size(); i++) {
         ConstString name = textures.get(i).asString();
         printf("Adding video texture %s\n", name.c_str());
