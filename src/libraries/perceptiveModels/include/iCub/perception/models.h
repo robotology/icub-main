@@ -17,7 +17,6 @@
 */
 
 /** 
- * @note UNDER DEVELOPMENT   
  * @defgroup Models Models
  *  
  * @ingroup PerceptiveModels 

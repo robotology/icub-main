@@ -109,9 +109,9 @@ bool SpringyFinger::getSensorsData(Value &data) const
         return false;
 
     Value val_in, val_out[3];
-    In_0->second->getInput(val_in);
-    Out_0->second->getInput(val_out[0]);
-    Out_1->second->getInput(val_out[1]);
+    In_0->second->getOutput(val_in);
+    Out_0->second->getOutput(val_out[0]);
+    Out_1->second->getOutput(val_out[1]);
 
     Vector in(lssvm.getDomainSize());
     in[0]=val_in.asDouble();
@@ -122,7 +122,7 @@ bool SpringyFinger::getSensorsData(Value &data) const
 
     if (lssvm.getCoDomainSize()>2)
     {
-        Out_2->second->getInput(val_out[2]);
+        Out_2->second->getOutput(val_out[2]);
         out[2]=val_out[2].asDouble();
     }
 

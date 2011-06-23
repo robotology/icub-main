@@ -17,15 +17,12 @@
 */
 
 /** 
- * @note UNDER DEVELOPMENT  
  * @defgroup PerceptiveModels perceptiveModels
- *  
  * @ingroup icub_libraries 
  *  
  * Abstract layers for dealing with perceptive models framework. 
  *  
  * @defgroup Sensors Sensors 
- *  
  * @ingroup PerceptiveModels
  *
  * @author Ugo Pattacini 
@@ -56,8 +53,10 @@ namespace perception
 {
 
 /** 
-* @ingroup Sensors
+* @ingroup Sensors 
 *  
+* An abstract class that exposes the basic methods for sensors 
+* handling. 
 */
 class Sensor
 {
@@ -67,17 +66,45 @@ protected:
     void *source;
 
 public:
+    /**
+    * Constructor. 
+    */
     Sensor();
+
+    /**
+    * Retrieve the sensor name. 
+    * @return a string containing the sensor name. 
+    */
     std::string getName() const { return name; }
+
+    /**
+    * Configure the sensor. 
+    * @param source a pointer to the underlying structure to which 
+    *               the sensor is attached.
+    * @param options a Property containing the configuration 
+    *                parameters.
+    * @return true/false on success/failure.
+    */
     virtual bool configure(void *source, const yarp::os::Property &options) = 0;
-    virtual bool getInput(yarp::os::Value &in) const = 0;
+
+    /**
+    * Retrieve the sensor raw output.
+    * @param in a value containing the sensor output.
+    * @return true/false on success/failure.
+    */
+    virtual bool getOutput(yarp::os::Value &in) const = 0;
+
+    /**
+    * Destructor. 
+    */
     virtual ~Sensor() { }
 };
 
 
 /**
-* @ingroup Sensors
+* @ingroup Sensors 
 *  
+* This class implements the reading of motor joints encoders. 
 */
 class SensorInterface : public Sensor
 {
@@ -86,14 +113,32 @@ protected:
     int index;
 
 public:
+    /**
+    * Configure the sensor. 
+    * @param source a pointer to the yarp::dev::IEncoders interface.
+    * @param options a Property containing the configuration 
+    *                parameters. Available options are:
+    * <b>name</b>: the name of the sensor. 
+    * <b>size</b>: the size of the whole sensor data vector. 
+    * <b>index</b>: the index corresponding to the joint that needs 
+    * to be sensed. 
+    * @return true/false on success/failure.
+    */
     bool configure(void *source, const yarp::os::Property &options);
-    bool getInput(yarp::os::Value &in) const;
+
+    /**
+    * Retrieve the sensor joint value.
+    * @param in a value containing the current joint position.
+    * @return true/false on success/failure.
+    */
+    bool getOutput(yarp::os::Value &in) const;
 };
 
 
 /**
-* @ingroup Sensors
+* @ingroup Sensors 
 *  
+* This class implements the reading of a value from a port. 
 */
 class SensorPort : public Sensor
 {
@@ -101,8 +146,24 @@ protected:
     int index;
 
 public:
+    /**
+    * Configure the sensor. 
+    * @param source a pointer to the yarp::os::Port object.
+    * @param options a Property containing the configuration 
+    *                parameters. Available options are:
+    * <b>name</b>: the name of the sensor. 
+    * <b>index</b>: the index corresponding to the double that needs
+    * to be retrieved. 
+    * @return true/false on success/failure.
+    */
     bool configure(void *source, const yarp::os::Property &options);
-    bool getInput(yarp::os::Value &in) const;
+
+    /**
+    * Retrieve the sensor output.
+    * @param in is filled with the current output value.
+    * @return true/false on success/failure.
+    */
+    bool getOutput(yarp::os::Value &in) const;
 };
 
 

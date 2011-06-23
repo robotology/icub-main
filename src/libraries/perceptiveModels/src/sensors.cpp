@@ -58,7 +58,7 @@ bool SensorInterface::configure(void *source, const Property &options)
 
 
 /************************************************************************/
-bool SensorInterface::getInput(Value &in) const
+bool SensorInterface::getOutput(Value &in) const
 {
     if (!configured)
         return false;    
@@ -87,7 +87,7 @@ bool SensorPort::configure(void *source, const Property &options)
 
 
 /************************************************************************/
-bool SensorPort::getInput(Value &in) const
+bool SensorPort::getOutput(Value &in) const
 {
     if (configured)
     {

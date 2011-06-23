@@ -17,7 +17,6 @@
 */
 
 /** 
- * @note UNDER DEVELOPMENT   
  * @defgroup SpringyFingers springyFingers
  *  
  * @ingroup PerceptiveModels 

@@ -17,7 +17,6 @@
 */
 
 /** 
- * @note UNDER DEVELOPMENT   
  * @defgroup TactileFingers tactileFingers
  *  
  * @ingroup PerceptiveModels 

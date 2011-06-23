@@ -80,7 +80,7 @@ bool TactileFinger::getSensorsData(Value &data) const
         if (In==sensors.end())
             return false;
 
-        Value val_in; In->second->getInput(val_in);
+        Value val_in; In->second->getOutput(val_in);
         in[j]=val_in.asDouble();
     }
 

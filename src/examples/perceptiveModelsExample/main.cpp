@@ -28,10 +28,44 @@ Copyright (C) 2011 RobotCub Consortium
 Author: Ugo Pattacini 
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+ 
+\section intro_sec Description 
+This simple module gives a very brief introduction to the use 
+of \ref PerceptiveModels framework for the case of detection of
+contacts of the fingers with external objects.
+
+Two types of models are envisaged: \n
+-# the springy approach that learns the relations between the motor
+joints and the distal fingers joints to detect discrepancies caused
+by external contacts;
+-# an direct approach that relies on the output of tactile sensors.
+
+The output of this module is printed out on the screen reporting the
+data as gathered from the sensors as well as a synthetic number which
+accounts for the contact detection: the larger it becomes, the stronger
+should be the force excerted by the external object.
 
 \section lib_sec Libraries 
 - YARP libraries. 
-- \ref PerceptiveModels library.  
+- \ref PerceptiveModels library. 
+ 
+\section parameters_sec Parameters
+--name \e name
+- specify the module name, which is \e percex by default. 
+ 
+--hand \e hand 
+- specify which hand has to be used: \e hand can be \e left or 
+  \e right (by default).
+ 
+--model \e type 
+- specify the type of perceptive model to be employed for 
+  sensing external contacts; possible choices are: \e springy
+  and \e tactile. In case the \e springy model is used, a
+  preliminary calibration phase is carried out.
+ 
+--finger \e finger 
+- specify the finger to be used; possible choices are: \e thumb, 
+  \e index, \e middle, \e ring and \e little.
 
 \section tested_os_sec Tested OS
 Windows, Linux
@@ -78,7 +112,7 @@ public:
     {
         string name=rf.find("name").asString().c_str();
         string hand=rf.find("hand").asString().c_str();
-        string type=rf.find("type").asString().c_str();
+        string modelType=rf.find("modelType").asString().c_str();
         fingerName=rf.find("finger").asString().c_str();
 
         if (fingerName=="thumb")
@@ -116,7 +150,7 @@ public:
         val=&min;
 
         Property genOpt;
-        genOpt.put("name",(name+"/"+type).c_str());
+        genOpt.put("name",(name+"/"+modelType).c_str());
         genOpt.put("type",hand.c_str());
         genOpt.put("verbose",1);
         string general(genOpt.toString().c_str());
@@ -129,9 +163,9 @@ public:
 		Property options((general+" "+thumb+" "+index+" "+middle+" "+ring+" "+little).c_str());
 		fprintf(stdout,"configuring options: %s\n",options.toString().c_str());
 
-        if (type=="springy")
+        if (modelType=="springy")
             model=new SpringyFingersModel;
-        else if (type=="tactile")
+        else if (modelType=="tactile")
             model=new TactileFingersModel;
         else
         {
@@ -221,7 +255,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefault("name","percex");
     rf.setDefault("hand","right");
-    rf.setDefault("type","springy");
+    rf.setDefault("modelType","springy");
     rf.setDefault("finger","index");
     rf.configure("ICUB_ROOT",argc,argv);
 
