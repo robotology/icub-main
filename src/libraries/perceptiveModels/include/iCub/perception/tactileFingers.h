@@ -91,6 +91,7 @@ private:
     SensorPort    sensPort[60];
     TactileFinger fingers[5];
     bool configured;
+    bool compensation;
 
     yarp::os::BufferedPort<yarp::os::Bottle> *port;
 

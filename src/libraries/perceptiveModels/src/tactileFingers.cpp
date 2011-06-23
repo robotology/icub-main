@@ -171,10 +171,15 @@ bool TactileFingersModel::fromProperty(const Property &options)
     name=opt.find("name").asString().c_str();
     type=opt.find("type").asString().c_str();
     robot=opt.check("robot",Value("icub")).asString().c_str();
+    compensation=(opt.check("compensation",Value("false")).asString()=="true");
     verbose=opt.check("verbose",Value(0)).asInt();
 
     port->open(("/"+name+"/"+type+"_hand:i").c_str());
+
     string skinPortName(("/"+robot+"/skin/"+type+"_hand").c_str());
+    if (compensation)
+        skinPortName+="_comp";
+
     if (!Network::connect(skinPortName.c_str(),port->getName().c_str(),"udp"))
     {
         printMessage(1,"unable to connect to %s\n",skinPortName.c_str());
@@ -260,6 +265,7 @@ void TactileFingersModel::toProperty(Property &options) const
         options.put("name",name.c_str());
         options.put("type",type.c_str());
         options.put("robot",robot.c_str());
+        options.put("compensation",compensation?"true":"false");
         options.put("verbose",verbose);
         options.put("thumb",prop[0].toString().c_str());
         options.put("index",prop[1].toString().c_str());
