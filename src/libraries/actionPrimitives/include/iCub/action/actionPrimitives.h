@@ -69,7 +69,7 @@
  * action is accomplished. 
  *  
  * To detect contacts among fingers and objects the \ref 
- * icub_graspDetector module is employed.
+ * PerceptiveModels library is employed.
  */ 
 
 #ifndef __AFFACTIONPRIMITIVES_H__
@@ -86,6 +86,7 @@
 #include <yarp/sig/Vector.h>
 
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
+#include <iCub/perception/models.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynInv.h>
 #include <iCub/iDyn/iDynTransform.h>
@@ -144,7 +145,7 @@ protected:
     yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
-    yarp::os::BufferedPort<yarp::os::Bottle> graspDetectionPort;
+    perception::Model    *graspModel;
 
     yarp::os::RateThread *armWaver;
     yarp::os::Semaphore   mutex;
@@ -229,6 +230,7 @@ protected:
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,
                                 const int j);
     virtual bool configHandSeq(yarp::os::Property &opt);
+    virtual bool configGraspModel(yarp::os::Property &opt);
     virtual bool _pushAction(const bool execArm, const yarp::sig::Vector &x,
                              const yarp::sig::Vector &o, const double execTime,
                              const bool oEnabled, const bool execHand, const HandWayPoint &handWP,
@@ -328,6 +330,16 @@ public:
     *  
     * @b torso_yaw_max <double>: set the yaw maximum value [deg]. 
     *  
+    * @b grasp_model_type <string>: establish the type of the model 
+    *    used to detect external contacts while moving fingers. It
+    *    refers to the types implemented within the \ref
+    *    PerceptiveModels library, such as the "springy" or
+    *    "tactile".
+    * @note the special tag "none" is used to skip this part. 
+    *  
+    * @b grasp_model_file <string>: complete path to the file 
+    *    containing the options to initialize the grasp model.
+    *  
     * @b hand_sequences_file <string>: complete path to the file 
     *    containing the hand motions sequences.<br />Here is the
     *    format of motion sequences:
@@ -348,10 +360,10 @@ public:
     *  
     *  // the "poss", "vels" and "tols" keys specify 9 joints
     *  // positions, velocities and tolerances whereas the "thres"
-	*  // key specifies 5 fingers thresholds used for model-based
-	*  // contact detection. The "tols" key serves to detect the end
-    *  // motion condition. The "tmo" key specifies the timeout
-    *  // beyond which the motion is considered to be finished.
+	*  // key specifies 5 fingers thresholds used for contact detection
+	*  // The "tols" key serves to detect the end motion condition.
+    *  // The "tmo" key specifies the timeout beyond which the motion
+    *  // is considered to be finished.
     *  @endcode
     *  
     * @note A port called <i> /<local>/<part>/detectGrasp:i </i> is 
@@ -586,6 +598,17 @@ public:
     *       return false.
     */
     virtual bool areFingersInPosition(bool &f) const;
+
+    /**
+    * Return the model used internally to detect external contacts.
+    * @param model the perceptive model.
+    * @return true/false on success/fail. 
+    *  
+    * @note Useful to access the model methods as defined in \ref 
+    *       PerceptiveModels library, such as the calibration
+    *       procedures.
+    */
+    virtual bool getGraspModel(perception::Model *&model) const;
 
     /**
     * Return the cartesian interface used internally to control the 

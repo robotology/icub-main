@@ -71,7 +71,7 @@ reach(x2+lift_displacement,o)).
  
 --part \e type 
 - specify which arm has to be used: type can be \e left_arm, \e 
-  right_arm, \e both_arms (default=both_arms).
+  right_arm.
  
 \section portsa_sec Ports Accessed
 Assumes that \ref icub_iCubInterface (with ICartesianControl 
@@ -95,6 +95,14 @@ None.
 None. 
  
 \section conf_file_sec Configuration Files 
+--grasp_model_type \e type 
+- specify the grasp model type according to the \ref 
+  ActionPrimitives documentation.
+ 
+--grasp_model_file \e file 
+- specify the path to the file containing the grasp model 
+  options.
+ 
 --hand_sequences_file \e file 
 - specify the path to the file containing the hand motion 
   sequences relative to the current context ( \ref
@@ -122,22 +130,13 @@ torso_pitch_max                 30.0
 tracking_mode                   off 
 verbosity                       on 
  
-// arm-dependent options 
-[left_arm]
+[arm_dependent]
 grasp_orientation               (-0.171542 0.124396 -0.977292 3.058211)
 grasp_displacement              (0.0 0.0 0.05)
 systematic_error_displacement   (-0.03 -0.07 -0.02)
 lifting_displacement            (0.0 0.0 0.2)
 home_position                   (-0.29 -0.21 0.11)
-home_orientation                (-0.029976 0.763076 -0.645613 2.884471)
-
-[right_arm]
-grasp_orientation               (-0.0191 -0.983248 0.181269 3.093746)
-grasp_displacement              (0.0 0.0 0.05)
-systematic_error_displacement   (-0.03 -0.07 -0.02)
-lifting_displacement            (0.0 0.0 0.2)
-home_position                   (-0.29 -0.21 0.11)
-home_orientation                (-0.193426 -0.63989 0.743725 2.995693)
+home_orientation                (-0.029976 0.763076 -0.645613 2.884471) 
 \endcode 
 
 \section tested_os_sec Tested OS
@@ -153,9 +152,11 @@ Windows, Linux
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 #include <yarp/dev/Drivers.h>
+#include <iCub/perception/springyFingers.h>
 #include <iCub/action/actionPrimitives.h>
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <string>
 #include <deque>
@@ -172,76 +173,62 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
+using namespace iCub::perception;
 using namespace iCub::action;
 
 
 class ExampleModule: public RFModule
 {
 protected:
-    string partUsed;
-
-	AFFACTIONPRIMITIVESLAYER *actionL;
-    AFFACTIONPRIMITIVESLAYER *actionR;
     AFFACTIONPRIMITIVESLAYER *action;
-	BufferedPort<Bottle>      inPort;
+    BufferedPort<Bottle>      inPort;
     Port                      rpcPort;
 
-    Vector graspOrienL, graspOrienR;
-    Vector graspDispL,  graspDispR;
-    Vector dOffsL,      dOffsR;
-    Vector dLiftL,      dLiftR;
-    Vector home_xL,     home_xR;
-
-    Vector *graspOrien;
-    Vector *graspDisp;
-    Vector *dOffs;
-    Vector *dLift;
-    Vector *home_x;
+    Vector graspOrien;
+    Vector graspDisp;
+    Vector dOffs;
+    Vector dLift;
+    Vector home_x;
 
     bool openPorts;
     bool firstRun;
 
 public:
     ExampleModule()
-	{		        
-        graspOrienL.resize(4);    graspOrienR.resize(4);
-        graspDispL.resize(4);     graspDispR.resize(3);
-        dOffsL.resize(3);         dOffsR.resize(3);
-        dLiftL.resize(3);         dLiftR.resize(3);
-        home_xL.resize(3);        home_xR.resize(3);
+    {
+        graspOrien.resize(4);
+        graspDisp.resize(4);
+        dOffs.resize(3);
+        dLift.resize(3);
+        home_x.resize(3);
 
         // default values for arm-dependent quantities
-        graspOrienL[0]=-0.171542; graspOrienR[0]=-0.0191;
-        graspOrienL[1]= 0.124396; graspOrienR[1]=-0.983248;
-        graspOrienL[2]=-0.977292; graspOrienR[2]= 0.181269;
-        graspOrienL[3]= 3.058211; graspOrienR[3]= 3.093746;
+        graspOrien[0]=-0.171542;
+        graspOrien[1]= 0.124396;
+        graspOrien[2]=-0.977292;
+        graspOrien[3]= 3.058211;
 
-        graspDispL[0]= 0.0;       graspDispR[0]= 0.0;
-        graspDispL[1]= 0.0;       graspDispR[1]= 0.0;
-        graspDispL[2]= 0.05;      graspDispR[2]= 0.05;
+        graspDisp[0]=0.0;
+        graspDisp[1]=0.0;
+        graspDisp[2]=0.05;
 
-        dOffsL[0]=-0.03;          dOffsR[0]=-0.03;
-        dOffsL[1]=-0.07;          dOffsR[1]=-0.07;
-        dOffsL[2]=-0.02;          dOffsR[2]=-0.02;
+        dOffs[0]=-0.03;
+        dOffs[1]=-0.07;
+        dOffs[2]=-0.02;
 
-        dLiftL[0]= 0.0;           dLiftR[0]= 0.0;  
-        dLiftL[1]= 0.0;           dLiftR[1]= 0.0;  
-        dLiftL[2]= 0.15;          dLiftR[2]= 0.15; 
+        dLift[0]=0.0;
+        dLift[1]=0.0;
+        dLift[2]=0.15;
         
-        home_xL[0]=-0.29;         home_xR[0]=-0.29;
-        home_xL[1]=-0.21;         home_xR[1]= 0.24;
-        home_xL[2]= 0.11;         home_xR[2]= 0.07;
+        home_x[0]=-0.29;
+        home_x[1]=-0.21;
+        home_x[2]= 0.11;
 
-        action=actionL=actionR=NULL;
-        graspOrien=NULL;
-        graspDisp=NULL;
-        dOffs=NULL;
-        dLift=NULL;
-        home_x=NULL;
+        action=NULL;
 
         openPorts=false;
         firstRun=true;
-	}
+    }
 
     void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
                                 Vector &_dOffs, Vector &_dLift, Vector &_home_x)
@@ -302,10 +289,10 @@ public:
         string name=rf.find("name").asString().c_str();
         setName(name.c_str());
 
-        partUsed=rf.check("part",Value("both_arms")).asString().c_str();
-        if ((partUsed!="both_arms") && (partUsed!="left_arm") && (partUsed!="right_arm"))
+        string partUsed=rf.find("part").asString().c_str();
+        if ((partUsed!="left_arm") && (partUsed!="right_arm"))
         {
-            cout<<"Invalid part requested !"<<endl;
+            cout<<"Invalid part requested!"<<endl;
             return false;
         }        
 
@@ -332,64 +319,43 @@ public:
         }
 
         option.put("local",name.c_str());
-        option.put("hand_sequences_file",rf.findFile("hand_sequences_file"));
+        option.put("part",rf.find("part").asString().c_str());
+        option.put("grasp_model_type",rf.find("grasp_model_type").asString().c_str());
+        option.put("grasp_model_file",rf.findFile("grasp_model_file"));
+        option.put("hand_sequences_file",rf.findFile("hand_sequences_file"));        
 
-        Property optionL(option); optionL.put("part","left_arm");
-        Property optionR(option); optionR.put("part","right_arm");
+        // parsing arm dependent config options
+        Bottle &bArm=config.findGroup("arm_dependent");
+        getArmDependentOptions(bArm,graspOrien,graspDisp,dOffs,dLift,home_x);
 
-        // parsing left_arm config options
-        Bottle &bLeft=config.findGroup("left_arm");
-        if (bLeft.isNull())
+        cout<<"***** Instantiating primitives for "<<partUsed<<endl;
+        action=new AFFACTIONPRIMITIVESLAYER(option);
+        if (!action->isValid())
         {
-            cout<<"Error: group left_arm is missing!"<<endl;
+            delete action;
             return false;
         }
-        else 
-            getArmDependentOptions(bLeft,graspOrienL,graspDispL,
-                                   dOffsL,dLiftL,home_xL);
-
-        // parsing right_arm config options
-        Bottle &bRight=config.findGroup("right_arm");
-        if (bRight.isNull())
+        
+        // check whether the grasp model is calibrated (in case)
+        if (option.find("grasp_model_type").asString()=="springy")
         {
-            cout<<"Error: group right_arm is missing!"<<endl;
-            return false;
-        }
-        else
-            getArmDependentOptions(bRight,graspOrienR,graspDispR,
-                                   dOffsR,dLiftR,home_xR);
+            Model *model; action->getGraspModel(model);
+            SpringyFingersModel *springyModel=dynamic_cast<SpringyFingersModel*>(model);
 
-        if ((partUsed=="both_arms") || (partUsed=="left_arm"))
-        {    
-            cout<<"***** Instantiating primitives for left_arm"<<endl;
-            actionL=new AFFACTIONPRIMITIVESLAYER(optionL);
-
-            if (!actionL->isValid())
+            // if calibration is required, do it and save the results
+            if (!springyModel->isCalibrated())
             {
-                delete actionL;
-                return false;
+                Property prop("(finger all)");
+                springyModel->calibrate(prop);
+
+                prop.clear();
+                springyModel->toProperty(prop);
+
+                ofstream fout;
+                fout.open(option.find("grasp_model_file").asString().c_str());
+                fout<<prop.toString().c_str();
+                fout.close();
             }
-            else
-                useArm(USE_LEFT);
-        }
-
-        if ((partUsed=="both_arms") || (partUsed=="right_arm"))
-        {    
-            cout<<"***** Instantiating primitives for right_arm"<<endl;
-            actionR=new AFFACTIONPRIMITIVESLAYER(optionR);
-
-            if (!actionR->isValid())
-            {
-                delete actionR;
-
-                // remind to check to delete the left as well (if any)
-                if (actionL)
-                    delete actionL;
-
-                return false;
-            }
-            else
-                useArm(USE_RIGHT);
         }
 
         deque<string> q=action->getHandSeqList();
@@ -409,11 +375,8 @@ public:
 
     virtual bool close()
     {
-		if (actionL!=NULL)
-			delete actionL;
-		
-        if (actionR!=NULL)
-            delete actionR;
+        if (action!=NULL)
+            delete action;
 
         if (openPorts)
         {
@@ -425,59 +388,23 @@ public:
     }
 
     virtual double getPeriod()
-	{
-		return 0.1;
-	}
-
-    void useArm(const int arm)
     {
-        if (arm==USE_LEFT)
-        {
-            action=actionL;
-
-            graspOrien=&graspOrienL;
-            graspDisp=&graspDispL;
-            dOffs=&dOffsL;
-            dLift=&dLiftL;
-            home_x=&home_xL;
-        }
-        else if (arm==USE_RIGHT)
-        {
-            action=actionR;
-
-            graspOrien=&graspOrienR;
-            graspDisp=&graspDispR;
-            dOffs=&dOffsR;
-            dLift=&dLiftR;
-            home_x=&home_xR;
-        }
+        return 0.1;
     }
 
     void init()
     {
         bool f;
 
-        if ((partUsed=="both_arms") || (partUsed=="right_arm"))
-        {
-            useArm(USE_RIGHT);
-            action->pushAction(*home_x,"open_hand");
-            action->checkActionsDone(f,true);
-            action->enableArmWaving(*home_x);
-        }
-
-        if ((partUsed=="both_arms") || (partUsed=="left_arm"))
-        {
-            useArm(USE_LEFT);
-            action->pushAction(*home_x,"open_hand");
-            action->checkActionsDone(f,true);
-            action->enableArmWaving(*home_x);
-        }
+        action->pushAction(home_x,"open_hand");
+        action->checkActionsDone(f,true);
+        action->enableArmWaving(home_x);
     }
 
     // we don't need a thread since the actions library already
     // incapsulates one inside dealing with all the tight time constraints
     virtual bool updateModule()
-	{
+    {
         // do it only once
         if (firstRun)
         {
@@ -486,35 +413,26 @@ public:
         }
 
         // get a target object position from a YARP port
-		Bottle *b=inPort.read();	// blocking call
+        Bottle *b=inPort.read();	// blocking call
 
         if (b!=NULL)
-		{
-			Vector xd(3);
+        {
+            Vector xd(3);
             bool f;
-			
-			xd[0]=b->get(0).asDouble();
-			xd[1]=b->get(1).asDouble();
-			xd[2]=b->get(2).asDouble();
 
-            // switch only if it's allowed
-            if (partUsed=="both_arms")
-            {
-                if (xd[1]>0.0)
-                    useArm(USE_RIGHT);
-                else
-                    useArm(USE_LEFT);
-            }
+            xd[0]=b->get(0).asDouble();
+            xd[1]=b->get(1).asDouble();
+            xd[2]=b->get(2).asDouble();
 
             // apply systematic offset
             // due to uncalibrated kinematic
-            xd=xd+*dOffs;
+            xd=xd+dOffs;
 
             // safe thresholding
-			xd[0]=xd[0]>-0.1?-0.1:xd[0];
+            xd[0]=xd[0]>-0.1?-0.1:xd[0];
 
             // grasp (wait until it's done)
-			action->grasp(xd,*graspOrien,*graspDisp);
+            action->grasp(xd,graspOrien,graspDisp);
             action->checkActionsDone(f,true);
             action->areFingersInPosition(f);
 
@@ -526,7 +444,7 @@ public:
                 cout<<"Wow, got something!"<<endl;
 
                 // lift the object (wait until it's done)
-    			action->pushAction(xd+*dLift,*graspOrien);
+                action->pushAction(xd+dLift,graspOrien);
                 action->checkActionsDone(f,true);
             }
             else
@@ -539,36 +457,36 @@ public:
 
             // go home :) (wait until it's done, since
             // we may use two arms that share the torso)
-            action->pushAction(*home_x);
+            action->pushAction(home_x);
             action->checkActionsDone(f,true);
 
             // let the hand wave a bit around home position
             // the waving will be disabled before commencing
             // a new action
-            action->enableArmWaving(*home_x);
-		}		
+            action->enableArmWaving(home_x);
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	bool interruptModule()
-	{
+    bool interruptModule()
+    {
         // since a call to checkActionsDone() blocks
         // the execution until it's done, we need to 
         // take control and exit from the waiting state
-		action->syncCheckInterrupt(true);        
+        action->syncCheckInterrupt(true);        
 
         inPort.interrupt();
         rpcPort.interrupt();
 
-		return true;
-	}
+        return true;
+    }
 };
 
 
 int main(int argc, char *argv[])
 {
-    Network yarp;	
+    Network yarp;
 
     if (!yarp.checkNetwork())
         return -1;
@@ -579,6 +497,9 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultContext("actionPrimitivesExample/conf");
     rf.setDefaultConfigFile("config.ini");
+    rf.setDefault("part","left_arm");
+    rf.setDefault("grasp_model_type","springy");
+    rf.setDefault("grasp_model_file","grasp_model.ini");
     rf.setDefault("hand_sequences_file","hand_sequences.ini");
     rf.setDefault("name","actionPrimitivesMod");
     rf.configure("ICUB_ROOT",argc,argv);

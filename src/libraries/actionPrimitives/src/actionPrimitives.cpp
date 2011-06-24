@@ -25,6 +25,8 @@
 #include <gsl/gsl_math.h>
 
 #include <iCub/ctrl/math.h>
+#include <iCub/perception/springyFingers.h>
+#include <iCub/perception/tactileFingers.h>
 #include <iCub/action/actionPrimitives.h>
 
 #include <stdio.h>
@@ -53,6 +55,7 @@ using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iDyn;
+using namespace iCub::perception;
 using namespace iCub::action;
 
 
@@ -185,6 +188,8 @@ void ActionPrimitives::init()
     armWaver=NULL;
     actionClb=NULL;
 
+    graspModel=NULL;
+
     armMoveDone =latchArmMoveDone =true;
     handMoveDone=latchHandMoveDone=true;
     configured=closed=false;
@@ -299,11 +304,10 @@ bool ActionPrimitives::configHandSeq(Property &opt)
 {
     if (opt.check("hand_sequences_file"))
     {
-        string handSeqFile=opt.find("hand_sequences_file").asString().c_str();
-        Property handSeqProp;
+        string handSeqFile=opt.find("hand_sequences_file").asString().c_str();        
 
         printMessage("Processing %s file\n",handSeqFile.c_str());
-        handSeqProp.fromConfigFile(handSeqFile.c_str());
+        Property handSeqProp; handSeqProp.fromConfigFile(handSeqFile.c_str());
     
         // GENERAL group
         Bottle &bGeneral=handSeqProp.findGroup("GENERAL");
@@ -360,6 +364,62 @@ bool ActionPrimitives::configHandSeq(Property &opt)
 
 
 /************************************************************************/
+bool ActionPrimitives::configGraspModel(Property &opt)
+{
+    if (opt.check("grasp_model_type"))
+    {
+        string modelType=opt.find("grasp_model_type").asString().c_str();
+        if (modelType!="none")
+        {
+            if (opt.check("grasp_model_file"))            
+            {
+                if (modelType=="springy")
+                    graspModel=new SpringyFingersModel;
+                else if (modelType=="tactile")
+                    graspModel=new TactileFingersModel;
+                else
+                {
+                    printMessage("WARNING: unknown grasp model type %s!\n",modelType.c_str());
+                    return false;
+                }
+
+                string modelFile=opt.find("grasp_model_file").asString().c_str();                
+                printMessage("Retrieving grasp model data from %s file\n",modelFile.c_str());
+                Property modelProp; modelProp.fromConfigFile(modelFile.c_str());
+
+                // consistency check between the model and the part
+                if (modelProp.check("type"))
+                {
+                    string type=modelProp.find("type").asString().c_str();
+                    type+="_arm";
+                    if (type!=part)
+                    {
+                        printMessage("WARNING: attempt to instantiate a grasp model of type %s while part is %s\n",
+                                     type.c_str(),part.c_str());
+                        return false;
+                    }
+                }
+
+                // prepend the action name to the model name
+                if (modelProp.check("name"))
+                {
+                    string name=modelProp.find("name").asString().c_str();
+                    modelProp.unput("name");
+                    modelProp.put("name",(local+"/"+name).c_str());
+                }
+
+                return graspModel->fromProperty(modelProp);
+            }
+            else
+                printMessage("WARNING: unable to find \"grasp_model_file\" option!\n");
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ActionPrimitives::open(Property &opt)
 {
     if (configured)
@@ -383,6 +443,9 @@ bool ActionPrimitives::open(Property &opt)
 
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
+
+    // create the model for grasp detection (if any)
+    configGraspModel(opt);
 
     // get hand sequence motions (if any)
     configHandSeq(opt);
@@ -440,9 +503,6 @@ bool ActionPrimitives::open(Property &opt)
 
     // start with torso disabled
     disableTorsoDof();    
-
-    // open port for grasp detection
-    graspDetectionPort.open(("/"+local+"/"+part+"/detectGrasp:i").c_str());
 
     jHandMin=7;                     // hand first joint
     posCtrl->getAxes(&jHandMax);    // hand last joint
@@ -514,11 +574,8 @@ void ActionPrimitives::close()
         delete polyCart;
     }
 
-    if (!graspDetectionPort.isClosed())
-    {    
-        graspDetectionPort.interrupt();
-        graspDetectionPort.close();
-    }
+    if (graspModel!=NULL)
+        delete graspModel;
 
     closed=true;
 }
@@ -536,9 +593,12 @@ bool ActionPrimitives::isHandSeqEnded()
             tmpSet.erase(*i);
     }
 
-    // get data from the graspDetector
-    if (Bottle *pB=graspDetectionPort.read(false))
+    // get data from the grasp model
+    if (graspModel!=NULL)
     {
+        Value out; graspModel->getOutput(out);
+        Bottle *pB=out.asList();
+
         // span over fingers
         for (int fng=0; fng<5; fng++)
         {
@@ -1417,6 +1477,19 @@ bool ActionPrimitives::areFingersInPosition(bool &f) const
     if (configured)
     {
         f=fingersInPosition;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::getGraspModel(Model *&model) const
+{
+    if (configured)
+    {
+        model=static_cast<Model*>(graspModel);
         return true;
     }
     else
