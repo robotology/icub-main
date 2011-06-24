@@ -86,7 +86,7 @@ class TactileFingersModel : public virtual Model
 private:
     std::string type;
     std::string robot;
-    int verbose;
+    int verbosity;
 
     SensorPort    sensPort[60];
     TactileFinger fingers[5];

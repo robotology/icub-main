@@ -235,7 +235,7 @@ SpringyFingersModel::SpringyFingersModel()
 /************************************************************************/
 int SpringyFingersModel::printMessage(const int level, const char *format, ...) const
 {
-    if (verbose>=level)
+    if (verbosity>=level)
     {
         fprintf(stdout,"*** %s: ",name.c_str());
     
@@ -267,7 +267,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     name=opt.find("name").asString().c_str();
     type=opt.find("type").asString().c_str();
     robot=opt.check("robot",Value("icub")).asString().c_str();
-    verbose=opt.check("verbose",Value(0)).asInt();
+    verbosity=opt.check("verbosity",Value(0)).asInt();
 
     string part_motor=string("/"+type+"_arm");
     string part_analog=string("/"+type+"_hand");
@@ -417,7 +417,7 @@ void SpringyFingersModel::toProperty(Property &options) const
         options.put("name",name.c_str());
         options.put("type",type.c_str());
         options.put("robot",robot.c_str());
-        options.put("verbose",verbose);
+        options.put("verbosity",verbosity);
         options.put("thumb",prop[0].toString().c_str());
         options.put("index",prop[1].toString().c_str());
         options.put("middle",prop[2].toString().c_str());

@@ -94,7 +94,7 @@ class SpringyFingersModel : public virtual Model
 private:
     std::string type;
     std::string robot;
-    int verbose;
+    int verbosity;
 
     SensorInterface sensIF[5];
     SensorPort      sensPort[12];

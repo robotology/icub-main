@@ -141,7 +141,7 @@ TactileFingersModel::TactileFingersModel()
 /************************************************************************/
 int TactileFingersModel::printMessage(const int level, const char *format, ...) const
 {
-    if (verbose>=level)
+    if (verbosity>=level)
     {
         fprintf(stdout,"*** %s: ",name.c_str());
     
@@ -174,7 +174,7 @@ bool TactileFingersModel::fromProperty(const Property &options)
     type=opt.find("type").asString().c_str();
     robot=opt.check("robot",Value("icub")).asString().c_str();
     compensation=(opt.check("compensation",Value("false")).asString()=="true");
-    verbose=opt.check("verbose",Value(0)).asInt();
+    verbosity=opt.check("verbosity",Value(0)).asInt();
 
     port->open(("/"+name+"/"+type+"_hand:i").c_str());
     string skinPortName(("/"+robot+"/skin/"+type+"_hand").c_str());
@@ -267,7 +267,7 @@ void TactileFingersModel::toProperty(Property &options) const
         options.put("type",type.c_str());
         options.put("robot",robot.c_str());
         options.put("compensation",compensation?"true":"false");
-        options.put("verbose",verbose);
+        options.put("verbosity",verbosity);
         options.put("thumb",prop[0].toString().c_str());
         options.put("index",prop[1].toString().c_str());
         options.put("middle",prop[2].toString().c_str());
