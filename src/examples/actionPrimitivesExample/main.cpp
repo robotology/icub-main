@@ -353,7 +353,7 @@ public:
 
                 ofstream fout;
                 fout.open(option.find("grasp_model_file").asString().c_str());
-                fout<<prop.toString().c_str();
+                fout<<prop.toString().c_str()<<endl;
                 fout.close();
             }
         }
