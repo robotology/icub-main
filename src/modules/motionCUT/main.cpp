@@ -36,7 +36,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 The module exploits the pyramidal Lucas-Kanade algorithm to
 detect independent moving points over a selectable grid of 
 nodes. The algorithm is designed in such a way that it works 
-also (and especially) with moving cameras. 
+also - and especially - with moving cameras. 
  
 \note the name motionCUT stands for motion Cover/Uncover Trick 
       and refers to its working principle that is detailed in
