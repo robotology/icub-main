@@ -67,6 +67,8 @@ protected:
     mutable iCub::learningmachine::FixedRangeScaler scaler;
     mutable iCub::learningmachine::LSSVMLearner     lssvm;
     double  calibratingVelocity;
+    double  outputGain;
+    bool    calibrated;
 
     bool extractSensorsData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
 
@@ -79,6 +81,7 @@ public:
 
     void   setCalibVel(const double vel) { calibratingVelocity=vel;    }
     double getCalibVel() const           { return calibratingVelocity; }
+    bool   isCalibrated() const          { return calibrated;          }
 };
 
 

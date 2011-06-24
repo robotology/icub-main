@@ -48,7 +48,7 @@ bool SpringyFinger::fromProperty(const Property &options)
     neighbors.clear();
     lssvm.reset();
 
-    name=opt.find("name").asString().c_str();
+    name=opt.find("name").asString().c_str();    
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(360.0);
@@ -67,6 +67,8 @@ bool SpringyFinger::fromProperty(const Property &options)
         return false;
 
     calibratingVelocity=opt.check("calib_vel",Value(30.0)).asDouble();
+    outputGain=opt.check("output_gain",Value(1.0)).asDouble();
+    calibrated=(opt.check("calibrated",Value("false")).asString()=="true");
 
     if (opt.check("scaler"))
         scaler.fromString(opt.find("scaler").asString().c_str());
@@ -84,6 +86,8 @@ void SpringyFinger::toProperty(Property &options) const
     options.clear();
     options.put("name",name.c_str());
     options.put("calib_vel",calibratingVelocity);
+    options.put("output_gain",outputGain);
+    options.put("calibrated",calibrated?"true":"false");
     options.put("scaler",scaler.toString().c_str());
     options.put("lssvm",lssvm.toString().c_str());
 }
@@ -174,7 +178,7 @@ bool SpringyFinger::getOutput(Value &out) const
     for (int j=0; j<pred.length(); j++)
         pred[j]=scaler.unTransform(pred[j]);
 
-    out=Value(norm(o-pred));
+    out=Value(outputGain*norm(o-pred));
 
     return true;
 }
@@ -204,7 +208,10 @@ bool SpringyFinger::calibrate(const Property &options)
     }
 
     if (opt.check("train"))
+    {
         lssvm.train();
+        calibrated=true;
+    }
 
     return true;
 }

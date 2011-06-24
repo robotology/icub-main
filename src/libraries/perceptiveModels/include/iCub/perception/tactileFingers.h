@@ -62,6 +62,7 @@ class TactileFinger : public Node
 {
 protected:
     bool directLogic;
+    double outputGain;
 
     bool extractSensorsData(yarp::sig::Vector &in) const;
 

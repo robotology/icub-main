@@ -45,6 +45,7 @@ bool TactileFinger::fromProperty(const Property &options)
 
     name=opt.find("name").asString().c_str();
     directLogic=(opt.check("logic",Value("direct")).asString()=="direct");
+    outputGain=opt.check("output_gain",Value(1.0)).asDouble();
 
     return true;
 }
@@ -56,6 +57,7 @@ void TactileFinger::toProperty(Property &options) const
     options.clear();
     options.put("name",name.c_str());
     options.put("logic",directLogic?"direct":"inverse");
+    options.put("output_gain",outputGain);
 }
 
 
@@ -122,7 +124,7 @@ bool TactileFinger::getOutput(Value &out) const
     for (int j=0; j<i.length(); j++)
         ret=std::max(ret,directLogic?(255.0-i[j]):i[j]);
 
-    out=Value(ret);
+    out=Value(outputGain*ret);
 
     return true;
 }
