@@ -74,6 +74,7 @@ public:
     bool getSensorsData(yarp::os::Value &data) const;
     bool getOutput(yarp::os::Value &out) const;    
 
+    bool isCalibrated() const;
     bool isDirectLogic() const { return directLogic; }
 };
 
@@ -106,6 +107,7 @@ public:
     void toProperty(yarp::os::Property &options) const;
     bool toStream(std::ostream &str) const;
     bool calibrate(const yarp::os::Property &options);
+    bool isCalibrated() const;
     bool getOutput(yarp::os::Value &out) const;    
 
     virtual ~TactileFingersModel();

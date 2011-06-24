@@ -76,6 +76,7 @@ public:
     virtual void toProperty(yarp::os::Property &options) const = 0;
     virtual bool toStream(std::ostream &str) const = 0;
     virtual bool calibrate(const yarp::os::Property &options) = 0;
+    virtual bool isCalibrated() const = 0;
     virtual bool getOutput(yarp::os::Value &out) const = 0;
 
     virtual ~Model() { }

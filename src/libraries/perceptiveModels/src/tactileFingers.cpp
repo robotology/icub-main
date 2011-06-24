@@ -79,8 +79,16 @@ bool TactileFinger::toStream(ostream &str) const
 /************************************************************************/
 bool TactileFinger::calibrate(const Property &options)
 {
-    // not available
-    return false;
+    // meaningless: not available
+    return true;
+}
+
+
+/************************************************************************/
+bool TactileFinger::isCalibrated() const
+{
+    // meaningless: not available
+    return true;
 }
 
 
@@ -349,8 +357,16 @@ bool TactileFingersModel::toStream(ostream &str) const
 /************************************************************************/
 bool TactileFingersModel::calibrate(const Property &options)
 {
-    printMessage(1,"configuration not available\n");
-    return false;
+    printMessage(1,"calibration not available\n");
+    return true;
+}
+
+
+/************************************************************************/
+bool TactileFingersModel::isCalibrated() const
+{
+    printMessage(1,"calibration not available\n");
+    return true;
 }
 
 

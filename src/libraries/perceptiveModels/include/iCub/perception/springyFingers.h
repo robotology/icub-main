@@ -76,13 +76,13 @@ public:
     bool fromProperty(const yarp::os::Property &options);
     void toProperty(yarp::os::Property &options) const;
     bool toStream(std::ostream &str) const;
-    bool calibrate(const yarp::os::Property &options);
+    bool calibrate(const yarp::os::Property &options);    
     bool getSensorsData(yarp::os::Value &data) const;
     bool getOutput(yarp::os::Value &out) const;
 
-    void   setCalibVel(const double vel) { calibratingVelocity=vel;    }
-    double getCalibVel() const           { return calibratingVelocity; }
     bool   isCalibrated() const          { return calibrated;          }
+    void   setCalibVel(const double vel) { calibratingVelocity=vel;    }
+    double getCalibVel() const           { return calibratingVelocity; }    
 };
 
 
@@ -117,9 +117,8 @@ public:
     void toProperty(yarp::os::Property &options) const;
     bool toStream(std::ostream &str) const;
     bool calibrate(const yarp::os::Property &options);
-    bool getOutput(yarp::os::Value &out) const;
-
     bool isCalibrated() const;
+    bool getOutput(yarp::os::Value &out) const;    
 
     virtual ~SpringyFingersModel();
 };

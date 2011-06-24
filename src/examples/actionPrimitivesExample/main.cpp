@@ -152,7 +152,7 @@ Windows, Linux
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 #include <yarp/dev/Drivers.h>
-#include <iCub/perception/springyFingers.h>
+#include <iCub/perception/models.h>
 #include <iCub/action/actionPrimitives.h>
 
 #include <iostream>
@@ -336,23 +336,18 @@ public:
             return false;
         }
         
-        // check whether the grasp model is calibrated (in case)
-        if (option.find("grasp_model_type").asString()=="springy")
+        // check whether the grasp model is calibrated,
+        // otherwise calibrate it and save the results
+        Model *model; action->getGraspModel(model);
+        if (!model->isCalibrated())
         {
-            Model *model; action->getGraspModel(model);
-            SpringyFingersModel *springyModel=dynamic_cast<SpringyFingersModel*>(model);
+            Property prop("(finger all)");
+            model->calibrate(prop);
 
-            // if calibration is required, do it and save the results
-            if (!springyModel->isCalibrated())
-            {
-                Property prop("(finger all)");
-                springyModel->calibrate(prop);
-
-                ofstream fout;
-                fout.open(option.find("grasp_model_file").asString().c_str());
-                springyModel->toStream(fout);
-                fout.close();
-            }
+            ofstream fout;
+            fout.open(option.find("grasp_model_file").asString().c_str());
+            model->toStream(fout);
+            fout.close();
         }
 
         deque<string> q=action->getHandSeqList();
