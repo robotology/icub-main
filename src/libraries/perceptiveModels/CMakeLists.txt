@@ -10,16 +10,16 @@ SET(folder_source src/ports.cpp
                   src/sensors.cpp
                   src/nodes.cpp
                   src/models.cpp
-				  src/springyFingers.cpp
-				  src/tactileFingers.cpp)
+                  src/springyFingers.cpp
+                  src/tactileFingers.cpp)
 
-SET(folder_header_private include/iCub/perception/private/ports.h)				  
-				  
+SET(folder_header_private include/iCub/perception/private/ports.h)
+
 SET(folder_header include/iCub/perception/sensors.h
                   include/iCub/perception/nodes.h
                   include/iCub/perception/models.h
-				  include/iCub/perception/springyFingers.h
-				  include/iCub/perception/tactileFingers.h)
+                  include/iCub/perception/springyFingers.h
+                  include/iCub/perception/tactileFingers.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header_private} ${folder_header})
@@ -34,7 +34,7 @@ ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header_private} ${folder_he
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ctrlLib
                                       learningMachine
                                       ${YARP_LIBRARIES})
-				   				   
+
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                    DEPENDS ctrlLib learningMachine
                                    DESTINATION include/iCub/perception

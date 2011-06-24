@@ -59,14 +59,21 @@ bool SpringyFinger::fromProperty(const Property &options)
     lssvm.setC(4.0);
     lssvm.getKernel()->setGamma(16.0);
 
+    double defaultCalibVel;
     if ((name=="thumb") || (name=="index") || (name=="middle"))
+    {
         lssvm.setCoDomainSize(2);
+        defaultCalibVel=30.0;
+    }
     else if ((name=="ring") || (name=="little"))
+    {
         lssvm.setCoDomainSize(3);
+        defaultCalibVel=60.0;
+    }
     else
-        return false;
+        return false;    
 
-    calibratingVelocity=opt.check("calib_vel",Value(30.0)).asDouble();
+    calibratingVelocity=opt.check("calib_vel",Value(defaultCalibVel)).asDouble();
     outputGain=opt.check("output_gain",Value(1.0)).asDouble();
     calibrated=(opt.check("calibrated",Value("false")).asString()=="true");
 
@@ -359,12 +366,6 @@ bool SpringyFingersModel::fromProperty(const Property &options)
         return false;
     }
 
-    if (!ring.check("calib_vel"))
-        fingers[3].setCalibVel(60.0);
-
-    if (!little.check("calib_vel"))
-        fingers[4].setCalibVel(60.0);
-
     printMessage(1,"attaching sensors to fingers ...\n");
     fingers[0].attachSensor(sensIF[0]);
     fingers[0].attachSensor(sensPort[0]);
@@ -598,6 +599,17 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     printMessage(1,"training finger %s ...\n",finger.getName().c_str());    
     finger.calibrate(train);
     printMessage(1,"done\n");
+}
+
+
+/************************************************************************/
+bool SpringyFingersModel::isCalibrated() const
+{
+    return (fingers[0].isCalibrated()&&
+            fingers[1].isCalibrated()&&
+            fingers[2].isCalibrated()&&
+            fingers[3].isCalibrated()&&
+            fingers[4].isCalibrated());
 }
 
 

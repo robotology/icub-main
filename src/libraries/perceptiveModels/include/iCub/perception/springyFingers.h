@@ -117,6 +117,8 @@ public:
     bool calibrate(const yarp::os::Property &options);
     bool getOutput(yarp::os::Value &out) const;
 
+    bool isCalibrated() const;
+
     virtual ~SpringyFingersModel();
 };
 
