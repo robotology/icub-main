@@ -114,6 +114,7 @@ public:
 
     bool fromProperty(const yarp::os::Property &options);
     void toProperty(yarp::os::Property &options) const;
+    bool toFile(const std::string &fileName) const;
     bool calibrate(const yarp::os::Property &options);
     bool getOutput(yarp::os::Value &out) const;
 

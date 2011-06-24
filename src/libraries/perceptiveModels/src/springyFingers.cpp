@@ -18,6 +18,8 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <fstream>
+#include <iomanip>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
@@ -440,6 +442,68 @@ void SpringyFingersModel::toProperty(Property &options) const
         options.put("robot",robot.c_str());
         options.put("verbosity",verbosity);
     }
+}
+
+
+/************************************************************************/
+bool SpringyFingersModel::toFile(const string &fileName) const
+{
+    if (configured)
+    {
+        ofstream fout;
+        fout.open(fileName.c_str());
+
+        if (fout.fail())
+        {
+            printMessage(1,"opening of file %s failed!\n",fileName.c_str());
+            return false;
+        }
+
+        Property prop[5];
+        fingers[0].toProperty(prop[0]);
+        fingers[1].toProperty(prop[1]);
+        fingers[2].toProperty(prop[2]);
+        fingers[3].toProperty(prop[3]);
+        fingers[4].toProperty(prop[4]);
+
+        fout<<"name      "<<name<<endl;
+        fout<<"type      "<<type<<endl;
+        fout<<"robot     "<<robot<<endl;
+        fout<<"verbosity "<<verbosity<<endl;
+
+        fout<<endl;
+        fout<<"[thumb]"<<endl;
+        fout<<prop[0].toString().c_str()<<endl;
+
+        fout<<endl;
+        fout<<"[index]"<<endl;
+        fout<<prop[1].toString().c_str()<<endl;
+
+        fout<<endl;
+        fout<<"[middle]"<<endl;
+        fout<<prop[2].toString().c_str()<<endl;
+
+        fout<<endl;
+        fout<<"[ring]"<<endl;
+        fout<<prop[3].toString().c_str()<<endl;
+
+        fout<<endl;
+        fout<<"[little]"<<endl;
+        fout<<prop[4].toString().c_str()<<endl;
+
+        if (fout.fail())
+        {
+            printMessage(1,"error occured while writing to file %s!\n",fileName.c_str());
+            return false;
+        }
+
+        fout.close();
+        printMessage(1,"file %s successfully written\n",fileName.c_str());
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
