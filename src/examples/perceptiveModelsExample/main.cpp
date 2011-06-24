@@ -38,12 +38,13 @@ Two types of models are envisaged: \n
 -# the springy approach that learns the relations between the motor
 joints and the distal fingers joints to detect discrepancies caused
 by external contacts;
--# an direct approach that relies on the output of tactile sensors.
+-# a direct approach that relies on the output of tactile 
+ sensors.
 
 The output of this module is printed out on the screen reporting the
 data as gathered from the sensors as well as a synthetic number which
 accounts for the contact detection: the larger it becomes, the stronger
-should be the force excerted by the external object.
+should be the force excerted by the external object. 
 
 \section lib_sec Libraries 
 - YARP libraries. 
