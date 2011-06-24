@@ -156,6 +156,7 @@ Windows, Linux
 #include <iCub/action/actionPrimitives.h>
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <string>
 #include <deque>
@@ -346,7 +347,11 @@ public:
             {
                 Property prop("(finger all)");
                 springyModel->calibrate(prop);
-                springyModel->toFile(option.find("grasp_model_file").asString().c_str());
+
+                ofstream fout;
+                fout.open(option.find("grasp_model_file").asString().c_str());
+                springyModel->toStream(fout);
+                fout.close();
             }
         }
 

@@ -75,6 +75,7 @@ protected:
 public:
     bool fromProperty(const yarp::os::Property &options);
     void toProperty(yarp::os::Property &options) const;
+    bool toStream(std::ostream &str) const;
     bool calibrate(const yarp::os::Property &options);
     bool getSensorsData(yarp::os::Value &data) const;
     bool getOutput(yarp::os::Value &out) const;
@@ -114,7 +115,7 @@ public:
 
     bool fromProperty(const yarp::os::Property &options);
     void toProperty(yarp::os::Property &options) const;
-    bool toFile(const std::string &fileName) const;
+    bool toStream(std::ostream &str) const;
     bool calibrate(const yarp::os::Property &options);
     bool getOutput(yarp::os::Value &out) const;
 

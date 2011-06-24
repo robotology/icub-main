@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sstream>
-#include <fstream>
 #include <iomanip>
 
 #include <yarp/os/Network.h>
@@ -60,6 +59,20 @@ void TactileFinger::toProperty(Property &options) const
     options.put("name",name.c_str());
     options.put("logic",directLogic?"direct":"inverse");
     options.put("output_gain",outputGain);
+}
+
+
+/************************************************************************/
+bool TactileFinger::toStream(ostream &str) const
+{
+    str<<"name        "<<name<<endl;
+    str<<"logic       "<<(directLogic?"direct":"inverse")<<endl;
+    str<<"output_gain "<<outputGain<<endl;
+
+    if (str.fail())
+        return false;
+    else
+        return true;
 }
 
 
@@ -296,60 +309,35 @@ void TactileFingersModel::toProperty(Property &options) const
 
 
 /************************************************************************/
-bool TactileFingersModel::toFile(const string &fileName) const
+bool TactileFingersModel::toStream(ostream &str) const
 {
     if (configured)
     {
-        ofstream fout;
-        fout.open(fileName.c_str());
+        str<<"name         "<<name<<endl;
+        str<<"type         "<<type<<endl;
+        str<<"robot        "<<robot<<endl;
+        str<<"compensation "<<(compensation?"true":"false")<<endl;
+        str<<"verbosity    "<<verbosity<<endl;
 
-        if (fout.fail())
-        {
-            printMessage(1,"opening of file %s failed!\n",fileName.c_str());
-            return false;
-        }
+        str<<endl;
+        str<<"[thumb]"<<endl;
+        fingers[0].toStream(str);
 
-        Property prop[5];
-        fingers[0].toProperty(prop[0]);
-        fingers[1].toProperty(prop[1]);
-        fingers[2].toProperty(prop[2]);
-        fingers[3].toProperty(prop[3]);
-        fingers[4].toProperty(prop[4]);
+        str<<endl;
+        str<<"[index]"<<endl;
+        fingers[1].toStream(str);
 
-        fout<<"name         "<<name<<endl;
-        fout<<"type         "<<type<<endl;
-        fout<<"robot        "<<robot<<endl;
-        fout<<"compensation "<<(compensation?"true":"false")<<endl;
-        fout<<"verbosity    "<<verbosity<<endl;
+        str<<endl;
+        str<<"[middle]"<<endl;
+        fingers[2].toStream(str);
 
-        fout<<endl;
-        fout<<"[thumb]"<<endl;
-        fout<<prop[0].toString().c_str()<<endl;
+        str<<endl;
+        str<<"[ring]"<<endl;
+        fingers[3].toStream(str);
 
-        fout<<endl;
-        fout<<"[index]"<<endl;
-        fout<<prop[1].toString().c_str()<<endl;
-
-        fout<<endl;
-        fout<<"[middle]"<<endl;
-        fout<<prop[2].toString().c_str()<<endl;
-
-        fout<<endl;
-        fout<<"[ring]"<<endl;
-        fout<<prop[3].toString().c_str()<<endl;
-
-        fout<<endl;
-        fout<<"[little]"<<endl;
-        fout<<prop[4].toString().c_str()<<endl;
-
-        if (fout.fail())
-        {
-            printMessage(1,"error occured while writing to file %s!\n",fileName.c_str());
-            return false;
-        }
-
-        fout.close();
-        printMessage(1,"file %s successfully written\n",fileName.c_str());
+        str<<endl;
+        str<<"[little]"<<endl;
+        fingers[4].toStream(str);
 
         return true;
     }
