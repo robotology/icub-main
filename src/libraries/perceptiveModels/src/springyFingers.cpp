@@ -79,10 +79,16 @@ bool SpringyFinger::fromProperty(const Property &options)
     calibrated=(opt.check("calibrated",Value("false")).asString()=="true");
 
     if (opt.check("scaler"))
-        scaler.fromString(opt.find("scaler").asString().c_str());
+    {
+        Bottle *pB=opt.find("scaler").asList();
+        scaler.fromString(pB->toString().c_str());
+    }
 
     if (opt.check("lssvm"))
-        lssvm.fromString(opt.find("lssvm").asString().c_str());
+    {
+        Bottle *pB=opt.find("lssvm").asList();
+        lssvm.fromString(pB->toString().c_str());
+    }
 
     return true;
 }
@@ -96,8 +102,8 @@ void SpringyFinger::toProperty(Property &options) const
     options.put("calib_vel",calibratingVelocity);
     options.put("output_gain",outputGain);
     options.put("calibrated",calibrated?"true":"false");
-    options.put("scaler",scaler.toString().c_str());
-    options.put("lssvm",lssvm.toString().c_str());
+    options.put("scaler",("("+string(scaler.toString().c_str())+")").c_str());
+    options.put("lssvm",("("+string(lssvm.toString().c_str())+")").c_str());
 }
 
 
@@ -108,8 +114,8 @@ bool SpringyFinger::toStream(ostream &str) const
     str<<"calib_vel   "<<calibratingVelocity<<endl;
     str<<"output_gain "<<outputGain<<endl;
     str<<"calibrated  "<<(calibrated?"true":"false")<<endl;
-    str<<"scaler      "<<scaler.toString().c_str()<<endl;
-    str<<"lssvm       "<<lssvm.toString().c_str()<<endl;
+    str<<"scaler      "<<("("+string(scaler.toString().c_str())+")").c_str()<<endl;
+    str<<"lssvm       "<<("("+string(lssvm.toString().c_str())+")").c_str()<<endl;
 
     if (str.fail())
         return false;
