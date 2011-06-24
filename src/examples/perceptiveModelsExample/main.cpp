@@ -95,7 +95,7 @@ using namespace iCub::perception;
 
 class ExampleModule: public RFModule
 {
-	Model *model;
+    Model *model;
     PolyDriver driver;
     bool calibrate;
     string fingerName;
@@ -161,8 +161,8 @@ public:
         string ring(  "(ring   (name ring))");
         string little("(little (name little))");
 
-		Property options((general+" "+thumb+" "+index+" "+middle+" "+ring+" "+little).c_str());
-		fprintf(stdout,"configuring options: %s\n",options.toString().c_str());
+        Property options((general+" "+thumb+" "+index+" "+middle+" "+ring+" "+little).c_str());
+        fprintf(stdout,"configuring options: %s\n",options.toString().c_str());
 
         if (modelType=="springy")
             model=new SpringyFingersModel;
@@ -187,20 +187,20 @@ public:
     {
         driver.close();
 
-		Property options;
-		model->toProperty(options);
-		fprintf(stdout,"saving options: %s\n",options.toString().c_str());
+        Property options;
+        model->toProperty(options);
+        fprintf(stdout,"saving options: %s\n",options.toString().c_str());
         
         return true;
     }
 
     double getPeriod()
-	{
-		return 0.1;
-	}
+    {
+        return 0.1;
+    }
 
     bool updateModule()
-	{
+    {
         if (calibrate)
         {
             Property options;
@@ -240,8 +240,8 @@ public:
             }
         }
 
-		return true;
-	}
+        return true;
+    }
 };
 
 

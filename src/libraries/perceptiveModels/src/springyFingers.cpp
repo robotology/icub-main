@@ -414,15 +414,31 @@ void SpringyFingersModel::toProperty(Property &options) const
         fingers[3].toProperty(prop[3]);
         fingers[4].toProperty(prop[4]);
 
+        string thumb="(thumb ";
+        thumb+=prop[0].toString().c_str();
+        thumb+=")";
+
+        string index="(index ";
+        index+=prop[1].toString().c_str();
+        index+=")";
+
+        string middle="(middle ";
+        middle+=prop[2].toString().c_str();
+        middle+=")";
+
+        string ring="(ring ";
+        ring+=prop[3].toString().c_str();
+        ring+=")";
+
+        string little="(little ";
+        little+=prop[4].toString().c_str();
+        little+=")";
+
+        options.fromString((thumb+index+middle+ring+little).c_str());
         options.put("name",name.c_str());
         options.put("type",type.c_str());
         options.put("robot",robot.c_str());
         options.put("verbosity",verbosity);
-        options.put("thumb",prop[0].toString().c_str());
-        options.put("index",prop[1].toString().c_str());
-        options.put("middle",prop[2].toString().c_str());
-        options.put("ring",prop[3].toString().c_str());
-        options.put("little",prop[4].toString().c_str());
     }
 }
 
