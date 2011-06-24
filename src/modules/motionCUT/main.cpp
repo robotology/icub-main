@@ -39,8 +39,12 @@ nodes. The algorithm is designed in such a way that it works
 also (and especially) with moving cameras. 
  
 \note the name motionCUT stands for motion Cover/Uncover Trick 
-      and refers to its working principle that will be detailed
-      soon :)
+      and refers to its working principle that is detailed in
+      the paper: Ciliberto C., Pattacini U., Natale L., Nori F.
+      and Metta G., "Reexamining Lucas-Kanade Method for
+      Real-Time Independent Motion Detection: Application to the
+      iCub Humanoid Robot", to appear on IEEE/RSJ International
+      Conference on Intelligent Robots and Systems 2011.
  
 \note If you're going to use the motionCUT for your work, please
       quote it within any resulting publication.
