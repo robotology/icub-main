@@ -14,7 +14,7 @@ SET(folder_header include/iCub/iKin/iKinFwd.h
                   include/iCub/iKin/iKinInv.h
                   include/iCub/iKin/iKinVocabs.h
                   include/iCub/iKin/iKinHlp.h)
-				  
+
 IF(ICUB_USE_IPOPT)
    SET(folder_source ${folder_source}
                      src/iKinIpOpt.cpp
@@ -48,7 +48,7 @@ ENDIF(ICUB_USE_IPOPT)
 IF(ICUB_USE_IPOPT)
     icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                        EXTERNAL_INCLUDE_DIRS ${IPOPT_INCLUDE_DIRS}
-									   DEPENDS ctrlLib
+                                       DEPENDS ctrlLib
                                        DESTINATION include/iCub/iKin                                       
                                        FILES ${folder_header})                                   
 ELSE(ICUB_USE_IPOPT)
