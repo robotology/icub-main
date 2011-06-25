@@ -19,10 +19,41 @@
 /** 
 \defgroup pmpServer pmpServer 
  
-@ingroup icub_contrib_modules
+@ingroup icub_module
  
-Launches the server part of the Passive Motion Paradigm (PMP) 
-control. 
+Just a container which runs the server part of the \ref pmp 
+"Passive Motion Paradigm"(PMP) control. 
+ 
+\section intro_sec Description
+
+See \ref pmp "Pmp Library" for detailed documentation. 
+ 
+\section lib_sec Libraries 
+- YARP libraries. 
+- \ref pmp "Pmp" library.
+
+\section parameters_sec Parameters
+--robot \e robot
+- select the robot to connect to.
+
+--part \e part
+- select the part to control. 
+ 
+--name \e name
+- specify the stem-name of the server. 
+ 
+--device \e device
+- select the cartesian device to rely on. Currently only the 
+  cartesiancontrollerclient is supported.
+ 
+--period \e Ts
+- specify the server period given in [ms].
+ 
+--verbosity \e level
+- specify the verbosity level of the server print-outs.
+ 
+\section tested_os_sec Tested OS
+Windows, Linux
  
 \author Ilaria Gori, Ugo Pattacini
 */ 

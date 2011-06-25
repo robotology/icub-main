@@ -19,7 +19,7 @@
 /**
  * \defgroup pmp pmp
  *  
- * @ingroup icub_contrib_libraries 
+ * @ingroup icub_libraries 
  *  
  * Abstract class for dealing with the Passive Motion Paradigm 
  * (PMP) control. 
