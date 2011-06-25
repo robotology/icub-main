@@ -114,8 +114,8 @@ private:
     {
         SpringyFingersModel *model;
         SpringyFinger       *finger;
-        Vector              *qmin;
-        Vector              *qmax;
+        double               min;
+        double               max;
         int                  joint;
         bool                 done;
 
@@ -123,20 +123,20 @@ private:
         CalibThread() : model(NULL), done(false) { }
 
         void setInfo(SpringyFingersModel *model, SpringyFinger &finger,
-                     const int joint, const Vector &qmin, const Vector &qmax)
+                     const int joint, const double min, const double max)
         {
             this->model=model;
             this->finger=&finger;
             this->joint=joint;
-            this->qmin=&const_cast<Vector&>(qmin);
-            this->qmax=&const_cast<Vector&>(qmax);
+            this->min=min;
+            this->max=max;
         }
 
         void run()
         {
             if (!done && (model!=NULL))
             {
-                model->calibrateFinger(*finger,joint,*qmin,*qmax);
+                model->calibrateFinger(*finger,joint,min,max);
                 done=true;
             }
 
@@ -148,8 +148,8 @@ private:
     friend class CalibThread;
 
     int printMessage(const int level, const char *format, ...) const;
-    void calibrateFinger(SpringyFinger &finger, const int joint, const yarp::sig::Vector &qmin,
-                         const yarp::sig::Vector &qmax);
+    void calibrateFinger(SpringyFinger &finger, const int joint,
+                         const double min, const double max);
     void close();
 
 public:

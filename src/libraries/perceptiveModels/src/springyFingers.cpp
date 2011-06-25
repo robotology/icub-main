@@ -533,40 +533,40 @@ bool SpringyFingersModel::calibrate(const Property &options)
         string tag=opt.check("finger",Value("all")).asString().c_str();
         if (tag=="thumb")
         {
-            calibrateFinger(fingers[0],10,qmin,qmax);
+            calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
         }
         else if (tag=="index")
         {
-            calibrateFinger(fingers[1],12,qmin,qmax);
+            calibrateFinger(fingers[1],12,qmin[12],qmax[12]);
         }
         else if (tag=="middle")
         {
-            calibrateFinger(fingers[2],14,qmin,qmax);
+            calibrateFinger(fingers[2],14,qmin[14],qmax[14]);
         }
         else if (tag=="ring")
         {
-            calibrateFinger(fingers[3],15,qmin,qmax);
+            calibrateFinger(fingers[3],15,qmin[15],qmax[15]);
         }
         else if (tag=="little")
         {
-            calibrateFinger(fingers[4],15,qmin,qmax);
+            calibrateFinger(fingers[4],15,qmin[15],qmax[15]);
         }
         else if ((tag=="all") || (tag=="all_serial"))
         {
-            calibrateFinger(fingers[0],10,qmin,qmax);
-            calibrateFinger(fingers[1],12,qmin,qmax);
-            calibrateFinger(fingers[2],14,qmin,qmax);
-            calibrateFinger(fingers[3],15,qmin,qmax);
-            calibrateFinger(fingers[4],15,qmin,qmax);
+            calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
+            calibrateFinger(fingers[1],12,qmin[12],qmax[12]);
+            calibrateFinger(fingers[2],14,qmin[14],qmax[14]);
+            calibrateFinger(fingers[3],15,qmin[15],qmax[15]);
+            calibrateFinger(fingers[4],15,qmin[15],qmax[15]);
         }
         else if (tag=="all_parallel")
         {
             CalibThread thr[5];
-            thr[0].setInfo(this,fingers[0],10,qmin,qmax);
-            thr[1].setInfo(this,fingers[1],12,qmin,qmax);
-            thr[2].setInfo(this,fingers[2],14,qmin,qmax);
-            thr[3].setInfo(this,fingers[3],15,qmin,qmax);
-            thr[4].setInfo(this,fingers[4],15,qmin,qmax);
+            thr[0].setInfo(this,fingers[0],10,qmin[10],qmax[10]);
+            thr[1].setInfo(this,fingers[1],12,qmin[12],qmax[12]);
+            thr[2].setInfo(this,fingers[2],14,qmin[14],qmax[14]);
+            thr[3].setInfo(this,fingers[3],15,qmin[15],qmax[15]);
+            thr[4].setInfo(this,fingers[4],15,qmin[15],qmax[15]);
 
             thr[0].start(); thr[1].start(); thr[2].start();
             thr[3].start(); thr[4].start();
@@ -634,17 +634,17 @@ bool SpringyFingersModel::getOutput(Value &out) const
 
 /************************************************************************/
 void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint,
-                                          const Vector &qmin, const Vector &qmax)
+                                          const double min, const double max)
 {
     printMessage(1,"calibrating finger %s ...\n",finger.getName().c_str());
-    double margin=0.1*(qmax[joint]-qmin[joint]);
-    double min=qmin[joint]+margin;
-    double max=qmax[joint]-margin;
+    double margin=0.1*(max-min);
+    double _min=min+margin;
+    double _max=max-margin;
     double tol_min=5.0;
     double tol_max=5.0;
-    double *val=&min;
+    double *val=&_min;
     double *tol=&tol_min;
-    double timeout=2.0*(max-min)/finger.getCalibVel();
+    double timeout=2.0*(_max-_min)/finger.getCalibVel();
 
     mutex.wait();
     IEncoders        *ienc; driver.view(ienc);
@@ -654,8 +654,8 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     // workaround
     if ((finger.getName()=="ring") || (finger.getName()=="little"))
     {
-        min=30.0;
-        max=180.0;
+        _min=30.0;
+        _max=180.0;
         tol_min=20.0;
         tol_max=50.0;
     }
@@ -697,14 +697,14 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
             fbOld=fb;
         }
 
-        if (val==&min)
+        if (val==&_min)
         {
-            val=&max;
+            val=&_max;
             tol=&tol_max;
         }
         else
         {
-            val=&min;
+            val=&_min;
             tol=&tol_min;
         }
     }
