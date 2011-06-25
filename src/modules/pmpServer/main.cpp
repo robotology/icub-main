@@ -24,8 +24,7 @@
 Just a container which runs the server part of the \ref pmp 
 "Passive Motion Paradigm"(PMP) control. 
  
-\section intro_sec Description
-
+\section intro_sec Description 
 See \ref pmp "Pmp Library" for detailed documentation. 
  
 \section lib_sec Libraries 
@@ -50,7 +49,13 @@ See \ref pmp "Pmp Library" for detailed documentation.
 - specify the server period given in [ms].
  
 --verbosity \e level
-- specify the verbosity level of the server print-outs.
+- specify the verbosity level of the server print-outs. 
+ 
+\section portsc_sec Ports Created 
+Among all the ports created by the server, one deserves 
+particular attention. In fact, the port /<name>/gui:o can be 
+directly connected to the \ref icub_gui objects port for 
+visualization purpose. 
  
 \section tested_os_sec Tested OS
 Windows, Linux

@@ -16,6 +16,47 @@
  * Public License for more details
 */
 
+/** 
+\defgroup pmpExample pmpExample
+ 
+@ingroup icub_module  
+ 
+Example module for the use of \ref pmp "Pmp Library".
+
+\section intro_sec Description 
+This simple module steers the arm to a starting pose and then 
+creates one pmp-target and one pmp-obstacle; thereby it enables 
+the pmp field that in turn lets the robot end-effector attain 
+the target avoiding the obstacle. 
+ 
+It requires the \ref pmpServer running. 
+ 
+\section lib_sec Libraries 
+- YARP libraries. 
+- \ref pmp "Pmp" library.
+
+\section parameters_sec Parameters 
+--robot \e robot
+- select the robot to connect to.
+
+--part \e part
+- select the part to control. 
+
+--remote \e name
+- specify the pmp server name to connect to.
+ 
+--local \e name
+- specify the pmp client stem-name.
+ 
+--verbosity \e level
+- specify the verbosity level of the pmp client print-outs.
+ 
+\section tested_os_sec Tested OS
+Windows, Linux
+
+\author Ilaria Gori, Ugo Pattacini
+*/ 
+
 #include <string>
 #include <stdio.h>
 #include <yarp/os/Network.h>

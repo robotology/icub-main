@@ -30,8 +30,7 @@ Author: Ugo Pattacini
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-\section intro_sec Description
-
+\section intro_sec Description 
 See \ref iKinSlv "Cartesian Solver" for documentation. 
  
 \section lib_sec Libraries 
