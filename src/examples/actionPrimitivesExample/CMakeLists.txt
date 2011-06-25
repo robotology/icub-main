@@ -11,6 +11,7 @@ SET(folder_source main.cpp)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
 INCLUDE_DIRECTORIES(${actionPrimitives_INCLUDE_DIRS}
+                    ${perceptiveModels_INCLUDE_DIRS}
                     ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 

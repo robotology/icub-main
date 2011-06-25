@@ -321,8 +321,8 @@ public:
         option.put("local",name.c_str());
         option.put("part",rf.find("part").asString().c_str());
         option.put("grasp_model_type",rf.find("grasp_model_type").asString().c_str());
-        option.put("grasp_model_file",rf.findFile("grasp_model_file"));
-        option.put("hand_sequences_file",rf.findFile("hand_sequences_file"));        
+        option.put("grasp_model_file",rf.findFile("grasp_model_file").c_str());
+        option.put("hand_sequences_file",rf.findFile("hand_sequences_file").c_str());        
 
         // parsing arm dependent config options
         Bottle &bArm=config.findGroup("arm_dependent");
@@ -336,6 +336,18 @@ public:
             return false;
         }
         
+        deque<string> q=action->getHandSeqList();
+        cout<<"***** List of available hand sequence keys:"<<endl;
+        for (size_t i=0; i<q.size(); i++)
+            cout<<q[i]<<endl;
+
+        string fwslash="/";
+        inPort.open((fwslash+name+"/in").c_str());
+        rpcPort.open((fwslash+name+"/rpc").c_str());
+        attach(rpcPort);
+
+        openPorts=true;
+
         // check whether the grasp model is calibrated,
         // otherwise calibrate it and save the results
         Model *model; action->getGraspModel(model);
@@ -349,18 +361,6 @@ public:
             model->toStream(fout);
             fout.close();
         }
-
-        deque<string> q=action->getHandSeqList();
-        cout<<"***** List of available hand sequence keys:"<<endl;
-        for (size_t i=0; i<q.size(); i++)
-            cout<<q[i]<<endl;
-
-        string fwslash="/";
-        inPort.open((fwslash+name+"/in").c_str());
-        rpcPort.open((fwslash+name+"/rpc").c_str());
-        attach(rpcPort);
-
-        openPorts=true;
 
         return true;
     }

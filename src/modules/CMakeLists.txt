@@ -23,6 +23,7 @@ add_subdirectory(eye2world)
 add_subdirectory(vergence)
 add_subdirectory(skinDriftCompensation)
 add_subdirectory(objectsPropertiesCollector)
+add_subdirectory(pmpServer)
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(motionCUT)    

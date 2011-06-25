@@ -23,7 +23,6 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} perceptiveModels iDyn icubmod
                                       ${YARP_LIBRARIES})
 
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                   EXTERNAL_INCLUDE_DIRS ${perceptiveModels_INCLUDE_DIRS}
                                    DEPENDS perceptiveModels iDyn
                                    DESTINATION include/iCub/action
                                    FILES ${folder_header})
