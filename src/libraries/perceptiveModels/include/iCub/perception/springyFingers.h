@@ -41,6 +41,8 @@
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Time.h>
+#include <yarp/os/Thread.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/sig/Vector.h>
 
@@ -104,6 +106,43 @@ private:
 
     yarp::os::BufferedPort<yarp::os::Bottle> *port;
     yarp::dev::PolyDriver                     driver;
+
+    class CalibThread : public yarp::os::Thread
+    {
+        SpringyFingersModel *model;
+        SpringyFinger       *finger;
+        Vector              *qmin;
+        Vector              *qmax;
+        int                  joint;
+        bool                 done;
+
+    public:
+        CalibThread() : model(NULL), done(false) { }
+
+        void setInfo(SpringyFingersModel *model, SpringyFinger &finger,
+                     const int joint, const Vector &qmin, const Vector &qmax)
+        {
+            this->model=model;
+            this->finger=&finger;
+            this->joint=joint;
+            this->qmin=&const_cast<Vector&>(qmin);
+            this->qmax=&const_cast<Vector&>(qmax);
+        }
+
+        void run()
+        {
+            if (!done && (model!=NULL))
+            {
+                model->calibrateFinger(*finger,joint,*qmin,*qmax);
+                done=true;
+            }
+
+            Time::delay(0.1);
+        }
+
+        bool isDone() const { return done; }
+    };
+    friend class CalibThread;
 
     int printMessage(const int level, const char *format, ...) const;
     void calibrateFinger(SpringyFinger &finger, const int joint, const yarp::sig::Vector &qmin,

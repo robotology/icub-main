@@ -21,7 +21,6 @@
 #include <iomanip>
 
 #include <yarp/os/Network.h>
-#include <yarp/os/Time.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
 #include <iCub/ctrl/math.h>
@@ -531,7 +530,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         printMessage(1,"proceeding with the calibration\n");
         Property &opt=const_cast<Property&>(options);
-        string tag=opt.check("finger",Value("all")).asString().c_str();
+        string tag=opt.check("finger",Value("all_serial")).asString().c_str();
         if (tag=="thumb")
         {
             calibrateFinger(fingers[0],10,qmin,qmax);
@@ -552,13 +551,40 @@ bool SpringyFingersModel::calibrate(const Property &options)
         {
             calibrateFinger(fingers[4],15,qmin,qmax);
         }
-        else if (tag=="all")
+        else if (tag=="all_serial")
         {
             calibrateFinger(fingers[0],10,qmin,qmax);
             calibrateFinger(fingers[1],12,qmin,qmax);
             calibrateFinger(fingers[2],14,qmin,qmax);
             calibrateFinger(fingers[3],15,qmin,qmax);
             calibrateFinger(fingers[4],15,qmin,qmax);
+        }
+        else if (tag=="all_parallel")
+        {
+            CalibThread thr[5];
+            thr[0].setInfo(this,fingers[0],10,qmin,qmax);
+            thr[1].setInfo(this,fingers[1],12,qmin,qmax);
+            thr[2].setInfo(this,fingers[2],14,qmin,qmax);
+            thr[3].setInfo(this,fingers[3],15,qmin,qmax);
+            thr[4].setInfo(this,fingers[4],15,qmin,qmax);
+
+            thr[0].start(); thr[1].start(); thr[2].start();
+            thr[3].start(); thr[4].start();
+
+            int cnt=0;
+            while (cnt<5)
+            {
+                for (int i=0; i<5; i++)
+                {
+                    if (thr[i].isDone() && thr[i].isRunning())
+                    {
+                        thr[i].stop();
+                        cnt++;
+                    }
+                }
+
+                Time::delay(0.1);
+            }
         }
         else
             return false;
