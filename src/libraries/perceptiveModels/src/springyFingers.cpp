@@ -525,7 +525,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
             ipos->setRefAcceleration(j,1e9);
             ipos->setRefSpeed(j,60.0);
-            ipos->positionMove(j,(j==7)||(j==8)?qmax[j]:qmin[j]);
+            ipos->positionMove(j,(j==8)?qmax[j]:qmin[j]);   // thumb in opposition
         }
 
         printMessage(1,"proceeding with the calibration\n");
