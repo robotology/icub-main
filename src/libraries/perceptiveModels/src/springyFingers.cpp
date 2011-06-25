@@ -571,16 +571,15 @@ bool SpringyFingersModel::calibrate(const Property &options)
             thr[0].start(); thr[1].start(); thr[2].start();
             thr[3].start(); thr[4].start();
 
-            int cnt=0;
-            while (cnt<5)
+            bool done=false;
+            while (!done)
             {
+                done=true;
                 for (int i=0; i<5; i++)
                 {
+                    done&=thr[i].isDone();
                     if (thr[i].isDone() && thr[i].isRunning())
-                    {
                         thr[i].stop();
-                        cnt++;
-                    }
                 }
 
                 Time::delay(0.1);
@@ -712,7 +711,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 
     printMessage(1,"training finger %s ...\n",finger.getName().c_str());    
     finger.calibrate(train);
-    printMessage(1,"done\n");
+    printMessage(1,"finger %s trained!\n",finger.getName().c_str());
 }
 
 
