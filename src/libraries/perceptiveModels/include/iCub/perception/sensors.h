@@ -24,8 +24,51 @@
  *  
  * @section framework_intro_sec Description 
  *  
- * ... 
+ * This library provides the user with a collection of objects 
+ * in order to organically handle the problem of acquiring data
+ * from the robot, execute some first grade processing and then
+ * pass them to the higher software layers.
  *  
+ * The final objective is to give the raw data a kind of common 
+ * structure together with the set of operations that are
+ * normally carried out at a preliminary stage such as the 
+ * normalization of the values, the data formatting, the 
+ * gathering of the data from different sources so that it turns
+ * to be convenient to model this structure to then apply 
+ * alternative algorithms/techniques decoupling the higher 
+ * routines from the acquisition layer. 
+ *  
+ * As practical example, one may think to address the problem of 
+ * sensing external contacts with the fingers of the robot 
+ * either by relying on a elastic model of the distal links or 
+ * by directly reading the output of the tactile sensors. This 
+ * is only a mere implementative aspect (yet quite significant 
+ * indeed) from the standpoint of a software designer, thus it 
+ * can be relevant to build a sort of wrapper over the 
+ * acquisition phase that in turn returns an homogeneous measure 
+ * of the amount of contact regardless the source of the raw 
+ * data. This is exactly what this library attempts to do. 
+ *  
+ * Central to the \ref PerceptiveModels platform are the 
+ * following concepts: 
+ *  
+ * - <b>Sensor</b>: a sensor is an object that simply allows to 
+ *   retrieve raw data from a source, e.g. a port, a motor
+ *   interface (example: the patches of a finger tip are
+ *   considered to be sensors).
+ *  
+ * - <b>Node</b>: a node is an object that performs some 
+ *   operations on the data that it can read through the sensors
+ *   attached to the node itself (example: a finger can be
+ *   treated as a node to which a number of patches are
+ *   attached).
+ *  
+ * - <b>Model</b>: a model is a kind of super-object that 
+ *   encapsulates nodes and executes operations on these nodes
+ *   when asked by the user; it also provides the results in a
+ *   unified format, so that the user might instantiate
+ *   different models to easily change the implementation
+ *   without affecting the format of the outcome.
  *  
  * @defgroup Sensors Sensors 
  * @ingroup PerceptiveModels
@@ -38,7 +81,7 @@
  *
  * @section sensors_intro_sec Description
  *
- * ... 
+ * Here goes the implementation of data acquisition.
  *  
  */ 
 
