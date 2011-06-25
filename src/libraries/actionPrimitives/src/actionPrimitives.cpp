@@ -400,14 +400,6 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                     }
                 }
 
-                // prepend the action name to the model name
-                if (modelProp.check("name"))
-                {
-                    string name=modelProp.find("name").asString().c_str();
-                    modelProp.unput("name");
-                    modelProp.put("name",(local+"/"+name).c_str());
-                }
-
                 return graspModel->fromProperty(modelProp);
             }
             else
