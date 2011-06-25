@@ -530,7 +530,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         printMessage(1,"proceeding with the calibration\n");
         Property &opt=const_cast<Property&>(options);
-        string tag=opt.check("finger",Value("all_serial")).asString().c_str();
+        string tag=opt.check("finger",Value("all")).asString().c_str();
         if (tag=="thumb")
         {
             calibrateFinger(fingers[0],10,qmin,qmax);
@@ -551,7 +551,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
         {
             calibrateFinger(fingers[4],15,qmin,qmax);
         }
-        else if (tag=="all_serial")
+        else if ((tag=="all") || (tag=="all_serial"))
         {
             calibrateFinger(fingers[0],10,qmin,qmax);
             calibrateFinger(fingers[1],12,qmin,qmax);
@@ -587,7 +587,10 @@ bool SpringyFingersModel::calibrate(const Property &options)
             }
         }
         else
+        {
+            printMessage(1,"unknown finger request %s\n",tag.c_str());
             return false;
+        }
 
         for (int j=7; j<nAxes; j++)
         {
