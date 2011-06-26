@@ -20,7 +20,8 @@
  * @defgroup SpringyFingers springyFingers
  * @ingroup PerceptiveModels 
  *  
- * Abstract layers for dealing with perceptive models framework.
+ * An elastic model of the distal joints of the robot's fingers 
+ * that enables to perceive contacts with external forces.
  *
  * @author Ugo Pattacini 
  *  
@@ -30,8 +31,22 @@
  *
  * @section intro_sec Description
  *
- * ... 
+ * Essentially, this framework attemps to model the elastic 
+ * properties of the distal joints of the fingers by carrying 
+ * out a training stage where the fingers are left free to move 
+ * in the space while acquiring sensors data. As result, the 
+ * "springy" relations between the data acquired from motor 
+ * joint encoders and the distal joints encoders are learnt 
+ * relying on a Least-Squares SVM machine from the \ref 
+ * icub_libLM_learning_machines "Learning Machine" library. 
+ * Finally, the model output consists of the metric distance 
+ * between the vector of distal joints readings as currently 
+ * acquired and the vector of quantities predicted by the 
+ * machine. 
  *  
+ * This method represents a natural extension of the linear 
+ * technique proposed in the paper <a 
+ * href="http://people.liralab.it/iron/Papers/conference/schmitzEtAlHumanoids10.pdf">pdf</a>. 
  */ 
 
 #ifndef __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
@@ -61,7 +76,9 @@ namespace perception
 
 /**
 * @ingroup SpringyFingers
-*
+*  
+* An implementation of the Node class that represents the 
+* springy element. 
 */
 class SpringyFinger : public Node
 {
@@ -75,16 +92,102 @@ protected:
     bool extractSensorsData(yarp::sig::Vector &in, yarp::sig::Vector &out) const;
 
 public:
+    /**
+    * Configure the finger taking its parameters from a Property 
+    * object. 
+    * @param options a Property containing the configuration 
+    *                parameters. Available options are:\n
+    * <b>name</b>: the name of the finger; it can be "thumb", 
+    * "index", "middle", "ring" or "little".\n 
+    * <b>calib_vel</b>: a double that specifies the velocity [deg/s]
+    * with which the finger is actuated during calibration.\n 
+    * <b>output_gain</b>: a double that is used to multiply the 
+    * final output for normalization purpose.\n 
+    * <b>calibrated</b>: it can be "true" or "false" and indicates 
+    * whether the configured finger has to be considered calibrated 
+    * or not.\n 
+    * <b>scaler</b>: the string that configures the internal scaler 
+    * used by the learning machine. \see 
+    * iCub::learningmachine::FixedRangeScaler.\n 
+    * <b>lssvm</b>: the string that configures the Least-Squares SVM 
+    * machine. \see iCub::learningmachine::LSSVMLearner.
+    * @return true/false on success/failure.
+    */
     bool fromProperty(const yarp::os::Property &options);
+
+    /**
+    * Return a Property representation of all the node parameters.
+    * @param options a Property filled with the configuration 
+    *                parameters.
+    */
     void toProperty(yarp::os::Property &options) const;
+
+    /**
+    * Similar to the @see toProperty method but it operates on 
+    * output streams (e.g. string, ofstream, ...). It allows to 
+    * better manage the storing of the configuration over files. 
+    * @param str the reference to the output stream. 
+    * @return true/false on success/failure. 
+    */
     bool toStream(std::ostream &str) const;
+
+    /**
+    * Allow to send calibration commands to the finger.
+    * @param options a Property containing the calibration 
+    *                parameters. Available options are:\n
+    * <b>reset</b>: resets the internal machine.\n
+    * <b>feed</b>: feeds the internal machine with the current 
+    * couple of input-output data for calibration purpose.\n 
+    * <b>train</b>: issues the final training stage after having 
+    * collected a sufficient number of input-output data couples 
+    * through the "feed" command. 
+    * @return true/false on success/failure. 
+    */
     bool calibrate(const yarp::os::Property &options);    
+
+    /**
+    * Retrieve data finger from the joints used both for calibration 
+    * and normal operation. 
+    * @param data a Value containing the representation of the data 
+    *             in the format: ((in (1.0)) (out (2.0 3.0))).
+    * @return true/false on success/failure. 
+    */
     bool getSensorsData(yarp::os::Value &data) const;
+
+    /**
+    * Retrieve the finger output.
+    * @param out a Value containing the finger output in the form: 
+    *            output_gain*norm(out-pred).
+    * @return true/false on success/failure. 
+    */
     bool getOutput(yarp::os::Value &out) const;
 
-    bool   isCalibrated() const          { return calibrated;          }
-    void   setCalibVel(const double vel) { calibratingVelocity=vel;    }
-    double getCalibVel() const           { return calibratingVelocity; }    
+    /**
+    * Return the internal status of the calibration.
+    * @return true/false on calibrated/uncalibrated-failure.
+    */
+    bool isCalibrated() const
+    {
+        return calibrated;
+    }
+
+    /**
+    * Set the finger actuation velocity used while calibrating. 
+    * @param vel the velocity [deg/s].
+    */
+    void setCalibVel(const double vel)
+    {
+        calibratingVelocity=vel;
+    }
+
+    /**
+    * Return the finger actuation velocity used while calibrating.
+    * @return the velocity [deg/s].
+    */
+    double getCalibVel() const
+    {
+        return calibratingVelocity;
+    }    
 };
 
 
@@ -155,10 +258,15 @@ public:
     SpringyFingersModel();
 
     bool fromProperty(const yarp::os::Property &options);
+
     void toProperty(yarp::os::Property &options) const;
+
     bool toStream(std::ostream &str) const;
+
     bool calibrate(const yarp::os::Property &options);
+
     bool isCalibrated() const;
+
     bool getOutput(yarp::os::Value &out) const;    
 
     virtual ~SpringyFingersModel();

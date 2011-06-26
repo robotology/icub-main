@@ -74,7 +74,10 @@ public:
     * Retrieve the node name. 
     * @return a string containing the node name. 
     */
-    std::string getName() const { return name; }
+    std::string getName() const
+    {
+        return name;
+    }
 
     /**
     * The callback routine. 
@@ -109,7 +112,10 @@ public:
     * Retrieve the node name. 
     * @return a string containing the node name. 
     */
-    std::string getName() const { return name; }
+    std::string getName() const
+    {
+        return name;
+    }
 
     /**
     * Attach a sensor object to the node. 

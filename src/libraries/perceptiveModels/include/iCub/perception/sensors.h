@@ -126,7 +126,10 @@ public:
     * Retrieve the sensor name. 
     * @return a string containing the sensor name. 
     */
-    std::string getName() const { return name; }
+    std::string getName() const
+    {
+        return name;
+    }
 
     /**
     * Configure the sensor. 
@@ -168,9 +171,9 @@ public:
     * Configure the sensor. 
     * @param source a pointer to the yarp::dev::IEncoders interface.
     * @param options a Property containing the configuration 
-    *                parameters. Available options are:
-    * <b>name</b>: the name of the sensor. 
-    * <b>size</b>: the size of the whole sensor data vector. 
+    *                parameters. Available options are:\n
+    * <b>name</b>: the name of the sensor.\n 
+    * <b>size</b>: the size of the whole sensor data vector.\n 
     * <b>index</b>: the index corresponding to the joint that needs 
     * to be sensed. 
     * @return true/false on success/failure.
@@ -201,8 +204,8 @@ public:
     * Configure the sensor. 
     * @param source a pointer to the yarp::os::Port object.
     * @param options a Property containing the configuration 
-    *                parameters. Available options are:
-    * <b>name</b>: the name of the sensor. 
+    *                parameters. Available options are:\n
+    * <b>name</b>: the name of the sensor.\n 
     * <b>index</b>: the index corresponding to the double that needs
     * to be retrieved. 
     * @return true/false on success/failure.

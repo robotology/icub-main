@@ -77,7 +77,10 @@ public:
     * Retrieve the model name. 
     * @return a string containing the model name. 
     */
-    std::string getName() const { return name; }
+    std::string getName() const
+    {
+        return name;
+    }
 
     /**
     * Attach a node object to the model. 
