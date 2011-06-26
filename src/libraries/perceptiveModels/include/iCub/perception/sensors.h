@@ -70,8 +70,11 @@
  *   different models to easily change the implementation
  *   without affecting the format of the outcome.
  *  
+ * @defgroup Interfaces Interfaces 
+ * @ingroup PerceptiveModels 
+ *  
  * @defgroup Sensors Sensors 
- * @ingroup PerceptiveModels
+ * @ingroup Interfaces
  *  
  * Classes for data acquisition. 
  *  

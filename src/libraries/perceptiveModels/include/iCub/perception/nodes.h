@@ -18,7 +18,7 @@
 
 /** 
  * @defgroup Nodes Nodes
- * @ingroup PerceptiveModels 
+ * @ingroup Interfaces 
  *  
  * Abstract classes for data processing.
  *

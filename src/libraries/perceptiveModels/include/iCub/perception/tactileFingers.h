@@ -18,7 +18,7 @@
 
 /** 
  * @defgroup TactileFingers tactileFingers
- * @ingroup PerceptiveModels 
+ * @ingroup Implementations 
  *  
  * A very simple wrapper that replace the \ref SpringyFingers 
  * model with a perception based on the tactile sensors.

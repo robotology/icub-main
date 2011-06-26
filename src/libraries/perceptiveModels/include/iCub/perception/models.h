@@ -18,7 +18,7 @@
 
 /** 
  * @defgroup Models Models
- * @ingroup PerceptiveModels 
+ * @ingroup Interfaces 
  *  
  * Classes for distributing perceptive frameworks.
  *
