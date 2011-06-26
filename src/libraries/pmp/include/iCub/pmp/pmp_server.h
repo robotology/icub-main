@@ -16,17 +16,6 @@
  * Public License for more details
 */
 
-/**
- * \defgroup pmp_server pmp_server
- *  
- * @ingroup pmp
- *
- * Implementation of Pmp server part. 
- *  
- * \author Ilaria Gori, Ugo Pattacini 
- *  
- */ 
-
 #ifndef __PMP_SERVER_H__
 #define __PMP_SERVER_H__
 

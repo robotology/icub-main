@@ -16,17 +16,6 @@
  * Public License for more details
 */
 
-/**
- * \defgroup pmp_client pmp_client
- *  
- * @ingroup pmp
- *
- * Implementation of Pmp client part.
- *  
- * \author Ilaria Gori, Ugo Pattacini 
- *  
- */ 
-
 #ifndef __PMP_CLIENT_H__
 #define __PMP_CLIENT_H__
 
