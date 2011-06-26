@@ -193,7 +193,10 @@ public:
 
 /**
 * @ingroup SpringyFingers
-*
+*  
+* A class that provides the user with a suitable framework to 
+* deal with the elastic approach to the problem of detecting 
+* contacts of fingers with external forces. 
 */
 class SpringyFingersModel : public virtual Model
 {
@@ -255,20 +258,76 @@ private:
     void close();
 
 public:
+    /**
+    * Constructor. 
+    */
     SpringyFingersModel();
 
+    /**
+    * Configure the model taking its parameters from a Property 
+    * object. 
+    * @param options a Property containing the configuration 
+    *                parameters. Available options are:\n
+    * <b>name</b>: the name of the model.\n 
+    * <b>type</b>: the handedness type; it can be either "left" or 
+    * "right".\n 
+    * <b>robot</b>: the name of the robot to connect to; e.g. "icub" 
+    * or "icubSim".\n 
+    * <b>verbosity</b>: an integer that accounts for the verbosity 
+    * level of model print-outs. 
+    * @return true/false on success/failure.
+    */
     bool fromProperty(const yarp::os::Property &options);
 
+    /**
+    * Return a Property representation of all the model parameters.
+    * @param options a Property filled with the configuration 
+    *                parameters.
+    */
     void toProperty(yarp::os::Property &options) const;
 
+    /**
+    * Similar to the @see toProperty method but it operates on 
+    * output streams (e.g. string, ofstream, ...). It allows to 
+    * better manage the storing of the configuration over files. 
+    * @param str the reference to the output stream. 
+    * @return true/false on success/failure. 
+    */
     bool toStream(std::ostream &str) const;
 
+    /**
+    * Execute the fingers calibration.
+    * @param options a Property containing the calibration 
+    *                parameters. Available options are:\n
+    * <b>finger</b>: a string that encodes the finger to calibrate; 
+    * it can be "thumb", "index", "middle", "ring", "little", "all", 
+    * "all_serial", "all_parallel". The special tags "all" and 
+    * "all_serial" serve to calibrate all the fingers consecutively, 
+    * whereas the tag "all_parallel" allows calibrating all the 
+    * fingers at the same time.
+    * @return true/false on success/failure. 
+    */
     bool calibrate(const yarp::os::Property &options);
 
+    /**
+    * Return the internal status of the calibration.
+    * @return true/false on calibrated/uncalibrated-failure.
+    */
     bool isCalibrated() const;
 
+    /**
+    * Retrieve the complete output of the model.
+    * @param out a Value containing the model output in the form: 
+    *            (thumb_out index_out ... little_out), where the
+    *            finger_out is the output double of the
+    *            corresponding finger.
+    * @return true/false on success/failure. 
+    */
     bool getOutput(yarp::os::Value &out) const;    
 
+    /**
+    * Destructor. 
+    */
     virtual ~SpringyFingersModel();
 };
 
