@@ -48,7 +48,11 @@ bool TactileFinger::fromProperty(const Property &options)
     directLogic=(opt.check("logic",Value("direct")).asString()=="direct");
     outputGain=opt.check("output_gain",Value(1.0)).asDouble();
 
-    return true;
+    if ((name=="thumb") || (name=="index") || (name=="middle") ||
+        (name=="ring")  || (name=="little"))
+        return true;
+    else
+        return false;
 }
 
 

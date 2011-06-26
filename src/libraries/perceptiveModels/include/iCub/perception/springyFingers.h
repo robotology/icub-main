@@ -78,7 +78,7 @@ namespace perception
 * @ingroup SpringyFingers
 *  
 * An implementation of the Node class that represents the 
-* springy element. 
+* springy finger. 
 */
 class SpringyFinger : public Node
 {
@@ -195,7 +195,7 @@ public:
 * @ingroup SpringyFingers
 *  
 * A class that provides the user with a suitable framework to 
-* deal with the elastic approach to the problem of detecting 
+* deal with the elastic approach for the problem of detecting 
 * contacts of fingers with external forces. 
 */
 class SpringyFingersModel : public virtual Model
