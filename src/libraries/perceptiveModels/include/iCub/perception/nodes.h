@@ -17,8 +17,8 @@
 */
 
 /** 
- * @defgroup Nodes Nodes
- * @ingroup Interfaces 
+ * @defgroup percmod_Nodes Nodes
+ * @ingroup percmod_Interfaces 
  *  
  * Abstract classes for data processing.
  *
@@ -55,7 +55,7 @@ namespace perception
 {
 
 /**
-* @ingroup Nodes 
+* @ingroup percmod_Nodes 
 *  
 * An abstract class that provides basic events handling.
 */
@@ -88,7 +88,7 @@ public:
 
 
 /**
-* @ingroup Nodes
+* @ingroup percmod_Nodes
 *  
 * An abstract class that exposes the basic methods for the 
 * handling of data acquired through the attached sensors. 

@@ -17,11 +17,11 @@
 */
 
 /** 
- * @defgroup Implementations Implementations 
+ * @defgroup percmod_Implementations Implementations 
  * @ingroup PerceptiveModels 
  * 
  * @defgroup SpringyFingers springyFingers
- * @ingroup Implementations 
+ * @ingroup percmod_Implementations 
  *  
  * An elastic model of the distal joints of the robot's fingers 
  * that enables to perceive contacts with external forces.

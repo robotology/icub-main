@@ -70,11 +70,11 @@
  *   different models to easily change the implementation
  *   without affecting the format of the outcome.
  *  
- * @defgroup Interfaces Interfaces 
+ * @defgroup percmod_Interfaces Interfaces 
  * @ingroup PerceptiveModels 
  *  
- * @defgroup Sensors Sensors 
- * @ingroup Interfaces
+ * @defgroup percmod_Sensors Sensors 
+ * @ingroup percmod_Interfaces
  *  
  * Classes for data acquisition. 
  *  
@@ -107,7 +107,7 @@ namespace perception
 {
 
 /** 
-* @ingroup Sensors 
+* @ingroup percmod_Sensors 
 *  
 * An abstract class that exposes the basic methods for sensors 
 * handling. 
@@ -159,7 +159,7 @@ public:
 
 
 /**
-* @ingroup Sensors 
+* @ingroup percmod_Sensors 
 *  
 * This class implements the reading of motor joints encoders. 
 */
@@ -193,7 +193,7 @@ public:
 
 
 /**
-* @ingroup Sensors 
+* @ingroup percmod_Sensors 
 *  
 * This class implements the reading of a value from a port. 
 */

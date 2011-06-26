@@ -17,8 +17,8 @@
 */
 
 /** 
- * @defgroup Models Models
- * @ingroup Interfaces 
+ * @defgroup percmod_Models Models
+ * @ingroup percmod_Interfaces 
  *  
  * Classes for distributing perceptive frameworks.
  *
@@ -56,7 +56,7 @@ namespace perception
 {
 
 /**
-* @ingroup Models
+* @ingroup percmod_Models
 *  
 * An abstract class that provides basic methods for interfacing 
 * with the data acquisition. 
