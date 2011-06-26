@@ -73,6 +73,9 @@
  * @defgroup percmod_Interfaces Interfaces 
  * @ingroup PerceptiveModels 
  *  
+ * A collection of abstract classes establishing the 
+ * perceptive-based framework. 
+ *  
  * @defgroup percmod_Sensors Sensors 
  * @ingroup percmod_Interfaces
  *  

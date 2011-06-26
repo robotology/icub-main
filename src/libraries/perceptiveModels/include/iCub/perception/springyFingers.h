@@ -19,6 +19,9 @@
 /** 
  * @defgroup percmod_Implementations Implementations 
  * @ingroup PerceptiveModels 
+ *  
+ * Herein are grouped up all the perceptive models that rely on 
+ * the framework. 
  * 
  * @defgroup SpringyFingers springyFingers
  * @ingroup percmod_Implementations 
