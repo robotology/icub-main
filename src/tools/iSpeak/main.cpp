@@ -16,6 +16,61 @@
  * Public License for more details
 */
 
+/**
+@ingroup icub_tools
+
+\defgroup iSpeak iSpeak
+ 
+Acquire sentences over a yarp port and then let the robot
+pronounce them, also controlling the facial expressions. 
+
+\section intro_sec Description
+
+The behavior is pretty intuitive and does not need any further
+detail.\n 
+This module has been tested only on Linux since it requires the 
+<b>festival</b> package: <i>sudo apt-get install festival</i>.
+
+\section lib_sec Libraries 
+YARP libraries. 
+Festival package for speech synthesis. 
+
+\section parameters_sec Parameters
+--name \e name 
+- The parameter \e name identifies the unique stem-name used to 
+  open all relevant ports.
+ 
+--robot \e robot 
+- The parameter \e robot specifies the robot to connect to. 
+ 
+\section portsa_sec Ports Accessed
+At startup an attempt is made to connect to 
+/<robot>/face/emotions port. 
+
+\section portsc_sec Ports Created 
+- \e /<name>: this port receives the request for speech 
+  synthesis as a property-like bottle. Each bottle must
+  contain the "phrase" and "time" information. For example the
+  bottle (phrase "down with the service robotics") (time 10.0)
+  will let the robot speak the phrase "down with the service
+  robotics" and at the same time the facial expression will be
+  changed for 10 seconds to mimic the proper mouth movement.
+ 
+- \e /<name>/emotions: this port serves to command the facial 
+  expressions. At startup an attempt to connect to the proper
+  robot port is automatically made.
+ 
+- \e /<name>/rpc: a remote procedure call port useful to query
+  whether the robot is still speaking or not: the query command
+  is the vocab [stat], whereas the response will be a string:
+  either "speaking" or "quiet".
+
+\section tested_os_sec Tested OS
+Linux. 
+
+\author Ugo Pattacini
+*/ 
+
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
