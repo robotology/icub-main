@@ -25,6 +25,7 @@
 #include <yarp/os/Time.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <deque>
 
@@ -36,7 +37,7 @@ class iSpeak : public BufferedPort<Property>,
                public RateThread
 {
     string name;
-    string robot;    
+    string robot;
     Port emotions;
 
     deque<Property> buffer;
@@ -92,20 +93,18 @@ public:
         string phrase=request.check("phrase",Value("I have received nothing to say")).asString().c_str();
         double time=request.check("time",Value(1.0)).asDouble();
 
-    #ifdef LINUX
         system(("echo \""+phrase+"\" | festival --batch --tts &").c_str());
-    #endif
 
         t0=Time::now();
         dt=time;
         speaking=true;
-    }    
+    }
 
     void run()
     {
         mutex.wait();
         if (buffer.size()>0)
-        {            
+        {
             speak(buffer.front());
             buffer.pop_front();
         }
