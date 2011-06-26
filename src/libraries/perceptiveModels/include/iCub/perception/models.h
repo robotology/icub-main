@@ -113,9 +113,9 @@ public:
     virtual void toProperty(yarp::os::Property &options) const = 0;
 
     /**
-    * Similar to the @see toProperty method but it operates on 
-    * output streams (e.g. string, ofstream, ...). It allows to 
-    * better manage the storing of the configuration over files. 
+    * Similar to the toProperty() method but it operates on output
+    * streams (e.g. string, ofstream, ...). It allows to better 
+    * manage the storing of the configuration over files. 
     * @param str the reference to the output stream. 
     * @return true/false on success/failure. 
     */
