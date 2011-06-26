@@ -174,6 +174,7 @@ public:
     * manage the storing of the configuration over files. 
     * @param str the reference to the output stream. 
     * @return true/false on success/failure. 
+    * @see toProperty 
     */
     virtual bool toStream(std::ostream &str) const = 0;
 
