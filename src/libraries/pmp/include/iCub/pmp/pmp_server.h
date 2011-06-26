@@ -21,7 +21,7 @@
  *  
  * @ingroup pmp
  *
- * Implementation of Pmp client part. 
+ * Implementation of Pmp server part. 
  *  
  * \author Ilaria Gori, Ugo Pattacini 
  *  
