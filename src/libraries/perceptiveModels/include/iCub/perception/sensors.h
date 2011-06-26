@@ -159,7 +159,7 @@ public:
 
 
 /**
-* @ingroup percmod_Sensors 
+* @ingroup percmod_Implementations 
 *  
 * This class implements the reading of motor joints encoders. 
 */
@@ -193,7 +193,7 @@ public:
 
 
 /**
-* @ingroup percmod_Sensors 
+* @ingroup percmod_Implementations 
 *  
 * This class implements the reading of a value from a port. 
 */
