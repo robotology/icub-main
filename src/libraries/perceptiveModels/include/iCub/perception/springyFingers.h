@@ -18,7 +18,6 @@
 
 /** 
  * @defgroup SpringyFingers springyFingers
- *  
  * @ingroup PerceptiveModels 
  *  
  * Abstract layers for dealing with perceptive models framework.

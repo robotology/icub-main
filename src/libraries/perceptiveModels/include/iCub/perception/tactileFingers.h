@@ -18,7 +18,6 @@
 
 /** 
  * @defgroup TactileFingers tactileFingers
- *  
  * @ingroup PerceptiveModels 
  *  
  * Abstract layers for dealing with perceptive models framework.

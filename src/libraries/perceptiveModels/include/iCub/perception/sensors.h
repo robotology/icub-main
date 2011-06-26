@@ -72,7 +72,9 @@
  *  
  * @defgroup Sensors Sensors 
  * @ingroup PerceptiveModels
- *
+ *  
+ * Classes for data acquisition. 
+ *  
  * @author Ugo Pattacini 
  *  
  * Copyright (C) 2011 RobotCub Consortium
@@ -81,8 +83,9 @@
  *
  * @section sensors_intro_sec Description
  *
- * Here goes the implementation of data acquisition.
- *  
+ * A Sensor is an object that allows to retrieve data from 
+ * different kinds of sources such as yarp ports and yarp motor 
+ * interfaces. A Sensor is normally attached to a Node.
  */ 
 
 #ifndef __PERCEPTIVEMODELS_SENSORS_H__

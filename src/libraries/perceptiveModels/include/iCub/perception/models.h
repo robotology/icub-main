@@ -18,7 +18,6 @@
 
 /** 
  * @defgroup Models Models
- *  
  * @ingroup PerceptiveModels 
  *  
  * Abstract layers for dealing with perceptive models framework.
