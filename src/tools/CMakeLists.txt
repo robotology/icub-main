@@ -7,6 +7,7 @@ add_subdirectory(dataDumper)
 add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
 add_subdirectory(iCubTest)
+add_subdirectory(iSpeak)
 
 #canLoader needs GtkPlus, but it contains a library needed by other modules
 add_subdirectory(canLoader)
@@ -48,7 +49,6 @@ else(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 	message(STATUS "Qt3 or OpenGL or GLUT not selected, skipping iCubGui")
 endif(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 
-
 if(BUILD_MATLAB_BASED_TOOLS)
 	add_subdirectory(iKinArmView)
 	add_subdirectory(iKinGazeView)
@@ -58,5 +58,4 @@ else(BUILD_MATLAB_BASED_TOOLS)
 	message(STATUS "skipping iKinGazeView")
 	message(STATUS "skipping signalScope")
 endif(BUILD_MATLAB_BASED_TOOLS)
-
 
