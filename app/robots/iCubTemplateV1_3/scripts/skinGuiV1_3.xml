@@ -37,32 +37,32 @@
 	<tag>skinGuiRightForearm_upper</tag>
    </module>
 <connection>
-  <from>/icub/skin/lefthand</from>
+  <from>/icub/skin/left_hand</from>
   <to>/skinGui/left_hand:i</to>
   <protocol>tcp</protocol>
 </connection>
 <connection>
-  <from>/icub/skin/righthand</from>
+  <from>/icub/skin/right_hand</from>
   <to>/skinGui/right_hand:i</to>
   <protocol>tcp</protocol>
 </connection>
 <connection>
-  <from>/icub/skin/leftforearm_uppercover</from>
+  <from>/icub/skin/left_forearm_upper</from>
   <to>/skinGui/left_forearm_upper:i</to>
   <protocol>tcp</protocol>
 </connection>
 <connection>
-  <from>/icub/skin/leftforearm_lowercover</from>
+  <from>/icub/skin/left_forearm_lower</from>
   <to>/skinGui/left_forearm_lower:i</to>
   <protocol>tcp</protocol>
 </connection>
 <connection>
-  <from>/icub/skin/rightforearm_uppercover</from>
+  <from>/icub/skin/right_forearm_upper</from>
   <to>/skinGui/right_forearm_upper:i</to>
   <protocol>tcp</protocol>
 </connection>
 <connection>
-  <from>/icub/skin/rightforearm_lowercover</from>
+  <from>/icub/skin/right_forearm_lower</from>
   <to>/skinGui/right_forearm_lower:i</to>
   <protocol>tcp</protocol>
 </connection>
