@@ -122,7 +122,7 @@ public:
         useCallback();
 
         emotions.open(("/"+name+"/emotions").c_str());
-        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions").c_str());
+        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());
 
         return true;
     }
