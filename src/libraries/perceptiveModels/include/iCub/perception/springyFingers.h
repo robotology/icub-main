@@ -113,11 +113,12 @@ public:
     * whether the configured finger has to be considered calibrated 
     * or not.\n 
     * <b>scaler</b>: the string that configures the internal scaler 
-    * used by the learning machine. \see 
-    * iCub::learningmachine::FixedRangeScaler.\n 
-    * <b>lssvm</b>: the string that configures the Least-Squares SVM 
-    * machine. \see iCub::learningmachine::LSSVMLearner.
-    * @return true/false on success/failure.
+    * used by the learning machine.\n 
+    * <b>lssvm</b>: the string that configures the Least-Squares SVM
+    * machine.
+    * @return true/false on success/failure. 
+    * @see iCub::learningmachine::FixedRangeScaler 
+    * @see iCub::learningmachine::LSSVMLearner
     */
     bool fromProperty(const yarp::os::Property &options);
 
