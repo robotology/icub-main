@@ -9,7 +9,7 @@
       <parameters></parameters>
 	  <node>icubsrv</node>
 	  <stdio>icubsrv</stdio>	
-	<tag>iCubInterface</tag>
+	<tag>robotMotorGui</tag>
    </module>
    </application>
 
