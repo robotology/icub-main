@@ -387,7 +387,7 @@ public:
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             fprintf(stdout,"numThreads        = %d\n",numThreads);
         #else
-            fprintf(stdout,"numThreads        = OpenCV version does not support OpenMP multi-threading");
+            fprintf(stdout,"numThreads        = OpenCV version does not support OpenMP multi-threading\n");
         #endif
             
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
