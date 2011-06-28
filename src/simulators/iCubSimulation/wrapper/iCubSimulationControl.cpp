@@ -20,7 +20,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)  //for VC++, no precision loss complaints
-#define _USE_MATH_DEFINES	   // for M_PI
+#define _USE_MATH_DEFINES      // for M_PI
 #endif
 /// general purpose stuff.
 #include <yarp/os/Time.h>
