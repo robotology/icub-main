@@ -2889,10 +2889,10 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     //joint parameters
     for (int x=0; x<6; x++){
         //dJointSetHingeParam(LLegjoints[x], dParamVel, LLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
-        dJointSetHingeParam(LLegjoints[x], dParamFMax,50);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
+        dJointSetHingeParam(LLegjoints[x], dParamFMax,100);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
 
         dJointSetHingeParam(RLegjoints[x], dParamVel, RLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
-        dJointSetHingeParam(RLegjoints[x], dParamFMax,20);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
+        dJointSetHingeParam(RLegjoints[x], dParamFMax,100);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
     }
     for (int x=0; x<5; x++){
         dJointSetHingeParam(Torsojoints[x], dParamVel, Torso_speed[x]);
@@ -2900,11 +2900,30 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     }   
     for (int x=0; x<5; x++){
         dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetHingeParam(LAjoints[x], dParamFMax,50);
+        dJointSetHingeParam(LAjoints[x], dParamFMax,200);
         dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetHingeParam(RAjoints[x], dParamFMax,50);
+        dJointSetHingeParam(RAjoints[x], dParamFMax,200);
     }
     for (int x=5; x<6;x++){//for the hands
+        dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax,100);
+        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax2,100);
+
+        dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax,100);
+        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax2,100);
+    }
+    for (int x=6; x<25; x++){//22
+        if (x!=9 && x!=13 && x!=17 && x!=21 && x!=22){
+            dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
+            dJointSetHingeParam(LAjoints[x], dParamFMax,50);
+            dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
+            dJointSetHingeParam(RAjoints[x], dParamFMax,50);
+        }
+    }
+    for (int x=22; x<23;x++){//for the hands
         dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
         dJointSetUniversalParam(LAjoints[x], dParamFMax,50);
         dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
@@ -2915,33 +2934,14 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
         dJointSetUniversalParam(RAjoints[x], dParamFMax2,50);
     }
-    for (int x=6; x<25; x++){//22
-        if (x!=9 && x!=13 && x!=17 && x!=21 && x!=22){
-            dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
-            dJointSetHingeParam(LAjoints[x], dParamFMax,3);
-            dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
-            dJointSetHingeParam(RAjoints[x], dParamFMax,3);
-        }
-    }
-    for (int x=22; x<23;x++){//for the hands
-        dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax,3);
-        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax2,3);
-
-        dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax,3);
-        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax2,3);
-    }
 
     dJointSetHingeParam(Hjoints[0], dParamVel, h_speed[0]);
-    dJointSetHingeParam(Hjoints[0], dParamFMax,20);
+    dJointSetHingeParam(Hjoints[0], dParamFMax,200);
     if (actHead ){
         /*-------------head parameters--------------*/
         for (int x=1; x<6; x++){//Joint parameters
             dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
-            dJointSetHingeParam(Hjoints[x], dParamFMax,20);
+            dJointSetHingeParam(Hjoints[x], dParamFMax,200);
         }
     }
 

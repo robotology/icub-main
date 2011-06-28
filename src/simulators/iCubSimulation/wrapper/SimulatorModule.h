@@ -23,6 +23,7 @@
 #define ICUBSIMULATION_SIMULATORMODULE_INC
 
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/sig/Image.h>
 #include <yarp/dev/PolyDriver.h>
@@ -92,6 +93,7 @@ private:
 #endif
     bool firstpass;
 
+    yarp::os::Stamp                         camerasStamp;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> buffer;
 
     yarp::dev::PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;

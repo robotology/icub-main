@@ -421,6 +421,8 @@ void SimulatorModule::displayStep(int pause) {
             order = "lwr";
         }
 
+        camerasStamp.update(Time::now());
+
         for (int i=0; i<3; i++) {
             char ch = order[i];
             switch (ch) {
@@ -504,6 +506,7 @@ void SimulatorModule::getImage(){
 void SimulatorModule::sendImage(BufferedPort<ImageOf<PixelRgb> >& port) {
     ImageOf<PixelRgb>& normal = port.prepare();
     normal.copy( buffer );
+    port.setEnvelope(camerasStamp);
     port.write();
 }
 
