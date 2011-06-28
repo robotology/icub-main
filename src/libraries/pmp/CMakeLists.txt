@@ -24,7 +24,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${YARP_INCLUDE_DIRS})
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header_private} ${folder_header})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib)
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib icubmod)
 
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                    DEPENDS ctrlLib

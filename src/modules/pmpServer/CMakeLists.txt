@@ -14,7 +14,7 @@ include_directories(${ctrlLib_INCLUDE_DIRS} ${pmp_INCLUDE_DIRS} ${YARP_INCLUDE_D
 
 add_executable(${PROJECTNAME} ${folder_source})
 
-target_link_libraries(${PROJECTNAME} icubmod pmp ${YARP_LIBRARIES})
+target_link_libraries(${PROJECTNAME} pmp ${YARP_LIBRARIES})
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
