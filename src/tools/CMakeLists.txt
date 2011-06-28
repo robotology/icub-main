@@ -35,6 +35,7 @@ endif(ICUB_USE_SDL)
 
 if(ICUB_USE_GtkMM)
 	add_subdirectory(frameGrabberGui2)
+	add_subdirectory(focusTool)
 	if(ICUB_USE_INTERFACEGUI)
 	  add_subdirectory(iCubInterfaceGui)
 	endif(ICUB_USE_INTERFACEGUI)

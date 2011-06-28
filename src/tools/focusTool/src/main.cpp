@@ -61,14 +61,21 @@
 
 int main(int argc, char *argv[])
 {
+    if (argc!=3)
+    {
+        printf("USAGE: %s /localport /cameraport\n",argv[0]);
+        return 1;
+    }
+    
     Glib::thread_init();
     Gtk::Main kit(argc,argv);
-
 	yarp::os::Network yarp;
 
-    yarp::os::ConstString loc(argv[1]);
-    yarp::os::ConstString rem(argv[2]);
-    iCubFocusGuiWindow client(loc,rem);
+    yarp::os::Property config;
+    config.put("local",argv[1]);
+    config.put("remote",argv[2]);
+    //config.fromCommand(argc,argv);
+    iCubFocusGuiWindow client(config);
 
     kit.run(client);
 

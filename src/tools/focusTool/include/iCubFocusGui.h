@@ -16,14 +16,14 @@
 class iCubFocusGuiThread : public yarp::os::Thread
 {
 public:
-    iCubFocusGuiThread(yarp::os::ConstString& loc,yarp::os::ConstString& rem)
+    iCubFocusGuiThread(yarp::os::Searchable &config)
     {
         mR=mD=0.0;
-
+        
+        //yarp::os::Property p;
+        //p.put("local",loc);
+        //p.put("remote",rem);
         // grabber
-        yarp::os::Property config;
-		config.put("local",loc);
-        config.put("remote",rem);
         pFG=new yarp::dev::RemoteFrameGrabber();
         pFG->open(config);
     }
@@ -42,38 +42,41 @@ public:
     
     void run()
     { 
-        if (pFG->getImage(img))
+        while (!isStopping())
         {
-            int mW=img.width();
-            int mH=img.height();
-            unsigned char *p=img.getRawImage();
-            
-            double Rx,Gx,Bx;
-            double Ry,Gy,By;
-            double D=0.0;
-
-            for (int y=1; y<mH-1; ++y)
+            if (pFG->getImage(img))
             {
-                for (int x=1; x<mW-1; ++x)
+                int mW=img.width();
+                int mH=img.height();
+                unsigned char *p=img.getRawImage();
+
+                double Rx,Gx,Bx;
+                double Ry,Gy,By;
+                double D=0.0;
+
+                for (int y=1; y<mH-1; ++y)
                 {
-                    Rx=p[R(x+1,y-1)]-p[R(x-1,y-1)]+2*(p[R(x+1,y)]-p[R(x-1,y)])+p[R(x+1,y+1)]-p[R(x-1,y+1)];
-                    Ry=p[R(x-1,y+1)]-p[R(x-1,y-1)]+2*(p[R(x,y+1)]-p[R(x,y-1)])+p[R(x+1,y+1)]-p[R(x+1,y-1)];
+                    for (int x=1; x<mW-1; ++x)
+                    {
+                        Rx=p[R(x+1,y-1)]-p[R(x-1,y-1)]+2*(p[R(x+1,y)]-p[R(x-1,y)])+p[R(x+1,y+1)]-p[R(x-1,y+1)];
+                        Ry=p[R(x-1,y+1)]-p[R(x-1,y-1)]+2*(p[R(x,y+1)]-p[R(x,y-1)])+p[R(x+1,y+1)]-p[R(x+1,y-1)];
 
-                    Gx=p[G(x+1,y-1)]-p[G(x-1,y-1)]+2*(p[G(x+1,y)]-p[G(x-1,y)])+p[G(x+1,y+1)]-p[G(x-1,y+1)];
-                    Gy=p[G(x-1,y+1)]-p[G(x-1,y-1)]+2*(p[G(x,y+1)]-p[G(x,y-1)])+p[G(x+1,y+1)]-p[G(x+1,y-1)];
+                        Gx=p[G(x+1,y-1)]-p[G(x-1,y-1)]+2*(p[G(x+1,y)]-p[G(x-1,y)])+p[G(x+1,y+1)]-p[G(x-1,y+1)];
+                        Gy=p[G(x-1,y+1)]-p[G(x-1,y-1)]+2*(p[G(x,y+1)]-p[G(x,y-1)])+p[G(x+1,y+1)]-p[G(x+1,y-1)];
 
-                    Bx=p[B(x+1,y-1)]-p[B(x-1,y-1)]+2*(p[B(x+1,y)]-p[B(x-1,y)])+p[B(x+1,y+1)]-p[B(x-1,y+1)];
-                    By=p[B(x-1,y+1)]-p[B(x-1,y-1)]+2*(p[B(x,y+1)]-p[B(x,y-1)])+p[B(x+1,y+1)]-p[B(x+1,y-1)];
+                        Bx=p[B(x+1,y-1)]-p[B(x-1,y-1)]+2*(p[B(x+1,y)]-p[B(x-1,y)])+p[B(x+1,y+1)]-p[B(x-1,y+1)];
+                        By=p[B(x-1,y+1)]-p[B(x-1,y-1)]+2*(p[B(x,y+1)]-p[B(x,y-1)])+p[B(x+1,y+1)]-p[B(x+1,y-1)];
 
-                    D+=Rx*Rx+Gx*Gx+Bx*Bx+Ry*Ry+Gy*Gy+By*By;
+                        D+=Rx*Rx+Gx*Gx+Bx*Bx+Ry*Ry+Gy*Gy+By*By;
+                    }
                 }
+
+                if (mD<D) mD=D;
+
+                mR=D/mD;
+
+                mSigWindow();  
             }
-
-            if (mD<D) mD=D;
-
-            mR=D/mD;
-
-            mSigWindow();  
         }
     }
     
@@ -96,20 +99,20 @@ protected:
 class iCubFocusGuiWindow : public Gtk::Window
 {
 public:
-    iCubFocusGuiWindow(yarp::os::ConstString& loc,yarp::os::ConstString& rem)
+    iCubFocusGuiWindow(yarp::os::Searchable &config)
     {
         // gui
         set_title("Camera focus GUI");
         set_border_width(5);
-        set_default_size(400,300);
+        set_default_size(512,100);
 
         add(mVBox);
         mVBox.pack_start(mPB);
         show_all();
 
-        yarp::os::Time::delay(1.0);
+        //yarp::os::Time::delay(1.0);
         
-        mThread=new iCubFocusGuiThread(loc,rem);
+        mThread=new iCubFocusGuiThread(config);
         mThread->mSigWindow.connect(sigc::mem_fun(*this,&iCubFocusGuiWindow::run));
         mThread->start();
     }
