@@ -41,6 +41,7 @@ if(ICUB_USE_GtkMM)
 	endif(ICUB_USE_INTERFACEGUI)
 else(ICUB_USE_GtkMM)
 	message(STATUS "GtkMM not selected, skipping frameGrabberGui2")
+	message(STATUS "GtkMM not selected, skipping focusTool")
 	message(STATUS "GtkMM not selected, skipping iCubInterfaceGui")
 endif(ICUB_USE_GtkMM)
 
