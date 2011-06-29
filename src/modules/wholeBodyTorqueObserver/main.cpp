@@ -48,9 +48,13 @@ http://eris.liralab.it/wiki/Force_Control
 
 \section parameters_sec Parameters
 
+--robot \e name 
+- The parameter \e name identifies the robot name. If not specified
+  \e icub is assumed. 
+
 --rate \e r 
 - The parameter \e r identifies the rate the thread will work. If not
-  specified \e 100ms is assumed. The minimum suggested rate is \e 20ms.
+  specified \e 10ms is assumed. 
 
 --no_legs   
 - this option disables the dynamics computation for the legs joints
@@ -79,7 +83,7 @@ Linux and Windows.
 By launching the following command: 
  
 \code 
-wholeBodyTorqueObserver --rate 50  
+wholeBodyTorqueObserver --rate 10  
 \endcode 
  
 the module will create the listening port /wholeBodyTorqueObserver/right_arm/FT:i for 
@@ -522,8 +526,12 @@ public:
 		writeTorque(RATorques, 1, port_RATorques); //arm
 		writeTorque(LATorques, 1, port_LATorques); //arm
 		writeTorque(TOTorques, 4, port_TOTorques); //torso
-		//fprintf (stderr,"TORSO: %s \n",TOTorques.toString().c_str());
-		
+//		fprintf (stderr,"TORSO: %s \n",TOTorques.toString().c_str());
+/*		fprintf (stderr,"TORSO: %s %s %s \n",TOTorques.toString().c_str(),
+											 LLTorques.toString().c_str(),
+											 RLTorques.toString().c_str());
+*/
+
 		if (ddLR) writeTorque(RLTorques, 2, port_RLTorques); //leg
 		if (ddLL) writeTorque(LLTorques, 2, port_LLTorques); //leg
 		writeTorque(RATorques, 3, port_RWTorques); //wrist
@@ -737,6 +745,14 @@ public:
 			sz = inertial->length();
 			inertial_measurements.resize(sz) ;
 			inertial_measurements= *inertial;
+#ifdef DEBUG_FIXED_INERTIAL
+			inertial_measurements[0] = 0;
+			inertial_measurements[1] = 0;
+			inertial_measurements[2] = 9.81;
+			inertial_measurements[3] = 0;
+			inertial_measurements[4] = 0;
+			inertial_measurements[5] = 0;
+#endif
 			d2p0[0] = inertial_measurements[0];
 			d2p0[1] = inertial_measurements[1];
 			d2p0[2] = inertial_measurements[2];
@@ -1055,6 +1071,10 @@ public:
 			name = rf.find("name").asString();
 		else name = "wholeBodyTorqueObserver";
 */
+		string robot_name;
+		if (rf.check("robot"))
+			 robot_name = rf.find("robot").asString();
+		else robot_name = "icub";
 
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
 		if (rf.check("no_legs"))
@@ -1071,7 +1091,7 @@ public:
 		}
 		else
 		{
-			fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
+			fprintf(stderr,"Could not find rate in the config file\nusing 10ms as default");
 			rate = 10;
 		}
 
@@ -1079,7 +1099,7 @@ public:
 
 		OptionsHead.put("device","remote_controlboard");
 		OptionsHead.put("local","/wholeBodyTorqueObserver/head/client");
-		OptionsHead.put("remote","/icub/head");
+		OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
 
 		dd_head = new PolyDriver(OptionsHead);
 		if (!createDriver(dd_head))
@@ -1092,7 +1112,7 @@ public:
 
 		OptionsLeftArm.put("device","remote_controlboard");
 		OptionsLeftArm.put("local","/wholeBodyTorqueObserver/left_arm/client");
-		OptionsLeftArm.put("remote","/icub/left_arm");
+		OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
 		dd_left_arm = new PolyDriver(OptionsLeftArm);
 		if (!createDriver(dd_left_arm))
 		{
@@ -1102,7 +1122,7 @@ public:
 
 		OptionsRightArm.put("device","remote_controlboard");
 		OptionsRightArm.put("local","/wholeBodyTorqueObserver/right_arm/client");
-		OptionsRightArm.put("remote","/icub/right_arm");
+		OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
 		dd_right_arm = new PolyDriver(OptionsRightArm);
 		if (!createDriver(dd_right_arm))
 		{
@@ -1114,7 +1134,7 @@ public:
 		{
 			OptionsLeftLeg.put("device","remote_controlboard");
 			OptionsLeftLeg.put("local","/wholeBodyTorqueObserver/left_leg/client");
-			OptionsLeftLeg.put("remote","/icub/left_leg");
+			OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
 			dd_left_leg = new PolyDriver(OptionsLeftLeg);
 			if (!createDriver(dd_left_leg))
 			{
@@ -1124,7 +1144,7 @@ public:
 
 			OptionsRightLeg.put("device","remote_controlboard");
 			OptionsRightLeg.put("local","/wholeBodyTorqueObserver/right_leg/client");
-			OptionsRightLeg.put("remote","/icub/right_leg");
+			OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
 			dd_right_leg = new PolyDriver(OptionsRightLeg);
 			if (!createDriver(dd_right_leg))
 			{
@@ -1135,7 +1155,7 @@ public:
 
 		OptionsTorso.put("device","remote_controlboard");
 		OptionsTorso.put("local","/wholeBodyTorqueObserver/torso/client");
-		OptionsTorso.put("remote","/icub/torso");
+		OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
 
 		dd_torso = new PolyDriver(OptionsTorso);
 		if (!createDriver(dd_torso))
@@ -1277,7 +1297,8 @@ int main(int argc, char * argv[])
         cout << "Options:" << endl << endl;
         cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app: default wrechObserver/conf)" << endl;
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
-        cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"                          << endl;
+		cout << "\t--rate       rate: the period used by the module. default: 10ms"                                               << endl;
+		cout << "\t--robot      robot: the robot name. default: iCub"                                                             << endl;
         cout << "\t--no_legs    this option disables the dynamics computation for the legs joints"								  << endl;    
 		return 0;
     }
