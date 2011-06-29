@@ -2212,9 +2212,9 @@ iCubWholeBody::iCubWholeBody(const NewEulMode mode, unsigned int verbose)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubWholeBody::~iCubWholeBody()
 {
-	delete upperTorso; upperTorso = NULL;
-	delete lowerTorso; lowerTorso = NULL;
-	delete rbt;
+	if (upperTorso) delete upperTorso; upperTorso = NULL;
+	if (lowerTorso) delete lowerTorso; lowerTorso = NULL;
+	if (rbt)        delete rbt;        rbt        = NULL;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubWholeBody::attachTorso()
