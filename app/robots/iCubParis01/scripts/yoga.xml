@@ -12,8 +12,8 @@
 
   <module> 
 	<name>iCubDemoY3</name>
-	<stdio>icubsrv</stdio>
-	<node>icubsrv</node>
+	<stdio>macsi03</stdio>
+	<node>macsi03</node>
 	<tag>yoga-classic</tag>
   </module>
 </application>

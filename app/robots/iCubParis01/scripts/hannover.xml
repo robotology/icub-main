@@ -13,8 +13,8 @@
   <module> 
 	<name>iCubDemoY3</name>
 	<parameters>--positions hannover.txt</parameters>
-	<stdio>icubsrv</stdio>
-	<node>icubsrv</node>
+	<stdio>macsi03</stdio>
+	<node>macsi03</node>
 	<tag>hannover</tag>
   </module>
 </application>
