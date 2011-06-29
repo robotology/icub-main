@@ -144,6 +144,9 @@ double lpf_ord1_3hz(double input, int j)
 class inverseDynamics: public RateThread
 {
 private:
+	string     robot_name;
+	bool       autoconnect;
+
     PolyDriver *ddAL;
     PolyDriver *ddAR;
     PolyDriver *ddH;
@@ -364,7 +367,7 @@ private:
 	}
 
 public:
-    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT)
+    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), autoconnect(autoconnect)
     {        
         first = true;
 
@@ -410,6 +413,15 @@ public:
 		port_external_wrench_RA->open("/wholeBodyTorqueObserver/right_arm/endEffectorWrench:o"); 
 		port_external_wrench_LA->open("/wholeBodyTorqueObserver/left_arm/endEffectorWrench:o"); 
 		port_external_wrench_TO->open("/wholeBodyTorqueObserver/torso/Wrench:o");
+
+		if (autoconnect)
+		{
+			yarp::os::Network::connect(string("/"+robot_name+"/inertial").c_str(),          "/wholeBodyTorqueObserver/inertial:i","tcp",false);
+			yarp::os::Network::connect(string("/"+robot_name+"/left_arm/analog:o").c_str(), "/wholeBodyTorqueObserver/left_arm/FT:i","tcp",false);
+			yarp::os::Network::connect(string("/"+robot_name+"/right_arm/analog:o").c_str(),"/wholeBodyTorqueObserver/right_arm/FT:i","tcp",false);
+			yarp::os::Network::connect(string("/"+robot_name+"/left_leg/analog:o").c_str(), "/wholeBodyTorqueObserver/left_leg/FT:i","tcp",false);
+			yarp::os::Network::connect(string("/"+robot_name+"/right_leg/analog:o").c_str(),"/wholeBodyTorqueObserver/right_leg/FT:i","tcp",false);
+		}
 
 		//---------------------DEVICES--------------------------//
         if (ddAL) ddAL->view(iencs_arm_left);
@@ -1071,10 +1083,17 @@ public:
 			name = rf.find("name").asString();
 		else name = "wholeBodyTorqueObserver";
 */
+		//-----------------GET THE ROBOT NAME-------------------//
 		string robot_name;
 		if (rf.check("robot"))
 			 robot_name = rf.find("robot").asString();
 		else robot_name = "icub";
+
+		//-----------------CHECK IF AUTOCONNECT IS ON-----------//
+		bool autoconnect;
+		if (rf.check("autoconnect"))
+			 autoconnect = true;
+		else autoconnect = false;
 
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
 		if (rf.check("no_legs"))
@@ -1167,7 +1186,7 @@ public:
 			fprintf(stderr,"device driver created\n");
 
 		//--------------------------THREAD--------------------------
-		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso);
+		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, autoconnect);
 		fprintf(stderr,"ft thread istantiated...\n");
         Time::delay(5.0);
 
