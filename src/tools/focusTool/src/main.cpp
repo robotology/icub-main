@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 RobotCub Consortium
+ * Copyright (C) 2011 RobotCub Consortium
  * Author: Alessandro Scalzo alessandro.scalzo@iit.it
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
@@ -7,35 +7,37 @@
 
 /**
 *
-* \defgroup icubinterfacegui_gui iCubInterfaceGuiClient
+* \defgroup focustool_gui focusTool
 * @ingroup icub_guis
 *
 *
-* A gui that shows the full state of the robot control board networks.
+* A simple camera focus calibration tool.
 *
 *
 * \section intro_sec Description
 * 
-* Displays the status of the robot motor and sensor control board networks
-* in a hyerarchical tree view. It connects to its server part running inside
-* the \ref icub_iCubInterface iCubInterface. 
+* When this tool is connected to a running camera, it provides a visual representation of
+* the energy of the edges in the images. A level indicator bar shows the rate between
+* the actual energy in the image and the maximum energy level detected during the calibration
+* process. The calibration procedure is the following: the focus adjust must be slowly changed 
+* from its minimum to its maximum; the maximum of the energy is recorder by the tool during this
+* calibration phase. In the second phase, the focus adjust must be brought back until the maximum
+* is shown by the energy level bar. 
 * 
-* \image html icubinterfacegui.jpg "Screenshots: iCubInterfaceGuiClient running on Windows"
-*
 *
 * \section lib_sec Libraries
 *  - YARP
 *  - GtkMM.
 *
 * \section parameters_sec Parameters
-* It doesn't need any parameter or configuration file because
-* it receives the network configuration from the iCubInterface
-* server side in the connection phase.
+* --local /localport
+* --remote /cameraport
 *
 * \section portsa_sec Ports Accessed
 *
 * \code
-* icubinterfacegui/server
+* /localport
+* /cameraport
 * \endcode
 *
 * \section tested_os_sec Tested OS
@@ -44,12 +46,13 @@
 *
 * \author Alessandro Scalzo
 *
-* Copyright (C) 2010 RobotCub Consortium
+* Copyright (C) 2011 RobotCub Consortium
 *
 * CopyPolicy: Released under the terms of the GNU GPL v2.0.
 *
-* This file can be edited at main/src/tools/iCubInterfaceGui/iCubInterfaceGuiClient/mainClient.cpp.
+* This file can be edited at main/src/tools/focusTool/main.cpp.
 */
+
 
 
 
