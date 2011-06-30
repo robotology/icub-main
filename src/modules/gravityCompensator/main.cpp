@@ -111,33 +111,37 @@ private:
 	BufferedPort<Vector> *right_arm_torques;
 	BufferedPort<Vector> *left_leg_torques;
 	BufferedPort<Vector> *right_leg_torques;
+	BufferedPort<Vector> *torso_torques;
 
-	PolyDriver *ddLA;
-    PolyDriver *ddRA;
-    PolyDriver *ddH;
-    IEncoders  *iencs_arm_left;
-    IEncoders  *iencs_arm_right;
-    IEncoders  *iencs_head;
+	PolyDriver   *ddLA;
+    PolyDriver   *ddRA;
+    PolyDriver   *ddH;
+    IEncoders    *iencs_arm_left;
+    IEncoders    *iencs_arm_right;
+    IEncoders    *iencs_head;
 	IControlMode *iCtrlMode_arm_left;
 	IControlMode *iCtrlMode_arm_right;
+	IControlMode *iCtrlMode_torso;
 	IImpedanceControl *iImp_arm_left;
-	ITorqueControl *iTqs_arm_left;
+	ITorqueControl    *iTqs_arm_left;
 	IImpedanceControl *iImp_arm_right;
-	ITorqueControl *iTqs_arm_right;
+	ITorqueControl    *iTqs_arm_right;
+	IImpedanceControl *iImp_torso;
+	ITorqueControl    *iTqs_torso;
 	thread_status_enum thread_status;	
 	
-    PolyDriver *ddLL;
-    PolyDriver *ddRL;
-    PolyDriver *ddT;
-    IEncoders  *iencs_leg_left;
-    IEncoders  *iencs_leg_right;
-    IEncoders  *iencs_torso;
+    PolyDriver   *ddLL;
+    PolyDriver   *ddRL;
+    PolyDriver   *ddT;
+    IEncoders    *iencs_leg_left;
+    IEncoders    *iencs_leg_right;
+    IEncoders    *iencs_torso;
 	IControlMode *iCtrlMode_leg_left;
 	IControlMode *iCtrlMode_leg_right;
 	IImpedanceControl *iImp_leg_left;
-	ITorqueControl *iTqs_leg_left;
+	ITorqueControl    *iTqs_leg_left;
 	IImpedanceControl *iImp_leg_right;
-	ITorqueControl *iTqs_leg_right;
+	ITorqueControl    *iTqs_leg_right;
 
 	Vector encoders_arm_left;
     Vector encoders_arm_right;
@@ -177,7 +181,7 @@ private:
 	Vector inertial_measurements;
 	Vector torque_offset;
 
-	Vector torques_LA,torques_RA,torques_LL,torques_RL;
+	Vector torques_LA,torques_RA,torques_LL,torques_RL, torques_TO;
 	Vector ampli_larm, ampli_rarm, ampli_lleg, ampli_rleg;
 	bool isCalibrated;
 	
@@ -350,6 +354,9 @@ public:
         iencs_head			= 0;
 	    iCtrlMode_arm_left  = 0;
 	    iCtrlMode_arm_right = 0;
+		iCtrlMode_torso     = 0;
+		iImp_torso	     	= 0;
+		iTqs_torso   		= 0;
 		iImp_arm_left		= 0;
 	    iTqs_arm_left		= 0;
 	    iImp_arm_right		= 0;
@@ -382,6 +389,8 @@ public:
 		left_leg_torques->open("/gravityCompensator/left_leg_torques:o");
 		right_leg_torques = new BufferedPort<Vector>;
 		right_leg_torques->open("/gravityCompensator/right_leg_torques:o");
+		torso_torques = new BufferedPort<Vector>;
+		torso_torques->open("/gravityCompensator/torso_torques:o");
 		//*offset_input = 0.0;
 
 		//---------------------DEVICES--------------------------//
@@ -398,6 +407,10 @@ public:
 		if (ddLA) ddLA->view(iTqs_arm_left);
         if (ddRA) ddRA->view(iImp_arm_right);
 		if (ddRA) ddRA->view(iTqs_arm_right);
+
+		if (ddT)  ddT->view(iCtrlMode_torso);
+        if (ddT)  ddT->view(iImp_torso);
+		if (ddT)  ddT->view(iTqs_torso);
 
 		if (ddLL) ddLL->view(iCtrlMode_leg_left);
         if (ddRL) ddRL->view(iCtrlMode_leg_right);
@@ -598,7 +611,8 @@ public:
 		torques_LA = icub.upperTorso->left->getTorques();
 		torques_RA = icub.upperTorso->right->getTorques();
 		torques_LL = icub.lowerTorso->left->getTorques();
-		torques_RL = icub.lowerTorso->right->getTorques();   
+		torques_RL = icub.lowerTorso->right->getTorques();  
+		torques_TO = icub.lowerTorso->getTorques("torso");
 	}
 
     bool threadInit()
@@ -712,6 +726,13 @@ public:
 				right_arm_torques->prepare() =  torques_RA;
 				right_arm_torques->write();
 			}
+			if (iCtrlMode_torso)  
+			{
+			//  @@@ NOT YET COMPLETED
+			//	feedFwdGravityControl(iCtrlMode_torso,iTqs_torso,iImp_torso,torques_TO,ampli_torso);
+				torso_torques->prepare()  =  torques_TO;
+				torso_torques->write();
+			}
 			if (iCtrlMode_leg_left)	
 			{
 				feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
@@ -767,12 +788,16 @@ public:
     {
 		Vector Z(10);Z=0.0;
 		
-		fprintf(stderr,"Setting gravity compensation offset to zero, left arm\n");
-		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
-		fprintf(stderr,"Setting gravity compensation offset to zero, right arm\n");
-		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
-		
-		//In the following two lines: feedFwdGravityControl is execute only if legs are enabled
+		if (iCtrlMode_arm_left)
+		{
+			fprintf(stderr,"Setting gravity compensation offset to zero, left arm\n");
+			feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
+		}
+		if (iCtrlMode_arm_right)	
+		{
+			fprintf(stderr,"Setting gravity compensation offset to zero, right arm\n");
+			feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
+		}
 		if (iCtrlMode_leg_left)	 
 		{
 			fprintf(stderr,"Setting gravity compensation offset to zero, left leg\n");
@@ -795,14 +820,15 @@ public:
         left_leg_torques->close();
 	    right_leg_torques->close();*/
 
-        if (left_arm_torques)  {delete left_arm_torques; left_arm_torques = 0;}
+        if (left_arm_torques)  {delete left_arm_torques;  left_arm_torques = 0;}
         if (right_arm_torques) {delete right_arm_torques; right_arm_torques = 0;}
-        if (left_leg_torques)  {delete left_leg_torques; left_leg_torques = 0;}
+        if (left_leg_torques)  {delete left_leg_torques;  left_leg_torques = 0;}
         if (right_leg_torques) {delete right_leg_torques; right_leg_torques = 0;}
+		if (torso_torques)     {delete torso_torques;     torso_torques = 0;}		
 		
-		if (linEstUp)          {delete linEstUp; linEstUp = 0;}
-		if (quadEstUp)         {delete quadEstUp; quadEstUp = 0;}
-		if (linEstLow)         {delete linEstLow; linEstLow = 0;}
+		if (linEstUp)          {delete linEstUp;   linEstUp = 0;}
+		if (quadEstUp)         {delete quadEstUp;  quadEstUp = 0;}
+		if (linEstLow)         {delete linEstLow;  linEstLow = 0;}
 		if (quadEstLow)        {delete quadEstLow; quadEstLow = 0;}
 		
 		//closing ports
