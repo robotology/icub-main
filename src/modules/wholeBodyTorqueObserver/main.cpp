@@ -416,11 +416,12 @@ public:
 
 		if (autoconnect)
 		{
-			yarp::os::Network::connect(string("/"+robot_name+"/inertial").c_str(),          "/wholeBodyTorqueObserver/inertial:i","tcp",false);
-			yarp::os::Network::connect(string("/"+robot_name+"/left_arm/analog:o").c_str(), "/wholeBodyTorqueObserver/left_arm/FT:i","tcp",false);
-			yarp::os::Network::connect(string("/"+robot_name+"/right_arm/analog:o").c_str(),"/wholeBodyTorqueObserver/right_arm/FT:i","tcp",false);
-			yarp::os::Network::connect(string("/"+robot_name+"/left_leg/analog:o").c_str(), "/wholeBodyTorqueObserver/left_leg/FT:i","tcp",false);
-			yarp::os::Network::connect(string("/"+robot_name+"/right_leg/analog:o").c_str(),"/wholeBodyTorqueObserver/right_leg/FT:i","tcp",false);
+			Network::connect("/wholeBodyTorqueObserver/filtered/inertial:o",      "/wholeBodyTorqueObserver/inertial:i","tcp",false);			
+			Network::connect(string("/"+robot_name+"/inertial").c_str(),          "/wholeBodyTorqueObserver/unfiltered/inertial:i","tcp",false);
+			Network::connect(string("/"+robot_name+"/left_arm/analog:o").c_str(), "/wholeBodyTorqueObserver/left_arm/FT:i","tcp",false);
+			Network::connect(string("/"+robot_name+"/right_arm/analog:o").c_str(),"/wholeBodyTorqueObserver/right_arm/FT:i","tcp",false);
+			Network::connect(string("/"+robot_name+"/left_leg/analog:o").c_str(), "/wholeBodyTorqueObserver/left_leg/FT:i","tcp",false);
+			Network::connect(string("/"+robot_name+"/right_leg/analog:o").c_str(),"/wholeBodyTorqueObserver/right_leg/FT:i","tcp",false);
 		}
 
 		//---------------------DEVICES--------------------------//
@@ -500,6 +501,16 @@ public:
 		icub.upperTorso->setSensorMeasurement(F_RArm,F_LArm,F_up);
 		icub.upperTorso->solveKinematics();
 		icub.upperTorso->solveWrench();
+		/*
+		// DEBUG ONLY
+		fprintf (stderr,"UPTORSO: %s %s %s\n",w0.toString().c_str(),
+										dw0.toString().c_str(),
+										d2p0.toString().c_str());
+		fprintf (stderr,"LOWTORSO: %s %s %s\n",icub.upperTorso->getTorsoAngVel().toString().c_str(),
+										icub.upperTorso->getTorsoAngAcc().toString().c_str(),
+										icub.upperTorso->getTorsoLinAcc().toString().c_str());
+		*/
+
 		icub.lowerTorso->setInertialMeasure(icub.upperTorso->getTorsoAngVel(), 
 											icub.upperTorso->getTorsoAngAcc(),
 											icub.upperTorso->getTorsoLinAcc());
@@ -538,7 +549,7 @@ public:
 		writeTorque(RATorques, 1, port_RATorques); //arm
 		writeTorque(LATorques, 1, port_LATorques); //arm
 		writeTorque(TOTorques, 4, port_TOTorques); //torso
-//		fprintf (stderr,"TORSO: %s \n",TOTorques.toString().c_str());
+	//	fprintf (stderr,"TORSO: %s \n",TOTorques.toString().c_str());
 /*		fprintf (stderr,"TORSO: %s %s %s \n",TOTorques.toString().c_str(),
 											 LLTorques.toString().c_str(),
 											 RLTorques.toString().c_str());
@@ -1065,14 +1076,11 @@ public:
 
     bool configure(ResourceFinder &rf)
     {
-		port_filtered.open("/filtered/inertial:o");
+		port_filtered.open("/wholeBodyTorqueObserver/filtered/inertial:o");
 		port_inertial_input = new dataFilter(port_filtered, rf);
 		port_inertial_input->useCallback();
-		port_inertial_input->open("/unfiltered/inertial:i");
-		//Time::delay(1.0);
-		Network::connect("/icub/inertial","/unfiltered/inertial:i");
-
-
+		port_inertial_input->open("/wholeBodyTorqueObserver/unfiltered/inertial:i");
+		
 		string fwdSlash = "/";
 		Bottle tmp;
 		int rate = 10;
