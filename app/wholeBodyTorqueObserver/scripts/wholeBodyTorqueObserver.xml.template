@@ -16,13 +16,18 @@
 			<stdio>console</stdio>
 			<tag>gravityCompensator</tag>
    	</module>
+	    <connection>
+                <from>/icub/inertial</from>
+                <to>/wholeBodyTorqueObserver/unfiltered/inertial:i</to>
+                <protocol>udp</protocol>
+        </connection>
         <connection>
-                <from>/filtered/inertial:o</from>
+                <from>/wholeBodyTorqueObserver/filtered/inertial:o</from>
                 <to>/wholeBodyTorqueObserver/inertial:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/filtered/inertial:o</from>
+                <from>/wholeBodyTorqueObserver/filtered/inertial:o</from>
                 <to>/gravityCompensator/inertial:i</to>
                 <protocol>udp</protocol>
         </connection>
