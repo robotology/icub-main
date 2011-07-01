@@ -39,9 +39,9 @@
  *
  * Essentially, this framework attemps to model the elastic 
  * properties of the distal joints of the fingers by carrying 
- * out a training stage where the fingers are left free to move 
- * in the space while acquiring sensors data. As result, the 
- * "springy" relations between the data acquired from motor 
+ * out a calibration stage where the fingers are left free to 
+ * move in the space while acquiring sensors data. As result, 
+ * the "springy" relations between the data acquired from motor 
  * joint encoders and the distal joints encoders are learnt 
  * relying on a Least-Squares SVM machine from the \ref 
  * icub_libLM_learning_machines "Learning Machine" library. 
@@ -51,8 +51,8 @@
  * machine. 
  *  
  * This method represents a natural extension of the linear 
- * technique proposed in the paper <a 
- * href="http://web.student.tuwien.ac.at/~e0125943/schmitz2010humanoids.pdf">Design, 
+ * technique proposed in the paper: <a 
+ * href="http://iit-it.academia.edu/AlexanderSchmitz/Papers/562353/Design_Realization_and_Sensorization_of_the_Dexterous_iCub_Hand">Design, 
  * Realization and Sensorization of the Dextrous iCub Hand</a>. 
  */ 
 
