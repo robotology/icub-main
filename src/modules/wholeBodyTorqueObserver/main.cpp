@@ -367,7 +367,7 @@ private:
 	}
 
 public:
-    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), autoconnect(autoconnect)
+    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), autoconnect(_autoconnect)
     {        
         first = true;
 
@@ -1100,8 +1100,14 @@ public:
 		//-----------------CHECK IF AUTOCONNECT IS ON-----------//
 		bool autoconnect;
 		if (rf.check("autoconnect"))
+        {
+             fprintf(stderr,"'autoconnect' option enabled.\n");
 			 autoconnect = true;
-		else autoconnect = false;
+        }
+		else
+        { 
+              autoconnect = false;
+        }
 
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
 		if (rf.check("no_legs"))
