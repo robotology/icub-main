@@ -20,10 +20,10 @@ add_subdirectory(logpolar)
 add_subdirectory(ctrlLib)
 add_subdirectory(iKin)
 add_subdirectory(iDyn)
+add_subdirectory(perceptiveModels)
 add_subdirectory(actionPrimitives)
 add_subdirectory(learningMachine)
 add_subdirectory(icubmod)
-add_subdirectory(perceptiveModels)
 add_subdirectory(pmp)
 
 
