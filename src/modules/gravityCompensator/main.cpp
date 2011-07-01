@@ -748,7 +748,7 @@ public:
 		}
 		else
 		{
-			if(Network::exists("/filtered/inertial:o"))
+			if(Network::exists("/wholeBodyTorqueObserver/filtered/inertial:o"))
 			{
 				fprintf(stderr,"connection exists! starting calibration...\n");
 				//the following delay is required because even if the filtered port exists, may be the 
@@ -756,7 +756,7 @@ public:
 				Time::delay(1.0); 
 
 				isCalibrated = true;
-				Network::connect("/filtered/inertial:o","/gravityCompensator/inertial:i");
+				Network::connect("/wholeBodyTorqueObserver/filtered/inertial:o","/gravityCompensator/inertial:i");
 				setZeroJntAngVelAcc();
 				setUpperMeasure();
 				setLowerMeasure();
