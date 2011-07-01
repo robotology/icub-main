@@ -703,26 +703,28 @@ public:
 			Offset_RLeg = Offset_RLeg + (F_RLeg-F_iDyn_RLeg);
 		}
 
-		fprintf(stderr,"!\n");
-		fprintf(stderr, "Ntrials: %d\n", Ntrials);
-		fprintf(stderr, "F_LArm: %s\n", F_LArm.toString().c_str());
-		fprintf(stderr, "F_idyn_LArm: %s\n", F_iDyn_LArm.toString().c_str());
-		fprintf(stderr, "F_RArm: %s\n", F_RArm.toString().c_str());
-		fprintf(stderr, "F_idyn_RArm: %s\n", F_iDyn_RArm.toString().c_str());		
-		fprintf(stderr, "F_LLeg: %s\n", F_LLeg.toString().c_str());
-		fprintf(stderr, "F_idyn_LLeg: %s\n", F_iDyn_LLeg.toString().c_str());		
-		fprintf(stderr, "F_RLeg: %s\n", F_RLeg.toString().c_str());
-		fprintf(stderr, "F_idyn_RLeg: %s\n", F_iDyn_RLeg.toString().c_str());
 		Offset_LArm = 1.0/(double)Ntrials * Offset_LArm;
-		cout<<"Left Arm:	"<<Offset_LArm.toString()<<endl;
 		Offset_RArm = 1.0/(double)Ntrials * Offset_RArm;
-		cout<<"Right Arm:	"<<Offset_RArm.toString()<<endl;
 		Offset_LLeg = 1.0/(double)Ntrials * Offset_LLeg;
-		cout<<"Left Leg:	"<<Offset_LLeg.toString()<<endl;
 		Offset_RLeg = 1.0/(double)Ntrials * Offset_RLeg;
-		cout<<"Right Leg:	"<<Offset_RLeg.toString()<<endl;
 
-		//Time::delay(2.0);
+		fprintf(stderr,"\n");
+		fprintf(stderr, "Ntrials: %d\n", Ntrials);
+		fprintf(stderr, "F_LArm:      %s\n", F_LArm.toString().c_str());
+		fprintf(stderr, "F_idyn_LArm: %s\n", F_iDyn_LArm.toString().c_str());
+		fprintf(stderr, "F_RArm:      %s\n", F_RArm.toString().c_str());
+		fprintf(stderr, "F_idyn_RArm: %s\n", F_iDyn_RArm.toString().c_str());		
+		fprintf(stderr, "F_LLeg:      %s\n", F_LLeg.toString().c_str());
+		fprintf(stderr, "F_idyn_LLeg: %s\n", F_iDyn_LLeg.toString().c_str());		
+		fprintf(stderr, "F_RLeg:      %s\n", F_RLeg.toString().c_str());
+		fprintf(stderr, "F_idyn_RLeg: %s\n", F_iDyn_RLeg.toString().c_str());
+        fprintf(stderr, "\n");
+		fprintf(stderr, "Left Arm:	  %s\n", Offset_LArm.toString().c_str());
+		fprintf(stderr, "Right Arm:	  %s\n", Offset_RArm.toString().c_str());
+		fprintf(stderr, "Left Leg:	  %s\n", Offset_LLeg.toString().c_str());
+		fprintf(stderr, "Right Leg:	  %s\n", Offset_RLeg.toString().c_str());
+        fprintf(stderr, "\n");
+
 	}
 	bool readAndUpdate(bool waitMeasure=false, bool _init=false)
 	{
