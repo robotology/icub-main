@@ -1,0 +1,19 @@
+<application>
+  <name>Hannover Demo</name>
+  <dependencies>
+	<port>/icub/right_arm/state:o</port>
+	<port>/icub/left_arm/state:o</port>
+	<port>/icub/left_leg/state:o</port>
+	<port>/icub/right_leg/state:o</port>	
+	<port>/icub/torso/state:o</port>f
+	<port>/icub/head/state:o</port>f
+  </dependencies>
+
+  <module> 
+	<name>iCubDemoY3</name>
+	<parameters>--positions hannover.txt</parameters>
+	<stdio>console</stdio>
+	<node>console</node>
+	<tag>hannover</tag>
+  </module>
+</application>

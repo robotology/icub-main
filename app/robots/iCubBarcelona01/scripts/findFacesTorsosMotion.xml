@@ -1,0 +1,98 @@
+<application>
+<name>Face Pointing</name>
+        <module>
+                <name>findFaces</name>
+		<parameters> /usr/local/src/robot/iCub/src/findFaces/haarcascade_frontalface_default.xml </parameters>
+                <node>icubclient1</node>
+                <tag>fhumanfaces</tag>
+        </module>
+	 <module>
+                <name>findMovements</name>
+                <node>icubclient2</node>
+                <tag>findMoves</tag>
+        </module>
+	<module>
+                <name>findTorsos</name>
+		<parameters> /usr/local/src/robot/iCub/src/findTorsos/haarcascade_UpperBodyNew.xml</parameters>
+                <node>icubclient1</node>
+                <tag>fhumantorsos</tag>
+        </module>
+	 <module>
+                <name>iKinGazeCtrl</name>
+		<node>icubsrv</node>
+                <tag>gazeCtrl</tag>
+        </module>
+
+        <connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/findfaces/image/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/icub/camcalib/right/out</from>
+                <to>/findfaces/image/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+
+
+	<connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/findmovements/image/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+
+	<connection>
+                <from>/icub/camcalib/right/out</from>
+                <to>/findmovements/image/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+
+	<connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/findtorsos/image/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/icub/camcalib/right/out</from>
+                <to>/findtorsos/image/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+
+      	<connection>
+                <from>/findfaces/faces/left/out</from>
+                <to>/iqr/attention/faces/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+        	<connection>
+                <from>/findtorsos/torsos/left/out</from>
+                <to>/iqr/attention/torsos/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/findfaces/faces/right/out</from>
+                <to>/iqr/attention/faces/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/findtorsos/torsos/right/out</from>
+                <to>/iqr/attention/torsos/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/findmovements/right/out</from>
+                <to>/iqr/attention/movements/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/findmovements/left/out</from>
+                <to>/iqr/attention/movements/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	
+	<connection>
+                <from>/iqr/attention/commands/out</from>
+                <to>/iKinGazeCtrl/head/stereo:i</to>
+                <protocol>udp</protocol>
+        </connection>
+	
+</application>

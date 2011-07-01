@@ -1,0 +1,109 @@
+<application>
+  <name>Left Whole Arm</name>
+  <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompLeft.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompLeftHand</tag>
+  </module>
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiLeft.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompGuiLeftHand</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_bottom.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>LeftarmUpBot</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_internal.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>LeftarmUpInt</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_external.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>LeftarmUpExt</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_lower.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>LeftarmLow</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_upper.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>LeftForearmUp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_lower.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>LeftForearmLow</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from lefthand.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>LeftHand</tag>
+  </module>
+  
+  
+  <connection>
+    <from>/driftCompGuiLeft/rpc:o</from>
+    <to>/leftSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/leftSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiLeft/monitor:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/leftSkinDriftComp/info:o</from>
+    <to>/driftCompGuiLeft/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_hand_comp</from>
+    <to>/skinGui/left_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_lower_comp</from>
+    <to>/skinGui/left_forearm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_upper_comp</from>
+    <to>/skinGui/left_forearm_upper:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_internal_comp</from>
+    <to>/skinGui/leftupperarm_upper_internal:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_external_comp</from>
+    <to>/skinGui/leftupperarm_upper_external:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_bottom_comp</from>
+    <to>/skinGui/leftupperarm_upper_bottom:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_lower_comp</from>
+    <to>/skinGui/leftupperarm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+</application>

@@ -1,0 +1,12 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_default default
+
+Place here default configuration files 
+and scripts.
+
+This is not a real application but rather a container for 
+scripts and configuration files that are shared by most 
+applications in normal circumstances.
+
+*/

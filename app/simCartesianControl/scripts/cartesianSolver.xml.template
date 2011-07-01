@@ -1,0 +1,31 @@
+<application>
+<name>Cartesian Solvers and Controllers Launcher for the Simulator</name>
+
+        <dependencies>
+        <port>/icubSim/left_arm/state:o</port>
+        <port>/icubSim/right_arm/state:o</port>
+        </dependencies>
+      
+        <module>
+                <name>simCartesianControl</name>
+                <node>pwrNode2</node>
+                <tag>armsController</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--context simCartesianControl/conf --part right_arm</parameters>
+                <node>pwrNode3</node>
+                <tag>rightArmSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--context simCartesianControl/conf --part left_arm</parameters>
+                <node>pwrNode4</node>
+                <tag>leftArmSolver</tag>
+        </module>
+
+</application>
+
+

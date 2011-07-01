@@ -1,0 +1,24 @@
+# Copyright (C) 2008 RobotCub Consortium
+# Author: Matteo Fumagalli
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+SET(PROJECTNAME demoForceControl)
+
+PROJECT(${PROJECTNAME})
+
+SET(folder_source main.cpp)
+
+SOURCE_GROUP("Header Files" FILES ${folder_header})
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+
+INCLUDE_DIRECTORIES(${iDyn_INCLUDE_DIRS}
+                    ${YARP_INCLUDE_DIRS})
+
+ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
+
+TARGET_LINK_LIBRARIES(${PROJECTNAME} iDyn
+                                     ${YARP_LIBRARIES})
+
+INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+
+

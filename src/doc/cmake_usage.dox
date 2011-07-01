@@ -1,0 +1,136 @@
+
+/**
+  * \page cmake_usage CMake usage
+
+Every iCub module should come with a CMake script called
+CMakeLists.txt. This makes it easier for people in very different
+environments to compile the code.
+
+@section cmake_usage_basics Getting started
+
+For basic information about
+how to install use CMake, see:
+ - <a href="http://eris.liralab.it/wiki/CMake">Installing and Using CMake</A>
+
+If your module is independent of others in the repository at the code
+level, you don't have to do anything special.  Here's about the
+simplest CMakeLists.txt possible:
+\verbatim
+PROJECT(example)
+ADD_EXECUTABLE(example main.cpp)
+\endverbatim
+This would compile source code from main.cpp, e.g:
+\code
+#include <stdio.h>
+int main() {
+  printf("CMake the world a better place!\n");
+  return 0;
+}
+\endcode
+and create a program called "example".  
+
+@section cmake_usage_use_libraries Using libraries
+
+If you need YARP, make sure you have the YARP_DIR environment variable set, 
+and then use:
+\verbatim
+FIND_PACKAGE(YARP REQUIRED)
+\endverbatim
+
+If you have some dependencies on the rest of the iCub repository, then
+define the ICUB_DIR environment variable to point to the repository,
+and use:
+\verbatim
+FIND_PACKAGE(ICUB)
+\endverbatim
+
+It is possible to say "FIND_PACKAGE(ICUB REQUIRED)", if your code
+absolutely positively won't work any other way except with as part of
+the iCub project.  At the moment, there is no good reason to ever 
+specify "REQUIRED" here.
+
+What exactly does the ICUB package do?  It sets up paths so you
+can access all internal libraries within the iCub repository.
+For example, you could use the "simio" library (present
+in $ICUB_DIR/src/simio, and giving a portable version of
+Windows conio.h) by doing:
+\verbatim
+FIND_PACKAGE(SIMIO REQUIRED)
+INCLUDE_DIRECTORIES(${SIMIO_INCLUDE_DIRS})
+LINK_LIBRARIES(${SIMIO_LIBRARIES})
+\endverbatim
+
+Note the INCLUDE_DIRECTORIES and LINK_LIBRARIES lines.  For just about
+every library, you need to do this to explicitly tell CMake that you
+want to be able to see the library's include directories, and you want
+to link against its binaries.  The details of this can vary from
+library to library, although at least within iCub we're trying to be
+consistent with the usage above.
+
+For non-iCub libraries, the basic pattern is similar.  For example,
+if you need OpenCV, do:
+\verbatim
+FIND_PACKAGE(OpenCV REQUIRED)
+INCLUDE_DIRECTORIES(${OPENCV_INCLUDE_DIR})
+LINK_LIBRARIES(${OPENCV_LIBRARIES})
+\endverbatim
+Note that capitalization and pluralization is a bit inconsistent in
+this case.  To figure this out, look for a file called "FindOpenCV.cmake" 
+on your computer.  Another option is to look at the CMakeLists.txt 
+files of related modules in the repository.
+
+
+@section cmake_usage_global Adding your module to the global build
+
+Ideally, all modules should be compilable either individually or as
+part of the full repository.  When you are happy that your module
+compiles well on Windows and Linux, you can add a line to
+$ICUB_DIR/src/CMakeLists.txt:
+\verbatim
+ADD_SUBDIRECTORY(put_your_new_directory_name_here)
+\endverbatim
+
+It will now be compiled as part of the full repository.
+
+That's about all you have to do for executables.  For libraries, you
+need to do a bit more.
+
+
+@section cmake_usage_make_library Making a new library
+
+When you create a library, e.g. $ICUB_DIR/src/intelligence, you need to do a 
+little work to make it easy for that library to be used from other modules.
+Make sure you include an INTELLIGENCEConfig.cmake file in that directory.  
+It should look something like this:
+\verbatim
+IF (NESTED_BUILD)
+  SET(INTELLIGENCE_LIBRARIES intelligence)
+ELSE (NESTED_BUILD)
+  FIND_LIBRARY(INTELLIGENCE_LIBRARIES intelligence ${INTELLIGENCE_DIR})
+ENDIF (NESTED_BUILD)
+
+SET(INTELLIGENCE_INCLUDE_DIRS ${INTELLIGENCE_DIR})
+\endverbatim
+Then add a line like this in $ICUB_DIR/ICUBConfig.cmake:
+\verbatim
+SET(INTELLIGENCE_DIR ${ICUB_DIR}/src/intelligence)
+\endverbatim
+Now your library will be easy to use as part of the iCub collection,
+or completely separately from it.  Users of your library should use
+the line:
+\verbatim
+FING_PACKAGE(INTELLIGENCE REQUIRED)
+\endverbatim
+
+All libraries in iCub should define at least the LIBRARYNAME_INCLUDE_DIRS
+and LIBRARYNAME_LIBRARIES variables 
+as described here (always use the plural names,
+even if there is just one include path or library).
+
+@section cmake_usage_edit_mi Editing this page
+
+This page can be edited at src/doc/cmake_usage.dox.
+
+*
+*/
+

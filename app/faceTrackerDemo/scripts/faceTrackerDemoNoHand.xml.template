@@ -1,0 +1,46 @@
+<application>
+
+    <name>Face Tracker NoHand</name>
+
+    <dependencies>
+      <port>/icub/camcalib/right/out</port>
+      <port>/iKinGazeCtrl/head/angles:o</port>
+    </dependencies> 
+
+    <module>
+      <name>faceTracker</name>
+      <node>pwrNode1</node>
+      <parameters>--eye right --eyeDist 0.5 --arm none --holdoff 3.0</parameters>
+      <tag>tracker</tag> 
+    </module> 
+
+    <module>
+      <name>yarpview</name>
+      <parameters>--name /faceViewer --out /faceViewer/click:o</parameters>
+      <node>console</node>
+      <tag>faceViewer</tag> 
+    </module> 
+
+    <connection>
+      <from>/icub/camcalib/right/out</from>
+      <to>/faceTracker/img:i</to>
+    </connection> 
+
+    <connection>
+      <from>/faceTracker/img:o</from>
+      <to>/faceViewer</to>
+    </connection> 
+
+    <connection>
+      <from>/faceViewer/click:o</from>
+      <to>/faceTracker/topdown:i</to>
+    </connection>
+    
+    <connection>
+      <from>/faceTracker/setFace:rpc</from>
+      <to>/icub/face/emotions/in</to>
+    </connection>
+
+</application>
+
+

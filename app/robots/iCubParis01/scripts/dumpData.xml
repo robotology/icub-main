@@ -1,0 +1,90 @@
+<application>
+<name>Data dumpers</name>
+<dependencies>
+      	<port>/iCubParis01</port>
+	<port>/icub/right_arm/state:o</port>
+	<port>/icub/left_arm/state:o</port>
+	<port>/icub/torso/state:o</port>
+	<port>/icub/head/state:o</port>
+</dependencies>
+<module>
+	<name>dataDumper</name>
+	<parameters>--name /dump/leftEye --type image --rxTime</parameters>
+	<node>macsi03</node>
+	<stdio>macsi03</stdio>
+	<tag>left-eye</tag>
+</module>
+<module>
+	<name>dataDumper</name>
+	<parameters>--name /dump/rightEye --type image --rxTime</parameters>
+	<node>macsi03</node>
+	<stdio>macsi03</stdio>
+	<tag>right-eye</tag>
+</module>
+<module>
+	<name>dataDumper</name>
+	<parameters>--name /dump/head --type bottle --rxTime</parameters>
+	<node>macsi03</node>
+	<stdio>macsi03</stdio>
+	<tag>head-joints</tag>
+</module>
+<module>
+	<name>dataDumper</name>
+	<parameters>--name /dump/leftArm --type bottle --rxTime</parameters>
+	<node>macsi03</node>
+	<stdio>macsi03</stdio>
+	<tag>left-arm-joints</tag>
+</module>
+<module>
+	<name>dataDumper</name>
+	<parameters>--name /dump/rightArm --type bottle --rxTime</parameters>
+	<node>macsi03</node>
+	<stdio>macsi03</stdio>
+	<tag>right-arm-joints</tag>
+</module>
+<module>
+	<name>dataDumper</name>
+	<parameters>--name /dump/torso --type bottle --rxTime</parameters>
+	<node>macsi03</node>
+	<stdio>macsi03</stdio>
+	<tag>torso-joints</tag>
+</module>
+
+<connection>
+  <from>/icub/left_arm/state:o</from>
+  <to>/dump/leftArm</to>
+  <protocol>udp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/right_arm/state:o</from>
+  <to>/dump/rightArm</to>
+  <protocol>udp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/torso/state:o</from>
+  <to>/dump/torso</to>
+  <protocol>udp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/head/state:o</from>
+  <to>/dump/head</to>
+  <protocol>udp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/dump/leftEye</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/right</from>
+  <to>/dump/rightEye</to>
+  <protocol>tcp</protocol>
+</connection>
+
+</application>
+

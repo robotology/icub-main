@@ -1,0 +1,25 @@
+#!/bin/bash
+
+MYSHELL="bash -c"
+
+case "$1" in
+
+    	connect)
+		yarp connect /icub/head/state:o /dataDumper/head/ctp
+		;;
+
+    	disconnect)
+		yarp disconnect /icub/head/state:o /dataDumper/head/ctp
+		;;
+ 	start)
+		$MYSHELL "dataDumper --name /dataDumper/head/ctp"&
+		sleep 2
+		;;
+ 	stop)
+		echo "quit" | yarp rpc /dataDumper/head/ctp/rpc
+		;;
+
+    *)
+		echo "stop, start, kill"
+		;;
+esac

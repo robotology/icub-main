@@ -1,0 +1,23 @@
+[POSITION0] 
+jointPositions 0.01 0.01 -0.00 -0.00 0.03 -0.03 -0.34 0.00 1.16 1.44 nan nan 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 5.00 10.00 100.00 100.00 100.00 100.00 100.00 
+timing 0.10 
+[POSITION1] 
+jointPositions -39.99 -0.00 -0.00 -0.01 0.02 -0.04 0.01 0.00 0.64 0.82 nan nan 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 5.00 10.00 100.00 100.00 100.00 100.00 100.00 
+timing 0.10 
+[POSITION2] 
+jointPositions -39.99 -0.00 -0.00 -0.01 0.02 -0.04 0.10 0.00 0.64 0.82 nan nan 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 5.00 10.00 100.00 100.00 100.00 100.00 100.00 
+timing 0.10 
+[POSITION3] 
+jointPositions -39.99 -0.00 -0.00 -0.01 0.02 -0.04 0.01 0.00 0.64 0.82 nan nan 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 5.00 10.00 100.00 100.00 100.00 100.00 100.00 
+timing 0.10 
+[POSITION4] 
+jointPositions -39.99 -0.00 -0.00 -0.01 0.02 -0.04 0.01 0.00 0.64 0.74 nan nan 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 5.00 10.00 100.00 100.00 100.00 100.00 100.00 
+timing 0.10 
+[DIMENSIONS]
+numberOfPoses 5
+numberOfJoints 12

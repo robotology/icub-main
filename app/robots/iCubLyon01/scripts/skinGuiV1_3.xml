@@ -1,0 +1,69 @@
+<application>
+  <name>Arm V1.3</name>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_upper.ini</parameters>
+    <node>icubsrv</node>
+    <tag>LeftForearmUp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_lower.ini</parameters>
+    <node>icubsrv</node>
+    <tag>LeftForearmLow</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from lefthand.ini</parameters>
+    <node>icubsrv</node>
+    <tag>LeftHand</tag>
+  </module>
+ <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from rightforearm_upper.ini</parameters>
+    <node>icubsrv</node>
+    <tag>RightForearmUp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from rightforearm_lower.ini</parameters>
+    <node>icubsrv</node>
+    <tag>RightForearmLow</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from righthand.ini</parameters>
+    <node>icubsrv</node>
+    <tag>RightHand</tag>
+  </module>
+  <connection>
+    <from>/icub/skin/left_hand</from>
+    <to>/skinGui/left_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_lower</from>
+    <to>/skinGui/left_forearm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_upper</from>
+    <to>/skinGui/left_forearm_upper:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+    <connection>
+    <from>/icub/skin/right_hand</from>
+    <to>/skinGui/right_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_forearm_lower</from>
+    <to>/skinGui/right_forearm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_forearm_upper</from>
+    <to>/skinGui/right_forearm_upper:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+</application>
