@@ -30,8 +30,8 @@ namespace learningmachine {
  *
  * A portable wrapper around an IMachineLearner.
  *
- * \see iCub::learningMachine::PortableT
- * \see iCub::learningMachine::IMachineLearner
+ * \see iCub::learningmachine::PortableT
+ * \see iCub::learningmachine::IMachineLearner
  *
  * \author Arjan Gijsberts
  */

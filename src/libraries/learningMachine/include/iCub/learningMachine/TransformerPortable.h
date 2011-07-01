@@ -31,8 +31,8 @@ namespace learningmachine {
  *
  * A portable wrapper around an ITransformer.
  *
- * \see iCub::learningMachine::PortableT
- * \see iCub::learningMachine::ITransformer
+ * \see iCub::learningmachine::PortableT
+ * \see iCub::learningmachine::ITransformer
  *
  * \author Arjan Gijsberts
  */
