@@ -65,8 +65,9 @@ namespace learningmachine {
  * online learning machines (e.g. SVM, LSSVM, ANN). This interface
  * extends the Learner interface, which imposes certain limitations.
  * Learning machines that meet this interface can, if desired, be made
- * into two executable modules by iCub::contrib::LearnModule and
- * iCub::contrib::PredictModule.
+ * into two executable modules by 
+ * iCub::learningmachine::LearnModule and 
+ * iCub::learningmachine::PredictModule. 
  *
  * The learning machine can be used for regression and classification
  * from R^* to R^*.
@@ -77,10 +78,10 @@ namespace learningmachine {
  * port readers and writers. See MachinePortable for how to send
  * Learning Machines over ports.
  *
- * \see iCub::contrib::Learner
- * \see iCub::contrib::IFixedSizeLearner
- * \see iCub::contrib::MachinePortable
- * \see iCub::contrib::MachineFactory
+ * \see iCub::learningmachine::Learner
+ * \see iCub::learningmachine::IFixedSizeLearner
+ * \see iCub::learningmachine::MachinePortable
+ * \see iCub::learningmachine::MachineFactory
  *
  * \author Arjan Gijsberts
  *

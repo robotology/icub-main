@@ -38,7 +38,7 @@ namespace learningmachine {
  * from R^M to R^N. M and N are here fixed sizes which should be respected
  * by the samples that are fed into the system.
  *
- * \see iCub::contrib::IMachineLearner
+ * \see iCub::learningmachine::IMachineLearner
  *
  * \author Arjan Gijsberts
  *

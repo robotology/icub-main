@@ -40,7 +40,7 @@ std::string printVector(const Vector& v);
  * This dummy machine learner demonstrates how the IMachineLearner interface can
  * be used in practice. The functionality, however, is rather useless.
  *
- * \see iCub::contrib::IMachineLearner
+ * \see iCub::learningmachine::IMachineLearner
  *
  * \author Arjan Gijsberts
  *

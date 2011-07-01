@@ -76,9 +76,10 @@ public:
  * \ingroup icub_libLM_modules
  *
  * A module for training.
- * The module can contain any iCub::contrib::IMachineLearner
- * This module is inspired by the original Learner module by Francesco Orabona
- * and Paul Fitzpatrick.
+ * The module can contain any 
+ * iCub::learningmachine::IMachineLearner This module is 
+ * inspired by the original Learner module by Francesco Orabona 
+ * and Paul Fitzpatrick. 
  *
  * \see iCub::learningmachine::IMachineLearner
  * \see iCub::learningmachine::IMachineLearnerModule

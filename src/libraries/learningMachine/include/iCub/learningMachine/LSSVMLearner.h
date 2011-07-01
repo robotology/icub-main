@@ -128,8 +128,8 @@ public:
  * efficiency the hyperparameters are shared among all outputs. Only the RBF
  * kernel function is supported.
  *
- * \see iCub::contrib::IMachineLearner
- * \see iCub::contrib::IFixedSizeLearner
+ * \see iCub::learningmachine::IMachineLearner
+ * \see iCub::learningmachine::IFixedSizeLearner
  *
  * \author Arjan Gijsberts
  *

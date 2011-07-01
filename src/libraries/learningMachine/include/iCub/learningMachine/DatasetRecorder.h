@@ -38,7 +38,7 @@ namespace learningmachine {
  * This 'machine learner' demonstrates how the IMachineLearner interface can
  * be used to easily record samples to a file.
  *
- * \see iCub::contrib::IMachineLearner
+ * \see iCub::learningmachine::IMachineLearner
  *
  * \author Arjan Gijsberts
  *
