@@ -32,8 +32,8 @@ This module has been tested only on Linux since it requires the
 <b>festival</b> package: <i>sudo apt-get install festival</i>.
 
 \section lib_sec Libraries 
-YARP libraries. 
-Festival package for speech synthesis. 
+- YARP libraries. 
+- Festival package for speech synthesis. 
 
 \section parameters_sec Parameters
 --name \e name 
