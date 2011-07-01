@@ -52,7 +52,8 @@
  *  
  * This method represents a natural extension of the linear 
  * technique proposed in the paper <a 
- * href="http://people.liralab.it/iron/Papers/conference/schmitzEtAlHumanoids10.pdf">pdf</a>. 
+ * href="http://people.liralab.it/iron/Papers/conference/schmitzEtAlHumanoids10.pdf">Design, 
+ * Realization and Sensorization of the Dextrous iCub Hand</a>. 
  */ 
 
 #ifndef __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
