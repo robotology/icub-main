@@ -1059,9 +1059,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
 	    case BOARD_TYPE_STRAIN: 
 		case BOARD_TYPE_SKIN:
 		case BOARD_TYPE_MAIS:
-		case BOARD_TYPE_2FOC:
 		case BOARD_TYPE_6SG:
-		
 			txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
 			txBuffer[0].setLen(2);
 			txBuffer[0].getData()[0]= CAN_SET_BOARD_ID;
@@ -1073,6 +1071,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
 		case BOARD_TYPE_2DC:
 		case BOARD_TYPE_4DC:
 		case BOARD_TYPE_BLL:
+		case BOARD_TYPE_2FOC:
 			txBuffer[0].setId((ID_MASTER << 4) + target_id);
 			txBuffer[0].setLen(2);
 			txBuffer[0].getData()[0]= CAN_SET_BOARD_ID;
