@@ -880,7 +880,7 @@ public:
                             {
                                 if (Bottle *bOpt=command.get(2).asList())
                                 {
-                                    if (bOpt->size()>4)
+                                    if (bOpt->size()>3)
                                     {
                                         string eye=bOpt->get(0).asString().c_str();
                                         double u=bOpt->get(1).asDouble();
@@ -910,7 +910,7 @@ public:
                             {
                                 if (Bottle *bOpt=command.get(2).asList())
                                 {
-                                    if (bOpt->size()>7)
+                                    if (bOpt->size()>6)
                                     {
                                         Vector plane(4);
                                         string eye=bOpt->get(0).asString().c_str();
