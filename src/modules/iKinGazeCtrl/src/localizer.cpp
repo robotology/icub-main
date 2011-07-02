@@ -333,11 +333,25 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
     iCubEye *eye=(isLeft?eyeL:eyeR);
 
     if (projectPoint(type,u,v,1.0,x))
-    {      
-        Vector n(3),   p0(3);
-        n[0]=plane[0]; p0[0]=0.0;
-        n[1]=plane[1]; p0[1]=0.0;
-        n[2]=plane[2]; p0[2]=-plane[3]/plane[2];
+    {
+        // pick up a point belonging to the plane
+        Vector p0(3); p0=0.0;
+        if (plane[0]!=0.0)
+            p0[0]=-plane[3]/plane[0];
+        else if (plane[1]!=0.0)
+            p0[1]=-plane[3]/plane[1];
+        else if (plane[2]!=0.0)
+            p0[2]=-plane[3]/plane[2];
+        else
+        {
+            fprintf(stdout,"Error while specifying projection plane!\n");
+            return false;
+        }
+
+        Vector n(3);
+        n[0]=plane[0];
+        n[1]=plane[1];
+        n[2]=plane[2];
 
         mutex.wait();
         Vector e=eye->EndEffPose().subVector(0,2);
