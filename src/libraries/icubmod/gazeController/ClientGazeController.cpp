@@ -236,7 +236,7 @@ bool ClientGazeController::getAngles(Vector &ang)
 /************************************************************************/
 bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
 {
-    if (!connected || fp.length()<3)
+    if (!connected || (fp.length()<3))
         return false;
 
     Bottle cmd;
@@ -252,7 +252,7 @@ bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
 /************************************************************************/
 bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
 {
-    if (!connected || ang.length()<3)
+    if (!connected || (ang.length()<3))
         return false;
 
     Bottle cmd;
@@ -269,7 +269,7 @@ bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
 /************************************************************************/
 bool ClientGazeController::lookAtRelAngles(const Vector &ang)
 {
-    if (!connected || ang.length()<3)
+    if (!connected || (ang.length()<3))
         return false;
 
     Bottle cmd;
@@ -286,11 +286,11 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
 /************************************************************************/
 bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px, const double z)
 {
-    if (!connected || px.length()<2)
+    if (!connected || (px.length()<2))
         return false;
 
     Bottle cmd;
-    cmd.addString((camSel)?"right":"left");
+    cmd.addString((camSel==0)?"left":"right");
     cmd.addDouble(px[0]);
     cmd.addDouble(px[1]);
     cmd.addDouble(z);
@@ -303,7 +303,7 @@ bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px, c
 /************************************************************************/
 bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &pxr)
 {
-    if (!connected || pxl.length()<2 || pxr.length()<2)
+    if (!connected || (pxl.length()<2) || (pxr.length()<2))
         return false;
 
     Bottle cmd;
@@ -433,6 +433,91 @@ bool ClientGazeController::getRightEyePose(Vector &x, Vector &o)
 bool ClientGazeController::getHeadPose(Vector &x, Vector &o)
 {
     return getPose("head",x,o);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
+                                      const double z, Vector &x)
+{
+    if (!connected || (px.length()<2))
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("3D");
+    Bottle &bOpt=command.addList();
+    bOpt.addString((camSel==0)?"left":"right");
+    bOpt.addDouble(px[0]);
+    bOpt.addDouble(px[1]);
+    bOpt.addDouble(z);
+
+    // send command and wait for reply
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        if (Bottle *bPoint=reply.get(1).asList())
+        {
+            x.resize(bPoint->size());
+            for (int i=0; i<x.length(); i++)
+                x[i]=bPoint->get(i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
+                                             const Vector &plane, Vector &x)
+{
+    if (!connected || (px.length()<2) || (plane.length()<4))
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("proj");
+    Bottle &bOpt=command.addList();
+    bOpt.addString((camSel==0)?"left":"right");
+    bOpt.addDouble(px[0]);
+    bOpt.addDouble(px[1]);
+    bOpt.addDouble(plane[0]);
+    bOpt.addDouble(plane[1]);
+    bOpt.addDouble(plane[2]);
+    bOpt.addDouble(plane[3]);
+
+    // send command and wait for reply
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        if (Bottle *bPoint=reply.get(1).asList())
+        {
+            x.resize(bPoint->size());
+            for (int i=0; i<x.length(); i++)
+                x[i]=bPoint->get(i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 
