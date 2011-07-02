@@ -43,7 +43,7 @@ further command modalities are available: 1) the coordinates
 component z in the eye's reference frame can be provided; 2) the
 position of the target within the two image planes can be 
 converted in the 3D task space using the monocular approach 
-coupled with a pid on the distance z; 3) the head-centered 
+coupled with a pid on the component z; 3) the head-centered 
 azimuth and elevation angles along with the vergence angle can 
 be given to the module both in absolute and relative mode.
 
@@ -173,13 +173,14 @@ point:
 - by sending the absolute 3D position to gaze at in the task 
   space through /<ctrlName>/xd:i port.
 - by localizing the target in just one image plane and then 
-  sending its coordinates together with a guessed distance z
-  from the image plane to the /<ctrlName>/mono:i port. <b> In
-  this mode the intrinsic cameras parameters are required </b>.
+  sending its coordinates together with a guessed component z
+  in the eye's reference frame to the /<ctrlName>/mono:i port.
+  <b> In this mode the intrinsic cameras parameters are
+  required </b>.
 - by localizing the target in the two image planes and thus 
   sending its coordinates to the /<ctrlName>/stereo:i port. This
   strategy employs the monocular approach along with a pid that
-  varies the distance z incrementally according to the actual
+  varies the component z incrementally according to the actual
   error; to achieve that it's required to feed continuosly the
   port with new feedback while converging to the target. <b> In
   this mode the intrinsic cameras parameters are required </b>.
@@ -207,9 +208,9 @@ following ports:
 
 - \e /<ctrlName>/<part>/mono:i receives the current target 
   position expressed in one image plane. The input data format
-  is the Bottle [type u v z], where \e type can be left or
-  right, <i> (u,v) </i> is the pixel coordinates and \e z is the
-  guessed z-component in the eye's reference frame.
+  is the Bottle [type u v z], where \e type can be "left" or
+  "right", <i> (u,v) </i> is the pixel coordinates and \e z is
+  the guessed z-component in the eye's reference frame.
  
 - \e /<ctrlName>/<part>/stereo:i receives the current target 
   position expressed in image planes. It accepts 4 double (also
@@ -267,11 +268,20 @@ following ports:
       achieve the target [deg].
     - [get] [vel]: returns the head joints velocities commanded
       by the controller [deg/s].
-    - [get] [pose] <val>: returns (enclosed in a list) the left
-      eye pose if val=="left", the right eye pose if
-      vel=="right" and the head-centered pose if val=="head".
+    - [get] [pose] <type>: returns (enclosed in a list) the left
+      eye pose if type=="left", the right eye pose if
+      type=="right" and the head-centered pose if type=="head".
       The pose is given in axis/angle representation (i.e.
       7-componenets vector).
+    - [get] [3D] (<type> < u> <v> <z>): returns the 3D point
+      whose projected pixel coordinates (u,v) in the image plane
+      <type> ["left"|"right"] along with third component <z> in
+      the eye's reference frame are given.
+    - [get] [proj] (<type> < u> <v> < a> < b> < c> <d>): returns
+      the 3D point with projected pixel coordinates (u,v) in the
+      image plane <type> ["left"|"right"] that results from the
+      intersection with the plane expressed with its implicit
+      equation ax+by+cz+d=0;
     - [get] [pid]: returns (enclosed in a list) a property-like
       bottle containing the pid values used to converge to the
       target with stereo input.
@@ -689,17 +699,10 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
-                        else
-                        {
-                            reply.addVocab(nack);
-                            return false;
-                        }
                     }
-                    else
-                    {
-                        reply.addVocab(nack);
-                        return false;
-                    }
+
+                    reply.addVocab(nack);
+                    return false;
                 }
 
                 case VOCAB3('d','e','l'):
@@ -712,17 +715,10 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
-                        else
-                        {
-                            reply.addVocab(nack);
-                            return false;
-                        }
                     }
-                    else
-                    {
-                        reply.addVocab(nack);
-                        return false;
-                    }
+
+                    reply.addVocab(nack);
+                    return false;
                 }
 
                 case VOCAB4('b','i','n','d'):
@@ -748,11 +744,9 @@ public:
                         reply.addVocab(ack);
                         return true;
                     }
-                    else
-                    {
-                        reply.addVocab(nack);
-                        return false;
-                    }
+
+                    reply.addVocab(nack);
+                    return false;
                 }
 
                 case VOCAB4('c','l','e','a'):
@@ -775,11 +769,9 @@ public:
                         reply.addVocab(ack);
                         return true;
                     }
-                    else
-                    {
-                        reply.addVocab(nack);
-                        return false;
-                    }
+
+                    reply.addVocab(nack);
+                    return false;
                 }
 
                 case VOCAB3('g','e','t'):
@@ -874,18 +866,77 @@ public:
                                     Bottle &bPose=reply.addList();
                                     for (int i=0; i<x.length(); i++)
                                         bPose.addDouble(x[i]);
-                                }
-                                else
-                                {
-                                    reply.addVocab(nack);
-                                    return false;
+
+                                    return true;
                                 }
                             }
-                            else
+
+                            reply.addVocab(nack);
+                            return false;
+                        }
+                        else if (type==VOCAB2('3','D'))
+                        {
+                            if (command.size()>2)
                             {
-                                reply.addVocab(nack);
-                                return false;
+                                if (Bottle *bOpt=command.get(2).asList())
+                                {
+                                    if (bOpt->size()>4)
+                                    {
+                                        string eye=bOpt->get(0).asString().c_str();
+                                        double u=bOpt->get(1).asDouble();
+                                        double v=bOpt->get(2).asDouble();
+                                        double z=bOpt->get(3).asDouble();
+                                        Vector x;
+
+                                        if (loc->projectPoint(eye,u,v,z,x))
+                                        {
+                                            reply.addVocab(ack);
+                                            Bottle &bPoint=reply.addList();
+                                            for (int i=0; i<x.length(); i++)
+                                                bPoint.addDouble(x[i]);
+
+                                            return true;
+                                        }
+                                    }
+                                }
                             }
+
+                            reply.addVocab(nack);
+                            return false;
+                        }
+                        else if (type==VOCAB4('p','r','o','j'))
+                        {
+                            if (command.size()>2)
+                            {
+                                if (Bottle *bOpt=command.get(2).asList())
+                                {
+                                    if (bOpt->size()>7)
+                                    {
+                                        Vector plane(4);
+                                        string eye=bOpt->get(0).asString().c_str();
+                                        double u=bOpt->get(1).asDouble();
+                                        double v=bOpt->get(2).asDouble();
+                                        plane[0]=bOpt->get(3).asDouble();
+                                        plane[1]=bOpt->get(4).asDouble();
+                                        plane[2]=bOpt->get(5).asDouble();
+                                        plane[3]=bOpt->get(6).asDouble();
+                                        Vector x;
+
+                                        if (loc->projectPoint(eye,u,v,plane,x))
+                                        {
+                                            reply.addVocab(ack);
+                                            Bottle &bPoint=reply.addList();
+                                            for (int i=0; i<x.length(); i++)
+                                                bPoint.addDouble(x[i]);
+
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            reply.addVocab(nack);
+                            return false;
                         }
                         else if (type==VOCAB3('p','i','d'))
                         {
@@ -903,11 +954,9 @@ public:
                         
                         return true;
                     }
-                    else
-                    {
-                        reply.addVocab(nack);
-                        return false;
-                    }
+
+                    reply.addVocab(nack);
+                    return false;
                 }
 
                 case VOCAB3('s','e','t'):

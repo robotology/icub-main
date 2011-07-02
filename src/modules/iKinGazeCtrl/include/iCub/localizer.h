@@ -20,6 +20,7 @@
 #define __LOCALIZER_H__
 
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
 
@@ -44,6 +45,7 @@ using namespace iCub::iKin;
 class Localizer : public RateThread
 {
 protected:
+    Semaphore             mutex;
     exchangeData         *commData;
     xdPort               *port_xd;
     BufferedPort<Bottle>  port_mono;
@@ -74,8 +76,6 @@ protected:
 
     Vector getCurAbsAngles();
     Vector getFixationPoint(const string &type, const Vector &ang);
-    bool   projectPoint(const string &type, const double u, const double v,
-                        const double z, Vector &fp);
 
     void handleMonocularInput();
     void handleStereoInput();
@@ -90,6 +90,10 @@ public:
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void getPidOptions(Bottle &options);
     void setPidOptions(const Bottle &options);
+    bool projectPoint(const string &type, const double u, const double v,
+                      const double z, Vector &x);
+    bool projectPoint(const string &type, const double u, const double v,
+                      const Vector &plane, Vector &x);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);

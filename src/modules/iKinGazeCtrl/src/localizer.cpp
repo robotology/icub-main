@@ -152,19 +152,23 @@ void Localizer::afterStart(bool s)
 /************************************************************************/
 void Localizer::getPidOptions(Bottle &options)
 {
-    pid->getOptions(options);
+    mutex.wait();
 
+    pid->getOptions(options);
     Bottle &bDominantEye=options.addList();
     bDominantEye.addString("dominantEye");
     bDominantEye.addString(dominantEye.c_str());
+
+    mutex.post();
 }
 
 
 /************************************************************************/
 void Localizer::setPidOptions(const Bottle &options)
 {
-    pid->setOptions(options);
+    mutex.wait();
 
+    pid->setOptions(options);
     Bottle &opt=const_cast<Bottle&>(options);
     if (opt.check("dominantEye"))
     {
@@ -172,6 +176,8 @@ void Localizer::setPidOptions(const Bottle &options)
         if ((domEye=="left") || (domEye=="right"))
             dominantEye=domEye;
     }
+
+    mutex.post();
 }
 
 
@@ -260,18 +266,13 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
         xd=eyeCAbsFrame*(R*fph);    // apply rotation and retrieve fp wrt root frame
     }
 
-    Vector xo(3);
-    xo[0]=xd[0];
-    xo[1]=xd[1];
-    xo[2]=xd[2];
-
-    return xo;
+    return xd.subVector(0,2);
 }
 
 
 /************************************************************************/
 bool Localizer::projectPoint(const string &type, const double u, const double v,
-                             const double z, Vector &fp)
+                             const double z, Vector &x)
 {
     bool isLeft=(type=="left");
 
@@ -297,23 +298,19 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         else
             q[7]=head[4]-head[5]/2.0;
 
-        Vector x(3);
-        x[0]=z*u;
-        x[1]=z*v;
-        x[2]=z;
+        Vector p(3);
+        p[0]=z*u;
+        p[1]=z*v;
+        p[2]=z;
 
         // find the 3D position from the 2D projection,
-        // knowing the distance z from the camera
-        Vector xe=*invPrj*x;
+        // knowing the coordinate z in the camera frame
+        Vector xe=*invPrj*p;
         xe[3]=1.0;  // impose homogeneous coordinates                
 
-        // update position wrt the root frame
+        // find position wrt the root frame
         Vector xo=eye->getH(q)*xe;
-
-        fp.resize(3);
-        fp[0]=xo[0];
-        fp[1]=xo[1];
-        fp[2]=xo[2];
+        x=xo.subVector(0,2);
 
         return true;
     }
@@ -322,6 +319,31 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         fprintf(stdout,"Unspecified projection matrix for %s camera!\n",type.c_str());
         return false;
     }
+}
+
+
+/************************************************************************/
+bool Localizer::projectPoint(const string &type, const double u, const double v,
+                             const Vector &plane, Vector &x)
+{
+    bool isLeft=(type=="left");
+    iCubEye *eye=(isLeft?eyeL:eyeR);
+
+    if (projectPoint(type,u,v,1.0,x))
+    {      
+        Vector n(3),   p0(3);
+        n[0]=plane[0]; p0[0]=0.0;
+        n[1]=plane[1]; p0[1]=0.0;
+        n[2]=plane[2]; p0[2]=-plane[3]/plane[2];
+
+        Vector e=eye->EndEffPose().subVector(0,2);
+        Vector v=x-e;
+        x=e+(dot(p0-e,n)/dot(v,n))*v;
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
@@ -445,10 +467,14 @@ void Localizer::handleAnglesOutput()
 /************************************************************************/
 void Localizer::run()
 {
+    mutex.wait();
+
     handleMonocularInput();
     handleStereoInput();
     handleAnglesInput();
     handleAnglesOutput();
+
+    mutex.post();
 }
 
 
