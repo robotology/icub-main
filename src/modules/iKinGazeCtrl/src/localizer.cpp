@@ -309,7 +309,10 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         xe[3]=1.0;  // impose homogeneous coordinates                
 
         // find position wrt the root frame
+        mutex.wait();
         Vector xo=eye->getH(q)*xe;
+        mutex.post();
+
         x=xo.subVector(0,2);
 
         return true;
@@ -336,7 +339,10 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         n[1]=plane[1]; p0[1]=0.0;
         n[2]=plane[2]; p0[2]=-plane[3]/plane[2];
 
+        mutex.wait();
         Vector e=eye->EndEffPose().subVector(0,2);
+        mutex.post();
+
         Vector v=x-e;
         x=e+(dot(p0-e,n)/dot(v,n))*v;
 
