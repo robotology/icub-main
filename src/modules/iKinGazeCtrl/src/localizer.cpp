@@ -348,6 +348,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
             return false;
         }
 
+        // take a vector orthogonal to the plane
         Vector n(3);
         n[0]=plane[0];
         n[1]=plane[1];
@@ -357,6 +358,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         Vector e=eye->EndEffPose().subVector(0,2);
         mutex.post();
 
+        // compute the projection
         Vector v=x-e;
         x=e+(dot(p0-e,n)/dot(v,n))*v;
 
