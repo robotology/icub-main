@@ -1,3 +1,9 @@
+2011-07-02  Ugo Pattacini  <ugo.pattacini@iit.it>
+
+        * main/src/libraries/icubmod/gazeController:
+        new methods get3DPoint() and get3DPointOnPlane() added to
+        facilitate 2d-3d mapping.
+
 2011-05-13 Lorenzo Natale <lorenzo.natale@iit.it>
     * tagging version 1.1.1
     
