@@ -296,10 +296,13 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
             q[7]=head[4]+head[5]/2.0;
         else
             q[7]=head[4]-head[5]/2.0;
+        
+        Vector xo=x;
+        xo.push_back(1.0);  // impose homogeneous coordinates
 
         // find position wrt the camera frame
         mutex.wait();
-        Vector xe=SE3inv(eye->getH(q))*x;
+        Vector xe=SE3inv(eye->getH(q))*xo;
         mutex.post();
 
         // find the 2D projection
@@ -353,7 +356,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         // find the 3D position from the 2D projection,
         // knowing the coordinate z in the camera frame
         Vector xe=*invPrj*p;
-        xe[3]=1.0;  // impose homogeneous coordinates                
+        xe[3]=1.0;  // impose homogeneous coordinates
 
         // find position wrt the root frame
         mutex.wait();
