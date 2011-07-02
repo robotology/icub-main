@@ -273,6 +273,10 @@ following ports:
       type=="right" and the head-centered pose if type=="head".
       The pose is given in axis/angle representation (i.e.
       7-componenets vector).
+    - [get] [2D] (<type> <x> <y> <z>): returns the 2D pixel
+      point whose cartesian coordinates (x,y,z) are given wrt
+      the root reference frame as the result of its projection
+      into the image plane <type> ["left"|"right"].
     - [get] [3D] (<type> < u> <v> <z>): returns the 3D point
       whose projected pixel coordinates (u,v) in the image plane
       <type> ["left"|"right"] along with third component <z> in
@@ -281,7 +285,7 @@ following ports:
       the 3D point with projected pixel coordinates (u,v) in the
       image plane <type> ["left"|"right"] that results from the
       intersection with the plane expressed with its implicit
-      equation ax+by+cz+d=0;
+      equation ax+by+cz+d=0 in the root reference frame.
     - [get] [pid]: returns (enclosed in a list) a property-like
       bottle containing the pid values used to converge to the
       target with stereo input.
@@ -874,6 +878,37 @@ public:
                             reply.addVocab(nack);
                             return false;
                         }
+                        else if (type==VOCAB2('2','D'))
+                        {
+                            if (command.size()>2)
+                            {
+                                if (Bottle *bOpt=command.get(2).asList())
+                                {
+                                    if (bOpt->size()>3)
+                                    {
+                                        Vector x(3);
+                                        string eye=bOpt->get(0).asString().c_str();
+                                        x[0]=bOpt->get(1).asDouble();
+                                        x[1]=bOpt->get(2).asDouble();
+                                        x[2]=bOpt->get(3).asDouble();
+
+                                        Vector px;
+                                        if (loc->projectPoint(eye,x,px))
+                                        {
+                                            reply.addVocab(ack);
+                                            Bottle &bPixel=reply.addList();
+                                            for (int i=0; i<px.length(); i++)
+                                                bPixel.addDouble(px[i]);
+
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            reply.addVocab(nack);
+                            return false;
+                        }
                         else if (type==VOCAB2('3','D'))
                         {
                             if (command.size()>2)
@@ -886,8 +921,8 @@ public:
                                         double u=bOpt->get(1).asDouble();
                                         double v=bOpt->get(2).asDouble();
                                         double z=bOpt->get(3).asDouble();
-                                        Vector x;
 
+                                        Vector x;
                                         if (loc->projectPoint(eye,u,v,z,x))
                                         {
                                             reply.addVocab(ack);
@@ -920,8 +955,8 @@ public:
                                         plane[1]=bOpt->get(4).asDouble();
                                         plane[2]=bOpt->get(5).asDouble();
                                         plane[3]=bOpt->get(6).asDouble();
-                                        Vector x;
 
+                                        Vector x;
                                         if (loc->projectPoint(eye,u,v,plane,x))
                                         {
                                             reply.addVocab(ack);

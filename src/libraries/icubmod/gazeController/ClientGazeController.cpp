@@ -437,6 +437,46 @@ bool ClientGazeController::getHeadPose(Vector &x, Vector &o)
 
 
 /************************************************************************/
+bool ClientGazeController::get2DPixel(const int camSel, const Vector &x, Vector &px)
+{
+    if (!connected || (x.length()<3))
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("2D");
+    Bottle &bOpt=command.addList();
+    bOpt.addString((camSel==0)?"left":"right");
+    bOpt.addDouble(x[0]);
+    bOpt.addDouble(x[1]);
+    bOpt.addDouble(x[2]);
+
+    // send command and wait for reply
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        if (Bottle *bPixel=reply.get(1).asList())
+        {
+            px.resize(bPixel->size());
+            for (int i=0; i<px.length(); i++)
+                px[i]=bPixel->get(i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
                                       const double z, Vector &x)
 {

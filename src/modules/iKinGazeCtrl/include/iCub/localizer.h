@@ -90,6 +90,7 @@ public:
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void getPidOptions(Bottle &options);
     void setPidOptions(const Bottle &options);
+    bool projectPoint(const string &type, const Vector &x, Vector &px);
     bool projectPoint(const string &type, const double u, const double v,
                       const double z, Vector &x);
     bool projectPoint(const string &type, const double u, const double v,

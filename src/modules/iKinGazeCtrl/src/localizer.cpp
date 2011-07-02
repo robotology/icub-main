@@ -271,6 +271,53 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
 
 
 /************************************************************************/
+bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
+{
+    bool isLeft=(type=="left");
+
+    Matrix  *Prj=(isLeft?PrjL:PrjR);
+    iCubEye *eye=(isLeft?eyeL:eyeR);
+
+    if (Prj)
+    {
+        Vector torso=commData->get_torso();
+        Vector head=commData->get_q();
+
+        Vector q(8);
+        q[0]=torso[0];
+        q[1]=torso[1];
+        q[2]=torso[2];
+        q[3]=head[0];
+        q[4]=head[1];
+        q[5]=head[2];
+        q[6]=head[3];
+
+        if (isLeft)
+            q[7]=head[4]+head[5]/2.0;
+        else
+            q[7]=head[4]-head[5]/2.0;
+
+        // find position wrt the camera frame
+        mutex.wait();
+        Vector xe=SE3inv(eye->getH(q))*x;
+        mutex.post();
+
+        // find the 2D projection
+        px=*Prj*xe;
+        px=px/px[2];
+        px=px.subVector(0,1);
+
+        return true;
+    }
+    else
+    {
+        fprintf(stdout,"Unspecified projection matrix for %s camera!\n",type.c_str());
+        return false;
+    }
+}
+
+
+/************************************************************************/
 bool Localizer::projectPoint(const string &type, const double u, const double v,
                              const double z, Vector &x)
 {
