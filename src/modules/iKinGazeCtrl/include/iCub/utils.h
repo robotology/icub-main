@@ -33,7 +33,7 @@
 
 #include <iCub/gazeNlp.h>
 
-#define MINALLOWED_VERGENCE     0.5     // [deg]
+#define MINALLOWED_VERGENCE     0.1     // [deg]
 #define ALMOST_ZERO             1e-6
 
 using namespace std;
