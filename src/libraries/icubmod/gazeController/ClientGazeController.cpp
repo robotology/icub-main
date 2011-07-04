@@ -488,6 +488,7 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
     // prepare command
     command.addString("get");
     command.addString("3D");
+    command.addString("mono");
     Bottle &bOpt=command.addList();
     bOpt.addString((camSel==0)?"left":"right");
     bOpt.addDouble(px[0]);
@@ -528,6 +529,7 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
 
     // prepare command
     command.addString("get");
+    command.addString("3D");
     command.addString("proj");
     Bottle &bOpt=command.addList();
     bOpt.addString((camSel==0)?"left":"right");

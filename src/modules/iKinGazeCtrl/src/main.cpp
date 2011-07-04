@@ -277,15 +277,16 @@ following ports:
       point whose cartesian coordinates (x,y,z) are given wrt
       the root reference frame as the result of its projection
       into the image plane <type> ["left"|"right"].
-    - [get] [3D] (<type> < u> <v> <z>): returns the 3D point
-      whose projected pixel coordinates (u,v) in the image plane
-      <type> ["left"|"right"] along with third component <z> in
-      the eye's reference frame are given.
-    - [get] [proj] (<type> < u> <v> < a> < b> < c> <d>): returns
-      the 3D point with projected pixel coordinates (u,v) in the
-      image plane <type> ["left"|"right"] that results from the
-      intersection with the plane expressed with its implicit
-      equation ax+by+cz+d=0 in the root reference frame.
+    - [get] [3D] [mono] (<type> < u> <v> <z>): returns the 3D
+      point whose projected pixel coordinates (u,v) in the image
+      plane <type> ["left"|"right"] along with third component
+      <z> in the eye's reference frame are given.
+    - [get] [3D] [proj] (<type> < u> <v> < a> < b> < c> <d>):
+      returns the 3D point with projected pixel coordinates
+      (u,v) in the image plane <type> ["left"|"right"] that
+      results from the intersection with the plane expressed
+      with its implicit equation ax+by+cz+d=0 in the root
+      reference frame.
     - [get] [pid]: returns (enclosed in a list) a property-like
       bottle containing the pid values used to converge to the
       target with stereo input.
@@ -911,67 +912,83 @@ public:
                         }
                         else if (type==VOCAB2('3','D'))
                         {
-                            if (command.size()>2)
+                            if (command.size()<3)
                             {
-                                if (Bottle *bOpt=command.get(2).asList())
+                                reply.addVocab(nack);
+                                return false;
+                            }
+
+                            int subType=command.get(2).asVocab();
+
+                            if (subType==VOCAB4('m','o','n','o'))
+                            {
+                                if (command.size()>3)
                                 {
-                                    if (bOpt->size()>3)
+                                    if (Bottle *bOpt=command.get(3).asList())
                                     {
-                                        string eye=bOpt->get(0).asString().c_str();
-                                        double u=bOpt->get(1).asDouble();
-                                        double v=bOpt->get(2).asDouble();
-                                        double z=bOpt->get(3).asDouble();
-
-                                        Vector x;
-                                        if (loc->projectPoint(eye,u,v,z,x))
+                                        if (bOpt->size()>3)
                                         {
-                                            reply.addVocab(ack);
-                                            Bottle &bPoint=reply.addList();
-                                            for (int i=0; i<x.length(); i++)
-                                                bPoint.addDouble(x[i]);
+                                            string eye=bOpt->get(0).asString().c_str();
+                                            double u=bOpt->get(1).asDouble();
+                                            double v=bOpt->get(2).asDouble();
+                                            double z=bOpt->get(3).asDouble();
 
-                                            return true;
+                                            Vector x;
+                                            if (loc->projectPoint(eye,u,v,z,x))
+                                            {
+                                                reply.addVocab(ack);
+                                                Bottle &bPoint=reply.addList();
+                                                for (int i=0; i<x.length(); i++)
+                                                    bPoint.addDouble(x[i]);
+
+                                                return true;
+                                            }
                                         }
                                     }
                                 }
+
+                                reply.addVocab(nack);
+                                return false;
                             }
-
-                            reply.addVocab(nack);
-                            return false;
-                        }
-                        else if (type==VOCAB4('p','r','o','j'))
-                        {
-                            if (command.size()>2)
+                            else if (subType==VOCAB4('p','r','o','j'))
                             {
-                                if (Bottle *bOpt=command.get(2).asList())
+                                if (command.size()>3)
                                 {
-                                    if (bOpt->size()>6)
+                                    if (Bottle *bOpt=command.get(3).asList())
                                     {
-                                        Vector plane(4);
-                                        string eye=bOpt->get(0).asString().c_str();
-                                        double u=bOpt->get(1).asDouble();
-                                        double v=bOpt->get(2).asDouble();
-                                        plane[0]=bOpt->get(3).asDouble();
-                                        plane[1]=bOpt->get(4).asDouble();
-                                        plane[2]=bOpt->get(5).asDouble();
-                                        plane[3]=bOpt->get(6).asDouble();
-
-                                        Vector x;
-                                        if (loc->projectPoint(eye,u,v,plane,x))
+                                        if (bOpt->size()>6)
                                         {
-                                            reply.addVocab(ack);
-                                            Bottle &bPoint=reply.addList();
-                                            for (int i=0; i<x.length(); i++)
-                                                bPoint.addDouble(x[i]);
+                                            Vector plane(4);
+                                            string eye=bOpt->get(0).asString().c_str();
+                                            double u=bOpt->get(1).asDouble();
+                                            double v=bOpt->get(2).asDouble();
+                                            plane[0]=bOpt->get(3).asDouble();
+                                            plane[1]=bOpt->get(4).asDouble();
+                                            plane[2]=bOpt->get(5).asDouble();
+                                            plane[3]=bOpt->get(6).asDouble();
 
-                                            return true;
+                                            Vector x;
+                                            if (loc->projectPoint(eye,u,v,plane,x))
+                                            {
+                                                reply.addVocab(ack);
+                                                Bottle &bPoint=reply.addList();
+                                                for (int i=0; i<x.length(); i++)
+                                                    bPoint.addDouble(x[i]);
+
+                                                return true;
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            reply.addVocab(nack);
-                            return false;
+                                reply.addVocab(nack);
+                                return false;
+                            }
+                            else
+                            {
+                                reply.addVocab(nack);
+                                return false;
+                            }
                         }
                         else if (type==VOCAB3('p','i','d'))
                         {
