@@ -6,14 +6,14 @@
 	<module>
       		<name>wholeBodyTorqueObserver</name>
       		<parameters>--context wholeBodyTorqueObserver/conf --from wholeBodyTorqueObserver.ini</parameters>
-			<node>console</node>
-			<stdio>console</stdio>
+			<node>icubsrv</node>
+			<stdio>icubsrv</stdio>
 			<tag>wholeBody_tqObs</tag>
    	</module>
 	<module>
       		<name>gravityCompensator</name>
-			<node>console</node>
-			<stdio>console</stdio>
+			<node>icubsrv</node>
+			<stdio>icubsrv</stdio>
 			<tag>gravityCompensator</tag>
    	</module>
 	    <connection>
