@@ -281,6 +281,13 @@ following ports:
       point whose projected pixel coordinates (u,v) in the image
       plane <type> ["left"|"right"] along with third component
       <z> in the eye's reference frame are given.
+    - [get] [3D] [stereo] (< ul> <vl> <ur> <vr>): returns the 3D
+      point whose projected pixels coordinates (ul,vl) and
+      (ur,vr) in the image planes are provided as the result of
+      the triangulation.
+      @note The triangulation is deeply affected by
+      uncertainties in the cameras extrinsic parameters and
+      cameras alignment.
     - [get] [3D] [proj] (<type> < u> <v> < a> < b> < c> <d>):
       returns the 3D point with projected pixel coordinates
       (u,v) in the image plane <type> ["left"|"right"] that
@@ -935,6 +942,37 @@ public:
 
                                             Vector x;
                                             if (loc->projectPoint(eye,u,v,z,x))
+                                            {
+                                                reply.addVocab(ack);
+                                                Bottle &bPoint=reply.addList();
+                                                for (int i=0; i<x.length(); i++)
+                                                    bPoint.addDouble(x[i]);
+
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                reply.addVocab(nack);
+                                return false;
+                            }
+                            else if (subType==VOCAB4('s','t','e','r'))
+                            {
+                                if (command.size()>3)
+                                {
+                                    if (Bottle *bOpt=command.get(3).asList())
+                                    {
+                                        if (bOpt->size()>3)
+                                        {
+                                            Vector pxl(2),pxr(2);
+                                            pxl[0]=bOpt->get(0).asDouble();
+                                            pxl[1]=bOpt->get(1).asDouble();
+                                            pxr[0]=bOpt->get(2).asDouble();
+                                            pxr[1]=bOpt->get(3).asDouble();
+
+                                            Vector x;
+                                            if (loc->triangulatePoint(pxl,pxr,x))
                                             {
                                                 reply.addVocab(ack);
                                                 Bottle &bPoint=reply.addList();

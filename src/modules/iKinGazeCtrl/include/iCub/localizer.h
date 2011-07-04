@@ -95,6 +95,7 @@ public:
                       const double z, Vector &x);
     bool projectPoint(const string &type, const double u, const double v,
                       const Vector &plane, Vector &x);
+    bool triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);

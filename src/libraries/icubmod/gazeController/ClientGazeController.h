@@ -103,8 +103,9 @@ public:
     bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool get2DPixel(const int camSel, const yarp::sig::Vector &x, yarp::sig::Vector &px);
-    bool get3DPoint(const int camSel, const yarp::sig::Vector &px, const double z, yarp::sig::Vector &x);
+    bool get3DPoint(const int camSel, const yarp::sig::Vector &px, const double z, yarp::sig::Vector &x);    
     bool get3DPointOnPlane(const int camSel, const yarp::sig::Vector &px, const yarp::sig::Vector &plane, yarp::sig::Vector &x);
+    bool triangulate3DPoint(const yarp::sig::Vector &pxl, const yarp::sig::Vector &pxr, yarp::sig::Vector &x);
     bool getJointsDesired(yarp::sig::Vector &qdes);
     bool getJointsVelocities(yarp::sig::Vector &qdot);
     bool getStereoOptions(yarp::os::Bottle &options);

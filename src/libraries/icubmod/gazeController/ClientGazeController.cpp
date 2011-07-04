@@ -564,6 +564,48 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
 
 
 /************************************************************************/
+bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &pxr,
+                                              Vector &x)
+{
+    if (!connected || (pxl.length()<2) && (pxr.length()<2))
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("3D");
+    command.addString("stereo");
+    Bottle &bOpt=command.addList();
+    bOpt.addDouble(pxl[0]);
+    bOpt.addDouble(pxl[1]);
+    bOpt.addDouble(pxr[0]);
+    bOpt.addDouble(pxr[1]);
+
+    // send command and wait for reply
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        if (Bottle *bPoint=reply.get(1).asList())
+        {
+            x.resize(bPoint->size());
+            for (int i=0; i<x.length(); i++)
+                x[i]=bPoint->get(i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::getJointsDesired(Vector &qdes)
 {
     if (!connected)

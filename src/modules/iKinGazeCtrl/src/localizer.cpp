@@ -273,6 +273,12 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
 /************************************************************************/
 bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
 {
+    if (x.length()<3)
+    {
+        fprintf(stdout,"Not enough values given for the point!\n");
+        return false;
+    }
+
     bool isLeft=(type=="left");
 
     Matrix  *Prj=(isLeft?PrjL:PrjR);
@@ -298,7 +304,8 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
             q[7]=head[4]-head[5]/2.0;
         
         Vector xo=x;
-        xo.push_back(1.0);  // impose homogeneous coordinates
+        if (xo.length()<4)
+            xo.push_back(1.0);  // impose homogeneous coordinates
 
         // find position wrt the camera frame
         mutex.wait();
@@ -360,10 +367,8 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 
         // find position wrt the root frame
         mutex.wait();
-        Vector xo=eye->getH(q)*xe;
+        x=(eye->getH(q)*xe).subVector(0,2);
         mutex.post();
-
-        x=xo.subVector(0,2);
 
         return true;
     }
@@ -379,6 +384,12 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 bool Localizer::projectPoint(const string &type, const double u, const double v,
                              const Vector &plane, Vector &x)
 {
+    if (plane.length()<4)
+    {
+        fprintf(stdout,"Not enough values given for the projection plane!\n");
+        return false;
+    }
+
     bool isLeft=(type=="left");
     iCubEye *eye=(isLeft?eyeL:eyeR);
 
@@ -416,6 +427,72 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x)
+{
+    if ((pxl.length()<2) || (pxr.length()<2))
+    {
+        fprintf(stdout,"Not enough values given for the pixels!\n");
+        return false;
+    }
+
+    if (PrjL && PrjR)
+    {
+        Vector torso=commData->get_torso();
+        Vector head=commData->get_q();
+
+        Vector qL(8);
+        qL[0]=torso[0];
+        qL[1]=torso[1];
+        qL[2]=torso[2];
+        qL[3]=head[0];
+        qL[4]=head[1];
+        qL[5]=head[2];
+        qL[6]=head[3];
+        qL[7]=head[4]+head[5]/2.0;
+
+        Vector qR=qL;
+        qR[7]-=head[5];
+
+        mutex.wait();
+        Matrix HL=SE3inv(eyeL->getH(qL));
+        Matrix HR=SE3inv(eyeR->getH(qR));
+        mutex.post();
+
+        Matrix tmp=zeros(3,4); tmp(2,2)=1.0;
+        tmp(0,2)=pxl[0]; tmp(1,2)=pxl[1];
+        Matrix AL=(*PrjL-tmp)*HL;
+
+        tmp(0,2)=pxr[0]; tmp(1,2)=pxr[1];
+        Matrix AR=(*PrjR-tmp)*HR;
+
+        Matrix A(4,3);
+        Vector b(4);
+        for (int i=0; i<2; i++)
+        {
+            b[i]=-AL(i,3);
+            b[i+2]=-AR(i,3);
+
+            for (int j=0; j<3; j++)
+            {
+                A(i,j)=AL(i,j);
+                A(i+2,j)=AR(i,j);
+            }
+        }
+
+        // solve the least-squares problem
+        x=pinv(A)*b;
+
+        return true;
+    }
+    else
+    {
+        fprintf(stdout,"Unspecified projection matrix for at least one camera!\n");
+        return false;
+    }
 }
 
 
