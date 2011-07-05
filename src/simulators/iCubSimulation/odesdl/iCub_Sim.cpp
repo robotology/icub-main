@@ -675,7 +675,6 @@ void OdeSdlSimulation::draw_screen() {
     draw();
     glEnable(GL_TEXTURE_2D);
     drawSkyDome(0,0,0,50,50,50); // Draw the Skybox
-
     SDL_GL_SwapBuffers();// Swap Buffers
 }
 
@@ -686,15 +685,17 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3], roll, pitch, yaw;
     inertialReport.clear();
     //this prepares a bottle of 12 doubles to be sent on the /icubSim/inertial port
-        
-    roll = dBodyGetRotation(odeinit._iCub->head)[1] ;
-    pitch = dBodyGetRotation(odeinit._iCub->head)[6] ;
-    yaw = dBodyGetRotation(odeinit._iCub->head)[2] ;
+    //fprintf (stdout, "inertial pos %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", dBodyGetRotation(odeinit._iCub->head)[0]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[1]* 180/M_PI,dBodyGetRotation(odeinit._iCub->head)[2]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[3]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[4]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[5]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[6]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[7]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[8]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[9]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[10]* 180/M_PI,dBodyGetRotation(odeinit._iCub->head)[11]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[12]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[13]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[14]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[15]* 180/M_PI);
+    
+    roll = dBodyGetRotation(odeinit._iCub->head)[4]; // was 1
+    pitch = dBodyGetRotation(odeinit._iCub->head)[6];
+    yaw = dBodyGetRotation(odeinit._iCub->head)[2];
+
     //Add Euler angles roll pitch yaw
-    inertialReport.addDouble( roll * 180/M_PI); // roll 
-    inertialReport.addDouble( pitch * 180/M_PI); // pitch
-    inertialReport.addDouble( yaw * 180/M_PI); // yaw
-        		
+    inertialReport.addDouble( roll * 180/M_PI);// roll 
+    inertialReport.addDouble( pitch * 180/M_PI);// pitch
+    inertialReport.addDouble( yaw * 180/M_PI);// yaw
+
     //in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
     LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->head)[0];
     LinearVel[1] = dBodyGetLinearVel(odeinit._iCub->head)[1];
@@ -721,7 +722,6 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     inertialReport.addDouble(0.0);
     inertialReport.addDouble(0.0);
     inertialReport.addDouble(0.0);
-
 }
 int OdeSdlSimulation::thread_ode(void *unused) {
     //SLD_AddTimer freezes the system if delay is too short. Instead use a while loop that waits if there was time left after the computation of ODE_process
