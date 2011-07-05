@@ -232,6 +232,8 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
     if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
         ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
 
+    mutex.wait();
+
     q[7]+=ver/2.0;
     eyeL->setAng(q);
 
@@ -243,6 +245,8 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
 
     // compute new fp due to changed vergence
     computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp);
+
+    mutex.post();
 
     // compute rotational matrix to
     // account for elevation and azimuth
@@ -556,7 +560,9 @@ void Localizer::handleStereoInput()
                     fb=ul-cxl;
                 }
                 
+                mutex.wait();
                 Vector z=pid->compute(ref,fb);
+                mutex.post();
 
                 if (projectPoint(dominantEye,u,v,z[0],fp))
                 {
@@ -616,14 +622,10 @@ void Localizer::handleAnglesOutput()
 /************************************************************************/
 void Localizer::run()
 {
-    mutex.wait();
-
     handleMonocularInput();
     handleStereoInput();
     handleAnglesInput();
     handleAnglesOutput();
-
-    mutex.post();
 }
 
 
