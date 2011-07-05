@@ -406,8 +406,12 @@ bool TactileFingersModel::getOutput(Value &out) const
 void TactileFingersModel::close()
 {
     printMessage(1,"closing ...\n");
-    port->interrupt();
-    port->close();
+
+    if (!port->isClosed())
+    {
+        port->interrupt();
+        port->close();
+    }
 
     nodes.clear();
 

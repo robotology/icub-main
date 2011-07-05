@@ -730,10 +730,15 @@ bool SpringyFingersModel::isCalibrated() const
 void SpringyFingersModel::close()
 {
     printMessage(1,"closing ...\n");
-    driver.close();
 
-    port->interrupt();
-    port->close();
+    if (driver.isValid())
+        driver.close();
+
+    if (!port->isClosed())
+    {
+        port->interrupt();
+        port->close();
+    }
 
     nodes.clear();
 
