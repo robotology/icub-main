@@ -86,19 +86,13 @@ using namespace yarp::dev;
 class SimCartCtrlModule: public RFModule
 {
 protected:
-    PolyDriver *torso;
-    PolyDriver *armR,    *armL;
-    PolyDriver *serverR, *serverL;
+    PolyDriver torso;
+    PolyDriver armR,    armL;
+    PolyDriver serverR, serverL;
 
 public:
     virtual bool configure(ResourceFinder &rf)
     {   
-        torso=NULL;
-        armR=NULL;
-        armL=NULL;
-        serverR=NULL;
-        serverL=NULL;
-
         Property optTorso("(device remote_controlboard)");
         Property optArmR("(device remote_controlboard)"); 
         Property optArmL("(device remote_controlboard)"); 
@@ -113,11 +107,7 @@ public:
         optArmR.put("local",("/"+local+"/right_arm").c_str());
         optArmL.put("local",("/"+local+"/left_arm").c_str());
 
-        torso=new PolyDriver(optTorso);
-        armR =new PolyDriver(optArmR);
-        armL =new PolyDriver(optArmL);
-
-        if (!torso->isValid() || !armR->isValid() || !armL->isValid())
+        if (!torso.open(optTorso) || !armR.open(optArmR) || !armL.open(optArmL))
         {
             cout<<"Device drivers not available!"<<endl;
             close();
@@ -126,27 +116,25 @@ public:
         }
 
         PolyDriverList listR, listL;
-        listR.push(torso,"torso");
-        listR.push(armR,"right_arm");
-        listL.push(torso,"torso");
-        listL.push(armL,"left_arm");
+        listR.push(&torso,"torso");
+        listR.push(&armR,"right_arm");
+        listL.push(&torso,"torso");
+        listL.push(&armL,"left_arm");
 
         Property optServerR("(device cartesiancontrollerserver)");
         Property optServerL("(device cartesiancontrollerserver)");
         optServerR.fromConfigFile(rf.findFile("right_arm_file"),false);
         optServerL.fromConfigFile(rf.findFile("left_arm_file"),false);
 
-        serverR=new PolyDriver;
-        serverL=new PolyDriver;
-        if (!serverR->open(optServerR) || !serverL->open(optServerL))
+        if (!serverR.open(optServerR) || !serverL.open(optServerL))
         {
             close();    
             return false;
         }
 
         IMultipleWrapper *wrapperR, *wrapperL;
-        serverR->view(wrapperR);
-        serverL->view(wrapperL);
+        serverR.view(wrapperR);
+        serverL.view(wrapperL);
         if (!wrapperR->attachAll(listR) || !wrapperL->attachAll(listL))
         {
             close();    
@@ -158,20 +146,20 @@ public:
 
     virtual bool close()
     {
-        if (serverR)
-            delete serverR;
+        if (serverR.isValid())
+            serverR.close();
 
-        if (serverL)
-            delete serverL;
+        if (serverL.isValid())
+            serverL.close();
 
-        if (torso)
-            delete torso;
+        if (torso.isValid())
+            torso.close();
 
-        if (armR)
-            delete armR;
+        if (armR.isValid())
+            armR.close();
 
-        if (armL)
-            delete armL;
+        if (armL.isValid())
+            armL.close();
 
         return true;
     }
