@@ -25,6 +25,7 @@
 
 using namespace yarp::sig;
 
+
 // globals
 Semaphore ODE_access(1);
 
@@ -691,47 +692,105 @@ void OdeSdlSimulation::draw_screen() {
 
 void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     OdeInit& odeinit = OdeInit::get();
-    static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3], roll, pitch, yaw;
+    static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3];
     inertialReport.clear();
-    //this prepares a bottle of 12 doubles to be sent on the /icubSim/inertial port
-    //fprintf (stdout, "inertial pos %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", dBodyGetRotation(odeinit._iCub->head)[0]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[1]* 180/M_PI,dBodyGetRotation(odeinit._iCub->head)[2]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[3]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[4]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[5]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[6]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[7]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[8]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[9]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[10]* 180/M_PI,dBodyGetRotation(odeinit._iCub->head)[11]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[12]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[13]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[14]* 180/M_PI, dBodyGetRotation(odeinit._iCub->head)[15]* 180/M_PI);
+
+    //get euler angles from quaternions
+    dQuaternion angles;
+    dGeomGetQuaternion( odeinit._iCub->inertialGeom, angles );
+    dReal w, x, y, z;
+    w = angles[0];
+    x = angles[1];
+    y = angles[2];
+    z = angles[3];
     
-    roll = dBodyGetRotation(odeinit._iCub->head)[4]; // was 1
-    pitch = dBodyGetRotation(odeinit._iCub->head)[6];
-    yaw = dBodyGetRotation(odeinit._iCub->head)[2];
+    double sqw = w * w;    
+    double sqx = x * x;    
+    double sqy = y * y;    
+    double sqz = z * z; 
+    float roll, pitch, yaw;
+
+    double unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+    double test = x*y + z*w;
+    if (test > 0.499*unit) { // singularity at north pole
+        roll = 2 * atan2(x,w);
+        pitch = M_PI/2;
+        yaw = 0;
+        return;
+    }
+    if (test < -0.499*unit) { // singularity at south pole
+        roll = -2 * atan2(x,w);
+        pitch = -M_PI/2;
+        yaw = 0;
+    return;
+    }
+    roll =(float) ( atan2(2.0*y*w-2*x*z , sqx - sqy - sqz + sqw) ); //z
+    pitch = (float) (atan2(2.0*x*w-2*y*z , -sqx + sqy - sqz + sqw) );//x
+    yaw = asin(2*test/unit);//y
+
+    //roll = dBodyGetRotation(odeinit._iCub->head)[4]; // was 1
+    //pitch = dBodyGetRotation(odeinit._iCub->head)[6];
+    //yaw = dBodyGetRotation(odeinit._iCub->head)[2];
 
     //Add Euler angles roll pitch yaw
+    inertialReport.addDouble( -yaw * 180/M_PI);// yaw
+    inertialReport.addDouble( -pitch * 180/M_PI);// pitch
     inertialReport.addDouble( roll * 180/M_PI);// roll 
-    inertialReport.addDouble( pitch * 180/M_PI);// pitch
-    inertialReport.addDouble( yaw * 180/M_PI);// yaw
 
-    //in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
-    LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->head)[0];
-    LinearVel[1] = dBodyGetLinearVel(odeinit._iCub->head)[1];
-    LinearVel[2] = dBodyGetLinearVel(odeinit._iCub->head)[2];
+    /*//in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
+    LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->inertialBody)[0];
+    LinearVel[1] = dBodyGetLinearVel(odeinit._iCub->inertialBody)[1];
+    LinearVel[2] = dBodyGetLinearVel(odeinit._iCub->inertialBody)[2];
     //// a = dv/dt = ( t - t_old ) / dt
     LinearAccel[0] = ( LinearVel[0] - OldLinearVel[0] ) / 0.02;
     LinearAccel[1] = ( LinearVel[1] - OldLinearVel[1] ) / 0.02;
     LinearAccel[2] = ( LinearVel[2] - OldLinearVel[2] ) / 0.02;
     OldLinearVel[0] = LinearVel[0];
     OldLinearVel[1] = LinearVel[1];
-    OldLinearVel[2] = LinearVel[2];
+    OldLinearVel[2] = LinearVel[2];*/
         
     ////Add linear acceleration
-    inertialReport.addDouble( -(sin(pitch) * cos(roll)) * 9.8 );
-    inertialReport.addDouble( (sin(roll)) * 9.8 );
-    inertialReport.addDouble( (cos(pitch) * cos(roll)) * 9.8 );
+    Vector grav,grav1,grav2,grav3;
+    grav.resize(3);
+    grav1.resize(3);
+    grav2.resize(3);
+    grav3.resize(3);
+    double  theta;
+
+    grav[0]=0;
+    grav[1]=0;
+    grav[2]=9.81;
+
+    theta = pitch;
+    grav1[0]=grav[0]*cos(theta)+grav[2]*sin(theta);
+    grav1[1]=grav[1];
+    grav1[2]=grav[0]*(-sin(theta))+grav[2]*cos(theta);
+
+    theta = yaw;
+    grav2[0]=grav1[0];
+    grav2[1]=grav1[1]*cos(theta)+grav1[2]*(-sin(theta));
+    grav2[2]=grav1[1]*sin(theta)+grav1[2]*cos(theta);
+
+    theta = roll;
+    grav3[0]=grav2[0]*cos(theta)+grav2[1]*(-sin(theta));
+    grav3[1]=grav2[0]*sin(theta)+grav2[1]*cos(theta);
+    grav3[2]=grav2[2];
+
+    inertialReport.addDouble( grav3[0] );
+    inertialReport.addDouble( grav3[1] );
+    inertialReport.addDouble( grav3[2] );
 
     //Add angular velocity
-    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[2] / 10);
-    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[0] / 10);
-    inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->head)[1] / 10);
+    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[2] / 10);
+    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[0] / 10);
+    inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->inertialBody)[1] / 10);
         
     //Add magnetic fields
     inertialReport.addDouble(0.0);
     inertialReport.addDouble(0.0);
     inertialReport.addDouble(0.0);
 }
+
 int OdeSdlSimulation::thread_ode(void *unused) {
     //SLD_AddTimer freezes the system if delay is too short. Instead use a while loop that waits if there was time left after the computation of ODE_process
     long prevTime = (long) clock();

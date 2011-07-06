@@ -48,6 +48,7 @@ Model *iCubHeadModel;
 Model *topEyeLidModel;
 Model *bottomEyeLidModel;
 
+
 ICubData::ICubData() {
 }
 
@@ -940,7 +941,6 @@ void ICubSim::draw(){
         glPushMatrix(); LDEsetM(dGeomGetPosition(head1_geom),dGeomGetRotation(head1_geom));
         DrawBox(0.104, 0.002,0.052,false,textured,2);
         glPopMatrix();
-    
 
         glColor3d(0.3,0.3,0.3);
         glPushMatrix(); LDEsetM(dGeomGetPosition(head2_geom),dGeomGetRotation(head2_geom));
@@ -948,13 +948,12 @@ void ICubSim::draw(){
 
         glPushMatrix(); LDEsetM(dGeomGetPosition(head3_geom),dGeomGetRotation(head3_geom));
         DrawBox(0.002, 0.093,0.052,false,false,2);glPopMatrix();
+        //glPushMatrix(); LDEsetM(dGeomGetPosition(head4_geom),dGeomGetRotation(head4_geom));
+        //DrawBox( 0.104, 0.002 ,0.032,false,false,2);glPopMatrix();
 
-        glPushMatrix(); LDEsetM(dGeomGetPosition(head4_geom),dGeomGetRotation(head4_geom));
-        DrawBox( 0.104, 0.002 ,0.032,false,false,2);glPopMatrix();
-
-        glPushMatrix(); LDEsetM(dGeomGetPosition(head5_geom),dGeomGetRotation(head5_geom));
-        DrawBox( 0.011, 0.026,0.025,false,false,2);glPopMatrix();
-
+        //glPushMatrix(); LDEsetM(dGeomGetPosition(head5_geom),dGeomGetRotation(head5_geom));
+        //DrawBox( 0.011, 0.026,0.025,false,false,2);glPopMatrix();
+        glColor3d(0.3,0.3,0.3);
         glPushMatrix(); LDEsetM(dGeomGetPosition(head6_geom),dGeomGetRotation(head6_geom));
         DrawBox(  0.011, 0.051,0.012,false,false,2);glPopMatrix();
 
@@ -992,8 +991,13 @@ void ICubSim::draw(){
     glColor3d(1,1,1);
     DrawSphere(0.0185,false,false,0);
     glPopMatrix();
-}
 
+    glColor3d(1,0.49,0.14);
+    glPushMatrix();LDEsetM(dBodyGetPosition(inertialBody),dBodyGetRotation(inertialBody));
+    DrawBox( 0.03, 0.02, 0.05,false,false,2);
+    glPopMatrix();
+
+}
 bool ICubSim::loadJointPosition(const char *joints_path){
 
     ifstream fin(joints_path);
@@ -1077,7 +1081,6 @@ bool ICubSim::loadJointPosition(const char *joints_path){
             jP_head[i][j]=headJoint->get(j).asDouble();
     }
 
-
     /*---- eyes ----*/
     Bottle &bLeftEye=bJoints.findGroup("left_eye");
     Bottle &bRightEye=bJoints.findGroup("right_eye");
@@ -1096,11 +1099,17 @@ bool ICubSim::loadJointPosition(const char *joints_path){
             jP_rightEye[i][j]=rightJoint->get(j).asDouble();
         }
     }
+     /*---- inertial ----*/
+    Bottle &bInertial=bJoints.findGroup("inertial");
+    Bottle *inertialJP = bInertial.get(1).asList();
+    jP_inertial.resize(3);
 
+    for(int j=0; j<3; j++)
+    {
+        jP_inertial[j] = inertialJP->get(j).asDouble();
+    }
     return true;
 }
-
-
 
 void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
     //Coordinates X Y Z using the 3D Cartesian coordinate system
@@ -1212,10 +1221,11 @@ void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
         dBodySetPosition (leye,    jP_leftEye[1][1], elev + jP_leftEye[1][2], jP_leftEye[1][0]);//dBodySetPosition (leye, -0.0, elev +0.89, -0.026);
         dBodySetPosition (reye,    jP_rightEye[1][1], elev + jP_rightEye[1][2], jP_rightEye[1][0]);//dBodySetPosition (reye, -0.0, elev +0.89, -0.026);
     }
-
         // eyelids position
         dBodySetPosition (topEyeLid, 0.0, elev + jP_head[3][2], 0.035);
         dBodySetPosition (bottomEyeLid, 0.0, elev + jP_head[3][2], 0.035);
+
+        dBodySetPosition (inertialBody, jP_inertial[1], elev + jP_inertial[2], jP_inertial[0]);
     }
 
 #define FLAGIFY(flags,name) name = flags.name?"on":"off"
@@ -2358,6 +2368,10 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dBodySetMass(head,&m);
     }
 
+    inertialBody = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.0001,0.03,0.02,0.05);
+    dBodySetMass(inertialBody,&m);
+    inertialGeom = dCreateBox (iCub,0.03,0.02,0.05);dGeomSetBody (inertialGeom,inertialBody);
+
     setPosition( X, Y, Z);
 
     if (actElevation == "on")
@@ -2972,6 +2986,10 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         }
         // this call fixes the joint to its current position in 3D space
         dJointSetFixed (fixedHipJoint);
+
+        inertialJoint = dJointCreateFixed(world, 0);
+        dJointAttach (inertialJoint,inertialBody,head);
+        dJointSetFixed (inertialJoint);
     }
 }
 

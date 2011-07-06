@@ -76,6 +76,8 @@ public:
     dSpaceID    iCub;
     dGeomID     geom_cube[1];
 
+    dBodyID     inertialBody;
+    dGeomID     inertialGeom;
     dBodyID     iCubHead;
     dGeomID     iCubHeadGeom;
     /*----Lower Body parts----*/
@@ -180,6 +182,8 @@ public:
     dJointID    RAjoints [25];
 
     dJointID    Hjoints [6];
+    dJointID    inertialJoint;
+
 
     dJointID    grab;
     dJointID    grab1;
@@ -232,6 +236,7 @@ public:
     Vector          jP_rightEye[2];
     Vector          jP_leftLeg[6];
     Vector          jP_rightLeg[6];
+    Vector          jP_inertial;
 
     ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
             RobotConfig& config);
