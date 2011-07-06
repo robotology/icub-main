@@ -84,6 +84,15 @@ static RobotConfig *robot_config = NULL;
 static bool eyeCams;
 static const GLfloat light_position[] = { 0.0f, 5.0f, 5.0f, 0.0f };
 
+//camera calibration parameters
+static int width_left;
+static int width_right;
+static int height_left;
+static int height_right;
+static double fov_left;
+static double fov_right;
+
+
 // # of touch sensors
 #define N_TOUCH_SENSORS 12
 // allocate feedback structs as a static array. We don't allocate feedback structs 
@@ -922,7 +931,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     
     if (left){
         glLoadIdentity();
-        gluPerspective( 57.32, (float) 320/240, 0.04, 100.0 );//55.8
+        gluPerspective( fov_left, (float) width_left/height_left, 0.04, 100.0 );
         pos = dGeomGetPosition(odeinit._iCub->Leye1_geom);
         rot = dGeomGetRotation(odeinit._iCub->Leye1_geom);
         glMatrixMode (GL_MODELVIEW);
@@ -940,7 +949,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     }
     if (right){
         glLoadIdentity();
-        gluPerspective( 56.40, (float) 320/240, 0.04, 100.0 );//55.8
+        gluPerspective( fov_right, (float) width_right/height_right, 0.04, 100.0 );//55.8
         pos = dGeomGetPosition(odeinit._iCub->Reye1_geom);
         rot = dGeomGetRotation(odeinit._iCub->Reye1_geom);
         glMatrixMode (GL_MODELVIEW);
@@ -958,7 +967,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     }	
     if (wide){
         glLoadIdentity();
-        gluPerspective( 55.8, (float) 320/240, 0.04, 100.0 );
+        gluPerspective( 55.8, (float) 320/240, 0.04, 100.0 );//here nothing to do with cameras
         glMatrixMode (GL_MODELVIEW);
         glLoadIdentity();
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -1004,8 +1013,31 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     odeinit._iCub->eyeLidsPortName = moduleName;
     Property options;
 
+
+    //get the camera calibration parameters
+    ConstString camcalibConf = robot_config->getFinder().findFile("camcalib");
+    Property camcalibOptions;
+    camcalibOptions.fromConfigFile(camcalibConf.c_str());
+
+    //left
+    Bottle &bCalibLeft=camcalibOptions.findGroup("CAMERA_CALIBRATION_LEFT");
+    width_left=bCalibLeft.check("w",Value(320)).asInt();
+    height_left=bCalibLeft.check("h",Value(240)).asInt();
+
+    double focal_length_left=bCalibLeft.check("fy",Value(257.34)).asDouble();
+    fov_left=2*atan2((double)height_left,2*focal_length_left)*180.0/M_PI;
+
+    //right
+    Bottle &bCalibRight=camcalibOptions.findGroup("CAMERA_CALIBRATION_RIGHT");
+    width_right=bCalibRight.check("w",Value(320)).asInt();
+    height_right=bCalibRight.check("h",Value(240)).asInt();
+
+    double focal_length_right=bCalibRight.check("fy",Value(257.34)).asDouble();
+    fov_right=2*atan2((double)height_right,2*focal_length_right)*180.0/M_PI;
+    //--------------------------------------//
+
+
     ConstString videoconf = robot_config->getFinder().findFile("video");
-        
     options.fromConfigFile(videoconf.c_str());
 
     Bottle textures = *options.find("textures").asList();
@@ -1014,6 +1046,9 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
         printf("Adding video texture %s\n", name.c_str());
         video->add(options.findGroup(name.c_str()));
     }
+
+
+
 }
 
 OdeSdlSimulation::~OdeSdlSimulation() {
