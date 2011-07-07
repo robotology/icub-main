@@ -53,8 +53,6 @@ PGRFlyCapture (Windows)
 \section parameters_sec Parameters
 --name             // image output port
 
---DR2              // if specified, dragonfly2 hardware model is assumed
-
 --video_type       // 1: RGB 320x240, 2: RGB 640x480 (default), 3: RGB 640x480 software Bayer decoding (higher fps) 
 
 --width|size_x     // width image cropping (limited to image size)
@@ -106,15 +104,15 @@ Linux and Windows.
 \section example_sec Example Instantiation of the Module
 Usage syntax:
 
-yarpdev --device grabber --subdevice dragonfly2 --name <yarp port name> [--DR2] 
+yarpdev --device grabber --subdevice dragonfly2 --name <yarp port name> 
 [--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
 [--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <value>] [...]
 
 Example:
 
-yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --DR2 --d 0|1 [...]
+yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
 
-yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/right --DR2 --d 1|0 [...]
+yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
 
 \author Paul Fitzpatrick, Giorgio Metta, Alessandro Scalzo
 

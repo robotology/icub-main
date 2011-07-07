@@ -104,6 +104,7 @@ protected:
 	FlyCapture2::Camera *m_pCamera;
 	FlyCapture2::Error error;
 
+    bool mHires;
 	FlyCapture2::CameraInfo m_CameraInfo;
 	int m_BusSpeedBS;
 	
@@ -123,7 +124,6 @@ protected:
     bool m_bFrameIsValid;
     bool m_bCameraOn;
  
-    bool m_bDR2;
 	unsigned int m_XDim,m_YDim;
 
 	unsigned int m_iMin[FlyCapture2::UNSPECIFIED_PROPERTY_TYPE],m_iMax[FlyCapture2::UNSPECIFIED_PROPERTY_TYPE];

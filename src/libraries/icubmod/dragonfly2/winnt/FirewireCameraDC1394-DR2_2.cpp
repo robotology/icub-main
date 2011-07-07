@@ -14,6 +14,7 @@
 //     W   W   I   N   N
 
 #include "winnt/FirewireCameraDC1394-DR2_2.h"
+#include <string.h>
 
 #define NOT_PRESENT -1
 int CFWCamera_DR2_2::DC2Fly(int feature)
@@ -45,46 +46,93 @@ int CFWCamera_DR2_2::DC2Fly(int feature)
 
 int CFWCamera_DR2_2::maxFPS(FlyCapture2::Mode mode,FlyCapture2::PixelFormat pixelFormat)
 {
-    switch (mode)
+    if (mHires)
     {
-    case FlyCapture2::MODE_0:
-        switch (pixelFormat)
+        switch (mode)
         {
-        case FlyCapture2::PIXEL_FORMAT_MONO8:
-        case FlyCapture2::PIXEL_FORMAT_RAW8:  
-        case FlyCapture2::PIXEL_FORMAT_411YUV8: return 59;
-        
-        case FlyCapture2::PIXEL_FORMAT_MONO16:
-        case FlyCapture2::PIXEL_FORMAT_RAW16:
-        case FlyCapture2::PIXEL_FORMAT_422YUV8: return 47;
-        
-        case FlyCapture2::PIXEL_FORMAT_444YUV8:
-        case FlyCapture2::PIXEL_FORMAT_RGB8:    return 31;
-        }
-        return 0;
-    case FlyCapture2::MODE_1:
-        switch (pixelFormat)
-        {
-        case FlyCapture2::PIXEL_FORMAT_MONO8:
-        case FlyCapture2::PIXEL_FORMAT_MONO16:  return 100;
+        case FlyCapture2::MODE_0:
+            switch (pixelFormat)
+            {
+            case FlyCapture2::PIXEL_FORMAT_MONO8:   return 31;
+            case FlyCapture2::PIXEL_FORMAT_RAW8:    return 31;
+            case FlyCapture2::PIXEL_FORMAT_411YUV8: return 26;
 
-        case FlyCapture2::PIXEL_FORMAT_411YUV8:
-        case FlyCapture2::PIXEL_FORMAT_422YUV8:
-        case FlyCapture2::PIXEL_FORMAT_444YUV8:
-        case FlyCapture2::PIXEL_FORMAT_RGB8:    return 59;
+            case FlyCapture2::PIXEL_FORMAT_MONO16:  return 15;
+            case FlyCapture2::PIXEL_FORMAT_RAW16:   return 15;
+            case FlyCapture2::PIXEL_FORMAT_422YUV8: return 15;
+
+            case FlyCapture2::PIXEL_FORMAT_444YUV8: return 11;
+            case FlyCapture2::PIXEL_FORMAT_RGB8:    return 11;
+            }
+            return 0;
+        case FlyCapture2::MODE_1:
+            switch (pixelFormat)
+            {
+            case FlyCapture2::PIXEL_FORMAT_MONO8:   return 54;
+            case FlyCapture2::PIXEL_FORMAT_MONO16:  return 54;
+
+            case FlyCapture2::PIXEL_FORMAT_411YUV8: return 31;
+            case FlyCapture2::PIXEL_FORMAT_422YUV8: return 31;
+            case FlyCapture2::PIXEL_FORMAT_444YUV8: return 31;
+            case FlyCapture2::PIXEL_FORMAT_RGB8:    return 31;
+            }
+            return 0;
+        case FlyCapture2::MODE_2:
+            switch (pixelFormat)
+            {
+            case FlyCapture2::PIXEL_FORMAT_MONO8:   return 31;
+            case FlyCapture2::PIXEL_FORMAT_MONO16:  return 26;
+            case FlyCapture2::PIXEL_FORMAT_411YUV8: return 31;
+            case FlyCapture2::PIXEL_FORMAT_422YUV8: return 26;
+            case FlyCapture2::PIXEL_FORMAT_444YUV8: return 17;
+            case FlyCapture2::PIXEL_FORMAT_RGB8:    return 17;
+            }
+            return 0;
         }
-        return 0;
-    case FlyCapture2::MODE_2:
-        switch (pixelFormat)
+    }
+    else // lores
+    {
+        switch (mode)
         {
-        case FlyCapture2::PIXEL_FORMAT_MONO8:
-        case FlyCapture2::PIXEL_FORMAT_MONO16:
-        case FlyCapture2::PIXEL_FORMAT_411YUV8:
-        case FlyCapture2::PIXEL_FORMAT_422YUV8:
-        case FlyCapture2::PIXEL_FORMAT_444YUV8:
-        case FlyCapture2::PIXEL_FORMAT_RGB8:    return 59;
+        case FlyCapture2::MODE_0:
+            switch (pixelFormat)
+            {
+            case FlyCapture2::PIXEL_FORMAT_MONO8:
+            case FlyCapture2::PIXEL_FORMAT_RAW8:  
+            case FlyCapture2::PIXEL_FORMAT_411YUV8: return 59;
+
+            case FlyCapture2::PIXEL_FORMAT_MONO16:
+            case FlyCapture2::PIXEL_FORMAT_RAW16:
+            case FlyCapture2::PIXEL_FORMAT_422YUV8: return 47;
+
+            case FlyCapture2::PIXEL_FORMAT_444YUV8:
+            case FlyCapture2::PIXEL_FORMAT_RGB8:    return 31;
+            }
+            return 0;
+        case FlyCapture2::MODE_1:
+            switch (pixelFormat)
+            {
+            case FlyCapture2::PIXEL_FORMAT_MONO8:
+            case FlyCapture2::PIXEL_FORMAT_MONO16:  return 100;
+
+            case FlyCapture2::PIXEL_FORMAT_411YUV8:
+            case FlyCapture2::PIXEL_FORMAT_422YUV8:
+            case FlyCapture2::PIXEL_FORMAT_444YUV8:
+            case FlyCapture2::PIXEL_FORMAT_RGB8:    return 59;
+            }
+            return 0;
+        case FlyCapture2::MODE_2:
+            switch (pixelFormat)
+            {
+            case FlyCapture2::PIXEL_FORMAT_MONO8:
+            case FlyCapture2::PIXEL_FORMAT_MONO16:
+            case FlyCapture2::PIXEL_FORMAT_411YUV8:
+            case FlyCapture2::PIXEL_FORMAT_422YUV8:
+            case FlyCapture2::PIXEL_FORMAT_444YUV8:
+            case FlyCapture2::PIXEL_FORMAT_RGB8:    return 59;
+            }
+            return 0;
         }
-        return 0;
     }
 
     return 0;
@@ -132,8 +180,6 @@ double CFWCamera_DR2_2::ValueToNorm(unsigned int iVal,int feature)
 
 bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 {
-    m_bDR2=config.check("DR2");
-
     int size_x=checkInt(config,"width");   
     int size_y=checkInt(config,"height");
     int off_x=checkInt(config,"xoff");
@@ -190,6 +236,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     error=m_pCamera->GetCameraInfo(&m_CameraInfo);
     if (manage(error)) return false;
 
+    mHires=(strcmp("1032x776",m_CameraInfo.sensorResolution)==0);
+
     switch (m_CameraInfo.maximumBusSpeed)
     {
     case FlyCapture2::BUSSPEED_S100:  m_BusSpeedBS= 10000000; break;
@@ -227,28 +275,62 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         break;
 
     case DR_RGB_HALF_RES:
-        if (!size_x) { size_x=320; }
-        if (!size_y) { size_y=240; }
+        if (mHires)
+        {
+            if (!size_x) { size_x=512; }
+            if (!size_y) { size_y=384; }
+        }
+        else
+        {
+            if (!size_x) { size_x=320; }
+            if (!size_y) { size_y=240; }
+        }
         SetF7(FlyCapture2::MODE_1,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50,off_x,off_y);
         break;
 
     case DR_RGB_FULL_RES:
-        if (!size_x) { size_x=640; }
-        if (!size_y) { size_y=480; }
-
-        if (size_x==640 && size_y==480)
+        if (mHires)
         {
-            SetVideoMode(FlyCapture2::VIDEOMODE_640x480RGB);
+            if (!size_x) { size_x=1024; }
+            if (!size_y) { size_y=768; }
+            /*
+            if (size_x==1024 && size_y==768)
+            {
+                SetVideoMode(FlyCapture2::VIDEOMODE_1024x768RGB);
+            }
+            else
+            */
+            {
+                SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50,off_x,off_y);
+            }
         }
         else
         {
-            SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50,off_x,off_y);
+            if (!size_x) { size_x=640; }
+            if (!size_y) { size_y=480; }
+
+            if (size_x==640 && size_y==480)
+            {
+                SetVideoMode(FlyCapture2::VIDEOMODE_640x480RGB);
+            }
+            else
+            {
+                SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RGB,50,off_x,off_y);
+            }
         }
         break;
 
     case DR_BAYER_FULL_RES:
-        if (!size_x) { size_x=640; }
-        if (!size_y) { size_y=480; }
+        if (mHires)
+        {
+            if (!size_x) { size_x=1024; }
+            if (!size_y) { size_y=768; }
+        }
+        else
+        {
+            if (!size_x) { size_x=640; }
+            if (!size_y) { size_y=480; }
+        }
         SetF7(FlyCapture2::MODE_0,size_x,size_y,FlyCapture2::PIXEL_FORMAT_RAW8,50,off_x,off_y);
         break;
 
@@ -362,13 +444,27 @@ bool CFWCamera_DR2_2::SetVideoMode(FlyCapture2::VideoMode video_mode)
     // calculate raw image size at given video mode
     switch (video_mode)
     {
-    case FlyCapture2::VIDEOMODE_160x120YUV444: xdim=160; ydim=120; buff_dim= xdim*ydim*3;    break;
-    case FlyCapture2::VIDEOMODE_320x240YUV422: xdim=320; ydim=240; buff_dim= xdim*ydim*2;    break;
-    case FlyCapture2::VIDEOMODE_640x480YUV411: xdim=640; ydim=480; buff_dim=(xdim*ydim*3)/2; break;
-    case FlyCapture2::VIDEOMODE_640x480YUV422: xdim=640; ydim=480; buff_dim= xdim*ydim*2;    break;
-    case FlyCapture2::VIDEOMODE_640x480RGB:    xdim=640; ydim=480; buff_dim= xdim*ydim*3;    break;
-    case FlyCapture2::VIDEOMODE_640x480Y8:     xdim=640; ydim=480; buff_dim= xdim*ydim;		 break;
-    case FlyCapture2::VIDEOMODE_640x480Y16:	   xdim=640; ydim=480; buff_dim= xdim*ydim*2;    break;
+    case FlyCapture2::VIDEOMODE_160x120YUV444:  xdim=160; ydim=120; buff_dim= xdim*ydim*3;    break;
+    
+    case FlyCapture2::VIDEOMODE_320x240YUV422:  xdim=320; ydim=240; buff_dim= xdim*ydim*2;    break;
+    
+    case FlyCapture2::VIDEOMODE_640x480YUV411:  xdim=640; ydim=480; buff_dim=(xdim*ydim*3)/2; break;
+    
+    case FlyCapture2::VIDEOMODE_640x480YUV422:  xdim=640; ydim=480; buff_dim= xdim*ydim*2;    break;
+    case FlyCapture2::VIDEOMODE_640x480RGB:     xdim=640; ydim=480; buff_dim= xdim*ydim*3;    break;
+    case FlyCapture2::VIDEOMODE_640x480Y8:      xdim=640; ydim=480; buff_dim= xdim*ydim;      break;
+    case FlyCapture2::VIDEOMODE_640x480Y16:	    xdim=640; ydim=480; buff_dim= xdim*ydim*2;    break;
+
+    case FlyCapture2::VIDEOMODE_800x600YUV422:  xdim=800; ydim=600; buff_dim= xdim*ydim*2;    break;
+    case FlyCapture2::VIDEOMODE_800x600RGB:     xdim=800; ydim=600; buff_dim= xdim*ydim*3;    break;
+    case FlyCapture2::VIDEOMODE_800x600Y8:      xdim=800; ydim=600; buff_dim= xdim*ydim;	  break;
+    case FlyCapture2::VIDEOMODE_800x600Y16:     xdim=800; ydim=600; buff_dim= xdim*ydim*2;    break;
+    
+    case FlyCapture2::VIDEOMODE_1024x768YUV422: xdim=1024; ydim=768; buff_dim= xdim*ydim*2;   break;
+    case FlyCapture2::VIDEOMODE_1024x768RGB:    xdim=1024; ydim=768; buff_dim= xdim*ydim*3;   break;
+    case FlyCapture2::VIDEOMODE_1024x768Y8:     xdim=1024; ydim=768; buff_dim= xdim*ydim;	  break;
+    case FlyCapture2::VIDEOMODE_1024x768Y16:    xdim=1024; ydim=768; buff_dim= xdim*ydim*2;   break;
+
     default: return false;
     }
 
@@ -402,7 +498,6 @@ bool CFWCamera_DR2_2::SetVideoMode(FlyCapture2::VideoMode video_mode)
     else if (fpsMax<30.0) { frame_rate=FlyCapture2::FRAMERATE_15; }
     else if (fpsMax<60.0) { frame_rate=FlyCapture2::FRAMERATE_30; }
     else if (fpsMax<120.0){ frame_rate=FlyCapture2::FRAMERATE_60; }
-    else if (fpsMax<120.0){ frame_rate=FlyCapture2::FRAMERATE_60; }
     else if (fpsMax<240.0){ frame_rate=FlyCapture2::FRAMERATE_120; }
     else                  { frame_rate=FlyCapture2::FRAMERATE_240; }
 
@@ -416,6 +511,9 @@ bool CFWCamera_DR2_2::SetVideoMode(FlyCapture2::VideoMode video_mode)
         if (bSupported)
         {
             error=m_pCamera->SetVideoModeAndFrameRate(video_mode,(FlyCapture2::FrameRate)fr);
+
+            printf("video mode=%d   framerate=%d\n",video_mode,fr);
+
             if (manage(error)) return false;
 
             m_XDim=xdim;
@@ -579,7 +677,7 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
     {
         m_F7PacketSize=(unsigned int)(0.01*double(speed*packetInfo.maxBytesPerPacket)*margin);
         //m_F7PacketSize=(unsigned int)((speed*packetInfo.maxBytesPerPacket)/100);
-        printf("maxBandOcc=%f   m_BusSpeedBS=%d    margin=%f    m_F7PacketSize=%d\n",maxBandOcc,m_BusSpeedBS,margin,m_F7PacketSize);
+        //printf("maxBandOcc=%f   m_BusSpeedBS=%d    margin=%f    m_F7PacketSize=%d\n",maxBandOcc,m_BusSpeedBS,margin,m_F7PacketSize);
     }
 
     m_F7PacketSize=(m_F7PacketSize/packetInfo.unitBytesPerPacket)*packetInfo.unitBytesPerPacket;
@@ -595,7 +693,7 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
     error=m_pCamera->GetFormat7Configuration(&m_F7ImageSettings,&m_F7PacketSize,&m_F7PercentSpeed);
     if (manage(error)) return false;
 
-    printf("\nPacket size=%d - Speed=%f\n\n",m_F7PacketSize,m_F7PercentSpeed);
+    //printf("\n 1 Packet size=%d - Speed=%f\n\n",m_F7PacketSize,m_F7PercentSpeed);
 
     m_XDim=m_F7ImageSettings.width;
     m_YDim=m_F7ImageSettings.height;
@@ -860,10 +958,30 @@ unsigned int CFWCamera_DR2_2::getVideoModeMaskDC1394()
 
     for (int m=FlyCapture2::VIDEOMODE_160x120YUV444; m<FlyCapture2::NUM_VIDEOMODES; ++m)
     {
-        error=m_pCamera->GetVideoModeAndFrameRateInfo((FlyCapture2::VideoMode)m,FlyCapture2::FRAMERATE_15,&bSupported);
-        if (error.GetType()==FlyCapture2::PGRERROR_OK && bSupported) 
+        for (int f=FlyCapture2::FRAMERATE_1_875; f<FlyCapture2::NUM_FRAMERATES; ++f)
         {
-            mask|=1<<m;
+            error=m_pCamera->GetVideoModeAndFrameRateInfo((FlyCapture2::VideoMode)m,(FlyCapture2::FrameRate)f,&bSupported);
+            
+            if (error.GetType()==FlyCapture2::PGRERROR_OK && bSupported) 
+            {
+                int vm=m;
+
+                switch (vm)
+                {
+                    case 11: vm=10; break;
+                    case 12: vm=11; break;
+                    case 13: vm=12; break;
+                    case 10: vm=13; break;
+
+                    case 19: vm=18; break;
+                    case 20: vm=19; break;
+                    case 21: vm=20; break;
+                    case 18: vm=21; break;
+                }
+
+                mask|=1<<vm;
+                break;
+            }
         }
     }
 
@@ -909,6 +1027,19 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int video_mode)
 
     if (video_mode<FlyCapture2::VIDEOMODE_FORMAT7)
     {
+        switch (video_mode)
+        {
+            case 10: video_mode=FlyCapture2::VIDEOMODE_1024x768YUV422; break;
+            case 11: video_mode=FlyCapture2::VIDEOMODE_1024x768RGB; break;
+            case 12: video_mode=FlyCapture2::VIDEOMODE_1024x768Y8; break;
+            case 13: video_mode=FlyCapture2::VIDEOMODE_800x600Y16; break;
+
+            case 18: video_mode=FlyCapture2::VIDEOMODE_1600x1200YUV422; break;
+            case 19: video_mode=FlyCapture2::VIDEOMODE_1600x1200RGB; break;
+            case 20: video_mode=FlyCapture2::VIDEOMODE_1600x1200Y8; break;
+            case 21: video_mode=FlyCapture2::VIDEOMODE_1280x960Y16; break;
+        }
+
         if (!SetVideoMode((FlyCapture2::VideoMode)video_mode))
         {
             m_AcqMutex.post();
@@ -945,6 +1076,19 @@ unsigned int CFWCamera_DR2_2::getVideoModeDC1394()
         if (manage(error)) return 0;
 
         return 1+vm+m_F7ImageSettings.mode;
+    }
+
+    switch (vm)
+    {
+        case 11: return 10;
+        case 12: return 11;
+        case 13: return 12;
+        case 10: return 13;
+
+        case 19: return 18;
+        case 20: return 19;
+        case 21: return 20;
+        case 18: return 21;
     }
 
     return vm;
@@ -1335,7 +1479,6 @@ bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
 // 29
 bool CFWCamera_DR2_2::getOperationModeDC1394()
 {
-    //if (!m_pCamera || !m_bDR2) return false;
     return true;
 }
 
@@ -1452,7 +1595,9 @@ unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
     error=m_pCamera->GetFormat7Configuration(&m_F7ImageSettings,&m_F7PacketSize,&m_F7PercentSpeed);
     if (manage(error)) return 0;
 
-    return (unsigned int)(100.0f*m_F7PercentSpeed);
+    //printf("\n 2 Packet size=%d - Speed=%f\n\n",m_F7PacketSize,m_F7PercentSpeed);
+
+    return (unsigned int)(m_F7PercentSpeed);
 }
 
 // 40
