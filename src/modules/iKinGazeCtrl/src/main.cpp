@@ -380,10 +380,6 @@ twist  0.0 0.0   // [rad]
 \section tested_os_sec Tested OS
 Windows, Linux
 
-Note that \ref iKinGazeView "iKinGazeView" module can show
-interactively the iCub head configuration launching MATLAB in 
-background. Just connect the ports with the viewer and play. 
-
 \author Ugo Pattacini
 */ 
 
