@@ -620,10 +620,11 @@ protected:
             {
                 if (targetPosNew->get(6).asDouble()==1.0)
                 {
-                    Vector fp(3);
+                    Vector fp(4);
                     fp[0]=targetPosNew->get(0).asDouble();
                     fp[1]=targetPosNew->get(1).asDouble();
                     fp[2]=targetPosNew->get(2).asDouble();
+                    fp[3]=1.0;
 
                     if (!gsl_isnan(fp[0]) && !gsl_isnan(fp[1]) && !gsl_isnan(fp[2]))
                     {
