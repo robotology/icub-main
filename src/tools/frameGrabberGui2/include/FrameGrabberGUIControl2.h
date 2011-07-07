@@ -10,7 +10,40 @@
 #ifndef __FRAME_GRABBER_GUI_CONTROL2_H__
 #define __FRAME_GRABBER_GUI_CONTROL2_H__
 
-static const char *video_mode_labels[]={"160x120 YUV444","320x240 YUV422","640x480 YUV411", "640x480 YUV422","640x480 RGB8","640x480 MONO8","640x480 MONO16","800x600 YUV422", "800x600 RGB8","800x600_MONO8","1024x768 YUV422","1024x768 RGB8","1024x768 MONO8", "800x600 MONO16","1024x768 MONO16","1280x960 YUV422","1280x960 RGB8","1280x960_MONO8", "1600x1200 YUV422","1600x1200 RGB8","1600x1200 MONO8","1280x960 MONO16","1600x1200_MONO16","EXIF","FORMAT7 0","FORMAT7 1","FORMAT7 2","FORMAT7 3","FORMAT7 4","FORMAT7 5","FORMAT7 6","FORMAT7 7"};
+static const char *video_mode_labels[]={
+    "160x120 YUV444",
+    "320x240 YUV422",
+    "640x480 YUV411", 
+    "640x480 YUV422",
+    "640x480 RGB8",
+    "640x480 MONO8",
+    "640x480 MONO16",
+    "800x600 YUV422",
+    "800x600 RGB8",
+    "800x600_MONO8",
+    "1024x768 YUV422",
+    "1024x768 RGB8",
+    "1024x768 MONO8",
+    "800x600 MONO16",
+    "1024x768 MONO16",
+    "1280x960 YUV422",
+    "1280x960 RGB8",
+    "1280x960_MONO8", 
+    "1600x1200 YUV422",
+    "1600x1200 RGB8",
+    "1600x1200 MONO8",
+    "1280x960 MONO16",
+    "1600x1200_MONO16",
+    "EXIF",
+    "FORMAT7 0",
+    "FORMAT7 1",
+    "FORMAT7 2",
+    "FORMAT7 3",
+    "FORMAT7 4",
+    "FORMAT7 5",
+    "FORMAT7 6",
+    "FORMAT7 7"
+};
 
 static const char *video_rate_labels[]={"1.875 fps","3.75 fps","7.5 fps","15 fps","30 fps","60 fps","120 fps","240 fps"};
 
@@ -144,6 +177,7 @@ public:
 		m_VBoxForm.pack_start(*(pHBox),Gtk::PACK_SHRINK,2);
         		
 		m_MenuFPS.set_name("Framerate");
+        m_MenuFPS.clear_items();
 		mask=getFPSMaskDC1394();
 		for (int i=0,e=0; i<8; ++i)
 		{
@@ -321,18 +355,15 @@ public:
 	
 	void Reload()
     {
-		printf("*** Reload() ***\n");
-
 		unsigned int video_mode=getVideoModeDC1394();
 
 		m_MenuMode.set_active_text(video_mode_labels[video_mode]);
+        printf("video mode %s %d\n",video_mode_labels[video_mode],video_mode);
 
         m_MenuColorCoding.unset_active();        
         m_MenuColorCoding.clear_items();
 
         unsigned int mask=getColorCodingMaskDC1394(video_mode);
-
-		printf("getColorCodingMaskDC1394(%d)==%d\n",video_mode,mask);
 
         for (int i=0,e=0; i<32; ++i)
 		{
@@ -392,7 +423,6 @@ public:
             m_bpp.set_sensitive(true);
 			++m_bppCNT;
             m_bpp.set_value(getBytesPerPacketDC1394());    
-
             m_xdim.set_sensitive(true);
             m_ydim.set_sensitive(true); 
             m_xoff.set_sensitive(true);
@@ -673,6 +703,7 @@ protected:
 		printf("on_reset_change()\n");
 		setResetDC1394();
         Reload();
+
 		m_bpp.set_value(getBytesPerPacketDC1394());
         m_bpp.set_sensitive(getColorCodingMaskDC1394(getVideoModeDC1394()));
 		m_transmission.set_active(getTransmissionDC1394());
@@ -683,6 +714,7 @@ protected:
 		printf("on_load_defaults_change()\n");
 		setDefaultsDC1394();
         Reload();
+
 		m_bpp.set_value(getBytesPerPacketDC1394());
         m_bpp.set_sensitive(getColorCodingMaskDC1394(getVideoModeDC1394()));
         setTransmissionDC1394(true);
