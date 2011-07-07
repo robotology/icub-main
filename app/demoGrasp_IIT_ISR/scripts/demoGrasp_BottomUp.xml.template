@@ -22,13 +22,6 @@
         </module>
 
         <module>
-                <name>eye2RootFrameTransformer</name>
-                <parameters>--name l2rBall --eye left</parameters>
-                <node>pwrNode1</node>
-                <tag>l2rBall</tag>
-        </module>
-
-        <module>
                 <name>demoGraspManager_IIT_ISR</name>
                 <node>pwrNode2</node>
                 <tag>manager</tag>
@@ -47,21 +40,6 @@
                 <protocol>mcast</protocol>
         </connection>
         <connection>
-                <from>/icub/head/state:o</from>
-                <to>/l2rBall/head:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/torso/state:o</from>
-                <to>/l2rBall/torso:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/PF3DTracker_L/dataOut</from>
-                <to>/l2rBall/targetPos:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
                 <from>/icub/PF3DTracker_L/videoOut</from>
                 <to>/PF3DTracker_viewer</to>
                 <protocol>udp</protocol>
@@ -72,7 +50,7 @@
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/l2rBall/targetPos:o</from>
+                <from>/icub/PF3DTracker_L/dataOut</from>
                 <to>/demoGraspManager_IIT_ISR/trackTarget:i</to>
                 <protocol>udp</protocol>
         </connection>

@@ -20,8 +20,6 @@ interface implemented) and \ref iKinGazeCtrl are running.
 \section int_sec Instantiated Modules
 - \ref pf3dTracker "pf3dTracker"
 
-- \ref eye2RootFrameTransformer "eye2RootFrameTransformer"
-
 - \ref motionCUT "motionCUT"
 
 - \ref demoGraspManager_IIT_ISR "demoGraspManager_IIT_ISR"

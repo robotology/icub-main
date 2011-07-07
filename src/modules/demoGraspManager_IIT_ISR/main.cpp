@@ -99,6 +99,10 @@ left_arm        on
 right_arm       on 
 // arm trajectory execution time [s]
 traj_time       2.0 
+// reaching tolerance [m]
+reach_tol       0.01 
+// eye used 
+eye             left 
 // homes limbs if target detection timeout expires [s]
 idle_tmo        5.0 
 // enable the use of stereo vision calibrated by NN 
@@ -172,13 +176,13 @@ Windows, Linux
 #include <yarp/os/Time.h>
 #include <yarp/os/Random.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/math/Math.h>
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/GazeControl.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/math/Math.h>
 
 #include <gsl/gsl_math.h>
 #include <iCub/ctrl/math.h>
@@ -302,6 +306,7 @@ protected:
 
     string name;
     string robot;
+    string eyeUsed;
 
     bool useLeftArm;
     bool useRightArm;
@@ -319,7 +324,7 @@ protected:
     ICartesianControl *cartArm;
     IGazeControl      *gazeCtrl;    
 
-    BufferedPort<Vector> inportTrackTarget;
+    BufferedPort<Bottle> inportTrackTarget;
     BufferedPort<Bottle> inportIMDTargetLeft;
     BufferedPort<Bottle> inportIMDTargetRight;
     Port outportCmdFace;
@@ -609,10 +614,35 @@ protected:
                 newTarget=true;
             }
         }
-        else if (Vector *targetPosNew=inportTrackTarget.read(false))
+        else if (Bottle *targetPosNew=inportTrackTarget.read(false))
         {
-            targetPos=*targetPosNew;
-            newTarget=true;
+            if (targetPosNew->size()>6)
+            {
+                if (targetPosNew->get(6).asDouble()==1.0)
+                {
+                    Vector fp(3);
+                    fp[0]=targetPosNew->get(0).asDouble();
+                    fp[1]=targetPosNew->get(1).asDouble();
+                    fp[2]=targetPosNew->get(2).asDouble();
+
+                    if (!gsl_isnan(fp[0]) && !gsl_isnan(fp[1]) && !gsl_isnan(fp[2]))
+                    {
+                        Vector x,o;
+                        if (eyeUsed=="left")
+                            gazeCtrl->getLeftEyePose(x,o);
+                        else
+                            gazeCtrl->getRightEyePose(x,o);
+
+                        Matrix T=axis2dcm(o);
+                        T(0,3)=x[0];
+                        T(1,3)=x[1];
+                        T(2,3)=x[2];
+
+                        targetPos=T*fp;
+                        newTarget=true;
+                    }
+                }
+            }
         }
 
         if (newTarget)
@@ -1143,7 +1173,8 @@ public:
         useNetwork=bGeneral.check("use_network",Value("off"),"Getting network enable").asString()=="on"?true:false;
         trajTime=bGeneral.check("traj_time",Value(2.0),"Getting trajectory time").asDouble();
         reachTol=bGeneral.check("reach_tol",Value(0.01),"Getting reaching tolerance").asDouble();
-        idleTmo=bGeneral.check("idle_tmo",Value(1e10),"Getting idle timeout").asDouble();        
+        eyeUsed=bGeneral.check("eye",Value("left"),"Getting the used eye").asString().c_str();
+        idleTmo=bGeneral.check("idle_tmo",Value(1e10),"Getting idle timeout").asDouble();
         setRate(bGeneral.check("thread_period",Value(DEFAULT_THR_PER),"Getting thread period [ms]").asInt());
 
         // torso part
