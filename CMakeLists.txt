@@ -88,33 +88,6 @@ else (NOT ICUB_HAS_GSL)
   endif (NOT ICUB_USE_GSL)
 endif (NOT ICUB_HAS_GSL)
 
-# find matlab libraries
-set(BUILD_MATLAB_BASED_TOOLS FALSE CACHE BOOL "Dou you want to build MATLAB-based tools?")
-if(BUILD_MATLAB_BASED_TOOLS)
-    find_path(MATLAB_INCLUDE_DIRS engine.h NO_DEFAULT_PATH)
-    if(WIN32)
-       find_path(MATLAB_LIBRARIES_DIRS libeng.lib NO_DEFAULT_PATH)
-    else(WIN32)
-       find_path(MATLAB_LIBRARIES_DIRS eng NO_DEFAULT_PATH)
-    endif(WIN32)
-    
-    if(WIN32)
-       set(MATLAB_LIBRARIES ${MATLAB_LIBRARIES_DIRS}/libeng.lib
-                            ${MATLAB_LIBRARIES_DIRS}/libmx.lib
-                            ${MATLAB_LIBRARIES_DIRS}/libmex.lib
-                            ${MATLAB_LIBRARIES_DIRS}/libmat.lib)
-    else(WIN32)
-       set(MATLAB_LIBRARIES ${MATLAB_LIBRARIES_DIRS}/libeng.so
-                            ${MATLAB_LIBRARIES_DIRS}/libmx.so
-                            ${MATLAB_LIBRARIES_DIRS}/libmex.so
-                            ${MATLAB_LIBRARIES_DIRS}/libmat.so)
-    endif(WIN32)
-else(BUILD_MATLAB_BASED_TOOLS)
-    set(MATLAB_INCLUDE_DIRS "")
-    set(MATLAB_LIBRARIES_DIRS "")
-    set(MATLAB_LIBRARIES "")
-endif(BUILD_MATLAB_BASED_TOOLS)
-
 ### enable testing
 include (CTest)
 

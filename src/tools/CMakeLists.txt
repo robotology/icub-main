@@ -51,13 +51,3 @@ else(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 	message(STATUS "Qt3 or OpenGL or GLUT not selected, skipping iCubGui")
 endif(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 
-if(BUILD_MATLAB_BASED_TOOLS)
-	add_subdirectory(iKinArmView)
-	add_subdirectory(iKinGazeView)
-	add_subdirectory(signalScope)
-else(BUILD_MATLAB_BASED_TOOLS)
-	message(STATUS "skipping iKinArmView")
-	message(STATUS "skipping iKinGazeView")
-	message(STATUS "skipping signalScope")
-endif(BUILD_MATLAB_BASED_TOOLS)
-
