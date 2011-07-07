@@ -640,6 +640,7 @@ protected:
                         T(2,3)=x[2];
 
                         targetPos=T*fp;
+                        targetPos.pop_back();
                         newTarget=true;
                     }
                 }
