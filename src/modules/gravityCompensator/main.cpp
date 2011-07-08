@@ -290,7 +290,7 @@ private:
 		d2q_rleg.resize(6,0.0);
         allJnt+=jnt;
 
-		// Head variables
+		// Torso variables
 		jnt = 0;
         if (iencs_torso) iencs_torso->getAxes(&jnt);
 		else jnt=3;
@@ -936,6 +936,12 @@ public:
             rate = rf.find("rate").asInt();
         else rate = 20;
 
+		//-----------------GET THE ROBOT NAME-------------------//
+		string robot_name;
+		if (rf.check("robot"))
+			 robot_name = rf.find("robot").asString();
+		else robot_name = "icub";
+
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
 		if (rf.check("no_legs"))
 		{
@@ -958,7 +964,7 @@ public:
         
 		OptionsHead.put("device","remote_controlboard");
 		OptionsHead.put("local","/gravityCompensator/head/client");
-		OptionsHead.put("remote","/icub/head");
+		OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
 
 		dd_head = new PolyDriver(OptionsHead);
 		if (!createDriver(dd_head))
@@ -973,7 +979,7 @@ public:
 		{
 			OptionsLeftArm.put("device","remote_controlboard");
 			OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
-			OptionsLeftArm.put("remote","/icub/left_arm");
+			OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
 			dd_left_arm = new PolyDriver(OptionsLeftArm);
 			if (!createDriver(dd_left_arm))
 			{
@@ -986,7 +992,7 @@ public:
 		{
 			OptionsRightArm.put("device","remote_controlboard");
 			OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
-			OptionsRightArm.put("remote","/icub/right_arm");
+			OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
 			dd_right_arm = new PolyDriver(OptionsRightArm);
 			if (!createDriver(dd_right_arm))
 			{
@@ -999,7 +1005,7 @@ public:
 		{
 			OptionsLeftLeg.put("device","remote_controlboard");
 			OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
-			OptionsLeftLeg.put("remote","/icub/left_leg");
+			OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
 			dd_left_leg = new PolyDriver(OptionsLeftLeg);
 			if (!createDriver(dd_left_leg))
 			{
@@ -1009,7 +1015,7 @@ public:
 
 			OptionsRightLeg.put("device","remote_controlboard");
 			OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
-			OptionsRightLeg.put("remote","/icub/right_leg");
+			OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
 			dd_right_leg = new PolyDriver(OptionsRightLeg);
 			if (!createDriver(dd_right_leg))
 			{
@@ -1020,7 +1026,7 @@ public:
 		
 		OptionsTorso.put("device","remote_controlboard");
 		OptionsTorso.put("local","/gravityCompensator/torso/client");
-		OptionsTorso.put("remote","/icub/torso");
+		OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
 
 		dd_torso = new PolyDriver(OptionsTorso);
 		if (!createDriver(dd_torso))
