@@ -182,7 +182,6 @@ Linux and Windows.
 #include <yarp/sig/Image.h>
 
 #include <cv.h>
-#include <highgui.h>
 
 #include <stdio.h>
 #include <string>
