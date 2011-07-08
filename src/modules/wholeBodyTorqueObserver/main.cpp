@@ -279,7 +279,8 @@ private:
 		ft_arm_left = 0;
 		allJnt = 0;
         int jnt=0;
-        iencs_arm_left->getAxes(&jnt);
+        if (iencs_arm_left) iencs_arm_left->getAxes(&jnt);
+		else jnt = 7;
         encoders_arm_left.resize(jnt,0.0);
         F_LArm.resize(6,0.0);
         F_iDyn_LArm.resize(6,0.0);
@@ -292,7 +293,8 @@ private:
 		// Right_arm variables
 		ft_arm_right = 0;
 		jnt = 0;
-        iencs_arm_right->getAxes(&jnt);
+        if (iencs_arm_right) iencs_arm_right->getAxes(&jnt);
+		else jnt = 7;
         encoders_arm_right.resize(jnt,0.0);
 		q_rarm.resize(7,0.0);
 		dq_rarm.resize(7,0.0);
@@ -304,7 +306,8 @@ private:
 
 		// Head variables
 		jnt = 0;
-        iencs_head->getAxes(&jnt);
+        if (iencs_head) iencs_head->getAxes(&jnt);
+		else jnt = 3;
         encoders_head.resize(jnt,0.0);
 		q_head.resize(3,0.0);
 		dq_head.resize(3,0.0);
@@ -349,9 +352,10 @@ private:
         Offset_RLeg.resize(6,0.0);
 		allJnt+=jnt;
 
-		// Head variables
+		// Torso variables
 		jnt = 0;
-        iencs_torso->getAxes(&jnt);
+        if (iencs_torso) iencs_torso->getAxes(&jnt);
+		else jnt=3;
         encoders_torso.resize(jnt,0.0);
 		q_torso.resize(3,0.0);
 		dq_torso.resize(3,0.0);
@@ -807,7 +811,10 @@ public:
 			else
 			{encoders_leg_right.zero();}
 
-			b &= iencs_torso->getEncoders(encoders_torso.data());
+			if (encoders_torso)
+			{b &= iencs_torso->getEncoders(encoders_torso.data());}
+			else
+			{encoders_torso.zero();}
 
 			for (int i=0;i<q_torso.length();i++)
 			{
@@ -849,9 +856,12 @@ public:
 	bool getUpperEncodersSpeedAndAcceleration()
 	{
 		bool b = true;
-		b &= iencs_arm_left->getEncoders(encoders_arm_left.data());
-		b &= iencs_arm_right->getEncoders(encoders_arm_right.data());
-		b &= iencs_head->getEncoders(encoders_head.data());		
+		if (iencs_arm_left) b &= iencs_arm_left->getEncoders(encoders_arm_left.data());
+		else encoders_arm_left.zero();
+		if (iencs_arm_right) b &= iencs_arm_right->getEncoders(encoders_arm_right.data());
+		else encoders_arm_right.zero();
+		if (iencs_head) b &= iencs_head->getEncoders(encoders_head.data());	
+		else encoders_head.zero();
 
 		for (int i=0;i<q_head.length();i++)
 		{
@@ -1027,6 +1037,8 @@ private:
     Property OptionsRightLeg;
     Property OptionsTorso;
 	bool     legs_enabled;
+	bool     left_arm_enabled;
+	bool     right_arm_enabled;
 
 	
 	dataFilter *port_inertial_input;
@@ -1052,6 +1064,8 @@ public:
         dd_right_leg=0;
         dd_torso=0;
 		legs_enabled = true;
+		left_arm_enabled = true;
+		right_arm_enabled = true;
     }
 
     virtual bool createDriver(PolyDriver *_dd)
@@ -1118,6 +1132,18 @@ public:
 			fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
 		}
 
+		//------------------CHECK IF ARMS ARE ENABLED-----------//
+		if (rf.check("no_left_arm"))
+		{
+			left_arm_enabled= false;
+			fprintf(stderr,"'no_left_arm' option found. Left arm will be disabled.\n");
+		}
+		if (rf.check("no_right_arm"))
+		{
+			right_arm_enabled= false;
+			fprintf(stderr,"'no_right_arm' option found. Right arm will be disabled.\n");
+		}
+
 		//---------------------RATE-----------------------------//
 		if (rf.check("rate"))
 		{
@@ -1145,24 +1171,30 @@ public:
 		else
 			fprintf(stderr,"device driver created\n");
 
-		OptionsLeftArm.put("device","remote_controlboard");
-		OptionsLeftArm.put("local","/wholeBodyTorqueObserver/left_arm/client");
-		OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
-		dd_left_arm = new PolyDriver(OptionsLeftArm);
-		if (!createDriver(dd_left_arm))
+		if (left_arm_enabled)
 		{
-			fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
-			return false;
+			OptionsLeftArm.put("device","remote_controlboard");
+			OptionsLeftArm.put("local","/wholeBodyTorqueObserver/left_arm/client");
+			OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
+			dd_left_arm = new PolyDriver(OptionsLeftArm);
+			if (!createDriver(dd_left_arm))
+			{
+				fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
+				return false;
+			}
 		}
-
-		OptionsRightArm.put("device","remote_controlboard");
-		OptionsRightArm.put("local","/wholeBodyTorqueObserver/right_arm/client");
-		OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
-		dd_right_arm = new PolyDriver(OptionsRightArm);
-		if (!createDriver(dd_right_arm))
+		
+		if (right_arm_enabled)
 		{
-			fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
-			return false;
+			OptionsRightArm.put("device","remote_controlboard");
+			OptionsRightArm.put("local","/wholeBodyTorqueObserver/right_arm/client");
+			OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
+			dd_right_arm = new PolyDriver(OptionsRightArm);
+			if (!createDriver(dd_right_arm))
+			{
+				fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
+				return false;
+			}
 		}
 
 		if (legs_enabled)
