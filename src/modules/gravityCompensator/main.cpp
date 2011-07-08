@@ -225,7 +225,8 @@ private:
 		// Left_arm variables
 		allJnt = 0;
         int jnt=0;
-        iencs_arm_left->getAxes(&jnt);
+        if (iencs_arm_left) iencs_arm_left->getAxes(&jnt);
+		else jnt = 7;
         encoders_arm_left.resize(jnt,0.0);
 		F_LArm.resize(6,0.0);
         F_iDyn_LArm.resize(6,0.0);
@@ -237,7 +238,8 @@ private:
 
 		// Right_arm variables
 		jnt = 0;
-        iencs_arm_right->getAxes(&jnt);
+        if (iencs_arm_right) iencs_arm_right->getAxes(&jnt);
+		else jnt = 7;
         encoders_arm_right.resize(jnt,0.0);
 		F_RArm.resize(6,0.0);
         F_iDyn_RArm.resize(6,0.0);
@@ -249,7 +251,8 @@ private:
 
 		// Head variables
 		jnt = 0;
-        iencs_head->getAxes(&jnt);
+        if (iencs_head) iencs_head->getAxes(&jnt);
+		else jnt = 3;
         encoders_head.resize(jnt,0.0);
 		q_head.resize(3,0.0);
 		dq_head.resize(3,0.0);
@@ -289,7 +292,8 @@ private:
 
 		// Head variables
 		jnt = 0;
-        iencs_torso->getAxes(&jnt);
+        if (iencs_torso) iencs_torso->getAxes(&jnt);
+		else jnt=3;
         encoders_torso.resize(jnt,0.0);
 		q_torso.resize(3,0.0);
 		dq_torso.resize(3,0.0);
@@ -522,7 +526,8 @@ public:
 			if (iencs_leg_right) iencs_leg_right->getEncoders(encoders_leg_right.data());
 			else encoders_leg_right.zero();
 
-			iencs_torso->getEncoders(encoders_torso.data());
+			if (iencs_torso) iencs_torso->getEncoders(encoders_torso.data());
+			else encoders_torso.zero();
 
 			for (int i=0;i<q_torso.length();i++)
 			{
@@ -562,10 +567,12 @@ public:
 
 	void getUpperEncodersSpeedAndAcceleration()
 	{
-		iencs_arm_left->getEncoders(encoders_arm_left.data());
-		iencs_arm_right->getEncoders(encoders_arm_right.data());
-		iencs_head->getEncoders(encoders_head.data());
-		
+		if (iencs_arm_left) iencs_arm_left->getEncoders(encoders_arm_left.data());
+		else encoders_arm_left.zero();
+		if (iencs_arm_right) iencs_arm_right->getEncoders(encoders_arm_right.data());
+		else encoders_arm_right.zero();
+		if (iencs_head) iencs_head->getEncoders(encoders_head.data());
+		else encoders_head.zero();		
 
 		for (int i=0;i<q_head.length();i++)
 		{
