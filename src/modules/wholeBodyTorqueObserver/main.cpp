@@ -694,8 +694,10 @@ public:
 			F_iDyn_LLeg  = -1.0 * F_sensor_low.getCol(1);
 			F_iDyn_RLeg = -1.0 * F_sensor_low.getCol(0);
 
-			F_RArm = *ft_arm_right;
-			F_LArm = *ft_arm_left;
+			if (ft_arm_right) {F_RArm = *ft_arm_right;}
+			else {F_RArm.zero();}
+			if (ft_arm_left) {F_LArm = *ft_arm_left;}
+			else {F_LArm.zero();}
 			if (ft_leg_right) {F_RLeg = *ft_leg_right;}
 			else {F_RLeg.zero();}
 			if (ft_leg_left) {F_LLeg = *ft_leg_left;}
