@@ -874,6 +874,8 @@ private:
     PolyDriver *dd_torso;
 
 	bool legs_enabled;
+	bool right_arm_enabled;
+	bool left_arm_enabled;
 	string m_side;
 	string m_part;
 
@@ -881,6 +883,8 @@ public:
     gravityModuleCompensator()
     {
 		legs_enabled  = true;
+		left_arm_enabled  = true;
+		right_arm_enabled  = true;
 		dd_left_arm   = 0;
 		dd_right_arm  = 0;
 		dd_head       = 0;
@@ -938,6 +942,18 @@ public:
 			legs_enabled= false;
 			fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
 		}
+		//------------------CHECK IF ARMS ARE ENABLED-----------//
+		if (rf.check("no_left_arm"))
+		{
+			left_arm_enabled= false;
+			fprintf(stderr,"'no_left_arm' option found. Left arm will be disabled.\n");
+		}
+		//------------------CHECK IF ARMS ARE ENABLED-----------//
+		if (rf.check("no_right_arm"))
+		{
+			right_arm_enabled= false;
+			fprintf(stderr,"'no_right_arm' option found. Right arm will be disabled.\n");
+		}
         //---------------------DEVICES--------------------------//
         
 		OptionsHead.put("device","remote_controlboard");
@@ -953,26 +969,31 @@ public:
 		else
 			fprintf(stderr,"device driver created\n");
         
+		if (left_arm_enabled)
+		{
+			OptionsLeftArm.put("device","remote_controlboard");
+			OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
+			OptionsLeftArm.put("remote","/icub/left_arm");
+			dd_left_arm = new PolyDriver(OptionsLeftArm);
+			if (!createDriver(dd_left_arm))
+			{
+				fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
+				return false;
+			}
+		}
 
-        OptionsLeftArm.put("device","remote_controlboard");
-        OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
-        OptionsLeftArm.put("remote","/icub/left_arm");
-        dd_left_arm = new PolyDriver(OptionsLeftArm);
-        if (!createDriver(dd_left_arm))
-        {
-            fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
-            return false;
-        }
-
-        OptionsRightArm.put("device","remote_controlboard");
-        OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
-        OptionsRightArm.put("remote","/icub/right_arm");
-        dd_right_arm = new PolyDriver(OptionsRightArm);
-        if (!createDriver(dd_right_arm))
-        {
-            fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
-            return false;
-        }
+		if (right_arm_enabled)
+		{
+			OptionsRightArm.put("device","remote_controlboard");
+			OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
+			OptionsRightArm.put("remote","/icub/right_arm");
+			dd_right_arm = new PolyDriver(OptionsRightArm);
+			if (!createDriver(dd_right_arm))
+			{
+				fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
+				return false;
+			}
+		}
 
 		if (legs_enabled)
 		{
