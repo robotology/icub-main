@@ -811,7 +811,7 @@ public:
 			else
 			{encoders_leg_right.zero();}
 
-			if (encoders_torso)
+			if (iencs_torso)
 			{b &= iencs_torso->getEncoders(encoders_torso.data());}
 			else
 			{encoders_torso.zero();}
