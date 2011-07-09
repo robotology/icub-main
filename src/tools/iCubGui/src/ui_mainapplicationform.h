@@ -295,3 +295,4 @@ namespace Ui {
 //QT_END_NAMESPACE
 
 #endif // UI_MAINAPPLICATIONFORM_H
+
