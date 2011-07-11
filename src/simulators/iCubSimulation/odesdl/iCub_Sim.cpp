@@ -69,7 +69,7 @@ static float view_hpr[3];	// heading, pitch, roll (degrees)
 static float view2_xyz[3];
 static float view2_hpr[3];
 static float zoom = 0;
-static float xpos = 0, ypos = 0, zpos = 0, xrot = 0, yrot = 0, angle=0.0;
+static float xpos = 0, ypos = 0, zpos = 0, xrot = 0, yrot = 0, zrot = 0, angle=0.0;
 static float lastx, lasty;
 static float xrotrad = 0, yrotrad = 0;
 static long startTime, finishTime;
@@ -217,6 +217,8 @@ void OdeSdlSimulation::process_events(void) {
         xpos -= float(sin(yrotrad))* 0.005f;zpos += float(cos(yrotrad))* 0.005f; ;ypos += float(sin(xrotrad))* 0.005f;}
     if (keystate[SDLK_a]){yrotrad = (yrot / 180 * 3.141592654f);xpos -= float(cos(yrotrad)) * 0.008;zpos -= float(sin(yrotrad)) * 0.008; }
     if (keystate[SDLK_d]){yrotrad = (yrot / 180 * 3.141592654f);xpos += float(cos(yrotrad)) * 0.008;zpos += float(sin(yrotrad)) * 0.008;}
+    if(keystate[SDLK_e]){zrot += 1 * 0.4f;if (zrot >360) zrot -= 360 * 0.4f;}
+    if(keystate[SDLK_c]){zrot -= 1 * 0.4f;if (zrot < -360) zrot += 360 * 0.4f;}
 
     if(keystate[SDLK_1]){initViewpoint();}
 
@@ -637,7 +639,7 @@ void OdeSdlSimulation::initViewpoint() {
     zpos = 1;
     xrot = 25;
     yrot = 0;
-    //zrot = 0;
+    zrot = 0;
 }
 
 void OdeSdlSimulation::mouseMovement(float x, float y) {
@@ -667,6 +669,7 @@ void OdeSdlSimulation::draw_screen() {
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
     glRotatef (xrot, 1,0,0);
     glRotatef (yrot, 0,1,0);
+    glRotatef (zrot, 0,0,1);
     glTranslated(-xpos,-ypos,-zpos);
 
     // set up any video textures
