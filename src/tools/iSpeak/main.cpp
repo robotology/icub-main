@@ -45,7 +45,7 @@ This module has been tested only on Linux since it requires the
  
 \section portsa_sec Ports Accessed
 At startup an attempt is made to connect to 
-/<robot>/face/emotions port. 
+/<robot>/face/emotions/in port. 
 
 \section portsc_sec Ports Created 
 - \e /<name>: this port receives the request for speech 
@@ -59,7 +59,7 @@ At startup an attempt is made to connect to
   phrase: this was meant to underline that the time tuning is
   left to you :) .
  
-- \e /<name>/emotions: this port serves to command the facial 
+- \e /<name>/emotions:o: this port serves to command the facial
   expressions. At startup an attempt to connect to the proper
   robot port is automatically made.
  
@@ -124,7 +124,7 @@ public:
         open(("/"+name).c_str());
         useCallback();
 
-        emotions.open(("/"+name+"/emotions").c_str());
+        emotions.open(("/"+name+"/emotions:o").c_str());
         Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());
 
         return true;
