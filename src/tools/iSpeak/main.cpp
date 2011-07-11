@@ -55,6 +55,9 @@ At startup an attempt is made to connect to
   will let the robot speak the phrase "down with the service
   robotics" and at the same time the facial expression will be
   changed for 10 seconds to mimic the proper mouth movement.
+  Obvioulsy, 10 seconds are really too much for that particular
+  phrase: this was meant to underline that the time tuning is
+  left to you :) .
  
 - \e /<name>/emotions: this port serves to command the facial 
   expressions. At startup an attempt to connect to the proper
