@@ -175,3 +175,4 @@ bool iCubAnalogChannel::findAndRead(std::string addr,yarp::os::Value& data)
     return true;
 }
 */
+

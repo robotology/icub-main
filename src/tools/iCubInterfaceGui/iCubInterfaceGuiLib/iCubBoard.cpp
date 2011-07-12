@@ -226,3 +226,4 @@ yarp::dev::LoggerDataRef* iCubBLLBoard::getDataReference(std::string addr)
     return NULL;
 }
 */
+
