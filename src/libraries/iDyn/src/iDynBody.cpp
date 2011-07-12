@@ -2099,9 +2099,10 @@ unsigned int iDynSensorTorsoNode::getNLinks(const string &limbType) const
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubUpperTorso::iCubUpperTorso(const NewEulMode _mode, unsigned int verb)
+iCubUpperTorso::iCubUpperTorso(const NewEulMode _mode, unsigned int verb, string _tag)
 :iDynSensorTorsoNode("upper-torso",_mode,verb)
 {
+	tag=_tag;
 	build();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2109,7 +2110,10 @@ void iCubUpperTorso::build()
 {
 	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
 	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
-	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
+	if (tag == "V2")
+	{up		= new iCubNeckInertialDynV2(KINBWD_WREBWD);}
+	else
+	{up		= new iCubNeckInertialDyn(KINBWD_WREBWD);}
 
 	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(left),mode,verbose);
 	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
@@ -2150,33 +2154,42 @@ void iCubUpperTorso::build()
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb)
+iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb, string _tag)
 :iDynSensorTorsoNode("lower-torso",_mode,verb)
 {
+	tag=_tag;
 	build();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubLowerTorso::build()
 {
-	left	= new iCubLegNoTorsoDyn("left",KINFWD_WREBWD);
-	right	= new iCubLegNoTorsoDyn("right",KINFWD_WREBWD);
+	left	= new iCubLegDyn("left",KINFWD_WREBWD);
+	right	= new iCubLegDyn("right",KINFWD_WREBWD);
 	up		= new iCubTorsoDyn("lower",KINBWD_WREBWD);
 
 	leftSensor = new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(left),mode,verbose);
 	rightSensor= new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(right),mode,verbose);
 
-	HUp.resize(4,4);	HUp.zero(); HUp=eye(4,4);
+	HUp.resize(4,4);	HUp.zero();
+	HUp(0,1)=-1.0;  // 0 -1  0
+    HUp(1,2)=-1.0;  // 0  0 -1 
+    HUp(2,0)= 1.0;  // 1  0  0
+    HUp(3,3)= 1.0;	
+
 	HLeft.resize(4,4);	HRight.resize(4,4);
-	
-	// left and right RBT have a common part
-	HLeft.zero();
-	HLeft(2,0)=-1.0;	HLeft(0,1)=-1.0;	
-	HLeft(2,2)=-1.0;	HLeft(3,3)=1.0;		
-	HRight = HLeft;
-	// left part
-	HLeft(0,3)=-0.1199;	HLeft(2,3)=0.0681;
-	// right part
-	HRight(0,3)=-0.1199;HRight(2,3)=-0.0681;
+	HLeft.zero();       HRight.zero();
+
+	HLeft(0,0)=1.0;			//  1  0  0
+	HLeft(1,2)=1.0;			//  0  0  1  
+	HLeft(2,1)=-1.0;		//  0 -1  0  
+	HLeft(3,3)=1.0;			//  
+	HLeft(2,3)=-0.1199;	HLeft(1,3)=-0.0681;
+
+	HRight(0,0)=1.0;		//  1  0  0
+	HRight(1,2)=1.0;		//  0  0  1  
+	HRight(2,1)=-1.0;		//  0 -1  0  
+	HRight(3,3)=1.0;		//  
+	HRight(2,3)=-0.1199;HRight(1,3)=0.0681;
 
 	// order: torso - right leg - left leg
 	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
@@ -2198,16 +2211,18 @@ void iCubLowerTorso::build()
 //====================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubWholeBody::iCubWholeBody(const NewEulMode mode, unsigned int verbose)
+iCubWholeBody::iCubWholeBody(const NewEulMode mode, unsigned int verbose, string _tag)
 {
 	//create all limbs
-	upperTorso = new iCubUpperTorso(mode,verbose);
-	lowerTorso = new iCubLowerTorso(mode,verbose);
+	tag = _tag;
+	upperTorso = new iCubUpperTorso(mode,verbose,tag);
+	lowerTorso = new iCubLowerTorso(mode,verbose,tag);
 	
 	//now create a connection between upperTorso node and Torso ( lowerTorso->up == Torso )
-	Matrix H(4,4); H.eye();
+	Matrix H(4,4);
+	H.eye();
+	//H  is no used currently since the transformation is an identity
 	rbt = new RigidBodyTransformation(lowerTorso->up,H,"connection between lower and upper torso",false,RBT_NODE_OUT,RBT_NODE_OUT,mode,verbose);
-
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubWholeBody::~iCubWholeBody()
@@ -2217,493 +2232,55 @@ iCubWholeBody::~iCubWholeBody()
 	if (rbt)        delete rbt;        rbt        = NULL;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iCubWholeBody::attachTorso()
+void iCubWholeBody::attachLowerTorso(const Vector &FM_right_leg, const Vector &FM_left_leg)
 {
-	// take the w,dw,ddp,F,Mu from upperTorso, apply the RBT, and set the 
-	// kinematic and wrench variables into the lowerTorso
-	//rbt->setKinematic(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+    Vector in_w   = upperTorso->getTorsoAngVel();
+	Vector in_dw  = upperTorso->getTorsoAngAcc();
+	Vector in_ddp = upperTorso->getTorsoLinAcc();
+	Vector in_F   = upperTorso->getTorsoForce();
+	Vector in_M   = upperTorso->getTorsoMoment();
 
-	lowerTorso->setKinematicMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+	Vector out_w;   out_w.resize(3);
+    Vector out_dw;  out_dw.resize(3);
+	Vector out_ddp; out_ddp.resize(3);
+	Vector out_F;   out_F.resize(3);
+	Vector out_M;   out_M.resize(3);
+    
+	//kinematics: 
+	out_w[0]= in_w[0];
+	out_w[1]= in_w[1];
+	out_w[2]= in_w[2];
 
-	//lowerTorso->setKinematicMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
-	// revision6047 lowerTorso->setInertialMeasure(upperTorso->getTorsoAngVel(),upperTorso->getTorsoAngAcc(),upperTorso->getTorsoLinAcc());
+	out_dw[0]= in_dw[0];
+	out_dw[1]= in_dw[1];
+	out_dw[2]= in_dw[2];
 
-	//rbt->setWrench(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());	
+	out_ddp[0]= in_ddp[0];
+	out_ddp[1]= in_ddp[1];
+	out_ddp[2]= in_ddp[2];
 
-	lowerTorso->up->initWrenchNewtonEuler(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+	//wrenches:
+	out_F[0]= in_F[0];
+	out_F[1]= in_F[1];
+	out_F[2]= in_F[2];
 
-	//lowerTorso->setWrenchMeasure(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
-	// revision 6047 lowerTorso->up->initWrenchNewtonEuler(upperTorso->getTorsoForce(),upperTorso->getTorsoMoment());
+	out_M[0]= in_M[0];
+	out_M[1]= in_M[1];
+	out_M[2]= in_M[2];
 
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubWholeBody::updateAll(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_head, 
-							  const Vector &FM_right_arm, const Vector &FM_left_arm,
-							  const Vector &FM_right_leg, const Vector &FM_left_leg)
-{
-	bool isOk = true;
-	isOk = isOk && upperTorso->update(w0,dw0,ddp0,FM_right_arm,FM_left_arm,FM_head);
-	attachTorso();
-	isOk = isOk && lowerTorso->update(FM_right_leg,FM_left_leg,NODE_AFTER_ATTACH);
-	return isOk;
-}
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-
-//====================================
-//
-//	     iCUB UPPER BODY   
-//
-//====================================
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubUpperBody::iCubUpperBody(const NewEulMode _mode, unsigned int verb)
-:iDynSensorNode("icub_upper_body",_mode,verb)
-{
-    build();
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iCubUpperBody::build()
-{
-	leftArm	    = new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
-	rightArm    = new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
-	head		= new iCubNeckInertialDyn(KINBWD_WREBWD);
-    torso       = new iCubTorsoDyn("lower",KINBWD_WREBWD);
-	
-	leftSensor = new iDynSensorArmNoTorso(leftArm,mode,verbose);
-	rightSensor= new iDynSensorArmNoTorso(rightArm,mode,verbose);
-
-    /// HHead: roto-translational matrix defining the head base frame with respect to the torso node
-    /// HLeft: roto-translational matrix defining the left arm base frame with respect to the torso node
-    /// HRight: roto-translational matrix defining the right arm base frame with respect to the torso node
-    /// HTorso: roto-translational matrix defining the torso base frame with respect to the torso node
-
-    Matrix HHead(4,4);	    HHead.eye();
-	Matrix HLeft(4,4);	    HLeft.zero();
-	Matrix HRight(4,4);	    HRight.zero();
-    Matrix HTorso(4,4);     HTorso.eye();
-    Matrix H0Torso(4,4);    H0Torso.zero();
-
-	double theta = CTRL_DEG2RAD * (180.0-15.0);
-	HLeft(0,0) = cos(theta);	HLeft(0,1) = 0.0;		HLeft(0,2) = sin(theta);	HLeft(0,3) = 0.003066;
-	HLeft(1,0) = 0.0;			HLeft(1,1) = 1.0;		HLeft(1,2) = 0.0;			HLeft(1,3) = -0.049999;
-	HLeft(2,0) = -sin(theta);	HLeft(2,1) = 0.0;		HLeft(2,2) = cos(theta);	HLeft(2,3) = -0.110261;
-	HLeft(3,3) = 1.0;	
-	HRight(0,0) = -cos(theta);	HRight(0,1) = 0.0;      HRight(0,2) = -sin(theta);	HRight(0,3) = 0.00294;
-	HRight(1,0) = 0.0;			HRight(1,1) = -1.0;     HRight(1,2) = 0.0;			HRight(1,3) = -0.050;
-	HRight(2,0) = -sin(theta);	HRight(2,1) = 0.0;	    HRight(2,2) = cos(theta);	HRight(2,3) = 0.10997;
-	HRight(3,3) = 1.0;
-    H0Torso(0,1)=-1.0;          H0Torso(1,2)=-1.0;      H0Torso(2,0)=1.0;           H0Torso(3,3)=1.0;
-
-    // by default, we set the H0 matrix of the torso limb to be coherent with
-    // the H0 in iCubArm (iKin) and iCubArmDyn (the iDyn version of iCubArm)
-    // the main reason is to armonize with iKin the computation of the jacobians
-	torso->setH0(H0Torso);
-
-	// order: head - right arm - left arm - torso
-	addLimb(head,       HHead,                  RBT_NODE_IN,    RBT_NODE_IN);
-	addLimb(rightArm,   HRight, rightSensor,    RBT_NODE_OUT,   RBT_NODE_IN);
-	addLimb(leftArm,    HLeft,  leftSensor,     RBT_NODE_OUT,   RBT_NODE_IN);
-    addLimb(torso,      HTorso,                 RBT_NODE_OUT,   RBT_NODE_OUT);
+	Vector FUP ;
+	Vector FLL ;
+	Vector FRL ;
+	FUP.resize(6);
+	FUP[0] = out_F[0];
+	FUP[1] = out_F[1];
+	FUP[2] = out_F[2];
+	FUP[3] = out_M[0];
+	FUP[4] = out_M[1];
+	FUP[5] = out_M[2];
+	lowerTorso->setKinematicMeasure(out_w,out_dw,out_ddp);
+	lowerTorso->setSensorMeasurement(FM_right_leg,FM_left_leg,FUP);
 
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubUpperBody::~iCubUpperBody()
-{
-	delete rightSensor; rightSensor = NULL;
-	delete leftSensor;	leftSensor = NULL;
-	delete head;		head = NULL;
-	delete rightArm;	rightArm = NULL;
-	delete leftArm;		leftArm = NULL;
-    delete torso;       torso = NULL;
-
-	rbtList.clear();
-	sensorList.clear();
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubUpperBody::setInertialMeasure(const Vector &w0, const Vector &dw0, const Vector &ddp0)
-{
-	return setKinematicMeasure(w0,dw0,ddp0);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubUpperBody::setSensorsWrenchMeasure(const Vector &FM_right, const Vector &FM_left, const Vector &FM_head)
-{
-	Matrix FM(6,3); FM.zero();
-    if((FM_right.length()==6)&&(FM_left.length()==6)&&FM_head.length()==6)
-	{
-        // order: head 0 - rightArm 1 - leftArm 2
-        // note that there's not the torso, because the torso wrench
-        // is set after the wrench phase in the node..
-        FM.setCol(0,FM_head);
-		FM.setCol(1,FM_right);
-		FM.setCol(2,FM_left);
-		return setWrenchMeasure(FM,false);
-	}
-	else
-	{
-		if(verbose)
-			fprintf(stderr,"iCubUpperBody could not set sensor measurements properly due to wrong sized vectors. FM head/right/left have lenght %d,%d,%d instead of 6,6. Setting everything to zero. \n",FM_head.length(),FM_right.length(),FM_left.length());
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubUpperBody::setH0(const string &limbType, const Matrix &H0)
-{
-    //setH0 already check the size of the input H0 and returns false if not 4x4
-    if(limbType=="head")			return head->setH0(H0);
-    else if(limbType=="left_arm")	return leftArm->setH0(H0);
-    else if(limbType=="right_arm")	return rightArm->setH0(H0);
-    else if(limbType=="torso")      return torso->setH0(H0);
-    else
-    {		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. ",limbType.c_str());
-	    return false;
-    }
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubUpperBody::update()
-{
-	bool isOk = true;
-	isOk = solveKinematics();
-	isOk = isOk && solveWrench();
-	return isOk;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_right, const Vector &FM_left, const Vector &FM_head)
-{
-	bool inputOk = true;
-
-	if((FM_right.length()==6)&&(FM_left.length()==6)&&(FM_head.length()==6)&&(w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
-	{
-		setInertialMeasure(w0,dw0,ddp0);
-		setSensorsWrenchMeasure(FM_right,FM_left,FM_head);
-		return update();
-	}
-	else
-	{
-		if(verbose)
-        { 
-            fprintf(stderr,"iCubUpperBody: error, could not update() due to wrong sized vectors. ");
-			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
-			fprintf(stderr," FM head,right/left arm have size %d,%d,%d instead of 6,6,6. ",FM_head.length(),FM_right.length(),FM_left.length());
-			fprintf(stderr," Updating without new values.\n");
-        }
-		update();
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubUpperBody::update(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &FM_right, const Vector &FM_left)
-{
-	bool inputOk = true;
-
-	if((FM_right.length()==6)&&(FM_left.length()==6)&&(w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
-	{
-        Vector FM_head(6); FM_head.zero();
-		setInertialMeasure(w0,dw0,ddp0);
-		setSensorsWrenchMeasure(FM_right,FM_left,FM_head);
-		return update();
-	}
-	else
-	{
-		if(verbose)
-        {
-            fprintf(stderr,"iCubUpperBody: error, could not update() due to wrong sized vectors. ");
-			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3. ",w0.length(),dw0.length(),ddp0.length());
-			fprintf(stderr," FM right/left arm have size %d,%d instead of 6,6. ",FM_right.length(),FM_left.length());
-			fprintf(stderr," Updating without new values.\n");
-        }
-		update();
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	//----------------
-	//      GET
-	//----------------
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iCubUpperBody::getForces(const string &limbType)
-{
-	if(limbType=="head")				return head->getForces();
-	else if(limbType=="left_arm")		return leftArm->getForces();
-	else if(limbType=="right_arm")		return rightArm->getForces();
-    else if(limbType=="torso")          return torso->getForces();
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Matrix(0,0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iCubUpperBody::getMoments(const string &limbType)
-{
-	if(limbType=="head")			return head->getMoments();
-	else if(limbType=="left_arm")	return leftArm->getMoments();
-	else if(limbType=="right_arm")	return rightArm->getMoments();
-	else if(limbType=="torso")      return torso->getMoments();
-    else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Matrix(0,0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getTorques(const string &limbType)
-{
-	if(limbType=="head")			return head->getTorques();
-	else if(limbType=="left_arm")	return leftArm->getTorques();
-	else if(limbType=="right_arm")	return rightArm->getTorques();
-	else if(limbType=="torso")      return torso->getTorques();
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Vector(0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getNodeForce() const  {return F;}	
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getNodeMoment() const {return Mu;}	
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getNodeAngVel() const {return w;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getNodeAngAcc() const {return dw;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getNodeLinAcc() const {return ddp;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	//------------------
-	//    LIMB CALLS
-	//------------------
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::setAng(const string &limbType, const Vector &_q)
-{
-	if(limbType=="head")			return head->setAng(_q);
-	else if(limbType=="left_arm")	return leftArm->setAng(_q);
-	else if(limbType=="right_arm")	return rightArm->setAng(_q);
-	else if(limbType=="torso")      return torso->setAng(_q);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Vector(0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getAng(const string &limbType)
-{
-	if(limbType=="head")			return head->getAng();
-	else if(limbType=="left_arm")	return leftArm->getAng();
-	else if(limbType=="right_arm")	return rightArm->getAng();
-	else if(limbType=="torso")      return torso->getAng();
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Vector(0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iCubUpperBody::setAng(const string &limbType, const unsigned int i, double _q)
-{
-	if(limbType=="head")			return head->setAng(i,_q);
-	else if(limbType=="left_arm")	return leftArm->setAng(i,_q);
-	else if(limbType=="right_arm")	return rightArm->setAng(i,_q);
-	else if(limbType=="torso")      return torso->setAng(i,_q);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0.0;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iCubUpperBody::getAng(const string &limbType, const unsigned int i)
-{
-	if(limbType=="head")			return head->getAng(i);
-	else if(limbType=="left_arm")	return leftArm->getAng(i);
-	else if(limbType=="right_arm")	return rightArm->getAng(i);
-	else if(limbType=="torso")      return torso->getAng(i);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0.0;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::setDAng(const string &limbType, const Vector &_dq)
-{
-	if(limbType=="head")			return head->setDAng(_dq);
-	else if(limbType=="left_arm")	return leftArm->setDAng(_dq);
-	else if(limbType=="right_arm")	return rightArm->setDAng(_dq);
-	else if(limbType=="torso")      return torso->setDAng(_dq);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Vector(0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getDAng(const string &limbType)
-{
-	if(limbType=="head")			return head->getDAng();
-	else if(limbType=="left_arm")	return leftArm->getDAng();
-	else if(limbType=="right_arm")	return rightArm->getDAng();
-	else if(limbType=="torso")      return torso->getDAng();
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Vector(0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iCubUpperBody::setDAng(const string &limbType, const unsigned int i, double _dq)
-{
-	if(limbType=="head")			return head->setDAng(i,_dq);
-	else if(limbType=="left_arm")	return leftArm->setDAng(i,_dq);
-	else if(limbType=="right_arm")	return rightArm->setDAng(i,_dq);
-	else if(limbType=="torso")      return torso->setDAng(i,_dq);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0.0;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iCubUpperBody::getDAng(const string &limbType, const unsigned int i)    
-{
-	if(limbType=="head")			return head->getDAng(i);
-	else if(limbType=="left_arm")	return leftArm->getDAng(i);
-	else if(limbType=="right_arm")	return rightArm->getDAng(i);
-	else if(limbType=="torso")      return torso->getDAng(i);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0.0;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::setD2Ang(const string &limbType, const Vector &_ddq)
-{
-	if(limbType=="head")			return head->setD2Ang(_ddq);
-	else if(limbType=="left_arm")	return leftArm->setD2Ang(_ddq);
-	else if(limbType=="right_arm")	return rightArm->setD2Ang(_ddq);
-	else if(limbType=="torso")      return torso->setD2Ang(_ddq);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Vector(0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::getD2Ang(const string &limbType)
-{
-	if(limbType=="head")			return head->getD2Ang();
-	else if(limbType=="left_arm")	return leftArm->getD2Ang();
-	else if(limbType=="right_arm")	return rightArm->getD2Ang();
-	else if(limbType=="torso")      return torso->getD2Ang();
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return Vector(0);
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iCubUpperBody::setD2Ang(const string &limbType, const unsigned int i, double _ddq)
-{
-	if(limbType=="head")			return head->setD2Ang(i,_ddq);
-	else if(limbType=="left_arm")	return leftArm->setD2Ang(i,_ddq);
-	else if(limbType=="right_arm")	return rightArm->setD2Ang(i,_ddq);
-	else if(limbType=="torso")      return torso->setD2Ang(i,_ddq);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0.0;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iCubUpperBody::getD2Ang(const string &limbType, const unsigned int i)
-{
-	if(limbType=="head")			return head->getD2Ang(i);
-	else if(limbType=="left_arm")	return leftArm->getD2Ang(i);
-	else if(limbType=="right_arm")	return rightArm->getD2Ang(i);
-	else if(limbType=="torso")      return torso->getD2Ang(i);
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0.0;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-unsigned int iCubUpperBody::setJoints(const string &limbType, const Vector &_q, const Vector &_dq, const Vector &_ddq)
-{
-    Vector qchange = _q;
-    if(limbType=="head")			{head->setD2Ang(_ddq); head->setDAng(_dq); qchange = head->setAng(_q);}
-    else if(limbType=="left_arm")	{leftArm->setD2Ang(_ddq); leftArm->setDAng(_dq); qchange = leftArm->setAng(_q);}
-    else if(limbType=="right_arm")	{rightArm->setD2Ang(_ddq); rightArm->setDAng(_dq); qchange = rightArm->setAng(_q);}
-    else if(limbType=="torso")      {torso->setD2Ang(_ddq); torso->setDAng(_dq); qchange = torso->setAng(_q);}
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0;
-	}
-    if(qchange==_q)
-        return 1;
-    else
-        return 2;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-unsigned int iCubUpperBody::getNLinks(const string &limbType) const
-{
-	if(limbType=="head")			return head->getN();
-	else if(limbType=="left_arm")	return leftArm->getN();
-	else if(limbType=="right_arm")	return rightArm->getN();
-	else if(limbType=="torso")      return torso->getN();
-	else
-	{		
-        if(verbose)	fprintf(stderr,"iCubUpperBody: error there's not a limb named %s. Only 'head','right_arm','left_arm','torso' are available. \n",limbType.c_str());
-		return 0;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iCubUpperBody::estimateSensorsWrench(const Matrix &FM, bool afterAttach) 
-{ 
-    return iDynSensorNode::estimateSensorsWrench(FM,afterAttach); 
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-    //------------------
-    //    JACOBIANS
-    //------------------
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iCubUpperBody::Jacobian_TorsoHead()			        {	return computeJacobian(3,JAC_KIN, 0,JAC_KIN);	}
-Matrix iCubUpperBody::Jacobian_TorsoArmRight()		        {	return computeJacobian(3,JAC_KIN, 1,JAC_KIN);	}
-Matrix iCubUpperBody::Jacobian_TorsoArmLeft()		        {	return computeJacobian(3,JAC_KIN, 2,JAC_KIN);	}
-Matrix iCubUpperBody::Jacobian_HeadArmRight()		        {	return computeJacobian(0,JAC_IKIN,1,JAC_KIN);	}
-Matrix iCubUpperBody::Jacobian_HeadArmLeft()		        {	return computeJacobian(0,JAC_IKIN,2,JAC_KIN);	}
-Matrix iCubUpperBody::Jacobian_HeadTorso()			        {	return computeJacobian(0,JAC_IKIN,3,JAC_IKIN);	}
-Matrix iCubUpperBody::Jacobian_ArmLeftArmRight()	        {	return computeJacobian(2,JAC_IKIN,1,JAC_KIN);	}
-Matrix iCubUpperBody::Jacobian_ArmRightArmLeft()	        {	return computeJacobian(1,JAC_IKIN,2,JAC_KIN);	}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iCubUpperBody::Pose_TorsoHead(bool axisRep)			{	return computePose(3,JAC_KIN, 0,JAC_KIN, axisRep);	}
-Vector iCubUpperBody::Pose_TorsoArmRight(bool axisRep) 	    {	return computePose(3,JAC_KIN, 1,JAC_KIN, axisRep);	}		
-Vector iCubUpperBody::Pose_TorsoArmLeft(bool axisRep)		{	return computePose(3,JAC_KIN, 2,JAC_KIN, axisRep);	}
-Vector iCubUpperBody::Pose_HeadArmRight(bool axisRep)		{	return computePose(0,JAC_IKIN,1,JAC_KIN, axisRep);	}		
-Vector iCubUpperBody::Pose_HeadArmLeft(bool axisRep)		{	return computePose(0,JAC_IKIN,2,JAC_KIN, axisRep);	}
-Vector iCubUpperBody::Pose_HeadTorso(bool axisRep)			{	return computePose(0,JAC_IKIN,3,JAC_IKIN,axisRep);	}
-Vector iCubUpperBody::Pose_ArmLeftArmRight(bool axisRep)	{	return computePose(2,JAC_IKIN,1,JAC_KIN, axisRep);	}
-Vector iCubUpperBody::Pose_ArmRightArmLeft(bool axisRep)	{	return computePose(1,JAC_IKIN,2,JAC_KIN, axisRep);	}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-
-

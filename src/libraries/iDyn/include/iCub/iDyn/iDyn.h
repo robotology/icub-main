@@ -1356,120 +1356,6 @@ public:
 /**
 * \ingroup iDyn
 *
-* A class for defining the 5-DOF iCub Eye
-*/
-class iCubEyeDyn : public iDynLimb
-{
-protected:
-    virtual void allocate(const std::string &_type);
-
-public:
-    /**
-    * Default constructor. 
-    */
-    iCubEyeDyn();
-
-    /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
-    *              "right" eye
-    */
-    iCubEyeDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
-
-    /**
-    * Creates a new Eye from an already existing Eye object.
-    * @param eye is the Eye to be copied.
-    */
-    iCubEyeDyn(const iCubEyeDyn &eye);
-
-    /**
-    * Alignes the Eye joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
-    *            allows to access the Torso and the Head limits.
-    * @return true/false on success/failure. 
-    */
-    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
-
-};
-
-
-/**
-* \ingroup iDyn
-*
-* A class for defining the 5-DOF iCub Eye with the root 
-* reference frame attached to the neck. 
-*/
-class iCubEyeNeckRefDyn : public iCubEyeDyn
-{
-protected:
-    virtual void allocate(const std::string &_type);
-
-public:
-    /**
-    * Default constructor. 
-    */
-    iCubEyeNeckRefDyn();
-
-    /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and "right" eye
-    */
-    iCubEyeNeckRefDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
-
-    /**
-    * Creates a new Eye from an already existing Eye object.
-    * @param eye is the Eye to be copied.
-    */
-    iCubEyeNeckRefDyn(const iCubEyeNeckRefDyn &eye);
-
-	/**
-    * Alignes the Eye joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
-    *            allows to access the Torso and the Head limits.
-    * @return true/false on success/failure. 
-    */
-    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
-};
-
-
-/**
-* \ingroup iDyn
-*
-* A class for defining the 6-DOF Inertia Sensor Kinematics
-*/
-class iCubInertialSensorDyn : public iDynLimb
-{
-protected:
-    virtual void allocate(const std::string &_type);
-
-public:
-    /**
-    * Default constructor. 
-    */
-    iCubInertialSensorDyn(const ChainComputationMode _mode=KINBWD_WREBWD);
-
-    /**
-    * Creates a new Inertial Sensor from an already existing object.
-    * @param sensor is the object to be copied.
-    */
-    iCubInertialSensorDyn(const iCubInertialSensorDyn &sensor);
-
-    /**
-    * Alignes the Inertial Sensor joints bounds with current values 
-    * set aboard the iCub. 
-    * @param lim is the ordered list of control interfaces that 
-    *            allows to access the Torso and the Head limits.
-    * @return true/false on success/failure. 
-    */
-    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
-
-};
-
-/**
-* \ingroup iDyn
-*
 * A class for defining the 3-DOF Inertia Sensor Kinematics
 */
 class iCubNeckInertialDyn : public iDynLimb
@@ -1487,7 +1373,40 @@ public:
     * Creates a new Inertial Sensor from an already existing object.
     * @param sensor is the object to be copied.
     */
-    iCubNeckInertialDyn(const iCubInertialSensorDyn &sensor);
+    iCubNeckInertialDyn(const iCubNeckInertialDyn &sensor);
+
+    /**
+    * Alignes the Inertial Sensor joints bounds with current values 
+    * set aboard the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the limb limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
+};
+
+/**
+* \ingroup iDyn
+*
+* A class for defining the 3-DOF Inertia Sensor Kinematics (V2 HEAD)
+*/
+class iCubNeckInertialDynV2 : public iDynLimb
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubNeckInertialDynV2(const ChainComputationMode _mode=KINBWD_WREBWD);
+
+    /**
+    * Creates a new Inertial Sensor from an already existing object.
+    * @param sensor is the object to be copied.
+    */
+    iCubNeckInertialDynV2(const iCubNeckInertialDynV2 &sensor);
 
     /**
     * Alignes the Inertial Sensor joints bounds with current values 

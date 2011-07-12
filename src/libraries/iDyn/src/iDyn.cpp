@@ -1876,8 +1876,6 @@ iCubTorsoDyn::iCubTorsoDyn(const iCubTorsoDyn &torso)
 void iCubTorsoDyn::allocate(const string &_type)
 {
 	type = _type;
-	if(type!="lower" && type!="upper")
-		type = "lower";
 
     // note: H0 here is an identity, whereas in iCubArm and iCubArmDyn is different (0 -1 00; 00 -1 0; 1 000; 0001 by row)
     // the reason is that the torso limb is cursed, and its H0 is different if we consider it a standalone limb attached
@@ -1888,20 +1886,18 @@ void iCubTorsoDyn::allocate(const string &_type)
 	H0.eye();
 	setH0(H0);
 
-    if (getType()=="lower")
-    {
-        //      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
-        pushLink(new iDynLink(0,	0,	0,  0,		0,0,0,  0,0,0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
-		pushLink(new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
-		pushLink(new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
-    }
-    else // "upper"
-    { 
-        //      iDynLink(     mass,  rC (3x1),      I(6x1),					A,         D,       alfa,            offset,         min,               max);
-        pushLink(new iDynLink(0,	0,	0,  0,		0,0,0,  0,0,0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
-		pushLink(new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
-		pushLink(new iDynLink(0,	0,	0,	0,		0,0,0,  0,0,0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
-    }
+    //           iDynLink(   mass,					 rC (3x1),					  I(6x1),													                 A,          D,         alfa,     offset,                   min,               max);
+#define TORSO_NO_WEIGHT
+#ifdef TORSO_NO_WEIGHT
+	pushLink(new iDynLink(0.00e-3,	  0.000e-3,  0.000e-3,  0.000e-3,		0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,	    32.0e-3,         0,	    M_PI/2.0,		 0.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0.00e-3,	  0.000e-3,  0.000e-3,  0.000e-3, 	    0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   	      0,   -5.5e-3,		M_PI/2.0,  -M_PI/2.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0.00e-3,	  0.000e-3,  0.000e-3,  0.000e-3,	    0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,		2.31e-3, -193.3e-3,	   -M_PI/2.0,  -M_PI/2.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+#else
+	pushLink(new iDynLink(7.79e-1,	  3.120e-2,	 6.300e-4,  -9.758e-7,		4.544e-4,  -4.263e-5,  -3.889e-8,   1.141e-3,   0.000e-0,   1.236e-3,		32.0e-3,         0,     M_PI/2.0,        0.0,	 -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
+	pushLink(new iDynLink(5.77e-1,	  4.265e-2,	+4.296e-5,	-1.360e-3,		5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,		      0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,	 -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
+	pushLink(new iDynLink(4.81e+0,	 -8.102e-5,  7.905e-3,	-1.183e-1,		7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,		2.31e-3, -193.3e-3,	   -M_PI/2.0,  -M_PI/2.0,	 -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
+#endif  
+
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
@@ -1963,36 +1959,56 @@ void iCubLegDyn::allocate(const string &_type)
 
 	Matrix H0(4,4);
     H0.eye();		
-	H0(2,3)=-0.1199;
-
+	setH0(H0);
+	
+#ifdef  LEGS_NO_WEIGHT
     if(getType()=="right")
     {
-        H0(1,3)=0.0681;
-
-		//create iDynLink from parameters calling
+    	//create iDynLink from parameters calling
 		//pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
-
-        pushLink(new iDynLink(0.754,         -0.0782,  -0.00637,  -0.00093,				0,			0,			0,			0,			0,			0,									   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -44.0*CTRL_DEG2RAD,      132.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0.526,         0.00296,  -0.00072,	  0.03045,				0,			0,			0,			0,			0,			0,									   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -17.0*CTRL_DEG2RAD,  119.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(2.175,         0.00144,   0.06417,	  0.00039,				0,			0,			0,			0,			0,			0,									   0.0,		 0.2236,   -M_PI/2.0,	-M_PI/2.0,  -79.0*CTRL_DEG2RAD,   79.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(1.264,          0.1059,   0.00182,	 -0.00211,			  0.0,		  0.0,		  0.0,		  0.0,		  0.0,		  0.0,									-0.213,			0.0,		M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,   23.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0.746,         -0.0054,   0.00163,   -0.0172,				0,			0,			0,			0,			0,			0,									   0.0,			0.0,	M_PI/2.0,		  0.0,  -42.0*CTRL_DEG2RAD,       21.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0,					  0,		 0,			0,				0,			0,			0,			0,			0,			0,									-0.041,			0.0,		M_PI,		  0.0,  -24.0*CTRL_DEG2RAD,   24.0*CTRL_DEG2RAD));
+		//                    m            rcx        rcy        rcZ               I1          I2          I3          I4          I5          I6          A            D          alpha     offset                   
+        pushLink(new iDynLink(0,         -0.0782,  -0.00637,  -0.00093,				0,			0,			0,			0,			0,			0,		   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -44.0*CTRL_DEG2RAD,  132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,         0.00296,  -0.00072,   0.03045,				0,			0,			0,			0,			0,			0,		   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -17.0*CTRL_DEG2RAD,  119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,         0.00144,   0.06417,   0.00039,				0,			0,			0,			0,			0,			0,		   0.0,		 0.2236,   -M_PI/2.0,	-M_PI/2.0,  -79.0*CTRL_DEG2RAD,   79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,          0.1059,   0.00182,  -0.00211,			    0,		    0,		    0,		    0,		    0,		    0,		-0.213,			0.0,		M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,   23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,         -0.0054,   0.00163,   -0.0172,				0,			0,			0,			0,			0,			0,		   0.0,			0.0,	M_PI/2.0,		  0.0,  -42.0*CTRL_DEG2RAD,   21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,			   0,		  0,  		 0,				0,			0,			0,			0,			0,			0,		-0.041,			0.0,		M_PI,		  0.0,  -24.0*CTRL_DEG2RAD,   24.0*CTRL_DEG2RAD));
 
 	}
     else
     {
-        H0(1,3)=-0.0681;
-
-        pushLink(new iDynLink(0.754,         -0.0782, -0.00637,   0.00093,	 471.076e-6,     2.059e-6,     1.451e-6,      346.478e-6,        1.545e-6,       510.315e-6,				   0.0,			0.0,   -M_PI/2.0,	M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0.526,         0.00296, -0.00072, -0.03045,	738.0487e-6,	-0.074e-6,    -0.062e-6,      561.583e-6,       10.835e-6,       294.119e-6,				   0.0,			0.0,   -M_PI/2.0,   M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(2.175,         0.00144,  0.06417,	-0.00039,	7591.073e-6,   -67.260e-6,     2.267e-6,    1423.0245e-6,    36.372582e-6,		7553.8490e-6,				   0.0,		-0.2236,	M_PI/2.0,  -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(1.264,          0.1059,  0.00182,	 0.00211,	 998.950e-6,  -185.699e-6,   -63.147e-6,     4450.537e-6,        0.786e-6,		 4207.657e-6,				-0.213,			0.0,		M_PI,   M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0.746,         -0.0054,  0.00163,    0.0172,    633.230e-6,	-7.081e-6,	  41.421e-6,	   687.760e-6,		 20.817e-6,		  313.897e-6,				   0.0,			0.0,   -M_PI/2.0,        0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0,					  0,		0,		   0,			  0,			0,			   0,				0,				 0,				   0,				-0.041,			0.0,         0.0,        0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,         -0.0782, -0.00637,    0.00093,	   471.076e-6,   2.059e-6,   1.451e-6,  346.478e-6,   1.545e-6,510.315e-6,		   0.0,			0.0,   -M_PI/2.0,	M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,         0.00296, -0.00072,   -0.03045,	  738.0487e-6,  -0.074e-6,  -0.062e-6,  561.583e-6,  10.835e-6,294.119e-6,		   0.0,			0.0,   -M_PI/2.0,   M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,         0.00144,  0.06417,	  -0.00039,	  7591.073e-6, -67.260e-6,   2.267e-6,1423.0245e-6,36.37582e-6,7553.84e-6,		   0.0,		-0.2236,	M_PI/2.0,  -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,          0.1059,  0.00182,	   0.00211,    998.950e-6,-185.699e-6, -63.147e-6, 4450.537e-6,   0.786e-6,4207.65e-6,		-0.213,			0.0,		M_PI,   M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,         -0.0054,  0.00163,     0.0172,    633.230e-6,	-7.081e-6,  41.421e-6,  687.760e-6,  20.817e-6, 313.89e-6,		   0.0,			0.0,   -M_PI/2.0,        0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,			   0,		 0,	 	     0,		  	    0,			0,	        0, 			 0,			 0,		    0,		-0.041,			0.0,         0.0,        0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
     }
+#else
+    if(getType()=="right")
+    {
+		//create iDynLink from parameters calling
+		//pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
 
-	setH0(H0);
+        pushLink(new iDynLink(0.754,      -0.0782,  -0.00637, -0.00093,				0,			0,			0,			0,			0,			0,		   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.526,      0.00296,  -0.00072,  0.03045,				0,			0,			0,			0,			0,			0,		   0.0,			0.0,	M_PI/2.0,	 M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(2.175,      0.00144,   0.06417,  0.00039,				0,			0,			0,			0,			0,			0,		   0.0,		 0.2236,   -M_PI/2.0,	-M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(1.264,       0.1059,   0.00182, -0.00211,			  0.0,		  0.0,		  0.0,		  0.0,		  0.0,		  0.0,		-0.213,			0.0,		M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.746,      -0.0054,   0.00163,  -0.0172,				0,			0,			0,			0,			0,			0,		   0.0,			0.0,	M_PI/2.0,		  0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,		  	    0,		   0,	 	 0,				0,			0,			0,			0,			0,			0,		-0.041,			0.0,		M_PI,		  0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+
+	}
+    else
+    {
+        pushLink(new iDynLink(0.754,      -0.0782, -0.00637,   0.00093,     471.076e-6,   2.059e-6,  1.451e-6,  346.478e-6,   1.545e-6, 510.315e-6,		   0.0,			0.0,   -M_PI/2.0,	M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.526,      0.00296, -0.00072,  -0.03045,    738.0487e-6,	 -0.074e-6, -0.062e-6,  561.583e-6,  10.835e-6, 294.119e-6,		   0.0,			0.0,   -M_PI/2.0,   M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(2.175,      0.00144,  0.06417,  -0.00039,    7591.073e-6, -67.260e-6,  2.267e-6,1423.0245e-6,36.37258e-6,7553.849e-6,		   0.0,		-0.2236,	M_PI/2.0,  -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(1.264,       0.1059,  0.00182,   0.00211,     998.950e-6,-185.699e-6,-63.147e-6, 4450.537e-6,   0.786e-6,4207.657e-6,		-0.213,			0.0,		M_PI,   M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.746,      -0.0054,  0.00163,    0.0172,     633.230e-6,	 -7.081e-6, 41.421e-6,  687.760e-6,	 20.817e-6, 313.897e-6,		   0.0,			0.0,   -M_PI/2.0,        0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,	 	 	    0,		  0,   	     0, 	    	 0,			 0,	 	    0,		     0,  		 0, 		 0,		-0.041,			0.0,         0.0,        0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+    }
+#endif
+
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubLegDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
@@ -2018,311 +2034,6 @@ bool iCubLegDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-
-
-//======================================
-//
-//	    ICUB LEG NO TORSO DYN
-//
-//======================================
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-iCubLegNoTorsoDyn::iCubLegNoTorsoDyn()
-:iCubLegDyn()
-{
-	H0.zero();	H0.eye();	H0(2,3)=-0.1199;
-	if(type=="right")
-        H0(1,3)=0.0681;
-	else
-        H0(1,3)=-0.0681;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubLegNoTorsoDyn::iCubLegNoTorsoDyn(const string &_type,const ChainComputationMode _mode)
-:iCubLegDyn(_type,_mode)
-{
-	H0.zero();	H0.eye();	H0(2,3)=-0.1199;
-	if(type=="right")
-        H0(1,3)=0.0681;
-	else
-        H0(1,3)=-0.0681;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubLegNoTorsoDyn::iCubLegNoTorsoDyn(const iCubLegNoTorsoDyn &leg)
-{
-    clone(leg);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-
-
-//======================================
-//
-//			  ICUB EYE DYN
-//
-//======================================
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeDyn::iCubEyeDyn()
-{
-    allocate("right");
-	setIterMode(KINFWD_WREBWD);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeDyn::iCubEyeDyn(const string &_type,const ChainComputationMode _mode)
-{
-    allocate(_type);
-	setIterMode(_mode);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeDyn::iCubEyeDyn(const iCubEyeDyn &eye)
-{
-    clone(eye);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iCubEyeDyn::allocate(const string &_type)
-{
-    iDynLimb::allocate(_type);
-
-	Matrix H0(4,4);
-    H0.zero();
-    H0(0,1)=-1.0;
-    H0(1,2)=-1.0;
-    H0(2,0)=1.0;
-    H0(3,3)=1.0;
-	setH0(H0);
-
-	//dynamical parameters: inertia and COM are matrices, they must be initialized before
-	// mass
-	Vector m(8); m=0.0;
-	// inertia and COM
-	deque<Matrix> HC;  
-	deque<Matrix> I; 
-	Matrix HCtmp(4,4); HCtmp.eye();
-	Matrix Itmp(3,3); Itmp.zero();
-	for(int i=0;i<8; i++)
-	{
-		HC.push_back(HCtmp);
-		I.push_back(Itmp);
-	}
-
-    if(getType()=="right")
-    {
-		//create iDynLink from parameters calling
-		//pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
-
-        pushLink(new iDynLink(m[0],	HC[0],	I[0],   0.032,    0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[1],	HC[1],	I[1],     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[2],	HC[2],	I[2], 0.00231,-0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[3],	HC[3],	I[3],   0.033,    0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[4],	HC[4],	I[4],     0.0,    0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[5],	HC[5],	I[5],  -0.054, 0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[6],	HC[6],	I[6],     0.0,  0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[7],	HC[7],	I[7],     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
-    }
-    else
-    {
-
-        pushLink(new iDynLink(m[0],	HC[0],	I[0],   0.032,    0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[1],	HC[1],	I[1],     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[2],	HC[2],	I[2], 0.00231,-0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[3],	HC[3],	I[3],   0.033,    0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[4],	HC[4],	I[4],     0.0,    0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[5],	HC[5],	I[5],  -0.054, 0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[6],	HC[6],	I[6],     0.0, -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(m[7],	HC[7],	I[7],     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
-    }
-
-    blockLink(0,0.0);
-    blockLink(1,0.0);
-    blockLink(2,0.0);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubEyeDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
-{
-    if (lim.size()<2)
-        return false;
-
-    IControlLimits &limTorso=*lim[0];
-    IControlLimits &limHead =*lim[1];
-
-    unsigned int iTorso;
-    unsigned int iHead;
-    double min, max;
-
-    for (iTorso=0; iTorso<3; iTorso++)
-    {   
-        if (!limTorso.getLimits(iTorso,&min,&max))
-            return false;
-
-        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
-        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
-    }
-
-    for (iHead=0; iHead<getN()-iTorso; iHead++)
-    {   
-        if (!limHead.getLimits(iHead,&min,&max))
-            return false;
-
-        (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);
-        (*this)[iTorso+iHead].setMax(CTRL_DEG2RAD*max);
-    }
-
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-//======================================
-//
-//		ICUB EYE NECK REF DYN   
-//         
-//======================================
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeNeckRefDyn::iCubEyeNeckRefDyn()
-{
-    allocate("right");
-	setIterMode(KINFWD_WREBWD);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeNeckRefDyn::iCubEyeNeckRefDyn(const string &_type,const ChainComputationMode _mode)
-{
-    allocate(_type);
-	setIterMode(_mode);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubEyeNeckRefDyn::iCubEyeNeckRefDyn(const iCubEyeNeckRefDyn &eye)
-{
-    clone(eye);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iCubEyeNeckRefDyn::allocate(const string &_type)
-{
-    rmLink(0);
-    rmLink(0);
-    rmLink(0);
-
-    delete linkList[0];
-    delete linkList[1];
-    delete linkList[2];
-
-    linkList.erase(linkList.begin(),linkList.begin()+2);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubEyeNeckRefDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
-{
-    if (lim.size()<1)
-        return false;
-
-    IControlLimits &limHead =*lim[0];
-
-    unsigned int iHead;
-    double min, max;
-
-    for (iHead=0; iHead<getN(); iHead++)
-    {   
-        if (!limHead.getLimits(iHead,&min,&max))
-            return false;
-
-        (*this)[iHead].setMin(CTRL_DEG2RAD*min);
-        (*this)[iHead].setMax(CTRL_DEG2RAD*max);
-    }
-
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-////////////////////////////////////////
-//		ICUB INERTIAL SENSOR DYN            
-////////////////////////////////////////
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubInertialSensorDyn::iCubInertialSensorDyn(const ChainComputationMode _mode)
-{
-    allocate("right");
-	setIterMode(_mode);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubInertialSensorDyn::iCubInertialSensorDyn(const iCubInertialSensorDyn &sensor)
-{
-    clone(sensor);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iCubInertialSensorDyn::allocate(const string &_type)
-{
-    iDynLimb::allocate(_type);
-
-	Matrix H0(4,4);
-    H0.zero();
-    H0(0,1)=-1.0;
-    H0(1,2)=-1.0;
-    H0(2,0)=1.0;
-    H0(3,3)=1.0;
-	setH0(H0);
-
-    // links of torso and neck
-    pushLink(new iDynLink(0,							  0,		     0,		         0,					    0,				  0,				   0,			 0,				 0,				0,		  0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(0,							  0,		     0,		         0,					    0,				  0,				   0,			 0,				 0,				0,			0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(0,							  0,		     0,		         0,			       	    0,			  	  0,				   0,			 0,				 0,				0,		0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(0.27017604,	  -30.535917e-3,  2.5211768e-3, -0.23571261e-3, 	     100.46346e-6,   -0.17765781e-6,       0.44914333e-6, 45.425961e-6, -0.12682862e-6, 1.0145446e+02,		  0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD,     30.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(0.27230552,				0.0,  4.3752947e-3,   5.4544215e-3, 	     142.82339e-6, -0.0059261471e-6,    -0.0022006663e-6, 82.884917e-6,  -9.1321119e-6,  87.620338e-6,          0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD,     60.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(0,							  0,		     0,		         0,					    0,				  0,				   0,			 0,				 0,				0,		 0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
-
-    // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
-    pushLink(new iDynLink(1.3368659,		  -11.811104e-3, -5.7800518e-3,  -11.685197e-3,			3412.8918e-06,  66.297315e-6, -153.07583e-6, 4693.0882e-6,  8.0646052e-6, 4153.4285e-6, 0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
-
-    blockLink(6,0.0);
-
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubInertialSensorDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
-{
-    if (lim.size()<2)
-        return false;
-
-    IControlLimits &limTorso=*lim[0];
-    IControlLimits &limHead =*lim[1];
-
-    unsigned int iTorso;
-    unsigned int iHead;
-    double min, max;
-
-	// reverse torso joints as usual
-    for (iTorso=0; iTorso<3; iTorso++)
-    {   
-        if (!limTorso.getLimits(iTorso,&min,&max))
-            return false;
-
-        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
-        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
-    }
-
-    // only the neck: not the virtual link
-    for (iHead=0; iHead<3; iHead++)
-    {   
-        if (!limHead.getLimits(iHead,&min,&max))
-            return false;
-
-        (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);
-        (*this)[iTorso+iHead].setMax(CTRL_DEG2RAD*max);
-    }
-
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
 ////////////////////////////////////////
 //		ICUB INERTIAL SENSOR DYN            
 ////////////////////////////////////////
@@ -2334,7 +2045,7 @@ iCubNeckInertialDyn::iCubNeckInertialDyn(const ChainComputationMode _mode)
 	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubNeckInertialDyn::iCubNeckInertialDyn(const iCubInertialSensorDyn &sensor)
+iCubNeckInertialDyn::iCubNeckInertialDyn(const iCubNeckInertialDyn &sensor)
 {
     clone(sensor);
 }
@@ -2383,5 +2094,64 @@ bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+////////////////////////////////////////
+//		ICUB INERTIAL SENSOR DYN V2          
+////////////////////////////////////////
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubNeckInertialDynV2::iCubNeckInertialDynV2(const ChainComputationMode _mode)
+{
+    allocate("right");
+	setIterMode(_mode);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubNeckInertialDynV2::iCubNeckInertialDynV2(const iCubNeckInertialDynV2 &sensor)
+{
+    clone(sensor);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iCubNeckInertialDynV2::allocate(const string &_type)
+{
+    iDynLimb::allocate(_type);
+
+	Matrix H0(4,4);
+    H0.eye();
+	setH0(H0);
+
+	//sorry: mass and dynamic parameters have still to be calculated for the V2 head
+	pushLink(new iDynLink(0,  0,0,0,  0,0,0,0,0,0,      0.0095,  0.0,	  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0,  0,0,0,  0,0,0,0,0,0,      0.0,     0.0,	 -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0,  0,0,0,  0,0,0,0,0,0,      0.0185,  0.1108, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
+
+	// NOTE: VERIFY THE DYNAMIC PARAMETERS OF THE HEAD WRITTEN BELOW 
+    // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
+    pushLink(new iDynLink(1.3368659,		  -11.811104e-3, -5.7800518e-3,  -11.685197e-3,			3412.8918e-06,  66.297315e-6, -153.07583e-6, 4693.0882e-6,  8.0646052e-6, 4153.4285e-6, 0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
+
+    blockLink(3,0.0);
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubNeckInertialDynV2::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<1)
+        return false;
+
+    IControlLimits &limHead =*lim[0];
+
+    unsigned int iHead;
+    double min, max;
+
+    // only the neck: the sensor is in a virtual link
+    for (iHead=0; iHead<3; iHead++)
+    {   
+        if (!limHead.getLimits(iHead,&min,&max))
+            return false;
+
+        (*this)[iHead].setMin(CTRL_DEG2RAD*min);
+        (*this)[iHead].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
