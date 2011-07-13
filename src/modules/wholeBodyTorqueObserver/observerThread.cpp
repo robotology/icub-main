@@ -822,3 +822,4 @@ void inverseDynamics::setZeroJntAngVelAcc()
 	dq_torso=0.0;
 	d2q_torso=0.0;
 }
+

@@ -714,3 +714,4 @@ void gravityCompensatorThread::threadRelease()
 void gravityCompensatorThread::closePort(Contactable *_port)
 {
 }
+
