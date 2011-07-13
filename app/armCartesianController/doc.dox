@@ -91,10 +91,9 @@ a human-like behaviour, while retaining converge property and robustness against
 (the method can be cast back to the DLS algorithm).
 
 For further details about:
-- <b>homography</b> please refer to \ref icub_eye2world documentation.
+- <b>homography</b> please refer to the documentation of eye2world module in the contrib branch.
 - <b>executing motor primitives</b> such as the grasp please refer to \ref ActionPrimitives documentation.
 - <b>controlling the gaze</b> please refer to \ref iKinGazeCtrl documentation.
-- <b>detecting contacts with objects</b> please refer to \ref icub_graspDetector documentation.
 
 \section dep_sec Dependencies
 Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
@@ -102,11 +101,9 @@ Assumes \ref iKinGazeCtrl is running.
 Assumes camera images are available.
 
 \section int_sec Instantiated Modules
-- \ref icub_eye2world
+- eye2world (from contrib branch)
 
 - \ref ationPrimitivesExample
-
-- \ref icub_graspDetector
 
 \section config_sec Configuration Files
 - ./conf/table.ini provides the 3-d position of the table where

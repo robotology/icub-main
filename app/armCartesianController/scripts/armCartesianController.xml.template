@@ -4,8 +4,6 @@
 
   <dependencies>
       <port>/icub/camcalib/left/out</port>
-      <port>/icub/head/state:o</port>
-      <port>/icub/torso/state:o</port>
       <port>/icub/cartesianController/left_arm/state:o</port>
       <port>/icub/cartesianController/right_arm/state:o</port>
       <port>/iKinGazeCtrl/head/rpc</port>
@@ -45,20 +43,6 @@
                   --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
       <node>pwrNode3</node>
       <tag>eye2worldGaze</tag>
-  </module>
-
-  <module>
-      <name>graspDetector</name>
-      <parameters>--context graspDetector/conf --from left_armGraspDetector.ini</parameters>
-      <node>pwrNode4</node>
-      <tag>graspDetector_leftarm</tag>
-  </module>
-
-  <module>
-      <name>graspDetector</name>
-      <parameters>--context graspDetector/conf --from right_armGraspDetector.ini</parameters>
-      <node>pwrNode4</node>
-      <tag>graspDetector_rightarm</tag>
   </module>
 
   <connection>
@@ -115,16 +99,6 @@
   <connection>
       <from>/eye2worldGaze/out</from>
       <to>/iKinGazeCtrl/head/xd:i</to>
-  </connection>
-
-  <connection>
-      <from>/icub/left_hand/analog:o/fingerDetector/status:o</from>
-      <to>/actionPrimitivesMod/left_arm/detectGrasp:i</to>
-  </connection>
-
-  <connection>
-      <from>/icub/righ_thand/analog:o/fingerDetector/status:o</from>
-      <to>/actionPrimitivesMod/right_arm/detectGrasp:i</to>
   </connection>
 
 </application>
