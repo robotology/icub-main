@@ -199,7 +199,7 @@ void  gravityCompensatorThread::setUpperMeasure()
 	
 gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, string icub_type) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
 {   
-
+	gravity_mode = GRAVITY_COMPENSATION_ON;
 	wholeBodyName = "wholeBodyTorqueObserver";
 
 	//--------------INTERFACE INITIALIZATION-------------//
@@ -463,7 +463,6 @@ void gravityCompensatorThread::getUpperEncodersSpeedAndAcceleration()
 
 bool gravityCompensatorThread::threadInit()
 {       
-	gravity_mode = GRAVITY_COMPENSATION_ON;
 	thread_status = STATUS_OK;
 	return true;
 }
