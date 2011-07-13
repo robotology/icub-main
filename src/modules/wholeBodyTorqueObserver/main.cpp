@@ -252,7 +252,10 @@ public:
 		//------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
 		string icub_type;
 		if (rf.check("head_v2"))
+		{
+			fprintf(stderr,"'head_v2' option found. Using icubV2 head kinematics.\n");
 			icub_type = "V2";
+		}
 
 		//-----------------CHECK IF AUTOCONNECT IS ON-----------//
 		bool autoconnect;
@@ -315,7 +318,7 @@ public:
 		if (left_arm_enabled)
 		{
 			OptionsLeftArm.put("device","remote_controlboard");
-		OptionsLeftArm.put("local",string("/"+local_name+"/left_arm/client").c_str());
+			OptionsLeftArm.put("local",string("/"+local_name+"/left_arm/client").c_str());
 			OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
 			dd_left_arm = new PolyDriver(OptionsLeftArm);
 			if (!createDriver(dd_left_arm))
@@ -328,7 +331,7 @@ public:
 		if (right_arm_enabled)
 		{
 			OptionsRightArm.put("device","remote_controlboard");
-		OptionsRightArm.put("local",string("/"+local_name+"/right_arm/client").c_str());
+			OptionsRightArm.put("local",string("/"+local_name+"/right_arm/client").c_str());
 			OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
 			dd_right_arm = new PolyDriver(OptionsRightArm);
 			if (!createDriver(dd_right_arm))
