@@ -190,7 +190,10 @@ public:
 		//------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
 		string icub_type;
 		if (rf.check("head_v2"))
+		{
+			fprintf(stderr,"'head_v2' option found. Using icubV2 head kinematics.\n");
 			icub_type = "V2";
+		}
 
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
 		if (rf.check("no_legs"))
@@ -410,7 +413,9 @@ int main(int argc, char * argv[])
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
         cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"						  << endl;
         cout << "\t--no_legs    this option disables the gravity compensation for the legs joints"								  << endl;
-
+		cout << "\t--head_v2    use the model of the headV2" << endl;  
+		cout << "\t--no_left_arm    disables the left arm" << endl;
+		cout << "\t--no_right_arm   disabled the right arm" << endl;
         return 0;
     }
 
