@@ -376,8 +376,8 @@ public:
 
     	unsigned int xmax,ymax,xstep,ystep,xoffstep,yoffstep;
     	getFormat7MaxWindowDC1394(xmax,ymax,xstep,ystep,xoffstep,yoffstep);
-    	unsigned int xdim,ydim;
-        int x0,y0;
+    	unsigned int xdim=0,ydim=0;
+        int x0=0,y0=0;
     	getFormat7WindowDC1394(xdim,ydim,x0,y0);
      
         m_xdim.set_sensitive(false);
