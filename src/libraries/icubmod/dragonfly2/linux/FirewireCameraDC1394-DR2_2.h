@@ -29,12 +29,21 @@
 #define NUM_DMA_BUFFERS 4
 
 // formats
-#define DR_UNINIT           0 // not initialized
-#define DR_RGB_HALF_RES     1 // 320 x 240 RGB8
-#define DR_RGB_FULL_RES     2 // 640 x 480 RGB8
-#define DR_BAYER_FULL_RES   3 // 640 x 480 RAW + software Bayer decoding
-#define DR_BAYER_RAW16_FULL_RES   4 // 640 x 480 RAW16 + software Bayer decoding VNG
-#define DR_YUV422_FULL_RES   5 // 640 x 480 YUV422 FORMAT7 0 1.5bytes/pixel
+
+#define DR_UNINIT                0
+#define DR_RGB_320x240           1
+#define DR_RGB_640x480           2
+#define DR_BAYER_640x480         3
+#define DR_BAYER16_640x480       4
+#define DR_YUV_640x480           5
+
+//#define DR_YUV_320x240         
+#define DR_RGB_512x384           6
+#define DR_RGB_800x600           7
+#define DR_YUV_800x600           8
+#define DR_RGB_1024x768          9
+#define DR_YUV_1024x768          10
+#define DR_BAYER_1024x768        11
 
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
@@ -89,6 +98,7 @@ protected:
 
     int m_nInvalidFrames;
     bool m_bCameraOn;
+    bool mHires;
 
     unsigned int m_RawBufferSize;
     unsigned int m_XDim,m_YDim;

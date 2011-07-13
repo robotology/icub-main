@@ -53,7 +53,7 @@ PGRFlyCapture (Windows)
 \section parameters_sec Parameters
 --name             // image output port
 
---video_type       // 1: RGB 320x240, 2: RGB 640x480 (default), 3: RGB 640x480 software Bayer decoding (higher fps) 
+--video_type       // 1: RGB 320x240, 2: RGB 640x480, 3: RGB 640x480 (default) software Bayer decoding (higher fps) 
 
 --width|size_x     // width image cropping (limited to image size)
 
