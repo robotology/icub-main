@@ -20,6 +20,7 @@
 #include <stdarg.h>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 #include <yarp/os/Network.h>
 
