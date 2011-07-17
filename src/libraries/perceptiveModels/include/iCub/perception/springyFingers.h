@@ -329,8 +329,8 @@ public:
     * Retrieve the complete output of the model.
     * @param out a Value containing the model output in the form: 
     *            (thumb_out index_out ... little_out), where the
-    *            finger_out is the output double of the
-    *            corresponding finger.
+    *            finger_out is the output of the corresponding
+    *            finger.
     * @return true/false on success/failure. 
     */
     bool getOutput(yarp::os::Value &out) const;    
