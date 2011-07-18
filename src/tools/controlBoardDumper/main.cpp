@@ -383,7 +383,7 @@ public:
     
         ConstString localPortName = name;
         localPortName = localPortName + "/controlBoardDumper/";
-        localPortName = localPortName + robot.asString();
+        //localPortName = localPortName + robot.asString();
         localPortName = localPortName + part.asString();
         ddOptions.put("local", localPortName.c_str());
 
@@ -404,7 +404,7 @@ public:
         }
     
         portPrefix = "/";
-        portPrefix= portPrefix + robot.asString() + "/controlBoardDumper/" + part.asString() + "/";
+        portPrefix= portPrefix + "controlBoardDumper/" + part.asString() + "/";
         //controlBoardDumper *myDumper = new controlBoardDumper(&dd, rate, portPrefix, dataToDump[0]);
         //myDumper->setThetaMap(thetaMap, nJoints);
 
@@ -582,7 +582,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
 
     rf.setVerbose(true);
-    rf.setDefaultContext("dumpControlBoardData/conf");
+    rf.setDefaultContext("controlBoardDumper/conf");
     rf.setDefaultConfigFile("controlBoardDumper.ini");
 
     rf.setDefault("part", "head");
