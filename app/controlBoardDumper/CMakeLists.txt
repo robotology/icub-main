@@ -1,4 +1,4 @@
-set(appname dumpControlBoardData)
+set(appname controlBoardDumper)
 
 icub_app(${appname})
 
