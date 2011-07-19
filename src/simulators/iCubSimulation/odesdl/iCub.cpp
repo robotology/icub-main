@@ -2986,11 +2986,10 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         }
         // this call fixes the joint to its current position in 3D space
         dJointSetFixed (fixedHipJoint);
-
-        inertialJoint = dJointCreateFixed(world, 0);
-        dJointAttach (inertialJoint,inertialBody,head);
-        dJointSetFixed (inertialJoint);
     }
+    inertialJoint = dJointCreateFixed(world, 0);
+    dJointAttach (inertialJoint,inertialBody,head);
+    dJointSetFixed (inertialJoint);
 }
 
 ICubSim::~ICubSim() {
