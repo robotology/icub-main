@@ -18,13 +18,11 @@
 * Public License for more details
 */
 
-
 #include "iCub_Sim.h"
 
 #include "OdeInit.h"
 
 using namespace yarp::sig;
-
 
 // globals
 Semaphore ODE_access(1);

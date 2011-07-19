@@ -38,10 +38,11 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
     _wrld = new worldSim(world, space, 0,0,0, *robot_config);
     _controls = new iCubSimulationControl*[MAX_PART];
     
+    // initialize at NULL
     for (int i=0; i<MAX_PART; i++) 
     { 
         _controls[i] = NULL; 
-    } // initialize at NULL
+    } 
     
     _wrld->OBJNUM = 0;
     _wrld->waitOBJ = 0;

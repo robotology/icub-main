@@ -88,8 +88,6 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     double velocity = p.findGroup("GENERAL").check("Vel",Value(1),
                                           "Default velocity").asDouble();
-    int i;
-
     _mutex.wait();
     partSelec = TypeArm;
 
@@ -123,8 +121,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 //  joint_dev = new DeviceTag[njoints];
 
     motor_on = allocAndCheck<bool>(njoints);
-    for(int i = 0;i<njoints;i++)
-        motor_on[i] = false;
+    for(int axis = 0;axis<njoints;axis++)
+        motor_on[axis] = false;
 
     /////////////////////////
     /*   GENERAL           */
@@ -136,20 +134,20 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         printf("AxisMap does not have the right number of entries\n");
         return false;
     }
-    for (i = 1; i < xtmp.size(); i++) axisMap[i-1] = xtmp.get(i).asInt();
+    for (int i = 1; i < xtmp.size(); i++) axisMap[i-1] = xtmp.get(i).asInt();
 
     xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
     if (xtmp.size() != njoints+1) {
         printf("Encoder does not have the right number of entries\n");
         return false;
     }
-    for (i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asDouble();
+    for (int i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
     if (xtmp.size() != njoints+1) {
         printf("Zeros does not have the right number of entries\n");
         return false;
     }
-    for (i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
+    for (int i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
     ////////////////////////
     /*   LIMITS           */
     ////////////////////////
@@ -159,7 +157,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
             printf("Not enough max joint limits\n");
             return false;
         }
-    for( i =1;i<xtmp.size();i++) 
+    for( int i =1;i<xtmp.size();i++ ) 
         limitsMax[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
         
     xtmp = p.findGroup("LIMITS").findGroup("Min","access the joint limits min");
@@ -181,19 +179,19 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         error_tol[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
 
 
-    for(int i =0;i<njoints;i++)
+    for(int axis =0;axis<njoints;axis++)
     {
-        current_pos[i] = 0.0;
-        ErrorPos[i] = 0.0;
+        current_pos[axis] = 0.0;
+        ErrorPos[axis] = 0.0;
         double v = 0.0;     
-        if (v<limitsMin[i]) v = limitsMin[i];
-        if (v>limitsMax[i]) v = limitsMax[i];
+        if (v<limitsMin[axis]) v = limitsMin[axis];
+        if (v>limitsMax[axis]) v = limitsMax[axis];
         //else v = next_pos[i];
-        next_pos[i] = M_PI*(v/angleToEncoder[i])/180;//removed (v/angleToEncoder[i]-1)/180
-        next_vel[i] = 0.0;      
+        next_pos[axis] = M_PI*(v/angleToEncoder[axis])/180;//removed (v/angleToEncoder[i]-1)/180
+        next_vel[axis] = 0.0;      
         input = 0;
-        inputs[i] = 0;
-        vels[i] = 1;
+        inputs[axis] = 0;
+        vels[axis] = 1;
    }
 
     ImplementPositionControl<iCubSimulationControl, IPositionControl>::
@@ -210,6 +208,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits<iCubSimulationControl, IControlLimits>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
+
     velocityMode = false;
 
     if (!p.check("joint_device")) {
@@ -294,33 +293,31 @@ void iCubSimulationControl::jointStep() {
         _mutex.post();
         return;
     }
-    int lengths[] = { 0, 16, 16, 6, 6 , 6, 3};
+    //int lengths[] = { 0, 16, 16, 6, 6 , 6, 3};
     if (partSelec<=6) {
-        int len = lengths[partSelec];
-        int i;
+        //int len = lengths[partSelec];
         
-        for (i=0; i<len; i++) {
-            LogicalJoint& ctrl = manager->control(partSelec,i); 
+        for (int axis=0; axis<njoints; axis++) {
+            LogicalJoint& ctrl = manager->control(partSelec,axis); 
             if (!ctrl.isValid()) continue;
-            current_pos[i] = ctrl.getAngle();
-            current_vel[i] = ctrl.getVelocity();
-        }
+            current_pos[axis] = ctrl.getAngle();
+            current_vel[axis] = ctrl.getVelocity();
         
-        for (i=0; i<len; i++) {
-            LogicalJoint& ctrl = manager->control(partSelec,i); 
-            if (!ctrl.isValid()) continue;
-            motor_on[i] = true; // no reason to turn motors off, for now
+            //LogicalJoint& ctrl = manager->control(partSelec,i); 
+            //if (!ctrl.isValid()) continue;
+            motor_on[axis] = true; // no reason to turn motors off, for now
+
             if (velocityMode) {
                 //ctrl.setVelocity(next_vel[i]);
-                if(((current_pos[i]<limitsMin[i])&&(next_vel[i]<0)) || ((current_pos[i]>limitsMax[i])&&(next_vel[i]>0)))
+                if(((current_pos[axis]<limitsMin[axis])&&(next_vel[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(next_vel[axis]>0)))
                     ctrl.setVelocity(0.0);
                 else{
-                    ctrl.setVelocity(next_vel[i]);
+                    ctrl.setVelocity(next_vel[axis]);
                 }
             } else {
                 // no acceleration control right now, just velocity
-                ctrl.setControlParameters(vels[i],1);
-                ctrl.setPosition(next_pos[i]);
+                ctrl.setControlParameters(vels[axis],1);
+                ctrl.setPosition(next_pos[axis]);
             }
         }
     }
@@ -354,18 +351,18 @@ bool iCubSimulationControl::setPidsRaw(const Pid *pids)
 }
 
 /// cmd is a SingleAxis pointer with 1 double arg
-bool iCubSimulationControl::setReferenceRaw (int j, double ref)
+bool iCubSimulationControl::setReferenceRaw (int axis, double ref)
 {
-    if( j>=0 && j<njoints )
+    if( (axis>=0) && (axis<njoints) )
         {
         //printf(" GETTING THE REFERENCE??? 1\n");
             _mutex.wait();
-            next_pos[j] = ref;
+            next_pos[axis] = ref;
             _mutex.post();
             return true;
         }
     if (verbosity)
-        printf("setReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+        printf("setReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     return false;
 }
 
@@ -373,14 +370,14 @@ bool iCubSimulationControl::setReferenceRaw (int j, double ref)
 bool iCubSimulationControl::setReferencesRaw (const double *refs)
 {
    _mutex.wait();
-   for(int i = 0;i<njoints;i++){
-        next_pos[i] = refs[i];
+   for(int axis = 0; axis<njoints; axis++){
+        next_pos[axis] = refs[axis];
    }
     _mutex.post();
     return true;
 }
 
-bool iCubSimulationControl::setErrorLimitRaw(int j, double limit)
+bool iCubSimulationControl::setErrorLimitRaw(int axis, double limit)
 {
     return NOT_YET_IMPLEMENTED("setErrorLimitRaw");
 }
@@ -410,30 +407,30 @@ bool iCubSimulationControl::getOutputsRaw(double *outs)
     return NOT_YET_IMPLEMENTED("getOutputsRaw");
 }
 
-bool iCubSimulationControl::getReferenceRaw(int j, double *ref)
+bool iCubSimulationControl::getReferenceRaw(int axis, double *ref)
 {
-    if( j>=0 && j<njoints )
+    if( (axis>=0) && (axis<njoints) )
         {
             _mutex.wait();
-            *ref = next_pos[j];
+            *ref = next_pos[axis];
             _mutex.post();
             return true;
         }
     if (verbosity)
-        printf("getReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+        printf("getReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     return false;
 }
 
 bool iCubSimulationControl::getReferencesRaw(double *ref)
 {
     _mutex.wait();
-    for(int i = 0;i<njoints;i++)
-        ref[i] = next_pos[i];
+    for(int axis = 0; axis<njoints; axis++)
+        ref[axis] = next_pos[axis];
     _mutex.post();
     return true;
 }
 
-bool iCubSimulationControl::getErrorLimitRaw(int j, double *err)
+bool iCubSimulationControl::getErrorLimitRaw(int axis, double *err)
 {
      return NOT_YET_IMPLEMENTED("getErrorLimitRaw");
 }
@@ -443,7 +440,7 @@ bool iCubSimulationControl::getErrorLimitsRaw(double *errs)
    return NOT_YET_IMPLEMENTED("getErrorLimitsRaw");
 }
 
-bool iCubSimulationControl::resetPidRaw(int j)
+bool iCubSimulationControl::resetPidRaw(int axis)
 {
     return NOT_YET_IMPLEMENTED("resetPidRaw");
 }
@@ -478,7 +475,7 @@ bool iCubSimulationControl::setVelocityModeRaw()
 bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
 {
     velocityMode = false;
-    if( axis >=0 && axis<njoints)
+    if( (axis >=0) && (axis<njoints) )
     {
         _mutex.wait();
         if(ref< limitsMin[axis])
@@ -490,7 +487,7 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
         motor_on[axis]=true;
 
         if (verbosity)
-            printf("here moving joint %d of part %d to pos %f\n",axis, partSelec, next_pos[axis]);
+            printf("moving joint %d of part %d to pos %f\n",axis, partSelec, next_pos[axis]);
         _mutex.post();
         return true;
     }
@@ -502,37 +499,37 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
 bool iCubSimulationControl::positionMoveRaw(const double *refs)
 {
     velocityMode = false;
-      _mutex.wait();
-    for(int i = 0; i<njoints; i++)
+    _mutex.wait();
+    for(int axis = 0; axis<njoints; axis++)
         {
-            double ref = refs[i];
-            if(ref< limitsMin[i]){
-                next_pos[i] = limitsMin[i];
+            double ref = refs[axis];
+            if(ref< limitsMin[axis]){
+                next_pos[axis] = limitsMin[axis];
             }
-            else if(ref > limitsMax[i]){
-                next_pos[i] = limitsMax[i];
+            else if(ref > limitsMax[axis]){
+                next_pos[axis] = limitsMax[axis];
             }
             else
-                next_pos[i] = ref;
-            motor_on[i]=true;
+                next_pos[axis] = ref;
+            motor_on[axis]=true;
             if (verbosity)
-                printf("moving joint %d of part %d to pos %f\n",i,partSelec,next_pos[i]);
+                printf("moving joint %d of part %d to pos %f\n",axis,partSelec,next_pos[axis]);
         }
     _mutex.post();
     return true;
 }
 
-bool iCubSimulationControl::relativeMoveRaw(int j, double delta)
+bool iCubSimulationControl::relativeMoveRaw(int axis, double delta)
 {
     velocityMode = false;
-    return positionMoveRaw(j,next_pos[j]+delta);
+    return positionMoveRaw(axis,next_pos[axis]+delta);
 }
 
 bool iCubSimulationControl::relativeMoveRaw(const double *deltas)
 {
     velocityMode = false;
-    for(int i = 0; i<njoints; i++) {
-        relativeMoveRaw(i,deltas[i]);
+    for(int axis = 0; axis<njoints; axis++) {
+        relativeMoveRaw(axis,deltas[axis]);
     }
     return true;
 }
@@ -541,9 +538,9 @@ bool iCubSimulationControl::checkMotionDoneRaw (bool *ret)
 {
     _mutex.wait();
     bool fin = true;
-    for(int i = 0;i<njoints;i++)
+    for(int axis = 0;axis<njoints;axis++)
         {
-            if(!(fabs(current_pos[i]-next_pos[i])<error_tol[i]))
+            if(! (fabs( current_pos[axis]-next_pos[axis])<error_tol[axis]))
                 {
                     fin = false;
                     // printf("axes %d unfinished\n");
@@ -559,7 +556,7 @@ bool iCubSimulationControl::checkMotionDoneRaw (bool *ret)
 
 bool iCubSimulationControl::checkMotionDoneRaw(int axis, bool *ret)
 {
-    if(axis >=0 && axis<njoints)
+    if( (axis >=0) && (axis<njoints) )
         {
             _mutex.wait();
             if(fabs(current_pos[axis]-next_pos[axis])<error_tol[axis])
@@ -573,15 +570,15 @@ bool iCubSimulationControl::checkMotionDoneRaw(int axis, bool *ret)
         printf("checkMotionDoneRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     return false;
 }
-bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
+bool iCubSimulationControl::setRefSpeedRaw(int axis, double sp)
 {
-    if(j >=0 && j<njoints)
+    if( (axis >=0) && (axis<njoints) )
         {
             _mutex.wait();
-            vel = sp *180/M_PI ;
-            vels[j] = vel/20;
+            //vel = sp;// *180/M_PI ;
+            vels[axis] = sp;//vel/20;
             if (verbosity)
-                printf("setting joint %d of part %d to reference velocity %f\n",j,partSelec,vels[j]);
+                printf("setting joint %d of part %d to reference velocity %f\n",axis,partSelec,vels[axis]);
             _mutex.post();
             return true;
         }
@@ -591,17 +588,17 @@ bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
 bool iCubSimulationControl::setRefSpeedsRaw(const double *spds)
 {
     _mutex.wait();
-    for(int i = 0; i<njoints; i++)
+    for(int axis = 0; axis<njoints; axis++)
     {
-        vels[i] = (spds[i]*180/M_PI)/20;
+        vels[axis] = spds[axis];//(spds[i]*180/M_PI)/20;
         //vels[i] = spds[i]/20;
         if (verbosity)
-            printf("setting joint %d of part %d to reference velocity %f\n",i,partSelec,vels[i]);
+            printf("setting joint %d of part %d to reference velocity %f\n",axis,partSelec,vels[axis]);
     }
     _mutex.post();
     return true;
 }
-bool iCubSimulationControl::setRefAccelerationRaw(int j, double acc)
+bool iCubSimulationControl::setRefAccelerationRaw(int axis, double acc)
 {
     return NOT_YET_IMPLEMENTED("setRefAccelerationRaw");
 }
@@ -629,7 +626,7 @@ bool iCubSimulationControl::getRefSpeedsRaw(double *spds)
     _mutex.post();
     return true;
 }
-bool iCubSimulationControl::getRefAccelerationRaw(int j, double *acc)
+bool iCubSimulationControl::getRefAccelerationRaw(int axis, double *acc)
 {
     return NOT_YET_IMPLEMENTED("getRefAccelerationRaw");
 }
@@ -637,26 +634,26 @@ bool iCubSimulationControl::getRefAccelerationsRaw(double *accs)
 {
     return NOT_YET_IMPLEMENTED("getRefAccelerationsRaw");
 }
-bool iCubSimulationControl::stopRaw(int j)
+bool iCubSimulationControl::stopRaw(int axis)
 {
-    if(j>=0 && j<njoints)
+    if( (axis>=0) && (axis<njoints) )
         {
             _mutex.wait();
-            next_pos[j] = current_pos[j];
-            next_vel[j] = 0;
+            next_pos[axis] = current_pos[axis];
+            next_vel[axis] = 0;
             _mutex.post();
             return true;
         }
     if (verbosity)
-        printf("stopRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+        printf("stopRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     return false;
 }
 bool iCubSimulationControl::stopRaw()
 {
     _mutex.wait();
-    for(int i=0;i<njoints;i++){
-        next_pos[i] = current_pos[i];
-        next_vel[i] = 0.0;
+    for(int axis=0;axis<njoints;axis++){
+        next_pos[axis] = current_pos[axis];
+        next_vel[axis] = 0.0;
     }
     _mutex.post();
     return true;
@@ -666,15 +663,15 @@ bool iCubSimulationControl::stopRaw()
 bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
 {
     velocityMode = true;
-    if(axis >=0 && axis<njoints) {
+    if( (axis >=0) && (axis<njoints) ) {
         _mutex.wait();
         next_vel[axis] = sp;
         motor_on[axis] = true;
-        if (verbosity)
-            printf("setting joint %d of part %d to velocity %f\n",axis,partSelec,next_vel[axis]);
         _mutex.post();
         return true;
     }
+    if (verbosity)
+        printf("velocityMoveRaw: joint with index %d does not exist, valis joints indices are between 0 and %d \n",axis,njoints);
     return false;    
 }
 
@@ -684,18 +681,18 @@ bool iCubSimulationControl::velocityMoveRaw (const double *sp)
 {
     velocityMode = true;
     _mutex.wait();
-    for (int i=0; i<njoints; i++) {
+    for (int axis=0; axis<njoints; axis++) {
         //velocityMoveRaw(i,sp[i]);
-        next_vel[i] = sp[i];
-        motor_on[i] = true;
+        next_vel[axis] = sp[axis];
+        motor_on[axis] = true;
         if (verbosity)
-            printf("setting joint %d of part %d to velocity %f\n",i,partSelec,next_vel[i]);
+            printf("setting joint %d of part %d to velocity %f\n",axis,partSelec,next_vel[axis]);
     }
     _mutex.post();
     return true;
 }
 
-bool iCubSimulationControl::setEncoderRaw(int j, double val)
+bool iCubSimulationControl::setEncoderRaw(int axis, double val)
 {
     return NOT_YET_IMPLEMENTED("setEncoderRaw");
 }
@@ -705,7 +702,7 @@ bool iCubSimulationControl::setEncodersRaw(const double *vals)
     return NOT_YET_IMPLEMENTED("setEncodersRaw");
 }
 
-bool iCubSimulationControl::resetEncoderRaw(int j)
+bool iCubSimulationControl::resetEncoderRaw(int axis)
 {
     return NOT_YET_IMPLEMENTED("resetEncoderRaw");
 }
@@ -718,8 +715,8 @@ bool iCubSimulationControl::resetEncodersRaw()
 bool iCubSimulationControl::getEncodersRaw(double *v)
 {
    _mutex.wait();
-    for(int i = 0;i<njoints;i++)
-        v[i] = current_pos[i];
+    for(int axis = 0;axis<njoints;axis++)
+        v[axis] = current_pos[axis];
     _mutex.post();
     return true;
 }
@@ -730,31 +727,33 @@ bool iCubSimulationControl::getEncoderRaw(int axis, double *v)
         _mutex.wait();
         *v = current_pos[axis];
         _mutex.post();
+        return true;
     }
     if (verbosity)
         printf("getEncoderRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
-    return true;
+    return false;
 }
 
 bool iCubSimulationControl::getEncoderSpeedsRaw(double *v)
 {
    _mutex.wait();
-    for(int i = 0;i<njoints;i++)
-        v[i] = current_vel[i] * 10;
+    for(int axis = 0; axis<njoints; axis++)
+        v[axis] = current_vel[axis];//* 10;
     _mutex.post();
     return true;
 }
 
 bool iCubSimulationControl::getEncoderSpeedRaw(int axis, double *v)
 {
-    if((axis>=0) && (axis<njoints)) {
+    if( (axis>=0) && (axis<njoints) ) {
         _mutex.wait();
-        *v = current_vel[axis] * 10;
+        *v = current_vel[axis];// * 10;
         _mutex.post();
+        return true;
     }
     if (verbosity)
         printf("getEncoderSpeedRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
-    return true;
+    return false;
 }
 
 bool iCubSimulationControl::getEncoderAccelerationsRaw(double *v)
@@ -762,14 +761,14 @@ bool iCubSimulationControl::getEncoderAccelerationsRaw(double *v)
   	return NOT_YET_IMPLEMENTED("getEncoderAccelerationsRaw");
 }
 
-bool iCubSimulationControl::getEncoderAccelerationRaw(int j, double *v)
+bool iCubSimulationControl::getEncoderAccelerationRaw(int axis, double *v)
 {
     return NOT_YET_IMPLEMENTED("getEncoderAcc");
 }
 
 bool iCubSimulationControl::disableAmpRaw(int axis)
 {
-    if(axis >=0 && axis<njoints)
+    if( (axis >=0) && (axis<njoints) )
         {
             _mutex.wait();
             motor_on[axis] = false;
@@ -784,7 +783,7 @@ bool iCubSimulationControl::disableAmpRaw(int axis)
 bool iCubSimulationControl::enableAmpRaw(int axis)
 {
    
-    if(axis>=0 && axis<njoints)
+    if( (axis>=0) && (axis<njoints) )
         {
             _mutex.wait();
             motor_on[axis] = true;
@@ -827,29 +826,29 @@ bool iCubSimulationControl::doneRaw(int axis)
 bool iCubSimulationControl::getAmpStatusRaw(int *st)
 {
     _mutex.wait();
-    for(int i =0;i<njoints;i++)
-        st[i] = (int)motor_on[i];
+    for(int axis =0;axis<njoints;axis++)
+        st[axis] = (int)motor_on[axis];
     _mutex.post();
     return true;
 }
 
-bool iCubSimulationControl::getAmpStatusRaw(int i, int *st)
+bool iCubSimulationControl::getAmpStatusRaw(int axis, int *st)
 {
-    if((i>=0) && (i<njoints)) 
+    if( (axis>=0) && (axis<njoints)) 
     {
         _mutex.wait();
-        st[i] = (int)motor_on[i];
+        st[axis] = (int)motor_on[axis];
         _mutex.post();
         return true;
     }
     if (verbosity)
-        printf("getAmpStatusRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", i, njoints);
+        printf("getAmpStatusRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     return false;
 }
 
 bool iCubSimulationControl::setLimitsRaw(int axis, double min, double max)
 {
-    if(axis >=0 && axis < njoints){
+    if( (axis >=0) && (axis < njoints) ){
         _mutex.wait();
         limitsMax[axis] = max;
         limitsMin[axis] = min;
@@ -863,14 +862,14 @@ bool iCubSimulationControl::setLimitsRaw(int axis, double min, double max)
 
 bool iCubSimulationControl::getLimitsRaw(int axis, double *min, double *max)
 {
-    if(axis >=0 && axis < njoints){
+    if( (axis >=0) && (axis < njoints)) {
         _mutex.wait();
          *min = limitsMin[axis];
          *max = limitsMax[axis];
          _mutex.post();
          return true;
      }
-     else
-         return false;
+     //else
+     return false;
 }
 
