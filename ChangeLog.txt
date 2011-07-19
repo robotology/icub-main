@@ -1,3 +1,7 @@
+2011-18-07  Lorenzo Natale  <lorenzo.natale@iit.it>
+    * Forcing ICUB_APPLICATION_PREFIX from ICUB_ROOT
+	* Disable and complain if ICUB_ROOT is not set
+	
 2011-15-07  Lorenzo Natale  <lorenzo.natale@iit.it>
     * tagging version 1.1.3
 

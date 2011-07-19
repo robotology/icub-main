@@ -113,10 +113,20 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-install-includes.cmake "")
 
 # Some options: mostly cache variables
-set(ICUB_EXPERIMENTAL_APP_INSTALL TRUE CACHE BOOL "Turn on app install experimental feature")
+set(ICUB_INSTALL_APPLICATIONS TRUE CACHE BOOL "Turn on/off install for applications")
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
-SET(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE TYPE PATH)
 
+set(__ICUB_INSTALL_APPLICATIONS__ TRUE)
+
+if (ICUB_INSTALL_APPLICATIONS)
+   if (NOT env_icub_root)
+       message("No ICUB_ROOT environment variable set, disabling application install rules.")
+	   set(__ICUB_INSTALL_APPLICATIONS__ FALSE)
+   endif()
+endif()
+
+set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
+	   
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
@@ -124,17 +134,17 @@ set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus proto
 ###################### End options and definitions
 
 ########### populate applications
-if (ICUB_EXPERIMENTAL_APP_INSTALL)
+if (__ICUB_INSTALL_APPLICATIONS__)
     add_subdirectory(app)
-endif(ICUB_EXPERIMENTAL_APP_INSTALL)
+endif(__ICUB_INSTALL_APPLICATIONS__)
 
 # Create everything needed to build our executables.
 add_subdirectory(src)
 
 ############ generate custom target that exports all applications
-if (ICUB_EXPERIMENTAL_APP_INSTALL)
+if (__ICUB_INSTALL_APPLICATIONS__)
     icub_app_all()
-endif(ICUB_EXPERIMENTAL_APP_INSTALL)
+endif(__ICUB_INSTALL_APPLICATIONS__)
 
 ########### propagate version info to targets
 get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
