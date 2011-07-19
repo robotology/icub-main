@@ -68,7 +68,6 @@ public:
 
     virtual void sendInertial(yarp::os::Bottle& report);
     virtual bool shouldSendInertial();
-
 private:
 
 #ifndef OMIT_LOGPOLAR

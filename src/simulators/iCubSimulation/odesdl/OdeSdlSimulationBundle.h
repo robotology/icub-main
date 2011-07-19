@@ -36,5 +36,4 @@ public:
     virtual bool onEnd();
 };
 
-
 #endif

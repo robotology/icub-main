@@ -39,6 +39,8 @@ public:
     virtual Simulation *createSimulation(RobotConfig& config) = 0;
 
     virtual bool onEnd() = 0;
+
+    bool verbose;
 };
 
 #endif

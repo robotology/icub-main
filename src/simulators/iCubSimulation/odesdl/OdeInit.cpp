@@ -27,6 +27,7 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
     world = dWorldCreate();
     space = dHashSpaceCreate (0);
     contactgroup = dJointGroupCreate (0);
+    verbose = false;
     
     dWorldSetGravity (world,0,-9.8,0);
     ground = dCreatePlane (space,0, 1, 0, 0);
@@ -36,6 +37,7 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
     _iCub = new ICubSim(world, space, 0,0,0, *robot_config);
     _wrld = new worldSim(world, space, 0,0,0, *robot_config);
     _controls = new iCubSimulationControl*[MAX_PART];
+    
     for (int i=0; i<MAX_PART; i++) 
     { 
         _controls[i] = NULL; 
@@ -58,8 +60,6 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config) {
 
     _wrld->s_waitMOD = 0;
     _wrld->s_MODEL_NUM = 0;
-
-    
 }
 
 OdeInit::~OdeInit() {

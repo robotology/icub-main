@@ -35,6 +35,8 @@ LogicalJoints *OdeSdlSimulationBundle::createJoints(RobotConfig& config) {
     OdeInit& odeinit = OdeInit::init(&config);
     odeinit.setName(config.getModuleName().c_str());
 
+    odeinit.verbose = verbose;
+   
     // Set up ODE joints
     return new iCubLogicalJoints(config);
 }

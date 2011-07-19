@@ -186,6 +186,8 @@ class yarp::dev::iCubSimulationControl :
   /////// Joint steps
   void jointStep();
 
+  bool verbosity;
+
 protected:
     yarp::dev::PolyDriver joints;
     LogicalJoints *manager;

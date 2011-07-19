@@ -165,6 +165,7 @@ int main(int argc, char** argv) {
     // simulation for test purposes that does nothing other than create
     // the standard ports (pass --fake to start this simulation).
     SimulationBundle *bundle = NULL;
+
     if (options.check("fake")) {
 #ifdef ICUB_SIM_ENABLE_FAKE
         bundle = new FakeSimulationBundle;
@@ -174,6 +175,11 @@ int main(int argc, char** argv) {
         bundle = new OdeSdlSimulationBundle;
 #endif
     }
+    if (options.check("verbose"))
+	{
+        bundle->verbose = true;
+        fprintf(stdout, "Starting the simulator with verbose flag on\n");
+	}
     if (bundle==NULL) {
         fprintf(stderr,"Failed to allocate simulator\n");
         return 1;
