@@ -90,7 +90,7 @@ should look like as follows:
 \code 
 [general]
 // the robot name to connect to 
-robot	        icub
+robot           icub
 // the thread period [ms] 
 thread_period   30
 // left arm switch 
@@ -118,9 +118,9 @@ yaw on
 
 [left_arm]
 // the offset [m] to be added to the desired position  
-reach_offset	    0.0 -0.15 -0.05
+reach_offset        0.0 -0.15 -0.05
 // the offset [m] for grasping 
-grasp_offset	    0.0 0.0 -0.05
+grasp_offset        0.0 0.0 -0.05
 // perturbation given as standard deviation [m] 
 grasp_sigma 0.01 0.01 0.01 
 // hand orientation to be kept [axis-angle rep.] 
@@ -131,8 +131,8 @@ impedance_stiffness 0.5 0.5 0.5 0.2 0.1
 impedance_damping 60.0 60.0 60.0 20.0 0.0 
 
 [right_arm]
-reach_offset	    0.0 0.15 -0.05
-grasp_offset	    0.0 0.0 -0.05
+reach_offset        0.0 0.15 -0.05
+grasp_offset        0.0 0.0 -0.05
 grasp_sigma	        0.01 0.01 0.01
 hand_orientation    -0.012968 -0.721210 0.692595 2.917075
 impedance_velocity_mode off 
