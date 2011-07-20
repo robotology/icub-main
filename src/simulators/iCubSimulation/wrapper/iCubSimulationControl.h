@@ -55,6 +55,7 @@ class yarp::dev::iCubSimulationControl :
     public IAmplifierControlRaw,
     public IControlCalibrationRaw,
     public IControlLimitsRaw,
+	public ImplementTorqueControl,
     public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
     public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
     public ImplementPidControl<iCubSimulationControl, IPidControl>,
@@ -261,6 +262,7 @@ protected:
     double *angleToEncoder;                    
 
     double *zeros;                             /** encoder zeros */
+	double *newtonsToSensor;
 
     double *error_tol;
 

@@ -52,6 +52,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
     ImplementEncoders<iCubSimulationControl, IEncoders>(this),
+	ImplementTorqueControl(this),
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>(this),
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>(this),
     ImplementControlLimits<iCubSimulationControl, IControlLimits>(this),/* */
@@ -97,6 +98,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     angleToEncoder = allocAndCheck<double>(njoints);
     zeros = allocAndCheck<double>(njoints);
+	newtonsToSensor = allocAndCheck<double>(njoints);
     
     limitsMin = allocAndCheck<double>(njoints);
     limitsMax = allocAndCheck<double>(njoints);
@@ -149,6 +151,10 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         return false;
     }
     for (int i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
+
+	//torque sensor
+	for (int i = 1; i < njoints+1; i++) newtonsToSensor[i-1] = 1.0;
+
     ////////////////////////
     /*   LIMITS           */
     ////////////////////////
@@ -209,6 +215,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits<iCubSimulationControl, IControlLimits>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
+	ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
 
     velocityMode = false;
 
@@ -268,6 +275,7 @@ bool iCubSimulationControl::close (void)
 
     checkAndDestroy<double>(angleToEncoder);
     checkAndDestroy<double>(zeros);
+	checkAndDestroy<double>(newtonsToSensor);
     checkAndDestroy<double>(limitsMin);
     checkAndDestroy<double>(limitsMax);
     checkAndDestroy<int>(axisMap);
@@ -879,11 +887,21 @@ bool iCubSimulationControl::setTorqueModeRaw( )
 }
 bool iCubSimulationControl::getTorqueRaw(int axis, double *sp)
 {
-    return NOT_YET_IMPLEMENTED("getTorqueRaw");
+    if( (axis >=0) && (axis < njoints)) {
+        _mutex.wait();
+         *sp = 0.0;
+         _mutex.post();
+         return true;
+	}
+    return false;
 }
 bool iCubSimulationControl::getTorquesRaw(double *sp)
 {
-    return NOT_YET_IMPLEMENTED("getTorquesRaw");
+   _mutex.wait();
+    for(int axis = 0;axis<njoints;axis++)
+        sp[axis] = 0.0;
+    _mutex.post();
+    return true;
 }
 bool iCubSimulationControl::getTorqueRangeRaw(int axis, double *a,double *b)
 {
