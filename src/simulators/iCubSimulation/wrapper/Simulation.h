@@ -71,6 +71,8 @@ public:
     virtual void simLoop(int h,int w) = 0;
 
     virtual bool checkSync(bool reset = false) = 0;
+
+    virtual bool getTrqData(yarp::os::Bottle &data) = 0;
 };
 
 #endif

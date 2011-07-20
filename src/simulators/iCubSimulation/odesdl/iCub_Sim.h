@@ -108,6 +108,8 @@ public:
 
     virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& target);
 
+    virtual bool getTrqData(Bottle &data);
+
 private:
     static void draw();
 

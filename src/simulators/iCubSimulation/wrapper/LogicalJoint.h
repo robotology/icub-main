@@ -63,6 +63,12 @@ public:
     virtual void setVelocity(double target) = 0;
 
     virtual bool isValid() = 0;
+
+
+    /**
+     * this is just a fake torque interface for now
+     */
+    virtual double getTorque() = 0;
 };
 
 

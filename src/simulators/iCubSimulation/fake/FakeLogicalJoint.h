@@ -30,10 +30,11 @@ private:
     double angle;
     double vel;
     double last;
+    double torque;
 public:
     FakeLogicalJoint() { 
         last = yarp::os::Time::now(); 
-        angle = vel = 0;
+        angle = vel = torque = 0;
     }
 
     virtual double getAngle() { 
@@ -64,11 +65,17 @@ public:
         return true;
     }
 
+    
+    virtual double getTorque(){
+        return true;
+    }
+
     void update() {
         double now = yarp::os::Time::now();
         angle += vel*(now-last);
         last = now;
     }
+
 };
 
 

@@ -49,7 +49,7 @@ static bool NOT_YET_IMPLEMENTED(const char *txt)
 iCubSimulationControl::iCubSimulationControl() : 
     //RateThread(10),
     ImplementPositionControl<iCubSimulationControl, IPositionControl>(this),
-   ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
+    ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
     ImplementEncoders<iCubSimulationControl, IEncoders>(this),
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>(this),
@@ -111,6 +111,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     current_pos = allocAndCheck<double>(njoints);
     current_vel = allocAndCheck<double>(njoints);
+    current_torques = allocAndCheck<double>(njoints);
     next_pos = allocAndCheck<double>(njoints);
     next_vel = allocAndCheck<double>(njoints);
     inputs = allocAndCheck<int>(njoints);
@@ -259,6 +260,7 @@ bool iCubSimulationControl::close (void)
     }
 
     checkAndDestroy<double>(current_pos);
+    checkAndDestroy<double>(current_torques);
     checkAndDestroy<double>(current_vel);
     checkAndDestroy<double>(next_pos);
     checkAndDestroy<double>(next_vel);
@@ -293,22 +295,20 @@ void iCubSimulationControl::jointStep() {
         _mutex.post();
         return;
     }
-    //int lengths[] = { 0, 16, 16, 6, 6 , 6, 3};
-    if (partSelec<=6) {
-        //int len = lengths[partSelec];
-        
+    if (partSelec<=6) {   
         for (int axis=0; axis<njoints; axis++) {
             LogicalJoint& ctrl = manager->control(partSelec,axis); 
             if (!ctrl.isValid()) continue;
             current_pos[axis] = ctrl.getAngle();
             current_vel[axis] = ctrl.getVelocity();
+
+            current_torques[axis] = ctrl.getTorque();
+
+            //fprintf(stdout,"torques %lf \n",current_torques[axis]);
         
-            //LogicalJoint& ctrl = manager->control(partSelec,i); 
-            //if (!ctrl.isValid()) continue;
             motor_on[axis] = true; // no reason to turn motors off, for now
 
             if (velocityMode) {
-                //ctrl.setVelocity(next_vel[i]);
                 if(((current_pos[axis]<limitsMin[axis])&&(next_vel[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(next_vel[axis]>0)))
                     ctrl.setVelocity(0.0);
                 else{
@@ -871,5 +871,106 @@ bool iCubSimulationControl::getLimitsRaw(int axis, double *min, double *max)
      }
      //else
      return false;
+}
+
+bool iCubSimulationControl::setTorqueModeRaw( )
+{
+    return NOT_YET_IMPLEMENTED("setTorqueModeRaw");
+}
+bool iCubSimulationControl::getTorqueRaw(int axis, double *sp)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueRaw");
+}
+bool iCubSimulationControl::getTorquesRaw(double *sp)
+{
+    return NOT_YET_IMPLEMENTED("getTorquesRaw");
+}
+bool iCubSimulationControl::getTorqueRangeRaw(int axis, double *a,double *b)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueRangeRaw");
+}
+bool iCubSimulationControl::getTorqueRangesRaw(double *a,double *b)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueRangesRaw");
+}
+bool iCubSimulationControl::setRefTorquesRaw(const double *sp)
+{
+    return NOT_YET_IMPLEMENTED("setRefTorquesRaw");
+}
+bool iCubSimulationControl::setRefTorqueRaw(int axis,double ref)
+{
+    return NOT_YET_IMPLEMENTED("setRefTorqueRaw");
+}
+bool iCubSimulationControl::getRefTorquesRaw(double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getRefTorquesRaw");
+}
+bool iCubSimulationControl::getRefTorqueRaw(int axis,double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getRefTorqueRaw");
+}
+bool iCubSimulationControl::setTorquePidRaw(int axis, const yarp::dev::Pid &pid)
+{
+    return NOT_YET_IMPLEMENTED("setTorquePidRaw");
+}
+bool iCubSimulationControl::setTorquePidsRaw(const yarp::dev::Pid *pid)
+{
+    return NOT_YET_IMPLEMENTED("setTorquePidsRaw");
+}
+bool iCubSimulationControl::setTorqueErrorLimitRaw(int axis, double lim)
+{
+    return NOT_YET_IMPLEMENTED("setTorqueErrorLimitRaw");
+}
+bool iCubSimulationControl::setTorqueErrorLimitsRaw(const double *lims)
+{
+    return NOT_YET_IMPLEMENTED("setTorqueErrorLimitsRaw");
+}
+bool iCubSimulationControl::getTorqueErrorRaw(int axis,double *err)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueErrorRaw");
+}
+bool iCubSimulationControl::getTorqueErrorsRaw(double *err)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueErrorsRaw");
+}
+bool iCubSimulationControl::getTorquePidOutputRaw(int axis, double *out)
+{
+    return NOT_YET_IMPLEMENTED("getTorquePidOutputRaw");
+}
+bool iCubSimulationControl::getTorquePidOutputsRaw(double *out)
+{
+    return NOT_YET_IMPLEMENTED("getTorquePidOutputsRaw");
+}
+bool iCubSimulationControl::getTorquePidRaw(int axis, yarp::dev::Pid *pid)
+{
+    return NOT_YET_IMPLEMENTED("getTorquePidRaw");
+}
+bool iCubSimulationControl::getTorquePidsRaw(yarp::dev::Pid *pid)
+{
+    return NOT_YET_IMPLEMENTED("getTorquePidsRaw");
+}
+bool iCubSimulationControl::getTorqueErrorLimitRaw(int axis, double *err)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueErrorLimitRaw");
+}
+bool iCubSimulationControl::getTorqueErrorLimitsRaw(double *err)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueErrorLimitsRaw");
+}
+bool iCubSimulationControl::resetTorquePidRaw(int axis)
+{
+    return NOT_YET_IMPLEMENTED("resetTorquePidRaw");
+}
+bool iCubSimulationControl::disableTorquePidRaw(int axis)
+{
+    return NOT_YET_IMPLEMENTED("disableTorquePidRaw");
+}
+bool iCubSimulationControl::enableTorquePidRaw(int axis)
+{
+    return NOT_YET_IMPLEMENTED("enableTorquePidRaw");
+}
+bool iCubSimulationControl::setTorqueOffsetRaw(int axis,double offset)
+{
+    return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
 }
 

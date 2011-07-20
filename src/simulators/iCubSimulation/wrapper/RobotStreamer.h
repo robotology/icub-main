@@ -33,6 +33,7 @@ public:
     virtual bool shouldSendTouchRight() = 0;
     virtual void sendInertial(yarp::os::Bottle& report) = 0;
     virtual bool shouldSendInertial() = 0;
+    virtual void checkTorques() = 0;
 };
 
 #endif

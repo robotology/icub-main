@@ -68,6 +68,7 @@ public:
 
     virtual void sendInertial(yarp::os::Bottle& report);
     virtual bool shouldSendInertial();
+
 private:
 
 #ifndef OMIT_LOGPOLAR
@@ -82,6 +83,9 @@ private:
 #endif
 
     void displayStep(int pause);
+
+    virtual void checkTorques();
+    void getTorques( yarp::os::BufferedPort<yarp::os::Bottle>& Port );
 
     void getImage();
     void sendImage(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
@@ -102,10 +106,8 @@ private:
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeftFov, portLeftLog, portRightFov, portRightLog ;
 #endif
     yarp::os::Port cmdPort;
-    yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort;
-    yarp::os::BufferedPort<yarp::os::Bottle> tactileRightPort;
-    yarp::os::BufferedPort<yarp::os::Bottle> tactilePort;
-    yarp::os::BufferedPort<yarp::os::Bottle> inertialPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort, tactileRightPort, tactilePort, inertialPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> trqLeftLegPort, trqRightLegPort, trqLeftArmPort, trqRightArmPort, trqTorsoPort;
 
     int _argc;
     char **_argv;

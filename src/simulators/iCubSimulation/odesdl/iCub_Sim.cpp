@@ -850,6 +850,10 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
         retreiveInertialData(inertialReport);
         robot_streamer->sendInertial(inertialReport);
     }
+
+    //go and check if torques are needed
+    robot_streamer->checkTorques();
+
     setJointSpeed();
     //setJointTorques();
     //finishTimeODE = clock() ;
@@ -1073,7 +1077,6 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     odeinit._iCub->eyeLidsPortName = moduleName;
     Property options;
 
-
     //get the camera calibration parameters
     ConstString camcalibConf = robot_config->getFinder().findFile("camcalib");
     Property camcalibOptions;
@@ -1106,9 +1109,6 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
         printf("Adding video texture %s\n", name.c_str());
         video->add(options.findGroup(name.c_str()));
     }
-
-
-
 }
 
 OdeSdlSimulation::~OdeSdlSimulation() {
@@ -1123,6 +1123,18 @@ bool OdeSdlSimulation::checkSync(bool reset) {
     }
     return odeinit.sync;
 }
+
+
+bool OdeSdlSimulation::getTrqData(Bottle &data) {
+    OdeInit& odeinit = OdeInit::get();
+    for (int s=0; s<data.size(); s++){
+        odeinit._iCub->torqueData[s] = data.get(s).asDouble();
+        //fprintf(stdout,"torques... %lf \n",odeinit._iCub->torqueData[s]);
+    }
+    return true;
+}
+
+
 
 bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
     int w = 320;

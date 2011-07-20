@@ -151,8 +151,14 @@ void OdeLogicalJoint::init(const char *unit,
         printf("Unknown body unit %s\n", unit);
         exit(1);
     }
+
 }
 
+double OdeLogicalJoint::getTorque() {
+    OdeInit& odeinit = OdeInit::get();
+    double result = odeinit._iCub->torqueData[0];
+    return result;
+}
 
 double OdeLogicalJoint::getAngleRaw() {
     if (verge==0) {

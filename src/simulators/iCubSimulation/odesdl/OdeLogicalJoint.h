@@ -99,6 +99,10 @@ public:
         return speedSetpoint;
     }
 
+    //test for torque
+    double getTorque();
+    double setTorque();
+
     /**
      * Set velocity and acceleration control parameters.
      */
@@ -138,6 +142,7 @@ private:
     double vel;
     double acc;
     PidFilter filter;
+    double torque;
 
     OdeLogicalJoint *left, *right, *peer;
     int verge;

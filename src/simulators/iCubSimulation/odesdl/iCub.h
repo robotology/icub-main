@@ -210,6 +210,8 @@ public:
     int modelTextureIndex;
     int numCovers;
 
+    double torqueData[100];
+
     class iCubCovers {
     public:
         dBodyID body;

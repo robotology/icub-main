@@ -50,6 +50,7 @@ class yarp::dev::iCubSimulationControl :
     public IPidControlRaw, 
     public IPositionControlRaw, 
     public IVelocityControlRaw, 
+    public ITorqueControlRaw,
     public IEncodersRaw, 
     public IAmplifierControlRaw,
     public IControlCalibrationRaw,
@@ -180,8 +181,34 @@ class yarp::dev::iCubSimulationControl :
   virtual bool setLimitsRaw(int axis, double min, double max);
   virtual bool getLimitsRaw(int axis, double *min, double *max);
 
-  /////// RateThread
-  //void run(void);
+    /////// Torque Control
+    virtual bool setTorqueModeRaw(void);
+    virtual bool getTorqueRaw(int, double *);
+    virtual bool getTorquesRaw(double *);
+    virtual bool getTorqueRangeRaw(int,double *,double *);
+    virtual bool getTorqueRangesRaw(double *,double *);
+    virtual bool setRefTorquesRaw(const double *);
+    virtual bool setRefTorqueRaw(int,double);
+    virtual bool getRefTorquesRaw(double *);
+    virtual bool getRefTorqueRaw(int,double *);
+    virtual bool setTorquePidRaw(int,const yarp::dev::Pid &);
+    virtual bool setTorquePidsRaw(const yarp::dev::Pid *);
+    virtual bool setTorqueErrorLimitRaw(int,double);
+    virtual bool setTorqueErrorLimitsRaw(const double *);
+    virtual bool getTorqueErrorRaw(int,double *);
+    virtual bool getTorqueErrorsRaw(double *);
+    virtual bool getTorquePidOutputRaw(int,double *);
+    virtual bool getTorquePidOutputsRaw(double *);
+    virtual bool getTorquePidRaw(int,yarp::dev::Pid *);
+    virtual bool getTorquePidsRaw(yarp::dev::Pid *);
+    virtual bool getTorqueErrorLimitRaw(int,double *);
+    virtual bool getTorqueErrorLimitsRaw(double *);
+    virtual bool resetTorquePidRaw(int);
+    virtual bool disableTorquePidRaw(int);
+    virtual bool enableTorquePidRaw(int);
+    virtual bool setTorqueOffsetRaw(int,double);
+
+//void run(void);
 
   /////// Joint steps
   void jointStep();
@@ -201,6 +228,9 @@ protected:
 
     //current position of the joints
     double *current_pos;
+
+    //torque of the joints
+    double *current_torques; // at the moment this is fake
 
     //current velocity of the joints
     double *current_vel;

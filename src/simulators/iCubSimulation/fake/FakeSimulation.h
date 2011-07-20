@@ -39,6 +39,8 @@ public:
 
     virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& img);
 
+    virtual bool getTrqData(yarp::os::Bottle &data);
+
     virtual void clearBuffer() {
     }
 

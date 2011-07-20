@@ -33,6 +33,11 @@ void FakeSimulation::simLoop(int h, int w) {
     }
 }
 
+bool FakeSimulation::getTrqData(yarp::os::Bottle &data)
+{
+    return true;
+}
+
 
 bool FakeSimulation::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& img) {
     img.resize(320,240);

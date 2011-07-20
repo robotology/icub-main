@@ -144,6 +144,12 @@ bool SimulatorModule::closeModule() {
     tactileRightPort.close();
     inertialPort.close();
     cmdPort.close();
+
+    trqLeftLegPort.close();
+    trqRightLegPort.close();
+    trqTorsoPort.close();
+    trqLeftArmPort.close();
+    trqRightArmPort.close();
     
     fprintf(stderr, "Successfully terminated...bye...\n");
     return true;
@@ -359,11 +365,24 @@ bool SimulatorModule::open() {
     string tactileLeft = moduleName + "/skin/left_hand";
     string tactileRight = moduleName + "/skin/right_hand";
 
+    string torqueLeftLeg = moduleName +"/joint_vsens/left_leg:i";
+    string torqueRightLeg = moduleName +"/joint_vsens/right_leg:i";
+    string torqueTorso = moduleName +"/joint_vsens/torso:i";
+    string torqueRightArm = moduleName +"/joint_vsens/left_arm:i";
+    string torqueLeftArm = moduleName +"/joint_vsens/right_arm:i";
+    
     string inertial = moduleName + "/inertial";
     cmdPort.open( world.c_str() );
     tactileLeftPort.open( tactileLeft.c_str() );
     tactileRightPort.open( tactileRight.c_str() );
     inertialPort.open( inertial.c_str() );
+
+    trqLeftLegPort.open( torqueLeftLeg.c_str() );
+    trqRightLegPort.open( torqueRightLeg.c_str() );
+    trqTorsoPort.open( torqueTorso.c_str() );
+    trqLeftArmPort.open( torqueLeftArm.c_str() );
+    trqRightArmPort.open( torqueRightArm.c_str() );
+
 
     if (robot_flags.actVision) {
         initImagePorts();
@@ -380,7 +399,7 @@ bool SimulatorModule::open() {
     buffer.resize( w, h);
 
     firstpass = true;
-
+   
     return true;
 }
 
@@ -391,7 +410,37 @@ bool SimulatorModule::runModule() {
     return true;
 }
 
+void SimulatorModule::checkTorques()
+{
+    bool needLeftLeg = (trqLeftLegPort.getInputCount()>0);
+    bool needRightLeg = (trqRightLegPort.getInputCount()>0);
+    bool needLeftArm = (trqLeftArmPort.getInputCount()>0);
+    bool needRightArm = (trqRightArmPort.getInputCount()>0);
+    bool needTorso = (trqTorsoPort.getInputCount()>0);
 
+    if (needLeftLeg)
+        getTorques( trqLeftLegPort );
+    if (needRightLeg)
+        getTorques( trqRightLegPort );
+    if (needLeftArm)
+        getTorques( trqLeftArmPort );
+    if (needRightArm)
+        getTorques( trqRightArmPort );
+    if (needTorso)
+        getTorques( trqTorsoPort );
+}
+
+void SimulatorModule::getTorques( yarp::os::BufferedPort<yarp::os::Bottle>& buffPort )
+{
+    mutex.wait();
+    Bottle *torques = NULL;
+    torques = buffPort.read(false);
+    if ( torques !=NULL )
+    {
+        sim->getTrqData(*torques);
+    }
+    mutex.post();
+}
 
 void SimulatorModule::displayStep(int pause) {
     //if (sim->checkSync())

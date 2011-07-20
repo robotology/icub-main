@@ -1273,6 +1273,9 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     ResourceFinder& finder = config.getFinder();
     activateiCubParts(config);
 
+    for (int x =0; x<100; x++)
+        torqueData[x] = 0;
+
     if (actHeadCover)
     {
         iCubHeadModel =  new Model();
