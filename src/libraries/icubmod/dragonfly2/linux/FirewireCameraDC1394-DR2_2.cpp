@@ -944,12 +944,11 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
 	}
 
     if (mUseHardwareTimestamp) {
-        // hats off to Shohei Nobuhara
         uint32_t v = ntohl(*((uint32_t*)m_pFrame->image));
-        int tck = ((v >> 25) & 0x7f) * 1000000 + ((v >> 12) & 0x1fff) * 125 +
-            (int)(((v) & 0xfff) * (1.0 / 24.576));
-
-        m_Stamp.update(tck/1000000.0);
+        int nSecond = (v >> 25) & 0x7f;
+        int nCycleCount  = (v >> 12) & 0x1fff;
+        int nCycleOffset = (v >> 0) & 0xfff;
+        m_Stamp.update((double)nSecond + (((double)nCycleCount+((double)nCycleOffset/3072.0))/8000.0));
         //m_Stamp.update(m_pFrame->timestamp/1000000.0);
     } else {
         m_Stamp.update();
