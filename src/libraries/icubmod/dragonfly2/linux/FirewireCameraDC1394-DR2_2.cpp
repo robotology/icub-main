@@ -14,6 +14,39 @@
 //  LLLLL  I  N   N   UUU   X   X
 
 #include "linux/FirewireCameraDC1394-DR2_2.h"
+#include <arpa/inet.h>
+
+#define POINTGREY_REGISTER_TIMESTAMP 0x12F8
+
+static dc1394error_t set_embedded_timestamp(dc1394camera_t *camera, 
+                                            bool enable) {
+    uint32_t value;
+    dc1394error_t err;
+
+    err = dc1394_get_control_register(camera, 
+                                      POINTGREY_REGISTER_TIMESTAMP, 
+                                      &value);
+    DC1394_ERR_RTN(err, "No embedded timestamp capability");
+    
+    bool current = (value & 0x1U)!=0;
+    
+    if(enable==current) {
+        return DC1394_SUCCESS;
+    }
+    value ^= 0x1;
+    err = dc1394_set_control_register(camera, 
+                                      POINTGREY_REGISTER_TIMESTAMP, 
+                                      value);
+    DC1394_ERR_RTN(err, "Cannot configure embedded timestamp");
+    err = dc1394_get_control_register(camera, 
+                                      POINTGREY_REGISTER_TIMESTAMP, 
+                                      &value);
+    DC1394_ERR_RTN(err, "Configuration for embedded timestamp won't stick");
+
+    current = value & 0x1;
+
+    return (enable==current)?DC1394_SUCCESS: DC1394_FAILURE;
+}
 
 double CFWCamera_DR2_2::bytesPerPixel(dc1394color_coding_t pixelFormat)
 {
@@ -415,6 +448,10 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     dc1394_feature_get_value(m_pCamera,DC1394_FEATURE_SHUTTER,&m_ShutterSaveValue);
     dc1394_feature_get_value(m_pCamera,DC1394_FEATURE_GAIN,&m_GainSaveValue);
+
+    if (mUseHardwareTimestamp) {
+        set_embedded_timestamp(m_pCamera,true);
+    }
 
     return true;
 }
@@ -907,7 +944,13 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
 	}
 
     if (mUseHardwareTimestamp) {
-        m_Stamp.update(m_pFrame->timestamp/1000000.0);
+        // hats off to Shohei Nobuhara
+        uint32_t v = ntohl(*((uint32_t*)m_pFrame->image));
+        int tck = ((v >> 25) & 0x7f) * 1000000 + ((v >> 12) & 0x1fff) * 125 +
+            (int)(((v) & 0xfff) * (1.0 / 24.576));
+
+        m_Stamp.update(tck);
+        //m_Stamp.update(m_pFrame->timestamp/1000000.0);
     } else {
         m_Stamp.update();
     }
