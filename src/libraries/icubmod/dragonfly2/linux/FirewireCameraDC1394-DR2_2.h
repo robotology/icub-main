@@ -50,6 +50,8 @@ class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 public:   
     CFWCamera_DR2_2()
     {
+        m_LastSecond = 0;
+        m_SecondOffset = 0;
     }
 
     virtual ~CFWCamera_DR2_2()
@@ -113,6 +115,8 @@ protected:
     dc1394video_frame_t *m_pFrame,*m_pFramePoll;
     yarp::os::Semaphore m_AcqMutex;
     yarp::os::Stamp m_Stamp;
+    int m_LastSecond;
+    double m_SecondOffset;
 
     dc1394camera_t *m_pCamera;
 

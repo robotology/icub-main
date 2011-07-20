@@ -948,7 +948,14 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
         int nSecond = (v >> 25) & 0x7f;
         int nCycleCount  = (v >> 12) & 0x1fff;
         int nCycleOffset = (v >> 0) & 0xfff;
-        m_Stamp.update((double)nSecond + (((double)nCycleCount+((double)nCycleOffset/3072.0))/8000.0));
+
+        if (m_LastSecond>nSecond) {
+            // we got a wrap-around event, losing 128 seconds
+            m_SecondOffset += 128;
+        }
+        m_LastSecond = nSecond;
+
+        m_Stamp.update(m_SecondOffset+(double)nSecond + (((double)nCycleCount+((double)nCycleOffset/3072.0))/8000.0));
         //m_Stamp.update(m_pFrame->timestamp/1000000.0);
     } else {
         m_Stamp.update();
