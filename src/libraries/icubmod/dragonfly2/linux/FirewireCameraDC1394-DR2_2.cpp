@@ -949,7 +949,7 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
         int tck = ((v >> 25) & 0x7f) * 1000000 + ((v >> 12) & 0x1fff) * 125 +
             (int)(((v) & 0xfff) * (1.0 / 24.576));
 
-        m_Stamp.update(tck);
+        m_Stamp.update(tck/1000000.0);
         //m_Stamp.update(m_pFrame->timestamp/1000000.0);
     } else {
         m_Stamp.update();
