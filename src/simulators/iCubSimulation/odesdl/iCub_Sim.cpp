@@ -1126,7 +1126,7 @@ bool OdeSdlSimulation::checkSync(bool reset) {
 }
 
 
-bool OdeSdlSimulation::getTrqData(Bottle &data) {
+bool OdeSdlSimulation::getTrqData(Bottle data) {
     OdeInit& odeinit = OdeInit::get();
     for (int s=0; s<data.size(); s++){
         odeinit._iCub->torqueData[s] = data.get(s).asDouble();

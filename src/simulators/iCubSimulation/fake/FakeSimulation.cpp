@@ -33,7 +33,7 @@ void FakeSimulation::simLoop(int h, int w) {
     }
 }
 
-bool FakeSimulation::getTrqData(yarp::os::Bottle &data)
+bool FakeSimulation::getTrqData(yarp::os::Bottle data)
 {
     return true;
 }

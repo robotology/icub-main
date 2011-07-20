@@ -72,7 +72,7 @@ public:
 
     virtual bool checkSync(bool reset = false) = 0;
 
-    virtual bool getTrqData(yarp::os::Bottle &data) = 0;
+    virtual bool getTrqData(yarp::os::Bottle data) = 0;
 };
 
 #endif
