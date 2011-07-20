@@ -146,6 +146,7 @@ void OdeSdlSimulation::handle_key_down(SDL_keysym* keysym) {
         case SDLK_e:
             break;
         case SDLK_r:
+            initViewpoint();
             break;
         case SDLK_t:
             break;
