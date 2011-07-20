@@ -154,9 +154,9 @@ void OdeLogicalJoint::init(const char *unit,
 
 }
 
-double OdeLogicalJoint::getTorque() {
+double OdeLogicalJoint::getTorque(int axis) {
     OdeInit& odeinit = OdeInit::get();
-    double result = odeinit._iCub->torqueData[0];
+    double result = odeinit._iCub->torqueData[axis];
     return result;
 }
 

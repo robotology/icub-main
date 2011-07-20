@@ -68,7 +68,7 @@ public:
     /**
      * this is just a fake torque interface for now
      */
-    virtual double getTorque() = 0;
+    virtual double getTorque(int axis) = 0;
 };
 
 

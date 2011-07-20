@@ -310,7 +310,7 @@ void iCubSimulationControl::jointStep() {
             current_pos[axis] = ctrl.getAngle();
             current_vel[axis] = ctrl.getVelocity();
 
-            current_torques[axis] = ctrl.getTorque();
+            current_torques[axis] = ctrl.getTorque(axis);
 
             //fprintf(stdout,"torques %lf \n",current_torques[axis]);
         
@@ -363,7 +363,6 @@ bool iCubSimulationControl::setReferenceRaw (int axis, double ref)
 {
     if( (axis>=0) && (axis<njoints) )
         {
-        //printf(" GETTING THE REFERENCE??? 1\n");
             _mutex.wait();
             next_pos[axis] = ref;
             _mutex.post();
@@ -889,7 +888,7 @@ bool iCubSimulationControl::getTorqueRaw(int axis, double *sp)
 {
     if( (axis >=0) && (axis < njoints)) {
         _mutex.wait();
-         *sp = 0.0;
+         *sp = current_torques[axis];
          _mutex.post();
          return true;
 	}
@@ -899,7 +898,7 @@ bool iCubSimulationControl::getTorquesRaw(double *sp)
 {
    _mutex.wait();
     for(int axis = 0;axis<njoints;axis++)
-        sp[axis] = 0.0;
+        sp[axis] = current_torques[axis];
     _mutex.post();
     return true;
 }

@@ -66,7 +66,7 @@ public:
     }
 
     
-    virtual double getTorque(){
+    virtual double getTorque(int axis){
         return true;
     }
 

@@ -100,7 +100,7 @@ public:
     }
 
     //test for torque
-    double getTorque();
+    double getTorque(int axis);
     double setTorque();
 
     /**

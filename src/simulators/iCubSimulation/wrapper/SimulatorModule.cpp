@@ -437,7 +437,7 @@ void SimulatorModule::getTorques( yarp::os::BufferedPort<yarp::os::Bottle>& buff
     torques = buffPort.read(false);
     if ( torques !=NULL )
     {
-        sim->getTrqData(*torques);
+        sim->getTrqData( torques->tail() );
     }
     mutex.post();
 }
