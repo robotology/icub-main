@@ -101,6 +101,7 @@ protected:
     int m_nInvalidFrames;
     bool m_bCameraOn;
     bool mHires;
+    bool mUseHardwareTimestamp;
 
     unsigned int m_RawBufferSize;
     unsigned int m_XDim,m_YDim;

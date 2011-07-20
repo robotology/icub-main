@@ -137,6 +137,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     int off_x=checkInt(config,"xoff");
     int off_y=checkInt(config,"yoff");
     int format=checkInt(config,"video_type");
+    mUseHardwareTimestamp = !checkInt(config,"use_network_time");
+
     unsigned int idCamera=checkInt(config,"d");
     m_Framerate=checkInt(config,"framerate");
     
@@ -904,7 +906,11 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
 		return false;
 	}
 
-	m_Stamp.update();
+    if (mUseHardwareTimestamp) {
+        m_Stamp.update(m_pFrame->timestamp/1000000.0);
+    } else {
+        m_Stamp.update();
+    }
 
 	if (pImage)
 	{
