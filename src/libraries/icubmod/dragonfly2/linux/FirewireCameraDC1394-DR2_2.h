@@ -25,6 +25,7 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
+#include <yarp/dev/PreciselyTimed.h>
 
 #define NUM_DMA_BUFFERS 4
 
@@ -45,7 +46,8 @@
 #define DR_YUV_1024x768          10
 #define DR_BAYER_1024x768        11
 
-class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
+class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394,
+                        public yarp::dev::IPreciselyTimed
 {
 public:   
     CFWCamera_DR2_2()
@@ -61,7 +63,7 @@ public:
     inline int height(){ return m_YDim; }
     inline int getRawBufferSize(){ return m_RawBufferSize; }
 
-    inline const yarp::os::Stamp& getLastInputStamp(){ return m_Stamp; }
+    virtual yarp::os::Stamp getLastInputStamp() { return m_Stamp; }
 
     bool Create(yarp::os::Searchable& config);
 
