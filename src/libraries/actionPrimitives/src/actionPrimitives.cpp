@@ -198,6 +198,7 @@ void ActionPrimitives::init()
     handSeqTerminator=false;
     fingersInPosition=true;
     reachTmoEnabled=false;
+    locked=false;
 
     latchTimerWait=waitTmo=0.0;
     latchTimerReach=reachTmo=0.0;
@@ -669,12 +670,45 @@ bool ActionPrimitives::clearActionsQueue()
 
 
 /************************************************************************/
+bool ActionPrimitives::lockActions()
+{
+    if (configured)
+    {
+        locked=true;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::unlockActions()
+{
+    if (configured)
+    {
+        locked=false;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::getActionsLockStatus() const
+{
+    return locked;
+}
+
+
+/************************************************************************/
 bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Vector &o,
                                    const double execTime, const bool oEnabled, const bool execHand,
                                    const HandWayPoint &handWP, const bool handSeqTerminator,
                                    ActionPrimitivesCallback *clb)
 {
-    if (configured)
+    if (configured && !locked)
     {
         mutex.wait();
         Action action;
@@ -842,7 +876,7 @@ bool ActionPrimitives::pushAction(const string &handSeqKey,
 /************************************************************************/
 bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback *clb)
 {
-    if (configured)
+    if (configured && !locked)
     {
         mutex.wait();
         Action action;
@@ -868,7 +902,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
 bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
                                  const double execTime)
 {
-    if (configured)
+    if (configured && !locked)
     {
         disableArmWaving();
 
@@ -896,7 +930,7 @@ bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
 /************************************************************************/
 bool ActionPrimitives::reachPosition(const Vector &x, const double execTime)
 {
-    if (configured)
+    if (configured && !locked)
     {
         disableArmWaving();
 

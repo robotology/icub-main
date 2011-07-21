@@ -132,7 +132,7 @@ public:
 * hand (in joint-space) primitive actions and to combine them in 
 * the actions queue. 
 */
-class ActionPrimitives : public yarp::os::RateThread
+class ActionPrimitives : protected yarp::os::RateThread
 {
 protected:
     std::string robot;
@@ -161,10 +161,11 @@ protected:
 
     bool configured;
     bool closed;
-    bool checkEnabled;
+    bool checkEnabled;    
     bool tracking_mode;
     bool torsoActive;
     bool reachTmoEnabled;
+    bool locked;
     bool verbose;
 
     double default_exec_time;
@@ -360,8 +361,8 @@ public:
     *  
     *  // the "poss", "vels" and "tols" keys specify 9 joints
     *  // positions, velocities and tolerances whereas the "thres"
-	*  // key specifies 5 fingers thresholds used for contact detection
-	*  // The "tols" key serves to detect the end motion condition.
+    *  // key specifies 5 fingers thresholds used for contact detection
+    *  // The "tols" key serves to detect the end motion condition.
     *  // The "tmo" key specifies the timeout beyond which the motion
     *  // is considered to be finished.
     *  @endcode
@@ -516,6 +517,24 @@ public:
     * @return true/false on success/fail.
     */
     virtual bool clearActionsQueue();
+
+    /**
+    * Disable the possibility to yield any new action.
+    * @return true/false on success/fail.
+    */
+    virtual bool lockActions();
+
+    /**
+    * Enable the possibility to yield new actions.
+    * @return true/false on success/fail.
+    */
+    virtual bool unlockActions();
+
+    /**
+    * Return the actions lock status.
+    * @return true/false on locked/unlocked.
+    */
+    virtual bool getActionsLockStatus() const;
 
     /**
     * Define an hand WayPoint (WP) to be added at the bottom of the 
