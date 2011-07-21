@@ -946,10 +946,9 @@ void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
 
 					case VOCAB_IMP_PARAM:
 						{
-							*ok = iimp->getImpedance(cmd.get(3).asInt(), &dtmp0, &dtmp1, &dtmp2);
+							*ok = iimp->getImpedance(cmd.get(3).asInt(), &dtmp0, &dtmp1);
 							response.addDouble(dtmp0);
 							response.addDouble(dtmp1);
-							response.addDouble(dtmp2);
 						}
                         break;
 
