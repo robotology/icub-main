@@ -496,6 +496,13 @@ void gravityCompensatorThread::feedFwdGravityControl(IControlMode *iCtrlMode, IT
 		iCtrlMode->getControlMode(i,&ctrl_mode);
 		switch(ctrl_mode)
 		{
+			//for all this control modes do nothing
+			case VOCAB_CM_OPENLOOP:
+			case VOCAB_CM_IDLE:
+			case VOCAB_CM_POSITION:
+			case VOCAB_CM_VELOCITY:
+				break;
+
 			case VOCAB_CM_TORQUE:	
 				if(gravity_mode == GRAVITY_COMPENSATION_ON)
 				{
@@ -523,6 +530,7 @@ void gravityCompensatorThread::feedFwdGravityControl(IControlMode *iCtrlMode, IT
 				}
 				break;
 			default:
+				fprintf(stderr,"Unknown control mode (jnt:%d).\n",i);
 				break;
 		}
 	}
