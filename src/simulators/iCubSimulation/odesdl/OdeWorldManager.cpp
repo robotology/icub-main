@@ -292,7 +292,7 @@ void OdeLink::doGrab() {
             dJointDestroy(odeinit._iCub->grab);
         }
         if (right) {
-            dJointDestroy(odeinit._iCub->grab);
+            dJointDestroy(odeinit._iCub->grab1);
         }
     }
     odeinit.mutex.post();
