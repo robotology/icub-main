@@ -537,7 +537,7 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
 			{
                 //		handleTorqueMsg(cmd, response, &rec, &ok);
 			}
-    else if ((cmd.size()>1) && (cmd.get(0).asVocab()==VOCAB_ICONTROLMODE))
+    else if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_ICONTROLMODE))
 		    {
                 //      handleControlModeMsg(cmd, response, &rec, &ok);
 			}

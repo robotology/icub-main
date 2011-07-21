@@ -322,7 +322,7 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
         }
 
     //TODO: handle here messages about  IControlMode interface
-    int code = cmd.get(1).asVocab();
+    int code = cmd.get(0).asVocab();
     *ok=true;
 
     switch(code)
@@ -819,7 +819,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         {
                           handleTorqueMsg(cmd, response, &rec, &ok);
         }
-    else if ((cmd.size()>1) && (cmd.get(0).asVocab()==VOCAB_ICONTROLMODE))
+    else if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_ICONTROLMODE))
         {
                           handleControlModeMsg(cmd, response, &rec, &ok);
         }

@@ -1,3 +1,10 @@
+2011-07-21 Randazzo Marco <marco.randazzo@iit.it>
+	* main/src/core/iCubInterface/ControlBoardWrapper.cpp
+	* main/src/core/iCubInterface/ControlBoardWrapper2.cpp
+	* main/src/core/iCubInterface/ControlBoardWrapper2.h
+	Old methods of yarp::dev::IImpedanceControl have been removed (see 2011-05-26 changelog)
+	Fixed a mismatch between yarp and icub VOCABS for yarp::dev::IControlMode interface
+	
 2011-18-07  Lorenzo Natale  <lorenzo.natale@iit.it>
     * Forcing ICUB_APPLICATION_PREFIX from ICUB_ROOT
 	* Disable and complain if ICUB_ROOT is not set
