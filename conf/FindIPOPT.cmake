@@ -65,24 +65,24 @@ ELSE(WIN32)
             STRING(REGEX REPLACE "-[^l][^ ]* " "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "-l"                "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
-            STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})	# remove any possible auto-dependence
+            STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})       # remove any possible auto-dependence
             SEPARATE_ARGUMENTS(IPOPT_DEP)
 
             # use the find_library command in order to prepare rpath correctly 
-	    FOREACH(LIB ${IPOPT_DEP})
-	       FIND_LIBRARY(SEARCH_FOR_IPOPT_${LIB} ${LIB} ${IPOPT_DIR}/lib
+            FOREACH(LIB ${IPOPT_DEP})
+               FIND_LIBRARY(SEARCH_FOR_IPOPT_${LIB} ${LIB} ${IPOPT_DIR}/lib
                                                            ${IPOPT_DIR}/lib/coin
-	     		   		                   ${IPOPT_DIR}/lib/coin/ThirdParty
-	     				                   NO_DEFAULT_PATH)
+                                                           ${IPOPT_DIR}/lib/coin/ThirdParty
+                                                           NO_DEFAULT_PATH)
                IF(SEARCH_FOR_IPOPT_${LIB})
                   # handle non-system libraries (e.g. coinblas)
                   SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${SEARCH_FOR_IPOPT_${LIB}})
                ELSE(SEARCH_FOR_IPOPT_${LIB})
                   # handle system libraries (e.g. gfortran)
                   SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
-	       ENDIF(SEARCH_FOR_IPOPT_${LIB})
+               ENDIF(SEARCH_FOR_IPOPT_${LIB})
                MARK_AS_ADVANCED(SEARCH_FOR_IPOPT_${LIB})
-	    ENDFOREACH(LIB)
+            ENDFOREACH(LIB)
          ELSE(IPOPT_DEP_FILE)
             SET(IPOPT_INCLUDE_DIRS /usr/include/coin)
          ENDIF(IPOPT_DEP_FILE)
