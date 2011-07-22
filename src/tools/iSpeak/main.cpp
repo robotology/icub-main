@@ -179,22 +179,29 @@ class iSpeak : protected BufferedPort<Bottle>,
         close();
     }
 
-    void speak(Bottle &request)
+    void speak(const string &phrase)
     {
-        string phrase=request.get(0).asString().c_str();
         system(("echo \""+phrase+"\" | festival --tts").c_str());        
     }
 
     void run()
     {
-        Bottle request;
+        string phrase;
 
         mutex.wait();
-        if (buffer.size()>0)
+        if (buffer.size()>0)    // protect also the access to the size() method
         {
-            request=buffer.front();             
+            Bottle request=buffer.front();
             buffer.pop_front();
-            speaking=true;
+
+            if (request.size()>0)
+            {
+                if (request.get(0).isString())
+                {
+                    phrase=request.get(0).asString().c_str();
+                    speaking=true;
+                }
+            }
         }
         mutex.post();
 
@@ -205,7 +212,7 @@ class iSpeak : protected BufferedPort<Bottle>,
             else
                 mouth.start();
 
-            speak(request);
+            speak(phrase);
 
             mouth.suspend();
             speaking=false;
