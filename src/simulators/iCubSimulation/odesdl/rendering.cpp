@@ -595,7 +595,7 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     cout << "Finished Setting gluBuild2DMipmaps "<< endl; 
     free(infoheader1.data); // Free the memory we used to load the texture
     
-    cout << "\nFisnished creating 3D Model................\n" << endl;
+    cout << "\nFinished creating 3D Model................\n" << endl;
     //glDisable(GL_TEXTURE_2D);
     return ( whichtexture ); // Returns the current texture OpenGL ID
 }
