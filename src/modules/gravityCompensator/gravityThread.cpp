@@ -490,11 +490,11 @@ void gravityCompensatorThread::feedFwdGravityControl(IControlMode *iCtrlMode, IT
 	}
 
 	//set the appropriate feedforward term (normal operation)
+	int ctrl_mode [16];
+	iCtrlMode->getControlModes(ctrl_mode);
 	for(int i=0;i<ctrlJnt;i++)
 	{
-		int ctrl_mode = 0;
-		iCtrlMode->getControlMode(i,&ctrl_mode);
-		switch(ctrl_mode)
+		switch(ctrl_mode[i])
 		{
 			//for all this control modes do nothing
 			case VOCAB_CM_OPENLOOP:
