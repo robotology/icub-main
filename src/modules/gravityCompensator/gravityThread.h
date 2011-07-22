@@ -153,7 +153,7 @@ public:
 	void getLowerEncodersSpeedAndAcceleration();
 	void getUpperEncodersSpeedAndAcceleration();
     bool threadInit();
-	void feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false);
+	void feedFwdGravityControl(std::string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false);
     void run();
     void threadRelease();
 	void closePort(Contactable *_port);

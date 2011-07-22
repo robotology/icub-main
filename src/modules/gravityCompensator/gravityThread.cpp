@@ -468,7 +468,7 @@ bool gravityCompensatorThread::threadInit()
 }
 
 
-void gravityCompensatorThread::feedFwdGravityControl(IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing)
+void gravityCompensatorThread::feedFwdGravityControl(string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing)
 {
 	//check if interfaces are still up (icubinterface running)  
 	if (iCtrlMode == 0) 
@@ -501,6 +501,7 @@ void gravityCompensatorThread::feedFwdGravityControl(IControlMode *iCtrlMode, IT
 			case VOCAB_CM_IDLE:
 			case VOCAB_CM_POSITION:
 			case VOCAB_CM_VELOCITY:
+            case VOCAB_CM_UNKNOWN:
 				break;
 
 			case VOCAB_CM_TORQUE:	
@@ -530,7 +531,7 @@ void gravityCompensatorThread::feedFwdGravityControl(IControlMode *iCtrlMode, IT
 				}
 				break;
 			default:
-				fprintf(stderr,"Unknown control mode (jnt:%d).\n",i);
+				if (i!=3 && s_part!="torso") fprintf(stderr,"Unknown control mode (part: %s jnt:%d).\n",s_part.c_str(), i);
 				break;
 		}
 	}
@@ -589,31 +590,31 @@ void gravityCompensatorThread::run()
 
 		if (iCtrlMode_arm_left)  
 		{
-			feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
+			feedFwdGravityControl("left_arm", iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
 			left_arm_torques->prepare()  =  torques_LA;
 			left_arm_torques->write();
 		}
 		if (iCtrlMode_arm_right)
 		{
-			feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
+			feedFwdGravityControl("right_arm", iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
 			right_arm_torques->prepare() =  torques_RA;
 			right_arm_torques->write();
 		}
 		if (iCtrlMode_torso)  
 		{
-			feedFwdGravityControl(iCtrlMode_torso,iTqs_torso,iImp_torso,torques_TO,ampli_torso);
+			feedFwdGravityControl("torso", iCtrlMode_torso,iTqs_torso,iImp_torso,torques_TO,ampli_torso);
 			torso_torques->prepare()  =  torques_TO;
 			torso_torques->write();
 		}
 		if (iCtrlMode_leg_left)	
 		{
-			feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
+			feedFwdGravityControl("left_leg", iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
 			left_leg_torques->prepare() =  torques_LL;
 			left_leg_torques->write();
 		}
 		if (iCtrlMode_leg_right)
 		{
-			feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
+			feedFwdGravityControl("right_leg", iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
 			right_leg_torques->prepare()  =  torques_RL;
 			right_leg_torques->write();
 		}
@@ -670,24 +671,29 @@ void gravityCompensatorThread::threadRelease()
 	if (iCtrlMode_arm_left)
 	{
 		fprintf(stderr,"Setting gravity compensation offset to zero, left arm\n");
-		feedFwdGravityControl(iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
+		feedFwdGravityControl("left_arm",iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,Z,ampli_larm,true);
 	}
 	if (iCtrlMode_arm_right)	
 	{
 		fprintf(stderr,"Setting gravity compensation offset to zero, right arm\n");
-		feedFwdGravityControl(iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
+		feedFwdGravityControl("right_arm",iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,Z,ampli_rarm,true);
 	}
 	if (iCtrlMode_leg_left)	 
 	{
 		fprintf(stderr,"Setting gravity compensation offset to zero, left leg\n");
-		feedFwdGravityControl(iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
+		feedFwdGravityControl("left_leg", iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,Z,ampli_lleg,true);
 	}
 	if (iCtrlMode_leg_right)
 	{
 		fprintf(stderr,"Setting gravity compensation offset to zero, right leg\n");
-		feedFwdGravityControl(iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
+		feedFwdGravityControl("right_leg",iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,Z,ampli_rleg,true);
 	}
-    
+    if (iCtrlMode_torso)
+	{
+		fprintf(stderr,"Setting gravity compensation offset to zero, torso\n");
+		feedFwdGravityControl("torso",iCtrlMode_torso,iTqs_torso,iImp_torso,Z,ampli_torso,true);
+	}
+
 	Time::delay(0.5);
 
 /*	left_arm_torques->interrupt();
