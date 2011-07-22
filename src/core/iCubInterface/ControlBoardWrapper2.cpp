@@ -393,8 +393,7 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
                         *ok = iMode->getControlMode(axis, &p);
 
                         response.addVocab(VOCAB_IS);
-                        response.addInt(axis);
-                        response.addVocab(VOCAB_CM_CONTROL_MODE);       
+                        response.addInt(axis);     
                         response.addVocab(p);
 			
                         //fprintf(stderr, "Returning %d\n", p);
