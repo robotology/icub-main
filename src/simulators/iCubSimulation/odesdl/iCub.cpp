@@ -2689,12 +2689,12 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
 
     dJointAttach (LAjoints[23],body[28],body[29]);//left thumb1 and thumb2
     dJointSetHingeAnchor(LAjoints[23], jP_leftArm[7][1], elev +jP_leftArm[6][2]-0.045/*fabs(jP_leftArm[7][2]-jP_leftArm[6][2])+0.016*/,jP_leftArm[7][0]+0.069 - 0.011);
-    dJointSetHingeAxis(LAjoints[23],0,0.5,0); 
+    dJointSetHingeAxis(LAjoints[23],0.0,0.5,0); 
     dJointSetHingeParam(LAjoints[23],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(LAjoints[23],  dParamHiStop, (dReal) 2.7925);
 
     dJointAttach (LAjoints[24],body[29],body[30]);//left thumb2 and thumb3
     dJointSetHingeAnchor(LAjoints[24],jP_leftArm[7][1], elev +jP_leftArm[6][2]-0.045/*fabs(jP_leftArm[7][2]-jP_leftArm[6][2])+0.016*/,jP_leftArm[7][0]+0.088 - 0.008);
-    dJointSetHingeAxis(LAjoints[24],0,0.5,0); 
+    dJointSetHingeAxis(LAjoints[24],0.0,0.5,0); 
     dJointSetHingeParam(LAjoints[24],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(LAjoints[24],  dParamHiStop, (dReal) 2.7925);
     }
 

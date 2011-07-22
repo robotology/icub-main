@@ -208,8 +208,8 @@ void OdeSdlSimulation::process_events(void) {
     SDL_Event event;
 
     Uint8 * keystate = SDL_GetKeyState(NULL);
-    if(keystate[SDLK_q]){xrot += 1 * 0.1f;if (xrot >360) xrot -= 360 * 0.1f;}
-    if(keystate[SDLK_z]){xrot -= 1 * 0.1f;if (xrot < -360) xrot += 360 * 0.1f;}
+    if(keystate[SDLK_q]){xrot += 1 * 0.4f;if (xrot >360) xrot -= 360 * 0.1f;}
+    if(keystate[SDLK_z]){xrot -= 1 * 0.4f;if (xrot < -360) xrot += 360 * 0.1f;}
     if(keystate[SDLK_w]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f); 
         xpos += float(sin(yrotrad))* 0.005f; ;zpos -= float(cos(yrotrad))* 0.005f; ypos -= float(sin(xrotrad))* 0.005f;}
     if(keystate[SDLK_s]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f); 
@@ -218,6 +218,9 @@ void OdeSdlSimulation::process_events(void) {
     if (keystate[SDLK_d]){yrotrad = (yrot / 180 * 3.141592654f);xpos += float(cos(yrotrad)) * 0.008;zpos += float(sin(yrotrad)) * 0.008;}
     if(keystate[SDLK_e]){zrot += 1 * 0.4f;if (zrot >360) zrot -= 360 * 0.4f;}
     if(keystate[SDLK_c]){zrot -= 1 * 0.4f;if (zrot < -360) zrot += 360 * 0.4f;}
+
+    if (keystate[SDLK_f]){ypos +=1 *0.005f;}
+    if (keystate[SDLK_v]){ypos -=1 *0.005f;}
 
     if(keystate[SDLK_1]){initViewpoint();}
 
