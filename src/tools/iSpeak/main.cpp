@@ -33,7 +33,7 @@ This module has been tested only on Linux since it requires the
 
 \section lib_sec Libraries 
 - YARP libraries. 
-- Festival package for speech synthesis. 
+- Festival package for speech synthesis (under linux).
 
 \section parameters_sec Parameters
 --name \e name 
@@ -48,16 +48,8 @@ At startup an attempt is made to connect to
 /<robot>/face/emotions/in port. 
 
 \section portsc_sec Ports Created 
-- \e /<name>: this port receives the request for speech 
-  synthesis as a property-like bottle. Each bottle must
-  contain the "phrase" and "time" information. For example the
-  bottle (phrase "down with the service robotics") (time 10.0)
-  will let the robot speak the phrase "down with the service
-  robotics" and at the same time the facial expression will be
-  changed for 10 seconds to mimic the proper mouth movement.
-  Obvioulsy, 10 seconds are really too much for that particular
-  phrase: this was meant to underline that the time tuning is
-  left to you :) .
+- \e /<name>: this port receives the string for speech
+  synthesis.
  
 - \e /<name>/emotions:o: this port serves to command the facial
   expressions. At startup an attempt to connect to the proper
@@ -91,25 +83,51 @@ using namespace std;
 using namespace yarp::os;
 
 
-class iSpeak : public BufferedPort<Property>,
-               public RateThread
+class MouthHandler : public RateThread
 {
     string name;
     string robot;
+    string state;
+
     Port emotions;
 
-    deque<Property> buffer;
-    Semaphore mutex;
+    void send()
+    {
+        Bottle cmd, reply;
+        cmd.addVocab(Vocab::encode("set"));
+        cmd.addVocab(Vocab::encode("mou"));
+        cmd.addVocab(Vocab::encode(state.c_str()));
+        emotions.write(cmd,reply);
+    }
 
-    double t0;
-    double dt;
-    string state;
-    bool speaking;
+    bool threadInit()
+    {
+        emotions.open(("/"+name+"/emotions:o").c_str());
+        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());
+        state="sur";
+
+        return true;
+    }
+
+    void run()
+    {
+        if (state=="sur")
+            state="hap";
+        else
+            state="sur";
+
+        send();
+    }
+
+    void threadRelease()
+    {
+        emotions.interrupt();
+        emotions.close();
+    }
 
 public:
-    iSpeak() : RateThread(200)
+    MouthHandler() : RateThread(200)
     {
-        speaking=false;
         state="sur";
     }
 
@@ -119,74 +137,91 @@ public:
         robot=rf.find("robot").asString().c_str();
     }
 
-    bool threadInit()
+    void suspend()
     {
-        open(("/"+name).c_str());
-        useCallback();
+        state="hap";
+        send();
 
-        emotions.open(("/"+name+"/emotions:o").c_str());
-        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());
-
-        return true;
+        RateThread::suspend();
     }
+};
 
-    void threadRelease()
-    {
-        interrupt();
-        close();
 
-        emotions.interrupt();
-        emotions.close();
-    }
+class iSpeak : protected BufferedPort<Bottle>,
+               public    RateThread
+{
+    string name;    
 
-    void onRead(Property &request)
+    deque<Bottle> buffer;
+    Semaphore mutex;
+    
+    bool speaking;
+    MouthHandler mouth;
+
+    void onRead(Bottle &request)
     {
         mutex.wait();
         buffer.push_back(request);
         mutex.post();
     }
 
-    void speak(Property &request)
+    bool threadInit()
     {
-        string phrase=request.check("phrase",Value("I have received nothing to say")).asString().c_str();
-        double time=request.check("time",Value(1.0)).asDouble();
+        open(("/"+name).c_str());
+        useCallback();
+        return true;
+    }
 
-        system(("echo \""+phrase+"\" | festival --batch --tts &").c_str());
+    void threadRelease()
+    {
+        mouth.stop();
+        interrupt();
+        close();
+    }
 
-        t0=Time::now();
-        dt=time;
-        speaking=true;
+    void speak(Bottle &request)
+    {
+        string phrase=request.get(0).asString().c_str();
+        system(("echo \""+phrase+"\" | festival --tts").c_str());        
     }
 
     void run()
     {
+        Bottle request;
+
         mutex.wait();
         if (buffer.size()>0)
         {
-            speak(buffer.front());
+            request=buffer.front();             
             buffer.pop_front();
+            speaking=true;
         }
         mutex.post();
 
         if (speaking)
         {
-            if (state=="sur")
-                state="hap";
+            if (mouth.isSuspended())
+                mouth.resume();
             else
-                state="sur";
+                mouth.start();
 
-            if (Time::now()-t0>dt)
-            {
-                state="hap";
-                speaking=false;
-            }
+            speak(request);
 
-            Bottle cmd, reply;
-            cmd.addVocab(Vocab::encode("set"));
-            cmd.addVocab(Vocab::encode("mou"));
-            cmd.addVocab(Vocab::encode(state.c_str()));
-            emotions.write(cmd,reply);
-        }        
+            mouth.suspend();
+            speaking=false;
+        }
+    }
+
+public:
+    iSpeak() : RateThread(200)
+    {
+        speaking=false;
+    }
+
+    void configure(ResourceFinder &rf)
+    {
+        name=rf.find("name").asString().c_str();
+        mouth.configure(rf);
     }
     
     bool isSpeaking() const
