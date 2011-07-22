@@ -1,0 +1,16 @@
+<application>
+<name>Cartesian Solvers Launcher</name>
+
+        <dependencies>
+                <port>/icub/torso/state:o</port>
+                <port>/icub/left_arm/state:o</port>
+        </dependencies>
+   
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part left_arm</parameters>
+                <node>icubbrain2</node>
+                <tag>leftArmSolver</tag>
+        </module>
+
+</application>
