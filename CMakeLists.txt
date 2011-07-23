@@ -17,10 +17,10 @@ project(iCub)
 
 SET(ICUB_REQYARP_VERSION_MAJOR "2")
 SET(ICUB_REQYARP_VERSION_MINOR "3")
-SET(ICUB_REQYARP_VERSION_PATCH "7")
+SET(ICUB_REQYARP_VERSION_PATCH "8")
 
 ## avoid checking specific versions of YARP with CMake 2.6.0
-## this is because find_package does not work as expected with CMake 2.6.0
+## this is because find_package does not work as expected with CMake <2.6.4
 if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
         # find yarp, accept all versions, then manually check YARP version
         find_package(YARP REQUIRED)      
