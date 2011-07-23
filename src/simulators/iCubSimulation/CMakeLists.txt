@@ -62,7 +62,7 @@ IF (ICUB_SIM_ENABLE_ODESDL)
       INCLUDE(CheckCXXSourceRuns)
       SET(CMAKE_REQUIRED_INCLUDES ${ODE_INCLUDE_DIRS})
       SET(CMAKE_REQUIRED_LIBRARIES ${ODE_LIBRARIES})
-      CHECK_CXX_SOURCE_RUNS("#include <ode/ode.h>\n int main() { return dCheckConfiguration(\"ODE_double_precision\")?0:1; }\n" ODE_IS_DOUBLE)
+      CHECK_CXX_SOURCE_RUNS("extern \"C\" int dCheckConfiguration(const char*str); \n int main() { return dCheckConfiguration(\"ODE_double_precision\")?0:1; }\n" ODE_IS_DOUBLE)
       # should return 1 if ODE_double_precision
     ELSE (CMAKE_CROSS_COMPILING)
       SET(ODE_IS_DOUBLE FALSE)
