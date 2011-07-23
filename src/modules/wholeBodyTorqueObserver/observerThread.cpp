@@ -301,10 +301,20 @@ bool inverseDynamics::threadInit()
 void inverseDynamics::run()
 {   
 	thread_status = STATUS_OK;
+	static int delay_check=0;
     if(readAndUpdate(false) == false)
 	{
-		printf ("inverseDynamics thread lost connection with iCubInterface.\n");
-		thread_status = STATUS_DISCONNECTED;
+		delay_check++;
+		printf ("network delays detected (%d/10)\n", delay_check);
+		if (delay_check>=10)
+		{
+			printf ("inverseDynamics thread lost connection with iCubInterface.\n");
+			thread_status = STATUS_DISCONNECTED;
+		}
+	}
+	else
+	{
+		delay_check = 0;
 	}
 
 	//get the FT sensors measurments
