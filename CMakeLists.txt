@@ -221,5 +221,5 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubPackage.cmake)
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
 
-########
+#########
 
