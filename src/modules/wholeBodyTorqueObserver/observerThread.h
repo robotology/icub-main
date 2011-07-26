@@ -99,6 +99,8 @@ private:
 	BufferedPort<Vector> *port_com_ra;
 	BufferedPort<Vector> *port_com_ll;
 	BufferedPort<Vector> *port_com_rl;
+	BufferedPort<Vector> *port_com_hd;
+	BufferedPort<Vector> *port_com_to;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;

@@ -235,6 +235,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_ra  = new BufferedPort<Vector>;
 	port_com_ll  = new BufferedPort<Vector>;
 	port_com_rl  = new BufferedPort<Vector>;
+	port_com_to  = new BufferedPort<Vector>;
+	port_com_hd  = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
 	port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -256,6 +258,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_ra ->open(string("/"+local_name+"/right_arm/com:o").c_str());
 	port_com_ll ->open(string("/"+local_name+"/left_leg/com:o").c_str());
 	port_com_rl ->open(string("/"+local_name+"/right_leg/com:o").c_str());
+	port_com_hd ->open(string("/"+local_name+"/head/com:o").c_str());
+	port_com_to ->open(string("/"+local_name+"/torso/com:o").c_str());
 
 	if (autoconnect)
 	{
@@ -423,8 +427,8 @@ void inverseDynamics::run()
 	writeTorque(RATorques, 3, port_RWTorques); //wrist
 	writeTorque(LATorques, 3, port_LWTorques); //wrist
 	
-	Vector com_all(3), com_ll(3), com_rl(3), com_la(3),com_ra(3); 
-	double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  ;
+	Vector com_all(3), com_ll(3), com_rl(3), com_la(3),com_ra(3), com_hd(3), com_to(3); 
+	double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to;
 	
 	if (com_enabled)	
 	{
@@ -434,11 +438,13 @@ void inverseDynamics::run()
 		icub->getCOM(RIGHT_LEG, com_rl,  mass_rl);
 		icub->getCOM(LEFT_ARM,  com_la,  mass_la);
 		icub->getCOM(RIGHT_ARM, com_ra,  mass_ra);
+		icub->getCOM(HEAD,      com_hd,  mass_hd);
+		icub->getCOM(TORSO,     com_to,  mass_to);
 	}
 	else
 	{   
-		mass_all=mass_ll=mass_rl=mass_la=mass_ra=0.0;
-		com_all.zero(); com_ll.zero(); com_rl.zero(); com_la.zero(); com_ra.zero();
+		mass_all=mass_ll=mass_rl=mass_la=mass_ra=mass_hd=mass_to=0.0;
+		com_all.zero(); com_ll.zero(); com_rl.zero(); com_la.zero(); com_ra.zero(); com_hd.zero(); com_to.zero();
 	}
 	
 	F_ext_left_arm=icub->upperTorso->left->getForceMomentEndEff();//-icub_sens->upperTorso->left->getForceMomentEndEff();
@@ -449,6 +455,8 @@ void inverseDynamics::run()
 	port_com_rl->prepare()  = com_rl;
 	port_com_la->prepare()  = com_la;
 	port_com_ra->prepare()  = com_ra;
+	port_com_hd->prepare()  = com_hd;
+	port_com_to->prepare()  = com_to;
 	port_external_wrench_TO->prepare() = F_up;
 	port_external_wrench_RA->prepare() = F_ext_right_arm;
 	port_external_wrench_LA->prepare() = F_ext_left_arm;
@@ -457,6 +465,8 @@ void inverseDynamics::run()
 	port_com_rl->write();
 	port_com_la->write();
 	port_com_ra->write();
+	port_com_hd->write();
+	port_com_to->write();
 	port_external_wrench_RA->write();
 	port_external_wrench_LA->write();
 	port_external_wrench_TO->write();	
@@ -519,6 +529,8 @@ void inverseDynamics::threadRelease()
 	closePort(port_com_rl);
 	closePort(port_com_la);
 	closePort(port_com_ll);
+	closePort(port_com_hd);
+	closePort(port_com_to);
 
 	fprintf(stderr, "Closing inertial port\n");
 	closePort(port_inertial_thread);
