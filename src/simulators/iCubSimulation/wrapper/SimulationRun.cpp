@@ -20,7 +20,7 @@
 
 #include "SimulationRun.h"
 
-#include <yarp/dev/all.h>
+#include <yarp/dev/DriverLinkCreator.h>
 
 #include "SimulatorModule.h"
 #include "iCubSimulationControl.h"
