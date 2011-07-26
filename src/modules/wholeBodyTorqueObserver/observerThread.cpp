@@ -198,7 +198,7 @@ void inverseDynamics::init_lower()
     FM_sens_low.resize(6,2); FM_sens_low.zero();
 }
 
-inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, bool _autoconnect, string icub_type) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), autoconnect(_autoconnect), local_name(_local_name)
+inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, bool _autoconnect, string icub_type, bool _com_enabled) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), autoconnect(_autoconnect), local_name(_local_name), com_enabled(_com_enabled)
 {   
 	icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
 	icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
@@ -230,6 +230,11 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_wrench_RA = new BufferedPort<Vector>;  
     port_external_wrench_LA = new BufferedPort<Vector>;  
 	port_external_wrench_TO = new BufferedPort<Vector>;  
+	port_com_all = new BufferedPort<Vector>;
+	port_com_la  = new BufferedPort<Vector>;
+	port_com_ra  = new BufferedPort<Vector>;
+	port_com_ll  = new BufferedPort<Vector>;
+	port_com_rl  = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
 	port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -246,6 +251,11 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_external_wrench_RA->open(string("/"+local_name+"/right_arm/endEffectorWrench:o").c_str()); 
 	port_external_wrench_LA->open(string("/"+local_name+"/left_arm/endEffectorWrench:o").c_str()); 
 	port_external_wrench_TO->open(string("/"+local_name+"/torso/Wrench:o").c_str());
+	port_com_all->open(string("/"+local_name+"/com:o").c_str());
+	port_com_la ->open(string("/"+local_name+"/left_arm/com:o").c_str());
+	port_com_ra ->open(string("/"+local_name+"/right_arm/com:o").c_str());
+	port_com_ll ->open(string("/"+local_name+"/left_leg/com:o").c_str());
+	port_com_rl ->open(string("/"+local_name+"/right_leg/com:o").c_str());
 
 	if (autoconnect)
 	{
@@ -413,12 +423,40 @@ void inverseDynamics::run()
 	writeTorque(RATorques, 3, port_RWTorques); //wrist
 	writeTorque(LATorques, 3, port_LWTorques); //wrist
 	
+	Vector com_all(3), com_ll(3), com_rl(3), com_la(3),com_ra(3); 
+	double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  ;
+	
+	if (com_enabled)	
+	{
+		icub->computeCOM();
+		icub->getCOM(ALL,       com_all, mass_all);
+		icub->getCOM(LEFT_LEG,  com_ll,  mass_ll);
+		icub->getCOM(RIGHT_LEG, com_rl,  mass_rl);
+		icub->getCOM(LEFT_ARM,  com_la,  mass_la);
+		icub->getCOM(RIGHT_ARM, com_ra,  mass_ra);
+	}
+	else
+	{   
+		mass_all=mass_ll=mass_rl=mass_la=mass_ra=0.0;
+		com_all.zero(); com_ll.zero(); com_rl.zero(); com_la.zero(); com_ra.zero();
+	}
+	
 	F_ext_left_arm=icub->upperTorso->left->getForceMomentEndEff();//-icub_sens->upperTorso->left->getForceMomentEndEff();
 	F_ext_right_arm=icub->upperTorso->right->getForceMomentEndEff();//-icub_sens->upperTorso->right->getForceMomentEndEff();
 
+	port_com_all->prepare() = com_all;
+	port_com_ll->prepare()  = com_ll;
+	port_com_rl->prepare()  = com_rl;
+	port_com_la->prepare()  = com_la;
+	port_com_ra->prepare()  = com_ra;
 	port_external_wrench_TO->prepare() = F_up;
 	port_external_wrench_RA->prepare() = F_ext_right_arm;
 	port_external_wrench_LA->prepare() = F_ext_left_arm;
+	port_com_all->write();
+	port_com_ll->write();
+	port_com_rl->write();
+	port_com_la->write();
+	port_com_ra->write();
 	port_external_wrench_RA->write();
 	port_external_wrench_LA->write();
 	port_external_wrench_TO->write();	
@@ -475,6 +513,12 @@ void inverseDynamics::threadRelease()
 	closePort(port_external_wrench_LA);
 	fprintf(stderr, "Closing external_wrench_TO port\n");	
 	closePort(port_external_wrench_TO);
+	fprintf(stderr, "Closing COM ports\n");	
+	closePort(port_com_all);
+	closePort(port_com_ra);
+	closePort(port_com_rl);
+	closePort(port_com_la);
+	closePort(port_com_ll);
 
 	fprintf(stderr, "Closing inertial port\n");
 	closePort(port_inertial_thread);

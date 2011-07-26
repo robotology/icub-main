@@ -54,6 +54,7 @@ private:
 	string     robot_name;
 	string     local_name;
 	bool       autoconnect;
+	bool       com_enabled;
 
     PolyDriver *ddAL;
     PolyDriver *ddAR;
@@ -93,6 +94,11 @@ private:
 	BufferedPort<Vector> *port_external_wrench_RA;
 	BufferedPort<Vector> *port_external_wrench_LA;
 	BufferedPort<Vector> *port_external_wrench_TO;
+	BufferedPort<Vector> *port_com_all;
+	BufferedPort<Vector> *port_com_la;
+	BufferedPort<Vector> *port_com_ra;
+	BufferedPort<Vector> *port_com_ll;
+	BufferedPort<Vector> *port_com_rl;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;
@@ -151,7 +157,7 @@ private:
 	void setLowerMeasure(bool _init=false);
 
 public:
-    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, bool _autoconnect, string icub_type);
+    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, bool _autoconnect, string icub_type, bool _com_enabled);
     bool threadInit();
 	inline thread_status_enum getThreadStatus() 
 	{

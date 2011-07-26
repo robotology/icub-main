@@ -175,6 +175,7 @@ private:
     Property OptionsRightLeg;
     Property OptionsTorso;
 	bool     legs_enabled;
+	bool     com_enabled;
 	bool     left_arm_enabled;
 	bool     right_arm_enabled;
 
@@ -201,6 +202,7 @@ public:
         dd_left_leg=0;
         dd_right_leg=0;
         dd_torso=0;
+		com_enabled=true;
 		legs_enabled = true;
 		left_arm_enabled = true;
 		right_arm_enabled = true;
@@ -268,6 +270,13 @@ public:
         { 
               autoconnect = false;
         }
+
+		//------------CHECK IF COM COMPUTATION IS ENABLED-----------//
+		if (rf.check("no_com"))
+		{
+			com_enabled= false;
+			fprintf(stderr,"'no_com' option found. COM computation will be disabled.\n");
+		}
 
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
 		if (rf.check("no_legs"))
@@ -378,7 +387,7 @@ public:
 			fprintf(stderr,"device driver created\n");
 
 		//--------------------------THREAD--------------------------
-		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, autoconnect, icub_type);
+		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, autoconnect, icub_type, com_enabled);
 		fprintf(stderr,"ft thread istantiated...\n");
         Time::delay(5.0);
 
@@ -515,7 +524,8 @@ int main(int argc, char * argv[])
         cout << "\t--no_legs    this option disables the dynamics computation for the legs joints"								  << endl;  
 		cout << "\t--head_v2        use the model of the headV2" << endl;    
 		cout << "\t--no_left_arm    disables the left arm" << endl;
-		cout << "\t--no_right_arm   disabled the right arm" << endl;
+		cout << "\t--no_right_arm   disables the right arm" << endl;
+		cout << "\t--no_com         disables the com computation" << endl;
 		return 0;
     }
 
