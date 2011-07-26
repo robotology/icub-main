@@ -102,6 +102,7 @@ enum JacobType{ JAC_KIN, JAC_IKIN };
 #define NODE_AFTER_ATTACH	true
 #define NODE_NO_ATTACH      false
 
+enum partEnum{ LEFT_ARM=0, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, TORSO, HEAD, ALL }; 
 
 /**
 * \ingroup iDynBody
@@ -536,6 +537,10 @@ protected:
 	yarp::sig::Vector F;	
 	/// moment
 	yarp::sig::Vector Mu;	
+	/// COM position of the node
+	yarp::sig::Vector COM;	
+	/// total mass of the node
+	double mass;
 
 	/**
 	* Reset all data to zero. The list of limbs is not modified or deleted.
@@ -1062,6 +1067,14 @@ public:
 	/// central-up limb
 	iDyn::iDynLimb * up;
 
+	/// COMs and masses of the limbs
+	yarp::sig::Vector total_COM_UP;
+	yarp::sig::Vector total_COM_LF;
+	yarp::sig::Vector total_COM_RT;
+	double            total_mass_UP;
+	double            total_mass_LF;
+	double            total_mass_RT;
+
 	/**
 	* Constructor
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
@@ -1159,6 +1172,20 @@ public:
 	* @return the chosen limb-link torque
 	*/
 	double getTorque(const std::string &limbType, const unsigned int iLink) const;
+
+	/**
+	* Performs the computation of the center of mass (COM) of the node
+	* @return true if succeeds, false otherwise
+	*/
+	bool computeCOM();
+
+	/**
+    * Retrieves the result of the last COM computation
+	* @param COM the computed COM of the node
+	* @param mass the computed mass of the node 
+	* @return true if succeeds, false otherwise
+	*/
+	bool getCOM(yarp::sig::Vector &COM, double & mass);
 
 	/**
     * Return the torso force
@@ -1420,6 +1447,14 @@ public:
 	iCubUpperTorso * upperTorso;
 	/// pointer to LowerTorso = torso + right leg + left leg
 	iCubLowerTorso * lowerTorso;
+	
+	/// masses and position of the center of mass of the iCub sub-parts
+	double whole_mass;
+	double lower_mass;
+	double upper_mass;
+	yarp::sig::Vector whole_COM;
+	yarp::sig::Vector upper_COM;
+	yarp::sig::Vector lower_COM;
 
 	/**
 	* Constructor: build the nodes and creates the whole body
@@ -1456,6 +1491,20 @@ public:
 	}
 
 
+	/**
+	* Performs the computation of the center of mass (COM) of the whole iCub
+	* @return true if succeeds, false otherwise
+	*/
+	bool computeCOM();
+
+	/**
+    * Retrieves the result of the last COM computation
+	* @param which_part selects the result (e.g: LEFT_LEG, RIGHT_ARM, ALL, etc..)
+	* @param COM the computed COM of the selected part
+	* @param mass the computed mass of the selected part
+	* @return true if succeeds, false otherwise
+	*/
+	bool getCOM(partEnum which_part, yarp::sig::Vector &COM, double & mass);
 };
 
 
