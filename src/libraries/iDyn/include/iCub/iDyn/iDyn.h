@@ -645,7 +645,7 @@ public:
     */
 	bool setMasses(yarp::sig::Vector _m);
 
-     /**
+    /**
     * Returns the i-th link mass
     * @return the i-th link mass
     */
@@ -656,6 +656,12 @@ public:
     * @return true if operation is successful, false otherwise
     */
 	bool setMass(const unsigned int i, const double _m);
+
+    /**
+    * Returns the i-th link inertia matrix
+    * @return the i-th link inertia matrix
+    */
+    yarp::sig::Matrix getInertia(const unsigned int i) const;
 
 	/**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
@@ -743,7 +749,9 @@ public:
 	/**
 	* Compute forces and torques with the Newton-Euler recursive algorithm: forward
 	* and backward phase are performed, and results are stored in the links; to get
-	* resulting forces and torques, one can call getForces() and getMoments() methods
+	* resulting forces and torques, one can call getForces() and getMoments() methods.
+    * The function parameters contain the information for initializing the kinematic
+    * and wrench phase.
 	*/
 	bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
 
@@ -751,7 +759,7 @@ public:
 	* Compute forces and torques with the Newton-Euler recursive algorithm: forward
 	* and backward phase are performed, and results are stored in the links; to get
 	* resulting forces and torques, one can call getForces() and getMoments() methods; 
-	* before calling this method, initNewtonEuler() must be called
+	* before calling this method, initNewtonEuler() must be called.
 	*/
 	bool computeNewtonEuler();
 
@@ -773,14 +781,14 @@ public:
 	void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
 
 	/**
-    * Returns the links forces as a matrix, where the i-th col is the i-th force
-    * @return a 3x(N+2) matrix with forces, in the form: i-th col = F_i
+    * Returns the links forces as a matrix, where the (i+1)-th col is the i-th force
+    * @return a 3x(N+2) matrix with forces, in the form: (i+1)-th col = F_i
     */
 	yarp::sig::Matrix getForcesNewtonEuler() const;
 
 	/**
-    * Returns the links moments as a matrix, where the i-th col is the i-th moment
-    * @return a 3x(N+2) matrix with moments, in the form: i-th col = Mu_i
+    * Returns the links moments as a matrix, where the (i+1)-th col is the i-th moment
+    * @return a 3x(N+2) matrix with moments, in the form: (i+1)-th col = Mu_i
     */
 	yarp::sig::Matrix getMomentsNewtonEuler() const;
 
@@ -953,21 +961,37 @@ public:
 	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
     /**
+    * Return the H0 base matrix of the chain
+    * @return H0, the base matrix of the chain
+    */
+	yarp::sig::Matrix getH0() const;
+
+    /**
+    * Set a new H0 base matrix in the chain
+    * @param H0 the (4x4) base matrix of the chain
+    * @return true if succeed, false otherwise
+    */
+	bool setH0(const yarp::sig::Matrix &_H0);
+
+    /**
     * Return the Denavit-Hartenberg matrix of the i-th link in the chain.
     * Note that all the links are considered (0<=i<N)
     * @param i the i-th link in the chain
     * @return the Denavit-Hartenberg matrix of the i-th link
     */
-	yarp::sig::Matrix getDenHart(unsigned int i) 
-    { return allList[i]->getH();}
+	yarp::sig::Matrix getDenHart(unsigned int i);
 
     //---------------
 	// jacobians COM
 	//---------------
 
     /**
-	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
-	* @param iLinkN the index of the link, in the chain, being the final frame for the Jacobian computation
+	* Compute the Jacobian of the COM of link indexed iLink. 
+    * The chain considered for the computation is the entire kinematic chain, between
+    * links 0 and N-1. Hence, the Jacobian is 6xN (differently from the Jacobian of the i-th link
+    * which assumes the chain to be from 0 to iLink, and differently from the Jacobian of the end-effector
+    * which is 6xDOF).
+	* @param iLinkN the index of the link, in the chain
 	* @return the Jacobian matrix of the COM of the iLink of the chain 
 	*/
 	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink);
@@ -1002,6 +1026,14 @@ public:
     yarp::sig::Matrix getHCOM(unsigned int iLink);
 
 
+    //---------------
+	// mass matrix
+	//---------------
+
+    yarp::sig::Matrix computeMassMatrix();
+
+
+
 };
 
 
@@ -1013,6 +1045,12 @@ public:
 * \ingroup iDyn
 *
 * A class for defining a generic Limb within the iDyn framework.
+*
+* Note:
+* Since iKinLimb is derived with protected modifier from iKinChain in order to make some methods hidden
+* to the user such as addLink, rmLink and so on, all the remaining public methods have been
+* redeclared and simply inherited.
+* iDynLimb follows the same rule of iKinLimb, therefore the methods must be redeclared.
 */
 class iDynLimb : public iDynChain
 {

@@ -393,6 +393,8 @@ Vector	iDynLink::getr(bool proj)
 {
 	if(proj==false)
 		return getH(true).submatrix(0,2,0,3).getCol(3);
+        //SEREDEBUG
+        //return (getR().transposed() * getH(true).submatrix(0,2,0,3).getCol(3));
 	else
 		return (-1.0 * getR().transposed() * getH(true).submatrix(0,2,0,3).getCol(3));
 }
@@ -401,6 +403,8 @@ Vector	iDynLink::getrC(bool proj)
 {
 	if(proj==false)
 		return getCOM().submatrix(0,2,0,3).getCol(3);
+        //SEREDEBUG
+        //return getCOM().submatrix(0,2,0,3).getCol(3);
 	else
 		return (-1.0 * getRC().transposed() * getCOM().submatrix(0,2,0,3).getCol(3));
 }
@@ -695,6 +699,18 @@ bool iDynChain::setMass(const unsigned int i, const double _m)
 	{
 		if(verbose)	fprintf(stderr,"iDynChain error: setMass() failed due to out of range index: %d >= %d \n",i,N);
 		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::getInertia(const unsigned int i) const
+{
+	if(i<N)
+        return allList[i]->getInertia();
+	else
+	{
+		if(verbose)
+			fprintf(stderr,"iDynChain: getInertia() failed due to out of range index: %d >= %d \n",i,N);
+		return Matrix(0,0);
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1167,6 +1183,25 @@ void iDynChain::setIterMode(const ChainComputationMode mode)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::getH0() const
+{
+    return H0;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynChain::setH0(const Matrix &_H0)
+{
+     if((_H0.cols()==4)&&(_H0.rows()==4))
+     {
+        H0 = _H0;
+        return true;
+     }
+     else
+     {
+        if(verbose) fprintf(stderr,"iDynChain: could not set H0 due to wrong sized matrix: %d x %d instead of 4x4 \n",_H0.rows(),_H0.cols());
+        return false;
+     }
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//-----------
 	//  jacobian
@@ -1315,6 +1350,11 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn, const Matrix &_H0)
     return J;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::getDenHart(unsigned int i) 
+{ 
+    return allList[i]->getH();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     //---------------
 	// jacobians COM
@@ -1329,7 +1369,10 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink)
         return Matrix(0,0);
     }
 
+    //note: all links must be considered! the Jacobian is 6xN, but only the first
+    //iLink columns are filled.  
     Matrix J(6,iLink+1);
+    //Matrix J(6,N); J.zero();
     Matrix Pn,Z;
     Vector w;
 
@@ -1443,6 +1486,28 @@ Matrix iDynChain::getHCOM(unsigned int iLink)
         return Matrix(0,0);
     }
     return getH(iLink,true) * allList[iLink]->getCOM();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    //---------------
+	// mass matrix
+	//---------------
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::computeMassMatrix()
+{
+    Matrix JP, JO, Jac;
+    Jac.resize(6,N);
+    // mass matrix and its inverse
+    Matrix B(N,N); B.zero();
+    for(unsigned int i=0; i<N; i++)
+    { 
+        Jac = computeCOMJacobian(i);
+        JP = Jac.submatrix(0,2,0,N-1);
+        JO = Jac.submatrix(3,5,0,N-1);
+        B = B + getMass(i) * JP.transposed() * JP + JO.transposed() * getInertia(i) * JO; 
+    }
+    return B;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
