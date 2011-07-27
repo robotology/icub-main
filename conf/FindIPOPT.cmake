@@ -43,14 +43,14 @@ IF(WIN32)
     
 ELSE(WIN32)
 
-  IF (APPLE)
+  IF(APPLE)
     FIND_PACKAGE(PkgConfig)
     IF(PKG_CONFIG_FOUND)
       PKG_CHECK_MODULES(IPOPT ipopt)
       LINK_DIRECTORIES(${IPOPT_LIBRARY_DIRS}) # vital on Macs, but not many
                                               # ipopt-using programs do this
     ENDIF(PKG_CONFIG_FOUND)
-  ENDIF ()
+  ENDIF(APPLE)
 
    IF(NOT IPOPT_FOUND)
 #      to be used to fetch the native Ipopt library provided with apt-get utility
@@ -69,7 +69,7 @@ ELSE(WIN32)
             STRING(REGEX REPLACE "-[^l][^ ]* " "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "-l"                "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
-            STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})       # remove any possible auto-dependence
+            STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})       # remove any possible auto-dependency
             SEPARATE_ARGUMENTS(IPOPT_DEP)
 
             # use the find_library command in order to prepare rpath correctly 
