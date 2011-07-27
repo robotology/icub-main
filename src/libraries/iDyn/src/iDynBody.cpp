@@ -2425,13 +2425,19 @@ bool iCubWholeBody::computeCOM()
 	//lower torso COM computation
 	lowerTorso->computeCOM();
 
-	lower_mass =   upperTorso->total_mass_UP
-		          +upperTorso->total_mass_LF
-				  +upperTorso->total_mass_RT;
+	lower_mass =   lowerTorso->total_mass_UP
+		          +lowerTorso->total_mass_LF
+				  +lowerTorso->total_mass_RT;
 
-	lower_COM  = (upperTorso->total_COM_UP * upperTorso->total_mass_UP+
-				  upperTorso->total_COM_LF * upperTorso->total_mass_LF+
-		          upperTorso->total_COM_RT * upperTorso->total_mass_RT)/ lower_mass;
+	lower_COM  = (lowerTorso->total_COM_UP * lowerTorso->total_mass_UP+
+				  lowerTorso->total_COM_LF * lowerTorso->total_mass_LF+
+		          lowerTorso->total_COM_RT * lowerTorso->total_mass_RT)/ lower_mass;
+
+	//only for debug
+	//whole_mass = lower_mass;
+	//whole_COM  = lower_COM;
+	//whole_mass = upper_mass;
+	//whole_COM  = upper_COM;
 
 	whole_mass = lower_mass+upper_mass;
 	whole_COM  = ((upper_COM*upper_mass)+(lower_COM*lower_mass))/(upper_mass+lower_mass);
