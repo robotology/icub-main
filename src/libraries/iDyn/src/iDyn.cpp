@@ -1887,15 +1887,21 @@ void iCubTorsoDyn::allocate(const string &_type)
 	setH0(H0);
 
     //           iDynLink(   mass,					 rC (3x1),					  I(6x1),													                 A,          D,         alfa,     offset,                   min,               max);
-#define TORSO_NO_WEIGHT
+//  These parameters are still under debug!
+//#define TORSO_NO_WEIGHT
 #ifdef TORSO_NO_WEIGHT
 	pushLink(new iDynLink(0.00e-3,	  0.000e-3,  0.000e-3,  0.000e-3,		0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,	    32.0e-3,         0,	    M_PI/2.0,		 0.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
     pushLink(new iDynLink(0.00e-3,	  0.000e-3,  0.000e-3,  0.000e-3, 	    0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   	      0,   -5.5e-3,		M_PI/2.0,  -M_PI/2.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
     pushLink(new iDynLink(0.00e-3,	  0.000e-3,  0.000e-3,  0.000e-3,	    0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,   0.000e-6,		2.31e-3, -193.3e-3,	   -M_PI/2.0,  -M_PI/2.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
 #else
-	pushLink(new iDynLink(7.79e-1,	  3.120e-2,	 6.300e-4,  -9.758e-7,		4.544e-4,  -4.263e-5,  -3.889e-8,   1.141e-3,   0.000e-0,   1.236e-3,		32.0e-3,         0,     M_PI/2.0,        0.0,	 -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
-	pushLink(new iDynLink(5.77e-1,	  4.265e-2,	+4.296e-5,	-1.360e-3,		5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,		      0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,	 -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
-	pushLink(new iDynLink(4.81e+0,	 -8.102e-5,  7.905e-3,	-1.183e-1,		7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,		2.31e-3, -193.3e-3,	   -M_PI/2.0,  -M_PI/2.0,	 -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
+//  This version of the parameters has been taken from the CAD...
+//  pushLink(new iDynLink(7.79e-1,	  3.120e-2,	 6.300e-4,  -9.758e-7,		4.544e-4,  -4.263e-5,  -3.889e-8,   1.141e-3,   0.000e-0,   1.236e-3,		32.0e-3,         0,     M_PI/2.0,        0.0,	 -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
+//	pushLink(new iDynLink(5.77e-1,	  4.265e-2,	+4.296e-5,	-1.360e-3,		5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,		      0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,	 -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
+//	pushLink(new iDynLink(4.81e+0,	 -8.102e-5,  7.905e-3,	-1.183e-1,		7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,		2.31e-3, -193.3e-3,	   -M_PI/2.0,  -M_PI/2.0,	 -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
+//  ...but they have still to be verified. In the meanwhile use this for debug:
+    pushLink(new iDynLink(0,	      3.120e-2,	 6.300e-4,  -9.758e-7,		4.544e-4,  -4.263e-5,  -3.889e-8,   1.141e-3,   0.000e-0,   1.236e-3,		32.0e-3,         0,     M_PI/2.0,        0.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+	pushLink(new iDynLink(0,	      4.265e-2,	+4.296e-5,	-1.360e-3,		5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,		      0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+	pushLink(new iDynLink(4.81e+0,	 -8.102e-5, -1.183e-1,   7.905e-3,		7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,		2.31e-3, -193.3e-3,	   -M_PI/2.0,  -M_PI/2.0,	-100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
 #endif  
 
 }
