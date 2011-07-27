@@ -45,7 +45,7 @@ class Compensator
 public:
 	Compensator(string name, string robotName, string outputPortName, string inputPortName, 
                          float changePerTimestep, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
-                         bool _smoothFilter, float _smoothFactor);
+                         bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
     ~Compensator();
 	    
 	void calibrationInit();
@@ -54,15 +54,18 @@ public:
     bool readRawAndWriteCompensatedData();
 	void updateBaseline();
 	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
+    bool isThereContact();
 
 	void setBinarization(bool value);
 	void setSmoothFilter(bool value);
 	bool setSmoothFactor(float value);
+    void setLinkId(unsigned int linkId);
 
 	Vector getTouchThreshold();
 	bool getBinarization();
 	bool getSmoothFilter();
 	float getSmoothFactor();
+    unsigned int getLinkId();
     
     unsigned int getNumTaxels();
     unsigned int getErrorCounter();
@@ -87,7 +90,8 @@ private:
 
 	/* class variables */
 	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
-	Vector touchThresholds;						// threshold for discriminating between "touch" and "no touch"
+	vector<bool> touchDetectedFilt;             // true if touch has been detected after applying the filtering
+    Vector touchThresholds;						// threshold for discriminating between "touch" and "no touch"
 	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold
     Vector initialBaselines;					// mean of the raw tactile data computed during calibration
     Vector baselines;							// mean of the raw tactile data 
@@ -114,6 +118,9 @@ private:
 	bool smoothFilter;				// if true the smooth filter is on, otherwise it is off
 	float smoothFactor;				// intensity of the smooth filter action
 	Semaphore smoothFactorSem;
+
+    // SKIN EVENTS
+    unsigned int linkId;
 
 	/* ports */
 	BufferedPort<Vector> compensatedTactileDataPort;	// output port

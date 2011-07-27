@@ -105,7 +105,11 @@ private:
 
     vector<Compensator*> compensators;
 
+    // SKIN EVENTS
+    bool skinEventsOn;
+
 	/* ports */
+    BufferedPort<Bottle> skinEventsPort;			// skin events output port
 	BufferedPort<Bottle> monitorPort;				// monitoring output port (streaming)
     BufferedPort<Bottle> infoPort;					// info output port
 
@@ -117,6 +121,7 @@ private:
     bool doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline, double &initialBaseline);
 	void sendMonitorData();
     void sendInfoMsg(string msg);
+    void sendSkinEvents();
 
 };
 

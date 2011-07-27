@@ -28,11 +28,11 @@ using namespace iCub::skinDriftCompensation;
 
 Compensator::Compensator(string name, string robotName, string outputPortName, string inputPortName, 
                          float changePerTimestep, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
-                         bool _smoothFilter, float _smoothFactor)
+                         bool _smoothFilter, float _smoothFactor, unsigned int _linkId)
 									   : 
 										CHANGE_PER_TIMESTEP(changePerTimestep), ADD_THRESHOLD(addThreshold), 
                                             minBaseline(_minBaseline), binarization(_binarization), smoothFilter(_smoothFilter), 
-                                            smoothFactor(_smoothFactor), robotName(robotName), name(name)
+                                            smoothFactor(_smoothFactor), robotName(robotName), name(name), linkId(_linkId)
 {
     this->zeroUpRawData = _zeroUpRawData;
     _isWorking = init(name, robotName, outputPortName, inputPortName);
@@ -83,6 +83,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     baselines.resize(SKIN_DIM);
     touchThresholds.resize(SKIN_DIM);
     touchDetected.resize(SKIN_DIM);
+    touchDetectedFilt.resize(SKIN_DIM);
     compensatedData.resize(SKIN_DIM);
     compensatedDataOld.resize(SKIN_DIM);
 
@@ -245,14 +246,19 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	    }
 
 	    // binarization filter
-        if(binarization){
-            // here we don't use the touchDetected array because, if the smooth filter is on,
-            // we want to use the filtered values
-	        if(d > touchThresholds[i] + ADD_THRESHOLD)
-			    d = BIN_TOUCH;
-	        else
-		        d = BIN_NO_TOUCH;
-        }else if(d<0) // if negative, set it to zero
+        // here we don't use the touchDetected array because, if the smooth filter is on,
+        // we want to use the filtered values
+        if(d > touchThresholds[i] + ADD_THRESHOLD){
+            touchDetectedFilt[i] = true;
+            if(binarization)
+		        d = BIN_TOUCH;
+        }else{
+            touchDetectedFilt[i] = false;
+            if(binarization)
+	            d = BIN_NO_TOUCH;
+        }
+        
+        if(d<0) // if negative, set it to zero
 		    d=0;
 	    compensatedData2Send.push_back(d);
 	}
@@ -325,6 +331,13 @@ bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline,
 
 
 
+bool Compensator::isThereContact(){
+    for(unsigned int i=0; i<SKIN_DIM; i++){
+        if(touchDetectedFilt[i])
+            return true;
+    }
+    return false;
+}
 void Compensator::setBinarization(bool value){
 	binarization = value;
 }
@@ -348,6 +361,9 @@ bool Compensator::setSmoothFactor(float value){
 	return true;
 }
 
+void Compensator::setLinkId(unsigned int linkId){
+    this->linkId = linkId;
+}
 unsigned int Compensator::getNumTaxels(){
     if(_isWorking)
         return SKIN_DIM;
@@ -383,6 +399,9 @@ float Compensator::getSmoothFactor(){
 	return res;
 }
 
+unsigned int Compensator::getLinkId(){
+    return linkId;
+}
 string Compensator::getName(){
     return name;
 }

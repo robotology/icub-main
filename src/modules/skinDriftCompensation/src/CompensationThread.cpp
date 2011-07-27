@@ -113,7 +113,37 @@ bool CompensationThread::threadInit()
             i--;
         }
     }	
-	    
+
+
+    // configure the SKIN_EVENT if the corresponding section exists
+    skinEventsOn = false;
+	Bottle &skinEventsConf = rf->findGroup("SKIN_EVENTS");
+	if(!skinEventsConf.isNull()){
+        cout<< "SKIN_EVENTS section found\n";
+        //maxNeighbourDistance = skinEventsConf.check("maxNeighbourDistance", 0.01).asDouble();
+        if(skinEventsConf.check("linkList")){
+            Bottle* linkList = skinEventsConf.find("linkList").asList();
+            if(linkList->size() != portNum){
+                fprintf(stderr, "ERROR: the number of link id does not match the number of input ports (%d!=%d)\n", 
+                    linkList->size(), portNum);
+            }else{
+                FOR_ALL_PORTS(i){
+                    compensators[i]->setLinkId(linkList->get(i).asInt());
+                }
+                string eventPortName = "/" + moduleName + "/skin_events:o";  // output skin events
+	            if(!skinEventsPort.open(eventPortName.c_str())){
+		            cout << "Unable to open port " << eventPortName << endl;
+		            skinEventsOn = false;
+                }else{
+                    skinEventsOn = true;
+                }
+            }
+        }
+	}
+    if(skinEventsOn)
+        fprintf(stderr, "Skin events ENABLED.\n");
+    else
+        fprintf(stderr, "Skin events DISABLED.\n");
 
 	return true;
 }
@@ -167,6 +197,10 @@ void CompensationThread::run(){
 			    compensators[i]->updateBaseline();
 		    }
         }
+
+        if(skinEventsOn){
+            sendSkinEvents();
+        }
 	}
 	else if(state == calibration){
         FOR_ALL_PORTS(i){            
@@ -192,6 +226,25 @@ void CompensationThread::run(){
 	sendMonitorData();    
     checkErrors();
 }
+
+void CompensationThread::sendSkinEvents(){
+    Bottle &skinEvents = skinEventsPort.prepare();
+    skinEvents.clear();
+    bool contact = false;
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->isThereContact()){
+            contact = true;
+            Bottle &c = skinEvents.addList();
+            c.addString("part");
+            c.addString(compensators[i]->getInputPortName().c_str());
+            c.addString("link");
+            c.addInt(compensators[i]->getLinkId());
+        }
+    }
+    if(contact)
+        skinEventsPort.write();
+}
+
 
 void CompensationThread::checkErrors(){
     FOR_ALL_PORTS(i){

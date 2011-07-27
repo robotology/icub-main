@@ -91,7 +91,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 		zeroUpRawData = true;
 	}else if(zeroUpRawDataStr.compare("false")==0){
 		zeroUpRawData = false;
-	}	 	
+	}
 
 	/*
 	* attach a port of the same name as the module (prefixed with a /) to the module
