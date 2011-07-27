@@ -2433,14 +2433,9 @@ bool iCubWholeBody::computeCOM()
 				  lowerTorso->total_COM_LF * lowerTorso->total_mass_LF+
 		          lowerTorso->total_COM_RT * lowerTorso->total_mass_RT)/ lower_mass;
 
-	//only for debug
-	//whole_mass = lower_mass;
-	//whole_COM  = lower_COM;
-	//whole_mass = upper_mass;
-	//whole_COM  = upper_COM;
-
 	whole_mass = lower_mass+upper_mass;
 	whole_COM  = ((upper_COM*upper_mass)+(lower_COM*lower_mass))/(upper_mass+lower_mass);
+	whole_COM.pop_back();
 
 	return true;
 }
@@ -2477,6 +2472,7 @@ bool iCubWholeBody::getCOM(partEnum which_part, Vector &COM, double & mass)
 			COM=this->upperTorso->total_COM_LF;
 			COM.push_back(1.0);
 			COM= T0 * T1 * COM;
+			COM.pop_back();
 		break;
 		case RIGHT_ARM:
 			T0 = lowerTorso->HUp;
@@ -2485,6 +2481,7 @@ bool iCubWholeBody::getCOM(partEnum which_part, Vector &COM, double & mass)
 			COM=this->upperTorso->total_COM_RT;
 			COM.push_back(1.0);
 			COM= T0 * T1 * COM;
+			COM.pop_back();
 		break;
 		case HEAD:
 			T0 = lowerTorso->HUp;
@@ -2493,6 +2490,7 @@ bool iCubWholeBody::getCOM(partEnum which_part, Vector &COM, double & mass)
 			COM=this->upperTorso->total_COM_UP;
 			COM.push_back(1.0);
 			COM= T0 * T1 * COM;
+			COM.pop_back();
 		break;
 		default:
 			COM.zero();
