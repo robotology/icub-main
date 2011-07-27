@@ -1,0 +1,81 @@
+<application>
+  <name>Left Whole Arm No Compensation</name>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_bottom.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>LeftarmUpBotNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_internal.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>LeftarmUpIntNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_upper_external.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>LeftarmUpExtNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftupperarm_lower.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>LeftarmLowNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_upper.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>LeftForearmUpNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from leftforearm_lower.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>LeftForearmLowNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from lefthand.ini</parameters>
+    <node>console</node>
+    <tag>LeftHandNoComp</tag>
+  </module>
+  
+  <connection>
+    <from>/icub/skin/left_hand</from>
+    <to>/skinGuiNoComp/left_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_lower</from>
+    <to>/skinGuiNoComp/left_forearm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_upper</from>
+    <to>/skinGuiNoComp/left_forearm_upper:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_internal</from>
+    <to>/skinGuiNoComp/leftupperarm_upper_internal:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_external</from>
+    <to>/skinGuiNoComp/leftupperarm_upper_external:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_upper_bottom</from>
+    <to>/skinGuiNoComp/leftupperarm_upper_bottom:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_arm_lower</from>
+    <to>/skinGuiNoComp/leftupperarm_lower:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+</application>
