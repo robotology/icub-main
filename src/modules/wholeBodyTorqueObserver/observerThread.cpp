@@ -454,13 +454,20 @@ void inverseDynamics::run()
 	F_ext_left_arm=icub->upperTorso->left->getForceMomentEndEff();//-icub_sens->upperTorso->left->getForceMomentEndEff();
 	F_ext_right_arm=icub->upperTorso->right->getForceMomentEndEff();//-icub_sens->upperTorso->right->getForceMomentEndEff();
 
+	com_all.push_back(mass_all);
+	com_ll.push_back (mass_ll);
+	com_rl.push_back (mass_rl);
+	com_la.push_back (mass_la);
+	com_ra.push_back (mass_ra);
+	com_hd.push_back (mass_hd);
+	com_to.push_back (mass_to);
 	port_com_all->prepare() = com_all;
-	port_com_ll->prepare()  = com_ll;
-	port_com_rl->prepare()  = com_rl;
-	port_com_la->prepare()  = com_la;
-	port_com_ra->prepare()  = com_ra;
-	port_com_hd->prepare()  = com_hd;
-	port_com_to->prepare()  = com_to;
+	port_com_ll->prepare()  = com_ll ;
+	port_com_rl->prepare()  = com_rl ;
+	port_com_la->prepare()  = com_la ;
+	port_com_ra->prepare()  = com_ra ;
+	port_com_hd->prepare()  = com_hd ;
+	port_com_to->prepare()  = com_to ;
 	port_external_wrench_TO->prepare() = F_up;
 	port_external_wrench_RA->prepare() = F_ext_right_arm;
 	port_external_wrench_LA->prepare() = F_ext_left_arm;
