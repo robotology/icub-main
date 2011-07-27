@@ -198,8 +198,12 @@ void inverseDynamics::init_lower()
     FM_sens_low.resize(6,2); FM_sens_low.zero();
 }
 
-inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, bool _autoconnect, string icub_type, bool _com_enabled) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), autoconnect(_autoconnect), local_name(_local_name), com_enabled(_com_enabled)
+inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, string icub_type, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), local_name(_local_name) 
 {   
+	autoconnect = _autoconnect;
+	com_enabled = true;
+	dummy_ft    = false;
+
 	icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
 	icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
     first = true;
@@ -572,7 +576,10 @@ void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bot
 void inverseDynamics::calibrateOffset(const unsigned int Ntrials)
 {
 	fprintf(stderr,"SensToTorques: starting sensor offset calibration, waiting for port connections... \n\n");
-	Vector *dummy = port_inertial_thread->read(true); //blocking call: waits for ports connection
+	if (!dummy_ft)
+	{
+		Vector *dummy = port_inertial_thread->read(true); //blocking call: waits for ports connection
+	}
 
 	Offset_LArm.zero();
 	Offset_RArm.zero();
@@ -648,14 +655,16 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 	if (ddAL)
 	{
 		if (waitMeasure) fprintf(stderr,"Trying to connect to left arm sensor...");
-		ft_arm_left  = port_ft_arm_left->read(waitMeasure);
+		if (!dummy_ft)   ft_arm_left  = port_ft_arm_left->read(waitMeasure);
+		else             {if (!ft_arm_left) {ft_arm_left = new yarp::sig::Vector(6);} ft_arm_left->zero();}
 		if (waitMeasure) fprintf(stderr,"done. \n");
 	}
 
 	if (ddAR)
 	{
 		if (waitMeasure) fprintf(stderr,"Trying to connect to right arm sensor...");
-		ft_arm_right = port_ft_arm_right->read(waitMeasure);
+		if (!dummy_ft)   ft_arm_right = port_ft_arm_right->read(waitMeasure);
+		else             {if (!ft_arm_right) {ft_arm_right = new yarp::sig::Vector(6);} ft_arm_right->zero();}
 		if (waitMeasure) fprintf(stderr,"done. \n");
 	}
 
@@ -663,13 +672,15 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 	if (ddLL)
 	{
 		if (waitMeasure) fprintf(stderr,"Trying to connect to left leg sensor...");
-		ft_leg_left  = port_ft_leg_left->read(waitMeasure);
+		if (!dummy_ft)   ft_leg_left  = port_ft_leg_left->read(waitMeasure);
+		else             {if (!ft_leg_left) {ft_leg_left = new yarp::sig::Vector(6);} ft_leg_left->zero();}
 		if (waitMeasure) fprintf(stderr,"done. \n");
 	}
 	if (ddLR)
 	{
 		if (waitMeasure) fprintf(stderr,"Trying to connect to right leg sensor...");
-		ft_leg_right = port_ft_leg_right->read(waitMeasure);
+		if (!dummy_ft)   ft_leg_right = port_ft_leg_right->read(waitMeasure);
+		else             {if (!ft_leg_right) {ft_leg_right = new yarp::sig::Vector(6);} ft_leg_right->zero();}
 		if (waitMeasure) fprintf(stderr,"done. \n");
 	}
 	

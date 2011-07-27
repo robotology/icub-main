@@ -50,11 +50,14 @@ double lpf_ord1_3hz(double input, int j);
 // class inverseDynamics: class for reading from Vrow and providing FT on an output port
 class inverseDynamics: public RateThread
 {
+public:
+	bool       com_enabled;
+	bool       dummy_ft;
+
 private:
 	string     robot_name;
 	string     local_name;
 	bool       autoconnect;
-	bool       com_enabled;
 
     PolyDriver *ddAL;
     PolyDriver *ddAR;
@@ -159,7 +162,7 @@ private:
 	void setLowerMeasure(bool _init=false);
 
 public:
-    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, bool _autoconnect, string icub_type, bool _com_enabled);
+    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, string icub_type, bool _autoconnect=false );
     bool threadInit();
 	inline thread_status_enum getThreadStatus() 
 	{

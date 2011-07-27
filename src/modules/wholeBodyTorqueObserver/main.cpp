@@ -309,6 +309,14 @@ public:
 			rate = 10;
 		}
 
+		//---------------------DUMMY_FT-------------------------//
+		bool dummy_ft = false;
+		if (rf.check("dummy_ft"))
+		{
+			dummy_ft = true;
+			fprintf(stderr,"Using dummy FT sensors (debug mode)\n");
+		}
+
 		//---------------------DEVICES--------------------------//
 
 		OptionsHead.put("device","remote_controlboard");
@@ -387,7 +395,10 @@ public:
 			fprintf(stderr,"device driver created\n");
 
 		//--------------------------THREAD--------------------------
-		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, autoconnect, icub_type, com_enabled);
+		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect);
+		inv_dyn->com_enabled=com_enabled;
+		inv_dyn->dummy_ft=dummy_ft;
+
 		fprintf(stderr,"ft thread istantiated...\n");
         Time::delay(5.0);
 
@@ -526,6 +537,7 @@ int main(int argc, char * argv[])
 		cout << "\t--no_left_arm    disables the left arm" << endl;
 		cout << "\t--no_right_arm   disables the right arm" << endl;
 		cout << "\t--no_com         disables the com computation" << endl;
+		cout << "\t--dummy_ft       uses fake FT sensors (debug use only)" <<endl;
 		return 0;
     }
 
