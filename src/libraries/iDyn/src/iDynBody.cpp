@@ -1928,7 +1928,7 @@ Vector iDynSensorTorsoNode::getTorsoLinAcc() const{	return ddp;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool   iDynSensorTorsoNode::computeCOM()
 {
-	int i=0;
+	unsigned int i=0;
 	yarp::sig::Vector COM_UP(3); COM_UP.zero();
 	yarp::sig::Vector COM_RT(3); COM_RT.zero();
 	yarp::sig::Vector COM_LF(3); COM_LF.zero();
@@ -1986,7 +1986,7 @@ bool   iDynSensorTorsoNode::computeCOM()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool   iDynSensorTorsoNode::getCOM(yarp::sig::Vector &_COM, double &_mass)
 {
-	int i=0;
+	unsigned int i=0;
 	yarp::sig::Vector COM_UP(3); COM_UP.zero();
 	yarp::sig::Vector COM_RT(3); COM_RT.zero();
 	yarp::sig::Vector COM_LF(3); COM_LF.zero();
