@@ -27,6 +27,7 @@ target_link_libraries(${PROJECTNAME}
                       ${GtkMM_LIBRARIES} 
                       ${YARP_LIBRARIES} 
                       ${Gthread_LIBRARIES}
+		      ${GtkPlus_LIBRARIES}
 		      iCubInterfaceGuiLib)
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
