@@ -43,10 +43,14 @@ IF(WIN32)
     
 ELSE(WIN32)
 
-#   FIND_PACKAGE(PkgConfig)
-#   IF(PKG_CONFIG_FOUND)
-#     PKG_CHECK_MODULES(IPOPT ipopt)
-#   ENDIF(PKG_CONFIG_FOUND)
+  IF (APPLE)
+    FIND_PACKAGE(PkgConfig)
+    IF(PKG_CONFIG_FOUND)
+      PKG_CHECK_MODULES(IPOPT ipopt)
+      LINK_DIRECTORIES(${IPOPT_LIBRARY_DIRS}) # vital on Macs, but not many
+                                              # ipopt-using programs do this
+    ENDIF(PKG_CONFIG_FOUND)
+  ENDIF ()
 
    IF(NOT IPOPT_FOUND)
 #      to be used to fetch the native Ipopt library provided with apt-get utility
