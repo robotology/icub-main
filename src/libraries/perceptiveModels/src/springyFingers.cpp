@@ -22,6 +22,7 @@
 
 #include <yarp/os/Network.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/math/Math.h>
 
 #include <iCub/ctrl/math.h>
 #include <iCub/perception/private/ports.h>
@@ -31,6 +32,7 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
+using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::learningmachine;
 using namespace iCub::perception;
@@ -203,7 +205,7 @@ bool SpringyFinger::getOutput(Value &out) const
         return false;
 
     i[0]=scaler.transform(i[0]);
-    Vector pred=lssvm.predict(i);
+    Vector pred=lssvm.predict(i).getPrediction();
 
     for (int j=0; j<pred.length(); j++)
         pred[j]=scaler.unTransform(pred[j]);

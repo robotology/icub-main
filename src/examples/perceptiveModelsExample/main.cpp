@@ -84,6 +84,7 @@ Windows, Linux
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
+#include <iCub/ctrl/math.h>
 #include <iCub/perception/springyFingers.h>
 #include <iCub/perception/tactileFingers.h>
 
