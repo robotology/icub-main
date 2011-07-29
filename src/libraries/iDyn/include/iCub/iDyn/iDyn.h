@@ -1365,35 +1365,6 @@ public:
 /**
 * \ingroup iDyn
 *
-* A class for defining the 6-DOF iCub Leg in the iDyn framework, to attach the legs
-* to the torso in iCub Lower Torso
-*/
-class iCubLegNoTorsoDyn : public iCubLegDyn
-{
-public:
-    /**
-    * Default constructor. 
-    */
-    iCubLegNoTorsoDyn();
-
-    /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
-    *              "right" leg
-    */
-    iCubLegNoTorsoDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
-
-    /**
-    * Creates a new Leg from an already existing Leg object.
-    * @param leg is the Leg to be copied.
-    */
-    iCubLegNoTorsoDyn(const iCubLegNoTorsoDyn &leg);
-
-};
-
-/**
-* \ingroup iDyn
-*
 * A class for defining the 3-DOF Inertia Sensor Kinematics
 */
 class iCubNeckInertialDyn : public iDynLimb
