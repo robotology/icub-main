@@ -461,7 +461,7 @@ public:
 	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
 	* @return the Jacobian matrix of the selected link COM 
 	*/
-    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, bool rbtRoto = false);
+    yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, bool rbtRoto = false);
 
     /**
     * Returns the Jacobian matrix of the COM of the selected link (index = iLink) in the chain: in this case
@@ -471,7 +471,7 @@ public:
 	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
 	* @return the Jacobian matrix of the selected link COM 
 	*/
-	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, bool rbtRoto = false);
+	yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, bool rbtRoto = false);
 
     /**
     * Returns the Jacobian matrix of the COM of the selected link (index = iLink) in the chain: in this case
@@ -483,7 +483,7 @@ public:
 	* @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
 	* @return the Jacobian matrix of the selected link COM 
 	*/
-    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0, bool rbtRoto = false );
+    yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0, bool rbtRoto = false );
 
     /**
     * Returns the COM matrix of the selected link (index = iLink) in the chain.
@@ -837,7 +837,7 @@ public:
 	* @param dirB the 'direction' of visit of the chain
 	* @return the Jacobian matrix
 	*/
-	yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep);
+	yarp::sig::Vector TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep);
 
     /**
 	* Compute the Pose of the end-effector, given a "virtual" chain connecting two limbs.
@@ -857,7 +857,7 @@ public:
 	* @param dirB the 'direction' of visit of the chain
 	* @return the Jacobian matrix
 	*/
-	yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep);
+	yarp::sig::Vector TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep);
 
     
     //---------------
@@ -871,7 +871,7 @@ public:
     * @param iLink  the index of the limnk in the limb
 	* @return the Jacobian matrix of the COM
 	*/
-    yarp::sig::Matrix computeCOMJacobian(unsigned int iChain, unsigned int iLink);
+    yarp::sig::Matrix TESTING_computeCOMJacobian(unsigned int iChain, unsigned int iLink);
 
     /**
 	* Compute the Jacobian of the COM of link iLinkB, in chainB, when two different chains (A and B) are connected. The chains are
@@ -886,7 +886,7 @@ public:
 	* @param dirB the 'direction' of the chain wrt the jacobian computation
 	* @return the Jacobian matrix of the COM
 	*/
-    yarp::sig::Matrix computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB);
+    yarp::sig::Matrix TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB);
 
 
 };
@@ -1473,23 +1473,6 @@ public:
 	* wrench variables between the two parts.
 	*/
 	void attachLowerTorso(const yarp::sig::Vector &FM_right_leg, const yarp::sig::Vector &FM_left_leg);
-
-    /**
-    * Not available yet! We'll do it as soon as possible..
-    */
-	yarp::sig::Matrix computeJacobian(bool whichTorsoA, unsigned int iChainA, JacobType dirA, bool whichTorsoB, unsigned int iChainB, JacobType dirB)
-	{
-        iCub::iDyn::notImplemented(VERBOSE,"iCubWholeBody does not have this computeJacobian() yet. Sorry!");
-	}
-
-    /**
-    * Not available yet! We'll do it as soon as possible..
-    */
-	yarp::sig::Vector computePose(bool whichTorsoA, unsigned int iChainA, JacobType dirA, bool whichTorsoB, unsigned int iChainB, JacobType dirB, const bool axisRep)
-	{
-        iCub::iDyn::notImplemented(VERBOSE,"iCubWholeBody does not have this computePose() yet. Sorry! ");	
-	}
-
 
 	/**
 	* Performs the computation of the center of mass (COM) of the whole iCub

@@ -994,7 +994,7 @@ public:
 	* @param iLinkN the index of the link, in the chain
 	* @return the Jacobian matrix of the COM of the iLink of the chain 
 	*/
-	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink);
+	yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink);
 
     /**
 	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
@@ -1002,7 +1002,7 @@ public:
     * @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
     * @return the Jacobian matrix of the COM of the iLink of the chain 
 	*/
-	yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn);
+	yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn);
 
     /**
 	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
@@ -1011,7 +1011,7 @@ public:
 	* @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
     * @return the Jacobian matrix of the COM of the iLink of the chain 
 	*/
-    yarp::sig::Matrix computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
+    yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
     /**
     * Return the COM matrix of the i-th link
@@ -1030,7 +1030,7 @@ public:
 	// mass matrix
 	//---------------
 
-    yarp::sig::Matrix computeMassMatrix();
+    yarp::sig::Matrix TESTING_computeMassMatrix();
 
 
 

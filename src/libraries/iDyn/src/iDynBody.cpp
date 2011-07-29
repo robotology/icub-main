@@ -371,28 +371,28 @@ bool RigidBodyTransformation::setH0(const Matrix &_H0)
 	//---------------
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::computeCOMJacobian(const unsigned int iLink, bool rbtRoto)  
+Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iLink, bool rbtRoto)  
 { 
     if(rbtRoto==false)
-        return limb->computeCOMJacobian(iLink);
+        return limb->TESTING_computeCOMJacobian(iLink);
     else
-        return getR6() * limb->computeCOMJacobian(iLink);
+        return getR6() * limb->TESTING_computeCOMJacobian(iLink);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, bool rbtRoto)
+Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, bool rbtRoto)
 { 
    if(rbtRoto==false)
-        return limb->computeCOMJacobian(iLink, Pn);
+        return limb->TESTING_computeCOMJacobian(iLink, Pn);
     else
-        return getR6() * limb->computeCOMJacobian(iLink, Pn);
+        return getR6() * limb->TESTING_computeCOMJacobian(iLink, Pn);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &_H0, bool rbtRoto)
+Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &_H0, bool rbtRoto)
 { 
    if(rbtRoto==false)
-        return limb->computeCOMJacobian(iLink, Pn, _H0);
+        return limb->TESTING_computeCOMJacobian(iLink, Pn, _H0);
     else
-        return getR6() * limb->computeCOMJacobian(iLink, Pn, _H0);
+        return getR6() * limb->TESTING_computeCOMJacobian(iLink, Pn, _H0);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix RigidBodyTransformation::getHCOM(unsigned int iLink)
@@ -1056,7 +1056,7 @@ void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep)
+Vector iDynNode::TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep)
 {
 	//first check param coherence:
 	// - wrong limb index
@@ -1116,7 +1116,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	return v;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep)
+Vector iDynNode::TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep)
 {
 	//first check param coherence:
 	// - wrong limb index
@@ -1188,13 +1188,13 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
 	//---------------
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynNode::computeCOMJacobian(unsigned int iChain, unsigned int iLink)
+Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChain, unsigned int iLink)
 {
     if(iChain<=rbtList.size())
     {
         // the check on iLink<=N is performed by iDynChain when calling computeCOMJacobian(iLink)
         // from the RBT
-        return rbtList[iChain].computeCOMJacobian(iLink,false);
+        return rbtList[iChain].TESTING_computeCOMJacobian(iLink,false);
     }
     else
     {
@@ -1203,7 +1203,7 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChain, unsigned int iLink)
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB)
+Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB)
 {
 	//first check param coherence:
 	// - wrong limb index
@@ -1248,7 +1248,7 @@ Matrix iDynNode::computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsign
 	J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);			
 	// JB
 	// note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0 
-	J_B = rbtList[iChainB].computeCOMJacobian(iLinkB,Pn,H_A_Node,false);
+	J_B = rbtList[iChainB].TESTING_computeCOMJacobian(iLinkB,Pn,H_A_Node,false);
 
 	// finally start building the Jacobian J=[J_A|J_B]
 	unsigned int c=0;

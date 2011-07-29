@@ -1361,7 +1361,7 @@ Matrix iDynChain::getDenHart(unsigned int i)
 	//---------------
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::computeCOMJacobian(const unsigned int iLink)
+Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink)
 {
     if (iLink>=N)
     {
@@ -1400,7 +1400,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink)
     return J;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn)
+Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink, const Matrix &Pn)
 {
     if (iLink>=N)
     {
@@ -1434,7 +1434,7 @@ Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn)
     return J;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &_H0)
+Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &_H0)
 {
     if (iLink>=N)
     {
@@ -1494,7 +1494,7 @@ Matrix iDynChain::getHCOM(unsigned int iLink)
 	//---------------
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::computeMassMatrix()
+Matrix iDynChain::TESTING_computeMassMatrix()
 {
     Matrix JP, JO, Jac;
     Jac.resize(6,N);
@@ -1502,7 +1502,7 @@ Matrix iDynChain::computeMassMatrix()
     Matrix B(N,N); B.zero();
     for(unsigned int i=0; i<N; i++)
     { 
-        Jac = computeCOMJacobian(i);
+        Jac = TESTING_computeCOMJacobian(i);
         JP = Jac.submatrix(0,2,0,N-1);
         JO = Jac.submatrix(3,5,0,N-1);
         B = B + getMass(i) * JP.transposed() * JP + JO.transposed() * getInertia(i) * JO; 
