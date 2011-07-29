@@ -2,3 +2,12 @@ These examples are hidden here *on purpose*. We should not in any way
 give the impression that this is the proper way to use the 
 learningMachine functionality. There are learningMachine modules for 
 a reason and they should be used.
+
+Ugo Pattacini: sometimes there exist cases where the resort to the
+library corresponds to commendable design: for instance, the development
+of an own library that encorporates the learningMachine functionality
+so that the final product is self-contained and thus it is not required
+to launch the learning modules externally.
+Therefore, despite the fact that the modules should cover the majority
+of the user's needs, please judge with care.
+
