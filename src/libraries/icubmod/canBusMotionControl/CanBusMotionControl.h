@@ -342,7 +342,7 @@ class speedEstimationHelper
 };
 
 #define BOARD_TYPE_4DC    0x03
-#define BOARD_TYPE_BLL    0x04
+#define BOARD_TYPE_BLL    0x04 // Note: Also BLL2DC firmware is identified BLL. This is intentional.
 
 struct can_protocol_info
 {
@@ -422,6 +422,7 @@ class firmwareVersionHelper
 
 		    if (infos[j].board_type==BOARD_TYPE_BLL)
 			{
+				// Note: Also BLL2DC firmware is identified BLL. This is intentional.
 				if (infos[j].fw_build<LAST_BLL_BUILD) 
 				{
 					printMessagePleaseUpgradeFirmware();
@@ -481,16 +482,16 @@ class firmwareVersionHelper
 	inline void printMessagePleaseUpgradeiCub()
 	{
 		fprintf(stderr,"\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"#################################################################################################\n");
+		fprintf(stderr,"#################################################################################################\n");
 		fprintf(stderr,"\n");
 		fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
 		fprintf(stderr,"  which is newer than the recommended version, although it is still compatible with it.\n");
 		fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
-		fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.");
+		fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
 		fprintf(stderr,"\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
+		fprintf(stderr,"#################################################################################################\n");
+		fprintf(stderr,"#################################################################################################\n");
 		fprintf(stderr,"\n");
 	}
 	inline void printMessageSevereError()
