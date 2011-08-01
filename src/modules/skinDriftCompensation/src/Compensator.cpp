@@ -101,7 +101,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
             }
         }
         if(skinBroken)
-            sendInfoMsg("The output of all the taxels is 255. Probably there is a hardware problem.");
+            sendInfoMsg("The output of all the taxels is 0. Probably there is a hardware problem.");
         return !skinBroken;
     }
 
@@ -167,7 +167,7 @@ void Compensator::calibrationFinish(){
 		for (int j=0; j<=MAX_SKIN; j++) {
 			if (skin_empty[i][j] > (calibrationRead*0.95)) {
                 // the threshold can not be less than MIN_TOUCH_THR
-				touchThresholds[i] = max<double>(MIN_TOUCH_THR, (double)j - baselines[i]);
+				touchThresholds[i] = (double)j - baselines[i];
 				j = MAX_SKIN;   // break
 			}
 		}
@@ -175,13 +175,26 @@ void Compensator::calibrationFinish(){
     // store the initial baseline to compute the drift compensated later
     initialBaselines = baselines;
 	
-	// release the semaphore so that as of now the touchThreshold can be read
-	touchThresholdSem.post();
-
 	// set the "old output value" for the smoothing filter to the baseline value to get a smooth start
-	compensatedDataOld = baselines;
+	compensatedDataOld = baselines;	
 
-	// print to console
+    // test to check if the skin is broken (all taxel baselines are 255 and thresholds are 0)
+    bool baseline255 = true, thresholdZero = true;
+    for(int i=0; i<SKIN_DIM; i++){
+        if(baselines[i]!=255){
+            baseline255 = false;
+        }
+        if(touchThresholds[i]>0.00001){
+            //fprintf(stdout, "Threhsold taxel %d = %f\n", i, touchThreshold[i]);
+            thresholdZero = false;
+        }
+    }
+    if(baseline255 || thresholdZero){
+        _isWorking = false;
+        sendInfoMsg("Eithre the baselines of all the taxels are 255 or the noises are 0. Probably there is a hardware problem.");
+    }
+
+    // print to console
 	fprintf(stderr, "\n[%s] Baselines:\n", name.c_str());
 	for (unsigned int i=0; i<SKIN_DIM; i++) {
 		if(!(i%12)) fprintf(stderr, "\n");
@@ -197,9 +210,13 @@ void Compensator::calibrationFinish(){
 	fprintf(stderr,"\n[%s] Thresholds (95 percentile):\n", name.c_str());
 	for (unsigned int i=0; i<SKIN_DIM; i++) {
 		if(!(i%12)) fprintf(stderr, "\n");
+        touchThresholds[i] = max<double>(MIN_TOUCH_THR, touchThresholds[i]);
 		fprintf(stderr,"%3.1f ", touchThresholds[i]);		
 	}
 	fprintf(stderr,"\n");
+
+    // release the semaphore so that as of now the touchThreshold can be read
+	touchThresholdSem.post();
 }
 
 bool Compensator::readInputData(Vector& skin_values){

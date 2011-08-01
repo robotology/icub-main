@@ -324,13 +324,8 @@ void CompensationThread::checkErrors(){
         if(compWorking[i]){
             compWorking[i] = compensators[i]->isWorking();
             if(!compWorking[i]){    // read failed too many times in a row, remove the port
-                stringstream msg;
-                msg<< "[ERROR] Too many successive errors reading port "<< 
-                    compensators[i]->getInputPortName()<< ". Closing compensator "<< compensators[i]->getInputPortName()<< ".";
-                sendInfoMsg(msg.str());
-
                 if(compensatorCounter==1){
-                    fprintf(stderr, "No input port left. Stopping the thread\n");
+                    fprintf(stderr, "No input port left. Stopping the compensation thread\n");
                     this->threadRelease();
 		            this->suspend();
                     return;
