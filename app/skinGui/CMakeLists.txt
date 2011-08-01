@@ -3,7 +3,7 @@ set(appname skinGui)
 icub_app(${appname})
 
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template)
-file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.glade)
+file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.glade ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.txt)
 
 icub_app_install(${appname} 
 				FILES ${scripts}
