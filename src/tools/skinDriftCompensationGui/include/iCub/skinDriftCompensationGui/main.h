@@ -49,6 +49,8 @@ GtkToggleButton			*btnBinarization;
 GtkScale				*scaleSmooth;	
 GtkTextView             *tvLog;
 GtkTextBuffer           *tbLog;
+GtkSpinButton           *spinThreshold;
+GtkSpinButton           *spinGain;
 // second tab
 GtkTreeView             *treeBaselines;
 GtkTreeStore            *treeStoreComp;
@@ -58,6 +60,9 @@ GtkLabel                *lblMaxY;
 GtkLabel                *lblMinY;
 GtkLabel                *lblMaxX;
 GtkLabel                *lblMinX;
+GtkComboBox             *comboPort;
+GtkComboBox             *comboTriangle;
+GtkComboBox             *comboTaxel;
 // fourth tab
 GtkLabel                *lblInfo;
 
@@ -70,8 +75,10 @@ vector<string>			portNames;				// names of the skin input ports
 vector<unsigned int>	portDim;				// number of taxels of the input ports
 double					currentSmoothFactor;    // current smooth factor value
 bool                    initDone;               // true if the gui has been initialized
+unsigned int            currentThreshold;       // current safety threshold
+double                  currentCompGain;        // current compensation gain
 
-void initGuiStatus();
+bool initGuiStatus();
 
 static void printLog(string text){
     text = text + "\n";
@@ -107,7 +114,7 @@ static void setStatusBarFreq(bool freqUpdated, double freq){
 		freq = round(freq, 2);
 		text<< "Skin data frequency: "<< freq;
 	}else{
-		text<< "Cannot read the frequency";
+		text<< "Cannot read the frequency. Probably the skinDriftCompensation module has stopped working.";
 	}
 	guint contextId = gtk_statusbar_get_context_id(statusBarFreq, text.str().c_str());
 	gtk_statusbar_push(statusBarFreq, contextId, text.str().c_str());

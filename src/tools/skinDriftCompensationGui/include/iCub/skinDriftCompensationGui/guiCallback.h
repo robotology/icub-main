@@ -33,6 +33,60 @@ static void on_window_destroy_event(GtkObject *object, gpointer user_data){
 	gtk_main_quit();
 }
 
+static void spin_threshold_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
+    int safetyThr = gtk_spin_button_get_value_as_int(spinbutton);
+    if(safetyThr == currentThreshold)
+        return;
+    
+    // set the threshold
+    Bottle b, setReply;
+    b.addString("set"); b.addString("threshold"); b.addInt(safetyThr);
+    guiRpcPort.write(b, setReply);
+
+    // read the threshold
+	Bottle getReply = sendRpcCommand(true, 2, "get", "threshold");
+	currentThreshold = getReply.get(0).asInt();
+
+	if(safetyThr==currentThreshold){
+        stringstream msg; msg << "Safety threshold changed: " << safetyThr;
+        setStatusBarText(msg.str().c_str());
+        return;
+    }
+    
+    stringstream msg; msg << "Unable to set the threshold to " << safetyThr;
+	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);
+    // setting the old value
+    gtk_spin_button_set_value(spinbutton, currentThreshold);
+}
+
+static void spin_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
+    double compGain = gtk_spin_button_get_value(spinbutton);
+    if(compGain == currentCompGain)
+        return;
+
+    // set the gain
+    Bottle b, setReply;
+    b.addString("set"); b.addString("gain"); b.addDouble(compGain);
+    guiRpcPort.write(b, setReply);
+
+    // read the gain
+	Bottle getReply = sendRpcCommand(true, 2, "get", "gain");
+	currentCompGain = getReply.get(0).asDouble();
+
+	if(compGain==currentCompGain){
+        stringstream msg; msg << "Compensation gain changed: " << compGain;
+        setStatusBarText(msg.str().c_str());
+        return;
+    }
+    
+    stringstream msg; msg << "Unable to set the compensation gain to " << compGain;
+	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);   
+    // setting the old value
+    gtk_spin_button_set_value(spinbutton, currentCompGain);
+}
+
 static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll, gdouble value, gpointer user_data){
 	// check whether the smooth factor has changed
 	double smoothFactor = round(value, 1); //double(int((value*10)+0.5))/10.0;
@@ -53,12 +107,13 @@ static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll
 		stringstream msg; msg << "Smooth factor changed: " << smoothFactor;
 		setStatusBarText(msg.str());
 		return false;
-	}else{
-		stringstream msg; msg << "Unable to set the smooth factor to " << smoothFactor;
-		msg<< ".\nSet command reply: "<< setReply.toString().c_str();
-		openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);
-		return true;
 	}
+	stringstream msg; msg << "Unable to set the smooth factor to " << smoothFactor;
+	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);
+    // setting the old value
+    gtk_range_set_value(range, currentSmoothFactor);
+	return true;
 }
 
 
@@ -166,12 +221,11 @@ static gboolean button_threshold(GtkToggleButton *widget, GdkEvent *ev, gpointer
     }
 	return false;
 }
+
 static gboolean button_clear_log(GtkToggleButton *widget, GdkEvent *ev, gpointer data){
 	gtk_text_buffer_set_text(tbLog, "", 0);
 	return false;
 }
-
-
 
 static gint periodic_timeout(gpointer data){    
 	//printf("Timeout thread: %p\n", g_thread_self());
@@ -179,17 +233,22 @@ static gint periodic_timeout(gpointer data){
     // if the gui has not been initialized yet
     if(!initDone){
         // if the rpc port is connected, then initialize the gui status
-        if(guiRpcPort.getOutputCount()>0){
-		    initGuiStatus();
-            initDone = true;
+        if(guiRpcPort.getOutputCount()>0)
+            initDone = initGuiStatus();
+
+        if(initDone)
             printLog("GUI connected!");
-	    }else
+	    else
             return true;
     }
 
-	if(driftCompMonitorPort.getInputCount()>0){
+	if(driftCompMonitorPort.getInputCount()==0){
+        setStatusBarFreq(false, 0);
+    }else{
 		Bottle* b = driftCompMonitorPort.read(false);
-		if(b){
+        if(!b){
+            setStatusBarFreq(false, 0);
+        }else{
             //set the frequency
 			double freq = b->get(0).asDouble();
 			setStatusBarFreq(true, freq);
@@ -213,12 +272,12 @@ static gint periodic_timeout(gpointer data){
                     else if(meanTr<minY)
                         minY = meanTr;
                 }
-                gtk_curve_set_range(curveComp, 0, (gfloat)(numTr), (gfloat)(minY-1), (gfloat)(maxY+1));
+                /*gtk_curve_set_range(curveComp, 0, (gfloat)(numTr), (gfloat)(minY-1), (gfloat)(maxY+1));
                 gtk_curve_set_vector(curveComp, numTr, &driftPerTr[0]);                
                 stringstream maxYS; maxYS<< maxY;
                 gtk_label_set_text(lblMaxY, maxYS.str().c_str());
                 stringstream minYS; minYS<< minY;
-                gtk_label_set_text(lblMinY, minYS.str().c_str());
+                gtk_label_set_text(lblMinY, minYS.str().c_str());*/
                                
 
 				GtkTreeIter iterPort, iterTr, iterTax;
@@ -257,7 +316,7 @@ static gint periodic_timeout(gpointer data){
 							taxS.str(""); taxS<<k;
 							if(gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTax, &iterTr, k))
 								gtk_tree_store_set((treeStoreComp), &iterTax, 2, taxS.str().c_str(), 3, drift, -1);
-						}					
+						}
 					}
 
 					meanPort = sumPort/(portDim[i]/12);
@@ -265,10 +324,8 @@ static gint periodic_timeout(gpointer data){
 					gtk_tree_model_iter_next(GTK_TREE_MODEL(treeStoreComp), &iterPort);
 				}
             }
-		}else
-			setStatusBarFreq(false, 0);
-	}else
-		setStatusBarFreq(false, 0);
+		}
+    }
 
     // check if there are messages on the info port
     Bottle* infoMsg = driftCompInfoPort.read(false);

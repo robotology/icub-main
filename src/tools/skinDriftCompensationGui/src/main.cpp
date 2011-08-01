@@ -81,7 +81,7 @@
 
 #include "iCub/skinDriftCompensationGui/guiCallback.h"
 
-void initGuiStatus(){
+bool initGuiStatus(){
     Bottle reply = sendRpcCommand(true, 2, "get", "binarization");
 	if(string(reply.toString().c_str()).compare("on") == 0){
 		gtk_toggle_button_set_active(btnBinarization, true);
@@ -99,19 +99,34 @@ void initGuiStatus(){
 
 	reply = sendRpcCommand(true, 3, "get", "smooth", "factor");
 	currentSmoothFactor = reply.get(0).asDouble();
-	gtk_adjustment_set_value(scaleSmooth->range.adjustment, currentSmoothFactor);
+	gtk_adjustment_set_value(scaleSmooth->range.adjustment, currentSmoothFactor);	
 
-	// check whether the skin calibration is in process
-	reply = sendRpcCommand(true, 2, "is", "calibrating");
-	if(string(reply.toString().c_str()).compare("yes")==0){
-		gtk_widget_show(GTK_WIDGET(progBarCalib));
-		g_timeout_add(100, progressbar_calibration, NULL);
-		gtk_widget_set_sensitive(GTK_WIDGET(btnCalibration), false);
-	}
+    reply = sendRpcCommand(true, 2, "get", "threshold");
+    if(reply.isNull() || reply.size()==0 || !reply.get(0).isInt()){
+        printLog("Error while getting the safety threshold");
+        return false;
+    }else{
+        currentThreshold = reply.get(0).asInt();
+        gtk_adjustment_set_value(spinThreshold->adjustment, currentThreshold);
+    }
+
+    reply = sendRpcCommand(true, 2, "get", "gain");
+    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
+        printLog("Error while getting the compensation gain");
+        return false;
+    }else{
+        currentCompGain = reply.get(0).asDouble();
+        gtk_adjustment_set_value(spinGain->adjustment, currentCompGain);
+    }
 
     // get module information
     reply = sendRpcCommand(true, 2, "get", "info");
-    stringstream ss; 
+    if(reply.isNull() || reply.size()!=3){
+        printLog("Error while reading the module information");
+        gtk_label_set_text(lblInfo, reply.toString().c_str());
+        return false;
+    }
+    stringstream ss;
 	ss<< reply.get(0).toString().c_str()<< endl;
 	ss<< reply.get(1).toString().c_str()<< "\nInput ports:";
 	Bottle* portList = reply.get(2).asList();
@@ -126,11 +141,32 @@ void initGuiStatus(){
     }
     gtk_label_set_text(lblInfo, ss.str().c_str());
 
-    // set plot max X axis labels
-    int numTriangles = numTaxels/16;
-    ss.str("");
-    ss<< numTriangles;
-    gtk_label_set_text(lblMaxX, ss.str().c_str());
+    // plot 
+    unsigned int numTriangles = numTaxels/16;
+    //gtk_label_set_text(lblMaxX, ss.str().c_str());
+   /* for(unsigned int i=0;i<portDim.size();i++){
+        gtk_combo_box_append_text(comboPort, portNames[i].c_str());
+    }
+    for(unsigned int i=0;i<numTriangles;i++){
+        ss.str("");
+        ss<< i;
+        gtk_combo_box_append_text(comboTriangle, ss.str().c_str());
+    }
+    for(unsigned int i=0;i<12;i++){
+        ss.str("");
+        ss<< i;
+        gtk_combo_box_append_text(comboTaxel, ss.str().c_str());
+    }*/
+
+    // check whether the skin calibration is in process
+	reply = sendRpcCommand(true, 2, "is", "calibrating");
+	if(string(reply.toString().c_str()).compare("yes")==0){
+		gtk_widget_show(GTK_WIDGET(progBarCalib));
+		g_timeout_add(100, progressbar_calibration, NULL);
+		gtk_widget_set_sensitive(GTK_WIDGET(btnCalibration), false);
+	}
+
+    return true;
 }
 
 bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], string &guiName, unsigned int& gXpos, unsigned int& gYpos){    
@@ -221,6 +257,7 @@ int main (int argc, char *argv[])
 
 	// get pointers to the widgets we are interested in
 	window			= GTK_WINDOW (gtk_builder_get_object (builder, "window"));
+
 	btnSmooth		= GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "btnSmooth"));
 	btnBinarization = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "btnBinarization"));
     btnClearLog     = GTK_BUTTON (gtk_builder_get_object (builder, "btnClearLog"));
@@ -228,28 +265,37 @@ int main (int argc, char *argv[])
 	btnCalibration	= GTK_BUTTON (gtk_builder_get_object (builder, "btnCalibration"));
 	progBarCalib	= GTK_PROGRESS_BAR (gtk_builder_get_object (builder, "progressbarCalib"));
 	btnTouchThr		= GTK_BUTTON (gtk_builder_get_object (builder, "btnThreshold"));
+    spinThreshold	= GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonThreshold"));
+    spinGain    	= GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonGain"));
+
     tbLog           = GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbufferLog"));
     tvLog           = GTK_TEXT_VIEW (gtk_builder_get_object (builder, "textviewLog"));
     lblInfo         = GTK_LABEL (gtk_builder_get_object (builder, "labelInfo"));
     treeBaselines   = GTK_TREE_VIEW (gtk_builder_get_object (builder, "treeview"));
     treeStoreComp   = GTK_TREE_STORE (gtk_builder_get_object (builder, "treestore"));
+
     curveComp       = GTK_CURVE (gtk_builder_get_object (builder, "curve"));
     lblMaxY         = GTK_LABEL (gtk_builder_get_object (builder, "lblMaxY"));
     lblMinY         = GTK_LABEL (gtk_builder_get_object (builder, "lblMinY"));
     lblMaxX         = GTK_LABEL (gtk_builder_get_object (builder, "lblMaxX"));
-    lblMinX         = GTK_LABEL (gtk_builder_get_object (builder, "lblMinX"));    
+    lblMinX         = GTK_LABEL (gtk_builder_get_object (builder, "lblMinX"));
+    comboPort   	= GTK_COMBO_BOX (gtk_builder_get_object (builder, "comboboxPort"));
+    comboTriangle  	= GTK_COMBO_BOX (gtk_builder_get_object (builder, "comboboxTriangle"));
+    comboTaxel   	= GTK_COMBO_BOX (gtk_builder_get_object (builder, "comboboxTaxel"));
+
     statusBar		= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusBar"));
 	statusBarFreq	= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusbarFreq"));
 
 	// if the rpc port is connected, then initialize the gui status
     initDone = false;
-	if(guiRpcPort.getOutputCount()>0){
-		initGuiStatus();
-        initDone = true;
+	if(guiRpcPort.getOutputCount()>0)		
+        initDone = initGuiStatus();
+
+    if(initDone)
         printLog("GUI connected!");
-	}else
+	else
         printLog("GUI not connected. Connect it to the module to make it work.");
-    // otherwise the gui will try to initialize every timeout (i.e. 2 seconds)
+    // otherwise the gui will try to initialize every timeout (i.e. 0.5 sec)
 
 	// connect all the callback functions (after the initialization, so as not to activate the callbacks)
 	g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy_event), NULL);
@@ -259,7 +305,9 @@ int main (int argc, char *argv[])
 	g_signal_connect(btnTouchThr, "button-press-event", G_CALLBACK(button_threshold), NULL);
     g_signal_connect(btnClearLog, "button-press-event", G_CALLBACK(button_clear_log), NULL);
 	g_signal_connect(scaleSmooth, "change-value", G_CALLBACK(scale_smooth_value_changed), NULL);
-	gdk_threads_add_timeout(2000, (periodic_timeout), NULL);   // thread safe version of "g_timeout_add()
+    g_signal_connect(spinThreshold, "value-changed", G_CALLBACK(spin_threshold_value_changed), NULL);
+    g_signal_connect(spinGain, "value-changed", G_CALLBACK(spin_gain_value_changed), NULL);
+	gdk_threads_add_timeout(1000, (periodic_timeout), NULL);   // thread safe version of "g_timeout_add()
 
 	// free the memory used by the glade xml file
 	g_object_unref (G_OBJECT (builder));
@@ -267,8 +315,8 @@ int main (int argc, char *argv[])
 	gtk_widget_show(GTK_WIDGET(window));
 	gtk_window_set_title(window, guiName.c_str());
 	gtk_window_set_resizable(window, true);
-	gtk_window_set_default_size(GTK_WINDOW(window),300,200);
-    gtk_window_resize(GTK_WINDOW(window),300,200);
+	gtk_window_set_default_size(GTK_WINDOW(window),600,200);
+    gtk_window_resize(GTK_WINDOW(window),600,200);
 	gtk_window_move(GTK_WINDOW(window),gXpos,gYpos);
 
 	
