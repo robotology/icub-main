@@ -26,11 +26,11 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace iCub::skinDriftCompensation;
 
-Compensator::Compensator(string name, string robotName, string outputPortName, string inputPortName, 
-                         float changePerTimestep, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
+Compensator::Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort, 
+                         double _compensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
                          bool _smoothFilter, float _smoothFactor, unsigned int _linkId)
 									   : 
-										CHANGE_PER_TIMESTEP(changePerTimestep), ADD_THRESHOLD(addThreshold), 
+										compensationGain(_compensationGain), ADD_THRESHOLD(addThreshold), infoPort(_infoPort),
                                             minBaseline(_minBaseline), binarization(_binarization), smoothFilter(_smoothFilter), 
                                             smoothFactor(_smoothFactor), robotName(robotName), name(name), linkId(_linkId)
 {
@@ -39,8 +39,10 @@ Compensator::Compensator(string name, string robotName, string outputPortName, s
 }
 
 Compensator::~Compensator(){
-    if(tactileSensorDevice)
+    if(tactileSensorDevice){
 		tactileSensorDevice->close();
+        delete tactileSensorDevice;
+    }
 
     compensatedTactileDataPort.interrupt();
     compensatedTactileDataPort.close();
@@ -48,7 +50,8 @@ Compensator::~Compensator(){
 
 bool Compensator::init(string name, string robotName, string outputPortName, string inputPortName){
     if (!compensatedTactileDataPort.open(outputPortName.c_str())) {
-	    cout<< "Unable to open output port "<< outputPortName<< endl;
+	    stringstream msg; msg<< "Unable to open output port "<< outputPortName;
+        sendInfoMsg(msg.str());
 	    return false;  // unable to open
     }
 
@@ -76,7 +79,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     
     SKIN_DIM = tactileSensor->getChannels();
     if(SKIN_DIM<=0){
-		fprintf(stderr, "Error while reading the number of channels of the tactile sensor device\n");
+		fprintf(stderr, "Error while reading the number of channels of the tactile sensor device. Using 192 as default value.\n");
 		SKIN_DIM = 192;
 	}
     readErrorCounter = 0;
@@ -86,6 +89,21 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     touchDetectedFilt.resize(SKIN_DIM);
     compensatedData.resize(SKIN_DIM);
     compensatedDataOld.resize(SKIN_DIM);
+    taxelPosOri = NULL;
+
+    // test read to check if the skin is broken (all taxel output is 0)
+    if(readInputData(compensatedData)){
+        bool skinBroken = true;
+        for(int i=0; i<SKIN_DIM; i++){
+            if(compensatedData[i]!=0){
+                skinBroken = false;
+                break;
+            }
+        }
+        if(skinBroken)
+            sendInfoMsg("The output of all the taxels is 255. Probably there is a hardware problem.");
+        return !skinBroken;
+    }
 
     return true;
 }
@@ -188,18 +206,28 @@ bool Compensator::readInputData(Vector& skin_values){
     int err;
     if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
         readErrorCounter++;
-        if(err == IAnalogSensor::AS_TIMEOUT)
-            fprintf(stderr, "[%s]: Timeout error reading tactile sensor.\n", compensatedTactileDataPort.getName().c_str(), err);
+        if(readErrorCounter>MAX_READ_ERROR)
+            _isWorking = false;
+
+        stringstream msg;
+        if(err == IAnalogSensor::AS_TIMEOUT)            
+            msg<< "Timeout error reading tactile sensor.";
         else if(err == IAnalogSensor::AS_OVF)
-            fprintf(stderr, "[%s]: Ovf error reading tactile sensor.\n", compensatedTactileDataPort.getName().c_str(), err);
+            msg<< "Ovf error reading tactile sensor.";
         else if(err == IAnalogSensor::AS_ERROR)
-            fprintf(stderr, "[%s]: Generic error reading tactile sensor.\n", compensatedTactileDataPort.getName().c_str(), err);
+            msg<< "Generic error reading tactile sensor.";
+        sendInfoMsg(msg.str());
 	    return false;
     }
 
     if(skin_values.size() != SKIN_DIM){
         readErrorCounter++;
-        fprintf(stderr, "Unexpected size of the input array (raw tactile data): %d\n", skin_values.size());
+        if(readErrorCounter>MAX_READ_ERROR)
+            _isWorking = false;
+
+        stringstream msg;
+        msg<< "Unexpected size of the input array (raw tactile data): "<< skin_values.size();
+        sendInfoMsg(msg.str());
         return false;
     }
     
@@ -207,9 +235,9 @@ bool Compensator::readInputData(Vector& skin_values){
     readErrorCounter = 0;
     return true;
 }
-unsigned int Compensator::getErrorCounter(){
-    return readErrorCounter;
-}
+//unsigned int Compensator::getErrorCounter(){
+//    return readErrorCounter;
+//}
 
 bool Compensator::readRawAndWriteCompensatedData(){
     Vector rawData(SKIN_DIM);
@@ -263,11 +291,6 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	    compensatedData2Send.push_back(d);
 	}
 
-	if(compensatedData2Send.size() != SKIN_DIM){
-		fprintf(stderr, "Unexpected size of the output array (compensated tactile data): %d\n", compensatedData2Send.size());
-		return false;
-	}
-
 	compensatedTactileDataPort.write();
 	return true;
 }
@@ -284,16 +307,16 @@ void Compensator::updateBaseline(){
 
             // old algorithm
 			//if(d > 0.5) {
-			//	baselines[j]		+= CHANGE_PER_TIMESTEP;
-			//	mean_change			+= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
+			//	baselines[j]		+= compensationGain;
+			//	mean_change			+= compensationGain;				//for changing the taxels where we detected touch
 			//}else if(d < -0.5) {
-			//	baselines[j]		-= CHANGE_PER_TIMESTEP;
-			//	mean_change			-= CHANGE_PER_TIMESTEP;				//for changing the taxels where we detected touch
+			//	baselines[j]		-= compensationGain;
+			//	mean_change			-= compensationGain;				//for changing the taxels where we detected touch
 			//}
 
             // new algorithm
 			if(fabs(d)>0.5){
-                change          = CHANGE_PER_TIMESTEP*d/touchThresholds[j];
+                change          = (compensationGain/50)*d/touchThresholds[j];
 				baselines[j]    += change;
                 mean_change     += change;
 			}
@@ -338,9 +361,37 @@ bool Compensator::isThereContact(){
     }
     return false;
 }
+
+Vector Compensator::getContactCOP(){
+	Vector mean3D(0);
+    if(taxelPosOri == NULL){
+        return mean3D;
+    }
+
+    mean3D.resize(3);
+	mean3D.zero();
+	double pointsTouched = 0;
+    for(int i = 0; i != touchDetectedFilt.size(); i++){
+	    if(touchDetectedFilt[i]){
+		    pointsTouched++;
+		    mean3D[0]+=taxelPosOri[i][0];
+		    mean3D[1]+=taxelPosOri[i][1];
+		    mean3D[2]+=taxelPosOri[i][2];
+	    }
+    }
+    if(pointsTouched>0){
+	    mean3D[0]=mean3D[0]/pointsTouched;
+	    mean3D[1]=mean3D[1]/pointsTouched;
+	    mean3D[2]=mean3D[2]/pointsTouched;
+    }else 
+        mean3D.resize(0);
+	return mean3D;
+}
+
 void Compensator::setBinarization(bool value){
 	binarization = value;
 }
+
 void Compensator::setSmoothFilter(bool value){
 	if(smoothFilter != value){
 		smoothFilter = value;
@@ -364,6 +415,23 @@ bool Compensator::setSmoothFactor(float value){
 void Compensator::setLinkId(unsigned int linkId){
     this->linkId = linkId;
 }
+
+bool Compensator::setAddThreshold(unsigned int thr){
+    if(thr>=MAX_SKIN)
+        return false;
+    ADD_THRESHOLD = thr;
+    cout<< "Add threshold changed: "<< thr<< endl;
+    return true;
+}
+
+bool Compensator::setCompensationGain(double gain){
+    if(gain<=0.0)
+        return false;
+    compensationGain = gain;
+    cout<< "Compensation gain changed: "<< gain<< endl;
+    return true;
+}
+
 unsigned int Compensator::getNumTaxels(){
     if(_isWorking)
         return SKIN_DIM;
@@ -402,6 +470,13 @@ float Compensator::getSmoothFactor(){
 unsigned int Compensator::getLinkId(){
     return linkId;
 }
+
+unsigned int Compensator::getAddThreshold(){
+    return ADD_THRESHOLD;
+}
+double Compensator::getCompensationGain(){
+    return compensationGain;
+}
 string Compensator::getName(){
     return name;
 }
@@ -412,4 +487,41 @@ string Compensator::getInputPortName(){
 
 bool Compensator::isWorking(){
     return _isWorking;
+}
+
+bool Compensator::setTaxelPositions(const char *filePath){
+	ifstream posFile;
+	posFile.open(filePath);
+	string posLine;
+	int totalLines = 0;
+	if (posFile.is_open()) {
+		while (getline(posFile,posLine)){
+			posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
+			if(!posLine.empty())totalLines++;
+		}
+		posFile.clear(); 
+		posFile.seekg(0, std::ios::beg);//rewind iterator
+		taxelPosOri = new double*[totalLines];
+		for(int i= 0; getline(posFile,posLine); i++) {
+			posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
+			if(posLine.empty())
+				continue;
+			taxelPosOri[i] = new double[6];
+			string number;
+			istringstream iss(posLine, istringstream::in);
+			for(int j = 0; iss >> number; j++ ){
+				taxelPosOri[i][j] = strtod(number.c_str(),NULL);
+			}
+		}
+	}else return false;
+	return true;
+}
+void Compensator::sendInfoMsg(string msg){
+    printf("\n");
+    printf("[%s]: %s", getInputPortName().c_str(), msg.c_str());
+    Bottle& b = infoPort->prepare();
+    b.clear();
+    b.addString(getInputPortName().c_str());
+    b.addString((": " + msg).c_str());
+    infoPort->write();
 }

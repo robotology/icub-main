@@ -17,6 +17,9 @@
  * Public License for more details
  */
 
+#ifndef __COMPTHREAD_H__
+#define __COMPTHREAD_H__
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -49,9 +52,8 @@ public:
 
 	/* class methods */
 
-	CompensationThread(string name, ResourceFinder* rf, string robotName, float maxDrift, int addThreshold, 
-		float minBaseline, bool zeroUpRawData, int period, 
-		bool binarization, bool smoothFilter, float smoothFactor);
+	CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, int addThreshold, 
+		float minBaseline, bool zeroUpRawData, int period, bool binarization, bool smoothFilter, float smoothFactor);
 	bool threadInit();
 	void threadRelease();
 	void run(); 
@@ -60,11 +62,15 @@ public:
 	void setBinarization(bool value);
 	void setSmoothFilter(bool value);
 	bool setSmoothFactor(float value);
+    bool setAddThreshold(unsigned int thr);
+    bool setCompensationGain(double gain);
 
 	Vector getTouchThreshold();
 	bool getBinarization();
 	bool getSmoothFilter();
 	float getSmoothFactor();
+    unsigned int getAddThreshold();
+    double getCompensationGain();
 	bool isCalibrating();
     Bottle getInfo();
 
@@ -72,20 +78,19 @@ public:
 private:
 
 	/* class constants */	
-	static const int CAL_TIME = 5;				// calibration time in sec
-	static const int MAX_READ_ERROR = 100;		// max number of read errors before suspending the thread
+	static const int CAL_TIME = 5;				// calibration time in sec	
 	
     int CAL_SAMPLES;                            // num of samples needed for calibration
 	const int PERIOD;							// thread period in ms
 	int ADD_THRESHOLD;							// value added to the touch threshold of every taxel	
 	unsigned int SKIN_DIM;						// number of taxels (for the hand it is 192)
-	float MAX_DRIFT;							// the maximal drift that is being compensated every second
-	float CHANGE_PER_TIMESTEP;					// the maximal drift that is being compensated every cycle	
+	double compensationGain;				    // the gain of the compensation algorithm
 
 	/* class variables */
 	double frequency;
 	double frequencyOld;
 	double lastTimestamp;	
+    bool initializationFinished;
 	
 	// calibration variables
 	int calibrationCounter;						// count the calibration cycles	
@@ -104,6 +109,8 @@ private:
 	unsigned int portNum;			// number of input ports (that is the same as the number of output ports)
 
     vector<Compensator*> compensators;
+    vector<bool> compWorking;           // true if the relative compensator is working, false otherwise
+    unsigned int compensatorCounter;    // count the number of compensators that are working 
 
     // SKIN EVENTS
     bool skinEventsOn;
@@ -128,3 +135,5 @@ private:
 } //namespace iCub
 
 } //namespace skinDriftCompensation
+
+#endif

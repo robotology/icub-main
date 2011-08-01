@@ -27,7 +27,7 @@ const int SkinDriftCompensation::MIN_BASELINE_DEFAULT = 3;
 const int SkinDriftCompensation::ADD_THRESHOLD_DEFAULT = 2;
 const int SkinDriftCompensation::PERIOD_DEFAULT = 50;
 const float SkinDriftCompensation::SMOOTH_FACTOR_DEFAULT = 0.5;
-const float SkinDriftCompensation::MAX_DRIFT_DEFAULT = 0.2f;
+const float SkinDriftCompensation::COMPENSATION_GAIN_DEFAULT = 0.2f;
 const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
 const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
 const string SkinDriftCompensation::HAND_DEFAULT = "right";
@@ -39,8 +39,10 @@ const string SkinDriftCompensation::COMMAND_LIST[]  = {
 	"forbid calibration",	"allow calibration",	"force calibration", 
 	"get percentile",		"set binarization",		"get binarization", 
 	"set smooth filter",	"get smooth filter",	"set smooth factor",	
-	"get smooth factor",	"is calibrating",       "get info",		
-    "help",					"quit"};
+	"get smooth factor",	"set threshold",        "get threshold", 
+    "set gain",             "get gain",
+    "is calibrating",       "get info",		        "help",					
+    "quit"};
 
 // the order in COMMAND_DESC must correspond to the order in COMMAND_LIST
 const string SkinDriftCompensation::COMMAND_DESC[]  = {
@@ -54,6 +56,10 @@ const string SkinDriftCompensation::COMMAND_DESC[]  = {
 	"get the smooth filter state (on, off)",
 	"set the value of the smooth factor (in [0,1])",
 	"get the smooth factor value",
+    "set the safety threshold that is added to the touch thresholds (int in [0, 254])",
+    "get the safety threshold that is added to the touch threshold",
+    "set the compensation gain", 
+    "get the compensation gain",
 	"tell whether the skin calibration is in progress",
     "get information about the module",
 	"get this list", 
@@ -79,8 +85,8 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	bool smoothFilter		= rf.check("smoothFilter");
 	float smoothFactor		= (float)rf.check("smoothFactor", Value(SMOOTH_FACTOR_DEFAULT), 
 	   "Determine the smoothing intensity (float in [0,1])").asDouble();
-	float maxDrift			= (float)rf.check("maxDrift", Value(MAX_DRIFT_DEFAULT), 
-	   "Max drift compensated every second (float)").asDouble();
+	float compGain			= (float)rf.check("compensationGain", Value(COMPENSATION_GAIN_DEFAULT), 
+	   "Gain of the compensation algorithm (float)").asDouble();
 	int addThreshold		= (int)rf.check("addThreshold", Value(ADD_THRESHOLD_DEFAULT), 
 	   "Value added to all the touch thresholds (positive int)").asInt();
 	
@@ -107,7 +113,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 
 
 	/* create the thread and pass pointers to the module parameters */
-	myThread = new CompensationThread(moduleName, &rf, robotName, maxDrift, addThreshold, minBaseline, 
+	myThread = new CompensationThread(moduleName, &rf, robotName, compGain, addThreshold, minBaseline, 
 		zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
 	/* now start the thread to do the work */
 	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
@@ -131,10 +137,7 @@ bool SkinDriftCompensation::close()
 	if(myThread){
 		myThread->stop();
         delete myThread;
-    }
-    
-
-	//compensatedTactileDataPort.close();
+    }    	
 	handlerPort.close();   
 
 	return true;
@@ -257,6 +260,50 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 		case get_smooth_factor:
 			reply.addDouble(myThread->getSmoothFactor());
 			return true;
+
+        case set_threshold:
+            {
+			if(command.size()<3 || (!command.get(2).isInt())){
+				reply.addString("New threshold value missing or not an integer! Threshold not updated.");
+				return true;
+			}
+
+			stringstream temp;
+			if(myThread->setAddThreshold(command.get(2).asInt())){				
+				temp<< "New threshold set: "<< command.get(2).asInt();				
+			}
+			else{
+				temp<< "ERROR in setting new threshold: "<< command.get(2).asInt();
+			}
+			reply.addString( temp.str().c_str());
+			return true;
+			}
+
+        case get_threshold:
+            reply.addInt(myThread->getAddThreshold());
+            return true;
+
+        case set_gain:
+            {
+			if(command.size()<3 || (!command.get(2).isDouble())){
+				reply.addString("New gain value missing or not a double! Gain not updated.");
+				return true;
+			}
+
+			stringstream temp;
+			if(myThread->setCompensationGain(command.get(2).asDouble())){	
+				temp<< "New gain set: "<< command.get(2).asDouble();				
+			}
+			else{
+				temp<< "ERROR in setting new gain: "<< command.get(2).asDouble();
+			}
+			reply.addString( temp.str().c_str());
+			return true;
+			}
+
+        case get_gain:
+            reply.addDouble(myThread->getCompensationGain());
+            return true;
 
 		case is_calibrating:
 			if(myThread->isCalibrating())

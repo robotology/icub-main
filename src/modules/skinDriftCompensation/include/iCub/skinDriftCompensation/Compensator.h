@@ -16,11 +16,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
+#ifndef __COMP_H__
+#define __COMP_H__
 
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
+#include <fstream>//duarte code
 
 #include <yarp/sig/Vector.h>
 #include <yarp/os/BufferedPort.h>
@@ -37,14 +40,14 @@ using namespace yarp::dev;
 
 namespace iCub{
 
-namespace skinDriftCompensation{
+namespace skinDriftCompensation{    
 
 class Compensator
 {
 	/* class methods */
 public:
-	Compensator(string name, string robotName, string outputPortName, string inputPortName, 
-                         float changePerTimestep, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
+	Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort,
+                         double _compensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
                          bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
     ~Compensator();
 	    
@@ -60,33 +63,42 @@ public:
 	void setSmoothFilter(bool value);
 	bool setSmoothFactor(float value);
     void setLinkId(unsigned int linkId);
+    bool setAddThreshold(unsigned int thr);
+    bool setCompensationGain(double gain);
+
 
 	Vector getTouchThreshold();
 	bool getBinarization();
 	bool getSmoothFilter();
 	float getSmoothFactor();
     unsigned int getLinkId();
+    unsigned int getAddThreshold();
+    double getCompensationGain();
     
     unsigned int getNumTaxels();
-    unsigned int getErrorCounter();
+    //unsigned int getErrorCounter();
     Vector getCompensation();
     string getName();
     string getInputPortName();
     bool isWorking();
+	bool setTaxelPositions(const char *filePath);
+	Vector getContactCOP(); // get the contact center of pressure
 
 private:
 
 	/* class constants */	
+    static const int MAX_READ_ERROR = 100;		// max number of read errors before suspending the compensator
 	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
     static const int MIN_TOUCH_THR = 1;			// min value assigned to the touch thresholds (i.e. the 95% percentile)
 	static const int BIN_TOUCH = 100;			// output value of the binarization filter when touch is detected
 	static const int BIN_NO_TOUCH = 0;			// output value of the binarization filter when no touch is detected
 	
-	int ADD_THRESHOLD;							// value added to the touch threshold of every taxel	
-	unsigned int SKIN_DIM;								// number of taxels (for the hand it is 192)
-	float CHANGE_PER_TIMESTEP;					// the maximal drift that is being compensated every cycle	
+	unsigned int ADD_THRESHOLD;					// value added to the touch threshold of every taxel	
+	unsigned int SKIN_DIM;						// number of taxels (for the hand it is 192)
+	double compensationGain;					// the maximal drift that is being compensated every cycle	
     string robotName;
     string name;                                // name of the compensator
+	double **taxelPosOri;						//taxel position and orientation {xPos, yPos, zPos, xOri, yOri, zOri}
 
 	/* class variables */
 	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
@@ -124,14 +136,18 @@ private:
 
 	/* ports */
 	BufferedPort<Vector> compensatedTactileDataPort;	// output port
+    BufferedPort<Bottle>* infoPort;					    // info output port
 
 	
 	/* class private methods */	    
     bool init(string name, string robotName, string outputPortName, string inputPortName);
     bool readInputData(Vector& skin_values);
+    void sendInfoMsg(string msg);
 	
 };
 
 } //namespace iCub
 
 } //namespace skinDriftCompensation
+
+#endif
