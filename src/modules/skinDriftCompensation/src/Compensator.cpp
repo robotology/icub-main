@@ -94,7 +94,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     // test read to check if the skin is broken (all taxel output is 0)
     if(readInputData(compensatedData)){
         bool skinBroken = true;
-        for(int i=0; i<SKIN_DIM; i++){
+        for(unsigned int i=0; i<SKIN_DIM; i++){
             if(compensatedData[i]!=0){
                 skinBroken = false;
                 break;
@@ -180,7 +180,7 @@ void Compensator::calibrationFinish(){
 
     // test to check if the skin is broken (all taxel baselines are 255 and thresholds are 0)
     bool baseline255 = true, thresholdZero = true;
-    for(int i=0; i<SKIN_DIM; i++){
+    for(unsigned int i=0; i<SKIN_DIM; i++){
         if(baselines[i]!=255){
             baseline255 = false;
         }
