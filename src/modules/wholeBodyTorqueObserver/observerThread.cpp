@@ -233,7 +233,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_TOTorques = new BufferedPort<Bottle>;
     port_external_wrench_RA = new BufferedPort<Vector>;  
     port_external_wrench_LA = new BufferedPort<Vector>;  
-	port_external_wrench_TO = new BufferedPort<Vector>;  
+	port_external_wrench_TO = new BufferedPort<Vector>; 
+    port_skin_events = new BufferedPort<Bottle>; 
 	port_com_all = new BufferedPort<Vector>;
 	port_com_la  = new BufferedPort<Vector>;
 	port_com_ra  = new BufferedPort<Vector>;
@@ -264,6 +265,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_rl ->open(string("/"+local_name+"/right_leg/com:o").c_str());
 	port_com_hd ->open(string("/"+local_name+"/head/com:o").c_str());
 	port_com_to ->open(string("/"+local_name+"/torso/com:o").c_str());
+    port_skin_events->open(string("/"+local_name+"/skin_events:i").c_str());
 
 	if (autoconnect)
 	{
@@ -350,6 +352,7 @@ void inverseDynamics::run()
 	icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
 	icub->upperTorso->setSensorMeasurement(F_RArm,F_LArm,F_up);
 	icub->upperTorso->solveKinematics();
+	addSkinContacts();
 	icub->upperTorso->solveWrench();
 
 //#define DEBUG_KINEMATICS
@@ -552,7 +555,9 @@ void inverseDynamics::threadRelease()
 	fprintf(stderr, "Closing ft_leg_right port\n");
 	closePort(port_ft_leg_right);
 	fprintf(stderr, "Closing ft_leg_left port\n");
-	closePort(port_ft_leg_left);	  
+	closePort(port_ft_leg_left);
+    fprintf(stderr, "Closing skin_events port\n");
+	closePort(port_skin_events);
 
 	if (icub)      {delete icub; icub=0;}
 	if (icub_sens) {delete icub_sens; icub=0;}
@@ -907,3 +912,26 @@ void inverseDynamics::setZeroJntAngVelAcc()
 	d2q_torso=0.0;
 }
 
+void inverseDynamics::addSkinContacts(){
+    icub->upperTorso->leftSensor->clearContactList();
+    Bottle *skinEvents = port_skin_events->read(false);
+    if(!skinEvents || skinEvents->isNull() || skinEvents->size()==0)
+        return;        
+    
+    for(int i=0; i<skinEvents->size(); i++){
+        Bottle *e = skinEvents->get(i).asList();
+        if(e->size() != 5){
+            fprintf(stderr, "Unexpected size of a skin event: %d\n", e->size());
+            return;
+        }
+        string partName = e->get(0).asString().c_str();
+        unsigned int linkId = e->get(1).asInt();
+        //fprintf(stdout, "%3.3f\tContact on link %d\n", Random::normal(), linkId);
+        Vector pos(3);
+        pos(0) = e->get(2).asDouble();
+        pos(1) = e->get(3).asDouble();
+        pos(2) = e->get(4).asDouble();
+        iDynContact c(linkId, pos);
+        icub->upperTorso->leftSensor->addContact(c);
+    }
+}

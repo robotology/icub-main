@@ -85,6 +85,7 @@ private:
 	BufferedPort<Vector> *port_ft_leg_left;
     BufferedPort<Vector> *port_ft_leg_right;
 	BufferedPort<Vector> *port_inertial_thread;
+    BufferedPort<Bottle> *port_skin_events;
 
 	//output ports
 	BufferedPort<Bottle> *port_RATorques;
@@ -160,6 +161,8 @@ private:
 	void init_lower();
 	void setUpperMeasure(bool _init=false);
 	void setLowerMeasure(bool _init=false);
+
+    void addSkinContacts();
 
 public:
     inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, string icub_type, bool _autoconnect=false );
