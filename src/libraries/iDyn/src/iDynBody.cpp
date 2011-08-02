@@ -1731,30 +1731,6 @@ iDynSensorTorsoNode::iDynSensorTorsoNode(const string &_info,const NewEulMode _m
 :iDynSensorNode(_info,_mode,verb)
 {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynSensorTorsoNode::build()
-{
-	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
-	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
-	up		= new iCubNeckInertialDyn(KINBWD_WREBWD);
-
-	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(left),mode,verbose);
-	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
-
-	HUp.resize(4,4);	HUp.zero();
-	HLeft.resize(4,4);	HLeft.zero();
-	HRight.resize(4,4);	HRight.zero();
-
-	// order: head - right - left
-	addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
-	addLimb(right,HRight,rightSensor,RBT_NODE_OUT,RBT_NODE_IN);
-	addLimb(left,HLeft,leftSensor,RBT_NODE_OUT,RBT_NODE_IN);
-
-	left_name = "default_up";
-	right_name= "default_right";
-	up_name	  = "default_left";
-	name	  = "default_upper_torso";
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynSensorTorsoNode::~iDynSensorTorsoNode()
 {
 	delete rightSensor; rightSensor = NULL;
@@ -2235,8 +2211,16 @@ void iCubUpperTorso::build()
 	else
 	{up		= new iCubNeckInertialDyn(KINBWD_WREBWD);}
 
-	leftSensor = new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(left),mode,verbose);
-	rightSensor= new iDynSensorArmNoTorso(dynamic_cast<iCubArmNoTorsoDyn*>(right),mode,verbose);
+	SensorLinkNewtonEuler* armLeftSensor = new iCubArmSensorLink("left", mode, verbose);
+	SensorLinkNewtonEuler* armRightSensor = new iCubArmSensorLink("right", mode, verbose);
+	// FT sensor is in position 2 in the kinematic chain in both arms
+	// note position 5 if with torso, 2 without torso
+	unsigned int SENSOR_LINK_INDEX = 2;
+
+    leftSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(left), SENSOR_LINK_INDEX, armLeftSensor, 
+        "leftArmContactSolver",mode,verbose);
+	rightSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(right), SENSOR_LINK_INDEX, armRightSensor, 
+        "rightArmContactSolver",mode,verbose);
 
 	HUp.resize(4,4);	HUp.eye();
 	HLeft.resize(4,4);	HLeft.zero();
@@ -2287,8 +2271,14 @@ void iCubLowerTorso::build()
 	right	= new iCubLegDyn("right",KINFWD_WREBWD);
 	up		= new iCubTorsoDyn("lower",KINBWD_WREBWD);
 
-	leftSensor = new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(left),mode,verbose);
-	rightSensor= new iDynSensorLeg(dynamic_cast<iCubLegDyn*>(right),mode,verbose);
+	SensorLinkNewtonEuler* legLeftSensor = new iCubLegSensorLink("left", mode, verbose);
+	SensorLinkNewtonEuler* legRightSensor = new iCubLegSensorLink("right", mode, verbose);
+	unsigned int SENSOR_LINK_INDEX = 1;
+
+    leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(left), SENSOR_LINK_INDEX, legLeftSensor, 
+        "leftLegContactSolver",mode,verbose);
+	rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(right), SENSOR_LINK_INDEX, legRightSensor, 
+        "rightLegContactSolver",mode,verbose);
 
 	HUp.resize(4,4);	HUp.zero();
 	HUp(0,1)=-1.0;  // 0 -1  0

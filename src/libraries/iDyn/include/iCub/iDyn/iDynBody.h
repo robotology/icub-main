@@ -51,6 +51,7 @@
 #include <iCub/ctrl/math.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iDyn/iDynInv.h>
+#include <iCub/iDyn/iDynContact.h>
 #include <deque>
 #include <string>
 
@@ -1032,11 +1033,6 @@ class iDynSensorTorsoNode : public iDynSensorNode
 {
 protected:
 
-	/// left leg - FT sensor and solver
-	iDyn::iDynSensor * leftSensor;
-	/// right leg - FT sensor and solver
-	iDyn::iDynSensor * rightSensor;
-
 	/// roto-translational matrix defining the central-up base frame with respect to the torso node
 	yarp::sig::Matrix HUp;
 	/// roto-translational matrix defining the left limb base frame with respect to the torso node
@@ -1056,9 +1052,16 @@ protected:
 	/**
 	* Build the node.
 	*/
-	virtual void build();
+	//virtual void build();
 
 public:
+	/// left leg - FT sensor and solver
+	iDyn::iDynContactSolver * leftSensor;
+	/// right leg - FT sensor and solver
+	iDyn::iDynContactSolver * rightSensor;
+    /*iDyn::iDynSensor * leftSensor;
+	/// right leg - FT sensor and solver
+	iDyn::iDynSensor * rightSensor;*/
 
 	/// left limb
 	iDyn::iDynLimb * left;

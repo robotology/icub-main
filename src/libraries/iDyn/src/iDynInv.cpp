@@ -33,366 +33,6 @@ using namespace iCub::ctrl;
 using namespace iCub::iKin;
 using namespace iCub::iDyn;
 
-//================================
-//
-//		CONTACT NEWTON EULER
-//
-//================================
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ContactNewtonEuler::ContactNewtonEuler(unsigned int verb)
-{
-    verbose = verb;
-    info = "contact";
-    H.resize(4,4); H.eye();
-    F.resize(3); F.zero();
-    Mu.resize(3); Mu.zero();
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ContactNewtonEuler::disconnect()
-{
-    H.eye();
-    F.zero(); Mu.zero();
-    info = "no contact";
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ContactNewtonEuler::zero()
-{
-    H.eye();
-    F.zero(); Mu.zero();
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-//~~~~~~~~~~~~~~~~~~~~~~
-//   get methods
-//~~~~~~~~~~~~~~~~~~~~~~
-
-Vector	ContactNewtonEuler::getForce()	const   {return F;}
-Vector	ContactNewtonEuler::getMoment()	const	{return Mu;}
-Matrix	ContactNewtonEuler::getH()		const   {return H;}
-Matrix	ContactNewtonEuler::getR()      const   {return H.submatrix(0,2,0,2);}
-Vector	ContactNewtonEuler::getr()      const   {return H.submatrix(0,2,0,3).getCol(3);}
-string  ContactNewtonEuler::getInfo()   const   {return info;}
-
-//~~~~~~~~~~~~~~~~~~~~~~
-//   set methods
-//~~~~~~~~~~~~~~~~~~~~~~
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ContactNewtonEuler::setVerbose(unsigned int verb)
-{
-	verbose = verb;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ContactNewtonEuler::setInfo(const string &_info)
-{
-	info = _info;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool ContactNewtonEuler::setForce(const Vector &_F)
-{
-	if(_F.length()==3)
-	{
-		F=_F;
-		return true;
-	}
-	else
-	{
-		if(verbose)
-			fprintf(stderr,"ContactNewtonEuler error, could not set force due to wrong dimension: %d instead of 3.\n",_F.length());
-
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool ContactNewtonEuler::setMoment(const Vector &_Mu)
-{
-	if(_Mu.length()==3)
-	{
-		Mu=_Mu;
-		return true;
-	}
-	else
-	{
-		if(verbose)
-			fprintf(stderr,"ContactNewtonEuler error, could not set moment due to wrong dimension: %d instead of 3.\n",_Mu.length());
-
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool ContactNewtonEuler::setMeasuredFMu(const Vector &_FM)
-{
-	if((_FM.length()==6))
-	{
-        F = _FM.subVector(0,2);
-        Mu = _FM.subVector(3,5);
-		return true;
-	}
-	else
-	{
-		F.resize(3);	F.zero();
-		Mu.resize(3);	Mu.zero();
-	
-		if(verbose)
-            fprintf(stderr,"ContactNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d) instead of (6 = 3,3). Default zero is set.\n",_FM.length());
-
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool ContactNewtonEuler::setH(const Matrix &_H)
-{
-    if((_H.rows()==4)&&(_H.cols()==4))
-	{
-        H.resize(4,4); H=_H;
-		return true;
-	}
-	else
-	{
-		H.resize(4,4);	H.eye();
-		if(verbose)
-            fprintf(stderr,"ContactNewtonEuler error: could not set H due to wrong dimensions: (%d,%d) instead of (4,4). Default identity is set.\n",_H.rows(),_H.cols());
-
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-//~~~~~~~~~~~~~~~~~~~~~~
-//   compute methods
-//~~~~~~~~~~~~~~~~~~~~~~
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector ContactNewtonEuler::getForceMoment() const
-{
-	Vector ret(6); ret.zero();
-	ret[0]=F[0]; ret[1]=F[1]; ret[2]=F[2];
-	ret[3]=Mu[0]; ret[4]=Mu[1]; ret[5]=Mu[2];
-	return ret;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string ContactNewtonEuler::toString() const
-{
-    string ret = "[Contact]: " + info;
-
-    char buffer[300]; int j=0;		  
-	j=sprintf(buffer," [Force]: %.3f,%.3f,%.3f",F(0),F(1),F(2));
-	j+=sprintf(buffer+j," [Moment]: %.3f,%.3f,%.3f",Mu(0),Mu(1),Mu(2));	
-    Vector r = getr();
-	j+=sprintf(buffer+j," [r]: %.3f,%.3f,%.3f",r(0),r(1),r(2));
-		
-	ret.append(buffer);
-	return ret;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ContactNewtonEuler::computeExternalWrench(OneLinkNewtonEuler *link, OneLinkNewtonEuler *next)
-{
-    //a compute backward
-    F = getR() * ( next->getR() * ( next->getForce() + next->getMass() * next->getLinAccC() ) - link->getForce() );
-    // from oneLink->computeForceBackward
-    F = getR().transposed() * ( next->getR() * ( next->getForce() + next->getMass() * next->getLinAccC() ) - link->getForce() );
-
-    // from oneLink->computeMomentBackward
-    switch(link->getMode())
-	{
-        // the computation modality is retrieved automatically by the links
-	case DYNAMIC_CORIOLIS_GRAVITY:
-	case DYNAMIC:		
-    Mu = getR().transposed() *( cross(next->getr() , next->getR() * next->getForce()) 
-			+ cross(next->getr() + next->getR() * next->getrC() , next->getR() * (next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment(false)
-			+ next->getR() * next->getInertia() * next->getAngAcc() 
-			+ next->getR() * cross( next->getAngVel() , next->getInertia() * next->getAngVel())
-            - link->getR() * link->getMoment(false)
-            - cross(getR()*link->getr() + getr(),F) );
-		break;
-	case DYNAMIC_W_ROTOR:
-	 Mu = getR().transposed() *( cross(next->getr() , next->getR() * next->getForce()) 
-			+ cross(next->getr() + next->getR() * next->getrC() , next->getR() * (next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment()
-			+ next->getR() * next->getInertia() * next->getAngAcc() 
-			+ next->getR() * cross( next->getAngVel() , next->getInertia() * next->getAngVel())
-			+ next->getKr() * next->getD2q() * next->getIm() * next->getZM()
-			+ next->getKr() * next->getDq() * next->getIm() * cross(next->getAngVel(),next->getZM()) 
-            - link->getR() * link->getMoment(false)
-            - cross(getR()*link->getr() + getr(),F) );
-		break;
-	case STATIC:
-	Mu = getR().transposed() *( cross(next->getr(),next->getR()*next->getForce()) 
-			+ cross(next->getr()+next->getR()*next->getrC(),next->getR()*(next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment(false)
-            - link->getR() * link->getMoment(false)
-            - cross(getR()*link->getr() + getr(),F) );
-		break;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-//================================
-//
-//		 IDYN CONTACT 
-//
-//================================
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContact::iDynContact(iDynChain *_c, unsigned int verb)
-{
-    //with pointers
-    chain = _c;
-    contact = new ContactNewtonEuler(verb);
-    status = NO_CONTACT;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContact::iDynContact(iDynChain *_c, unsigned int i, const Matrix &_H, const string &_info, unsigned int verb)
-{
-    //with pointers
-    chain = _c;
-    contact = new ContactNewtonEuler(verb);
-    contact->setInfo(_info);
-    contact->setH(_H);
-    if(i<=_c->getN())
-        lCont = i;
-    else
-    {
-        lCont = _c->getN();
-        //without verbose flag because it must be displayed
-        fprintf(stderr,"iDynContact error: the link selected for contact is wrong for chain %s; check link range %d <= %d. Setting the end-effector as default.",_c->NE->getInfo().c_str(),i,chain->getN());
-    }
-    status = CONTACT;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContact::~iDynContact()
-{
-    delete contact;
-    contact = NULL;
-    chain = NULL;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::setExtContact(unsigned int i, const Matrix &Hext)
-{
-	if(i<chain->getN())
-	{
-		lCont = i;
-        if(contact == NULL) 
-        {
-            contact = new ContactNewtonEuler(verbose);
-            if(verbose)
-                fprintf(stderr,"iDynContact: first time setting a contact in the chain \n");
-        }
-        status = CONTACT;
-        return contact->setH(Hext); 
-	}
-	else
-	{
-        status = NO_CONTACT;
-		if(verbose)
-            fprintf(stderr,"iDynContact error: could not set a contact inside the dynamic chain due to out of range index: %d >= %d \n",i,chain->getN());
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::setExtContact(unsigned int i, const Matrix &Hext, const Vector &FMext)
-{
-	if(i<chain->getN())
-	{
-		lCont = i;
-        if(contact == NULL) 
-        {
-            contact = new ContactNewtonEuler(verbose);
-            if(verbose)
-                fprintf(stderr,"iDynContact: first time setting a contact in the chain \n");
-        }
-        status = CONTACT;
-        return (contact->setH(Hext) && contact->setMeasuredFMu(FMext)); 
-	}
-	else
-	{
-        status = NO_CONTACT;
-		if(verbose)
-            fprintf(stderr,"iDynContact error: could not set a contact inside the dynamic chain due to out of range index: %d >= %d \n",i,chain->getN());
-		return false;
-	}
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynContact::getExtContactForce() const   
-{
-    if(contact != NULL)
-        return contact->getForce();
-    else
-    {
-        if(verbose)
-            fprintf(stderr,"iDynContact error: could not get external contact force, because the contact is not set yet.\n");
-        return Vector(0);
-    }
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynContact::getExtContactMoment() const   
-{
-    if(contact != NULL)    
-        return contact->getMoment();
-    else
-    {
-        if(verbose)
-            fprintf(stderr,"iDynContact error: could not get external contact moment, because the contact is not set yet.\n");
-        return Vector(0);
-    }
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-unsigned int iDynContact::getExtContactLink()	const	{return lCont; }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynContact::getExtContactForceMoment()	const	
-{
-    if(contact != NULL) 
-        return contact->getForceMoment(); 
-    else
-    {
-        if(verbose)
-            fprintf(stderr,"iDynContact error: could not get external contact, because the contact is not set yet.\n");
-        return Vector(0);
-    }
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynContact::getExtContactInfo()			const	
-{
-    if(contact != NULL) 
-        return contact->getInfo();
-    else
-    {
-        if(verbose)
-            fprintf(stderr,"iDynContact error: could not get info from the contact, because the contact is not set yet.\n");
-        return "no contact yet";
-    }
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynContact::setExtContactInfo(const string &_info)
-{
-	if(contact == NULL) 
-    {
-        contact = new ContactNewtonEuler(verbose);
-        if(verbose)
-            fprintf(stderr,"iDynContact: first time setting a contact in the chain \n");
-    }
-    contact->setInfo(_info);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynContact::removeExtContact()
-{
-    if((status == NO_CONTACT)&&(verbose>1))
-        fprintf(stderr,"iDynContact warning: contact is already removed from the chain \n");
-    status = NO_CONTACT;
-    contact->disconnect();
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynContact::changeChain(iDynChain *_c)
-{
-    if(verbose)
-        fprintf(stderr,"iDynContact: changing contact from chain [%s] to [%s]\n", chain->NE->getInfo().c_str(), _c->NE->getInfo().c_str());
-    chain = _c;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 //================================
 //
@@ -2075,11 +1715,18 @@ void OneChainNewtonEuler::BackwardKinematicFromEnd(const Vector &_w, const Vecto
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardWrenchFromEnd()
 {
-	
 	for(int i=nEndEff-1; i>=0; i--)
 		neChain[i]->BackwardWrench(neChain[i+1]);
 	for(int i=nEndEff-1; i>0; i--)
 		neChain[i]->computeTorque(neChain[i-1]);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void OneChainNewtonEuler::computeTorques()
+{
+    for(int i=nEndEff-1; i>0; i--){
+        //fprintf(stdout, "Computing torque of link %d\n", i-1);
+		neChain[i]->computeTorque(neChain[i-1]);
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardWrenchFromEnd(const Vector &F, const Vector &Mu)
@@ -2140,8 +1787,9 @@ bool OneChainNewtonEuler::BackwardWrenchToBase(unsigned int lSens)
 		// indexed lSens = lSens + baseLink - the previous one
 		// that's because link lSens = neChain[lSens+1] is already set before
 		// with a specific sensor method
-		for(int i=lSens; i>=0; i--)
+        for(int i=lSens; i>=0; i--){
 			neChain[i]->BackwardWrench(neChain[i+1]);
+        }
 		// now we can compute all torques
 		// we also compute the one of the sensor link, since we needed the 
 		// previous link done
@@ -2161,12 +1809,13 @@ bool OneChainNewtonEuler::BackwardWrenchToBase(unsigned int lSens)
 bool OneChainNewtonEuler::ForwardWrenchFromAtoB(unsigned int lA, unsigned int lB)
 {
     // lB must be larger than lA, because we are moving forward
-	if( (lB > lA) && (lB <=nLinks))
+	if( (lB >= lA) && (lB <=nLinks))
 	{
 		// link lA --> neChain[lA+1] (same for B)
-		for(unsigned int i=lA+1; i<=lB+1; i++)
+        for(unsigned int i=lA+1; i<=lB+1; i++){
+            // the torques are automatically computed inside the "ForwardWrench" method
 			neChain[i]->ForwardWrench(neChain[i-1]);
-        // we don't compute torques, only wrenches
+        }        
 		return true;
 	}
 	else
@@ -2183,9 +1832,13 @@ bool OneChainNewtonEuler::BackwardWrenchFromAtoB(unsigned int lA, unsigned int l
 	{
 		// link lA --> neChain[lA+1] (same for B)
         // note: it's int and not unsigned int to avoid problems when decrementing
-		for(int i=lA+1; i>=(int)(lB+1); i--)
+        for(int i=lA+1; i>=(int)(lB+1); i--){
 			neChain[i]->BackwardWrench(neChain[i+1]);
-        // we don't compute torques, only wrenches
+        }
+        
+        // Del Prete: now we can compute all torques
+		for(int i=lA+2; i>=(int)(lB+2); i--)
+			neChain[i]->computeTorque(neChain[i-1]);
 		return true;
 	}
 	else
@@ -2194,30 +1847,6 @@ bool OneChainNewtonEuler::BackwardWrenchFromAtoB(unsigned int lA, unsigned int l
 		return false;
 	}
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool OneChainNewtonEuler::computeExtContactWrench(iDynContact *contact)
-{
-    // link link --> neChain[link+1] 
-    // the external force is acting on (link+1), thus we need (link) and (link+2)
-    unsigned int link = contact->getExtContactLink();
-    //first check: 0<= link <= n
-    // it should have been already checked
-    if( link<nLinks )
-    {
-        contact->contact->computeExternalWrench(neChain[link+1],neChain[link+2]);
-        return true;
-    }
-    else
-    {
-        if(verbose)
-            fprintf(stderr,"OneChainNE error: could not compute external wrench due to bad index of the link, %d > %d \n",link,nLinks);
-        return false;
-    }
-    
-
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 //======================================
 //
@@ -2289,6 +1918,18 @@ bool iDynInvSensor::setSensor(unsigned int i, const Matrix &_H, const Matrix &_H
             fprintf(stderr,"iDynInvSensor error: could not set FT Sensor inside the dynamic chain due to out of range index: %d >= %d \n",i,chain->getN());
 		return false;
 	}
+}
+
+bool iDynInvSensor::setSensor(unsigned int i, SensorLinkNewtonEuler* sensor){
+    if(i<chain->getN())
+	{
+		lSens = i;
+        sens = sensor;
+        return true;
+	}
+	if(verbose)
+        fprintf(stderr,"iDynInvSensor error: could not set FT Sensor inside the dynamic chain due to out of range index: %d >= %d \n",i,chain->getN());
+    return false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynInvSensor::computeSensorForceMoment()
@@ -2797,93 +2438,6 @@ bool iDynSensor::computeFromSensorNewtonEuler(const Vector &FMu)
 	}
 	else
 		return false;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   computations for contacts
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynSensor::computeExtContactFromSensorNewtonEuler(iDynContact *contact, Vector &FMsens, Vector &FMend)
-{
-    workInProgress(VERBOSE, "iDynContact is still work in progress. Please report to the authors.");
-
-    if((FMsens.length()!=6)||(FMend.length()!=6))
-    {
-        if(verbose)
-            fprintf(stderr,"iDynSensor: couldn't compute external contacts due to wrong sized vectors for initialization \n");
-        return false;
-    }
-	//first forward all the quantities w,dw,.. in the chain
-	//just in case it was not initialized before
-	if(chain->NE == NULL)		
-	{
-		chain->prepareNewtonEuler(mode);
-		chain->initNewtonEuler();
-	}
-
-    // set the external contact properties: index of the link, roto-translational matrix
-    // set the sensor measure
-    setSensorMeasures(FMsens);
-    
-    // the kinematic phase is the same in all cases
-    //the iDynChain independently solve the forward phase of the limb
-	//setting w,dw,ddp,ddpC
-	chain->computeKinematicNewtonEuler();
-	sens->ForwardAttachToLink(chain->refLink(lSens));
-	
-    //the sensor does not need to retrieve w,dw,ddp,ddpC in this case 
-	//then propagate forces and moments
-	//from sensor to lSens
-	sens->ForwardForcesMomentsToLink(chain->refLink(lSens));
-
-    Vector Fend(3); 
-    Vector Mend(3);  
-    iDyn::asForceMoment(FMend,Fend,Mend);
-
-    // the dynamic phase is then different depending on the contact position wrt to the sensor
-    if(contact->lCont > lSens)
-    {
-        // FMend must be set in the end effector, terminal link
-        chain->NE->initWrenchEnd(Fend, Mend);
-
-        // from lSens to lCont it's forward
-        chain->NE->ForwardWrenchFromAtoB( lSens , contact->lCont );
-
-        // from nEndEff to lCont it's backward
-        chain->NE->BackwardWrenchFromAtoB( chain->getN(), contact->lCont +1);
-
-        // in lCont, we must make the computation considering the neighbor links
-        chain->NE->computeExtContactWrench(contact);  
-
-        return true;
-    }
-    else if(contact->lCont < lSens)
-    {
-        //FMend must be set in the base link
-        chain->NE->initWrenchBase(Fend,Mend);
-
-        // from base to lCont it's forward
-        chain->NE->ForwardWrenchFromAtoB( 0, contact->lCont );
-
-        // from lSens to lCont it's backward
-        chain->NE->BackwardWrenchFromAtoB( lSens, contact->lCont+1);
-
-        // in lCont, we must make the computation considering the neighbor links
-        chain->NE->computeExtContactWrench(contact);     
-
-        return true;
-    }
-    else
-    {
-        // case lCont==lSens
-        // it's the critical case, because it must distinguish whether the contact is before or after the FT sensor
-        // TODO
-        iDyn::notImplemented(verbose,"we don't know if the contact is in the sublink before or after the sensor");
-
-        return false;
-    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

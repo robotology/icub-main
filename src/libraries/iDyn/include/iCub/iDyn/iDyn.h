@@ -92,6 +92,7 @@ namespace iDyn
     class FinalLinkNewtonEuler;
     class SensorLinkNewtonEuler;
     class ContactNewtonEuler;
+    class iDynContactSolver;
     class OneChainNewtonEuler;
     class OneChainSensorNewtonEuler;
     class iDynSensor;
@@ -509,7 +510,7 @@ class iDynChain : public iKin::iKinChain
 	friend class iDynInvSensor;
 	friend class iDynSensor;
 	friend class RigidBodyTransformation;
-    friend class iDynContact;
+    friend class iDynContactSolver;
 
 protected:
 	
@@ -1361,6 +1362,7 @@ public:
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
 };
+
 
 /**
 * \ingroup iDyn
