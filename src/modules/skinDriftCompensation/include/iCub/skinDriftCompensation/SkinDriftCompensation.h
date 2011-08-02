@@ -219,7 +219,7 @@ private:
 	static const float COMPENSATION_GAIN_DEFAULT;
 	static const string MODULE_NAME_DEFAULT;
 	static const string ROBOT_NAME_DEFAULT;
-	static const string HAND_DEFAULT;
+	//static const string HAND_DEFAULT;
 	static const string ZERO_UP_RAW_DATA_DEFAULT;
 	static const string RPC_PORT_DEFAULT;
 	

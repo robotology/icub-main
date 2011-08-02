@@ -30,7 +30,7 @@ const float SkinDriftCompensation::SMOOTH_FACTOR_DEFAULT = 0.5;
 const float SkinDriftCompensation::COMPENSATION_GAIN_DEFAULT = 0.2f;
 const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
 const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
-const string SkinDriftCompensation::HAND_DEFAULT = "right";
+//const string SkinDriftCompensation::HAND_DEFAULT = "right";
 const string SkinDriftCompensation::ZERO_UP_RAW_DATA_DEFAULT = "notFound";
 const string SkinDriftCompensation::RPC_PORT_DEFAULT = "/rpc";
 

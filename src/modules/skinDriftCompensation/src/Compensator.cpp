@@ -49,6 +49,9 @@ Compensator::~Compensator(){
 }
 
 bool Compensator::init(string name, string robotName, string outputPortName, string inputPortName){
+    size_t found = inputPortName.find_last_of("/");
+    partName = inputPortName.substr(found+1);
+
     if (!compensatedTactileDataPort.open(outputPortName.c_str())) {
 	    stringstream msg; msg<< "Unable to open output port "<< outputPortName;
         sendInfoMsg(msg.str());
@@ -108,8 +111,6 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     return true;
 }
 
-
-
 void Compensator::calibrationInit(){   
 	// take the semaphore so that the touchThreshold can't be read during the calibration phase
 	touchThresholdSem.wait();
@@ -127,8 +128,6 @@ void Compensator::calibrationInit(){
 }
 
 void Compensator::calibrationDataCollection(){	
-	//calibrationCounter++; 
-
     Vector skin_values(SKIN_DIM);
     if(!readInputData(skin_values))
         return;
@@ -178,14 +177,13 @@ void Compensator::calibrationFinish(){
 	// set the "old output value" for the smoothing filter to the baseline value to get a smooth start
 	compensatedDataOld = baselines;	
 
-    // test to check if the skin is broken (all taxel baselines are 255 and thresholds are 0)
+    // test to check if the skin is broken (all taxel baselines are 255 OR thresholds are 0)
     bool baseline255 = true, thresholdZero = true;
     for(unsigned int i=0; i<SKIN_DIM; i++){
         if(baselines[i]!=255){
             baseline255 = false;
         }
         if(touchThresholds[i]>0.00001){
-            //fprintf(stdout, "Threhsold taxel %d = %f\n", i, touchThreshold[i]);
             thresholdZero = false;
         }
     }
@@ -195,25 +193,20 @@ void Compensator::calibrationFinish(){
     }
 
     // print to console
-	fprintf(stderr, "\n[%s] Baselines:\n", name.c_str());
-	for (unsigned int i=0; i<SKIN_DIM; i++) {
-		if(!(i%12)) fprintf(stderr, "\n");
-		fprintf(stderr,"%4.1f ", baselines[i]);		
-	}
-
-	/*fprintf(stderr, "\nStandard dev:\n");
-	for (int i=0; i<SKIN_DIM; i++) {
-		if(!(i%12)) fprintf(stderr, "\n");
-		fprintf(stderr,"%3.1f ", standard_dev[i]);
-	}*/
-
-	fprintf(stderr,"\n[%s] Thresholds (95 percentile):\n", name.c_str());
-	for (unsigned int i=0; i<SKIN_DIM; i++) {
-		if(!(i%12)) fprintf(stderr, "\n");
-        touchThresholds[i] = max<double>(MIN_TOUCH_THR, touchThresholds[i]);
-		fprintf(stderr,"%3.1f ", touchThresholds[i]);		
-	}
-	fprintf(stderr,"\n");
+    if(_isWorking){
+	    fprintf(stderr, "\n[%s] Baselines:\n", name.c_str());
+	    for (unsigned int i=0; i<SKIN_DIM; i++) {
+		    if(!(i%12)) fprintf(stderr, "\n");
+		    fprintf(stderr,"%4.1f ", baselines[i]);		
+	    }
+	    fprintf(stderr,"\n[%s] Thresholds (95 percentile):\n", name.c_str());
+	    for (unsigned int i=0; i<SKIN_DIM; i++) {
+		    if(!(i%12)) fprintf(stderr, "\n");
+            touchThresholds[i] = max<double>(MIN_TOUCH_THR, touchThresholds[i]);
+		    fprintf(stderr,"%3.1f ", touchThresholds[i]);		
+	    }
+	    fprintf(stderr,"\n");
+    }
 
     // release the semaphore so that as of now the touchThreshold can be read
 	touchThresholdSem.post();
@@ -222,9 +215,7 @@ void Compensator::calibrationFinish(){
 bool Compensator::readInputData(Vector& skin_values){
     int err;
     if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
-        readErrorCounter++;
-        if(readErrorCounter>MAX_READ_ERROR)
-            _isWorking = false;
+        readErrorCounter++;        
 
         stringstream msg;
         if(err == IAnalogSensor::AS_TIMEOUT)            
@@ -234,17 +225,25 @@ bool Compensator::readInputData(Vector& skin_values){
         else if(err == IAnalogSensor::AS_ERROR)
             msg<< "Generic error reading tactile sensor.";
         sendInfoMsg(msg.str());
+
+        if(readErrorCounter>MAX_READ_ERROR){
+            _isWorking = false;
+            sendInfoMsg("Too many errors in a row. Stopping the compensator.");
+        }
 	    return false;
     }
 
     if(skin_values.size() != SKIN_DIM){
-        readErrorCounter++;
-        if(readErrorCounter>MAX_READ_ERROR)
-            _isWorking = false;
+        readErrorCounter++;        
 
         stringstream msg;
         msg<< "Unexpected size of the input array (raw tactile data): "<< skin_values.size();
         sendInfoMsg(msg.str());
+
+        if(readErrorCounter>MAX_READ_ERROR){
+            _isWorking = false;
+            sendInfoMsg("Too many errors in a row. Stopping the compensator.");
+        }
         return false;
     }
     
@@ -252,9 +251,6 @@ bool Compensator::readInputData(Vector& skin_values){
     readErrorCounter = 0;
     return true;
 }
-//unsigned int Compensator::getErrorCounter(){
-//    return readErrorCounter;
-//}
 
 bool Compensator::readRawAndWriteCompensatedData(){
     Vector rawData(SKIN_DIM);
@@ -460,6 +456,10 @@ Vector Compensator::getTouchThreshold(){
 	Vector res = touchThresholds;
 	touchThresholdSem.post();
 	return res;
+}
+
+string Compensator::getPartName(){
+    return partName;
 }
 
 Vector Compensator::getCompensation(){

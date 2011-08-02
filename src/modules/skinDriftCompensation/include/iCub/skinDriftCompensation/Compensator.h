@@ -58,6 +58,7 @@ public:
 	void updateBaseline();
 	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
     bool isThereContact();
+    bool isWorking();
 
 	void setBinarization(bool value);
 	void setSmoothFilter(bool value);
@@ -65,7 +66,7 @@ public:
     void setLinkId(unsigned int linkId);
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
-
+    bool setTaxelPositions(const char *filePath);
 
 	Vector getTouchThreshold();
 	bool getBinarization();
@@ -73,16 +74,13 @@ public:
 	float getSmoothFactor();
     unsigned int getLinkId();
     unsigned int getAddThreshold();
-    double getCompensationGain();
-    
+    double getCompensationGain();    
     unsigned int getNumTaxels();
-    //unsigned int getErrorCounter();
     Vector getCompensation();
     string getName();
-    string getInputPortName();
-    bool isWorking();
-	bool setTaxelPositions(const char *filePath);
+    string getInputPortName();    
 	Vector getContactCOP(); // get the contact center of pressure
+    string getPartName();    
 
 private:
 
@@ -98,6 +96,7 @@ private:
 	double compensationGain;					// the maximal drift that is being compensated every cycle	
     string robotName;
     string name;                                // name of the compensator
+    string partName;                            // name of the part of the skin
 	double **taxelPosOri;						//taxel position and orientation {xPos, yPos, zPos, xOri, yOri, zOri}
 
 	/* class variables */

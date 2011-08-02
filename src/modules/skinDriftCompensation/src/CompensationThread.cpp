@@ -187,52 +187,7 @@ bool CompensationThread::threadInit()
 }
 
 
-void CompensationThread::setBinarization(bool value){
-    binarization = value;
-    FOR_ALL_PORTS(i){
-	    compensators[i]->setBinarization(value);
-    }
-}
-void CompensationThread::setSmoothFilter(bool value){
-	if(smoothFilter != value){
-		stateSem.wait();
-        smoothFilter = value;
-        FOR_ALL_PORTS(i){
-            compensators[i]->setSmoothFilter(value);
-        }
-		stateSem.post();
-	}
-}
-bool CompensationThread::setSmoothFactor(float value){
-	if(value<0 || value>1)
-		return false;
-	if(value==1) 
-		value = 0.99f;	// otherwise with 1 the values don't update
-	smoothFactor = value;
-    FOR_ALL_PORTS(i){
-        compensators[i]->setSmoothFactor(value);
-    }
-	return true;
-}
-bool CompensationThread::setAddThreshold(unsigned int thr){
-    bool res = true;
-    FOR_ALL_PORTS(i){
-        res = res && compensators[i]->setAddThreshold(thr);
-    }
-    if(res)
-        ADD_THRESHOLD = thr;
-    return res;
-}
 
-bool CompensationThread::setCompensationGain(double gain){
-    bool res = true;
-    FOR_ALL_PORTS(i){
-        res = res && compensators[i]->setCompensationGain(gain);
-    }
-    if(res)
-        compensationGain = gain;
-    return res;
-}
 
 void CompensationThread::forceCalibration(){
 	stateSem.wait();
@@ -298,20 +253,20 @@ void CompensationThread::sendSkinEvents(){
         if(compWorking[i] && compensators[i]->isThereContact()){
             contact = true;
             Bottle &c = skinEvents.addList();
-            c.addString("part");
-            c.addString(compensators[i]->getInputPortName().c_str());
-            c.addString("link");
+            //c.addString("part");
+            c.addString(compensators[i]->getPartName().c_str());
+            //c.addString("link");
             c.addInt(compensators[i]->getLinkId());
-            c.addString("pos");
+            //c.addString("pos");
 			mean3DPoint = compensators[i]->getContactCOP();
-			//duarte code
-			Bottle &list = c.addList();
-			list.clear();//creates the bottle so it always has the same number of elements
-			if(mean3DPoint.size()==3){
-				list.addDouble(mean3DPoint[0]);
-				list.addDouble(mean3DPoint[1]);
-				list.addDouble(mean3DPoint[2]);
-			}
+            // if the position is unknown set it to zero
+            if(mean3DPoint.size() != 3){
+                mean3DPoint.resize(3);
+                mean3DPoint.zero();
+            }
+			c.addDouble(mean3DPoint[0]);
+			c.addDouble(mean3DPoint[1]);
+			c.addDouble(mean3DPoint[2]);
         }
     }
     if(contact)
@@ -377,42 +332,7 @@ void CompensationThread::threadRelease()
     infoPort.close();
 }
 
-Vector CompensationThread::getTouchThreshold(){
-    Vector res(SKIN_DIM);
-    int currentDim=0;
-    FOR_ALL_PORTS(i){
-        if(compWorking[i]){
-	        Vector temp = compensators[i]->getTouchThreshold();
-            memcpy(res.data()+currentDim, temp.data(), temp.size()*sizeof(double));
-            currentDim += temp.size();
-        }
-    }
-	return res;
-}
 
-unsigned int CompensationThread::getAddThreshold(){
-    return ADD_THRESHOLD;
-}
-
-double CompensationThread::getCompensationGain(){
-    return compensationGain;
-}
-
-bool CompensationThread::getBinarization(){
-	return binarization;
-}
-bool CompensationThread::getSmoothFilter(){
-	return smoothFilter;
-}
-bool CompensationThread::isCalibrating(){
-	stateSem.wait();
-	bool res = state==calibration;
-	stateSem.post();
-	return res;
-}
-float CompensationThread::getSmoothFactor(){
-	return smoothFactor;
-}
 // send the data on the monitor port
 void CompensationThread::sendMonitorData(){
 	// update the frequency
@@ -476,4 +396,88 @@ Bottle CompensationThread::getInfo(){
         res.addString("Module initialization has not been completed yet.");
     }
     return res;
+}
+
+void CompensationThread::setBinarization(bool value){
+    binarization = value;
+    FOR_ALL_PORTS(i){
+	    compensators[i]->setBinarization(value);
+    }
+}
+void CompensationThread::setSmoothFilter(bool value){
+	if(smoothFilter != value){
+		stateSem.wait();
+        smoothFilter = value;
+        FOR_ALL_PORTS(i){
+            compensators[i]->setSmoothFilter(value);
+        }
+		stateSem.post();
+	}
+}
+bool CompensationThread::setSmoothFactor(float value){
+	if(value<0 || value>1)
+		return false;
+	if(value==1) 
+		value = 0.99f;	// otherwise with 1 the values don't update
+	smoothFactor = value;
+    FOR_ALL_PORTS(i){
+        compensators[i]->setSmoothFactor(value);
+    }
+	return true;
+}
+bool CompensationThread::setAddThreshold(unsigned int thr){
+    bool res = true;
+    FOR_ALL_PORTS(i){
+        res = res && compensators[i]->setAddThreshold(thr);
+    }
+    if(res)
+        ADD_THRESHOLD = thr;
+    return res;
+}
+
+bool CompensationThread::setCompensationGain(double gain){
+    bool res = true;
+    FOR_ALL_PORTS(i){
+        res = res && compensators[i]->setCompensationGain(gain);
+    }
+    if(res)
+        compensationGain = gain;
+    return res;
+}
+
+Vector CompensationThread::getTouchThreshold(){
+    Vector res(SKIN_DIM);
+    int currentDim=0;
+    FOR_ALL_PORTS(i){
+        if(compWorking[i]){
+	        Vector temp = compensators[i]->getTouchThreshold();
+            memcpy(res.data()+currentDim, temp.data(), temp.size()*sizeof(double));
+            currentDim += temp.size();
+        }
+    }
+	return res;
+}
+
+unsigned int CompensationThread::getAddThreshold(){
+    return ADD_THRESHOLD;
+}
+
+double CompensationThread::getCompensationGain(){
+    return compensationGain;
+}
+
+bool CompensationThread::getBinarization(){
+	return binarization;
+}
+bool CompensationThread::getSmoothFilter(){
+	return smoothFilter;
+}
+bool CompensationThread::isCalibrating(){
+	stateSem.wait();
+	bool res = state==calibration;
+	stateSem.post();
+	return res;
+}
+float CompensationThread::getSmoothFactor(){
+	return smoothFactor;
 }
