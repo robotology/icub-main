@@ -305,7 +305,7 @@ gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA,
 		case GRAVITY_COMPENSATION_OFF:		printf("GRAVITY_COMPENSATION_OFF     \n");	break;
 		case GRAVITY_COMPENSATION_ON:		printf("GRAVITY_COMPENSATION_ON      \n");	break;
 		default:
-		case VOCAB_CM_UNKNOWN:		printf("UNKNOWN  \n");	break;
+		case VOCAB_CM_UNKNOWN:		        printf("UNKNOWN  \n");	break;
 	}
 }
 	
@@ -326,9 +326,11 @@ void gravityCompensatorThread::setZeroJntAngVelAcc()
 	d2q_torso=0.0;
 }
 
-void gravityCompensatorThread::readAndUpdate(bool waitMeasure)
+bool gravityCompensatorThread::readAndUpdate(bool waitMeasure)
 {
-	inertial = port_inertial->read(waitMeasure);
+	bool b = true;
+
+	inertial = port_inertial->read(false);
 	offset_input = additional_offset->read(false);
 	int sz = 0;
 	if(offset_input!=0)
@@ -359,24 +361,36 @@ void gravityCompensatorThread::readAndUpdate(bool waitMeasure)
 		dw0 [1] = 0;
 		dw0 [2] = 0;
 	}
+	else
+	{
+		b = false;
+	}
 	
-	getUpperEncodersSpeedAndAcceleration();
+	b &= getUpperEncodersSpeedAndAcceleration();
 	setUpperMeasure();
-	getLowerEncodersSpeedAndAcceleration();
+	b &= getLowerEncodersSpeedAndAcceleration();
 	setLowerMeasure();
 
+	return b;
 }
 
-void gravityCompensatorThread::getLowerEncodersSpeedAndAcceleration()
+bool gravityCompensatorThread::getLowerEncodersSpeedAndAcceleration()
 {
-	if (iencs_leg_left)  iencs_leg_left->getEncoders(encoders_leg_left.data());
-	else encoders_leg_left.zero();
+	bool b = true;
+	if (iencs_leg_left)  
+	{b &= iencs_leg_left->getEncoders(encoders_leg_left.data());}
+	else 
+	{encoders_leg_left.zero();}
 
-	if (iencs_leg_right) iencs_leg_right->getEncoders(encoders_leg_right.data());
-	else encoders_leg_right.zero();
+	if (iencs_leg_right) 
+	{b &= iencs_leg_right->getEncoders(encoders_leg_right.data());}
+	else 
+	{encoders_leg_right.zero();}
 
-	if (iencs_torso) iencs_torso->getEncoders(encoders_torso.data());
-	else encoders_torso.zero();
+	if (iencs_torso) 
+	{b &= iencs_torso->getEncoders(encoders_torso.data());}
+	else 
+	{encoders_torso.zero();}
 
 	for (int i=0;i<q_torso.length();i++)
 	{
@@ -393,10 +407,14 @@ void gravityCompensatorThread::getLowerEncodersSpeedAndAcceleration()
 		q_rleg(i) = encoders_leg_right(i);
 		all_q_low(q_torso.length()+q_lleg.length()+i) = q_rleg(i);
 	}
+
     setZeroJntAngVelAcc();
-	//all_dq_low = evalVelLow(all_q_low);
-	//all_d2q_low = evalAccLow(all_q_low);
-	/*for (int i=0;i<q_torso.length();i++)
+
+	/*
+	all_dq_low = evalVelLow(all_q_low);
+	all_d2q_low = evalAccLow(all_q_low);
+	
+	for (int i=0;i<q_torso.length();i++)
 	{
 		dq_torso(i) = all_dq_low(i);
 		d2q_torso(i) = all_d2q_low(i);
@@ -411,17 +429,28 @@ void gravityCompensatorThread::getLowerEncodersSpeedAndAcceleration()
 		dq_rleg(i) = all_dq_low(i+q_torso.length()+q_lleg.length());
 		d2q_rleg(i) = all_d2q_low(i+q_torso.length()+q_lleg.length());
 	}*/
+
+	return b;
 }
 
 
-void gravityCompensatorThread::getUpperEncodersSpeedAndAcceleration()
+bool gravityCompensatorThread::getUpperEncodersSpeedAndAcceleration()
 {
-	if (iencs_arm_left) iencs_arm_left->getEncoders(encoders_arm_left.data());
-	else encoders_arm_left.zero();
-	if (iencs_arm_right) iencs_arm_right->getEncoders(encoders_arm_right.data());
-	else encoders_arm_right.zero();
-	if (iencs_head) iencs_head->getEncoders(encoders_head.data());
-	else encoders_head.zero();		
+	bool b = true;
+	if (iencs_arm_left) 
+	{b &= iencs_arm_left->getEncoders(encoders_arm_left.data());}
+	else 
+	{encoders_arm_left.zero();}
+
+	if (iencs_arm_right) 
+	{b &= iencs_arm_right->getEncoders(encoders_arm_right.data());}
+	else 
+	{encoders_arm_right.zero();}
+
+	if (iencs_head) 
+	{b &= iencs_head->getEncoders(encoders_head.data());}
+	else 
+	{encoders_head.zero();}
 
 	for (int i=0;i<q_head.length();i++)
 	{
@@ -440,7 +469,8 @@ void gravityCompensatorThread::getUpperEncodersSpeedAndAcceleration()
 	}
 
     setZeroJntAngVelAcc();
-/*
+    
+	/*
 	all_dq_up = evalVelUp(all_q_up);
 	all_d2q_up = evalAccUp(all_q_up);
 	
@@ -459,6 +489,8 @@ void gravityCompensatorThread::getUpperEncodersSpeedAndAcceleration()
 		dq_rarm(i) = all_dq_up(i+q_head.length()+q_larm.length());
 		d2q_rarm(i) = all_d2q_up(i+q_head.length()+q_larm.length());
 	}*/
+
+	return b;
 }
 
 bool gravityCompensatorThread::threadInit()
@@ -531,7 +563,14 @@ void gravityCompensatorThread::feedFwdGravityControl(string s_part, IControlMode
 				}
 				break;
 			default:
-				if (i!=3 && s_part!="torso") fprintf(stderr,"Unknown control mode (part: %s jnt:%d).\n",s_part.c_str(), i);
+				if (s_part=="torso" && i==3)
+				{
+					// do nothing, because joint 3 of the torso is only virtual
+				}
+				else					
+				{
+					fprintf(stderr,"Unknown control mode (part: %s jnt:%d).\n",s_part.c_str(), i);
+				}
 				break;
 		}
 	}
@@ -540,20 +579,23 @@ void gravityCompensatorThread::feedFwdGravityControl(string s_part, IControlMode
 void gravityCompensatorThread::run()
 {  
 	thread_status = STATUS_OK;
-    if(iencs_head->getEncoders(encoders_head.data()) == false)
-	{
-		printf ("gravityCompensator thread lost connection with iCubInterface.\n");
-		thread_status = STATUS_DISCONNECTED;
-		return;
-	}
-
+	static int delay_check=0;
 	if(isCalibrated==true)
 	{
-	
-		setUpperMeasure();
-		setLowerMeasure();
-
-		readAndUpdate(true);
+		if (readAndUpdate(true) == false)
+		{
+			delay_check++;
+			printf ("network delays detected (%d/10)\n", delay_check);
+			if (delay_check>=10)
+			{
+				printf ("gravityCompensatorThread lost connection with wholeBodyTorqueObserver.\n");
+				thread_status = STATUS_DISCONNECTED;
+			}
+		}
+		else
+		{
+			delay_check = 0;
+		}
 
 		Vector F_up(6);
 		F_up=0.0;

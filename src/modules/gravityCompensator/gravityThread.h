@@ -149,9 +149,9 @@ public:
     gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, std::string icub_type);
 
 	void setZeroJntAngVelAcc();
-	void readAndUpdate(bool waitMeasure=false);
-	void getLowerEncodersSpeedAndAcceleration();
-	void getUpperEncodersSpeedAndAcceleration();
+	bool readAndUpdate(bool waitMeasure=false);
+	bool getLowerEncodersSpeedAndAcceleration();
+	bool getUpperEncodersSpeedAndAcceleration();
     bool threadInit();
 	void feedFwdGravityControl(std::string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false);
     void run();
