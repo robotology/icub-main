@@ -291,13 +291,13 @@ deque<iDynContact> iDynContactSolver::computeExternalContacts(){
 	else
 		pinv_A = pinv(A, tollerance);
     Vector X = pinv_A * B;
-	Vector AX = A*X;
-    if(verbose){
-        printMatrix("A", A);
-        printVector("B", B);
-        printVector("X", X);
-		printVector("AX", AX);
-    }
+	//Vector AX = A*X;
+    //if(verbose){
+        //printMatrix("A", A);
+        //printVector("B", B);
+        //printVector("X", X);
+		//printVector("AX", AX);
+    //}
     
     // SET THE COMPUTED VALUES IN THE CONTACT LIST
     unsigned int unknownInd = 0;
