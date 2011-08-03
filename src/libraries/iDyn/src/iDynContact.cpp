@@ -263,13 +263,16 @@ deque<iDynContact> iDynContactSolver::computeExternalContacts(){
     // PROPAGATE WRENCH FORWARD, UP TO THE FIRST LINK A CONTACT IS APPLIED TO
 	sens->ForwardForcesMomentsToLink(chain->refLink(lSens));    // propagate wrench from sensor to hosting link
     //printMatrix("Forces after forward sensor", chain->getForces());
+        
     if(firstContactLink==lSens){
         // if there're contacts on the sensor link we need to propagate the wrench to the previous link
         // (here we are assuming that the contacts are detected by the F/T sensor, no matter their application point)
         chain->NE->BackwardWrenchFromAtoB(lSens-1, lSens-1);
+        
         /*Vector zeroF(3), zeroMu(3); zeroF.zero(); zeroMu.zero();
         chain->refLink(lSens)->setForceMoment(zeroF, zeroMu);*/    
-    }else if(firstContactLink>lSens+1){
+    }else 
+    if(firstContactLink>lSens+1){
         chain->NE->ForwardWrenchFromAtoB(lSens+1, firstContactLink-1);
     }
     //printMatrix("Forces after firstContactLink", chain->getForces());
@@ -291,8 +294,9 @@ deque<iDynContact> iDynContactSolver::computeExternalContacts(){
 	else
 		pinv_A = pinv(A, tollerance);
     Vector X = pinv_A * B;
-	//Vector AX = A*X;
+	
     //if(verbose){
+        //Vector AX = A*X;
         //printMatrix("A", A);
         //printVector("B", B);
         //printVector("X", X);
@@ -318,6 +322,12 @@ deque<iDynContact> iDynContactSolver::computeExternalContacts(){
         }
     }
 
+    //propagate the wrench backward form the sensor
+    if(firstContactLink==lSens) // if there is a contact on the sensor link you have to propagate the wrench of the previous link
+	    chain->NE->BackwardWrenchToBase(lSens-1);
+    else
+        chain->NE->BackwardWrenchToBase(lSens);
+
     // RETURN A COPY OF THE CONTACT LIST
     return contactList;
 }
@@ -333,11 +343,7 @@ void iDynContactSolver::computeWrenchFromSensorNewtonEuler(){
 	// are computed, form the sensor link to the end effector
 	// (except for the contact subchain, but now we suppose only 1 contact at a time)
 	computeExternalContacts();
-    //printMatrix("Forces after computeExternalContacts", chain->getForces());
-
-	//propagate the wrench from lSens to Base
-	chain->NE->BackwardWrenchToBase(lSens-1);
-    //printMatrix("Forces after backward To Base", chain->getForces());
+    //printMatrix("Forces after computeExternalContacts", chain->getForces());	
 
     // now we can compute all torques
     chain->NE->computeTorques();
