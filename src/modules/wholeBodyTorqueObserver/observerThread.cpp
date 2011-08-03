@@ -207,6 +207,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
 	icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
     first = true;
+    skinEventsTimestamp = 0.0;
 
 	//--------------INTERFACE INITIALIZATION-------------//
 	
@@ -913,11 +914,19 @@ void inverseDynamics::setZeroJntAngVelAcc()
 }
 
 void inverseDynamics::addSkinContacts(){
-    icub->upperTorso->leftSensor->clearContactList();
     Bottle *skinEvents = port_skin_events->read(false);
-    if(!skinEvents || skinEvents->isNull() || skinEvents->size()==0)
-        return;        
+    // if nothing is read
+    if(!skinEvents){ // || skinEvents->isNull())
+        if(skinEventsTimestamp!=0.0 && Time::now()-skinEventsTimestamp > SKIN_EVENTS_TIMEOUT){   
+            // if time is up remove all the contacts
+            fprintf(stderr, "Could not read the skin events for longer than %d ms\n", SKIN_EVENTS_TIMEOUT);
+            icub->upperTorso->leftSensor->clearContactList();
+        }
+        return;     // otherwise keep the same contacts you had before
+    }
     
+    skinEventsTimestamp = Time::now();  // update the timestamp
+    icub->upperTorso->leftSensor->clearContactList();    
     for(int i=0; i<skinEvents->size(); i++){
         Bottle *e = skinEvents->get(i).asList();
         if(e->size() != 5){

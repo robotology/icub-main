@@ -41,6 +41,7 @@ using namespace std;
 
 #define MAX_JN 12
 #define MAX_FILTER_ORDER 6
+#define SKIN_EVENTS_TIMEOUT 200     // max time (in ms) a contact is kept without reading anything from the skin events port
 
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 
@@ -78,6 +79,7 @@ private:
     Vector *ft_arm_left;
     Vector *ft_arm_right;
     Vector *inertial;
+    double skinEventsTimestamp;
     
 	//input ports
 	BufferedPort<Vector> *port_ft_arm_left;

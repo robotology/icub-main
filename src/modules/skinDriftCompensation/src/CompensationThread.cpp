@@ -269,8 +269,8 @@ void CompensationThread::sendSkinEvents(){
 			c.addDouble(mean3DPoint[2]);
         }
     }
-    if(contact)
-        skinEventsPort.write();
+    //if(contact)
+    skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 
 
