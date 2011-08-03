@@ -40,6 +40,8 @@ public:
     virtual RobotFlags& getFlags() = 0;
 
     void setFlags();
+	//bool stopConfig(yarp::os::ConstString error, bool proceed);
+	void stopConfig(yarp::os::ConstString error);
 };
 
 #endif
