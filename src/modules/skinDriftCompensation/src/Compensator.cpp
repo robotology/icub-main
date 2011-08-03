@@ -542,3 +542,4 @@ void Compensator::sendInfoMsg(string msg){
     b.addString((": " + msg).c_str());
     infoPort->write();
 }
+
