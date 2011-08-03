@@ -481,3 +481,4 @@ bool CompensationThread::isCalibrating(){
 float CompensationThread::getSmoothFactor(){
 	return smoothFactor;
 }
+
