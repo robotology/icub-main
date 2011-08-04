@@ -1491,6 +1491,14 @@ public:
 	* @return true if succeeds, false otherwise
 	*/
 	bool getCOM(partEnum which_part, yarp::sig::Vector &COM, double & mass);
+
+	/**
+    * Retrieves a vector containing the velocities of all the iCub joints, ordered in this way:
+	* left leg (6), right leg (6), torso (3), left arm (7), right arm (7), head (3).
+	* @param vel the velocities vector (size = 32)
+	* @return true if succeeds, false otherwise
+	*/
+	bool getAllVelocities(Vector &vel);
 };
 
 

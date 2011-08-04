@@ -2490,3 +2490,24 @@ bool iCubWholeBody::getCOM(partEnum which_part, Vector &COM, double & mass)
 	return true;
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubWholeBody::getAllVelocities(Vector &vel)
+{
+	Vector ll = this->lowerTorso->left->getDAng();
+	Vector rl = this->lowerTorso->right->getDAng();
+	Vector to = this->lowerTorso->up->getDAng();
+	Vector la = this->upperTorso->left->getDAng();
+	Vector ra = this->upperTorso->right->getDAng();
+	Vector hd = this->upperTorso->up->getDAng();
+	vel.clear();
+	vel.resize(32,0.0);
+	int i=0; int j=0;
+	for (i=0; i<6; i++, j++) vel[j] = ll[i];
+	for (i=0; i<6; i++, j++) vel[j] = rl[i];
+	for (i=0; i<3; i++, j++) vel[j] = to[i];
+	for (i=0; i<7; i++, j++) vel[j] = la[i];
+	for (i=0; i<7; i++, j++) vel[j] = ra[i];
+	for (i=0; i<3; i++, j++) vel[j] = hd[i];
+
+	return true;
+}
