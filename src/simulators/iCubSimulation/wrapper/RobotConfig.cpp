@@ -153,6 +153,6 @@ void RobotConfig::stopConfig( ConstString error ){
 	cout << "Check the iCub_parts_activation.ini under $CIUB_ROOT/app/simConfig " << endl;
 	cout << "If it still does not work (update svn) and re-install the app folder\n\n" << endl;
 	cout << "The iCub simulator will not start..\n\n\n" << endl;
-	exit(1);
+	std::exit(1); // we can do this as no port has been created yet
 	//return false;
 }
