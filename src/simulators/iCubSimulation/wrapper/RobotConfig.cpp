@@ -157,3 +157,4 @@ void RobotConfig::stopConfig( ConstString error ){
 	std::exit(1); // we can do this as no port has been created yet
 	//return false;
 }
+
