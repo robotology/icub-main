@@ -23,6 +23,7 @@
 #include <yarp/os/Property.h>
 
 #include <iostream>
+#include <cstdlib>
 
 using namespace yarp::os;
 using namespace std;
