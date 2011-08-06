@@ -176,6 +176,7 @@ private:
     Property OptionsTorso;
 	bool     legs_enabled;
 	bool     com_enabled;
+	bool     com_vel_enabled;
 	bool     left_arm_enabled;
 	bool     right_arm_enabled;
 
@@ -202,6 +203,7 @@ public:
         dd_left_leg=0;
         dd_right_leg=0;
         dd_torso=0;
+		com_vel_enabled=false;
 		com_enabled=true;
 		legs_enabled = true;
 		left_arm_enabled = true;
@@ -276,6 +278,13 @@ public:
 		{
 			com_enabled= false;
 			fprintf(stderr,"'no_com' option found. COM computation will be disabled.\n");
+		}
+
+		//------------CHECK IF COM VELOCITY COMPUTATION IS ENABLED-----------//
+		if (rf.check("experimental_com_vel"))
+		{
+			com_vel_enabled= true;
+			fprintf(stderr,"'enable_com_vel' option found. Extra COM velocity computation will be enabled.\n");
 		}
 
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
@@ -397,6 +406,7 @@ public:
 		//--------------------------THREAD--------------------------
 		inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect);
 		inv_dyn->com_enabled=com_enabled;
+		inv_dyn->com_vel_enabled=com_vel_enabled;
 		inv_dyn->dummy_ft=dummy_ft;
 
 		fprintf(stderr,"ft thread istantiated...\n");
@@ -531,13 +541,14 @@ int main(int argc, char * argv[])
 		cout << "\t--rate       rate: the period used by the module. default: 10ms"                                               << endl;
 		cout << "\t--robot      robot: the robot name. default: iCub"                                                             << endl;
 		cout << "\t--local      name: the prefix of the ports opened by the module. defualt: wholebodyTorqueObserver"             << endl;
-		cout << "\t--autoconnect : automatically connects the module ports to iCubInterface"								      << endl;        
-        cout << "\t--no_legs    this option disables the dynamics computation for the legs joints"								  << endl;  
-		cout << "\t--head_v2        use the model of the headV2" << endl;    
-		cout << "\t--no_left_arm    disables the left arm" << endl;
-		cout << "\t--no_right_arm   disables the right arm" << endl;
-		cout << "\t--no_com         disables the com computation" << endl;
-		cout << "\t--dummy_ft       uses fake FT sensors (debug use only)" <<endl;
+		cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"								      << endl;        
+        cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"								  << endl;  
+		cout << "\t--head_v2         use the model of the headV2" << endl;    
+		cout << "\t--no_left_arm     disables the left arm" << endl;
+		cout << "\t--no_right_arm    disables the right arm" << endl;
+		cout << "\t--no_com          disables the com computation" << endl;
+		cout << "\t--dummy_ft        uses fake FT sensors (debug use only)" <<endl;
+		cout << "\t--experimental_com_vel  enables com velocity computation (experimental)" << endl;
 		return 0;
     }
 

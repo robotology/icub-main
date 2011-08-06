@@ -53,6 +53,7 @@ class inverseDynamics: public RateThread
 {
 public:
 	bool       com_enabled;
+	bool       com_vel_enabled;
 	bool       dummy_ft;
 
 private:

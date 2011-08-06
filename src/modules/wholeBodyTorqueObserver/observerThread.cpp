@@ -202,6 +202,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 {   
 	autoconnect = _autoconnect;
 	com_enabled = true;
+	com_vel_enabled = false;
 	dummy_ft    = false;
 
 	icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
@@ -435,7 +436,7 @@ void inverseDynamics::run()
 	writeTorque(RATorques, 3, port_RWTorques); //wrist
 	writeTorque(LATorques, 3, port_LWTorques); //wrist
 	
-	Vector com_all(3), com_ll(3), com_rl(3), com_la(3),com_ra(3), com_hd(3), com_to(3); 
+	Vector com_all(7), com_ll(7), com_rl(7), com_la(7),com_ra(7), com_hd(7), com_to(7); 
 	double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to;
 	
 	if (com_enabled)	
@@ -448,6 +449,30 @@ void inverseDynamics::run()
 		icub->getCOM(RIGHT_ARM, com_ra,  mass_ra);
 		icub->getCOM(HEAD,      com_hd,  mass_hd);
 		icub->getCOM(TORSO,     com_to,  mass_to);
+		com_all.push_back(mass_all);
+		com_ll.push_back (mass_ll);
+		com_rl.push_back (mass_rl);
+		com_la.push_back (mass_la);
+		com_ra.push_back (mass_ra);
+		com_hd.push_back (mass_hd);
+		com_to.push_back (mass_to);
+
+		if (com_vel_enabled)
+		{
+			//experimental
+			Vector com_v;
+			icub->EXPERIMENTAL_computeCOMjacobian();
+			icub->EXPERIMENTAL_getCOMvelocity(com_v);
+			com_all.push_back(com_v[0]);
+			com_all.push_back(com_v[1]);
+			com_all.push_back(com_v[2]);
+		}
+		else
+		{
+			com_all.push_back(0);
+			com_all.push_back(0);
+			com_all.push_back(0);
+		}
 	}
 	else
 	{   
@@ -458,13 +483,6 @@ void inverseDynamics::run()
 	F_ext_left_arm=icub->upperTorso->left->getForceMomentEndEff();//-icub_sens->upperTorso->left->getForceMomentEndEff();
 	F_ext_right_arm=icub->upperTorso->right->getForceMomentEndEff();//-icub_sens->upperTorso->right->getForceMomentEndEff();
 
-	com_all.push_back(mass_all);
-	com_ll.push_back (mass_ll);
-	com_rl.push_back (mass_rl);
-	com_la.push_back (mass_la);
-	com_ra.push_back (mass_ra);
-	com_hd.push_back (mass_hd);
-	com_to.push_back (mass_to);
 	port_com_all->prepare() = com_all;
 	port_com_ll->prepare()  = com_ll ;
 	port_com_rl->prepare()  = com_rl ;
