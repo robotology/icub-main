@@ -1960,22 +1960,11 @@ bool   iDynSensorTorsoNode::computeCOM()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool   iDynSensorTorsoNode::getCOM(yarp::sig::Vector &_COM, double &_mass)
+bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
 {
-	unsigned int i=0;
-	yarp::sig::Vector COM_UP(3); COM_UP.zero();
-	yarp::sig::Vector COM_RT(3); COM_RT.zero();
-	yarp::sig::Vector COM_LF(3); COM_LF.zero();
-	total_COM_UP.resize(3);total_COM_UP.zero();
-	total_COM_RT.resize(3);total_COM_RT.zero();
-	total_COM_LF.resize(3);total_COM_LF.zero();
-    total_mass_UP=0.0;
-    total_mass_RT=0.0;
-    total_mass_LF=0.0;
-
 	iCub::iDyn::iDynLimb *limb =       0;
 	yarp::sig::Matrix    *orig =       0;
-	yarp::sig::Vector    *total_COM  = 0;        
+	yarp::sig::Matrix    *COM_jacob  = 0;   
 	double               *total_mass = 0;
 
 	for (int n=0; n<3; n++)
@@ -1985,41 +1974,71 @@ bool   iDynSensorTorsoNode::getCOM(yarp::sig::Vector &_COM, double &_mass)
 			case 0:
 				limb =        (this->left);
 				orig =       &(this->HLeft);
-				total_COM  = &(total_COM_LF);        
+				COM_jacob  = &(COM_jacob_LF);     
 				total_mass = &(total_mass_LF);
 			break;
 			case 1:
 				limb =        (this->right);
 				orig =       &(this->HRight);
-				total_COM  = &(total_COM_RT);        
+				COM_jacob  = &(COM_jacob_RT);    
 				total_mass = &(total_mass_RT);
 			break;
 			case 2:
 				limb =        (this->up);
 				orig =       &(this->HUp);
-				total_COM  = &(total_COM_UP);        
+				COM_jacob  = &(COM_jacob_UP);        
 				total_mass = &(total_mass_UP);
 			break;
 		}
 
-		for (i=0; i<limb->getN(); i++)
-		{
-			(*total_mass)=(*total_mass)+limb->getMass(i);
-			COM=limb->getCOM(i).getCol(3);
-			yarp::sig::Matrix m = limb->getH(i, true);		
-			(*total_COM) = (*total_COM) + ((*orig) * m * COM) * limb->getMass(i); 
-		}
-		if (fabs(*total_mass) > 0.00001)
-			{(*total_COM)=(*total_COM)/(*total_mass);  }
-		else
-			{(*total_COM).zero();}
-	}
-	
-	_mass=  total_mass_UP+total_mass_LF+total_mass_RT;
-	_COM = (total_COM_UP*total_mass_UP+
-		    total_COM_LF*total_mass_LF+
-		    total_COM_RT*total_mass_RT)/_mass;
+		//here do the computation
+		double* partial_mass = 0;
+		Vector* partial_COM  = 0;
+		partial_mass = new double [limb->getN()];
+		partial_COM  = new Vector [limb->getN()];
 
+		for (unsigned int iLink=0; iLink<limb->getN(); iLink++)
+		{
+			// this is the transformation from the link root to current link iLink 
+			yarp::sig::Matrix m = (*orig) * limb->getH(iLink, true);	
+
+			//partial COMs are computed in this block
+			for (unsigned int i=iLink; i<limb->getN(); i++)
+			{
+				partial_COM[iLink]= limb->getCOM(i).getCol(3) * limb->getMass(i);
+				partial_mass[iLink]=partial_mass[iLink]+limb->getMass(i);
+			}
+			partial_COM[iLink] = m * partial_COM[iLink]/partial_mass[iLink];
+
+			//partial COM jacobian are computed in this block
+			double mass_coeff = partial_mass[iLink]/(*total_mass);
+
+			Matrix J(6,iLink+1);
+			Vector Z = limb->getH(iLink).getCol(3);
+			Vector w;
+
+			w=cross(Z,partial_COM[iLink],verbose); 
+			J(0,0)=mass_coeff*w[0];
+			J(1,0)=mass_coeff*w[1];
+			J(2,0)=mass_coeff*w[2];
+			J(3,0)=Z(0);
+			J(4,0)=Z(1);
+			J(5,0)=Z(2);
+
+			//complete COM jacobian is obtained puttin togheter all the partial COM jacobians.
+			//(*COM_jacob)
+		}
+		COM_jacob_LF.resize(6,6);
+		COM_jacob_RT.resize(6,6);
+		COM_jacob_UP.resize(3,6);
+		/*
+		COM_jacob_LF.eye();
+		COM_jacob_RT.eye();		COM_jacob_RT=COM_jacob_RT*2;
+		COM_jacob_UP.eye();		COM_jacob_UP=COM_jacob_UP*3;
+		*/
+		delete [] partial_mass;
+		delete [] partial_COM;
+	}
 	return true;
 }
 
@@ -2510,4 +2529,67 @@ bool iCubWholeBody::getAllVelocities(Vector &vel)
 	for (i=0; i<3; i++, j++) vel[j] = hd[i];
 
 	return true;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
+{
+	//upper torso COM jacobian computation
+	yarp::sig::Matrix T0 = lowerTorso->HUp;
+	yarp::sig::Matrix T1 = lowerTorso->up->getH(2,true);
+
+	//upperTorso->EXPERIMENTAL_computeCOMjacobian();
+
+	//lower torso COM jacobian computation
+	lowerTorso->EXPERIMENTAL_computeCOMjacobian();
+
+	//order the partial jacobians in the main jacobian.
+	this->COM_Jacob.resize(6,32);
+	unsigned int r,c,ct=0;
+	//left leg
+	for (r=0; r<6; r++)
+		{
+			ct = 0;
+			//left_leg
+			for (c=0; c<6; c++, ct++)
+				COM_Jacob(r,ct) = lowerTorso->total_mass_LF * lowerTorso->COM_jacob_LF(r,c) / lower_mass;
+			//right leg
+			for (c=0; c<6; c++, ct++)
+				COM_Jacob(r,ct) = lowerTorso->total_mass_RT * lowerTorso->COM_jacob_RT(r,c) / lower_mass;
+			//torso
+			for (c=0; c<3; c++, ct++)
+				COM_Jacob(r,ct) = lowerTorso->total_mass_UP * lowerTorso->COM_jacob_RT(r,c) / lower_mass;
+			//left arm
+			//right arm
+			//head
+		}
+
+	//printMatrix("",COM_Jacob);
+	return true;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(Matrix &jac)
+{ 
+	if (COM_Jacob.cols() == 32)
+		{
+			jac = COM_Jacob; 
+			return true;
+		}
+	jac.zero();
+	return false;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(Vector &vel)
+{
+	if (COM_Jacob.cols() == 32)
+		{
+			Vector jvel; 
+			getAllVelocities(jvel);
+			vel = COM_Jacob*jvel;
+			return true;
+		}
+	vel.zero();
+	return false;
 }

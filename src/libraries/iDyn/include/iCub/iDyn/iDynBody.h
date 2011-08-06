@@ -1077,6 +1077,9 @@ public:
 	double            total_mass_UP;
 	double            total_mass_LF;
 	double            total_mass_RT;
+	yarp::sig::Matrix COM_jacob_UP;
+	yarp::sig::Matrix COM_jacob_LF;
+	yarp::sig::Matrix COM_jacob_RT;
 
 	/**
 	* Constructor
@@ -1183,12 +1186,10 @@ public:
 	bool computeCOM();
 
 	/**
-    * Retrieves the result of the last COM computation
-	* @param COM the computed COM of the node
-	* @param mass the computed mass of the node 
+    * Performs the computation of the center of mass jacobian of the node
 	* @return true if succeeds, false otherwise
 	*/
-	bool getCOM(yarp::sig::Vector &COM, double & mass);
+	bool EXPERIMENTAL_computeCOMjacobian();
 
 	/**
     * Return the torso force
@@ -1458,6 +1459,7 @@ public:
 	yarp::sig::Vector whole_COM;
 	yarp::sig::Vector upper_COM;
 	yarp::sig::Vector lower_COM;
+	yarp::sig::Matrix COM_Jacob;
 
 	/**
 	* Constructor: build the nodes and creates the whole body
@@ -1499,6 +1501,26 @@ public:
 	* @return true if succeeds, false otherwise
 	*/
 	bool getAllVelocities(Vector &vel);
+
+	/**
+    * Retrieves the result of the last COM jacobian computation
+	* @param jac the jacobian matrix
+	* @return true if succeeds, false otherwise
+	*/
+	bool EXPERIMENTAL_getCOMjacobian(Matrix &jac);
+
+	/**
+    * Performs the computation of the center of mass jacobian of the whole iCub
+	* @return true if succeeds, false otherwise
+	*/
+	bool EXPERIMENTAL_computeCOMjacobian();
+
+	/**
+    * Retrieves a 3x1 vector containing the velocity of the robot COM
+	* @param vel the velocity vector
+	* @return true if succeeds, false otherwise
+	*/
+	bool EXPERIMENTAL_getCOMvelocity(Vector &vel);
 };
 
 

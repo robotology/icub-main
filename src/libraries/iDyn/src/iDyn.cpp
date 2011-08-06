@@ -37,6 +37,21 @@ using namespace iCub::iDyn;
 //
 //================================
 
+
+
+
+void iCub::iDyn::printMatrix(std::string s, const yarp::sig::Matrix &m)
+{
+	printf ("%s \n",s);
+	for(int i=0;i<m.rows();i++)
+	{
+		for(int j=0;j<m.cols();j++)
+		{
+			printf ("%+7.4f\t",m(i,j));
+		}
+		printf ("\n");
+	}
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCub::iDyn::notImplemented(const unsigned int verbose)
 {
@@ -1380,9 +1395,9 @@ Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink)
     intH.push_back(H0);
 
     for (unsigned int j=0; j<=iLink; j++)
-        intH.push_back(intH[j]*allList[j]->getH(true));
+        intH.push_back(intH[j]*allList[j]->getH(true)); 
 
-    Pn=intH[iLink+1]*allList[iLink]->getCOM();
+    Pn=intH[iLink+1]*allList[iLink]->getCOM(); 
 
     for (unsigned int j=0; j<=iLink; j++)
     {
@@ -2066,7 +2081,7 @@ void iCubLegDyn::allocate(const string &_type)
         pushLink(new iDynLink(2.175,      0.00144,   0.06417,  0.00039,				0,			0,			0,			0,			0,			0,		   0.0,		 0.2236,   -M_PI/2.0,	-M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(1.264,       0.1059,   0.00182, -0.00211,			  0.0,		  0.0,		  0.0,		  0.0,		  0.0,		  0.0,		-0.213,			0.0,		M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.746,      -0.0054,   0.00163,  -0.0172,				0,			0,			0,			0,			0,			0,		   0.0,			0.0,	M_PI/2.0,		  0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0,		  	    0,		   0,	 	 0,				0,			0,			0,			0,			0,			0,		-0.041,			0.0,		M_PI,		  0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.010,	  	    0,		   0,	 	 0,				0,			0,			0,			0,			0,			0,		-0.041,			0.0,		M_PI,		  0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
 
 	}
     else
@@ -2076,7 +2091,7 @@ void iCubLegDyn::allocate(const string &_type)
         pushLink(new iDynLink(2.175,      0.00144,  0.06417,  -0.00039,    7591.073e-6, -67.260e-6,  2.267e-6,1423.0245e-6,36.37258e-6,7553.849e-6,		   0.0,		-0.2236,	M_PI/2.0,  -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(1.264,       0.1059,  0.00182,   0.00211,     998.950e-6,-185.699e-6,-63.147e-6, 4450.537e-6,   0.786e-6,4207.657e-6,		-0.213,			0.0,		M_PI,   M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.746,      -0.0054,  0.00163,    0.0172,     633.230e-6,	 -7.081e-6, 41.421e-6,  687.760e-6,	 20.817e-6, 313.897e-6,		   0.0,			0.0,   -M_PI/2.0,        0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
-        pushLink(new iDynLink(0,	 	 	    0,		  0,   	     0, 	    	 0,			 0,	 	    0,		     0,  		 0, 		 0,		-0.041,			0.0,         0.0,        0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.010,	  	    0,		  0,   	     0, 	    	 0,			 0,	 	    0,		     0,  		 0, 		 0,		-0.041,			0.0,         0.0,        0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
     }
 #endif
 

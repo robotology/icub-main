@@ -80,6 +80,7 @@ namespace iCub
 
 namespace iDyn
 {
+	void printMatrix(std::string s, const yarp::sig::Matrix &m);
     void notImplemented(const unsigned int verbose);
     void notImplemented(const unsigned int verbose, const std::string &msg);
     void workInProgress(const unsigned int verbose, const std::string &msg);
