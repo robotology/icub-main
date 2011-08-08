@@ -42,7 +42,7 @@ using namespace iCub::iDyn;
 
 void iCub::iDyn::printMatrix(std::string s, const yarp::sig::Matrix &m)
 {
-	printf ("%s \n",s);
+	printf ("%s \n",s.c_str());
 	for(int i=0;i<m.rows();i++)
 	{
 		for(int j=0;j<m.cols();j++)
