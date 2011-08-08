@@ -2616,3 +2616,4 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(Vector &vel)
 	vel.zero();
 	return false;
 }
+
