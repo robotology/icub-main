@@ -2546,9 +2546,17 @@ bool iCubWholeBody::getAllVelocities(Vector &vel)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 {
-	//upper torso COM jacobian computation
+	//prepare the transformation matrices
 	yarp::sig::Matrix T0 = lowerTorso->HUp;
 	yarp::sig::Matrix T1 = lowerTorso->up->getH(2,true);
+	yarp::sig::Matrix T0_6x6; T0_6x6.resize(6,6); T0_6x6.zero();
+	yarp::sig::Matrix T1_6x6; T1_6x6.resize(6,6); T1_6x6.zero();
+	unsigned int r,c,ct=0;
+	for (r=0; r<3; r++) for (c=0; c<3; c++) T0_6x6(r,c)= T0(r,c);
+	for (r=3; r<6; r++) for (c=3; c<6; c++) T0_6x6(r,c)= T0(r-3,c-3);
+	for (r=0; r<3; r++) for (c=0; c<3; c++) T1_6x6(r,c)= T1(r,c);
+	for (r=3; r<6; r++) for (c=3; c<6; c++) T1_6x6(r,c)= T1(r-3,c-3);
+	yarp::sig::Matrix T_UP = T0_6x6*T1_6x6;
 
 	//upperTorso->EXPERIMENTAL_computeCOMjacobian();
 	upperTorso->COM_jacob_LF.resize(6,7);
@@ -2560,8 +2568,7 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 
 	//order the partial jacobians in the main jacobian.
 	this->COM_Jacob.resize(6,32);
-	unsigned int r,c,ct=0;
-	//left leg
+
 	for (r=0; r<6; r++)
 		{
 			ct = 0;
@@ -2576,13 +2583,13 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 				COM_Jacob(r,ct) = lowerTorso->total_mass_UP * lowerTorso->COM_jacob_UP(r,c) / whole_mass;
 			//left arm
 			for (c=0; c<7; c++, ct++)
-				COM_Jacob(r,ct) = upperTorso->total_mass_LF * (/*T0*T1**/upperTorso->COM_jacob_LF(r,c)) / whole_mass;
+				COM_Jacob(r,ct) = upperTorso->total_mass_LF * ((T_UP*upperTorso->COM_jacob_LF)(r,c)) / whole_mass;
 			//right arm
 			for (c=0; c<7; c++, ct++)
-				COM_Jacob(r,ct) = upperTorso->total_mass_RT * (/*T0*T1**/upperTorso->COM_jacob_RT(r,c)) / whole_mass;
+				COM_Jacob(r,ct) = upperTorso->total_mass_RT * ((T_UP*upperTorso->COM_jacob_RT)(r,c)) / whole_mass;
 			//head
 			for (c=0; c<3; c++, ct++)
-				COM_Jacob(r,ct) = upperTorso->total_mass_UP * (/*T0*T1**/upperTorso->COM_jacob_UP(r,c)) / whole_mass;
+				COM_Jacob(r,ct) = upperTorso->total_mass_UP * ((T_UP*upperTorso->COM_jacob_UP)(r,c)) / whole_mass;
 		}
 
 	//printMatrix("torso",lowerTorso->COM_jacob_UP);
