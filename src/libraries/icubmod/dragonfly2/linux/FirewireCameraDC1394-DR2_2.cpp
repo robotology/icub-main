@@ -225,8 +225,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     
     // if previous instance crashed we need to clean up 
     // allocated bandwidth -- Added Lorenzo Natale, 9/2/2010.
-    const int INT_MAX=0x7FFFFFFF;
-    error=dc1394_iso_release_bandwidth(m_pCamera, INT_MAX);
+    const int BANDWIDTH_MAX=0x7FFFFFFF;
+    error=dc1394_iso_release_bandwidth(m_pCamera, BANDWIDTH_MAX);
     if (manage(error)) { printf("%d",__LINE__); fflush (stdout); return false; }
 
 	dc1394speed_t isoSpeed;
