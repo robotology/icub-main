@@ -603,6 +603,28 @@ double iDynChain::getD2Ang(const unsigned int i)
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::getLinVel(const unsigned int i) const
+{
+    if(i<N)
+        return allList[i]->getLinVel();
+    else 
+    {
+		if(verbose)	fprintf(stderr,"iDynChain error: getLinVel() failed due to out of range index: %d >= %d \n",i,N);
+		return Vector(0);
+    }	
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::getLinVelCOM(const unsigned int i) const
+{
+    if(i<N)
+		return allList[i]->getLinVelC();
+    else 
+    {
+		if(verbose)	fprintf(stderr,"iDynChain error: getLinVelCOM() failed due to out of range index: %d >= %d \n",i,N);
+		return Vector(0);
+    }	
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::getLinAcc(const unsigned int i) const
 {
     if(i<N)
@@ -621,6 +643,28 @@ Vector iDynChain::getLinAccCOM(const unsigned int i) const
     else 
     {
 		if(verbose)	fprintf(stderr,"iDynChain error: getLinAccCOM() failed due to out of range index: %d >= %d \n",i,N);
+		return Vector(0);
+    }	
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::getAngVel(const unsigned int i) const
+{
+    if(i<N)
+		return allList[i]->getW();
+    else 
+    {
+		if(verbose)	fprintf(stderr,"iDynChain error: getAngVel() failed due to out of range index: %d >= %d \n",i,N);
+		return Vector(0);
+    }	
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::getAngAcc(const unsigned int i) const
+{
+    if(i<N)
+		return allList[i]->getdW();
+    else 
+    {
+		if(verbose)	fprintf(stderr,"iDynChain error: getAngAcc() failed due to out of range index: %d >= %d \n",i,N);
 		return Vector(0);
     }	
 }

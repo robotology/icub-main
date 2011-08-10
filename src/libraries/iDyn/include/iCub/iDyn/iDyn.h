@@ -702,6 +702,18 @@ public:
 	double getTorque(const unsigned int iLink) const;
 
 	/**
+    * Returns the i-th link linear velocity
+    * @return the i-th link linear velocity
+    */
+	yarp::sig::Vector getLinVel(const unsigned int i) const;
+
+	/**
+    * Returns the i-th link linear velocity of the COM
+    * @return the i-th link linear velocity of the COM
+    */
+	yarp::sig::Vector getLinVelCOM(const unsigned int i) const;
+
+	/**
     * Returns the i-th link linear acceleration
     * @return the i-th link linear acceleration
     */
@@ -712,6 +724,18 @@ public:
     * @return the i-th link linear acceleration of the COM
     */
 	yarp::sig::Vector getLinAccCOM(const unsigned int i) const;
+
+	/**
+    * Returns the i-th link angular velocity
+    * @return the i-th link angular velocity
+    */
+	yarp::sig::Vector getAngVel(const unsigned int i) const;
+
+	/**
+    * Returns the i-th link angular acceleration
+    * @return the i-th link angular acceleration
+    */
+	yarp::sig::Vector getAngAcc (const unsigned int i) const;
 
 	/**
 	* Set the dynamic parameters of the i-th Link with motor.
