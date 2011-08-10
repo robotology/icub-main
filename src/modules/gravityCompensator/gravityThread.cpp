@@ -330,7 +330,7 @@ bool gravityCompensatorThread::readAndUpdate(bool waitMeasure)
 {
 	bool b = true;
 
-	inertial = port_inertial->read(false);
+	inertial = port_inertial->read(waitMeasure);
 	offset_input = additional_offset->read(false);
 	int sz = 0;
 	if(offset_input!=0)
@@ -582,7 +582,7 @@ void gravityCompensatorThread::run()
 	static int delay_check=0;
 	if(isCalibrated==true)
 	{
-		if (readAndUpdate(true) == false)
+		if (readAndUpdate(false) == false)
 		{
 			delay_check++;
 			printf ("network delays detected (%d/10)\n", delay_check);
