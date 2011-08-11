@@ -293,24 +293,34 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     //////////////////////////////////////
     //calibrate the eye set of joints   //
     //////////////////////////////////////
-	for (k =0; k < 3; k++)
+/*	for (k =0; k < 3; k++)
     {
 		//LATER: calibrateJoint will be removed after enableAmp
 	    calibrateJoint(eyeSetOfJoints[k]); 
 	}
+    Time::delay(0.010);
 	for (k =0; k < 3; k++)
     {
         checkCalibrateJointEnded(eyeSetOfJoints[k]);
  	}
-
 	for (k = 0; k < 3; k++)
 	{
         goToZero(eyeSetOfJoints[k]);
 	}
 	for (k = 0; k < 3; k++)
     {
-         checkGoneToZero(eyeSetOfJoints[k]);
+        checkGoneToZero(eyeSetOfJoints[k]);
 	}
+*/
+    for (k =0; k < 3; k++)
+    {
+        calibrateJoint(eyeSetOfJoints[k]); 
+        checkCalibrateJointEnded(eyeSetOfJoints[k]);
+        goToZero(eyeSetOfJoints[k]);
+        checkGoneToZero(eyeSetOfJoints[k]);
+        Time::delay(0.010);
+    }
+
 
 	/////////////////////////////////////
 	//finished!                        //
