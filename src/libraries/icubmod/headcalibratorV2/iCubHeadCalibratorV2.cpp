@@ -114,8 +114,10 @@ bool iCubHeadCalibratorV2::open (yarp::os::Searchable& config)
    }
    else
    {
-	   fprintf(stderr, "ARMCALIB[%d] :MaxPWM parameter not found, assuming 60\n", canID);
-	   for (i = 1; i < nj+1; i++) maxPWM[i-1] = 60;
+	   fprintf(stderr, "ARMCALIB[%d] :MaxPWM parameter not found, using default values\n", canID);
+	   for (i = 0; i < 3; i++) maxPWM[i] = 250;    //head
+	   for (i = 3; i < 6; i++) maxPWM[i] = 1333;   //eyes do not use maxPWM
+	   for (i = 6; i < 9; i++) maxPWM[i] = 200;    //torso
    }
 
     return true;
