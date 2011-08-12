@@ -26,6 +26,9 @@ using namespace yarp::sig;
 
 // globals
 Semaphore ODE_access(1);
+#define M_PI             3.14159265358979323846264338328
+#define CTRL_RAD2DEG    (180.0/M_PI)
+#define CTRL_DEG2RAD    (M_PI/180.0)
 
 // locals
 // NOTE that we use (long) instead of (clock_t), because on MacOS, (clock_t) is unsigned, while we need negative numbers
@@ -786,9 +789,9 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     inertialReport.addDouble( grav3[2] );
 
     //Add angular velocity
-    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[2] / 10);
-    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[0] / 10);
-    inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->inertialBody)[1] / 10);
+    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[2])*CTRL_RAD2DEG;
+    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[0])*CTRL_RAD2DEG;
+    inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->inertialBody)[1])*CTRL_RAD2DEG;
         
     //Add magnetic fields
     inertialReport.addDouble(0.0);
