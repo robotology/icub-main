@@ -20,6 +20,10 @@ using namespace yarp::dev;
 using namespace yarp::sig;
 //using ACE_OS::printf;
 
+#define M_PI             3.14159265358979323846264338328
+#define CTRL_RAD2DEG    (180.0/M_PI)
+#define CTRL_DEG2RAD    (M_PI/180.0)
+
 class XSensMTxResources: public Thread
 {
 public:
@@ -87,6 +91,7 @@ void XSensMTxResources::run (void)
 	    
             _mutex.wait ();
             
+			//euler_data are expressed in deg
             _last[0]  = euler_data[0]; //roll
             _last[1]  = euler_data[1]; //pitch
             _last[2]  = euler_data[2]; //yaw
@@ -95,9 +100,10 @@ void XSensMTxResources::run (void)
             _last[4]  = accel_data[1]; //accel-Y
             _last[5]  = accel_data[2]; //accel-Z
 	    
-            _last[6]  = gyro_data[0];  //gyro-X
-            _last[7]  = gyro_data[1];  //gyro-Y
-            _last[8]  = gyro_data[2];  //gyro-Z
+			//gyro_data are expressed in rad/s, so they have to be converted in deg/s
+            _last[6]  = gyro_data[0]*CTRL_RAD2DEG;  //gyro-X
+            _last[7]  = gyro_data[1]*CTRL_RAD2DEG;  //gyro-Y
+            _last[8]  = gyro_data[2]*CTRL_RAD2DEG;  //gyro-Z
 	    
             _last[9]  = magn_data[0];  //magn-X
             _last[10] = magn_data[1];  //magn-Y
