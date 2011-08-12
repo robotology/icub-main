@@ -192,21 +192,20 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
         H(1,3)=fp[1]-H(1,3);
         H(2,3)=fp[2]-H(2,3);
 
-        // gyro rate [rad/s]
+        // gyro rate [deg/s]
         double &gyrX=gyro[6];
         double &gyrY=gyro[7];
         double &gyrZ=gyro[8];
 
         // to filter out the noise on the gyro readouts
-        if ((fabs(gyrX)<GYRO_BIAS_STABILITY*CTRL_DEG2RAD) &&
-            (fabs(gyrY)<GYRO_BIAS_STABILITY*CTRL_DEG2RAD) &&
-            (fabs(gyrZ)<GYRO_BIAS_STABILITY*CTRL_DEG2RAD))
+        if ((fabs(gyrX)<GYRO_BIAS_STABILITY) && (fabs(gyrY)<GYRO_BIAS_STABILITY) &&
+            (fabs(gyrZ)<GYRO_BIAS_STABILITY))
         {
             fprelv.resize(eyesJ.rows(),0.0);    // pinv(eyesJ) => use rows
             return fprelv;
         }
         else
-            fprelv=gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3);
+            fprelv=CTRL_DEG2RAD*(gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3));
     }
     else
     {
