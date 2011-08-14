@@ -176,9 +176,11 @@ private:
     Property OptionsTorso;
 	bool     legs_enabled;
 	bool     com_enabled;
+	bool     w0_dw0_enabled;
 	bool     com_vel_enabled;
 	bool     left_arm_enabled;
 	bool     right_arm_enabled;
+	bool     dummy_ft;
 
 	
 	dataFilter *port_inertial_input;
@@ -208,6 +210,8 @@ public:
 		legs_enabled = true;
 		left_arm_enabled = true;
 		right_arm_enabled = true;
+		w0_dw0_enabled = false;
+		dummy_ft = false;
     }
 
     virtual bool createDriver(PolyDriver *_dd)
@@ -280,6 +284,19 @@ public:
 			fprintf(stderr,"'no_com' option found. COM computation will be disabled.\n");
 		}
 
+		//------------DEBUG ONLY-----------//
+		if (rf.check("disable_w0_dw0"))
+		{
+			w0_dw0_enabled= false;
+			fprintf(stderr,"'disable_w0_dw0' option found. w0 and dw0 will be set to zero.\n");
+		}
+		//------------DEBUG ONLY-----------//
+		if (rf.check("enable_w0_dw0"))
+		{
+			w0_dw0_enabled= true;
+			fprintf(stderr,"'enable_w0_dw0' option found. w0 and dw0 will be used.\n");
+		}
+
 		//------------CHECK IF COM VELOCITY COMPUTATION IS ENABLED-----------//
 		if (rf.check("experimental_com_vel"))
 		{
@@ -319,7 +336,6 @@ public:
 		}
 
 		//---------------------DUMMY_FT-------------------------//
-		bool dummy_ft = false;
 		if (rf.check("dummy_ft"))
 		{
 			dummy_ft = true;
@@ -408,6 +424,7 @@ public:
 		inv_dyn->com_enabled=com_enabled;
 		inv_dyn->com_vel_enabled=com_vel_enabled;
 		inv_dyn->dummy_ft=dummy_ft;
+		inv_dyn->w0_dw0_enabled=w0_dw0_enabled;
 
 		fprintf(stderr,"ft thread istantiated...\n");
         Time::delay(5.0);

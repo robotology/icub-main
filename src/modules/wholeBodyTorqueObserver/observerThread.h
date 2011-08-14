@@ -55,6 +55,7 @@ public:
 	bool       com_enabled;
 	bool       com_vel_enabled;
 	bool       dummy_ft;
+	bool       w0_dw0_enabled;
 
 private:
 	string     robot_name;

@@ -48,9 +48,9 @@ double lpf_ord1_3hz(double input, int j)
 	static double xv[MAX_FILTER_ORDER][MAX_JN];
 	static double yv[MAX_FILTER_ORDER][MAX_JN];
 	xv[0][j] = xv[1][j] ; 
-    xv[1][j] = input / 1.870043440e+01;
+    xv[1][j] = input / 1.157889499e+01;
     yv[0][j] = yv[1][j] ; 
-    yv[1][j] =   (xv[0][j]  + xv[1][j] ) + (  0.8930506128 * yv[0][j] );
+    yv[1][j] =   (xv[0][j]  + xv[1][j] ) + (  0.8272719460 * yv[0][j] );
     return (yv[1][j]);
 }
 
@@ -204,6 +204,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	com_enabled = true;
 	com_vel_enabled = false;
 	dummy_ft    = false;
+	w0_dw0_enabled   = false;
 
 	icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
 	icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
@@ -345,9 +346,12 @@ void inverseDynamics::run()
     if(ft_leg_left!=0)  F_LLeg = -1.0 * (*ft_leg_left-Offset_LLeg);
     if(ft_leg_right!=0) F_RLeg = -1.0 * (*ft_leg_right-Offset_RLeg);
 
-	//w0 and dw0 are too noisy! For now, I'm removing them
-	w0.zero();
-	dw0.zero();
+	if (w0_dw0_enabled == false)
+	{
+		//if w0 and dw0 are too noisy, you can disable them using 'no_w0_dw0' option
+		w0.zero();
+		dw0.zero();
+	}
 	
 	Vector F_up(6);
 	F_up=0.0;
@@ -367,7 +371,7 @@ void inverseDynamics::run()
 
 	icub->attachLowerTorso(F_RLeg,F_LLeg);
 	icub->lowerTorso->solveKinematics();
-	icub->lowerTorso->solveWrench();
+	icub->lowerTorso->solveWrench();	
 
 //#define DEBUG_KINEMATICS
 #ifdef DEBUG_KINEMATICS
@@ -737,10 +741,14 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 		d2p0[0] = inertial_measurements[0];
 		d2p0[1] = inertial_measurements[1];
 		d2p0[2] = inertial_measurements[2];
-		w0 [0] = inertial_measurements[3];
-		w0 [1] = inertial_measurements[4];
-		w0 [2] = inertial_measurements[5];
+		w0 [0] = inertial_measurements[3]*CTRL_DEG2RAD;
+		w0 [1] = inertial_measurements[4]*CTRL_DEG2RAD;
+		w0 [2] = inertial_measurements[5]*CTRL_DEG2RAD;
 		dw0 = eval_domega(w0);
+#ifdef DEBUG_PRINT_INERTIAL
+		printf ("meas_w  (rad/s):  %3.3f, %3.3f, %3.3f \n", w0[0],   w0[1],   w0[2]);
+		printf ("meas_dwo(rad/s):  %3.3f, %3.3f, %3.3f \n", dw0[0],  dw0[1],  dw0[2]);
+#endif
 	}
 	
 	b &= getUpperEncodersSpeedAndAcceleration();
