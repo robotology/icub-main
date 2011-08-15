@@ -52,6 +52,15 @@ void iCub::iDyn::printMatrix(std::string s, const yarp::sig::Matrix &m)
 		printf ("\n");
 	}
 }
+void iCub::iDyn::printVector(std::string s, const yarp::sig::Vector &v)
+{
+	printf ("%s :",s.c_str());
+	for(int i=0;i<v.size();i++)
+	{
+		printf ("%+6.3f\t",v(i));
+	}
+	printf ("\n");
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCub::iDyn::notImplemented(const unsigned int verbose)
 {

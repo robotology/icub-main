@@ -1948,7 +1948,7 @@ bool   iDynSensorTorsoNode::computeCOM()
 		{
 			(*total_mass)=(*total_mass)+limb->getMass(i);
 			COM=limb->getCOM(i).getCol(3);
-			yarp::sig::Matrix m = limb->getH(i, true);		
+				yarp::sig::Matrix m = limb->getH(i, true);		
 			(*total_COM) = (*total_COM) + ((*orig) * m * COM) * limb->getMass(i); 
 		}
 		if (fabs(*total_mass) > 0.00001)
@@ -1998,56 +1998,49 @@ bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
 		partial_COM  = new Vector [limb->getN()];
 		COM_jacob->resize(6,limb->getN());
 
+		//obtain the list of Z vectors (used in the final step)
+		deque<Matrix> intH;
+		intH.push_back(*orig);
+		for (unsigned int i=0; i<limb->getN(); i++)
+			intH.push_back((*orig)*limb->getH(i,true));
+
 		for (unsigned int iLink=0; iLink<limb->getN(); iLink++)
 		{
 			partial_mass[iLink]=0;
+			partial_COM [iLink].resize(4);
+			partial_COM [iLink].zero();
 
 			// this is the transformation from the link root to current link iLink 
 			yarp::sig::Matrix m = (*orig) * limb->getH(iLink, true);	
-
+			
 			//partial COMs are computed in this block
 			for (unsigned int i=iLink; i<limb->getN(); i++)
 			{
-				partial_COM[iLink]= limb->getCOM(i).getCol(3) * limb->getMass(i);
-				partial_mass[iLink]=partial_mass[iLink]+limb->getMass(i);
+				yarp::sig::Matrix m_i = (*orig) * limb->getH(i, true);
+				partial_COM[iLink] =partial_COM[iLink] + m_i * limb->getCOM(i).getCol(3) * limb->getMass(i);
+				partial_mass[iLink]=partial_mass[iLink]+limb->getMass(i);             
 			}
-			partial_COM[iLink] = m * partial_COM[iLink]/partial_mass[iLink];
+			partial_COM[iLink] = (partial_COM[iLink]/partial_mass[iLink])-intH[iLink].getCol(3);
 
+#ifdef DEBUG_P_COM
+			printf ("parCOM: %d %+3.3f %+3.3f %+3.3f \n", iLink, partial_COM[iLink](0), partial_COM[iLink](1), partial_COM[iLink](2));
+			printf ("n     : %d %+3.3f %+3.3f %+3.3f \n", iLink, intH[iLink].getCol(3)(0),intH[iLink].getCol(3)(1),intH[iLink].getCol(3)(2));
+			printf ("p-nCOM: %d %+3.3f %+3.3f %+3.3f \n", iLink, partial_COM[iLink](0), partial_COM[iLink](1), partial_COM[iLink](2));
+#endif
 			//partial COM jacobian are computed in this block
-			double mass_coeff = partial_mass[iLink]/(*total_mass);
+			double mass_coeff = partial_mass[iLink]/(*total_mass);                    
 
-			Vector Z = limb->getH(iLink).getCol(2);
-			Vector w;
-/*
-			 example
-		     Z=intH[j];
-			 w=cross(Z,2,Pn-Z,3,verbose);
-			 J(0,i)=w[0];
-			 J(1,i)=w[1];
-			 J(2,i)=w[2];
-			 J(3,i)=Z(0,2);
-			 J(4,i)=Z(1,2);
-			 J(5,i)=Z(2,2);
-*/
-			w=cross(Z,partial_COM[iLink],verbose); 
+			Vector Z = intH[iLink].getCol(2);
+			Vector w = cross(Z,partial_COM[iLink],verbose);
+
 			(*COM_jacob)(0,iLink)=mass_coeff*w[0];
 			(*COM_jacob)(1,iLink)=mass_coeff*w[1];
 			(*COM_jacob)(2,iLink)=mass_coeff*w[2];
 			(*COM_jacob)(3,iLink)=Z(0);
 			(*COM_jacob)(4,iLink)=Z(1);
 			(*COM_jacob)(5,iLink)=Z(2);
-
-			//complete COM jacobian is obtained puttin togheter all the partial COM jacobians.
-			//(*COM_jacob)
 		}
-		//COM_jacob_LF.resize(6,6);
-		//COM_jacob_RT.resize(6,6);
-		//COM_jacob_UP.resize(6,3);
-		/*
-		COM_jacob_LF.eye();
-		COM_jacob_RT.eye();		COM_jacob_RT=COM_jacob_RT*2;
-		COM_jacob_UP.eye();		COM_jacob_UP=COM_jacob_UP*3;
-		*/
+
 		delete [] partial_mass;
 		delete [] partial_COM;
 	}
@@ -2581,20 +2574,34 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 			//torso
 			for (c=0; c<3; c++, ct++)
 				COM_Jacob(r,ct) = lowerTorso->total_mass_UP * lowerTorso->COM_jacob_UP(r,c) / whole_mass;
-			//left arm
+			//left arm @@@@ TO BE VERIFIED
 			for (c=0; c<7; c++, ct++)
 				COM_Jacob(r,ct) = upperTorso->total_mass_LF * ((T_UP*upperTorso->COM_jacob_LF)(r,c)) / whole_mass;
-			//right arm
+			//right arm @@@@ TO BE VERIFIED
 			for (c=0; c<7; c++, ct++)
 				COM_Jacob(r,ct) = upperTorso->total_mass_RT * ((T_UP*upperTorso->COM_jacob_RT)(r,c)) / whole_mass;
-			//head
+			//head @@@@ TO BE VERIFIED
 			for (c=0; c<3; c++, ct++)
 				COM_Jacob(r,ct) = upperTorso->total_mass_UP * ((T_UP*upperTorso->COM_jacob_UP)(r,c)) / whole_mass;
 		}
 
-	//printMatrix("torso",lowerTorso->COM_jacob_UP);
+//*********************************************************************************************
+//  debug block
+#ifdef DEBUG_ONLY_TORSO_JACOB
+	for (r=0; r<6; r++)
+	{
+		ct = 6+6;
+		for (c=0; c<3; c++, ct++)
+			COM_Jacob(r,ct) = lowerTorso->COM_jacob_UP(r,c);
+	}
+	printMatrix("torso",lowerTorso->COM_jacob_UP);
+#endif
 	//printMatrix("left leg",lowerTorso->COM_jacob_LF);
 	//printMatrix("all",COM_Jacob);
+	//printMatrix("T_UP",T_UP);
+
+//*********************************************************************************************
+
 	return true;
 }
 
