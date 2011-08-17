@@ -80,7 +80,7 @@ namespace iCub
 
 namespace iDyn
 {
-	void printMatrix(std::string s, const yarp::sig::Matrix &m);
+	//void printMatrix(std::string s, const yarp::sig::Matrix &m);
 	void printVector(std::string s, const yarp::sig::Vector &v);
     void notImplemented(const unsigned int verbose);
     void notImplemented(const unsigned int verbose, const std::string &msg);
@@ -605,6 +605,18 @@ public:
     * @return the actual DOF values
     */
     yarp::sig::Vector getD2Ang();
+
+    /**
+    * Returns a list containing the min value for each joint
+    * @return the min joint bounds
+    */
+    yarp::sig::Vector getJointBoundMin();
+
+    /**
+    * Returns a list containing the max value for each joint
+    * @return the max joint bounds
+    */
+    yarp::sig::Vector getJointBoundMax();
 
     /**
     * Sets the ith joint angle velocity 

@@ -103,7 +103,7 @@ enum JacobType{ JAC_KIN, JAC_IKIN };
 #define NODE_AFTER_ATTACH	true
 #define NODE_NO_ATTACH      false
 
-enum partEnum{ LEFT_ARM=0, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, TORSO, HEAD, ALL }; 
+//enum partEnum{ LEFT_ARM=0, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, TORSO, HEAD, ALL }; 
 
 /**
 * \ingroup iDynBody
@@ -199,7 +199,7 @@ public:
 	* @param _mode the NewEulMode for computations
 	* @param verb verbosity flag
 	*/
-	RigidBodyTransformation(iDyn::iDynLimb *_limb, const yarp::sig::Matrix &_H, const std::string &_info, bool _hasSensor = false, const FlowType kin=RBT_NODE_OUT, const FlowType wre=RBT_NODE_IN, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+	RigidBodyTransformation(iDyn::iDynLimb *_limb, const yarp::sig::Matrix &_H, const std::string &_info, bool _hasSensor = false, const FlowType kin=RBT_NODE_OUT, const FlowType wre=RBT_NODE_IN, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
 
 	/**
 	* Destructor
@@ -600,7 +600,7 @@ public:
     * @param _mode the modality for dynamic computation
     * @param verb verbosity level
 	*/
-	iDynNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+	iDynNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
 
 	/**
 	* Add one limb to the node, defining its RigidBodyTransformation. A new RigidBodyTransformation
@@ -926,7 +926,7 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	iDynSensorNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+	iDynSensorNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
 
 	/**
 	* Add one limb to the node, defining its RigidBodyTransformation. A new RigidBodyTransformation
@@ -1086,7 +1086,7 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	iDynSensorTorsoNode(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+	iDynSensorTorsoNode(const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
 
 	/**
 	* Constructor
@@ -1094,7 +1094,7 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	iDynSensorTorsoNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE);
+	iDynSensorTorsoNode(const std::string &_info, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
 
 	/**
 	* Destructor
@@ -1390,7 +1390,7 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	iCubUpperTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE, std::string _tag="");
+	iCubUpperTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE, std::string _tag="");
 
 };
 
@@ -1423,7 +1423,7 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	iCubLowerTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=VERBOSE, std::string _tag = "" );
+	iCubLowerTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE, std::string _tag = "" );
 
 };
 
@@ -1466,7 +1466,7 @@ public:
 	* @param mode the computation mode: DYNAMIC/STATIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
 	* @param verbose the verbosity level: NO_VERBOSE/VERBOSE/MORE_VERBOSE
 	*/
-	iCubWholeBody(const NewEulMode mode=DYNAMIC, unsigned int verbose=VERBOSE, std::string _tag="");
+	iCubWholeBody(const NewEulMode mode=DYNAMIC, unsigned int verbose=iCub::skinDynLib::VERBOSE, std::string _tag="");
 
 	/**
 	* Standard destructor
@@ -1492,7 +1492,7 @@ public:
 	* @param mass the computed mass of the selected part
 	* @return true if succeeds, false otherwise
 	*/
-	bool getCOM(partEnum which_part, yarp::sig::Vector &COM, double & mass);
+    bool getCOM(iCub::skinDynLib::BodyPart which_part, yarp::sig::Vector &COM, double & mass);
 
 	/**
     * Retrieves a vector containing the velocities of all the iCub joints, ordered in this way:
@@ -1500,14 +1500,14 @@ public:
 	* @param vel the velocities vector (size = 32)
 	* @return true if succeeds, false otherwise
 	*/
-	bool getAllVelocities(Vector &vel);
+    bool getAllVelocities(yarp::sig::Vector &vel);
 
 	/**
     * Retrieves the result of the last COM jacobian computation
 	* @param jac the jacobian matrix
 	* @return true if succeeds, false otherwise
 	*/
-	bool EXPERIMENTAL_getCOMjacobian(Matrix &jac);
+	bool EXPERIMENTAL_getCOMjacobian(yarp::sig::Matrix &jac);
 
 	/**
     * Performs the computation of the center of mass jacobian of the whole iCub
@@ -1520,7 +1520,7 @@ public:
 	* @param vel the velocity vector
 	* @return true if succeeds, false otherwise
 	*/
-	bool EXPERIMENTAL_getCOMvelocity(Vector &vel);
+	bool EXPERIMENTAL_getCOMvelocity(yarp::sig::Vector &vel);
 };
 
 

@@ -39,6 +39,7 @@ using namespace yarp::dev;
 using namespace std;
 using namespace iCub::ctrl;
 using namespace iCub::iDyn;
+using namespace iCub::skinDynLib;
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

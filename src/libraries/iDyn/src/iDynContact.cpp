@@ -21,164 +21,13 @@
 #include <yarp/math/SVD.h>
 #include <stdio.h>
 
-//using namespace std;
-//using namespace yarp::sig;
+using namespace std;
+using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::iKin;
 using namespace iCub::iDyn;
 using namespace iCub::ctrl;
-
-
-//~~~~~~~~~~~~~~~~~~~~~~
-//   IDYN CONTACT
-//~~~~~~~~~~~~~~~~~~~~~~
-iDynContact::iDynContact(unsigned int _linkNumber, const Vector &_pos){
-    init(_linkNumber, _pos);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContact::iDynContact(unsigned int _linkNumber, const Vector &_pos, const Vector &_Mu){
-    init(_linkNumber, _pos);
-    setMoment(_Mu);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContact::iDynContact(unsigned int _linkNumber, const Vector &_pos, const Vector &_Mu, const Vector &_Fdir){
-    init(_linkNumber, _pos);
-    setMoment(_Mu);
-    setForceDirection(_Fdir);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynContact::init(unsigned int _linkNumber, const Vector &_pos){
-    setLinkNumber(_linkNumber); 
-    setPosition(_pos);
-    muKnown = false;
-    fDirKnown = false;
-}
-//~~~~~~~~~~~~~~~~~~~~~~
-//   GET methods
-//~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynContact::getForceMoment() const{
-	Vector ret(6); ret.zero();
-    Vector F = Fmodule*Fdir;
-	ret[0]=F[0]; ret[1]=F[1]; ret[2]=F[2];
-	ret[3]=Mu[0]; ret[4]=Mu[1]; ret[5]=Mu[2];
-	return ret;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynContact::getForce() const{ return Fmodule*Fdir;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynContact::getForceDirection() const{ return Fdir;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iDynContact::getForceModule() const{ return Fmodule;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynContact::getMoment() const{ return Mu;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynContact::getPosition() const{ return pos;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-unsigned int iDynContact::getLinkNumber() const{ return linkNumber;}
-//~~~~~~~~~~~~~~~~~~~~~~
-//   IS methods
-//~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::isMomentKnown() const{ return muKnown;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::isForceDirectionKnown() const{ return fDirKnown;}
-//~~~~~~~~~~~~~~~~~~~~~~
-//   SET methods
-//~~~~~~~~~~~~~~~~~~~~~~    
-bool iDynContact::setForce(const Vector &_F){
-    if(!checkVectorDim(_F, 3, "force"))
-        return false;
-    Fmodule = norm(_F);
-    Fdir = _F / Fmodule;
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::setForceModule(double _Fmodule){
-    if(_Fmodule<0){
-        if(verbose)
-            fprintf(stderr, "Error in iDynContact: negative force module, %f\n", _Fmodule);
-        return false;
-    }
-    Fmodule = _Fmodule;
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::setForceDirection(const Vector &_Fdir){
-    if(!checkVectorDim(_Fdir, 3, "force direction"))
-        return false;
-    Fdir = _Fdir / norm(_Fdir);
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::setMoment(const Vector &_Mu){
-    if(!checkVectorDim(_Mu, 3, "moment"))
-        return false;
-    Mu = _Mu;
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::setPosition(const Vector &_pos){
-    if(!checkVectorDim(_pos, 3, "position"))
-        return false;
-    pos = _pos;
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::setLinkNumber(unsigned int _linkNum){
-    linkNumber = _linkNum;
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~
-//   FIX/UNFIX methods
-//~~~~~~~~~~~~~~~~~~~~~~ 
-bool iDynContact::fixForceDirection(const Vector &_Fdir){
-    if(setForceDirection(_Fdir)){
-        fDirKnown = true;
-        return true;
-    }
-    return false;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::fixMoment(){
-    Vector zeroMu(3);
-	zeroMu.zero();
-    return fixMoment(zeroMu);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::fixMoment(const Vector &_Mu){
-    if(setMoment(_Mu)){
-        muKnown = true;
-        return true;
-    }
-    return false;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynContact::unfixForceDirection(){ fDirKnown=false;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynContact::unfixMoment(){ muKnown=false;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynContact::toString() const{
-    return "";
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynContact::setVerbose(unsigned int verb){
-    verbose = verb;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContact::checkVectorDim(const Vector &v, unsigned int dim, const string &descr){
-    if(v.length() != dim){
-        if(verbose)
-            fprintf(stderr, "Error in iDynContact: unexpected dimension of vector %s, %d\n", descr.c_str(), v.length());
-        return false;
-    }
-    return true;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iDynContact::norm(const Vector &v){
-    double res = 0;
-    for(int i=0; i<v.length(); i++)
-        res += pow(v(i), 2);
-    return sqrt(res);
-}
+using namespace iCub::skinDynLib;
 
 
 
@@ -207,12 +56,12 @@ iDynContactSolver::~iDynContactSolver(){
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContactSolver::addContact(const iDynContact &contact){
+bool iDynContactSolver::addContact(const dynContact &contact){
     contactList.push_back(contact);
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContactSolver::addContacts(const deque<iDynContact> &contacts){
+bool iDynContactSolver::addContacts(const deque<dynContact> &contacts){
     contactList.insert(contactList.end(), contacts.begin(), contacts.end());
     return true;
 }
@@ -226,15 +75,15 @@ void iDynContactSolver::clearContactList(){
         contactList.clear();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-deque<iDynContact> iDynContactSolver::computeExternalContacts(const Vector &FMsens){
-	deque<iDynContact> nullList;
+deque<dynContact> iDynContactSolver::computeExternalContacts(const Vector &FMsens){
+	deque<dynContact> nullList;
 	if(!setSensorMeasures(FMsens))                      // set the sensor measure
         return nullList;
 	return computeExternalContacts();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-deque<iDynContact> iDynContactSolver::computeExternalContacts(){
-    deque<iDynContact> nullList;
+deque<dynContact> iDynContactSolver::computeExternalContacts(){
+    deque<dynContact> nullList;
     if(contactList.size()==0)
         return nullList;
 
@@ -295,18 +144,18 @@ deque<iDynContact> iDynContactSolver::computeExternalContacts(){
 		pinv_A = pinv(A, tollerance);
     Vector X = pinv_A * B;
 	
-    //if(verbose){
-        //Vector AX = A*X;
-        //printMatrix("A", A);
-        //printVector("B", B);
-        //printVector("X", X);
-		//printVector("AX", AX);
-    //}
+    /*if(verbose){
+        Vector AX = A*X;
+        printMatrix(A, "A");
+        printVector(B, "B");
+        printVector(X, "X");
+		printVector(AX, "AX");
+    }*/
     
     // SET THE COMPUTED VALUES IN THE CONTACT LIST
     unsigned int unknownInd = 0;
     Matrix H, R;
-    deque<iDynContact>::iterator it = contactList.begin();
+    deque<dynContact>::iterator it = contactList.begin();
     for(; it!=contactList.end(); it++){        
         if(it->isForceDirectionKnown()){
             it->setForceModule( X(unknownInd++));
@@ -362,7 +211,7 @@ Matrix iDynContactSolver::buildA(unsigned int firstContactLink, unsigned int las
     unsigned int colInd = 0;
     Matrix H, R;
     Vector r;
-    deque<iDynContact>::const_iterator it = contactList.begin();
+    deque<dynContact>::const_iterator it = contactList.begin();
     for(; it!=contactList.end(); it++){
         // compute the rototranslation matrix from <firstContactLink-1> to the current link
         H = getHFromAtoB(firstContactLink-1, it->getLinkNumber());
@@ -371,14 +220,14 @@ Matrix iDynContactSolver::buildA(unsigned int firstContactLink, unsigned int las
 
         if(it->isForceDirectionKnown()){                    // 1 UNKNOWN: FORCE MODULE
             Vector v = R*it->getForceDirection();           // force direction unit vector
-            Vector v2 = cross(R*it->getPosition() + r, v);  // contact point X force direction
+            Vector v2 = cross(R*it->getCoP() + r, v);  // contact point X force direction
             v.resize(6);
             v(3) = v2(0); v(4)=v2(1); v(5)=v2(2);
             A.setCol(colInd++, v);
         }else{                                              // 3 UNKNOWNS: FORCE
             Matrix m(6,3); m.zero();
             m(0,0) = 1; m(1,1) = 1; m(2,2) = 1; 
-            Vector pos = R*it->getPosition() + r;
+            Vector pos = R*it->getCoP() + r;
             Matrix m2 = crossProductMatrix(pos);
             m.setRow(3, m2.getRow(0));
             m.setRow(4, m2.getRow(1));
@@ -464,13 +313,13 @@ Vector iDynContactSolver::buildB(unsigned int firstContactLink, unsigned int las
     return B;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-deque<iDynContact> iDynContactSolver::getContactList() const{
+deque<dynContact> iDynContactSolver::getContactList() const{
     return contactList;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynContactSolver::findContactSubChain(unsigned int &firstLink, unsigned int &lastLink){
-    deque<iDynContact>::const_iterator it=contactList.begin();
+    deque<dynContact>::const_iterator it=contactList.begin();
     firstLink = chain->getN()+1; 
     lastLink = 0;
 
@@ -512,7 +361,7 @@ Matrix iDynContactSolver::getHFromAtoB(unsigned int a, unsigned int b){
     return H;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynContactSolver::projectContact2Root(const iDynContact &c){
+Vector iDynContactSolver::projectContact2Root(const dynContact &c){
 	Vector wrench = c.getForceMoment();
 	Matrix H_02L = getHFromAtoB(0, c.getLinkNumber());	// rototraslation from 0 to contact link
 	Matrix H_r20 = chain->getH0();	// rototraslation from root to 0
@@ -521,7 +370,7 @@ Vector iDynContactSolver::projectContact2Root(const iDynContact &c){
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 unsigned int iDynContactSolver::getUnknownNumber() const{
-    deque<iDynContact>::const_iterator it=contactList.begin();
+    deque<dynContact>::const_iterator it=contactList.begin();
     unsigned int unknowns=0;
 
     for(; it!=contactList.end(); it++){        

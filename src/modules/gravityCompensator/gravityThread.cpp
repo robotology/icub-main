@@ -31,6 +31,7 @@
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
+#include <iCub/skinDynLib/common.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -38,6 +39,7 @@ using namespace yarp::math;
 using namespace yarp::dev;
 using namespace iCub::ctrl;
 using namespace iCub::iDyn;
+using namespace iCub::skinDynLib;
 using namespace std;
 
 Vector gravityCompensatorThread::evalVelUp(const Vector &x)
@@ -505,9 +507,9 @@ void gravityCompensatorThread::feedFwdGravityControl(string s_part, IControlMode
 	//check if interfaces are still up (icubinterface running)  
 	if (iCtrlMode == 0) 
 		{fprintf(stderr,"ControlMode interface already closed, unable to reset compensation offset.\n");    return;}
-	if (iTqs == 0)      
+	if (iTqs == 0)
 		{fprintf(stderr,"TorqueControl interface already closed, unable to reset compensation offset.\n");  return;}
-	if (iImp == 0)     
+	if (iImp == 0)
 		{fprintf(stderr,"Impedance interface already closed, unable to reset compensation offset.\n");      return;}
 
 	//set to zero all the offsets if the module is closing

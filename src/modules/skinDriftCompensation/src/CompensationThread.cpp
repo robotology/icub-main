@@ -45,7 +45,7 @@ CompensationThread::CompensationThread(string name, ResourceFinder* rf, string r
 
 bool CompensationThread::threadInit() 
 {
-    fprintf(stderr, "THREAD INIT\n\n");    
+    fprintf(stderr, "THREAD INIT\n\n");
 
    /* initialize variables and create data-structures if needed */
 	lastTimestamp = Time::now();
@@ -142,12 +142,12 @@ bool CompensationThread::threadInit()
             Bottle* linkList = skinEventsConf.find("linkList").asList();
             if(linkList->size() != portNum){
                 stringstream msg;
-                msg<< "ERROR: the number of link id does not match the number of input ports ("
+                msg<< "ERROR: the number of link id is not equal to the number of input ports ("
                     << linkList->size()<< "!="<< portNum<< ")";
                 sendInfoMsg(msg.str());
             }else{
                 FOR_ALL_PORTS(i){
-                    compensators[i]->setLinkId(linkList->get(i).asInt());
+                    compensators[i]->setLinkNum(linkList->get(i).asInt());
                 }
                 string eventPortName = "/" + moduleName + "/skin_events:o";  // output skin events
 	            if(!skinEventsPort.open(eventPortName.c_str())){
@@ -156,6 +156,36 @@ bool CompensationThread::threadInit()
                 }else{
                     skinEventsOn = true;
                 }
+            }
+        }
+
+        if(skinEventsConf.check("bodyParts")){
+            Bottle* bodyPartList = skinEventsConf.find("bodyParts").asList();
+            if(bodyPartList->size() != portNum){
+                stringstream msg;
+                msg<< "ERROR: the number of body part ids is not equal to the number of input ports ("
+                    << bodyPartList->size()<< "!="<< portNum<< "). Body parts will not be set.";
+                sendInfoMsg(msg.str());
+            }else{
+                FOR_ALL_PORTS(i){
+                    cout<< "Body part "<< BodyPart_s[bodyPartList->get(i).asInt()]<< endl;
+                    compensators[i]->setBodyPart((BodyPart)bodyPartList->get(i).asInt());
+                }                
+            }
+        }
+
+        if(skinEventsConf.check("skinParts")){
+            Bottle* skinPartList = skinEventsConf.find("skinParts").asList();
+            if(skinPartList->size() != portNum){
+                stringstream msg;
+                msg<< "ERROR: the number of skin part ids is not equal to the number of input ports ("
+                    << skinPartList->size()<< "!="<< portNum<< "). Skin parts will not be set.";
+                sendInfoMsg(msg.str());
+            }else{
+                FOR_ALL_PORTS(i){
+                    cout<< "Skin part "<< SkinPart_s[skinPartList->get(i).asInt()]<< endl;
+                    compensators[i]->setSkinPart((SkinPart)skinPartList->get(i).asInt());
+                }                
             }
         }
     
@@ -247,29 +277,16 @@ void CompensationThread::run(){
 void CompensationThread::sendSkinEvents(){
     Bottle &skinEvents = skinEventsPort.prepare();
     skinEvents.clear();
-    bool contact = false;
-	Vector mean3DPoint;
+
     FOR_ALL_PORTS(i){
-        if(compWorking[i] && compensators[i]->isThereContact()){
-            contact = true;
-            Bottle &c = skinEvents.addList();
-            //c.addString("part");
-            c.addString(compensators[i]->getPartName().c_str());
-            //c.addString("link");
-            c.addInt(compensators[i]->getLinkId());
-            //c.addString("pos");
-			mean3DPoint = compensators[i]->getContactCOP();
-            // if the position is unknown set it to zero
-            if(mean3DPoint.size() != 3){
-                mean3DPoint.resize(3);
-                mean3DPoint.zero();
+        if(compWorking[i]){
+            deque<skinContact> cList = compensators[i]->getContacts();
+            for(unsigned int j=0; j<cList.size(); j++){
+                Bottle &c = skinEvents.addList();
+                c.append(cList[j].toBottle());
             }
-			c.addDouble(mean3DPoint[0]);
-			c.addDouble(mean3DPoint[1]);
-			c.addDouble(mean3DPoint[2]);
         }
     }
-    //if(contact)
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 

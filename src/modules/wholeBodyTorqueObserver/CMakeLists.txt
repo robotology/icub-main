@@ -15,11 +15,13 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${iDyn_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${YARP_INCLUDE_DIRS}
+                    ${skinDynLib_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} iDyn
-                                     ${YARP_LIBRARIES})
+                                     ${YARP_LIBRARIES}
+                                     skinDynLib)
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)

@@ -23,6 +23,7 @@
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
+#include <iCub/skinDynLib/skinContact.h>
 
 #include <iostream>
 #include <iomanip>
@@ -35,6 +36,7 @@ using namespace yarp::math;
 using namespace yarp::dev;
 using namespace iCub::ctrl;
 using namespace iCub::iDyn;
+using namespace iCub::skinDynLib;
 using namespace std;
 
 double lpf_ord1_3hz(double input, int j)
@@ -446,13 +448,13 @@ void inverseDynamics::run()
 	if (com_enabled)	
 	{
 		icub->computeCOM();
-		icub->getCOM(ALL,       com_all, mass_all);
-		icub->getCOM(LEFT_LEG,  com_ll,  mass_ll);
-		icub->getCOM(RIGHT_LEG, com_rl,  mass_rl);
-		icub->getCOM(LEFT_ARM,  com_la,  mass_la);
-		icub->getCOM(RIGHT_ARM, com_ra,  mass_ra);
-		icub->getCOM(HEAD,      com_hd,  mass_hd);
-		icub->getCOM(TORSO,     com_to,  mass_to);
+		icub->getCOM(ALL_BODY_PARTS,    com_all, mass_all);
+		icub->getCOM(LEFT_LEG,          com_ll,  mass_ll);
+		icub->getCOM(RIGHT_LEG,         com_rl,  mass_rl);
+		icub->getCOM(LEFT_ARM,          com_la,  mass_la);
+		icub->getCOM(RIGHT_ARM,         com_ra,  mass_ra);
+		icub->getCOM(HEAD,              com_hd,  mass_hd);
+		icub->getCOM(TORSO,             com_to,  mass_to);
 		com_all.push_back(mass_all);
 		com_ll.push_back (mass_ll);
 		com_rl.push_back (mass_rl);
@@ -664,6 +666,7 @@ void inverseDynamics::calibrateOffset(const unsigned int Ntrials)
 	Offset_LLeg = 1.0/(double)Ntrials * Offset_LLeg;
 	Offset_RLeg = 1.0/(double)Ntrials * Offset_RLeg;
 
+    printVector(Offset_LArm, "off");
 	fprintf(stderr,"\n");
 	fprintf(stderr, "Ntrials: %d\n", Ntrials);
 	fprintf(stderr, "F_LArm:      %s\n", F_LArm.toString().c_str());
@@ -720,7 +723,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 	}
 	
 	//inertial sensor
-	if (waitMeasure) fprintf(stderr,"Trying to connect to intertial sensor...");
+	if (waitMeasure) fprintf(stderr,"Trying to connect to inertial sensor...");
 	inertial = port_inertial_thread->read(waitMeasure);
 	if (waitMeasure) fprintf(stderr,"done. \n");
 		
@@ -944,29 +947,18 @@ void inverseDynamics::addSkinContacts(){
     // if nothing is read
     if(!skinEvents){ // || skinEvents->isNull())
         if(skinEventsTimestamp!=0.0 && Time::now()-skinEventsTimestamp > SKIN_EVENTS_TIMEOUT){   
-            // if time is up remove all the contacts
-            fprintf(stderr, "Could not read the skin events for longer than %d ms\n", SKIN_EVENTS_TIMEOUT);
+            // if time is up, remove all the contacts
+            fprintf(stderr, "Skin event timeout (%d ms)\n", SKIN_EVENTS_TIMEOUT);
             icub->upperTorso->leftSensor->clearContactList();
         }
         return;     // otherwise keep the same contacts you had before
     }
     
     skinEventsTimestamp = Time::now();  // update the timestamp
-    icub->upperTorso->leftSensor->clearContactList();    
+    icub->upperTorso->leftSensor->clearContactList();
     for(int i=0; i<skinEvents->size(); i++){
         Bottle *e = skinEvents->get(i).asList();
-        if(e->size() != 5){
-            fprintf(stderr, "Unexpected size of a skin event: %d\n", e->size());
-            return;
-        }
-        string partName = e->get(0).asString().c_str();
-        unsigned int linkId = e->get(1).asInt();
-        //fprintf(stdout, "%3.3f\tContact on link %d\n", Random::normal(), linkId);
-        Vector pos(3);
-        pos(0) = e->get(2).asDouble();
-        pos(1) = e->get(3).asDouble();
-        pos(2) = e->get(4).asDouble();
-        iDynContact c(linkId, pos);
+        skinContact c(*e);
         icub->upperTorso->leftSensor->addContact(c);
     }
 }

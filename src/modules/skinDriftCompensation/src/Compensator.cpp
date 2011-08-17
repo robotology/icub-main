@@ -25,14 +25,15 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace iCub::skinDriftCompensation;
+using namespace iCub::skinDynLib;
 
 Compensator::Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort, 
                          double _compensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
-                         bool _smoothFilter, float _smoothFactor, unsigned int _linkId)
+                         bool _smoothFilter, float _smoothFactor, unsigned int _linkNum)
 									   : 
-										compensationGain(_compensationGain), ADD_THRESHOLD(addThreshold), infoPort(_infoPort),
+										compensationGain(_compensationGain), addThreshold(addThreshold), infoPort(_infoPort),
                                             minBaseline(_minBaseline), binarization(_binarization), smoothFilter(_smoothFilter), 
-                                            smoothFactor(_smoothFactor), robotName(robotName), name(name), linkId(_linkId)
+                                            smoothFactor(_smoothFactor), robotName(robotName), name(name), linkNum(_linkNum)
 {
     this->zeroUpRawData = _zeroUpRawData;
     _isWorking = init(name, robotName, outputPortName, inputPortName);
@@ -49,8 +50,8 @@ Compensator::~Compensator(){
 }
 
 bool Compensator::init(string name, string robotName, string outputPortName, string inputPortName){
-    size_t found = inputPortName.find_last_of("/");
-    partName = inputPortName.substr(found+1);
+    skinPart = UNKNOWN_SKIN_PART;
+    bodyPart = UNKNOWN_BODY_PART;
 
     if (!compensatedTactileDataPort.open(outputPortName.c_str())) {
 	    stringstream msg; msg<< "Unable to open output port "<< outputPortName;
@@ -80,24 +81,24 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
 	    return false;
     }
     
-    SKIN_DIM = tactileSensor->getChannels();
-    if(SKIN_DIM<=0){
+    skinDim = tactileSensor->getChannels();
+    if(skinDim<=0){
 		fprintf(stderr, "Error while reading the number of channels of the tactile sensor device. Using 192 as default value.\n");
-		SKIN_DIM = 192;
+		skinDim = 192;
 	}
     readErrorCounter = 0;
-    baselines.resize(SKIN_DIM);
-    touchThresholds.resize(SKIN_DIM);
-    touchDetected.resize(SKIN_DIM);
-    touchDetectedFilt.resize(SKIN_DIM);
-    compensatedData.resize(SKIN_DIM);
-    compensatedDataOld.resize(SKIN_DIM);
+    baselines.resize(skinDim);
+    touchThresholds.resize(skinDim);
+    touchDetected.resize(skinDim);
+    touchDetectedFilt.resize(skinDim);
+    compensatedData.resize(skinDim);
+    compensatedDataOld.resize(skinDim);
     taxelPosOri = NULL;
 
     // test read to check if the skin is broken (all taxel output is 0)
     if(readInputData(compensatedData)){
         bool skinBroken = true;
-        for(unsigned int i=0; i<SKIN_DIM; i++){
+        for(unsigned int i=0; i<skinDim; i++){
             if(compensatedData[i]!=0){
                 skinBroken = false;
                 break;
@@ -123,17 +124,17 @@ void Compensator::calibrationInit(){
 	// initialize
     calibrationRead = 0;
     saturatedTaxels.resize(0);
-	start_sum.assign(SKIN_DIM, 0);
-	skin_empty.assign(SKIN_DIM, vector<int>(MAX_SKIN+1, 0));
+	start_sum.assign(skinDim, 0);
+	skin_empty.assign(skinDim, vector<int>(MAX_SKIN+1, 0));
 }
 
 void Compensator::calibrationDataCollection(){	
-    Vector skin_values(SKIN_DIM);
+    Vector skin_values(skinDim);
     if(!readInputData(skin_values))
         return;
 	calibrationRead++;
 		
-	for (unsigned int j=0; j<SKIN_DIM; j++) {
+	for (unsigned int j=0; j<skinDim; j++) {
 		if (zeroUpRawData==false)
 			skin_values[j] = MAX_SKIN - skin_values[j];
 		
@@ -149,9 +150,9 @@ void Compensator::calibrationDataCollection(){
 
 void Compensator::calibrationFinish(){
 	
-	//vector<float> standard_dev(SKIN_DIM, 0);
+	//vector<float> standard_dev(skinDim, 0);
 	//get percentile
-	for (unsigned int i=0; i<SKIN_DIM; i++) {
+	for (unsigned int i=0; i<skinDim; i++) {
 		//avg start value
 		baselines[i] = start_sum[i]/calibrationRead;
 		
@@ -179,7 +180,7 @@ void Compensator::calibrationFinish(){
 
     // test to check if the skin is broken (all taxel baselines are 255 OR thresholds are 0)
     bool baseline255 = true, thresholdZero = true;
-    for(unsigned int i=0; i<SKIN_DIM; i++){
+    for(unsigned int i=0; i<skinDim; i++){
         if(baselines[i]!=255){
             baseline255 = false;
         }
@@ -195,12 +196,12 @@ void Compensator::calibrationFinish(){
     // print to console
     if(_isWorking){
 	    fprintf(stderr, "\n[%s] Baselines:\n", name.c_str());
-	    for (unsigned int i=0; i<SKIN_DIM; i++) {
+	    for (unsigned int i=0; i<skinDim; i++) {
 		    if(!(i%12)) fprintf(stderr, "\n");
 		    fprintf(stderr,"%4.1f ", baselines[i]);		
 	    }
 	    fprintf(stderr,"\n[%s] Thresholds (95 percentile):\n", name.c_str());
-	    for (unsigned int i=0; i<SKIN_DIM; i++) {
+	    for (unsigned int i=0; i<skinDim; i++) {
 		    if(!(i%12)) fprintf(stderr, "\n");
             touchThresholds[i] = max<double>(MIN_TOUCH_THR, touchThresholds[i]);
 		    fprintf(stderr,"%3.1f ", touchThresholds[i]);		
@@ -233,7 +234,7 @@ bool Compensator::readInputData(Vector& skin_values){
 	    return false;
     }
 
-    if(skin_values.size() != SKIN_DIM){
+    if(skin_values.size() != skinDim){
         readErrorCounter++;        
 
         stringstream msg;
@@ -253,7 +254,7 @@ bool Compensator::readInputData(Vector& skin_values){
 }
 
 bool Compensator::readRawAndWriteCompensatedData(){
-    Vector rawData(SKIN_DIM);
+    Vector rawData(skinDim);
     if(!readInputData(rawData))
         return false;
 	
@@ -262,7 +263,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	compensatedData.clear();        // global variable with data to store
 	
 	double d;
-	for(unsigned int i=0; i<SKIN_DIM; i++){
+	for(unsigned int i=0; i<skinDim; i++){
 	    // baseline compensation
 	    if( zeroUpRawData == false){
 		    d = (double)( MAX_SKIN - rawData(i) - baselines[i]);
@@ -272,7 +273,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	    compensatedData.push_back(d);	// save the data before applying filtering
 
         // detect touch (before applying filtering, so the compensation algorithm is not affected by the filters)
-        if(d > touchThresholds[i] + ADD_THRESHOLD){
+        if(d > touchThresholds[i] + addThreshold){
 		    touchDetected[i] = true;
 	    }else{
 		    touchDetected[i] = false;
@@ -289,7 +290,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	    // binarization filter
         // here we don't use the touchDetected array because, if the smooth filter is on,
         // we want to use the filtered values
-        if(d > touchThresholds[i] + ADD_THRESHOLD){
+        if(d > touchThresholds[i] + addThreshold){
             touchDetectedFilt[i] = true;
             if(binarization)
 		        d = BIN_TOUCH;
@@ -313,7 +314,7 @@ void Compensator::updateBaseline(){
     unsigned int non_touching_taxels = 0;
 	double d; 
 
-    for(unsigned int j=0; j<SKIN_DIM; j++) {
+    for(unsigned int j=0; j<skinDim; j++) {
         if(!touchDetected[j]){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
 			d = compensatedData(j);
@@ -337,9 +338,9 @@ void Compensator::updateBaseline(){
     }
     
     //for compensating the taxels where we detected touch
-    if (non_touching_taxels>0 && non_touching_taxels<SKIN_DIM && mean_change!=0){
+    if (non_touching_taxels>0 && non_touching_taxels<skinDim && mean_change!=0){
         mean_change /= non_touching_taxels;
-        for(unsigned int j=0; j<SKIN_DIM; j++) {
+        for(unsigned int j=0; j<skinDim; j++) {
             if (touchDetected[j]) {
                 baselines[j]		+= mean_change;
             }
@@ -349,7 +350,7 @@ void Compensator::updateBaseline(){
 
 bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline){
     vector<unsigned int>::iterator it;
-	for(unsigned int i=0; i<SKIN_DIM; i++){                
+	for(unsigned int i=0; i<skinDim; i++){
 	    if(baselines[i]<minBaseline || baselines[i]>MAX_SKIN-minBaseline){
             it = find(saturatedTaxels.begin(), saturatedTaxels.end(), i);
             if(it==saturatedTaxels.end()){  // if the taxel hasn't been already signalled
@@ -366,39 +367,31 @@ bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline,
 }
 
 
-
-bool Compensator::isThereContact(){
-    for(unsigned int i=0; i<SKIN_DIM; i++){
-        if(touchDetectedFilt[i])
-            return true;
+deque<skinContact> Compensator::getContacts(){
+    deque<skinContact> contactList;
+    // temporarily suppose there is only one contact
+    Vector CoP(3);
+    CoP.zero();
+    double taxelsTouched = 0;
+    for(int i=0; i!=touchDetectedFilt.size(); i++){
+        if(touchDetectedFilt[i]){
+	        taxelsTouched++;
+            if(taxelPosOri != NULL){
+	            CoP[0]+=taxelPosOri[i][0];
+	            CoP[1]+=taxelPosOri[i][1];
+	            CoP[2]+=taxelPosOri[i][2];
+            }
+        }
     }
-    return false;
-}
-
-Vector Compensator::getContactCOP(){
-	Vector mean3D(0);
-    if(taxelPosOri == NULL){
-        return mean3D;
+    if(taxelsTouched>0){
+        CoP[0]=CoP[0]/taxelsTouched;
+        CoP[1]=CoP[1]/taxelsTouched;
+        CoP[2]=CoP[2]/taxelsTouched;
+        skinContact c(bodyPart, skinPart, linkNum, CoP);
+        contactList.push_back(c);
     }
-
-    mean3D.resize(3);
-	mean3D.zero();
-	double pointsTouched = 0;
-    for(int i = 0; i != touchDetectedFilt.size(); i++){
-	    if(touchDetectedFilt[i]){
-		    pointsTouched++;
-		    mean3D[0]+=taxelPosOri[i][0];
-		    mean3D[1]+=taxelPosOri[i][1];
-		    mean3D[2]+=taxelPosOri[i][2];
-	    }
-    }
-    if(pointsTouched>0){
-	    mean3D[0]=mean3D[0]/pointsTouched;
-	    mean3D[1]=mean3D[1]/pointsTouched;
-	    mean3D[2]=mean3D[2]/pointsTouched;
-    }else 
-        mean3D.resize(0);
-	return mean3D;
+    
+    return contactList;
 }
 
 void Compensator::setBinarization(bool value){
@@ -425,14 +418,22 @@ bool Compensator::setSmoothFactor(float value){
 	return true;
 }
 
-void Compensator::setLinkId(unsigned int linkId){
-    this->linkId = linkId;
+void Compensator::setLinkNum(unsigned int linkNum){
+    this->linkNum = linkNum;
+}
+
+void Compensator::setBodyPart(BodyPart _bodyPart){
+    this->bodyPart = _bodyPart;
+}
+
+void Compensator::setSkinPart(SkinPart _skinPart){
+    this->skinPart = _skinPart;
 }
 
 bool Compensator::setAddThreshold(unsigned int thr){
     if(thr>=MAX_SKIN)
         return false;
-    ADD_THRESHOLD = thr;
+    addThreshold = thr;
     cout<< "Add threshold changed: "<< thr<< endl;
     return true;
 }
@@ -447,7 +448,7 @@ bool Compensator::setCompensationGain(double gain){
 
 unsigned int Compensator::getNumTaxels(){
     if(_isWorking)
-        return SKIN_DIM;
+        return skinDim;
     return 0;
 }
 
@@ -458,8 +459,12 @@ Vector Compensator::getTouchThreshold(){
 	return res;
 }
 
-string Compensator::getPartName(){
-    return partName;
+string Compensator::getBodyPartName(){
+    return BodyPart_s[bodyPart];
+}
+
+string Compensator::getSkinPartName(){
+    return SkinPart_s[skinPart];
 }
 
 Vector Compensator::getCompensation(){
@@ -484,12 +489,12 @@ float Compensator::getSmoothFactor(){
 	return res;
 }
 
-unsigned int Compensator::getLinkId(){
-    return linkId;
+unsigned int Compensator::getLinkNum(){
+    return linkNum;
 }
 
 unsigned int Compensator::getAddThreshold(){
-    return ADD_THRESHOLD;
+    return addThreshold;
 }
 double Compensator::getCompensationGain(){
     return compensationGain;

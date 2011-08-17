@@ -29,6 +29,7 @@ using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
 using namespace iCub::iDyn;
+using namespace iCub::skinDynLib;
 
 //====================================
 //
@@ -2455,7 +2456,7 @@ bool iCubWholeBody::computeCOM()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubWholeBody::getCOM(partEnum which_part, Vector &COM, double & mass)
+bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 {
 	COM.zero();
 	mass=0.0;
@@ -2463,7 +2464,7 @@ bool iCubWholeBody::getCOM(partEnum which_part, Vector &COM, double & mass)
 	yarp::sig::Matrix T1;
 	switch (which_part) 
 	{
-		case ALL:
+		case ALL_BODY_PARTS:
 			COM=whole_COM;
 			mass=whole_mass;
 		break;

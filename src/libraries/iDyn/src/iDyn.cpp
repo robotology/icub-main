@@ -39,19 +39,19 @@ using namespace iCub::iDyn;
 
 
 
-
-void iCub::iDyn::printMatrix(std::string s, const yarp::sig::Matrix &m)
-{
-	printf ("%s \n",s.c_str());
-	for(int i=0;i<m.rows();i++)
-	{
-		for(int j=0;j<m.cols();j++)
-		{
-			printf ("%+7.4f\t",m(i,j));
-		}
-		printf ("\n");
-	}
-}
+// moved to iCub::skinDynLib
+//void iCub::iDyn::printMatrix(std::string s, const yarp::sig::Matrix &m)
+//{
+//	printf ("%s \n",s.c_str());
+//	for(int i=0;i<m.rows();i++)
+//	{
+//		for(int j=0;j<m.cols();j++)
+//		{
+//			printf ("%+7.4f\t",m(i,j));
+//		}
+//		printf ("\n");
+//	}
+//}
 void iCub::iDyn::printVector(std::string s, const yarp::sig::Vector &v)
 {
 	printf ("%s :",s.c_str());
@@ -565,6 +565,28 @@ Vector iDynChain::getD2Ang()
         curr_ddq[i]=quickList[hash_dof[i]]->getD2Ang();
 
     return curr_ddq;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::getJointBoundMin()
+{
+    if(!DOF)
+       return Vector(0);
+
+    Vector jointBounds(DOF);
+    for(unsigned int i=0; i<DOF; i++)
+        jointBounds[i]=quickList[hash_dof[i]]->getMin();
+    return jointBounds;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::getJointBoundMax()
+{
+    if(!DOF)
+       return Vector(0);
+
+    Vector jointBounds(DOF);
+    for(unsigned int i=0; i<DOF; i++)
+        jointBounds[i]=quickList[hash_dof[i]]->getMax();
+    return jointBounds;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double iDynChain::setDAng(const unsigned int i, double _dq)

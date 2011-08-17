@@ -48,6 +48,7 @@
 #include <iCub/ctrl/math.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iDyn/iDyn.h>
+#include <iCub/skinDynLib/common.h>
 #include <deque>
 #include <string>
 
@@ -71,10 +72,10 @@ const std::string ChainComputationMode_s[4] = {"Kinematic Forward - Wrench Forwa
 
 // verbosity levels
 // useful for all classes
-enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
+//enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 
 // contact flags
-enum ContactStatus { NO_CONTACT, CONTACT };
+//enum ContactStatus { NO_CONTACT, CONTACT };
 
 	class iDynLink;
 	class iDynChain;
@@ -267,7 +268,7 @@ public:
 	/**
      * Constructor, with initialization of some data
      */
-	OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb = NO_VERBOSE, iDyn::iDynLink *dlink=NULL);
+    OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb = iCub::skinDynLib::NO_VERBOSE, iDyn::iDynLink *dlink=NULL);
 	 	 
 	/**
      * Set everything to zero; R is set to an identity matrix
@@ -326,7 +327,7 @@ public:
 	* Set the verbosity level of comments during operations
 	* @param verb, a boolean flag
 	*/
-	 void setVerbose(unsigned int verb = VERBOSE);
+	 void setVerbose(unsigned int verb = iCub::skinDynLib::VERBOSE);
  	/**
 	* Set the operation mode (static,dynamic etc)
 	* @param _mode the NewEulMode defining the type of operations
@@ -513,7 +514,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
+	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor, initializing the base data
@@ -524,7 +525,8 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
+	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, 
+        const yarp::sig::Vector &_ddp, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
 	/**
      * Sets the base data
@@ -619,7 +621,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
+	FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor, initializing the final frame data
@@ -628,7 +630,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
+	FinalLinkNewtonEuler(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
 	/**
      * Set the final frame data
@@ -729,14 +731,14 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
+	SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor 
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
+	SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 	
 
 	/**
@@ -876,7 +878,7 @@ public:
   /**
     * Constructor (note: without FT sensor)
     */
-	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* Standard destructor
@@ -926,7 +928,7 @@ public:
 	//   set methods
 	//~~~~~~~~~~~~~~~~~~~~~~
 
-	void setVerbose(unsigned int verb=VERBOSE);
+	void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
 	void setMode(const NewEulMode _mode);
  	void setInfo(const std::string _info);
 	
@@ -1216,7 +1218,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensor(iDyn::iDynChain *_c, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor with FT sensor
@@ -1287,7 +1289,7 @@ public:
 	//~~~~~~~~~~~~~~
 
 	void setMode(const NewEulMode _mode = DYNAMIC);
-	void setVerbose(unsigned int verb=VERBOSE);
+	void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
 	void setInfo(const std::string &_info);
 	void setSensorInfo(const std::string &_info);
 
@@ -1328,7 +1330,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/right
@@ -1360,7 +1362,7 @@ protected:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the leg type: left/right
@@ -1390,7 +1392,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
@@ -1400,7 +1402,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/arm
@@ -1430,7 +1432,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
@@ -1440,7 +1442,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArmNoTorso(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorArmNoTorso(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/arm
@@ -1470,7 +1472,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
@@ -1479,7 +1481,7 @@ public:
 	* @param _mode the analysis mode (STATIC/DYNAMIC)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the leg type: left/arm
@@ -1519,7 +1521,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 
 	/**
@@ -1534,7 +1536,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	 * Set the sensor measured force and moment
@@ -1693,7 +1695,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the arm sensor type: left/arm
@@ -1725,7 +1727,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iDynSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the arm sensor type: left/arm
@@ -1756,7 +1758,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = NO_VERBOSE);
+	iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 	/**
 	* @return type the leg sensor type: left/arm

@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <fstream>//duarte code
+#include <deque>
 
 #include <yarp/sig/Vector.h>
 #include <yarp/os/BufferedPort.h>
@@ -33,10 +34,13 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 
+#include "iCub/skinDynLib/skinContact.h"
+
 using namespace std;
 using namespace yarp::os; 
 using namespace yarp::sig;
 using namespace yarp::dev;
+using namespace iCub::skinDynLib;
 
 namespace iCub{
 
@@ -57,81 +61,88 @@ public:
     bool readRawAndWriteCompensatedData();
 	void updateBaseline();
 	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
-    bool isThereContact();
+    //bool isThereContact();
+    deque<skinContact> getContacts();
     bool isWorking();
 
 	void setBinarization(bool value);
 	void setSmoothFilter(bool value);
-	bool setSmoothFactor(float value);
-    void setLinkId(unsigned int linkId);
+	bool setSmoothFactor(float value);    
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setTaxelPositions(const char *filePath);
+    void setLinkNum(unsigned int linkNum);
+    void setBodyPart(BodyPart _bodyPart);
+    void setSkinPart(SkinPart _skinPart);
 
 	Vector getTouchThreshold();
 	bool getBinarization();
 	bool getSmoothFilter();
-	float getSmoothFactor();
-    unsigned int getLinkId();
+	float getSmoothFactor();    
     unsigned int getAddThreshold();
     double getCompensationGain();    
     unsigned int getNumTaxels();
     Vector getCompensation();
     string getName();
     string getInputPortName();    
-	Vector getContactCOP(); // get the contact center of pressure
-    string getPartName();    
+	//Vector getContactCOP();         // get the contact center of pressure
+    BodyPart getBodyPart();
+    string getBodyPartName();
+    SkinPart getSkinPart();    
+    string getSkinPartName();
+    unsigned int getLinkNum();
 
 private:
 
-	/* class constants */	
+	/* class constants */
     static const int MAX_READ_ERROR = 100;		// max number of read errors before suspending the compensator
 	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
     static const int MIN_TOUCH_THR = 1;			// min value assigned to the touch thresholds (i.e. the 95% percentile)
 	static const int BIN_TOUCH = 100;			// output value of the binarization filter when touch is detected
 	static const int BIN_NO_TOUCH = 0;			// output value of the binarization filter when no touch is detected
 	
-	unsigned int ADD_THRESHOLD;					// value added to the touch threshold of every taxel	
-	unsigned int SKIN_DIM;						// number of taxels (for the hand it is 192)
-	double compensationGain;					// the maximal drift that is being compensated every cycle	
+    // INIT
+    unsigned int skinDim;						// number of taxels (for the hand it is 192)	
     string robotName;
     string name;                                // name of the compensator
-    string partName;                            // name of the part of the skin
-	double **taxelPosOri;						//taxel position and orientation {xPos, yPos, zPos, xOri, yOri, zOri}
+    SkinPart skinPart;                          // id of the part of the skin (hand, forearm_lower, arm_internal, ...)
+    BodyPart bodyPart;                          // id of the part of the body (head, torso, left_arm, right_arm, ...)
+    unsigned int linkNum;                       // number of the link
+	double **taxelPosOri;						// taxel positions and normals {xPos, yPos, zPos, xOri, yOri, zOri}
 
-	/* class variables */
+	// COMPENSATION
 	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
 	vector<bool> touchDetectedFilt;             // true if touch has been detected after applying the filtering
-    Vector touchThresholds;						// threshold for discriminating between "touch" and "no touch"
+    Vector touchThresholds;						// thresholds for discriminating between "touch" and "no touch"
 	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold
     Vector initialBaselines;					// mean of the raw tactile data computed during calibration
-    Vector baselines;							// mean of the raw tactile data 
-												// (considering only the samples read when no touch is detected)
+    Vector baselines;							// mean of the raw tactile data     
+    Vector compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
+	Vector compensatedDataOld;			    	// compensated tactile data of the previous step (used for smoothing filter)
 	
-	// calibration variables
+	// CALIBRATION
     int calibrationRead;						// count the calibration reads
 	vector<float> start_sum;					// sum of the values read during the calibration
     vector< vector<int> > skin_empty;			// distribution of the values read during the calibration
 	
-	int readErrorCounter;						// it counts the number of successive errors
-    Vector compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
-	Vector compensatedDataOld;			    	// compensated tactile data of the previous step (used for smoothing filter)
+	// DEVICE
 	IAnalogSensor* tactileSensor;	        	// interface for executing the tactile sensor calibration
 	PolyDriver* tactileSensorDevice;
 
+    // ERROR MANAGEMENT
     bool _isWorking;                            // true if the compensator is working fine
+    int readErrorCounter;						// it counts the number of successive errors
     vector<unsigned int> saturatedTaxels;       // list of all the taxels whose baseline exceeded
 
     // input parameters
-	bool zeroUpRawData;				// if true the raw data are considered from zero up, otherwise from 255 down
-    float minBaseline;				// min baseline value regarded as "safe"
-	bool binarization;				// if true binarize the compensated output value (0: no touch, 255: touch)
-	bool smoothFilter;				// if true the smooth filter is on, otherwise it is off
-	float smoothFactor;				// intensity of the smooth filter action
+    unsigned int addThreshold;          // value added to the touch threshold of every taxel    
+	double compensationGain;            // proportional gain of the compensation algorithm
+	bool zeroUpRawData;				    // if true the raw data are considered from zero up, otherwise from 255 down
+    float minBaseline;				    // min baseline value regarded as "safe"
+	bool binarization;				    // if true binarize the compensated output value (0: no touch, 255: touch)
+	bool smoothFilter;				    // if true the smooth filter is on, otherwise it is off
+	float smoothFactor;				    // intensity of the smooth filter action
 	Semaphore smoothFactorSem;
-
-    // SKIN EVENTS
-    unsigned int linkId;
 
 	/* ports */
 	BufferedPort<Vector> compensatedTactileDataPort;	// output port

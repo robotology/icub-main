@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <deque>
 #include <string>
+#include <sstream>  // for debug
 
 using namespace std;
 using namespace yarp::sig;
@@ -32,6 +33,7 @@ using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
 using namespace iCub::iDyn;
+using namespace iCub::skinDynLib;
 
 
 //================================
@@ -1714,9 +1716,15 @@ void OneChainNewtonEuler::BackwardKinematicFromEnd(const Vector &_w, const Vecto
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardWrenchFromEnd()
-{
-	for(int i=nEndEff-1; i>=0; i--)
+{    
+    for(int i=nEndEff-1; i>=0; i--){
+        /*stringstream ss;
+        ss<< "Moment link "<< i+1;
+        printVector(neChain[i+1]->getMoment(), ss.str());*/
 		neChain[i]->BackwardWrench(neChain[i+1]);
+    }
+    //printVector(neChain[0]->getMoment(), "Moment link 0");
+
 	for(int i=nEndEff-1; i>0; i--)
 		neChain[i]->computeTorque(neChain[i-1]);
 }
