@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include "stdio.h"
 
 #include <yarp/math/Math.h>
 #include "iCub/skinDynLib/dynContact.h"
