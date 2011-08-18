@@ -50,7 +50,10 @@ const std::string HandPart_s[] = {"index", "middle", "ring", "little", "thumb", 
 
 static const int ARM_FT_SENSOR_LINK_INDEX = 2;  // index of the link containing the F/T sensor in the iCub arms
 static const int LEG_FT_SENSOR_LINK_INDEX = 1;  // index of the link containing the F/T sensor in the iCub legs
+
 static const int ARM_DOF = 7;
+static const int TORSO_DOF = 3;
+
 }
 
 }//end namespace
