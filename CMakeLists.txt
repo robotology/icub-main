@@ -13,39 +13,42 @@ endif(COMMAND cmake_policy)
 
 project(iCub)
 
-#### Find YARP
-
+#### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
 SET(ICUB_REQYARP_VERSION_MAJOR "2")
 SET(ICUB_REQYARP_VERSION_MINOR "3")
-SET(ICUB_REQYARP_VERSION_PATCH "9")
+SET(ICUB_REQYARP_VERSION_PATCH "8")
+SET(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH})
 
-## avoid checking specific versions of YARP with CMake 2.6.0
-## this is because find_package does not work as expected with CMake <2.6.4
-if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
-        # find yarp, accept all versions, then manually check YARP version
-        find_package(YARP REQUIRED)      
-        if (YARP_VERSION_MAJOR LESS ICUB_REQYARP_VERSION_MAJOR OR YARP_VERSION_MINOR LESS ICUB_REQYARP_VERSION OR YARP_VERSION_PATCH LESS ICUB_REQYARP_VERSION_PATCH)
-           message(FATAL_ERROR "YARP version is not compatible, please update YARP")
-        endif()
-else()
-        ## rely on find_package to request a particular version of YARP
-        find_package(YARP ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH} EXACT)
-endif()
+find_package(YARP REQUIRED)
 
 message(STATUS "YARP is version: ${YARP_VERSION_MAJOR}.${YARP_VERSION_MINOR}.${YARP_VERSION_PATCH}")
  
-if (YARP_FOUND)
-   if (YARP_HAS_MATH_LIB)
+if (YARP_VERSION VERSION_LESS ICUB_REQYARP_VERSION)
+    message(FATAL_ERROR "YARP version is not compatible, please update YARP")
+else()
+    message(STATUS "found compatible YARP version")
+endif()
+
+# ## avoid checking specific versions of YARP with CMake 2.6.0
+# ## this is because find_package does not work as expected with CMake <2.6.4
+# if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
+        # # find yarp, accept all versions, then manually check YARP version
+        # find_package(YARP REQUIRED)      
+        # if (YARP_VERSION_MAJOR LESS ICUB_REQYARP_VERSION_MAJOR OR YARP_VERSION_MINOR LESS ICUB_REQYARP_VERSION OR YARP_VERSION_PATCH LESS ICUB_REQYARP_VERSION_PATCH)
+           # message(FATAL_ERROR "YARP version is not compatible, please update YARP")
+        # endif()
+# else()
+        # ## rely on find_package to request a particular version of YARP
+        # find_package(YARP ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH})
+# endif()
+
+if (YARP_HAS_MATH_LIB)
      set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
-     message(STATUS "found YARP")
-   else(YARP_HAS_MATH_LIB)
+     message(STATUS "found libYARP_math")
+else(YARP_HAS_MATH_LIB)
      set(ICUB_HAS_YARP FALSE CACHE BOOL "" FORCE)
      message(FATAL_ERROR "YARP was found, but no libYARP_math was detected, please recompile yarp")
-   endif(YARP_HAS_MATH_LIB) 
-else (YARP_FOUND)
-  set(ICUB_HAS_YARP FALSE CACHE BOOL "" FORCE)
-  message(FATAL_ERROR "Cannot find YARP")
-endif (YARP_FOUND)
+endif(YARP_HAS_MATH_LIB) 
 
 
 ############# Options and definitions

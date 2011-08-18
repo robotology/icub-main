@@ -1,3 +1,6 @@
+2011-08-18 Lorenzo Natale <lorenzo.natale@iit.it>
+    * main/CMakeLists.txt: simpler YARP version check
+
 2011-07-21 Randazzo Marco <marco.randazzo@iit.it>
 	* main/src/core/iCubInterface/ControlBoardWrapper.cpp
 	* main/src/core/iCubInterface/ControlBoardWrapper2.cpp
