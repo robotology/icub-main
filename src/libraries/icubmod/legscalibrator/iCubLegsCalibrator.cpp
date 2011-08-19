@@ -233,8 +233,6 @@ bool iCubLegsCalibrator::calibrate(DeviceDriver *dd)
 	}
 
     ret = true;
-    bool x;
-
 
     fprintf(stderr, "LEGSCALIB[%d]: Calibration done!\n", canID);
     return ret;
