@@ -1153,3 +1153,4 @@ bool iCubSimulationControl::getControlModesRaw(int* modes)
     _mutex.post();
     return true;
 }
+
