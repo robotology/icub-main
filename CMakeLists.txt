@@ -23,24 +23,26 @@ find_package(YARP REQUIRED)
 
 message(STATUS "YARP is version: ${YARP_VERSION_MAJOR}.${YARP_VERSION_MINOR}.${YARP_VERSION_PATCH}")
  
-if (YARP_VERSION VERSION_LESS ICUB_REQYARP_VERSION)
-    message(FATAL_ERROR "YARP version is not compatible, please update YARP")
-else()
-    message(STATUS "found compatible YARP version")
-endif()
-
-# ## avoid checking specific versions of YARP with CMake 2.6.0
-# ## this is because find_package does not work as expected with CMake <2.6.4
-# if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
+# unfortunately VERSION_LESS is unavailable with cmake 2.6.? 
+if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
         # # find yarp, accept all versions, then manually check YARP version
-        # find_package(YARP REQUIRED)      
-        # if (YARP_VERSION_MAJOR LESS ICUB_REQYARP_VERSION_MAJOR OR YARP_VERSION_MINOR LESS ICUB_REQYARP_VERSION OR YARP_VERSION_PATCH LESS ICUB_REQYARP_VERSION_PATCH)
-           # message(FATAL_ERROR "YARP version is not compatible, please update YARP")
-        # endif()
-# else()
-        # ## rely on find_package to request a particular version of YARP
-        # find_package(YARP ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH})
-# endif()
+       
+        if (YARP_VERSION_MAJOR LESS ICUB_REQYARP_VERSION_MAJOR OR YARP_VERSION_MINOR LESS ICUB_REQYARP_VERSION)
+           message(FATAL_ERROR "YARP version is not compatible, please update YARP")
+        else()
+            if(YARP_VERSION_PATCH LESS ICUB_REQYARP_VERSION_PATCH)
+               message(FATAL_ERROR "YARP version is not compatible, please update YARP")
+            else()
+               message(STATUS "found compatible YARP version")
+            endif()
+        endif()
+else()
+    if (YARP_VERSION VERSION_LESS ICUB_REQYARP_VERSION)
+        message(FATAL_ERROR "YARP version is not compatible, please update YARP")
+    else()
+        message(STATUS "found compatible YARP version")
+    endif()
+endif()
 
 if (YARP_HAS_MATH_LIB)
      set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
