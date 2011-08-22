@@ -1,6 +1,6 @@
 == YARP VERSION ==
 
-This snapshot was released with yarp 2.3.4
+This snapshot was released with yarp 2.3.10
 
 == iCub Linux Dependencies ==
 Operating system: Linux Debian 5.0 (Lenny)

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Copyright: RobotCub Consortium
+# Copyright: 2010 RobotCub Consortium
 # Author: Lorenzo Natale
 
 export SOURCE_TMP_DIR=./package-tmp
 export MODULE=iCub
-export REL=1.1.1
+export REL=1.1.6
 export ARCHFILE_LINUX=$MODULE-src-$REL.tar.gz
 export ARCHFILE_WINDOWS=$MODULE-src-$REL.zip
 export DEPFILE=$MODULE-dep-$REL.txt
