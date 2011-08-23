@@ -254,7 +254,7 @@ private:
                 done=true;
             }
 
-			yarp::os::Time::delay(0.1);
+            yarp::os::Time::delay(0.1);
         }
 
         bool isDone() const { return done; }
