@@ -39,6 +39,15 @@ void iCub::perception::Port::onRead(Bottle &bottle)
 
 
 /************************************************************************/
+void iCub::perception::Port::interrupt()
+{
+    disableCallback();
+    mutex.post();
+    BufferedPort<Bottle>::interrupt();
+}
+
+
+/************************************************************************/
 Value iCub::perception::Port::getValue(const int index)
 {
     Value ret;
