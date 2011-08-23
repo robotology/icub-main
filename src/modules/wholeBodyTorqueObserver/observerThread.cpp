@@ -247,6 +247,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_rl  = new BufferedPort<Vector>;
 	port_com_to  = new BufferedPort<Vector>;
 	port_com_hd  = new BufferedPort<Vector>;
+    port_monitor = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
 	port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -271,6 +272,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_hd ->open(string("/"+local_name+"/head/com:o").c_str());
 	port_com_to ->open(string("/"+local_name+"/torso/com:o").c_str());
     port_skin_events->open(string("/"+local_name+"/skin_events:i").c_str());
+    port_monitor->open(string("/"+local_name+"/monitor:o").c_str());
 
 	if (autoconnect)
 	{
@@ -353,7 +355,7 @@ void inverseDynamics::run()
 		//if w0 and dw0 are too noisy, you can disable them using 'no_w0_dw0' option
 		w0.zero();
 		dw0.zero();
-	}
+    }
 	
 	Vector F_up(6);
 	F_up=0.0;
@@ -489,6 +491,41 @@ void inverseDynamics::run()
 	F_ext_left_arm=icub->upperTorso->left->getForceMomentEndEff();//-icub_sens->upperTorso->left->getForceMomentEndEff();
 	F_ext_right_arm=icub->upperTorso->right->getForceMomentEndEff();//-icub_sens->upperTorso->right->getForceMomentEndEff();
 
+    // *** MONITOR DATA ***
+    Vector monitorData(0);
+    //monitorData = w0 * CTRL_RAD2DEG;                                // w inertial sensor
+    //Vector temp = dw0 * CTRL_RAD2DEG;                               // dw inertial sensor
+    //for(int i=0;i<3;i++) monitorData.push_back(temp(i));
+    //temp = icub->upperTorso->getAngVel() * CTRL_RAD2DEG;            // w upper node
+    //for(int i=0;i<3;i++) monitorData.push_back(temp(i));
+    //temp = icub->upperTorso->getAngAcc() * CTRL_RAD2DEG;            // dw upper node
+    //for(int i=0;i<3;i++) monitorData.push_back(temp(i));    
+    //monitorData.push_back(norm(icub->upperTorso->getLinAcc()));     // lin acc norm upper node
+    //monitorData.push_back(norm(icub->upperTorso->getTorsoForce())); // force norm upper node
+    //monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node    
+    //for(int i=0;i<3;i++){                                           // w torso
+    //    temp = icub->lowerTorso->up->getAngVel(i) * CTRL_RAD2DEG;
+    //    for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+    //}
+    //for(int i=0;i<3;i++){                                           // dw torso
+    //    temp = icub->lowerTorso->up->getAngAcc(i) * CTRL_RAD2DEG;
+    //    for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+    //}
+    //for(int j=0;j<TOTorques.size();j++)                             // torso torques
+    //    monitorData.push_back(TOTorques[j]);
+    //for(int i=0;i<3;i++)                                            // norm of COM ddp torso
+    //    monitorData.push_back(norm(icub->lowerTorso->up->getLinAccCOM(i)));
+    //for(int i=0;i<3;i++)                                            // norm of forces torso
+    //    monitorData.push_back(norm(icub->lowerTorso->up->getForce(i)));
+    //for(int i=0;i<3;i++){                                           // moments torso
+    //    temp = icub->lowerTorso->up->getMoment(i);
+    //    for(int j=0;j<temp.size();j++)
+    //        monitorData.push_back(temp(j));
+    //}
+    //for(int i=0;i<3;i++)                                            // norm of moments head
+    //    monitorData.push_back(norm(icub->upperTorso->up->getMoment(i)));    
+
+
 	port_com_all->prepare() = com_all;
 	port_com_ll->prepare()  = com_ll ;
 	port_com_rl->prepare()  = com_rl ;
@@ -499,6 +536,7 @@ void inverseDynamics::run()
 	port_external_wrench_TO->prepare() = F_up;
 	port_external_wrench_RA->prepare() = F_ext_right_arm;
 	port_external_wrench_LA->prepare() = F_ext_left_arm;
+    port_monitor->prepare() = monitorData;
 	port_com_all->write();
 	port_com_ll->write();
 	port_com_rl->write();
@@ -509,6 +547,7 @@ void inverseDynamics::run()
 	port_external_wrench_RA->write();
 	port_external_wrench_LA->write();
 	port_external_wrench_TO->write();	
+    port_monitor->write();
 }
 
 void inverseDynamics::threadRelease()
@@ -948,7 +987,7 @@ void inverseDynamics::addSkinContacts(){
     if(!skinEvents){ // || skinEvents->isNull())
         if(skinEventsTimestamp!=0.0 && Time::now()-skinEventsTimestamp > SKIN_EVENTS_TIMEOUT){   
             // if time is up, remove all the contacts
-            fprintf(stderr, "Skin event timeout (%d ms)\n", SKIN_EVENTS_TIMEOUT);
+            fprintf(stderr, "Skin event timeout (%3.3f sec)\n", SKIN_EVENTS_TIMEOUT);
             icub->upperTorso->leftSensor->clearContactList();
         }
         return;     // otherwise keep the same contacts you had before
