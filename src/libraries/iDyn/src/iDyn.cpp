@@ -2219,9 +2219,9 @@ void iCubNeckInertialDyn::allocate(const string &_type)
     H0.eye();
 	setH0(H0);
 
-    pushLink(new iDynLink(0.27017604,	  -30.535917e-3,  2.5211768e-3, -0.23571261e-3, 	     100.46346e-6,   -0.17765781e-6,       0.44914333e-6, 45.425961e-6, -0.12682862e-6, 1.0145446e+02,		  0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD,     30.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0.27017604,	  -30.535917e-3,  2.5211768e-3, -0.23571261e-3, 	     100.46346e-6,   -0.17765781e-6,       0.44914333e-6, 45.425961e-6, -0.12682862e-6,  0,		  0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD,     30.0*CTRL_DEG2RAD));
     pushLink(new iDynLink(0.27230552,				0.0,  4.3752947e-3,   5.4544215e-3, 	     142.82339e-6, -0.0059261471e-6,    -0.0022006663e-6, 82.884917e-6,  -9.1321119e-6,  87.620338e-6,          0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD,     60.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(0,							  0,		     0,		         0,					    0,				  0,				   0,			 0,				 0,				0,		 0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0,						  0,		     0,		         0,					    0,				  0,				   0,			 0,				 0,				0,		 0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
 
     // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
     pushLink(new iDynLink(1.3368659,		  -11.811104e-3, -5.7800518e-3,  -11.685197e-3,			3412.8918e-06,  66.297315e-6, -153.07583e-6, 4693.0882e-6,  8.0646052e-6, 4153.4285e-6, 0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
