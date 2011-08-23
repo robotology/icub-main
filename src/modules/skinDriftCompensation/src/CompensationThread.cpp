@@ -202,7 +202,7 @@ bool CompensationThread::threadInit()
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
 	                string filePath(rf->findFile(taxelPosFile.c_str()));
-	                compensators[i]->setTaxelPositions(filePath.c_str());                    
+	                compensators[i]->setTaxelPositions(filePath.c_str());
 	            }
             }
         }

@@ -113,6 +113,7 @@ private:
 	// COMPENSATION
 	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
 	vector<bool> touchDetectedFilt;             // true if touch has been detected after applying the filtering
+    vector<bool> subTouchDetected;              // true if the taxel value has gone under the baseline (because of touch in neighbouring taxels)
     Vector touchThresholds;						// thresholds for discriminating between "touch" and "no touch"
 	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold
     Vector initialBaselines;					// mean of the raw tactile data computed during calibration

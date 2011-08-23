@@ -90,6 +90,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     baselines.resize(skinDim);
     touchThresholds.resize(skinDim);
     touchDetected.resize(skinDim);
+    subTouchDetected.resize(skinDim);
     touchDetectedFilt.resize(skinDim);
     compensatedData.resize(skinDim);
     compensatedDataOld.resize(skinDim);
@@ -277,7 +278,14 @@ bool Compensator::readRawAndWriteCompensatedData(){
 		    touchDetected[i] = true;
 	    }else{
 		    touchDetected[i] = false;
-	    }	   
+        }
+
+        // detect subtouch
+        if(d < -touchThresholds[i] - addThreshold){
+		    subTouchDetected[i] = true;
+	    }else{
+		    subTouchDetected[i] = false;
+        }
 
         // smooth filter
         if(smoothFilter){
@@ -315,7 +323,7 @@ void Compensator::updateBaseline(){
 	double d; 
 
     for(unsigned int j=0; j<skinDim; j++) {
-        if(!touchDetected[j]){
+        if(!(touchDetected[j] || subTouchDetected[j])){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
 			d = compensatedData(j);
 
