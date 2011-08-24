@@ -6,10 +6,6 @@
 *
 */
 
-#include <ace/config.h>
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
-
 #include <yarp/os/Time.h>
 
 #include "iCubArmCalibratorJ8.h"
@@ -83,44 +79,40 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     homeVel = new double[nj];
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     int i;
     for (i = 1; i < xtmp.size(); i++)
           param1[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration2");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     for (i = 1; i < xtmp.size(); i++)
         param2[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration3");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
    for (i = 1; i < xtmp.size(); i++)
        param3[i-1] = xtmp.get(i).asDouble();
    xtmp = p.findGroup("CALIBRATION").findGroup("CalibrationType");
-   ACE_ASSERT (xtmp.size() == nj+1);
    
    for (i = 1; i < xtmp.size(); i++)
         type[i-1] = (unsigned char) xtmp.get(i).asDouble();
    
   
    xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
-   ACE_ASSERT (xtmp.size() == nj+1);
+
    for (i = 1; i < xtmp.size(); i++)
         zeroPos[i-1] = xtmp.get(i).asDouble();
    
    xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
-   ACE_ASSERT (xtmp.size() == nj+1);
   
    for (i = 1; i < xtmp.size(); i++)
         zeroVel[i-1] = xtmp.get(i).asDouble();
    
    xtmp = p.findGroup("HOME").findGroup("PositionHome");
-   ACE_ASSERT (xtmp.size() == nj+1);
    
    for (i = 1; i < xtmp.size(); i++)
         homePos[i-1] = xtmp.get(i).asDouble();
    
    xtmp = p.findGroup("HOME").findGroup("VelocityHome");
-   ACE_ASSERT (xtmp.size() == nj+1);
   
    for (i = 1; i < xtmp.size(); i++)
        homeVel[i-1] = xtmp.get(i).asDouble();
@@ -128,7 +120,6 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
    if (p.findGroup("CALIBRATION").check("MaxPWM")) 
    {
 	   xtmp = p.findGroup("CALIBRATION").findGroup("MaxPWM");
-	   ACE_ASSERT (xtmp.size() == nj+1);
 	   for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
    }
    else
