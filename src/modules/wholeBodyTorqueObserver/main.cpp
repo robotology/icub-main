@@ -519,7 +519,7 @@ public:
         period = inv_dyn->getRate();
         inv_dyn->getEstPeriod(avgTime, stdDev);
         if(avgTime > 1.3 * period){
-            printf("(real period: %3.3f +/- %3.3f; expected period %3.3f)\n", avgTime, stdDev, period);
+        //   printf("(real period: %3.3f +/- %3.3f; expected period %3.3f)\n", avgTime, stdDev, period);
         }
 
 	    static unsigned long int alive_counter = 0;

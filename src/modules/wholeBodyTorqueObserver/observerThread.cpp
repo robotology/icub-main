@@ -236,6 +236,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_RWTorques = new BufferedPort<Bottle>;
 	port_LWTorques = new BufferedPort<Bottle>;
 	port_TOTorques = new BufferedPort<Bottle>;
+	port_HDTorques = new BufferedPort<Bottle>;
     port_external_wrench_RA = new BufferedPort<Vector>;  
     port_external_wrench_LA = new BufferedPort<Vector>;  
 	port_external_wrench_TO = new BufferedPort<Vector>; 
@@ -261,6 +262,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_RWTorques->open(string("/"+local_name+"/right_wrist/Torques:o").c_str());
 	port_LWTorques->open(string("/"+local_name+"/left_wrist/Torques:o").c_str());
 	port_TOTorques->open(string("/"+local_name+"/torso/Torques:o").c_str());
+	port_HDTorques->open(string("/"+local_name+"/head/Torques:o").c_str());
 	port_external_wrench_RA->open(string("/"+local_name+"/right_arm/endEffectorWrench:o").c_str()); 
 	port_external_wrench_LA->open(string("/"+local_name+"/left_arm/endEffectorWrench:o").c_str()); 
 	port_external_wrench_TO->open(string("/"+local_name+"/torso/Wrench:o").c_str());
@@ -414,16 +416,22 @@ void inverseDynamics::run()
 
 	Vector LATorques = icub->upperTorso->getTorques("left_arm");
 	Vector RATorques = icub->upperTorso->getTorques("right_arm");
-	Vector HDTorques = icub->upperTorso->getTorques("head");
+	Vector HDtmp     = icub->upperTorso->getTorques("head");
 	
 	Vector LLTorques = icub->lowerTorso->getTorques("left_leg");
 	Vector RLTorques = icub->lowerTorso->getTorques("right_leg");
-	Vector tmp       = icub->lowerTorso->getTorques("torso");
+	Vector TOtmp     = icub->lowerTorso->getTorques("torso");
 	Vector TOTorques(3);
+	Vector HDTorques(3);
 
-	TOTorques[0] = tmp [2];
-	TOTorques[1] = tmp [1];
-	TOTorques[2] = tmp [0];
+	//head torques
+	HDTorques[0] = HDtmp [0];
+	HDTorques[1] = HDtmp [1];
+	HDTorques[2] = HDtmp [2];
+	//torso torques
+	TOTorques[0] = TOtmp [2];
+	TOTorques[1] = TOtmp [1];
+	TOTorques[2] = TOtmp [0];
 
 //#define DEBUG_TORQUES
 #ifdef  DEBUG_TORQUES
@@ -433,6 +441,7 @@ void inverseDynamics::run()
 	writeTorque(RATorques, 1, port_RATorques); //arm
 	writeTorque(LATorques, 1, port_LATorques); //arm
 	writeTorque(TOTorques, 4, port_TOTorques); //torso
+	writeTorque(HDTorques, 0, port_HDTorques); //head
 //	fprintf (stderr,"TORSO: %s \n",TOTorques.toString().c_str());
 /*		fprintf (stderr,"TORSO: %s %s %s \n",TOTorques.toString().c_str(),
 										 LLTorques.toString().c_str(),
@@ -595,6 +604,8 @@ void inverseDynamics::threadRelease()
 	closePort(port_LWTorques);
 	fprintf(stderr, "Closing TOTorques port\n");
 	closePort(port_TOTorques);
+	fprintf(stderr, "Closing HDTorques port\n");
+	closePort(port_HDTorques);
 	fprintf(stderr, "Closing external_wrench_RA port\n");
 	closePort(port_external_wrench_RA);
 	fprintf(stderr, "Closing external_wrench_LA port\n");	

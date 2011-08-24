@@ -99,6 +99,7 @@ private:
 	BufferedPort<Bottle> *port_LLTorques;
 	BufferedPort<Bottle> *port_LWTorques;
 	BufferedPort<Bottle> *port_TOTorques;
+	BufferedPort<Bottle> *port_HDTorques;
 	BufferedPort<Vector> *port_external_wrench_RA;
 	BufferedPort<Vector> *port_external_wrench_LA;
 	BufferedPort<Vector> *port_external_wrench_TO;
