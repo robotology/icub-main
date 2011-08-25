@@ -1847,7 +1847,7 @@ bool CanBusMotionControl::open (Searchable &config)
 p._newtonsToSensor);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
-    ImplementDebugInterface::initialize(p._njoints, p._axisMap);
+    ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder);
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -3873,6 +3873,20 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
 	return true;
 }
 
+bool CanBusMotionControl::getDebugReferencePositionRaw(int axis, double* value)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    int val = 0;
+    if (_readDWord (CAN_GET_DESIRED_POSITION, axis, val) == true)
+        *value = double (val);
+    else
+        return false;
+
+    return true;
+}
+
 
 bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info* fw_info)
 {
@@ -4067,6 +4081,14 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
     _mutex.post();
 
 	return true;
+}
+
+bool CanBusMotionControl::setDebugReferencePositionRaw(int axis, double value)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    return _writeDWord (CAN_SET_DESIRED_POSITION, axis, S_32(value));
 }
 
 bool CanBusMotionControl::setOutputsRaw(const double *v)
