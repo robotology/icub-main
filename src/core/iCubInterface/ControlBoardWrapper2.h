@@ -2652,6 +2652,22 @@ public:
         return false;
 	}
 
+	virtual bool getDebugReferencePosition(int j, double *t)
+	{
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getDebugReferencePosition(off+base, t);
+        }		
+        return false;
+	}
+
 	virtual bool setDebugParameter(int j, unsigned int index, double t)
 	{
         int off=device.lut[j].offset;
@@ -2664,6 +2680,22 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->setDebugParameter(off+base, index, t);
+        }		
+        return false;
+	}
+
+	virtual bool setDebugReferencePosition(int j, double t)
+	{
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->setDebugReferencePosition(off+base, t);
         }		
         return false;
 	}

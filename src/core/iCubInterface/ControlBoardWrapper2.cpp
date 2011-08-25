@@ -894,6 +894,14 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 }
                                 break;
 
+                             case VOCAB_DEBUG_DESIRED_POS:
+                                {
+                                    int j     = cmd.get(2).asInt();
+                                    double val   = cmd.get(3).asDouble();
+									ok = iDbg->setDebugReferencePosition(j, val);
+                                }
+                                break;
+
 							case VOCAB_GENERIC_PARAMETER:
                                 {
                                     int j     = cmd.get(2).asInt();
@@ -1262,6 +1270,15 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 									ok = iDbg->getDebugParameter(j, index, &dtmp);
 									response.addInt(j);
 									response.addInt(index);
+									response.addDouble(dtmp);
+                                }
+                                break;
+
+							case VOCAB_DEBUG_DESIRED_POS:
+                                {
+                                    int j     = cmd.get(2).asInt();
+									ok = iDbg->getDebugReferencePosition(j, &dtmp);
+									response.addInt(j);
 									response.addDouble(dtmp);
                                 }
                                 break;
