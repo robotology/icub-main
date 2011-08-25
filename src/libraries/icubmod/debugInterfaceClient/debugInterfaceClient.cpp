@@ -222,6 +222,38 @@ bool yarp::dev::DebugInterfaceClient::getDebugParameter(int j, unsigned int inde
     return ok;
 }
 
+bool yarp::dev::DebugInterfaceClient::getDebugReferencePosition(int j, double *t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_DESIRED_POS);
+    cmd.addInt(j);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+		&&(resp.get(1).asInt()==VOCAB_DEBUG_DESIRED_POS)
+        &&(resp.get(2).asInt()==j))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
+
+
+bool yarp::dev::DebugInterfaceClient::setDebugReferencePosition(int j, double t)
+{ 
+    Bottle cmd, response;
+    cmd.addVocab(VOCAB_SET);
+    cmd.addVocab(VOCAB_DEBUG_DESIRED_POS);
+    cmd.addInt(j);
+	cmd.addDouble(t);
+
+    bool ok = rpc_p.write(cmd, response);
+    return CHECK_FAIL(ok, response);
+}
+
 // implementation of CommandsHelper
 yarp::dev::DriverCreator *createDebugInterfaceClient() {
     return new DriverCreatorOf<DebugInterfaceClient>("debugInterfaceClient", 

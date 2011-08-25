@@ -69,6 +69,8 @@ public:
     bool getParameter(int j, unsigned int type, double *t);
 	bool setDebugParameter(int j, unsigned int index, double t);
     bool getDebugParameter(int j, unsigned int index, double *t);
+	bool setDebugReferencePosition(int j, double value);
+	bool getDebugReferencePosition(int j, double *value);
 };
 
 #endif
