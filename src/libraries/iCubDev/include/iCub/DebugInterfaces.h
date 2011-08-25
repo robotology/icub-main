@@ -45,7 +45,8 @@
 
 // additional vocabs defined for the IDebug interface.
 #define VOCAB_GENERIC_PARAMETER VOCAB4('g','e','n','p')
-#define VOCAB_DEBUG_PARAMETER VOCAB4('d','b','g','p')
+#define VOCAB_DEBUG_PARAMETER   VOCAB4('d','b','g','p')
+#define VOCAB_DEBUG_DESIRED_POS VOCAB4('d','d','p','s')
 
 /* LATER: is it likely that some of these would move into iCub::dev namespace? */
 namespace yarp{
@@ -545,6 +546,18 @@ public:
      * @return true/false on success/failure
      */
     virtual bool getDebugParameter(int j, unsigned int index, double* value)=0;
+
+	/* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
+     * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool setDebugReferencePosition(int j, double value)=0;
+
+    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
+	 * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool getDebugReferencePosition(int j, double* value)=0;
 };
 
 class yarp::dev::IDebugInterfaceRaw {
@@ -574,6 +587,18 @@ public:
      * @return true/false on success/failure
      */
     virtual bool getDebugParameterRaw(int j, unsigned int index, double* value)=0;
+
+    /* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
+     * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool setDebugReferencePositionRaw(int j, double value)=0;
+
+    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
+	 * @param index is the number of the debug parameter
+     * @return true/false on success/failure
+     */
+    virtual bool getDebugReferencePositionRaw(int j, double* value)=0;
 };
 
 class yarp::dev::ImplementDebugInterface: public IDebugInterface
@@ -582,7 +607,7 @@ class yarp::dev::ImplementDebugInterface: public IDebugInterface
     yarp::dev::IDebugInterfaceRaw *raw;
     double *dummy;
 public:
-    bool initialize(int k, const int *amap);
+    bool initialize(int k, const int *amap, const double *angleToEncoder);
     bool uninitialize();
     ImplementDebugInterface(IDebugInterfaceRaw *v);
     ~ImplementDebugInterface();
@@ -590,6 +615,8 @@ public:
     bool getParameter(int j, unsigned int type, double* value);
 	bool setDebugParameter(int j, unsigned int index, double value);
     bool getDebugParameter(int j, unsigned int index, double *value);
+	bool setDebugReferencePosition(int j, double value);
+	bool getDebugReferencePosition(int j, double *value);
 };
 
 #endif /* __DEBUGINTERFACES__ */
