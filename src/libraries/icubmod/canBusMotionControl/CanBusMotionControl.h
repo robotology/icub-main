@@ -783,6 +783,7 @@ public:
     virtual bool setImpedanceRaw(int j, double  stiff, double  damp);   
     virtual bool getImpedanceOffsetRaw(int j, double *offs);  
     virtual bool setImpedanceOffsetRaw(int j, double  offs);   
+	virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
 
 	//
     /////////////////////////////// END Impedance Control INTERFACE

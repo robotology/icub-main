@@ -2330,6 +2330,23 @@ public:
         return false;
     }
 
+	virtual bool getCurrentImpedanceLimit(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iImpedance)
+        {
+            return p->iImpedance->getCurrentImpedanceLimit(off+base, min_stiff, max_stiff, min_damp, max_damp);
+        }        
+
+        return false;
+    }
+
     virtual bool getTorquePids(Pid *pids)
     {
          bool ret=true;

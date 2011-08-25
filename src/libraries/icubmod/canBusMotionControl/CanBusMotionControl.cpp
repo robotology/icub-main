@@ -3162,6 +3162,16 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 	return true;
 }
 
+bool CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
+{
+	//test only!
+	(*min_stiff) = 0.001;
+	(*max_stiff) = 9.998;
+	(*min_damp)  = 0.002;
+	(*max_damp)  = 9.999;
+	return true;
+}
+
 bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
 {
 	//    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);

@@ -296,6 +296,21 @@ void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
 						*rec=true;
 					}
 					break;
+				case VOCAB_LIMITS:
+					{
+					    double min_stiff    = 0;
+						double max_stiff    = 0;
+						double min_damp     = 0;
+						double max_damp     = 0;
+						*ok = iImpedance->getCurrentImpedanceLimit(cmd.get(3).asInt(),&min_stiff, &max_stiff, &min_damp, &max_damp);
+						Bottle& b = response.addList();
+						b.addDouble(min_stiff);
+						b.addDouble(max_stiff);
+						b.addDouble(min_damp);
+						b.addDouble(max_damp);
+						*rec=true;
+					}
+					break;
 				}
         }
 		lastRpcStamp.update();
