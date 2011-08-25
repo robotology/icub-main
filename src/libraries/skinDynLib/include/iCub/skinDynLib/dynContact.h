@@ -29,6 +29,7 @@
 #ifndef __DINCONT_H__
 #define __DINCONT_H__
 
+#include <yarp/os/Portable.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include "iCub/skinDynLib/common.h"
@@ -44,7 +45,7 @@ namespace skinDynLib
 * The link number and the contact position are supposed to be known.
 * The force direction and the moment may be either known or unknown.
 */
-class dynContact
+class dynContact : public yarp::os::Portable
 {
 protected:
     /// id of this contact
@@ -139,6 +140,20 @@ public:
     virtual bool fixMoment(const yarp::sig::Vector &_Mu);
     virtual void unfixForceDirection();
     virtual void unfixMoment();
+
+    //~~~~~~~~~~~~~~~~~~~~~~
+	//   SERIALIZATION methods
+	//~~~~~~~~~~~~~~~~~~~~~~ 
+    /*
+    * Read dynContact from a connection.
+    * return true iff a dynContact was read correctly
+    */
+    virtual bool read(yarp::os::ConnectionReader& connection);
+    /**
+    * Write dynContact to a connection.
+    * return true iff a dynContact was written correctly
+    */
+    virtual bool write(yarp::os::ConnectionWriter& connection);
 
     
     

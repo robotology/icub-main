@@ -16,6 +16,7 @@
 #include <iCub/ctrl/math.h>
 
 using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -47,6 +48,8 @@ void dynContact::init(BodyPart _bodyPart, unsigned int _linkNumber, const Vector
     setBodyPart(_bodyPart);
     setLinkNumber(_linkNumber); 
     setCoP(_CoP);
+    Mu.resize(3, 0.0);
+    Fdir.resize(3, 0.0);
 
     if(_Mu.size()==0)
         muKnown = false;
@@ -169,9 +172,46 @@ void dynContact::unfixForceDirection(){ fDirKnown=false;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void dynContact::unfixMoment(){ muKnown=false;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~
+//   BOTTLE methods
+//~~~~~~~~~~~~~~~~~~~~~~
+bool dynContact::write(ConnectionWriter& connection){
+    //connection.declareSizes();
+
+    connection.appendInt(bodyPart);    // left_arm, right_arm, ...
+    connection.appendInt(linkNumber);
+    for(int i=0;i<3;i++) connection.appendDouble(CoP[i]);
+    connection.appendDouble(Fmodule);
+    for(int i=0;i<3;i++) connection.appendDouble(Fdir[i]);
+    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);  
+
+    // if someone is foolish enough to connect in text mode,
+    // let them see something readable.
+    connection.convertTextMode();  
+    
+    return !connection.isError();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool dynContact::read(ConnectionReader& connection){    
+    printf("dynContact size: %d\n", connection.getSize());
+
+    // auto-convert text mode interaction
+    connection.convertTextMode();
+    // populate the object
+    bodyPart    = (BodyPart)connection.expectInt();
+    linkNumber  = connection.expectInt();
+    for(int i=0;i<3;i++) CoP[i] = connection.expectDouble();
+    Fmodule = connection.expectDouble();
+    for(int i=0;i<3;i++) Fdir[i] = connection.expectDouble();
+    for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
+     
+    return !connection.isError();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string dynContact::toString(){
     stringstream res;
-    res<< "Contact on "<< BodyPart_s[bodyPart]<< ", link "<< linkNumber<< ", CoP "<< CoP.toString().c_str();
+    res<< "Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<< CoP.toString().c_str()
+        << ", F: "<< getForce().toString().c_str()<< ", M: "<< Mu.toString().c_str();
     return res.str();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

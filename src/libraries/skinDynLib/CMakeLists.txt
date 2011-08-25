@@ -8,9 +8,11 @@ project(${PROJECTNAME})
 
 set(folder_source       src/skinContact.cpp
                         src/dynContact.cpp
+                        src/dynContactList.cpp
                         src/common.cpp )
 set(folder_header       include/iCub/skinDynLib/skinContact.h
                         include/iCub/skinDynLib/dynContact.h
+                        include/iCub/skinDynLib/dynContactList.h
                         include/iCub/skinDynLib/common.h )
 
 source_group("Source Files" FILES ${folder_source})
