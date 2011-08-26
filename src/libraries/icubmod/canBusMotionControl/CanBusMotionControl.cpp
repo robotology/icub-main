@@ -579,6 +579,16 @@ speedEstimationHelper::speedEstimationHelper(int njoints, SpeedEstimationParamet
 		memset(estim_params, 0, sizeof(SpeedEstimationParameters)*jointsNum);
 }
 
+axisImpedanceHelper::axisImpedanceHelper(int njoints, ImpedanceLimits* imped_limits)
+{
+	jointsNum=njoints;
+	impLimits = new ImpedanceLimits [jointsNum];
+	if (impLimits != 0)
+        memcpy(impLimits, imped_limits, sizeof(ImpedanceLimits)*jointsNum);
+    else
+        memset(impLimits, 0, sizeof(ImpedanceLimits)*jointsNum);
+}
+
 axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens )
 {
 	jointsNum=njoints;
@@ -1114,7 +1124,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         fprintf(stderr, "Torque Pids section NOT enabled, skipping...\n");
     }
 
-    ////// IMPEDANCE PIDS
+    ////// IMPEDANCE DEFAULT VALUES
     if (p.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
     {
         fprintf(stderr, "IMPEDANCE parameters section found\n");
@@ -1135,6 +1145,18 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     {
         printf("Impedance section NOT enabled, skipping...\n");
     }
+
+	////// IMPEDANCE LIMITS (UNDER TESTING)
+	for(j=0;j<nj;j++)
+	{
+		_impedance_limits[j].min_damp=  0.001;
+		_impedance_limits[j].max_damp=  9.888;
+		_impedance_limits[j].min_stiff= 0.002;
+		_impedance_limits[j].max_stiff= 9.889;
+		_impedance_limits[j].param_a=   0.011;
+		_impedance_limits[j].param_b=   0.012;
+		_impedance_limits[j].param_c=   0.013;
+	}
 
     /////// LIMITS
     Bottle &limits=p.findGroup("LIMITS");
@@ -1338,6 +1360,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
 	_newtonsToSensor=0;
 	_debug_params=0;
 	_impedance_params=0;
+	_impedance_limits=0;
 	_estim_params=0;
 
     _my_address = 0;
@@ -1368,6 +1391,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
 	_tpids=allocAndCheck<Pid>(nj);
 	_debug_params=allocAndCheck<DebugParameters>(nj);
 	_impedance_params=allocAndCheck<ImpedanceParameters>(nj);
+	_impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
 	_estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
 
     _limitsMax=allocAndCheck<double>(nj);
@@ -1418,6 +1442,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
 	checkAndDestroy<SpeedEstimationParameters>(_estim_params);
 	checkAndDestroy<DebugParameters>(_debug_params);
 	checkAndDestroy<ImpedanceParameters>(_impedance_params);
+	checkAndDestroy<ImpedanceLimits>(_impedance_limits);
     checkAndDestroy<double>(_limitsMax);
     checkAndDestroy<double>(_limitsMin);
     checkAndDestroy<double>(_currentLimits);
@@ -1844,7 +1869,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementControlMode::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
-//	_axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_params);
+	_axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -3164,11 +3189,20 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 
 bool CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
 {
-	//test only!
-	(*min_stiff) = 0.001;
-	(*max_stiff) = 9.998;
-	(*min_damp)  = 0.002;
-	(*max_damp)  = 9.999;
+	CanBusResources& r = RES(system_resources);
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    _mutex.wait();
+    // *** This method is implementented reading data without sending/receiving data from the Canbus ***
+	*min_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_min_stiff(); 
+	*max_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_max_stiff(); 
+	*min_damp= _axisImpedanceHelper->getImpedanceLimits()->get_min_damp(); 
+	*max_damp= _axisImpedanceHelper->getImpedanceLimits()->get_max_damp(); 
+	int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
+    _mutex.post();
+
 	return true;
 }
 

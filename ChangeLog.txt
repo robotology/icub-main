@@ -1,3 +1,8 @@
+2011-08-26 Randazzo Marco <marco.randazzo@iit.it>
+    * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
+    * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
+	improved method yarp::dev::IImpedanceControl::getCurrentImpedanceLimit()
+
 2011-08-25 Randazzo Marco <marco.randazzo@iit.it>
     * CMakeLists.txt: iCub now requires YARP 2.3.11
     * main/src/core/iCubInterface/ControlBoardWrapper2.cpp

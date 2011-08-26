@@ -70,6 +70,29 @@ struct SpeedEstimationParameters
 	}
 };
 
+struct ImpedanceLimits
+{
+	double min_stiff;
+	double max_stiff;
+	double min_damp;
+	double max_damp;
+	double param_a;
+	double param_b;
+	double param_c;
+
+	public:
+	ImpedanceLimits()
+	{
+		min_stiff=0; max_stiff=0;
+		min_damp=0;  max_damp=0;
+		param_a=0; param_a=0; param_c=0;
+	}
+
+	double get_min_stiff() {return min_stiff;}
+	double get_max_stiff() {return max_stiff;}
+	double get_min_damp()  {return min_damp;}
+	double get_max_damp()  {return max_damp;}
+};
 /**
 * \file CanBusMotionControl.h 
 * class for interfacing with a generic can device driver.
@@ -122,6 +145,7 @@ public:
 		double stiffness;
 		double damping;
 		bool   enabled;
+		ImpedanceLimits limits;
 		ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
 	};
 
@@ -152,6 +176,7 @@ public:
 	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 	DebugParameters *_debug_params;             /** debug parameters */
 	ImpedanceParameters *_impedance_params;		/** impedance parameters */
+	ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
@@ -514,6 +539,23 @@ class firmwareVersionHelper
 		delete [] infos;
 		infos = 0;
 	}
+};
+
+class axisImpedanceHelper
+{
+	int  jointsNum;
+	ImpedanceLimits* impLimits;
+	
+	public:
+	axisImpedanceHelper(int njoints, ImpedanceLimits* imped_limits );
+
+	inline ~axisImpedanceHelper()
+	{
+		delete [] impLimits;
+		impLimits=0;										
+	}
+
+	inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
 };
 
 class axisTorqueHelper
@@ -919,7 +961,8 @@ protected:
     bool _writeNone  (int msg, int axis);
 	bool _writeByte8 (int msg, int axis, int value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
-	axisTorqueHelper *_axisTorqueHelper;
+	axisTorqueHelper      *_axisTorqueHelper;
+	axisImpedanceHelper   *_axisImpedanceHelper;
 	firmwareVersionHelper *_firmwareVersionHelper;
 	speedEstimationHelper *_speedEstimationHelper;
 
