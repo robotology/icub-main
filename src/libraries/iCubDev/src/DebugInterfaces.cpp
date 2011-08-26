@@ -74,7 +74,7 @@ yarp::dev::ImplementDebugInterface::ImplementDebugInterface(IDebugInterfaceRaw *
     helper=0;
 }
 
-bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, const double *angleToEncoder)
+bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, const double *angleToEncoder, const double *zeros)
 {
     if (helper!=0)
         return false;
@@ -83,7 +83,7 @@ bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, c
     for(int k=0;k<size;k++)
         dummy[k]=0;
 
-    helper=(void *)(new ControlBoardHelper2(size, amap, angleToEncoder, dummy, dummy));
+    helper=(void *)(new ControlBoardHelper2(size, amap, angleToEncoder, zeros, dummy));
     _YARP_ASSERT_DEBUG(helper != 0);
 
     delete [] dummy;

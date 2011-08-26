@@ -1843,11 +1843,11 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
-    _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, 
-p._newtonsToSensor);
+    _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
+//	_axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_params);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
-    ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder);
+    ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -4098,7 +4098,8 @@ bool CanBusMotionControl::setDebugReferencePositionRaw(int axis, double value)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    return _writeDWord (CAN_SET_DESIRED_POSITION, axis, S_32(value));
+    //return _writeDWord (CAN_SET_DESIRED_POSITION, axis, S_32(value));
+    return _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(value));
 }
 
 bool CanBusMotionControl::setOutputsRaw(const double *v)

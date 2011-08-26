@@ -607,7 +607,7 @@ class yarp::dev::ImplementDebugInterface: public IDebugInterface
     yarp::dev::IDebugInterfaceRaw *raw;
     double *dummy;
 public:
-    bool initialize(int k, const int *amap, const double *angleToEncoder);
+    bool initialize(int k, const int *amap, const double *angleToEncoder, const double *zeros);
     bool uninitialize();
     ImplementDebugInterface(IDebugInterfaceRaw *v);
     ~ImplementDebugInterface();
