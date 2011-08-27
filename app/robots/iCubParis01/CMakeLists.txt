@@ -11,7 +11,12 @@ icub_app_install(${appname}
 
 icub_app_install(${appname} 
 				FILES ${conf}
-				DESTINATION conf)			
+				DESTINATION conf)	
+
+icub_app_install(${appname} 
+				FILES ${crawling_conf}
+				DESTINATION conf/crawling)	
+		
 				
 
 
