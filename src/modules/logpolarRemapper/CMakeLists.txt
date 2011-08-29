@@ -1,5 +1,5 @@
 #
-# Copyright (C): 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+# Copyright: (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 # Authors: Giorgio Metta
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
