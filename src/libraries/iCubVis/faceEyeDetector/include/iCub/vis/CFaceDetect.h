@@ -8,35 +8,6 @@
 
 #include "cv.h"
 #include "cxcore.h"
-//<<<<<<< CFaceDetect.h
-//#include "highgui.h"
-//=======
-
-//// There was a merge error committed to the repository here
-//// Fixing it because this module is in the global iCub project,
-//// and so blocks others building when it breaks.
-////       --paulfitz
-
-//#include "highgui.h"
-//>>>>>>> 1.5
-//#include "cvcam.h"
-//<<<<<<< CFaceDetect.h
-//=======
-//=======
-//>>>>>>> 1.5
-/*!
- $Author: vislab $
-*/
-#include "cv.h"
-#include "cxcore.h"
-//<<<<<<< CFaceDetect.h
-//#include <highgui.h>
-//=======
-//#include <highgui.h>
-//>>>>>>> 1.3
-//#include "cvcam.h"
-//=======
-//>>>>>>> 1.5
 
 class CFaceDetect
 {
