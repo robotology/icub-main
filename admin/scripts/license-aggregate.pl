@@ -10,11 +10,16 @@ my %good_licenses= ( # a list of "good" licenses
             "GPL20 or later" => 1,
             "BSD" => 1,
             "OPENCV"=> 1);
+
 my %authors=();
+my %copyright_owners=();
 
 open GOOD, ">licenses-good.txt";
 open BAD, ">licenses-bad.txt";
 open AUTHORS, ">licenses-authors.txt";
+open AUTHORS_COMPACT, ">licenses-authors-compact.txt";
+open COPYRIGHT_COMPACT, ">licenses-copyright-compact.txt";
+
 open(FILE, $fname) || 
     die "Can't open $fname";
 
@@ -60,29 +65,41 @@ while(!eof(FILE) && defined (my $line=<FILE>)) {
         print BAD "$filename: missing copyright information\n";
     }
     else {
-         my @authors=split('\s*\,\s*|\sand\s+', $copyright);
+         my @names=split('\s*\,\s*|\sand\s+', $copyright);
 
-        foreach my $aut (@authors)
+        foreach my $name (@names)
         {
-            $authors{$aut}++;
+            $copyright_owners{$name}++;
         }
     }
 
     if ($author=~m/unknown/i) {
     }
     else {
-        @names=split(',\s*|\sand\s+', $author);
-        foreach $name (@names)
+        my @names=split(',\s*|\sand\s+', $author);
+        foreach my $name (@names)
             { $authors{$name}++; }
     }
 }
 
-print AUTHORS "==== List of Authors ====\n";
-while ( ($key, $value) = each %authors) 
+#print in sorted 
+
+print AUTHORS "=== List of Copyright Owners ===\n";
+foreach $value (sort {$copyright_owners{$b} <=> $copyright_owners{$a} } keys %copyright_owners)
 {
-    print AUTHORS "$key: $value\n";
+    print AUTHORS "$value: $copyright_owners{$value}\n";
+    print COPYRIGHT_COMPACT "* $value ($copyright_owners{$value} files)\n";
 }
-    
+
+print AUTHORS "==== List of Authors ====\n";
+foreach $value (sort {$authors{$b} <=> $authors{$a} } keys %authors)
+{ 
+    print AUTHORS "$value: $authors{$value}\n";
+    print AUTHORS_COMPACT "* $value ($authors{$value} files)\n";
+}
+
+
+
 close BAD;
 close GOOD;
 close AUTHORS;

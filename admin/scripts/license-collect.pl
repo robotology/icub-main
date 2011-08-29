@@ -35,6 +35,8 @@ sub fix_names {
         $names=~s/Robotcub/RobotCub/;
         $names=~s/^The\s|^\-//;
 
+        $names=~s/\sall rights reserved//;
+
         $names=~s/\$YOUR_NAME/unknown/;
 
         return $names;
@@ -68,11 +70,22 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
     next if $line=~m/The name of the author may not be used/i;
     next if $line=~m/BE LIABLE FOR ANY/i;
     next if $line=~m/\`*AS IS\'* AND ANY EXPRESS/i;
+    
+    # and word copyright
+    next if $line=~m/copyright notice/i;
 
-    if ($line=~m/authors?:?\s*/i && $author eq "unknown"){
+    if ($line=~m/authors?\s*(of changes)?\s*:?\s*/i && $author eq "unknown"){
         $author=$';
+#       $author=~s/of changes\b*:?\b*//i; #remove pattern "of changes" (could not incoroprate it in prev. match
         $author=~s/\.?\s*$//;  #remove trailing . and eof ...
-        
+
+	# remove email addresses, reg exp from http://www.regular-expressions.info/email.html
+        # adapted by adding spaces on top and optional quotes <>
+	$author=~s/\s*<?\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b>?//i;
+
+	# remove html links
+	$author=~s/\s*<A HREF.*?A>\.?//i;
+    
         $author=fix_names($author);
     }
 
