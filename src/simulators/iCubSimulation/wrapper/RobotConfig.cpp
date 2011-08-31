@@ -150,8 +150,8 @@ void RobotConfig::setFlags() {
 //bool RobotConfig::stopConfig(ConstString error, bool proceed){
 void RobotConfig::stopConfig( ConstString error ){
 
-	cout << "\n\n\nThere seems to be a conflict with the " << error << " configuration" << endl;
-	cout << "Check the iCub_parts_activation.ini under $CIUB_ROOT/app/simConfig " << endl;
+	cout << "\n\n\nThere seems to be a conflict with the " << error << " configuration file" << endl;
+	cout << "Check the iCub_parts_activation.ini under $ICUB_ROOT/app/simConfig " << endl;
 	cout << "If it still does not work (update svn) and re-install the app folder\n\n" << endl;
 	cout << "The iCub simulator will not start..\n\n\n" << endl;
 	std::exit(1); // we can do this as no port has been created yet
