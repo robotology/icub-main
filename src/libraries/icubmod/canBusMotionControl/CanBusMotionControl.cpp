@@ -38,7 +38,7 @@
 /// get the message types from the DSP code.
 #include "messages.h"
 
-#include "../src/ControlBoardInterfacesImpl.inl"
+#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "canControlConstants.h"
 #include "canControlUtils.h"
