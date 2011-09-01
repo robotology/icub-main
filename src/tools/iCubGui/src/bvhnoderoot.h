@@ -25,8 +25,9 @@ class BVHNodeROOT : public BVHNodeRPY_XYZ
 {
 public:
     BVHNodeROOT(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,iCubMesh* mesh,ObjectsManager* objManager) 
-        : BVHNodeRPY_XYZ(name,enc,yaw,pitch,roll,x,y,z,-180.0,180.0,mesh)
+        : BVHNodeRPY_XYZ(name,yaw,pitch,roll,x,y,z)
     {
+        pMesh=mesh;
         mObjectsManager=objManager;
     }
         
@@ -53,6 +54,8 @@ public:
             pMesh->Draw();
         }
     
+        drawArrows();
+
         for (unsigned int i=0; i<children.count(); ++i)
         {
             children[i]->draw(encoders,pSelected);

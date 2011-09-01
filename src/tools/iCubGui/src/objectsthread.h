@@ -22,6 +22,7 @@
 #include <qthread.h>
 #include <vector>
 #include <yarp/sig/Vector.h>
+#include <iCub/skinDynLib/dynContactList.h>
 
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
@@ -32,15 +33,17 @@
 class ObjectsManager
 {
 public:
-    ObjectsManager(const char *objPortName,const char *texPortName)
+    ObjectsManager(const char *objPortName,const char *texPortName,const char *forcePortName)
     {
         bReset=false;
 
         mObjPort.open(objPortName);
         mTexPort.open(texPortName);
+        mForcePort.open(forcePortName);
 
         mObjPort.setStrict();
         mTexPort.setStrict();
+        mForcePort.setStrict();
     }
 
     ~ObjectsManager()
@@ -50,6 +53,9 @@ public:
         
         mTexPort.interrupt();
         mTexPort.close();
+
+        mForcePort.interrupt();
+        mForcePort.close();
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
@@ -62,26 +68,48 @@ public:
         }
     }
 
+    void setAddressBook(BVHNode ***ab)
+    {
+        mAB=ab;
+    }
+
     inline void manage(yarp::os::Bottle *msg);
     inline void manage(yarp::sig::VectorOf<unsigned char> *img);
+    inline void manage(iCub::skinDynLib::dynContactList &forces);
 
     void draw()
     {
         // objects
-        yarp::os::Bottle *botObj;
-        do
+        for (yarp::os::Bottle *botObj; botObj=mObjPort.read(false);)
         {
-            if (botObj=mObjPort.read(false)) manage(botObj);
+            manage(botObj);
         }
-        while (botObj);
 
         // textures
-        yarp::sig::VectorOf<unsigned char> *imgTex;
-        do
+        for (yarp::sig::VectorOf<unsigned char> *imgTex; imgTex=mTexPort.read(false);)
         {
-            if (imgTex=mTexPort.read(false)) manage(imgTex);
+            manage(imgTex);
         }
-        while (imgTex);
+
+        for (iCub::skinDynLib::dynContactList *forces; forces=mForcePort.read(false);) 
+        {        
+            manage(*forces);
+        }
+        
+        /* TEST
+        yarp::sig::Vector P; P.resize(3);
+        yarp::sig::Vector M; M.resize(3);
+        yarp::sig::Vector F; F.resize(3);
+        F[0]=1.0; F[1]=0.0; F[2]=0.0;
+
+        iCub::skinDynLib::dynContact fhead(iCub::skinDynLib::LEFT_ARM,4,P,M,F);
+        fhead.setForceModule(200.0);
+
+        iCub::skinDynLib::dynContactList forces;
+        forces.push_back(fhead);
+
+        manage(forces);
+        */
 
         if (bReset)
         {
@@ -154,8 +182,11 @@ protected:
     std::vector<VisionObj*> mObjects;
     std::vector<TrajectoryObj*> mTrajectories;
 
+    BVHNode ***mAB;
+
     yarp::os::BufferedPort<yarp::os::Bottle> mObjPort;
     yarp::os::BufferedPort<yarp::sig::VectorOf<unsigned char> > mTexPort;
+    yarp::os::BufferedPort<iCub::skinDynLib::dynContactList> mForcePort;
 };
 
 void ObjectsManager::manage(yarp::os::Bottle *msg)
@@ -345,4 +376,31 @@ void ObjectsManager::manage(yarp::sig::VectorOf<unsigned char> *img)
         }
     }
 }
+
+void ObjectsManager::manage(iCub::skinDynLib::dynContactList &forces)
+{
+    for (int p=0; p<8; ++p)
+    {
+        for (int l=0; l<8; ++l)
+        {
+            if (mAB[p][l]) mAB[p][l]->clearArrows();
+        }
+    }
+
+    for (int i=0; i<(int)forces.size(); ++i)
+    {
+        yarp::sig::Vector P=forces[i].getCoP();
+        double f=forces[i].getForceModule();
+        yarp::sig::Vector F=forces[i].getForceDirection();
+
+        int p=forces[i].getBodyPart();
+        int l=forces[i].getLinkNumber();
+
+        if (mAB[p][l])
+        {
+            mAB[p][l]->addArrow(new ForceArrow(P[0],P[1],P[2],f,F[0],F[1],F[2]));
+        }
+    }
+}
+
 #endif

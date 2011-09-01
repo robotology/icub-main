@@ -85,15 +85,7 @@ public:
         if (pEncLeftLeg) pEncLeftLeg->getEncoders(dEncLeftLeg);
         if (pEncRightLeg) pEncRightLeg->getEncoders(dEncRightLeg);
         #endif
-        /*
-        dEncBuffer[9]=-40.0;
-        dEncBuffer[10]=60.0;
-        dEncBuffer[12]=80.0;
 
-        dEncBuffer[25]=-40.0;
-        dEncBuffer[26]=60.0;
-        dEncBuffer[28]=80.0;
-        */
         glShadeModel(GL_SMOOTH);
         GLfloat ambientA[]={0.9,0.667,0.561,1};
         GLfloat diffuseA[]={0.9,0.667,0.561,0};
@@ -138,6 +130,8 @@ public:
     BVHNode* pRoot;
 
     ObjectsManager *mObjectsManager;
+
+    BVHNode ***mAB;
     
     // YARP
     

@@ -29,6 +29,18 @@ BVH::BVH(ObjectsManager *objManager)
 {
     pRoot=NULL;
     mObjectsManager=objManager;
+
+    mAB=new BVHNode**[8];
+
+    for (int p=0; p<8; ++p)
+    {
+        mAB[p]=new BVHNode*[8];
+
+        for (int l=0; l<8; ++l)
+        {
+            mAB[p][l]=NULL;
+        }
+    }
 }
 
 bool BVH::Create(yarp::os::ResourceFinder& config)
@@ -46,6 +58,7 @@ bool BVH::Create(yarp::os::ResourceFinder& config)
     dAvatarScale=1.0;
   
     pRoot=bvhRead(config);
+    mObjectsManager->setAddressBook(mAB);
 
     return pRoot!=NULL;
 }
@@ -67,6 +80,16 @@ BVH::~ BVH()
     #ifdef __YARP
     Network::fini();
     #endif
+
+    if (mAB)
+    {
+        for (int p=0; p<16; ++p)
+        {
+            if (mAB[p]) delete [] mAB[p];
+        }
+
+        delete [] mAB;
+    }
 }
 
 QString BVH::token()
@@ -139,8 +162,8 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
     if (!pEncTorso || !pEncHead || !pEncLeftArm || !pEncRightArm || !pEncLeftLeg || !pEncRightLeg)
     {
         qDebug("BVH::BVH: error getting IEncoders interfaces");
-        dEncBuffer[10]=45.0;
-        dEncBuffer[26]=45.0;
+        dEncBuffer[10]=90.0;
+        dEncBuffer[26]=90.0;
     }
     else
     {
@@ -164,7 +187,7 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
         dEncLeftLeg=dEncRightArm+nJRightArm;
         dEncRightLeg=dEncLeftLeg+nJLeftLeg;
         dEncRoot=dEncRightLeg+nJRightLeg;
-        dEncLeftArm[1]=dEncRightArm[1]=10.0;
+        dEncLeftArm[1]=dEncRightArm[1]=0.0;
     }
     #endif
     
@@ -201,11 +224,34 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     
     QString sName=token();
 	partNames << sName;
+
     expect_token("{");
     iCubMesh *pMesh=0;
     QString tag=token();
     int ftSensorId=-1;
     
+    int skinPart=0;
+    int skinLink=0;
+
+    if (tag=="SKIN")
+    {
+        QString partName=token();
+        if (partName=="head")
+            skinPart=1;
+        else if (partName=="torso")
+            skinPart=2;
+        else if (partName=="left_arm")
+            skinPart=3;
+        else if (partName=="right_arm")
+            skinPart=4;
+        else if (partName=="left_leg")
+            skinPart=5;
+        else if (partName=="right_leg")
+            skinPart=6;
+        skinLink=token().toInt();
+        tag=token();
+    }
+
     if (tag=="MESH")
     {
 		QString name=token();
@@ -245,16 +291,13 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     case BVH_JOINT:
         if (tag=="RPY_XYZ")
 		{
-			int a=token().toInt();
+			double a=token().toDouble();
 			double b=token().toDouble();
 			double c=token().toDouble();
 			double d=token().toDouble();
 			double e=token().toDouble();
 			double f=token().toDouble();
-			double g=token().toDouble();
-			double h=token().toDouble();
-			double i=token().toDouble();
-            node=new BVHNodeRPY_XYZ(sName,a,b,c,d,e,f,g,h,i,pMesh);
+            node=new BVHNodeRPY_XYZ(sName,a,b,c,d,e,f);
 		}
         else if (tag=="DH")
 		{
@@ -263,35 +306,34 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 			double c=token().toDouble();
 			double d=token().toDouble();
 			double e=token().toDouble();
-			double f=token().toDouble();
-			double g=token().toDouble();
-            
             if (ftSensorId==-1)
             {
-                node=new BVHNodeDH(sName,a,b,c,d,e,f,g,pMesh); 
+                node=new BVHNodeDH(sName,a,b,c,d,e,pMesh); 
 		    }
             else
             {
-                node=new BVHNodeForceTorque(sName,ftSensorId,a,b,c,d,e,f,g,pMesh);
+                node=new BVHNodeForceTorque(sName,ftSensorId,a,b,c,d,e,pMesh);
             }
         }
 		break;
     case BVH_END:
         if (tag=="EYE")
 		{
+            int n=token().toInt();
 			double a=token().toDouble();
 			double b=token().toDouble();
 			double c=token().toDouble();
 			double d=token().toDouble();
-            node=new BVHNodeEYE(sName,a,b,c,d,pMesh);
+            node=new BVHNodeEYE(sName,n,a,b,c,d,pMesh);
 		}
 		else if (tag=="DH")
 		{
+            int n=token().toInt();
 			double a=token().toDouble();
 			double b=token().toDouble();
 			double c=token().toDouble();
 			double d=token().toDouble();
-            node=new BVHNodeEND(sName,a,b,c,d,pMesh);
+            node=new BVHNodeEND(sName,n,a,b,c,d,pMesh);
 		}
 		else if (tag=="LEFTHAND")
 		{
@@ -320,6 +362,11 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
             node=new BVHNodeINERTIAL(sName,a,b,c,d,robot+"/inertial",pMesh);
 		}
 		break;    
+    }
+
+    if (skinPart)
+    {
+        mAB[skinPart][skinLink]=node;
     }
 
     BVHNode* child=0;

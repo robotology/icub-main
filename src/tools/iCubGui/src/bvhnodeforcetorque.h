@@ -28,8 +28,8 @@ class BVHNodeForceTorque : public BVHNodeDH
 {
     public:
     
-    BVHNodeForceTorque(const QString& name,int id,int enc,double a,double d,double alpha,double theta0,double thetaMin,double thetaMax,iCubMesh* mesh=0)
-        : BVHNodeDH(name,enc,a,d,alpha,theta0,thetaMin,thetaMax,mesh)
+    BVHNodeForceTorque(const QString& name,int id,int enc,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
+        : BVHNodeDH(name,enc,a,d,alpha,theta0,mesh)
     {
         const int CAN_DRIVER_BUFFER_SIZE=2047;
 

@@ -24,8 +24,8 @@ class BVHNodeEND : public BVHNodeDH
 {
 public:
     
-    BVHNodeEND(const QString& name,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
-        : BVHNodeDH(name,-1,a,d,alpha,theta0,0.0,0.0,mesh){}
+    BVHNodeEND(const QString& name,int n,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
+        : BVHNodeDH(name,n,a,d,alpha,theta0,mesh){}
         
     virtual void drawJoint(){}
         
@@ -33,7 +33,7 @@ public:
     {  
         glPushMatrix();
         
-        glRotated(dTheta0,0.0,0.0,1.0);
+        glRotated(dTheta0+encoders[nEnc],0.0,0.0,1.0);
         glTranslated(dA,0.0,dD);
         
         glColor4f(0.5,0.5,0.5,1.0);
@@ -50,6 +50,8 @@ public:
             glColor4f(0.9,0.8,0.7,1.0);
             pMesh->Draw();
         }
+
+        drawArrows();
 
         drawJoint();
         

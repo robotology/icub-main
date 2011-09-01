@@ -13,14 +13,27 @@ source_group("Header Files" FILES ${icubgui_HDR})
 qt_wrap_cpp(iCubGui icubgui_MOC_SRC ${icubgui_MOC_HDR})
 
 # Include path to the generated header files
-include_directories(${PROJECT_SOURCE_DIR}/src ${Qt3_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${OpenGL_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+include_directories(
+    ${PROJECT_SOURCE_DIR}/src 
+    ${Qt3_INCLUDE_DIRS} 
+    ${GLUT_INCLUDE_DIRS} 
+    ${OpenGL_INCLUDE_DIRS} 
+    ${YARP_INCLUDE_DIRS} 
+    ${skinDynLib_INCLUDE_DIRS}
+)
 
 # Set defines
 add_definitions(${QT_DEFINITIONS})
 
 # Compile and link
 add_executable(iCubGui ${icubgui_HDR} ${icubgui_SRC} ${icubgui_MOC_SRC})
-target_link_libraries(iCubGui ${Qt3_LIBRARIES} ${GLUT_LIBRARIES} ${OpenGL_LIBRARIES} ${YARP_LIBRARIES})
+target_link_libraries(iCubGui 
+    ${Qt3_LIBRARIES} 
+    ${GLUT_LIBRARIES} 
+    ${OpenGL_LIBRARIES} 
+    ${YARP_LIBRARIES} 
+    skinDynLib
+)
 
 # Install iCubGui
 install(TARGETS iCubGui RUNTIME DESTINATION bin)

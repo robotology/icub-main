@@ -23,17 +23,20 @@
 class BVHNodeDH : public BVHNode
 {
 public:
-    BVHNodeDH(const QString& name,int enc,double a,double d,double alpha,double theta0,double thetamin=-180.0,double thetamax=180.0,iCubMesh* mesh=0) 
+    BVHNodeDH(const QString& name,int enc,double a,double d,double alpha,double theta0,iCubMesh* mesh=0) 
     : BVHNode(name,enc,mesh)
     {
-        dA=a; dD=d; dAlpha=alpha; dTheta0=theta0; dThetaMin=thetamin; dThetaMax=thetamax;
+        dA=a; 
+        dD=d; 
+        dAlpha=alpha; 
+        dTheta0=theta0;
     }
 
     virtual void draw(double *encoders,BVHNode* pSelected)
     {
         glPushMatrix();
-        
-        glRotated(dTheta0,0.0,0.0,1.0);
+
+        glRotated(dTheta0+encoders[nEnc],0.0,0.0,1.0);
         glTranslated(dA,0.0,dD);
         
         glColor4f(0.5,0.5,0.5,1.0);
@@ -44,23 +47,18 @@ public:
         glEnd();
         
         glRotated(dAlpha,1.0,0.0,0.0);
-        
-        if (pSelected==this) 
-            glColor4f(1.0,0.0,0.0,1.0);
-        else
-            glColor4f(0.5,0.5,0.5,1.0);
-        
-        glRotated(encoders[nEnc],0.0,0.0,1.0);
-        
+
+        glColor4f(0.5,0.5,0.5,1.0);
+        drawJoint();
+
         if (pMesh)
         { 
             glColor4f(0.9,0.8,0.7,m_Alpha);
             pMesh->Draw();
         }
 
-        glColor4f(0.5,0.5,0.5,1.0);
-        drawJoint();
-    
+        drawArrows();
+
         for (unsigned int i=0; i<children.count(); ++i)
         {
             children[i]->draw(encoders,pSelected);
@@ -104,7 +102,7 @@ protected:
         glutSolidCone(7.5,30.0,16,16);
     }
 
-    double dA,dD,dAlpha,dTheta0,dThetaMin,dThetaMax;
+    double dA,dD,dAlpha,dTheta0;
 };
 
 #endif

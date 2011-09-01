@@ -23,13 +23,11 @@
 class BVHNodeRPY_XYZ : public BVHNode
 {
 public:
-    BVHNodeRPY_XYZ(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,
-                   double rotmin=-180.0,double rotmax=180.0,iCubMesh* mesh=0) : BVHNode(name,enc,mesh)
+    BVHNodeRPY_XYZ(const QString& name,double yaw,double pitch,double roll,double x,double y,double z) 
+        : BVHNode(name,-1,NULL)
     {
         dYaw=yaw; dPitch=pitch; dRoll=roll;
         dX=x; dY=y; dZ=z;
-        
-        dRotMin=rotmin; dRotMax=rotmax;
     }
 
     virtual void draw(double *encoders,BVHNode *pSelected)
@@ -49,20 +47,9 @@ public:
         glRotated(dPitch,0.0,1.0,0.0);
         glRotated(dRoll, 1.0,0.0,0.0);  
                
-        if (pSelected==this) 
-            glColor4f(1.0,0.0,0.0,1.0);
-        else
-            glColor4f(0.5,0.5,0.5,1.0);
+        glColor4f(0.5,0.5,0.5,1.0);
             
         drawJoint();
-       
-        glRotated(encoders[nEnc],0.0,0.0,1.0);
-        
-        if (pMesh)
-        { 
-            glColor4f(0.9,0.8,0.7,1.0);
-            pMesh->Draw();
-        }
         
         for(unsigned int i=0; i<children.count(); ++i)
         {
@@ -74,7 +61,6 @@ public:
 
 protected:
     double dYaw,dPitch,dRoll,dX,dY,dZ;
-    double dRotMin,dRotMax;
 };
 
 #endif

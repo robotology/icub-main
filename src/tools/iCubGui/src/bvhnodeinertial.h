@@ -25,13 +25,13 @@ class BVHNodeINERTIAL : public BVHNodeEND
 public:
     
     BVHNodeINERTIAL(const QString& name,double a,double d,double alpha,double theta0,QString portIMUName,iCubMesh* mesh=0)
-        : BVHNodeEND(name,a,d,alpha,theta0,mesh)
+        : BVHNodeEND(name,-1,a,d,alpha,theta0,mesh)
         { 
             memset(dInertial,0,sizeof(dInertial));
             
             bHasInertial=portIMU.open("/iCubGui/inertial");
             
-			const int RETRY=2;
+			const int RETRY=4;
             if (bHasInertial)
             {
                 for (int i=0; i<=RETRY; ++i)
@@ -42,8 +42,9 @@ public:
 			            break;
 			        }
 			        
-			        if (yarp::os::Network::connect(portIMUName.latin1(),"/iCubGui/inertial")) break;
-			        yarp::os::Time::delay(1.0);
+                    if (yarp::os::Network::connect(portIMUName.latin1(),"/iCubGui/inertial")) break;
+                    
+			        yarp::os::Time::delay(0.5);
 			    }
             } 
         }
@@ -68,15 +69,8 @@ public:
                     dInertial[i]=pIMUData->get(i).asDouble();
                 }
             }
-        /*
-        }
-        else
-        {
-            dInertial[3]=dInertial[4]=0.0;
-            dInertial[5]=10.0;
-        }
-        */
-            glTranslated(70.0,0.0,230.0);
+
+            glTranslated(40.0,0.0,230.0);
             glColor4f(0.4,0.4,1.0,1.0);
             glutSolidCube(22.0);
             
@@ -104,10 +98,6 @@ public:
             
             glLineWidth(2.0);
             glDisable(GL_LINE_SMOOTH);
-        
-            //dInertial[8]=60.0;
-            //dInertial[7]=50.0;
-            //dInertial[6]=40.0;
         
             glColor4f(0.0,0.0,1.0,1.0);
             glPushMatrix();

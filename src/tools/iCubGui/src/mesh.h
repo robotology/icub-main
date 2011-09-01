@@ -123,9 +123,9 @@ public:
                 if (parameters[3].toDouble()<zmin) zmin=parameters[3].toDouble();
                 if (parameters[3].toDouble()>zmax) zmax=parameters[3].toDouble();
 
-                x1=parameters[1].toDouble()+tx;
-                y1=parameters[2].toDouble()+ty;
-                z1=parameters[3].toDouble()+tz;
+                x1=parameters[1].toDouble();
+                y1=parameters[2].toDouble();
+                z1=parameters[3].toDouble();
             
                 x2=cz*x1-sz*y1;
                 y2=sz*x1+cz*y1;
@@ -135,9 +135,9 @@ public:
                 y3= y2;
                 z3=-sy*x2+cy*z2;
                 
-                vx[v]=x3;
-                vy[v]=cx*y3-sx*z3;
-                vz[v]=sx*y3+cx*z3;
+                vx[v]=tx+x3;
+                vy[v]=ty+cx*y3-sx*z3;
+                vz[v]=tz+sx*y3+cx*z3;
                 
                 ++v;
             }
@@ -175,14 +175,6 @@ public:
             }   
         }
         objFile.close();
-
-        /*
-        printf("mesh %s\n",fileName.ascii());
-        printf("xmin %lf    xmax %lf\n",xmin,xmax);
-        printf("ymin %lf    ymax %lf\n",ymin,ymax);
-        printf("zmin %lf    zmax %lf\n",zmin,zmax);
-        printf("********************\n");
-        */
     }
 
     ~iCubMesh()

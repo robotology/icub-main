@@ -62,7 +62,7 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     ySelect=false;
     zSelect=false;
 
-    mObjectsManager=new ObjectsManager(config.find("objport").asString().c_str(),config.find("texport").asString().c_str());
+    mObjectsManager=new ObjectsManager(config.find("objport").asString().c_str(),config.find("texport").asString().c_str(),config.find("forceport").asString().c_str());
     //printf("objport=%s\n",config.find("objport").asString().c_str());
 
     leftMouseButton=false;

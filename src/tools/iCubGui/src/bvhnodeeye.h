@@ -24,8 +24,8 @@ class BVHNodeEYE : public BVHNodeEND
 {
 public:
     
-    BVHNodeEYE(const QString& name,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
-        : BVHNodeEND(name,a,d,alpha,theta0,mesh){}
+    BVHNodeEYE(const QString& name,int n,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
+        : BVHNodeEND(name,n,a,d,alpha,theta0,mesh){}
         
     virtual void drawJoint()
     {
