@@ -1,0 +1,77 @@
+<application>
+  <name>Skin Torso</name>
+  <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompTorso.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompTorso</tag>
+  </module>
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiTorso.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>driftCompGuiTorso</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from torso_left_bottom.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>TorsoLB</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from torso_left_top.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>TorsoLT</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from torso_right_bottom.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>TorsoRB</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from torso_right_top.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>TorsoRT</tag>
+  </module>  
+  
+  
+  <connection>
+    <from>/driftCompGuiTorso/rpc:o</from>
+    <to>/torsoSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/torsoSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiTorso/monitor:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/torsoSkinDriftComp/info:o</from>
+    <to>/driftCompGuiTorso/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/torso_left_top</from>
+    <to>/skinGui/torso_left_top:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/torso_left_bottom</from>
+    <to>/skinGui/torso_left_bottom:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/torso_right_top</from>
+    <to>/skinGui/torso_right_top:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/torso_right_bottom</from>
+    <to>/skinGui/torso_right_bottom:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+</application>
