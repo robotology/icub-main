@@ -61,29 +61,29 @@ bool iDynContactSolver::addContact(const dynContact &contact){
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContactSolver::addContacts(const deque<dynContact> &contacts){
+bool iDynContactSolver::addContacts(const dynContactList &contacts){
     contactList.insert(contactList.end(), contacts.begin(), contacts.end());
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynContactSolver::removeContact(const int contactId){
-    return false;
-}
+//bool iDynContactSolver::removeContact(const int contactId){
+//    return false;
+//}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynContactSolver::clearContactList(){
     if(!contactList.empty())
         contactList.clear();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-deque<dynContact> iDynContactSolver::computeExternalContacts(const Vector &FMsens){
-	deque<dynContact> nullList;
+dynContactList iDynContactSolver::computeExternalContacts(const Vector &FMsens){
+	dynContactList nullList;
 	if(!setSensorMeasures(FMsens))                      // set the sensor measure
         return nullList;
 	return computeExternalContacts();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-deque<dynContact> iDynContactSolver::computeExternalContacts(){
-    deque<dynContact> nullList;
+dynContactList iDynContactSolver::computeExternalContacts(){
+    dynContactList nullList;
     if(contactList.size()==0)
         return nullList;
 
@@ -155,7 +155,7 @@ deque<dynContact> iDynContactSolver::computeExternalContacts(){
     // SET THE COMPUTED VALUES IN THE CONTACT LIST
     unsigned int unknownInd = 0;
     Matrix H, R;
-    deque<dynContact>::iterator it = contactList.begin();
+    dynContactList::iterator it = contactList.begin();
     for(; it!=contactList.end(); it++){        
         if(it->isForceDirectionKnown()){
             it->setForceModule( X(unknownInd++));
@@ -211,7 +211,7 @@ Matrix iDynContactSolver::buildA(unsigned int firstContactLink, unsigned int las
     unsigned int colInd = 0;
     Matrix H, R;
     Vector r;
-    deque<dynContact>::const_iterator it = contactList.begin();
+    dynContactList::const_iterator it = contactList.begin();
     for(; it!=contactList.end(); it++){
         // compute the rototranslation matrix from <firstContactLink-1> to the current link
         H = getHFromAtoB(firstContactLink-1, it->getLinkNumber());
@@ -313,13 +313,13 @@ Vector iDynContactSolver::buildB(unsigned int firstContactLink, unsigned int las
     return B;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-deque<dynContact> iDynContactSolver::getContactList() const{
+dynContactList iDynContactSolver::getContactList() const{
     return contactList;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynContactSolver::findContactSubChain(unsigned int &firstLink, unsigned int &lastLink){
-    deque<dynContact>::const_iterator it=contactList.begin();
+    dynContactList::const_iterator it=contactList.begin();
     firstLink = chain->getN()+1; 
     lastLink = 0;
 
@@ -370,7 +370,7 @@ Vector iDynContactSolver::projectContact2Root(const dynContact &c){
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 unsigned int iDynContactSolver::getUnknownNumber() const{
-    deque<dynContact>::const_iterator it=contactList.begin();
+    dynContactList::const_iterator it=contactList.begin();
     unsigned int unknowns=0;
 
     for(; it!=contactList.end(); it++){        

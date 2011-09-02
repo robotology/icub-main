@@ -31,7 +31,7 @@
 #define __IDYNCONT_H__
 
 #include <iCub/iDyn/iDyn.h>
-#include "iCub/skinDynLib/dynContact.h"
+#include "iCub/skinDynLib/dynContactList.h"
 
 
 namespace iCub
@@ -48,7 +48,7 @@ class iDynContactSolver : public iDynSensor
 protected:
 
     /// list of contacts acting on the link chain
-    std::deque<iCub::skinDynLib::dynContact> contactList;
+    iCub::skinDynLib::dynContactList contactList;
 
     void findContactSubChain(unsigned int &firstLink, unsigned int &lastLink);
     yarp::sig::Matrix crossProductMatrix(const yarp::sig::Vector &v);
@@ -84,7 +84,7 @@ public:
 	 * @return true if the operation is successful, false otherwise (eg index out of range)
      */
 	bool addContact(const iCub::skinDynLib::dynContact &contact);
-    bool addContacts(const std::deque<iCub::skinDynLib::dynContact> &contacts);
+    bool addContacts(const iCub::skinDynLib::dynContactList &contacts);
     bool removeContact(const int contactId);
     void clearContactList();
 
@@ -92,9 +92,9 @@ public:
      * Compute an estimate of the external contact wrenches.
      * @return A copy of the external contact list
      */
-    std::deque<iCub::skinDynLib::dynContact> computeExternalContacts(const yarp::sig::Vector &FMsens);
+    iCub::skinDynLib::dynContactList computeExternalContacts(const yarp::sig::Vector &FMsens);
 
-    std::deque<iCub::skinDynLib::dynContact> computeExternalContacts();
+    iCub::skinDynLib::dynContactList computeExternalContacts();
 
 	void computeWrenchFromSensorNewtonEuler();
 
@@ -105,7 +105,7 @@ public:
     /**
      * @return A copy of the external contact list
      */
-    std::deque<iCub::skinDynLib::dynContact> getContactList() const;
+    iCub::skinDynLib::dynContactList getContactList() const;
     unsigned int getUnknownNumber() const;
 
 	//***************************************************************************************
