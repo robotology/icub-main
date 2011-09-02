@@ -29,11 +29,12 @@ using namespace yarp::sig;
 using namespace iCub::skinDriftCompensation;
 
 
-CompensationThread::CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, 
+CompensationThread::CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, double _contactCompensationGain, 
                                        int addThreshold, float minBaseline, bool zeroUpRawData, 
 									   int period, bool binarization, bool smoothFilter, float smoothFactor)
 									   : 
 										RateThread(period), moduleName(name), compensationGain(_compensationGain), 
+                                            contactCompensationGain(_contactCompensationGain), 
 											ADD_THRESHOLD(addThreshold), PERIOD(period), robotName(robotName), 
 											binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
 {
@@ -104,7 +105,7 @@ bool CompensationThread::threadInit()
         stringstream name;
         name<< moduleName<< i;
 		compensators[i] = new Compensator(name.str(), robotName, outputPortName, inputPortName, &infoPort,
-                         compensationGain, ADD_THRESHOLD, minBaseline, zeroUpRawData, binarization, 
+                         compensationGain, contactCompensationGain, ADD_THRESHOLD, minBaseline, zeroUpRawData, binarization, 
                          smoothFilter, smoothFactor);
         SKIN_DIM += compensators[i]->getNumTaxels();
 	}
@@ -275,18 +276,16 @@ void CompensationThread::run(){
 }
 
 void CompensationThread::sendSkinEvents(){
-    Bottle &skinEvents = skinEventsPort.prepare();
+    skinContactList &skinEvents = skinEventsPort.prepare();
     skinEvents.clear();
 
     FOR_ALL_PORTS(i){
         if(compWorking[i]){
-            deque<skinContact> cList = compensators[i]->getContacts();
-            for(unsigned int j=0; j<cList.size(); j++){
-                Bottle &c = skinEvents.addList();
-                c.append(cList[j].toBottle());
-            }
+            skinContactList temp = compensators[i]->getContacts();
+            skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());            
         }
     }
+    //printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 
@@ -370,14 +369,28 @@ void CompensationThread::sendMonitorData(){
             // for each taxel add how much the baseline has changed so far (i.e. the drift)
             FOR_ALL_PORTS(i){
                 if(compWorking[i]){
-                    Vector temp = compensators[i]->getCompensation();
-                    for(int j=0; j<temp.size(); j++){
+                    Vector temp = compensators[i]->getBaselines();
+                    for(int j=0; j<temp.size(); j++){ 
                         b.addDouble(temp[j]);
+                        if(temp[j]<0){
+                            stringstream ss;
+                            ss<<"port "<<compensators[i]->getSkinPartName()<<"; tax "<< j<<"; baseline "<< temp[j]<< "; d: "<< 
+                                compensators[i]->getCompData()[j]<<"; raw: "<< compensators[i]->getRawData()[j]<< 
+                                "; touchThr: "<< compensators[i]->getTouchThreshold()[j];
+                            sendInfoMsg(ss.str());
+                        }
                     }
+                }
+            }
+            FOR_ALL_PORTS(i){
+                if(compWorking[i]){
+                    Vector temp = compensators[i]->getRawData();
+                    for(int j=0; j<temp.size(); j++) b.addDouble(temp[j]);
                 }
             }
         }
         stateSem.post();
+        //printf("Writing %d data on monitor port\n", b.size());
 	    monitorPort.write();
     }
 }
@@ -462,6 +475,16 @@ bool CompensationThread::setCompensationGain(double gain){
     return res;
 }
 
+bool CompensationThread::setContactCompensationGain(double gain){
+    bool res = true;
+    FOR_ALL_PORTS(i){
+        res = res && compensators[i]->setContactCompensationGain(gain);
+    }
+    if(res)
+        contactCompensationGain = gain;
+    return res;
+}
+
 Vector CompensationThread::getTouchThreshold(){
     Vector res(SKIN_DIM);
     int currentDim=0;
@@ -481,6 +504,10 @@ unsigned int CompensationThread::getAddThreshold(){
 
 double CompensationThread::getCompensationGain(){
     return compensationGain;
+}
+
+double CompensationThread::getContactCompensationGain(){
+    return contactCompensationGain;
 }
 
 bool CompensationThread::getBinarization(){

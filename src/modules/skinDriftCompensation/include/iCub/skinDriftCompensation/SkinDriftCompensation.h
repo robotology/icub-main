@@ -198,8 +198,9 @@ public:
 		get_percentile,		set_binarization,	get_binarization, 
 		set_smooth_filter,	get_smooth_filter,	set_smooth_factor, 
 		get_smooth_factor,	set_threshold,      get_threshold, 
-        set_gain,           get_gain,           is_calibrating,		
-        get_info,           help,				quit,               
+        set_gain,           get_gain,           set_cont_gain,           
+        get_cont_gain,      is_calibrating,		get_info,           
+        help,				quit,               
         COMMANDS_COUNT} SkinDriftCompCommand;
    
 	bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
@@ -217,6 +218,7 @@ private:
 	static const int ADD_THRESHOLD_DEFAULT;
 	static const float SMOOTH_FACTOR_DEFAULT;
 	static const float COMPENSATION_GAIN_DEFAULT;
+    static const float CONTACT_COMPENSATION_GAIN_DEFAULT;
 	static const string MODULE_NAME_DEFAULT;
 	static const string ROBOT_NAME_DEFAULT;
 	//static const string HAND_DEFAULT;

@@ -35,6 +35,7 @@
 #include <yarp/dev/PolyDriver.h>
 
 #include "iCub/skinDynLib/skinContact.h"
+#include "iCub/skinDynLib/skinContactList.h"
 
 using namespace std;
 using namespace yarp::os; 
@@ -51,8 +52,8 @@ class Compensator
 	/* class methods */
 public:
 	Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort,
-                         double _compensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
-                         bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
+                         double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
+                         bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
     ~Compensator();
 	    
 	void calibrationInit();
@@ -62,7 +63,7 @@ public:
 	void updateBaseline();
 	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
     //bool isThereContact();
-    deque<skinContact> getContacts();
+    skinContactList getContacts();
     bool isWorking();
 
 	void setBinarization(bool value);
@@ -70,6 +71,7 @@ public:
 	bool setSmoothFactor(float value);    
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
+    bool setContactCompensationGain(double gain);
     bool setTaxelPositions(const char *filePath);
     void setLinkNum(unsigned int linkNum);
     void setBodyPart(BodyPart _bodyPart);
@@ -80,9 +82,13 @@ public:
 	bool getSmoothFilter();
 	float getSmoothFactor();    
     unsigned int getAddThreshold();
-    double getCompensationGain();    
+    double getCompensationGain();
+    double getContactCompensationGain();
     unsigned int getNumTaxels();
+    Vector getBaselines();
     Vector getCompensation();
+    Vector getRawData();    
+    Vector getCompData();
     string getName();
     string getInputPortName();    
 	//Vector getContactCOP();         // get the contact center of pressure
@@ -108,12 +114,17 @@ private:
     SkinPart skinPart;                          // id of the part of the skin (hand, forearm_lower, arm_internal, ...)
     BodyPart bodyPart;                          // id of the part of the body (head, torso, left_arm, right_arm, ...)
     unsigned int linkNum;                       // number of the link
-	double **taxelPosOri;						// taxel positions and normals {xPos, yPos, zPos, xOri, yOri, zOri}
+
+    // SKIN CONTACTS
+    vector<vector<int>>     neighborsXtaxel;    // list of neighbors for each taxel    
+	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
+    vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
 
 	// COMPENSATION
 	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
 	vector<bool> touchDetectedFilt;             // true if touch has been detected after applying the filtering
     vector<bool> subTouchDetected;              // true if the taxel value has gone under the baseline (because of touch in neighbouring taxels)
+    Vector rawData;                             // data read from the skin
     Vector touchThresholds;						// thresholds for discriminating between "touch" and "no touch"
 	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold
     Vector initialBaselines;					// mean of the raw tactile data computed during calibration
@@ -138,6 +149,7 @@ private:
     // input parameters
     unsigned int addThreshold;          // value added to the touch threshold of every taxel    
 	double compensationGain;            // proportional gain of the compensation algorithm
+    double contactCompensationGain;     // proportional gain of the compensation algorithm during contact
 	bool zeroUpRawData;				    // if true the raw data are considered from zero up, otherwise from 255 down
     float minBaseline;				    // min baseline value regarded as "safe"
 	bool binarization;				    // if true binarize the compensated output value (0: no touch, 255: touch)
@@ -154,6 +166,7 @@ private:
     bool init(string name, string robotName, string outputPortName, string inputPortName);
     bool readInputData(Vector& skin_values);
     void sendInfoMsg(string msg);
+    void computeNeighbors(double maxDist);
 	
 };
 

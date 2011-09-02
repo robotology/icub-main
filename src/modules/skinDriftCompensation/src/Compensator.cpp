@@ -16,6 +16,7 @@
  * Public License for more details
  */
 #include <yarp/os/Time.h>
+#include <yarp/math/Math.h>
 #include "math.h"
 #include <algorithm>
 #include "iCub/skinDriftCompensation/Compensator.h"
@@ -24,14 +25,16 @@
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::math;
 using namespace iCub::skinDriftCompensation;
 using namespace iCub::skinDynLib;
 
 Compensator::Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort, 
-                         double _compensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, bool _binarization, 
-                         bool _smoothFilter, float _smoothFactor, unsigned int _linkNum)
+                         double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
+                         bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkNum)
 									   : 
-										compensationGain(_compensationGain), addThreshold(addThreshold), infoPort(_infoPort),
+										compensationGain(_compensationGain), contactCompensationGain(_contactCompensationGain),
+                                            addThreshold(addThreshold), infoPort(_infoPort),
                                             minBaseline(_minBaseline), binarization(_binarization), smoothFilter(_smoothFilter), 
                                             smoothFactor(_smoothFactor), robotName(robotName), name(name), linkNum(_linkNum)
 {
@@ -87,14 +90,20 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
 		skinDim = 192;
 	}
     readErrorCounter = 0;
+    rawData.resize(skinDim);
     baselines.resize(skinDim);
     touchThresholds.resize(skinDim);
     touchDetected.resize(skinDim);
     subTouchDetected.resize(skinDim);
     touchDetectedFilt.resize(skinDim);
     compensatedData.resize(skinDim);
-    compensatedDataOld.resize(skinDim);
-    taxelPosOri = NULL;
+    compensatedDataOld.resize(skinDim);    
+    taxelPos.resize(skinDim, zeros(3));
+    taxelOri.resize(skinDim, zeros(3));
+    // by default every taxel is neighbor with all the other taxels
+    vector<int> defaultNeighbors(skinDim);
+    for(unsigned int i=0;i<skinDim;i++) defaultNeighbors[i]=i;
+    neighborsXtaxel.resize(skinDim, defaultNeighbors);    
 
     // test read to check if the skin is broken (all taxel output is 0)
     if(readInputData(compensatedData)){
@@ -254,8 +263,7 @@ bool Compensator::readInputData(Vector& skin_values){
     return true;
 }
 
-bool Compensator::readRawAndWriteCompensatedData(){
-    Vector rawData(skinDim);
+bool Compensator::readRawAndWriteCompensatedData(){    
     if(!readInputData(rawData))
         return false;
 	
@@ -308,8 +316,8 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	            d = BIN_NO_TOUCH;
         }
         
-        if(d<0) // if negative, set it to zero
-		    d=0;
+      //  if(d<0) // if negative, set it to zero
+		    //d=0;
 	    compensatedData2Send.push_back(d);
 	}
 
@@ -318,31 +326,50 @@ bool Compensator::readRawAndWriteCompensatedData(){
 }
 
 void Compensator::updateBaseline(){
-	double mean_change = 0, change;
+	double mean_change = 0, change, gain;
     unsigned int non_touching_taxels = 0;
 	double d; 
 
     for(unsigned int j=0; j<skinDim; j++) {
-        if(!(touchDetected[j] || subTouchDetected[j])){
+        // *** Algorithm 1
+        /*if(!touchDetected[j]){
+		    if(d > 0.5) {
+			    baselines[j]		+= compensationGain;
+			    mean_change			+= compensationGain;				//for changing the taxels where we detected touch
+		    }else if(d < -0.5) {
+			    baselines[j]		-= compensationGain;
+			    mean_change			-= compensationGain;				//for changing the taxels where we detected touch
+		    }
+        }*/
+
+        // *** Algorithm 2
+        /*if(!(touchDetected[j] || subTouchDetected[j])){
 			non_touching_taxels++;										//for changing the taxels where we detected touch
 			d = compensatedData(j);
-
-            // old algorithm
-			//if(d > 0.5) {
-			//	baselines[j]		+= compensationGain;
-			//	mean_change			+= compensationGain;				//for changing the taxels where we detected touch
-			//}else if(d < -0.5) {
-			//	baselines[j]		-= compensationGain;
-			//	mean_change			-= compensationGain;				//for changing the taxels where we detected touch
-			//}
-
-            // new algorithm
 			if(fabs(d)>0.5){
                 change          = (compensationGain/50)*d/touchThresholds[j];
 				baselines[j]    += change;
                 mean_change     += change;
 			}
-		}
+		}*/
+
+        d = compensatedData(j);
+		if(fabs(d)>0.5){
+            if(touchDetected[j]){
+                gain            = contactCompensationGain/50;                
+            }else{
+                gain            = compensationGain/50;                
+                non_touching_taxels++;
+            }
+            change          = gain*d/touchThresholds[j];
+			baselines[j]    += change;
+            mean_change     += change;
+
+            if(baselines[j]<0){
+                printf("port %s; tax %d; baseline %.2f; gain: %.4f; d: %.2f; raw: %.2f; change: %f; touchThr: %.2f\n", SkinPart_s[skinPart].c_str(), j, baselines[j], 
+                    gain, d, rawData[j], change, touchThresholds[j]);
+            }
+		}        
     }
     
     //for compensating the taxels where we detected touch
@@ -351,6 +378,9 @@ void Compensator::updateBaseline(){
         for(unsigned int j=0; j<skinDim; j++) {
             if (touchDetected[j]) {
                 baselines[j]		+= mean_change;
+                if(baselines[j]<0){
+                    printf("2)tax %d; baseline %.2f; meanchange: %f; \n", j, baselines[j], mean_change);
+                }
             }
         }
     }
@@ -375,12 +405,71 @@ bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline,
 }
 
 
-deque<skinContact> Compensator::getContacts(){
-    deque<skinContact> contactList;
-    // temporarily suppose there is only one contact
+skinContactList Compensator::getContacts(){    
+    vector<int>         contactXtaxel(skinDim, -1);     // contact for each taxel (-1 means no contact)
+    deque<deque<int>>   taxelsXcontact;                 // taxels for each contact
+    int                 contactId = 0;                  // id of the next contact to create
+    int                 neighCont;                      // id of the contact of the current neighbor
+
+    for(unsigned int i=0; i<skinDim; i++){
+        if(touchDetectedFilt[i] ){ // && contactXtaxel[i]<0 (second condition should always be true)
+            vector<int> *neighbors = &(neighborsXtaxel[i]);
+            //printf("Taxel %d active. Going to check its %d neighbors\n", i, neighbors->size());
+            for(unsigned int n=0; n<neighbors->size(); n++){
+                
+                neighCont = contactXtaxel[(*neighbors)[n]];
+                if(neighCont >= 0){                                     // ** if neighbor belongs to a contact
+                    if(contactXtaxel[i]<0){                             // ** add taxel to pre-existing contact
+                        contactXtaxel[i] = neighCont;
+                        taxelsXcontact[neighCont].push_back(i);
+                        //printf("Add taxel to pre existing contact %d (neighbor %d)\n", neighCont, (*neighbors)[n]);
+                    }else if(contactXtaxel[i]!=neighCont){              // ** merge 2 contacts
+                        //mergeContacts(contactXtaxel[i], neighCont);
+                        int newId = min(contactXtaxel[i], neighCont);
+                        int oldId = max(contactXtaxel[i], neighCont);
+                        deque<int> tax2move = taxelsXcontact[oldId];
+                        for(deque<int>::iterator it=tax2move.begin(); it!=tax2move.end(); it++){
+                            contactXtaxel[(*it)] = newId;               // assign new contact id
+                            taxelsXcontact[newId].push_back((*it));     // add taxel ids to contact
+                        }
+                        taxelsXcontact[oldId].clear();      // clear the list of taxels belonging to the merged contact
+                        //printf("Merge two contacts: %d and %d\n", oldId, newId);
+                    }
+                }
+
+            }
+            if(contactXtaxel[i]<0){            // ** if no neighbor belongs to a contact -> create new contact
+                contactXtaxel[i] = contactId;
+                taxelsXcontact.resize(contactId+1);
+                taxelsXcontact[contactId].push_back(i);
+                contactId++;
+                //printf("New contact created: %d\n", contactId-1);
+            }
+        }
+    }
+    //printf("Clustering finished\n");
+
+    skinContactList contactList;
     Vector CoP(3);
+    for( deque<deque<int>>::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
+        int activeTaxels = it->size();
+        //printf("Contact size: %d\n", activeTaxels);
+        if(activeTaxels==0) continue;        
+        
+        CoP.zero();
+        for( deque<int>::iterator tax=it->begin(); tax!=it->end(); tax++){
+            CoP = CoP+taxelPos[(*tax)];
+        }
+        CoP = CoP/activeTaxels;
+        skinContact c(bodyPart, skinPart, linkNum, CoP, CoP, activeTaxels, 0.0);
+        contactList.push_back(c);
+    }
+
+
+    // temporarily suppose there is only one contact
+    /*Vector CoP(3);
     CoP.zero();
-    double taxelsTouched = 0;
+    int taxelsTouched = 0;
     for(int i=0; i!=touchDetectedFilt.size(); i++){
         if(touchDetectedFilt[i]){
 	        taxelsTouched++;
@@ -395,9 +484,9 @@ deque<skinContact> Compensator::getContacts(){
         CoP[0]=CoP[0]/taxelsTouched;
         CoP[1]=CoP[1]/taxelsTouched;
         CoP[2]=CoP[2]/taxelsTouched;
-        skinContact c(bodyPart, skinPart, linkNum, CoP);
+        skinContact c(bodyPart, skinPart, linkNum, CoP, CoP, taxelsTouched, 0.0);
         contactList.push_back(c);
-    }
+    }*/
     
     return contactList;
 }
@@ -442,7 +531,6 @@ bool Compensator::setAddThreshold(unsigned int thr){
     if(thr>=MAX_SKIN)
         return false;
     addThreshold = thr;
-    cout<< "Add threshold changed: "<< thr<< endl;
     return true;
 }
 
@@ -450,7 +538,13 @@ bool Compensator::setCompensationGain(double gain){
     if(gain<=0.0)
         return false;
     compensationGain = gain;
-    cout<< "Compensation gain changed: "<< gain<< endl;
+    return true;
+}
+
+bool Compensator::setContactCompensationGain(double gain){
+    if(gain<0.0)
+        return false;
+    contactCompensationGain = gain;
     return true;
 }
 
@@ -467,21 +561,15 @@ Vector Compensator::getTouchThreshold(){
 	return res;
 }
 
-string Compensator::getBodyPartName(){
-    return BodyPart_s[bodyPart];
-}
+string Compensator::getBodyPartName(){ return BodyPart_s[bodyPart];}
 
-string Compensator::getSkinPartName(){
-    return SkinPart_s[skinPart];
-}
+string Compensator::getSkinPartName(){ return SkinPart_s[skinPart];}
+SkinPart Compensator::getSkinPart(){ return skinPart;}
 
-Vector Compensator::getCompensation(){
-    Vector res(baselines.size());
-    for(int i=0; i<res.size(); i++){
-        res[i] = baselines[i] - initialBaselines[i];
-    }
-    return res;
-}
+Vector Compensator::getCompensation(){  return baselines-initialBaselines;}
+Vector Compensator::getBaselines(){     return baselines;}
+Vector Compensator::getRawData(){       return rawData;}
+Vector Compensator::getCompData(){      return compensatedData;}
 
 bool Compensator::getBinarization(){
 	return binarization;
@@ -507,6 +595,9 @@ unsigned int Compensator::getAddThreshold(){
 double Compensator::getCompensationGain(){
     return compensationGain;
 }
+double Compensator::getContactCompensationGain(){
+    return contactCompensationGain;
+}
 string Compensator::getName(){
     return name;
 }
@@ -521,30 +612,63 @@ bool Compensator::isWorking(){
 
 bool Compensator::setTaxelPositions(const char *filePath){
 	ifstream posFile;
-	posFile.open(filePath);
-	string posLine;
-	int totalLines = 0;
-	if (posFile.is_open()) {
-		while (getline(posFile,posLine)){
-			posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
-			if(!posLine.empty())totalLines++;
+	posFile.open(filePath);		
+	if (!posFile.is_open())
+        return false;
+
+    string posLine;
+    int totalLines = 0;
+	while (getline(posFile,posLine)){
+		posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
+		if(!posLine.empty())totalLines++;
+	}
+	posFile.clear(); 
+	posFile.seekg(0, std::ios::beg);//rewind iterator
+    if(totalLines!=skinDim){
+        fprintf(stderr, "Error while reading taxel position file %s: num of lines %d is not equal to num of taxels %d.\n", 
+            filePath, totalLines, skinDim);
+    }
+
+	for(int i= 0; getline(posFile,posLine); i++) {
+		posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
+		if(posLine.empty())
+			continue;
+		string number;
+		istringstream iss(posLine, istringstream::in);
+		for(int j = 0; iss >> number; j++ ){
+            if(j<3)
+			    taxelPos[i][j] = strtod(number.c_str(),NULL);
+            else
+                taxelOri[i][j-3] = strtod(number.c_str(),NULL);
 		}
-		posFile.clear(); 
-		posFile.seekg(0, std::ios::beg);//rewind iterator
-		taxelPosOri = new double*[totalLines];
-		for(int i= 0; getline(posFile,posLine); i++) {
-			posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
-			if(posLine.empty())
-				continue;
-			taxelPosOri[i] = new double[6];
-			string number;
-			istringstream iss(posLine, istringstream::in);
-			for(int j = 0; iss >> number; j++ ){
-				taxelPosOri[i][j] = strtod(number.c_str(),NULL);
-			}
-		}
-	}else return false;
+	}
+    computeNeighbors(0.01);
+
 	return true;
+}
+void Compensator::computeNeighbors(double maxDist){
+    neighborsXtaxel.clear();
+    neighborsXtaxel.resize(skinDim, vector<int>(0));
+    for(unsigned int i=0; i<skinDim; i++){
+        for(unsigned int j=i+1; j<skinDim; j++){
+            if( norm(taxelPos[i]-taxelPos[j]) <= maxDist){
+                neighborsXtaxel[i].push_back(j);
+                neighborsXtaxel[j].push_back(i);
+                //printf("Taxels %d (%s) and %d (%s) are neighbors\n", i, taxelPos[i].toString().c_str(), j, taxelPos[j].toString().c_str());
+            }
+        }
+    }
+
+    int minNeighbors=skinDim, maxNeighbors=0, ns;
+    for(unsigned int i=0; i<skinDim; i++){
+        ns = neighborsXtaxel[i].size();
+        if(ns>maxNeighbors) maxNeighbors = ns;
+        if(ns<minNeighbors) minNeighbors = ns;
+        /*printf("\nTaxel %d neighbors are: ", i);
+        for(unsigned int j=0; j<ns; j++)
+            printf("%d ", neighborsXtaxel[i][j]);*/
+    }
+    //printf("Min neighbors: %d\nMax neighbors: %d\n", minNeighbors, maxNeighbors);
 }
 void Compensator::sendInfoMsg(string msg){
     printf("\n");

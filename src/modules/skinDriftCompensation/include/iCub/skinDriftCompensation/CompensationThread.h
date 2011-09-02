@@ -35,11 +35,13 @@
 
 #include <yarp/os/Network.h>	//temporary
 #include "iCub/skinDriftCompensation/Compensator.h"
+#include "iCub/skinDynLib/skinContactList.h"
 
 using namespace std;
 using namespace yarp::os; 
 using namespace yarp::sig;
 using namespace yarp::dev;
+using namespace iCub::skinDynLib;
 
 namespace iCub{
 
@@ -52,8 +54,8 @@ public:
 
 	/* class methods */
 
-	CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, int addThreshold, 
-		float minBaseline, bool zeroUpRawData, int period, bool binarization, bool smoothFilter, float smoothFactor);
+	CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, double _contactCompensationGain,
+        int addThreshold, float minBaseline, bool zeroUpRawData, int period, bool binarization, bool smoothFilter, float smoothFactor);
 	bool threadInit();
 	void threadRelease();
 	void run(); 
@@ -64,6 +66,7 @@ public:
 	bool setSmoothFactor(float value);
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
+    bool setContactCompensationGain(double gain);
 
 	Vector getTouchThreshold();
 	bool getBinarization();
@@ -71,6 +74,7 @@ public:
 	float getSmoothFactor();
     unsigned int getAddThreshold();
     double getCompensationGain();
+    double getContactCompensationGain();
 	bool isCalibrating();
     Bottle getInfo();
 
@@ -85,6 +89,7 @@ private:
 	int ADD_THRESHOLD;							// value added to the touch threshold of every taxel	
 	unsigned int SKIN_DIM;						// number of taxels (for the hand it is 192)
 	double compensationGain;				    // the gain of the compensation algorithm
+    double contactCompensationGain;				// the gain of the compensation algorithm during contact
 
 	/* class variables */
 	double frequency;
@@ -116,7 +121,7 @@ private:
     bool skinEventsOn;
 
 	/* ports */
-    BufferedPort<Bottle> skinEventsPort;			// skin events output port
+    BufferedPort<skinContactList> skinEventsPort;   // skin events output port
 	BufferedPort<Bottle> monitorPort;				// monitoring output port (streaming)
     BufferedPort<Bottle> infoPort;					// info output port
 

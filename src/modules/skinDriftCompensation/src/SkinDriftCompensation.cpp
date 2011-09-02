@@ -28,6 +28,7 @@ const int SkinDriftCompensation::ADD_THRESHOLD_DEFAULT = 2;
 const int SkinDriftCompensation::PERIOD_DEFAULT = 50;
 const float SkinDriftCompensation::SMOOTH_FACTOR_DEFAULT = 0.5;
 const float SkinDriftCompensation::COMPENSATION_GAIN_DEFAULT = 0.2f;
+const float SkinDriftCompensation::CONTACT_COMPENSATION_GAIN_DEFAULT = 0.0f;
 const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
 const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
 //const string SkinDriftCompensation::HAND_DEFAULT = "right";
@@ -40,9 +41,9 @@ const string SkinDriftCompensation::COMMAND_LIST[]  = {
 	"get percentile",		"set binarization",		"get binarization", 
 	"set smooth filter",	"get smooth filter",	"set smooth factor",	
 	"get smooth factor",	"set threshold",        "get threshold", 
-    "set gain",             "get gain",
-    "is calibrating",       "get info",		        "help",					
-    "quit"};
+    "set gain",             "get gain",             "set contact gain",
+    "get contact gain",     "is calibrating",       "get info",		        
+    "help",					"quit"};
 
 // the order in COMMAND_DESC must correspond to the order in COMMAND_LIST
 const string SkinDriftCompensation::COMMAND_DESC[]  = {
@@ -60,6 +61,8 @@ const string SkinDriftCompensation::COMMAND_DESC[]  = {
     "get the safety threshold that is added to the touch threshold",
     "set the compensation gain", 
     "get the compensation gain",
+    "set the contact compensation gain", 
+    "get the contact compensation gain",
 	"tell whether the skin calibration is in progress",
     "get information about the module",
 	"get this list", 
@@ -87,6 +90,8 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	   "Determine the smoothing intensity (float in [0,1])").asDouble();
 	float compGain			= (float)rf.check("compensationGain", Value(COMPENSATION_GAIN_DEFAULT), 
 	   "Gain of the compensation algorithm (float)").asDouble();
+    float contCompGain		= (float)rf.check("contactCompensationGain", Value(CONTACT_COMPENSATION_GAIN_DEFAULT), 
+	   "Gain of the compensation algorithm during contact (float)").asDouble();
 	int addThreshold		= (int)rf.check("addThreshold", Value(ADD_THRESHOLD_DEFAULT), 
 	   "Value added to all the touch thresholds (positive int)").asInt();
 	
@@ -110,10 +115,11 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 		return false;
 	}
 	attach(handlerPort);                  // attach to port	
+    handlerPort.setRpcMode(true);
 
 
 	/* create the thread and pass pointers to the module parameters */
-	myThread = new CompensationThread(moduleName, &rf, robotName, compGain, addThreshold, minBaseline, 
+	myThread = new CompensationThread(moduleName, &rf, robotName, compGain, contCompGain, addThreshold, minBaseline, 
 		zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
 	/* now start the thread to do the work */
 	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
@@ -162,7 +168,7 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 			return false;
 
 		case help:
-			reply.addString("many");				// print every string added to the bottle on a new line
+            reply.addVocab(Vocab::encode("many"));				// print every string added to the bottle on a new line
 			reply.addString(helpMessage.c_str());
 			for(unsigned int i=0; i< COMMANDS_COUNT; i++){
 				reply.addString( ("- "+COMMAND_LIST[i]+": "+COMMAND_DESC[i]).c_str() );
@@ -170,9 +176,6 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 			return true;
 
 		case forbid_calibration:
-            reply.addString("Command deprecated!");
-			return true;
-
 		case allow_calibration:
 			reply.addString("Command deprecated!");
 			return true;
@@ -303,6 +306,28 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
         case get_gain:
             reply.addDouble(myThread->getCompensationGain());
+            return true;
+
+        case set_cont_gain:
+            {
+			if(command.size()<4 || (!command.get(3).isDouble())){
+				reply.addString("New gain value missing or not a double! Contact gain not updated.");
+				return true;
+			}
+
+			stringstream temp;
+			if(myThread->setContactCompensationGain(command.get(3).asDouble())){	
+				temp<< "New contact gain set: "<< command.get(3).asDouble();				
+			}
+			else{
+				temp<< "ERROR in setting new contact gain: "<< command.get(3).asDouble();
+			}
+			reply.addString( temp.str().c_str());
+			return true;
+			}
+
+        case get_cont_gain:
+            reply.addDouble(myThread->getContactCompensationGain());
             return true;
 
 		case is_calibrating:
