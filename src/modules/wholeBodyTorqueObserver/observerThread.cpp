@@ -240,7 +240,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_wrench_RA = new BufferedPort<Vector>;  
     port_external_wrench_LA = new BufferedPort<Vector>;  
 	port_external_wrench_TO = new BufferedPort<Vector>; 
-    port_skin_events = new BufferedPort<Bottle>; 
+    port_skin_events = new BufferedPort<skinContactList>; 
 	port_com_all = new BufferedPort<Vector>;
 	port_com_la  = new BufferedPort<Vector>;
 	port_com_ra  = new BufferedPort<Vector>;
@@ -993,22 +993,27 @@ void inverseDynamics::setZeroJntAngVelAcc()
 }
 
 void inverseDynamics::addSkinContacts(){
-    Bottle *skinEvents = port_skin_events->read(false);
+    skinContactList *skinEvents = port_skin_events->read(false);
     // if nothing is read
     if(!skinEvents){ // || skinEvents->isNull())
         if(skinEventsTimestamp!=0.0 && Time::now()-skinEventsTimestamp > SKIN_EVENTS_TIMEOUT){   
             // if time is up, remove all the contacts
             fprintf(stderr, "Skin event timeout (%3.3f sec)\n", SKIN_EVENTS_TIMEOUT);
             icub->upperTorso->leftSensor->clearContactList();
+            icub->upperTorso->rightSensor->clearContactList();
         }
         return;     // otherwise keep the same contacts you had before
     }
     
     skinEventsTimestamp = Time::now();  // update the timestamp
     icub->upperTorso->leftSensor->clearContactList();
-    for(int i=0; i<skinEvents->size(); i++){
-        Bottle *e = skinEvents->get(i).asList();
-        skinContact c(*e);
-        icub->upperTorso->leftSensor->addContact(c);
+    icub->upperTorso->rightSensor->clearContactList();
+    dynContactList contactList = skinEvents->toDynContactList();
+    for(dynContactList::iterator it=contactList.begin(); it!=contactList.end(); it++){
+        if(it->getBodyPart()==LEFT_ARM)
+            icub->upperTorso->leftSensor->addContact((*it));
+        else if(it->getBodyPart() == RIGHT_ARM)
+            icub->upperTorso->rightSensor->addContact((*it));
     }
+    //printf("Dyn contact: %d\n", contactList.size());
 }

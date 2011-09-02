@@ -26,6 +26,7 @@
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
+#include <iCub/skinDynLib/skinContactList.h>
 
 #include <iostream>
 #include <iomanip>
@@ -89,7 +90,7 @@ private:
 	BufferedPort<Vector> *port_ft_leg_left;
     BufferedPort<Vector> *port_ft_leg_right;
 	BufferedPort<Vector> *port_inertial_thread;
-    BufferedPort<Bottle> *port_skin_events;
+    BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_events;
 
 	//output ports
 	BufferedPort<Bottle> *port_RATorques;
