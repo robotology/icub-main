@@ -32,7 +32,6 @@
 #include <iostream>
 #include <iomanip>
 #include <yarp/sig/Vector.h>
-#include <yarp/os/Bottle.h>
 #include "iCub/skinDynLib/dynContact.h"
 
 namespace iCub
@@ -62,27 +61,14 @@ public:
 	//   CONSTRUCTORS
 	//~~~~~~~~~~~~~~~~~~~~~~
     /**
-    * Default constructor
+    * Default contructor
     */
-    skinContact(BodyPart _bodyPart, SkinPart _skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP);
+    skinContact();
     /**
-    * Contructor from Bottle
+    * 
     */
-    skinContact(const yarp::os::Bottle& b);
-
-
-    //~~~~~~~~~~~~~~~~~~~~~~
-	//   BOTTLE methods
-	//~~~~~~~~~~~~~~~~~~~~~~
-    /**
-     * Creates a bottle containing all the data of this object.
-     */
-    virtual yarp::os::Bottle    toBottle()              const;
-    /**
-     * Populate the object with the data contained in the specified Bottle.
-     */
-    virtual bool                fromBottle(const yarp::os::Bottle& b);
-
+    skinContact(BodyPart _bodyPart, SkinPart _skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure);
 
     //~~~~~~~~~~~~~~~~~~~~~~
 	//   GET methods
@@ -101,6 +87,22 @@ public:
     bool setPressure(double _pressure);
     bool setActiveTaxels(unsigned int _activeTaxels);
     void setSkinPart(SkinPart _skinPart);
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//   SERIALIZATION methods
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /*
+    * Read skinContact from a connection.
+    * return true iff a skinContact was read correctly
+    */
+    virtual bool read(yarp::os::ConnectionReader& connection);
+    /**
+    * Write skinContact to a connection.
+    * return true iff a skinContact was written correctly
+    */
+    virtual bool write(yarp::os::ConnectionWriter& connection);
+
+    virtual std::string toString() const;
    
 };
 

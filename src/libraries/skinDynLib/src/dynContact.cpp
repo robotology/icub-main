@@ -173,7 +173,7 @@ void dynContact::unfixForceDirection(){ fDirKnown=false;}
 void dynContact::unfixMoment(){ muKnown=false;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~
-//   BOTTLE methods
+//   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::write(ConnectionWriter& connection){
     //connection.declareSizes();
@@ -192,9 +192,7 @@ bool dynContact::write(ConnectionWriter& connection){
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool dynContact::read(ConnectionReader& connection){    
-    printf("dynContact size: %d\n", connection.getSize());
-
+bool dynContact::read(ConnectionReader& connection){
     // auto-convert text mode interaction
     connection.convertTextMode();
     // populate the object
@@ -208,7 +206,7 @@ bool dynContact::read(ConnectionReader& connection){
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string dynContact::toString(){
+string dynContact::toString() const{
     stringstream res;
     res<< "Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<< CoP.toString().c_str()
         << ", F: "<< getForce().toString().c_str()<< ", M: "<< Mu.toString().c_str();
