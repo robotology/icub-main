@@ -407,7 +407,7 @@ bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline,
 
 skinContactList Compensator::getContacts(){    
     vector<int>         contactXtaxel(skinDim, -1);     // contact for each taxel (-1 means no contact)
-    deque<deque<int>>   taxelsXcontact;                 // taxels for each contact
+    deque<deque<int> >  taxelsXcontact;                 // taxels for each contact
     int                 contactId = 0;                  // id of the next contact to create
     int                 neighCont;                      // id of the contact of the current neighbor
 
@@ -451,7 +451,7 @@ skinContactList Compensator::getContacts(){
 
     skinContactList contactList;
     Vector CoP(3);
-    for( deque<deque<int>>::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
+    for( deque<deque<int> >::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
         int activeTaxels = it->size();
         //printf("Contact size: %d\n", activeTaxels);
         if(activeTaxels==0) continue;        
@@ -651,7 +651,8 @@ void Compensator::computeNeighbors(double maxDist){
     neighborsXtaxel.resize(skinDim, vector<int>(0));
     for(unsigned int i=0; i<skinDim; i++){
         for(unsigned int j=i+1; j<skinDim; j++){
-            if( norm(taxelPos[i]-taxelPos[j]) <= maxDist){
+            Vector v = taxelPos[i]-taxelPos[j];
+            if( dot(v,v) <= (maxDist*maxDist)){
                 neighborsXtaxel[i].push_back(j);
                 neighborsXtaxel[j].push_back(i);
                 //printf("Taxels %d (%s) and %d (%s) are neighbors\n", i, taxelPos[i].toString().c_str(), j, taxelPos[j].toString().c_str());

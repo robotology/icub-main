@@ -116,7 +116,7 @@ private:
     unsigned int linkNum;                       // number of the link
 
     // SKIN CONTACTS
-    vector<vector<int>>     neighborsXtaxel;    // list of neighbors for each taxel    
+    vector< vector<int> >     neighborsXtaxel;    // list of neighbors for each taxel    
 	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
     vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
 
