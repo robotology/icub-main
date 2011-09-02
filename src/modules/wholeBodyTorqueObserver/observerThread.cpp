@@ -504,6 +504,11 @@ void inverseDynamics::run()
 
     // DYN CONTACTS
     dynContactList contactList = icub->upperTorso->leftSensor->getContactList();
+    printf("%s\n", contactList.toString().c_str());
+    for(dynContactList::iterator it=contactList.begin(); it!=contactList.end(); it++){
+        it->setForceModule(it->getForceModule()*10);
+        it->setCoP(it->getCoP()*1000);
+    }
 
     // *** MONITOR DATA ***
     Vector monitorData(0);
@@ -1021,10 +1026,11 @@ void inverseDynamics::addSkinContacts(){
     icub->upperTorso->rightSensor->clearContactList();
     dynContactList contactList = skinEvents->toDynContactList();
     for(dynContactList::iterator it=contactList.begin(); it!=contactList.end(); it++){
-        if(it->getBodyPart()==LEFT_ARM)
+        if(it->getBodyPart()==LEFT_ARM){
+            //printf("%s\n", it->toString().c_str());
             icub->upperTorso->leftSensor->addContact((*it));
-        else if(it->getBodyPart() == RIGHT_ARM)
+        }else if(it->getBodyPart() == RIGHT_ARM)
             icub->upperTorso->rightSensor->addContact((*it));
     }
-    //printf("Dyn contact: %d\n", contactList.size());
+    printf("Dyn contacts: %d\n", contactList.size());
 }
