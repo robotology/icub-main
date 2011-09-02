@@ -249,6 +249,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_to  = new BufferedPort<Vector>;
 	port_com_hd  = new BufferedPort<Vector>;
     port_monitor = new BufferedPort<Vector>;
+    port_dyn_contacts = new BufferedPort<dynContactList>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
 	port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -275,6 +276,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_to ->open(string("/"+local_name+"/torso/com:o").c_str());
     port_skin_events->open(string("/"+local_name+"/skin_events:i").c_str());
     port_monitor->open(string("/"+local_name+"/monitor:o").c_str());
+    port_dyn_contacts->open(string("/"+local_name+"/dyn_contacts:o").c_str());
 
 	if (autoconnect)
 	{
@@ -500,6 +502,9 @@ void inverseDynamics::run()
 	F_ext_left_arm=icub->upperTorso->left->getForceMomentEndEff();//-icub_sens->upperTorso->left->getForceMomentEndEff();
 	F_ext_right_arm=icub->upperTorso->right->getForceMomentEndEff();//-icub_sens->upperTorso->right->getForceMomentEndEff();
 
+    // DYN CONTACTS
+    dynContactList contactList = icub->upperTorso->leftSensor->getContactList();
+
     // *** MONITOR DATA ***
     Vector monitorData(0);
     //monitorData = w0 * CTRL_RAD2DEG;                                // w inertial sensor
@@ -545,6 +550,7 @@ void inverseDynamics::run()
 	port_external_wrench_TO->prepare() = F_up;
 	port_external_wrench_RA->prepare() = F_ext_right_arm;
 	port_external_wrench_LA->prepare() = F_ext_left_arm;
+    port_dyn_contacts->prepare() = contactList;
     port_monitor->prepare() = monitorData;
 	port_com_all->write();
 	port_com_ll->write();
@@ -555,7 +561,8 @@ void inverseDynamics::run()
 	port_com_to->write();
 	port_external_wrench_RA->write();
 	port_external_wrench_LA->write();
-	port_external_wrench_TO->write();	
+	port_external_wrench_TO->write();
+    port_dyn_contacts->write();
     port_monitor->write();
 }
 
@@ -633,6 +640,10 @@ void inverseDynamics::threadRelease()
 	closePort(port_ft_leg_left);
     fprintf(stderr, "Closing skin_events port\n");
 	closePort(port_skin_events);
+    fprintf(stderr, "Closing monitor port\n");
+    closePort(port_monitor);
+    fprintf(stderr, "Closing dyn_contacts port\n");
+    closePort(port_dyn_contacts);
 
 	if (icub)      {delete icub; icub=0;}
 	if (icub_sens) {delete icub_sens; icub=0;}

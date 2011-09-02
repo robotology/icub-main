@@ -112,6 +112,7 @@ private:
 	BufferedPort<Vector> *port_com_hd;
 	BufferedPort<Vector> *port_com_to;
     BufferedPort<Vector> *port_monitor;
+    BufferedPort<iCub::skinDynLib::dynContactList> *port_dyn_contacts;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;
