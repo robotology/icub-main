@@ -1,1 +1,0 @@
-iCub software readme.txt
