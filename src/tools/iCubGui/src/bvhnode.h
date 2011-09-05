@@ -46,30 +46,63 @@
 class ForceArrow
 {
 public:
-    ForceArrow(double x,double y,double z,double f,double fx,double fy,double fz)
+    ForceArrow(double x,double y,double z,double f,double fx,double fy,double fz,double mx,double my,double mz)
     {
         static const double dRad2Deg=180.0/M_PI;
 
         px=x; py=y; pz=z;
 
-        m=f-20.0;
-        if (m<0.0) m=0.0;
+        fth=0.0;
+        fax=0.0;
+        fay=0.0;
+        faz=1.0;
 
-        double a=sqrt(fx*fx+fy*fy);
+        bForce=(f>0.0);
+        
+        if (bForce)
+        {
+            fm=f-20.0;
+            if (fm<0.0) fm=0.0;
             
-        if (a!=0.0)
-        {
-            th=dRad2Deg*atan2(a,fz);
-            ax=-fy/a;
-            ay= fx/a;
-            az= 0.0;
+            double a=fx*fx+fy*fy;
+            
+            if (a>0.0)
+            {
+                a=sqrt(a);
+                fth=dRad2Deg*atan2(a,fz);
+                fax=-fy/a;
+                fay= fx/a;
+                faz= 0.0;
+            } 
         }
-        else
+        
+        mth=0.0;
+        max=0.0;
+        may=0.0;
+        maz=1.0;
+
+        double m=mx*mx+my*my+mz*mz;
+
+        bTorque=(m>0.0);
+
+        if (bTorque)
         {
-            th=0.0;
-            ax=0.0;
-            ay=0.0;
-            az=1.0;
+            m=sqrt(m);
+
+            mx/=m; my/=m; mz/=m;
+            mm=m-20.0;
+            if (mm<0.0) mm=0.0;
+
+            double a=mx*mx+my*my;
+
+            if (a>0.0)
+            {
+                a=sqrt(a);
+                mth=dRad2Deg*atan2(a,mz);
+                max=-my/a;
+                may= mx/a;
+                maz= 0.0;
+            }
         }
 
         gluQuadricDrawStyle(cyl=gluNewQuadric(),GLU_FILL);
@@ -83,22 +116,41 @@ public:
     {
         if (!cyl) return;
 
-        glPushMatrix();
-        glColor4f(1.0f,0.0f,0.0f,1.0f);
-        glTranslated(px,py,pz);
-        glRotated(th,ax,ay,az);
-        glTranslated(0.0,0.0,-20.0); // cone base
-        glutSolidCone(5.0,20.0,16,4);
-        glTranslated(0.0,0.0,-m);
-        gluCylinder(cyl,2.5,2.5,m,16,4);
-        glPopMatrix();
+        if (bForce)
+        {
+            glPushMatrix();
+            glColor4f(1.0f,0.0f,0.0f,1.0f);
+            glTranslated(px,py,pz);
+            glRotated(fth,fax,fay,faz);
+            glTranslated(0.0,0.0,-20.0); // cone base
+            glutSolidCone(5.0,20.0,16,4);
+            glTranslated(0.0,0.0,-fm);
+            gluCylinder(cyl,2.5,2.5,fm,16,4);
+            glPopMatrix();
+        }
+
+        if (bTorque)
+        {
+            glPushMatrix();
+            glColor4f(0.0f,0.0f,1.0f,1.0f);
+            glTranslated(px,py,pz);
+            glRotated(mth,max,may,maz);
+            glTranslated(0.0,0.0,-20.0); // cone base
+            glutSolidCone(5.0,20.0,16,4);
+            glTranslated(0.0,0.0,-mm);
+            gluCylinder(cyl,2.5,2.5,mm,16,4);
+            glPopMatrix();
+        }
     }
 
 protected:
     GLUquadricObj *cyl;
+    double px,py,pz;
 
-    double px,py,pz,m;
-    double th,ax,ay,az;
+    double fm,fth,fax,fay,faz;
+    double mm,mth,max,may,maz;
+
+    bool bForce,bTorque;
 };
 
 class BVHNode
