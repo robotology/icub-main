@@ -12,6 +12,7 @@
     <node>console</node>
     <tag>driftCompGuiLeftHand</tag>
   </module>
+  
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from leftupperarm_upper_bottom.ini --useCalibration</parameters>
@@ -71,6 +72,7 @@
     <to>/driftCompGuiLeft/info:i</to>
     <protocol>tcp</protocol>
   </connection>
+  
   <connection>
     <from>/icub/skin/left_hand_comp</from>
     <to>/skinGui/left_hand:i</to>

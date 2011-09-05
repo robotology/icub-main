@@ -1,6 +1,30 @@
 <application>
   <name>Right Whole Arm No Comp</name>
-  
+
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from rightupperarm_upper_bottom.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>rightarmUpBotNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from rightupperarm_upper_internal.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>rightarmUpIntNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from rightupperarm_upper_external.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>rightarmUpExtNoComp</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from rightupperarm_lower.ini --name /skinGuiNoComp</parameters>
+    <node>console</node>
+    <tag>rightarmLowNoComp</tag>
+  </module>
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from rightforearm_upper.ini --name /skinGuiNoComp</parameters>
@@ -33,6 +57,26 @@
   <connection>
     <from>/icub/skin/right_forearm_upper</from>
     <to>/skinGuiNoComp/right_forearm_upper:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_arm_upper_internal</from>
+    <to>/skinGuiNoComp/rightupperarm_upper_internal:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_arm_upper_external</from>
+    <to>/skinGuiNoComp/rightupperarm_upper_external:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_arm_upper_bottom</from>
+    <to>/skinGuiNoComp/rightupperarm_upper_bottom:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_arm_lower</from>
+    <to>/skinGuiNoComp/rightupperarm_lower:i</to>
     <protocol>tcp</protocol>
   </connection>
 </application>
