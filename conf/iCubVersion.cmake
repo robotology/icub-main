@@ -1,4 +1,4 @@
-# Copyright: (C) 2011 RobotCub Consortium
+# Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
 # Author: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -6,7 +6,7 @@
 
 set(ICUB_VERSION_MAJOR "1")
 set(ICUB_VERSION_MINOR "1")
-set(ICUB_VERSION_PATCH "0")
+set(ICUB_VERSION_PATCH "6")
 set(ICUB_VERSION_MODIFIER "")
 set(ICUB_VERSION_ABI "1")
 
