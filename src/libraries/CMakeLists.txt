@@ -9,13 +9,15 @@
 # put B before A. Failure to do so might break the build.
 # 
 
+add_subdirectory(iCubDev)
+add_subdirectory(iCubInterfaceGuiLib)
+
 if(ICUB_USE_OpenCV)
     add_subdirectory(iCubVis)
 else(ICUB_USE_OpenCV)
     message(STATUS "OpenCV not found/selected, skipping iCubVis")
 endif(ICUB_USE_OpenCV)
 
-add_subdirectory(iCubDev)
 add_subdirectory(logpolar)
 add_subdirectory(ctrlLib)
 add_subdirectory(skinDynLib)

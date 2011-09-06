@@ -19,7 +19,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderL
 
 if(ICUB_USE_INTERFACEGUI)
 	add_definitions(-D_USE_INTERFACEGUI)
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/iCubInterfaceGui/iCubInterfaceGuiLib)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../libraries/iCubInterfaceGuiLib)
 endif(ICUB_USE_INTERFACEGUI)
 
 ADD_EXECUTABLE(iCubInterface ${folder_source} ${folder_header})

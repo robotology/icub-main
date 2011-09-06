@@ -13,5 +13,5 @@ else(ICUB_USE_GtkMM)
     message(STATUS "GtkMM not selected, skipping iCubInterfaceGuiClient")
 endif(ICUB_USE_GtkMM)
 
-add_subdirectory(iCubInterfaceGuiLib)
+#add_subdirectory(iCubInterfaceGuiLib)
 #add_subdirectory(iCubInterfaceGuiServer)

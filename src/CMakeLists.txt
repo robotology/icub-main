@@ -2,9 +2,9 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-## order here is important, libraries go first because they set variables
-## that are used by other modules. This is not a strict requirement but 
-## helped solve some sporadice glitches.
+## Order here is important, libraries go first because they set variables
+## that are used by the other modules. 
+
 add_subdirectory(libraries)
 add_subdirectory(examples)
 add_subdirectory(core)
