@@ -1,4 +1,4 @@
-# Copyright: (C) 2011 RobotCub Consortium
+# Copyright: (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
 # Authors: Ilaria Gori, Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 

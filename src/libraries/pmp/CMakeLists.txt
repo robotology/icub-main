@@ -1,4 +1,4 @@
-# Copyright: (C) 2011 RobotCub Consortium
+# Copyright: (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
 # Authors: Ilaria Gori, Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -9,7 +9,7 @@ project(${PROJECTNAME})
 set(folder_source src/pmp_helpers.cpp
                   src/pmp_server.cpp
                   src/pmp_client.cpp)
-				  
+
 set(folder_header_private include/iCub/pmp/private/pmp_helpers.h)
 
 set(folder_header include/iCub/pmp/pmp.h
