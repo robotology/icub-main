@@ -1,8 +1,7 @@
 /* 
- * Copyright (C) 2011 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -24,8 +23,6 @@
  *
  * @author Ugo Pattacini 
  *  
- * Copyright (C) 2011 RobotCub Consortium
- *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0. 
  *
  * @section intro_sec Description
