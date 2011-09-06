@@ -229,8 +229,8 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     if (r2 > 0)
     {
         v[1]=atan2(sqrt(r2), R(2,2));
-	    v[0]=atan2(R(1,2)/sin(v[1]), R(0,2)/sin(v[1]));
-	    v[2]=atan2(R(2,1)/sin(v[1]),-R(2,0)/sin(v[1]));
+        v[0]=atan2(R(1,2)/sin(v[1]), R(0,2)/sin(v[1]));
+        v[2]=atan2(R(2,1)/sin(v[1]),-R(2,0)/sin(v[1]));
     }
     else
     {
@@ -238,8 +238,8 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
             fprintf(stderr,"dcm2euler() in singularity: choosing one solution among multiple\n");
 
         v[1]=0;
-	    v[0]=atan2(R(1,0), R(0,0));
-	    v[2]=0;
+        v[0]=atan2(R(1,0), R(0,0));
+        v[2]=0;
     }
 
     return v;
@@ -307,12 +307,12 @@ Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
 /************************************************************************/
 Vector iCub::ctrl::sign(const Vector &v)
 {
-	Vector ret(v.length());
+    Vector ret(v.length());
 
     for (int i=0; i<v.length(); i++)
         ret[i]=sign(v[i]);
 
-	return ret;
+    return ret;
 }
 
 
