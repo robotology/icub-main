@@ -57,11 +57,11 @@ public:
         fay=0.0;
         faz=1.0;
 
-        bForce=(f>0.0);
+        bForce=(f>mForceThr);
         
         if (bForce)
         {
-            fm=f-20.0;
+            fm=mForceGain*f-20.0;
             if (fm<0.0) fm=0.0;
             
             double a=fx*fx+fy*fy;
@@ -83,14 +83,14 @@ public:
 
         double m=mx*mx+my*my+mz*mz;
 
-        bTorque=(m>0.0);
+        bTorque=(m>mTorqueThr);
 
         if (bTorque)
         {
             m=sqrt(m);
 
             mx/=m; my/=m; mz/=m;
-            mm=m-20.0;
+            mm=mTorqueGain*m-20.0;
             if (mm<0.0) mm=0.0;
 
             double a=mx*mx+my*my;
@@ -143,6 +143,14 @@ public:
         }
     }
 
+    static void setParams(double fg,double ft,double tg,double tt)
+    {
+        mForceGain=fg;
+        mForceThr=ft;
+        mTorqueGain=tg;
+        mTorqueThr=tt;
+    }
+
 protected:
     GLUquadricObj *cyl;
     double px,py,pz;
@@ -151,6 +159,11 @@ protected:
     double mm,mth,max,may,maz;
 
     bool bForce,bTorque;
+
+    static double mForceThr;
+    static double mForceGain;
+    static double mTorqueThr;
+    static double mTorqueGain;
 };
 
 class BVHNode

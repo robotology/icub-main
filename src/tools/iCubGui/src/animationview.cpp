@@ -62,6 +62,17 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     ySelect=false;
     zSelect=false;
 
+    yarp::os::Bottle skinParams=config.findGroup("SKIN");
+    if (!skinParams.isNull())
+    {
+        ForceArrow::setParams(
+            skinParams.find("force_gain").asDouble(),
+            skinParams.find("force_thr").asDouble(),
+            skinParams.find("torque_gain").asDouble(),
+            skinParams.find("torque_thr").asDouble()
+        );
+    }
+
     mObjectsManager=new ObjectsManager(config.find("objport").asString().c_str(),config.find("texport").asString().c_str(),config.find("forceport").asString().c_str());
     //printf("objport=%s\n",config.find("objport").asString().c_str());
 
