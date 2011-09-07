@@ -50,7 +50,7 @@ public:
     {
         static const double dRad2Deg=180.0/M_PI;
 
-        px=0.001*x; py=0.001*y; pz=0.001*z;
+        px=1000.0*x; py=1000.0*y; pz=1000.0*z;
 
         fth=0.0;
         fax=0.0;
