@@ -504,11 +504,9 @@ void inverseDynamics::run()
 
     // DYN CONTACTS
     dynContactList contactList = icub->upperTorso->leftSensor->getContactList();
+    dynContactList contactListR = icub->upperTorso->rightSensor->getContactList();
+    contactList.insert(contactList.begin(), contactListR.begin(), contactListR.end());
     printf("%s\n", contactList.toString().c_str());
-    for(dynContactList::iterator it=contactList.begin(); it!=contactList.end(); it++){
-        it->setForceModule(it->getForceModule()*10);
-        it->setCoP(it->getCoP()*1000);
-    }
 
     // *** MONITOR DATA ***
     Vector monitorData(0);
@@ -552,11 +550,12 @@ void inverseDynamics::run()
 	port_com_ra->prepare()  = com_ra ;
 	port_com_hd->prepare()  = com_hd ;
 	port_com_to->prepare()  = com_to ;
-	port_external_wrench_TO->prepare() = F_up;
-	port_external_wrench_RA->prepare() = F_ext_right_arm;
-	port_external_wrench_LA->prepare() = F_ext_left_arm;
-    port_dyn_contacts->prepare() = contactList;
-    port_monitor->prepare() = monitorData;
+	port_external_wrench_TO->prepare()  = F_up;
+	port_external_wrench_RA->prepare()  = F_ext_right_arm;
+	port_external_wrench_LA->prepare()  = F_ext_left_arm;
+    port_dyn_contacts->prepare()        = contactList;
+    port_monitor->prepare()             = monitorData;
+
 	port_com_all->write();
 	port_com_ll->write();
 	port_com_rl->write();
@@ -1032,5 +1031,5 @@ void inverseDynamics::addSkinContacts(){
         }else if(it->getBodyPart() == RIGHT_ARM)
             icub->upperTorso->rightSensor->addContact((*it));
     }
-    printf("Dyn contacts: %d\n", contactList.size());
+    //printf("Dyn contacts: %d\n", contactList.size());
 }
