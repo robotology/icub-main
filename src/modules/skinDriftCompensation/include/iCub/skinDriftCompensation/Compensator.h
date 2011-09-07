@@ -72,7 +72,7 @@ public:
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
-    bool setTaxelPositions(const char *filePath);
+    bool setTaxelPositions(const char *filePath, double maxNeighborDist);
     void setLinkNum(unsigned int linkNum);
     void setBodyPart(BodyPart _bodyPart);
     void setSkinPart(SkinPart _skinPart);
@@ -116,7 +116,7 @@ private:
     unsigned int linkNum;                       // number of the link
 
     // SKIN CONTACTS
-    vector< vector<int> >     neighborsXtaxel;    // list of neighbors for each taxel    
+    vector< vector<int> >   neighborsXtaxel;    // list of neighbors for each taxel    
 	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
     vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
 

@@ -610,7 +610,7 @@ bool Compensator::isWorking(){
     return _isWorking;
 }
 
-bool Compensator::setTaxelPositions(const char *filePath){
+bool Compensator::setTaxelPositions(const char *filePath, double maxNeighborDist){
 	ifstream posFile;
 	posFile.open(filePath);		
 	if (!posFile.is_open())
@@ -642,7 +642,7 @@ bool Compensator::setTaxelPositions(const char *filePath){
                 taxelOri[i][j-3] = strtod(number.c_str(),NULL);
 		}
 	}
-    computeNeighbors(0.01);
+    computeNeighbors(maxNeighborDist);
 
 	return true;
 }
@@ -651,25 +651,29 @@ void Compensator::computeNeighbors(double maxDist){
     neighborsXtaxel.resize(skinDim, vector<int>(0));
     for(unsigned int i=0; i<skinDim; i++){
         for(unsigned int j=i+1; j<skinDim; j++){
-            Vector v = taxelPos[i]-taxelPos[j];
-            if( dot(v,v) <= (maxDist*maxDist)){
-                neighborsXtaxel[i].push_back(j);
-                neighborsXtaxel[j].push_back(i);
-                //printf("Taxels %d (%s) and %d (%s) are neighbors\n", i, taxelPos[i].toString().c_str(), j, taxelPos[j].toString().c_str());
+            if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
+                Vector v = taxelPos[i]-taxelPos[j];
+                if( dot(v,v) <= (maxDist*maxDist)){
+                    neighborsXtaxel[i].push_back(j);
+                    neighborsXtaxel[j].push_back(i);
+                    //printf("Taxels %d (%s) and %d (%s) are neighbors\n", i, taxelPos[i].toString().c_str(), j, taxelPos[j].toString().c_str());
+                }
             }
         }
     }
 
     int minNeighbors=skinDim, maxNeighbors=0, ns;
     for(unsigned int i=0; i<skinDim; i++){
-        ns = neighborsXtaxel[i].size();
-        if(ns>maxNeighbors) maxNeighbors = ns;
-        if(ns<minNeighbors) minNeighbors = ns;
-        /*printf("\nTaxel %d neighbors are: ", i);
-        for(unsigned int j=0; j<ns; j++)
-            printf("%d ", neighborsXtaxel[i][j]);*/
+        if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
+            ns = neighborsXtaxel[i].size();
+            if(ns>maxNeighbors) maxNeighbors = ns;
+            if(ns<minNeighbors) minNeighbors = ns;
+            /*printf("\nTaxel %d neighbors are: ", i);
+            for(unsigned int j=0; j<ns; j++)
+                printf("%d ", neighborsXtaxel[i][j]);*/
+        }
     }
-    //printf("Min neighbors: %d\nMax neighbors: %d\n", minNeighbors, maxNeighbors);
+    printf("[%s] min neighbors: %d; max neighbors: %d\n", getSkinPartName().c_str(), minNeighbors, maxNeighbors);
 }
 void Compensator::sendInfoMsg(string msg){
     printf("\n");

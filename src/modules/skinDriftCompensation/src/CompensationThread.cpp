@@ -200,10 +200,11 @@ bool CompensationThread::threadInit()
                 sendInfoMsg(msg.str());
             }
             else{
+                double maxNeighborDist = (int)rf->check("maxNeighborDist", Value(0.12)).asInt();
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
 	                string filePath(rf->findFile(taxelPosFile.c_str()));
-	                compensators[i]->setTaxelPositions(filePath.c_str());
+	                compensators[i]->setTaxelPositions(filePath.c_str(), maxNeighborDist);
 	            }
             }
         }
@@ -285,7 +286,7 @@ void CompensationThread::sendSkinEvents(){
             skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());            
         }
     }
-    //printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
+    printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 
