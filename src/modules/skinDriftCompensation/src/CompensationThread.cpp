@@ -200,7 +200,8 @@ bool CompensationThread::threadInit()
                 sendInfoMsg(msg.str());
             }
             else{
-                double maxNeighborDist = (int)rf->check("maxNeighborDist", Value(0.12)).asInt();
+                double maxNeighborDist = rf->check("maxNeighborDist", Value(0.12)).asDouble();
+                printf("Max neighbor distance: %f\n", maxNeighborDist);
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
 	                string filePath(rf->findFile(taxelPosFile.c_str()));
