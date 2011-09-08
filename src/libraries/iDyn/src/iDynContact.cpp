@@ -107,9 +107,9 @@ dynContactList iDynContactSolver::computeExternalContacts(){
     // FIND THE BOUND OF THE SUBCHAIN WHERE EXT CONTACTS ARE APPLIED
     unsigned int firstContactLink, lastContactLink;
     findContactSubChain(firstContactLink, lastContactLink);
-	if(verbose)
+	/*if(verbose)
 		fprintf(stdout, "Estimating %d contacts between link %d and %d\n", 
-			contactList.size(), firstContactLink, lastContactLink);
+			contactList.size(), firstContactLink, lastContactLink);*/
     if(firstContactLink<lSens){
         if(verbose)
             fprintf(stderr, "Contacts before the sensor link. Impossible to compute the external contacts!\n");
@@ -127,8 +127,7 @@ dynContactList iDynContactSolver::computeExternalContacts(){
         
         /*Vector zeroF(3), zeroMu(3); zeroF.zero(); zeroMu.zero();
         chain->refLink(lSens)->setForceMoment(zeroF, zeroMu);*/    
-    }else 
-    if(firstContactLink>lSens+1){
+    }else if(firstContactLink>lSens+1){
         chain->NE->ForwardWrenchFromAtoB(lSens+1, firstContactLink-1);
     }
     //printMatrix("Forces after firstContactLink", chain->getForces());
