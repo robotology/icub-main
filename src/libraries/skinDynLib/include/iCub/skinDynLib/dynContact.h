@@ -128,6 +128,8 @@ public:
     virtual bool setForceModule(double _Fmodule);
     virtual bool setForceDirection(const yarp::sig::Vector &_Fdir);
 	virtual bool setMoment(const yarp::sig::Vector &_Mu);
+    virtual bool setForceMoment(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    virtual bool setForceMoment(const yarp::sig::Vector &_FMu);
     virtual bool setCoP(const yarp::sig::Vector &_CoP);
     virtual void setLinkNumber(unsigned int _linkNum);
     virtual void setBodyPart(BodyPart _bodyPart);

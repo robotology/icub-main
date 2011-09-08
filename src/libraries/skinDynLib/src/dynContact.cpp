@@ -129,6 +129,17 @@ bool dynContact::setMoment(const Vector &_Mu){
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool dynContact::setForceMoment(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu){
+    return setForce(_F) && setMoment(_Mu);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool dynContact::setForceMoment(const yarp::sig::Vector &_FMu){
+    if(!checkVectorDim(_FMu, 6, "force moment"))
+        return false;
+    bool res = setForce(_FMu.subVector(0,2));
+    return res && setMoment(_FMu.subVector(3,5));
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::setCoP(const Vector &_CoP){
     if(!checkVectorDim(_CoP, 3, "Center of pressure"))
         return false;
