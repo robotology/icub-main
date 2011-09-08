@@ -82,7 +82,8 @@ private:
     Vector *ft_arm_left;
     Vector *ft_arm_right;
     Vector *inertial;
-    double skinEventsTimestamp;
+    double skinEventsLeftTimestamp;
+    double skinEventsRightTimestamp;
     
 	//input ports
 	BufferedPort<Vector> *port_ft_arm_left;
@@ -90,7 +91,8 @@ private:
 	BufferedPort<Vector> *port_ft_leg_left;
     BufferedPort<Vector> *port_ft_leg_right;
 	BufferedPort<Vector> *port_inertial_thread;
-    BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_events;
+    BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_events_left;
+    BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_events_right;
 
 	//output ports
 	BufferedPort<Bottle> *port_RATorques;
