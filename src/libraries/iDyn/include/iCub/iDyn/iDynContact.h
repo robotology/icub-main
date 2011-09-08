@@ -40,15 +40,19 @@ namespace iCub
 namespace iDyn
 {
 
+    // tollerance used to solve the linear system (all singular values < TOLLERANCE are considered zero)
+    static double const TOLLERANCE = 10e-08;
+
 /**
 * \ingroup iDynContact
 */
 class iDynContactSolver : public iDynSensor
 {
-protected:
-
+protected:        
     /// list of contacts acting on the link chain
     iCub::skinDynLib::dynContactList contactList;
+    // body part related to this solver
+    iCub::skinDynLib::BodyPart      bodyPart;
 
     void findContactSubChain(unsigned int &firstLink, unsigned int &lastLink);
     yarp::sig::Matrix crossProductMatrix(const yarp::sig::Vector &v);
@@ -63,16 +67,18 @@ public:
     /**
      * Default constructor 
      */
-    iDynContactSolver(iDynChain *_c, const std::string &_info="", const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+    iDynContactSolver(iDynChain *_c, const std::string &_info="", const NewEulMode _mode=DYNAMIC, 
+        iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::UNKNOWN_BODY_PART, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
     
     iDynContactSolver(iDynChain *_c, unsigned int sensLink, SensorLinkNewtonEuler *sensor, 
-        const std::string &_info="", const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+        const std::string &_info="", const NewEulMode _mode=DYNAMIC, iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::UNKNOWN_BODY_PART, 
+        unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
     /**
      * Constructor with F/T sensor information
      */
     iDynContactSolver(iDynChain *_c, unsigned int sensLink, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, 
         double _m, const yarp::sig::Matrix &_I, const std::string &_info="", const NewEulMode _mode=DYNAMIC, 
-        unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+        iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::UNKNOWN_BODY_PART, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
     /**
      * Default destructor
      */

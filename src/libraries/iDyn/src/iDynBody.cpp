@@ -2032,7 +2032,7 @@ bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
 			double mass_coeff = partial_mass[iLink]/(*total_mass);                    
 
 			Vector Z = intH[iLink].getCol(2);
-			Vector w = cross(Z,partial_COM[iLink],verbose);
+			Vector w = cross(Z,partial_COM[iLink]);
 
 			(*COM_jacob)(0,iLink)=mass_coeff*w[0];
 			(*COM_jacob)(1,iLink)=mass_coeff*w[1];
@@ -2243,9 +2243,9 @@ void iCubUpperTorso::build()
 	unsigned int SENSOR_LINK_INDEX = 2;
 
     leftSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(left), SENSOR_LINK_INDEX, armLeftSensor, 
-        "leftArmContactSolver",mode,verbose);
+        "leftArmContactSolver",mode,LEFT_ARM, verbose);
 	rightSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(right), SENSOR_LINK_INDEX, armRightSensor, 
-        "rightArmContactSolver",mode,verbose);
+        "rightArmContactSolver",mode,RIGHT_ARM, verbose);
 
 	HUp.resize(4,4);	HUp.eye();
 	HLeft.resize(4,4);	HLeft.zero();
@@ -2301,9 +2301,9 @@ void iCubLowerTorso::build()
 	unsigned int SENSOR_LINK_INDEX = 1;
 
     leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(left), SENSOR_LINK_INDEX, legLeftSensor, 
-        "leftLegContactSolver",mode,verbose);
+        "leftLegContactSolver",mode,LEFT_LEG,verbose);
 	rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(right), SENSOR_LINK_INDEX, legRightSensor, 
-        "rightLegContactSolver",mode,verbose);
+        "rightLegContactSolver",mode,RIGHT_LEG,verbose);
 
 	HUp.resize(4,4);	HUp.zero();
 	HUp(0,1)=-1.0;  // 0 -1  0

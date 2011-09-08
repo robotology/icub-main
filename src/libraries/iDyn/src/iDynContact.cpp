@@ -36,34 +36,39 @@ using namespace iCub::skinDynLib;
 // IDYN CONTACT SOLVER
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContactSolver::iDynContactSolver(iDynChain *_c, const string &_info, const NewEulMode _mode, unsigned int verb)
-:iDynSensor(_c, _info, _mode, verb){}
+iDynContactSolver::iDynContactSolver(iDynChain *_c, const string &_info, const NewEulMode _mode, BodyPart _bodyPart, unsigned int verb)
+:iDynSensor(_c, _info, _mode, verb), bodyPart(_bodyPart){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, SensorLinkNewtonEuler *sensor, 
-                                    const string &_info, const NewEulMode _mode, unsigned int verb)
-:iDynSensor(_c, _info, _mode, verb){
+                                    const string &_info, const NewEulMode _mode, BodyPart _bodyPart, unsigned int verb)
+:iDynSensor(_c, _info, _mode, verb), bodyPart(_bodyPart){
     lSens = sensLink;
     sens = sensor;
 }
-
-iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, const Matrix &_H, const Matrix &_HC, double _m, 
-                                     const Matrix &_I, const string &_info, const NewEulMode _mode, unsigned int verb)
-:iDynSensor(_c, sensLink, _H, _HC, _m, _I, _info, _mode, verb){
-
-}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContactSolver::~iDynContactSolver(){
-
-}
+iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, const Matrix &_H, const Matrix &_HC, double _m, 
+                                     const Matrix &_I, const string &_info, const NewEulMode _mode, BodyPart _bodyPart, unsigned int verb)
+:iDynSensor(_c, sensLink, _H, _HC, _m, _I, _info, _mode, verb), bodyPart(_bodyPart){}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynContactSolver::~iDynContactSolver(){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynContactSolver::addContact(const dynContact &contact){
+    // check that the contact body part is the same of the sensor
+    if(contact.getBodyPart()!=bodyPart){
+        if(verbose)
+            printf("Error: trying to add a %s contact to a %s sensor!\n", contact.getBodyPartName().c_str(), BodyPart_s[bodyPart].c_str());
+        return false;
+    }
     contactList.push_back(contact);
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynContactSolver::addContacts(const dynContactList &contacts){
-    contactList.insert(contactList.end(), contacts.begin(), contacts.end());
-    return true;
+    //contactList.insert(contactList.end(), contacts.begin(), contacts.end());
+    bool res=true;
+    for(dynContactList::const_iterator it=contacts.begin();it!=contacts.end();it++)
+        res &= addContact(*it);
+    return res;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //bool iDynContactSolver::removeContact(const int contactId){
@@ -83,9 +88,11 @@ dynContactList iDynContactSolver::computeExternalContacts(const Vector &FMsens){
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dynContactList iDynContactSolver::computeExternalContacts(){
-    dynContactList nullList;
-    if(contactList.size()==0)
-        return nullList;
+    if(contactList.size()==0){
+        // if there are no contacts assume a contact at the end effector
+        dynContact c(bodyPart, chain->getN()-1, zeros(3));
+        contactList.push_back(c);
+    }
 
 	// initialize the dynamics at the end effector and the kinematics at the base
 	if(chain->NE == NULL){
@@ -106,7 +113,7 @@ dynContactList iDynContactSolver::computeExternalContacts(){
     if(firstContactLink<lSens){
         if(verbose)
             fprintf(stderr, "Contacts before the sensor link. Impossible to compute the external contacts!\n");
-        return nullList;
+        return dynContactList();
     }
 
     // PROPAGATE WRENCH FORWARD, UP TO THE FIRST LINK A CONTACT IS APPLIED TO
@@ -137,11 +144,11 @@ dynContactList iDynContactSolver::computeExternalContacts(){
     Matrix A = buildA(firstContactLink, lastContactLink);
     Vector B = buildB(firstContactLink, lastContactLink);
 	Matrix pinv_A;
-	double tollerance = 10e-08;
+	
 	if(A.rows() < A.cols())	// SVD is not implemented for "fat" matrixes in GSL
-		pinv_A = pinv(A.transposed(), tollerance).transposed();
+		pinv_A = pinv(A.transposed(), TOLLERANCE).transposed();
 	else
-		pinv_A = pinv(A, tollerance);
+		pinv_A = pinv(A, TOLLERANCE);
     Vector X = pinv_A * B;
 	
     /*if(verbose){
@@ -155,8 +162,7 @@ dynContactList iDynContactSolver::computeExternalContacts(){
     // SET THE COMPUTED VALUES IN THE CONTACT LIST
     unsigned int unknownInd = 0;
     Matrix H, R;
-    dynContactList::iterator it = contactList.begin();
-    for(; it!=contactList.end(); it++){        
+    for(dynContactList::iterator it = contactList.begin(); it!=contactList.end(); it++){        
         if(it->isForceDirectionKnown()){
             it->setForceModule( X(unknownInd++));
         }else{
@@ -183,10 +189,10 @@ dynContactList iDynContactSolver::computeExternalContacts(){
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynContactSolver::computeWrenchFromSensorNewtonEuler(){
 	// if there is no contact specified, suppose contact at the end effector
-	if(contactList.empty()){
+	/*if(contactList.empty()){
 		iDynSensor::computeWrenchFromSensorNewtonEuler();
 		return;
-	}
+	}*/
 
 	// in the external contact computations also the internal wrenches
 	// are computed, form the sensor link to the end effector
