@@ -166,9 +166,7 @@ bool dynContact::fixForceDirection(const Vector &_Fdir){
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::fixMoment(){
-    Vector zeroMu(3);
-	zeroMu.zero();
-    return fixMoment(zeroMu);
+    return fixMoment(zeros(3));
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::fixMoment(const Vector &_Mu){
