@@ -43,24 +43,6 @@ double iCub::ctrl::dot(const Matrix &A, int colA, const Matrix &B, int colB)
 
 
 /************************************************************************/
-Vector iCub::ctrl::cross(const Vector &a, const Vector &b, unsigned int verbose)
-{
-    Vector v(3);
-
-    if (a.length()>=3 && b.length()>=3)
-    {
-        v[0]=a[1]*b[2]-a[2]*b[1];
-        v[1]=a[2]*b[0]-a[0]*b[2];
-        v[2]=a[0]*b[1]-a[1]*b[0];
-    }
-    else if (verbose)
-        fprintf(stderr,"cross() failed: not 3x1 input vectors\n");
-
-    return v;
-}
-
-
-/************************************************************************/
 Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
                          unsigned int verbose)
 {
@@ -133,7 +115,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
     v[0]=R(2,1)-R(1,2);
     v[1]=R(0,2)-R(2,0);
     v[2]=R(1,0)-R(0,1);
-    double r=iCub::ctrl::norm(v);
+    double r=yarp::math::norm(v);
     double theta=atan2(0.5*r,0.5*(R(0,0)+R(1,1)+R(2,2)-1));
 
     if (r<1e-9)
@@ -157,7 +139,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
         v[0]=V(0,2);
         v[1]=V(1,2);
         v[2]=V(2,2);
-        r=iCub::ctrl::norm(v);
+        r=yarp::math::norm(v);
     }
 
     v=(1.0/r)*v;
@@ -314,39 +296,6 @@ Vector iCub::ctrl::sign(const Vector &v)
 
     return ret;
 }
-
-
-/************************************************************************/
-double iCub::ctrl::max(const Vector &v)
-{
-    if (v.length()<=0)
-        return 0.0;
-    
-    double ret=v[0];
-
-    for (int i=0; i<v.length(); i++)
-        if (v[i]>ret)
-            ret=v[i];
-
-    return ret;
-}
-
-
-/************************************************************************/
-double iCub::ctrl::min(const Vector &v)
-{
-    if (v.length()<=0)
-        return 0.0;
-    
-    double ret=v[0];
-
-    for (int i=0; i<v.length(); i++)
-        if (v[i]<ret)
-            ret=v[i];
-
-	return ret;
-}
-
 
 /************************************************************************/
 Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)

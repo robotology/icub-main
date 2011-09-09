@@ -75,20 +75,6 @@ namespace ctrl
 double dot(const yarp::sig::Matrix &A, int colA,
            const yarp::sig::Matrix &B, int colB);
 
-
-/**
-* \ingroup Maths
-*
-* Returns the Euclidean squared norm of the vector. 
-* @param v is the input vector. 
-* @return ||v||^2. 
-*/
-inline double norm2(const yarp::sig::Vector &v)
-{
-    return yarp::math::dot(v,v);
-}
-
-
 /**
 * \ingroup Maths
 *
@@ -102,20 +88,6 @@ inline double norm2(const yarp::sig::Matrix &M, int col)
 {
     return dot(M,col,M,col);
 }
-
-
-/**
-* \ingroup Maths
-*
-* Returns the Euclidean norm of the vector. 
-* @param v is the input vector. 
-* @return ||v||. 
-*/
-inline double norm(const yarp::sig::Vector &v)
-{
-    return sqrt(norm2(v));
-}
-
 
 /**
 * \ingroup Maths
@@ -131,7 +103,6 @@ inline double norm(const yarp::sig::Matrix &M, int col)
     return sqrt(norm2(M,col));
 }
 
-
 /**
 * \ingroup Maths
 *
@@ -144,7 +115,6 @@ inline double sign(const double &v)
     return ((v==0.0)?0.0:((v>0.0)?1.0:-1.0));
 }
 
-
 /**
 * \ingroup Maths
 *
@@ -154,39 +124,6 @@ inline double sign(const double &v)
 * @return sign(v). 
 */
 yarp::sig::Vector sign(const yarp::sig::Vector &v);
-
-
-/**
-* \ingroup Maths
-*
-* Returns the maximum of the elements of a real vector.
-* @param v is the input vector. 
-* @return max(v). 
-*/
-double max(const yarp::sig::Vector &v);
-
-
-/**
-* \ingroup Maths
-*
-* Returns the minimum of the elements of a real vector.
-* @param v is the input vector. 
-* @return min(v). 
-*/
-double min(const yarp::sig::Vector &v);
-
-
-/**
-* \ingroup Maths
-*
-* Returns the the cross product between two vectors. 
-* @param a is the first input vector. 
-* @param b is the second input vector. 
-* @param verbose sets some verbosity. 
-* @return axb.
-*/
-yarp::sig::Vector cross(const yarp::sig::Vector &a, const yarp::sig::Vector &b,
-                        unsigned int verbose=0);
 
 
 /**
@@ -205,7 +142,6 @@ yarp::sig::Vector cross(const yarp::sig::Matrix &A, int colA,
                         const yarp::sig::Matrix &B, int colB,
                         unsigned int verbose=0);
 
-
 /**
 * \ingroup Maths
 *
@@ -220,7 +156,6 @@ yarp::sig::Vector cross(const yarp::sig::Matrix &A, int colA,
 yarp::sig::Vector Dcross(const yarp::sig::Vector &a, const yarp::sig::Vector &Da,
                          const yarp::sig::Vector &b, const yarp::sig::Vector &Db,
                          unsigned int verbose=0);
-
 
 /**
 * \ingroup Maths
@@ -240,7 +175,6 @@ yarp::sig::Vector Dcross(const yarp::sig::Matrix &A, const yarp::sig::Matrix &DA
                          const yarp::sig::Matrix &B, const yarp::sig::Matrix &DB, int colB,
                          unsigned int verbose=0);
 
-
 /**
 * \ingroup Maths
 *
@@ -252,7 +186,6 @@ yarp::sig::Vector Dcross(const yarp::sig::Matrix &A, const yarp::sig::Matrix &DA
 */
 yarp::sig::Vector dcm2axis(const yarp::sig::Matrix &R, unsigned int verbose=0);
 
-
 /**
 * \ingroup Maths
 *
@@ -263,7 +196,6 @@ yarp::sig::Vector dcm2axis(const yarp::sig::Matrix &R, unsigned int verbose=0);
 * @return 4 by 4 rotation matrix of the form [R,1].
 */
 yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
-
 
 /**
 * \ingroup Maths
@@ -279,7 +211,6 @@ yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
 */
 yarp::sig::Vector dcm2euler(const yarp::sig::Matrix &R, unsigned int verbose=0);
 
-
 /**
 * \ingroup Maths
 *
@@ -294,7 +225,6 @@ yarp::sig::Vector dcm2euler(const yarp::sig::Matrix &R, unsigned int verbose=0);
 */
 yarp::sig::Matrix euler2dcm(const yarp::sig::Vector &euler, unsigned int verbose=0);
 
-
 /**
 * \ingroup Maths
 *
@@ -306,7 +236,6 @@ yarp::sig::Matrix euler2dcm(const yarp::sig::Vector &euler, unsigned int verbose
 * @note about 5 times faster than pinv() 
 */
 yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
-
 
 /**
 * \ingroup Maths
@@ -320,7 +249,6 @@ yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 */
 yarp::sig::Matrix adjoint(const yarp::sig::Matrix &H, unsigned int verbose=0);
 
-
 /**
 * \ingroup Maths
 *
@@ -333,7 +261,6 @@ yarp::sig::Matrix adjoint(const yarp::sig::Matrix &H, unsigned int verbose=0);
 * @return the inverse of the adjoint matrix  
 */
 yarp::sig::Matrix adjointInv(const yarp::sig::Matrix &H, unsigned int verbose=0);
-
 
 }
  

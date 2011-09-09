@@ -406,7 +406,7 @@ public:
     * (euclidean norm is used). 
     * @return actual distance from the target.
     */
-    virtual double dist() { return ctrl::norm(e); }
+    virtual double dist() { return yarp::math::norm(e); }
 
     /**
     * Default destructor.
@@ -481,7 +481,7 @@ public:
     virtual void setChainConstraints(bool _constrained);
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
     virtual void restart(const yarp::sig::Vector &q0);
-    virtual bool test_convergence(const double tol_size) { return ctrl::norm(grad)<tol_size; }
+    virtual bool test_convergence(const double tol_size) { return yarp::math::norm(grad)<tol_size; }
     virtual std::string getAlgoName()                    { return "steepest-descent";        }
 
     /**
@@ -662,7 +662,7 @@ public:
     virtual void setChainConstraints(bool _constrained);
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
     virtual void restart(const yarp::sig::Vector &q0);
-    virtual bool test_convergence(const double tol_size) { return ctrl::norm(grad)<tol_size; }
+    virtual bool test_convergence(const double tol_size) { return yarp::math::norm(grad)<tol_size; }
     virtual std::string getAlgoName()                    { return "levenberg-marquardt";     }
 
     /**
