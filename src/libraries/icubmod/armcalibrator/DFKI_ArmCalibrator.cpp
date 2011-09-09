@@ -186,17 +186,17 @@ bool DFKI_ArmCalibrator::calibrate(DeviceDriver *dd)
     iPids->disablePid(2);
     iAmps->disableAmp(2);
 
-	int firstSetOfJoints[] = { 6, 7, 8, 9, 11, 13};   /*0, 1 , 3, 4,*/
-    for (k =0; k < 6; k++)	/*10*/
+	int firstSetOfJoints[] = {4, 6, 7, 8, 9, 11, 13};   /*0, 1 , 3, 4,*/
+    for (k =0; k < 7; k++)	/*10*/
 		calibrateJoint(firstSetOfJoints[k]);
-	for (k =0; k < 6; k++)   /*10*/
+	for (k =0; k < 7; k++)   /*10*/
 	{
 		x = checkCalibrateJointEnded(firstSetOfJoints[k]);
 		ret = ret && x;
 	}
-	for (k = 0; k < 6; k++)  /*10*/
+	for (k = 0; k < 7; k++)  /*10*/
 		goToZero(firstSetOfJoints[k]);
-	for (k = 0; k < 6; k++)    /*10*/
+	for (k = 0; k < 7; k++)    /*10*/
 		checkGoneToZero(firstSetOfJoints[k]);
 	//////////////////////////////////////////
     iAmps->enableAmp(2);
