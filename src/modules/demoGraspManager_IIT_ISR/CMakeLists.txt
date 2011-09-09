@@ -11,14 +11,12 @@ SET(folder_source main.cpp)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
-INCLUDE_DIRECTORIES(${ctrlLib_INCLUDE_DIRS}
-                    ${iKin_INCLUDE_DIRS}
+INCLUDE_DIRECTORIES(${iKin_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib
-                                     iKin
+TARGET_LINK_LIBRARIES(${PROJECTNAME} iKin
                                      icubmod
                                      ${YARP_LIBRARIES})
 

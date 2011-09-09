@@ -303,11 +303,6 @@ public:
         port_xd.close();
     }
 
-    double norm(const Vector &v)
-    {
-        return sqrt(dot(v,v));
-    }
-
     void limitTorsoPitch()
     {
         int axis=0; // pitch joint
