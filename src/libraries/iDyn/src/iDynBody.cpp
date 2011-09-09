@@ -1906,12 +1906,12 @@ Vector iDynSensorTorsoNode::getTorsoLinAcc() const{	return ddp;}
 bool   iDynSensorTorsoNode::computeCOM()
 {
 	unsigned int i=0;
-	yarp::sig::Vector COM_UP(3); COM_UP.zero();
-	yarp::sig::Vector COM_RT(3); COM_RT.zero();
-	yarp::sig::Vector COM_LF(3); COM_LF.zero();
-	total_COM_UP.resize(3);total_COM_UP.zero();
-	total_COM_RT.resize(3);total_COM_RT.zero();
-	total_COM_LF.resize(3);total_COM_LF.zero();
+	yarp::sig::Vector COM_UP(4); COM_UP.zero();
+	yarp::sig::Vector COM_RT(4); COM_RT.zero();
+	yarp::sig::Vector COM_LF(4); COM_LF.zero();
+	total_COM_UP.resize(4);total_COM_UP.zero();
+	total_COM_RT.resize(4);total_COM_RT.zero();
+	total_COM_LF.resize(4);total_COM_LF.zero();
     total_mass_UP=0.0;
     total_mass_RT=0.0;
     total_mass_LF=0.0;
@@ -2434,7 +2434,7 @@ bool iCubWholeBody::computeCOM()
 	upper_COM = (upperTorso->total_COM_UP * upperTorso->total_mass_UP+
 				 upperTorso->total_COM_LF * upperTorso->total_mass_LF+
 		         upperTorso->total_COM_RT * upperTorso->total_mass_RT)/ upper_mass;
-	upper_COM.push_back(1.0);
+	//upper_COM.push_back(1.0);
 	upper_COM= T0 * T1 * upper_COM;
 
 	//lower torso COM computation
@@ -2471,21 +2471,24 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 		case LEFT_LEG:
 			COM=this->lowerTorso->total_COM_LF;
 			mass=this->lowerTorso->total_mass_LF;
+			COM.pop_back();
 		break;
 		case RIGHT_LEG:
 			COM=this->lowerTorso->total_COM_RT;
 			mass=this->lowerTorso->total_mass_RT;
+			COM.pop_back();
 		break;
 		case TORSO:
 			COM=this->lowerTorso->total_COM_UP;
 			mass=this->lowerTorso->total_mass_UP;
+			COM.pop_back();
 		break;
 		case LEFT_ARM:
 			T0 = lowerTorso->HUp;
 			T1 = lowerTorso->up->getH(2,true);
 			mass=this->upperTorso->total_mass_LF;
 			COM=this->upperTorso->total_COM_LF;
-			COM.push_back(1.0);
+			//COM.push_back(1.0);
 			COM= T0 * T1 * COM;
 			COM.pop_back();
 		break;
@@ -2494,7 +2497,7 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 			T1 = lowerTorso->up->getH(2,true);
 			mass=this->upperTorso->total_mass_RT;
 			COM=this->upperTorso->total_COM_RT;
-			COM.push_back(1.0);
+			//COM.push_back(1.0);
 			COM= T0 * T1 * COM;
 			COM.pop_back();
 		break;
@@ -2503,7 +2506,7 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 			T1 = lowerTorso->up->getH(2,true);
 			mass=this->upperTorso->total_mass_UP;
 			COM=this->upperTorso->total_COM_UP;
-			COM.push_back(1.0);
+			//COM.push_back(1.0);
 			COM= T0 * T1 * COM;
 			COM.pop_back();
 		break;
