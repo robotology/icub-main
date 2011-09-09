@@ -87,6 +87,33 @@ static void spin_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_dat
     gtk_spin_button_set_value(spinbutton, currentCompGain);
 }
 
+static void spin_cont_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
+    double contCompGain = gtk_spin_button_get_value(spinbutton);
+    if(contCompGain == currentContCompGain)
+        return;
+
+    // set the gain
+    Bottle b, setReply;
+    b.addString("set"); b.addString("contact"); b.addString("gain"); b.addDouble(contCompGain);
+    guiRpcPort.write(b, setReply);
+
+    // read the gain
+	Bottle getReply = sendRpcCommand(true, 3, "get", "contact", "gain");
+	currentContCompGain = getReply.get(0).asDouble();
+
+	if(contCompGain==currentContCompGain){
+        stringstream msg; msg << "Contact compensation gain changed: " << contCompGain;
+        setStatusBarText(msg.str().c_str());
+        return;
+    }
+    
+    stringstream msg; msg << "Unable to set the contact compensation gain to " << contCompGain;
+	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);   
+    // setting the old value
+    gtk_spin_button_set_value(spinbutton, currentContCompGain);
+}
+
 static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll, gdouble value, gpointer user_data){
 	// check whether the smooth factor has changed
 	double smoothFactor = round(value, 1); //double(int((value*10)+0.5))/10.0;

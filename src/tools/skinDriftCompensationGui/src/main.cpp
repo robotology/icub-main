@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete
  * email:   andrea.delprete@iit.it
  * website: www.robotcub.org 
@@ -24,15 +24,18 @@
  * A simple graphical interface for controlling and monitoring an instance of the \ref icub_skinDriftCompensation module.
  * This GUI needs at least the version 2.14 of GtkPlus.
  *
+ * \image html driftCompensationGui_filters.png "Screenshots: skinDriftCompensationGui running on Windows"
+ *
  * \section intro_sec Description
  *
- * This GUI can be used for the following pouposes:
+ * This GUI can be used for the following purposes:
  *
  * - calibrate the skin
  * - see the touch threshold of each skin taxels
  * - turn on/off the binarization filter
  * - turn on/off the smooth filter
  * - tune the smooth factor of the smooth filter
+ * - tune the compensation algorithm parameters (i.e. safety threshold, compensation gain, contact compensation gain)
  * - monitor the skin data frequency
  * - monitor the drift of each skin taxel
  * - get warning and error messages related to the skin
@@ -72,7 +75,7 @@
  *
  * \author Andrea Del Prete (andrea.delprete@iit.it)
  *
- *Copyright (C) 2008 RobotCub Consortium
+ *Copyright (C) 2010 RobotCub Consortium
  *
  *CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
@@ -117,6 +120,15 @@ bool initGuiStatus(){
     }else{
         currentCompGain = reply.get(0).asDouble();
         gtk_adjustment_set_value(spinGain->adjustment, currentCompGain);
+    }
+
+    reply = sendRpcCommand(true, 3, "get", "contact", "gain");
+    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
+        printLog("Error while getting the contact compensation gain");
+        return false;
+    }else{
+        currentContCompGain = reply.get(0).asDouble();
+        gtk_adjustment_set_value(spinContGain->adjustment, currentContCompGain);
     }
 
     // get module information
@@ -267,6 +279,7 @@ int main (int argc, char *argv[])
 	btnTouchThr		= GTK_BUTTON (gtk_builder_get_object (builder, "btnThreshold"));
     spinThreshold	= GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonThreshold"));
     spinGain    	= GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonGain"));
+    spinContGain    = GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonContGain"));
 
     tbLog           = GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbufferLog"));
     tvLog           = GTK_TEXT_VIEW (gtk_builder_get_object (builder, "textviewLog"));
@@ -295,7 +308,7 @@ int main (int argc, char *argv[])
         printLog("GUI connected!");
 	else
         printLog("GUI not connected. Connect it to the module to make it work.");
-    // otherwise the gui will try to initialize every timeout (i.e. 0.5 sec)
+    // otherwise the gui will try to initialize every timeout (i.e. 1 sec)
 
 	// connect all the callback functions (after the initialization, so as not to activate the callbacks)
 	g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy_event), NULL);
@@ -307,6 +320,7 @@ int main (int argc, char *argv[])
 	g_signal_connect(scaleSmooth, "change-value", G_CALLBACK(scale_smooth_value_changed), NULL);
     g_signal_connect(spinThreshold, "value-changed", G_CALLBACK(spin_threshold_value_changed), NULL);
     g_signal_connect(spinGain, "value-changed", G_CALLBACK(spin_gain_value_changed), NULL);
+    g_signal_connect(spinContGain, "value-changed", G_CALLBACK(spin_cont_gain_value_changed), NULL);
 	gdk_threads_add_timeout(1000, (periodic_timeout), NULL);   // thread safe version of "g_timeout_add()
 
 	// free the memory used by the glade xml file

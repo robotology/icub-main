@@ -51,6 +51,7 @@ GtkTextView             *tvLog;
 GtkTextBuffer           *tbLog;
 GtkSpinButton           *spinThreshold;
 GtkSpinButton           *spinGain;
+GtkSpinButton           *spinContGain;
 // second tab
 GtkTreeView             *treeBaselines;
 GtkTreeStore            *treeStoreComp;
@@ -77,6 +78,7 @@ double					currentSmoothFactor;    // current smooth factor value
 bool                    initDone;               // true if the gui has been initialized
 unsigned int            currentThreshold;       // current safety threshold
 double                  currentCompGain;        // current compensation gain
+double                  currentContCompGain;    // current contact compensation gain
 
 bool initGuiStatus();
 
