@@ -482,7 +482,7 @@ public:
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
     virtual void restart(const yarp::sig::Vector &q0);
     virtual bool test_convergence(const double tol_size) { return yarp::math::norm(grad)<tol_size; }
-    virtual std::string getAlgoName()                    { return "steepest-descent";        }
+    virtual std::string getAlgoName()                    { return "steepest-descent";              }
 
     /**
     * Resets integral status at the current joint angles.
@@ -663,7 +663,7 @@ public:
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
     virtual void restart(const yarp::sig::Vector &q0);
     virtual bool test_convergence(const double tol_size) { return yarp::math::norm(grad)<tol_size; }
-    virtual std::string getAlgoName()                    { return "levenberg-marquardt";     }
+    virtual std::string getAlgoName()                    { return "levenberg-marquardt";           }
 
     /**
     * Resets integral status at the current joint angles.
