@@ -115,7 +115,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
     v[0]=R(2,1)-R(1,2);
     v[1]=R(0,2)-R(2,0);
     v[2]=R(1,0)-R(0,1);
-    double r=norm(v);
+	double r=yarp::math::norm(v);
     double theta=atan2(0.5*r,0.5*(R(0,0)+R(1,1)+R(2,2)-1));
 
     if (r<1e-9)
@@ -139,7 +139,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
         v[0]=V(0,2);
         v[1]=V(1,2);
         v[2]=V(2,2);
-        r=norm(v);
+		r=yarp::math::norm(v);
     }
 
     v=(1.0/r)*v;
