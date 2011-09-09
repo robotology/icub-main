@@ -1,6 +1,6 @@
  
 /* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete, Alexander Schmitz
  * email:   andrea.delprete@iit.it, alexander.schmitz@iit.it
  * website: www.robotcub.org 
@@ -23,26 +23,27 @@
 @ingroup icub_module
 \defgroup icub_skinDriftCompensation skinDriftCompensation
 
-This module reads the raw tactile sensor values, compensates the (thermal) drift of the sensors (basically it is a low pass filter)
+This module reads the raw tactile sensor values, compensates for the (thermal) drift of the sensors (basically it is a high pass filter)
 and writes the compensated values on output ports.
 The module can manage many input ports at the same time (see parameter "inputPorts").
 For each input port the compensated tactile data are written on the corresponding output port (see parameter "outputPorts").
-Optionally, the module also can apply a smoothing filter and/or a binarization filter to the data.
+Optionally, the module also can apply a smoothing filter (low pass filter) and/or a binarization filter to the data.
+The \ref icub_skinDriftCompensationGui can be used to control and monitor an instance of the skinDriftCompensation module.
 
 
 \section intro_sec Description
-When launched the module executes the sensors calibration, assuming that the sensors are not in contact 
+When launched the module executes the skin sensor calibration, assuming that the sensors are not in contact 
 with anything during this phase. 
-The calibration reset the taxel baselines, gathers the sensors data for 5 sec, computes the mean (i.e. the baseline) 
+The calibration resets the taxel baselines, gathers the sensor data for 5 sec, computes the mean (i.e. the baseline) 
 and the 95 percentile (i.e. the touch threshold) for every taxel.
 
 After the calibration the module starts reading the raw data, computing the difference between the read values 
 and the baseline, and outputs the results. 
 If no touch is detected (i.e. the compensated values are under the touch threshold) then the baseline is updated
-in order to follow the drift.
+in order to follow the drift (if any).
 
 The binarization filter is really simple.
-Every taxel has a touch threshold, given by its 95% percentile plus a safety threshold equals to 2.
+Every taxel has a touch threshold, given by its 95% percentile plus a safety threshold (2 by default).
 If the read value is greater than the corrisponding touch threshold the output is set to 100, otherwise to 0.
 The binarization filter can be used for stressing the touch detection, especially in cases where the touch is very light.
 
@@ -134,6 +135,12 @@ will be accessed.
 	- "get smooth filter": get the smooth filter state (on, off)
 	- "set smooth factor": set the value of the smooth factor (in [0,1])
 	- "get smooth factor": get the smooth factor value
+    - "set gain": set the compensation gain
+    - "get gain": get the compensation gain
+    - "set contact gain": set the contact compensation gain
+    - "get contact gain": get the contact compensation gain
+    - "set threshold": set the safety threshold
+    - "get threshold": get the safety threshold
 	- "is calibrating": tell whether the skin calibration is in progress
 	- "get info": get information about the module (module name, robot name, input ports, num of taxels)
 	- "help": get a list of the commands accepted by this module
@@ -161,7 +168,7 @@ skinDriftCompensation --context skinGui/conf --from driftCompRight.ini
 
 \author Andrea Del Prete (andrea.delprete@iit.it), Alexander Schmitz
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2010 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
