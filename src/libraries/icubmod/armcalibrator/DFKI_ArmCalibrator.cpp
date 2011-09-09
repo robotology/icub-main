@@ -21,7 +21,7 @@ const int GO_TO_ZERO_TIMEOUT=20;
 const int CALIBRATE_JOINT_TIMEOUT=25;
 const double POSITION_THRESHOLD=2.0;
 
-const int numberOfJoints=11;
+const int numberOfJoints=12;
 
 DFKI_ArmCalibrator::DFKI_ArmCalibrator()
 {
