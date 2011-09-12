@@ -6,7 +6,7 @@
 
 # Inspired from similar script in yarp by Paul Fitzpatrick
 
-echo "Make sure you run this as ./admin/scripts/license.sh"
+echo "Make sure you run this as ./admin/scripts/update-license.sh"
 
 # reset log
 echo -n | tee licenses-all.txt
@@ -69,7 +69,7 @@ equivalent to the following list of institutions:
 
 EOF
 
-) > main/COPYING
+) > main/COPYING_new
 
 (
  echo "This is the list of authors who contributed code to the iCub main package:"
@@ -77,4 +77,6 @@ EOF
  cat licenses-authors-compact.txt
  echo
 
-) > main/AUTHORS
+) > main/AUTHORS_new
+
+
