@@ -3,14 +3,18 @@
 # Copyright: 2010 RobotCub Consortium
 # Author: Lorenzo Natale
 
+
 export SOURCE_TMP_DIR=./package-tmp
 export MODULE=iCub
-export REL=1.1.6
 export ARCHFILE_LINUX=$MODULE-src-$REL.tar.gz
 export ARCHFILE_WINDOWS=$MODULE-src-$REL.zip
 export DEPFILE=$MODULE-dep-$REL.txt
-export URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/$MODULE
-export TAG_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/$MODULE$REL
+
+if [ "k$1" =  "k" ]
+ export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/$MODULE
+else
+ export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/$MODULE$1
+fi
 
 mkdir $SOURCE_TMP_DIR
 cd $SOURCE_TMP_DIR
@@ -23,7 +27,7 @@ echo "See $DEPFILE for list of library dependencies." >> $versionFile
 ########### Linux
 echo "Checkout code from $TAG_URL"
 
-svn export $TAG_URL $MODULE
+svn export $SVN_URL $MODULE
 
 #store this file for later upload
 cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
