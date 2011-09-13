@@ -1788,28 +1788,10 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 								return -1;
 							}
 						//pause
-						switch(board_type){ 
-				            case BOARD_TYPE_2FOC:
-							case BOARD_TYPE_6SG:
-							  drv_sleep(15);
-							  break;
-
-				            default:
-							  drv_sleep(5);
-						      break;
-						}
+						drv_sleep(5);
 					}
 				    //receive one ack for the whole line
-				    switch(board_type){
-						  case BOARD_TYPE_2FOC:
-						  case BOARD_TYPE_6SG:
-					        read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards,200);
-							break;
-
-						  default:
-                          read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards);
-						  break;
-                    }
+					read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards, 10);
 				    ret=verify_ack(CMD_DATA, rxBuffer, read_messages);	   
 					//DEBUG 
 		
