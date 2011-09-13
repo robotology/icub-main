@@ -6,14 +6,15 @@
 
 export SOURCE_TMP_DIR=./package-tmp
 export MODULE=iCub
+export REL=$1
 export ARCHFILE_LINUX=$MODULE-src-$REL.tar.gz
 export ARCHFILE_WINDOWS=$MODULE-src-$REL.zip
 export DEPFILE=$MODULE-dep-$REL.txt
 
-if [ "k$1" =  "k" ]
- export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/$MODULE
+if [ "k$1" =  "k" ]; then
+ export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
 else
- export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/$MODULE$1
+ export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub$REL
 fi
 
 mkdir $SOURCE_TMP_DIR
@@ -25,7 +26,7 @@ echo "Built on `date`" >> $versionFile
 echo "See $DEPFILE for list of library dependencies." >> $versionFile
 
 ########### Linux
-echo "Checkout code from $TAG_URL"
+echo "Checkout code from $SVN_URL"
 
 svn export $SVN_URL $MODULE
 
@@ -47,7 +48,7 @@ echo "Done Linux"
 ########### Windows
 echo "Checkout code from $URL"
 
-svn export $TAG_URL $MODULE --native-eol CRLF
+svn export $SVN_URL $MODULE --native-eol CRLF
 
 #store this file for later upload
 cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
