@@ -23,8 +23,6 @@
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 
-#include <iCub/ctrl/math.h>
-
 #include <stdio.h>
 
 #include "ClientGazeController.h"
@@ -38,7 +36,6 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iCub::ctrl;
 
 
 /************************************************************************/
