@@ -21,14 +21,14 @@
 /**
 *
 @ingroup icub_module
-\defgroup icub_skinDriftCompensation skinDriftCompensation
+\defgroup icub_skinManager skinManager
 
 This module reads the raw tactile sensor values, compensates for the (thermal) drift of the sensors (basically it is a high pass filter)
 and writes the compensated values on output ports.
 The module can manage many input ports at the same time (see parameter "inputPorts").
 For each input port the compensated tactile data are written on the corresponding output port (see parameter "outputPorts").
 Optionally, the module also can apply a smoothing filter (low pass filter) and/or a binarization filter to the data.
-The \ref icub_skinDriftCompensationGui can be used to control and monitor an instance of the skinDriftCompensation module.
+The \ref icub_skinManagerGui can be used to control and monitor an instance of the skinManager module.
 
 
 \section intro_sec Description
@@ -67,7 +67,7 @@ The following key-value pairs can be specified as command-line parameters by pre
    specifies the configuration file
  - \c context \c [skinGui/conf] \n
     specifies the sub-path from \c $ICUB_ROOT/app to the configuration file
- - \c name \c [skinDriftCompensation] \n   
+ - \c name \c [skinManager] \n   
     specifies the name of the module (used to form the stem of module port names)  
  - \c robot \c [icub] \n          
     specifies the name of the robot (used only to distiguish the simulator and the real robot)
@@ -115,17 +115,17 @@ will be accessed.
 - Every port specified in the "outputPorts" parameter: outputs a yarp::os::Vector containing the compensated tactile data.
 - "/"+moduleName+"/monitor:o": \n 
     outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
-    (used to communicate with the \ref icub_skinDriftCompensationGui). The first value is the data frequency, while
+    (used to communicate with the \ref icub_skinManagerGui). The first value is the data frequency, while
     all the following ones represent the drift compensated so far for each taxel.
 - "/"+moduleName+"/info:o": \n 
     outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
-    such as warning or error messages (used to communicate with the SkinDriftCompensationGui). Possible messages may regard 
+    such as warning or error messages (used to communicate with the SkinManagerGui). Possible messages may regard 
     an error in the sensor reading or an excessive drift of the baseline of a taxel.\n
 
 <b>Input ports</b>
 - For each port specified in the "inputPorts" parameter a local port is created with the name
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
-- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinDriftCompensationGui can be used). 
+- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinManagerGui can be used). 
     This port accepts a yarp::os::Bottle that contains one of these commands:
 	- “force calibration”: force the sensor calibration
 	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
@@ -163,7 +163,7 @@ Linux and Windows.
 
 
 \section example_sec Example Instantiation of the Module
-skinDriftCompensation --context skinGui/conf --from driftCompRight.ini
+skinManager --context skinGui/conf --from driftCompRight.ini
 
 
 \author Andrea Del Prete (andrea.delprete@iit.it), Alexander Schmitz
