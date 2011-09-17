@@ -70,7 +70,7 @@ public:
     {
         int alarm=mLocalData ? mLocalData->alarmLevel() : 0;
 
-        for (int i=0; alarm!=2 && i<(int)mBoards.size(); ++i)
+        for (int i=0; i<(int)mBoards.size(); ++i)
         {
             if (mBoards[i])
             {

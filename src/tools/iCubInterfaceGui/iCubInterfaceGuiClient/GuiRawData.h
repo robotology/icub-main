@@ -237,7 +237,7 @@ public:
     {
         int alarm=0;
 
-        for (int i=0; alarm!=2 && i<(int)mArray.size(); ++i)
+        for (int i=0; i<(int)mArray.size(); ++i)
         {
             if (mArray[i])
             {

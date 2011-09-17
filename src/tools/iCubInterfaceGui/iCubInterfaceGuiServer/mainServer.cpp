@@ -63,7 +63,9 @@ public:
         {
             yarp::os::Value data((counter=!counter)?1:0);
 
-            pServer->log(std::string("fakecan 1,BLL,1,7"),data);
+            pServer->log(std::string("cfw2can 1,BLL,1,7"),data);
+            pServer->log(std::string("cfw2can 2,analog,12,3"),data);
+            pServer->log(std::string("cfw2can 3,network,9"),data);
         }
     }
 

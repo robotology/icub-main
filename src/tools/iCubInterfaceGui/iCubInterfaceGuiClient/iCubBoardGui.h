@@ -61,7 +61,7 @@ public:
     {
         int alarm=0;
 
-        for (int i=0; alarm!=2 && i<nModules; ++i)
+        for (int i=0; i<nModules; ++i)
         {
             if (mChannel[i])
             {

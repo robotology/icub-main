@@ -177,7 +177,7 @@ public:
     {
         int alarm=0;
 
-        for (int i=0; alarm!=2 && i<(int)mNetworks.size(); ++i)
+        for (int i=0; i<(int)mNetworks.size(); ++i)
         {
             if (mNetworks[i])
             {
