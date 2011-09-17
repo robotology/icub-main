@@ -11,250 +11,121 @@
 #define __GTKMM_ICUB_BOARD_GUI_H__
 
 #include <gtkmm.h>
-#include "iCubBoard.h"
-#include "iCubBoardChannelGui.h"
+#include "GuiRawData.h"
 
-class iCubBLLBoardGui : public iCubBLLBoard, public iCubInterfaceGuiRows
+class iCubBoardGui
 {
 public:
-    iCubBLLBoardGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot) 
-        : iCubBLLBoard(),iCubInterfaceGuiRows()
+    iCubBoardGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &boardConf) 
     {
-        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
+        nModules=boardConf.size();
+        mChannel=new GuiRawDataArray*[nModules];
 
-        mChannel[0]=new iCubBLLChannelGui(refTreeModel,*baseRow,*(bot.get(2).asList()));
-        mChannel[1]=new iCubBLLChannelGui(refTreeModel,*baseRow,*(bot.get(3).asList()));
+        mChannel[0]=new GuiRawDataArray(refTreeModel,parent,boardConf.get(0).asList());
 
-        mData.fromBottle(*(bot.get(1).asList()));
+        mRoot=mChannel[0]->getRoot();
 
-        mAlarmMask=new char[mNumRows];
-        mAlarmState=new bool[mNumRows];
-
-        for (int i=0; i<(int)mData.size(); ++i)
+        for (int i=1; i<nModules; ++i)
         {
-            mAlarmState[i]=false;
-            mAlarmMask[i]=ALARM_NONE;
-            if (mRowNames[i][0]=='!')
-            {
-                if (mRowNames[i][1]=='~')
-                {
-                    mAlarmMask[i]=ALARM_LOW;
-                }
-                else
-                {
-                    mAlarmMask[i]=ALARM_HIGH;
-                }
-            }
+            yarp::os::Bottle *rowNames=boardConf.get(i).asList();
 
-            if (mAlarmMask[i]==ALARM_HIGH)
-            {
-                mAlarmState[i]=mData.isHigh(i);                    
-            }
-            else if (mAlarmMask[i]==ALARM_LOW)
-            {
-                mAlarmState[i]=mData.isLow(i);
-            }
-            
-            mRows[i][mColumns.mColValue]=mData.toString(i);
+            mChannel[i]=new GuiRawDataArray(refTreeModel,*(mChannel[0]->getRoot()),boardConf.get(i).asList());
         }
     }
 
-    virtual ~iCubBLLBoardGui()
+    virtual ~iCubBoardGui()
     {
-        delete [] mAlarmMask;
-        delete [] mAlarmState;
+        if (mChannel)
+        {
+            for (int i=0; i<nModules; ++i)
+            {
+                if (mChannel[i]) delete mChannel[i];
+            }
+    
+            delete [] mChannel;
+        }
     }
+
+    Gtk::TreeModel::Row *getRoot(){ return mRoot; }
 
     virtual void fromBottle(yarp::os::Bottle& bot)
     {
-        iCubBLLBoard::fromBottle(bot);
-
-        for (int i=0; i<(int)mData.size(); ++i)
+        for (int i=0; i<(int)bot.size(); ++i)
         {
-            if (mData.test(i))
-            {
-                if (mAlarmMask[i]==ALARM_HIGH)
-                {
-                    mAlarmState[i]=mData.isHigh(i);
-                }
-                else if (mAlarmMask[i]==ALARM_LOW)
-                {
-                    mAlarmState[i]=mData.isLow(i);
-                }
-
-                mRows[i][mColumns.mColValue]=mData.toString(i);
-            }
+            yarp::os::Bottle *list=bot.get(i).asList();
+            mChannel[list->get(0).asInt()]->fromBottle(list->tail());
         }
     }
 
-    virtual bool hasAlarm()
+    int alarmLevel()
     {
-        bool alarm=false;
+        int alarm=0;
 
-        for (int i=0; i<mNumRows; ++i)
+        for (int i=0; alarm!=2 && i<nModules; ++i)
         {
-            if (mAlarmState[i])
+            if (mChannel[i])
             {
-                alarm=true;
-                mRows[i][mColumns.mColIcon]="(!)";
-            }
-            else
-            {
-                mRows[i][mColumns.mColIcon]="";
-            }
-        }
-
-        for (int i=0; i<2; ++i)
-        {
-            if (mChannel[i]->hasAlarm()) 
-            {
-                alarm=true;
+                int childAlarmLevel=mChannel[i]->alarmLevel();
+                
+                if (childAlarmLevel>alarm)
+                {
+                    alarm=childAlarmLevel;
+                }
             }
         }
 
-        if (alarm)
+        switch(alarm)
         {
-            mRows[0][mColumns.mColIcon]="(!)";
-        }
-        else
-        {
-            mRows[0][mColumns.mColIcon]="";
+        case 0:
+            (*mRoot)[mColumns.mColIcon]="";
+            break;
+        case 1:
+            (*mRoot)[mColumns.mColIcon]="*";
+            break;
+        case 2:
+            (*mRoot)[mColumns.mColIcon]="(!)";
+            break;
         }
 
         return alarm;
     }
 
-protected:
-    bool* mAlarmState;
-    char* mAlarmMask;
-};
-
-class iCubAnalogBoardGui : public iCubAnalogBoard, public iCubInterfaceGuiRows
-{
-public:
-    iCubAnalogBoardGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot) 
-        : iCubAnalogBoard(),iCubInterfaceGuiRows()
+    bool findAndReset(const Gtk::TreeModel::Row row)
     {
-        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
-
-        nChannels=bot.get(1).asList()->get(6).asInt();
-
-        mChannel=NULL; //new iCubAnalogChannel*[nChannels];
-
-        if (mChannel)
+        for (int i=0; i<nModules; ++i)
         {
-            for (int c=0; c<nChannels; ++c)
+            if (mChannel[i])
             {
-                mChannel[c]=new iCubAnalogChannelGui(refTreeModel,*baseRow,*(bot.get(c+2).asList()));
-            }
-        }
-
-        mData.fromBottle(*(bot.get(1).asList()));
-
-        mAlarmMask=new char[mNumRows];
-        mAlarmState=new bool[mNumRows];
-
-        for (int i=0; i<mNumRows; ++i)
-        {
-            mAlarmState[i]=false;
-            mAlarmMask[i]=ALARM_NONE;
-            if (mRowNames[i][0]=='!')
-            {
-                if (mRowNames[i][1]=='~')
+                if (*(mChannel[i]->getRoot())==row)
                 {
-                    mAlarmMask[i]=ALARM_LOW;
+                    mChannel[i]->reset();
+                    return true;
                 }
                 else
                 {
-                    mAlarmMask[i]=ALARM_HIGH;
+                    if (mChannel[i]->findAndReset(row)) return true;
                 }
             }
-
-            if (mAlarmMask[i]==ALARM_HIGH)
-            {
-                mAlarmState[i]=mData.isHigh(i);                    
-            }
-            else if (mAlarmMask[i]==ALARM_LOW)
-            {
-                mAlarmState[i]=mData.isLow(i);
-            }
-
-            mRows[i][mColumns.mColValue]=mData.toString(i);
         }
+
+        return false;
     }
 
-    virtual ~iCubAnalogBoardGui()
+    void reset()
     {
-        delete [] mAlarmMask;
-        delete [] mAlarmState;
-    }
-
-    virtual void fromBottle(yarp::os::Bottle& bot)
-    {
-        iCubAnalogBoard::fromBottle(bot);
-
-        for (int i=0; i<mNumRows; ++i)
+        for (int i=0; i<nModules; ++i)
         {
-            if (mData.test(i))
-            {
-                if (mAlarmMask[i]==ALARM_HIGH)
-                {
-                    mAlarmState[i]=mData.isHigh(i);
-                }
-                else if (mAlarmMask[i]==ALARM_LOW)
-                {
-                    mAlarmState[i]=mData.isLow(i);
-                }
-
-                mRows[i][mColumns.mColValue]=mData.toString(i);
-            }
+            if (mChannel[i]) mChannel[i]->reset();
         }
-    }
-
-    virtual bool hasAlarm()
-    {
-        bool alarm=false;
-
-        for (int i=0; i<mNumRows; ++i)
-        {
-            if (mAlarmState[i])
-            {
-                alarm=true;
-                mRows[i][mColumns.mColIcon]="(!)";
-            }
-            else
-            {
-                mRows[i][mColumns.mColIcon]="";
-            }
-        }
-
-        if (mChannel)
-        {
-            for (int i=0; i<nChannels; ++i)
-            {
-                if (mChannel[i]->hasAlarm()) 
-                {
-                    alarm=true;
-                }
-            }
-        }
-
-        if (alarm)
-        {
-            mRows[0][mColumns.mColIcon]="(!)";
-        }
-        else
-        {
-            mRows[0][mColumns.mColIcon]="";
-        }
-
-        return alarm;
     }
 
 protected:
-    bool* mAlarmState;
-    char* mAlarmMask;
+    Glib::RefPtr<Gtk::TreeStore> mRefTreeModel;
+    Gtk::TreeModel::Row *mRoot;
+    ModelColumns mColumns;
+
+    int nModules;
+    GuiRawDataArray **mChannel;
 };
 
 #endif
-

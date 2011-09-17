@@ -32,6 +32,13 @@ public:
 class iCubInterfaceGuiWindow : public Gtk::Window
 {
 public:
+    void onTreeViewRowActivated(const Gtk::TreeModel::Path &path,Gtk::TreeViewColumn* column)
+    {
+        Gtk::TreeModel::iterator iter=mRefTreeModel->get_iter(path);
+        const Gtk::TreeModel::Row row=*iter;
+        findAndReset(row);
+    }
+
     iCubInterfaceGuiWindow()
     {
         set_title("iCubInterface GUI");
@@ -74,9 +81,9 @@ public:
         
         /////////////////////////////////////////////////////////////////////////////
 
-        //mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiClient::onTreeViewRowActivated));
-
+        mTreeView.signal_row_activated().connect(sigc::mem_fun(*this,&iCubInterfaceGuiWindow::onTreeViewRowActivated));
         //show_all_children();
+
         show_all();
 
         yarp::os::Time::delay(1.0);
@@ -102,6 +109,15 @@ public:
 
         mPort.interrupt();
         mPort.close();
+
+        for (int i=0; i<(int)mNetworks.size(); ++i)
+        {
+            if (mNetworks[i])
+            {
+                delete mNetworks[i];
+                mNetworks[i]=NULL;
+            }
+        }
     }
 
     void run()
@@ -116,28 +132,19 @@ public:
         {
             mWaitConnection=false;
 
-            yarp::os::Bottle bot;
-            yarp::os::Bottle rep;
-            bot.addString("GET_CONF");
-            mPort.write(bot,rep);
+            yarp::os::Bottle config;
+            yarp::os::Bottle get;
+            get.addString("GET_CONF");
+            mPort.write(get,config);
 
-            for (int i=1; i<(int)rep.size(); ++i)
+            for (int i=0; i<(int)config.size(); ++i)
             {
-                yarp::os::Bottle *list=rep.get(i).asList();
+                yarp::os::Bottle *netConf=config.get(i).asList();
 
-                if (list)
+                if (netConf!=NULL)
                 {
-                    mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*(rep.get(i).asList())));
+                    mNetworks.push_back(new iCubNetworkGui(mRefTreeModel,mRowLev0,*netConf));
                 }
-            }
-
-            if (hasAlarm())
-            {
-                mRowLev0[mColumns.mColIcon]="(!)";
-            }
-            else
-            {
-                mRowLev0[mColumns.mColIcon]="";
             }
             
             return;
@@ -149,47 +156,88 @@ public:
         
         if (mPort.write(bot,rep))
         {
-            //printf("%s\n",rep.toString().c_str());
-            //fflush(stdout);
-
-            if (rep.size()>1)
+            if (rep.size()>0)
             {
                 fromBottle(rep);
-            }
-
-            if (hasAlarm())
-            {
-                mRowLev0[mColumns.mColIcon]="(!)";
-            }
-            else
-            {
-                mRowLev0[mColumns.mColIcon]="";
+                alarmLevel();
             }
         }
     }
 
     void fromBottle(yarp::os::Bottle &bot)
     {
-        for (int i=1; i<(int)bot.size(); ++i)
+        for (int i=0; i<(int)bot.size(); ++i)
         {
             yarp::os::Bottle *net=bot.get(i).asList();
-            mNetworks[net->get(0).asInt()]->fromBottle(*net);
+            mNetworks[net->get(0).asInt()]->fromBottle(net->tail());
         }
     }
 
-    bool hasAlarm()
+    void alarmLevel()
     {
-        bool alarm=false;
+        int alarm=0;
 
-        for (int i=0; i<(int)mNetworks.size(); ++i)
+        for (int i=0; alarm!=2 && i<(int)mNetworks.size(); ++i)
         {
-            if (mNetworks[i]->hasAlarm())
+            if (mNetworks[i])
             {
-                alarm=true;
+                int childAlarmLevel=mNetworks[i]->alarmLevel();
+                
+                if (childAlarmLevel>alarm)
+                {
+                    alarm=childAlarmLevel;
+                }
             }
         }
 
-        return alarm;
+        switch(alarm)
+        {
+        case 0:
+            mRowLev0[mColumns.mColIcon]="";
+            break;
+        case 1:
+            mRowLev0[mColumns.mColIcon]="*";
+            break;
+        case 2:
+            mRowLev0[mColumns.mColIcon]="(!)";
+            break;
+        }
+    }
+
+    void findAndReset(const Gtk::TreeModel::Row row)
+    {
+        if (row==mRowLev0)
+        {
+            reset();
+            return;
+        }
+        
+        for (int i=0; i<(int)mNetworks.size(); ++i)
+        {
+            if (mNetworks[i])
+            {
+                if (*(mNetworks[i]->getRoot())==row)
+                {
+                    mNetworks[i]->reset();
+                    return;
+                }
+                else
+                {
+                    if (mNetworks[i]->findAndReset(row)) return;
+                }
+            }
+        }
+    }
+
+    void reset()
+    {
+        for (int i=0; i<(int)mNetworks.size(); ++i)
+        {
+            if (mNetworks[i])
+            {
+                mNetworks[i]->reset();
+            }
+        }
     }
 
 protected:
@@ -204,7 +252,7 @@ protected:
 
     bool mWaitConnection;
     yarp::os::RpcClient mPort;
-    std::vector<iCubNetwork*> mNetworks;
+    std::vector<iCubNetworkGui*> mNetworks;
 };
 
 #endif

@@ -13,7 +13,7 @@ file(GLOB folder_source *.cpp)
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../iCubInterfaceGuiLib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../libraries/iCubInterfaceGuiLib)
 include_directories(${iCubDev_INCLUDE_DIRS})
 include_directories(${YARP_INCLUDE_DIRS})
 

@@ -12,137 +12,146 @@
 
 #include <gtkmm.h>
 #include <yarp/os/RateThread.h>
-#include "iCubNetwork.h"
 #include "iCubBoardGui.h"
 
-class iCubNetworkGui : public iCubNetwork, public iCubInterfaceGuiRows
+class iCubNetworkGui
 {
 public:
     enum { ALARM_NONE,ALARM_HIGH,ALARM_LOW };
 
-    iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &bot)
-        : iCubNetwork(),iCubInterfaceGuiRows()
+    iCubNetworkGui(Glib::RefPtr<Gtk::TreeStore> refTreeModel,Gtk::TreeModel::Row& parent,yarp::os::Bottle &netConf)
     {
-        Gtk::TreeModel::Row* baseRow=createRows(refTreeModel,parent,mRowNames);
+        mLocalData=new GuiRawDataArray(refTreeModel,parent,netConf.get(0).asList());
 
-        for (int i=2; i<(int)bot.size(); ++i)
+        mRoot=mLocalData->getRoot();
+
+        for (int i=1; i<(int)netConf.size(); ++i)
         {
-            yarp::os::Bottle *netBot=bot.get(i).asList();
-            yarp::os::ConstString boardType=netBot->get(1).asList()->get(4).asString();
-
-            if (boardType=="BLL")
-            {
-                mBoards.push_back(new iCubBLLBoardGui(refTreeModel,*baseRow,*netBot));
-            }
-            else if (boardType=="analog")
-            {
-                mBoards.push_back(new iCubAnalogBoardGui(refTreeModel,*baseRow,*netBot));
-            }
-        }
-
-        mData.fromBottle(*(bot.get(1).asList()));
-
-        mAlarmMask=new char[mNumRows];
-        mAlarmState=new bool[mNumRows];
-
-        for (int i=0; i<mNumRows; ++i)
-        {
-            mAlarmState[i]=false;
-            mAlarmMask[i]=ALARM_NONE;
-            if (mRowNames[i][0]=='!')
-            {
-                if (mRowNames[i][1]=='~')
-                {
-                    mAlarmMask[i]=ALARM_LOW;
-                }
-                else
-                {
-                    mAlarmMask[i]=ALARM_HIGH;
-                }
-            }
-            
-            if (mAlarmMask[i]==ALARM_HIGH)
-            {
-                mAlarmState[i]=mData.isHigh(i);                    
-            }
-            else if (mAlarmMask[i]==ALARM_LOW)
-            {
-                mAlarmState[i]=mData.isLow(i);
-            }
-
-            mRows[i][mColumns.mColValue]=mData.toString(i);
+            mBoards.push_back(new iCubBoardGui(refTreeModel,*mRoot,*(netConf.get(i).asList())));
         }
     }
 
     virtual ~iCubNetworkGui()
     {
-        delete [] mAlarmMask;
-        delete [] mAlarmState;
-    }
-
-    virtual void fromBottle(yarp::os::Bottle &bot)
-    {
-        iCubNetwork::fromBottle(bot);
-
-        for (int i=0; i<mNumRows; ++i)
-        {
-            if (mData.test(i))
-            {
-                if (mAlarmMask[i]==ALARM_HIGH)
-                {
-                    mAlarmState[i]=mData.isHigh(i);                    
-                }
-                else if (mAlarmMask[i]==ALARM_LOW)
-                {
-                    mAlarmState[i]=mData.isLow(i);
-                }
-
-                mRows[i][mColumns.mColValue]=mData.toString(i);
-            }
-        }
-    }
-
-    virtual bool hasAlarm()
-    {
-        bool alarm=false;
-
-        for (int i=0; i<mNumRows; ++i)
-        {
-            if (mAlarmState[i])
-            {
-                alarm=true;
-                mRows[i][mColumns.mColIcon]="(!)";
-            }
-            else
-            {
-                mRows[i][mColumns.mColIcon]="";
-            }
-        }
+        delete mLocalData;
 
         for (int i=0; i<(int)mBoards.size(); ++i)
         {
-            if (mBoards[i]->hasAlarm()) 
+            if (mBoards[i]!=NULL) delete mBoards[i];
+        }
+    }
+
+    Gtk::TreeModel::Row *getRoot(){ return mRoot; }
+
+    virtual void fromBottle(yarp::os::Bottle &bot)
+    {
+        static const int LOCAL_DATA=0;
+
+        for (int i=0; i<(int)bot.size(); ++i)
+        {
+            yarp::os::Bottle *list=bot.get(i).asList();
+
+            int index=list->get(0).asInt();
+
+            if (index==LOCAL_DATA)
             {
-                alarm=true;
+                mLocalData->fromBottle(list->tail());
+            }
+            else
+            {
+                mBoards[index-1]->fromBottle(list->tail());
             }
         }
 
-        if (alarm)
+        mLocalData->getRoot();
+    }
+
+    int alarmLevel()
+    {
+        int alarm=mLocalData ? mLocalData->alarmLevel() : 0;
+
+        for (int i=0; alarm!=2 && i<(int)mBoards.size(); ++i)
         {
-            mRows[0][mColumns.mColIcon]="(!)";
+            if (mBoards[i])
+            {
+                int childAlarmLevel=mBoards[i]->alarmLevel();
+                
+                if (childAlarmLevel>alarm)
+                {
+                    alarm=childAlarmLevel;
+                }
+            }
         }
-        else
+
+        switch(alarm)
         {
-            mRows[0][mColumns.mColIcon]="";
+        case 0:
+            (*mRoot)[mColumns.mColIcon]="";
+            break;
+        case 1:
+            (*mRoot)[mColumns.mColIcon]="*";
+            break;
+        case 2:
+            (*mRoot)[mColumns.mColIcon]="(!)";
+            break;
         }
 
         return alarm;
     }
 
+    bool findAndReset(const Gtk::TreeModel::Row row)
+    {
+        if (mLocalData)
+        {
+            if (*(mLocalData->getRoot())==row)
+            {
+                mLocalData->reset();
+                return true;
+            }
+            else
+            {
+                if (mLocalData->findAndReset(row)) return true;
+            }
+        }
+
+        for (int i=0; i<(int)mBoards.size(); ++i)
+        {
+            if (mBoards[i])
+            {
+                if (*(mBoards[i]->getRoot())==row)
+                {
+                    mBoards[i]->reset();
+                    return true;
+                }
+                else
+                {
+                    if (mBoards[i]->findAndReset(row)) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void reset()
+    {
+        if (mLocalData) mLocalData->reset();
+
+        for (int i=0; i<(int)mBoards.size(); ++i)
+        {
+            if (mBoards[i])
+            {
+                mBoards[i]->reset();
+            }
+        }
+    }
+
 protected:
-    bool* mAlarmState;
-    char* mAlarmMask;
+    Gtk::TreeModel::Row *mRoot;
+    GuiRawDataArray *mLocalData;
+    std::vector<iCubBoardGui*> mBoards;
+
+    ModelColumns mColumns;
 };
 
 #endif
-

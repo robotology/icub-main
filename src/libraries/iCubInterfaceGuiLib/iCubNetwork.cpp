@@ -9,65 +9,29 @@
 
 ////////////////////////////////////
 
-#include <stdlib.h>
-
 #include "iCubNetwork.h"
 
 ////////////////////////////////////
 
 const char* iCubNetwork::mRowNames[]=
 {
-        "Network",
-        "Device identifier",// Name of the yarp can device: pcan/cfw2
-        "Network id",	    // Usually a number for each device, from 0 to … n
-        "Driver Rx ovf",	// Rx buffer overflow in device driver (# messages)
-        "Driver Tx ovf",	// Tx buffer overflow in device driver (# messages)
-        "Rx Can errors",	// Rx errors (can device)
-        "Tx Can errors",	// Tx errors  (can device)
-        "Rx buffer ovf", 	// Overflow Rx buffer (can device)
-        "Tx buffer ovf", 	// Overflow Tx buffer (can device)
+    "Network",
+    "Device identifier",// Name of the yarp can device: pcan/cfw2
+    "Network id",	    // Usually a number for each device, from 0 to … n
+    "Driver Rx ovf",	// Rx buffer overflow in device driver (# messages)
+    "Driver Tx ovf",	// Tx buffer overflow in device driver (# messages)
+    "Rx Can errors",	// Rx errors (can device)
+    "Tx Can errors",	// Tx errors  (can device)
+    "Rx buffer ovf", 	// Overflow Rx buffer (can device)
+    "Tx buffer ovf", 	// Overflow Tx buffer (can device)
         
-        "!Bus off", //Bus off flag
+    "!Bus off", //Bus off flag
  
-        "Requested rate",         //Requested rate for the associated thread [ms]
-        "Estimated average rate", // Estimated rate for the associated thread [ms]
-        "Estimated std rate",	  // Same as before, standard deviation, ms
-        NULL
+    "Requested rate",         //Requested rate for the associated thread [ms]
+    "Estimated average rate", // Estimated rate for the associated thread [ms]
+    "Estimated std rate",	  // Same as before, standard deviation, ms
+    NULL
 };
-
-bool iCubNetwork::findAndWrite(std::string address,const yarp::os::Value& data)
-{
-    int separator=address.find(",");
-    if (separator<0) return false; // should never happen
-    std::string device_ID=address.substr(0,separator);
-    if (device_ID.length()==0) return false; // should never happen
-    if (device_ID!=mDevice_ID) return false;
-    ++separator;
-    address=address.substr(separator,address.length()-separator);
-    
-    separator=address.find(",");
-    if (separator<0) return false; // should never happen
-    std::string msgType=address.substr(0,separator);
-    if (msgType.length()==0) return false; // should never happen
-    
-    if (msgType=="network")
-    {
-        ++separator;
-        address=address.substr(separator,address.length()-separator);
-        return mData.write(atoi(address.c_str()),data);
-    }
-
-    // for a or channel board channel
-    for (int i=0; i<(int)mBoards.size(); ++i)
-    {
-        if (mBoards[i]->findAndWrite(address,data))
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
 
 /*
 yarp::dev::LoggerDataRef* iCubNetwork::getDataReference(std::string address)

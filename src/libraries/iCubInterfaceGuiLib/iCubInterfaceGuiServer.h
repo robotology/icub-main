@@ -50,13 +50,39 @@ public:
         return ret;
     }
     
-    //yarp::dev::LoggerDataRef* getDataReference(const std::string &key);
     bool log(const std::string &key,const yarp::os::Value &data);
     bool log(const yarp::os::Bottle &data){ return false; }
 
-    //bool findAndRead(std::string address,yarp::os::Value* data);
+    yarp::os::Bottle getConfig()
+    {
+        yarp::os::Bottle config;
 
-    yarp::os::Bottle toBottle(bool bConfig=false);
+        for (int n=0; n<(int)mNetworks.size(); ++n)
+        {   
+            config.addList()=mNetworks[n]->getConfig();
+        }
+
+        return config;
+    }
+
+    yarp::os::Bottle toBottle()
+    {
+        yarp::os::Bottle data;
+
+        for (int n=0; n<(int)mNetworks.size(); ++n)
+        {
+            yarp::os::Bottle netData=mNetworks[n]->toBottle();
+
+            if (netData.size())
+            {
+                yarp::os::Bottle &addList=data.addList();
+                addList.addInt(n);
+                addList.append(netData);
+            }
+        }
+
+        return data;
+    }
 
 protected:
     yarp::os::RpcServer mPort;

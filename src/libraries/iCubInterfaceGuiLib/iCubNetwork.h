@@ -12,9 +12,10 @@
 
 #include <string>
 #include <vector>
-#include <yarp/os/Property.h>
+#include <stdlib.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Property.h>
 
 ////////////////////////////////////
 
@@ -25,45 +26,7 @@
 class iCubNetwork
 {
 public:
-    iCubNetwork()
-    {
-        mName="";
-        mFile="";
-        mDevice="";
-        //mID=-1;
-    }
-
-    iCubNetwork(std::string &name,std::string &file,std::string &device) 
-        : mName(name),mFile(file),mDevice(device)
-    {
-        mData.write(STRING_Name,yarp::os::Value(name.c_str()));
-        mData.write(STRING_Device_identifier,yarp::os::Value(device.c_str()));
-
-        for (int i=INT_Network_id; i<=(int)DOUBLE_Estimated_std_rate; ++i)
-        {
-            mData.write(i,yarp::os::Value(0));
-        }
-    }
-
-    ~iCubNetwork()
-    {
-        for (int i=0; i<(int)mBoards.size(); ++i)
-        {
-            if (mBoards[i]!=NULL) delete mBoards[i];
-        }
-    }
-
-    void setID(int ID)
-    {
-        mData.write(INT_Network_id,yarp::os::Value(ID));
-
-        char buff[32];
-        sprintf(buff,"%d",ID);
-        mID=buff;
-
-        mDevice_ID=mDevice+" "+mID;
-    }
-
+    
     enum Index
     {
         STRING_Name,
@@ -84,6 +47,37 @@ public:
         DOUBLE_Estimated_std_rate	   // Same as before, standard deviation, ms
     };
 
+    iCubNetwork(std::string &name,std::string &file,std::string &device) 
+    {
+        mName=name;
+        mFile=file;
+        mDevice=device;
+        mLocalData=new RawDataArray(mRowNames);
+        mLocalData->findAndWrite(STRING_Name,yarp::os::Value(mName.c_str()));
+        mLocalData->findAndWrite(STRING_Device_identifier,yarp::os::Value(mDevice.c_str()));
+    }
+
+    ~iCubNetwork()
+    {
+        for (int i=0; i<(int)mBoards.size(); ++i)
+        {
+            if (mBoards[i]!=NULL) delete mBoards[i];
+        }
+
+        if (mLocalData) delete mLocalData;
+    }
+
+    void setID(int ID)
+    {
+        mLocalData->findAndWrite(INT_Network_id,yarp::os::Value(ID));
+
+        char buff[32];
+        sprintf(buff,"%d",ID);
+        mID=buff;
+
+        mDevice_ID=mDevice+" "+mID;
+    }
+
     inline bool operator==(std::string& name)
     {
         return name==mName;
@@ -95,49 +89,82 @@ public:
     }
 
     //yarp::dev::LoggerDataRef* getDataReference(std::string addr);
-    bool findAndWrite(std::string addr,const yarp::os::Value& data);
+    //bool findAndWrite(std::string addr,const yarp::os::Value& data);
 
-    virtual yarp::os::Bottle toBottle(bool bConfig=false)
+    virtual yarp::os::Bottle getConfig()
+    {
+        yarp::os::Bottle config;
+
+        config.addList()=mLocalData->getConfig();
+
+        for (int i=0; i<(int)mBoards.size(); ++i)
+        {
+            config.addList()=mBoards[i]->getConfig();
+        }
+
+        return config;
+    }
+
+    virtual yarp::os::Bottle toBottle()
     {
         yarp::os::Bottle bot;
 
-        yarp::os::Bottle data=mData.toBottle(bConfig);
+        yarp::os::Bottle data=mLocalData->toBottle();
+
         if (data.size())
         {
-            yarp::os::Bottle &addList=bot.addList();
-            addList.addInt(-1);
-            addList.append(data);
+            yarp::os::Bottle &tail=bot.addList();
+            tail.addInt(0);
+            tail.append(data);
         }
 
         for (int i=0; i<(int)mBoards.size(); ++i)
         {
-            yarp::os::Bottle board=mBoards[i]->toBottle(bConfig);
+            yarp::os::Bottle board=mBoards[i]->toBottle();
+            
             if (board.size())
             {
-                yarp::os::Bottle &addList=bot.addList();
-                addList.addInt(i);
-                addList.append(board);
+                yarp::os::Bottle &tail=bot.addList();
+                tail.addInt(i+1);
+                tail.append(board);
             }
         }
 
         return bot;
     }
 
-    virtual void fromBottle(yarp::os::Bottle &bot)
+    bool findAndWrite(std::string address,const yarp::os::Value& data)
     {
-        for (int i=1; i<(int)bot.size(); ++i)
-        {
-            yarp::os::Bottle *list=bot.get(i).asList();
+        int separator=address.find(",");
+        if (separator<0) return false; // should never happen
+        std::string device_ID=address.substr(0,separator);
+        if (device_ID.length()==0) return false; // should never happen
+        if (device_ID!=mDevice_ID) return false;
+        ++separator;
+        address=address.substr(separator,address.length()-separator);
 
-            if (list->get(0).asInt()==-1)
+        separator=address.find(",");
+        if (separator<0) return false; // should never happen
+        std::string msgType=address.substr(0,separator);
+        if (msgType.length()==0) return false; // should never happen
+
+        if (msgType=="network")
+        {
+            ++separator;
+            address=address.substr(separator,address.length()-separator);
+            return mLocalData->findAndWrite(atoi(address.c_str()),data);
+        }
+
+        // for a or channel board channel
+        for (int i=0; i<(int)mBoards.size(); ++i)
+        {
+            if (mBoards[i]->findAndWrite(address,data))
             {
-                mData.fromBottle(*list);
-            }
-            else
-            {
-                mBoards[list->get(0).asInt()]->fromBottle(*list);
+                return true;
             }
         }
+
+        return false;
     }
 
     virtual bool hasAlarm(){ return false; }
@@ -146,10 +173,9 @@ public:
 
 protected:
     std::vector<iCubBoard*> mBoards;
+    RawDataArray *mLocalData;
 
-    RawData mData;
     static const char* mRowNames[];
 };
 
 #endif
-

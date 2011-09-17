@@ -59,7 +59,12 @@ public:
     {
         static int counter=0;
 
-        if (pServer!=NULL) pServer->log(std::string("cfw2can 2,2,1,5"),yarp::os::Value(counter=!counter));
+        if (pServer!=NULL)
+        {
+            yarp::os::Value data((counter=!counter)?1:0);
+
+            pServer->log(std::string("fakecan 1,BLL,1,7"),data);
+        }
     }
 
 protected:
@@ -123,7 +128,8 @@ int main(int argc, char *argv[])
 
 	iCubInterfaceGuiServer server;
 
-    server.config(robot);
+    std::string PATH("C:/IIT/iCub/main/app/robots/iCubGenova01/conf/");
+    server.config(PATH,robot);
 
     server.start();
 

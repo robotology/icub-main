@@ -7,5 +7,4 @@
  *
  */
 
-#include "iCubBoardChannelGui.h"
-
+#include "GuiRawData.h"

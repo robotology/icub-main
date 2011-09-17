@@ -14,4 +14,4 @@ else(ICUB_USE_GtkMM)
 endif(ICUB_USE_GtkMM)
 
 #add_subdirectory(iCubInterfaceGuiLib)
-#add_subdirectory(iCubInterfaceGuiServer)
+add_subdirectory(iCubInterfaceGuiServer)

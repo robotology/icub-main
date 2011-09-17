@@ -9,7 +9,6 @@
 
 ////////////////////////////////////
 
-#include <stdlib.h>
 #include "iCubBoard.h"
 
 ////////////////////////////////////
@@ -20,19 +19,6 @@ const char* iCubBLLBoard::mRowNames[]=
 {
     "Board ID",       // The id with which the board is identified on the canbus
     "Device Type",   // ="BLL"
-    NULL
-};
-
-const std::string iCubAnalogBoard::mBoardType="analog";
-
-const char* iCubAnalogBoard::mRowNames[]=
-{
-    "Board ID",       // The id with which the board is identified on the canbus
-    "Device Type",    // ="analog"
-    "Channels",       // Number of channels
-    "!Saturations",
-    "!Errors",
-    "!Timeouts",
     NULL
 };
 
@@ -54,7 +40,7 @@ bool iCubBLLBoard::findAndWrite(std::string address,const yarp::os::Value& data)
     if (separator<0) // for the board
     {
         // address==index
-        mData.write(atoi(address.c_str()),data);
+        mLocalData->findAndWrite(atoi(address.c_str()),data);
 
         return true;
     }
@@ -71,6 +57,19 @@ bool iCubBLLBoard::findAndWrite(std::string address,const yarp::os::Value& data)
 
     return false;
 }
+
+const std::string iCubAnalogBoard::mBoardType="analog";
+
+const char* iCubAnalogBoard::mRowNames[]=
+{
+    "Board ID",       // The id with which the board is identified on the canbus
+    "Device Type",    // ="analog"
+    "Channels",       // Number of channels
+    "!Saturations",
+    "!Errors",
+    "!Timeouts",
+    NULL
+};
 
 bool iCubAnalogBoard::findAndWrite(std::string address,const yarp::os::Value& data)
 {
@@ -98,7 +97,7 @@ bool iCubAnalogBoard::findAndWrite(std::string address,const yarp::os::Value& da
     if (separator<0) // for the board
     {
         // address==index
-        mData.write(atoi(address.c_str()),data);
+        mLocalData->findAndWrite(atoi(address.c_str()),data);
 
         return true;
     }
