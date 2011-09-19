@@ -1133,6 +1133,18 @@ public:
 	//----------------
 	//      GET
 	//----------------
+	/**
+    * Return HLeft, i.e. the roto-translation matrix between the 'left' limb and the node.
+	*/
+	inline yarp::sig::Matrix getHLeft() { return HLeft; } 	
+	/**
+    * Return HRight, i.e. the roto-translation matrix between the 'right' limb and the node.
+	*/
+	yarp::sig::Matrix getHRight() { return HRight; } 	
+	/**
+    * Return HUp, i.e. the roto-translation matrix between the 'up' limb and the node.
+	*/
+	yarp::sig::Matrix getHUp() { return HUp; } 	
 
 	/**
     * Return the chosen limb forces, as a 6xN matrix.
