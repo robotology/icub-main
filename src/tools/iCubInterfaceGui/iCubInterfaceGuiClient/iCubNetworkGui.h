@@ -43,7 +43,7 @@ public:
 
     Gtk::TreeModel::Row *getRoot(){ return mRoot; }
 
-    virtual void fromBottle(yarp::os::Bottle &bot)
+    virtual void fromBottle(const yarp::os::Bottle &bot)
     {
         static const int LOCAL_DATA=0;
 

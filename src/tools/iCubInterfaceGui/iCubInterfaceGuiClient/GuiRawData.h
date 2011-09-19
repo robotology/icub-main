@@ -225,7 +225,7 @@ public:
         }
     }
 
-    virtual void fromBottle(yarp::os::Bottle &bot)
+    virtual void fromBottle(const yarp::os::Bottle &bot)
     {
         for (int i=0; i<bot.size(); i+=2)
         {
