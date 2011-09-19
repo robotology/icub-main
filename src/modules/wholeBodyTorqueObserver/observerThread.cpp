@@ -241,6 +241,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_wrench_RA = new BufferedPort<Vector>;  
     port_external_wrench_LA = new BufferedPort<Vector>;  
 	port_external_wrench_TO = new BufferedPort<Vector>; 
+	port_cartesian_external_wrench_RA = new BufferedPort<Vector>;  
+	port_cartesian_external_wrench_LA = new BufferedPort<Vector>;  
     port_skin_events_left = new BufferedPort<skinContactList>;
     port_skin_events_right = new BufferedPort<skinContactList>;
 	port_com_all = new BufferedPort<Vector>;
@@ -268,6 +270,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_HDTorques->open(string("/"+local_name+"/head/Torques:o").c_str());
 	port_external_wrench_RA->open(string("/"+local_name+"/right_arm/endEffectorWrench:o").c_str()); 
 	port_external_wrench_LA->open(string("/"+local_name+"/left_arm/endEffectorWrench:o").c_str()); 
+	port_external_wrench_RA->open(string("/"+local_name+"/right_arm/cartesianEndEffectorWrench:o").c_str()); 
+	port_external_wrench_LA->open(string("/"+local_name+"/left_arm/cartesianEndEffectorWrench:o").c_str()); 
 	port_external_wrench_TO->open(string("/"+local_name+"/torso/Wrench:o").c_str());
 	port_com_all->open(string("/"+local_name+"/com:o").c_str());
 	port_com_la ->open(string("/"+local_name+"/left_arm/com:o").c_str());
@@ -323,6 +327,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	inertial_measurements.zero();
 	F_ext_left_arm.resize(6,0.0);
 	F_ext_right_arm.resize(6,0.0); 
+	F_ext_cartesian_left_arm.resize(6,0.0);
+	F_ext_cartesian_right_arm.resize(6,0.0); 
 }
 
 bool inverseDynamics::threadInit()
@@ -511,7 +517,7 @@ void inverseDynamics::run()
     contactList.insert(contactList.begin(), contactListR.begin(), contactListR.end());
     printf("%s\n", contactList.toString().c_str());
 
-    F_ext_left_arm = F_ext_right_arm = zeros(6);
+    F_ext_left_arm = F_ext_right_arm = F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
     int eeInd = icub->upperTorso->left->getN()-1;
     for(dynContactList::const_iterator it=contactList.begin(); it!=contactList.end();it++){
         if(it->getLinkNumber() == eeInd){
@@ -521,42 +527,15 @@ void inverseDynamics::run()
                 F_ext_right_arm = it->getForceMoment();
         }
     }
+	yarp::sig::Matrix hl  = icub->upperTorso->getHLeft()  * icub->upperTorso->left->getH();
+	yarp::sig::Matrix hr  = icub->upperTorso->getHRight() * icub->upperTorso->right->getH();;
+	yarp::sig::Matrix ht  = icub->upperTorso->getHUp()    * icub->upperTorso->up->getH();
+	F_ext_cartesian_left_arm  = ht * hl * F_ext_left_arm;
+    F_ext_cartesian_right_arm = ht * hr * F_ext_right_arm;
 
     // *** MONITOR DATA ***
-    Vector monitorData(0);
-    //monitorData = w0 * CTRL_RAD2DEG;                                // w inertial sensor
-    //Vector temp = dw0 * CTRL_RAD2DEG;                               // dw inertial sensor
-    //for(int i=0;i<3;i++) monitorData.push_back(temp(i));
-    //temp = icub->upperTorso->getAngVel() * CTRL_RAD2DEG;            // w upper node
-    //for(int i=0;i<3;i++) monitorData.push_back(temp(i));
-    //temp = icub->upperTorso->getAngAcc() * CTRL_RAD2DEG;            // dw upper node
-    //for(int i=0;i<3;i++) monitorData.push_back(temp(i));    
-    //monitorData.push_back(norm(icub->upperTorso->getLinAcc()));     // lin acc norm upper node
-    //monitorData.push_back(norm(icub->upperTorso->getTorsoForce())); // force norm upper node
-    //monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node    
-    //for(int i=0;i<3;i++){                                           // w torso
-    //    temp = icub->lowerTorso->up->getAngVel(i) * CTRL_RAD2DEG;
-    //    for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
-    //}
-    //for(int i=0;i<3;i++){                                           // dw torso
-    //    temp = icub->lowerTorso->up->getAngAcc(i) * CTRL_RAD2DEG;
-    //    for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
-    //}
-    //for(int j=0;j<TOTorques.size();j++)                             // torso torques
-    //    monitorData.push_back(TOTorques[j]);
-    //for(int i=0;i<3;i++)                                            // norm of COM ddp torso
-    //    monitorData.push_back(norm(icub->lowerTorso->up->getLinAccCOM(i)));
-    //for(int i=0;i<3;i++)                                            // norm of forces torso
-    //    monitorData.push_back(norm(icub->lowerTorso->up->getForce(i)));
-    //for(int i=0;i<3;i++){                                           // moments torso
-    //    temp = icub->lowerTorso->up->getMoment(i);
-    //    for(int j=0;j<temp.size();j++)
-    //        monitorData.push_back(temp(j));
-    //}
-    //for(int i=0;i<3;i++)                                            // norm of moments head
-    //    monitorData.push_back(norm(icub->upperTorso->up->getMoment(i)));    
-
-
+	sendMonitorData();
+    
 	port_com_all->prepare() = com_all;
 	port_com_ll->prepare()  = com_ll ;
 	port_com_rl->prepare()  = com_rl ;
@@ -567,8 +546,10 @@ void inverseDynamics::run()
 	port_external_wrench_TO->prepare()  = F_up;
 	port_external_wrench_RA->prepare()  = F_ext_right_arm;
 	port_external_wrench_LA->prepare()  = F_ext_left_arm;
+	port_cartesian_external_wrench_RA->prepare()  = F_ext_cartesian_right_arm;
+	port_cartesian_external_wrench_LA->prepare()  = F_ext_cartesian_left_arm;
     port_dyn_contacts->prepare()        = contactList;
-    port_monitor->prepare()             = monitorData;
+
 
 	port_com_all->write();
 	port_com_ll->write();
@@ -579,9 +560,10 @@ void inverseDynamics::run()
 	port_com_to->write();
 	port_external_wrench_RA->write();
 	port_external_wrench_LA->write();
+	port_cartesian_external_wrench_RA->write();
+	port_cartesian_external_wrench_LA->write();
 	port_external_wrench_TO->write();
     port_dyn_contacts->write();
-    port_monitor->write();
 }
 
 void inverseDynamics::threadRelease()
@@ -635,6 +617,10 @@ void inverseDynamics::threadRelease()
 	closePort(port_external_wrench_RA);
 	fprintf(stderr, "Closing external_wrench_LA port\n");	
 	closePort(port_external_wrench_LA);
+	fprintf(stderr, "Closing cartesian_external_wrench_RA port\n");
+	closePort(port_cartesian_external_wrench_RA);
+	fprintf(stderr, "Closing cartesian_external_wrench_LA port\n");	
+	closePort(port_cartesian_external_wrench_LA);
 	fprintf(stderr, "Closing external_wrench_TO port\n");	
 	closePort(port_external_wrench_TO);
 	fprintf(stderr, "Closing COM ports\n");	
@@ -1084,4 +1070,42 @@ void inverseDynamics::addSkinContacts(){
     }
 
     
+}
+
+void inverseDynamics::sendMonitorData()
+{
+	Vector monitorData(0);
+    monitorData = w0 * CTRL_RAD2DEG;                                // w inertial sensor
+    Vector temp = dw0 * CTRL_RAD2DEG;                               // dw inertial sensor
+    for(int i=0;i<3;i++) monitorData.push_back(temp(i));
+    temp = icub->upperTorso->getAngVel() * CTRL_RAD2DEG;            // w upper node
+    for(int i=0;i<3;i++) monitorData.push_back(temp(i));
+    temp = icub->upperTorso->getAngAcc() * CTRL_RAD2DEG;            // dw upper node
+    for(int i=0;i<3;i++) monitorData.push_back(temp(i));    
+    monitorData.push_back(norm(icub->upperTorso->getLinAcc()));     // lin acc norm upper node
+    monitorData.push_back(norm(icub->upperTorso->getTorsoForce())); // force norm upper node
+    monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node    
+    for(int i=0;i<3;i++){                                           // w torso
+        temp = icub->lowerTorso->up->getAngVel(i) * CTRL_RAD2DEG;
+        for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+    }
+    for(int i=0;i<3;i++){                                           // dw torso
+        temp = icub->lowerTorso->up->getAngAcc(i) * CTRL_RAD2DEG;
+        for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+    }
+    //for(int j=0;j<TOTorques.size();j++)                             // torso torques
+    //    monitorData.push_back(TOTorques[j]);
+    for(int i=0;i<3;i++)                                            // norm of COM ddp torso
+        monitorData.push_back(norm(icub->lowerTorso->up->getLinAccCOM(i)));
+    for(int i=0;i<3;i++)                                            // norm of forces torso
+        monitorData.push_back(norm(icub->lowerTorso->up->getForce(i)));
+    for(int i=0;i<3;i++){                                           // moments torso
+        temp = icub->lowerTorso->up->getMoment(i);
+        for(int j=0;j<temp.size();j++)
+            monitorData.push_back(temp(j));
+    }
+    for(int i=0;i<3;i++)                                            // norm of moments head
+        monitorData.push_back(norm(icub->upperTorso->up->getMoment(i)));    
+	port_monitor->prepare()             = monitorData;
+	port_monitor->write();
 }
