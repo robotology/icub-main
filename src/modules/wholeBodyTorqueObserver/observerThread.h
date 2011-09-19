@@ -105,8 +105,8 @@ private:
 	BufferedPort<Bottle> *port_HDTorques;
 	BufferedPort<Vector> *port_external_wrench_RA;
 	BufferedPort<Vector> *port_external_wrench_LA;
-	BufferedPort<Vector> *port_cartesian_external_wrench_RA;
-	BufferedPort<Vector> *port_cartesian_external_wrench_LA;
+	BufferedPort<Vector> *port_external_cartesian_wrench_RA;
+	BufferedPort<Vector> *port_external_cartesian_wrench_LA;
 	BufferedPort<Vector> *port_external_wrench_TO;
 	BufferedPort<Vector> *port_com_all;
 	BufferedPort<Vector> *port_com_la;

@@ -241,8 +241,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_wrench_RA = new BufferedPort<Vector>;  
     port_external_wrench_LA = new BufferedPort<Vector>;  
 	port_external_wrench_TO = new BufferedPort<Vector>; 
-	port_cartesian_external_wrench_RA = new BufferedPort<Vector>;  
-	port_cartesian_external_wrench_LA = new BufferedPort<Vector>;  
+	port_external_cartesian_wrench_RA = new BufferedPort<Vector>;  
+	port_external_cartesian_wrench_LA = new BufferedPort<Vector>;  
     port_skin_events_left = new BufferedPort<skinContactList>;
     port_skin_events_right = new BufferedPort<skinContactList>;
 	port_com_all = new BufferedPort<Vector>;
@@ -270,8 +270,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_HDTorques->open(string("/"+local_name+"/head/Torques:o").c_str());
 	port_external_wrench_RA->open(string("/"+local_name+"/right_arm/endEffectorWrench:o").c_str()); 
 	port_external_wrench_LA->open(string("/"+local_name+"/left_arm/endEffectorWrench:o").c_str()); 
-	port_external_wrench_RA->open(string("/"+local_name+"/right_arm/cartesianEndEffectorWrench:o").c_str()); 
-	port_external_wrench_LA->open(string("/"+local_name+"/left_arm/cartesianEndEffectorWrench:o").c_str()); 
+	port_external_cartesian_wrench_RA->open(string("/"+local_name+"/right_arm/cartesianEndEffectorWrench:o").c_str()); 
+	port_external_cartesian_wrench_LA->open(string("/"+local_name+"/left_arm/cartesianEndEffectorWrench:o").c_str()); 
 	port_external_wrench_TO->open(string("/"+local_name+"/torso/Wrench:o").c_str());
 	port_com_all->open(string("/"+local_name+"/com:o").c_str());
 	port_com_la ->open(string("/"+local_name+"/left_arm/com:o").c_str());
@@ -552,8 +552,8 @@ void inverseDynamics::run()
 	port_external_wrench_TO->prepare()  = F_up;
 	port_external_wrench_RA->prepare()  = F_ext_right_arm;
 	port_external_wrench_LA->prepare()  = F_ext_left_arm;
-	port_cartesian_external_wrench_RA->prepare()  = F_ext_cartesian_right_arm;
-	port_cartesian_external_wrench_LA->prepare()  = F_ext_cartesian_left_arm;
+	port_external_cartesian_wrench_RA->prepare()  = F_ext_cartesian_right_arm;
+	port_external_cartesian_wrench_LA->prepare()  = F_ext_cartesian_left_arm;
     port_dyn_contacts->prepare()        = contactList;
 
 
@@ -566,8 +566,8 @@ void inverseDynamics::run()
 	port_com_to->write();
 	port_external_wrench_RA->write();
 	port_external_wrench_LA->write();
-	port_cartesian_external_wrench_RA->write();
-	port_cartesian_external_wrench_LA->write();
+	port_external_cartesian_wrench_RA->write();
+	port_external_cartesian_wrench_LA->write();
 	port_external_wrench_TO->write();
     port_dyn_contacts->write();
 }
@@ -624,9 +624,9 @@ void inverseDynamics::threadRelease()
 	fprintf(stderr, "Closing external_wrench_LA port\n");	
 	closePort(port_external_wrench_LA);
 	fprintf(stderr, "Closing cartesian_external_wrench_RA port\n");
-	closePort(port_cartesian_external_wrench_RA);
+	closePort(port_external_cartesian_wrench_RA);
 	fprintf(stderr, "Closing cartesian_external_wrench_LA port\n");	
-	closePort(port_cartesian_external_wrench_LA);
+	closePort(port_external_cartesian_wrench_LA);
 	fprintf(stderr, "Closing external_wrench_TO port\n");	
 	closePort(port_external_wrench_TO);
 	fprintf(stderr, "Closing COM ports\n");	
