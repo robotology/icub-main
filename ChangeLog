@@ -1,3 +1,7 @@
+2011-09-20 Randazzo Marco <marco.randazzo@iit.it>
+	* main/src/modules/torqueObserver is now deprecated
+	* main/src/modules/wrenchObserver is now deprecated
+
 2011-09-18 Alessandro Scalzo <alessandro.scalzo@iit.it>
     * Committed bunch of changes to iCubInterfaceGui to 
       support logging mechanism for errors
