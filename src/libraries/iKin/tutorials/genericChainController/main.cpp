@@ -349,8 +349,9 @@ public:
 
         // send v and x through YARP ports
         Vector qdot_deg=CTRL_RAD2DEG*ctrl->get_qdot();
+        Vector x=ctrl->get_x();
         port_v.write(qdot_deg);
-        port_x.write(ctrl->get_x());
+        port_x.write(x);
     }
 
     /*****************************************************************/
