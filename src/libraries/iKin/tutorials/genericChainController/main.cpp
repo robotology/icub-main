@@ -239,7 +239,8 @@ public:
             commData->setDesired(xdhat,qdhat);
 
             // send qdhat over yarp
-            port_qd.write(CTRL_RAD2DEG*qdhat);
+            Vector qdhat_deg=CTRL_RAD2DEG*qdhat;
+            port_qd.write(qdhat_deg);
 
             // latch the current target
             xd_old=xd;
@@ -347,7 +348,8 @@ public:
         ctrl->iterate(xd,qd,0x0064ffff);
 
         // send v and x through YARP ports
-        port_v.write(CTRL_RAD2DEG*ctrl->get_qdot());
+        Vector qdot_deg=CTRL_RAD2DEG*ctrl->get_qdot();
+        port_v.write(qdot_deg);
         port_x.write(ctrl->get_x());
     }
 
