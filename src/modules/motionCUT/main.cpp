@@ -686,7 +686,7 @@ public:
     void floodFill(const int i, Blob *pBlob)
     {
         set<int>::iterator el=activeNodesIndexSet.find(i);
-        if (el!=activeNodesIndexSet.end())
+        if ((el!=activeNodesIndexSet.end()) && (pBlob!=NULL))
         {
             // update blob
             pBlob->centroid.x+=(int)nodesPrev[i].x;
@@ -866,7 +866,7 @@ public:
     /************************************************************************/
     virtual bool close()
     {
-        if (thr)
+        if (thr!=NULL)
         {
             thr->stop();
             delete thr;
