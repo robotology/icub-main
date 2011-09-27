@@ -200,7 +200,7 @@ bool CompensationThread::threadInit()
                 sendInfoMsg(msg.str());
             }
             else{
-                double maxNeighborDist = rf->check("maxNeighborDist", Value(0.12)).asDouble();
+                double maxNeighborDist = skinEventsConf.check("maxNeighborDist", Value(0.012)).asDouble();
                 printf("Max neighbor distance: %f\n", maxNeighborDist);
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
