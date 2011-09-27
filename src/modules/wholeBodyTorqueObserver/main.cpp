@@ -185,6 +185,7 @@ private:
 	
 	dataFilter *port_inertial_input;
 	BufferedPort<Vector> port_filtered;	
+	Port rpcPort;
 
     inverseDynamics *inv_dyn;
 
@@ -235,6 +236,26 @@ public:
         return true;
     }
 
+	bool respond(const Bottle& command, Bottle& reply) 
+	{
+		reply.clear(); 
+		if (command.get(0).asInt()==0)
+		{
+			fprintf(stderr,"Asking recalibration...\n");
+			if (inv_dyn)
+			{
+				inv_dyn->suspend();
+				Time::delay(0.3);
+				inv_dyn->threadInit();
+				//inv_dyn->calibrateOffset(10); //maybe this is not required
+				Time::delay(0.3);
+				inv_dyn->resume();
+			}
+			fprintf(stderr,"Recalibration complete.\n");
+		}
+		return true;
+	}
+
     bool configure(ResourceFinder &rf)
     {
 		//---------------------LOCAL NAME-----------------------//
@@ -243,6 +264,11 @@ public:
 		{
 			local_name=rf.find("local").asString();
 		}
+		
+		//---------------OPEN RPC PORT--------------------//
+		string rpcPortName = local_name+"/rpc:i";
+		rpcPort.open(rpcPortName.c_str());
+		attach(rpcPort);                  
 
 		//---------------OPEN INERTIAL PORTS--------------------//
 		port_filtered.open(string("/"+local_name+"/filtered/inertial:o").c_str());
@@ -451,6 +477,8 @@ public:
 		port_filtered.interrupt(); //CHECK THIS, SOMETIMES IT SEEMS TO BLOCK THE PORT
 		fprintf(stderr,"closing the filtered port \n");     
 		port_filtered.close();
+		fprintf(stderr,"closing the rpc port \n");     
+		rpcPort.close();
 
 		if (dd_left_arm)
 		{
