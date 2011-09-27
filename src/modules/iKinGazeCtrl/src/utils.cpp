@@ -527,8 +527,10 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
     if (encTorso!=NULL)
     {
         if (encTorso->getEncoders(fb.data()))
+        {
             for (int i=0; i<nJointsTorso; i++)
                 fbTorso[i]=CTRL_DEG2RAD*fb[nJointsTorso-1-i];    // reversed order
+        }
         else
             ret=false;
     }
@@ -536,8 +538,10 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
         fbTorso=0.0;
 
     if (encHead->getEncoders(fb.data()))
+    {
         for (int i=0; i<nJointsHead; i++)
             fbHead[i]=CTRL_DEG2RAD*fb[i];
+    }
     else
         ret=false;
 
