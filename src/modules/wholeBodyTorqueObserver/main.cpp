@@ -266,7 +266,7 @@ public:
 		}
 		
 		//---------------OPEN RPC PORT--------------------//
-		string rpcPortName = local_name+"/rpc:i";
+		string rpcPortName = "/"+local_name+"/rpc:i";
 		rpcPort.open(rpcPortName.c_str());
 		attach(rpcPort);                  
 
