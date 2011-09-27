@@ -58,6 +58,7 @@ dynContactList skinContactList::toDynContactList() const{
     const_iterator itSkin = begin();
     for(dynContactList::iterator itDyn=res.begin(); itDyn!=res.end(); itDyn++){
         *itDyn = (dynContact)(*itSkin);
+        itSkin++;
     }
     return res;
 }
