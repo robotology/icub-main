@@ -530,12 +530,12 @@ void inverseDynamics::run()
 	yarp::sig::Matrix ht  = icub->upperTorso->getHUp()    * icub->upperTorso->up->getH();
 	yarp::sig::Matrix hl  = ht * icub->upperTorso->getHLeft()  * icub->upperTorso->left->getH();
 	yarp::sig::Matrix hr  = ht * icub->upperTorso->getHRight() * icub->upperTorso->right->getH();
-	yarp::sig::Vector tmp1 = F_ext_left_arm.subVector(0,2); tmp1.push_back(1.0); tmp1 = hl * tmp1;
-	yarp::sig::Vector tmp2 = F_ext_left_arm.subVector(3,5); tmp2.push_back(1.0); tmp2 = hl * tmp2;
+	yarp::sig::Vector tmp1 = F_ext_left_arm.subVector(0,2); tmp1.push_back(0.0); tmp1 = hl * tmp1;
+	yarp::sig::Vector tmp2 = F_ext_left_arm.subVector(3,5); tmp2.push_back(0.0); tmp2 = hl * tmp2;
 	for (int i=0; i<3; i++)	F_ext_cartesian_left_arm[i] = tmp1[i];
 	for (int i=3; i<6; i++)	F_ext_cartesian_left_arm[i] = tmp2[i-3];
-    tmp1 = F_ext_right_arm.subVector(0,2); tmp1.push_back(1.0); tmp1 = hr * tmp1;
-	tmp2 = F_ext_right_arm.subVector(3,5); tmp2.push_back(1.0); tmp2 = hr * tmp2;
+    tmp1 = F_ext_right_arm.subVector(0,2); tmp1.push_back(0.0); tmp1 = hr * tmp1;
+	tmp2 = F_ext_right_arm.subVector(3,5); tmp2.push_back(0.0); tmp2 = hr * tmp2;
 	for (int i=0; i<3; i++)	F_ext_cartesian_right_arm[i] = tmp1[i];
 	for (int i=3; i<6; i++)	F_ext_cartesian_right_arm[i] = tmp2[i-3];
 
