@@ -1,3 +1,8 @@
+2011-09-29 Alessandro Scalzo <alessandro.scalzo@iit.it>
+    * removed iCubInterfaceGui test program from repository
+        * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiServer/CMakeLists.txt
+        * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiServer/mainServer.cpp
+
 2011-09-20 Randazzo Marco <marco.randazzo@iit.it>
 	* main/src/modules/torqueObserver is now deprecated
 	* main/src/modules/wrenchObserver is now deprecated
