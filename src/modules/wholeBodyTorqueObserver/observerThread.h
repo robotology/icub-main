@@ -57,6 +57,7 @@ public:
 	bool       com_vel_enabled;
 	bool       dummy_ft;
 	bool       w0_dw0_enabled;
+    bool       dumpvel_enabled;
 
 private:
 	string     robot_name;
@@ -117,6 +118,7 @@ private:
 	BufferedPort<Vector> *port_com_to;
     BufferedPort<Vector> *port_monitor;
     BufferedPort<iCub::skinDynLib::dynContactList> *port_dyn_contacts;
+    BufferedPort<Vector> *port_dumpvel;
 
     Vector *ft_leg_left;
     Vector *ft_leg_right;
@@ -196,6 +198,7 @@ public:
 	bool getUpperEncodersSpeedAndAcceleration();
 	void setZeroJntAngVelAcc();
 	void sendMonitorData();
+    void sendVelAccData();
 
 };
 

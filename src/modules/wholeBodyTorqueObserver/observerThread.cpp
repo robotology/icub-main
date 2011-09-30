@@ -207,6 +207,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	com_vel_enabled = false;
 	dummy_ft    = false;
 	w0_dw0_enabled   = false;
+    dumpvel_enabled = false;
 
 	icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
 	icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
@@ -254,6 +255,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_hd  = new BufferedPort<Vector>;
     port_monitor = new BufferedPort<Vector>;
     port_dyn_contacts = new BufferedPort<dynContactList>;
+    port_dumpvel = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
 	port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -284,6 +286,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_skin_events_right->open(string("/"+local_name+"/skin_events_right:i").c_str());
     port_monitor->open(string("/"+local_name+"/monitor:o").c_str());
     port_dyn_contacts->open(string("/"+local_name+"/dyn_contacts:o").c_str());
+    port_dumpvel->open(string("/"+local_name+"/va:o").c_str());
 
 	if (autoconnect)
 	{
@@ -541,6 +544,9 @@ void inverseDynamics::run()
 
     // *** MONITOR DATA ***
 	//sendMonitorData();
+
+    // *** DUMP VEL DATA ***
+	//sendVelAccData();
     
 	port_com_all->prepare() = com_all;
 	port_com_ll->prepare()  = com_ll ;
@@ -653,6 +659,8 @@ void inverseDynamics::threadRelease()
     closePort(port_skin_events_right);
     fprintf(stderr, "Closing monitor port\n");
     closePort(port_monitor);
+    fprintf(stderr, "Closing dump port\n");
+    closePort(port_dumpvel);
     fprintf(stderr, "Closing dyn_contacts port\n");
     closePort(port_dyn_contacts);
 
@@ -1114,4 +1122,28 @@ void inverseDynamics::sendMonitorData()
         monitorData.push_back(norm(icub->upperTorso->up->getMoment(i)));    
 	port_monitor->prepare()             = monitorData;
 	port_monitor->write();
+}
+
+void inverseDynamics::sendVelAccData()
+{
+    Vector dump(0);
+    int i;
+    if(dumpvel_enabled)
+    {
+        for(i=0; i< all_q_up.size(); i++)
+            dump.push_back(all_q_up[i]);
+        for(i=0; i< all_dq_up.size(); i++)
+            dump.push_back(all_dq_up[i]);
+        for(i=0; i< all_d2q_up.size(); i++)
+            dump.push_back(all_d2q_up[i]);
+        for(i=0; i< all_q_low.size(); i++)
+            dump.push_back(all_q_low[i]);
+        for(i=0; i< all_dq_low.size(); i++)
+            dump.push_back(all_dq_low[i]);
+        for(i=0; i< all_d2q_low.size(); i++)
+            dump.push_back(all_d2q_low[i]);
+
+        port_dumpvel->prepare() = dump;
+        port_dumpvel->write();
+    }
 }

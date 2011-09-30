@@ -181,6 +181,7 @@ private:
 	bool     left_arm_enabled;
 	bool     right_arm_enabled;
 	bool     dummy_ft;
+    bool     dump_vel_enabled;
 
 	
 	dataFilter *port_inertial_input;
@@ -213,6 +214,7 @@ public:
 		right_arm_enabled = true;
 		w0_dw0_enabled = false;
 		dummy_ft = false;
+        dump_vel_enabled = false;
     }
 
     virtual bool createDriver(PolyDriver *_dd)
@@ -368,6 +370,13 @@ public:
 			fprintf(stderr,"Using dummy FT sensors (debug mode)\n");
 		}
 
+        //---------------------DUMP-VEL-------------------------//
+        if (rf.check("dumpvel"))
+        {
+            dump_vel_enabled = true;
+            fprintf(stderr,"Dumping joint velocities and accelerations (debug mode)\n");
+        }
+
 		//---------------------DEVICES--------------------------//
 
 		OptionsHead.put("device","remote_controlboard");
@@ -451,6 +460,7 @@ public:
 		inv_dyn->com_vel_enabled=com_vel_enabled;
 		inv_dyn->dummy_ft=dummy_ft;
 		inv_dyn->w0_dw0_enabled=w0_dw0_enabled;
+        inv_dyn->dumpvel_enabled=dump_vel_enabled;
 
 		fprintf(stderr,"ft thread istantiated...\n");
         Time::delay(5.0);
@@ -600,6 +610,7 @@ int main(int argc, char * argv[])
 		cout << "\t--no_right_arm    disables the right arm" << endl;
 		cout << "\t--no_com          disables the com computation" << endl;
 		cout << "\t--dummy_ft        uses fake FT sensors (debug use only)" <<endl;
+        cout << "\t--dumpvel         dumps joint velocities and accelerations (debug use only)" <<endl;
 		cout << "\t--experimental_com_vel  enables com velocity computation (experimental)" << endl;
 		return 0;
     }
