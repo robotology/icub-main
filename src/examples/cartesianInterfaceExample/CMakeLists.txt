@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-SET(PROJECTNAME iKinArmCtrlIF)
+SET(PROJECTNAME cartesianInterfaceExample)
 
 PROJECT(${PROJECTNAME})
 
@@ -21,7 +21,4 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME} icubmod
                                      ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
-
-
-
 

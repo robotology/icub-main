@@ -17,11 +17,12 @@
 */
 
 /** 
-\defgroup iKinArmCtrlIF iKinArmCtrlIF
+\defgroup cartesianInterfaceExample cartesianInterfaceExample
  
 @ingroup icub_module  
  
-The YARP interface version of \ref iKinArmCtrl.
+Just an example of how to control the iCub arm in the 
+operational space making use of the Cartesian Interface.
  
 Copyright (C) 2010 RobotCub Consortium
  
@@ -33,17 +34,9 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
  
 This module relies on the <a 
 href="http://eris.liralab.it/iCub/main/dox/html/icub_cartesian_interface.html">Cartesian 
-Interface</a> to implement the same functionalities of 
-iKinArmCtrl module. Please refer to 
-\ref iKinArmCtrl for a detailed description. 
- 
-The main differences with respect to \ref iKinArmCtrl are: 
--# \ref iKinArmCtrlIF controls joint by joint individually, 
-   hence one can use the non-controlled joints concurrently
-   without conflict.
--# \ref iKinArmCtrlIF does not have a <i>simulation</i> mode 
- since it is deeply connected to the robot. Nonetheless, you can
- still use it together with the \ref icub_Simulation "iCub Simulator".
+Interface</a> to provide a kind of easy-to-use port-based 
+front-end for controlling the iCub's arm in the operational 
+space. 
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -52,8 +45,7 @@ The main differences with respect to \ref iKinArmCtrl are:
 --ctrlName \e name 
 - The parameter \e name identifies the controller's name; all 
   the open ports will be tagged with the prefix
-  /<ctrlName>/<part>/. If not specified \e iKinArmCtrlIF is
-  assumed.
+  /<ctrlName>/<part>/. If not specified \e armCtrl is assumed.
  
 --robot \e name 
 - The parameter \e name selects the robot name to connect to; if
@@ -382,7 +374,7 @@ public:
         Time::turboBoost();
 
         // get params from the RF
-        ctrlName=rf.check("ctrlName",Value("iKinArmCtrlIF")).asString().c_str();
+        ctrlName=rf.check("ctrlName",Value("armCtrl")).asString().c_str();
         robotName=rf.check("robot",Value("icub")).asString().c_str();
         partName=rf.check("part",Value("right_arm")).asString().c_str();
 
@@ -428,7 +420,7 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-        cout << "\t--ctrlName name: controller name (default iKinArmCtrlIF)"                    << endl;
+        cout << "\t--ctrlName name: controller name (default armCtrl)"                          << endl;
         cout << "\t--robot    name: robot name to connect to (default: icub)"                   << endl;
         cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)" << endl;
         cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"  << endl;
