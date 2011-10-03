@@ -20,6 +20,7 @@
 // Developed by Ugo Pattacini
 
 #include <yarp/os/Time.h>
+#include <yarp/os/Property.h>
 #include <yarp/os/Network.h>
 
 #include <iCub/iKin/iKinVocabs.h>
@@ -1195,10 +1196,10 @@ bool ServerCartesianController::open(Searchable &config)
     {
         kinPart=optGeneral.find("KinematicPart").asString();
 
-        if ((kinPart!="arm") && (kinPart!="leg"))
+        if ((kinPart!="arm") && (kinPart!="leg") && (kinPart!="custom"))
         {
             fprintf(stdout,"Attempt to instantiate an unknown kinematic part\n");
-            fprintf(stdout,"Available parts are: arm, leg\n");
+            fprintf(stdout,"Available parts are: arm, leg, custom\n");
             close();
 
             return false;
@@ -1225,7 +1226,7 @@ bool ServerCartesianController::open(Searchable &config)
             return false;
         }
     }
-    else
+    else if (kinPart!="custom")
     {
         fprintf(stdout,"KinematicType option is missing\n");
         close();
@@ -1349,6 +1350,27 @@ bool ServerCartesianController::open(Searchable &config)
         limb=new iCubArm(kinType.c_str());
     else if (kinPart=="leg")
         limb=new iCubLeg(kinType.c_str());
+    else if (optGeneral.check("customKinFile"))     // custom kinematics case
+    {
+        Property linksOptions;
+        linksOptions.fromConfigFile(optGeneral.find("customKinFile").asString().c_str());
+
+        limb=new iKinLimb(linksOptions);
+        if (!limb->isValid())
+        {
+            fprintf(stdout,"Invalid links parameters\n");
+            close();
+
+            return false;
+        }
+    }
+    else
+    {
+        fprintf(stdout,"customKinFile option is missing\n");
+        close();
+
+        return false;
+    }
 
     chain=limb->asChain();
 
