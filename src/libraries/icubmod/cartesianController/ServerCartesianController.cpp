@@ -1017,13 +1017,7 @@ void ServerCartesianController::sendVelocity(const Vector &v)
                 {
                     // current error in the joint space
                     double e=qdes[cnt]-fb[cnt];
-
-                    if (e>0.0)
-                        v_cnt=thres;
-                    else if (e<0.0)
-                        v_cnt=-thres;
-                    else
-                        v_cnt=0.0;
+                    v_cnt=iCub::ctrl::sign(e)*thres;
                 }
 
                 lVel[j]->velocityMove(lRmp[j][k],velCmd[cnt]=v_cnt);
@@ -1201,7 +1195,7 @@ bool ServerCartesianController::open(Searchable &config)
     {
         kinPart=optGeneral.find("KinematicPart").asString();
 
-        if (kinPart!="arm" && kinPart!="leg")
+        if ((kinPart!="arm") && (kinPart!="leg"))
         {
             fprintf(stdout,"Attempt to instantiate an unknown kinematic part\n");
             fprintf(stdout,"Available parts are: arm, leg\n");
