@@ -1,3 +1,9 @@
+2011-10-03 Ugo Pattacini <ugo.pattacini@iit.it>
+        * main/src/modules/iKinHead moved under contrib/src/misc
+          since it is superseded by Gaze Interface
+        * main/src/modules/iKinArmCtrlIF moved under main/src/examples/cartesianInterfaceExample
+          since it is only an example of using cartesian IF.
+
 2011-09-29 Alessandro Scalzo <alessandro.scalzo@iit.it>
     * removed iCubInterfaceGui test program from repository
         * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiServer/CMakeLists.txt
