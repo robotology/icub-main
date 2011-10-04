@@ -456,7 +456,8 @@ protected:
             else
             {
                 double t1=Time::now();
-                while ((Time::now()-t1)<1.0);
+                while ((Time::now()-t1)<1.0)
+                    Time::delay(0.1);
             }
         }
 
