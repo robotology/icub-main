@@ -1309,12 +1309,17 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     prt=getPartDesc(options);
-    int remainingJoints=prt->chn->getN();
+    if (prt==NULL)
+    {
+        fprintf(stdout,"Detected errors while processing parts description!\n");
+        return false;
+    }    
     
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
 
     // open drivers
+    int remainingJoints=prt->chn->getN();
     for (int i=0; i<prt->num; i++)
     {
         fprintf(stdout,"Allocating device driver for %s ...\n",
@@ -1551,24 +1556,24 @@ void CartesianSolver::close()
     if (isRunning())
         stop();
 
-    if (inPort)
+    if (inPort!=NULL)
     {
         inPort->interrupt();
         inPort->close();
         delete inPort;
     }
 
-    if (outPort)
+    if (outPort!=NULL)
     {
         outPort->interrupt();
         outPort->close();
         delete outPort;
     }
 
-    if (slv)
+    if (slv!=NULL)
         delete slv;
 
-    if (clb)
+    if (clb!=NULL)
         delete clb;
 
     for (unsigned int i=0; i<drv.size(); i++)
@@ -1583,11 +1588,11 @@ void CartesianSolver::close()
     jnt.clear();
     rmp.clear();
 
-    if (prt)
+    if (prt!=NULL)
     {
         delete prt->lmb;
 
-        if (prt->cns)
+        if (prt->cns!=NULL)
             delete prt->cns;
 
         delete prt;
