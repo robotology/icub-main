@@ -276,9 +276,40 @@ InputPort::InputPort(CartesianSolver *_slv)
 
 
 /************************************************************************/
+void InputPort::set_dof(const Vector &_dof)
+{
+    mutex.wait();
+    dof=_dof;
+    mutex.post();
+}
+
+
+/************************************************************************/
+Vector InputPort::get_dof()
+{
+    mutex.wait();
+    Vector _dof=dof;
+    mutex.post();
+    return _dof;
+}
+
+
+/************************************************************************/
+Vector InputPort::get_xd()
+{
+    mutex.wait();
+    Vector _xd=xd;
+    mutex.post();
+    return _xd;
+}
+
+
+/************************************************************************/
 void InputPort::reset_xd(const Vector &_xd)
 {
+    mutex.wait();
     xd=_xd;
+    mutex.post();
     isNew=false;
 }
 
@@ -304,8 +335,10 @@ bool InputPort::handleTarget(Bottle *b)
         int len=b->size();
         int l=maxLen<len ? maxLen : len;
 
+        mutex.wait();
         for (int i=0; i<l; i++)
             xd[i]=b->get(i).asDouble();
+        mutex.post();
 
         return isNew=true;
     }
@@ -323,9 +356,11 @@ bool InputPort::handleDOF(Bottle *b)
         
         slv->lock();
 
+        mutex.wait();
         dof.resize(len);
         for (int i=0; i<len; i++)
             dof[i]=b->get(i).asInt();
+        mutex.post();
 
         slv->unlock();
 
@@ -1412,7 +1447,7 @@ bool CartesianSolver::open(Searchable &options)
     inPort->useCallback();
     
     // init input port data
-    inPort->get_dof()=dof;
+    inPort->set_dof(dof);
     inPort->get_pose()=ctrlPose;
     inPort->get_contMode()=mode;
 
@@ -1447,7 +1482,7 @@ bool CartesianSolver::changeDOF(const Vector &_dof)
         // dof stuff
         Vector curDOF=dof;
         decodeDOF(_dof);
-        inPort->get_dof()=encodeDOF();
+        inPort->set_dof(encodeDOF());
 
         if (dof==curDOF)
             return false;
@@ -1630,7 +1665,7 @@ void CartesianSolver::run()
     if (doSolve)
     {        
         // point to the desired pose
-        Vector &xd=inPort->get_xd();
+        Vector xd=inPort->get_xd();
         if (inPort->get_tokenPtr()) // latch the token
         {
             token=*inPort->get_tokenPtr();

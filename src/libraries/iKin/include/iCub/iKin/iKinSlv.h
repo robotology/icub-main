@@ -244,6 +244,8 @@ class InputPort : public yarp::os::BufferedPort<yarp::os::Bottle>
 protected:
     CartesianSolver *slv;
 
+    yarp::os::Semaphore mutex;
+
     bool contMode;
     bool isNew;
     int  maxLen;
@@ -258,13 +260,15 @@ protected:
     virtual void onRead(yarp::os::Bottle &b);
 
 public:
-    InputPort(CartesianSolver *_slv);    
-    yarp::sig::Vector &get_dof() { return dof;      }
-    yarp::sig::Vector &get_xd()  { return xd;       }
-    int    &get_pose()           { return pose;     }
-    bool   &get_contMode()       { return contMode; }
-    double *get_tokenPtr()       { return pToken;   }
+    InputPort(CartesianSolver *_slv);
 
+    int               &get_pose()     { return pose;     }
+    bool              &get_contMode() { return contMode; }
+    double            *get_tokenPtr() { return pToken;   }
+    yarp::sig::Vector  get_dof();
+    yarp::sig::Vector  get_xd();
+    
+    void set_dof(const yarp::sig::Vector &_dof);
     void reset_xd(const yarp::sig::Vector &_xd);
     bool isNewDataEvent();
     bool handleTarget(yarp::os::Bottle *b);
