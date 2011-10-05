@@ -464,7 +464,7 @@ protected:
             else
             {
                 double dt=ping_robot_tmo-(Time::now()-t0);
-                fprintf(stdout,"not yet: still %g [s] to timeout expiry\n",
+                fprintf(stdout,"not yet: still %.1f [s] to timeout expiry\n",
                         dt>0.0?dt:0.0);
 
                 double t1=Time::now();
