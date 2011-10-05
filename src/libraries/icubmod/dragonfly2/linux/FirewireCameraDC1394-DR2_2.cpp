@@ -163,7 +163,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 {
     //bool bDR2=config.check("DR2");
 
-    bool bDR2=true;
+    //bool bDR2=true;
 
     int size_x=checkInt(config,"width");   
     int size_y=checkInt(config,"height");
@@ -237,8 +237,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 	error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
     if (manage(error)) { fprintf(stderr,"LINE: %d\n",__LINE__); return false; }
 
-    error=dc1394_video_set_operation_mode(m_pCamera,bDR2?DC1394_OPERATION_MODE_1394B:DC1394_OPERATION_MODE_LEGACY);       
-    if (manage(error)) { fprintf(stderr,"LINE: %d\n",__LINE__); return false; }
+    dc1394_video_set_operation_mode(m_pCamera,DC1394_OPERATION_MODE_1394B);       
+    //if (manage(error)) { fprintf(stderr,"LINE: %d\n",__LINE__); return false; }
 
     error=dc1394_video_set_iso_speed(m_pCamera,DC1394_ISO_SPEED_400);
 	if (manage(error)) { fprintf(stderr,"LINE: %d\n",__LINE__); return false; }
