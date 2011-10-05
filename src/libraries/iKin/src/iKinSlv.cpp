@@ -523,13 +523,20 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
         pDrv=new PolyDriver(options);
         bool ok=pDrv->isValid();
 
-        fprintf(stdout,"%s: Checking if %s part is active ... %s\n",
-                slvName.c_str(),partName.c_str(),ok?"ok":"not yet");
+        fprintf(stdout,"%s: Checking if %s part is active ... ",
+                slvName.c_str(),partName.c_str());
 
         if (ok)
+        {
+            fprintf(stdout,"ok\n");
             return pDrv;
+        }
         else
         {
+            double dt=ping_robot_tmo-(Time::now()-t0);
+            fprintf(stdout,"not yet: still %g [s] to timeout expiry\n",
+                    dt>0.0?dt:0.0);
+
             double t1=Time::now();
             while ((Time::now()-t1)<1.0)
                 Time::delay(0.1);
