@@ -1750,7 +1750,7 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
     if (options.check("type"))
     {    
         type=options.find("type").asString().c_str();
-        if (type!="left" && type!="right")
+        if ((type!="left") && (type!="right"))
             type="right";
     }
 
@@ -1853,7 +1853,7 @@ PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
     if (options.check("type"))
     {    
         type=options.find("type").asString().c_str();
-        if (type!="left" && type!="right")
+        if ((type!="left") && (type!="right"))
             type="right";
     }
 
