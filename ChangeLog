@@ -1,3 +1,7 @@
+2011-10-05 Alessandro Scalzo <alessandro.scalzo@iit.it>
+    	Added error messages.
+        * main/src/libraries/icubmod/dragonfly2/linux/FirewireCameraDC1394-DR2_2.cpp
+
 2011-10-03 Ugo Pattacini <ugo.pattacini@iit.it>
         * main/src/modules/iKinHead moved under contrib/src/misc
           since it is superseded by Gaze Interface
