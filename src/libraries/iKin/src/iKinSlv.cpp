@@ -589,7 +589,7 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
             
                 lim[i]->getLimits(rmp[i][j],&curMin,&curMax);
             
-                if (min>=curMin && max<=curMax)
+                if ((min>=curMin) && (max<=curMax))
                 {
                     (*prt->chn)[axis].setMin(CTRL_DEG2RAD*min);
                     (*prt->chn)[axis].setMax(CTRL_DEG2RAD*max);
