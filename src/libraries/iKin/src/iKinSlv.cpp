@@ -27,7 +27,6 @@
 #define CARTSLV_SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
 #define CARTSLV_DEFAULT_PER                 20      // [ms]
 #define CARTSLV_DEFAULT_TOL                 1e-3
-#define CARTSLV_DEFAULT_TMO                 1.0     // [s]
 #define CARTSLV_WEIGHT_2ND_TASK             0.01
 #define CARTSLV_WEIGHT_3RD_TASK             0.01
 #define CARTSLV_UNCTRLEDJNTS_THRES          0.1     // [deg]
@@ -509,33 +508,35 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
 
 
 /************************************************************************/
-bool CartesianSolver::waitPart(const Property &partOpt)
-{
-    string robotName=const_cast<Property&>(partOpt).find("robot").asString().c_str();
-    string partName=const_cast<Property&>(partOpt).find("part").asString().c_str();
-    string portName="/"+robotName+"/"+partName+"/state:o";
+PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
+{    
+    Property &options=const_cast<Property&>(partOpt);
+    string partName=options.find("part").asString().c_str();
+    PolyDriver *pDrv=NULL;
+
     double t0=Time::now();
-
     while ((Time::now()-t0)<ping_robot_tmo)
-    {   
-        fprintf(stdout,"%s: Checking if %s port is active ... ",
-                slvName.c_str(),portName.c_str());
-    
-        bool ok=Network::exists(portName.c_str(),true);    
+    {
+        if (pDrv!=NULL)
+            delete pDrv;
 
-        fprintf(stdout,"%s\n",ok?"ok":"not yet");
+        pDrv=new PolyDriver(options);
+        bool ok=pDrv->isValid();
+
+        fprintf(stdout,"%s: Checking if %s part is active ... %s\n",
+                slvName.c_str(),partName.c_str(),ok?"ok":"not yet");
 
         if (ok)
-            return true;
+            return pDrv;
         else
         {
             double t1=Time::now();
-            while ((Time::now()-t1)<CARTSLV_DEFAULT_TMO)
+            while ((Time::now()-t1)<1.0)
                 Time::delay(0.1);
         }
     }
 
-    return false;
+    return pDrv;
 }
 
 
@@ -1325,18 +1326,17 @@ bool CartesianSolver::open(Searchable &options)
         fprintf(stdout,"Allocating device driver for %s ...\n",
                 prt->prp[i].find("part").asString().c_str());
 
+        PolyDriver *pDrv;
         if (ping_robot_tmo>0.0)
-            waitPart(prt->prp[i]);
-
-        PolyDriver *pDrv=new PolyDriver(prt->prp[i]);
-
+            pDrv=waitPart(prt->prp[i]);
+        else
+            pDrv=new PolyDriver(prt->prp[i]);
+        
         if (!pDrv->isValid())
         {
-            fprintf(stdout,"Device driver not available!\n");
-
             delete pDrv;
+            fprintf(stdout,"Device driver not available!\n");            
             close();
-
             return false;
         }
 
@@ -1577,10 +1577,16 @@ void CartesianSolver::close()
         delete clb;
 
     for (unsigned int i=0; i<drv.size(); i++)
-        delete drv[i];
+    {
+        if (drv[i]!=NULL)
+            delete drv[i];
+    }
 
     for (unsigned int i=0; i<rmp.size(); i++)
-        delete[] rmp[i];
+    {
+        if (rmp[i]!=NULL)
+            delete[] rmp[i];
+    }
 
     drv.clear();
     lim.clear();

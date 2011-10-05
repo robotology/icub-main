@@ -439,20 +439,26 @@ protected:
     std::map<int,Context> contextMap;
 
     /************************************************************************/
-    bool waitPart(const Property &partOpt, const double ping_robot_tmo)
-    {
-        string portName=const_cast<Property&>(partOpt).find("remote").asString().c_str();
-        portName+="/state:o";
-        double t0=Time::now();
+    PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
+    {    
+        Property &options=const_cast<Property&>(partOpt);
+        string partName=options.find("part").asString().c_str();
+        PolyDriver *pDrv=NULL;
 
+        double t0=Time::now();
         while ((Time::now()-t0)<ping_robot_tmo)
-        {   
-            fprintf(stdout,"Checking if %s port is active ... ",portName.c_str());
-            bool ok=Network::exists(portName.c_str(),true);
-            fprintf(stdout,"%s\n",ok?"ok":"not yet");
+        {
+            if (pDrv!=NULL)
+                delete pDrv;
+
+            pDrv=new PolyDriver(options);
+            bool ok=pDrv->isValid();
+
+            fprintf(stdout,"Checking if %s part is active ... %s\n",
+                    partName.c_str(),ok?"ok":"not yet");
 
             if (ok)
-                return true;
+                return pDrv;
             else
             {
                 double t1=Time::now();
@@ -461,7 +467,7 @@ protected:
             }
         }
 
-        return false;
+        return pDrv;
     }
 
     /************************************************************************/
@@ -591,16 +597,20 @@ public:
         string localHeadName="/"+ctrlName+"/"+partName;
         optHead.put("remote",remoteHeadName.c_str());
         optHead.put("local",localHeadName.c_str());
+        optHead.put("part",partName.c_str());
 
         string remoteTorsoName="/"+robotName+"/"+torsoName;
         string localTorsoName=localHeadName+"/"+torsoName;
         optTorso.put("remote",remoteTorsoName.c_str());
         optTorso.put("local",localTorsoName.c_str());
+        optTorso.put("part",torsoName.c_str());
 
         if (Robotable)
         {
-            waitPart(optTorso,ping_robot_tmo);
-            drvTorso=new PolyDriver(optTorso);
+            if (ping_robot_tmo>0.0)
+                drvTorso=waitPart(optTorso,ping_robot_tmo);
+            else
+                drvTorso=new PolyDriver(optTorso);
 
             if (!drvTorso->isValid())
             {
@@ -611,14 +621,19 @@ public:
                 drvTorso=NULL;
             }
 
-            waitPart(optHead,ping_robot_tmo);
-            drvHead =new PolyDriver(optHead);
+            if (ping_robot_tmo>0.0)
+                drvHead=waitPart(optHead,ping_robot_tmo);
+            else
+                drvHead=new PolyDriver(optHead);
 
             if (!drvHead->isValid())
             {
                 fprintf(stdout,"Head device driver not available!\n");
 
                 delete drvHead;
+                if (drvTorso!=NULL)
+                    delete drvTorso;
+
                 return false;
             }
         }

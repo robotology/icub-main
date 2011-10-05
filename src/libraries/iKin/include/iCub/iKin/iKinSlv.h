@@ -362,12 +362,13 @@ protected:
     virtual bool handleJointsRestPosition(const yarp::os::Bottle *options,
                                           yarp::os::Bottle *reply=NULL);
     virtual bool handleJointsRestWeights(const yarp::os::Bottle *options,
-                                         yarp::os::Bottle *reply=NULL);    
+                                         yarp::os::Bottle *reply=NULL);
+
+    yarp::dev::PolyDriver *waitPart(const yarp::os::Property &partOpt);
     
     bool   isNewDOF(const yarp::sig::Vector &_dof);
     bool   changeDOF(const yarp::sig::Vector &_dof);
 
-    bool   waitPart(const yarp::os::Property &partOpt);
     void   alignJointsBounds();
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
