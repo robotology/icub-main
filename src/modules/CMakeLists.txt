@@ -5,8 +5,6 @@
 add_subdirectory(ctpService)
 add_subdirectory(demoGraspManager_IIT_ISR)
 add_subdirectory(demoForceControl)
-add_subdirectory(graspDetectorConf)
-add_subdirectory(graspDetector)
 add_subdirectory(learningMachine)
 add_subdirectory(iCubDemoY3)
 add_subdirectory(logpolarRemapper)
