@@ -54,3 +54,13 @@ if (ICUB_INSTALL_WITH_RPATH )
 endif (ICUB_INSTALL_WITH_RPATH )
 #########################################################################
 
+
+#########################################################################
+# Shared library option (hide on windows for now)
+
+if (NOT MSVC)
+  option(ICUB_SHARED_LIBRARY "Compile shared libraries rather than static libraries" FALSE)
+  if (ICUB_SHARED_LIBRARY)
+    set(BUILD_SHARED_LIBS ON)
+  endif() 
+endif()
