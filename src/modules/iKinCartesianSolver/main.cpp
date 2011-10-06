@@ -180,7 +180,7 @@ public:
         string part, slvName;
 
         if (rf.check("part"))
-            part=rf.find("part").asString();
+            part=rf.find("part").asString().c_str();
         else
         {
             cout<<"Error: part option is not specified"<<endl;
@@ -196,7 +196,7 @@ public:
         }
 
         if (group.check("name"))
-            slvName=group.find("name").asString();
+            slvName=group.find("name").asString().c_str();
         else
         {
             cout<<"Error: name option is missing"<<endl;
