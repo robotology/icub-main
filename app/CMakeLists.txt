@@ -61,6 +61,4 @@ add_subdirectory(simConfig)
 add_subdirectory(iCubTest)
 add_subdirectory(iCubCluster)
 add_subdirectory(joystickCtrl)
-
-
-
+add_subdirectory(iCubInterfaceGui)
