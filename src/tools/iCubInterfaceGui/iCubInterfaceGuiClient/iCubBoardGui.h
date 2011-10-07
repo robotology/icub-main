@@ -77,13 +77,19 @@ public:
         switch(alarm)
         {
         case 0:
-            (*mRoot)[mColumns.mColIcon]="";
+            (*mRoot)[mColumns.mColIcon]=GuiRawData::mIconEmpty;
+            (*mRoot)[mColumns.mColColor]=GuiRawData::mColorEmpty;
+            (*mRoot)[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 1:
-            (*mRoot)[mColumns.mColIcon]="*";
+            (*mRoot)[mColumns.mColIcon]=GuiRawData::mIconWarning;
+            (*mRoot)[mColumns.mColColor]=GuiRawData::mColorWarning;
+            (*mRoot)[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 2:
-            (*mRoot)[mColumns.mColIcon]="(!)";
+            (*mRoot)[mColumns.mColIcon]=GuiRawData::mIconError;
+            (*mRoot)[mColumns.mColColor]=GuiRawData::mColorError;
+            (*mRoot)[mColumns.mColColorFg]=GuiRawData::mColorEmpty;
             break;
         }
 

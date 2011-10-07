@@ -11,6 +11,7 @@
 #define __GTKMM_ICUB_BOARD_CHANNEL_GUI_H__
 
 #include <gtkmm.h>
+#include <yarp/os/ResourceFinder.h>
 #include "RawData.h"
 
 //Tree model columns
@@ -22,15 +23,21 @@ public:
         add(mColIcon);
         add(mColName);
         add(mColValue);
+        add(mColColor);
+        add(mColColorFg);
     }
 
-    Gtk::TreeModelColumn<Glib::ustring> mColIcon;
-    //Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColIcon;
+    //Gtk::TreeModelColumn<Glib::ustring> mColIcon;
+    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > mColIcon;
     int mColIconID;
     Gtk::TreeModelColumn<Glib::ustring> mColName;
     int mColNameID;
     Gtk::TreeModelColumn<Glib::ustring> mColValue;
     int mColValueID;
+    Gtk::TreeModelColumn<Gdk::Color> mColColor;
+    int mColColorID;
+    Gtk::TreeModelColumn<Gdk::Color> mColColorFg;
+    int mColColorFgID;
 };
 
 ///////////////////////////////////////////////////
@@ -44,7 +51,7 @@ public:
 
         mStatusRow[mColumns.mColName]=name;
         mStatusRow[mColumns.mColValue]="";
-        mStatusRow[mColumns.mColIcon]="";
+        mStatusRow[mColumns.mColIcon]=mIconEmpty;
     }
 
     virtual ~GuiRawData(){}
@@ -60,10 +67,28 @@ public:
         mStatusRow[mColumns.mColValue]=bot.get(0).toString().c_str();
     }
 
+    static void setIcons(yarp::os::ResourceFinder& config)
+    {
+        mIconWarning=Gdk::Pixbuf::create_from_file(config.findPath("icons/warning.png").c_str());
+        mIconError=Gdk::Pixbuf::create_from_file(config.findPath("icons/error.png").c_str());
+        mIconEmpty=Gdk::Pixbuf::create_from_file(config.findPath("icons/empty.png").c_str());
+    }
+
+    static Glib::RefPtr<Gdk::Pixbuf> mIconWarning;
+    static Glib::RefPtr<Gdk::Pixbuf> mIconError;
+    static Glib::RefPtr<Gdk::Pixbuf> mIconEmpty;
+
+    static Gdk::Color mColorWarning;
+    static Gdk::Color mColorError;
+    static Gdk::Color mColorEmpty;
+    static Gdk::Color mColorBlack;
+
 protected:
     Gtk::TreeModel::Row mStatusRow;
     ModelColumns mColumns;
 };
+
+
 
 ///////////////////////////////////////
 
@@ -110,7 +135,7 @@ public:
             std::string timeStamp=ctime(&seconds);
             newRow[mColumns.mColName]=timeStamp.substr(0,timeStamp.length()-1).c_str();
             newRow[mColumns.mColValue]=bot.get(i).toString().c_str();
-            newRow[mColumns.mColIcon]=bot.get(i).asInt() ? "(!)" : "";
+            newRow[mColumns.mColIcon]=bot.get(i).asInt() ? mIconWarning : mIconEmpty;
         }
 
         mStatusRow[mColumns.mColValue]=bot.get(top).toString().c_str();
@@ -127,13 +152,19 @@ public:
         switch(mAlarm)
         {
         case 0:
-            mStatusRow[mColumns.mColIcon]="";
+            mStatusRow[mColumns.mColIcon]=mIconEmpty;
+            mStatusRow[mColumns.mColColor]=GuiRawData::mColorEmpty;
+            mStatusRow[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 1:
-            mStatusRow[mColumns.mColIcon]="*";
+            mStatusRow[mColumns.mColIcon]=mIconWarning;
+            mStatusRow[mColumns.mColColor]=GuiRawData::mColorWarning;
+            mStatusRow[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 2:
-            mStatusRow[mColumns.mColIcon]="(!)";
+            mStatusRow[mColumns.mColIcon]=mIconError;
+            mStatusRow[mColumns.mColColor]=GuiRawData::mColorError;
+            mStatusRow[mColumns.mColColorFg]=GuiRawData::mColorEmpty;
             break;
         }
     }
@@ -253,13 +284,19 @@ public:
         switch(alarm)
         {
         case 0:
-            (*mRoot)[mColumns.mColIcon]="";
+            (*mRoot)[mColumns.mColIcon]=GuiRawData::mIconEmpty;
+            (*mRoot)[mColumns.mColColor]=GuiRawData::mColorEmpty;
+            (*mRoot)[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 1:
-            (*mRoot)[mColumns.mColIcon]="*";
+            (*mRoot)[mColumns.mColIcon]=GuiRawData::mIconWarning;
+            (*mRoot)[mColumns.mColColor]=GuiRawData::mColorWarning;
+            (*mRoot)[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 2:
-            (*mRoot)[mColumns.mColIcon]="(!)";
+            (*mRoot)[mColumns.mColIcon]=GuiRawData::mIconError;
+            (*mRoot)[mColumns.mColColor]=GuiRawData::mColorError;
+            (*mRoot)[mColumns.mColColorFg]=GuiRawData::mColorEmpty;
             break;
         }
 

@@ -58,14 +58,19 @@
 
 #include "iCubInterfaceGuiClient.h"
 
-int main(int argc, char *argv[])
+int main( int argc, char ** argv )
 {
+    yarp::os::ResourceFinder rf;
+    rf.setVerbose();
+    rf.setDefaultContext("iCubInterfaceGui");
+    rf.configure("ICUB_ROOT",argc,argv);
+
     Glib::thread_init();
     Gtk::Main kit(argc,argv);
 
 	yarp::os::Network yarp;
 
-    iCubInterfaceGuiWindow client;
+    iCubInterfaceGuiWindow client(rf);
 
     kit.run(client);
 

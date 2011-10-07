@@ -39,8 +39,10 @@ public:
         findAndReset(row);
     }
 
-    iCubInterfaceGuiWindow()
+    iCubInterfaceGuiWindow(yarp::os::ResourceFinder& config)
     {
+        GuiRawData::setIcons(config);
+
         set_title("iCubInterface GUI");
         set_border_width(5);
         set_default_size(600,400);
@@ -61,23 +63,37 @@ public:
 	    //Add the TreeView's view columns:
         
         mColumns.mColIconID=mTreeView.append_column("",mColumns.mColIcon)-1;
-        mColumns.mColNameID=mTreeView.append_column("",mColumns.mColName)-1;
-        mColumns.mColValueID=mTreeView.append_column("",mColumns.mColValue)-1;
-
         /*
-        Gtk::CellRendererPixbuf* cell=Gtk::manage(new Gtk::CellRendererPixbuf);
-        mColumns.mColIconID=mTreeView.append_column("",*cell)-1;
-        Gtk::TreeViewColumn* pColumn=mTreeView.get_column(mColumns.mColIconID);
+        Gtk::CellRendererPixbuf* cellIcon=Gtk::manage(new Gtk::CellRendererPixbuf);
+        mColumns.mColIconID=mTreeView.append_column("",*cellIcon)-1;
+        Gtk::TreeViewColumn* pColumnIcon=mTreeView.get_column(mColumns.mColIconID);
         pColumn->add_attribute(cell->property_pixbuf(),mColumns.mColIcon);
         */
 
+        //mColumns.mColNameID=mTreeView.append_column("",mColumns.mColName)-1;
+        Gtk::CellRendererText* cellName=Gtk::manage(new Gtk::CellRendererText);
+        mColumns.mColNameID=mTreeView.append_column("",*cellName)-1;
+        Gtk::TreeViewColumn* pColumnName=mTreeView.get_column(mColumns.mColNameID);
+        pColumnName->add_attribute(cellName->property_text(),mColumns.mColName);
+        pColumnName->add_attribute(cellName->property_background_gdk(),mColumns.mColColor);
+        pColumnName->add_attribute(cellName->property_foreground_gdk(),mColumns.mColColorFg);
+
+        //mColumns.mColValueID=mTreeView.append_column("",mColumns.mColValue)-1;
+        Gtk::CellRendererText* cellValue=Gtk::manage(new Gtk::CellRendererText);
+        mColumns.mColValueID=mTreeView.append_column("",*cellValue)-1;
+        Gtk::TreeViewColumn* pColumnValue=mTreeView.get_column(mColumns.mColValueID);
+        pColumnValue->add_attribute(cellValue->property_text(),mColumns.mColValue);
+        pColumnValue->add_attribute(cellValue->property_background_gdk(),mColumns.mColColor);
+        pColumnValue->add_attribute(cellValue->property_foreground_gdk(),mColumns.mColColorFg);
+
         //Fill the TreeView's model
         mRowLev0=*(mRefTreeModel->append());
-        mRowLev0[mColumns.mColName]="Networks"; //partName.c_str();
-        mRowLev0[mColumns.mColValue]=""; //partName.c_str();
-        mRowLev0[mColumns.mColIcon]="";
+        mRowLev0[mColumns.mColName]="Networks";
+        mRowLev0[mColumns.mColColor]=GuiRawData::mColorEmpty;
+
+        mRowLev0[mColumns.mColValue]="";
+        mRowLev0[mColumns.mColIcon]=GuiRawData::mIconEmpty;
         //mRowLev0[mColumns.mColIcon]=Glib::RefPtr<Gdk::Pixbuf>(NULL);
-        //mRowLev0[mColumns.mColIcon]=Gdk::Pixbuf::create_from_file("C:/Documents and Settings/Administrator/My Documents/IIT/iCub/app/iCubGenova01/conf/warning.png");
         
         /////////////////////////////////////////////////////////////////////////////
 
@@ -193,13 +209,19 @@ public:
         switch(alarm)
         {
         case 0:
-            mRowLev0[mColumns.mColIcon]="";
+            mRowLev0[mColumns.mColIcon]=GuiRawData::mIconEmpty;
+            mRowLev0[mColumns.mColColor]=GuiRawData::mColorEmpty;
+            mRowLev0[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 1:
-            mRowLev0[mColumns.mColIcon]="*";
+            mRowLev0[mColumns.mColIcon]=GuiRawData::mIconWarning;
+            mRowLev0[mColumns.mColColor]=GuiRawData::mColorWarning;
+            mRowLev0[mColumns.mColColorFg]=GuiRawData::mColorBlack;
             break;
         case 2:
-            mRowLev0[mColumns.mColIcon]="(!)";
+            mRowLev0[mColumns.mColIcon]=GuiRawData::mIconError;
+            mRowLev0[mColumns.mColColor]=GuiRawData::mColorError;
+            mRowLev0[mColumns.mColColorFg]=GuiRawData::mColorEmpty;
             break;
         }
     }
