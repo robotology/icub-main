@@ -38,7 +38,6 @@ find_package(Gthread)
 find_package(ACE)
 find_package(IPOPT)
 find_package(IPP)
-find_package(SIFTGPU)
 
 message(STATUS "OpenCV version is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
 
@@ -102,8 +101,6 @@ checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 checkandset_dependency(IPP)
 checkandset_dependency(OpenCV)
-checkandset_dependency(SIFTGPU)
-
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)

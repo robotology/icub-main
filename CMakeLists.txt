@@ -199,7 +199,6 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindIPP.cmake
                         FindQt3.cmake
                         FindGLUT.cmake
-                        FindSIFTGPU.cmake
                         FindOpenGL.cmake
 						iCubHelpers.cmake
 						iCubOptions.cmake
