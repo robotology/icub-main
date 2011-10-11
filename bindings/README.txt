@@ -25,6 +25,8 @@ See $YARP_ROOT/example/swig
 Python example:
   import icub
   import yarp
+  yarp.Network.init()
+  icub.init()
   d = yarp.Drivers.factory()
   print d.toString().c_str()
   # list should include cartesiancontrollerclient etc, available

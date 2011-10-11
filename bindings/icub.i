@@ -9,23 +9,10 @@
 YARP_DECLARE_DEVICES(icubmod)
 %}
 
-#if defined(SWIGCSHARP)
+bool init();
 
-// csharp initialization seems to work differently to other language bindings
-%pragma(csharp) imclasscode=%{ 
-   protected class SWIGCustomInit { 
-     static SWIGCustomInit() { 
-       YARP_REGISTER_DEVICES(icubmod)
-     } 
-   } 
-   static protected SWIGCustomInit swigCustomInit = new SWIGCustomInit(); 
-%} 
-
-#else
-
-%init %{
-  YARP_REGISTER_DEVICES(icubmod)
+%{
+  bool init() {
+      YARP_REGISTER_DEVICES(icubmod)
+  }
 %}
-
-#endif
-
