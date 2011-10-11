@@ -36,3 +36,25 @@ To run for testing, be in the directory you built the icub bindings,
 place the above test in test.py, and do:
   PYTHONPATH=/path/to/yarp/python/bindings/ python test.py
 
+
+==================================================================
+
+Java example:
+  import icub.icub;
+  import yarp.Network;
+  import yarp.Drivers;
+
+  class Test {
+    public static void main(String[] args) {
+	System.loadLibrary("jyarp");
+	System.loadLibrary("icub");
+	Network.init();
+	icub.init();
+	System.out.println(Drivers.factory().toString_c());
+    }
+  };
+
+To run for testing, be in the directory you built the icub bindings,
+place the above test in Test.java, and do:
+  javac -cp /path/to/yarp/python/bindings/:$PWD Test.java
+  LD_LIBRARY_PATH=/path/to/yarp/python/bindings/:$PWD java -cp /path/to/yarp/python/bindings/:$PWD Test 
