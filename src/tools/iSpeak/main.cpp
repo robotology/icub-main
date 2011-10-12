@@ -84,10 +84,7 @@ using namespace yarp::os;
 
 class MouthHandler : public RateThread
 {
-    string name;
-    string robot;
     string state;
-
     Port emotions;
 
     void send()
@@ -116,17 +113,16 @@ class MouthHandler : public RateThread
     }
 
 public:
-    MouthHandler() : RateThread(200)
-    {
-        emotions.open(("/"+name+"/emotions:o").c_str());
-        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());
-        state="sur";
-    }
+    MouthHandler() : RateThread(200) { }
 
     void configure(ResourceFinder &rf)
     {
-        name=rf.find("name").asString().c_str();
-        robot=rf.find("robot").asString().c_str();
+        string name=rf.find("name").asString().c_str();
+        string robot=rf.find("robot").asString().c_str();
+        emotions.open(("/"+name+"/emotions:o").c_str());
+        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());        
+
+        state="sur";
     }
 
     void suspend()
