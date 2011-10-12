@@ -18,7 +18,10 @@
 * 
 * Displays the status of the robot motor and sensor control board networks
 * in a hyerarchical tree view. It connects to its server part running inside
-* the \ref icub_iCubInterface iCubInterface. 
+* the \ref icub_iCubInterface iCubInterface. Faults in the iCub device networks
+* are logged and emphasized with colors (yellow = resolved fault, red = active
+* fault). Expand a node in order to check its log. Double click
+* resets all active faults and logs in all the childs of a node. 
 * 
 * \image html icubinterfacegui.jpg "Screenshots: iCubInterfaceGuiClient running on Windows"
 *
