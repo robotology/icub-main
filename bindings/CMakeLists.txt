@@ -16,6 +16,12 @@ include_directories(${ICUB_INCLUDE_DIRS})
 link_directories(${ICUB_LIBRARY_DIRS})
 link_libraries(${ICUB_LIBRARIES})
 
+# Work-around for missing paths to OpenCV libraries
+find_package(OpenCV)
+if (OpenCV_FOUND)
+  link_directories(${OpenCV_LINK_DIRECTORIES} ${OPENCV_LINK_DIRECTORIES})
+endif ()
+
 set(CREATE_PYTHON FALSE CACHE BOOL "Create Python interface")
 set(CREATE_RUBY FALSE CACHE BOOL "Create Ruby interface")
 set(CREATE_JAVA FALSE CACHE BOOL "Create Java interface")
