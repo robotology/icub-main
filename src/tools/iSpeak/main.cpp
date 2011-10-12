@@ -99,15 +99,6 @@ class MouthHandler : public RateThread
         emotions.write(cmd,reply);
     }
 
-    bool threadInit()
-    {
-        emotions.open(("/"+name+"/emotions:o").c_str());
-        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());
-        state="sur";
-
-        return true;
-    }
-
     void run()
     {
         if (state=="sur")
@@ -127,6 +118,8 @@ class MouthHandler : public RateThread
 public:
     MouthHandler() : RateThread(200)
     {
+        emotions.open(("/"+name+"/emotions:o").c_str());
+        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());
         state="sur";
     }
 
