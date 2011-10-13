@@ -22,6 +22,12 @@ if (OpenCV_FOUND)
   link_directories(${OpenCV_LINK_DIRECTORIES} ${OPENCV_LINK_DIRECTORIES})
 endif ()
 
+include_directories(${CMAKE_SOURCE_DIR}/..)
+include_directories(${CMAKE_SOURCE_DIR}/../src/libraries/icubmod)
+
+# for yarp.i
+include_directories(${YARP_MODULE_PATH}/../example/swig)
+
 set(CREATE_PYTHON FALSE CACHE BOOL "Create Python interface")
 set(CREATE_RUBY FALSE CACHE BOOL "Create Ruby interface")
 set(CREATE_JAVA FALSE CACHE BOOL "Create Java interface")
@@ -59,13 +65,13 @@ if (CREATE_JAVA)
   find_package(JNI REQUIRED)
   include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
   swig_add_module(icub java icub.i)
-  option (CREATE_JAVA_CLASS_FILES "Compile java code with javac" ON)
-  if (CREATE_JAVA_CLASS_FILES)
-    ADD_CUSTOM_COMMAND(TARGET icub
-      POST_BUILD
-      COMMAND javac -source 1.3 -target 1.3 "icub/*.java"
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-  endif ()
+  #option (CREATE_JAVA_CLASS_FILES "Compile java code with javac" ON)
+  #if (CREATE_JAVA_CLASS_FILES)
+  #  ADD_CUSTOM_COMMAND(TARGET icub
+  #    POST_BUILD
+  #    COMMAND javac -source 1.3 -target 1.3 "icub/*.java"
+  #    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  #endif ()
   if (APPLE)
     set_target_properties(icub PROPERTIES SUFFIX ".jnilib")
   endif (APPLE)

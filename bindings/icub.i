@@ -4,10 +4,18 @@
 
 %module icub
 
+%include "std_string.i"
+%include "std_vector.i"
+
+%import "yarp.i"
+
 %{
 #include <yarp/dev/Drivers.h>
 YARP_DECLARE_DEVICES(icubmod)
+#include "cartesianController/ClientCartesianController.h"
 %}
+
+%include "cartesianController/ClientCartesianController.h"
 
 bool init();
 
