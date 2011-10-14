@@ -15,7 +15,7 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::sig;
 
-const double MAX_SPEED=150;
+const double MAX_SPEED=250;
 const double AVERAGE=50;
 const double ACCELERATIONS=1000000;
 const double MAX_GAIN = 10.0;
