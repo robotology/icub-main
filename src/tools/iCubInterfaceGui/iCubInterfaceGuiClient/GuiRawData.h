@@ -109,17 +109,12 @@ public:
 
     void reset()
     {  
+        mAlarm=0;
+
         while(!mStatusRow->children().empty())
         {
             mRefTreeModel->erase(mStatusRow->children().begin());
         }
-
-        /*
-        for (Gtk::TreeIter iter=mStatusRow.children().begin(); iter!=mStatusRow.children().end(); ++iter)
-        {
-            mRefTreeModel->erase(iter);
-        }
-        */
     }
 
     void fromBottle(yarp::os::Bottle& bot)
