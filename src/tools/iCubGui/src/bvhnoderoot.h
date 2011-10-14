@@ -27,6 +27,7 @@ public:
     BVHNodeROOT(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,iCubMesh* mesh,ObjectsManager* objManager) 
         : BVHNodeRPY_XYZ(name,yaw,pitch,roll,x,y,z)
     {
+        nEnc=enc;
         pMesh=mesh;
         mObjectsManager=objManager;
     }
@@ -40,8 +41,8 @@ public:
         glTranslated(encoders[nEnc+3],encoders[nEnc+4],encoders[nEnc+5]);
         glRotated(encoders[nEnc],  0.0,0.0,1.0);
         glRotated(encoders[nEnc+1],0.0,1.0,0.0);
-        glRotated(encoders[nEnc+2],1.0,0.0,0.0);    
-    
+        glRotated(encoders[nEnc+2],1.0,0.0,0.0);   
+
         glTranslated(dX,dY,dZ);
        
         glRotated(dYaw,  0.0,0.0,1.0);
