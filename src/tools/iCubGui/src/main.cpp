@@ -117,6 +117,8 @@
 * This file can be edited at src/gui/iCubGui/src/main.cpp.
 */
 
+#include <signal.h>
+
 #include "qavimator.h"
 #include <qapplication.h>
 
@@ -126,12 +128,28 @@
 #include "drivers.h"
 #endif
 
+qavimator* mw=NULL;
+
+void sig_handler(int sig)
+{
+    if (mw) mw->fileExit();
+}
+
 int main( int argc, char ** argv )
 {
     yarp::os::Network yarp; //initialize network, this goes before everything
 
 #ifdef USE_ICUB_MOD
     yarp::dev::DriverCollection dev;
+#endif 
+
+    signal(SIGINT,sig_handler);
+    signal(SIGTERM,sig_handler);
+
+#if defined(WIN32) || defined(WIN64)
+    signal(SIGBREAK,sig_handler);
+#else
+    signal(SIGHUP,sig_handler);
 #endif 
 
     yarp::os::ResourceFinder rf;
@@ -142,7 +160,7 @@ int main( int argc, char ** argv )
 
     QApplication a(argc,argv);
 
-    qavimator* mw=new qavimator(rf);
+    mw=new qavimator(rf);
     mw->show();
     a.connect(&a,SIGNAL(lastWindowClosed()),&a,SLOT(quit()));
     return a.exec();

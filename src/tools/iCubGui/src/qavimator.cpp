@@ -64,8 +64,8 @@ qavimator::qavimator(yarp::os::ResourceFinder& config) : QMainWindow(0)
 
 qavimator::~qavimator()
 {
-    if (animationView) delete animationView;
-    animationView=0;
+    //if (animationView) delete animationView;
+    //animationView=0;
     fileExit();
 }
 

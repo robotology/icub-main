@@ -75,7 +75,11 @@ BVH::~ BVH()
     CloseDriver(pRightLegDriver);
     #endif
     
-    if (pRoot) delete pRoot;
+    if (pRoot)
+    {
+        delete pRoot;
+        pRoot=NULL;
+    }
 
     #ifdef __YARP
     Network::fini();
@@ -83,12 +87,18 @@ BVH::~ BVH()
 
     if (mAB)
     {
-        for (int p=0; p<16; ++p)
+        for (int p=0; p<8; ++p)
         {
-            if (mAB[p]) delete [] mAB[p];
+            if (mAB[p])
+            { 
+                delete [] mAB[p];
+                mAB[p]=NULL;
+            }
         }
 
         delete [] mAB;
+
+        mAB=NULL;
     }
 }
 
@@ -254,10 +264,10 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 
     if (tag=="MESH")
     {
-		QString name=token();
-		double a=token().toDouble();
-		double b=token().toDouble();
-		double c=token().toDouble();
+        QString name=token();
+        double a=token().toDouble();
+        double b=token().toDouble();
+        double c=token().toDouble();
 		double d=token().toDouble();
 		double e=token().toDouble();
 		double f=token().toDouble();

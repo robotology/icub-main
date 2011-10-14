@@ -80,7 +80,9 @@ class qavimator : public QMainWindow, Ui::MainWindow
     void fileOpen(const QString& fileName);
     void fileSave();
     void fileSaveAs();
+  public:
     void fileExit();
+  protected:
     void setJointLimits(bool on);
     void showTimeline(bool state);
     void configure();
