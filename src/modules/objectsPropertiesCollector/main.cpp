@@ -464,19 +464,26 @@ public:
     }
 
     /************************************************************************/
-    void add(Bottle *content)
+    bool add(Bottle *content)
     {
+        if (content==NULL)
+            return false;
+
         mutex.wait();
         Property *item=new Property(content->toString().c_str());
         itemsMap[idCnt]=item;
 
         fprintf(stdout,"added item %s\n",item->toString().c_str());
         mutex.post();
+        return true;
     }
 
     /************************************************************************/
     bool remove(Bottle *content)
     {
+        if (content==NULL)
+            return false;
+
         mutex.wait();
         if (content->size()==1)
         {
@@ -529,6 +536,9 @@ public:
     /************************************************************************/
     bool get(Bottle *content, Bottle &item)
     {
+        if (content==NULL)
+            return false;
+
         mutex.wait();
         Property request(content->toString().c_str());
 
@@ -576,6 +586,9 @@ public:
     /************************************************************************/
     bool set(Bottle *content)
     {
+        if (content==NULL)
+            return false;
+
         mutex.wait();
         Property request(content->toString().c_str());
 
@@ -627,6 +640,9 @@ public:
     /************************************************************************/
     bool ask(Bottle *content, Bottle &items)
     {
+        if (content==NULL)
+            return false;
+
         mutex.wait();
         if (content->size()==1)
         {
@@ -810,13 +826,16 @@ public:
                 }
 
                 Bottle *content=command.get(1).asList();
-
-                add(content);
-                reply.addVocab(REP_ACK);
-                Bottle &b=reply.addList();
-                b.addString(PROP_ID);
-                b.addInt(idCnt);
-                idCnt++;
+                if (add(content))
+                {
+                    reply.addVocab(REP_ACK);
+                    Bottle &b=reply.addList();
+                    b.addString(PROP_ID);
+                    b.addInt(idCnt);
+                    idCnt++;
+                }
+                else
+                    reply.addVocab(REP_NACK);
 
                 break;
             }
@@ -830,7 +849,6 @@ public:
                 }
 
                 Bottle *content=command.get(1).asList();
-
                 if (remove(content))
                     reply.addVocab(REP_ACK);
                 else
@@ -847,9 +865,8 @@ public:
                     break;
                 }
 
-                Bottle *content=command.get(1).asList();
                 Bottle item;
-
+                Bottle *content=command.get(1).asList();                
                 if (get(content,item))
                 {
                     reply.addVocab(REP_ACK);
@@ -870,7 +887,6 @@ public:
                 }
     
                 Bottle *content=command.get(1).asList();
-    
                 if (set(content))
                     reply.addVocab(REP_ACK);
                 else
@@ -894,9 +910,8 @@ public:
                     break;
                 }
 
-                Bottle *content=command.get(1).asList();
                 Bottle items;
-
+                Bottle *content=command.get(1).asList();
                 if (ask(content,items))
                 {
                     reply.addVocab(REP_ACK);
