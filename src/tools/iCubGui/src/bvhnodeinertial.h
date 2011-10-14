@@ -68,9 +68,11 @@ public:
                 {
                     dInertial[i]=pIMUData->get(i).asDouble();
                 }
-				dInertial[6]=dInertial[6]*3.14159265/180.0;
-				dInertial[7]=dInertial[7]*3.14159265/180.0;
-				dInertial[8]=dInertial[8]*3.14159265/180.0;
+
+                static const double DEG2RAD=3.14159265/180.0;
+				dInertial[6]*=DEG2RAD;
+				dInertial[7]*=DEG2RAD;
+				dInertial[8]*=DEG2RAD;
             }
 
             glTranslated(40.0,0.0,230.0);
