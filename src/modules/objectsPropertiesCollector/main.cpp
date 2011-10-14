@@ -460,7 +460,6 @@ public:
             fprintf(stdout,"empty\n");
         else
             write(stdout);
-
         mutex.post();
     }
 
@@ -784,7 +783,6 @@ public:
                 }
             }
         }
-
         mutex.post();
     }
 
@@ -929,7 +927,7 @@ protected:
     DataBase *pDataBase;
 
     /************************************************************************/
-    virtual bool read(ConnectionReader &connection)
+    bool read(ConnectionReader &connection)
     {
         Bottle command, reply;
 
@@ -965,7 +963,7 @@ private:
 
 public:
     /************************************************************************/
-    virtual bool configure(ResourceFinder &rf)
+    bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
 
@@ -982,7 +980,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool close()
+    bool close()
     {
         rpcPort.interrupt();
         rpcPort.close();
@@ -991,7 +989,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool updateModule()
+    bool updateModule()
     {        
         dataBase.periodicHandler(getPeriod());
 
@@ -1006,7 +1004,7 @@ public:
     }
 
     /************************************************************************/
-    virtual double getPeriod()
+    double getPeriod()
     {
         return 1.0;
     }
