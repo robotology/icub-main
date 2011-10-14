@@ -70,8 +70,8 @@ The commands sent as bottles to the module port
 Format: [add] (({prop0} <val0>) ({prop1} <val1>) ...) \n
 Reply: [nack]; [ack] (id <num>) \n 
 Action: a new item is added to the database with the given 
-properties. A unique identifier is returned that is used to 
-access the item. 
+properties. \n 
+A unique identifier is returned that is used to access the item.
 
 <b>del</b> \n
 Format: [del] ((id <num>) (propSet ({prop0} {prop1} ...))) \n 
