@@ -17,3 +17,4 @@ Gdk::Color GuiRawData::mColorWarning("#FFCC44");
 Gdk::Color GuiRawData::mColorError("#FF5555");
 Gdk::Color GuiRawData::mColorEmpty("#FFFFFF");
 Gdk::Color GuiRawData::mColorBlack("#000000");
+
