@@ -802,7 +802,7 @@ public:
                 {
                     fprintf(stdout,"item with id==%d expired\n",it->first);
                     eraseItem(it);
-                    break;
+                    break;  // to avoid seg-fault
                 }
                 else
                 {
