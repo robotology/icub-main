@@ -217,7 +217,7 @@ namespace relationalOperators
 {
 
 /************************************************************************/
-bool greater(Value &a, Value& b)
+bool greater(Value &a, Value &b)
 {
     if (a.isDouble() && b.isDouble())
         return (a.asDouble()>b.asDouble());
@@ -229,7 +229,7 @@ bool greater(Value &a, Value& b)
 
 
 /************************************************************************/
-bool greaterEqual(Value &a, Value& b)
+bool greaterEqual(Value &a, Value &b)
 {
     if (a.isDouble() && b.isDouble())
         return (a.asDouble()>=b.asDouble());
@@ -241,7 +241,7 @@ bool greaterEqual(Value &a, Value& b)
 
 
 /************************************************************************/
-bool lower(Value &a, Value& b)
+bool lower(Value &a, Value &b)
 {
     if (a.isDouble() && b.isDouble())
         return (a.asDouble()<b.asDouble());
@@ -253,7 +253,7 @@ bool lower(Value &a, Value& b)
 
 
 /************************************************************************/
-bool lowerEqual(Value &a, Value& b)
+bool lowerEqual(Value &a, Value &b)
 {
     if (a.isDouble() && b.isDouble())
         return (a.asDouble()<=b.asDouble());
@@ -265,7 +265,7 @@ bool lowerEqual(Value &a, Value& b)
 
 
 /************************************************************************/
-bool equal(Value &a, Value& b)
+bool equal(Value &a, Value &b)
 {
     if (a.isDouble() && b.isDouble())
         return (a.asDouble()==b.asDouble());
@@ -275,7 +275,6 @@ bool equal(Value &a, Value& b)
     {
         string aStr=a.asString().c_str();
         string bStr=b.asString().c_str();
-
         return (aStr==bStr);
     }
     else
@@ -284,7 +283,7 @@ bool equal(Value &a, Value& b)
 
 
 /************************************************************************/
-bool notEqual(Value &a, Value& b)
+bool notEqual(Value &a, Value &b)
 {
     if (a.isDouble() && b.isDouble())
         return (a.asDouble()!=b.asDouble());
@@ -294,7 +293,6 @@ bool notEqual(Value &a, Value& b)
     {
         string aStr=a.asString().c_str();
         string bStr=b.asString().c_str();
-
         return (aStr!=bStr);
     }
     else
@@ -346,6 +344,54 @@ protected:
         int i=0;
         for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
             fprintf(stream,"item_%d (%s %d) (%s)\n",i++,PROP_ID,it->first,it->second->toString().c_str());
+    }
+
+    /************************************************************************/
+    bool recursiveCheck(Property *item, deque<Condition> &condList,
+                        deque<string> &opList, const unsigned int i=0)
+    {
+        bool result;
+        if (item->check(condList[i].prop.c_str()))
+        {
+            // take the current value of the item's property under test
+            Value &val=item->find(condList[i].prop.c_str());
+
+            // compute the condition over the current value
+            result=(*condList[i].compare)(val,condList[i].val);
+        }
+        else
+            result=false;
+
+        if ((i+1)>=condList.size())
+            return result;
+        else if (opList[i]=="||")
+            return (result||recursiveCheck(item,condList,opList,i+1));
+        else    // at this point we know we deal with the "&&" operations
+        {
+            unsigned int j;
+            for (j=i+1; j<condList.size(); j++)
+            {
+                if (result)
+                {
+                    if (item->check(condList[j].prop.c_str()))
+                    {
+                        Value &val=item->find(condList[j].prop.c_str());
+                        result=result&&(*condList[j].compare)(val,condList[j].val);
+                    }
+                    else
+                        result=false;
+                }
+
+                if (j<opList.size())
+                    if (opList[j]=="||")
+                        break;
+            }
+
+            if (j>=condList.size())
+                return result;
+            else
+                return (result||recursiveCheck(item,condList,opList,j+1));
+        }
     }
 
 public:
@@ -731,47 +777,13 @@ public:
         // apply the conditions to each item
         for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
-            // there must be at least one condition to process
-            string &prop=condList[0].prop;
-            bool finalRes;
-
-            if (it->second->check(prop.c_str()))
-            {
-                Value &val=it->second->find(prop.c_str());
-                finalRes=(*condList[0].compare)(val,condList[0].val);
-            }
-            else
-                finalRes=false;
-
-            // if we're required to process more than one condition
-            // we go ahead accumulating the temporary results
-            for (unsigned int j=0; j<opList.size(); j++)
-            {
-                int k=j+1;
-
-                string &prop=condList[k].prop;
-                bool currentRes;
-
-                if (it->second->check(prop.c_str()))
-                {
-                    Value &val=it->second->find(prop.c_str());
-                    currentRes=(*condList[k].compare)(val,condList[k].val);
-                }
-                else
-                    currentRes=false;
-
-                if (opList[j]=="||")
-                    finalRes=finalRes||currentRes;
-                else if (opList[j]=="&&")
-                    finalRes=finalRes&&currentRes;
-            }
-
-            // keep only the item that satisfies the whole list of conditions
-            if (finalRes)
+            // do recursion and keep only the item that
+            // satisfies the whole list of conditions
+            if (recursiveCheck(it->second,condList,opList))
                 items.addInt(it->first);
         }
 
-        fprintf(stdout,"found items matching received conditions (%s)\n",items.toString().c_str());
+        fprintf(stdout,"found items matching received conditions: (%s)\n",items.toString().c_str());
         mutex.post();
         return true;
     }
