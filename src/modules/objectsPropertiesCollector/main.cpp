@@ -95,6 +95,12 @@ Format: [set] ((id <num>) ({prop2} <val2>) ...) \n
 Reply: [nack]; [ack] \n 
 Action: add/modify properties of the stored item.
  
+<b>time</b> \n
+Format: [time] ((id <num>)) \n 
+Reply: [nack]; [ack] (<time>) \n 
+Action: retrieve the time elapsed in seconds from the last 
+[add]/[del]/[set] operations on the stored item. 
+ 
 <b>dump</b> \n 
 Format: [dump] \n 
 Reply: [ack] \n 
@@ -199,6 +205,7 @@ using namespace std;
 #define CMD_DEL             VOCAB3('d','e','l')
 #define CMD_GET             VOCAB3('g','e','t')
 #define CMD_SET             VOCAB3('s','e','t')
+#define CMD_TIME            VOCAB4('t','i','m','e')
 #define CMD_DUMP            VOCAB4('d','u','m','p')
 #define CMD_ASK             VOCAB3('a','s','k')
                             
@@ -307,12 +314,12 @@ bool notEqual(Value &a, Value &b)
 class DataBase
 {
 protected:
-    map<int,Property*> itemsMap;
-    Semaphore mutex;
-    int idCnt;
-    bool initialized;
-
-    string dbFileName;
+    /************************************************************************/
+    struct Item
+    {
+        Property *prop;
+        double   lastUpdate;
+    };
 
     /************************************************************************/
     struct Condition
@@ -322,19 +329,26 @@ protected:
         Value val;
     };
 
+    map<int,Item> itemsMap;
+    Semaphore mutex;
+    int idCnt;
+    bool initialized;
+
+    string dbFileName;
+
     /************************************************************************/
     void clearMap()
     {
-        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
-            delete it->second;
+        for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+            delete it->second.prop;
 
         itemsMap.clear();
     }
 
     /************************************************************************/
-    void eraseItem(map<int,Property*>::iterator &it)
+    void eraseItem(map<int,Item>::iterator &it)
     {
-        delete it->second;
+        delete it->second.prop;
         itemsMap.erase(it);
     }
 
@@ -342,8 +356,9 @@ protected:
     void write(FILE *stream)
     {
         int i=0;
-        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
-            fprintf(stream,"item_%d (%s %d) (%s)\n",i++,PROP_ID,it->first,it->second->toString().c_str());
+        for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+            fprintf(stream,"item_%d (%s %d) (%s)\n",
+                    i++,PROP_ID,it->first,it->second.prop->toString().c_str());
     }
 
     /************************************************************************/
@@ -472,7 +487,8 @@ public:
             }
 
             int id=b2->get(1).asInt();
-            itemsMap[id]=new Property(b1.get(2).asList()->toString().c_str());
+            itemsMap[id].prop=new Property(b1.get(2).asList()->toString().c_str());
+            itemsMap[id].lastUpdate=Time::now();
 
             if (idCnt<id)
                 idCnt=id+1;
@@ -517,7 +533,8 @@ public:
 
         mutex.wait();
         Property *item=new Property(content->toString().c_str());
-        itemsMap[idCnt]=item;
+        itemsMap[idCnt].prop=item;
+        itemsMap[idCnt].lastUpdate=Time::now();
 
         fprintf(stdout,"added item %s\n",item->toString().c_str());
         mutex.post();
@@ -546,7 +563,6 @@ public:
         }
 
         Property request(content->toString().c_str());
-
         if (!request.check(PROP_ID))
         {
             fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
@@ -557,14 +573,16 @@ public:
         int id=request.find(PROP_ID).asInt();
         fprintf(stdout,"removing item %d ... ",id);
 
-        map<int,Property*>::iterator it=itemsMap.find(id);
+        map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
             Bottle *propSet=request.find(PROP_SET).asList();
             if (propSet!=NULL)
             {
                 for (int i=0; i<propSet->size(); i++)
-                    it->second->unput(propSet->get(i).asString().c_str());
+                    it->second.prop->unput(propSet->get(i).asString().c_str());
+
+                it->second.lastUpdate=Time::now();
             }
             else
                 eraseItem(it);
@@ -587,7 +605,6 @@ public:
 
         mutex.wait();
         Property request(content->toString().c_str());
-
         if (!request.check(PROP_ID))
         {
             fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
@@ -598,9 +615,10 @@ public:
         int id=request.find(PROP_ID).asInt();
         fprintf(stdout,"getting item %d ... ",id);
 
-        map<int,Property*>::iterator it=itemsMap.find(id);
+        map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
+            Property *pProp=it->second.prop;
             item.clear();
 
             Bottle *propSet=request.find(PROP_SET).asList();
@@ -610,14 +628,14 @@ public:
                 for (int i=0; i<propSet->size(); i++)
                 {
                     string propName=propSet->get(i).asString().c_str();
-                    if (it->second->check(propName.c_str()))
-                        prop.put(propName.c_str(),it->second->find(propName.c_str()));
+                    if (pProp->check(propName.c_str()))
+                        prop.put(propName.c_str(),pProp->find(propName.c_str()));
                 }
 
                 item.fromString(prop.toString().c_str());
             }
             else
-                item.fromString(it->second->toString().c_str());
+                item.fromString(pProp->toString().c_str());
 
             fprintf(stdout,"%s\n",item.toString().c_str());
             mutex.post();
@@ -637,7 +655,6 @@ public:
 
         mutex.wait();
         Property request(content->toString().c_str());
-
         if (!request.check(PROP_ID))
         {
             fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
@@ -648,9 +665,10 @@ public:
         int id=request.find(PROP_ID).asInt();
         fprintf(stdout,"setting item %d ... ",id);
 
-        map<int,Property*>::iterator it=itemsMap.find(id);
+        map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
+            Property *pProp=it->second.prop;
             request.unput(PROP_ID);
             Bottle b(request.toString().c_str());
 
@@ -669,16 +687,50 @@ public:
                 string prop=option->get(0).asString().c_str();
                 Value  val=option->get(1);
 
-                it->second->unput(prop.c_str());
-                it->second->put(prop.c_str(),val);
+                pProp->unput(prop.c_str());
+                pProp->put(prop.c_str(),val);
             }
 
+            it->second.lastUpdate=Time::now();
             mutex.post();
-
             return true;
         }
 
         fprintf(stdout,"not present!\n");
+        mutex.post();
+        return false;
+    }
+
+    /************************************************************************/
+    bool time(Bottle *content, Bottle &item)
+    {
+        if (content==NULL)
+            return false;
+
+        mutex.wait();
+        Property request(content->toString().c_str());
+        if (!request.check(PROP_ID))
+        {
+            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
+            mutex.post();
+            return false;
+        }
+
+        int id=request.find(PROP_ID).asInt();
+        fprintf(stdout,"getting time elapsed from last update for item %d ... ",id);
+
+        map<int,Item>::iterator it=itemsMap.find(id);
+        if (it!=itemsMap.end())
+        {
+            item.clear();
+            double dt=Time::now()-it->second.lastUpdate;            
+            item.addDouble(dt);
+            fprintf(stdout,"%g [s]\n",dt);
+            mutex.post();
+            return true;
+        }
+
+        fprintf(stdout,"item not present!\n");
         mutex.post();
         return false;
     }
@@ -698,7 +750,7 @@ public:
                 {
                     items.clear();
                 
-                    for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+                    for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
                         items.addInt(it->first);
                 
                     mutex.post();
@@ -775,11 +827,11 @@ public:
         items.clear();
 
         // apply the conditions to each item
-        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+        for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
             // do recursion and keep only the item that
             // satisfies the whole list of conditions
-            if (recursiveCheck(it->second,condList,opList))
+            if (recursiveCheck(it->second.prop,condList,opList))
                 items.addInt(it->first);
         }
 
@@ -792,11 +844,12 @@ public:
     void periodicHandler(const double dt)   // manage the items life-timers
     {
         mutex.wait();
-        for (map<int,Property*>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+        for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
-            if (it->second->check(PROP_LIFETIMER))
+            Property *pProp=it->second.prop;
+            if (pProp->check(PROP_LIFETIMER))
             {
-                double lifeTimer=it->second->find(PROP_LIFETIMER).asDouble()-dt;
+                double lifeTimer=pProp->find(PROP_LIFETIMER).asDouble()-dt;
 
                 if (lifeTimer<0.0)
                 {
@@ -806,8 +859,8 @@ public:
                 }
                 else
                 {
-                    it->second->unput(PROP_LIFETIMER);
-                    it->second->put(PROP_LIFETIMER,lifeTimer);
+                    pProp->unput(PROP_LIFETIMER);
+                    pProp->put(PROP_LIFETIMER,lifeTimer);
                 }
             }
         }
@@ -904,6 +957,27 @@ public:
                 else
                     reply.addVocab(REP_NACK);
     
+                break;
+            }
+
+            case CMD_TIME:
+            {
+                if (command.size()<2)
+                {
+                    reply.addVocab(REP_NACK);
+                    break;
+                }
+
+                Bottle item;
+                Bottle *content=command.get(1).asList();                
+                if (time(content,item))
+                {
+                    reply.addVocab(REP_ACK);
+                    reply.addList()=item;
+                }
+                else
+                    reply.addVocab(REP_NACK);
+
                 break;
             }
     
