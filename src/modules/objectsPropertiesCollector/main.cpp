@@ -882,6 +882,7 @@ public:
 
         switch(cmd)
         {
+            //-----------------
             case CMD_ADD:
             {
                 if (command.size()<2)
@@ -905,6 +906,7 @@ public:
                 break;
             }
 
+            //-----------------
             case CMD_DEL:
             {
                 if (command.size()<2)
@@ -922,6 +924,7 @@ public:
                 break;
             }
 
+            //-----------------
             case CMD_GET:
             {
                 if (command.size()<2)
@@ -943,6 +946,7 @@ public:
                 break;
             }
 
+            //-----------------
             case CMD_SET:
             {
                 if (command.size()<2)
@@ -960,6 +964,7 @@ public:
                 break;
             }
 
+            //-----------------
             case CMD_TIME:
             {
                 if (command.size()<2)
@@ -980,7 +985,8 @@ public:
 
                 break;
             }
-    
+
+            //-----------------
             case CMD_DUMP:
             {
                 dump();
@@ -988,6 +994,7 @@ public:
                 break;
             }
 
+            //-----------------
             case CMD_ASK:
             {
                 if (command.size()<2)
@@ -1011,6 +1018,7 @@ public:
                 break;
             }
 
+            //-----------------
             default:
             {
                 fprintf(stdout,"received unknown command!\n");
