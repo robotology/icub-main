@@ -423,7 +423,7 @@ int main(int argc, char * argv[])
 	part_frame[RIGHT_ARM] = gtk_frame_new ("right arm");
 	part_frame[LEFT_LEG] =  gtk_frame_new ("left leg");
 	part_frame[RIGHT_LEG] = gtk_frame_new ("right leg");
-	part_frame[TORSO] = gtk_frame_new ("torso");
+	part_frame[TORSO] = gtk_frame_new ("torso (EXPERIMENTAL)");
 
 	gtk_widget_set_size_request	(part_frame[LEFT_ARM],   150, 550    );
 	gtk_widget_set_size_request	(part_frame[RIGHT_ARM],  150, 550    );
