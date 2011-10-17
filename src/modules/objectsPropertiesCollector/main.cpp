@@ -488,7 +488,7 @@ public:
 
             int id=b2->get(1).asInt();
             itemsMap[id].prop=new Property(b1.get(2).asList()->toString().c_str());
-            itemsMap[id].lastUpdate=Time::now();
+            itemsMap[id].lastUpdate=0.0;
 
             if (idCnt<id)
                 idCnt=id+1;
