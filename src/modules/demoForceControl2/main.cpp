@@ -336,9 +336,9 @@ void radio_click_im( GtkWidget *widget, void* r)
 				robot->icmd[rd->id]->setImpedancePositionMode(5);
 			break;
 			case TORSO:
-				robot->iimp[rd->id]->setImpedance(0,0.1,0.0);
-				robot->iimp[rd->id]->setImpedance(1,0.1,0.0);
-				robot->iimp[rd->id]->setImpedance(2,0.1,0.0);
+				robot->iimp[rd->id]->setImpedance(0,0.3,0.0);
+				robot->iimp[rd->id]->setImpedance(1,0.3,0.0);
+				robot->iimp[rd->id]->setImpedance(2,0.3,0.0);
 				robot->icmd[rd->id]->setImpedancePositionMode(0);
 				robot->icmd[rd->id]->setImpedancePositionMode(1);
 				robot->icmd[rd->id]->setImpedancePositionMode(2);
@@ -371,9 +371,9 @@ void radio_click_ih( GtkWidget *widget, void* r)
 			break;
 			case LEFT_LEG:
 			case RIGHT_LEG:
-				robot->iimp[rd->id]->setImpedance(0,0.9,0.02);
-				robot->iimp[rd->id]->setImpedance(1,0.9,0.02);
-				robot->iimp[rd->id]->setImpedance(2,0.6,0.02);
+				robot->iimp[rd->id]->setImpedance(0,1.0,0.02);
+				robot->iimp[rd->id]->setImpedance(1,1.0,0.02);
+				robot->iimp[rd->id]->setImpedance(2,0.7,0.02);
 				robot->iimp[rd->id]->setImpedance(3,0.6,0.02);
 				robot->iimp[rd->id]->setImpedance(4,0.6,0.02);
 				robot->iimp[rd->id]->setImpedance(5,0.6,0.02);
@@ -385,9 +385,9 @@ void radio_click_ih( GtkWidget *widget, void* r)
 				robot->icmd[rd->id]->setImpedancePositionMode(5);
 			break;
 			case TORSO:
-				robot->iimp[rd->id]->setImpedance(0,0.1,0.0);
-				robot->iimp[rd->id]->setImpedance(1,0.1,0.0);
-				robot->iimp[rd->id]->setImpedance(2,0.1,0.0);
+				robot->iimp[rd->id]->setImpedance(0,0.7,0.015);
+				robot->iimp[rd->id]->setImpedance(1,0.7,0.015);
+				robot->iimp[rd->id]->setImpedance(2,0.7,0.015);
 				robot->icmd[rd->id]->setImpedancePositionMode(0);
 				robot->icmd[rd->id]->setImpedancePositionMode(1);
 				robot->icmd[rd->id]->setImpedancePositionMode(2);
@@ -469,7 +469,7 @@ int main(int argc, char * argv[])
 	}
 
 	//update_radio_buttons();
-	gtk_widget_set_sensitive(part_frame[TORSO],false);
+	//gtk_widget_set_sensitive(part_frame[TORSO],false);
 
 	update_labels();
 	put_everything_in_position();
