@@ -81,3 +81,5 @@ void robot_interfaces::init()
 		ok = ok & dd[i]->view(iamp[i]);
 	}
 }
+
+
