@@ -21,8 +21,8 @@
 
 \defgroup objectsPropertiesCollector objectsPropertiesCollector
  
-Provides a on-line database to collect properties of objects 
-that are of interest for your specific application.
+Provides a on-line yarp-oriented database to collect properties 
+of objects that are of interest for your specific application. 
  
 Copyright (C) 2010 RobotCub Consortium
  
@@ -34,11 +34,11 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
  
 \section intro_sec Description 
  
-Provides a on-line database to collect properties such as 
-positions, colors, shapes, grasping points and so on about 
-objects that are of interest for your specific application, i.e.
-normally real objects that the robot can play with but ideally 
-any kind of objects you can think of. 
+Provides a on-line yarp-oriented database to collect properties 
+such as positions, colors, shapes, grasping points and so on 
+about objects that are of interest for your specific 
+application, i.e. normally real objects that the robot can play 
+with but ideally any kind of objects you can think of. 
 The user can set, get, add, remove items and even make queries 
 to the database. 
 
