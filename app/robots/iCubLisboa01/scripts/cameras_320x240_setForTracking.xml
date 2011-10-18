@@ -20,14 +20,14 @@
 
 <module>
       <name>camCalib</name>
-      <parameters>--fps 30 --context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left </parameters>
+      <parameters>--fps 30 --context iCubLisboa01/conf --from icubEyes320x240.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left </parameters>
       <node>icubbrain1</node>
       <stdio>chico3</stdio>
       <tag>camCalibLeft</tag>
 </module>
 <module>
       <name>camCalib</name>
-      <parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right --fps 30</parameters>
+      <parameters>--context iCubLisboa01/conf --from icubEyes320x240.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right --fps 30</parameters>
       <node>icubbrain1</node>
       <stdio>chico3</stdio>
       <tag>camCalibRight</tag>
