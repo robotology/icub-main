@@ -1,4 +1,4 @@
-SET(PROJECTNAME demoForceControl2)
+SET(PROJECTNAME demoForceControl)
 PROJECT(${PROJECTNAME})
 
 FILE(GLOB_RECURSE folder_header *.h)
