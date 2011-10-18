@@ -99,7 +99,9 @@ Action: add/modify properties of the stored item.
 Format: [time] ((id <num>)) \n 
 Reply: [nack]; [ack] (<time>) \n 
 Action: retrieve the time elapsed in seconds from the last 
-[add]/[del]/[set] operations on the stored item. 
+[add]/[del]/[set] operations on the stored item. \n 
+Negative values of <time> indicates that the item has not been 
+modified since it was loaded within the database. 
  
 <b>dump</b> \n 
 Format: [dump] \n 
@@ -488,7 +490,7 @@ public:
 
             int id=b2->get(1).asInt();
             itemsMap[id].prop=new Property(b1.get(2).asList()->toString().c_str());
-            itemsMap[id].lastUpdate=0.0;
+            itemsMap[id].lastUpdate=-1.0;
 
             if (idCnt<id)
                 idCnt=id+1;
@@ -723,9 +725,17 @@ public:
         if (it!=itemsMap.end())
         {
             item.clear();
-            double dt=Time::now()-it->second.lastUpdate;            
-            item.addDouble(dt);
-            fprintf(stdout,"%g [s]\n",dt);
+            if (it->second.lastUpdate<0.0)
+            {
+                item.addDouble(it->second.lastUpdate);
+                fprintf(stdout,"just loaded\n");
+            }
+            else
+            {
+                double dt=Time::now()-it->second.lastUpdate;
+                item.addDouble(dt);
+                fprintf(stdout,"%g [s]\n",dt);
+            }
             mutex.post();
             return true;
         }
