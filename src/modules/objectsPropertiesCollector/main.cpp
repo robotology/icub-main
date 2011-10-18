@@ -67,52 +67,56 @@ The commands sent as bottles to the module port
 /<moduleName>/rpc are the following: 
  
 <b>add</b> \n
-Format: [add] (({prop0} <val0>) ({prop1} <val1>) ...) \n
-Reply: [nack]; [ack] (id <num>) \n 
-Action: a new item is added to the database with the given 
-properties. \n 
+<i>Format</i>: [add] (({prop0} <val0>) ({prop1} <val1>) ...) \n
+<i>Reply</i>: [nack]; [ack] (id <num>) \n 
+<i>Action</i>: a new item is added to the database with the 
+given properties. \n 
 A unique identifier is returned that is used to access the item.
 
 <b>del</b> \n
-Format: [del] ((id <num>) (propSet ({prop0} {prop1} ...))) \n 
-Reply: [nack]; [ack] \n 
-Action: remove from the database the specified properties 
+<i>Format</i>: [del] ((id <num>) (propSet ({prop0} {prop1} 
+...))) \n 
+<i>Reply</i>: [nack]; [ack] \n 
+<i>Action</i>: remove from the database the specified properties
 belonging to the item specified with the given identifier. \n 
 The special command "del ((id <num>))" removes the whole item.\n
 The special command "[del] (all)" clears the current content of 
 the database. 
  
 <b>get</b> \n
-Format: [get] ((id <num>) (propSet ({prop0} {prop1} ...))) \n
-Reply: [nack]; [ack] (({prop0} <val0>) ({prop1} <val1>) ...) \n
-Action: return the required properties assigned to the stored 
-item. \n 
+<i>Format</i>: [get] ((id <num>) (propSet ({prop0} {prop1} 
+...))) \n 
+<i>Reply</i>: [nack]; [ack] (({prop0} <val0>) ({prop1} <val1>) 
+...) \n 
+<i>Action</i>: return the required properties assigned to the 
+stored item. \n 
 The special command "[get] ((id <num>))" returns all the 
 properties. 
  
 <b>set</b> \n
-Format: [set] ((id <num>) ({prop2} <val2>) ...) \n 
-Reply: [nack]; [ack] \n 
-Action: add/modify properties of the stored item.
+<i>Format</i>: [set] ((id <num>) ({prop2} <val2>) ...) \n 
+<i>Reply</i>: [nack]; [ack] \n 
+<i>Action</i>: add/modify properties of the stored item.
  
 <b>time</b> \n
-Format: [time] ((id <num>)) \n 
-Reply: [nack]; [ack] (<time>) \n 
-Action: retrieve the time elapsed in seconds from the last 
-[add]/[del]/[set] operations on the stored item. \n 
+<i>Format</i>: [time] ((id <num>)) \n 
+<i>Reply</i>: [nack]; [ack] (<time>) \n 
+<i>Action</i>: retrieve the time elapsed in seconds from the 
+last [add]/[del]/[set] operations on the stored item. \n 
 Negative values of <time> indicates that the item has not been 
 modified since it was loaded within the database. 
  
 <b>dump</b> \n 
-Format: [dump] \n 
-Reply: [ack] \n 
-Action: ask the database handler to dump on the screen all the 
-stored items along with their properties. 
+<i>Format</i>: [dump] \n 
+<i>Reply</i>: [ack] \n 
+<i>Action</i>: ask the database handler to dump on the screen 
+all the stored items along with their properties. 
  
 <b>ask</b> \n
-Format: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) ...) \n
-Reply: [nack]; [ack] (id (<num0> <num1> ...)) \n 
-Action: query the database to find all the items whose 
+<i>Format</i>: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) 
+...) \n 
+<i>Reply</i>: [nack]; [ack] (id (<num0> <num1> ...)) \n 
+<i>Action</i>: query the database to find all the items whose 
 properties match the conditions given in the command. You can 
 compose multiple conditions using the boolean operators such as 
 '||' for \e or and '&&' for \e and and each condition has to be 
