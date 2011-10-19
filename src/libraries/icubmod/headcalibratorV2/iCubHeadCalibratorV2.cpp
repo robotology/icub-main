@@ -20,6 +20,8 @@ const int GO_TO_ZERO_TIMEOUT=20;
 const int CALIBRATE_JOINT_TIMEOUT=25;
 const double POSITION_THRESHOLD=2.0;
 
+#define TORSO_IS_AVAILABLE (nj > 5)
+
 iCubHeadCalibratorV2::iCubHeadCalibratorV2()
 {
 	canID  = -1;
@@ -114,10 +116,13 @@ bool iCubHeadCalibratorV2::open (yarp::os::Searchable& config)
    }
    else
    {
-	   fprintf(stderr, "ARMCALIB[%d] :MaxPWM parameter not found, using default values\n", canID);
+	   fprintf(stderr, "HEADCALIB[%d] :MaxPWM parameter not found, using default values\n", canID);
 	   for (i = 0; i < 3; i++) maxPWM[i] = 250;    //head
 	   for (i = 3; i < 6; i++) maxPWM[i] = 1333;   //eyes do not use maxPWM
-	   for (i = 6; i < 9; i++) maxPWM[i] = 200;    //torso
+	   if (TORSO_IS_AVAILABLE)
+	   {
+		   for (i = 6; i < 9; i++) maxPWM[i] = 200;    //torso
+	   }
    }
 
     return true;
@@ -207,15 +212,18 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
 		iPids->setPid(k,limited_pid[k]);
 	}
 	//BLL boards must receive calibration message before enabling PWM
-	for (k = 6; k < nj; k++) 
-    {
-		//bll boards are joint 6 7 8 (9)
-        calibrateJoint(k);
-		iPids->getPid(k,&original_pid[k]);
-		limited_pid[k]=original_pid[k];
-		limited_pid[k].max_int=maxPWM[k];
-		limited_pid[k].max_output=maxPWM[k];
-		iPids->setPid(k,limited_pid[k]);
+	if (TORSO_IS_AVAILABLE)
+	{
+		for (k = 6; k < nj; k++) 
+		{
+			//bll boards are joint 6 7 8 (9)
+			calibrateJoint(k);
+			iPids->getPid(k,&original_pid[k]);
+			limited_pid[k]=original_pid[k];
+			limited_pid[k].max_int=maxPWM[k];
+			limited_pid[k].max_output=maxPWM[k];
+			iPids->setPid(k,limited_pid[k]);
+		}
 	}
     
 	/////////////////////////////////////
@@ -239,30 +247,32 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     /////////////////////////////////////
 	//calibrate the torso set of joints//
     /////////////////////////////////////
-	calibration_ok = true;
-	for (k =0; k < 3; k++)
-    {
-        //fprintf(stderr, "TORSOCALIB::Moving joint %d to zero\n", k);
-		goToZero(torsoSetOfJoints[k]);
-    }
-	for (k = 0; k < 3; k++)
-    {
-        //fprintf(stderr, "TORSOCALIB::Waiting for joint %d movement\n", k);
-		calibration_ok &= checkGoneToZeroThreshold(torsoSetOfJoints[k]);
-    }
-    if (calibration_ok)
+	if (TORSO_IS_AVAILABLE)
 	{
-		fprintf(stderr, "TORSOCALIB[%d]: Calibration done!\n", canID);
+		calibration_ok = true;
+		for (k =0; k < 3; k++)
+		{
+			//fprintf(stderr, "TORSOCALIB::Moving joint %d to zero\n", k);
+			goToZero(torsoSetOfJoints[k]);
+		}
 		for (k = 0; k < 3; k++)
-			iPids->setPid(torsoSetOfJoints[k],original_pid[torsoSetOfJoints[k]]);
+		{
+			//fprintf(stderr, "TORSOCALIB::Waiting for joint %d movement\n", k);
+			calibration_ok &= checkGoneToZeroThreshold(torsoSetOfJoints[k]);
+		}
+		if (calibration_ok)
+		{
+			fprintf(stderr, "TORSOCALIB[%d]: Calibration done!\n", canID);
+			for (k = 0; k < 3; k++)
+				iPids->setPid(torsoSetOfJoints[k],original_pid[torsoSetOfJoints[k]]);
+		}
+		else
+		{
+			fprintf(stderr, "TORSOCALIB[%d]: Calibration failed!\n", canID);
+			for (k = 0; k < 3; k++)
+				iAmps->disableAmp(torsoSetOfJoints[k]);
+		}
 	}
-	else
-	{
-		fprintf(stderr, "TORSOCALIB[%d]: Calibration failed!\n", canID);
-		for (k = 0; k < 3; k++)
-			iAmps->disableAmp(torsoSetOfJoints[k]);
-	}
-
     /////////////////////////////////////
 	//calibrate the head set of joints //
     /////////////////////////////////////
