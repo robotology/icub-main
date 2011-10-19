@@ -248,7 +248,7 @@ void GuiReporter::setServer(PmpServer *server)
 /************************************************************************/
 void GuiReporter::report(const PortInfo &info)
 {
-    if ((server!=NULL) && info.created & !info.incoming)
+    if ((server!=NULL) && info.created && !info.incoming)
         server->scheduleInitGuiTrajectory();
 }
 
