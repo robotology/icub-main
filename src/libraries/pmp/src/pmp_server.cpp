@@ -1052,12 +1052,14 @@ bool PmpServer::read(ConnectionReader &connection)
         reply.addVocab(PMP_VOCAB_CMD_NACK);
     else switch(cmd.get(0).asVocab())
     {
+        //-----------------
          case PMP_VOCAB_CMD_PING:
          {
              reply.addVocab(PMP_VOCAB_CMD_ACK);
              break;
          }         
 
+         //-----------------
          case PMP_VOCAB_CMD_ADD:
          {
              if (cmd.size()<2)
@@ -1077,6 +1079,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }         
 
+         //-----------------
          case PMP_VOCAB_CMD_DEL:
          {
              if (cmd.size()<2)
@@ -1092,6 +1095,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_SET:
          {
              if (cmd.size()<3)
@@ -1104,6 +1108,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_GET:
          {
              if (cmd.size()<2)
@@ -1126,6 +1131,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_LIST:
          {
              Bottle items;
@@ -1140,6 +1146,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_CLEAR:
          {
              if (clearItems())
@@ -1150,6 +1157,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_ENFIELD:
          {
              if (enableField())
@@ -1160,6 +1168,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_DISFIELD:
          {
              if (disableField())
@@ -1170,6 +1179,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_STATFIELD:
          {
              bool status;
@@ -1184,6 +1194,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_ENCTRL:
          {
              if (enableControl())
@@ -1194,6 +1205,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_DISCTRL:
          {
              if (disableControl())
@@ -1204,6 +1216,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_STATCTRL:
          {
              bool status;
@@ -1218,6 +1231,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_ENSIM:
          {
              if (enableSimulation())
@@ -1228,6 +1242,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_DISSIM:
          {
              if (disableSimulation())
@@ -1238,6 +1253,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_STATSIM:
          {
              bool status;
@@ -1252,6 +1268,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_SETPER:
          {
              if (cmd.size()<2)
@@ -1264,6 +1281,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }         
 
+         //-----------------
          case PMP_VOCAB_CMD_GETPER:
          {
              int period;
@@ -1278,6 +1296,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_SETSTATETOTOOL:
          {
              if (cmd.size()<1)
@@ -1293,6 +1312,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_SETSTATE:
          {
              if (cmd.size()<2)
@@ -1320,6 +1340,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_GETSTATE:
          {
              if (isOpen)
@@ -1337,6 +1358,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_ATTACHTOOLFRAME:
          {
              if (cmd.size()<2)
@@ -1357,6 +1379,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_GETTOOLFRAME:
          {
              Vector x,o;
@@ -1381,6 +1404,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_REMOVETOOLFRAME:
          {
              if (removeToolFrame())
@@ -1391,6 +1415,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          case PMP_VOCAB_CMD_GETTOOL:
          {
              Vector x,o;
@@ -1415,6 +1440,7 @@ bool PmpServer::read(ConnectionReader &connection)
              break;
          }
 
+         //-----------------
          default:
              reply.addVocab(PMP_VOCAB_CMD_NACK);
     }

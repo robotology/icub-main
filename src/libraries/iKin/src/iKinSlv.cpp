@@ -756,6 +756,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
         else switch (vcb)
         {
+            //-----------------
             case IKINSLV_VOCAB_CMD_HELP:
             {                    
                 string ack("commands={");
@@ -790,6 +791,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
     
+            //-----------------
             case IKINSLV_VOCAB_CMD_SUSP:
             {                    
                 fprintf(stdout,"%s suspended\n",slvName.c_str());
@@ -798,6 +800,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
     
+            //-----------------
             case IKINSLV_VOCAB_CMD_RUN:
             {   
                 if (!isRunning())
@@ -818,6 +821,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINSLV_VOCAB_CMD_QUIT:
             {                    
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -825,11 +829,13 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINSLV_VOCAB_CMD_GET:
             {
                 if (command.size()>1)
                     switch (command.get(1).asVocab())
                     {
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_POSE:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -842,6 +848,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -854,6 +861,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_LIM:
                         {
                             if (command.size()>2)
@@ -875,6 +883,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_VERB:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -887,6 +896,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_DOF:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -895,6 +905,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_REST_POS:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -902,6 +913,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_REST_WEIGHTS:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -909,6 +921,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         default:
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                     }
@@ -918,11 +931,13 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINSLV_VOCAB_CMD_SET:
             {
                 if (command.size()>2)
                     switch (command.get(1).asVocab())
                     {
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_POSE:
                         {
                             if (inPort->handlePose(command.get(2).asVocab()))
@@ -933,6 +948,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
                             if (inPort->handleMode(command.get(2).asVocab()))
@@ -946,6 +962,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_LIM:
                         {
                             if (command.size()>4)
@@ -965,6 +982,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_VERB:
                         {
                             int sw=command.get(2).asVocab();
@@ -983,6 +1001,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_DOF:
                         {
                             if (inPort->handleDOF(command.get(2).asList()))
@@ -999,6 +1018,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_REST_POS:
                         {
                             Bottle restPart;
@@ -1018,6 +1038,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
     
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_REST_WEIGHTS:
                         {
                             Bottle restPart;
@@ -1037,6 +1058,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         default:
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                     }
@@ -1046,6 +1068,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINSLV_VOCAB_CMD_ASK:
             {
                 Bottle &options=const_cast<Bottle&>(command);
@@ -1128,6 +1151,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINSLV_VOCAB_CMD_CFG:
             {
                 Property options(command.toString().c_str());
@@ -1141,6 +1165,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             default:
                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
         }

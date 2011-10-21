@@ -241,6 +241,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
     if (command.size())
         switch (command.get(0).asVocab())
         {
+            //-----------------
             case IKINCARTCTRL_VOCAB_CMD_STOP:
             {   
                 // begin of critical code
@@ -254,6 +255,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINCARTCTRL_VOCAB_CMD_GO:
             {
                 if (command.size()>3)
@@ -297,6 +299,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINCARTCTRL_VOCAB_CMD_ASK:
             {
                 // just behave as a relay
@@ -311,6 +314,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINCARTCTRL_VOCAB_CMD_STORE:
             {
                 int id;
@@ -325,6 +329,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINCARTCTRL_VOCAB_CMD_RESTORE:
             {
                 if (command.size()>1)
@@ -339,6 +344,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINCARTCTRL_VOCAB_CMD_DELETE:
             {
                 if (command.size()>1)
@@ -353,11 +359,13 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINSLV_VOCAB_CMD_GET:
             {
                 if (command.size()>1)
                     switch (command.get(1).asVocab())
                     {
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_MODE:
                         {
                             bool flag;
@@ -377,6 +385,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
                             double time;
@@ -392,6 +401,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TOL:
                         {
                             double tol;
@@ -407,6 +417,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_MOTIONDONE:
                         {
                             bool flag;
@@ -426,6 +437,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_ISSOLVERON:
                         {
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -438,6 +450,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_LIM:
                         {
                             if (command.size()>2)
@@ -460,6 +473,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_DOF:
                         {
                             Vector curDof;
@@ -478,6 +492,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_REST_POS:
                         {
                             Vector curRestPos;
@@ -496,6 +511,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
     
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS:
                         {
                             Vector curRestWeights;
@@ -514,6 +530,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_DES:
                         {
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -533,6 +550,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_QDOT:
                         {
                             Vector qdot;
@@ -551,6 +569,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
     
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_XDOT:
                         {
                             Vector xdot, odot;
@@ -572,6 +591,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_POSE:
                         {               
                             if (command.size()>2)
@@ -599,6 +619,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         default:
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
@@ -608,11 +629,13 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             case IKINCARTCTRL_VOCAB_CMD_SET:
             {
                 if (command.size()>2)
                     switch (command.get(1).asVocab())
                     {
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_MODE:
                         {
                             int mode=command.get(2).asVocab();
@@ -637,6 +660,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
                             setTrajTime(command.get(2).asDouble());
@@ -644,6 +668,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TOL:
                         {
                             setInTargetTol(command.get(2).asDouble());
@@ -651,6 +676,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_LIM:
                         {                            
                             if (command.size()>4)
@@ -670,6 +696,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_DOF:
                         {
                             if (Bottle *b=command.get(2).asList())
@@ -697,6 +724,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_REST_POS:
                         {
                             if (Bottle *b=command.get(2).asList())
@@ -724,6 +752,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS:
                         {
                             if (Bottle *b=command.get(2).asList())
@@ -751,6 +780,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        //-----------------
                         default:
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
@@ -760,6 +790,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
+            //-----------------
             default:
                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
         }

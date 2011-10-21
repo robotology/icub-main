@@ -685,6 +685,7 @@ public:
         {
             switch (command.get(0).asVocab())
             {
+                //-----------------
                 case VOCAB4('s','u','s','p'):
                 {
                     ctrl->suspend();
@@ -694,6 +695,7 @@ public:
                     return true;
                 }
 
+                //-----------------
                 case VOCAB3('r','u','n'):
                 {
                     slv->resume();
@@ -703,6 +705,7 @@ public:
                     return true;
                 }
 
+                //-----------------
                 case VOCAB4('s','t','o','p'):
                 {
                     eyesRefGen->stopControl();
@@ -710,6 +713,7 @@ public:
                     return true;
                 }
 
+                //-----------------
                 case VOCAB4('s','t','o','r'):
                 {
                     int id;
@@ -719,6 +723,7 @@ public:
                     return true;
                 }
 
+                //-----------------
                 case VOCAB4('r','e','s','t'):
                 {
                     if (command.size()>1)
@@ -735,6 +740,7 @@ public:
                     return false;
                 }
 
+                //-----------------
                 case VOCAB3('d','e','l'):
                 {
                     if (command.size()>1)
@@ -751,6 +757,7 @@ public:
                     return false;
                 }
 
+                //-----------------
                 case VOCAB4('b','i','n','d'):
                 {
                     if (command.size()>2)
@@ -779,6 +786,7 @@ public:
                     return false;
                 }
 
+                //-----------------
                 case VOCAB4('c','l','e','a'):
                 {
                     if (command.size()>1)
@@ -804,6 +812,7 @@ public:
                     return false;
                 }
 
+                //-----------------
                 case VOCAB3('g','e','t'):
                 {
                     if (command.size()>1)
@@ -1067,6 +1076,7 @@ public:
                     return false;
                 }
 
+                //-----------------
                 case VOCAB3('s','e','t'):
                 {
                     if (command.size()>2)
@@ -1114,6 +1124,7 @@ public:
                     return true;
                 }
 
+                //-----------------
                 default:
                     return RFModule::respond(command,reply);
             }
