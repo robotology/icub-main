@@ -5472,3 +5472,5 @@ yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable&
 
     return 0;
 }
+
+

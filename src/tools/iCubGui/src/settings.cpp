@@ -45,3 +45,5 @@ void Settings::setEaseIn(bool on)              { m_easeIn=on; }
 bool Settings::easeIn()                        { return m_easeIn; }
 void Settings::setEaseOut(bool on)             { m_easeOut=on; }
 bool Settings::easeOut()                       { return m_easeOut; }
+
+

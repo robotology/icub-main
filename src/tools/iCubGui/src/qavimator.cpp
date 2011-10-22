@@ -402,3 +402,5 @@ void qavimator::on_fpsSpin_valueChanged(int newValue)
 
 // end autoconnection from designer UI
 // -------------------------------------------------------------------------
+
+

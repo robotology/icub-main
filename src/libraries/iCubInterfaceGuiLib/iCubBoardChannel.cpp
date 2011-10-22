@@ -178,3 +178,4 @@ yarp::dev::LoggerDataRef* iCubBLLChannel::getDataReference(std::string addr)
     return mData.getDataReference(index);
 }
 */
+

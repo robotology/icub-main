@@ -391,3 +391,5 @@ void ObjectsManager::manage(iCub::skinDynLib::dynContactList &forces)
 }
 
 #endif
+
+

@@ -44,3 +44,5 @@ class SettingsDialog : public QDialog, Ui::SettingsDialogForm
 };
 
 #endif
+
+

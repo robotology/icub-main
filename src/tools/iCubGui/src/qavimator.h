@@ -138,3 +138,5 @@ class qavimator : public QMainWindow, Ui::MainWindow
 };
 
 #endif
+
+
