@@ -387,7 +387,7 @@ protected:
             return result;
         else if (opList[i]=="||")
             return (result||recursiveCheck(item,condList,opList,i+1));
-        else    // at this point we know we deal with the "&&" operations
+        else    // at this point we know we deal with "&&" operations
         {
             unsigned int j;
             for (j=i+1; j<condList.size(); j++)
