@@ -19,7 +19,7 @@ using namespace yarp::os;
 using namespace iCub::contrib;
 
 /**
- * @ingroup icub_module
+ * @ingroup icub_tools
  *
  * \defgroup icub_camcalibconf camCalibConf
  *

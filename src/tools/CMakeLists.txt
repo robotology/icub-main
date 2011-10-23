@@ -51,3 +51,10 @@ else(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 	message(STATUS "Qt3 or OpenGL or GLUT not selected, skipping iCubGui")
 endif(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 
+if(ICUB_USE_OpenCV)
+    add_subdirectory(camCalibConf)
+else(ICUB_USE_OpenCV)
+    message(STATUS "OpenCV not found/selected, skipping camCalibConf")
+endif(ICUB_USE_OpenCV)
+
+
