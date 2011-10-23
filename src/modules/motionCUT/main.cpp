@@ -38,13 +38,14 @@ detect independent moving points over a selectable grid of
 nodes. The algorithm is designed in such a way that it works 
 also - and especially - with moving cameras. 
  
-\note the name motionCUT stands for motion Cover/Uncover Trick 
-      and refers to its working principle that is detailed in
-      the paper: Ciliberto C., Pattacini U., Natale L., Nori F.
-      and Metta G., "Reexamining Lucas-Kanade Method for
-      Real-Time Independent Motion Detection: Application to the
-      iCub Humanoid Robot", to appear on IEEE/RSJ International
-      Conference on Intelligent Robots and Systems 2011.
+\note the name motionCUT stands for <i>motion Cover/Uncover 
+      Trick</i> and refers to its working principle that is
+      detailed in the paper: Ciliberto C., Pattacini U., Natale
+      L., Nori F. and Metta G., "Reexamining Lucas-Kanade Method
+      for Real-Time Independent Motion Detection:
+      Application to the iCub Humanoid Robot", <i>IEEE/RSJ
+      International Conference on Intelligent Robots and
+      Systems</i>, San Francisco, CA, USA, 2011.
  
 \note If you're going to use the motionCUT for your work, please
       quote it within any resulting publication.
@@ -53,6 +54,9 @@ also - and especially - with moving cameras.
       multi-threading layers such as OpenMP and TBB in order to
       achieve high performances for motion detection. Refer to
       the OpenCV documentation for the details.
+ 
+\note A video on iCub employing <i>motionCUT</i> can be seen <a
+      href="http://eris.liralab.it/misc/icubvideos/motionCUT.mpeg">here</a>.
  
 \section lib_sec Libraries 
 YARP libraries and OpenCV
