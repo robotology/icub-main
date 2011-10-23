@@ -55,7 +55,7 @@ also - and especially - with moving cameras.
       achieve high performances for motion detection. Refer to
       the OpenCV documentation for the details.
  
-\note A video on iCub employing <i>motionCUT</i> can be seen <a
+\note A video on iCub employing \e motionCUT can be seen <a
       href="http://eris.liralab.it/misc/icubvideos/motionCUT.mpeg">here</a>.
  
 \section lib_sec Libraries 
@@ -95,9 +95,9 @@ YARP libraries and OpenCV
   independent moving node.
  
 --adjNodesThres \e min 
-- This parameter allows to filter out the salt-and-pepper noise
-  over the output image, by specifying the minimum number of
-  adjacent nodes that must be active (i.e. that undergo the
+- This parameter allows to filter out the \e salt-and-pepper
+  noise over the output image, by specifying the minimum number
+  of adjacent nodes that must be active (i.e. that undergo the
   motion) in the neighbourhood of any single node to keep it
   active.
  
