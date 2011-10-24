@@ -124,16 +124,16 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
     int fillImage = (flags & CV_FLOODFILL_MASK_ONLY) == 0;
     uchar newMaskVal = (uchar)(flags & 0xff00 ? flags >> 8 : 1);
     CvFFillSegment* buffer_end = buffer + buffer_size, *head = buffer, *tail = buffer;
-	//-------------------------------------------------------------------martim
-	// variance-adaptive threshold
-	double varAdaptA=0, varAdaptB=0; //cumulative p(i) and p(i)² where p=pixel value
-	double varAdaptN=0; //N(i) where N=number of pixels
-	double varAdaptAlpha=0.9; //weight on current threshold (0<alpha<1)
-	double varAdaptK=0.5; //sauvola's weight on the standard deviance component (0.2<=k<=0.5)
-	double varAdaptKa=1.5; //alex's weight on the standard deviance component (ka~1)
-	double varAdapt_aux=0;
-	if( cn!=1 ) return CV_OK;
-	//--end
+    //-------------------------------------------------------------------martim
+    // variance-adaptive threshold
+    double varAdaptA=0, varAdaptB=0; //cumulative p(i) and p(i)² where p=pixel value
+    double varAdaptN=0; //N(i) where N=number of pixels
+    double varAdaptAlpha=0.9; //weight on current threshold (0<alpha<1)
+    double varAdaptK=0.5; //sauvola's weight on the standard deviance component (0.2<=k<=0.5)
+    double varAdaptKa=1.5; //alex's weight on the standard deviance component (ka~1)
+    double varAdapt_aux=0;
+    if( cn!=1 ) return CV_OK;
+    //--end
 
     L = R = seed.x;
     if( mask[L] )
@@ -155,40 +155,40 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
         if( fixedRange )
         {
             while( !mask[R + 1] && DIFF_FLT_C1( img + (R+1), val0 )){
-				//-------------------------------------------------------------------martim
-				// variance-adaptive threshold
-				varAdapt_aux = (img+ R+1)[0];
-				varAdaptA += varAdapt_aux;
-				varAdaptB += varAdapt_aux*varAdapt_aux;
-				varAdaptN++;
-				//Sauvola:
-				varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
-				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-				interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
-				//Alex:
-//				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
-//				interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+                //-------------------------------------------------------------------martim
+                // variance-adaptive threshold
+                varAdapt_aux = (img+ R+1)[0];
+                varAdaptA += varAdapt_aux;
+                varAdaptB += varAdapt_aux*varAdapt_aux;
+                varAdaptN++;
+                //Sauvola:
+                varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
+                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
+                interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
+                //Alex:
+//                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
+//                interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
                 mask[++R] = newMaskVal;
-				//--end
-			}
+                //--end
+            }
 
             while( !mask[L - 1] && DIFF_FLT_C1( img + (L-1), val0 )){
-				//-------------------------------------------------------------------martim
-				// variance-adaptive threshold
-				varAdapt_aux = (img+ L-1)[0];
-				varAdaptA += varAdapt_aux;
-				varAdaptB += varAdapt_aux*varAdapt_aux;
-				varAdaptN++;
-				//Sauvola:
-				varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
-				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-				interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
-				//Alex:
-//				varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
-//				interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+                //-------------------------------------------------------------------martim
+                // variance-adaptive threshold
+                varAdapt_aux = (img+ L-1)[0];
+                varAdaptA += varAdapt_aux;
+                varAdaptB += varAdapt_aux*varAdapt_aux;
+                varAdaptN++;
+                //Sauvola:
+                varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
+                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
+                interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
+                //Alex:
+//                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
+//                interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
                 mask[--L] = newMaskVal;
-				//--end
-			}
+                //--end
+            }
         }
         else
         {
@@ -240,8 +240,8 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
                 int right = data[k][2];
 
                 if( fixedRange )
-					//-------------------------------------------------------------------martim
-					// variance-adaptive threshold
+                    //-------------------------------------------------------------------martim
+                    // variance-adaptive threshold
                     for( i = left; i <= right; i++ )
                     {
                         if( !mask[i] && DIFF_FLT_C1( img + i, val0 ))
@@ -250,38 +250,38 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
                             mask[i] = newMaskVal;
                             while( !mask[--j] && DIFF_FLT_C1( img + j, val0 )){
                                 mask[j] = newMaskVal;
-								varAdapt_aux = (img+j)[0];
-								varAdaptA += varAdapt_aux;
-								varAdaptB += varAdapt_aux*varAdapt_aux;
-								varAdaptN++;
-								//Sauvola:
-								varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
-								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-								interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
-								//Alex:
-//								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
-//								interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
-							}
+                                varAdapt_aux = (img+j)[0];
+                                varAdaptA += varAdapt_aux;
+                                varAdaptB += varAdapt_aux*varAdapt_aux;
+                                varAdaptN++;
+                                //Sauvola:
+                                varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
+                                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
+                                interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
+                                //Alex:
+//                                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
+//                                interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+                            }
 
                             while( !mask[++i] && DIFF_FLT_C1( img + i, val0 )){
                                 mask[i] = newMaskVal;
-								varAdapt_aux = (img+i)[0];
-								varAdaptA += varAdapt_aux;
-								varAdaptB += varAdapt_aux*varAdapt_aux;
-								varAdaptN++;
-								//Sauvola:
-								varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
-								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
-								interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
-								//Alex:
-//								varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
-//								interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
-							}
+                                varAdapt_aux = (img+i)[0];
+                                varAdaptA += varAdapt_aux;
+                                varAdaptB += varAdapt_aux*varAdapt_aux;
+                                varAdaptN++;
+                                //Sauvola:
+                                varAdapt_aux = sqrt( varAdaptB/varAdaptN - (varAdaptA*varAdaptA/(varAdaptN*varAdaptN)) );
+                                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN)*( 1+varAdaptK*((varAdapt_aux/128)-1) );
+                                interval[0] = (float)(varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux);
+                                //Alex:
+//                                varAdapt_aux = val0[0] - (varAdaptA/varAdaptN) + varAdaptKa*varAdapt_aux;
+//                                interval[0] = varAdaptAlpha*interval[0] + (1-varAdaptAlpha)*varAdapt_aux;
+                            }
 
                             ICV_PUSH( YC + dir, j+1, i-1, L, R, -dir );
                         }
                     }
-					//--end
+                    //--end
                 else if( !_8_connectivity )
                     for( i = left; i <= right; i++ )
                     {
@@ -363,8 +363,8 @@ icvFloodFill_Grad_32f_CnIR2( float* pImage, int step, uchar* pMask, int maskStep
         }
     }
 
-//	printf("Tf=%.4f, avg=%.4f, sigma=%.4f\n", interval[0], varAdaptA/varAdaptN, sqrt(varAdaptB/varAdaptN-(varAdaptA*varAdaptA/(varAdaptN*varAdaptN))) );
-//	printf("----------end floodfill\n");
+//    printf("Tf=%.4f, avg=%.4f, sigma=%.4f\n", interval[0], varAdaptA/varAdaptN, sqrt(varAdaptB/varAdaptN-(varAdaptA*varAdaptA/(varAdaptN*varAdaptN))) );
+//    printf("----------end floodfill\n");
 
     return CV_NO_ERR;
 }

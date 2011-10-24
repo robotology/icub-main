@@ -47,37 +47,37 @@ private:
 // my definitions
 typedef struct MbMoments
 {
-	double  m00, m10, m01;
-	double  m[12];
+    double  m00, m10, m01;
+    double  m[12];
 }MbMoments;
 
 typedef struct CameraModel
 {
-	double fx;
-	double fy;
-	double cx;
-	double cy;
-	double fov;
-	double aspect;
-	double znear;
-	double zfar;
+    double fx;
+    double fy;
+    double cx;
+    double cy;
+    double fov;
+    double aspect;
+    double znear;
+    double zfar;
 }CameraModel;
 
 typedef struct ObjectModel
 {
 /*
-	static const int QUANT_A=12;		//this should be made variable... (dynamic init.)
-	static const int NUM_MOM=12;		//this should be made variable... (dynamic init.)
-	static const int NUM_POSES=1008;	//this should be made variable... (dynamic init.)
-	double data[NUM_POSES][7+NUM_MOM];
-	double moment_variance[NUM_MOM];
-	double prob[NUM_POSES];
-	double prob_acum[NUM_POSES];
-	float prob_particles[NUM_POSES];
+    static const int QUANT_A=12;        //this should be made variable... (dynamic init.)
+    static const int NUM_MOM=12;        //this should be made variable... (dynamic init.)
+    static const int NUM_POSES=1008;    //this should be made variable... (dynamic init.)
+    double data[NUM_POSES][7+NUM_MOM];
+    double moment_variance[NUM_MOM];
+    double prob[NUM_POSES];
+    double prob_acum[NUM_POSES];
+    float prob_particles[NUM_POSES];
 */
-	double raio_esfera;
-	CvHistogram *hist;
-	CvMat *particles;
+    double raio_esfera;
+    CvHistogram *hist;
+    CvMat *particles;
 }ObjectModel;
 
 

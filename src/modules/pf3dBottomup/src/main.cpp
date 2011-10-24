@@ -31,9 +31,9 @@ using namespace yarp::os;
 
 int main(int argc, char *argv[])
 {
-	Network yarp;
-	pf3dBottomup bottomup;
-	bottomup.setName("/pf3dBottomup");
-	return bottomup.runModule(argc,argv);
+    Network yarp;
+    pf3dBottomup bottomup;
+    bottomup.setName("/pf3dBottomup");
+    return bottomup.runModule(argc,argv);
 }
 
