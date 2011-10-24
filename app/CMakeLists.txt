@@ -31,6 +31,7 @@ icub_app_install(app
 ### Go through single applications
 
 add_subdirectory(default)
+add_subdirectory(actionsRenderingEngine)
 add_subdirectory(armCartesianController)
 add_subdirectory(cameraCalibration)
 add_subdirectory(cartesianSolver)
