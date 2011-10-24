@@ -21,7 +21,7 @@
 @ingroup icub_module
  
 Just a container which runs the server part of the \ref pmp 
-"Passive Motion Paradigm"(PMP) control. 
+"Passive Motion Paradigm" (PMP) control. 
  
 \section intro_sec Description 
 See \ref pmp "Pmp Library" for detailed documentation. 
