@@ -215,3 +215,6 @@ bool ObjectPropertiesCollectorPort::setKinematicOffset(const string &obj_name, c
 
     return bReply.get(0).asVocab()==Vocab::encode("ack");
 }
+
+
+

@@ -176,3 +176,5 @@ WeakClassifier      *AdaBoost::best_classifier(const std::list<Inputs *> &traini
 
     return w;
 }
+
+
