@@ -21,8 +21,7 @@ if(ICUB_USE_OpenCV)
     add_subdirectory(motionCUT)    
     add_subdirectory(camCalib)
     add_subdirectory(pf3dTracker)
-# temporarely removed from build waiting to understand the version of opencv it requires
-#   add_subdirectory(pf3dBottomup)
+    add_subdirectory(pf3dBottomup)
 
     if(ICUB_OpenCV_LEGACY)
         message(STATUS "OpenCV legacy detected")        
