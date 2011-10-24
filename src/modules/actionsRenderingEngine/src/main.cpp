@@ -1,5 +1,5 @@
 /** 
-@ingroup icub_modules
+@ingroup icub_module
 \defgroup actionsRenderingEngine actionsRenderingEngine
 
 A module combining multiple libraries and modules from the iCub repository
