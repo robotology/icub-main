@@ -137,7 +137,7 @@ void readFolders(const char *folder_name, list<Inputs*> &dataset, int n_start, i
     //open the first file
     ifstream fin(loadPath);
 
-    fprintf(stdout,"0%      100% \n");
+    fprintf(stdout,"0%%      100%% \n");
     //read all files
     while(fin.is_open())
     {
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
     fprintf(stdout,"truly   rejected: %d\n",tr);
     fprintf(stdout,"falsely accepted: %d\n",fa);
     fprintf(stdout,"falsely rejected: %d\n",fr);
-    fprintf(stdout,"recognition performance: %f%",(double) (ta+tr)/(ta+tr+fa+fr)*100);
+    fprintf(stdout,"recognition performance: %f%%",(double) (ta+tr)/(ta+tr+fa+fr)*100);
 
     while(dataset.size())
     {
