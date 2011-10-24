@@ -38,6 +38,7 @@
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace iCub::boostMIL;
 
 
 
@@ -204,3 +205,4 @@ int main(int argc, char *argv[])
         dataset.pop_front();
     }
 }
+
