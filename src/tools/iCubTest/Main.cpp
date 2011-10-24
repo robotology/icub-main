@@ -20,7 +20,7 @@
 
 /**
 *
-@ingroup icub_module
+@ingroup icub_tools
 \defgroup icub_iCubTest iCubTest
 
 iCubTest can be used to test the health of an iCub robotic platform. 
