@@ -17,16 +17,15 @@ icub_app(app)
 
 ## policy file go to the icub application destination directory
 icub_app_install(app
-				ROOT
-				FILES "${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini")
+                 ROOT
+                 FILES "${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini")
 
 ## some other files go inside the "application directory"/app 
 icub_app_install(app
-				ROOT
-				FILES "${CMAKE_CURRENT_SOURCE_DIR}/ymanager.ini;${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py;${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template"
-				DESTINATION app
-                FORCE_UPDATE
-				)
+                 ROOT
+                 FILES "${CMAKE_CURRENT_SOURCE_DIR}/ymanager.ini;${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py;${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template"
+                 DESTINATION app
+                 FORCE_UPDATE)
 #################################
 
 ### Go through single applications
@@ -58,3 +57,4 @@ add_subdirectory(iCubTest)
 add_subdirectory(iCubCluster)
 add_subdirectory(joystickCtrl)
 add_subdirectory(iCubInterfaceGui)
+
