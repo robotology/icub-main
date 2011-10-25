@@ -9,10 +9,10 @@
 # IPOPT_FOUND        - If false, don't try to use IPOPT
 
 SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
-SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
 
 IF(WIN32)
 
+   SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
    FIND_LIBRARY(IPOPT_LIBRARIES_RELEASE libipopt  ${IPOPT_DIR}/lib 
                                                   ${IPOPT_DIR}/lib/coin
                                                   NO_DEFAULT_PATH)
@@ -35,30 +35,37 @@ IF(WIN32)
    SET(IPOPT_LIBRARIES_RELEASE "")
    SET(IPOPT_LIBRARIES_DEBUG "")
 
-    IF(MSVC)
-        SET(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
-    ELSE(MSVC)
-        SET(IPOPT_LINK_FLAGS "")
-    ENDIF(MSVC)
+   IF(MSVC)
+       SET(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+   ELSE(MSVC)
+       SET(IPOPT_LINK_FLAGS "")
+   ENDIF(MSVC)
     
 ELSE(WIN32)
 
-  IF(APPLE)
-    FIND_PACKAGE(PkgConfig)
-    IF(PKG_CONFIG_FOUND)
-      PKG_CHECK_MODULES(IPOPT ipopt)
-      LINK_DIRECTORIES(${IPOPT_LIBRARY_DIRS}) # vital on Macs, but not many
-                                              # ipopt-using programs do this
-    ENDIF(PKG_CONFIG_FOUND)
-  ENDIF(APPLE)
+   IF(APPLE)
 
-   IF(NOT IPOPT_FOUND)
-      # to fetch native Ipopt library (e.g. provided with apt-get utility)
-      # remove the key option "NO_DEFAULT_PATH" from the FIND_LIBRARY()
-      # and FIND_FILE() below
+     FIND_PACKAGE(PkgConfig)
+     IF(PKG_CONFIG_FOUND)
+       PKG_CHECK_MODULES(IPOPT ipopt)
+       LINK_DIRECTORIES(${IPOPT_LIBRARY_DIRS}) # vital on Macs, but not many
+                                               # ipopt-using programs do this
+     ENDIF(PKG_CONFIG_FOUND)
+
+   ELSEIF(APPLE)
+
+      # in linux if the env var IPOPT_DIR is not set
+      # we know we are dealing with an installed package
+      # of iCub sw
+      IF(NOT IPOPT_DIR)
+         SET(IPOPT_DIR /usr)
+      ENDIF(NOT IPOPT_DIR)
+
+      SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
                                          ${IPOPT_DIR}/lib/coin
                                          NO_DEFAULT_PATH)
+      
       IF(IPOPT_LIBRARIES)
          FIND_FILE(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
                                                         ${IPOPT_DIR}/share/coin/doc/Ipopt
@@ -71,7 +78,7 @@ ELSE(WIN32)
             STRING(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
             STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})       # remove any possible auto-dependency
             SEPARATE_ARGUMENTS(IPOPT_DEP)
-
+      
             # use the find_library command in order to prepare rpath correctly 
             FOREACH(LIB ${IPOPT_DEP})
                FIND_LIBRARY(SEARCH_FOR_IPOPT_${LIB} ${LIB} ${IPOPT_DIR}/lib
@@ -87,13 +94,12 @@ ELSE(WIN32)
                ENDIF(SEARCH_FOR_IPOPT_${LIB})
                MARK_AS_ADVANCED(SEARCH_FOR_IPOPT_${LIB})
             ENDFOREACH(LIB)
-         ELSE(IPOPT_DEP_FILE)
-            SET(IPOPT_INCLUDE_DIRS /usr/include/coin)
          ENDIF(IPOPT_DEP_FILE)
       ENDIF(IPOPT_LIBRARIES)
-   ENDIF(NOT IPOPT_FOUND)
-   
-   SET(IPOPT_LINK_FLAGS "")
+      
+      SET(IPOPT_LINK_FLAGS "")
+
+   ENDIF(APPLE)
 
 ENDIF(WIN32)
 
