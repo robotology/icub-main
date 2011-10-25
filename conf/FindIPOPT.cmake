@@ -8,9 +8,8 @@
 # IPOPT_LINK_FLAGS   - Flags to be added to linker's options
 # IPOPT_FOUND        - If false, don't try to use IPOPT
 
-SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
-
 IF(WIN32)
+   SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
 
    SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
    FIND_LIBRARY(IPOPT_LIBRARIES_RELEASE libipopt  ${IPOPT_DIR}/lib 
@@ -44,6 +43,7 @@ IF(WIN32)
 ELSE(WIN32)
 
    IF(APPLE)
+     SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
 
      FIND_PACKAGE(PkgConfig)
      IF(PKG_CONFIG_FOUND)
@@ -55,11 +55,12 @@ ELSE(WIN32)
    ELSE(APPLE)
 
       # in linux if the env var IPOPT_DIR is not set
-      # we know we are dealing with an installed package
-      # of iCub sw
-      IF(NOT IPOPT_DIR)
-         SET(IPOPT_DIR /usr)
-      ENDIF(NOT IPOPT_DIR)
+      # we know we are dealing with an installed iCub package
+      IF($ENV{IPOPT_DIR})
+         SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
+      ELSE($ENV{IPOPT_DIR})
+         SET(IPOPT_DIR /usr            CACHE PATH "Path to IPOPT build directory")
+      ENDIF($ENV{IPOPT_DIR})
 
       SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
