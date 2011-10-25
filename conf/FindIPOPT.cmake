@@ -52,7 +52,7 @@ ELSE(WIN32)
                                                # ipopt-using programs do this
      ENDIF(PKG_CONFIG_FOUND)
 
-   ELSEIF(APPLE)
+   ELSE(APPLE)
 
       # in linux if the env var IPOPT_DIR is not set
       # we know we are dealing with an installed package
