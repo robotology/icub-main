@@ -72,6 +72,8 @@ ELSE(WIN32)
          FIND_FILE(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
                                                         ${IPOPT_DIR}/share/coin/doc/Ipopt
                                                         NO_DEFAULT_PATH)
+         MARK_AS_ADVANCED(IPOPT_DEP_FILE)
+
          IF(IPOPT_DEP_FILE)
             # parse the file and acquire the dependencies
             FILE(READ ${IPOPT_DEP_FILE} IPOPT_DEP)
