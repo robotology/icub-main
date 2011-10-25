@@ -92,8 +92,6 @@ struct Dragger
     double                      damping;
     double                      inertia;
 
-    string                      object_name;
-
     Dragger()
     {
         I=NULL;
@@ -293,11 +291,11 @@ public:
     void exploreTorso(const double &trial_time);
 
     bool startLearningModeAction(Bottle &options);
-    bool suspendLearningModeAction(bool save=true);
+    bool suspendLearningModeAction(Bottle &options);
     bool imitateAction(Bottle &options);
 
     bool startLearningModeKinOffset(Bottle &options);
-    bool suspendLearningModeKinOffset(bool save=true);
+    bool suspendLearningModeKinOffset(Bottle &options);
 
 
     bool isWholeBodyAvailable();

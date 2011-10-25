@@ -513,7 +513,7 @@ public:
                         }
                         else if(command.get(2).asString()=="stop")
                         {
-                            motorThr->suspendLearningModeKinOffset();
+                            motorThr->suspendLearningModeKinOffset(command);
                             reply.addString("learn kinematic offset mode: off");
                         }
 
@@ -547,7 +547,7 @@ public:
 
                 if(check(command,"stop"))
                 {
-                    bool ok=motorThr->suspendLearningModeAction();
+                    bool ok=motorThr->suspendLearningModeAction(command);
                     
                     fprintf(stdout,"stopped %s\n",ok?"ok":"bad");
                     motorThr->setGazeIdle();

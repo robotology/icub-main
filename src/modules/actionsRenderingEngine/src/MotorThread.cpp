@@ -275,7 +275,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 
 
     // if an object was specified check for its 3D position associated to the object
-    if(!bTarget->check("name"))
+    if(bTarget->check("name"))
     {
         if(opcPort.getCartesianPosition(bTarget->find("name").asString().c_str(),xd))
         {
@@ -290,8 +290,6 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     if(!found && bTarget->check("stereo"))
     {
         Bottle *bStereo=bTarget->find("stereo").asList();
-
-        fprintf(stdout,"to string %s\n",bStereo->toString().c_str());
 
         Vector stereo;
         for(int i=0; i<bStereo->size(); i++)
@@ -2123,7 +2121,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
     return true;
 }
 
-bool MotorThread::suspendLearningModeAction(bool save)
+bool MotorThread::suspendLearningModeAction(Bottle &options)
 {
     if(arm_mode!=ARM_MODE_LEARN_ACTION)
         return false;
@@ -2132,8 +2130,9 @@ bool MotorThread::suspendLearningModeAction(bool save)
 
     bool success=true;
 
-    //save the actions in a file
-    if(save)
+    bool skip=checkOptions(options,"skip");
+
+    if(!skip)
     {
         ofstream action_fout((actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str());
 
@@ -2272,12 +2271,14 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     return true;
 }
 
-bool MotorThread::suspendLearningModeKinOffset(bool save)
+bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
 {
     if(arm_mode!=ARM_MODE_LEARN_KINOFF)
         return false;
 
-    if(save)
+    bool skip=checkOptions(options,"skip");
+
+    if(!skip)
     {
         //compute the offset
         Vector x(3),o(4);
@@ -2291,7 +2292,7 @@ bool MotorThread::suspendLearningModeKinOffset(bool save)
 
 
         //if no object with specified name is present in the database, then update the default kinematic offsets
-        if(!opcPort.setKinematicOffset(dragger.object_name,currentKinematicOffset))
+        if(options.size()<4 || !opcPort.setKinematicOffset(options.get(3).asString().c_str(),currentKinematicOffset))
         {
             defaultKinematicOffset[dragger.arm]=currentKinematicOffset[dragger.arm];
 
@@ -2305,7 +2306,6 @@ bool MotorThread::suspendLearningModeKinOffset(bool save)
 
             saveKinematicOffsets();
         }
-
     }
 
     arm_mode=ARM_MODE_IDLE;
@@ -2404,8 +2404,9 @@ void MotorThread::interrupt()
     disparityPort.interrupt();
 
     //if learning is going on
-    suspendLearningModeAction(false);
-    suspendLearningModeKinOffset(false);
+    Bottle bInterrupt("skip");
+    suspendLearningModeAction(bInterrupt);
+    suspendLearningModeKinOffset(bInterrupt);
 
     setGazeIdle();
     gazeCtrl->stopControl();

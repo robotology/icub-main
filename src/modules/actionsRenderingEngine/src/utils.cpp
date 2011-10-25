@@ -20,7 +20,8 @@
 #include <iCub/utils.h>
 
 
-
+#include <iostream>
+#include <stdio.h>
 
 //--------------- Object Properties Port ------------------//
 
@@ -28,7 +29,7 @@
 bool ObjectPropertiesCollectorPort::getStereoPosition(const string &obj_name, Vector &stereo)
 {
     //if the object property collector port is connected use it to obtain the object 2D position
-    if(this->getInputCount()==0)
+    if(this->getOutputCount()==0)
         return false;
 
     //ask for the object's id
@@ -43,7 +44,7 @@ bool ObjectPropertiesCollectorPort::getStereoPosition(const string &obj_name, Ve
 
     if(bReply.size()==0 ||
        bReply.get(0).asVocab()!=Vocab::encode("ack") ||
-       bReply.get(1).asList()->check("id") ||
+       bReply.get(1).asList()->check("id")==false ||
        bReply.get(1).asList()->find("id").asList()->size()==0)
         return false;
 
@@ -79,6 +80,8 @@ bool ObjectPropertiesCollectorPort::getStereoPosition(const string &obj_name, Ve
         stereo[3]=0.5*(bStereo->get(1).asDouble()+bStereo->get(3).asDouble());
     }
 
+    fprintf(stdout,"stereo: %s\n\n",stereo.toString().c_str());
+
     return true;
 }
 
@@ -86,7 +89,7 @@ bool ObjectPropertiesCollectorPort::getStereoPosition(const string &obj_name, Ve
 bool ObjectPropertiesCollectorPort::getCartesianPosition(const string &obj_name, Vector &x)
 {
     //if the object property collector port is connected use it to obtain the object 2D position
-    if(this->getInputCount()==0)
+    if(this->getOutputCount()==0)
         return false;
 
     //ask for the object's id
@@ -101,7 +104,7 @@ bool ObjectPropertiesCollectorPort::getCartesianPosition(const string &obj_name,
 
     if(bReply.size()==0 ||
        bReply.get(0).asVocab()!=Vocab::encode("ack") ||
-       bReply.get(1).asList()->check("id") ||
+       bReply.get(1).asList()->check("id")==false ||
        bReply.get(1).asList()->find("id").asList()->size()==0)
         return false;
 
@@ -114,6 +117,7 @@ bool ObjectPropertiesCollectorPort::getCartesianPosition(const string &obj_name,
 
     if(bReply.size()==0 || bReply.get(0).asVocab()!=Vocab::encode("ack"))
         return false;
+
 
     if(!bReply.get(1).asList()->check("position_3d"))
         return false;
@@ -128,6 +132,7 @@ bool ObjectPropertiesCollectorPort::getCartesianPosition(const string &obj_name,
             x[i]=bX->get(i).asDouble();
     }
 
+
     return true;
 }
 
@@ -136,7 +141,7 @@ bool ObjectPropertiesCollectorPort::getCartesianPosition(const string &obj_name,
 bool ObjectPropertiesCollectorPort::getKinematicOffsets(const string &obj_name, Vector *kinematic_offset)
 {
     //if the object property collector port is connected use it to obtain the object 2D position
-    if(this->getInputCount()==0)
+    if(this->getOutputCount()==0)
         return false;
 
     //ask for the object's id
@@ -151,7 +156,7 @@ bool ObjectPropertiesCollectorPort::getKinematicOffsets(const string &obj_name, 
 
     if(bReply.size()==0 ||
        bReply.get(0).asVocab()!=Vocab::encode("ack") ||
-       bReply.get(1).asList()->check("id") ||
+       bReply.get(1).asList()->check("id")==false ||
        bReply.get(1).asList()->find("id").asList()->size()==0)
         return false;
 
@@ -203,7 +208,7 @@ bool ObjectPropertiesCollectorPort::setKinematicOffset(const string &obj_name, c
 
     if(bReply.size()==0 ||
        bReply.get(0).asVocab()!=Vocab::encode("ack") ||
-       bReply.get(1).asList()->check("id") ||
+       bReply.get(1).asList()->check("id")==false ||
        bReply.get(1).asList()->find("id").asList()->size()==0)
         return false;
 
