@@ -4,7 +4,6 @@
 
 add_subdirectory(ctpService)
 add_subdirectory(demoGraspManager_IIT_ISR)
-add_subdirectory(demoForceControl)
 add_subdirectory(learningMachine)
 add_subdirectory(iCubDemoY3)
 add_subdirectory(logpolarRemapper)
@@ -45,4 +44,10 @@ else(ICUB_USE_IPOPT)
     message(STATUS "IPOPT not found/selected, skipping iKinGazeCtrl")
     message(STATUS "IPOPT not found/selected, skipping iKinCartesianSolver")
 endif(ICUB_USE_IPOPT)
+
+if(ICUB_USE_GtkPlus)
+    add_subdirectory(demoForceControl)
+else(ICUB_USE_GtkPlus)
+    message(STATUS "GtkPlus not selected, skipping demoForceControl")
+endif(ICUB_USE_GtkPlus)
 
