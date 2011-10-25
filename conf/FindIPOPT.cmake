@@ -56,11 +56,13 @@ ELSE(WIN32)
 
       # in linux if the env var IPOPT_DIR is not set
       # we know we are dealing with an installed iCub package
-      IF($ENV{IPOPT_DIR})
+      SET(IPOPT_DIR_TEST $ENV{IPOPT_DIR})
+      MARK_AS_ADVANCED(IPOPT_DIR_TEST)
+      IF(IPOPT_DIR_TEST)
          SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
-      ELSE($ENV{IPOPT_DIR})
+      ELSE(IPOPT_DIR_TEST)
          SET(IPOPT_DIR /usr            CACHE PATH "Path to IPOPT build directory")
-      ENDIF($ENV{IPOPT_DIR})
+      ENDIF(IPOPT_DIR_TEST)
 
       SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
