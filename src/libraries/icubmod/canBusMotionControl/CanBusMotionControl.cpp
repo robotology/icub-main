@@ -4555,7 +4555,9 @@ bool CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
 
 bool CanBusMotionControl::stopRaw(int j)
 {
-    return velocityMoveRaw(j, 0);
+    bool ret=velocityMoveRaw(j, 0);
+    ret &= _writeNone  (CAN_STOP_TRAJECTORY, j);
+    return ret;
 }
 
 bool CanBusMotionControl::stopRaw()
@@ -4566,7 +4568,11 @@ bool CanBusMotionControl::stopRaw()
     double *tmp = new double [n];
     memset(tmp, 0, sizeof(double)*n);
     bool ret=velocityMoveRaw(tmp);
-    
+    for (int j=0; j<n; j++)
+    {
+       ret &= _writeNone  (CAN_STOP_TRAJECTORY, j);
+    }
+
     delete [] tmp;
     return ret;
 }

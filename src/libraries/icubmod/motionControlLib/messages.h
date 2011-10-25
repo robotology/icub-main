@@ -86,6 +86,7 @@
 #define CAN_GET_TLIM				43
 #define CAN_SET_DESIRED_TORQUE		44
 #define CAN_GET_DESIRED_TORQUE		45
+#define CAN_STOP_TRAJECTORY   		46
 
 #define CAN_SET_BOARD_ID			50
 #define CAN_GET_BOARD_ID			51
