@@ -53,9 +53,9 @@ ELSE(WIN32)
   ENDIF(APPLE)
 
    IF(NOT IPOPT_FOUND)
-#      to be used to fetch the native Ipopt library provided with apt-get utility
-#      FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
-#                                         ${IPOPT_DIR}/lib/coin)
+      # to fetch native Ipopt library (e.g. provided with apt-get utility)
+      # remove the key option "NO_DEFAULT_PATH" from the FIND_LIBRARY()
+      # and FIND_FILE() below
       FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
                                          ${IPOPT_DIR}/lib/coin
                                          NO_DEFAULT_PATH)
