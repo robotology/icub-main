@@ -58,7 +58,9 @@ the action required. In these cases the parameter [target] can be expressed as f
 
 --[raw] when the target is provided as a raw couple of camera plane coordinates to one of the two 'raw:i' ports.
 
---(<camera> u v) when the target is a 2D couple of camera plane coordinates. The camera used can be specified (default: left).
+--(<camera> u v) when the target is a 2D couple of camera plane coordinates. If not specified, the camera used is assumed to be the left one.
+
+--("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.
 
 --"object_name" when using a visual classifier to localize objects.
 
@@ -412,6 +414,9 @@ public:
 
     virtual bool updateModule()
     {
+        motorThr->update();
+
+
         Bottle command,reply;
         command.clear();
         reply.clear();

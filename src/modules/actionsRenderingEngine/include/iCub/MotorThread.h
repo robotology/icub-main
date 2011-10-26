@@ -264,6 +264,7 @@ public:
         return true;
     }
 
+    void update();
     void interrupt();
     void reinstate();
 

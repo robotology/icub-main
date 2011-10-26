@@ -240,3 +240,105 @@ bool ObjectPropertiesCollectorPort::setKinematicOffset(const string &obj_name, c
 
 
 
+
+
+bool ObjectPropertiesCollectorPort::getTableHeight(double &table_height)
+{
+    //if the object property collector port is connected use it to obtain the object 2D position
+    if(this->getOutputCount()==0)
+        return false;
+
+    //ask for the object's id
+    Bottle bAsk,bGet,bReply;
+    bAsk.addVocab(Vocab::encode("ask"));
+    Bottle &bTempAsk=bAsk.addList().addList();
+    bTempAsk.addString("entity");
+    bTempAsk.addString("==");
+    bTempAsk.addString("table");
+
+    this->write(bAsk,bReply);
+
+    if(bReply.size()==0 ||
+       bReply.get(0).asVocab()!=Vocab::encode("ack") ||
+       bReply.get(1).asList()->check("id")==false ||
+       bReply.get(1).asList()->find("id").asList()->size()==0)
+        return false;
+
+    bGet.addVocab(Vocab::encode("get"));
+    Bottle &bTempGet=bGet.addList().addList();
+    bTempGet.addString("id");
+    bTempGet.addInt(bReply.get(1).asList()->find("id").asList()->get(0).asInt());
+
+    this->write(bGet,bReply);
+
+    if(bReply.size()==0 || bReply.get(0).asVocab()!=Vocab::encode("ack"))
+        return false;
+
+    if(!bReply.get(1).asList()->check("height"))
+        return false;
+
+    table_height=bReply.get(1).asList()->find("height").asList()->get(1).asDouble();
+    return true;
+}
+
+
+
+
+bool ObjectPropertiesCollectorPort::setTableHeight(const double &table_height)
+{
+    //if the object property collector port is connected use it to obtain the object 2D position
+    if(this->getOutputCount()==0)
+        return false;
+
+    //ask for the object's id
+    Bottle bAsk,bReply;
+    bAsk.addVocab(Vocab::encode("ask"));
+    Bottle &bTempAsk=bAsk.addList().addList();
+    bTempAsk.addString("entity");
+    bTempAsk.addString("==");
+    bTempAsk.addString("table");
+
+    this->write(bAsk,bReply);
+
+    if(bReply.size()==0 ||
+       bReply.get(0).asVocab()!=Vocab::encode("ack") ||
+       bReply.get(1).asList()->check("id")==false)
+        return false;
+
+    //if the table entity has not been created yet
+    if(bReply.get(1).asList()->find("id").asList()->size()==0)
+    {
+        Bottle bAdd;
+        bAdd.addVocab(Vocab::encode("add"));
+        Bottle &bTempAdd=bAdd.addList();
+
+        Bottle &bEntity=bTempAdd.addList();
+        bEntity.addString("entity"); bEntity.addString("table");
+
+        Bottle &bHeight=bTempAdd.addList();
+        bHeight.addString("height"); bHeight.addDouble(table_height);
+
+        this->write(bAdd,bReply);
+    }
+    else
+    {
+        Bottle bSet;
+        bSet.addVocab(Vocab::encode("set"));
+        Bottle &bTempSet=bSet.addList();
+
+        Bottle &bTempSetId=bTempSet.addList();
+        bTempSetId.addString("id");
+        bTempSetId.addInt(bReply.get(1).asList()->find("id").asList()->get(0).asInt());
+
+        Bottle &bTempSetTableHeightProp=bTempSet.addList();
+        bTempSetTableHeightProp.addString("height");
+        Bottle &bTableHeight=bTempSetTableHeightProp.addList();
+        bTableHeight.addDouble(table_height);
+
+        this->write(bSet,bReply);
+    }
+
+    return bReply.get(0).asVocab()==Vocab::encode("ack");
+}
+
+

@@ -20,7 +20,8 @@
 #define __VISUO_MOTOR_UTILS__
 
 #include <yarp/os/ResourceFinder.h>
-#include <yarp/os/Port.h>
+#include <yarp/os/RpcClient.h>
+#include <yarp/os/PortReport.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/sig/Vector.h>
 
@@ -41,13 +42,41 @@ using namespace yarp::sig;
 
 
 
-class ObjectPropertiesCollectorPort: public Port
+class ObjectPropertiesCollectorPort: public RpcClient, public PortReport
 {
+private:
+    bool scheduleUpdate;
+
 public:
+    ObjectPropertiesCollectorPort()
+        :scheduleUpdate(false)
+    {
+        this->setReporter(*this);
+    }
+
+    void report(const PortInfo &info)
+    {
+        if(info.created && !info.incoming)
+            scheduleUpdate=true;
+    }
+
     bool getStereoPosition(const string &obj_name, Vector &stereo);
     bool getCartesianPosition(const string &obj_name, Vector &x);
     bool getKinematicOffsets(const string &obj_name, Vector *kinematic_offset);
     bool setKinematicOffset(const string &obj_name, const Vector *kinematic_offset);
+    bool getTableHeight(double &table_height);
+    bool setTableHeight(const double &table_height);
+
+    bool isUpdateNeeded()
+    {
+        if(scheduleUpdate)
+        {
+            scheduleUpdate=false;
+            return true;
+        }
+
+        return false;
+    }
 };
 
 

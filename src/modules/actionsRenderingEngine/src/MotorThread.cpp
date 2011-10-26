@@ -274,17 +274,23 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     currentKinematicOffset[RIGHT]=defaultKinematicOffset[RIGHT];
 
 
-    // if an object was specified check for its 3D position associated to the object
-    if(bTarget->check("name"))
+    // if the tartget's cartesian coordinates was specified, use them.
+    if(!found && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>3)
     {
-        if(opcPort.getCartesianPosition(bTarget->find("name").asString().c_str(),xd))
-        {
-            opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
+        Bottle *bCartesian=bTarget->find("cartesian").asList();
 
-            found=true;
-        }
+        xd.clear();
+        for(int i=0; i<xd.size(); i++)
+            xd.push_back(bCartesian->get(i+1).asDouble());
+
+        found=true;
     }
-  
+
+
+    // if an object was specified check for its 3D position associated to the object
+    if(!found && bTarget->check("name"))
+        if(opcPort.getCartesianPosition(bTarget->find("name").asString().c_str(),xd))
+            found=true;
 
 
     if(!found && bTarget->check("stereo"))
@@ -298,7 +304,8 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         found=stereoToCartesian(stereo,xd);
     }
 
-
+    if(found && bTarget->check("name"))
+        opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
 
     return found;
 }
@@ -1920,10 +1927,10 @@ bool MotorThread::calibTable(Bottle &options)
     action[arm]->pushWaitState(2.0);
     action[arm]->disableContactDetection();
 
-    action[arm]->checkContact(f);
+    bool found;
+    action[arm]->checkContact(found);
 
-    bool found=false;
-    if (f)
+    if(found)
     {
         Vector x,o;
         action[arm]->getPose(x,o);
@@ -1934,16 +1941,17 @@ bool MotorThread::calibTable(Bottle &options)
         table[3]=-x[2];
 
         bKinOffsets.find("table_height")=Value(table_height);
+
+        //save the table height on file
         saveKinematicOffsets();
 
+        //save the table height also in the object database
+        opcPort.setTableHeight(table_height);
+
         fprintf(stdout,"########## Table height found: %f\n",table_height);
-        found=true;
     }
     else
-    {
         fprintf(stdout,"########## Table height not found.\n");
-        found=false;    
-    }
 
     action[arm]->pushAction(deployPrepare,reachAboveOrient[arm]);
 
@@ -2398,6 +2406,19 @@ void MotorThread::getStatus(Bottle &status)
     }
 }
 
+
+void MotorThread::update()
+{
+    if(opcPort.isUpdateNeeded())
+    {
+        opcPort.getTableHeight(table_height);
+
+        table.resize(4);
+        table=0.0;
+        table[2]=1.0;
+        table[3]=-(table_height-table_height_tolerance);
+    }
+}
 
 void MotorThread::interrupt()
 {

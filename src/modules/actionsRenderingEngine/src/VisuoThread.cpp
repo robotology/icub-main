@@ -471,7 +471,6 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
 
     if(type.isList())
     {
-
         Bottle *list=type.asList();
         if(list->size()>2)
         {
@@ -483,12 +482,26 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
                 bStereo.addDouble(list->get(2).asDouble());
                 
             }
-            else
+            else if(list->get(0).asString()=="left")
             {
                 bStereo.addDouble(list->get(1).asDouble());
                 bStereo.addDouble(list->get(2).asDouble());
                 bStereo.addDouble(0.0);
                 bStereo.addDouble(0.0);
+            }
+            else if(list->get(0).asString()=="cartesian")
+            {
+                bTarget.addList()=*list;
+            }
+            else
+            {
+                Bottle &bNewCartesian=bTarget.addList();
+                bNewCartesian.addString("cartesian");
+
+                Bottle &bCartesian=bNewCartesian.addList();
+
+                for(int i=0; i<list->size(); i++)
+                    bCartesian.addDouble(list->get(i).asDouble());
             }
 
             ok=true;
