@@ -358,26 +358,25 @@ public:
         }
 
         interrupted=false;
+        closing=false;
 
         return true;
     }
 
     virtual bool interruptModule()
     {
+        closing=true;
+
         cmdPort.interrupt();
         rpcPort.interrupt();
 
         initializer->interrupt();
 
         if(visuoThr!=NULL)
-        {
             visuoThr->interrupt();
-        }
 
         if(motorThr!=NULL)
-        {
             motorThr->interrupt();
-        }
 
         return true;
     }
@@ -414,6 +413,9 @@ public:
 
     virtual bool updateModule()
     {
+        if(closing)
+            return true;
+
         motorThr->update();
 
 
@@ -431,7 +433,7 @@ public:
         if(interrupted)
         {
             reply.addString("Module currently interrupted. Reinstate for action.");
-            cmdPort.reply(reply);            
+            cmdPort.reply(reply);
             return true;
         }
 
