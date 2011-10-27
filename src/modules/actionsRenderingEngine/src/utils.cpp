@@ -277,7 +277,7 @@ bool ObjectPropertiesCollectorPort::getTableHeight(double &table_height)
     if(!bReply.get(1).asList()->check("height"))
         return false;
 
-    table_height=bReply.get(1).asList()->find("height").asList()->get(1).asDouble();
+    table_height=bReply.get(1).asList()->find("height").asDouble();
     return true;
 }
 
