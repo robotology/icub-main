@@ -312,6 +312,7 @@ protected:
     Port                        rpcPort;
 
     bool                        interrupted;
+    bool                        closing;
 
 
     bool check(Bottle &bot, const string &name)
