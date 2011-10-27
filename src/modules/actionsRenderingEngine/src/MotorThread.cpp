@@ -1206,6 +1206,8 @@ void MotorThread::run()
             if(stereo.size()==4)
             {
 
+
+
                 if(stereo_track)
                 {
                     Vector px[2];

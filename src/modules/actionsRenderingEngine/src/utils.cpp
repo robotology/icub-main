@@ -80,8 +80,6 @@ bool ObjectPropertiesCollectorPort::getStereoPosition(const string &obj_name, Ve
         stereo[3]=0.5*(bStereo->get(1).asDouble()+bStereo->get(3).asDouble());
     }
 
-    fprintf(stdout,"stereo: %s\n\n",stereo.toString().c_str());
-
     return true;
 }
 
@@ -167,15 +165,17 @@ bool ObjectPropertiesCollectorPort::getKinematicOffsets(const string &obj_name, 
 
     this->write(bGet,bReply);
 
+
     if(bReply.size()==0 || bReply.get(0).asVocab()!=Vocab::encode("ack"))
         return false;
+
 
     if(bReply.get(1).asList()->check("kinematic_offset_left"))
     {
         kinematic_offset[LEFT].resize(3);
         Bottle *bCartesianOffset=bReply.get(1).asList()->find("kinematic_offset_left").asList();
         for(int i=0; i<bCartesianOffset->size(); i++)
-            kinematic_offset[LEFT]=bCartesianOffset->get(i).asDouble();
+            kinematic_offset[LEFT][i]=bCartesianOffset->get(i).asDouble();
     }
 
     if(bReply.get(1).asList()->check("kinematic_offset_right"))
@@ -183,7 +183,7 @@ bool ObjectPropertiesCollectorPort::getKinematicOffsets(const string &obj_name, 
         kinematic_offset[RIGHT].resize(3);
         Bottle *bCartesianOffset=bReply.get(1).asList()->find("kinematic_offset_right").asList();
         for(int i=0; i<bCartesianOffset->size(); i++)
-            kinematic_offset[RIGHT]=bCartesianOffset->get(i).asDouble();
+            kinematic_offset[RIGHT][i]=bCartesianOffset->get(i).asDouble();
     }
 
     return true;
@@ -330,9 +330,8 @@ bool ObjectPropertiesCollectorPort::setTableHeight(const double &table_height)
         bTempSetId.addString("id");
         bTempSetId.addInt(bReply.get(1).asList()->find("id").asList()->get(0).asInt());
 
-        Bottle &bTempSetTableHeightProp=bTempSet.addList();
-        bTempSetTableHeightProp.addString("height");
-        Bottle &bTableHeight=bTempSetTableHeightProp.addList();
+        Bottle &bTableHeight=bTempSet.addList();
+        bTableHeight.addString("height");
         bTableHeight.addDouble(table_height);
 
         this->write(bSet,bReply);

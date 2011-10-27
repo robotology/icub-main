@@ -80,6 +80,7 @@ public:
 };
 
 
+#include <stdio.h>
 
 class StereoTarget: public Vector
 {
@@ -90,18 +91,22 @@ public:
     void set(const Vector &stereo)
     {
         mutex.wait();
-        (Vector)*this=stereo;
+        this->resize(stereo.size());
+        for(int i=0; i<stereo.size(); i++)
+            this->data()[i]=stereo[i];
         mutex.post();
     }
 
     Vector get()
     {
-        Vector s;
+        Vector stereo;
         mutex.wait();
-        s=(Vector)*this;
+        stereo.resize(this->size());
+        for(int i=0; i<this->size(); i++)
+            stereo[i]= this->data()[i];
         this->clear();
         mutex.post();
-        return s;
+        return stereo;
     }
 };
 

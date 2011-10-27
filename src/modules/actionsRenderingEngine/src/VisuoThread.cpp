@@ -271,8 +271,10 @@ void VisuoThread::updateMotionCUT()
             buffer[cam].pop_front();
     }
 
+
     if(trackMode==MODE_TRACK_MOTION)
         stereo_target.set(stereo);
+
 
     motMutex.post();
 }
@@ -364,7 +366,6 @@ void VisuoThread::updatePFTracker()
 VisuoThread::VisuoThread(ResourceFinder &_rf, Initializer *initializer)
     :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc)
 {
-
     buffer[LEFT].clear();
     buffer[RIGHT].clear();
 
