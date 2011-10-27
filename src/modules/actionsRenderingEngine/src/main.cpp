@@ -63,7 +63,7 @@ the action required. In these cases the parameter [target] can be expressed as f
 --("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.
 
 --"object_name" when using a visual classifier to localize objects. This option represents a label to access online information stored in the
-  databased provided by /ref objectsPropertiesCollector module. The label itself is used to access the corresponding object through the "name"
+  databased provided by \ref objectsPropertiesCollector module. The label itself is used to access the corresponding object through the "name"
   property, whereas the relevant 3D information are available through the "position_3d" property.
 
 The commands:
