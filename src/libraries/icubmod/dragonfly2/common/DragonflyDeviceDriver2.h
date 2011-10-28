@@ -49,7 +49,8 @@ It can acquire RGB color images in 320x240 or 640x480 resolutions.
 In 640x480 there are two options: Bayer decoding performed on board by the camera or Bayer pattern decoding performed by the driver. In the second mode the bandwidth required to the Firewire bus is lower, and thus the framerate can be up to 60 fps. In the first mode the framerate is limited to 15 fps with two cameras on the same channel. Moreover, once the resolution is chosen, 
 the image can be cropped on board by the camera before the transfer on the Firewire bus.
 
-The dragonfly2raw driver is the raw version (Bayer pattern image format) of dragonfly2.  
+The dragonfly2raw driver is the raw version (Bayer pattern image format) of dragonfly2. The image is transmitted in 
+yarp::sig::ImageOf<yarp::sig::PixelMono> format. 
 
 \section lib_sec Libraries
 libdc1394-2 (Linux)
