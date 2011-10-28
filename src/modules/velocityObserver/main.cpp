@@ -90,7 +90,7 @@ algorithm and a simple moving average filter:
   deviation threshold for the algorithm (used for the first derivative
   estimation). During the validation phase, indeed, the window's
   length is considered valid if all the computed values from the
-  linear regressor lie wihin this threshold wrt their
+  linear regressor lie within this threshold wrt their
   corresponding sample values. If not the window's length is
   reduced by one step. Each instance of the computation a trial
   on a window's length enlarged by one step wrt to the current
