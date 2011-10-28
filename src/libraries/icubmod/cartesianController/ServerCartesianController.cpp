@@ -2289,7 +2289,19 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         if (!J.rows() || (J.cols()!=velCmd.length()))
             taskVel.resize(7,0.0);
         else
+        {
             taskVel=J*(CTRL_DEG2RAD*velCmd);
+
+            Vector _odot=taskVel.subVector(3,taskVel.length()-1);
+            double thetadot=norm(_odot);
+            if (thetadot!=0.0)
+                _odot=(1.0/thetadot)*_odot;
+
+            taskVel[3]=_odot[0];
+            taskVel[4]=_odot[1];
+            taskVel[5]=_odot[2];
+            taskVel.push_back(thetadot);
+        }
 
         xdot.resize(3);
         odot.resize(taskVel.length()-xdot.length());
