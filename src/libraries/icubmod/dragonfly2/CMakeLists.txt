@@ -4,7 +4,8 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
 
-PREPARE_DEVICE(dragonfly2 TYPE DragonflyDeviceDriver2 INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
+PREPARE_DEVICE(dragonfly2 TYPE DragonflyDeviceDriver2Rgb INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
+PREPARE_DEVICE(dragonfly2raw TYPE DragonflyDeviceDriver2Raw INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
 
 IF(NOT SKIP_dragonfly2)
   FIND_PACKAGE(DRAGONFLYAPI)

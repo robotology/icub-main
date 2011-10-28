@@ -277,6 +277,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     if (mHires)
     {
         if (!format) format=DR_BAYER_1024x768;
+
+        if (mRawDriver) format=DR_BAYER_1024x768;
     
         switch (format)
         {
@@ -334,6 +336,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     else // lores
     {
         if (!format) format=DR_BAYER_640x480;
+
+        if (mRawDriver) format=DR_BAYER_640x480;
 
         switch (format)
         {
@@ -483,6 +487,8 @@ void CFWCamera_DR2_2::Close()
 bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
 {
     if (!m_pCamera) return false;
+
+    if (mRawDriver) return false;
 
     int xdim,ydim,buffDim;
     dc1394framerate_t maxFramerate;
@@ -718,6 +724,11 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
 bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newBandPercent,int x0,int y0)
 {
     if (!m_pCamera) return false;
+
+    if (mRawDriver)
+    {
+        if (newVideoMode!=DC1394_VIDEO_MODE_FORMAT7_0 || newColorCoding!=DC1394_COLOR_CODING_RAW8) return false;
+    }
 
     dc1394color_coding_t actColorCoding=DC1394_COLOR_CODING_RGB8;
     unsigned int actPacketSize=0;
@@ -1021,6 +1032,61 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
 	return true;
 }
 
+bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
+{
+	m_AcqMutex.wait();
+
+	if (!m_bCameraOn || dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame)!=DC1394_SUCCESS)
+	{
+		m_AcqMutex.post();
+		return false;
+	}
+	
+	m_pFramePoll=0;	
+	while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
+	{
+	    dc1394_capture_enqueue(m_pCamera,m_pFrame);
+	    m_pFrame=m_pFramePoll;
+	    m_pFramePoll=0; 
+	}
+
+	if (m_nInvalidFrames)
+	{
+		--m_nInvalidFrames;
+		dc1394_capture_enqueue(m_pCamera,m_pFrame);
+		m_AcqMutex.post();
+		return false;
+	}
+
+    if (mUseHardwareTimestamp) {
+        uint32_t v = ntohl(*((uint32_t*)m_pFrame->image));
+        int nSecond = (v >> 25) & 0x7f;
+        int nCycleCount  = (v >> 12) & 0x1fff;
+        int nCycleOffset = (v >> 0) & 0xfff;
+
+        if (m_LastSecond>nSecond) {
+            // we got a wrap-around event, losing 128 seconds
+            m_SecondOffset += 128;
+        }
+        m_LastSecond = nSecond;
+
+        m_Stamp.update(m_SecondOffset+(double)nSecond + (((double)nCycleCount+((double)nCycleOffset/3072.0))/8000.0));
+        //m_Stamp.update(m_pFrame->timestamp/1000000.0);
+    } else {
+        m_Stamp.update();
+    }
+
+	if (pImage)
+	{
+		pImage->resize(m_pFrame->size[0],m_pFrame->size[1]);
+	    memcpy(pImage->getRawImage(),m_pFrame->image,m_pFrame->size[0]*m_pFrame->size[1]);
+    }
+
+	dc1394_capture_enqueue(m_pCamera,m_pFrame);
+	m_AcqMutex.post();
+	return true;
+}
+
 uint32_t CFWCamera_DR2_2::NormToValue(double& dVal,int feature)
 {
 	int f=feature-DC1394_FEATURE_MIN;
@@ -1255,6 +1321,11 @@ bool CFWCamera_DR2_2::getWhiteBalanceDC1394(double &b, double &r)
 // 12
 unsigned int CFWCamera_DR2_2::getVideoModeMaskDC1394()
 {
+    if (mRawDriver)
+    {
+        return 1<<(DC1394_VIDEO_MODE_FORMAT7_0-DC1394_VIDEO_MODE_MIN);
+    }
+
 	dc1394video_modes_t modes;
 	dc1394_video_get_supported_modes(m_pCamera,&modes);
 
@@ -1272,6 +1343,8 @@ unsigned int CFWCamera_DR2_2::getVideoModeMaskDC1394()
 // 13
 bool CFWCamera_DR2_2::setVideoModeDC1394(int newVideoMode)
 {
+    if (mRawDriver) return false;
+
 	fprintf(stderr,"SET VIDEO MODE %d\n",newVideoMode);
 
 	m_AcqMutex.wait();
@@ -1411,6 +1484,8 @@ unsigned int CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int videoMode)
 {
 	if (!m_pCamera) return 0;
 
+    if (mRawDriver) return 1<<(DC1394_COLOR_CODING_RAW8-DC1394_COLOR_CODING_MIN);
+
 	dc1394video_mode_t vm=(dc1394video_mode_t)(videoMode+DC1394_VIDEO_MODE_MIN);
 
 	if (vm<DC1394_VIDEO_MODE_FORMAT7_MIN) return 0;
@@ -1431,6 +1506,8 @@ unsigned int CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int videoMode)
 unsigned int CFWCamera_DR2_2::getActualColorCodingMaskDC1394()
 {
 	if (!m_pCamera) return false;
+
+    if (mRawDriver) return 1<<(DC1394_COLOR_CODING_RAW8-DC1394_COLOR_CODING_MIN);
 
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
@@ -1475,6 +1552,8 @@ unsigned int CFWCamera_DR2_2::getColorCodingDC1394()
 // 22
 bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 {
+    if (mRawDriver) return false;
+
 	m_AcqMutex.wait();
 
 	if (!m_pCamera)

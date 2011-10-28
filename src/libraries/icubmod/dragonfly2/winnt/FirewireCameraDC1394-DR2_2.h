@@ -59,7 +59,7 @@ typedef enum {
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
 public:   
-	CFWCamera_DR2_2()
+    CFWCamera_DR2_2(bool raw) : mRawDriver(raw)
 	{
 	}
 	
@@ -87,6 +87,11 @@ public:
 		return Capture(&image);
 	}
 
+	bool CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+	{
+		return Capture(&image);
+	}
+
 	bool CaptureRgb(unsigned char* pBuffer)
 	{
 		return Capture(0,pBuffer);
@@ -98,8 +103,11 @@ public:
 	}
 
     bool Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,unsigned char *pBuffer=0,bool bRaw=false);
+    bool Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage);
 
 protected:
+    bool mRawDriver;
+
 	FlyCapture2::BusManager *m_pBusManager;
 	FlyCapture2::Camera *m_pCamera;
 	FlyCapture2::Error error;

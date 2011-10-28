@@ -1,3 +1,9 @@
+2011-10-28 Alessandro Scalzo <alessandro.scalzo@iit.it>
+    	Added dragonfly2raw driver (raw image framegrabber support).
+        * main/src/libraries/icubmod/dragonfly2/common/*.*
+	* main/src/libraries/icubmod/dragonfly2/linux/*.*
+	* main/src/libraries/icubmod/dragonfly2/winnt/*.*
+
 2011-10-07 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	Added icons and colors in iCubInterfaceGui.
         * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiClient/GuiRawData.cpp

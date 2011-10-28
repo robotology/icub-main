@@ -26,6 +26,8 @@ namespace yarp {
     namespace dev {
         class Dragonfly2OpenParameters;
         class DragonflyDeviceDriver2;
+        class DragonflyDeviceDriver2Rgb;
+        class DragonflyDeviceDriver2Raw;
     }
 }
 
@@ -127,10 +129,14 @@ This file can be edited at src/modules/dragonfly2/DragonflyDeviceDriver2.h
 * dragonfly2 device driver implementation.
 */
 
+
+
 class yarp::dev::DragonflyDeviceDriver2 : 
-    public IFrameGrabber, 
     public IPreciselyTimed,
-    public IFrameGrabberRgb, public IFrameGrabberImage, public IFrameGrabberControlsDC1394, public DeviceDriver
+    public virtual IFrameGrabber,
+    public virtual IFrameGrabberRgb, 
+    public IFrameGrabberControlsDC1394, 
+    public DeviceDriver
 {
 private:
     DragonflyDeviceDriver2(const DragonflyDeviceDriver2&);
@@ -140,7 +146,7 @@ public:
     /**
     * Constructor.
     */
-    DragonflyDeviceDriver2();
+    DragonflyDeviceDriver2(bool raw);
 
     /**
     * Destructor.
@@ -192,15 +198,6 @@ public:
     * @return true/false upon success/failure
     */
     virtual bool getRgbBuffer(unsigned char *buffer);
-
-    /** 
-    * FrameGrabber image interface, returns the last acquired frame as
-    * an rgb image. A demosaicking method is applied to 
-    * reconstuct the color from the Bayer pattern of the sensor.
-    * @param image that will store the last frame.
-    * @return true/false upon success/failure
-    */
-    virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
 
     /** 
     * Implements the IPreciselyTimed interface.
@@ -650,4 +647,85 @@ protected:
     void* system_resources;
 };
 
+class yarp::dev::DragonflyDeviceDriver2Rgb : 
+    public yarp::dev::DragonflyDeviceDriver2,
+    public IFrameGrabberImage
+{
+private:
+    DragonflyDeviceDriver2Rgb(const DragonflyDeviceDriver2Rgb&);
+    void operator=(const DragonflyDeviceDriver2Rgb&);
+
+public:
+    /**
+    * Constructor.
+    */
+    DragonflyDeviceDriver2Rgb() : DragonflyDeviceDriver2(false){}
+
+    /**
+    * Destructor.
+    */
+    virtual ~DragonflyDeviceDriver2Rgb(){}
+
+    /** 
+    * FrameGrabber image interface, returns the last acquired frame as
+    * an rgb image. A demosaicking method is applied to 
+    * reconstuct the color from the Bayer pattern of the sensor.
+    * @param image that will store the last frame.
+    * @return true/false upon success/failure
+    */
+    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
+
+    /** 
+     * Return the height of each frame.
+     * @return image height
+     */
+    virtual int height() const;
+
+    /** 
+     * Return the width of each frame.
+     * @return image width
+     */
+    virtual int width() const;
+};
+
+class yarp::dev::DragonflyDeviceDriver2Raw : 
+    public yarp::dev::DragonflyDeviceDriver2,
+    public IFrameGrabberImageRaw
+{
+private:
+    DragonflyDeviceDriver2Raw(const DragonflyDeviceDriver2Raw&);
+    void operator=(const DragonflyDeviceDriver2Raw&);
+
+public:
+    /**
+    * Constructor.
+    */
+    DragonflyDeviceDriver2Raw() : DragonflyDeviceDriver2(true){}
+
+    /**
+    * Destructor.
+    */
+    virtual ~DragonflyDeviceDriver2Raw(){}
+
+    /** 
+    * FrameGrabber image interface, returns the last acquired frame as
+    * an rgb image. A demosaicking method is applied to 
+    * reconstuct the color from the Bayer pattern of the sensor.
+    * @param image that will store the last frame.
+    * @return true/false upon success/failure
+    */
+    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
+
+    /** 
+     * Return the height of each frame.
+     * @return image height
+     */
+    virtual int height() const;
+
+    /** 
+     * Return the width of each frame.
+     * @return image width
+     */
+    virtual int width() const;
+};
 #endif

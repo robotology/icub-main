@@ -269,6 +269,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     error=m_pCamera->SetConfiguration(&m_CamConfig);
     if (manage(error)) return false;
 
+    if (mRawDriver) format=DR_BAYER_FULL_RES;
+
     switch (format)
     {
     case DR_UNINIT:
@@ -439,6 +441,8 @@ bool CFWCamera_DR2_2::SetVideoMode(FlyCapture2::VideoMode video_mode)
 {
     if (!m_pCamera) return false;
 
+    if (mRawDriver) return false;
+
     int xdim,ydim,buff_dim;
 
     // calculate raw image size at given video mode
@@ -530,6 +534,11 @@ bool CFWCamera_DR2_2::SetVideoMode(FlyCapture2::VideoMode video_mode)
 bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int speed,int x0,int y0)
 {
     if (!m_pCamera) return false;
+
+    if (mRawDriver)
+    {
+        if (mode!=FlyCapture2::MODE_0 || pixel_format!=FlyCapture2::PIXEL_FORMAT_RAW8) return false;
+    }
 
     FlyCapture2::VideoMode vm;
     FlyCapture2::FrameRate fr;
@@ -750,6 +759,38 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
     return true;
 }
 
+bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
+{
+    m_AcqMutex.wait();
+
+    if (!m_bCameraOn)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
+
+    error=m_pCamera->RetrieveBuffer(m_pFrame);
+    if (manage(error,&m_AcqMutex)) return false;
+
+    if (!m_bFrameIsValid)
+    {
+        m_bFrameIsValid=true;
+        m_AcqMutex.post();
+        return false;
+    }
+
+    m_Stamp.update();
+
+    if (pImage)
+    {
+        pImage->resize(m_pFrame->GetCols(),m_pFrame->GetRows());
+        memcpy(pImage->getRawImage(),m_pFrame->GetData(),m_pFrame->GetRows()*m_pFrame->GetCols());
+    }
+
+    m_AcqMutex.post();
+    return true;
+}
+
 ////////////////////
 // feature functions
 ////////////////////
@@ -953,6 +994,11 @@ bool CFWCamera_DR2_2::getWhiteBalanceDC1394(double &b, double &r)
 // 12
 unsigned int CFWCamera_DR2_2::getVideoModeMaskDC1394()
 {
+    if (mRawDriver)
+    {
+        return 1<<(1+FlyCapture2::MODE_0+FlyCapture2::VIDEOMODE_FORMAT7);
+    }
+    
     bool bSupported;
     unsigned int mask=0;
 
@@ -983,7 +1029,7 @@ unsigned int CFWCamera_DR2_2::getVideoModeMaskDC1394()
                 break;
             }
         }
-    }
+    } 
 
     if (mask & FlyCapture2::VIDEOMODE_FORMAT7)
     {
@@ -1010,6 +1056,8 @@ unsigned int CFWCamera_DR2_2::getVideoModeMaskDC1394()
 // 13
 bool CFWCamera_DR2_2::setVideoModeDC1394(int video_mode)
 {
+    if (mRawDriver) return false;
+    
     m_AcqMutex.wait();
 
     printf("setVideoModeDC1394(%d)\n",video_mode);
@@ -1250,6 +1298,8 @@ unsigned int CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int video_mode)
 {
     if (!m_pCamera) return 0;
 
+    if (mRawDriver) return 1<<9;
+
     if (video_mode<FlyCapture2::VIDEOMODE_FORMAT7)
     {
         return 0;
@@ -1282,6 +1332,8 @@ unsigned int CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int video_mode)
 unsigned int CFWCamera_DR2_2::getActualColorCodingMaskDC1394()
 {
     if (!m_pCamera) return 0;
+
+    if (mRawDriver) return 1<<9;
 
     FlyCapture2::VideoMode vm;
     FlyCapture2::FrameRate fr;
@@ -1341,6 +1393,8 @@ unsigned int CFWCamera_DR2_2::getColorCodingDC1394()
 // 22
 bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 {
+    if (mRawDriver) return false;
+
     m_AcqMutex.wait();
 
     fprintf(stdout,"setColorCodingDC1394(%d)\n",coding);

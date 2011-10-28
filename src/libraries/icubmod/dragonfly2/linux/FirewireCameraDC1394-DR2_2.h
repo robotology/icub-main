@@ -48,7 +48,7 @@
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
 public:   
-    CFWCamera_DR2_2()
+    CFWCamera_DR2_2(bool raw) : mRawDriver(raw)
     {
         m_LastSecond = 0;
         m_SecondOffset = 0;
@@ -74,6 +74,11 @@ public:
         return Capture(&image);
     }
 
+	bool CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+	{
+		return Capture(&image);
+	}
+
     bool CaptureRgb(unsigned char* pBuffer)
     {
         return Capture(0,pBuffer);
@@ -88,8 +93,11 @@ public:
     bool SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newSpeed,int x0,int y0);
 
     bool Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,unsigned char *pBuffer=0,bool bRaw=false);
+    bool Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage);
 
 protected:
+    bool mRawDriver;
+
     dc1394_t *m_dc1394_handle;
     dc1394camera_list_t *m_pCameraList;
     dc1394video_frame_t m_ConvFrame;
