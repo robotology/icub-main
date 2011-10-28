@@ -50,6 +50,7 @@ void dynContact::init(BodyPart _bodyPart, unsigned int _linkNumber, const Vector
     setCoP(_CoP);
     Mu.resize(3, 0.0);
     Fdir.resize(3, 0.0);
+    Fmodule = 0.0;
 
     if(_Mu.size()==0)
         muKnown = false;
@@ -101,7 +102,8 @@ bool dynContact::setForce(const Vector &_F){
     if(!checkVectorDim(_F, 3, "force"))
         return false;
     Fmodule = norm(_F);
-    Fdir = _F / Fmodule;
+    if(Fmodule!=0.0)
+        Fdir = _F / Fmodule;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -118,7 +120,9 @@ bool dynContact::setForceModule(double _Fmodule){
 bool dynContact::setForceDirection(const Vector &_Fdir){
     if(!checkVectorDim(_Fdir, 3, "force direction"))
         return false;
-    Fdir = _Fdir / norm(_Fdir);
+    double FdirNorm = norm(_Fdir);
+    if(FdirNorm != 0.0)
+        Fdir = _Fdir / FdirNorm;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
