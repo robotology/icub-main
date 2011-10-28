@@ -41,12 +41,15 @@ namespace yarp {
 @ingroup icub_hardware_modules
 \defgroup icub_dragonfly2 dragonfly2
 The dragonfly2 framegrabber device driver can acquire RGB color images in 320x240 or 640x480 resolutions.
+The dragonfly2raw framegrabber device driver can acquire raw format images in 640x480 resolution.
 
 \section intro_sec Description
 The dragonfly2 framegrabber device driver is based on libdc1394-2. 
 It can acquire RGB color images in 320x240 or 640x480 resolutions. 
 In 640x480 there are two options: Bayer decoding performed on board by the camera or Bayer pattern decoding performed by the driver. In the second mode the bandwidth required to the Firewire bus is lower, and thus the framerate can be up to 60 fps. In the first mode the framerate is limited to 15 fps with two cameras on the same channel. Moreover, once the resolution is chosen, 
-the image can be cropped on board by the camera before the transfer on the Firewire bus. 
+the image can be cropped on board by the camera before the transfer on the Firewire bus.
+
+The dragonfly2raw driver is the raw version (Bayer pattern image format) of dragonfly2.  
 
 \section lib_sec Libraries
 libdc1394-2 (Linux)
@@ -110,11 +113,19 @@ yarpdev --device grabber --subdevice dragonfly2 --name <yarp port name>
 [--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
 [--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <value>] [...]
 
+yarpdev --device grabber --subdevice dragonfly2raw --name <yarp port name> 
+[--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
+[--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <value>] [...]
+
 Example:
 
 yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
 
 yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
+
+yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
+
+yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --d 1|0 [...]
 
 \author Paul Fitzpatrick, Giorgio Metta, Alessandro Scalzo
 
@@ -126,7 +137,7 @@ This file can be edited at src/modules/dragonfly2/DragonflyDeviceDriver2.h
 **/
 
 /**
-* dragonfly2 device driver implementation.
+* dragonfly2 and dragonfly2raw device driver implementation.
 */
 
 
