@@ -851,6 +851,7 @@ bool PmpServer::setPointStateToTool()
         Vector x,o,xdot,odot;
         getTool(x,o);
         iCtrl->getTaskVelocities(xdot,odot);
+        odot=0.0;
 
         copyVectorData(x,this->x);
         copyVectorData(o,this->x);
