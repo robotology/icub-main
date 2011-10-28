@@ -22,7 +22,7 @@
 \defgroup velocityObserver velocityObserver
  
 Estimates the first and second derivatives of incoming data 
-vector through a least-squares based algorithm on a adpative 
+vector through a least-squares algorithm based on an adpative 
 window
  
 Copyright (C) 2010 RobotCub Consortium
