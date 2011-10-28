@@ -53,8 +53,8 @@ the derivative and to limit the latency.
 Note that no knowledge of the sampling time is required since to
 perform the computation the module relies on the time
 information stored by the sender within the envelope of the 
-message. If the envelope is not valid, then the Time Stamp is 
-the reference time of the machine where the module is running 
+message. If the envelope is not available, then the Time Stamp 
+is the reference time of the machine where the module is running
 (i.e. the arrival time): of course in this case the computation 
 will be much less precise due to the variable YARP communication
 latencies. 
