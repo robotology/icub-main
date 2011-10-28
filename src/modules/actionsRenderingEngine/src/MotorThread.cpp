@@ -275,7 +275,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 
 
     // if the tartget's cartesian coordinates was specified, use them.
-    if(!found && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>3)
+    if(!found && bTarget!=NULL && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>3)
     {
         Bottle *bCartesian=bTarget->find("cartesian").asList();
 
@@ -285,15 +285,17 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 
         found=true;
     }
+    fprintf(stdout,"trafila\n");
 
 
     // if an object was specified check for its 3D position associated to the object
-    if(!found && bTarget->check("name"))
+    if(!found && bTarget!=NULL &&  bTarget->check("name"))
         if(opcPort.getCartesianPosition(bTarget->find("name").asString().c_str(),xd))
             found=true;
 
+    fprintf(stdout,"trafila\n");
 
-    if(!found && bTarget->check("stereo"))
+    if(!found &&  bTarget!=NULL &&  bTarget->check("stereo"))
     {
         Bottle *bStereo=bTarget->find("stereo").asList();
 
@@ -304,7 +306,10 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         found=stereoToCartesian(stereo,xd);
     }
 
-    if(found && bTarget->check("name"))
+
+    fprintf(stdout,"trafila\n");
+
+    if(found && bTarget!=NULL &&  bTarget->check("name"))
         opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
 
     return found;
@@ -742,7 +747,10 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     if(b.check("grasp_model_file"))
     {
         string grasp_model_name=b.find("grasp_model_file").asString().c_str();
-        graspPath[arm]=rf.findFile(grasp_model_name.c_str()).c_str();
+
+        string tmpGraspPath=rf.getContextPath().c_str();
+
+        graspPath[arm]=tmpGraspPath+"/"+b.find("grasp_model_file").asString().c_str();
     }
 
     return true;
@@ -1089,7 +1097,12 @@ bool MotorThread::threadInit()
             option_tmp.put("part",arm_name[arm].c_str());
 
             string grasp_model_name=bArm[arm].find("grasp_model_file").asString().c_str();
-            option_tmp.put("grasp_model_file",rf.findFile(grasp_model_name.c_str()).c_str());
+            //option_tmp.put("grasp_model_file",rf.findFile(grasp_model_name.c_str()).c_str());
+
+            string tmpGraspPath=rf.getContextPath().c_str();
+
+            option_tmp.put("grasp_model_file",(tmpGraspPath+"/"+bArm[arm].find("grasp_model_file").asString().c_str()).c_str());
+
 
             fprintf(stdout,"***** Instantiating primitives for %s\n",arm_name[arm].c_str());
             action[arm]=new ActionPrimitivesLayer2(option_tmp);
@@ -1757,6 +1770,7 @@ bool MotorThread::goHome(Bottle &options)
 
 bool MotorThread::deploy(Bottle &options)
 {
+
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
@@ -1773,6 +1787,7 @@ bool MotorThread::deploy(Bottle &options)
 
     if(!targetToCartesian(bTarget,deployZone))
     {
+
         deployZone=deployPos[arm];
 
         if(checkOptions(options,"away"))
