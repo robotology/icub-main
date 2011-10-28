@@ -285,15 +285,11 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 
         found=true;
     }
-    fprintf(stdout,"trafila\n");
-
 
     // if an object was specified check for its 3D position associated to the object
     if(!found && bTarget!=NULL &&  bTarget->check("name"))
         if(opcPort.getCartesianPosition(bTarget->find("name").asString().c_str(),xd))
             found=true;
-
-    fprintf(stdout,"trafila\n");
 
     if(!found &&  bTarget!=NULL &&  bTarget->check("stereo"))
     {
@@ -306,8 +302,6 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         found=stereoToCartesian(stereo,xd);
     }
 
-
-    fprintf(stdout,"trafila\n");
 
     if(found && bTarget!=NULL &&  bTarget->check("name"))
         opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
