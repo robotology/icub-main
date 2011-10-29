@@ -295,11 +295,14 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     {
         Bottle *bStereo=bTarget->find("stereo").asList();
 
-        Vector stereo;
-        for(int i=0; i<bStereo->size(); i++)
-            stereo.push_back(bStereo->get(i).asDouble());
+        if(bStereo!=NULL)
+        {
+            Vector stereo;
+            for(int i=0; i<bStereo->size(); i++)
+                stereo.push_back(bStereo->get(i).asDouble());
 
-        found=stereoToCartesian(stereo,xd);
+            found=stereoToCartesian(stereo,xd);
+        }
     }
 
 
@@ -939,23 +942,23 @@ bool MotorThread::threadInit()
     gazeCtrl->setStereoOptions(stereoOpt);
 
     //bind neck pitch and roll;
-    if(neckPitchRange->size()==1)
+    if(neckPitchRange!=NULL && neckPitchRange->size()==1)
     {
         double neckPitchBlock=neckPitchRange->get(0).asDouble();
         gazeCtrl->blockNeckPitch(neckPitchBlock);
     }
-    else if(neckPitchRange->size()>1)
+    else if(neckPitchRange!=NULL && neckPitchRange->size()>1)
     {
         double neckPitchMin=neckPitchRange->get(0).asDouble();
         double neckPitchMax=neckPitchRange->get(1).asDouble();
         gazeCtrl->bindNeckPitch(neckPitchMin,neckPitchMax);
     }
-    if(neckRollRange->size()==1)
+    if(neckRollRange!=NULL && neckRollRange->size()==1)
     {
         double neckRollBlock=neckRollRange->get(0).asDouble();
         gazeCtrl->blockNeckRoll(neckRollBlock);
     }
-    else if(neckRollRange->size()>1)
+    else if(neckRollRange!=NULL && neckRollRange->size()>1)
     {
         double neckRollMin=neckRollRange->get(0).asDouble();
         double neckRollMax=neckRollRange->get(1).asDouble();
