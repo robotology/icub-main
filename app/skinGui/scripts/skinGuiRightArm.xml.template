@@ -1,5 +1,5 @@
 <application>
-  <name>Right Whole Arm</name>
+  <name>Skin Gui Right Arm</name>
   <module>
     <name>skinDriftCompensation</name>
     <parameters>--from driftCompRight.ini --context skinGui/conf</parameters>

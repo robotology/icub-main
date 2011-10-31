@@ -1,5 +1,5 @@
 <application>
-  <name>Left Whole Arm No Compensation</name>
+  <name>Skin Gui Left Arm No Compensation</name>
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from leftupperarm_upper_bottom.ini --name /skinGuiNoComp</parameters>

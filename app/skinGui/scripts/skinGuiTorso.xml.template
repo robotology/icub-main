@@ -1,5 +1,5 @@
 <application>
-  <name>Skin Torso</name>
+  <name>Skin Gui Torso</name>
   <module>
     <name>skinDriftCompensation</name>
     <parameters>--from driftCompTorso.ini --context skinGui/conf</parameters>
