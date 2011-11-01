@@ -123,6 +123,8 @@ compose multiple conditions using the boolean operators such as
 expressed giving the property name, the value to compare with 
 and the corresponding relational operator (e.g. >, <=, ==, 
 ...).\n 
+Commands such as "[ask] (({prop0}) || ({prop1}))" will query 
+whether the properties exist or not. \n 
 The special command "[ask] (all)" returns the whole set of ids 
 present within the database. \n 
 In order to simplify the implementation, nested conditions such 
@@ -228,6 +230,13 @@ using namespace std;
 
 namespace relationalOperators
 {
+
+/************************************************************************/
+bool alwaysTrue(Value &a, Value &b)
+{
+    return true;
+}
+
 
 /************************************************************************/
 bool greater(Value &a, Value &b)
@@ -792,32 +801,39 @@ public:
             Condition condition;
             string operation;
 
-            if (b->size()<3)
+            if (b->size()==1)
             {
-                fprintf(stdout,"condition given with less than 3 elements!\n");
-                mutex.post();
-                return false;
+                condition.prop=b->get(0).asString().c_str();
+                condition.compare=&relationalOperators::alwaysTrue;
             }
+            else if (b->size()>2)
+            {
+                condition.prop=b->get(0).asString().c_str();
+                operation=b->get(1).asString().c_str();
+                condition.val=b->get(2);
 
-            condition.prop=b->get(0).asString().c_str();
-            condition.val=b->get(2);
-
-            operation=b->get(1).asString().c_str();
-            if (operation==">")
-                condition.compare=&relationalOperators::greater;
-            else if (operation==">=")
-                condition.compare=&relationalOperators::greaterEqual;
-            else if (operation=="<")
-                condition.compare=&relationalOperators::lower;
-            else if (operation=="<=")
-                condition.compare=&relationalOperators::lowerEqual;
-            else if (operation=="==")
-                condition.compare=&relationalOperators::equal;
-            else if (operation=="!=")
-                condition.compare=&relationalOperators::notEqual;
+                if (operation==">")
+                    condition.compare=&relationalOperators::greater;
+                else if (operation==">=")
+                    condition.compare=&relationalOperators::greaterEqual;
+                else if (operation=="<")
+                    condition.compare=&relationalOperators::lower;
+                else if (operation=="<=")
+                    condition.compare=&relationalOperators::lowerEqual;
+                else if (operation=="==")
+                    condition.compare=&relationalOperators::equal;
+                else if (operation=="!=")
+                    condition.compare=&relationalOperators::notEqual;
+                else
+                {
+                    fprintf(stdout,"unknown relational operator '%s'!\n",operation.c_str());
+                    mutex.post();
+                    return false;
+                }
+            }
             else
             {
-                fprintf(stdout,"unknown relational operator '%s'!\n",operation.c_str());
+                fprintf(stdout,"wrong condition given!\n");
                 mutex.post();
                 return false;
             }
