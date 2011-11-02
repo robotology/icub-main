@@ -1,0 +1,50 @@
+<!-- instantiation of
+     $ICUB_ROOT/main/app/skinGui/scripts/skinGuiRightArm.xml.template
+     for iCubLisboa01 -->
+
+<application>
+  <name>Skin Gui Right Arm with Compensation</name>
+
+  <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompRight.ini --context iCubLisboa01/conf</parameters>
+    <node>chico3</node>
+    <tag>driftCompRight</tag>
+  </module>
+
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiRight.ini --context skinGui/conf</parameters>
+    <node>chico3</node>
+    <tag>driftCompGuiRight</tag>
+  </module>
+
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from righthand.ini --useCalibration</parameters>
+    <node>chico3</node>
+    <tag>RightHand</tag>
+  </module>
+
+  <connection>
+    <from>/driftCompGuiRight/rpc:o</from>
+    <to>/rightSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/rightSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiRight/monitor:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/rightSkinDriftComp/info:o</from>
+    <to>/driftCompGuiRight/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/righthand_comp</from>
+    <to>/skinGui/right_hand:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+
+</application>
