@@ -94,7 +94,7 @@ The special command "[get] ((id <num>))" returns all the
 properties. 
  
 <b>set</b> \n
-<i>Format</i>: [set] ((id <num>) ({prop2} <val2>) ...) \n 
+<i>Format</i>: [set] ((id <num>) ({prop0} <val0>) ...) \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: add/modify properties of the stored item.
  
