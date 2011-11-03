@@ -33,14 +33,15 @@ Python example:
   # from PolyDriver
 
 To run for testing, be in the directory you built the icub bindings,
-place the above test in test.py, and do:
-  PYTHONPATH=/path/to/yarp/python/bindings/ python test.py
+place the above test in test.py, and do (in a bash shell):
+  export YARP_PYTHON=/path/to/yarp/python/bindings/
+  PYTHONPATH=$YARP_PYTHON python test.py
 
 
 ==================================================================
 
 Java example:
-  import icub.icub;
+  import yarp.icub;
   import yarp.Network;
   import yarp.Drivers;
 
@@ -55,6 +56,7 @@ Java example:
   };
 
 To run for testing, be in the directory you built the icub bindings,
-place the above test in Test.java, and do:
-  javac -cp /path/to/yarp/python/bindings/:$PWD Test.java
-  LD_LIBRARY_PATH=/path/to/yarp/python/bindings/:$PWD java -cp /path/to/yarp/python/bindings/:$PWD Test 
+place the above test in Test.java, and do (in a bash shell):
+  export YARP_JAVA=/path/to/yarp/python/bindings/
+  javac -cp $YARP_JAVA:$PWD Test.java
+  LD_LIBRARY_PATH=$YARP_JAVA:$PWD java -cp $YARP_JAVA:$PWD Test 
