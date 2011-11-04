@@ -1,11 +1,13 @@
 <cluster name="iCubParis01" user="icub">
 
-<nameserver namespace="/iCubParis01" node="icubsrv" type="yarpserver3"> </nameserver>
+<nameserver namespace="/iCubParis01" node="icubsrv" type="yarpserver"> </nameserver>
 
 <node>pc104</node>
 <node>macsi01</node>
 <node>macsi02</node>
 <node display=":0.0">macsi03</node>
+<node>macsi04</node>
+<node>macsi05</node>
 <node display=":0.0">serena-laptop</node>
 <node>stagiaire</node>
 </cluster>
