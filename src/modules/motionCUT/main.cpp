@@ -323,7 +323,7 @@ public:
     ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
 
     /************************************************************************/
-    virtual bool threadInit()
+    bool threadInit()
     {
         name=rf.check("name",Value("motionCUT")).asString().c_str();
         coverXratio=rf.check("coverXratio",Value(0.75)).asDouble();
@@ -401,7 +401,7 @@ public:
     }
 
     /************************************************************************/
-    virtual void run()
+    void run()
     {
         double latch_t, dt0, dt1, dt2;
 
@@ -637,7 +637,7 @@ public:
     }
 
     /************************************************************************/
-    virtual void onStop()
+    void onStop()
     {
         inPort.interrupt();
         outPort.interrupt();
@@ -647,7 +647,7 @@ public:
     }
 
     /************************************************************************/
-    virtual void threadRelease()
+    void threadRelease()
     {
         disposeMem();
 
@@ -841,7 +841,7 @@ public:
     ProcessModule() : thr(NULL) { }
 
     /************************************************************************/
-    virtual bool configure(ResourceFinder &rf)
+    bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
 
@@ -859,7 +859,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool respond(const Bottle &command, Bottle &reply)
+    bool respond(const Bottle &command, Bottle &reply)
     {
         if (thr->execReq(command,reply))
             return true;
@@ -868,7 +868,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool close()
+    bool close()
     {
         if (thr!=NULL)
         {
@@ -883,13 +883,13 @@ public:
     }
 
     /************************************************************************/
-    virtual double getPeriod()
+    double getPeriod()
     {
         return 1.0;
     }
 
     /************************************************************************/
-    virtual bool updateModule()
+    bool updateModule()
     {
         return true;
     }
