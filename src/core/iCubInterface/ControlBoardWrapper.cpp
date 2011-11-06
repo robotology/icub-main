@@ -1350,7 +1350,7 @@ bool ControlBoardWrapper::attachAll(const PolyDriverList &sub)
         {
             base=0;
         }
-        if (top<=0)
+        if (top<0)
         {
             top=deviceJoints-1;
         }
