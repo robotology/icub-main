@@ -260,18 +260,7 @@ iKinChain::iKinChain()
     N=DOF=verbose=0;
     hess_DH=NULL;
 
-    H0=eye(4,4);
-}
-
-
-/************************************************************************/
-iKinChain::iKinChain(const Matrix &_H0)
-{
-    N=DOF=verbose=0;
-    hess_DH=NULL;
-
-    H0=eye(4,4);
-    setH0(_H0);
+    H0=HN=eye(4,4);
 }
 
 
@@ -281,6 +270,7 @@ void iKinChain::clone(const iKinChain &c)
     N      =c.N;
     DOF    =c.DOF;
     H0     =c.H0;
+    HN     =c.HN;
     curr_q =c.curr_q;    
     verbose=c.verbose;
 
@@ -582,7 +572,25 @@ bool iKinChain::setH0(const Matrix &_H0)
     else
     {
         if (verbose)
-            fprintf(stderr,"Attempt to create a chain with wrong matrix H0 (not 4x4)\n");
+            fprintf(stderr,"Attempt to reference a wrong matrix H0 (not 4x4)\n");
+
+        return false;
+    }
+}
+
+
+/************************************************************************/
+bool iKinChain::setHN(const Matrix &_HN)
+{
+    if ((_HN.rows()==4) && (_HN.cols()==4))
+    {
+        HN=_HN;
+        return true;
+    }
+    else
+    {
+        if (verbose)
+            fprintf(stderr,"Attempt to reference a wrong matrix HN (not 4x4)\n");
 
         return false;
     }
@@ -733,6 +741,7 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
     Matrix H=H0;
     unsigned int _i,n;
     deque<iKinLink*> *l;
+    bool cumulHN=false;
     bool c_override;
 
     if (allLink)
@@ -742,6 +751,8 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
         c_override=true;
 
         _i=i;
+        if (_i>=N-1)
+            cumulHN=true;
     }
     else
     {
@@ -753,11 +764,19 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
             _i=quickList.size();
         else
             _i=i;
+
+        if (hash[_i]>=N-1)
+            cumulHN=true;
     }
 
     if (i<n)
+    {
         for (unsigned int j=0; j<=_i; j++)
             H=H*((*l)[j]->getH(c_override));
+
+        if (cumulHN)
+            H=H*HN;
+    }
     else if (verbose)
         fprintf(stderr,"getH() failed due to out of range index: %d>=%d\n",i,n);
 
@@ -776,7 +795,7 @@ Matrix iKinChain::getH()
     for (unsigned int i=0; i<n; i++)
         H=H*quickList[i]->getH();
 
-    return H;
+    return H*HN;
 }
 
 
@@ -917,6 +936,12 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
                 dH=dH*_H;
         }
 
+        if (i>=N-1)
+        {
+            H=H*HN;
+            dH=dH*HN;
+        }
+
         dr=dRotAng(H,dH);
 
         J(0,j)=dH(0,col);
@@ -966,6 +991,8 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
                 dH=dH*_H;
         }
 
+        H=H*HN;
+        dH=dH*HN;
         dr=dRotAng(H,dH);
 
         J(0,i)=dH(0,col);
@@ -1008,7 +1035,7 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
     }
 
     Matrix J(6,i+1);
-    Matrix Pn,Z;
+    Matrix PN,Z;
     Vector w;
 
     deque<Matrix> intH;
@@ -1017,12 +1044,14 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
     for (unsigned int j=0; j<=i; j++)
         intH.push_back(intH[j]*allList[j]->getH(true));
 
-    Pn=intH[i+1];
+    PN=intH[i+1];
+    if (i>=N-1)
+        PN=PN*HN;
 
     for (unsigned int j=0; j<=i; j++)
     {
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,PN-Z,3,verbose);
 
         J(0,j)=w[0];
         J(1,j)=w[1];
@@ -1048,7 +1077,7 @@ Matrix iKinChain::GeoJacobian()
     }
 
     Matrix J(6,DOF);
-    Matrix Pn,Z;
+    Matrix PN,Z;
     Vector w;
 
     deque<Matrix> intH;
@@ -1057,14 +1086,14 @@ Matrix iKinChain::GeoJacobian()
     for (unsigned int i=0; i<N; i++)
         intH.push_back(intH[i]*allList[i]->getH(true));
 
-    Pn=intH[N];
+    PN=intH[N]*HN;
 
     for (unsigned int i=0; i<DOF; i++)
     {
         unsigned int j=hash[i];
 
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,PN-Z,3,verbose);
 
         J(0,i)=w[0];
         J(1,i)=w[1];
@@ -1132,7 +1161,7 @@ Vector iKinChain::Hessian_ij(const unsigned int i, const unsigned int j)
 
     Matrix DZ=intDH[k];
 
-    Vector Dw=Dcross(intH[k],DZ,2,intH[N]-intH[k],intDH[N]-DZ,3,verbose);
+    Vector Dw=Dcross(intH[k],DZ,2,intH[N]*HN-intH[k],intDH[N]*HN-DZ,3,verbose);
     Vector h(6);
 
     h[0]=Dw[0];
@@ -1206,7 +1235,7 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 
     Matrix DZ=hess_DH[i][k];
 
-    Vector Dw=Dcross(hess_H[k],DZ,2,hess_H[N]-hess_H[k],hess_DH[i][N]-hess_DH[i][k],3,verbose);
+    Vector Dw=Dcross(hess_H[k],DZ,2,hess_H[N]*HN-hess_H[k],hess_DH[i][N]*HN-hess_DH[i][k],3,verbose);
     Vector h(6);
 
     h[0]=Dw[0];
@@ -1223,7 +1252,7 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 /************************************************************************/
 iKinChain::~iKinChain()
 {
-	dispose();
+    dispose();
 }
 
 
@@ -1263,9 +1292,9 @@ iKinLimb::iKinLimb(const iKinLimb &limb)
 
 
 /************************************************************************/
-iKinLimb::iKinLimb(const Property &option)
+iKinLimb::iKinLimb(const Property &options)
 {
-    fromLinksProperties(option);
+    fromLinksProperties(options);
 }
 
 
@@ -1278,32 +1307,38 @@ void iKinLimb::pushLink(iKinLink *pl)
 
 
 /************************************************************************/
-bool iKinLimb::fromLinksProperties(const Property &option)
+void iKinLimb::getMatrixFromProperties(Property &options, const string &tag, Matrix &H)
 {
-    Property &opt=const_cast<Property&>(option);
-
-    dispose();    
-
-    type=opt.check("type",Value("right")).asString().c_str();
-
-    if (Bottle *bH0=opt.find("H0").asList())
+    if (Bottle *bH=options.find(tag.c_str()).asList())
     {
         int i=0;
         int j=0;
 
-        H0.zero();
-
-        for (int cnt=0; (cnt<bH0->size()) && (cnt<H0.rows()*H0.cols()); cnt++)
+        H.zero();
+        for (int cnt=0; (cnt<bH->size()) && (cnt<H.rows()*H.cols()); cnt++)
         {    
-            H0(i,j)=bH0->get(cnt).asDouble();
-
-            if (++j>=H0.cols())
+            H(i,j)=bH->get(cnt).asDouble();
+            if (++j>=H.cols())
             {
                 i++;
                 j=0;
             }
         }
     }
+}
+
+
+/************************************************************************/
+bool iKinLimb::fromLinksProperties(const Property &options)
+{
+    Property &opt=const_cast<Property&>(options);
+
+    dispose();    
+
+    type=opt.check("type",Value("right")).asString().c_str();
+
+    getMatrixFromProperties(opt,"H0",H0);
+    getMatrixFromProperties(opt,"HN",HN);
 
     int numLinks=opt.check("numLinks",Value(0)).asInt();
     if (numLinks==0)
@@ -1312,6 +1347,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
 
         type="right";
         H0.eye();
+        HN.eye();
 
         return false;
     }
@@ -1353,7 +1389,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
 /************************************************************************/
 iKinLimb &iKinLimb::operator=(const iKinLimb &limb)
 {
-    dispose();	
+    dispose();
     clone(limb);
 
     return *this;
@@ -1380,6 +1416,7 @@ void iKinLimb::clone(const iKinLimb &limb)
 {
     type=limb.type;
     H0=limb.H0;
+    HN=limb.HN;
 
     for (unsigned int i=0; i<limb.getN(); i++)
         pushLink(new iKinLink(*(limb.linkList[i])));

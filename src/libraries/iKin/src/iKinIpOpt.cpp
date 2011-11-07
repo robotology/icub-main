@@ -577,6 +577,7 @@ iKinChain &iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
 {
     chain2ndTask.clear();
     chain2ndTask.setH0(chain.getH0());
+    chain2ndTask.setHN(chain.getHN());
 
     for (unsigned int i=0; i<n; i++)
         chain2ndTask<<chain[i];

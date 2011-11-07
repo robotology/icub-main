@@ -450,13 +450,6 @@ iDynChain::iDynChain()
 	setIterMode(KINFWD_WREBWD);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynChain::iDynChain(const Matrix &_H0)
-:iKinChain(_H0)
-{
-	NE=NULL;
-	setIterMode(KINFWD_WREBWD);
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::clone(const iDynChain &c)
 {
 	iKinChain::clone(c);

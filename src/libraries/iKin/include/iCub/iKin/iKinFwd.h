@@ -362,6 +362,7 @@ protected:
     unsigned int      DOF;
     unsigned int      verbose;
     yarp::sig::Matrix H0;
+    yarp::sig::Matrix HN;
     yarp::sig::Vector curr_q;
 
     std::deque<iKinLink*> allList;
@@ -387,14 +388,6 @@ public:
     * Default constructor. 
     */
     iKinChain();
-
-    /**
-    * Constructor.
-    * @param _H0 describes the rigid roto-translation from the root 
-    *            reference frame to points in the 0th frame in the
-    *            standard D-H convention.
-    */
-    iKinChain(const yarp::sig::Matrix &_H0);
 
     /**
     * Creates a new Chain from an already existing Chain object.
@@ -583,6 +576,21 @@ public:
     bool setH0(const yarp::sig::Matrix &_H0);
 
     /**
+    * Returns HN, the rigid roto-translation matrix from the Nth
+    * frame to the end-effector. 
+    * @return HN
+    */
+    yarp::sig::Matrix getHN() const { return HN; }
+
+    /**
+    * Sets HN, the rigid roto-translation matrix from the Nth frame 
+    * to the end-effector. 
+    * @param HN 
+    * @return true if succeed, false otherwise. 
+    */
+    bool setHN(const yarp::sig::Matrix &_HN);
+
+    /**
     * Sets the free joint angles to values of q[i].
     * @param q is a vector containing values for DOF.
     * @return the actual DOF values (angles constraints are 
@@ -626,18 +634,18 @@ public:
 
     /**
     * Returns the rigid roto-translation matrix from the root 
-    * reference frame to the Nth frame (End-Effector) in 
-    * Denavit-Hartenberg notation. 
-    * @return Hn
+    * reference frame to the end-effector frame in 
+    * Denavit-Hartenberg notation (HN is taken into account). 
+    * @return H(N-1)*HN
     */
     yarp::sig::Matrix getH();
 
     /**
     * Returns the rigid roto-translation matrix from the root 
-    * reference frame to the Nth frame (End-Effector) in 
-    * Denavit-Hartenberg notation. 
+    * reference frame to the end-effector frame in 
+    * Denavit-Hartenberg notation (HN is taken into account). 
     * @param q is the vector of new DOF values.  
-    * @return Hn
+    * @return H(N-1)*HN
     */
     yarp::sig::Matrix getH(const yarp::sig::Vector &q);
 
@@ -653,23 +661,23 @@ public:
     yarp::sig::Vector Pose(const unsigned int i, const bool axisRep=true);
 
     /**
-    * Returns the coordinates of End-Effector. Two notations are 
+    * Returns the coordinates of end-effector. Two notations are 
     * provided: the first with Euler Angles (XYZ form=>6x1 output 
     * vector) and second with axis/angle representation 
     * (default=>7x1 output vector). 
     * @param axisRep if true returns the axis/angle notation. 
-    * @return the Nth Link Pose (End-Effector). 
+    * @return the end-effector pose.
     */
     yarp::sig::Vector EndEffPose(const bool axisRep=true);
 
     /**
-    * Returns the coordinates of End-Effector computed in q. Two
+    * Returns the coordinates of end-effector computed in q. Two
     * notations are provided: the first with Euler Angles (XYZ 
     * form=>6x1 output vector) and second with axis/angle 
     * representation (default=>7x1 output vector). 
     * @param q is the vector of new DOF values. 
     * @param axisRep if true returns the axis/angle notation.  
-    * @return the Nth Link Pose (End-Effector).
+    * @return the end-effector pose.
     */
     yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true);
 
@@ -781,6 +789,8 @@ protected:
     std::string           type;
     bool                  configured;
 
+    virtual void getMatrixFromProperties(yarp::os::Property &options,
+                                         const std::string &tag, yarp::sig::Matrix &H);
     virtual void allocate(const std::string &_type);
     virtual void clone(const iKinLimb &limb);
     virtual void dispose();
@@ -822,15 +832,15 @@ public:
     /**
     * Creates a new Limb from a list of properties wherein links 
     * parameters are specified. 
-    * @param option is the list of links properties. 
+    * @param options is the list of links properties. 
     * @see fromLinksProperties()
     */
-    iKinLimb(const yarp::os::Property &option);
+    iKinLimb(const yarp::os::Property &options);
 
     /**
     * Initializes the Limb from a list of properties wherein links 
     * parameters are specified. 
-    * @param option is the list of links properties. 
+    * @param options is the list of links properties. 
     *  
     * @note Available options are: 
     *  
@@ -840,6 +850,10 @@ public:
     * \b H0 <list of 4x4 doubles (per rows)>: specifies the rigid 
     *    roto-translation matrix from the root reference frame to
     *    the 0th frame (default=eye(4,4)).
+    *  
+    * \b HN <list of 4x4 doubles (per rows)>: specifies the rigid 
+    *    roto-translation matrix from the Nth frame to the
+    *    end-effector (default=eye(4,4)).
     *  
     * \b numLinks <int>: specifies the expected number of links.
     *  
@@ -867,13 +881,14 @@ public:
     * @code 
     * type right 
     * H0 (1.0 2.0 3.0 ...) 
+    * HN (1.0 2.0 3.0 ...) 
     * numLinks 4 
     * link_0 (option1 value1) (option2 value2) ... 
     * link_1 (option1 value1) ... 
     * ... 
     * @endcode 
     */
-    bool fromLinksProperties(const yarp::os::Property &option);
+    bool fromLinksProperties(const yarp::os::Property &options);
 
     /**
     * Checks if the limb has been properly configured.

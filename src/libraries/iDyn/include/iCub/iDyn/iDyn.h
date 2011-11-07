@@ -561,13 +561,6 @@ public:
     iDynChain();
 
     /**
-    * Constructor
-    * @param _H0 describes the rigid roto-translation from the root reference frame to points in the 0th frame in the
-    *            standard D-H convention
-    */
-    iDynChain(const yarp::sig::Matrix &_H0);
-
-    /**
     * Creates a new Chain from an already existing Chain object
     * @param c is the Chain to be copied
     */
