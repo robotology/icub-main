@@ -126,12 +126,12 @@ set(__ICUB_INSTALL_APPLICATIONS__ TRUE)
 if (ICUB_INSTALL_APPLICATIONS)
    if (NOT env_icub_root)
        message("No ICUB_ROOT environment variable set, disabling application install rules.")
-	   set(__ICUB_INSTALL_APPLICATIONS__ FALSE)
+       set(__ICUB_INSTALL_APPLICATIONS__ FALSE)
    endif()
 endif()
 
 set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
-	   
+
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
@@ -155,7 +155,7 @@ endif(__ICUB_INSTALL_APPLICATIONS__)
 get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
 foreach(t ${ICUB_TARGETS})
   set_target_properties(${t} PROPERTIES VERSION ${ICUB_GENERIC_VERSION}
-	SOVERSION ${ICUB_GENERIC_SOVERSION})
+                        SOVERSION ${ICUB_GENERIC_SOVERSION})
 endforeach()
 ######################
 
@@ -166,7 +166,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 ################ copying python scripts
 message(STATUS "Installing manager.py")
 install(FILES  app/default/scripts/manager.py app/default/scripts/icub-cluster-server.sh app/default/scripts/icub-cluster-run.sh 
-				DESTINATION bin COMPONENT Core) 
+        DESTINATION bin COMPONENT Core) 
 
 # add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
 # so we need to use ${CMAKE_CFG_INTDIR}
@@ -174,11 +174,11 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/python-scripts-cmd
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/manager.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/icub-cluster-server.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
-	  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/icub-cluster-run.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
-	  COMMENT "Copying manager.py, icub-cluster scripts to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/icub-cluster-run.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMENT "Copying manager.py, icub-cluster scripts to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")		
 add_custom_target(python-scripts ALL DEPENDS ${CMAKE_BINARY_DIR}/python-scripts-cmd)
 if (ICUB_EXPERIMENTAL_APP_INSTALL)
-	add_dependencies(install_applications python-scripts)
+    add_dependencies(install_applications python-scripts)
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 ###############################
     
@@ -200,19 +200,19 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindQt3.cmake
                         FindGLUT.cmake
                         FindOpenGL.cmake
-						iCubHelpers.cmake
-						iCubOptions.cmake
-						iCubFindDependencies.cmake)
+                        iCubHelpers.cmake
+                        iCubOptions.cmake
+                        iCubFindDependencies.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   # in YARP we used to copy Find* scripts to the build directory
   # this as changed in YARP but NOT in iCub.
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
-				 
+
   # on the other hand we do need to install Find* script at install time
   install(FILES  conf/${conf} DESTINATION share/iCub/cmake/ COMPONENT Development)
-	  
+
 endforeach(conf)
 
 ## add the "uninstall" target
