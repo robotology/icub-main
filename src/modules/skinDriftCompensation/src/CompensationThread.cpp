@@ -35,7 +35,7 @@ CompensationThread::CompensationThread(string name, ResourceFinder* rf, string r
 									   : 
 										RateThread(period), moduleName(name), compensationGain(_compensationGain), 
                                             contactCompensationGain(_contactCompensationGain), 
-											ADD_THRESHOLD(addThreshold), PERIOD(period), robotName(robotName), 
+											ADD_THRESHOLD(addThreshold), robotName(robotName), 
 											binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
 {
    this->rf								= rf;
@@ -49,13 +49,10 @@ bool CompensationThread::threadInit()
     fprintf(stderr, "THREAD INIT\n\n");
 
    /* initialize variables and create data-structures if needed */
-	lastTimestamp = Time::now();
-	frequencyOld = 1.0/PERIOD;
-
 	readErrorCounter = 0;
 	state = calibration;
 	calibrationCounter = 0;
-    CAL_SAMPLES = 1000*CAL_TIME/PERIOD; // samples needed for calibration
+    CAL_SAMPLES = 1000*CAL_TIME/((int)getRate()); // samples needed for calibration (note that getRate() returns the thread period)
 
     // open the output ports for communicating with the gui
     string monitorPortName = "/" + moduleName + "/monitor:o";   // output streaming data
@@ -144,7 +141,7 @@ bool CompensationThread::threadInit()
             if(linkList->size() != portNum){
                 stringstream msg;
                 msg<< "ERROR: the number of link id is not equal to the number of input ports ("
-                    << linkList->size()<< "!="<< portNum<< ")";
+                    << linkList->size()<< "!="<< portNum<< ")";                
                 sendInfoMsg(msg.str());
             }else{
                 FOR_ALL_PORTS(i){
@@ -197,11 +194,12 @@ bool CompensationThread::threadInit()
                 msg<< "Mismatching number of taxel position files and input ports ("
                     <<portNum<< " in ports; "<< taxelPosFiles->size()<< " taxel position files). ";
                 msg<< "Taxel positions will not be set.";
+                msg<< ". Taxel position file list: "<< taxelPosFiles->toString().c_str();
                 sendInfoMsg(msg.str());
             }
             else{
                 double maxNeighborDist = skinEventsConf.check("maxNeighborDist", Value(0.012)).asDouble();
-                printf("Max neighbor distance: %f\n", maxNeighborDist);
+                printf("Max neighbor distance: %f m\n", maxNeighborDist);
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
 	                string filePath(rf->findFile(taxelPosFile.c_str()));
@@ -218,8 +216,6 @@ bool CompensationThread::threadInit()
     initializationFinished = true;
 	return true;
 }
-
-
 
 
 void CompensationThread::forceCalibration(){
@@ -287,7 +283,7 @@ void CompensationThread::sendSkinEvents(){
             skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());            
         }
     }
-    printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
+    //printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 
@@ -353,42 +349,32 @@ void CompensationThread::threadRelease()
 
 // send the data on the monitor port
 void CompensationThread::sendMonitorData(){
-	// update the frequency
-	double currentTimestamp = Time::now();
-	double timeBetweenRead = currentTimestamp - lastTimestamp;
-	lastTimestamp = currentTimestamp;
-	frequency = 0.5*(1.0/timeBetweenRead) + 0.5*frequencyOld;	// moving average
-	frequencyOld = frequency;
-
 	// send the monitor data (if there is at least a connection)
     if(monitorPort.getOutputCount()>0){
-	    Bottle &b = monitorPort.prepare();
-	    b.clear();
-	    b.addDouble(frequency); // data frequency
+        int originalSkinDim = 0;
+        FOR_ALL_PORTS(i)
+            originalSkinDim += compensators[i]->getNumTaxels();
+
+	    Vector &b = monitorPort.prepare();
+	    b.clear();        
+        b.resize(1+ 2*originalSkinDim);
+	    b[0] = 1000.0/getEstPeriod(); // thread frequency
         
         stateSem.wait();
         if(state==compensation){    // during calibration don't send this data
             // for each taxel add how much the baseline has changed so far (i.e. the drift)
+            int index = 1;
             FOR_ALL_PORTS(i){
                 if(compWorking[i]){
-                    Vector temp = compensators[i]->getBaselines();
-                    for(int j=0; j<temp.size(); j++){ 
-                        b.addDouble(temp[j]);
-                        if(temp[j]<0){
-                            stringstream ss;
-                            ss<<"port "<<compensators[i]->getSkinPartName()<<"; tax "<< j<<"; baseline "<< temp[j]<< "; d: "<< 
-                                compensators[i]->getCompData()[j]<<"; raw: "<< compensators[i]->getRawData()[j]<< 
-                                "; touchThr: "<< compensators[i]->getTouchThreshold()[j];
-                            sendInfoMsg(ss.str());
-                        }
-                    }
+                    b.setSubvector(index, compensators[i]->getCompensation());
                 }
+                index += compensators[i]->getNumTaxels();
             }
             FOR_ALL_PORTS(i){
                 if(compWorking[i]){
-                    Vector temp = compensators[i]->getRawData();
-                    for(int j=0; j<temp.size(); j++) b.addDouble(temp[j]);
+                    b.setSubvector(index, compensators[i]->getRawData());
                 }
+                index += compensators[i]->getNumTaxels();
             }
         }
         stateSem.post();
@@ -397,9 +383,9 @@ void CompensationThread::sendMonitorData(){
     }
 }
 
-void CompensationThread::sendInfoMsg(string msg){    
-    printf("\n");
-    printf("%s", msg.c_str());
+void CompensationThread::sendInfoMsg(string msg){
+    //printf("\n");
+    printf("%s\n", msg.c_str());
     Bottle& b = infoPort.prepare();
     b.clear();
     b.addString(msg.c_str());

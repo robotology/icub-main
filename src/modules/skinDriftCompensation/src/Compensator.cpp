@@ -29,17 +29,17 @@ using namespace yarp::math;
 using namespace iCub::skinDriftCompensation;
 using namespace iCub::skinDynLib;
 
-Compensator::Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort, 
+Compensator::Compensator(string _name, string _robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort, 
                          double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
                          bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkNum)
 									   : 
 										compensationGain(_compensationGain), contactCompensationGain(_contactCompensationGain),
                                             addThreshold(addThreshold), infoPort(_infoPort),
                                             minBaseline(_minBaseline), binarization(_binarization), smoothFilter(_smoothFilter), 
-                                            smoothFactor(_smoothFactor), robotName(robotName), name(name), linkNum(_linkNum)
+                                            smoothFactor(_smoothFactor), robotName(_robotName), name(_name), linkNum(_linkNum)
 {
     this->zeroUpRawData = _zeroUpRawData;
-    _isWorking = init(name, robotName, outputPortName, inputPortName);
+    _isWorking = init(_name, _robotName, outputPortName, inputPortName);
 }
 
 Compensator::~Compensator(){
@@ -73,8 +73,8 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     // create a new device driver
     tactileSensorDevice = new PolyDriver(options);
     if (!tactileSensorDevice->isValid()){
-	    printf("Device not available.  Here are the known devices:\n");
-	    printf("%s", Drivers::factory().toString().c_str());
+	    printf("Device not available.\n");
+	    //printf("%s", Drivers::factory().toString().c_str());
 	    return false;
     }
     // open the sensor interface	
@@ -84,10 +84,19 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
 	    return false;
     }
     
+    int getChannelsCounter = 0;
     skinDim = tactileSensor->getChannels();
-    if(skinDim<=0){
-		fprintf(stderr, "Error while reading the number of channels of the tactile sensor device. Using 192 as default value.\n");
-		skinDim = 192;
+    while(skinDim<=0){
+        // getChannels() returns 0 if it hasn't performed the first reading yet
+        // so wait for 1/50 sec, then try again        
+        if(++getChannelsCounter==50){
+            // after 50 failed tries give up and use the default value
+            skinDim = 192;
+            sendInfoMsg("Error reading the number of channels of the port. Using 192 as default value.");
+            break;
+        }
+        Time::delay(0.02);
+        skinDim = tactileSensor->getChannels();
 	}
     readErrorCounter = 0;
     rawData.resize(skinDim);
@@ -103,7 +112,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     // by default every taxel is neighbor with all the other taxels
     vector<int> defaultNeighbors(skinDim);
     for(unsigned int i=0;i<skinDim;i++) defaultNeighbors[i]=i;
-    neighborsXtaxel.resize(skinDim, defaultNeighbors);    
+    neighborsXtaxel.resize(skinDim, defaultNeighbors);
 
     // test read to check if the skin is broken (all taxel output is 0)
     if(readInputData(compensatedData)){
@@ -200,23 +209,23 @@ void Compensator::calibrationFinish(){
     }
     if(baseline255 || thresholdZero){
         _isWorking = false;
-        sendInfoMsg("Eithre the baselines of all the taxels are 255 or the noises are 0. Probably there is a hardware problem.");
+        sendInfoMsg("Either the baselines of all the taxels are 255 or the noises are 0. Probably there is a hardware problem.");
     }
 
     // print to console
     if(_isWorking){
-	    fprintf(stderr, "\n[%s] Baselines:\n", name.c_str());
+	    printf("\n[%s (%s)] Baselines:\n", name.c_str(), getSkinPartName().c_str());
 	    for (unsigned int i=0; i<skinDim; i++) {
 		    if(!(i%12)) fprintf(stderr, "\n");
-		    fprintf(stderr,"%4.1f ", baselines[i]);		
+		    fprintf(stderr,"%5.1f ", baselines[i]);		
 	    }
-	    fprintf(stderr,"\n[%s] Thresholds (95 percentile):\n", name.c_str());
+	    printf("\n[%s (%s)] Thresholds (95 percentile):\n", name.c_str(), getSkinPartName().c_str());
 	    for (unsigned int i=0; i<skinDim; i++) {
 		    if(!(i%12)) fprintf(stderr, "\n");
             touchThresholds[i] = max<double>(MIN_TOUCH_THR, touchThresholds[i]);
 		    fprintf(stderr,"%3.1f ", touchThresholds[i]);		
 	    }
-	    fprintf(stderr,"\n");
+	    printf("\n");
     }
 
     // release the semaphore so that as of now the touchThreshold can be read

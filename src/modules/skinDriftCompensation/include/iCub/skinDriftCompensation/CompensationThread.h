@@ -83,18 +83,14 @@ private:
 
 	/* class constants */	
 	static const int CAL_TIME = 5;				// calibration time in sec	
-	
+
+    /* class variables */
     int CAL_SAMPLES;                            // num of samples needed for calibration
-	const int PERIOD;							// thread period in ms
 	int ADD_THRESHOLD;							// value added to the touch threshold of every taxel	
-	unsigned int SKIN_DIM;						// number of taxels (for the hand it is 192)
+	unsigned int SKIN_DIM;						// total number of taxels
 	double compensationGain;				    // the gain of the compensation algorithm
     double contactCompensationGain;				// the gain of the compensation algorithm during contact
-
-	/* class variables */
-	double frequency;
-	double frequencyOld;
-	double lastTimestamp;	
+	
     bool initializationFinished;
 	
 	// calibration variables
@@ -122,7 +118,7 @@ private:
 
 	/* ports */
     BufferedPort<skinContactList> skinEventsPort;   // skin events output port
-	BufferedPort<Bottle> monitorPort;				// monitoring output port (streaming)
+	BufferedPort<Vector> monitorPort;				// monitoring output port (streaming)
     BufferedPort<Bottle> infoPort;					// info output port
 
 	CompensationThreadState state;			// state of the thread (calibration, compensation)
