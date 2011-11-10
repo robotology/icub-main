@@ -5,19 +5,19 @@
     <name>iCubSkinGui</name>
     <parameters>--from left_arm.ini --name /skinGuiNoComp --xpos 0 --ypos 450 --width 800 --height 550</parameters>
     <node>console</node>
-    <tag>LeftarmNoComp</tag>
+    <tag>skinGuiLANC</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from left_forearm.ini --name /skinGuiNoComp --xpos 0 --ypos 0 --width 400 --height 400</parameters>
     <node>console</node>
-    <tag>LeftForearmNoComp</tag>
+    <tag>skinGuiLFNC</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from left_hand.ini --name /skinGuiNoComp --xpos 410 --ypos 0 --width 400 --height 400</parameters>
     <node>console</node>
-    <tag>LeftHandNoComp</tag>
+    <tag>skinGuiLHNC</tag>
   </module>    
   
   <connection>

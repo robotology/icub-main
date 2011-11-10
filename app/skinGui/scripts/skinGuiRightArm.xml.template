@@ -4,32 +4,32 @@
     <name>skinDriftCompensation</name>
     <parameters>--from driftCompRight.ini --context skinGui/conf</parameters>
     <node>console</node>
-    <tag>driftCompRight</tag>
+    <tag>skinCompRA</tag>
   </module>
   <module>
     <name>skinDriftCompensationGui</name>
     <parameters>--from driftCompGuiRight.ini --context skinGui/conf  --xpos 1020 --ypos 350</parameters>
     <node>console</node>
-    <tag>driftCompGuiRight</tag>
+    <tag>skinCompGuiRA</tag>
   </module>
 
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from right_arm.ini --useCalibration --xpos 820 --ypos 450 --width 800 --height 550</parameters>
     <node>console</node>
-    <tag>rightarmLow</tag>
+    <tag>skinGuiRA</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from right_forearm.ini --useCalibration --xpos 820 --ypos 0 --width 400 --height 400</parameters>
     <node>console</node>
-    <tag>RightForearm</tag>
+    <tag>skinGuiRF</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from right_hand.ini --useCalibration --xpos 1230 --ypos 0 --width 400 --height 400</parameters>
     <node>console</node>
-    <tag>RightHand</tag>
+    <tag>skinGuiRH</tag>
   </module>
 
   <connection>
