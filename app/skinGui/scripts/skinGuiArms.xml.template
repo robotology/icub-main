@@ -1,5 +1,5 @@
 <application>
-  <name>Skin Gui Left Arm</name>
+  <name>Skin Gui Arms</name>
   <module>
     <name>skinDriftCompensation</name>
     <parameters>--from driftCompArms.ini --context skinGui/conf</parameters>
