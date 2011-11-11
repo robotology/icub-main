@@ -202,6 +202,7 @@ reply: [ack] (id (1))
 #include <yarp/os/RFModule.h>
 
 #include <stdio.h>
+#include <sstream>
 #include <string>
 #include <map>
 #include <deque>
@@ -473,31 +474,31 @@ public:
         finProperty.fromConfigFile(dbFileName.c_str());
         Bottle finBottle(finProperty.toString().c_str());
 
-        char tag[255];
         for (int i=0; i<finBottle.size(); i++)
         {
-            sprintf(tag,"item_%d",i);
-            Bottle &b1=finBottle.findGroup(tag);
+            ostringstream tag;
+            tag<<"item_"<<i;
+            Bottle &b1=finBottle.findGroup(tag.str().c_str());
 
             if (b1.isNull())
                 continue;
 
             if (b1.size()<3)
             {
-                fprintf(stdout,"error while loading %s!\n",tag);
+                fprintf(stdout,"error while loading %s!\n",tag.str().c_str());
                 continue;
             }
 
             Bottle *b2=b1.get(1).asList();
             if (b2==NULL)
             {
-                fprintf(stdout,"error while loading %s!\n",tag);
+                fprintf(stdout,"error while loading %s!\n",tag.str().c_str());
                 continue;
             }
 
             if (b2->size()<2)
             {
-                fprintf(stdout,"error while loading %s!\n",tag);
+                fprintf(stdout,"error while loading %s!\n",tag.str().c_str());
                 continue;
             }
 
