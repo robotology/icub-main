@@ -376,12 +376,13 @@ void PmpServer::close()
             eraseGuiItem(GuiRequest("erase",it));
 
             delete it->second;
-            table.erase(it);
 
             printMessage(1,"erasing item %d\n",it->first);
 
             Time::delay(0.02);
         }
+
+        table.clear();
 
         eraseGuiTrajectory();
 
@@ -478,6 +479,9 @@ bool PmpServer::eraseItem(const int item)
         {
             pushEraseGuiItem(it);
 
+            delete it->second;
+            table.erase(it);
+
             printMessage(1,"item %d scheduled for erasing\n",item);
             return true;
         }
@@ -501,8 +505,12 @@ bool PmpServer::clearItems()
     if (isOpen)
     {
         for (map<int,Item*>::iterator it=table.begin(); it!=table.end(); it++)
+        {
             pushEraseGuiItem(it);
+            delete it->second;
+        }
 
+        table.clear();
         printMessage(1,"all items have been scheduled for erasing\n");
         return true;
     }
@@ -1632,7 +1640,6 @@ void PmpServer::pushUpdateGuiItem(map<int,Item*>::iterator &it)
 void PmpServer::pushEraseGuiItem(map<int,Item*>::iterator &it)
 {
     int item=it->first;
-    Item *pItem=it->second;
     GuiRequest update("update",it);
 
     for (unsigned int i=0; i<guiQueue.size(); i++)
@@ -1641,18 +1648,12 @@ void PmpServer::pushEraseGuiItem(map<int,Item*>::iterator &it)
         {
             guiQueue.erase(guiQueue.begin()+i);
             printMessage(5,"remove schedule for gui item %d update\n",item);
-            // here we can "break", but for sake of "robust-programming"
-            // we keep on checking all the requests
+            break;
         }
     }
 
     guiQueue.push_back(GuiRequest("erase",it));
     printMessage(5,"scheduled request for gui item %d erase\n",item);
-
-    delete pItem;
-    table.erase(it);
-
-    printMessage(1,"erasing item %d\n",item);
 }
 
 
