@@ -546,7 +546,7 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
             bName.addString("name");
             bName.addString(type.asString().c_str());
 
-            ok=getObject(type.asString().c_str(),bStereo);
+            getObject(type.asString().c_str(),bStereo);
             break;
         }
     }

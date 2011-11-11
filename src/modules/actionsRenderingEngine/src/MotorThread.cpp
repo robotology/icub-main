@@ -308,7 +308,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 
     if(found && bTarget!=NULL &&  bTarget->check("name"))
         opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
-
+   		
     return found;
 }
 
@@ -2305,6 +2305,9 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
         //compute the offset
         Vector x(3),o(4);
         dragger.ctrl->getPose(x,o);
+        
+        if(options.size()>3)
+        	opcPort.getKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset);
 
         currentKinematicOffset[dragger.arm]=(x-dragger.x0) + currentKinematicOffset[dragger.arm];
 
