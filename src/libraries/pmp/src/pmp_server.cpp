@@ -1323,6 +1323,7 @@ bool PmpServer::read(ConnectionReader &connection)
                  Property options=extractProperty(cmd.get(1));
                  if (options.isNull())
                      reply.addVocab(PMP_VOCAB_CMD_NACK);
+                 else
                  {
                      Vector pos,vel;
                      if (extractVector(options,"x",pos) && extractVector(options,"xdot",vel))
