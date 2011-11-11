@@ -69,3 +69,5 @@ string skinContactList::toString() const{
         ss<<"- "<<it->toString()<<";\n";
     return ss.str();
 }
+
+

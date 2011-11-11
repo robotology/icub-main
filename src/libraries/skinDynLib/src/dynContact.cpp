@@ -239,3 +239,5 @@ bool dynContact::checkVectorDim(const Vector &v, unsigned int dim, const string 
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+

@@ -58,3 +58,4 @@ string dynContactList::toString() const{
         ss<<"- "<<it->toString()<<";\n";
     return ss.str();
 }
+

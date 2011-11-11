@@ -35,3 +35,5 @@ void iCub::skinDynLib::printVector(yarp::sig::Vector &v, std::string description
 	    cout<< setiosflags(ios::fixed)<< setprecision(precision)<< setw(precision+3)<<v(j)<<"\t";
     cout<<endl;
 }
+
+
