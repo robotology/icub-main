@@ -33,6 +33,7 @@
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 #include <iCub/ctrl/math.h>
+#include <string>
 #include <deque>
 
 
@@ -84,7 +85,7 @@ protected:
 
     bool configured;
 
-    bool getItem(yarp::os::Property &options, const char *tag, yarp::sig::Vector &item);
+    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item);
 
     virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x)=0;
     virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x)=0;

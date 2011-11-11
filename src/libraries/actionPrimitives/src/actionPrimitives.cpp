@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <sstream>
 #include <string>
 
 #define RES_WAVER(x)                                (dynamic_cast<ArmWavingMonitor*>(x))
@@ -217,20 +218,13 @@ bool ActionPrimitives::isValid() const
 /************************************************************************/
 string ActionPrimitives::toCompactString(const Vector &v)
 {
-    char buf[255];
-    string ret;
-    int i;
+    ostringstream ret;
+    ret.precision(3);
+    for (int i=0; i<v.length()-1; i++)
+        ret<<std::fixed<<v[i]<<" ";
 
-    for (i=0; i<v.length()-1; i++)
-    {
-        sprintf(buf,"%g ",v[i]);
-        ret+=buf;
-    }
-
-    sprintf(buf,"%g",v[i]);
-    ret+=buf;
-
-    return ret;
+    ret<<std::fixed<<v[v.length()-1];
+    return ret.str();
 }
 
 
@@ -329,13 +323,13 @@ bool ActionPrimitives::configHandSeq(Property &opt)
         // SEQUENCE groups
         for (int i=0; i<numSequences; i++)
         {
-            char seq[255];
-            sprintf(seq,"SEQ_%d",i);
+            ostringstream seq;
+            seq<<"SEQ_"<<i;
 
-            Bottle &bSeq=handSeqProp.findGroup(seq);
+            Bottle &bSeq=handSeqProp.findGroup(seq.str().c_str());
             if (bSeq.isNull())
             {
-                printMessage("WARNING: \"%s\" group is missing\n",seq);
+                printMessage("WARNING: \"%s\" group is missing\n",seq.str().c_str());
                 return false;
             }
 
@@ -1304,13 +1298,13 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
 
     for (int j=0; j<numWayPoints; j++)
     {
-        char wp[255];
-        sprintf(wp,"wp_%d",j);
+        ostringstream wp;
+        wp<<"wp_"<<j;
 
-        Bottle &bWP=bSeq.findGroup(wp);
+        Bottle &bWP=bSeq.findGroup(wp.str().c_str());
         if (bWP.isNull())
         {
-            printMessage("WARNING: \"%s\" entry is missing\n",wp);
+            printMessage("WARNING: \"%s\" entry is missing\n",wp.str().c_str());
             return false;
         }
 
@@ -1374,7 +1368,7 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
             ret=true;   // at least one WP has been added
         else
             printMessage("WARNING: \"%s\" entry is invalid, not added to \"%s\"\n",
-                         wp,handSeqKey.c_str());
+                         wp.str().c_str(),handSeqKey.c_str());
     }
 
     return ret;
@@ -1437,11 +1431,11 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
         // wayPoints parts
         for (unsigned int i=0; i<handWP.size(); i++)
         {
-            char wp[255];
-            sprintf(wp,"wp_%d",i);
+            ostringstream wp;
+            wp<<"wp_"<<i;
 
             Bottle &bWP=sequence.addList();
-            bWP.addString(wp);
+            bWP.addString(wp.str().c_str());
 
             // poss part
             Bottle &bPoss=bWP.addList();

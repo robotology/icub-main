@@ -20,6 +20,7 @@
 #include <iCub/ctrl/neuralNetworks.h>
 
 #include <stdio.h>
+#include <sstream>
 
 using namespace std;
 using namespace yarp::os;
@@ -50,9 +51,9 @@ bool ff2LayNN::isValid()
 
 
 /***************************************************************************/
-bool ff2LayNN::getItem(Property &options, const char *tag, Vector &item)
+bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item)
 {
-    Bottle *b=options.find(tag).asList();
+    Bottle *b=options.find(tag.c_str()).asList();
 
     if (b!=NULL)
     {
@@ -92,12 +93,11 @@ bool ff2LayNN::configure(Property &options)
 
     for (int i=0; i<numHiddenNodes; i++)
     {
-        char tag[255];
+        ostringstream tag;
         Vector item;
 
-        sprintf(tag,"IW_%d",i);
-
-        if (getItem(options,tag,item))
+        tag<<"IW_"<<i;
+        if (getItem(options,tag.str(),item))
             IW.push_back(item);
         else
             return false;
@@ -110,12 +110,11 @@ bool ff2LayNN::configure(Property &options)
 
     for (int i=0; i<numOutputNodes; i++)
     {
-        char tag[255];
+        ostringstream tag;
         Vector item;
 
-        sprintf(tag,"LW_%d",i);
-
-        if (getItem(options,tag,item))
+        tag<<"LW_"<<i;
+        if (getItem(options,tag.str(),item))
             LW.push_back(item);
         else
             return false;
@@ -128,13 +127,12 @@ bool ff2LayNN::configure(Property &options)
 
     for (int i=0; i<numInputNodes; i++)
     {
-        char tagX[255], tagY[255];
+        ostringstream tagX, tagY;
         Vector itemX, itemY;
 
-        sprintf(tagX,"inMinMaxX_%d",i);
-        sprintf(tagY,"inMinMaxY_%d",i);
-
-        if (!getItem(options,tagX,itemX) || !getItem(options,tagY,itemY))
+        tagX<<"inMinMaxX_"<<i;
+        tagY<<"inMinMaxY_"<<i;
+        if (!getItem(options,tagX.str(),itemX) || !getItem(options,tagY.str(),itemY))
             return false;
         else
         {
@@ -152,13 +150,12 @@ bool ff2LayNN::configure(Property &options)
 
     for (int i=0; i<numOutputNodes; i++)
     {
-        char tagX[255], tagY[255];
+        ostringstream tagX, tagY;
         Vector itemX, itemY;
 
-        sprintf(tagX,"outMinMaxX_%d",i);
-        sprintf(tagY,"outMinMaxY_%d",i);
-
-        if (!getItem(options,tagX,itemX) || !getItem(options,tagY,itemY))
+        tagX<<"outMinMaxX_"<<i;
+        tagY<<"outMinMaxY_"<<i;
+        if (!getItem(options,tagX.str(),itemX) || !getItem(options,tagY.str(),itemY))
             return false;
         else
         {

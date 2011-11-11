@@ -17,6 +17,7 @@
 */
 
 #include <stdio.h>
+#include <sstream>
 
 #include <iCub/iKin/iKinFwd.h>
 
@@ -1354,13 +1355,13 @@ bool iKinLimb::fromLinksProperties(const Property &options)
 
     for (int i=0; i<numLinks; i++)
     {
-        char link[255];
-        sprintf(link,"link_%d",i);
+        ostringstream link;
+        link<<"link_"<<i;
 
-        Bottle &bLink=opt.findGroup(link);
+        Bottle &bLink=opt.findGroup(link.str().c_str());
         if (bLink.isNull())
         {
-            fprintf(stderr,"Error: %s is missing!\n",link);
+            fprintf(stderr,"Error: %s is missing!\n",link.str().c_str());
 
             type="right";
             H0.eye();
