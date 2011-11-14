@@ -384,7 +384,8 @@ public:
                                yarp::sig::Vector &qhat) const = 0;
 
     /**
-    * Retrieve the active interface.
+    * Retrieve the interface currently active that controls the 
+    * limb. 
     * @param activeIF a string containing "right" or "left" depending on the
     *           active interface.
     * @return true/false if successful/failed.
@@ -392,7 +393,7 @@ public:
     virtual bool getActiveIF(std::string &activeIF) const = 0;
 
     /**
-    * Set the active interface.
+    * Set the active interface for limb control.
     * @param activeIF a string containing "right" or "left" depending on the
     *           interface to enable.
     * @return true/false if successful/failed.
@@ -400,12 +401,12 @@ public:
     virtual bool setActiveIF(const std::string &activeIF) = 0;
 
     /**
-    * Retrieve the complete simulated trajectory from an initial 
-    * point. 
-    * @param trajPos a deque contained the whole trajectory of points 
-    *            (position).
-    * @param trajOrien a deque contained the whole trajectory of points 
-    *            (orientation).
+    * Retrieve the complete simulated trajectory as evolved from the
+    * current state point. 
+    * @param trajPos a list containing the whole trajectory of 
+    *            points (position).
+    * @param trajOrien a list containing the whole trajectory of 
+    *            points (orientation).
     * @param maxIterations maximum number of iterations performed to reach 
     *            the target.
     * @param Ts integration period [s]. If Ts<=0.0 then the 
