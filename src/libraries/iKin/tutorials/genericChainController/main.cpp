@@ -465,12 +465,10 @@ int main(int argc, char *argv[])
     }
 
     Network yarp;
-
     if (!yarp.checkNetwork())
         return -1;
 
     CtrlModule mod;
-
     return mod.runModule(rf);
 }
 
