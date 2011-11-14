@@ -1160,8 +1160,9 @@ bool PmpServer::getField(Vector &field) const
 {
     if (isOpen)
     {
+        field.resize(x.length(),0.0);
         for (map<int,Item*>::const_iterator it=table.begin(); it!=table.end(); it++) 
-            field=field+it->second->getField(this->x,this->xdot);
+            field=field+it->second->getField(x,xdot);
 
         printMessage(1,"field = %s\n",field.toString().c_str());
         return true;
@@ -1693,9 +1694,9 @@ bool PmpServer::read(ConnectionReader &connection)
 /************************************************************************/
 Property PmpServer::prepareData()
 {
-    Vector field(7);
-    field=0.0;
+    Vector field;
     getField(field);
+
     Value val_field; val_field.fromString(("("+string(field.toString().c_str())+")").c_str());
     Value val_xdot;  val_xdot.fromString(("("+string(xdot.toString().c_str())+")").c_str());  
     Value val_x;     val_x.fromString(("("+string(x.toString().c_str())+")").c_str());        
@@ -1992,7 +1993,7 @@ void PmpServer::handleGuiQueue()
 
 /************************************************************************/
 bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
-                                     const unsigned int maxIterations, const double Ts)
+                              const unsigned int maxIterations, const double Ts)
 {
     if (isOpen)
     {
@@ -2001,8 +2002,7 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
         unsigned int iteration=0;
         while (iteration<maxIterations)
         {
-            Vector field(7);
-            field=0.0;
+            Vector field;
             getField(field);
 
             xdot=If.integrate(field);
@@ -2038,8 +2038,7 @@ void PmpServer::run()
     {
         printMessage(4,"processing %d items\n",table.size());
         
-        Vector field(7);
-        field=0.0;
+        Vector field;
         getField(field);
 
         xdot=If.integrate(field);
