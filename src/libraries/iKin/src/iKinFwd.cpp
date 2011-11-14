@@ -1374,8 +1374,8 @@ bool iKinLimb::fromLinksProperties(const Property &options)
         double D=bLink.check("D",Value(0.0)).asDouble();
         double alpha=CTRL_DEG2RAD*bLink.check("alpha",Value(0.0)).asDouble();
         double offset=CTRL_DEG2RAD*bLink.check("offset",Value(0.0)).asDouble();
-        double min=CTRL_DEG2RAD*bLink.check("min",Value(0.0)).asDouble();
-        double max=CTRL_DEG2RAD*bLink.check("max",Value(0.0)).asDouble();
+        double min=CTRL_DEG2RAD*bLink.check("min",Value(-180.0)).asDouble();
+        double max=CTRL_DEG2RAD*bLink.check("max",Value(180.0)).asDouble();
 
         pushLink(new iKinLink(A,D,alpha,offset,min,max));
 
