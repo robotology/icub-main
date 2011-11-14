@@ -1740,6 +1740,7 @@ bool PmpServer::getActiveIF(string &activeIF) const
         if (!offlineMode)
         {
             activeIF=this->activeIF;
+            printMessage(1,"active interface: %s\n",activeIF.c_str());
             return true;
         }
         else
@@ -1773,8 +1774,9 @@ bool PmpServer::setActiveIF(const string &activeIF)
                         iCtrlActive=iCtrlRight;
                     else
                         iCtrlActive=iCtrlLeft;
-
+                    
                     this->activeIF=activeIF;
+                    printMessage(1,"active interface successfully set to %s\n",activeIF.c_str());
                     return true;
                 }
                 else

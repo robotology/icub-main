@@ -1207,7 +1207,7 @@ bool PmpClient::setActiveIF(const string &activeIF)
         {
             if (reply.get(0).asVocab()==PMP_VOCAB_CMD_ACK)
             {
-                printMessage(1,"active interface successfully set to %s\n",activeIF);
+                printMessage(1,"active interface successfully set to %s\n",activeIF.c_str());
                 return true;
             }
             else
