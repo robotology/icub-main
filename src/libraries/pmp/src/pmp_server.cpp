@@ -340,6 +340,12 @@ bool PmpServer::open(const Property &options)
     rpc.open(("/"+name+"/rpc").c_str());
     rpc.setReader(*this);
 
+    // request high resolution scheduling straightaway
+    Time::turboBoost();
+    
+    setRate(period);
+    start();
+
     if (!offlineMode)
     {
         if ((part=="right_arm") || (part=="both_arms"))
@@ -383,12 +389,6 @@ bool PmpServer::open(const Property &options)
         iCtrlActive->getDOF(dof);
         qhat.resize(dof.length(),0.0);
 
-        // request high resolution scheduling straightaway
-        Time::turboBoost();
-        
-        setRate(period);
-        start();
-        
         t0=Time::now();
     }
 
@@ -403,10 +403,10 @@ void PmpServer::close()
 {
     if (isOpen)
     {
+        if (isRunning())
+            stop();
         if (!offlineMode)
         {
-            if (isRunning())
-                stop();
             if ((part=="right_arm") || (part=="both_arms"))
                 dCtrlRight.close();
             if ((part=="left_arm") || (part=="both_arms"))
@@ -2034,48 +2034,51 @@ void PmpServer::run()
 {
     mutex.wait();
 
-    if (fieldEnabled)
+    if (!offlineMode)
     {
-        printMessage(4,"processing %d items\n",table.size());
-        
-        Vector field;
-        getField(field);
-
-        xdot=If.integrate(field);
-        x=Iv.integrate(xdot);
-
-        if (controlEnabled)
+        if (fieldEnabled)
         {
-            Vector pos,orien;
-            getTargetForCartesianIF(pos,orien);
-            iCtrlActive->goToPose(pos,orien);
-        }
+            printMessage(4,"processing %d items\n",table.size());
+            
+            Vector field;
+            getField(field);
 
-        if (simulationEnabled)
-        {            
-            Vector pos,orien,xdhat,odhat;
-            getTargetForCartesianIF(pos,orien);
+            xdot=If.integrate(field);
+            x=Iv.integrate(xdot);
 
-            if (simulationFirstStep)
-            {                
-                iCtrlActive->askForPose(pos,orien,xdhat,odhat,qhat);
-                simulationFirstStep=false;
-            }
-            else
+            if (controlEnabled)
             {
-                Vector dof;
-                iCtrlActive->getDOF(dof);
-
-                Vector q0;
-                for (int i=0; i<dof.length(); i++)
-                    if (dof[i]>0.0)
-                        q0.push_back(qhat[i]);
-
-                iCtrlActive->askForPose(q0,pos,orien,xdhat,odhat,qhat);
+                Vector pos,orien;
+                getTargetForCartesianIF(pos,orien);
+                iCtrlActive->goToPose(pos,orien);
             }
 
-            copyVectorData(xdhat,xhat);
-            copyVectorData(odhat,xhat);
+            if (simulationEnabled)
+            {            
+                Vector pos,orien,xdhat,odhat;
+                getTargetForCartesianIF(pos,orien);
+
+                if (simulationFirstStep)
+                {                
+                    iCtrlActive->askForPose(pos,orien,xdhat,odhat,qhat);
+                    simulationFirstStep=false;
+                }
+                else
+                {
+                    Vector dof;
+                    iCtrlActive->getDOF(dof);
+
+                    Vector q0;
+                    for (int i=0; i<dof.length(); i++)
+                        if (dof[i]>0.0)
+                            q0.push_back(qhat[i]);
+
+                    iCtrlActive->askForPose(q0,pos,orien,xdhat,odhat,qhat);
+                }
+
+                copyVectorData(xdhat,xhat);
+                copyVectorData(odhat,xhat);
+            }
         }
     }
 
