@@ -37,8 +37,8 @@
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
-#define PMP_MAX_ITERATIONS      1000
-#define PMP_TS                  0.0
+#define PMP_DEFAULT_MAXITERATIONS       1000
+#define PMP_DEFAULT_TS_DISABLED         0.0
 
 namespace iCub
 {
@@ -415,8 +415,8 @@ public:
     */
     virtual bool getTrajectory(std::deque<yarp::sig::Vector> &trajPos,
                                std::deque<yarp::sig::Vector> &trajOrien,
-                               const unsigned int maxIterations=PMP_MAX_ITERATIONS,
-                               const double Ts=PMP_TS) = 0;
+                               const unsigned int maxIterations=PMP_DEFAULT_MAXITERATIONS,
+                               const double Ts=PMP_DEFAULT_TS_DISABLED) = 0;
 
     /**
      * Destructor.

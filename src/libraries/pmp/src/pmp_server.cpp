@@ -1997,7 +1997,9 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 {
     if (isOpen)
     {
-        double _Ts=(Ts<=0.0)?(double)period/1000.0:Ts;
+        double _Ts=(Ts<=PMP_DEFAULT_TS_DISABLED)?(double)period/1000.0:Ts;
+        If.setTs(_Ts);
+        Iv.setTs(_Ts);
 
         unsigned int iteration=0;
         while (iteration<maxIterations)
@@ -2018,6 +2020,9 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
             trajOrien.push_back(orien);
             iteration++;
         }       
+
+        If.setTs((double)period/1000.0);
+        Iv.setTs((double)period/1000.0);
 
         return true;
     }

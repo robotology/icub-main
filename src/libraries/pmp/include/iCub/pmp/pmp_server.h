@@ -242,8 +242,8 @@ public:
     bool setActiveIF(const std::string &activeIF);
     bool getTrajectory(std::deque<yarp::sig::Vector> &trajPos,
                        std::deque<yarp::sig::Vector> &trajOrien,
-                       const unsigned int maxIterations=PMP_MAX_ITERATIONS,
-                       const double Ts=PMP_TS);
+                       const unsigned int maxIterations=PMP_DEFAULT_MAXITERATIONS,
+                       const double Ts=PMP_DEFAULT_TS_DISABLED);
     virtual ~PmpServer();
 };
 
