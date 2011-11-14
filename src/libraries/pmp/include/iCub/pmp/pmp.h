@@ -37,6 +37,9 @@
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
+#define PMP_MAX_ITERATIONS      1000
+#define PMP_TS                  0.0
+
 namespace iCub
 {
 
@@ -84,6 +87,9 @@ public:
     *  
     * \b period <int>: example (period 20), specifies the period 
     *    given in [ms] to generate the pmp field.
+    *  
+    * \b offline: example (offline), lets the client/server start in 
+    *    offline mode.
     *  
     * \b verbosity <int>: example (verbosity 3), specifies the 
     *    verbosity level of print-outs messages.
@@ -376,6 +382,40 @@ public:
     */
     virtual bool getSimulation(yarp::sig::Vector &xhat, yarp::sig::Vector &ohat,
                                yarp::sig::Vector &qhat) const = 0;
+
+    /**
+    * Retrieve the active interface.
+    * @param activeIF a string containing "right" or "left" depending on the
+    *           active interface.
+    * @return true/false if successful/failed.
+    */
+    virtual bool getActiveIF(std::string &activeIF) const = 0;
+
+    /**
+    * Set the active interface.
+    * @param activeIF a string containing "right" or "left" depending on the
+    *           interface to enable.
+    * @return true/false if successful/failed.
+    */
+    virtual bool setActiveIF(const std::string &activeIF) = 0;
+
+    /**
+    * Retrieve the complete simulated trajectory from an initial 
+    * point. 
+    * @param trajPos a deque contained the whole trajectory of points 
+    *            (position).
+    * @param trajOrien a deque contained the whole trajectory of points 
+    *            (orientation).
+    * @param maxIterations maximum number of iterations performed to reach 
+    *            the target.
+    * @param Ts integration period [s]. If Ts<=0.0 then the 
+    *           configuration option "period" is used.
+    * @return true/false if successful/failed.
+    */
+    virtual bool getTrajectory(std::deque<yarp::sig::Vector> &trajPos,
+                               std::deque<yarp::sig::Vector> &trajOrien,
+                               const unsigned int maxIterations=PMP_MAX_ITERATIONS,
+                               const double Ts=PMP_TS) = 0;
 
     /**
      * Destructor.

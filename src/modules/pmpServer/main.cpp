@@ -89,7 +89,7 @@ public:
         string device=rf.check("device",Value("cartesiancontrollerclient")).asString().c_str();
         string name=rf.check("name",Value("pmp_server")).asString().c_str();
         string robot=rf.check("robot",Value("icub")).asString().c_str();
-        string part=rf.check("part",Value("right_arm")).asString().c_str();
+        string part=rf.check("part",Value("both_arms")).asString().c_str();
 
         Property options;
         options.put("verbosity",verbosity);

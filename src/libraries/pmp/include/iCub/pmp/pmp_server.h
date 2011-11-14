@@ -115,20 +115,22 @@ protected:
     bool controlEnabled;
     bool simulationEnabled;
     bool simulationFirstStep;
+    bool offlineMode;
     bool doInitGuiTrajectory;
     int  verbosity;
+    int  period;
 
     std::string device;
     std::string name;
     std::string robot;
     std::string part;
+    std::string activeIF;
 
     std::map<int,Item*> table;
     int itCnt;
     int doTrajectoryCnt;
     double t0;
 
-    yarp::sig::Vector field;
     yarp::sig::Vector xdot;
     yarp::sig::Vector x;
     yarp::sig::Vector xhat;
@@ -141,8 +143,11 @@ protected:
     iCub::ctrl::Integrator Iv;
 
     yarp::os::Semaphore           mutex;
-    yarp::dev::PolyDriver         dCtrl;
-    yarp::dev::ICartesianControl *iCtrl;
+    yarp::dev::PolyDriver         dCtrlLeft;
+    yarp::dev::ICartesianControl *iCtrlLeft;
+    yarp::dev::PolyDriver         dCtrlRight;
+    yarp::dev::ICartesianControl *iCtrlRight;
+    yarp::dev::ICartesianControl *iCtrlActive;
 
     yarp::os::Port data;
     yarp::os::Port gui;
@@ -233,6 +238,12 @@ public:
     bool getField(yarp::sig::Vector &field) const;
     bool getSimulation(yarp::sig::Vector &xhat, yarp::sig::Vector &ohat,
                        yarp::sig::Vector &qhat) const;
+    bool getActiveIF(std::string &activeIF) const;
+    bool setActiveIF(const std::string &activeIF);
+    bool getTrajectory(std::deque<yarp::sig::Vector> &trajPos,
+                       std::deque<yarp::sig::Vector> &trajOrien,
+                       const unsigned int maxIterations=PMP_MAX_ITERATIONS,
+                       const double Ts=PMP_TS);
     virtual ~PmpServer();
 };
 

@@ -1154,4 +1154,157 @@ bool PmpClient::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat) const
 }
 
 
+/************************************************************************/
+bool PmpClient::getActiveIF(string &activeIF) const
+{
+    if (isOpen)
+    {
+        printMessage(2,"request to know the active interface\n");
+
+        Bottle cmd,reply;
+        cmd.addVocab(PMP_VOCAB_CMD_GETACTIF);
+
+        if (rpc.write(cmd,reply))
+        {
+            if (reply.get(0).asVocab()==PMP_VOCAB_CMD_ACK)
+            {
+                activeIF=reply.get(1).asString().c_str();
+                printMessage(1,"active interface: %s\n",activeIF.c_str());
+                return true;
+            }
+            else
+            {
+                printMessage(1,"something went wrong: request rejected\n");
+                return false;
+            }
+        }
+        else
+        {
+            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        printMessage(1,"client is not open\n");
+        return false;
+    }
+}
+
+
+/************************************************************************/
+bool PmpClient::setActiveIF(const string &activeIF)
+{
+    if (isOpen)
+    {
+        printMessage(2,"request to set the active interface\n");
+
+        Bottle cmd,reply;
+        cmd.addVocab(PMP_VOCAB_CMD_SETACTIF);
+        cmd.addString(activeIF.c_str());
+
+        if (rpc.write(cmd,reply))
+        {
+            if (reply.get(0).asVocab()==PMP_VOCAB_CMD_ACK)
+            {
+                printMessage(1,"active interface successfully set to %s\n",activeIF);
+                return true;
+            }
+            else
+            {
+                printMessage(1,"something went wrong: request rejected\n");
+                return false;
+            }
+        }
+        else
+        {
+            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        printMessage(1,"client is not open\n");
+        return false;
+    }
+}
+
+
+/************************************************************************/
+bool PmpClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
+                                     const unsigned int maxIterations, const double Ts)
+{
+    if (isOpen)
+    {
+        printMessage(2,"request to retrieve the whole trajectory\n");
+
+        Bottle cmd,reply;
+        cmd.addVocab(PMP_VOCAB_CMD_GETTRAJ);
+         
+        Property options;
+        options.put("maxIterations",(int)maxIterations);
+        options.put("Ts",Ts);
+
+        string options_str=options.toString().c_str();
+
+        Value val;
+        val.fromString(("("+options_str+")").c_str());
+
+        cmd.add(val);
+        if (rpc.write(cmd,reply))
+        {
+            if (reply.get(0).asVocab()==PMP_VOCAB_CMD_ACK)
+            {
+                if (Bottle *BtrajPos=reply.get(1).asList())
+                {
+                    if (BtrajPos->get(0).asString()=="trajPos")
+                    {
+                        for (int i=1; i<BtrajPos->size(); i++)
+                        {
+                            Vector pos(3);
+                            Bottle *point=BtrajPos->get(i).asList();
+                            for (int j=0; j<point->size(); j++)
+                                pos[j]=point->get(j).asDouble();
+                            trajPos.push_back(pos);
+                        }
+
+                        printMessage(1,"trajectory in position has been computed\n");
+                        return true;
+                    }
+                }
+                if (Bottle *BtrajOrien=reply.get(2).asList())
+                {
+                    if (BtrajOrien->get(0).asString()=="trajOrien")
+                    {
+                        for (int i=1; i<BtrajOrien->size(); i++)
+                        {
+                            Vector orien(4);
+                            Bottle *point=BtrajOrien->get(i).asList();
+                            for (int j=0; j<point->size(); j++)
+                                orien[j]=point->get(j).asDouble();
+                            trajOrien.push_back(orien);
+                        }
+
+                        printMessage(1,"trajectory in orientation has been computed\n");
+                        return true;
+                    }
+                }
+            }
+
+            printMessage(1,"something went wrong: request rejected\n");
+            return false;
+        }
+        else
+        {
+            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        printMessage(1,"client is not open\n");
+        return false;
+    }
+}
+
 

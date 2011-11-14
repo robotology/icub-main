@@ -83,6 +83,12 @@ public:
     bool getField(yarp::sig::Vector &field) const;
     bool getSimulation(yarp::sig::Vector &xhat, yarp::sig::Vector &ohat,
                        yarp::sig::Vector &qhat) const;
+    bool getActiveIF(std::string &activeIF) const;
+    bool setActiveIF(const std::string &activeIF);
+    bool getTrajectory(std::deque<yarp::sig::Vector> &trajPos,
+                       std::deque<yarp::sig::Vector> &trajOrien,
+                       const unsigned int maxIterations=PMP_MAX_ITERATIONS,
+                       const double Ts=PMP_TS);
     virtual ~PmpClient();
 };
 

@@ -230,7 +230,6 @@ Vector Obstacle_Gaussian::getField(const Vector &x, const Vector &xdot)
 }
 
 
-
 /************************************************************************/
 GuiReporter::GuiReporter()
 {
@@ -262,13 +261,15 @@ PmpServer::PmpServer() : RateThread(20), If(0.0,Vector(7)), Iv(0.0,Vector(7))
     simulationEnabled=false;
     simulationFirstStep=false;
     doInitGuiTrajectory=false;
+    offlineMode=false;
     verbosity=0;
     name="";
-    iCtrl=NULL;
+    activeIF="";
+    iCtrlRight=NULL;
+    iCtrlLeft=NULL;
     itCnt=0;
     doTrajectoryCnt=0;
 
-    field.resize(7,0.0);
     xdot.resize(7,0.0);
     x.resize(7,0.0);
     xhat.resize(7,0.0);
@@ -312,22 +313,16 @@ bool PmpServer::open(const Property &options)
     device=opt.check("device",Value("cartesiancontrollerclient")).asString().c_str();
     name=opt.check("name",Value("pmp_server")).asString().c_str();
     robot=opt.check("robot",Value("icub")).asString().c_str();
-    part=opt.check("part",Value("right_arm")).asString().c_str();
-    int period=opt.check("period",Value(20)).asInt();
+    part=opt.check("part",Value("both_arms")).asString().c_str();
+    offlineMode=opt.check("offline");
 
-    Property optCtrl;
-    optCtrl.put("device",device.c_str());
-    optCtrl.put("remote",("/"+robot+"/cartesianController/"+part).c_str());
-    optCtrl.put("local",("/"+name+"/cartesian").c_str());
-
-    if (dCtrl.open(optCtrl))
-        dCtrl.view(iCtrl);
-    else
+    if ((part!="right_arm") && (part!="left_arm") && (part!="both_arms"))
+    {
+        printMessage(1,"server failed to open, unknown part specified\n");
         return false;
+    }
 
-    Vector dof;
-    iCtrl->getDOF(dof);
-    qhat.resize(dof.length(),0.0);
+    period=opt.check("period",Value(20)).asInt();
 
     double Ts=(double)period/1000.0;
 
@@ -340,20 +335,64 @@ bool PmpServer::open(const Property &options)
     reporter.setServer(this);
     gui.setReporter(reporter);
 
-    data.open(("/"+name+"/data:o").c_str());
+    data.open(("/"+name+"/data:o").c_str());    
     gui.open(("/"+name+"/gui:o").c_str());
     rpc.open(("/"+name+"/rpc").c_str());
     rpc.setReader(*this);
 
-    // request high resolution scheduling straightaway
-    Time::turboBoost();
+    if (!offlineMode)
+    {
+        if ((part=="right_arm") || (part=="both_arms"))
+        {
+            Property optCtrlRight;
+            optCtrlRight.put("device",device.c_str());
+            optCtrlRight.put("remote",("/"+robot+"/cartesianController/right_arm").c_str());
+            optCtrlRight.put("local",("/"+name+"_right/cartesian").c_str());
 
-    setRate(period);
-    start();
-    
-    t0=Time::now();
+            if (dCtrlRight.open(optCtrlRight))
+                dCtrlRight.view(iCtrlRight);
+            else
+                return false;
+        }
+        if ((part=="left_arm") || (part=="both_arms"))
+        {
+            Property optCtrlLeft;
+            optCtrlLeft.put("device",device.c_str());
+            optCtrlLeft.put("remote",("/"+robot+"/cartesianController/left_arm").c_str());
+            optCtrlLeft.put("local",("/"+name+"_left/cartesian").c_str());
 
-    printMessage(1,"server successfully open\n");
+            if (dCtrlLeft.open(optCtrlLeft))
+                dCtrlLeft.view(iCtrlLeft);
+            else
+                return false;
+
+        }
+
+        if ((part=="both_arms") || (part=="right_arm"))
+        {
+            iCtrlActive=iCtrlRight;
+            activeIF="right";
+        }
+        else
+        {
+            iCtrlActive=iCtrlLeft;
+            activeIF="left";
+        }
+
+        Vector dof;
+        iCtrlActive->getDOF(dof);
+        qhat.resize(dof.length(),0.0);
+
+        // request high resolution scheduling straightaway
+        Time::turboBoost();
+        
+        setRate(period);
+        start();
+        
+        t0=Time::now();
+    }
+
+    printMessage(1,"server successfully open%s\n", offlineMode?" (offline mode)":"");
 
     return isOpen=true;
 }
@@ -364,8 +403,15 @@ void PmpServer::close()
 {
     if (isOpen)
     {
-        if (isRunning())
-            stop();
+        if (!offlineMode)
+        {
+            if (isRunning())
+                stop();
+            if ((part=="right_arm") || (part=="both_arms"))
+                dCtrlRight.close();
+            if ((part=="left_arm") || (part=="both_arms"))
+                dCtrlLeft.close();
+        }
 
         mutex.wait();
 
@@ -392,7 +438,6 @@ void PmpServer::close()
         gui.interrupt();
         gui.close();
 
-        dCtrl.close();  
         isOpen=false;
 
         mutex.post();
@@ -628,7 +673,10 @@ bool PmpServer::disableField()
 {
     if (isOpen)
     {
-        iCtrl->stopControl();
+        if (!offlineMode)
+        {
+            iCtrlActive->stopControl();
+        }
 
         fieldEnabled=false;
 
@@ -666,16 +714,24 @@ bool PmpServer::enableControl()
 {
     if (isOpen)
     {
-        controlEnabled=true;
-        printMessage(1,"control enabled\n");
-
-        if (simulationEnabled)
+        if (!offlineMode)
         {
-            simulationEnabled=false;
-            printMessage(2,"simulation gets automatically disabled\n");
-        }
+            controlEnabled=true;
+            printMessage(1,"control enabled\n");
 
-        return true;
+            if (simulationEnabled)
+            {
+                simulationEnabled=false;
+                printMessage(2,"simulation gets automatically disabled\n");
+            }
+
+            return true;
+        }
+        else
+        {
+            printMessage(1,"it is not possible to enable control in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -690,12 +746,20 @@ bool PmpServer::disableControl()
 {
     if (isOpen)
     {
-        iCtrl->stopControl();
+        if (!offlineMode)
+        {
+            iCtrlActive->stopControl();
 
-        controlEnabled=false;
+            controlEnabled=false;
 
-        printMessage(1,"control disabled\n");
-        return true;
+            printMessage(1,"control disabled\n");
+            return true;
+        }
+        else
+        {
+            printMessage(1,"it is not possible to disable control in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -710,10 +774,18 @@ bool PmpServer::getControlStatus(bool &status) const
 {
     if (isOpen)
     {
-        status=controlEnabled;
+        if (!offlineMode)
+        {
+            status=controlEnabled;
 
-        printMessage(1,"control status = %s\n",status?"on":"off");
-        return true;
+            printMessage(1,"control status = %s\n",status?"on":"off");
+            return true;
+        }
+        else
+        {
+            printMessage(1,"there is no possibility to enable or disable control in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -728,17 +800,25 @@ bool PmpServer::enableSimulation()
 {
     if (isOpen)
     {
-        simulationEnabled=true;
-        simulationFirstStep=true;
-        printMessage(1,"simulation enabled\n");
-
-        if (controlEnabled)
+        if (!offlineMode)
         {
-            controlEnabled=false;
-            printMessage(2,"control gets automatically disabled\n");
-        }
+            simulationEnabled=true;
+            simulationFirstStep=true;
+            printMessage(1,"simulation enabled\n");
 
-        return true;
+            if (controlEnabled)
+            {
+                controlEnabled=false;
+                printMessage(2,"control gets automatically disabled\n");
+            }
+
+            return true;
+        }
+        else
+        {
+            printMessage(1,"it is not possible to enable simulation in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -753,10 +833,18 @@ bool PmpServer::disableSimulation()
 {
     if (isOpen)
     {
-        simulationEnabled=false;
+        if (!offlineMode)
+        {
+            simulationEnabled=false;
 
-        printMessage(1,"simulation disabled\n");
-        return true;
+            printMessage(1,"simulation disabled\n");
+            return true;
+        }
+        else
+        {
+            printMessage(1,"it is not possible to disable simulation in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -771,10 +859,18 @@ bool PmpServer::getSimulationStatus(bool &status) const
 {
     if (isOpen)
     {
-        status=simulationEnabled;
+        if (!offlineMode)
+        {
+            status=simulationEnabled;
 
-        printMessage(1,"simulation status = %s\n",status?"on":"off");
-        return true;
+            printMessage(1,"simulation status = %s\n",status?"on":"off");
+            return true;
+        }
+        else
+        {
+            printMessage(1,"there is no possibility to enable or disable simulation in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -789,14 +885,17 @@ bool PmpServer::setPeriod(const int period)
 {
     if (isOpen)
     {
-        double Ts=(double)period/1000.0;
+        this->period=period;
+        double Ts=(double)this->period/1000.0;
 
         If.setTs(Ts);
         Iv.setTs(Ts);
 
-        setRate(period);
-
-        printMessage(1,"thread period changed to %d [ms]\n",period);
+        if (!offlineMode)
+        {        
+            setRate(this->period);
+            printMessage(1,"thread period changed to %d [ms]\n",period);
+        }
         return true;
     }
     else
@@ -812,9 +911,17 @@ bool PmpServer::getPeriod(int &period) const
 {
     if (isOpen)
     {
-        period=(int)const_cast<PmpServer*>(this)->getRate();
+        if (!offlineMode)
+        {
+            period=(int)const_cast<PmpServer*>(this)->getRate();
+            printMessage(1,"thread period is %d [ms]\n",period);
+        }
+        else
+        {
+            period=this->period;
+            printMessage(1,"integration time is %d [ms]\n",this->period);
+        }
 
-        printMessage(1,"thread period is %d [ms]\n",period);
         return true;
     }
     else
@@ -856,22 +963,30 @@ bool PmpServer::setPointStateToTool()
 {
     if (isOpen)
     {
-        Vector x,o,xdot,odot;
-        getTool(x,o);
-        iCtrl->getTaskVelocities(xdot,odot);
-        odot=0.0;
+        if (!offlineMode)
+        {
+            Vector x,o,xdot,odot;
+            getTool(x,o);
+            iCtrlActive->getTaskVelocities(xdot,odot);
+            odot=0.0;
 
-        copyVectorData(x,this->x);
-        copyVectorData(o,this->x);
-        copyVectorData(xdot,this->xdot);
-        copyVectorData(odot,this->xdot);
+            copyVectorData(x,this->x);
+            copyVectorData(o,this->x);
+            copyVectorData(xdot,this->xdot);
+            copyVectorData(odot,this->xdot);
 
-        If.reset(this->xdot);
-        Iv.reset(this->x);
+            If.reset(this->xdot);
+            Iv.reset(this->x);
 
-        printMessage(1,"point state changed to x = %s; xdot = %s\n",
-                     this->x.toString().c_str(),this->xdot.toString().c_str());
-        return true;
+            printMessage(1,"point state changed to x = %s; xdot = %s\n",
+                         this->x.toString().c_str(),this->xdot.toString().c_str());
+            return true;
+        }
+        else
+        {
+            printMessage(1,"no connection with the robot in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -886,22 +1001,30 @@ bool PmpServer::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
 {
     if (isOpen)
     {
-        if ((x.length()<3) || (o.length()<4))
+        if (!offlineMode)
         {
-            printMessage(1,"problem with vector lengths\n");
-            return false;
+            if ((x.length()<3) || (o.length()<4))
+            {
+                printMessage(1,"problem with vector lengths\n");
+                return false;
+            }
+            else
+            {
+                toolFrame=axis2dcm(o);
+                toolFrame(0,3)=x[0];
+                toolFrame(1,3)=x[1];
+                toolFrame(2,3)=x[2];
+
+                invToolFrame=SE3inv(toolFrame);
+
+                printMessage(1,"attach tool frame = %s\n",toolFrame.toString().c_str());
+                return true;
+            }
         }
         else
         {
-            toolFrame=axis2dcm(o);
-            toolFrame(0,3)=x[0];
-            toolFrame(1,3)=x[1];
-            toolFrame(2,3)=x[2];
-
-            invToolFrame=SE3inv(toolFrame);
-
-            printMessage(1,"attach tool frame = %s\n",toolFrame.toString().c_str());
-            return true;
+            printMessage(1,"it is not possible to attach frame in offline mode\n");
+            return false;
         }
     }
     else
@@ -917,14 +1040,22 @@ bool PmpServer::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o) const
 {
     if (isOpen)
     {
-        x.resize(3);
-        x[0]=toolFrame(0,3);
-        x[1]=toolFrame(1,3);
-        x[2]=toolFrame(2,3);
-        o=dcm2axis(toolFrame);
+        if (!offlineMode)
+        {
+            x.resize(3);
+            x[0]=toolFrame(0,3);
+            x[1]=toolFrame(1,3);
+            x[2]=toolFrame(2,3);
+            o=dcm2axis(toolFrame);
 
-        printMessage(1,"tool frame currently attached is = %s\n",toolFrame.toString().c_str());
-        return true;
+            printMessage(1,"tool frame currently attached is = %s\n",toolFrame.toString().c_str());
+            return true;
+        }
+        else
+        {
+            printMessage(1,"there is no tool in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -939,10 +1070,18 @@ bool PmpServer::removeToolFrame()
 {
     if (isOpen)
     {
-        toolFrame=invToolFrame=eye(4,4);
+        if (!offlineMode)
+        {
+            toolFrame=invToolFrame=eye(4,4);
 
-        printMessage(1,"tool frame removed\n");
-        return true;
+            printMessage(1,"tool frame removed\n");
+            return true;
+        }
+        else
+        {
+            printMessage(1,"there is no tool in offline mode\n");
+            return false;
+        }   
     }
     else
     {
@@ -957,23 +1096,31 @@ bool PmpServer::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o) const
 {
     if (isOpen)
     {
-        Vector pos,orien;
-        iCtrl->getPose(pos,orien);
+        if (!offlineMode)
+        {
+            Vector pos,orien;
+            iCtrlActive->getPose(pos,orien);
 
-        Matrix frame1=axis2dcm(orien);
-        frame1(0,3)=pos[0];
-        frame1(1,3)=pos[1];
-        frame1(2,3)=pos[2];
+            Matrix frame1=axis2dcm(orien);
+            frame1(0,3)=pos[0];
+            frame1(1,3)=pos[1];
+            frame1(2,3)=pos[2];
 
-        Matrix frame2=frame1*toolFrame;
-        x.resize(3);
-        x[0]=frame2(0,3);
-        x[1]=frame2(1,3);
-        x[2]=frame2(2,3);
-        o=dcm2axis(frame2);
+            Matrix frame2=frame1*toolFrame;
+            x.resize(3);
+            x[0]=frame2(0,3);
+            x[1]=frame2(1,3);
+            x[2]=frame2(2,3);
+            o=dcm2axis(frame2);
 
-        printMessage(1,"tool state is = %s\n",frame2.toString().c_str());
-        return true;
+            printMessage(1,"tool state is = %s\n",frame2.toString().c_str());
+            return true;
+        }
+        else
+        {
+            printMessage(1,"there is no tool in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -1013,7 +1160,8 @@ bool PmpServer::getField(Vector &field) const
 {
     if (isOpen)
     {
-        field=this->field;
+        for (map<int,Item*>::const_iterator it=table.begin(); it!=table.end(); it++) 
+            field=field+it->second->getField(this->x,this->xdot);
 
         printMessage(1,"field = %s\n",field.toString().c_str());
         return true;
@@ -1031,15 +1179,23 @@ bool PmpServer::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat) const
 {
     if (isOpen)
     {
-        xhat=getVectorPos(xhat);
-        ohat=getVectorOrien(xhat);
-        qhat=this->qhat;
+        if (!offlineMode)
+        {
+            xhat=getVectorPos(xhat);
+            ohat=getVectorOrien(xhat);
+            qhat=this->qhat;
 
-        Vector &_xhat=const_cast<Vector&>(this->xhat);
+            Vector &_xhat=const_cast<Vector&>(this->xhat);
 
-        printMessage(1,"simulated end-effector pose is xhat = %s; part configuration is qhat = %s\n",
-                     _xhat.toString().c_str(),qhat.toString().c_str());
-        return true;
+            printMessage(1,"simulated end-effector pose is xhat = %s; part configuration is qhat = %s\n",
+                         _xhat.toString().c_str(),qhat.toString().c_str());
+            return true;
+        }
+        else
+        {
+            printMessage(1,"there is no possibility to enable simulation in offline mode\n");
+            return false;
+        }
     }
     else
     {
@@ -1306,6 +1462,75 @@ bool PmpServer::read(ConnectionReader &connection)
          }
 
          //-----------------
+         case PMP_VOCAB_CMD_SETACTIF:
+         {
+             if (cmd.size()<2)
+                 reply.addVocab(PMP_VOCAB_CMD_NACK);
+             else if (setActiveIF(cmd.get(1).asString().c_str()))
+                 reply.addVocab(PMP_VOCAB_CMD_ACK);
+             else
+                 reply.addVocab(PMP_VOCAB_CMD_NACK);
+
+             break;
+         }
+
+         //-----------------
+         case PMP_VOCAB_CMD_GETACTIF:
+         {
+             string _activeIF;
+             if (getActiveIF(_activeIF))
+             {
+                 reply.addVocab(PMP_VOCAB_CMD_ACK);
+                 reply.addString(_activeIF.c_str());
+             }
+             else
+                 reply.addVocab(PMP_VOCAB_CMD_NACK);
+
+             break;
+         }
+
+         //-----------------
+         case PMP_VOCAB_CMD_GETTRAJ:
+         {
+             Property options=extractProperty(cmd.get(1));
+             if (options.isNull())
+                 reply.addVocab(PMP_VOCAB_CMD_NACK);
+             else
+             {
+                 int maxIterations=options.find("maxIterations").asInt();
+                 double Ts=options.find("Ts").asDouble();
+                 deque<Vector> trajPos;
+                 deque<Vector> trajOrien;
+                 if (getTrajectory(trajPos,trajOrien,maxIterations,Ts))
+                 {
+                     reply.addVocab(PMP_VOCAB_CMD_ACK);
+
+                     Bottle &bPos=reply.addList();
+                     bPos.addString("trajPos");
+                     for (unsigned int i=0; i<trajPos.size(); i++)
+                     {
+                         Bottle &point=bPos.addList();
+                         for (int j=0; j<trajPos[i].size(); j++)
+                            point.addDouble(trajPos[i][j]);
+                     }
+
+                     Bottle &bOrien=reply.addList();
+                     bOrien.addString("trajOrien");
+                     for (unsigned int i=0; i<trajOrien.size(); i++)
+                     {
+                         Bottle &point=bOrien.addList();
+                         for (int j=0; j<trajOrien[i].size(); j++)
+                            point.addDouble(trajOrien[i][j]);
+                     }
+                }
+                else
+                    reply.addVocab(PMP_VOCAB_CMD_NACK);
+             }
+
+             break;
+         }
+
+         //-----------------
          case PMP_VOCAB_CMD_SETSTATETOTOOL:
          {
              if (cmd.size()<1)
@@ -1468,6 +1693,9 @@ bool PmpServer::read(ConnectionReader &connection)
 /************************************************************************/
 Property PmpServer::prepareData()
 {
+    Vector field(7);
+    field=0.0;
+    getField(field);
     Value val_field; val_field.fromString(("("+string(field.toString().c_str())+")").c_str());
     Value val_xdot;  val_xdot.fromString(("("+string(xdot.toString().c_str())+")").c_str());  
     Value val_x;     val_x.fromString(("("+string(x.toString().c_str())+")").c_str());        
@@ -1501,6 +1729,77 @@ void PmpServer::getTargetForCartesianIF(Vector &pos, Vector &orien)
     pos[1]=frame2(1,3);
     pos[2]=frame2(2,3);
     orien=dcm2axis(frame2);
+}
+
+
+/************************************************************************/
+bool PmpServer::getActiveIF(string &activeIF) const
+{
+    if (isOpen)
+    {
+        if (!offlineMode)
+        {
+            activeIF=this->activeIF;
+            return true;
+        }
+        else
+        {
+            activeIF="";
+            printMessage(1,"no connection with the robot in offline mode\n");
+            return false;
+        }
+    }
+    else
+    {
+        printMessage(1,"server is not open\n");
+        return false;
+    }
+}
+
+
+/************************************************************************/
+bool PmpServer::setActiveIF(const string &activeIF)
+{
+    if (isOpen)
+    {
+        if (!offlineMode)
+        {
+            if (part=="both_arms")
+            {
+                if ((activeIF=="right") || (activeIF=="left"))
+                {    
+                    iCtrlActive->stopControl();
+                    if (activeIF=="right")
+                        iCtrlActive=iCtrlRight;
+                    else
+                        iCtrlActive=iCtrlLeft;
+
+                    this->activeIF=activeIF;
+                    return true;
+                }
+                else
+                {
+                    printMessage(1,"wrong value specified, it should be \"right\" or \"left\"\n");
+                    return false;
+                }
+            }
+            else
+            {
+                printMessage(1,"cannot swap arm\n");
+                return false;
+            }
+        }
+        else
+        {            
+            printMessage(1,"no connection with the robot in offline mode\n");
+            return false;
+        }
+    }
+    else
+    {
+        printMessage(1,"server is not open\n");
+        return false;
+    }
 }
 
 
@@ -1690,6 +1989,45 @@ void PmpServer::handleGuiQueue()
 
 
 /************************************************************************/
+bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
+                                     const unsigned int maxIterations, const double Ts)
+{
+    if (isOpen)
+    {
+        double _Ts=(Ts<=0.0)?(double)period/1000.0:Ts;
+
+        unsigned int iteration=0;
+        while (iteration<maxIterations)
+        {
+            Vector field(7);
+            field=0.0;
+            getField(field);
+
+            xdot=If.integrate(field);
+            x=Iv.integrate(xdot);
+
+            Vector pos(3),orien(4);
+            for (int i=0; i<pos.length(); i++)
+                pos[i]=x[i];
+            for (int j=0; j<orien.length(); j++)
+                orien[j]=x[j+3];
+
+            trajPos.push_back(pos);
+            trajOrien.push_back(orien);
+            iteration++;
+        }       
+
+        return true;
+    }
+    else
+    {
+        printMessage(1,"server is not open\n");
+        return false;
+    }
+}
+
+
+/************************************************************************/
 void PmpServer::run()
 {
     mutex.wait();
@@ -1698,9 +2036,9 @@ void PmpServer::run()
     {
         printMessage(4,"processing %d items\n",table.size());
         
+        Vector field(7);
         field=0.0;
-        for (map<int,Item*>::iterator it=table.begin(); it!=table.end(); it++) 
-            field=field+it->second->getField(x,xdot);
+        getField(field);
 
         xdot=If.integrate(field);
         x=Iv.integrate(xdot);
@@ -1709,7 +2047,7 @@ void PmpServer::run()
         {
             Vector pos,orien;
             getTargetForCartesianIF(pos,orien);
-            iCtrl->goToPose(pos,orien);
+            iCtrlActive->goToPose(pos,orien);
         }
 
         if (simulationEnabled)
@@ -1719,20 +2057,20 @@ void PmpServer::run()
 
             if (simulationFirstStep)
             {                
-                iCtrl->askForPose(pos,orien,xdhat,odhat,qhat);
+                iCtrlActive->askForPose(pos,orien,xdhat,odhat,qhat);
                 simulationFirstStep=false;
             }
             else
             {
                 Vector dof;
-                iCtrl->getDOF(dof);
+                iCtrlActive->getDOF(dof);
 
                 Vector q0;
                 for (int i=0; i<dof.length(); i++)
                     if (dof[i]>0.0)
                         q0.push_back(qhat[i]);
 
-                iCtrl->askForPose(q0,pos,orien,xdhat,odhat,qhat);
+                iCtrlActive->askForPose(q0,pos,orien,xdhat,odhat,qhat);
             }
 
             copyVectorData(xdhat,xhat);
