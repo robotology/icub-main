@@ -518,7 +518,7 @@ void inverseDynamics::run()
     dynContactList contactList = icub->upperTorso->leftSensor->getContactList();
     dynContactList contactListR = icub->upperTorso->rightSensor->getContactList();
     contactList.insert(contactList.begin(), contactListR.begin(), contactListR.end());
-    printf("%s\n", contactList.toString().c_str());
+    //printf("%s\n", contactList.toString().c_str());
 
     F_ext_left_arm = F_ext_right_arm = F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
     int eeInd = icub->upperTorso->left->getN()-1;
