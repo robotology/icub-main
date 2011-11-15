@@ -405,7 +405,7 @@ public:
         }
 
         // get a target object position from a YARP port
-        Bottle *b=inPort.read();	// blocking call
+        Bottle *b=inPort.read();    // blocking call
 
         if (b!=NULL)
         {
