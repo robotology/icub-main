@@ -184,8 +184,6 @@ ActionPrimitives::ActionPrimitives(Property &opt) :
 /************************************************************************/
 void ActionPrimitives::init()
 {
-    polyHand=polyCart=NULL;
-
     armWaver=NULL;
     actionClb=NULL;
 
@@ -366,7 +364,7 @@ bool ActionPrimitives::configGraspModel(Property &opt)
         string modelType=opt.find("grasp_model_type").asString().c_str();
         if (modelType!="none")
         {
-            if (opt.check("grasp_model_file"))            
+            if (opt.check("grasp_model_file"))
             {
                 if (modelType=="springy")
                     graspModel=new SpringyFingersModel;
@@ -441,9 +439,7 @@ bool ActionPrimitives::open(Property &opt)
     Property optPolyHand("(device remote_controlboard)");
     optPolyHand.put("remote",("/"+robot+"/"+part).c_str());
     optPolyHand.put("local",("/"+local+"/"+part+"/position").c_str());
-
-    polyHand=new PolyDriver;
-    if (!polyHand->open(optPolyHand))
+    if (!polyHand.open(optPolyHand))
     {
         close();
         return false;
@@ -453,18 +449,16 @@ bool ActionPrimitives::open(Property &opt)
     Property optPolyCart("(device cartesiancontrollerclient)");
     optPolyCart.put("remote",("/"+robot+"/cartesianController/"+part).c_str());
     optPolyCart.put("local",("/"+local+"/"+part+"/cartesian").c_str());
-
-    polyCart=new PolyDriver;
-    if (!polyCart->open(optPolyCart))
+    if (!polyCart.open(optPolyCart))
     {
         close();
         return false;
     }
 
     // open views
-    polyHand->view(encCtrl);
-    polyHand->view(posCtrl);
-    polyCart->view(cartCtrl);
+    polyHand.view(encCtrl);
+    polyHand.view(posCtrl);
+    polyCart.view(cartCtrl);
 
     // latch the controller context
     cartCtrl->storeContext(&startup_context_id);
@@ -534,6 +528,7 @@ void ActionPrimitives::close()
         stop();
 
         delete armWaver;
+        armWaver=NULL;
     }
 
     if (isRunning())
@@ -542,27 +537,27 @@ void ActionPrimitives::close()
         stop();
     }
 
-    if ((polyHand!=NULL) && (polyCart!=NULL))
-    {
-        if (polyHand->isValid() && polyCart->isValid())
-            stopControl();
-    }
+    if (polyHand.isValid() && polyCart.isValid())
+        stopControl();
 
-    if (polyHand!=NULL)
+    if (polyHand.isValid())
     {
         printMessage("closing hand driver ...\n");
-        delete polyHand;
+        polyHand.close();
     }
 
-    if (polyCart!=NULL)
+    if (polyCart.isValid())
     {
         printMessage("closing cartesian driver ...\n");
         cartCtrl->restoreContext(startup_context_id);
-        delete polyCart;
+        polyCart.close();
     }
 
     if (graspModel!=NULL)
+    {
         delete graspModel;
+        graspModel=NULL;
+    }
 
     closed=true;
 }
@@ -1870,7 +1865,6 @@ void ActionPrimitivesLayer2::init()
     contactDetectionOn=false;
     contactDetected=false;
 
-    polyTorso=NULL;
     encTorso=NULL;
     velEst=NULL;
     accEst=NULL;
@@ -1981,15 +1975,13 @@ bool ActionPrimitivesLayer2::open(Property &opt)
         Property optPolyTorso("(device remote_controlboard)");
         optPolyTorso.put("remote",("/"+robot+"/torso").c_str());
         optPolyTorso.put("local",("/"+local+"/"+part+"/torso/position").c_str());
-
-        polyTorso=new PolyDriver;
-        if (!polyTorso->open(optPolyTorso))
+        if (!polyTorso.open(optPolyTorso))
         {
             close();
             return false;
         }
 
-        polyTorso->view(encTorso);
+        polyTorso.view(encTorso);
 
         int nTorso;
         int nArm;
@@ -2070,8 +2062,8 @@ void ActionPrimitivesLayer2::alignJointsBounds()
     IControlLimits *limTorso;
     IControlLimits *limHand;
 
-    polyTorso->view(limTorso);
-    polyHand->view(limHand);
+    polyTorso.view(limTorso);
+    polyHand.view(limHand);
     
     deque<IControlLimits*> lim;
     lim.push_back(limTorso);
@@ -2103,33 +2095,55 @@ void ActionPrimitivesLayer2::close()
         ftPortIn->interrupt();
         ftPortIn->close();
         delete ftPortIn;
+        ftPortIn=NULL;
     }
 
     if (dynTransformer!=NULL)
+    {
         delete dynTransformer;
+        dynTransformer=NULL;
+    }
 
     if (dynSensor!=NULL)
+    {
         delete dynSensor;
+        dynSensor=NULL;
+    }
 
     if (dynArm!=NULL)
+    {
         delete dynArm;
+        dynArm=NULL;
+    }
 
     if (velEst!=NULL)
+    {
         delete velEst;
+        velEst=NULL;
+    }
 
     if (accEst!=NULL)
+    {
         delete accEst;
+        accEst=NULL;
+    }
 
     if (execLiftAndGrasp!=NULL)
+    {
         delete execLiftAndGrasp;
+        execLiftAndGrasp=NULL;
+    }
 
     if (execTouch!=NULL)
+    {
         delete execTouch;
+        execTouch=NULL;
+    }
 
-    if (polyTorso!=NULL)
+    if (polyTorso.isValid())
     {
         printMessage("closing torso driver ...\n");
-        delete polyTorso;
+        polyTorso.close();
     }
 }
 

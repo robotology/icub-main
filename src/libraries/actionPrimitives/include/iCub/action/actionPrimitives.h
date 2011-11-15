@@ -139,8 +139,8 @@ protected:
     std::string local;
     std::string part;
 
-    yarp::dev::PolyDriver        *polyHand;
-    yarp::dev::PolyDriver        *polyCart;
+    yarp::dev::PolyDriver         polyHand;
+    yarp::dev::PolyDriver         polyCart;
     yarp::dev::IEncoders         *encCtrl;
     yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
@@ -978,7 +978,7 @@ protected:
 
     double ext_force_thres;
 
-    yarp::dev::PolyDriver  *polyTorso;
+    yarp::dev::PolyDriver   polyTorso;
     yarp::dev::IEncoders   *encTorso;
 
     ctrl::AWLinEstimator   *velEst;
