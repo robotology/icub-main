@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <interface>
- <!-- <requires lib="gtk+" version="2.14"/>
+<!--  <requires lib="gtk+" version="2.14"/>
  interface-naming-policy toplevel-contextual -->
   <object class="GtkTreeStore" id="treestore">
     <columns>
@@ -16,22 +16,25 @@
   </object>
   <object class="GtkListStore" id="liststoreTriangle">
     <columns>
-<!-- column-name gchararray1 -->
-      <column type="gchararray"/>
+<!-- column-name Triangle -->
+      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkListStore" id="liststoreTaxel">
     <columns>
-<!-- column-name gchararray1 -->
-      <column type="gchararray"/>
+<!-- column-name Taxel -->
+      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkListStore" id="liststorePort">
     <columns>
-<!-- column-name gchararray1 -->
+<!-- column-name Port index -->
+      <column type="gint"/>
+<!-- column-name Port -->
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="liststore1"/>
   <object class="GtkWindow" id="window">
     <property name="visible">True</property>
     <property name="title" translatable="yes">SkinDriftCompensation GUI</property>
@@ -587,7 +590,7 @@
                   <object class="GtkTable" id="table1">
                     <property name="visible">True</property>
                     <property name="n_rows">4</property>
-                    <property name="n_columns">2</property>
+                    <property name="n_columns">4</property>
                     <child>
                       <object class="GtkLabel" id="label11">
                         <property name="visible">True</property>
@@ -628,6 +631,18 @@
                       <object class="GtkComboBox" id="comboboxPort">
                         <property name="visible">True</property>
                         <property name="model">liststorePort</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="portIndexRender"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                        <child>
+                          <object class="GtkCellRendererText" id="portRender"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -640,6 +655,12 @@
                       <object class="GtkComboBox" id="comboboxTriangle">
                         <property name="visible">True</property>
                         <property name="model">liststoreTriangle</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext5"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -652,6 +673,12 @@
                       <object class="GtkComboBox" id="comboboxTaxel">
                         <property name="visible">True</property>
                         <property name="model">liststoreTaxel</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext6"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -659,6 +686,74 @@
                         <property name="top_attach">3</property>
                         <property name="bottom_attach">4</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label18">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Sample frequency:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="right_attach">3</property>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label19">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Sample number:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="right_attach">3</property>
+                        <property name="top_attach">2</property>
+                        <property name="bottom_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spinbuttonSampleFreq">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">3</property>
+                        <property name="adjustment">adjustmentFreq</property>
+                        <property name="climb_rate">1</property>
+                        <property name="numeric">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="right_attach">4</property>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spinbuttonSampleNum">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">3</property>
+                        <property name="adjustment">adjustmentNum</property>
+                        <property name="climb_rate">1</property>
+                        <property name="numeric">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="right_attach">4</property>
+                        <property name="top_attach">2</property>
+                        <property name="bottom_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -768,5 +863,18 @@
     <property name="upper">10</property>
     <property name="step_increment">0.01</property>
     <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustmentFreq">
+    <property name="value">1</property>
+    <property name="lower">1</property>
+    <property name="upper">50</property>
+    <property name="step_increment">1</property>
+    <property name="page_size">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustmentNum">
+    <property name="value">60</property>
+    <property name="lower">10</property>
+    <property name="upper">1000</property>
+    <property name="step_increment">10</property>
   </object>
 </interface>
