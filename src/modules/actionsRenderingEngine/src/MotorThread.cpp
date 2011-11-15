@@ -101,11 +101,13 @@ bool MotorThread::isWholeBodyAvailable()
 
 bool MotorThread::setImpedance(bool turn_on)
 {
+
     bool done=false;
 
     //if the system is asked to turn on impedance control
     if(turn_on && isWholeBodyAvailable())
     {
+    
         done=true;
 
         for(int i=0; i<5; i++)
@@ -115,7 +117,7 @@ bool MotorThread::setImpedance(bool turn_on)
             if(action[RIGHT]!=NULL)
                 done=done && armCtrlMode[RIGHT]->setImpedanceVelocityMode(i);
         }
-
+        
         done=done && torsoCtrlMode->setVelocityMode(0);
         done=done && torsoCtrlMode->setVelocityMode(2);
 
@@ -135,9 +137,10 @@ bool MotorThread::setImpedance(bool turn_on)
             if(action[RIGHT]!=NULL)
                 done=done && armCtrlMode[RIGHT]->setVelocityMode(i);
         }
-
+				
         for(int i=0; i<3; i++)
-            done=done && torsoCtrlMode->setVelocityMode(i);
+        	if(torsoCtrlMode!=NULL)
+            	done=done && torsoCtrlMode->setVelocityMode(i);
 
         status_impedance_on=!done;
     }
@@ -308,6 +311,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 
     if(found && bTarget!=NULL &&  bTarget->check("name"))
         opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
+   	
    		
     return found;
 }
@@ -551,7 +555,10 @@ bool MotorThread::loadKinematicOffsets(string _kinematics_path)
     table.resize(4);
     table=0.0;
     table[2]=1.0;
-    table[3]=-(table_height-table_height_tolerance);
+    table[3]=-table_height;
+
+    //adjust the table height accordingly to a specified tolerance
+    table_height+=table_height_tolerance;
 
 
     if(!bKinOffsets.check("left"))
@@ -758,22 +765,24 @@ void MotorThread::close()
 {
     //set the system back to velocity mode
     setImpedance(false);
-
+    
     if(drvHead!=NULL)
         delete drvHead;
+        
 
     if(drvTorso!=NULL)
         delete drvTorso;
 
     if(drvArm[LEFT]!=NULL)
         delete drvArm[LEFT];
-
+        
     if(drvArm[RIGHT]!=NULL)
         delete drvArm[RIGHT];
 
     if(drvGazeCtrl!=NULL)
     {
-        gazeCtrl->restoreContext(initial_gaze_context);
+    	if(gazeCtrl!=NULL)
+	        gazeCtrl->restoreContext(initial_gaze_context);
         delete drvGazeCtrl;
     }
 
@@ -1951,8 +1960,8 @@ bool MotorThread::calibTable(Bottle &options)
 
         gazeCtrl->lookAtFixationPoint(x);
 
-        table_height=x[2]+table_height_tolerance;
-        table[3]=-x[2];
+        table_height=x[2];
+        table[3]=-table_height;
 
         bKinOffsets.find("table_height")=Value(table_height);
 
@@ -1963,6 +1972,9 @@ bool MotorThread::calibTable(Bottle &options)
         opcPort.setTableHeight(table_height);
 
         fprintf(stdout,"########## Table height found: %f\n",table_height);
+        
+        //adjust the table height accordingly to a specified tolerance
+        table_height+=table_height_tolerance;
     }
     else
         fprintf(stdout,"########## Table height not found.\n");
@@ -2433,22 +2445,29 @@ void MotorThread::update()
         table.resize(4);
         table=0.0;
         table[2]=1.0;
-        table[3]=-(table_height-table_height_tolerance);
+        table[3]=-table_height;
+        
+        //adjust the table height accordingly to a specified tolerance
+        table_height+=table_height_tolerance;
     }
 }
 
 void MotorThread::interrupt()
 {
+    fprintf(stdout,"motor 1\n");
     disparityPort.interrupt();
 
+    fprintf(stdout,"motor 2\n");
     //if learning is going on
     Bottle bInterrupt("skip");
     suspendLearningModeAction(bInterrupt);
     suspendLearningModeKinOffset(bInterrupt);
 
+    fprintf(stdout,"motor 3\n");
     setGazeIdle();
     gazeCtrl->stopControl();
 
+    fprintf(stdout,"motor 4\n");
     if(action[LEFT]!=NULL)
     {
         action[LEFT]->lockActions();
@@ -2456,12 +2475,20 @@ void MotorThread::interrupt()
         action[LEFT]->stopControl();
     }
 
+    fprintf(stdout,"motor 5\n");
     if(action[RIGHT]!=NULL)
     {
+    
+	    fprintf(stdout,"actions 1\n");
         action[RIGHT]->lockActions();
+	    fprintf(stdout,"actions 2\n");
         action[RIGHT]->syncCheckInterrupt(true);
+	    fprintf(stdout,"actions 3\n");
         action[RIGHT]->stopControl();
+	    fprintf(stdout,"actions 4\n");
     }
+    
+    fprintf(stdout,"motor 6\n");
 }
 
 void MotorThread::reinstate()

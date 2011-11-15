@@ -283,7 +283,7 @@ void CompensationThread::sendSkinEvents(){
             skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());            
         }
     }
-    //printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
+    printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 

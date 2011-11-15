@@ -221,10 +221,13 @@ public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
         :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc)
     {
+    	gazeCtrl=NULL;
+    	torsoCtrlMode=NULL;
         drvHead=drvTorso=drvGazeCtrl=NULL;
         drvArm[LEFT]=drvArm[RIGHT]=NULL;
         drvCartArm[LEFT]=drvCartArm[RIGHT]=NULL;
         armCtrlMode[LEFT]=armCtrlMode[RIGHT]=NULL;
+        action[LEFT]=action[RIGHT]=NULL;
     }
 
     virtual bool threadInit();

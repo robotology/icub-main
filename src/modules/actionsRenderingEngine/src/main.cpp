@@ -314,7 +314,7 @@ protected:
     Port                        rpcPort;
 
     bool                        interrupted;
-    bool                        closing;
+    volatile bool               closing;
 
 
     bool check(Bottle &bot, const string &name)
@@ -368,33 +368,38 @@ public:
 
     virtual bool interruptModule()
     {
+    
         closing=true;
 
-        cmdPort.interrupt();
-        rpcPort.interrupt();
+        cmdPort.close();
+        rpcPort.close();
+        //cmdPort.interrupt();
+        //rpcPort.interrupt();
 
         initializer->interrupt();
 
         if(visuoThr!=NULL)
             visuoThr->interrupt();
 
-        if(motorThr!=NULL)
+         if(motorThr!=NULL)
             motorThr->interrupt();
-
+            
         return true;
     }
 
     virtual bool close()
     {
+
         cmdPort.close();
         rpcPort.close();
-
+        
         if(motorThr!=NULL)
         {
             motorThr->reinstate();
             motorThr->stop();
             delete motorThr;
         }
+
 
         if(visuoThr!=NULL)
         {
@@ -403,7 +408,9 @@ public:
             delete visuoThr;
         }
 
+
         initializer->close();
+        
         delete initializer;
 
         return true;
