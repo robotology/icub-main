@@ -1997,13 +1997,12 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 {
     if (isOpen)
     {
-        mutex.wait();
+        Vector xdotOffline=xdot;
+        Vector xOffline=x;
 
-        if (Ts>PMP_DEFAULT_TS_DISABLED)
-        {
-            If.setTs(Ts);
-            Iv.setTs(Ts);
-        }
+        double _Ts=(Ts<=PMP_DEFAULT_TS_DISABLED)?(double)period/1000.0:Ts;
+        Integrator IfOffline(_Ts,xdotOffline);
+        Integrator IvOffline(_Ts,xOffline);
 
         unsigned int iteration=0;
         while (iteration++<maxIterations)
@@ -2011,21 +2010,12 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
             Vector field;
             getField(field);
 
-            xdot=If.integrate(field);
-            x=Iv.integrate(xdot);
+            xdotOffline=IfOffline.integrate(field);
+            xOffline=IvOffline.integrate(xdotOffline);
 
-            trajPos.push_back(getVectorPos(x));
-            trajOrien.push_back(getVectorOrien(x));
+            trajPos.push_back(getVectorPos(xOffline));
+            trajOrien.push_back(getVectorOrien(xOffline));
         }       
-
-        if (Ts>PMP_DEFAULT_TS_DISABLED)
-        {
-            double periodSeconds=(double)period/1000.0;
-            If.setTs(periodSeconds);
-            Iv.setTs(periodSeconds);
-        }
-
-        mutex.post();
 
         return true;
     }
