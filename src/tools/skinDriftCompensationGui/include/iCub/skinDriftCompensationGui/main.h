@@ -31,11 +31,15 @@
 #include <yarp/os/Port.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/sig/Vector.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
+#include <yarp/os/Semaphore.h>
+
 
 using namespace std;
 using namespace yarp::os;
+using namespace yarp::sig;
 
 // main window
 GtkWindow               *window;
@@ -64,14 +68,19 @@ GtkLabel                *lblMinX;
 GtkComboBox             *comboPort;
 GtkComboBox             *comboTriangle;
 GtkComboBox             *comboTaxel;
+GtkListStore            *listPort;
+GtkListStore            *listTriangle;
+GtkListStore            *listTaxel;
 // fourth tab
 GtkLabel                *lblInfo;
 
 // ports for communicating with the module
 Port					guiRpcPort;             // to send rpc command to the module
-BufferedPort<Bottle>	driftCompMonitorPort;   // for reading streaming data (frequency, drift)
+BufferedPort<Vector>	driftCompMonitorPort;   // for reading streaming data (frequency, drift)
 BufferedPort<Bottle>	driftCompInfoPort;      // for reading sporadic msgs (errors, warnings)
 
+// global data
+guint                   timeoutId;              // id of the timeout callback function
 vector<string>			portNames;				// names of the skin input ports
 vector<unsigned int>	portDim;				// number of taxels of the input ports
 double					currentSmoothFactor;    // current smooth factor value
@@ -79,6 +88,15 @@ bool                    initDone;               // true if the gui has been init
 unsigned int            currentThreshold;       // current safety threshold
 double                  currentCompGain;        // current compensation gain
 double                  currentContCompGain;    // current contact compensation gain
+int                     currentSampleFreq;
+int                     currentSampleNum;       // size of the dataPlot array
+
+// plot data
+Semaphore               plotSem;
+gint                    port2plot;              // index of the skin port to plot
+gint                    tr2plot;                // triangle to plot
+gint                    tax2plot;               // taxel to plot
+vector<gfloat>          dataPlot;               // data to plot
 
 bool initGuiStatus();
 
@@ -114,7 +132,7 @@ static void setStatusBarFreq(bool freqUpdated, double freq){
 	stringstream text;
 	if(freqUpdated){
 		freq = round(freq, 2);
-		text<< "Skin data frequency: "<< freq;
+		text<< "SkinDriftCompensation frequency: "<< freq;
 	}else{
 		text<< "Cannot read the frequency. Probably the skinDriftCompensation module has stopped working.";
 	}
@@ -153,3 +171,8 @@ static Bottle sendRpcCommand(bool responseExpected, int commandWordCount, const 
 	return resp;
 }
 
+
+static void resetPlotData(){
+    for(int i=0; i<currentSampleNum; i++)
+        dataPlot[i] = 0;
+}

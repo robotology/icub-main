@@ -129,7 +129,7 @@ bool initGuiStatus(){
     }else{
         currentContCompGain = reply.get(0).asDouble();
         gtk_adjustment_set_value(spinContGain->adjustment, currentContCompGain);
-    }
+    }    
 
     // get module information
     reply = sendRpcCommand(true, 2, "get", "info");
@@ -144,31 +144,37 @@ bool initGuiStatus(){
 	Bottle* portList = reply.get(2).asList();
 	portNames.resize(portList->size()/2);
 	portDim.resize(portList->size()/2);
-    int numTaxels = 0;
+    //int numTaxels = 0;
     for(unsigned int i=0;i<portDim.size();i++){
 		portNames[i] = portList->get(i*2).toString().c_str();
 		portDim[i] = portList->get(i*2+1).asInt();
-        numTaxels += portDim[i];
+        //numTaxels += portDim[i];
         ss<< "\n - "<< portNames[i]<< " ("<< portDim[i]<< " taxels)";
     }
     gtk_label_set_text(lblInfo, ss.str().c_str());
 
-    // plot 
-    unsigned int numTriangles = numTaxels/16;
+    // plot        
+    unsigned int numTriangles = portDim[0]/12;    
+    GtkTreeIter iter;    
     //gtk_label_set_text(lblMaxX, ss.str().c_str());
-   /* for(unsigned int i=0;i<portDim.size();i++){
-        gtk_combo_box_append_text(comboPort, portNames[i].c_str());
-    }
+    for(unsigned int i=0;i<portDim.size();i++){
+        gtk_list_store_append (listPort, &iter);
+        gtk_list_store_set (listPort, &iter, 0, i, 1, portNames[i].c_str(), -1);
+    }    
     for(unsigned int i=0;i<numTriangles;i++){
-        ss.str("");
-        ss<< i;
-        gtk_combo_box_append_text(comboTriangle, ss.str().c_str());
+        gtk_list_store_append (listTriangle, &iter);
+        gtk_list_store_set (listTriangle, &iter, 0, i, -1);
     }
     for(unsigned int i=0;i<12;i++){
-        ss.str("");
-        ss<< i;
-        gtk_combo_box_append_text(comboTaxel, ss.str().c_str());
-    }*/
+        gtk_list_store_append (listTaxel, &iter);
+        gtk_list_store_set (listTaxel, &iter, 0, i, -1);
+    }
+    gtk_combo_box_set_active(comboPort, 0);
+    gtk_combo_box_set_active(comboTriangle, 0);
+    gtk_combo_box_set_active(comboTaxel, 0);
+    stringstream maxXS; maxXS<< currentSampleNum/currentSampleFreq;
+    gtk_label_set_text(lblMaxX, maxXS.str().c_str());
+    gtk_curve_set_range(curveComp, 0, (gfloat)currentSampleNum, 0, 255);
 
     // check whether the skin calibration is in process
 	reply = sendRpcCommand(true, 2, "is", "calibrating");
@@ -242,6 +248,8 @@ int main (int argc, char *argv[])
 	GtkBuilder              *builder;		
 	GtkButton				*btnTouchThr;
     GtkButton				*btnClearLog;
+    GtkSpinButton           *spinSampleFreq;
+    GtkSpinButton           *spinSampleNum;
 	GError					*error = NULL;
 
     Network yarp;
@@ -295,6 +303,11 @@ int main (int argc, char *argv[])
     comboPort   	= GTK_COMBO_BOX (gtk_builder_get_object (builder, "comboboxPort"));
     comboTriangle  	= GTK_COMBO_BOX (gtk_builder_get_object (builder, "comboboxTriangle"));
     comboTaxel   	= GTK_COMBO_BOX (gtk_builder_get_object (builder, "comboboxTaxel"));
+    listPort        = GTK_LIST_STORE(gtk_builder_get_object (builder, "liststorePort"));
+    listTriangle    = GTK_LIST_STORE(gtk_builder_get_object (builder, "liststoreTriangle"));
+    listTaxel       = GTK_LIST_STORE(gtk_builder_get_object (builder, "liststoreTaxel"));
+    spinSampleFreq  = GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonSampleFreq"));
+    spinSampleNum   = GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonSampleNum"));
 
     statusBar		= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusBar"));
 	statusBarFreq	= GTK_STATUSBAR (gtk_builder_get_object (builder, "statusbarFreq"));
@@ -310,6 +323,12 @@ int main (int argc, char *argv[])
         printLog("GUI not connected. Connect it to the module to make it work.");
     // otherwise the gui will try to initialize every timeout (i.e. 1 sec)
 
+    currentSampleFreq = 5;
+    currentSampleNum = 100;
+    dataPlot.resize(currentSampleNum);
+    gtk_adjustment_set_value(spinSampleFreq->adjustment, currentSampleFreq);
+    gtk_adjustment_set_value(spinSampleNum->adjustment, currentSampleNum);
+
 	// connect all the callback functions (after the initialization, so as not to activate the callbacks)
 	g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy_event), NULL);
 	g_signal_connect(btnSmooth, "button-press-event", G_CALLBACK(toggle_button_smooth), scaleSmooth);
@@ -321,7 +340,12 @@ int main (int argc, char *argv[])
     g_signal_connect(spinThreshold, "value-changed", G_CALLBACK(spin_threshold_value_changed), NULL);
     g_signal_connect(spinGain, "value-changed", G_CALLBACK(spin_gain_value_changed), NULL);
     g_signal_connect(spinContGain, "value-changed", G_CALLBACK(spin_cont_gain_value_changed), NULL);
-	gdk_threads_add_timeout(1000, (periodic_timeout), NULL);   // thread safe version of "g_timeout_add()
+    g_signal_connect(comboPort , "changed", G_CALLBACK(comboPort_changed), NULL);
+    g_signal_connect(comboTriangle , "changed", G_CALLBACK(comboTriangle_changed), NULL);
+    g_signal_connect(comboTaxel , "changed", G_CALLBACK(comboTaxel_changed), NULL);
+    g_signal_connect(spinSampleFreq, "value-changed", G_CALLBACK(spinSampleFreq_value_changed), NULL);
+    g_signal_connect(spinSampleNum, "value-changed", G_CALLBACK(spinSampleNum_value_changed), NULL);
+	timeoutId = gdk_threads_add_timeout(1000/currentSampleFreq, (periodic_timeout), NULL);   // thread safe version of "g_timeout_add()
 
 	// free the memory used by the glade xml file
 	g_object_unref (G_OBJECT (builder));

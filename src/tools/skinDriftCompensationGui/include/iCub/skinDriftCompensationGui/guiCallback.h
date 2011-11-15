@@ -16,6 +16,7 @@
  * Public License for more details
  */
 #include "iCub/skinDriftCompensationGui/main.h"
+#include <stdlib.h> //atoi
 
 
 static void clean_exit(){
@@ -254,6 +255,55 @@ static gboolean button_clear_log(GtkToggleButton *widget, GdkEvent *ev, gpointer
 	return false;
 }
 
+
+static void comboPort_changed(GtkComboBox* combo, gpointer data){
+    gchararray portName;
+    gint newPort2plot=-1;
+    GtkTreeIter iter;
+    GtkTreeModel* model;
+    if( gtk_combo_box_get_active_iter(comboPort, &iter)){                    
+        model = gtk_combo_box_get_model(comboPort);         // Obtain data model from combo box.                    
+        gtk_tree_model_get( model, &iter, 0, &newPort2plot, 1, &portName, -1 ); // Obtain string from model.
+    }
+    if(newPort2plot!=port2plot){    // port has changed
+        port2plot = newPort2plot;
+        resetPlotData();
+        unsigned int numTriangles = portDim[port2plot]/12;
+        gtk_list_store_clear(listTriangle);
+        for(unsigned int i=0;i<numTriangles;i++){
+            gtk_list_store_append (listTriangle, &iter);
+            gtk_list_store_set (listTriangle, &iter, 0, i, -1);
+        }
+        gtk_combo_box_set_active(comboTriangle, 0);
+    }
+}
+static void comboTriangle_changed(GtkComboBox* combo, gpointer data){
+    gint newTr2plot=-1;
+    GtkTreeIter iter;
+    GtkTreeModel* model;
+    if( gtk_combo_box_get_active_iter(comboTriangle, &iter)){                    
+        model = gtk_combo_box_get_model(comboTriangle);     // Obtain data model from combo box.                    
+        gtk_tree_model_get( model, &iter, 0, &newTr2plot, -1 ); 
+    }
+    if(newTr2plot!=tr2plot){    // triangle has changed
+        tr2plot = newTr2plot;
+        resetPlotData();
+    }
+}
+static void comboTaxel_changed(GtkComboBox* combo, gpointer data){
+    gint newTax2plot=-1;
+    GtkTreeIter iter;
+    GtkTreeModel* model;
+    if( gtk_combo_box_get_active_iter(comboTaxel, &iter)){                    
+        model = gtk_combo_box_get_model(comboTaxel);     // Obtain data model from combo box.                    
+        gtk_tree_model_get( model, &iter, 0, &newTax2plot, -1 ); 
+    }
+    if(newTax2plot!=tax2plot){    // taxel has changed
+        tax2plot = newTax2plot;
+        resetPlotData();
+    }
+}
+
 static gint periodic_timeout(gpointer data){    
 	//printf("Timeout thread: %p\n", g_thread_self());
 
@@ -272,40 +322,41 @@ static gint periodic_timeout(gpointer data){
 	if(driftCompMonitorPort.getInputCount()==0){
         setStatusBarFreq(false, 0);
     }else{
-		Bottle* b = driftCompMonitorPort.read(false);
-        if(!b){
+		Vector* b = driftCompMonitorPort.read(false);
+        if(!b || b->size()==0){
             setStatusBarFreq(false, 0);
         }else{
             //set the frequency
-			double freq = b->get(0).asDouble();
+			double freq = (*b)[0];
 			setStatusBarFreq(true, freq);
 
             // set the drift
-            const int numTax = b->size()-1;
+            int numTax = 0;
+            for(unsigned int i=0; i<portDim.size(); i++) numTax += portDim[i];
             const int numTr = numTax/12;
             if(numTax>0){
-                // draw the drift plot
-                vector<gfloat> driftPerTr(numTax/12);
-                gdouble maxY=0, minY=0, sumTr, meanTr;
+                // *** UPDATE TAXEL PLOT (3RD TAB)                
+                plotSem.wait();
+                for(int i=0; i<currentSampleNum-1; i++)
+                    dataPlot[i] = dataPlot[i+1];
+                int index = 1+numTax+ tr2plot*12 + tax2plot;
+                for(int i=0;i<port2plot;i++)
+                    index += portDim[i];
+                dataPlot[currentSampleNum-1] = (gfloat)(*b)[index];
+                gtk_curve_set_vector(curveComp, currentSampleNum, &(dataPlot[0]));
+                plotSem.post();
+                               
+
+                // *** UPDATE DRIFT TREE VIEW (2ND TAB)
+                vector<gfloat> driftPerTr(numTr);
+                gdouble sumTr;
                 for(int i=0; i<numTr; i++){
 					sumTr=0;
 					for(int j=0; j<12; j++){
-						sumTr += (gfloat) b->get(i*12+j+1).asDouble();
+						sumTr += (gfloat) (*b)(i*12+j+1);
 					}
-					meanTr = sumTr/12.0;
-					driftPerTr[i] = (gfloat)round(meanTr, 2);
-                    if(meanTr>maxY)
-                        maxY = meanTr;
-                    else if(meanTr<minY)
-                        minY = meanTr;
+					driftPerTr[i] = (gfloat)round(sumTr/12.0, 2);
                 }
-                /*gtk_curve_set_range(curveComp, 0, (gfloat)(numTr), (gfloat)(minY-1), (gfloat)(maxY+1));
-                gtk_curve_set_vector(curveComp, numTr, &driftPerTr[0]);                
-                stringstream maxYS; maxYS<< maxY;
-                gtk_label_set_text(lblMaxY, maxYS.str().c_str());
-                stringstream minYS; minYS<< minY;
-                gtk_label_set_text(lblMinY, minYS.str().c_str());*/
-                               
 
 				GtkTreeIter iterPort, iterTr, iterTax;
 				gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
@@ -327,7 +378,9 @@ static gint periodic_timeout(gpointer data){
                 // update the drift list
                 gdouble sumPort, meanPort;
 				stringstream trS, taxS;
-				int index=1, portIndex=0;				
+				index=1;
+                int portIndex=0;
+                gdouble meanTr;
 				for(unsigned int i=0; i<portNames.size(); i++){		
 					sumPort = 0;
 					for(unsigned int j=0; j<portDim[i]/12; j++){						
@@ -338,7 +391,7 @@ static gint periodic_timeout(gpointer data){
 						gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTr, &iterPort, j);
 						gtk_tree_store_set((treeStoreComp), &iterTr, 1, trS.str().c_str(), 3, meanTr, -1);
 						for(int k=0; k<12; k++){
-							gdouble drift = round(b->get(index).asDouble(), 2);
+							gdouble drift = round((*b)(index), 2);
 							index++;
 							taxS.str(""); taxS<<k;
 							if(gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTax, &iterTr, k))
@@ -363,4 +416,37 @@ static gint periodic_timeout(gpointer data){
     }
 
 	return true;
+}
+
+static void spinSampleFreq_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
+    int freq = gtk_spin_button_get_value_as_int(spinbutton);
+    if(freq==currentSampleFreq)
+        return;
+    currentSampleFreq = freq;
+    guint period = (int)(1000.0/freq);
+    // set the freq
+    g_source_remove(timeoutId);
+    timeoutId = gdk_threads_add_timeout(period, (periodic_timeout), NULL);   // thread safe version of "g_timeout_add()
+    stringstream maxXS; maxXS<< currentSampleNum/currentSampleFreq;
+    gtk_label_set_text(lblMaxX, maxXS.str().c_str());
+}
+static void spinSampleNum_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
+    int sampleNum = gtk_spin_button_get_value_as_int(spinbutton);
+    if(sampleNum==currentSampleNum)
+        return;
+    
+    plotSem.wait();
+    vector<gfloat> newDataPlot(sampleNum);
+    unsigned int data2copy = min(sampleNum, currentSampleNum);                
+    for(unsigned int i=1;i<=data2copy;i++){
+        newDataPlot[sampleNum-i] = dataPlot[currentSampleNum-i];
+    }
+    dataPlot = newDataPlot;
+    currentSampleNum = sampleNum;
+    
+    // update plot label and limits
+    stringstream maxXS; maxXS<< currentSampleNum/currentSampleFreq;
+    gtk_label_set_text(lblMaxX, maxXS.str().c_str());
+    gtk_curve_set_range(curveComp, 0, (gfloat)currentSampleNum, 0, 255);
+    plotSem.post();
 }
