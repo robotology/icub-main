@@ -283,7 +283,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         Bottle *bCartesian=bTarget->find("cartesian").asList();
 
         xd.clear();
-        for(int i=0; i<xd.size(); i++)
+        for(size_t i=0; i<xd.size(); i++)
             xd.push_back(bCartesian->get(i+1).asDouble());
 
         found=true;
@@ -1317,10 +1317,10 @@ void MotorThread::run()
                 Bottle &tmp_action=dragger.actions.addList();
                 Vector tmp_x=dragger.x0 - x;
 
-                for(int i=0; i<tmp_x.size(); i++)
+                for(size_t i=0; i<tmp_x.size(); i++)
                     tmp_action.addDouble(tmp_x[i]);
 
-                for(int i=0; i<o.size(); i++)
+                for(size_t i=0; i<o.size(); i++)
                     tmp_action.addDouble(o[i]);
 
                 //here add timestamp to the files

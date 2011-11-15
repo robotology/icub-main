@@ -223,14 +223,14 @@ bool ObjectPropertiesCollectorPort::setKinematicOffset(const string &obj_name, c
     Bottle &bTempSetKinematicOffsetLeft=bTempSet.addList();
     bTempSetKinematicOffsetLeft.addString("kinematic_offset_left");
     Bottle &bTempSetVectorLeft=bTempSetKinematicOffsetLeft.addList();
-    for(int i=0; i<kinematic_offset[LEFT].size(); i++)
+    for(size_t i=0; i<kinematic_offset[LEFT].size(); i++)
         bTempSetVectorLeft.addDouble(kinematic_offset[LEFT][i]);
 
     //Kinematic offset right
     Bottle &bTempSetKinematicOffsetRight=bTempSet.addList();
     bTempSetKinematicOffsetRight.addString("kinematic_offset_right");
     Bottle &bTempSetVectorRight=bTempSetKinematicOffsetRight.addList();
-    for(int i=0; i<kinematic_offset[RIGHT].size(); i++)
+    for(size_t i=0; i<kinematic_offset[RIGHT].size(); i++)
         bTempSetVectorRight.addDouble(kinematic_offset[RIGHT][i]);
 
     this->write(bSet,bReply);

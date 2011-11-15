@@ -479,7 +479,7 @@ public:
                                 if(motorThr->targetToCartesian(command.find("target").asList(),xd))
                                 {
                                     reply.clear();
-                                    for(int i=0; i<xd.size(); i++)
+                                    for(size_t i=0; i<xd.size(); i++)
                                         reply.addDouble(xd[i]);
                                 }
                                 else

@@ -573,7 +573,7 @@ bool VisuoThread::getFixation(Bottle &bStereo)
     }
     imgMutex.post();
 
-    for(int i=0; i<stereo.size(); i++)
+    for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
 
     int side=40;
@@ -652,7 +652,7 @@ bool VisuoThread::getMotion(Bottle &bStereo)
         motMutex.post();
     }
 
-    for(int i=0; i<stereo.size(); i++)
+    for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
 
     return ok;
@@ -676,7 +676,7 @@ bool VisuoThread::getTrack(Bottle &bStereo)
     }
     trackMutex.post();
 
-    for(int i=0; i<stereo.size(); i++)
+    for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
 
     return ok;
@@ -724,7 +724,7 @@ bool VisuoThread::getRaw(Bottle &bStereo)
         ok=true;
     }
 
-    for(int i=0; i<stereo.size(); i++)
+    for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
 
     return ok;
@@ -757,7 +757,7 @@ bool VisuoThread::getObject(const std::string &object_name, Bottle &bStereo)
         }
     }
 
-    for(int i=0; i<stereo.size(); i++)
+    for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
 
     return ok;
