@@ -61,7 +61,7 @@ protected:
         if (vect.length()!=b.size())
             vect.resize(b.size());
 
-        for (int i=0; i<vect.length(); i++)
+        for (size_t i=0; i<vect.length(); i++)
             vect[i]=b.get(i).asDouble();
 
         mutex.post();
