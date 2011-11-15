@@ -39,7 +39,7 @@ namespace ctrl
         Bottle &bKey=b.addList();
         bKey.addString(key);
         Bottle &bKeyContent=bKey.addList();
-        for (int i=0; i<val.length(); i++)
+        for (size_t i=0; i<val.length(); i++)
             bKeyContent.addDouble(val[i]);
     }
 

@@ -261,7 +261,7 @@ public:
                         else
                             last = analogPorts[i].offset + analogPorts[i].length - 1;
                         // check vector limit
-                        if(last>=v.size()){
+                        if(last>=(int)v.size()){
                             cerr<<"Error while sending analog sensor output on port "<< analogPorts[i].port_name<< endl;
                             cerr<<"Vector size expected to be at least "<<last<<" whereas it is "<< v.size()<< endl;
                             continue;

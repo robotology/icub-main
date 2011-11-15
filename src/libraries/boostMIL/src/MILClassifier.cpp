@@ -269,7 +269,7 @@ int                             MILClassifier::classify             (const Input
 
     int label=-1;
 
-    for(int i = 0; i < bag->size(); i += feature_size)
+    for(size_t i = 0; i < bag->size(); i += feature_size)
     {
         //compute the distance between the two vectors
         double dist=distanceFromCenter(bag->data()+i);
@@ -302,7 +302,7 @@ std::string  MILClassifier::toString() const
     strstr << "(negweight " << negweight << ") ";
 
     strstr << "(center (";
-    for(int i=0; i<center.size(); i++)
+    for(size_t i=0; i<center.size(); i++)
         strstr << center[i] << " ";
     strstr << ")) ";
 
@@ -361,7 +361,7 @@ void                            MILClassifier::update               (const Input
 
         //find the element in the bag which is nearest to the weak classifier center
         double min_dist = -1.0;
-        for(int i = 0; i < bag->size(); i+=feature_size)
+        for(size_t i = 0; i < bag->size(); i+=feature_size)
         {
             double dist = distanceFromCenter(bag->data()+i);
             if(dist < min_dist || min_dist < 0.0)
@@ -410,7 +410,7 @@ double                          MILClassifier::error_rate           (const std::
 
         //find the element in the bag which is nearest to the weak classifier center
         double min_dist = -1.0;
-        for(int i = 0; i < bag->size(); i+=feature_size)
+        for(size_t i = 0; i < bag->size(); i+=feature_size)
         {
             double dist = distanceFromCenter(bag->data()+i);
             if(dist < min_dist || min_dist < 0.0)
@@ -450,7 +450,7 @@ std::list<WeakClassifier*>      *MILClassifier::pack                (const Input
                 buffer << "Wrong input size: " << bag->size() << " is not divisible by " << feature_size;
                 throw std::runtime_error(buffer.str());
             }
-            for(int i= 0; i < bag->size(); i += feature_size)
+            for(size_t i= 0; i < bag->size(); i += feature_size)
                 list->push_back(new MILClassifier(type,resource,bag->data()+i));
         }
     }
@@ -665,8 +665,8 @@ std::list<WeakClassifier*>      *DictionaryClassifier::pack                (cons
                 buffer << "Wrong input size: " << bag->size() << " is not divisible by " << feature_size;
                 throw std::runtime_error(buffer.str());
             }
-            for(int f=0; f<bag->size(); f+=feature_size)
-                for(int i= 0; i < feature_size; i++)
+            for(size_t f=0; f<bag->size(); f+=feature_size)
+                for(size_t i=0; i<(size_t)feature_size; i++)
                     list->push_back(new DictionaryClassifier(type,resource,i,bag->data()+f));
         }
     }

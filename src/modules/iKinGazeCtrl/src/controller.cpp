@@ -296,7 +296,7 @@ void Controller::run()
     // for unachievable low velocities
     if (Robotable)
     {
-        for (int i=0; i<v.length(); i++)
+        for (size_t i=0; i<v.length(); i++)
         {
             if ((v[i]>-minAbsVel) && (v[i]<minAbsVel) && (v[i]!=0.0))
             {
@@ -330,7 +330,7 @@ void Controller::run()
 
     // send x,q through YARP ports
     Vector q(nJointsTorso+nJointsHead);
-    int j;
+    size_t j;
     for (j=0; j<nJointsTorso; j++)
         q[j]=CTRL_RAD2DEG*fbTorso[j];
     for (; j<q.length(); j++)

@@ -46,14 +46,14 @@ void DatasetRecorder::feedSample(const yarp::sig::Vector& input, const yarp::sig
     }
 
     // first write inputs
-    for(int i = 0; i < input.size(); i++) {
+    for(size_t i = 0; i < input.size(); i++) {
         if(i > 0) this->stream << " ";
         this->stream << std::setw(this->precision + 4) << input[i];
     }
     this->stream << "  ";
 
     // then write outputs
-    for(int i = 0; i < output.size(); i++) {
+    for(size_t i = 0; i < output.size(); i++) {
         if(i > 0) this->stream << " ";
         this->stream << std::setw(this->precision + 4) << output[i] << " ";
     }

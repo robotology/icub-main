@@ -1511,7 +1511,7 @@ bool PmpServer::read(ConnectionReader &connection)
                      for (unsigned int i=0; i<trajPos.size(); i++)
                      {
                          Bottle &point=bPos.addList();
-                         for (int j=0; j<trajPos[i].size(); j++)
+                         for (size_t j=0; j<trajPos[i].size(); j++)
                             point.addDouble(trajPos[i][j]);
                      }
 
@@ -1520,7 +1520,7 @@ bool PmpServer::read(ConnectionReader &connection)
                      for (unsigned int i=0; i<trajOrien.size(); i++)
                      {
                          Bottle &point=bOrien.addList();
-                         for (int j=0; j<trajOrien[i].size(); j++)
+                         for (size_t j=0; j<trajOrien[i].size(); j++)
                             point.addDouble(trajOrien[i][j]);
                      }
                 }
@@ -2067,7 +2067,7 @@ void PmpServer::run()
                     iCtrlActive->getDOF(dof);
 
                     Vector q0;
-                    for (int i=0; i<dof.length(); i++)
+                    for (size_t i=0; i<dof.length(); i++)
                         if (dof[i]>0.0)
                             q0.push_back(qhat[i]);
 

@@ -449,20 +449,20 @@ protected:
         if (b.check("impedance_stiffness","Getting joints stiffness"))
         {
             Bottle &grp=b.findGroup("impedance_stiffness");
-            int sz=grp.size()-1;
-            int len=sz>impStiff.length()?impStiff.length():sz;
+            size_t sz=grp.size()-1;
+            size_t len=sz>impStiff.length()?impStiff.length():sz;
 
-            for (int i=0; i<len; i++)
+            for (size_t i=0; i<len; i++)
                 impStiff[i]=grp.get(1+i).asDouble();
         }
 
         if (b.check("impedance_damping","Getting joints damping"))
         {
             Bottle &grp=b.findGroup("impedance_damping");
-            int sz=grp.size()-1;
-            int len=sz>impDamp.length()?impDamp.length():sz;
+            size_t sz=grp.size()-1;
+            size_t len=sz>impDamp.length()?impDamp.length():sz;
 
-            for (int i=0; i<len; i++)
+            for (size_t i=0; i<len; i++)
                 impDamp[i]=grp.get(1+i).asDouble();
         }
     }
@@ -565,7 +565,7 @@ protected:
         icart->setInTargetTol(reachTol);
         icart->getDOF(dof);
 
-        for (int j=0; j<sw.length(); j++)
+        for (size_t j=0; j<sw.length(); j++)
         {
             dof[j]=sw[j];
 
@@ -588,7 +588,7 @@ protected:
         icart->setDOF(dof,dof);
 
         fprintf(stdout,"DOF's=( ");
-        for (int i=0; i<dof.length(); i++)
+        for (size_t i=0; i<dof.length(); i++)
             fprintf(stdout,"%s ",dof[i]>0.0?"on":"off");
         fprintf(stdout,")\n");
     }
@@ -743,7 +743,7 @@ protected:
 
         fprintf(stdout,"*** Homing %s\n",type.c_str());
 
-        for (int j=0; j<homeVels.length(); j++)
+        for (size_t j=0; j<homeVels.length(); j++)
         {
             ipos->setRefSpeed(j,homeVels[j]);
             ipos->positionMove(j,homePoss[j]);
@@ -789,7 +789,7 @@ protected:
 
         fprintf(stdout,"*** Stopping %s joints\n",type.c_str());
 
-        for (int j=0; j<homeVels.length(); j++)
+        for (size_t j=0; j<homeVels.length(); j++)
         {
             double fb;
 
@@ -835,7 +835,7 @@ protected:
 
         fprintf(stdout,"*** %s %s\n",actionStr.c_str(),type.c_str());
 
-        for (int j=0; j<handVels.length(); j++)
+        for (size_t j=0; j<handVels.length(); j++)
         {
             int k=homeVels.length()+j;
 
@@ -936,7 +936,7 @@ protected:
                 if (checkTargetForGrasp() && checkArmForGrasp())
                 {    
                     Vector graspOffs(3);
-                    for (int i=0; i<graspOffs.length(); i++)
+                    for (size_t i=0; i<graspOffs.length(); i++)
                         graspOffs[i]=Random::normal((*armGraspOffs)[i],(*armGraspSigma)[i]);
 
                     Vector x=R.transposed()*(targetPos+graspOffs);

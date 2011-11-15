@@ -30,7 +30,7 @@ namespace learningmachine {
 std::string printVector(const yarp::sig::Vector& v) {
   std::ostringstream output;
   output << "[";
-  for(int i = 0; i < v.size(); i++) {
+  for(size_t i = 0; i < v.size(); i++) {
     if(i > 0) output << ",";
     output << v[i];
   }
@@ -58,7 +58,7 @@ Prediction DummyLearner::predict(const yarp::sig::Vector& input) {
     std::cout << "Received a prediction sample: " << printVector(input) << " => ";
     yarp::sig::Vector output = input;
     output.resize(this->getCoDomainSize());
-    for(int i = 0; i < output.size(); i++)
+    for(size_t i = 0; i < output.size(); i++)
         output[i] += this->sampleCount;
     std::cout << "(" << printVector(output) << ")" << std::endl;
     return Prediction(output);

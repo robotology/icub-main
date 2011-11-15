@@ -102,7 +102,7 @@ yarp::sig::Vector ScaleTransformer::transform(const yarp::sig::Vector& input) {
     assert(input.size() == int(this->scalers.size()));
     assert(output.size() == int(this->scalers.size()));
 
-    for(int i = 0; i < output.size(); i++) {
+    for(size_t i = 0; i < output.size(); i++) {
         output(i) = this->getAt(i)->transform(input(i));
     }
     return output;

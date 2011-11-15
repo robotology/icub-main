@@ -218,7 +218,7 @@ string ActionPrimitives::toCompactString(const Vector &v)
 {
     ostringstream ret;
     ret.precision(3);
-    for (int i=0; i<v.length()-1; i++)
+    for (size_t i=0; i<v.length()-1; i++)
         ret<<std::fixed<<v[i]<<" ";
 
     ret<<std::fixed<<v[v.length()-1];
@@ -1227,8 +1227,7 @@ bool ActionPrimitives::cmdHand(const Action &action)
 
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
         {
-            int j=*itr-jHandMin;
-
+            size_t j=*itr-jHandMin;
             if ((j>=poss.length()) || (j>=vels.length()))
                 break;
 
@@ -1336,25 +1335,25 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         Bottle *bPoss=bWP.find("poss").asList();
         Vector poss(bPoss->size());
 
-        for (int k=0; k<poss.length(); k++)
+        for (size_t k=0; k<poss.length(); k++)
             poss[k]=bPoss->get(k).asDouble();
 
         Bottle *bVels=bWP.find("vels").asList();
         Vector vels(bVels->size());
 
-        for (int k=0; k<vels.length(); k++)
+        for (size_t k=0; k<vels.length(); k++)
             vels[k]=bVels->get(k).asDouble();
 
         Bottle *bTols=bWP.find("tols").asList();
         Vector tols(bTols->size());
 
-        for (int k=0; k<tols.length(); k++)
+        for (size_t k=0; k<tols.length(); k++)
             tols[k]=bTols->get(k).asDouble();
 
         Bottle *bThres=bWP.find("thres").asList();
         Vector thres(bThres->size());
 
-        for (int k=0; k<thres.length(); k++)
+        for (size_t k=0; k<thres.length(); k++)
             thres[k]=bThres->get(k).asDouble();
 
         double tmo=bWP.find("tmo").asDouble();
@@ -1436,28 +1435,28 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
             Bottle &bPoss=bWP.addList();
             bPoss.addString("poss");
             Bottle &bPossVects=bPoss.addList();
-            for (int j=0; j<handWP[i].poss.length(); j++)
+            for (size_t j=0; j<handWP[i].poss.length(); j++)
                 bPossVects.addDouble(handWP[i].poss[j]);
 
             // vels part
             Bottle &bVels=bWP.addList();
             bVels.addString("vels");
             Bottle &bVelsVects=bVels.addList();
-            for (int j=0; j<handWP[i].vels.length(); j++)
+            for (size_t j=0; j<handWP[i].vels.length(); j++)
                 bVelsVects.addDouble(handWP[i].vels[j]);
 
             // tols part
             Bottle &bTols=bWP.addList();
             bTols.addString("tols");
             Bottle &bTolsVects=bTols.addList();
-            for (int j=0; j<handWP[i].tols.length(); j++)
+            for (size_t j=0; j<handWP[i].tols.length(); j++)
                 bTolsVects.addDouble(handWP[i].tols[j]);
 
             // thres part
             Bottle &bThres=bWP.addList();
             bThres.addString("thres");
             Bottle &bThresVects=bThres.addList();
-            for (int j=0; j<handWP[i].thres.length(); j++)
+            for (size_t j=0; j<handWP[i].thres.length(); j++)
                 bThresVects.addDouble(handWP[i].thres[j]);
 
             // tmo part
@@ -1901,10 +1900,10 @@ void ActionPrimitivesLayer2::run()
     encTorso->getEncoders(encDataTorso.data());
     encCtrl->getEncoders(encDataArm.data());
 
-    for (int i=0; i<3; i++)
+    for (size_t i=0; i<3; i++)
         q[i]=encDataTorso[2-i];
 
-    for (int i=3; i<q.length(); i++)
+    for (size_t i=3; i<q.length(); i++)
         q[i]=encDataArm[i-3];
 
     AWPolyElement el;

@@ -130,7 +130,7 @@ bool TactileFinger::extractSensorsData(Vector &in) const
     {
         Property prop(data.asList()->toString().c_str());
         Bottle *b=prop.find("in").asList(); in.resize(b->size());
-        for (int i=0; i<in.length(); i++)
+        for (size_t i=0; i<in.length(); i++)
             in[i]=b->get(i).asDouble();
 
         return true;
@@ -148,7 +148,7 @@ bool TactileFinger::getOutput(Value &out) const
         return false;
 
     double ret=0.0;
-    for (int j=0; j<i.length(); j++)
+    for (size_t j=0; j<i.length(); j++)
         ret=std::max(ret,directLogic?(255.0-i[j]):i[j]);
 
     out=Value(outputGain*ret);

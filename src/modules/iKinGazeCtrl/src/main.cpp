@@ -873,7 +873,7 @@ public:
                             {
                                 reply.addVocab(ack);
                                 Bottle &bDes=reply.addList();
-                                for (int i=0; i<des.length(); i++)
+                                for (size_t i=0; i<des.length(); i++)
                                     bDes.addDouble(des[i]);
                             }
                             else
@@ -886,7 +886,7 @@ public:
                             {
                                 reply.addVocab(ack);
                                 Bottle &bVel=reply.addList();
-                                for (int i=0; i<vel.length(); i++)
+                                for (size_t i=0; i<vel.length(); i++)
                                     bVel.addDouble(vel[i]);
                             }
                             else
@@ -903,7 +903,7 @@ public:
                                 {
                                     reply.addVocab(ack);
                                     Bottle &bPose=reply.addList();
-                                    for (int i=0; i<x.length(); i++)
+                                    for (size_t i=0; i<x.length(); i++)
                                         bPose.addDouble(x[i]);
 
                                     return true;
@@ -932,7 +932,7 @@ public:
                                         {
                                             reply.addVocab(ack);
                                             Bottle &bPixel=reply.addList();
-                                            for (int i=0; i<px.length(); i++)
+                                            for (size_t i=0; i<px.length(); i++)
                                                 bPixel.addDouble(px[i]);
 
                                             return true;
@@ -972,7 +972,7 @@ public:
                                             {
                                                 reply.addVocab(ack);
                                                 Bottle &bPoint=reply.addList();
-                                                for (int i=0; i<x.length(); i++)
+                                                for (size_t i=0; i<x.length(); i++)
                                                     bPoint.addDouble(x[i]);
 
                                                 return true;
@@ -1003,7 +1003,7 @@ public:
                                             {
                                                 reply.addVocab(ack);
                                                 Bottle &bPoint=reply.addList();
-                                                for (int i=0; i<x.length(); i++)
+                                                for (size_t i=0; i<x.length(); i++)
                                                     bPoint.addDouble(x[i]);
 
                                                 return true;
@@ -1037,7 +1037,7 @@ public:
                                             {
                                                 reply.addVocab(ack);
                                                 Bottle &bPoint=reply.addList();
-                                                for (int i=0; i<x.length(); i++)
+                                                for (size_t i=0; i<x.length(); i++)
                                                     bPoint.addDouble(x[i]);
 
                                                 return true;

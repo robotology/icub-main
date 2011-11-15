@@ -232,10 +232,10 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
     x.resize(3);
     o.resize(pose.length()-x.length());
 
-    for (int i=0; i<x.length(); i++)
+    for (size_t i=0; i<x.length(); i++)
         x[i]=pose[i];
 
-    for (int i=0; i<o.length(); i++)
+    for (size_t i=0; i<o.length(); i++)
         o[i]=pose[x.length()+i];
 
     return (now-lastPoseMsgArrivalTime<timeout);
@@ -269,10 +269,10 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
             x.resize(3);
             o.resize(posePart->size()-x.length());
 
-            for (int i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.length(); i++)
                 x[i]=posePart->get(i).asDouble();
 
-            for (int i=0; i<o.length(); i++)
+            for (size_t i=0; i<o.length(); i++)
                 o[i]=posePart->get(x.length()+i).asDouble();
 
             return true;
@@ -427,10 +427,10 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
 
     // prepare command
     Vector tg(xd.length()+od.length());
-    for (int i=0; i<xd.length(); i++)
+    for (size_t i=0; i<xd.length(); i++)
         tg[i]=xd[i];
 
-    for (int i=0; i<od.length(); i++)
+    for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
     
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
@@ -460,10 +460,10 @@ bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
 
     // prepare command
     Vector tg(xd.length()+od.length());
-    for (int i=0; i<xd.length(); i++)
+    for (size_t i=0; i<xd.length(); i++)
         tg[i]=xd[i];
 
-    for (int i=0; i<od.length(); i++)
+    for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
 
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
@@ -558,7 +558,7 @@ bool ClientCartesianController::getDOF(Vector &curDof)
         {
             curDof.resize(dofPart->size());
             
-            for (int i=0; i<curDof.length(); i++)
+            for (size_t i=0; i<curDof.length(); i++)
                 curDof[i]=dofPart->get(i).asDouble();
 
             return true;
@@ -582,7 +582,7 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_DOF);
     Bottle &dofPart=command.addList();
 
-    for (int i=0; i<newDof.length(); i++)
+    for (size_t i=0; i<newDof.length(); i++)
         dofPart.addInt((int)newDof[i]);
 
     // send command and wait for reply
@@ -598,7 +598,7 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         {                        
             curDof.resize(dofPart->size());
 
-            for (int i=0; i<curDof.length(); i++)
+            for (size_t i=0; i<curDof.length(); i++)
                 curDof[i]=dofPart->get(i).asDouble();
 
             return true;
@@ -634,7 +634,7 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
         {
             curRestPos.resize(restPart->size());
             
-            for (int i=0; i<curRestPos.length(); i++)
+            for (size_t i=0; i<curRestPos.length(); i++)
                 curRestPos[i]=restPart->get(i).asDouble();
 
             return true;
@@ -658,7 +658,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
     Bottle &restPart=command.addList();
 
-    for (int i=0; i<newRestPos.length(); i++)
+    for (size_t i=0; i<newRestPos.length(); i++)
         restPart.addDouble(newRestPos[i]);
 
     // send command and wait for reply
@@ -674,7 +674,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
         {                        
             curRestPos.resize(restPart->size());
 
-            for (int i=0; i<curRestPos.length(); i++)
+            for (size_t i=0; i<curRestPos.length(); i++)
                 curRestPos[i]=restPart->get(i).asDouble();
 
             return true;
@@ -710,7 +710,7 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
         {
             curRestWeights.resize(restPart->size());
             
-            for (int i=0; i<curRestWeights.length(); i++)
+            for (size_t i=0; i<curRestWeights.length(); i++)
                 curRestWeights[i]=restPart->get(i).asDouble();
 
             return true;
@@ -735,7 +735,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
     Bottle &restPart=command.addList();
 
-    for (int i=0; i<newRestWeights.length(); i++)
+    for (size_t i=0; i<newRestWeights.length(); i++)
         restPart.addDouble(newRestWeights[i]);
 
     // send command and wait for reply
@@ -751,7 +751,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         {                        
             curRestWeights.resize(restPart->size());
 
-            for (int i=0; i<curRestWeights.length(); i++)
+            for (size_t i=0; i<curRestWeights.length(); i++)
                 curRestWeights[i]=restPart->get(i).asDouble();
 
             return true;
@@ -962,7 +962,7 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
         {
             qdot.resize(qdotPart->size());
 
-            for (int i=0; i<qdot.length(); i++)
+            for (size_t i=0; i<qdot.length(); i++)
                 qdot[i]=qdotPart->get(i).asDouble();
 
             return true;
@@ -999,10 +999,10 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
             xdot.resize(3);
             odot.resize(xdotPart->size()-xdot.length());
 
-            for (int i=0; i<xdot.length(); i++)
+            for (size_t i=0; i<xdot.length(); i++)
                 xdot[i]=xdotPart->get(i).asDouble();
 
-            for (int i=0; i<odot.length(); i++)
+            for (size_t i=0; i<odot.length(); i++)
                 odot[i]=xdotPart->get(xdot.length()+i).asDouble();
 
             return true;

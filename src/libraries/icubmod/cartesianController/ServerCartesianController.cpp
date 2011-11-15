@@ -94,10 +94,10 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
                 Vector xd(3);
                 Vector od(v->size()-xd.length());
 
-                for (int i=0; i<xd.length(); i++)
+                for (size_t i=0; i<xd.length(); i++)
                     xd[i]=v->get(i).asDouble();
 
-                for (int i=0; i<od.length(); i++)
+                for (size_t i=0; i<od.length(); i++)
                     od[i]=v->get(xd.length()+i).asDouble();
 
                 ctrl->goToPose(xd,od,t);
@@ -119,10 +119,10 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
             Vector xdot(3);
             Vector odot(v->size()-xdot.length());
 
-            for (int i=0; i<xdot.length(); i++)
+            for (size_t i=0; i<xdot.length(); i++)
                 xdot[i]=v->get(i).asDouble();
 
-            for (int i=0; i<odot.length(); i++)
+            for (size_t i=0; i<odot.length(); i++)
                 odot[i]=v->get(xdot.length()+i).asDouble();
 
             ctrl->setTaskVelocities(xdot,odot);
@@ -483,7 +483,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &dofPart=reply.addList();
                                     
-                                for (int i=0; i<curDof.length(); i++)
+                                for (size_t i=0; i<curDof.length(); i++)
                                     dofPart.addInt((int)curDof[i]);
                             }
                             else
@@ -502,7 +502,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &restPart=reply.addList();
     
-                                for (int i=0; i<curRestPos.length(); i++)
+                                for (size_t i=0; i<curRestPos.length(); i++)
                                     restPart.addDouble(curRestPos[i]);
                             }
                             else
@@ -521,7 +521,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &restPart=reply.addList();
     
-                                for (int i=0; i<curRestWeights.length(); i++)
+                                for (size_t i=0; i<curRestWeights.length(); i++)
                                     restPart.addDouble(curRestWeights[i]);
                             }
                             else
@@ -560,7 +560,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &qdotPart=reply.addList();
     
-                                for (int i=0; i<qdot.length(); i++)
+                                for (size_t i=0; i<qdot.length(); i++)
                                     qdotPart.addDouble(qdot[i]);
                             }
                             else
@@ -579,10 +579,10 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &xdotPart=reply.addList();
     
-                                for (int i=0; i<xdot.length(); i++)
+                                for (size_t i=0; i<xdot.length(); i++)
                                     xdotPart.addDouble(xdot[i]);
     
-                                for (int i=0; i<odot.length(); i++)
+                                for (size_t i=0; i<odot.length(); i++)
                                     xdotPart.addDouble(odot[i]);
                             }
                             else
@@ -604,10 +604,10 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &posePart=reply.addList();
 
-                                    for (int i=0; i<x.length(); i++)
+                                    for (size_t i=0; i<x.length(); i++)
                                         posePart.addDouble(x[i]);
 
-                                    for (int i=0; i<o.length(); i++)
+                                    for (size_t i=0; i<o.length(); i++)
                                         posePart.addDouble(o[i]);
                                 }
                                 else
@@ -712,7 +712,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &dofPart=reply.addList();
 
-                                    for (int i=0; i<curDof.length(); i++)
+                                    for (size_t i=0; i<curDof.length(); i++)
                                         dofPart.addInt((int)curDof[i]);
                                 }
                                 else
@@ -740,7 +740,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &restPart=reply.addList();
     
-                                    for (int i=0; i<curRestPos.length(); i++)
+                                    for (size_t i=0; i<curRestPos.length(); i++)
                                         restPart.addDouble(curRestPos[i]);
                                 }
                                 else
@@ -768,7 +768,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &restPart=reply.addList();
     
-                                    for (int i=0; i<curRestWeights.length(); i++)
+                                    for (size_t i=0; i<curRestWeights.length(); i++)
                                         restPart.addDouble(curRestWeights[i]);
                                 }
                                 else
@@ -1510,12 +1510,12 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             // prepare references for minimum achievable absolute velocities
             if (lDsc[i].useDefaultMinAbsVel)
                 lDsc[i].minAbsVels.resize(joints,0.0);
-            else if (lDsc[i].minAbsVels.length()<joints)
+            else if (lDsc[i].minAbsVels.length()<(size_t)joints)
             {
                 Vector tmp=lDsc[i].minAbsVels;
                 lDsc[i].minAbsVels.resize(joints,0.0);
 
-                for (int k=0; k<tmp.length(); k++)
+                for (size_t k=0; k<tmp.length(); k++)
                     lDsc[i].minAbsVels[k]=tmp[k];
             }
 
@@ -1727,10 +1727,10 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o)
         x.resize(3);
         o.resize(pose.length()-x.length());
     
-        for (int i=0; i<x.length(); i++)
+        for (size_t i=0; i<x.length(); i++)
             x[i]=pose[i];
     
-        for (int i=0; i<o.length(); i++)
+        for (size_t i=0; i<o.length(); i++)
             o[i]=pose[x.length()+i];
     
         return true;
@@ -1751,7 +1751,7 @@ bool ServerCartesianController::getPose(const int axis, Vector &x, Vector &o)
     
             x.resize(3);
     
-            for (int i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.length(); i++)
                 x[i]=H(i,3);
     
             o=dcm2axis(H);
@@ -1773,10 +1773,10 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od, con
     {
         Vector _xd(xd.length()+od.length());
     
-        for (int i=0; i<xd.length(); i++)
+        for (size_t i=0; i<xd.length(); i++)
             _xd[i]=xd[i];
     
-        for (int i=0; i<od.length(); i++)
+        for (size_t i=0; i<od.length(); i++)
             _xd[xd.length()+i]=od[i];
 
         taskVelModeOn=false;
@@ -1822,10 +1822,10 @@ bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
         xdhat.resize(3);
         odhat.resize(xdes.length()-3);
 
-        for (int i=0; i<xdhat.length(); i++)
+        for (size_t i=0; i<xdhat.length(); i++)
             xdhat[i]=xdes[i];
 
-        for (int i=0; i<odhat.length(); i++)
+        for (size_t i=0; i<odhat.length(); i++)
             odhat[i]=xdes[xdhat.length()+i];
 
         qdhat.resize(chain->getN());
@@ -1855,10 +1855,10 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
 
     // prepare command
     Vector tg(xd.length()+od.length());
-    for (int i=0; i<xd.length(); i++)
+    for (size_t i=0; i<xd.length(); i++)
         tg[i]=xd[i];
 
-    for (int i=0; i<od.length(); i++)
+    for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
     
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
@@ -1888,10 +1888,10 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
 
     // prepare command
     Vector tg(xd.length()+od.length());
-    for (int i=0; i<xd.length(); i++)
+    for (size_t i=0; i<xd.length(); i++)
         tg[i]=xd[i];
 
-    for (int i=0; i<od.length(); i++)
+    for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
 
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
@@ -1992,7 +1992,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_DOF);
         Bottle &txDofPart=command.addList();
-        for (int i=0; i<newDof.length(); i++)
+        for (size_t i=0; i<newDof.length(); i++)
             txDofPart.addInt((int)newDof[i]);
     
         // send command to solver and wait for reply
@@ -2069,7 +2069,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_REST_POS);
         Bottle &txRestPart=command.addList();
-        for (int i=0; i<newRestPos.length(); i++)
+        for (size_t i=0; i<newRestPos.length(); i++)
             txRestPart.addDouble(newRestPos[i]);
     
         // send command to solver and wait for reply
@@ -2133,7 +2133,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
         Bottle &txRestPart=command.addList();
-        for (int i=0; i<newRestWeights.length(); i++)
+        for (size_t i=0; i<newRestWeights.length(); i++)
             txRestPart.addDouble(newRestWeights[i]);
     
         // send command to solver and wait for reply
@@ -2306,10 +2306,10 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         xdot.resize(3);
         odot.resize(taskVel.length()-xdot.length());
     
-        for (int i=0; i<xdot.length(); i++)
+        for (size_t i=0; i<xdot.length(); i++)
             xdot[i]=taskVel[i];
     
-        for (int i=0; i<odot.length(); i++)
+        for (size_t i=0; i<odot.length(); i++)
             odot[i]=taskVel[xdot.length()+i];
 
         return true;
@@ -2327,7 +2327,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         for (int i=0; i<3; i++)
             xdot_set[i]=xdot[i];
 
-        for (int i=3; i<xdot_set.length(); i++)
+        for (size_t i=3; i<xdot_set.length(); i++)
             xdot_set[i]=odot[i-3];
 
         if (norm(xdot_set)==0.0)

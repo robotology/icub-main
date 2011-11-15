@@ -684,7 +684,7 @@ void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bot
 {
 	Bottle a;
 	a.addInt(_address);
-	for(int i=0;i<_values.length();i++)
+	for(size_t i=0;i<_values.length();i++)
 		a.addDouble(_values(i));
 	_port->prepare() = a;
 	_port->write();
@@ -859,34 +859,34 @@ bool inverseDynamics::getLowerEncodersSpeedAndAcceleration()
 	else
 	{encoders_torso.zero();}
 
-	for (int i=0;i<q_torso.length();i++)
+	for (size_t i=0;i<q_torso.length();i++)
 	{
 		q_torso(i) = encoders_torso(2-i);
 		all_q_low(i) = q_torso(i);
 	}
-	for (int i=0;i<q_lleg.length();i++)
+	for (size_t i=0;i<q_lleg.length();i++)
 	{
 		q_lleg(i) = encoders_leg_left(i);
 		all_q_low(q_torso.length()+i) = q_lleg(i);
 	}
-	for (int i=0;i<q_rleg.length();i++)
+	for (size_t i=0;i<q_rleg.length();i++)
 	{
 		q_rleg(i) = encoders_leg_right(i);
 		all_q_low(q_torso.length()+q_lleg.length()+i) = q_rleg(i);
 	}
 	all_dq_low = evalVelLow(all_q_low);
 	all_d2q_low = evalAccLow(all_q_low);
-	for (int i=0;i<q_torso.length();i++)
+	for (size_t i=0;i<q_torso.length();i++)
 	{
 		dq_torso(i) = all_dq_low(i);
 		d2q_torso(i) = all_d2q_low(i);
 	}
-	for (int i=0;i<q_lleg.length();i++)
+	for (size_t i=0;i<q_lleg.length();i++)
 	{
 		dq_lleg(i) = all_dq_low(i+q_torso.length());
 		d2q_lleg(i) = all_d2q_low(i+q_torso.length());
 	}
-	for (int i=0;i<q_rleg.length();i++)
+	for (size_t i=0;i<q_rleg.length();i++)
 	{
 		dq_rleg(i) = all_dq_low(i+q_torso.length()+q_lleg.length());
 		d2q_rleg(i) = all_d2q_low(i+q_torso.length()+q_lleg.length());
@@ -906,17 +906,17 @@ bool inverseDynamics::getUpperEncodersSpeedAndAcceleration()
 	if (iencs_head) b &= iencs_head->getEncoders(encoders_head.data());	
 	else encoders_head.zero();
 
-	for (int i=0;i<q_head.length();i++)
+	for (size_t i=0;i<q_head.length();i++)
 	{
 		q_head(i) = encoders_head(i);
 		all_q_up(i) = q_head(i);
 	}
-	for (int i=0;i<q_larm.length();i++)
+	for (size_t i=0;i<q_larm.length();i++)
 	{
 		q_larm(i) = encoders_arm_left(i);
 		all_q_up(q_head.length()+i) = q_larm(i);
 	}
-	for (int i=0;i<q_rarm.length();i++)
+	for (size_t i=0;i<q_rarm.length();i++)
 	{
 		q_rarm(i) = encoders_arm_right(i);
 		all_q_up(q_head.length()+q_larm.length()+i) = q_rarm(i);
@@ -924,17 +924,17 @@ bool inverseDynamics::getUpperEncodersSpeedAndAcceleration()
 	all_dq_up = evalVelUp(all_q_up);
 	all_d2q_up = evalAccUp(all_q_up);
 	
-	for (int i=0;i<q_head.length();i++)
+	for (size_t i=0;i<q_head.length();i++)
 	{
 		dq_head(i) = all_dq_up(i);
 		d2q_head(i) = all_d2q_up(i);
 	}
-	for (int i=0;i<q_larm.length();i++)
+	for (size_t i=0;i<q_larm.length();i++)
 	{
 		dq_larm(i) = all_dq_up(i+q_head.length());
 		d2q_larm(i) = all_d2q_up(i+q_head.length());
 	}
-	for (int i=0;i<q_rarm.length();i++)
+	for (size_t i=0;i<q_rarm.length();i++)
 	{
 		dq_rarm(i) = all_dq_up(i+q_head.length()+q_larm.length());
 		d2q_rarm(i) = all_d2q_up(i+q_head.length()+q_larm.length());
@@ -1099,23 +1099,23 @@ void inverseDynamics::sendMonitorData()
     monitorData.push_back(norm(icub->upperTorso->getLinAcc()));     // lin acc norm upper node
     monitorData.push_back(norm(icub->upperTorso->getTorsoForce())); // force norm upper node
     monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node    
-    for(int i=0;i<3;i++){                                           // w torso
+    for(size_t i=0;i<3;i++){                                           // w torso
         temp = icub->lowerTorso->up->getAngVel(i) * CTRL_RAD2DEG;
-        for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+        for(size_t j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
     }
-    for(int i=0;i<3;i++){                                           // dw torso
+    for(size_t i=0;i<3;i++){                                           // dw torso
         temp = icub->lowerTorso->up->getAngAcc(i) * CTRL_RAD2DEG;
-        for(int j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+        for(size_t j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
     }
     //for(int j=0;j<TOTorques.size();j++)                             // torso torques
     //    monitorData.push_back(TOTorques[j]);
-    for(int i=0;i<3;i++)                                            // norm of COM ddp torso
+    for(size_t i=0;i<3;i++)                                            // norm of COM ddp torso
         monitorData.push_back(norm(icub->lowerTorso->up->getLinAccCOM(i)));
-    for(int i=0;i<3;i++)                                            // norm of forces torso
+    for(size_t i=0;i<3;i++)                                            // norm of forces torso
         monitorData.push_back(norm(icub->lowerTorso->up->getForce(i)));
-    for(int i=0;i<3;i++){                                           // moments torso
+    for(size_t i=0;i<3;i++){                                           // moments torso
         temp = icub->lowerTorso->up->getMoment(i);
-        for(int j=0;j<temp.size();j++)
+        for(size_t j=0;j<temp.size();j++)
             monitorData.push_back(temp(j));
     }
     for(int i=0;i<3;i++)                                            // norm of moments head
@@ -1127,7 +1127,7 @@ void inverseDynamics::sendMonitorData()
 void inverseDynamics::sendVelAccData()
 {
     Vector dump(0);
-    int i;
+    size_t i;
     if(dumpvel_enabled)
     {
         for(i=0; i< all_q_up.size(); i++)

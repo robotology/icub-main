@@ -33,10 +33,10 @@ yarp::os::Bottle& operator<<(yarp::os::Bottle &out, double val) {
 }
 
 yarp::os::Bottle& operator<<(yarp::os::Bottle &out, const yarp::sig::Vector& v) {
-    for(int i = 0; i < v.size(); i++) {
+    for(size_t i = 0; i < v.size(); i++) {
         out << v(i);
     }
-    out << v.size();
+    out << (int)v.size();
     return out;
 }
 

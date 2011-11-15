@@ -291,7 +291,7 @@ Vector iCub::ctrl::sign(const Vector &v)
 {
     Vector ret(v.length());
 
-    for (int i=0; i<v.length(); i++)
+    for (size_t i=0; i<v.length(); i++)
         ret[i]=sign(v[i]);
 
     return ret;

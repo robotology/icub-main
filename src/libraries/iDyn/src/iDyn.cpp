@@ -55,7 +55,7 @@ using namespace iCub::iDyn;
 void iCub::iDyn::printVector(std::string s, const yarp::sig::Vector &v)
 {
 	printf ("%s :",s.c_str());
-	for(int i=0;i<v.size();i++)
+	for(size_t i=0;i<v.size();i++)
 	{
 		printf ("%+6.3f\t",v(i));
 	}

@@ -502,7 +502,7 @@ void copyJointsBounds(iKinChain *ch1, iKinChain *ch2)
 /************************************************************************/
 void updateTorsoBlockedJoints(iKinChain *chain, const Vector &fbTorso)
 {
-    for (int i=0; i<fbTorso.length(); i++)
+    for (size_t i=0; i<fbTorso.length(); i++)
          chain->setBlockingValue(i,fbTorso[i]);
 }
 

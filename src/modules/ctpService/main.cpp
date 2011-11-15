@@ -220,7 +220,7 @@ protected:
             return;
         }
 
-        for (int i=0; i<disp.length(); i++)
+        for (size_t i=0; i<disp.length(); i++)
         {
             double q;
 
@@ -237,7 +237,7 @@ protected:
                 disp[i]=-disp[i];
         }
 
-        for (int i=0; i<disp.length(); i++)
+        for (size_t i=0; i<disp.length(); i++)
         {
             pos->setRefSpeed(offset+i,disp[i]/time);
             pos->positionMove(offset+i,x->getCmd()[i]);
@@ -465,7 +465,7 @@ private:
                 time=b.get(1).asDouble();
                 v.resize(b.size()-2);
 
-                for (int i=0; i<v.length(); i++)
+                for (size_t i=0; i<v.length(); i++)
                     v[i]=b.get(i+2).asDouble();
 
                 return true;
@@ -481,7 +481,7 @@ private:
     {
         Vector res;
 
-        for (int i=0; i<p.length(); i++)
+        for (size_t i=0; i<p.length(); i++)
         {
             res.push_back(i);
             res.push_back(p[i]);
@@ -495,7 +495,7 @@ private:
 
         if (++filtElemsCnt>VEL_FILT_SIZE)
         {
-            for (int i=0; i<p.length(); i++)
+            for (size_t i=0; i<p.length(); i++)
             {
                 res.push_back(1000.0+i);
                 res.push_back(v[i]);

@@ -139,7 +139,7 @@ class Output
 private:
     int                                 label;
     yarp::sig::Vector                   positions;
-    int                                 cnt;
+    size_t                              cnt;
 
 public:
     Output(const int &size)
@@ -147,7 +147,7 @@ public:
     {}
 
     void setLabel(int _label)                    {label=_label;}
-    void pushPosition(yarp::sig::Vector pos)    
+    void pushPosition(const yarp::sig::Vector &pos)
     {
         if(cnt>positions.size()) {
             std::ostringstream buffer;
@@ -171,7 +171,7 @@ public:
             return v;
 
         v.resize(cnt);
-        for(int i=0; i<cnt; i++)
+        for(size_t i=0; i<cnt; i++)
             v[i]=positions[i];
 
         return v;

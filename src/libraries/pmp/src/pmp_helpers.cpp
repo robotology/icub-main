@@ -31,7 +31,7 @@ bool extractVector(Property &prop, const string &option, Vector &res)
         if (Bottle *v=prop.find(option.c_str()).asList())
         {
             res.resize(v->size());
-            for (int i=0; i<res.length(); i++)
+            for (size_t i=0; i<res.length(); i++)
                 res[i]=v->get(i).asDouble();
 
             return true;
@@ -53,7 +53,7 @@ bool copyVectorData(const Vector &src, Vector &dest)
 
     if (src.length()<=dest.length()-offs)
     {
-        for (int i=0; i<src.length(); i++)
+        for (size_t i=0; i<src.length(); i++)
             dest[offs+i]=src[i];
 
         return true;

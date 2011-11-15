@@ -39,7 +39,7 @@ namespace learningmachine {
 class TrainEventListener : public IPortEventListener {
 protected:
     void vectorToBottle(const yarp::sig::Vector& vec, yarp::os::Bottle& bot) {
-        for(int i = 0; i < vec.size(); i++) {
+        for(size_t i = 0; i < vec.size(); i++) {
             bot.addDouble(vec[i]);
         }
     }

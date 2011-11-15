@@ -182,11 +182,11 @@ bool SpringyFinger::extractSensorsData(Vector &in, Vector &out) const
         Bottle *b;
 
         b=prop.find("in").asList(); in.resize(b->size());
-        for (int i=0; i<in.length(); i++)
+        for (size_t i=0; i<in.length(); i++)
             in[i]=b->get(i).asDouble();
 
         b=prop.find("out").asList(); out.resize(b->size());
-        for (int i=0; i<out.length(); i++)
+        for (size_t i=0; i<out.length(); i++)
             out[i]=b->get(i).asDouble();
 
         return true;
@@ -206,7 +206,7 @@ bool SpringyFinger::getOutput(Value &out) const
     i[0]=scaler.transform(i[0]);
     Vector pred=lssvm.predict(i).getPrediction();
 
-    for (int j=0; j<pred.length(); j++)
+    for (size_t j=0; j<pred.length(); j++)
         pred[j]=scaler.unTransform(pred[j]);
 
     out=Value(outputGain*norm(o-pred));
@@ -229,7 +229,7 @@ bool SpringyFinger::calibrate(const Property &options)
         if (extractSensorsData(in,out))
         {            
             in[0]=scaler.transform(in[0]);
-            for (int i=0; i<out.length(); i++)
+            for (size_t i=0; i<out.length(); i++)
                 out[i]=scaler.transform(out[i]);
 
             lssvm.feedSample(in,out);

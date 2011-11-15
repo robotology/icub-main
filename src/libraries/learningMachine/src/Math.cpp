@@ -210,7 +210,7 @@ yarp::sig::Matrix outerprod(const yarp::sig::Vector& v1, const yarp::sig::Vector
 }
 
 yarp::sig::Vector& addvec(yarp::sig::Vector& v, double val) {
-    for(int i = 0; i < v.size(); i++) {
+    for(size_t i = 0; i < v.size(); i++) {
         v(i) += val;
     }
     return v;
@@ -233,7 +233,7 @@ yarp::sig::Vector trsolve(const yarp::sig::Matrix& A, const yarp::sig::Vector& b
 }
 
 void fillrandom(yarp::sig::Vector& v, yarp::math::RandScalar& prng) {
-    int i;
+    size_t i;
     for(i = 0; i < v.size(); i++) {
         v(i) = prng.get();
     }
@@ -249,7 +249,7 @@ void fillrandom(yarp::sig::Matrix& M, yarp::math::RandScalar& prng) {
 }
 
 void fillrandom(yarp::sig::Vector& v, yarp::math::RandnScalar& prng) {
-    int i;
+    size_t i;
     for(i = 0; i < v.size(); i++) {
         v(i) = prng.get();
     }
@@ -289,7 +289,7 @@ yarp::sig::Matrix random(int rows, int columns, yarp::math::RandnScalar& prng) {
 }
 
 yarp::sig::Vector& map(yarp::sig::Vector& v, double (op)(double)) {
-    for(int i = 0; i < v.size(); i++) {
+    for(size_t i = 0; i < v.size(); i++) {
         v(i) = op(v(i));
     }
     return v;
@@ -306,7 +306,7 @@ yarp::sig::Matrix& map(yarp::sig::Matrix& M, double (op)(double)) {
 
 yarp::sig::Vector map(const yarp::sig::Vector& v, double (op)(double)) {
     yarp::sig::Vector out(v.size());
-    for(int i = 0; i < out.size(); i++) {
+    for(size_t i = 0; i < out.size(); i++) {
         out(i) = op(v(i));
     }
     return out;

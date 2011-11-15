@@ -202,7 +202,7 @@ public:
                 while(it!=sequences[l].end())
                     {
                         Vector &v=(*it);
-                        for(int e=0;e<v.length();e++)
+                        for(size_t e=0;e<v.length();e++)
                             cout<<v[e]<< " ";
                         cout<<endl;
 

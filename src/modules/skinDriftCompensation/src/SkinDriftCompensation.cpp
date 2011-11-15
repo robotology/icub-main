@@ -187,7 +187,7 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 		case get_percentile:
 			{
 			Vector touchThreshold = myThread->getTouchThreshold();
-			for(int i=0; i< touchThreshold.size(); i++) 
+			for(size_t i=0; i< touchThreshold.size(); i++) 
 				reply.addDouble(touchThreshold[i]);
 			return true;
 			}

@@ -59,7 +59,7 @@ bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item)
     {
         item.resize(b->size());
 
-        for (int i=0; i<item.length(); i++)
+        for (size_t i=0; i<item.length(); i++)
             item[i]=b->get(i).asDouble();
 
         return true;
@@ -176,7 +176,7 @@ bool ff2LayNN::configure(Property &options)
     inMinY.resize(inMinMaxX.size());
     inRatio.resize(inMinMaxX.size());
 
-    for (int i=0; i<inMinX.length(); i++)
+    for (size_t i=0; i<inMinX.length(); i++)
     {
         inMinX[i]=inMinMaxX[i].min;
         inMinY[i]=inMinMaxY[i].min;
@@ -187,7 +187,7 @@ bool ff2LayNN::configure(Property &options)
     outMinY.resize(outMinMaxX.size());
     outRatio.resize(outMinMaxX.size());
 
-    for (int i=0; i<outMinX.length(); i++)
+    for (size_t i=0; i<outMinX.length(); i++)
     {
         outMinX[i]=outMinMaxX[i].min;
         outMinY[i]=outMinMaxY[i].min;
@@ -208,14 +208,14 @@ Vector ff2LayNN::predict(const Vector &x)
     
         // compute the output a1 of hidden layer
         Vector n1(IW.size());
-        for (int i=0; i<n1.length(); i++)
+        for (size_t i=0; i<n1.length(); i++)
             n1[i]=yarp::math::dot(IW[i],x1)+b1[i];
     
         Vector a1=hiddenLayerFcn(n1);
     
         // compute the output a2 of the network
         Vector n2(LW.size());
-        for (int i=0; i<n2.length(); i++)
+        for (size_t i=0; i<n2.length(); i++)
             n2[i]=yarp::math::dot(LW[i],a1)+b2[i];
     
         Vector a2=outputLayerFcn(n2);
@@ -278,7 +278,7 @@ Vector ff2LayNN_tansig_purelin::hiddenLayerFcn(const Vector &x)
 {
     Vector y(x.length());
 
-    for (int i=0; i<x.length(); i++)
+    for (size_t i=0; i<x.length(); i++)
         y[i]=2.0/(1.0+exp(-2.0*x[i]))-1.0;
 
     return y;

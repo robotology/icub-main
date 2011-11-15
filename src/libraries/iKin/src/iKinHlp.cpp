@@ -32,7 +32,7 @@ void CartesianHelper::addVectorOption(Bottle &b, const int vcb, const Vector &v)
     part.addVocab(vcb);
     Bottle &vect=part.addList();
 
-    for (int i=0; i<v.length(); i++)
+    for (size_t i=0; i<v.length(); i++)
         vect.addDouble(v[i]);
 }
 
@@ -54,11 +54,11 @@ bool CartesianHelper::getDesiredOption(Bottle &reply, Vector &xdhat,
                 return false;
 
             xdhat.resize(3);
-            for (int i=0; i<xdhat.length(); i++)
+            for (size_t i=0; i<xdhat.length(); i++)
                 xdhat[i]=xData->get(i).asDouble();
 
             odhat.resize(4);
-            for (int i=0; i<odhat.length(); i++)
+            for (size_t i=0; i<odhat.length(); i++)
                 odhat[i]=xData->get(xdhat.length()+i).asDouble();
         }
         else
@@ -72,7 +72,7 @@ bool CartesianHelper::getDesiredOption(Bottle &reply, Vector &xdhat,
                 return false;
 
             qdhat.resize(qData->size());
-            for (int i=0; i<qdhat.length(); i++)
+            for (size_t i=0; i<qdhat.length(); i++)
                 qdhat[i]=qData->get(i).asDouble();
         }
         else

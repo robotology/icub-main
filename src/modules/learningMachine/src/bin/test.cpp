@@ -77,7 +77,7 @@ std::string printVector(const std::vector<int>& v) {
 std::string printVector(const Vector& v) {
   std::ostringstream output;
   output << "[";
-  for(int i = 0; i < v.size(); i++) {
+  for(size_t i = 0; i < v.size(); i++) {
     if(i > 0) output << ",";
     output << v[i];
   }
@@ -89,14 +89,14 @@ std::string printPrediction(Prediction& p) {
   std::ostringstream output;
   Vector v = p.head;
   output << "[";
-  for(int i = 0; i < v.size(); i++) {
+  for(size_t i = 0; i < v.size(); i++) {
     if(i > 0) output << ",";
     output << v[i];
   }
   v = p.body;
   if(v.size() > 0) {
     output << " +/- ";
-    for(int i = 0; i < v.size(); i++) {
+    for(size_t i = 0; i < v.size(); i++) {
       if(i > 0) output << ",";
       output << v[i];
     }
@@ -503,7 +503,7 @@ public:
                             std::string msg("incoming prediction has incorrect dimension");
                             throw std::runtime_error(msg);
                         }
-                        for(int j = 0; j < error.size(); j++) {
+                        for(size_t j = 0; j < error.size(); j++) {
                             double dist = sample.second[j] - expected[j];
                             error[j] += (dist * dist);
                         }
@@ -513,7 +513,7 @@ public:
                             std::string msg("incoming predictive variance has invalid dimension");
                             throw std::runtime_error(msg);
                         }
-                        for(int j = 0; j < nmlp.size(); j++) {
+                        for(size_t j = 0; j < nmlp.size(); j++) {
                             double normdist = (sample.second[j] - expected[j]) / variance[j];
                             nmlp[j] += 0.5 * ((normdist * normdist) + log(TWOPI) + 2 * log(variance[j]));
                         }
@@ -527,10 +527,10 @@ public:
                     reply.addString(reply_str.c_str());
 
                     // take mean of cumulated errors
-                    for(int i = 0; i < error.size(); i++) {
+                    for(size_t i = 0; i < error.size(); i++) {
                         error[i] = error[i] / double(noSamples);
                     }
-                    for(int i = 0; i < error.size(); i++) {
+                    for(size_t i = 0; i < error.size(); i++) {
                         nmlp[i] = nmlp[i] / double(noSamples);
                     }
 

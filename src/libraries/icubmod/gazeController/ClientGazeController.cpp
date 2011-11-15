@@ -397,10 +397,10 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
                 x.resize(3);
                 o.resize(bPose->size()-x.length());
         
-                for (int i=0; i<x.length(); i++)
+                for (size_t i=0; i<x.length(); i++)
                     x[i]=bPose->get(i).asDouble();
         
-                for (int i=0; i<o.length(); i++)
+                for (size_t i=0; i<o.length(); i++)
                     o[i]=bPose->get(x.length()+i).asDouble();
         
                 return true;
@@ -462,7 +462,7 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x, Vector 
         if (Bottle *bPixel=reply.get(1).asList())
         {
             px.resize(bPixel->size());
-            for (int i=0; i<px.length(); i++)
+            for (size_t i=0; i<px.length(); i++)
                 px[i]=bPixel->get(i).asDouble();
 
             return true;
@@ -504,7 +504,7 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
-            for (int i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.length(); i++)
                 x[i]=bPoint->get(i).asDouble();
 
             return true;
@@ -549,7 +549,7 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
-            for (int i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.length(); i++)
                 x[i]=bPoint->get(i).asDouble();
 
             return true;
@@ -591,7 +591,7 @@ bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &p
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
-            for (int i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.length(); i++)
                 x[i]=bPoint->get(i).asDouble();
 
             return true;
@@ -626,7 +626,7 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
         if (Bottle *bDes=reply.get(1).asList())
         {
             qdes.resize(bDes->size());
-            for (int i=0; i<qdes.length(); i++)
+            for (size_t i=0; i<qdes.length(); i++)
                 qdes[i]=bDes->get(i).asDouble();
 
             return true;
@@ -661,7 +661,7 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
         if (Bottle *bVel=reply.get(1).asList())
         {
             qdot.resize(bVel->size());
-            for (int i=0; i<qdot.length(); i++)
+            for (size_t i=0; i<qdot.length(); i++)
                 qdot[i]=bVel->get(i).asDouble();
 
             return true;

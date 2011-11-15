@@ -37,7 +37,7 @@ double RBFKernel::evaluate(const yarp::sig::Vector& v1, const yarp::sig::Vector&
     double result = 0.0;
     double diff;
 
-    for(int i = 0; i < v1.size(); i++) {
+    for(size_t i = 0; i < v1.size(); i++) {
         diff = v1(i) - v2(i);
         result += diff * diff;
     }
@@ -133,7 +133,7 @@ void LSSVMLearner::train() {
 
     for(unsigned int i = 0; i < this->getCoDomainSize(); i++) {
         yarp::sig::Vector alphas_i = this->alphas.getCol(i);
-        for(int j = 0; j < alphas_i.size(); j++) {
+        for(size_t j = 0; j < alphas_i.size(); j++) {
             double err = alphas_i(j) / Kinv(j, j);
             this->LOO(i) += err * err;
         }
@@ -151,7 +151,7 @@ Prediction LSSVMLearner::predict(const yarp::sig::Vector& input) {
 
     // compute kernel expansion
     yarp::sig::Vector k(this->inputs.size());
-    for(int i = 0; i < k.size(); i++) {
+    for(size_t i = 0; i < k.size(); i++) {
         k(i) = this->kernel->evaluate(this->inputs[i], input);
     }
 

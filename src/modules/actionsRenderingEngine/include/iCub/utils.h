@@ -92,7 +92,7 @@ public:
     {
         mutex.wait();
         this->resize(stereo.size());
-        for(int i=0; i<stereo.size(); i++)
+        for(size_t i=0; i<stereo.size(); i++)
             this->data()[i]=stereo[i];
         mutex.post();
     }
@@ -102,7 +102,7 @@ public:
         Vector stereo;
         mutex.wait();
         stereo.resize(this->size());
-        for(int i=0; i<this->size(); i++)
+        for(size_t i=0; i<this->size(); i++)
             stereo[i]= this->data()[i];
         this->clear();
         mutex.post();

@@ -394,17 +394,17 @@ bool gravityCompensatorThread::getLowerEncodersSpeedAndAcceleration()
 	else 
 	{encoders_torso.zero();}
 
-	for (int i=0;i<q_torso.length();i++)
+	for (size_t i=0;i<q_torso.length();i++)
 	{
 		q_torso(i) = encoders_torso(2-i);
 		all_q_low(i) = q_torso(i);
 	}
-	for (int i=0;i<q_lleg.length();i++)
+	for (size_t i=0;i<q_lleg.length();i++)
 	{
 		q_lleg(i) = encoders_leg_left(i);
 		all_q_low(q_torso.length()+i) = q_lleg(i);
 	}
-	for (int i=0;i<q_rleg.length();i++)
+	for (size_t i=0;i<q_rleg.length();i++)
 	{
 		q_rleg(i) = encoders_leg_right(i);
 		all_q_low(q_torso.length()+q_lleg.length()+i) = q_rleg(i);
@@ -454,17 +454,17 @@ bool gravityCompensatorThread::getUpperEncodersSpeedAndAcceleration()
 	else 
 	{encoders_head.zero();}
 
-	for (int i=0;i<q_head.length();i++)
+	for (size_t i=0;i<q_head.length();i++)
 	{
 		q_head(i) = encoders_head(i);
 		all_q_up(i) = q_head(i);
 	}
-	for (int i=0;i<q_larm.length();i++)
+	for (size_t i=0;i<q_larm.length();i++)
 	{
 		q_larm(i) = encoders_arm_left(i);
 		all_q_up(q_head.length()+i) = q_larm(i);
 	}
-	for (int i=0;i<q_rarm.length();i++)
+	for (size_t i=0;i<q_rarm.length();i++)
 	{
 		q_rarm(i) = encoders_arm_right(i);
 		all_q_up(q_head.length()+q_larm.length()+i) = q_rarm(i);

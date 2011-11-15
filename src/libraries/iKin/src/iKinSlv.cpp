@@ -101,7 +101,7 @@ protected:
     {
         Vector tmp(dest.length()+1);
 
-        for (int i=0; i<dest.length(); i++)
+        for (size_t i=0; i<dest.length(); i++)
             tmp[i]=dest[i];
 
         dest=tmp;
@@ -1092,7 +1092,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
                 // get the target
                 Vector xd(b_xd->size());
-                for (int i=0; i<xd.length(); i++)
+                for (size_t i=0; i<xd.length(); i++)
                     xd[i]=b_xd->get(i).asDouble();
 
                 // accounts for the starting DOF
@@ -1274,7 +1274,7 @@ bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *re
     if (reply)
     {
         Bottle &b=reply->addList();
-        for (int i=0; i<restJntPos.length(); i++)
+        for (size_t i=0; i<restJntPos.length(); i++)
             b.addDouble(CTRL_RAD2DEG*restJntPos[i]);
     }
 
@@ -1305,7 +1305,7 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
     if (reply)
     {
         Bottle &b=reply->addList();
-        for (int i=0; i<restWeights.length(); i++)
+        for (size_t i=0; i<restWeights.length(); i++)
             b.addDouble(restWeights[i]);
     }
 
@@ -1423,7 +1423,7 @@ bool CartesianSolver::open(Searchable &options)
     {            
         Vector _dof(v->size());
 
-        for (int i=0; i<_dof.length(); i++)
+        for (size_t i=0; i<_dof.length(); i++)
             _dof[i]=v->get(i).asInt();
 
         decodeDOF(_dof);
