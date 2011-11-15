@@ -330,10 +330,10 @@ void Controller::run()
 
     // send x,q through YARP ports
     Vector q(nJointsTorso+nJointsHead);
-    size_t j;
+    int j;
     for (j=0; j<nJointsTorso; j++)
         q[j]=CTRL_RAD2DEG*fbTorso[j];
-    for (; j<q.length(); j++)
+    for (; (size_t)j<q.length(); j++)
         q[j]=qdeg[j-nJointsTorso];
 
     if (port_x.getOutputCount()>0)
