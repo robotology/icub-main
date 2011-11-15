@@ -2006,7 +2006,7 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
         }
 
         unsigned int iteration=0;
-        while (iteration<maxIterations)
+        while (iteration++<maxIterations)
         {
             Vector field;
             getField(field);
@@ -2014,15 +2014,8 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
             xdot=If.integrate(field);
             x=Iv.integrate(xdot);
 
-            Vector pos(3),orien(4);
-            for (int i=0; i<pos.length(); i++)
-                pos[i]=x[i];
-            for (int j=0; j<orien.length(); j++)
-                orien[j]=x[j+3];
-
-            trajPos.push_back(pos);
-            trajOrien.push_back(orien);
-            iteration++;
+            trajPos.push_back(getVectorPos(x));
+            trajOrien.push_back(getVectorOrien(x));
         }       
 
         if (Ts>PMP_DEFAULT_TS_DISABLED)

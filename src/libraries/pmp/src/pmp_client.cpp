@@ -1232,7 +1232,7 @@ bool PmpClient::setActiveIF(const string &activeIF)
 
 /************************************************************************/
 bool PmpClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
-                                     const unsigned int maxIterations, const double Ts)
+                              const unsigned int maxIterations, const double Ts)
 {
     if (isOpen)
     {
@@ -1252,43 +1252,57 @@ bool PmpClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 
         cmd.add(val);
         if (rpc.write(cmd,reply))
-        {
+        {            
             if (reply.get(0).asVocab()==PMP_VOCAB_CMD_ACK)
             {
+                bool okPos=false;
                 if (Bottle *BtrajPos=reply.get(1).asList())
                 {
                     if (BtrajPos->get(0).asString()=="trajPos")
                     {
+                        trajPos.clear();
                         for (int i=1; i<BtrajPos->size(); i++)
-                        {
-                            Vector pos(3);
-                            Bottle *point=BtrajPos->get(i).asList();
-                            for (int j=0; j<point->size(); j++)
-                                pos[j]=point->get(j).asDouble();
-                            trajPos.push_back(pos);
+                        {                            
+                            if (Bottle *point=BtrajPos->get(i).asList())
+                            {
+                                Vector pos(point->size());
+                                for (int j=0; j<point->size(); j++)
+                                    pos[j]=point->get(j).asDouble();
+
+                                trajPos.push_back(pos);
+                            }
                         }
 
+                        okPos=true;
                         printMessage(1,"trajectory in position has been computed\n");
-                        return true;
                     }
                 }
+
+                bool okOrien=false;
                 if (Bottle *BtrajOrien=reply.get(2).asList())
                 {
                     if (BtrajOrien->get(0).asString()=="trajOrien")
                     {
+                        trajOrien.clear();
                         for (int i=1; i<BtrajOrien->size(); i++)
-                        {
-                            Vector orien(4);
-                            Bottle *point=BtrajOrien->get(i).asList();
-                            for (int j=0; j<point->size(); j++)
-                                orien[j]=point->get(j).asDouble();
-                            trajOrien.push_back(orien);
+                        {                            
+                            if (Bottle *point=BtrajOrien->get(i).asList())
+                            {                                
+                                Vector orien(point->size());
+                                for (int j=0; j<point->size(); j++)
+                                    orien[j]=point->get(j).asDouble();
+
+                                trajOrien.push_back(orien);
+                            }
                         }
 
-                        printMessage(1,"trajectory in orientation has been computed\n");
-                        return true;
+                        okOrien=true;
+                        printMessage(1,"trajectory in orientation has been computed\n");                        
                     }
                 }
+
+                if (okPos && okOrien)
+                    return true;
             }
 
             printMessage(1,"something went wrong: request rejected\n");
