@@ -506,7 +506,7 @@ public:
             itemsMap[id].prop=new Property(b1.get(2).asList()->toString().c_str());
             itemsMap[id].lastUpdate=-1.0;
 
-            if (idCnt<id)
+            if (idCnt<=id)
                 idCnt=id+1;
         }
 
