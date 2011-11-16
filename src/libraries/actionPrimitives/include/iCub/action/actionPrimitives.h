@@ -85,11 +85,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/perception/models.h>
-#include <iCub/iDyn/iDyn.h>
-#include <iCub/iDyn/iDynInv.h>
-#include <iCub/iDyn/iDynTransform.h>
 
 #include <string>
 #include <deque>
@@ -967,6 +963,8 @@ public:
 * integrates the force-torque sensing in order to stop the limb 
 * while reaching as soon as a contact with external objects is 
 * detected. 
+* The module \ref wholeBodyTorqueObserver - in charge of 
+* computing the robot dynamics - must be running. 
 */
 class ActionPrimitivesLayer2 : public ActionPrimitivesLayer1
 {
@@ -978,27 +976,11 @@ protected:
 
     double ext_force_thres;
 
-    yarp::dev::PolyDriver   polyTorso;
-    yarp::dev::IEncoders   *encTorso;
+    liftAndGraspCallback *execLiftAndGrasp;
+    touchCallback        *execTouch;
 
-    ctrl::AWLinEstimator   *velEst;
-    ctrl::AWQuadEstimator  *accEst;
-    iDyn::iCubArmDyn       *dynArm;
-    iDyn::iDynInvSensor    *dynSensor;
-    iDyn::iFTransformation *dynTransformer;
+    yarp::os::BufferedPort<yarp::sig::Vector> wbtoPortIn;
 
-    liftAndGraspCallback   *execLiftAndGrasp;
-    touchCallback          *execTouch;
-
-    yarp::os::BufferedPort<yarp::sig::Vector> ftPortIn;
-
-    yarp::sig::Vector q;
-    yarp::sig::Vector dq;
-    yarp::sig::Vector d2q;
-
-    yarp::sig::Vector wrenchModel;
-    yarp::sig::Vector wrenchOffset;
-    yarp::sig::Vector wrenchMeasured;
     yarp::sig::Vector wrenchExternal;
 
     yarp::sig::Vector grasp_d2;
@@ -1011,7 +993,6 @@ protected:
     friend class touchCallback;
 
     virtual void init();
-    virtual void alignJointsBounds();
     virtual void postReachCallback();
     virtual void run();
 
@@ -1049,8 +1030,17 @@ public:
     *    detect contact between end-effector and objects while
     *    reaching.
     *  
-    * @note A port called <i> /<local>/<part>/ft:i </i> is open to
-    *       acquire data provided by \ref force/torque sensor.
+    * @b wbto_stem_name <string>: specify the stem-name of the 
+    *    \ref wholeBodyTorqueObserver module.
+    *  
+    * @b wbto_port_name <string>: specify the tag-name of the port 
+    *    used by \ref wholeBodyTorqueObserver to stream out the
+    *    wrench at the end-effector.
+    *  
+    * @note A port called <i> /<local>/<part>/wbto:i </i> is open to 
+    *       acquire data provided by \ref wholeBodyTorqueObserver.
+    *       The port is automatically connected to
+    *       /<wbto_stem_name>/<part>/<wbto_port_name>.
     */
     virtual bool open(yarp::os::Property &opt);
 
@@ -1110,13 +1100,6 @@ public:
     */
     virtual bool touch(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d);
-
-    /**
-    * Latch the wrench to compensate for offset in the sensor 
-    * measures. 
-    * @return true/false on success/fail. 
-    */
-    virtual bool latchWrenchOffset();
 
     /**
     * Retrieve the current wrench on the end-effector.

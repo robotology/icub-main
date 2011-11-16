@@ -1467,7 +1467,6 @@ bool MotorThread::reach(Bottle &options)
 
     action[arm]->pushAction(xd+tmpDisp,tmpOrient);
 
-    action[arm]->latchWrenchOffset();
     action[arm]->enableContactDetection();
 
     action[arm]->pushAction(xd,tmpOrient);
@@ -1542,7 +1541,6 @@ bool MotorThread::push(Bottle &options)
         keepFixation();
     }
 
-    action[arm]->latchWrenchOffset();
     action[arm]->enableContactDetection();
     
     action[arm]->pushAction(xd-3*push_direction*reachSideDisp[arm],reachSideOrient[arm]);
@@ -1836,7 +1834,6 @@ bool MotorThread::deploy(Bottle &options)
     bool f;
     action[arm]->checkActionsDone(f,true);
 
-    action[arm]->latchWrenchOffset();
     action[arm]->enableContactDetection();
 
 
@@ -1940,7 +1937,6 @@ bool MotorThread::calibTable(Bottle &options)
     fprintf(stdout,"Actual orient: %s\n\n",o.toString().c_str());
 
 
-    action[arm]->latchWrenchOffset();
     action[arm]->enableContactDetection();
     action[arm]->pushWaitState(1.0);
 
@@ -2289,7 +2285,6 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     if(!dragger.using_impedance)
     {
         fprintf(stdout,"!!! Impedance control not available. Using admittance control!\n");
-        action[dragger.arm]->latchWrenchOffset();
         action[dragger.arm]->enableTorsoDof();
     }
 

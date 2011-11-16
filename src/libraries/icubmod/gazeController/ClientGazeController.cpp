@@ -96,13 +96,13 @@ bool ClientGazeController::open(Searchable &config)
     remote=remote+"/head";
     bool ok=true;
 
-    ok&=Network::connect(portCmdFp.getName().c_str(),(remote+"/xd:i").c_str());
-    ok&=Network::connect(portCmdAng.getName().c_str(),(remote+"/angles:i").c_str());
-    ok&=Network::connect(portCmdMono.getName().c_str(),(remote+"/mono:i").c_str());
-    ok&=Network::connect(portCmdStereo.getName().c_str(),(remote+"/stereo:i").c_str());
-    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str());
-    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str());
-    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str());
+    ok&=Network::connect(portCmdFp.getName().c_str(),(remote+"/xd:i").c_str(),"udp");
+    ok&=Network::connect(portCmdAng.getName().c_str(),(remote+"/angles:i").c_str(),"udp");
+    ok&=Network::connect(portCmdMono.getName().c_str(),(remote+"/mono:i").c_str(),"udp");
+    ok&=Network::connect(portCmdStereo.getName().c_str(),(remote+"/stereo:i").c_str(),"udp");
+    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str(),"udp");
+    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str(),"udp");
+    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str(),"udp");
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
 
     return connected=ok;

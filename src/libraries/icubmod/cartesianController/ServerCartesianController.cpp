@@ -1599,8 +1599,8 @@ bool ServerCartesianController::connectToSolver()
 
         bool ok=true;
 
-        ok&=Network::connect((portSlvName+"/out").c_str(),portSlvIn.getName().c_str());
-        ok&=Network::connect(portSlvOut.getName().c_str(),(portSlvName+"/in").c_str());
+        ok&=Network::connect((portSlvName+"/out").c_str(),portSlvIn.getName().c_str(),"udp");
+        ok&=Network::connect(portSlvOut.getName().c_str(),(portSlvName+"/in").c_str(),"udp");
         ok&=Network::connect(portSlvRpc.getName().c_str(),(portSlvName+"/rpc").c_str());
 
         if (!ok)

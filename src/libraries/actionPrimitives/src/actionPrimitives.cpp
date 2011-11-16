@@ -44,6 +44,8 @@
 #define ACTIONPRIM_DEFAULT_PART                     "right_arm"
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE             "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY                "off"
+#define ACTIONPRIM_DEFAULT_WBTO_STEMNAME            "wholeBodyTorqueObserver"
+#define ACTIONPRIM_DEFAULT_WBTO_PORTNAME            "cartesianEndEffectorWrench:o"
 
 // defines for balancing the arm when in home position
 #define ACTIONPRIM_BALANCEARM_PERIOD                2.0     // [s]
@@ -55,7 +57,6 @@ using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
-using namespace iCub::iDyn;
 using namespace iCub::perception;
 using namespace iCub::action;
 
@@ -1864,12 +1865,6 @@ void ActionPrimitivesLayer2::init()
     contactDetectionOn=false;
     contactDetected=false;
 
-    encTorso=NULL;
-    velEst=NULL;
-    accEst=NULL;
-    dynArm=NULL;
-    dynSensor=NULL;
-    dynTransformer=NULL;
     execLiftAndGrasp=NULL;
     execTouch=NULL;
 }
@@ -1893,39 +1888,9 @@ void ActionPrimitivesLayer2::run()
     if (!configuredLayer2)
         return;    
 
-    const double t=Time::now();    
-
-    // estimation of internal dynamic model
-    encTorso->getEncoders(encDataTorso.data());
-    encCtrl->getEncoders(encDataArm.data());
-
-    for (size_t i=0; i<3; i++)
-        q[i]=encDataTorso[2-i];
-
-    for (size_t i=3; i<q.length(); i++)
-        q[i]=encDataArm[i-3];
-
-    AWPolyElement el;
-    el.data=q;
-    el.time=t;
-
-    dq=velEst->estimate(el);
-    d2q=accEst->estimate(el);
-
-    dynArm->setAng(CTRL_DEG2RAD*q);
-    dynArm->setDAng(CTRL_DEG2RAD*dq);
-    dynArm->setD2Ang(CTRL_DEG2RAD*d2q);
-    dynArm->computeNewtonEuler();
-
-    dynSensor->computeSensorForceMoment();
-    wrenchModel=dynSensor->getSensorForceMoment();
-    
-    // get the input from the sensor
-    if (Vector *ftMeasured=ftPortIn.read(false))
-        wrenchMeasured=*ftMeasured;
-
-    // estimation of external forces/torques acting on the end-effector
-    wrenchExternal=dynTransformer->getEndEffWrenchAsBase((wrenchMeasured-wrenchOffset)+wrenchModel);
+    // get the input from WBTO
+    if (Vector *wbtoWrench=wbtoPortIn.read(false))
+        wrenchExternal=*wbtoWrench;
 
     Vector forceExternal(3);
     forceExternal[0]=wrenchExternal[0];
@@ -1968,37 +1933,15 @@ bool ActionPrimitivesLayer2::open(Property &opt)
     if (configured)
     {
         ext_force_thres=opt.check("ext_force_thres",Value(ACTIONPRIM_DEFAULT_EXT_FORCE_THRES)).asDouble();
+        string wbtoStemName=opt.check("wbto_stem_name",Value(ACTIONPRIM_DEFAULT_WBTO_STEMNAME)).asString().c_str();
+        string wbtoPortName=opt.check("wbto_port_name",Value(ACTIONPRIM_DEFAULT_WBTO_PORTNAME)).asString().c_str();
 
-        // open motor interfaces
-        Property optPolyTorso("(device remote_controlboard)");
-        optPolyTorso.put("remote",("/"+robot+"/torso").c_str());
-        optPolyTorso.put("local",("/"+local+"/"+part+"/torso/position").c_str());
-        if (!polyTorso.open(optPolyTorso))
+        // connect automatically to WTBO
+        string wbtoServerName="/"+wbtoStemName+"/"+part+"/"+wbtoPortName;
+        wbtoPortIn.open(("/"+local+"/"+part+"/wbto:i").c_str());
+        if (!Network::connect(wbtoServerName.c_str(),wbtoPortIn.getName().c_str()),"udp")
         {
-            close();
-            return false;
-        }
-
-        polyTorso.view(encTorso);
-
-        int nTorso;
-        int nArm;
-
-        encTorso->getAxes(&nTorso);
-        encCtrl->getAxes(&nArm);
-
-        encDataTorso.resize(nTorso,0.0);
-        encDataArm.resize(nArm,0.0);
-
-        // open port to get FT input
-        string ftPortInName="/"+local+"/"+part+"/ft:i";
-        string ftServerPortName="/"+robot+"/"+part+"/analog:o";
-        ftPortIn.open(ftPortInName.c_str());
-
-        // connect automatically to FT sensor
-        if (!Network::connect(ftServerPortName.c_str(),ftPortInName.c_str()))
-        {
-            printMessage("ERROR: unable to connect to port %s\n",ftServerPortName.c_str());
+            printMessage("ERROR: unable to connect to port %s\n",wbtoServerName.c_str());
 
             close();
             return false;
@@ -2008,65 +1951,12 @@ bool ActionPrimitivesLayer2::open(Property &opt)
         execLiftAndGrasp=new liftAndGraspCallback(this);
         execTouch=new touchCallback(this);
 
-        // create estimators
-        velEst=new AWLinEstimator(16,1.0);
-        accEst=new AWQuadEstimator(25,1.0);
-
-        // create dynamics
-        string armType=(part=="right_arm"?"right":"left");
-        dynArm=new iCubArmDyn(armType);
-
-        // free up torso links
-        dynArm->releaseLink(0);
-        dynArm->releaseLink(1);
-        dynArm->releaseLink(2);
-
-        dynSensor=new iDynInvSensorArm(dynArm,DYNAMIC);
-        dynTransformer=new iFTransformation(dynSensor);
-
-        // configure dynamics
-        alignJointsBounds();
-
-        Vector zeros(3), accFrame0(3);
-        zeros=accFrame0=0.0;
-        accFrame0[2]=9.81; // along z-component
-
-        wrenchModel.resize(6,0.0);
-        wrenchOffset.resize(6,0.0);
-        wrenchMeasured.resize(6,0.0);
         wrenchExternal.resize(6,0.0);
-
-        q.resize(dynArm->getN(),0.0);
-        dq.resize(dynArm->getN(),0.0);
-        d2q.resize(dynArm->getN(),0.0);
-
-        dynArm->setAng(q);
-        dynArm->setDAng(dq);
-        dynArm->setD2Ang(d2q);
-        dynArm->prepareNewtonEuler(DYNAMIC);
-        dynArm->initNewtonEuler(zeros,zeros,accFrame0,zeros,zeros);        
 
         return configuredLayer2=true;
     }
     else
         return false;
-}
-
-
-/************************************************************************/
-void ActionPrimitivesLayer2::alignJointsBounds()
-{
-    IControlLimits *limTorso;
-    IControlLimits *limHand;
-
-    polyTorso.view(limTorso);
-    polyHand.view(limHand);
-    
-    deque<IControlLimits*> lim;
-    lim.push_back(limTorso);
-    lim.push_back(limHand);
-
-    dynArm->alignJointsBounds(lim);
 }
 
 
@@ -2087,40 +1977,10 @@ void ActionPrimitivesLayer2::close()
     // the order does matter
     ActionPrimitivesLayer1::close();
 
-    if (!ftPortIn.isClosed())
+    if (!wbtoPortIn.isClosed())
     {
-        ftPortIn.interrupt();
-        ftPortIn.close();
-    }
-
-    if (dynTransformer!=NULL)
-    {
-        delete dynTransformer;
-        dynTransformer=NULL;
-    }
-
-    if (dynSensor!=NULL)
-    {
-        delete dynSensor;
-        dynSensor=NULL;
-    }
-
-    if (dynArm!=NULL)
-    {
-        delete dynArm;
-        dynArm=NULL;
-    }
-
-    if (velEst!=NULL)
-    {
-        delete velEst;
-        velEst=NULL;
-    }
-
-    if (accEst!=NULL)
-    {
-        delete accEst;
-        accEst=NULL;
+        wbtoPortIn.interrupt();
+        wbtoPortIn.close();
     }
 
     if (execLiftAndGrasp!=NULL)
@@ -2134,12 +1994,6 @@ void ActionPrimitivesLayer2::close()
         delete execTouch;
         execTouch=NULL;
     }
-
-    if (polyTorso.isValid())
-    {
-        printMessage("closing torso driver ...\n");
-        polyTorso.close();
-    }
 }
 
 
@@ -2150,9 +2004,6 @@ bool ActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
     if (configured)
     {
         printMessage("start grasping\n");
-
-        // latch the offset
-        latchWrenchOffset();
 
         enableContactDetection();
 
@@ -2186,27 +2037,11 @@ bool ActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vecto
     {
         printMessage("start touching\n");
 
-        // latch the offset
-        latchWrenchOffset();
-
         enableContactDetection();
 
         pushAction(x+d,o,"karate_hand");
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execTouch);
 
-        return true;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-bool ActionPrimitivesLayer2::latchWrenchOffset()
-{
-    if (configured)
-    {
-        wrenchOffset=wrenchMeasured+wrenchModel;
         return true;
     }
     else
