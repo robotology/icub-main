@@ -1486,7 +1486,7 @@ bool MotorThread::reach(Bottle &options)
         Vector x,o;
         action[arm]->getPose(x,o);
 
-        if(side)
+        if(!side)
             action[arm]->pushAction(x+graspAboveRelief,o);
     
         action[arm]->checkActionsDone(f,true);
