@@ -1939,7 +1939,7 @@ bool ActionPrimitivesLayer2::open(Property &opt)
         // connect automatically to WTBO
         string wbtoServerName="/"+wbtoStemName+"/"+part+"/"+wbtoPortName;
         wbtoPortIn.open(("/"+local+"/"+part+"/wbto:i").c_str());
-        if (!Network::connect(wbtoServerName.c_str(),wbtoPortIn.getName().c_str()),"udp")
+        if (!Network::connect(wbtoServerName.c_str(),wbtoPortIn.getName().c_str(),"udp"))
         {
             printMessage("ERROR: unable to connect to port %s\n",wbtoServerName.c_str());
 
