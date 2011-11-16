@@ -81,9 +81,8 @@ int MotorThread::checkArm(int arm)
 
 int MotorThread::checkArm(int arm, Vector &xd)
 {
-    if(arm==ARM_MOST_SUITED && xd.size()>0)
-        if(arm==ARM_MOST_SUITED)
-            arm=xd[1]<0.0?LEFT:RIGHT;
+    if(arm==ARM_MOST_SUITED)
+        arm=xd[1]<0.0?LEFT:RIGHT;
 
     if(arm!=ARM_IN_USE && arm!=ARM_MOST_SUITED && action[arm]!=NULL)
         armInUse=arm;
