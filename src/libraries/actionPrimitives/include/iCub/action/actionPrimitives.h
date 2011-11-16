@@ -990,7 +990,7 @@ protected:
     liftAndGraspCallback   *execLiftAndGrasp;
     touchCallback          *execTouch;
 
-    yarp::os::BufferedPort<yarp::sig::Vector> *ftPortIn;
+    yarp::os::BufferedPort<yarp::sig::Vector> ftPortIn;
 
     yarp::sig::Vector q;
     yarp::sig::Vector dq;

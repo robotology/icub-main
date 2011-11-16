@@ -533,7 +533,7 @@ void ActionPrimitives::close()
 
     if (isRunning())
     {
-        printMessage("stopping main thread ...\n");        
+        printMessage("stopping main thread ...\n");
         stop();
     }
 
@@ -1872,7 +1872,6 @@ void ActionPrimitivesLayer2::init()
     dynTransformer=NULL;
     execLiftAndGrasp=NULL;
     execTouch=NULL;
-    ftPortIn=NULL;
 }
 
 
@@ -1922,7 +1921,7 @@ void ActionPrimitivesLayer2::run()
     wrenchModel=dynSensor->getSensorForceMoment();
     
     // get the input from the sensor
-    if (Vector *ftMeasured=ftPortIn->read(false))
+    if (Vector *ftMeasured=ftPortIn.read(false))
         wrenchMeasured=*ftMeasured;
 
     // estimation of external forces/torques acting on the end-effector
@@ -1992,10 +1991,9 @@ bool ActionPrimitivesLayer2::open(Property &opt)
         encDataArm.resize(nArm,0.0);
 
         // open port to get FT input
-        ftPortIn=new BufferedPort<Vector>;
         string ftPortInName="/"+local+"/"+part+"/ft:i";
         string ftServerPortName="/"+robot+"/"+part+"/analog:o";
-        ftPortIn->open(ftPortInName.c_str());
+        ftPortIn.open(ftPortInName.c_str());
 
         // connect automatically to FT sensor
         if (!Network::connect(ftServerPortName.c_str(),ftPortInName.c_str()))
@@ -2089,12 +2087,10 @@ void ActionPrimitivesLayer2::close()
     // the order does matter
     ActionPrimitivesLayer1::close();
 
-    if (ftPortIn!=NULL)
+    if (!ftPortIn.isClosed())
     {
-        ftPortIn->interrupt();
-        ftPortIn->close();
-        delete ftPortIn;
-        ftPortIn=NULL;
+        ftPortIn.interrupt();
+        ftPortIn.close();
     }
 
     if (dynTransformer!=NULL)
