@@ -666,7 +666,7 @@ public:
                 motorThr->goHome(command);
                 motorThr->setGazeIdle();
 
-                reply.addString("Dropped");
+                reply.addString("dropped");
                 break;
             }
 
@@ -684,7 +684,7 @@ public:
 
                 if(!motorThr->reach(command))
                 {
-                    reply.addString("Failed. Please specify the target");
+                    reply.addString("failed. Please specify the target");
                     break;
                 }
 
@@ -707,14 +707,14 @@ public:
                         motorThr->goHome(b);
                     }
 
-                    reply.addString("Holding");
+                    reply.addString("holding");
                 }
                 else
                 {
                    motorThr->setGazeIdle();
                    motorThr->release(command);
                    motorThr->goHome(command);
-                   reply.addString("Failed");
+                   reply.addString("failed");
                 }
 
                 break;
@@ -734,7 +734,7 @@ public:
 
                 if(!motorThr->reach(command))
                 {
-                    reply.addString("Failed. Please specify the target");
+                    reply.addString("failed. Please specify the target");
                     break;
                 }
 
@@ -744,7 +744,7 @@ public:
                     motorThr->goHome(command);
                 }
 
-                reply.addString("Touched");
+                reply.addString("touched");
                 break;
             } 
 
@@ -762,14 +762,14 @@ public:
 
                 if(!motorThr->push(command))
                 {
-                    reply.addString("Failed. Please specify the target");
+                    reply.addString("failed. Please specify the target");
                     break;
                 }
 
                 motorThr->goHome(command);
                 motorThr->setGazeIdle();
 
-                reply.addString("Pushed");
+                reply.addString("pushed");
                 break;
             }
 
@@ -787,7 +787,7 @@ public:
 
                 if(!motorThr->point(command))
                 {
-                    reply.addString("Failed. Please specify the target");
+                    reply.addString("failed. Please specify the target");
                     break;
                 }
 
@@ -797,7 +797,7 @@ public:
                     motorThr->goHome(command);
                 }
 
-                reply.addString("Pointed");
+                reply.addString("pointed");
                 break;
             }
 
@@ -815,11 +815,11 @@ public:
 
                 if(!motorThr->look(command))
                 {
-                    reply.addString("Failed. Please specify the target");
+                    reply.addString("failed. Please specify the target");
                     break;
                 }
 
-                reply.addString("Looked");
+                reply.addString("looked");
                 break;
             }
 
@@ -841,14 +841,14 @@ public:
 
                 motorThr->lookAtObject();
 
-                reply.addString("Tracking");
+                reply.addString("tracking");
 
                 break;
             }
 
             default:
             {
-                reply.addString("Failed");
+                reply.addString("failed");
                 break;
             }
         }
