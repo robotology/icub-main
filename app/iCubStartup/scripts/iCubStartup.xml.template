@@ -1,0 +1,77 @@
+<application>
+<name>iCub Launcher</name>
+
+        <dependencies>
+        </dependencies>
+      
+        <module>
+                <name>iCubInterface</name>
+                <node>pc104</node>
+                <stdio>console</stdio>
+                <tag>icubInterface</tag>
+        </module>
+
+        <module>
+                <name>iCubInterfaceGuiClient</name>
+                <node>console</node>
+                <stdio>console</stdio>
+                <tag>iCubInterfaceGuiClient</tag>
+        </module>
+   
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part right_arm</parameters>
+                <node>pwrNode1</node>
+                <tag>rightArmSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part left_arm</parameters>
+                <node>pwrNode2</node>
+                <tag>leftArmSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part right_leg</parameters>
+                <node>pwrNode3</node>
+                <tag>rightLegSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part left_leg</parameters>
+                <node>pwrNode4</node>
+                <tag>leftLegSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinGazeCtrl</name>
+                <parameters>--context cameraCalibration/conf --config icubEyes.ini --eyeTiltMin -7.5 --eyeTiltMax 15.0 --ping_robot_tmo 40.0</parameters>
+                <node>pwrNode5</node>
+                <tag>gazeController</tag>
+        </module>
+
+        <module>
+                <name>wholeBodyDynamics</name>
+                <parameters>--autoconnect</parameters>
+                <node>pwrNode6</node>
+                <tag>wholeBodyDynamicsTag</tag>
+        </module>
+
+        <module>
+                <name>gravityCompensator</name>
+                <parameters>--autoconnect</parameters>
+                <node>pwrNode6</node>
+                <tag>gravityCompensatorTag</tag>
+        </module>
+
+
+        <connection>
+                <from>/icubinterfacegui/client</from>
+                <to>/icubinterfacegui/server</to>
+                <protocol>tcp</protocol>
+        </connection>
+
+</application>

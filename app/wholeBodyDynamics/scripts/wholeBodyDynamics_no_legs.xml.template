@@ -8,14 +8,14 @@
                 <parameters>--no_legs</parameters>
                 <node>icubsrv</node>
                 <stdio>icubsrv</stdio>
-                <tag>wholeBody_tqObs</tag>
+                <tag>wholeBodyDynamicsTag</tag>
         </module>
         <module>
                 <name>gravityCompensator</name>
                 <parameters>--no_legs</parameters>
                 <node>icubsrv</node>
                 <stdio>icubsrv</stdio>
-                <tag>gravityCompensator</tag>
+                <tag>gravityCompensatorTag</tag>
         </module>
 
         <connection>

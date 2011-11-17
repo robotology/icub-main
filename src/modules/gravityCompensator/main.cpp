@@ -429,7 +429,7 @@ int main(int argc, char * argv[])
     if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-        cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app: default wrechObserver/conf)" << endl;
+        cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app:)"                            << endl;
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
         cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"						  << endl;
         cout << "\t--no_legs    this option disables the gravity compensation for the legs joints"								  << endl;
