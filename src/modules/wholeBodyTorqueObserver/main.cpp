@@ -217,7 +217,7 @@ public:
         dump_vel_enabled = false;
     }
 
-    virtual bool createDriver(PolyDriver *_dd, Property options)
+    virtual bool createDriver(PolyDriver *&_dd, Property options)
     {
         int trials=0;
         double start_time = yarp::os::Time::now();

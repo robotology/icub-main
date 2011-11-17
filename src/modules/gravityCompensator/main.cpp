@@ -140,7 +140,7 @@ public:
 		m_part = "arm";
     }
 
-   virtual bool createDriver(PolyDriver *_dd, Property options)
+   virtual bool createDriver(PolyDriver *&_dd, Property options)
     {
         int trials=0;
         double start_time = yarp::os::Time::now();
