@@ -73,6 +73,9 @@ bool OdeLink::checkObject(bool forCreate) {
         bid = odeinit._wrld->Box;
     } else if (kind=="ball") {
         bid = odeinit._wrld->ballBody;
+    } else if (kind=="screen") {
+        gid = odeinit._iCub->screenGeom;
+        return true;
     } else if (kind=="hand") {
         if (op.rightHanded.get()) {
              if (

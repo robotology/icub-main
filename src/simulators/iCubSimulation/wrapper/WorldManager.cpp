@@ -191,6 +191,7 @@ void consumeKind(ManagerState& state) {
     case VOCAB4('t','a','b','l'):
     case VOCAB4('c','u','b','e'):
     case VOCAB4('b','a','l','l'):
+    case VOCAB4('s','c','r','e'):
     case VOCAB3('a','l','l'):
         break;
     default:
