@@ -10,15 +10,17 @@
 //
 // Author: Ugo Pattacini - <ugo.pattacini@iit.it>
 
-#include <gsl/gsl_math.h>
 #include <iostream>
 #include <iomanip>
+
+#include <yarp/os/Time.h>
+#include <yarp/sig/Vector.h>
 
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iKin/iKinIpOpt.h>
 
 using namespace std;
-using namespace yarp;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -177,7 +179,9 @@ int main()
     }
 
     // solve for xf starting from current configuration q0
+    double t=Time::now();
     qhat=slv.solve(chain->getAng(),xf);
+    double dt=Time::now()-t;
 
     // in general the solved qf is different from the initial qf
     // due to the redundancy
@@ -190,8 +194,9 @@ int main()
     cout << "Desired arm end-effector pose       xf= " << xf.toString()   << endl;
     cout << "Achieved arm end-effector pose K(qhat)= " << xhat.toString() << endl;
     cout << "||xf-K(qhat)||=" << norm(xf-xhat) << endl;
+    cout << "Solved in " << dt << " [s]" << endl;
 
     return 0;
 }
-      
-      
+
+
