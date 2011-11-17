@@ -1,22 +1,23 @@
 <application>
 <name>Torque Observer</name>
-	<dependencies>
-	        <port>/icub/inertial</port>
+        <dependencies>
+                <port>/icub/inertial</port>
         </dependencies>
-	<module>
-      		<name>wholeBodyTorqueObserver</name>
-      		<parameters>--context wholeBodyTorqueObserver/conf --from wholeBodyTorqueObserver.ini</parameters>
-			<node>icubsrv</node>
-			<stdio>icubsrv</stdio>
-			<tag>wholeBody_tqObs</tag>
-   	</module>
-	<module>
-      		<name>gravityCompensator</name>
-			<node>icubsrv</node>
-			<stdio>icubsrv</stdio>
-			<tag>gravityCompensator</tag>
-   	</module>
-	    <connection>
+        <module>
+                <name>wholeBodyTorqueObserver</name>
+                <parameters>--context wholeBodyTorqueObserver/conf --from wholeBodyTorqueObserver.ini</parameters>
+                <node>icubsrv</node>
+                <stdio>icubsrv</stdio>
+                <tag>wholeBody_tqObs</tag>
+        </module>
+        <module>
+                <name>gravityCompensator</name>
+                <node>icubsrv</node>
+                <stdio>icubsrv</stdio>
+                <tag>gravityCompensator</tag>
+        </module>
+
+        <connection>
                 <from>/icub/inertial</from>
                 <to>/wholeBodyTorqueObserver/unfiltered/inertial:i</to>
                 <protocol>udp</protocol>
@@ -52,8 +53,6 @@
                 <to>/wholeBodyTorqueObserver/right_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
-		
-		
         <connection>
                 <from>/wholeBodyTorqueObserver/left_arm/Torques:o</from>
                 <to>/icub/joint_vsens/left_arm:i</to>
@@ -74,7 +73,7 @@
                 <to>/icub/joint_vsens/right_wrist:i</to>
                 <protocol>udp</protocol>
         </connection>
-		<connection>
+        <connection>
                 <from>/wholeBodyTorqueObserver/torso/Torques:o</from>
                 <to>/icub/joint_vsens/torso:i</to>
                 <protocol>udp</protocol>
@@ -89,10 +88,9 @@
                 <to>/icub/joint_vsens/right_leg:i</to>
                 <protocol>udp</protocol>
         </connection>
-  <connection>
-    <from>/armSkinDriftComp/skin_events:o</from>
-    <to>/wholeBodyTorqueObserver/skin_contacts:i</to>
-    <protocol>udp</protocol>
-  </connection>
-
+        <connection>
+                <from>/armSkinDriftComp/skin_events:o</from>
+                <to>/wholeBodyTorqueObserver/skin_contacts:i</to>
+                <protocol>udp</protocol>
+        </connection>
 </application>
