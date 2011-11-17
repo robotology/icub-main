@@ -89,4 +89,10 @@
                 <to>/icub/joint_vsens/right_leg:i</to>
                 <protocol>udp</protocol>
         </connection>
+  <connection>
+    <from>/armSkinDriftComp/skin_events:o</from>
+    <to>/wholeBodyTorqueObserver/skin_contacts:i</to>
+    <protocol>udp</protocol>
+  </connection>
+
 </application>
