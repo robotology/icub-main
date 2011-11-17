@@ -8,7 +8,7 @@
 /**
 @ingroup icub_module
 
-\defgroup wholeBodyTorqueObserver wholeBodyTorqueObserver
+\defgroup wholeBodyDynamics wholeBodyDynamics
  
 Estimates the external forces and torques acting at the end effector
 through a model based estimation of the robot dynamics
@@ -64,8 +64,8 @@ The port the service is listening to.
 
 \section portsc_sec Ports Created
  
-- \e <name>/<part>/FT:i (e.g. /wholeBodyTorqueObserver/right_arm/FT:i) receives the input data 
-  vector.
+- \e <name>/<part>/FT:i (e.g. /wholeBodyDynamics/right_arm/FT:i) 
+  receives the input data vector.
  
 \section in_files_sec Input Data Files
 None.
@@ -83,21 +83,22 @@ Linux and Windows.
 By launching the following command: 
  
 \code 
-wholeBodyTorqueObserver --rate 10  
+wholeBodyDynamics --rate 10  
 \endcode 
  
-the module will create the listening port /wholeBodyTorqueObserver/right_arm/FT:i for 
-the acquisition of data vector coming for istance from the right arm analog port. 
+the module will create the listening port 
+/wholeBodyDynamics/right_arm/FT:i for the acquisition of data 
+vector coming for istance from the right arm analog port. 
  
 Try now the following: 
  
 \code 
-yarp connect /icub/right_arm/analog:o /wholeBodyTorqueObserver/right_arm/FT:i
+yarp connect /icub/right_arm/analog:o /wholeBodyDynamics/right_arm/FT:i
 \endcode 
  
 \author Matteo Fumagalli
 
-This file can be edited at src/wholeBodyTorqueObserver/main.cpp.
+This file can be edited at src/wholeBodyDynamics/main.cpp.
 */ 
 
 #include <yarp/os/all.h>
@@ -165,7 +166,7 @@ public:
 };
 
 // The main module
-class wholeBodyTorqueObserver: public RFModule
+class wholeBodyDynamics: public RFModule
 {
 private:
     Property OptionsLeftArm;
@@ -198,7 +199,7 @@ private:
     PolyDriver *dd_torso;
 
 public:
-    wholeBodyTorqueObserver()
+    wholeBodyDynamics()
     {
         inv_dyn=0;
         dd_left_arm=0;
@@ -289,7 +290,7 @@ public:
     bool configure(ResourceFinder &rf)
     {
 		//---------------------LOCAL NAME-----------------------//
-		string local_name = "wholeBodyTorqueObserver";
+		string local_name = "wholeBodyDynamics";
 		if (rf.check("local"))
 		{
 			local_name=rf.find("local").asString();
@@ -569,7 +570,7 @@ public:
 			port_inertial_input=0;
 		}
 
-		fprintf(stderr,"wholeBodyTorqueObserver module was closed successfully! \n");     
+		fprintf(stderr,"wholeBodyDynamics module was closed successfully! \n");     
         return true;
     }
 
@@ -590,7 +591,7 @@ public:
         static double curr_time = Time::now();
         if (Time::now() - curr_time > 60)
         {
-            printf ("wholeBodyTorqueObserver is alive! running for %ld mins.\n",++alive_counter);
+            printf ("wholeBodyDynamics is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
         }
 
@@ -601,12 +602,12 @@ public:
 			return true;
 		else if (thread_status==STATUS_DISCONNECTED)
 		{
-			printf ("wholeBodyTorqueObserver module lost connection with iCubInterface, now closing...\n");
+			printf ("wholeBodyDynamics module lost connection with iCubInterface, now closing...\n");
 			return false;
 		}
 		else
 		{
-			fprintf(stderr,"wholeBodyTorqueObserver module was closed successfully! \n");    
+			fprintf(stderr,"wholeBodyDynamics module was closed successfully! \n");    
 			return true;
 		}
 			
@@ -618,7 +619,8 @@ int main(int argc, char * argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-	rf.setDefaultContext("wholeBodyTorqueObserver/conf");
+    rf.setDefaultContext("wholeBodyDynamics/conf");
+    rf.setDefaultConfigFile("wholeBodyDynamics.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     if (rf.check("help"))
@@ -628,7 +630,7 @@ int main(int argc, char * argv[])
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
 		cout << "\t--rate       rate: the period used by the module. default: 10ms"                                               << endl;
 		cout << "\t--robot      robot: the robot name. default: iCub"                                                             << endl;
-		cout << "\t--local      name: the prefix of the ports opened by the module. defualt: wholebodyTorqueObserver"             << endl;
+		cout << "\t--local      name: the prefix of the ports opened by the module. defualt: wholeBodyDynamics      "             << endl;
 		cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"								      << endl;        
         cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"								  << endl;  
 		cout << "\t--head_v2         use the model of the headV2" << endl;    
@@ -649,8 +651,7 @@ int main(int argc, char * argv[])
         return -1;
 	}
 
-    wholeBodyTorqueObserver obs;
-
+    wholeBodyDynamics obs;
     return obs.runModule(rf);
 }
 
