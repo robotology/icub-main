@@ -963,8 +963,8 @@ public:
 * integrates the force-torque sensing in order to stop the limb 
 * while reaching as soon as a contact with external objects is 
 * detected. 
-* The module \ref wholeBodyTorqueObserver - in charge of 
-* computing the robot dynamics - must be running. 
+* The module \ref wholeBodyDynamics - in charge of computing the
+* robot dynamics - must be running. 
 */
 class ActionPrimitivesLayer2 : public ActionPrimitivesLayer1
 {
@@ -979,7 +979,7 @@ protected:
     liftAndGraspCallback *execLiftAndGrasp;
     touchCallback        *execTouch;
 
-    yarp::os::BufferedPort<yarp::sig::Vector> wbtoPortIn;
+    yarp::os::BufferedPort<yarp::sig::Vector> wbdynPortIn;
 
     yarp::sig::Vector wrenchExternal;
 
@@ -1030,17 +1030,17 @@ public:
     *    detect contact between end-effector and objects while
     *    reaching.
     *  
-    * @b wbto_stem_name <string>: specify the stem-name of the 
-    *    \ref wholeBodyTorqueObserver module.
+    * @b wbdyn_stem_name <string>: specify the stem-name of the 
+    *    \ref wholeBodyDynamics module.
     *  
-    * @b wbto_port_name <string>: specify the tag-name of the port 
-    *    used by \ref wholeBodyTorqueObserver to stream out the
-    *    wrench at the end-effector.
+    * @b wbdyn_port_name <string>: specify the tag-name of the port 
+    *    used by \ref wholeBodyDynamics to stream out the wrench at
+    *    the end-effector.
     *  
-    * @note A port called <i> /<local>/<part>/wbto:i </i> is open to 
-    *       acquire data provided by \ref wholeBodyTorqueObserver.
-    *       The port is automatically connected to
-    *       /<wbto_stem_name>/<part>/<wbto_port_name>.
+    * @note A port called <i> /<local>/<part>/wbdyn:i </i> is open 
+    *       to acquire data provided by \ref wholeBodyDynamics. The
+    *       port is automatically connected to
+    *       /<wbdyn_stem_name>/<part>/<wbdyn_port_name>.
     */
     virtual bool open(yarp::os::Property &opt);
 

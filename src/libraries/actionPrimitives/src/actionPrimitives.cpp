@@ -44,8 +44,8 @@
 #define ACTIONPRIM_DEFAULT_PART                     "right_arm"
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE             "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY                "off"
-#define ACTIONPRIM_DEFAULT_WBTO_STEMNAME            "wholeBodyTorqueObserver"
-#define ACTIONPRIM_DEFAULT_WBTO_PORTNAME            "cartesianEndEffectorWrench:o"
+#define ACTIONPRIM_DEFAULT_WBDYN_STEMNAME           "wholeBodyDynamics"
+#define ACTIONPRIM_DEFAULT_WBDYN_PORTNAME           "cartesianEndEffectorWrench:o"
 
 // defines for balancing the arm when in home position
 #define ACTIONPRIM_BALANCEARM_PERIOD                2.0     // [s]
@@ -1888,14 +1888,14 @@ void ActionPrimitivesLayer2::run()
     if (!configuredLayer2)
         return;    
 
-    // get the input from WBTO
-    if (Vector *wbtoWrench=wbtoPortIn.read(false))
+    // get the input from WBDYN
+    if (Vector *wbdynWrench=wbdynPortIn.read(false))
     {
-        size_t len=wbtoWrench->length()>wrenchExternal.length()?
-                   wrenchExternal.length():wbtoWrench->length();
+        size_t len=wbdynWrench->length()>wrenchExternal.length()?
+                   wrenchExternal.length():wbdynWrench->length();
 
         for (size_t i=0; i<len; i++)
-            wrenchExternal[i]=(*wbtoWrench)[i];
+            wrenchExternal[i]=(*wbdynWrench)[i];
     }
 
     Vector forceExternal(3);
@@ -1939,15 +1939,15 @@ bool ActionPrimitivesLayer2::open(Property &opt)
     if (configured)
     {
         ext_force_thres=opt.check("ext_force_thres",Value(ACTIONPRIM_DEFAULT_EXT_FORCE_THRES)).asDouble();
-        string wbtoStemName=opt.check("wbto_stem_name",Value(ACTIONPRIM_DEFAULT_WBTO_STEMNAME)).asString().c_str();
-        string wbtoPortName=opt.check("wbto_port_name",Value(ACTIONPRIM_DEFAULT_WBTO_PORTNAME)).asString().c_str();
+        string wbdynStemName=opt.check("wbdyn_stem_name",Value(ACTIONPRIM_DEFAULT_WBDYN_STEMNAME)).asString().c_str();
+        string wbdynPortName=opt.check("wbdyn_port_name",Value(ACTIONPRIM_DEFAULT_WBDYN_PORTNAME)).asString().c_str();
 
         // connect automatically to WTBO
-        string wbtoServerName="/"+wbtoStemName+"/"+part+"/"+wbtoPortName;
-        wbtoPortIn.open(("/"+local+"/"+part+"/wbto:i").c_str());
-        if (!Network::connect(wbtoServerName.c_str(),wbtoPortIn.getName().c_str(),"udp"))
+        string wbdynServerName="/"+wbdynStemName+"/"+part+"/"+wbdynPortName;
+        wbdynPortIn.open(("/"+local+"/"+part+"/wbdyn:i").c_str());
+        if (!Network::connect(wbdynServerName.c_str(),wbdynPortIn.getName().c_str(),"udp"))
         {
-            printMessage("ERROR: unable to connect to port %s\n",wbtoServerName.c_str());
+            printMessage("ERROR: unable to connect to port %s\n",wbdynServerName.c_str());
 
             close();
             return false;
@@ -1983,10 +1983,10 @@ void ActionPrimitivesLayer2::close()
     // the order does matter
     ActionPrimitivesLayer1::close();
 
-    if (!wbtoPortIn.isClosed())
+    if (!wbdynPortIn.isClosed())
     {
-        wbtoPortIn.interrupt();
-        wbtoPortIn.close();
+        wbdynPortIn.interrupt();
+        wbdynPortIn.close();
     }
 
     if (execLiftAndGrasp!=NULL)
