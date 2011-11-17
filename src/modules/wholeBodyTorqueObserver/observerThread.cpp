@@ -212,8 +212,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
 	icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
     first = true;
-    skinEventsLeftTimestamp = 0.0;
-    skinEventsRightTimestamp = 0.0;
+    skinContactsTimestamp = 0.0;
 
 	//--------------INTERFACE INITIALIZATION-------------//
 	
@@ -244,8 +243,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_external_wrench_TO = new BufferedPort<Vector>; 
 	port_external_cartesian_wrench_RA = new BufferedPort<Vector>;  
 	port_external_cartesian_wrench_LA = new BufferedPort<Vector>;  
-    port_skin_events_left = new BufferedPort<skinContactList>;
-    port_skin_events_right = new BufferedPort<skinContactList>;
+    port_skin_contacts = new BufferedPort<skinContactList>;
 	port_com_all = new BufferedPort<Vector>;
 	port_com_la  = new BufferedPort<Vector>;
 	port_com_ra  = new BufferedPort<Vector>;
@@ -282,8 +280,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_com_rl ->open(string("/"+local_name+"/right_leg/com:o").c_str());
 	port_com_hd ->open(string("/"+local_name+"/head/com:o").c_str());
 	port_com_to ->open(string("/"+local_name+"/torso/com:o").c_str());
-    port_skin_events_left->open(string("/"+local_name+"/skin_events_left:i").c_str());
-    port_skin_events_right->open(string("/"+local_name+"/skin_events_right:i").c_str());
+    port_skin_contacts->open(string("/"+local_name+"/skin_contacts:i").c_str());
     port_monitor->open(string("/"+local_name+"/monitor:o").c_str());
     port_dyn_contacts->open(string("/"+local_name+"/dyn_contacts:o").c_str());
     port_dumpvel->open(string("/"+local_name+"/va:o").c_str());
@@ -518,7 +515,7 @@ void inverseDynamics::run()
     dynContactList contactList = icub->upperTorso->leftSensor->getContactList();
     dynContactList contactListR = icub->upperTorso->rightSensor->getContactList();
     contactList.insert(contactList.begin(), contactListR.begin(), contactListR.end());
-    //printf("%s\n", contactList.toString().c_str());
+    printf("%s\n", contactList.toString().c_str());
 
     F_ext_left_arm = F_ext_right_arm = F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
     int eeInd = icub->upperTorso->left->getN()-1;
@@ -654,9 +651,8 @@ void inverseDynamics::threadRelease()
 	closePort(port_ft_leg_right);
 	fprintf(stderr, "Closing ft_leg_left port\n");
 	closePort(port_ft_leg_left);
-    fprintf(stderr, "Closing skin_events ports\n");
-	closePort(port_skin_events_left);
-    closePort(port_skin_events_right);
+    fprintf(stderr, "Closing skin_contacts port\n");
+	closePort(port_skin_contacts);
     fprintf(stderr, "Closing monitor port\n");
     closePort(port_monitor);
     fprintf(stderr, "Closing dump port\n");
@@ -1032,67 +1028,33 @@ void inverseDynamics::setZeroJntAngVelAcc()
 }
 
 void inverseDynamics::addSkinContacts(){
-    // *** LEFT ARM ***
-    skinContactList *skinEvents = port_skin_events_left->read(false);
-    // if nothing is read
-    if(!skinEvents){
-        if(skinEventsLeftTimestamp!=0.0 && Time::now()-skinEventsLeftTimestamp > SKIN_EVENTS_TIMEOUT){   
-            // if time is up, remove all the contacts
-            fprintf(stderr, "Skin event left timeout (%3.3f sec)\n", SKIN_EVENTS_TIMEOUT);
-            icub->upperTorso->leftSensor->clearContactList();
-        }
-    }
-    else{
-        skinEventsLeftTimestamp = Time::now();  // update the timestamp        
-        // if there are more than 1 contact 
-        if(skinEvents->size()>1){
-            for(skinContactList::iterator it=skinEvents->begin(); it!=skinEvents->end(); it++){
-                //suppose zero moment if less than 10 taxels are active
-                if(it->getActiveTaxels()<10)
-                    it->fixMoment();                
-            }
-        }
+    skinContactList *skinContacts = port_skin_contacts->read(false);
+    if(skinContacts){
+        skinContactsTimestamp = Time::now();
         icub->upperTorso->leftSensor->clearContactList();
-        dynContactList cl = skinEvents->toDynContactList();
-        for(dynContactList::iterator it=cl.begin(); it!=cl.end(); it++){
-            if(it->getBodyPart()==LEFT_ARM){
-                icub->upperTorso->leftSensor->addContact((*it));
-            }else if(it->getBodyPart() == RIGHT_ARM)
-                icub->upperTorso->rightSensor->addContact((*it));
-        }
-    }
-
-    // *** RIGHT ARM ***
-    skinEvents = port_skin_events_right->read(false);
-    // if nothing is read
-    if(!skinEvents){
-        if(skinEventsRightTimestamp!=0.0 && Time::now()-skinEventsRightTimestamp> SKIN_EVENTS_TIMEOUT){   
-            // if time is up, remove all the contacts
-            fprintf(stderr, "Skin event right timeout (%3.3f sec)\n", SKIN_EVENTS_TIMEOUT);
-            icub->upperTorso->rightSensor->clearContactList();
-        }
-    }
-    else{
-        skinEventsRightTimestamp = Time::now();  // update the timestamp        
-        // if there are more than 1 contact 
-        if(skinEvents->size()>1){
-            for(skinContactList::iterator it=skinEvents->begin(); it!=skinEvents->end(); it++){
+        icub->upperTorso->rightSensor->clearContactList();
+        // if there are more than 1 contact
+        if(skinContacts->size()>1){
+            for(skinContactList::iterator it=skinContacts->begin(); it!=skinContacts->end(); it++){
                 //suppose zero moment if less than 10 taxels are active
                 if(it->getActiveTaxels()<10)
-                    it->fixMoment();                
+                    it->fixMoment();
             }
         }
-        icub->upperTorso->rightSensor->clearContactList();
-        dynContactList cl = skinEvents->toDynContactList();
+        dynContactList cl = skinContacts->toDynContactList();
         for(dynContactList::iterator it=cl.begin(); it!=cl.end(); it++){
             if(it->getBodyPart()==LEFT_ARM){
                 icub->upperTorso->leftSensor->addContact((*it));
-            }else if(it->getBodyPart() == RIGHT_ARM)
+            }else if(it->getBodyPart() == RIGHT_ARM){
                 icub->upperTorso->rightSensor->addContact((*it));
+            }
         }
+    }else if(skinContactsTimestamp!=0.0 && Time::now()-skinContactsTimestamp > SKIN_EVENTS_TIMEOUT){   
+        // if time is up, remove all the contacts
+        //fprintf(stderr, "Skin event timeout (%3.3f sec)\n", SKIN_EVENTS_TIMEOUT);
+        icub->upperTorso->leftSensor->clearContactList();
+        icub->upperTorso->rightSensor->clearContactList();
     }
-
-    
 }
 
 void inverseDynamics::sendMonitorData()
