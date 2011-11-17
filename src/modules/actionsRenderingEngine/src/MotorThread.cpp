@@ -2448,20 +2448,16 @@ void MotorThread::update()
 
 void MotorThread::interrupt()
 {
-    fprintf(stdout,"motor 1\n");
     disparityPort.interrupt();
 
-    fprintf(stdout,"motor 2\n");
     //if learning is going on
     Bottle bInterrupt("skip");
     suspendLearningModeAction(bInterrupt);
     suspendLearningModeKinOffset(bInterrupt);
 
-    fprintf(stdout,"motor 3\n");
     setGazeIdle();
     gazeCtrl->stopControl();
 
-    fprintf(stdout,"motor 4\n");
     if(action[LEFT]!=NULL)
     {
         action[LEFT]->lockActions();
@@ -2469,20 +2465,12 @@ void MotorThread::interrupt()
         action[LEFT]->stopControl();
     }
 
-    fprintf(stdout,"motor 5\n");
     if(action[RIGHT]!=NULL)
     {
-    
-	    fprintf(stdout,"actions 1\n");
         action[RIGHT]->lockActions();
-	    fprintf(stdout,"actions 2\n");
         action[RIGHT]->syncCheckInterrupt(true);
-	    fprintf(stdout,"actions 3\n");
         action[RIGHT]->stopControl();
-	    fprintf(stdout,"actions 4\n");
     }
-    
-    fprintf(stdout,"motor 6\n");
 }
 
 void MotorThread::reinstate()
@@ -2498,6 +2486,8 @@ void MotorThread::reinstate()
         action[RIGHT]->unlockActions();
         action[RIGHT]->syncCheckReinstate();
     }
+
+    disparityPort.resume();
 }
 
 

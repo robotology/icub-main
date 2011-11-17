@@ -855,6 +855,30 @@ void VisuoThread::interrupt()
 
 void VisuoThread::reinstate()
 {
+    outPort[LEFT].resume();
+    outPort[RIGHT].resume();
+
+    imgPort[LEFT].resume();
+    imgPort[RIGHT].resume();
+
+    mCUTPort[LEFT].resume();
+    mCUTPort[RIGHT].resume();
+
+    rawInPort[LEFT].resume();
+    rawInPort[RIGHT].resume();
+
+    pftInPort.resume();
+    pftOutPort.resume();
+
+    boundMILPort.resume();
+    cmdMILPort.resume();
+    recMILPort.resume();
+
+    cmdMSRPort.resume();
+    recMSRPort.resume();
+
+    opcPort.resume();
+
     interrupted=false;
 }
 
