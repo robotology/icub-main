@@ -6,8 +6,8 @@
                 <port>/iKinGazeCtrl/head/rpc</port>
                 <port>/icub/cartesianController/right_arm/state:o</port>
                 <port>/icub/cartesianController/left_arm/state:o</port>
-                <port>/wholeBodyTorqueObserver/right_arm/FT:i</port>
-                <port>/wholeBodyTorqueObserver/left_arm/FT:i</port>
+                <port>/wholeBodyDynamics/right_arm/FT:i</port>
+                <port>/wholeBodyDynamics/left_arm/FT:i</port>
         </dependencies>
       
         <module>

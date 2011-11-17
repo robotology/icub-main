@@ -2,7 +2,7 @@
 <name>Demo Force Imitation</name>
 	<dependencies>
 	        <port>/icub/left_arm/state:o</port>
-	        <port>/wholeBodyTorqueObserver/filtered/inertial:o</port>
+	        <port>/wholeBodyDynamics/filtered/inertial:o</port>
 			<port>/leftSkinDriftComp/skin_events:o</port>
 			<port>/rightSkinDriftComp/skin_events:o</port>
         </dependencies>
