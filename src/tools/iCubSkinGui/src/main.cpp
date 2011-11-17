@@ -110,6 +110,8 @@ This file can be edited at /src/gui/iCubSkinGui/src/main.cpp.
 #include "include/SkinMeshThreadPort.h"
 
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
+#include <glib.h>
 
 YARP_DECLARE_DEVICES(icubmod)
 
@@ -282,7 +284,10 @@ int main(int argc, char *argv[])
     gpActivationMap=new double[gImageArea];
     gpImageBuff=new guchar[gImageSize];
 
-    gtk_init(&argc,&argv);
+	g_thread_init (NULL);
+    gdk_threads_init ();
+    gdk_threads_enter ();
+	gtk_init(&argc,&argv);
 	
     GtkWidget *pMainWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	std::string window_title="iCubSkinGui (robotPart: ";
@@ -313,6 +318,7 @@ int main(int argc, char *argv[])
 		gpSkinMeshThreadCan->start();
 
 		gtk_main();
+		gdk_threads_leave();
 
 		//gtk_widget_destroy(mainWindow);
 	
@@ -325,6 +331,7 @@ int main(int argc, char *argv[])
 		gpSkinMeshThreadPort->start();
 
 		gtk_main();
+		gdk_threads_leave();
 
 		//gtk_widget_destroy(mainWindow);
 	
