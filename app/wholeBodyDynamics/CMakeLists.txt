@@ -1,4 +1,4 @@
-set(appname wholeBodyTorqueObserver)
+set(appname wholeBodyDynamics)
 
 icub_app(${appname})
 
