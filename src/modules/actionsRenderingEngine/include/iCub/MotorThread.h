@@ -194,6 +194,7 @@ private:
     int                                 grasp_state;
 
     bool                                waving;
+    bool                                closed;
 
     //drag stuff
     Port                                wrenchPort[2];
@@ -228,6 +229,7 @@ public:
         drvCartArm[LEFT]=drvCartArm[RIGHT]=NULL;
         armCtrlMode[LEFT]=armCtrlMode[RIGHT]=NULL;
         action[LEFT]=action[RIGHT]=NULL;
+        closed=false;
     }
 
     virtual bool threadInit();

@@ -22,6 +22,9 @@
 
 void VisuoThread::close()
 {
+    if (closed)
+        return;
+
     interrupt();
 
     outPort[LEFT].close();
@@ -44,10 +47,18 @@ void VisuoThread::close()
     recMSRPort.close();
 
     if(img[LEFT]!=NULL)
+    {
         delete img[LEFT];
+        img[LEFT]=NULL;
+    }
 
     if(img[RIGHT]!=NULL)
+    {
         delete img[RIGHT];
+        img[RIGHT]=NULL;
+    }
+
+    closed=true;
 }
 
 
@@ -378,6 +389,7 @@ VisuoThread::VisuoThread(ResourceFinder &_rf, Initializer *initializer)
     stereoTracker.side=0;
 
     trackMode=MODE_TRACK_TEMPLATE;
+    closed=false;
 }
 
 bool VisuoThread::threadInit()
@@ -436,6 +448,7 @@ bool VisuoThread::threadInit()
 
     trackMode=MODE_TRACK_TEMPLATE;
 
+    closed=false;
     return true;
 }
 

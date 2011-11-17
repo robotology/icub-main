@@ -122,6 +122,7 @@ private:
     bool                        newImage[2];
 
     bool                        show;
+    bool                        closed;
 
     struct Item
     {

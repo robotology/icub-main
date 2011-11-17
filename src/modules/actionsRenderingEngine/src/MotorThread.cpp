@@ -754,43 +754,65 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
 
 void MotorThread::close()
 {
+    if (closed)
+        return;
+
     //set the system back to velocity mode
     setImpedance(false);
     
     if(drvHead!=NULL)
+    {
         delete drvHead;
-        
+        drvHead=NULL;
+    }
 
     if(drvTorso!=NULL)
+    {
         delete drvTorso;
+        drvTorso=NULL;
+    }
 
     if(drvArm[LEFT]!=NULL)
+    {
         delete drvArm[LEFT];
+        drvArm[LEFT]=NULL;
+    }
         
     if(drvArm[RIGHT]!=NULL)
+    {
         delete drvArm[RIGHT];
+        drvArm[RIGHT]=NULL;
+    }
 
     if(drvGazeCtrl!=NULL)
     {
         if(gazeCtrl!=NULL)
             gazeCtrl->restoreContext(initial_gaze_context);
         delete drvGazeCtrl;
+        drvGazeCtrl=NULL;
     }
 
     if (action[LEFT]!=NULL)
+    {
         delete action[LEFT];
+        action[LEFT]=NULL;
+    }
 
     if (action[RIGHT]!=NULL)
+    {
         delete action[RIGHT];
+        action[RIGHT]=NULL;
+    }
 
     disparityPort.interrupt();
     disparityPort.close();
+
+    closed=true;
 }
 
 
 bool MotorThread::threadInit()
 {
-
     Bottle bMotor=rf.findGroup("motor");
 
     if(bMotor.isNull())
@@ -1167,6 +1189,7 @@ bool MotorThread::threadInit()
     head_mode=HEAD_MODE_IDLE;
     arm_mode=ARM_MODE_IDLE;
 
+    closed=false;
     return true;
 }
 
