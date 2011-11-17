@@ -255,8 +255,8 @@ int main(int argc, char *argv[])
 
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
-    rf.setDefaultContext("iCubSkinDemo");
-    rf.setDefaultConfigFile("lefthand.ini");
+    rf.setDefaultContext("skinGui/conf/skinGui");
+    rf.setDefaultConfigFile("left_hand.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     gWidth =rf.find("width" ).asInt();
