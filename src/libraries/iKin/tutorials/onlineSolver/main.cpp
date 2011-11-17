@@ -14,6 +14,7 @@
 #include <yarp/os/Port.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/math/Math.h>
 
 #include <iCub/iKin/iKinVocabs.h>
 #include <iCub/iKin/iKinHlp.h>
