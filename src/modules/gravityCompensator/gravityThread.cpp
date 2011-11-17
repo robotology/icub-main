@@ -635,32 +635,47 @@ void gravityCompensatorThread::run()
 		if (iCtrlMode_arm_left)  
 		{
 			feedFwdGravityControl("left_arm", iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,torques_LA,ampli_larm);
-			left_arm_torques->prepare()  =  torques_LA;
-			left_arm_torques->write();
+			if (left_arm_torques->getOutputCount()>0)
+            {
+                left_arm_torques->prepare()  =  torques_LA;
+			    left_arm_torques->write();
+            }
 		}
 		if (iCtrlMode_arm_right)
 		{
 			feedFwdGravityControl("right_arm", iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,torques_RA,ampli_rarm);
-			right_arm_torques->prepare() =  torques_RA;
-			right_arm_torques->write();
+			if (right_arm_torques->getOutputCount()>0)
+            {
+                right_arm_torques->prepare() =  torques_RA;
+			    right_arm_torques->write();
+            }
 		}
 		if (iCtrlMode_torso)  
 		{
 			feedFwdGravityControl("torso", iCtrlMode_torso,iTqs_torso,iImp_torso,torques_TO,ampli_torso);
-			torso_torques->prepare()  =  torques_TO;
-			torso_torques->write();
+			if (torso_torques->getOutputCount()>0)
+            {
+                torso_torques->prepare()  =  torques_TO;
+			    torso_torques->write();
+            }
 		}
 		if (iCtrlMode_leg_left)	
 		{
 			feedFwdGravityControl("left_leg", iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,torques_LL,ampli_lleg);
-			left_leg_torques->prepare() =  torques_LL;
-			left_leg_torques->write();
+			if (left_leg_torques->getOutputCount()>0)
+            {
+                left_leg_torques->prepare() =  torques_LL;
+			    left_leg_torques->write();
+            }
 		}
 		if (iCtrlMode_leg_right)
 		{
 			feedFwdGravityControl("right_leg", iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,torques_RL,ampli_rleg);
-			right_leg_torques->prepare()  =  torques_RL;
-			right_leg_torques->write();
+			if (right_leg_torques->getOutputCount()>0)
+            {
+                right_leg_torques->prepare()  =  torques_RL;
+			    right_leg_torques->write();
+            }
 		}
 	}
 	else
