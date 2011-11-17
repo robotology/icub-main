@@ -192,6 +192,7 @@ public:
     void threadRelease();
 	void closePort(Contactable *_port);
 	void writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port);
+    template <class T> void broadcastData(T& _values, BufferedPort<T> *_port);
 	void calibrateOffset(const unsigned int Ntrials);
 	bool readAndUpdate(bool waitMeasure=false, bool _init=false);
 	bool getLowerEncodersSpeedAndAcceleration();

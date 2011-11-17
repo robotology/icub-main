@@ -533,14 +533,27 @@ void inverseDynamics::run()
 	yarp::sig::Matrix ht  = icub->upperTorso->getHUp()    * icub->upperTorso->up->getH();
 	yarp::sig::Matrix hl  = ht * icub->upperTorso->getHLeft()  * icub->upperTorso->left->getH();
 	yarp::sig::Matrix hr  = ht * icub->upperTorso->getHRight() * icub->upperTorso->right->getH();
+
+  
 	yarp::sig::Vector tmp1 = F_ext_left_arm.subVector(0,2); tmp1.push_back(0.0); tmp1 = hl * tmp1;
 	yarp::sig::Vector tmp2 = F_ext_left_arm.subVector(3,5); tmp2.push_back(0.0); tmp2 = hl * tmp2;
 	for (int i=0; i<3; i++)	F_ext_cartesian_left_arm[i] = tmp1[i];
 	for (int i=3; i<6; i++)	F_ext_cartesian_left_arm[i] = tmp2[i-3];
+    double n1=norm(F_ext_cartesian_left_arm.subVector(0,2));
+    double n2=norm(F_ext_cartesian_left_arm.subVector(3,5));
+    F_ext_cartesian_left_arm.push_back(n1);
+    F_ext_cartesian_left_arm.push_back(n2);
+    
+    
     tmp1 = F_ext_right_arm.subVector(0,2); tmp1.push_back(0.0); tmp1 = hr * tmp1;
 	tmp2 = F_ext_right_arm.subVector(3,5); tmp2.push_back(0.0); tmp2 = hr * tmp2;
-	for (int i=0; i<3; i++)	F_ext_cartesian_right_arm[i] = tmp1[i];
+    for (int i=0; i<3; i++)	F_ext_cartesian_right_arm[i] = tmp1[i];
 	for (int i=3; i<6; i++)	F_ext_cartesian_right_arm[i] = tmp2[i-3];
+    n1=norm(F_ext_cartesian_right_arm.subVector(0,2));
+    n2=norm(F_ext_cartesian_right_arm.subVector(3,5));
+    F_ext_cartesian_right_arm.push_back(n1);
+    F_ext_cartesian_right_arm.push_back(n2);
+    
 
     // *** MONITOR DATA ***
 	//sendMonitorData();
@@ -548,34 +561,21 @@ void inverseDynamics::run()
     // *** DUMP VEL DATA ***
 	//sendVelAccData();
     
-	port_com_all->prepare() = com_all;
-	port_com_ll->prepare()  = com_ll ;
-	port_com_rl->prepare()  = com_rl ;
-	port_com_la->prepare()  = com_la ;
-	port_com_ra->prepare()  = com_ra ;
-	port_com_hd->prepare()  = com_hd ;
-	port_com_to->prepare()  = com_to ;
-	port_external_wrench_TO->prepare()  = F_up;
-	port_external_wrench_RA->prepare()  = F_ext_right_arm;
-	port_external_wrench_LA->prepare()  = F_ext_left_arm;
-	port_external_cartesian_wrench_RA->prepare()  = F_ext_cartesian_right_arm;
-	port_external_cartesian_wrench_LA->prepare()  = F_ext_cartesian_left_arm;
-    port_dyn_contacts->prepare()        = contactList;
+	broadcastData<Vector> (com_all, port_com_all);
+    broadcastData<Vector> (com_ll,  port_com_ll);
+    broadcastData<Vector> (com_rl,  port_com_rl);
+    broadcastData<Vector> (com_la,  port_com_la);
+    broadcastData<Vector> (com_ra,  port_com_ra);
+    broadcastData<Vector> (com_hd,  port_com_hd);
+    broadcastData<Vector> (com_to,  port_com_to);
 
+    broadcastData<Vector> (F_up,                                    port_external_wrench_TO);
+    broadcastData<Vector> (F_ext_right_arm,                         port_external_wrench_RA);
+    broadcastData<Vector> (F_ext_left_arm,                          port_external_wrench_LA);
+    broadcastData<Vector> (F_ext_cartesian_right_arm,               port_external_cartesian_wrench_RA);
+    broadcastData<Vector> (F_ext_cartesian_left_arm,                port_external_cartesian_wrench_LA);
+    broadcastData<iCub::skinDynLib::dynContactList>( contactList,   port_dyn_contacts);
 
-	port_com_all->write();
-	port_com_ll->write();
-	port_com_rl->write();
-	port_com_la->write();
-	port_com_ra->write();
-	port_com_hd->write();
-	port_com_to->write();
-	port_external_wrench_RA->write();
-	port_external_wrench_LA->write();
-	port_external_cartesian_wrench_RA->write();
-	port_external_cartesian_wrench_LA->write();
-	port_external_wrench_TO->write();
-    port_dyn_contacts->write();
 }
 
 void inverseDynamics::threadRelease()
@@ -677,6 +677,15 @@ void inverseDynamics::closePort(Contactable *_port)
 
         delete _port;
         _port = 0;
+    }
+}
+
+template <class T> void inverseDynamics::broadcastData(T& _values, BufferedPort<T> *_port)
+{
+    if (_port && _port->getOutputCount()>0)
+    {
+        _port->prepare()  = _values ;
+        _port->write();
     }
 }
 

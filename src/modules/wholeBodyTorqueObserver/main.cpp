@@ -217,13 +217,41 @@ public:
         dump_vel_enabled = false;
     }
 
-    virtual bool createDriver(PolyDriver *_dd)
+    virtual bool createDriver(PolyDriver *_dd, Property options)
     {
-        if (!_dd || !(_dd->isValid()))
+        int trials=0;
+        double start_time = yarp::os::Time::now();
+
+        do
         {
-            fprintf(stderr,"It is not possible to instantiate the device driver\nreturning...");
-            return 0;
+            double current_time = yarp::os::Time::now();
+
+            //remove previously existing drivers
+            if (_dd)
+            {
+                delete _dd;
+                _dd=0;
+            }
+
+            //creates the new device driver
+            _dd = new PolyDriver(options);
+            bool connected =_dd->isValid();
+
+            //check if the driver is connected
+            if (connected) break;
+        
+            //check if the timeout (60s) is expired
+            if (current_time-start_time > 60.0)
+            {
+                fprintf(stderr,"It is not possible to instantiate the device driver. I tried %d times!\n", trials);
+                return false;
+            }
+
+            yarp::os::Time::delay(5);
+            trials++;
+            fprintf(stderr,"\nUnable to connect the device driver, trying again...\n");
         }
+        while (true);
 
         IEncoders *encs;
 
@@ -383,8 +411,7 @@ public:
 		OptionsHead.put("local",string("/"+local_name+"/head/client").c_str());
 		OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
 
-		dd_head = new PolyDriver(OptionsHead);
-		if (!createDriver(dd_head))
+		if (!createDriver(dd_head, OptionsHead))
 		{
 			fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
 			return false;
@@ -397,8 +424,8 @@ public:
 			OptionsLeftArm.put("device","remote_controlboard");
 			OptionsLeftArm.put("local",string("/"+local_name+"/left_arm/client").c_str());
 			OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
-			dd_left_arm = new PolyDriver(OptionsLeftArm);
-			if (!createDriver(dd_left_arm))
+
+			if (!createDriver(dd_left_arm, OptionsLeftArm))
 			{
 				fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
 				return false;
@@ -410,8 +437,8 @@ public:
 			OptionsRightArm.put("device","remote_controlboard");
 			OptionsRightArm.put("local",string("/"+local_name+"/right_arm/client").c_str());
 			OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
-			dd_right_arm = new PolyDriver(OptionsRightArm);
-			if (!createDriver(dd_right_arm))
+
+			if (!createDriver(dd_right_arm, OptionsRightArm))
 			{
 				fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
 				return false;
@@ -423,8 +450,8 @@ public:
 			OptionsLeftLeg.put("device","remote_controlboard");
 			OptionsLeftLeg.put("local",string("/"+local_name+"/left_leg/client").c_str());
 			OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
-			dd_left_leg = new PolyDriver(OptionsLeftLeg);
-			if (!createDriver(dd_left_leg))
+
+			if (!createDriver(dd_left_leg, OptionsLeftLeg))
 			{
 				fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
 				return false;
@@ -433,8 +460,8 @@ public:
 			OptionsRightLeg.put("device","remote_controlboard");
 			OptionsRightLeg.put("local",string("/"+local_name+"/right_leg/client").c_str());
 			OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
-			dd_right_leg = new PolyDriver(OptionsRightLeg);
-			if (!createDriver(dd_right_leg))
+
+			if (!createDriver(dd_right_leg, OptionsRightLeg))
 			{
 				fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
 				return false;
@@ -445,8 +472,7 @@ public:
 		OptionsTorso.put("local",string("/"+local_name+"/torso/client").c_str());
 		OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
 
-		dd_torso = new PolyDriver(OptionsTorso);
-		if (!createDriver(dd_torso))
+		if (!createDriver(dd_torso, OptionsTorso))
 		{
 			fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
 			return false;
