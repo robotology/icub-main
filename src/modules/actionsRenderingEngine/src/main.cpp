@@ -496,7 +496,6 @@ public:
                 break;
             }
 
-
             case CMD_CALIBRATE:
             {
                 switch(command.get(1).asVocab())

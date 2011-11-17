@@ -302,7 +302,6 @@ public:
     bool suspendLearningModeKinOffset(Bottle &options);
 
 
-    bool isWholeBodyAvailable();
     bool setImpedance(bool turn_on);
     bool setTorque(bool turn_on, int arm=ARM_IN_USE);
 

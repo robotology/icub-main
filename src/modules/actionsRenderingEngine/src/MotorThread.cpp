@@ -92,11 +92,6 @@ int MotorThread::checkArm(int arm, Vector &xd)
     return checkArm(arm);
 }
 
-bool MotorThread::isWholeBodyAvailable()
-{
-    return Network::isConnected("/wholeBodyTorqueObserver/filtered/inertial:o","/wholeBodyTorqueObserver/inertial:i");
-}
-
 
 bool MotorThread::setImpedance(bool turn_on)
 {
@@ -104,7 +99,7 @@ bool MotorThread::setImpedance(bool turn_on)
     bool done=false;
 
     //if the system is asked to turn on impedance control
-    if(turn_on && isWholeBodyAvailable())
+    if(turn_on)
     {
     
         done=true;
@@ -157,12 +152,12 @@ bool MotorThread::setTorque(bool turn_on, int arm)
     bool done=false;
 
     //if the system is asked to turn on impedance control
-    if(turn_on && isWholeBodyAvailable())
+    if(turn_on)
     {
         done=true;
 
         for(int i=0; i<4; i++)
-                done=done && armCtrlMode[arm]->setTorqueMode(i);
+            done=done && armCtrlMode[arm]->setTorqueMode(i);
 
         done=done && torsoCtrlMode->setTorqueMode(0);
         done=done && torsoCtrlMode->setImpedanceVelocityMode(2);
@@ -275,7 +270,6 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     currentKinematicOffset[LEFT]=defaultKinematicOffset[LEFT];
     currentKinematicOffset[RIGHT]=defaultKinematicOffset[RIGHT];
 
-
     // if the tartget's cartesian coordinates was specified, use them.
     if(!found && bTarget!=NULL && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>3)
     {
@@ -307,11 +301,9 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         }
     }
 
-
     if(found && bTarget!=NULL &&  bTarget->check("name"))
         opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
-   	
-   		
+
     return found;
 }
 
@@ -351,7 +343,6 @@ bool MotorThread::stereoToCartesian(const Vector &stereo, Vector &xd)
 
     return ok;
 }
-
 
 
 bool MotorThread::loadExplorationPoses(const string &file_name)
@@ -465,6 +456,7 @@ bool MotorThread::stereoToCartesianHomography(const Vector &stereo, Vector &xd)
     return true;
 }
 
+
 bool MotorThread::stereoToCartesianDisparity(const Vector &stereo, Vector &xd)
 {
     Bottle bEye;
@@ -492,6 +484,7 @@ bool MotorThread::stereoToCartesianDisparity(const Vector &stereo, Vector &xd)
     return xd.size()==3;
 }
 
+
 bool MotorThread::stereoToCartesianNetwork(const Vector &stereo, Vector &xd)
 {
     if(stereo.size()!=4 || stereo[0]==0.0 || stereo[1]==0.0 || stereo[2]==0.0 || stereo[3]==0.0)
@@ -515,7 +508,6 @@ bool MotorThread::stereoToCartesianNetwork(const Vector &stereo, Vector &xd)
 }
 
 
-
 Vector MotorThread::randomDeployOffset()
 {
     Vector offset(3);
@@ -525,6 +517,7 @@ Vector MotorThread::randomDeployOffset()
 
     return offset;
 }
+
 
 bool MotorThread::loadKinematicOffsets(string _kinematics_path)
 {
@@ -586,7 +579,6 @@ bool MotorThread::loadKinematicOffsets(string _kinematics_path)
 }
 
 
-
 bool MotorThread::saveKinematicOffsets()
 {
     ofstream kin_fout(kinematics_path.c_str());
@@ -600,6 +592,7 @@ bool MotorThread::saveKinematicOffsets()
 
     return true;
 }
+
 
 bool MotorThread::getGeneralOptions(Bottle &b)
 {
@@ -649,7 +642,6 @@ bool MotorThread::getGeneralOptions(Bottle &b)
 
     return true;
 }
-
 
 
 bool MotorThread::getArmOptions(Bottle &b, const int &arm)
@@ -780,8 +772,8 @@ void MotorThread::close()
 
     if(drvGazeCtrl!=NULL)
     {
-    	if(gazeCtrl!=NULL)
-	        gazeCtrl->restoreContext(initial_gaze_context);
+        if(gazeCtrl!=NULL)
+            gazeCtrl->restoreContext(initial_gaze_context);
         delete drvGazeCtrl;
     }
 
@@ -876,8 +868,6 @@ bool MotorThread::threadInit()
     drvTorso->view(torsoCtrlMode);
     drvTorso->view(torsoImpedenceCtrl);
 
-
-
     if(partUsed=="both_arms" || partUsed=="left_arm")
     {
         drvArm[LEFT]=new PolyDriver;
@@ -910,7 +900,6 @@ bool MotorThread::threadInit()
     vels=5.0; accs=6000.0;
     torsoPos->setRefSpeeds(vels.data());
     torsoPos->setRefAccelerations(accs.data());
-
 
     // initialize the gaze controller
 
@@ -1181,6 +1170,7 @@ bool MotorThread::threadInit()
     return true;
 }
 
+
 void MotorThread::run()
 {
     switch(head_mode)
@@ -1412,10 +1402,12 @@ void MotorThread::run()
     }
 }
 
+
 void MotorThread::threadRelease()
 {
     close();
 }
+
 
 // in case it is implemented....
 void MotorThread::onStop()
@@ -1426,8 +1418,6 @@ void MotorThread::onStop()
     if(action[RIGHT]!=NULL)
         action[RIGHT]->syncCheckInterrupt(true);
 }
-
-
 
 
 bool MotorThread::reach(Bottle &options)
@@ -1497,7 +1487,6 @@ bool MotorThread::reach(Bottle &options)
 
     return true;
 }
-
 
 
 bool MotorThread::push(Bottle &options)
@@ -1623,6 +1612,7 @@ bool MotorThread::point(Bottle &options)
     return true;
 }
 
+
 bool MotorThread::look(Bottle &options)
 {
     Bottle *bTarget=options.find("target").asList();
@@ -1638,6 +1628,7 @@ bool MotorThread::look(Bottle &options)
 
     return true;
 }
+
 
 bool MotorThread::grasp(Bottle &options)
 {
@@ -1663,6 +1654,7 @@ bool MotorThread::grasp(Bottle &options)
     return isHolding(options);
 }
 
+
 bool MotorThread::release(Bottle &options)
 {
     int arm=ARM_IN_USE;
@@ -1678,7 +1670,6 @@ bool MotorThread::release(Bottle &options)
 
     return true;
 }
-
 
 
 bool MotorThread::goHome(Bottle &options)
@@ -1851,6 +1842,7 @@ bool MotorThread::deploy(Bottle &options)
     return true;
 }
 
+
 bool MotorThread::drawNear(Bottle &options)
 {
     int arm=ARM_IN_USE;
@@ -1867,6 +1859,7 @@ bool MotorThread::drawNear(Bottle &options)
     return true;
 }
 
+
 bool MotorThread::isHolding(Bottle &options)
 {
     int arm=ARM_IN_USE;
@@ -1880,6 +1873,7 @@ bool MotorThread::isHolding(Bottle &options)
 
     return !in_position;
 }
+
 
 bool MotorThread::calibTable(Bottle &options)
 {
@@ -2047,8 +2041,6 @@ void MotorThread::exploreTorso(const double &trial_time)
 
     double t0=Time::now();
 
-    fprintf(stdout,"torso\n");
-
     int i=0;
     while(isRunning() && (Time::now()-t0<trial_time))
     {
@@ -2062,8 +2054,6 @@ void MotorThread::exploreTorso(const double &trial_time)
         i++;
     }
 
-    fprintf(stdout,"torso\n");
-
     //go back to torso home last pose
     torsoPos->positionMove(torsoPoses.back().data());
     bool done=false;
@@ -2072,9 +2062,6 @@ void MotorThread::exploreTorso(const double &trial_time)
         Time::delay(0.1);
         torsoPos->checkMotionDone(&done);
     }
-
-
-    fprintf(stdout,"torso\n");
 }
 
 
@@ -2084,11 +2071,6 @@ bool MotorThread::startLearningModeAction(Bottle &options)
     if(arm_mode!=ARM_MODE_IDLE)
     {
         fprintf(stdout,"Error! The requested arm is busy!\n");
-        return false;
-    }
-
-    if(!isWholeBodyAvailable()){
-        fprintf(stdout,"Error! could not find wholeBodyTorqueObserver!\n");
         return false;
     }
 
@@ -2149,6 +2131,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     return true;
 }
+
 
 bool MotorThread::suspendLearningModeAction(Bottle &options)
 {
@@ -2281,7 +2264,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     }
 
     //if the impedance control is available use it otherwise employ adimttance control
-    dragger.using_impedance=setTorque(true,dragger.arm);    
+    dragger.using_impedance=setTorque(true,dragger.arm);
     if(!dragger.using_impedance)
     {
         fprintf(stdout,"!!! Impedance control not available. Using admittance control!\n");
@@ -2299,6 +2282,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     return true;
 }
 
+
 bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
 {
     if(arm_mode!=ARM_MODE_LEARN_KINOFF)
@@ -2313,14 +2297,13 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
         dragger.ctrl->getPose(x,o);
         
         if(options.size()>3)
-        	opcPort.getKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset);
+            opcPort.getKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset);
 
         currentKinematicOffset[dragger.arm]=(x-dragger.x0) + currentKinematicOffset[dragger.arm];
 
         //for homography, the z coordinate does not have offset
         if(modeS2C==S2C_HOMOGRAPHY)
             currentKinematicOffset[dragger.arm][2]=0.0;
-
 
         //if no object with specified name is present in the database, then update the default kinematic offsets
         if(options.size()<4 || !opcPort.setKinematicOffset(options.get(3).asString().c_str(),currentKinematicOffset))
@@ -2351,8 +2334,6 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
 
     return true;
 }
-
-
 
 
 void MotorThread::getStatus(Bottle &status)
@@ -2446,6 +2427,7 @@ void MotorThread::update()
     }
 }
 
+
 void MotorThread::interrupt()
 {
     disparityPort.interrupt();
@@ -2472,6 +2454,7 @@ void MotorThread::interrupt()
         action[RIGHT]->stopControl();
     }
 }
+
 
 void MotorThread::reinstate()
 {
