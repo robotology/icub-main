@@ -1890,7 +1890,13 @@ void ActionPrimitivesLayer2::run()
 
     // get the input from WBTO
     if (Vector *wbtoWrench=wbtoPortIn.read(false))
-        wrenchExternal=*wbtoWrench;
+    {
+        size_t len=wbtoWrench->length()>wrenchExternal.length()?
+                   wrenchExternal.length():wbtoWrench->length();
+
+        for (size_t i=0; i<len; i++)
+            wrenchExternal[i]=(*wbtoWrench)[i];
+    }
 
     Vector forceExternal(3);
     forceExternal[0]=wrenchExternal[0];
