@@ -62,7 +62,6 @@
 
         <module>
                 <name>gravityCompensator</name>
-                <parameters>--autoconnect</parameters>
                 <node>pwrNode6</node>
                 <tag>gravityCompensatorTag</tag>
         </module>
