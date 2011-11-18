@@ -316,9 +316,9 @@ public:
 
 		//------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
 		string icub_type;
-		if (rf.check("head_v2"))
+		if (rf.check("headV2"))
 		{
-			fprintf(stderr,"'head_v2' option found. Using icubV2 head kinematics.\n");
+			fprintf(stderr,"'headV2' option found. Using icubV2 head kinematics.\n");
 			icub_type = "V2";
 		}
 
@@ -634,7 +634,7 @@ int main(int argc, char * argv[])
 		cout << "\t--local      name: the prefix of the ports opened by the module. defualt: wholeBodyDynamics      "             << endl;
 		cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"								      << endl;        
         cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"								  << endl;  
-		cout << "\t--head_v2         use the model of the headV2" << endl;    
+		cout << "\t--headV2         use the model of the headV2" << endl;    
 		cout << "\t--no_left_arm     disables the left arm" << endl;
 		cout << "\t--no_right_arm    disables the right arm" << endl;
 		cout << "\t--no_com          disables the com computation" << endl;
