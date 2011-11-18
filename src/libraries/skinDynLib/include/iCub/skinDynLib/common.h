@@ -22,6 +22,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
+#include <string>
 
 namespace iCub
 {
