@@ -16,6 +16,8 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Module.h>
 #include <yarp/os/all.h>
+#include <yarp/os/Stamp.h>
+
 #include <yarp/sig/all.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -173,6 +175,7 @@ CvMat* _noise1; //lines from 0 to 2
 CvMat* _noise2; //lines from 3 to 5
 
 
+Stamp _yarpTimestamp;
 ImageOf<PixelRgb> *_yarpImage;
 IplImage *_rawImage;
 IplImage* _transformedImage;//_yuvBinsImage[image_width][image_height][3];

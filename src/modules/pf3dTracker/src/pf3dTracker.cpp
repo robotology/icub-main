@@ -631,6 +631,7 @@ bool PF3DTracker::open(Searchable& config)
     //Read one image from the stream.
     //*********************************************************************
     _yarpImage = _inputVideoPort.read();
+    _inputVideoPort.getEnvelope(_yarpTimestamp);
 
     widthRatio=(double)_yarpImage->width()/(double)_calibrationImageWidth;
     heightRatio=(double)_yarpImage->height()/(double)_calibrationImageHeight;
@@ -1072,7 +1073,8 @@ bool PF3DTracker::updateModule()
         }
     
     
-    
+
+
         Bottle& output=_outputDataPort.prepare();
         output.clear();
         output.addDouble(weightedMeanX/1000);//millimeters to meters
@@ -1082,6 +1084,10 @@ bool PF3DTracker::updateModule()
         output.addDouble(meanU);
         output.addDouble(meanV);
         output.addDouble(_seeingObject);
+
+        //set the envelope for the output port
+        _outputDataPort.setEnvelope(_yarpTimestamp);
+
         _outputDataPort.write();
 
 		if (_seeingObject && supplyUVdata)
@@ -1148,7 +1154,9 @@ bool PF3DTracker::updateModule()
         //acquire a new image
         //*******************
         _yarpImage = _inputVideoPort.read(); //read one image from the buffer.
-    
+        _inputVideoPort.getEnvelope(_yarpTimestamp);
+
+
         //_fourthCpuClocks=ippGetCpuClocks();
         cvCvtColor((IplImage*)_yarpImage->getIplImage(), _rawImage, CV_RGB2BGR);
         //_fifthCpuClocks=ippGetCpuClocks();
