@@ -348,7 +348,7 @@ void iCubArmCalibratorJ8::checkGoneToZero(int j)
         if (logfile_name != "")
             Time::delay (0.1);
         else
-        Time::delay (0.5);
+            Time::delay (0.5);
         
         if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
@@ -379,7 +379,10 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
 			finished=true;
 		}
 
-        Time::delay (0.5);
+        if (logfile_name != "")
+            Time::delay (0.1);
+        else
+            Time::delay (0.5);
        
         if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
