@@ -1,0 +1,29 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_iCubStartup iCubStartup
+
+The iCub Launcher.
+
+\section intro_sec Description
+This application lets the user to launch everything is required to work with
+the iCub in a fully operative framework that embeds the cartesian control, the
+gaze control, the dynamics computed for the whole body.
+
+\section dep_sec Dependencies
+None.
+
+\section int_sec Instantiated Modules
+- \ref icub_iCubInterface
+- \ref iKinCartesianSolver
+- \ref iKinGazeCtrl
+- \ref wholeBodyDynamics
+- \ref gravityCompensator
+
+\section howto How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
+
+\author Ugo Pattacini
+**/
+
+

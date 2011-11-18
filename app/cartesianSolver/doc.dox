@@ -13,9 +13,9 @@ the server part of the gaze controller interface are launched as well.
 None.
 
 \section int_sec Instantiated Modules
-- \ref icub_iCubInterface "iCubInterface"
-- \ref iKinCartesianSolver "iKinCartesianSolver"
-- \ref iKinGazeCtrl "iKinGazeCtrl
+- \ref icub_iCubInterface
+- \ref iKinCartesianSolver
+- \ref iKinGazeCtrl
 
 \section config_sec Configuration Files
 The file ./conf/cartesianSolver.ini contains the solvers initialization parameters.
