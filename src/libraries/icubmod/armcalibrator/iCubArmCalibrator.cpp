@@ -324,7 +324,7 @@ void iCubArmCalibrator::checkGoneToZero(int j)
         else
             Time::delay (0.5);
         
-        if (start_time - yarp::os::Time::now() >= GO_TO_ZERO_TIMEOUT)
+        if (yarp::os::Time::now() - start_time >= GO_TO_ZERO_TIMEOUT)
         {
             fprintf(logfile, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
             finished = true;
@@ -355,7 +355,7 @@ bool iCubArmCalibrator::checkGoneToZeroThreshold(int j)
 
         Time::delay (0.5);
 
-        if (start_time - yarp::os::Time::now() >= GO_TO_ZERO_TIMEOUT)
+        if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
             fprintf(logfile, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
 			return false;
