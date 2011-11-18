@@ -19,6 +19,7 @@
 #ifndef __ICUB_ARM_CALIBRATORJ4__
 #define __ICUB_ARM_CALIBRATORJ4__
 
+#include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -96,17 +97,22 @@ private:
 	IControlMode *iControlMode;
 
     unsigned char *type;
+	int    canID;
 	double *param1;
 	double *param2;
 	double *param3;
 	int    *maxPWM;
-	double *pos;
-	double *vel;
+	double *currPos;
+	double *currVel;
 	Pid    *original_pid;
 	Pid    *limited_pid;
+	double *zeroVel;
+	double *zeroPos;
     double *homeVel;
     double *homePos;
     bool abortCalib;
     bool abortParking;
+    FILE   *logfile;   
+    std::string  logfile_name;
 };
 #endif

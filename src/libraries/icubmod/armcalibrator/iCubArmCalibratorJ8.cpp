@@ -25,6 +25,7 @@ const int numberOfJoints=8;
 
 iCubArmCalibratorJ8::iCubArmCalibratorJ8()
 {
+	logfile = stderr;
 	canID  = -1;
     type   = NULL;
     param1 = NULL;
@@ -52,7 +53,7 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     p.fromString(config.toString());
 
     if (!p.check("GENERAL")) {
-        fprintf(stderr, "ARMCALIB::Cannot understand configuration parameters\n");
+        fprintf(logfile, "ARMCALIB::Cannot understand configuration parameters\n");
         return false;
     }
 
@@ -61,7 +62,7 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     int nj = p.findGroup("GENERAL").find("Joints").asInt();
     if (nj!=numberOfJoints)
         {
-            fprintf(stderr, "ARMCALIB[%d]: Calibrator is for %d joints but device has %d\n", canID, numberOfJoints, nj);
+            fprintf(logfile, "ARMCALIB[%d]: Calibrator is for %d joints but device has %d\n", canID, numberOfJoints, nj);
             return false;
         }
         
@@ -77,6 +78,17 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     currVel = new double[nj];
     homePos = new double[nj];
     homeVel = new double[nj];
+
+	logfile_name = p.findGroup("CALIBRATION").find("Logfile").asString();
+    if (logfile_name != "") 
+    {
+        fprintf(stdout, "ARMCALIB::calibrator: opening logfile %s\n", logfile_name.c_str());
+        logfile = fopen (logfile_name.c_str(), "w");
+    }
+    else
+    {
+        fprintf(stdout, "ARMCALIB::calibrator: no logfile specified, errors displayed on standard stderr\n");
+    }
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
 
@@ -124,7 +136,7 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
    }
    else
    {
-	   fprintf(stderr, "ARMCALIB[%d] :MaxPWM parameter not found, assuming 60\n", canID);
+	   fprintf(logfile, "ARMCALIB[%d] :MaxPWM parameter not found, assuming 60\n", canID);
 	   for (i = 1; i < nj+1; i++) maxPWM[i-1] = 60;
    }
 
@@ -164,12 +176,14 @@ bool iCubArmCalibratorJ8::close ()
     if (homeVel != NULL) delete[] homeVel;
     homeVel = NULL;
 
+    if (logfile_name!="") fclose(logfile);
+
     return true;
 }
 
 bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 {
-    fprintf(stderr, "Calling iCubArmCalibratorJ8::calibrate \n");
+    fprintf(logfile, "Calling iCubArmCalibratorJ8::calibrate \n");
     abortCalib=false;
 
     iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
@@ -188,7 +202,7 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 
     if (nj!=numberOfJoints)
         {
-			fprintf(stderr, "ARMCALIB[%d]: Calibrator is for %d joints but device has %d\n", canID, numberOfJoints, nj);
+			fprintf(logfile, "ARMCALIB[%d]: Calibrator is for %d joints but device has %d\n", canID, numberOfJoints, nj);
             return false;
         }
 
@@ -203,9 +217,9 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     for (k =0; k < 4; k++)
     {
         Time::delay(0.040);
-        //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
+        //fprintf(logfile, "ARMCALIB::Sending offset for joint %d\n", k);
         iEncoders->getEncoders(currPos);
-		fprintf(stderr, "ARMCALIB[%d]: calibrating shoulder (j:%d) current enc values: %.2f %.2f %.2f %.2f\n", canID, k, currPos[0], currPos[1], currPos[2], currPos[3]);
+		fprintf(logfile, "ARMCALIB[%d]: calibrating shoulder (j:%d) current enc values: %.2f %.2f %.2f %.2f\n", canID, k, currPos[0], currPos[1], currPos[2], currPos[3]);
         calibrateJoint(shoulderSetOfJoints[k]);
     }
     Time::delay(1.0);
@@ -218,31 +232,31 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 		limited_pid[k].max_output=maxPWM[k];
 		if (k<4) iPids->setPid(k,limited_pid[k]);
 
-        fprintf(stderr, "ARMCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
+        fprintf(logfile, "ARMCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
         iAmps->enableAmp(k);
-        fprintf(stderr, "ARMCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
+        fprintf(logfile, "ARMCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
         iPids->enablePid(k);
     }
 
 	for (k = 0; k < 4; k++)
     {
-        //fprintf(stderr, "ARMCALIB::Moving joint %d to zero\n", k);
+        //fprintf(logfile, "ARMCALIB::Moving joint %d to zero\n", k);
 		goToZero(shoulderSetOfJoints[k]);
     }
 	for (k = 0; k < 4; k++)
     {
-        //fprintf(stderr, "ARMCALIB::Waiting for joint %d movement\n", k);
+        //fprintf(logfile, "ARMCALIB::Waiting for joint %d movement\n", k);
 		calibration_ok &= checkGoneToZeroThreshold(shoulderSetOfJoints[k]);
     }
     if (calibration_ok)
 	{
-		fprintf(stderr, "ARMCALIB[%d]: Calibration done!\n", canID);
+		fprintf(logfile, "ARMCALIB[%d]: Calibration done!\n", canID);
 		for (k = 0; k < 4; k++)
 			iPids->setPid(k,original_pid[k]);
 	}
 	else
 	{
-		fprintf(stderr, "ARMCALIB[%d]: Calibration failed!\n", canID);
+		fprintf(logfile, "ARMCALIB[%d]: Calibration failed!\n", canID);
 		for (k = 0; k < 4; k++)
 			iAmps->disableAmp(k);
 	}
@@ -276,13 +290,13 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 	for (k = 0; k < 1; k++)
 		checkGoneToZero(secondSetOfJoints[k]);
     
-    fprintf(stderr, "ARMCALIB[%d]: Calibration done!\n", canID);
+    fprintf(logfile, "ARMCALIB[%d]: Calibration done!\n", canID);
     return ret;
 }
 
 void iCubArmCalibratorJ8::calibrateJoint(int joint)
 {
-	fprintf(stderr, "ARMCALIB[%d]: Calling calibrateJoint on joint %d with params: %d  %+6.1f %+6.1f %+6.1f\n", canID, joint, type[joint], param1[joint], param2[joint], param3[joint]);
+	fprintf(logfile, "ARMCALIB[%d]: Calling calibrateJoint on joint %d with params: %d  %+6.1f %+6.1f %+6.1f\n", canID, joint, type[joint], param1[joint], param2[joint], param3[joint]);
     iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
 }
 
@@ -300,12 +314,12 @@ bool iCubArmCalibratorJ8::checkCalibrateJointEnded(int joint)
     }
     if (i == timeout)
     {
-        fprintf(stderr, "ARMCALIB[%d]: Timeout on joint %d while calibrating!\n", canID, joint);
+        fprintf(logfile, "ARMCALIB[%d]: Timeout on joint %d while calibrating!\n", canID, joint);
         return false;
     }
     if (abortCalib)
     {
-        fprintf(stderr, "ARMCALIB[%d]: aborted\n", canID);
+        fprintf(logfile, "ARMCALIB[%d]: aborted\n", canID);
     }
 
     return true;
@@ -330,16 +344,19 @@ void iCubArmCalibratorJ8::checkGoneToZero(int j)
     {
         iPosition->checkMotionDone(j, &finished);
 
+        if (logfile_name != "")
+            Time::delay (0.1);
+        else
         Time::delay (0.5);
         timeout ++;
         if (timeout >= GO_TO_ZERO_TIMEOUT)
         {
-            fprintf(stderr, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
+            fprintf(logfile, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
             finished = true;
         }
     }
     if (abortCalib)
-        fprintf(stderr, "ARMCALIB[%d]: abort wait for joint %d going to zero!\n", canID, j);
+        fprintf(logfile, "ARMCALIB[%d]: abort wait for joint %d going to zero!\n", canID, j);
 }
 
 bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
@@ -353,10 +370,10 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
     {
 		iEncoders->getEncoder(j, &ang);
 		delta = fabs(ang-zeroPos[j]);
-		fprintf(stderr, "ARMCALIB[%d] (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, zeroPos[j], delta);
+		fprintf(logfile, "ARMCALIB[%d] (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, zeroPos[j], delta);
 		if (delta<POSITION_THRESHOLD)
 		{
-			fprintf(stderr, "ARMCALIB[%d] (joint %d) completed! delta:%f\n", canID, j,delta);
+			fprintf(logfile, "ARMCALIB[%d] (joint %d) completed! delta:%f\n", canID, j,delta);
 			finished=true;
 		}
 
@@ -365,12 +382,12 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
 
         if (timeout >= GO_TO_ZERO_TIMEOUT)
         {
-            fprintf(stderr, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
+            fprintf(logfile, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
 			return false;
         }
     }
     if (abortCalib)
-        fprintf(stderr, "ARMCALIB[%d]: Abort wait for joint %d going to zero!\n", canID, j);
+        fprintf(logfile, "ARMCALIB[%d]: Abort wait for joint %d going to zero!\n", canID, j);
 
 	return finished;
 }
@@ -384,30 +401,30 @@ bool iCubArmCalibratorJ8::park(DeviceDriver *dd, bool wait)
     ret=iEncoders->getAxes(&nj);
     if (!ret)
         {
-            fprintf(stderr, "ARMCALIB[%d]: error getting number of encoders\n",canID);
+            fprintf(logfile, "ARMCALIB[%d]: error getting number of encoders\n",canID);
             return false;
         }
 
     if (nj!=numberOfJoints)
         {
-            fprintf(stderr, "ARMCALIB[%d]: calibrator is for %d joints but device has %d\n", canID, numberOfJoints, nj);
+            fprintf(logfile, "ARMCALIB[%d]: calibrator is for %d joints but device has %d\n", canID, numberOfJoints, nj);
             return false;
         }
 
 	int timeout = 0;
-    fprintf(stderr, "ARMCALIB[%d]: Calling iCubArmCalibratorJ8::park() \n",canID);
+    fprintf(logfile, "ARMCALIB[%d]: Calling iCubArmCalibratorJ8::park() \n",canID);
 	iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 
     if (wait)
     {
-        fprintf(stderr, "ARMCALIB[%d]: Moving to park positions \n",canID);
+        fprintf(logfile, "ARMCALIB[%d]: Moving to park positions \n",canID);
         bool done=false;
         while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
         {
             iPosition->checkMotionDone(&done);
-            fprintf(stderr, ".");
+            fprintf(logfile, ".");
             Time::delay(1);
 			timeout++;
         }
@@ -419,32 +436,32 @@ bool iCubArmCalibratorJ8::park(DeviceDriver *dd, bool wait)
 				if (iPosition->checkMotionDone(j, &done))
 				{
 					if (!done)
-						fprintf(stderr, "ARMCALIB[%d]: joint %d not in position during park()\n",canID, j);
+						fprintf(logfile, "ARMCALIB[%d]: joint %d not in position during park()\n",canID, j);
 				}
 				else
-					fprintf(stderr, "ARMCALIB[%d]: joint %d did not answer during park() \n", canID, j);
+					fprintf(logfile, "ARMCALIB[%d]: joint %d did not answer during park() \n", canID, j);
 			}
 		}
     }
 
     if (abortParking)
-        fprintf(stderr, "ARMCALIB[%d]: Park was aborted!\n", canID);
+        fprintf(logfile, "ARMCALIB[%d]: Park was aborted!\n", canID);
     else
-        fprintf(stderr, "ARMCALIB[%d]: Park was done!\n", canID);
+        fprintf(logfile, "ARMCALIB[%d]: Park was done!\n", canID);
 
     return true;
 }
 
 bool iCubArmCalibratorJ8::quitCalibrate()
 {
-    fprintf(stderr, "ARMCALIB[%d]: Quitting calibrate\n", canID);
+    fprintf(logfile, "ARMCALIB[%d]: Quitting calibrate\n", canID);
     abortCalib=true;
     return true;
 }
 
 bool iCubArmCalibratorJ8::quitPark()
 {
-    fprintf(stderr, "ARMCALIB[%d]: Quitting parking\n", canID);
+    fprintf(logfile, "ARMCALIB[%d]: Quitting parking\n", canID);
     abortParking=true;
     return true;
 }

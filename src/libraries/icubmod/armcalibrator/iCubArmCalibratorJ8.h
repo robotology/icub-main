@@ -19,6 +19,7 @@
 #ifndef __ICUB_ARM_CALIBRATORJ8__
 #define __ICUB_ARM_CALIBRATORJ8__
 
+#include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -111,5 +112,7 @@ private:
     double *homePos;
     bool abortCalib;
     bool abortParking;
+    FILE   *logfile;   
+    std::string  logfile_name;
 };
 #endif

@@ -18,6 +18,7 @@
 #ifndef __ICUB_ARM_CALIBRATOR__
 #define __ICUB_ARM_CALIBRATOR__
 
+#include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -98,6 +99,7 @@ private:
 	double *param1;
 	double *param2;
 	double *param3;
+	int    *maxPWM;
 	double *pos;
 	double *vel;
 	Pid    *original_pid;
@@ -106,5 +108,7 @@ private:
     double *homePos;
     bool abortCalib;
     bool abortParking;
+    FILE   *logfile;   
+    std::string  logfile_name;
 };
 #endif
