@@ -129,7 +129,7 @@ using namespace std;
 class dataFilter : public BufferedPort<Bottle>
 {
 private:
-	BufferedPort<Vector> &port_filtered;
+	BufferedPort<Vector> &port_filtered_output;
 	Vector g;
 	
 	virtual void onRead(Bottle &b)
@@ -153,13 +153,13 @@ private:
 		g[5] = inertial[8];
 		//g = (9.81/norm(g))*g;
 		
-		port_filtered.prepare() = g;
-		port_filtered.setEnvelope(info);
-		port_filtered.write();
+		port_filtered_output.prepare() = g;
+		port_filtered_output.setEnvelope(info);
+		port_filtered_output.write();
 	}
 public:
-	dataFilter(BufferedPort<Vector> &_port_filtered, ResourceFinder &rf):	
-	port_filtered(_port_filtered)
+	dataFilter(BufferedPort<Vector> &_port_filtered_output, ResourceFinder &rf):	
+	port_filtered_output(_port_filtered_output)
 	{
 		g.resize(6);
 	}
@@ -186,7 +186,7 @@ private:
 
 	
 	dataFilter *port_inertial_input;
-	BufferedPort<Vector> port_filtered;	
+	BufferedPort<Vector> port_filtered_output;	
 	Port rpcPort;
 
     inverseDynamics *inv_dyn;
@@ -302,8 +302,8 @@ public:
 		attach(rpcPort);                  
 
 		//---------------OPEN INERTIAL PORTS--------------------//
-		port_filtered.open(string("/"+local_name+"/filtered/inertial:o").c_str());
-		port_inertial_input = new dataFilter(port_filtered, rf);
+		port_filtered_output.open(string("/"+local_name+"/filtered/inertial:o").c_str());
+		port_inertial_input = new dataFilter(port_filtered_output, rf);
 		port_inertial_input->useCallback();
 		port_inertial_input->open(string("/"+local_name+"/unfiltered/inertial:i").c_str());		
 		int rate = 10;
@@ -499,7 +499,8 @@ public:
 
     bool close()
     {
-        fprintf(stderr,"closing... \n");     
+	//The order of execution of the following closures is important, do not change it.
+        fprintf(stderr,"Closing wholeBodyDynamics module... \n");     
 
 		if (inv_dyn)
 		  {
@@ -510,11 +511,20 @@ public:
 			inv_dyn=0;
 		  }
 
-		fprintf(stderr,"interrupting the filtered port \n");     
-		port_filtered.interrupt(); //CHECK THIS, SOMETIMES IT SEEMS TO BLOCK THE PORT
-		fprintf(stderr,"closing the filtered port \n");     
-		port_filtered.close();
-		fprintf(stderr,"closing the rpc port \n");     
+		if(port_inertial_input)
+		{
+			fprintf(stderr,"Closing the inertial input port \n");     
+			port_inertial_input->interrupt();
+			port_inertial_input->close();
+			delete port_inertial_input;
+			port_inertial_input=0;
+		}
+
+		fprintf(stderr,"Closing the filtered inertial output port \n");     
+		port_filtered_output.interrupt();
+		port_filtered_output.close();
+
+		fprintf(stderr,"Closing the rpc port \n");     
 		rpcPort.close();
 
 		if (dd_left_arm)
@@ -559,15 +569,6 @@ public:
 			dd_torso->close();
 			delete dd_torso;
 			dd_torso=0;
-		}
-
-		if(port_inertial_input)
-		{
-			fprintf(stderr,"interrupting the inertial input port \n");     
-			port_inertial_input->interrupt();
-			port_inertial_input->close();
-			delete port_inertial_input;
-			port_inertial_input=0;
 		}
 
 		fprintf(stderr,"wholeBodyDynamics module was closed successfully! \n");     
