@@ -364,15 +364,27 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
 {
     // wait.
     bool finished = false;
-    double ang=0;
+    double ang[4];
+    double angj = 0;
+    double pwm[4];
 	double delta=0;
 
     double start_time = yarp::os::Time::now();
     while ( (!finished) && (!abortCalib))
     {
-		iEncoders->getEncoder(j, &ang);
-		delta = fabs(ang-zeroPos[j]);
-		fprintf(logfile, "ARMCALIB[%d] (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, zeroPos[j], delta);
+        iEncoders->getEncoder(j, &angj);
+        for (int l=0; l<4; l++)
+        {
+		    iEncoders->getEncoder(l, &ang[l]);
+            iPids->getOutput(l,&pwm[l]);
+        }
+        
+		delta = fabs(angj-zeroPos[j]);
+		fprintf(logfile, "ARMCALIB[%d] (joint %d) curr:%+7.2f des:%+7.2f -> delta:%+7.2f \
+                          *** encs: %+7.2f %+7.2f %+7.2f pwms: %+7.2f %+7.2f %+7.2f\n",
+                          canID, j, angj, zeroPos[j], delta,
+                          ang[0], ang[1], ang[2], ang[3],
+                          pwm[0], pwm[1], pwm[2], pwm[3]);
 		if (delta<POSITION_THRESHOLD)
 		{
 			fprintf(logfile, "ARMCALIB[%d] (joint %d) completed! delta:%f\n", canID, j,delta);
