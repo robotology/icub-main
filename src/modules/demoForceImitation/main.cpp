@@ -63,7 +63,7 @@ class CtrlThread: public yarp::os::RateThread
 
     virtual bool threadInit()
     {
-        robot=new robot_interfaces();
+        robot=new robot_interfaces(LEFT_ARM, RIGHT_ARM);
         robot->init();
 
         port_skin_contacts = new BufferedPort<skinContactList>;
@@ -194,8 +194,6 @@ class CtrlThread: public yarp::os::RateThread
         for (int i=0; i<5; i++)
         {
             robot->icmd[LEFT_ARM] ->setPositionMode(i);
-            robot->icmd[LEFT_ARM] ->setPositionMode(i);
-            robot->icmd[RIGHT_ARM]->setPositionMode(i);
             robot->icmd[RIGHT_ARM]->setPositionMode(i);
         }
         closePort(port_skin_contacts);

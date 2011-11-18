@@ -21,25 +21,43 @@
 #include <yarp/dev/all.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <iCub/skinDynLib/common.h>
+#include <map>
+#include <vector>
 
 class robot_interfaces
 {
     public:
 
-    yarp::dev::IPositionControl        *ipos[7];
-    yarp::dev::ITorqueControl        *itrq[7];
-    yarp::dev::IImpedanceControl    *iimp[7];
-    yarp::dev::IControlMode            *icmd[7];
-    yarp::dev::IEncoders            *ienc[7];
-    yarp::dev::IPidControl            *ipid[7];
-    yarp::dev::IVelocityControl        *ivel[7];
-    yarp::dev::IAmplifierControl    *iamp[7];
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IPositionControl*>     ipos;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::ITorqueControl*>       itrq;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IImpedanceControl*>    iimp;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IControlMode*>         icmd;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IEncoders*>            ienc;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IPidControl*>          ipid;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IVelocityControl*>     ivel;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IAmplifierControl*>    iamp;
 
-    yarp::os::Property                   options[7];
-    yarp::dev::PolyDriver           *dd[7];
+    std::map<iCub::skinDynLib::BodyPart, yarp::os::Property>               options;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::PolyDriver*>           dd;
 
+    // *** CONSTRUCTORS ***
+    /** 
+     * Default constructor: it considers 5 body parts: arms, legs and torso.
+    **/
     robot_interfaces();
-    void init();
+    robot_interfaces(iCub::skinDynLib::BodyPart bp1);
+    robot_interfaces(iCub::skinDynLib::BodyPart bp1, iCub::skinDynLib::BodyPart bp2);
+    robot_interfaces(iCub::skinDynLib::BodyPart bp1, iCub::skinDynLib::BodyPart bp2, iCub::skinDynLib::BodyPart bp3);
+    robot_interfaces(iCub::skinDynLib::BodyPart bp1, iCub::skinDynLib::BodyPart bp2, iCub::skinDynLib::BodyPart bp3, 
+        iCub::skinDynLib::BodyPart bp4);
+    robot_interfaces(iCub::skinDynLib::BodyPart bp1, iCub::skinDynLib::BodyPart bp2, iCub::skinDynLib::BodyPart bp3, 
+        iCub::skinDynLib::BodyPart bp4, iCub::skinDynLib::BodyPart bp5);
+    robot_interfaces(iCub::skinDynLib::BodyPart *bps, int size);
+
+    bool init();
+
+private:
+    std::vector<iCub::skinDynLib::BodyPart> bodyParts;   // list of the body parts for which the interfaces are open    
 };
 
 #endif
