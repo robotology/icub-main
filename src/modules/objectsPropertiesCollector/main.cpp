@@ -146,7 +146,10 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 --db \e dbFileName 
 - The parameter \e dbFileName specifies the name of the database 
   to load at startup (if already existing) and save at shutdown.
- 
+
+--nosave
+- If this option is given the database is not saved at shutdown (use in conjonction with --db)
+
 --empty
 - If this options is given then an empty database is started.
  
@@ -350,7 +353,7 @@ protected:
     Semaphore mutex;
     int idCnt;
     bool initialized;
-
+    bool noSaveUsed;
     string dbFileName;
 
     /************************************************************************/
@@ -431,13 +434,15 @@ public:
     DataBase()
     {
         initialized=false;
+	noSaveUsed = false;
         idCnt=0;
     }
 
     /************************************************************************/
     ~DataBase()
     {
-        save();
+	if(!noSaveUsed)
+        	save();
         clearMap();
     }
 
@@ -456,6 +461,8 @@ public:
 
         if (!rf.check("empty"))
             load();
+
+        noSaveUsed = rf.check("nosave");
 
         dump();
         initialized=true;
@@ -1058,6 +1065,13 @@ public:
             }
         }
     }
+
+/************************************************************************/
+bool	shouldAutoSave()
+	{
+		return !noSaveUsed;
+	}
+
 };
 
 
@@ -1133,14 +1147,16 @@ public:
     bool updateModule()
     {        
         dataBase.periodicHandler(getPeriod());
-
-        // back-up straightaway the database each 15 minutes
-        if ((++cnt)*getPeriod()>(15.0*60.0))
-        {
-            dataBase.save();
-            cnt=0;
-        }
-
+	
+	if (!dataBase.shouldAutoSave())
+	{
+        	// back-up straightaway the database each 15 minutes
+        	if ((++cnt)*getPeriod()>(15.0*60.0))
+        	{
+            		dataBase.save();
+            		cnt=0;
+        	}
+	}
         return true;
     }
 
@@ -1166,6 +1182,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"Options\n\n");
         fprintf(stdout,"\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
         fprintf(stdout,"\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
+        fprintf(stdout,"\t--nosave	      : do not save the database at shutdown (in case of --db used)");
         fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector/conf)\n");
         fprintf(stdout,"\t--empty             : start an empty database\n");
         fprintf(stdout,"\n");
