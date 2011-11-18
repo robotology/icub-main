@@ -171,7 +171,18 @@ public:
     {
         if (calibrated_skin)
 		{
-			activation[id]=val;
+            if (val>244.0)
+            {
+                activation[id]=244.0;
+            }
+            else if (val<0.0)
+            {
+                activation[id]=0.0;
+            }
+            else
+            {
+                activation[id]=val;
+            }
 		}
 		else
 		{
