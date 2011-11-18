@@ -20,28 +20,23 @@
 
 #include <yarp/dev/all.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-
-#define LEFT_ARM  0
-#define RIGHT_ARM 1
-#define LEFT_LEG  2
-#define RIGHT_LEG 3
-#define TORSO     4
+#include <iCub/skinDynLib/common.h>
 
 class robot_interfaces
 {
     public:
 
-    yarp::dev::IPositionControl        *ipos[5];
-    yarp::dev::ITorqueControl        *itrq[5];
-    yarp::dev::IImpedanceControl    *iimp[5];
-    yarp::dev::IControlMode            *icmd[5];
-    yarp::dev::IEncoders            *ienc[5];
-    yarp::dev::IPidControl            *ipid[5];
-    yarp::dev::IVelocityControl        *ivel[5];
-    yarp::dev::IAmplifierControl    *iamp[5];
+    yarp::dev::IPositionControl        *ipos[7];
+    yarp::dev::ITorqueControl        *itrq[7];
+    yarp::dev::IImpedanceControl    *iimp[7];
+    yarp::dev::IControlMode            *icmd[7];
+    yarp::dev::IEncoders            *ienc[7];
+    yarp::dev::IPidControl            *ipid[7];
+    yarp::dev::IVelocityControl        *ivel[7];
+    yarp::dev::IAmplifierControl    *iamp[7];
 
-    yarp::os::Property                   options[5];
-    yarp::dev::PolyDriver           *dd[5];
+    yarp::os::Property                   options[7];
+    yarp::dev::PolyDriver           *dd[7];
 
     robot_interfaces();
     void init();

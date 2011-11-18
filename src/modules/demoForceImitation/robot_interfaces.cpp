@@ -20,10 +20,11 @@
 
 using namespace yarp::os;
 using namespace yarp::dev;
+using namespace iCub::skinDynLib;
 
 robot_interfaces::robot_interfaces()
 {
-    for (int i=0; i<5; i++)
+    for (int i=0; i<7; i++)
     {
         ipos[i]=0;
         itrq[i]=0;
@@ -45,16 +46,9 @@ void robot_interfaces::init()
     std::string remotePort;
 
     robot = "icub";
-    for (int i=0; i<5; i++)
+    for (int i=TORSO; i<=RIGHT_LEG; i++)
     {
-        switch (i) 
-        {
-            case LEFT_ARM:    part = "left_arm";    break;
-            case RIGHT_ARM:    part = "right_arm";    break;
-            case LEFT_LEG:    part = "left_leg";    break;
-            case RIGHT_LEG:    part = "right_leg";    break;
-            case TORSO:        part = "torso";        break;
-        }
+        part = BodyPart_s[i];
 
         localPort  = "/demoForceControl/" + part;
         remotePort = "/" + robot + "/" + part;

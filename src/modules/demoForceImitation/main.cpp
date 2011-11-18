@@ -49,8 +49,7 @@ class CtrlThread: public yarp::os::RateThread
     double encoders_slave  [16];
     bool   autoconnect;
 
-    BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_events_left;
-    BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_events_right;
+    BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_contacts;
 
 
     CtrlThread(unsigned int _period, ResourceFinder &_rf) :
@@ -59,8 +58,7 @@ class CtrlThread: public yarp::os::RateThread
         autoconnect = false;
         robot=0;
         left_arm_master=false;
-        port_skin_events_left=0;
-        port_skin_events_right=0;
+        port_skin_contacts=0;
     };
 
     virtual bool threadInit()
@@ -68,15 +66,12 @@ class CtrlThread: public yarp::os::RateThread
         robot=new robot_interfaces();
         robot->init();
 
-        port_skin_events_left = new BufferedPort<skinContactList>;
-        port_skin_events_right = new BufferedPort<skinContactList>;
-        port_skin_events_left->open(string("/demoForceControl2/skin_events_left:i").c_str());
-        port_skin_events_right->open(string("/demoForceControl2/skin_events_right:i").c_str());
+        port_skin_contacts = new BufferedPort<skinContactList>;
+        port_skin_contacts->open(string("/demoForceControl2/skin_contacts:i").c_str());
 
         if (autoconnect)
         {
-            Network::connect(string("/leftSkinDriftComp/skin_events:o").c_str(),string("/demoForceControl2/skin_events_left:i").c_str(),"tcp",false);            
-            Network::connect(string("/rightSkinDriftComp/skin_events:o").c_str(),string("/demoForceControl2/skin_events_right:i").c_str(),"tcp",false);            
+            Network::connect(string("/armSkinDriftComp/skin_events:o").c_str(),string("/demoForceControl2/skin_contacs:i").c_str(),"tcp",false);
         }
         
         robot->iimp[LEFT_ARM]->setImpedance(0,0.2,0.02);
@@ -110,19 +105,15 @@ class CtrlThread: public yarp::os::RateThread
         int  i_touching_right=0;
         int  i_touching_diff=0;
         
-        skinContactList *skinEventsLeftArm  = port_skin_events_left->read(false);
-        skinContactList *skinEventsRightArm = port_skin_events_right->read(false);
-        if(skinEventsLeftArm) 
-
-        if(skinEventsLeftArm && skinEventsLeftArm->size()>1)
+        skinContactList *skinContacts  = port_skin_contacts->read(false);
+        if(skinContacts)
         {
-            for(skinContactList::iterator it=skinEventsLeftArm->begin(); it!=skinEventsLeftArm->end(); it++)
-            i_touching_left = it->getActiveTaxels();
-        }
-        if(skinEventsRightArm && skinEventsRightArm->size()>1)
-        {
-            for(skinContactList::iterator it=skinEventsRightArm->begin(); it!=skinEventsRightArm->end(); it++)
-            i_touching_right = it->getActiveTaxels();
+            for(skinContactList::iterator it=skinContacts->begin(); it!=skinContacts->end(); it++){
+                if(it->getBodyPart() == LEFT_ARM)
+                    i_touching_left += it->getActiveTaxels();
+                else if(it->getBodyPart() == RIGHT_ARM)
+                    i_touching_right += it->getActiveTaxels();
+            }
         }
         i_touching_diff=i_touching_left-i_touching_right;
 
@@ -207,8 +198,7 @@ class CtrlThread: public yarp::os::RateThread
             robot->icmd[RIGHT_ARM]->setPositionMode(i);
             robot->icmd[RIGHT_ARM]->setPositionMode(i);
         }
-        closePort(port_skin_events_left);
-        closePort(port_skin_events_right);
+        closePort(port_skin_contacts);
     }
 };
 
