@@ -91,7 +91,7 @@ bool robot_interfaces::init()
     robot = "icub";
     BodyPart i;
     bool ok = true;
-    for (unsigned int iii=0; iii<=bodyParts.size(); iii++)
+    for (unsigned int iii=0; iii<bodyParts.size(); iii++)
     {
         i = bodyParts[iii];
         
