@@ -17,7 +17,7 @@ using namespace yarp::dev;
 // calibrator for the arm of the Arm iCub
 
 const int PARK_TIMEOUT=30;
-const int GO_TO_ZERO_TIMEOUT=20;
+const double GO_TO_ZERO_TIMEOUT=10; //seconds
 const int CALIBRATE_JOINT_TIMEOUT=25;
 const double POSITION_THRESHOLD=2.0;
 
@@ -339,7 +339,8 @@ void iCubArmCalibratorJ8::checkGoneToZero(int j)
 {
     // wait.
     bool finished = false;
-    int timeout = 0;
+    double start_time = yarp::os::Time::now();
+   
     while ( (!finished) && (!abortCalib))
     {
         iPosition->checkMotionDone(j, &finished);
@@ -348,8 +349,8 @@ void iCubArmCalibratorJ8::checkGoneToZero(int j)
             Time::delay (0.1);
         else
         Time::delay (0.5);
-        timeout ++;
-        if (timeout >= GO_TO_ZERO_TIMEOUT)
+        
+        if (start_time - yarp::os::Time::now() >= GO_TO_ZERO_TIMEOUT)
         {
             fprintf(logfile, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
             finished = true;
@@ -363,9 +364,10 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
 {
     // wait.
     bool finished = false;
-    int timeout = 0;
-	double ang=0;
+    double ang=0;
 	double delta=0;
+
+    double start_time = yarp::os::Time::now();
     while ( (!finished) && (!abortCalib))
     {
 		iEncoders->getEncoder(j, &ang);
@@ -378,9 +380,8 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
 		}
 
         Time::delay (0.5);
-        timeout ++;
-
-        if (timeout >= GO_TO_ZERO_TIMEOUT)
+       
+        if (start_time - yarp::os::Time::now() >= GO_TO_ZERO_TIMEOUT)
         {
             fprintf(logfile, "ARMCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
 			return false;
