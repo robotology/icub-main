@@ -7,7 +7,7 @@ SET(PROJECTNAME pf3dBottomup)
 PROJECT(${PROJECTNAME})
 
 FILE(GLOB folder_source src/*.cpp)
-FILE(GLOB folder_header include/iCub/*.h)
+FILE(GLOB folder_header include/iCub/*.hpp)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
