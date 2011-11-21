@@ -53,6 +53,7 @@
                 <tag>gazeController</tag>
         </module>
 
+		<!-- Enable/disable wholeBodyDynamics if you have/don't have torque sensors -->
         <module>
                 <name>wholeBodyDynamics</name>
                 <!-- Remember to add the "--headV2" parameter for robot equipped with head v. 2.0 -->
