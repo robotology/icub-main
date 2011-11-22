@@ -9,9 +9,6 @@ This application allows the user to launch instances of the iKinCartesianSolver
 on a specific machine belonging to the cluster. Moreover the iCubInterface and
 the server part of the gaze controller interface are launched as well.
 
-\section dep_sec Dependencies
-None.
-
 \section int_sec Instantiated Modules
 - \ref icub_iCubInterface
 - \ref iKinCartesianSolver
@@ -21,8 +18,7 @@ None.
 The file ./conf/cartesianSolver.ini contains the solvers initialization parameters.
 
 \section howto How to run the Application
-Customize the file ./scripts/*.template for your specific platform
-before launching them.
+Customize the file ./scripts/*.template for your specific platform.
 
 - ./scripts/cartesianSolver.xml.template
   launches solvers for the following parts: <i>right_arm, left_arm, right_leg, left_leg.</i>
