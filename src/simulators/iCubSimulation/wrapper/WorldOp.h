@@ -139,7 +139,7 @@ public:
     WorldOpTriplet location;
     WorldOpTriplet color;
     WorldOpName path;
-    WorldOpScalar count;
+    WorldOpIndex count;
 
     WorldResult() {
         success = false;

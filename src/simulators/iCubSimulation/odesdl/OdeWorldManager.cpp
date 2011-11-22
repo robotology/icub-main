@@ -393,7 +393,7 @@ void OdeLink::doNumber() {
     OdeInit& odeinit = OdeInit::get();
     odeinit.mutex.wait();
     int ct = store->length();
-    result.count = WorldOpScalar(ct);
+    result.count = WorldOpIndex(ct);
     result.setOk();
     odeinit.mutex.post();
 }
