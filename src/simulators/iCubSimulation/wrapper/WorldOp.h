@@ -34,6 +34,7 @@ enum WORLD_OP {
     WORLD_OP_ROT = VOCAB3('r','o','t'),
     WORLD_OP_DEL = VOCAB3('d','e','l'),
     WORLD_OP_COL = VOCAB3('c','o','l'),
+    WORLD_OP_NUM = VOCAB3('n','u','m'),
 };
 
 class WorldOpDatum {
@@ -136,7 +137,9 @@ public:
     bool success;
     std::string msg;
     WorldOpTriplet location;
+    WorldOpTriplet color;
     WorldOpName path;
+    WorldOpScalar count;
 
     WorldResult() {
         success = false;

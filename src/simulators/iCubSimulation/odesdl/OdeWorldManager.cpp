@@ -55,10 +55,11 @@ public:
     void doRotate();
     void doDelete();
     void doColor();
+    void doNumber();
     void apply();
 };
 
-bool OdeLink::checkObject(bool forCreate) {
+bool OdeLink::checkObject(bool justNeedKind) {
     op.show();
     OdeInit& odeinit = OdeInit::get();
 
@@ -102,7 +103,7 @@ bool OdeLink::checkObject(bool forCreate) {
         return true;
     }
 
-    if (!forCreate) {
+    if (!justNeedKind) {
         if ((!bid) && !op.index.isValid()) {
             result.setFail("object without index is not known");
             return false;
@@ -131,7 +132,7 @@ bool OdeLink::checkObject(bool forCreate) {
         return false;
     }
 
-    if (!forCreate) {
+    if (!justNeedKind) {
         int index = op.index.get()-1;
         if (!store->inRange(index)) {
             result.setFail("out of range");
@@ -333,6 +334,7 @@ void OdeLink::doRotate() {
     odeinit.mutex.post();
     result.setOk();
 }
+
 void OdeLink::doColor() {
     OdeInit& odeinit = OdeInit::get();
     if (!checkObject()) return;
@@ -343,6 +345,13 @@ void OdeLink::doColor() {
             store->colors[op.index.index-1][2] = op.color.get(2);
            
         }
+    } else {
+        if (store->colors!=NULL) {
+            result.color = 
+                WorldOpTriplet(store->colors[op.index.index-1][0],
+                               store->colors[op.index.index-1][1],
+                               store->colors[op.index.index-1][2]);
+        }
     }
     if (object==NULL) {
         result.setFail("no geometry found");
@@ -350,6 +359,7 @@ void OdeLink::doColor() {
     }
     result.setOk();
 }
+
 void OdeLink::doDelete() {
     OdeInit& odeinit = OdeInit::get();
 
@@ -367,7 +377,25 @@ void OdeLink::doDelete() {
         result.setOk();
         return;
     }
+    if (!checkObject()) return;
+    if (store!=NULL) {
+        // "store" + "object" can be used to access object to be destroyed
+    }
     result.setFail("delete operation implemented only for target: all");
+}
+
+void OdeLink::doNumber() {
+    if (!checkObject(true)) return;
+    if (store==NULL) {
+        result.setFail("cannot access that kind of object");
+        return;
+    }
+    OdeInit& odeinit = OdeInit::get();
+    odeinit.mutex.wait();
+    int ct = store->length();
+    result.count = WorldOpScalar(ct);
+    result.setOk();
+    odeinit.mutex.post();
 }
 
 void OdeLink::apply() {
@@ -395,6 +423,9 @@ void OdeLink::apply() {
         break;
     case WORLD_OP_COL:
         doColor();
+        break;
+    case WORLD_OP_NUM:
+        doNumber();
         break;
     default:
         result.setFail("unrecognized command");

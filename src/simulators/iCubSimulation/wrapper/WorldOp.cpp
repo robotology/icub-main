@@ -109,6 +109,8 @@ void WorldResult::show() {
     printf("  msg: %s\n", msg.c_str());
     printf("  location: ");
     ::show(location);
+    printf("  color: ");
+    ::show(color);
     printf("  path: ");
     ::show(path);
  }

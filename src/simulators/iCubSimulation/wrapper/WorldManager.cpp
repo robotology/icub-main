@@ -51,6 +51,10 @@ public:
         return command.get(offset);
     }
 
+    bool more() {
+        return command.size()>offset;
+    }
+
     void fail(const char *msg) {
         failed = true;
         why = std::string("could not set ") + msg;
@@ -233,7 +237,10 @@ bool doGet(ManagerState& state) {
 
 bool doColor(ManagerState& state) {
         consumeObject(state);
-        state.consume(state.op.color,"color");
+        // if color supplied, set, otherwise, get.
+        if (state.more()) {
+            state.consume(state.op.color,"color");
+        }
         if (!state.failed) {
             state.manager.apply(state.op,state.result);
         }
@@ -315,6 +322,14 @@ bool doDelete(ManagerState& state) {
     return !state.failed;
 }
 
+bool doNumber(ManagerState& state) {
+    consumeKind(state);
+    if (!state.failed) {
+        state.manager.apply(state.op,state.result);
+    }
+    return !state.failed;
+}
+
 bool WorldManager::respond(const yarp::os::Bottle& command, 
                            yarp::os::Bottle& reply) {
     WorldOp op;
@@ -345,6 +360,9 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
     case WORLD_OP_COL:
         doColor(state);
         break;
+    case WORLD_OP_NUM:
+        doNumber(state);
+        break;
     default:
         state.failed = true;
         state.why = "unrecognized command";
@@ -371,6 +389,12 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
                 reply.addDouble(result.location.get(0));
                 reply.addDouble(result.location.get(1));
                 reply.addDouble(result.location.get(2));
+            } else if (result.color.isValid()) {
+                reply.addDouble(result.color.get(0));
+                reply.addDouble(result.color.get(1));
+                reply.addDouble(result.color.get(2));
+            } else if (result.count.isValid()) {
+                reply.addInt(result.count.get());
             } else if (result.path.isValid()) {
                 reply.addString(result.path.get().c_str());
             } else {
