@@ -12,6 +12,7 @@
 ///
 
 /// general purpose stuff.
+
 #include <yarp/os/Time.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -234,8 +235,9 @@ public:
 	bool isCanBusOff	     () { return _canStatus & 0x02; }
 	bool isCanTxError	     () { return _canStatus & 0x04; }
 	bool isCanRxError	     () { return _canStatus & 0x08; }
-	bool isCanRxWarning	     () { return _canStatus & 0x10; }
-	bool isCanRxOverrun 	 () { return _canStatus & 0x20; }
+	bool isCanTxOverrun 	 () { return _canStatus & 0x10; }
+	bool isCanRxWarning	     () { return _canStatus & 0x20; }
+	bool isCanRxOverrun 	 () { return _canStatus & 0x40; }
 	bool isMainLoopOverflow  () { return _boardStatus & 0x01; }
 	bool isOverTempCh1       () { return _boardStatus & 0x02; }
 	bool isOverTempCh2       () { return _boardStatus & 0x04; } 
@@ -2463,6 +2465,9 @@ void CanBusMotionControl::handleBroadcasts()
 
                     if (r._bcastRecvBuffer[j].isCanRxError()) printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
 					logJointData(canDevName.c_str(),_networkN,j,15,yarp::os::Value((int)r._bcastRecvBuffer[j]._canRxError));
+
+					if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverrun())) printf ("%s [%d] board %d CAN TX OVERRUN \n", canDevName.c_str(), _networkN, addr);
+					logJointData(canDevName.c_str(),_networkN,j,17,yarp::os::Value((int)bFlag));
 
                     if (r._bcastRecvBuffer[j].isCanRxWarning()) printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
 
