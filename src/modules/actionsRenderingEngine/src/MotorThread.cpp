@@ -270,14 +270,15 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     currentKinematicOffset[LEFT]=defaultKinematicOffset[LEFT];
     currentKinematicOffset[RIGHT]=defaultKinematicOffset[RIGHT];
 
+
     // if the tartget's cartesian coordinates was specified, use them.
-    if(!found && bTarget!=NULL && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>3)
+    if(!found && bTarget!=NULL && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>=3)
     {
         Bottle *bCartesian=bTarget->find("cartesian").asList();
 
         xd.clear();
-        for(size_t i=0; i<xd.size(); i++)
-            xd.push_back(bCartesian->get(i+1).asDouble());
+        for(size_t i=0; i<bCartesian->size(); i++)
+            xd.push_back(bCartesian->get(i).asDouble());
 
         found=true;
     }

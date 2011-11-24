@@ -505,7 +505,13 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
             }
             else if(list->get(0).asString()=="cartesian")
             {
-                bTarget.addList()=*list;
+                Bottle &bNewCartesian=bTarget.addList();
+                bNewCartesian.addString("cartesian");
+
+                Bottle &bCartesian=bNewCartesian.addList();
+
+                for(int i=1; i<list->size(); i++)
+                    bCartesian.addDouble(list->get(i).asDouble());
             }
             else
             {
