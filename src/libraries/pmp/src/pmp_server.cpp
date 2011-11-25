@@ -360,6 +360,7 @@ bool PmpServer::open(const Property &options)
             else
                 return false;
         }
+
         if ((part=="left_arm") || (part=="both_arms"))
         {
             Property optCtrlLeft;
