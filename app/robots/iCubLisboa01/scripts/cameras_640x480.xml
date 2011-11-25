@@ -1,5 +1,5 @@
 <application>
-<name>Cameras</name>
+<name>Cameras 640x480</name>
 <dependencies>
       <port>/icub</port>
 </dependencies>
@@ -25,7 +25,7 @@
 <module>
       <name>camCalib</name>
       <parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
-      <node>icubbrain1</node>
+      <node>icubbrain2</node>
       <stdio>chico3</stdio>
       <tag>camCalibRight</tag>
 </module>
