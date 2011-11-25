@@ -277,7 +277,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         Bottle *bCartesian=bTarget->find("cartesian").asList();
 
         xd.clear();
-        for(size_t i=0; i<bCartesian->size(); i++)
+        for(int i=0; i<bCartesian->size(); i++)
             xd.push_back(bCartesian->get(i).asDouble());
 
         found=true;
