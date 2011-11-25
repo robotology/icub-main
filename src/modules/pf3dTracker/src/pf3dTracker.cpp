@@ -1090,16 +1090,18 @@ bool PF3DTracker::updateModule()
 
         _outputDataPort.write();
 
-		if (_seeingObject && supplyUVdata)
-		{	
-			Bottle& outputUV=_outputUVDataPort.prepare();
+        if (_seeingObject && supplyUVdata)
+        {
+            Bottle& outputUV=_outputUVDataPort.prepare();
 
-			outputUV.clear();
-	        outputUV.addDouble(meanU);
-			outputUV.addDouble(meanV);
+            outputUV.clear();
+            outputUV.addDouble(meanU);
+            outputUV.addDouble(meanV);
 
-			_outputUVDataPort.write();
-		}
+            //set the envelope for the output port
+            _outputUVDataPort.setEnvelope(_yarpTimestamp);
+            _outputUVDataPort.write();
+        }
 
         VectorOf<double>& tempVector=_outputAttentionPort.prepare();
         tempVector.resize(5);
@@ -1119,6 +1121,10 @@ bool PF3DTracker::updateModule()
         tempVector(2) = 0;
         tempVector(3) = 0;
         tempVector(4) = _attentionOutput;
+
+
+        //set the envelope for the output port
+        _outputAttentionPort.setEnvelope(_yarpTimestamp);
         _outputAttentionPort.write();
     
     
@@ -1143,6 +1149,9 @@ bool PF3DTracker::updateModule()
         
         //write the elaborated image on the output port.
         _outputVideoPort.prepare() =  *_yarpImage;
+
+        //set the envelope for the output port
+        _outputVideoPort.setEnvelope(_yarpTimestamp);
         _outputVideoPort.write();
     
         _frameCounter++;
