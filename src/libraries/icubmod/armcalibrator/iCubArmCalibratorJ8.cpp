@@ -381,7 +381,7 @@ bool iCubArmCalibratorJ8::checkGoneToZeroThreshold(int j)
         
 		delta = fabs(angj-zeroPos[j]);
 		fprintf(logfile, "ARMCALIB[%d] (joint %d) curr:%+7.2f des:%+7.2f -> delta:%+7.2f \
-                          *** encs: %+7.2f %+7.2f %+7.2f pwms: %+7.2f %+7.2f %+7.2f\n",
+                          *** encs: %+7.2f %+7.2f %+7.2f %+7.2f pwms: %+7.2f %+7.2f %+7.2f %+7.2f\n",
                           canID, j, angj, zeroPos[j], delta,
                           ang[0], ang[1], ang[2], ang[3],
                           pwm[0], pwm[1], pwm[2], pwm[3]);
