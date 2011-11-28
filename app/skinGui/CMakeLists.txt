@@ -5,6 +5,7 @@ icub_app(${appname})
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template)
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.glade ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.txt)
 file(GLOB confpos ${CMAKE_CURRENT_SOURCE_DIR}/conf/positions/*.txt)
+file(GLOB confgui ${CMAKE_CURRENT_SOURCE_DIR}/conf/skinGui/*.ini)
 
 icub_app_install(${appname} 
 				FILES ${scripts}
@@ -17,5 +18,9 @@ icub_app_install(${appname}
 icub_app_install(${appname} 
 				FILES ${confpos}
 				DESTINATION conf/positions)
+
+icub_app_install(${appname} 
+				FILES ${confgui}
+				DESTINATION conf/skinGui)
 				
 #icub_add_target(${appname})
