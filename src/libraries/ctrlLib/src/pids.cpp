@@ -28,48 +28,37 @@ using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 
-namespace iCub
+/************************************************************************/
+void iCub::ctrl::addKeyHelper(Bottle &b, const char *key, const Vector &val)
 {
-
-namespace ctrl
+    yarp::os::Bottle &bKey=b.addList();
+    bKey.addString(key);
+    yarp::os::Bottle &bKeyContent=bKey.addList();
+    for (size_t i=0; i<val.length(); i++)
+        bKeyContent.addDouble(val[i]);
+}
+/************************************************************************/
+bool iCub::ctrl::changeValHelper(yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size)
 {
-    /************************************************************************/
-    void addKeyHelper(Bottle &b, const char *key, const Vector &val)
+    if (options.check(key))
     {
-        Bottle &bKey=b.addList();
-        bKey.addString(key);
-        Bottle &bKeyContent=bKey.addList();
-        for (size_t i=0; i<val.length(); i++)
-            bKeyContent.addDouble(val[i]);
-    }
-
-    /************************************************************************/
-    bool changeValHelper(Bottle &options, const char *key, Vector &val, int &size)
-    {
-        if (options.check(key))
+        if (yarp::os::Bottle *b=options.find(key).asList())
         {
-            if (Bottle *b=options.find(key).asList())
-            {
-                int len=val.length();
-                int bSize=b->size();
-    
-                size=bSize<len?bSize:len;
-                for (int i=0; i<size; i++)
-                    val[i]=b->get(i).asDouble();
-    
-                return true;
-            }
-            else
-                return false;
+            int len=val.length();
+            int bSize=b->size();
+
+            size=bSize<len?bSize:len;
+            for (int i=0; i<size; i++)
+                val[i]=b->get(i).asDouble();
+
+            return true;
         }
         else
             return false;
     }
+    else
+        return false;
 }
-
-}
-
-
 /************************************************************************/
 Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 {

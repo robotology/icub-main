@@ -47,6 +47,31 @@ namespace ctrl
 {
 
 /**
+* Add the data contained in the specified vector to the 
+* specified bottle, using property-like form (i.e. "key-value" pairs).
+* @param b is the bottle to which add the data
+* @param key is the string representing the key of the vector
+* @param val is the vector containing the data to add
+* @note The resulting bottle will look like this: 
+* ... (key (value1 value2 ...))
+*/
+void addKeyHelper(yarp::os::Bottle &b, const char *key, const yarp::sig::Vector &val);
+
+/**
+* Fill the specified vector with the data associated with the 
+* specified key in the specified property-like bottle.
+* If the vector size is less than the size of the data found in 
+* the bottle, the exceeding data will be discarded.
+* @param options is the property-like bottle containing the data
+* @param key is the string representing the key to look for
+* @param val is the vector to fill with the retrieved data
+* @param size is the number of values written in val
+* @note The input bottle should look like this: 
+* ((key1 (value11 value12 ...) (key2 (value21 value22 ...) (key3 (value31 value32 ...))
+*/
+bool changeValHelper(yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size);
+
+/**
 * \ingroup PIDs
 *
 * A class for defining a saturated integrator based on Tustin 
@@ -222,8 +247,8 @@ public:
     * @param _Wd are the setpoint weigths for derivative part.
     * @param _N  are derivative low-pass filter bandwidth (3 to 20, 
     *            typ. 10).
-    * @param _Tt are anti-windup reset time (0.1 to 1 the value of
-    *            Ti=Kp/Ki).
+    * @param _Tt are anti-windup reset time (0.1 to 1 times the value of
+    *            Ti=Kp/Ki, greater than Td).
     * @param _satLim is the saturation thresholds matrix 
     *                (min_i=satLim(i,0), max_i=satLim(i,1)).
     */
