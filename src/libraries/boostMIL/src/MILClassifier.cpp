@@ -81,7 +81,7 @@ void                            MILClassifier::initResource         ()
         if(data.check("feature_size"))
         {
             feature_size = data.find("feature_size").asInt();
-            center.resize(feature_size);
+            center.resize((size_t)feature_size);
         }
     }
 }
