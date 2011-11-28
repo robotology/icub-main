@@ -30,39 +30,6 @@ using namespace iCub::ctrl;
 
 
 /************************************************************************/
-void iCub::ctrl::addKeyHelper(Bottle &option, const char *key, const Vector &val)
-{
-    Bottle &bKey=option.addList();
-    bKey.addString(key);
-    Bottle &bKeyContent=bKey.addList();
-    for (size_t i=0; i<val.length(); i++)
-        bKeyContent.addDouble(val[i]);
-}
-
-
-/************************************************************************/
-bool iCub::ctrl::changeValHelper(Bottle &options, const char *key, Vector &val, int &size)
-{
-    if (options.check(key))
-    {
-        if (Bottle *b=options.find(key).asList())
-        {
-            int len=(int)val.length();
-            int bSize=b->size();
-
-            size=bSize<len?bSize:len;
-            for (int i=0; i<size; i++)
-                val[i]=b->get(i).asDouble();
-
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-/************************************************************************/
 Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 {
     dim=y0.length();
@@ -162,6 +129,39 @@ void Integrator::reset(const Vector &y0)
 {
     y=saturate(y0);
     x_old=0.0;
+}
+
+
+/************************************************************************/
+void helperPID::addKeyHelper(Bottle &option, const char *key, const Vector &val)
+{
+    Bottle &bKey=option.addList();
+    bKey.addString(key);
+    Bottle &bKeyContent=bKey.addList();
+    for (size_t i=0; i<val.length(); i++)
+        bKeyContent.addDouble(val[i]);
+}
+
+
+/************************************************************************/
+bool helperPID::changeValHelper(Bottle &options, const char *key, Vector &val, int &size)
+{
+    if (options.check(key))
+    {
+        if (Bottle *b=options.find(key).asList())
+        {
+            int len=(int)val.length();
+            int bSize=b->size();
+
+            size=bSize<len?bSize:len;
+            for (int i=0; i<size; i++)
+                val[i]=b->get(i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 

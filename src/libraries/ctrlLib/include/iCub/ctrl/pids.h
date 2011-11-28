@@ -47,33 +47,6 @@ namespace ctrl
 {
 
 /**
-* Add the data contained in the specified vector to the 
-* specified bottle, using property-like form (i.e. "key-value" pairs).
-* @param option is the bottle to which add the data
-* @param key is the string representing the key of the vector
-* @param val is the vector containing the data to add
-* @note The resulting bottle will look like this: 
-* ... (key (value1 value2 ...))
-*/
-void addKeyHelper(yarp::os::Bottle &option, const char *key, const yarp::sig::Vector &val);
-
-
-/**
-* Fill the specified vector with the data associated with the 
-* specified key in the specified property-like bottle.
-* If the vector size is less than the size of the data found in 
-* the bottle, the exceeding data will be discarded.
-* @param options is the property-like bottle containing the data
-* @param key is the string representing the key to look for
-* @param val is the vector to fill with the retrieved data
-* @param size is the number of values written in val
-* @note The input bottle should look like this: 
-* ((key1 (value11 value12 ...) (key2 (value21 value22 ...) (key3 (value31 value32 ...))
-*/
-bool changeValHelper(yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size);
-
-
-/**
 * \ingroup PIDs
 *
 * A class for defining a saturated integrator based on Tustin 
@@ -193,6 +166,42 @@ public:
 /**
 * \ingroup PIDs
 *
+* Helper class providing useful methods to deal with pid 
+* options. 
+*/
+class helperPID
+{
+public:
+    /**
+    * Add the data contained in the specified vector to the 
+    * specified bottle, using property-like form (i.e. "key-value" pairs).
+    * @param option is the bottle to which add the data
+    * @param key is the string representing the key of the vector
+    * @param val is the vector containing the data to add
+    * @note The resulting bottle will look like this: 
+    * ... (key (value1 value2 ...))
+    */
+    static void addKeyHelper(yarp::os::Bottle &option, const char *key, const yarp::sig::Vector &val);
+
+    /**
+    * Fill the specified vector with the data associated with the 
+    * specified key in the specified property-like bottle.
+    * If the vector size is less than the size of the data found in 
+    * the bottle, the exceeding data will be discarded.
+    * @param options is the property-like bottle containing the data
+    * @param key is the string representing the key to look for
+    * @param val is the vector to fill with the retrieved data
+    * @param size is the number of values written in val
+    * @note The input bottle should look like this: 
+    * ((key1 (value11 value12 ...) (key2 (value21 value22 ...) (key3 (value31 value32 ...))
+    */
+    static bool changeValHelper(yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size);
+};
+
+
+/**
+* \ingroup PIDs
+*
 * General structure of parallel (non-interactive) PID. 
 *  
 * u = sat(P + I + D)
@@ -206,7 +215,7 @@ public:
 * - I=(Ki*ei+(sat(u)-u)/Tt)/s
 * - D=Kd*ed*s/(1+s*Td/N) [Td=Kd/Kp]
 */
-class parallelPID
+class parallelPID : public helperPID
 {
 private:
     // Default constructor: not implemented.
@@ -319,7 +328,7 @@ public:
 * - I=Kp/(Ti*s)
 * - D=Kd*s/(1+s*Td/N) [Td=Kd/Kp]
 */
-class seriesPID
+class seriesPID : public helperPID
 {
 private:
     // Default constructor: not implemented.
