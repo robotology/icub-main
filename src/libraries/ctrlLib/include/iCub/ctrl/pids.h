@@ -49,13 +49,14 @@ namespace ctrl
 /**
 * Add the data contained in the specified vector to the 
 * specified bottle, using property-like form (i.e. "key-value" pairs).
-* @param b is the bottle to which add the data
+* @param option is the bottle to which add the data
 * @param key is the string representing the key of the vector
 * @param val is the vector containing the data to add
 * @note The resulting bottle will look like this: 
 * ... (key (value1 value2 ...))
 */
-void addKeyHelper(yarp::os::Bottle &b, const char *key, const yarp::sig::Vector &val);
+void addKeyHelper(yarp::os::Bottle &option, const char *key, const yarp::sig::Vector &val);
+
 
 /**
 * Fill the specified vector with the data associated with the 
@@ -70,6 +71,7 @@ void addKeyHelper(yarp::os::Bottle &b, const char *key, const yarp::sig::Vector 
 * ((key1 (value11 value12 ...) (key2 (value21 value22 ...) (key3 (value31 value32 ...))
 */
 bool changeValHelper(yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size);
+
 
 /**
 * \ingroup PIDs
