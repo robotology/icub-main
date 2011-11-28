@@ -191,9 +191,6 @@ message(STATUS "Installing cmake scripts")
 set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindCFW2CANAPI.cmake
                         FindESDCANAPI.cmake
-                        FindGtkMM.cmake
-                        FindGtkMMUnix.cmake
-                        FindGtkMMWin32.cmake
                         FindIPOPT.cmake
                         FindODE.cmake
                         FindIPP.cmake
