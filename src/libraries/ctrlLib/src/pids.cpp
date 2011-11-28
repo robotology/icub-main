@@ -56,11 +56,9 @@ bool iCub::ctrl::changeValHelper(Bottle &options, const char *key, Vector &val, 
 
             return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
+
+    return false;
 }
 
 
