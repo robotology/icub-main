@@ -1,3 +1,7 @@
+# Copyright: (C) 2011 Department of Robotics Brain and Cognitive Sciences, Istituto Italiano di Tecnologia
+# Authors: Marco Randazzo
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 SET(PROJECTNAME demoForceControl)
 PROJECT(${PROJECTNAME})
 
