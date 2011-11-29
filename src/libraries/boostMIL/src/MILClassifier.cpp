@@ -205,7 +205,7 @@ double                          MILClassifier::bestRadius           ()
 
 
     // Check that the fr is zero
-    if (fabs(fr)/(negweight+posweight)> EPSILON)
+    if (fabs(fr)/(negweight+posweight)> 0.1)
     {
         std::ostringstream buffer;
         buffer << "MILClassifier of type: '" << type << "'" << std::endl;
