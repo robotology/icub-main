@@ -7,7 +7,6 @@
         <module>
                 <name>iCubInterface</name>
                 <node>pc104</node>
-                <stdio>console</stdio>
                 <tag>icubInterface</tag>
         </module>
 
