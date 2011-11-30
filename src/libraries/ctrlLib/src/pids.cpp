@@ -133,7 +133,7 @@ void Integrator::reset(const Vector &y0)
 
 
 /************************************************************************/
-void helperPID::addKeyHelper(Bottle &option, const char *key, const Vector &val)
+void helperPID::addVectorToOption(Bottle &option, const char *key, const Vector &val)
 {
     Bottle &bKey=option.addList();
     bKey.addString(key);
@@ -144,7 +144,7 @@ void helperPID::addKeyHelper(Bottle &option, const char *key, const Vector &val)
 
 
 /************************************************************************/
-bool helperPID::changeValHelper(Bottle &options, const char *key, Vector &val, int &size)
+bool helperPID::getVectorFromOption(Bottle &options, const char *key, Vector &val, int &size)
 {
     if (options.check(key))
     {
@@ -258,15 +258,15 @@ void parallelPID::getOptions(Bottle &options)
             satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
     options.clear();
-    addKeyHelper(options,"Kp",Kp);
-    addKeyHelper(options,"Ki",Ki);
-    addKeyHelper(options,"Kd",Kd);
-    addKeyHelper(options,"Wp",Wp);
-    addKeyHelper(options,"Wi",Wi);
-    addKeyHelper(options,"Wd",Wd);
-    addKeyHelper(options,"N",N);
-    addKeyHelper(options,"Tt",Tt);
-    addKeyHelper(options,"satLim",satLimVect);
+    addVectorToOption(options,"Kp",Kp);
+    addVectorToOption(options,"Ki",Ki);
+    addVectorToOption(options,"Kd",Kd);
+    addVectorToOption(options,"Wp",Wp);
+    addVectorToOption(options,"Wi",Wi);
+    addVectorToOption(options,"Wd",Wd);
+    addVectorToOption(options,"N",N);
+    addVectorToOption(options,"Tt",Tt);
+    addVectorToOption(options,"satLim",satLimVect);
         
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
@@ -286,22 +286,22 @@ void parallelPID::setOptions(const Bottle &options)
 
     bool recomputeQuantities=false;
     int size;
-    changeValHelper(opt,"Ki",Ki,size);
-    changeValHelper(opt,"Wp",Wp,size);
-    changeValHelper(opt,"Wi",Wi,size);
-    changeValHelper(opt,"Wd",Wd,size);
-    changeValHelper(opt,"Tt",Tt,size);
+    getVectorFromOption(opt,"Ki",Ki,size);
+    getVectorFromOption(opt,"Wp",Wp,size);
+    getVectorFromOption(opt,"Wi",Wi,size);
+    getVectorFromOption(opt,"Wd",Wd,size);
+    getVectorFromOption(opt,"Tt",Tt,size);
 
-    if (changeValHelper(opt,"Kp",Kp,size))
+    if (getVectorFromOption(opt,"Kp",Kp,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"Kd",Kd,size))
+    if (getVectorFromOption(opt,"Kd",Kd,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"N",N,size))
+    if (getVectorFromOption(opt,"N",N,size))
         recomputeQuantities=true;
 
-    if (changeValHelper(opt,"satLim",satLimVect,size))
+    if (getVectorFromOption(opt,"satLim",satLimVect,size))
     {
         for (int r=0; r<satLim.rows(); r++)
             for (int c=0; c<satLim.cols(); c++)
@@ -341,7 +341,7 @@ void parallelPID::setOptions(const Bottle &options)
     }
 
     Vector v(dim);
-    if (changeValHelper(opt,"reset",v,size))
+    if (getVectorFromOption(opt,"reset",v,size))
     {
         Vector u0(size);
         for (int i=0; i<size; i++)
@@ -464,11 +464,11 @@ void seriesPID::getOptions(Bottle &options)
             satLimVect[r*satLim.cols()+c]=satLim(r,c);
 
     options.clear();
-    addKeyHelper(options,"Kp",Kp);
-    addKeyHelper(options,"Ti",Ti);
-    addKeyHelper(options,"Kd",Kd);
-    addKeyHelper(options,"N",N);
-    addKeyHelper(options,"satLim",satLimVect);
+    addVectorToOption(options,"Kp",Kp);
+    addVectorToOption(options,"Ti",Ti);
+    addVectorToOption(options,"Kd",Kd);
+    addVectorToOption(options,"N",N);
+    addVectorToOption(options,"satLim",satLimVect);
         
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
@@ -488,19 +488,19 @@ void seriesPID::setOptions(const Bottle &options)
 
     bool recomputeQuantities=false;
     int size;
-    if (changeValHelper(opt,"Kp",Kp,size))
+    if (getVectorFromOption(opt,"Kp",Kp,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"Ti",Ti,size))
+    if (getVectorFromOption(opt,"Ti",Ti,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"Kd",Kd,size))
+    if (getVectorFromOption(opt,"Kd",Kd,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"N",N,size))
+    if (getVectorFromOption(opt,"N",N,size))
         recomputeQuantities=true;    
 
-    if (changeValHelper(opt,"satLim",satLimVect,size))
+    if (getVectorFromOption(opt,"satLim",satLimVect,size))
     {
         for (int r=0; r<satLim.rows(); r++)
             for (int c=0; c<satLim.cols(); c++)
