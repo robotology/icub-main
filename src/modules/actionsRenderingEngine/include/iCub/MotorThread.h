@@ -163,6 +163,7 @@ private:
     Vector                              deployPos[2];
     Vector                              drawNearPos[2];
     Vector                              drawNearOrient[2];
+    Vector                              shiftPos[2];
 
     //tactile perception
     iCub::perception::Model             *graspModel[2];
@@ -222,8 +223,8 @@ public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
         :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc)
     {
-    	gazeCtrl=NULL;
-    	torsoCtrlMode=NULL;
+        gazeCtrl=NULL;
+        torsoCtrlMode=NULL;
         drvHead=drvTorso=drvGazeCtrl=NULL;
         drvArm[LEFT]=drvArm[RIGHT]=NULL;
         drvCartArm[LEFT]=drvCartArm[RIGHT]=NULL;
@@ -288,6 +289,7 @@ public:
     bool release(Bottle &options);
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
+    bool shift(Bottle &options);
 
     bool isHolding(Bottle &options);
     bool calibTable(Bottle &options);

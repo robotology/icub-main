@@ -737,6 +737,19 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     else
         return false;
 
+    if (Bottle *pB=b.find("shift_position").asList())
+    {
+        shiftPos[arm].resize(pB->size());
+
+        for (int i=0; i<pB->size(); i++)
+            shiftPos[arm][i]=pB->get(i).asDouble();
+    }
+    else
+    {
+        shiftPos[arm].resize(3);
+        shiftPos[arm]=0.0;
+    }
+
     if (b.check("external_forces_thresh"))
         extForceThresh[arm]=b.find("external_forces_thresh").asDouble();
 
@@ -1666,10 +1679,10 @@ bool MotorThread::grasp(Bottle &options)
     {
         Vector x,o;
         action[arm]->getPose(x,o);
-        action[arm]->pushAction(x,o,"pregrasp_hand");
         action[arm]->pushAction(x,reachAboveOrient[arm]);
+        action[arm]->pushAction("pregrasp_hand");
     }
-        
+
     action[arm]->pushAction("close_hand");
 
     bool f;
@@ -1876,6 +1889,26 @@ bool MotorThread::drawNear(Bottle &options)
     arm=checkArm(arm);
 
     action[arm]->pushAction(drawNearPos[arm],drawNearOrient[arm]);
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+    return true;
+}
+
+bool MotorThread::shift(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    Vector x,o;
+    action[arm]->getPose(x,o);
+    x=x+shiftPos[arm];
+
+    action[arm]->pushAction(x,o);
 
     bool f;
     action[arm]->checkActionsDone(f,true);

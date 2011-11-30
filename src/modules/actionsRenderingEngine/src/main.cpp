@@ -688,6 +688,7 @@ public:
                 }
 
                 motorThr->lookAtHand();
+                motorThr->shift(command);
                 motorThr->grasp(command);
 
                 if(motorThr->isHolding(command))
