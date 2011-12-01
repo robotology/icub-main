@@ -1679,8 +1679,7 @@ bool MotorThread::grasp(Bottle &options)
     {
         Vector x,o;
         action[arm]->getPose(x,o);
-        action[arm]->pushAction(x,reachAboveOrient[arm]);
-        action[arm]->pushAction("pregrasp_hand");
+        action[arm]->pushAction(x,reachAboveOrient[arm],"pregrasp_hand");
     }
 
     action[arm]->pushAction("close_hand");
