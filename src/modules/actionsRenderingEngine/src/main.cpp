@@ -368,13 +368,10 @@ public:
 
     virtual bool interruptModule()
     {
-    
         closing=true;
 
-        cmdPort.close();
-        rpcPort.close();
-        //cmdPort.interrupt();
-        //rpcPort.interrupt();
+        cmdPort.interrupt();
+        rpcPort.interrupt();
 
         initializer->interrupt();
 
@@ -383,13 +380,12 @@ public:
 
          if(motorThr!=NULL)
             motorThr->interrupt();
-            
+
         return true;
     }
 
     virtual bool close()
     {
-
         cmdPort.close();
         rpcPort.close();
         
