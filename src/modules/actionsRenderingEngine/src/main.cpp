@@ -434,7 +434,11 @@ public:
             cmdPort.read(command,true);
 
         if(command.size()==0)
+        {
+            reply.addString("Interrupted");
+            cmdPort.reply(reply);
             return true;
+        }
 
         if(interrupted)
         {
@@ -848,6 +852,9 @@ public:
                 break;
             }
         }
+
+        if(reply.isNull() || reply.size()==0)
+            reply.addString("Random Error");
 
         cmdPort.reply(reply);
         return true;
