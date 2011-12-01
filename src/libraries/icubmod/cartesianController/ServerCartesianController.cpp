@@ -1611,9 +1611,27 @@ bool ServerCartesianController::connectToSolver()
         connected=true;
 
         // keep solver and controller status aligned at start-up
-        Vector curDof, tmpDof;
-        getDOF(curDof);
-        setDOF(curDof,tmpDof);
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab(IKINSLV_VOCAB_OPT_DOF);
+
+        // send command to solver and wait for reply
+        if (!portSlvRpc.write(command,reply))
+        {
+            fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+            return false;
+        }
+
+        // update chain's links
+        // skip the first ack/nack vocab
+        Bottle *rxDofPart=reply.get(1).asList();
+        Vector curDof((size_t)rxDofPart->size());
+        for (int i=0; i<rxDofPart->size(); i++)
+            if (curDof[i]=rxDofPart->get(i).asInt())
+                chain->releaseLink(i);
+            else
+                chain->blockLink(i);
+
         setTrackingMode(trackingMode);
         alignJointsBounds();
         
@@ -2008,7 +2026,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         // update chain's links
         // skip the first ack/nack vocab
         Bottle *rxDofPart=reply.get(1).asList();
-        curDof.resize(rxDofPart->size());
+        curDof.resize((size_t)rxDofPart->size());
         for (int i=0; i<rxDofPart->size(); i++)
             if (curDof[i]=rxDofPart->get(i).asInt())
                 chain->releaseLink(i);
