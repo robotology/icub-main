@@ -24,6 +24,9 @@
  * href="http://eris.liralab.it/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze 
  * Control Interface</a>. 
  *  
+ * @note Please read carefully the \ref icub_gaze_interface
+ *       "Gaze Interface" documentation.
+ *  
  * Copyright (C) 2010 RobotCub Consortium.
  *
  * Author: Ugo Pattacini

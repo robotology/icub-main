@@ -50,8 +50,7 @@ be given to the module both in absolute and relative mode.
 Moreover, this module also implements the server part of the <a 
 href="http://eris.liralab.it/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze 
 Control Interface</a>. For a tutorial on how to use the 
-interface, please go <a 
-href="http://eris.liralab.it/iCub/main/dox/html/icub_gaze_interface.html">here</a>. 
+interface, please go \ref icub_gaze_interface "here". 
  
 \note If the torso is not detected alive then the module will 
       try to keep on working with just the head part.

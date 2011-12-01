@@ -22,7 +22,10 @@
  *  
  * Implements the client part of the <a 
  * href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian 
- * Interface</a>.
+ * Interface</a>. 
+ *  
+ * @note Please read carefully the \ref icub_cartesian_interface
+ *       "Cartesian Interface" documentation.
  *
  * Copyright (C) 2010 RobotCub Consortium.
  *
