@@ -906,7 +906,7 @@ void ServerCartesianController::getFeedback(Vector &_fb)
 void ServerCartesianController::newController()
 {
     // guard
-    if (!chain)
+    if (chain==NULL)
         return;
 
     stopControl();
@@ -1179,7 +1179,9 @@ void ServerCartesianController::run()
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
-        connectToSolver();
+        if (connectToSolver())
+            newController();
+
         connectCnt=0;
     }
 }
@@ -1538,9 +1540,6 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         for (int j=0; j<lJnt[i]; j++)
             lVel[i]->setRefAcceleration(j,CARTCTRL_MAX_ACCEL);
 
-    // create controller
-    newController();
-
     // init task-space reference velocity
     xdot_set.resize(7,0.0);
 
@@ -1554,6 +1553,9 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     attached=true;
 
     connectToSolver();
+
+    // create controller
+    newController();
 
     start();
 
