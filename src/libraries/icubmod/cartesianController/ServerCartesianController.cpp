@@ -1543,11 +1543,6 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     // init task-space reference velocity
     xdot_set.resize(7,0.0);
 
-    // create the target generator for
-    // task-space reference velocity
-    taskRefVelTargetGen=new Integrator(taskRefVelPeriodFactor*(getRate()/1000.0),ctrl->get_x());
-    taskRefVelPeriodCnt=0;
-
     // this line shall be put before any
     // call to attached-dependent methods
     attached=true;
@@ -1556,6 +1551,11 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     // create controller
     newController();
+
+    // create the target generator for
+    // task-space reference velocity
+    taskRefVelTargetGen=new Integrator(taskRefVelPeriodFactor*(getRate()/1000.0),ctrl->get_x());
+    taskRefVelPeriodCnt=0;
 
     start();
 
