@@ -419,33 +419,25 @@ public:
 
     virtual bool updateModule()
     {
-        if(closing)
-            return true;
-
-        motorThr->update();
-
-
         Bottle command,reply;
         command.clear();
         reply.clear();
 
         //wait for a command. will provide reply
-        if(!isStopping())
+        if(!isStopping() && !closing)
             cmdPort.read(command,true);
-
-        if(command.size()==0)
-        {
-            reply.addString("Interrupted");
-            cmdPort.reply(reply);
+        else
             return true;
-        }
 
-        if(interrupted)
+
+        if(command.size()==0 || interrupted)
         {
             reply.addString("Module currently interrupted. Reinstate for action.");
             cmdPort.reply(reply);
             return true;
         }
+
+        motorThr->update();
 
         switch(command.get(0).asVocab())
         {
