@@ -80,125 +80,113 @@ Vector gravityCompensatorThread::evalAccLow(const Vector &x)
 
 void gravityCompensatorThread::init_upper()
 {
-	//---------------------PARTS-------------------------//
-	// Left_arm variables
-	allJnt = 0;
-    int jnt=0;
-    if (iencs_arm_left) iencs_arm_left->getAxes(&jnt);
-	else jnt = 7;
+    //---------------------PARTS-------------------------//
+    // Left_arm variables
+    allJnt = 0;
+    int jnt=7;
     encoders_arm_left.resize(jnt,0.0);
-	F_LArm.resize(6,0.0);
+    F_LArm.resize(6,0.0);
     F_iDyn_LArm.resize(6,0.0);
     Offset_LArm.resize(6,0.0);
     q_larm.resize(7,0.0);
-	dq_larm.resize(7,0.0);
-	d2q_larm.resize(7,0.0);
-	allJnt+=jnt;
-
-	// Right_arm variables
-	jnt = 0;
-    if (iencs_arm_right) iencs_arm_right->getAxes(&jnt);
-	else jnt = 7;
-    encoders_arm_right.resize(jnt,0.0);
-	F_RArm.resize(6,0.0);
-    F_iDyn_RArm.resize(6,0.0);
-    Offset_RArm.resize(6,0.0);
-	q_rarm.resize(7,0.0);
-	dq_rarm.resize(7,0.0);
-	d2q_rarm.resize(7,0.0);
+    dq_larm.resize(7,0.0);
+    d2q_larm.resize(7,0.0);
     allJnt+=jnt;
 
-	// Head variables
-	jnt = 0;
-    if (iencs_head) iencs_head->getAxes(&jnt);
-	else jnt = 3;
-    encoders_head.resize(jnt,0.0);
-	q_head.resize(3,0.0);
-	dq_head.resize(3,0.0);
-	d2q_head.resize(3,0.0);
-	allJnt+=jnt;
+    // Right_arm variables
+    jnt = 7;
+    encoders_arm_right.resize(jnt,0.0);
+    F_RArm.resize(6,0.0);
+    F_iDyn_RArm.resize(6,0.0);
+    Offset_RArm.resize(6,0.0);
+    q_rarm.resize(7,0.0);
+    dq_rarm.resize(7,0.0);
+    d2q_rarm.resize(7,0.0);
+    allJnt+=jnt;
 
-	all_q_up.resize(allJnt,0.0);
-	all_dq_up.resize(allJnt,0.0);
-	all_d2q_up.resize(allJnt,0.0); 
-	torques_LA.resize(7);torques_RA.resize(7);
-	ampli_larm.resize(7);ampli_larm=1.0;
-	ampli_rarm.resize(7);ampli_rarm=1.0;
-}	
+    // Head variables
+    jnt = 3;
+    encoders_head.resize(jnt,0.0);
+    q_head.resize(3,0.0);
+    dq_head.resize(3,0.0);
+    d2q_head.resize(3,0.0);
+    allJnt+=jnt;
+
+    all_q_up.resize(allJnt,0.0);
+    all_dq_up.resize(allJnt,0.0);
+    all_d2q_up.resize(allJnt,0.0); 
+    torques_LA.resize(7);torques_RA.resize(7);
+    ampli_larm.resize(7);ampli_larm=1.0;
+    ampli_rarm.resize(7);ampli_rarm=1.0;
+}
 
 void gravityCompensatorThread::init_lower()
 {
-	//---------------------PARTS-------------------------//
-	// Left_leg variables
-	allJnt = 0;
-    int jnt=0;
-    if (iencs_leg_left) iencs_leg_left->getAxes(&jnt);
-	else jnt = 6; //default value
+    //---------------------PARTS-------------------------//
+    // Left_leg variables
+    allJnt = 0;
+    int jnt = 6; 
     encoders_leg_left.resize(jnt,0.0);
     q_lleg.resize(6,0.0);
-	dq_lleg.resize(6,0.0);
-	d2q_lleg.resize(6,0.0);
-	allJnt+=jnt;
-
-	// Right_leg variables
-	jnt = 0;
-    if (iencs_leg_right) iencs_leg_right->getAxes(&jnt);
-	else jnt = 6; //default value
-    encoders_leg_right.resize(jnt,0.0);
-	q_rleg.resize(6,0.0);
-	dq_rleg.resize(6,0.0);
-	d2q_rleg.resize(6,0.0);
+    dq_lleg.resize(6,0.0);
+    d2q_lleg.resize(6,0.0);
     allJnt+=jnt;
 
-	// Torso variables
-	jnt = 0;
-    if (iencs_torso) iencs_torso->getAxes(&jnt);
-	else jnt=3;
-    encoders_torso.resize(jnt,0.0);
-	q_torso.resize(3,0.0);
-	dq_torso.resize(3,0.0);
-	d2q_torso.resize(3,0.0);
-	allJnt+=jnt;
+    // Right_leg variables
+    jnt = 6;
+    encoders_leg_right.resize(jnt,0.0);
+    q_rleg.resize(6,0.0);
+    dq_rleg.resize(6,0.0);
+    d2q_rleg.resize(6,0.0);
+    allJnt+=jnt;
 
-	all_q_low.resize(allJnt,0.0);
-	all_dq_low.resize(allJnt,0.0);
-	all_d2q_low.resize(allJnt,0.0);
-	torques_TO.resize(3);torques_LL.resize(6);torques_RL.resize(6);
-	ampli_lleg.resize(6);ampli_lleg=1.0;
-	ampli_rleg.resize(6);ampli_rleg=1.0;
-	ampli_torso.resize(6);ampli_torso=1.0;
+    // Torso variables
+    jnt = 3;
+    encoders_torso.resize(jnt,0.0);
+    q_torso.resize(3,0.0);
+    dq_torso.resize(3,0.0);
+    d2q_torso.resize(3,0.0);
+    allJnt+=jnt;
+
+    all_q_low.resize(allJnt,0.0);
+    all_dq_low.resize(allJnt,0.0);
+    all_d2q_low.resize(allJnt,0.0);
+    torques_TO.resize(3);torques_LL.resize(6);torques_RL.resize(6);
+    ampli_lleg.resize(6);ampli_lleg=1.0;
+    ampli_rleg.resize(6);ampli_rleg=1.0;
+    ampli_torso.resize(6);ampli_torso=1.0;
 
 }
 
 void  gravityCompensatorThread::setLowerMeasure()
 {
-	icub->lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
-	icub->lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
-	icub->lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
+    icub->lowerTorso->setAng("torso",CTRL_DEG2RAD * q_torso);
+    icub->lowerTorso->setDAng("torso",CTRL_DEG2RAD * dq_torso);
+    icub->lowerTorso->setD2Ang("torso",CTRL_DEG2RAD * d2q_torso);
 
-	icub->lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
-	icub->lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
-	icub->lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
+    icub->lowerTorso->setAng("left_leg",CTRL_DEG2RAD * q_lleg);
+    icub->lowerTorso->setDAng("left_leg",CTRL_DEG2RAD * dq_lleg);
+    icub->lowerTorso->setD2Ang("left_leg",CTRL_DEG2RAD * d2q_lleg);
 
-	icub->lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
-	icub->lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
-	icub->lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
+    icub->lowerTorso->setAng("right_leg",CTRL_DEG2RAD * q_rleg);
+    icub->lowerTorso->setDAng("right_leg",CTRL_DEG2RAD * dq_rleg);
+    icub->lowerTorso->setD2Ang("right_leg",CTRL_DEG2RAD * d2q_rleg);
 }
 
 void  gravityCompensatorThread::setUpperMeasure()
 {
-	icub->upperTorso->setAng("head",CTRL_DEG2RAD * q_head);
-	icub->upperTorso->setAng("left_arm",CTRL_DEG2RAD * q_larm);
-	icub->upperTorso->setAng("right_arm",CTRL_DEG2RAD * q_rarm);
-	icub->upperTorso->setDAng("head",CTRL_DEG2RAD * dq_head);
-	icub->upperTorso->setDAng("left_arm",CTRL_DEG2RAD * dq_larm);
-	icub->upperTorso->setDAng("right_arm",CTRL_DEG2RAD * dq_rarm);
-	icub->upperTorso->setD2Ang("head",CTRL_DEG2RAD * d2q_head);
-	icub->upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
-	icub->upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
-	icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
+    icub->upperTorso->setAng("head",CTRL_DEG2RAD * q_head);
+    icub->upperTorso->setAng("left_arm",CTRL_DEG2RAD * q_larm);
+    icub->upperTorso->setAng("right_arm",CTRL_DEG2RAD * q_rarm);
+    icub->upperTorso->setDAng("head",CTRL_DEG2RAD * dq_head);
+    icub->upperTorso->setDAng("left_arm",CTRL_DEG2RAD * dq_larm);
+    icub->upperTorso->setDAng("right_arm",CTRL_DEG2RAD * dq_rarm);
+    icub->upperTorso->setD2Ang("head",CTRL_DEG2RAD * d2q_head);
+    icub->upperTorso->setD2Ang("left_arm",CTRL_DEG2RAD * d2q_larm);
+    icub->upperTorso->setD2Ang("right_arm",CTRL_DEG2RAD * d2q_rarm);
+    icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
 }
-	
+
 gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, string icub_type) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
 {   
 	gravity_mode = GRAVITY_COMPENSATION_ON;
