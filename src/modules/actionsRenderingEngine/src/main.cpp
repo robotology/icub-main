@@ -394,36 +394,23 @@ public:
     virtual bool close()
     {
 
-        fprintf(stdout,"#### Module Closing 1\n");
         cmdPort.close();
-        fprintf(stdout,"#### Module Closing 2\n");
         rpcPort.close();
         
-        fprintf(stdout,"#### Module Closing 1\n");
         if(motorThr!=NULL)
         {
-            fprintf(stdout,"#### Motor Closing 1\n");
             motorThr->reinstate();
-            fprintf(stdout,"#### Motor Closing 2\n");
             motorThr->stop();
-            fprintf(stdout,"#### Motor Closing 3\n");
             delete motorThr;
         }
 
-
-        fprintf(stdout,"#### Module Closing 1\n");
         if(visuoThr!=NULL)
         {
-            fprintf(stdout,"#### Visuo Closing 1\n");
             visuoThr->reinstate();
-            fprintf(stdout,"#### Motor Closing 2\n");
             visuoThr->stop();
-            fprintf(stdout,"#### Motor Closing 3\n");
             delete visuoThr;
         }
 
-
-        fprintf(stdout,"#### Module Closing 1\n");
         initializer->close();
         
         delete initializer;
@@ -442,74 +429,104 @@ public:
         command.clear();
         reply.clear();
 
-        fprintf(stdout,"#### Start\n");
 
         //wait for a command. will provide reply
-        if(!isStopping() && !closing)
-            cmdPort.read(command,true);
-        else
-        {            
-            fprintf(stdout,"#### Stopping or Closing\n");
+        interrupt_mutex.wait();
+        if(isStopping() || closing)
             return true;
-        }
+
+        cmdPort.read(command,true);
 
         if(command.size()==0 || interrupted)
-        {
-            fprintf(stdout,"#### size 0 or Interrupting\n");
             reply.addString("Module currently interrupted. Reinstate for action.");
-
-            interrupt_mutex.wait();
-            cmdPort.reply(reply);
-            interrupt_mutex.post();
-
-
-            fprintf(stdout,"#### Replied but... to whom?\n");
-            return true;
-        }
-
-
-        fprintf(stdout,"#### Normal Operations\n");
-        fprintf(stdout,"#### %s\n",command.toString().c_str());
-
-        motorThr->update();
-
-        switch(command.get(0).asVocab())
+        else
         {
-            case CMD_IDLE:
-            {
-                motorThr->setGazeIdle();
-                reply.addString("idle");
-                break;
-            }
+            motorThr->update();
 
-            case CMD_HOME:
+            switch(command.get(0).asVocab())
             {
-                motorThr->goHome(command);
-                reply.addString("home");
+                case CMD_IDLE:
+                {
+                    motorThr->setGazeIdle();
+                    reply.addString("idle");
+                    break;
+                }
 
-                break;
-            }
+                case CMD_HOME:
+                {
+                    motorThr->goHome(command);
+                    reply.addString("home");
 
-            case CMD_GET:
-            {
-                if(command.size()>1)
+                    break;
+                }
+
+                case CMD_GET:
+                {
+                    if(command.size()>1)
+                    {
+                        switch(command.get(1).asVocab())
+                        {
+                            case CMD_GET_S2C:
+                            {
+                                if(command.size()>2)
+                                {
+                                    Vector xd;
+                                    visuoThr->getTarget(command.get(2),command);
+                                    if(motorThr->targetToCartesian(command.find("target").asList(),xd))
+                                    {
+                                        reply.clear();
+                                        for(size_t i=0; i<xd.size(); i++)
+                                            reply.addDouble(xd[i]);
+                                    }
+                                    else
+                                        reply.addString("Error");
+                                }
+
+                                break;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    break;
+                }
+
+                case CMD_CALIBRATE:
                 {
                     switch(command.get(1).asVocab())
                     {
-                        case CMD_GET_S2C:
+                        case CALIB_TABLE:
                         {
-                            if(command.size()>2)
+                            if(motorThr->calibTable(command))
+                                reply.addString("table height found");
+                            else
+                                reply.addString("table height not found");
+
+                            break;
+                        }
+
+                         case CALIB_FINGERS:
+                        {
+                            if(motorThr->calibFingers(command))
+                                reply.addString("fingers calibrated");
+                            else
+                                reply.addString("could not calibrate fingers");
+
+                            break;
+                        }
+
+                         case CALIB_KIN_OFFSET:
+                        {
+                            if(command.get(2).asString()=="start")
                             {
-                                Vector xd;
-                                visuoThr->getTarget(command.get(2),command);
-                                if(motorThr->targetToCartesian(command.find("target").asList(),xd))
-                                {
-                                    reply.clear();
-                                    for(size_t i=0; i<xd.size(); i++)
-                                        reply.addDouble(xd[i]);
-                                }
-                                else
-                                    reply.addString("Error");
+                                motorThr->startLearningModeKinOffset(command);
+                                reply.addString("learn kinematic offset mode: on");
+                            }
+                            else if(command.get(2).asString()=="stop")
+                            {
+                                motorThr->suspendLearningModeKinOffset(command);
+                                reply.addString("learn kinematic offset mode: off");
                             }
 
                             break;
@@ -519,57 +536,40 @@ public:
                     break;
                 }
 
-                break;
-            }
-
-            case CMD_CALIBRATE:
-            {
-                switch(command.get(1).asVocab())
+                //------ action "learning" ---------//
+                case CMD_ACTION_TEACH:
                 {
-                    case CALIB_TABLE:
+                    if(check(command,"start"))
                     {
-                        if(motorThr->calibTable(command))
-                            reply.addString("table height found");
+                        string action_name=command.get(1).asString().c_str();
+
+                        Bottle &action=command.addList();
+                        action.addString("action_name");
+                        action.addString(action_name.c_str());
+
+                        if(!motorThr->startLearningModeAction(command))
+                            reply.addString(("action "+action_name+" already known").c_str());
                         else
-                            reply.addString("table height not found");
-
-                        break;
-                    }
-
-                     case CALIB_FINGERS:
-                    {
-                        if(motorThr->calibFingers(command))
-                            reply.addString("fingers calibrated");
-                        else
-                            reply.addString("could not calibrate fingers");
-
-                        break;
-                    }
-
-                     case CALIB_KIN_OFFSET:
-                    {
-                        if(command.get(2).asString()=="start")
                         {
-                            motorThr->startLearningModeKinOffset(command);
-                            reply.addString("learn kinematic offset mode: on");
+                            motorThr->setGazeIdle();
+                            motorThr->lookAtHand();
+                            reply.addString("start teaching");
                         }
-                        else if(command.get(2).asString()=="stop")
-                        {
-                            motorThr->suspendLearningModeKinOffset(command);
-                            reply.addString("learn kinematic offset mode: off");
-                        }
-
-                        break;
                     }
+
+                    if(check(command,"stop"))
+                    {
+                        bool ok=motorThr->suspendLearningModeAction(command);
+                        
+                        fprintf(stdout,"stopped %s\n",ok?"ok":"bad");
+                        motorThr->setGazeIdle();
+                        reply.addString("stop teaching");
+                    }
+
+                    break;
                 }
 
-                break;
-            }
-
-            //------ action "learning" ---------//
-            case CMD_ACTION_TEACH:
-            {
-                if(check(command,"start"))
+                case CMD_ACTION_IMITATE:
                 {
                     string action_name=command.get(1).asString().c_str();
 
@@ -577,282 +577,95 @@ public:
                     action.addString("action_name");
                     action.addString(action_name.c_str());
 
-                    if(!motorThr->startLearningModeAction(command))
-                        reply.addString(("action "+action_name+" already known").c_str());
-                    else
-                    {
-                        motorThr->setGazeIdle();
-                        motorThr->lookAtHand();
-                        reply.addString("start teaching");
-                    }
-                }
+                    motorThr->lookAtHand();
 
-                if(check(command,"stop"))
-                {
-                    bool ok=motorThr->suspendLearningModeAction(command);
-                    
-                    fprintf(stdout,"stopped %s\n",ok?"ok":"bad");
+                    if(!motorThr->imitateAction(command))
+                        reply.addString(("action "+action_name+" unkown").c_str());
+                    else
+                        reply.addString(("action "+action_name+" done").c_str());
+
                     motorThr->setGazeIdle();
-                    reply.addString("stop teaching");
+
+                    break;
+                }
+                //-----------------------------------//
+
+
+                case CMD_LEARN_MIL:
+                {
+                    string obj_name=command.get(1).asString().c_str();
+                    if(motorThr->isHolding(command)) // 
+                    {
+                        fprintf(stdout,"Deploying %s.\n",obj_name.c_str());
+                        motorThr->deploy(command);
+                    }
+
+                    //if it is not currently tracking anything, start learning what it has in fixation
+                    Vector stereo;
+                    if(!visuoThr->isTracking())
+                    {
+                        Value v("fix");
+                                visuoThr->getTarget(v,command);
+                    }
+                    visuoThr->startLearningMIL(obj_name.c_str());
+
+                    fprintf(stdout,"Looking at %s.\n",obj_name.c_str());
+                    motorThr->exploreTorso(10.0);
+
+                    visuoThr->trainMIL();
+
+                    reply.addString((obj_name + " learned").c_str());
+                    fprintf(stdout,"'%s' learned.\n",obj_name.c_str());
+
+                    break;
                 }
 
-                break;
-            }
-
-            case CMD_ACTION_IMITATE:
-            {
-                string action_name=command.get(1).asString().c_str();
-
-                Bottle &action=command.addList();
-                action.addString("action_name");
-                action.addString(action_name.c_str());
-
-                motorThr->lookAtHand();
-
-                if(!motorThr->imitateAction(command))
-                    reply.addString(("action "+action_name+" unkown").c_str());
-                else
-                    reply.addString(("action "+action_name+" done").c_str());
-
-                motorThr->setGazeIdle();
-
-                break;
-            }
-            //-----------------------------------//
-
-
-            case CMD_LEARN_MIL:
-            {
-                string obj_name=command.get(1).asString().c_str();
-                if(motorThr->isHolding(command)) // 
+                case CMD_OBSERVE:
                 {
-                    fprintf(stdout,"Deploying %s.\n",obj_name.c_str());
+                    if(!motorThr->isHolding(command))
+                    {
+                        reply.addString("Nothing to drop. Not holding anything");
+                        motorThr->release(command);
+                        motorThr->goHome(command);
+                        break;
+                    }
+
+                    motorThr->lookAtHand();
+                    motorThr->drawNear(command);
+                    motorThr->setGazeIdle();
+
+                    reply.addString("observing");
+
+                    break;
+                }
+
+                case CMD_DROP:
+                {
+                    if(!motorThr->isHolding(command))
+                    {
+                        reply.addString("Nothing to drop. Not holding anything");
+                        motorThr->release(command);
+                        motorThr->goHome(command);
+                        break;
+                    }
+
+                    if(check(command,"over") && command.size()>2)
+                        visuoThr->getTarget(command.get(2),command);
+
+                    motorThr->setGazeIdle();
+
                     motorThr->deploy(command);
-                }
 
-                //if it is not currently tracking anything, start learning what it has in fixation
-                Vector stereo;
-                if(!visuoThr->isTracking())
-                {
-                    Value v("fix");
-                            visuoThr->getTarget(v,command);
-                }
-                visuoThr->startLearningMIL(obj_name.c_str());
+                    motorThr->keepFixation();
 
-                fprintf(stdout,"Looking at %s.\n",obj_name.c_str());
-                motorThr->exploreTorso(10.0);
-
-                visuoThr->trainMIL();
-
-                reply.addString((obj_name + " learned").c_str());
-                fprintf(stdout,"'%s' learned.\n",obj_name.c_str());
-
-                break;
-            }
-
-            case CMD_OBSERVE:
-            {
-                if(!motorThr->isHolding(command))
-                {
-                    reply.addString("Nothing to drop. Not holding anything");
-                    motorThr->release(command);
                     motorThr->goHome(command);
+                    motorThr->setGazeIdle();
+
+                    reply.addString("dropped");
                     break;
                 }
 
-                motorThr->lookAtHand();
-                motorThr->drawNear(command);
-                motorThr->setGazeIdle();
-
-                reply.addString("observing");
-
-                break;
-            }
-
-            case CMD_DROP:
-            {
-                if(!motorThr->isHolding(command))
-                {
-                    reply.addString("Nothing to drop. Not holding anything");
-                    motorThr->release(command);
-                    motorThr->goHome(command);
-                    break;
-                }
-
-                if(check(command,"over") && command.size()>2)
-                    visuoThr->getTarget(command.get(2),command);
-
-                motorThr->setGazeIdle();
-
-                motorThr->deploy(command);
-
-                motorThr->keepFixation();
-
-                motorThr->goHome(command);
-                motorThr->setGazeIdle();
-
-                reply.addString("dropped");
-                break;
-            }
-
-            case CMD_TAKE:
-            {
-                if(command.size()<2)
-                {
-                    reply.addString("Error");
-                    break;
-                }
-
-                visuoThr->getTarget(command.get(1),command);
-
-                motorThr->lookAtObject();
-
-                if(!motorThr->reach(command))
-                {
-                    reply.addString("failed. Please specify the target");
-                    break;
-                }
-
-                motorThr->lookAtHand();
-                motorThr->shift(command);
-                motorThr->grasp(command);
-
-                if(motorThr->isHolding(command))
-                {
-                    if(check(command,"near"))
-                    {
-                        motorThr->drawNear(command);
-                        motorThr->setGazeIdle();
-                    }
-                    else
-                    {
-                        motorThr->setGazeIdle();
-                        Bottle b;
-                        b.addString("head");
-                        b.addString("arms");
-                        motorThr->goHome(b);
-                    }
-
-                    reply.addString("holding");
-                }
-                else
-                {
-                   motorThr->setGazeIdle();
-                   motorThr->release(command);
-                   motorThr->goHome(command);
-                   reply.addString("failed");
-                }
-
-                break;
-            }
-
-            case CMD_TOUCH:
-            {
-                 if(command.size()<2)
-                {
-                    reply.addString("Error");
-                    break;
-                }
-
-                visuoThr->getTarget(command.get(1),command);
-
-                motorThr->lookAtObject();
-
-                if(!motorThr->reach(command))
-                {
-                    reply.addString("failed. Please specify the target");
-                    break;
-                }
-
-                if(!check(command,"still"))
-                {
-                    Time::delay(2.0);
-                    motorThr->goHome(command);
-                }
-
-                reply.addString("touched");
-                break;
-            } 
-
-            case CMD_PUSH:
-            {
-                if(command.size()<2)
-                {
-                    reply.addString("Error");
-                    break;
-                }
-
-                visuoThr->getTarget(command.get(1),command);
-
-                motorThr->lookAtObject();
-
-                if(!motorThr->push(command))
-                {
-                    reply.addString("failed. Please specify the target");
-                    break;
-                }
-
-                motorThr->goHome(command);
-                motorThr->setGazeIdle();
-
-                reply.addString("pushed");
-                break;
-            }
-
-            case CMD_POINT:
-            {
-                if(command.size()<2)
-                {
-                    reply.addString("Error");
-                    break;
-                }
-
-                visuoThr->getTarget(command.get(1),command);
-
-                motorThr->lookAtObject();
-
-                if(!motorThr->point(command))
-                {
-                    reply.addString("failed. Please specify the target");
-                    break;
-                }
-
-                if(!check(command,"still"))
-                {
-                    Time::delay(2.0);
-                    motorThr->goHome(command);
-                }
-
-                reply.addString("pointed");
-                break;
-            }
-
-            case CMD_LOOK:
-            {
-                if(command.size()<2)
-                {
-                    reply.addString("Error");
-                    break;
-                }
-
-                visuoThr->getTarget(command.get(1),command);
-
-                motorThr->lookAtObject();
-
-                if(!motorThr->look(command))
-                {
-                    reply.addString("failed. Please specify the target");
-                    break;
-                }
-
-                reply.addString("looked");
-                break;
-            }
-
-            case CMD_TRACK:
-            {
-                //motion tracking is handled differently (temporary cheat)
-                if(command.get(1).asVocab()!=Vocab::encode("motion"))
+                case CMD_TAKE:
                 {
                     if(command.size()<2)
                     {
@@ -861,21 +674,179 @@ public:
                     }
 
                     visuoThr->getTarget(command.get(1),command);
+
+                    motorThr->lookAtObject();
+
+                    if(!motorThr->reach(command))
+                    {
+                        reply.addString("failed. Please specify the target");
+                        break;
+                    }
+
+                    motorThr->lookAtHand();
+                    motorThr->shift(command);
+                    motorThr->grasp(command);
+
+                    if(motorThr->isHolding(command))
+                    {
+                        if(check(command,"near"))
+                        {
+                            motorThr->drawNear(command);
+                            motorThr->setGazeIdle();
+                        }
+                        else
+                        {
+                            motorThr->setGazeIdle();
+                            Bottle b;
+                            b.addString("head");
+                            b.addString("arms");
+                            motorThr->goHome(b);
+                        }
+
+                        reply.addString("holding");
+                    }
+                    else
+                    {
+                       motorThr->setGazeIdle();
+                       motorThr->release(command);
+                       motorThr->goHome(command);
+                       reply.addString("failed");
+                    }
+
+                    break;
                 }
-                else
-                    visuoThr->trackMotion();
 
-                motorThr->lookAtObject();
+                case CMD_TOUCH:
+                {
+                     if(command.size()<2)
+                    {
+                        reply.addString("Error");
+                        break;
+                    }
 
-                reply.addString("tracking");
+                    visuoThr->getTarget(command.get(1),command);
 
-                break;
-            }
+                    motorThr->lookAtObject();
 
-            default:
-            {
-                reply.addString("failed");
-                break;
+                    if(!motorThr->reach(command))
+                    {
+                        reply.addString("failed. Please specify the target");
+                        break;
+                    }
+
+                    if(!check(command,"still"))
+                    {
+                        Time::delay(2.0);
+                        motorThr->goHome(command);
+                    }
+
+                    reply.addString("touched");
+                    break;
+                } 
+
+                case CMD_PUSH:
+                {
+                    if(command.size()<2)
+                    {
+                        reply.addString("Error");
+                        break;
+                    }
+
+                    visuoThr->getTarget(command.get(1),command);
+
+                    motorThr->lookAtObject();
+
+                    if(!motorThr->push(command))
+                    {
+                        reply.addString("failed. Please specify the target");
+                        break;
+                    }
+
+                    motorThr->goHome(command);
+                    motorThr->setGazeIdle();
+
+                    reply.addString("pushed");
+                    break;
+                }
+
+                case CMD_POINT:
+                {
+                    if(command.size()<2)
+                    {
+                        reply.addString("Error");
+                        break;
+                    }
+
+                    visuoThr->getTarget(command.get(1),command);
+
+                    motorThr->lookAtObject();
+
+                    if(!motorThr->point(command))
+                    {
+                        reply.addString("failed. Please specify the target");
+                        break;
+                    }
+
+                    if(!check(command,"still"))
+                    {
+                        Time::delay(2.0);
+                        motorThr->goHome(command);
+                    }
+
+                    reply.addString("pointed");
+                    break;
+                }
+
+                case CMD_LOOK:
+                {
+                    if(command.size()<2)
+                    {
+                        reply.addString("Error");
+                        break;
+                    }
+
+                    visuoThr->getTarget(command.get(1),command);
+
+                    motorThr->lookAtObject();
+
+                    if(!motorThr->look(command))
+                    {
+                        reply.addString("failed. Please specify the target");
+                        break;
+                    }
+
+                    reply.addString("looked");
+                    break;
+                }
+
+                case CMD_TRACK:
+                {
+                    //motion tracking is handled differently (temporary cheat)
+                    if(command.get(1).asVocab()!=Vocab::encode("motion"))
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addString("Error");
+                            break;
+                        }
+
+                        visuoThr->getTarget(command.get(1),command);
+                    }
+                    else
+                        visuoThr->trackMotion();
+
+                    motorThr->lookAtObject();
+
+                    reply.addString("tracking");
+
+                    break;
+                }
+
+                default:
+                {
+                    reply.addString("failed");
+                    break;
+                }
             }
         }
 
@@ -883,11 +854,8 @@ public:
             reply.addString("Random Error");
 
 
-        fprintf(stdout,"#### Replying\n");
-        interrupt_mutex.wait();
         cmdPort.reply(reply);
         interrupt_mutex.post();
-        fprintf(stdout,"#### Replied\n");
         return true;
     }
 
