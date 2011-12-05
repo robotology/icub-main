@@ -374,7 +374,6 @@ public:
     {
         closing=true;
 
-        fprintf(stdout,"#### Module Interrupting 1\n");
         interrupt_mutex.wait();
         cmdPort.interrupt();
         interrupt_mutex.post();
@@ -433,7 +432,10 @@ public:
         //wait for a command. will provide reply
         interrupt_mutex.wait();
         if(isStopping() || closing)
+        {
+            interrupt_mutex.post();
             return true;
+        }
 
         cmdPort.read(command,true);
 
