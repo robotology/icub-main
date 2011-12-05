@@ -242,6 +242,8 @@ Windows, Linux
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 
+#include <yarp/os/Semaphore.h>
+
 #include <string>
 
 #include <iCub/utils.h>
@@ -304,6 +306,8 @@ using namespace iCub::action;
 
 class ActionsRenderingEngineModule: public RFModule
 {
+private:
+    Semaphore                   interrupt_mutex;
 protected:
     MotorThread                 *motorThr;
     VisuoThread                 *visuoThr;
@@ -370,7 +374,10 @@ public:
     {
         closing=true;
 
+        fprintf(stdout,"#### Module Interrupting 1\n");
+        interrupt_mutex.wait();
         cmdPort.interrupt();
+        interrupt_mutex.post();
         rpcPort.interrupt();
 
         initializer->interrupt();
@@ -386,25 +393,37 @@ public:
 
     virtual bool close()
     {
+
+        fprintf(stdout,"#### Module Closing 1\n");
         cmdPort.close();
+        fprintf(stdout,"#### Module Closing 2\n");
         rpcPort.close();
         
+        fprintf(stdout,"#### Module Closing 1\n");
         if(motorThr!=NULL)
         {
+            fprintf(stdout,"#### Motor Closing 1\n");
             motorThr->reinstate();
+            fprintf(stdout,"#### Motor Closing 2\n");
             motorThr->stop();
+            fprintf(stdout,"#### Motor Closing 3\n");
             delete motorThr;
         }
 
 
+        fprintf(stdout,"#### Module Closing 1\n");
         if(visuoThr!=NULL)
         {
+            fprintf(stdout,"#### Visuo Closing 1\n");
             visuoThr->reinstate();
+            fprintf(stdout,"#### Motor Closing 2\n");
             visuoThr->stop();
+            fprintf(stdout,"#### Motor Closing 3\n");
             delete visuoThr;
         }
 
 
+        fprintf(stdout,"#### Module Closing 1\n");
         initializer->close();
         
         delete initializer;
@@ -423,19 +442,34 @@ public:
         command.clear();
         reply.clear();
 
+        fprintf(stdout,"#### Start\n");
+
         //wait for a command. will provide reply
         if(!isStopping() && !closing)
             cmdPort.read(command,true);
         else
+        {            
+            fprintf(stdout,"#### Stopping or Closing\n");
             return true;
-
+        }
 
         if(command.size()==0 || interrupted)
         {
+            fprintf(stdout,"#### size 0 or Interrupting\n");
             reply.addString("Module currently interrupted. Reinstate for action.");
+
+            interrupt_mutex.wait();
             cmdPort.reply(reply);
+            interrupt_mutex.post();
+
+
+            fprintf(stdout,"#### Replied but... to whom?\n");
             return true;
         }
+
+
+        fprintf(stdout,"#### Normal Operations\n");
+        fprintf(stdout,"#### %s\n",command.toString().c_str());
 
         motorThr->update();
 
@@ -613,7 +647,7 @@ public:
                 reply.addString((obj_name + " learned").c_str());
                 fprintf(stdout,"'%s' learned.\n",obj_name.c_str());
 
-                return true;
+                break;
             }
 
             case CMD_OBSERVE:
@@ -848,7 +882,12 @@ public:
         if(reply.isNull() || reply.size()==0)
             reply.addString("Random Error");
 
+
+        fprintf(stdout,"#### Replying\n");
+        interrupt_mutex.wait();
         cmdPort.reply(reply);
+        interrupt_mutex.post();
+        fprintf(stdout,"#### Replied\n");
         return true;
     }
 
