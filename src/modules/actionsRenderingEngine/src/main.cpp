@@ -239,6 +239,7 @@ Windows, Linux
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/RpcServer.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 
@@ -306,15 +307,13 @@ using namespace iCub::action;
 
 class ActionsRenderingEngineModule: public RFModule
 {
-private:
-    Semaphore                   interrupt_mutex;
 protected:
     MotorThread                 *motorThr;
     VisuoThread                 *visuoThr;
 
     Initializer                 *initializer;
 
-    Port                        cmdPort;
+    RpcServer                   cmdPort;
     Port                        rpcPort;
 
     bool                        interrupted;
@@ -374,9 +373,7 @@ public:
     {
         closing=true;
 
-        interrupt_mutex.wait();
         cmdPort.interrupt();
-        interrupt_mutex.post();
         rpcPort.interrupt();
 
         initializer->interrupt();
@@ -393,7 +390,10 @@ public:
     virtual bool close()
     {
 
+        
+        fprintf(stdout,"going to get stuck\n");
         cmdPort.close();
+        fprintf(stdout,"false\n");
         rpcPort.close();
         
         if(motorThr!=NULL)
@@ -430,14 +430,16 @@ public:
 
 
         //wait for a command. will provide reply
-        interrupt_mutex.wait();
         if(isStopping() || closing)
         {
-            interrupt_mutex.post();
+            fprintf(stdout,"aho! sto chiudendo!\n");
             return true;
         }
-
+return true;
+        fprintf(stdout,"before read!\n");
         cmdPort.read(command,true);
+        fprintf(stdout,"just read!\n");
+
 
         if(command.size()==0 || interrupted)
             reply.addString("Module currently interrupted. Reinstate for action.");
@@ -856,8 +858,14 @@ public:
             reply.addString("Random Error");
 
 
-        cmdPort.reply(reply);
-        interrupt_mutex.post();
+        if(!closing)
+        {
+            fprintf(stdout,"repling!\n");
+            cmdPort.reply(reply);
+        }
+        else           
+           fprintf(stdout,"not replied!\n");
+
         return true;
     }
 
