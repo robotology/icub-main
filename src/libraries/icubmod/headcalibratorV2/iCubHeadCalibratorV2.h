@@ -18,6 +18,7 @@
 #ifndef __ICUB_HEAD_CALIBRATORV2__
 #define __ICUB_HEAD_CALIBRATORV2__
 
+#include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -66,13 +67,13 @@ public:
      * parameters.
      * @return true/false on success/failure.
      */
-	virtual bool open (yarp::os::Searchable& config);
+    virtual bool open (yarp::os::Searchable& config);
 
     /**
      * Close the device driver.
      * @return true/false on success/failure.
      */
-	virtual bool close ();
+    virtual bool close ();
 
     virtual bool park(DeviceDriver *dd, bool wait=true);
 
@@ -85,30 +86,32 @@ private:
     void goToZero(int j);
     bool checkCalibrateJointEnded(int j);
     void checkGoneToZero(int j);
-	bool checkGoneToZeroThreshold(int j);
+    bool checkGoneToZeroThreshold(int j);
 
     IControlCalibration2 *iCalibrate;
     IAmplifierControl *iAmps;
     IPidControl *iPids;
     IEncoders *iEncoders;
     IPositionControl *iPosition;
-	IControlMode *iControlMode;
+    IControlMode *iControlMode;
 
     unsigned char *type;
-	int    canID;
-	double *param1;
-	double *param2;
-	double *param3;
-	int    *maxPWM;
+    int    canID;
+    double *param1;
+    double *param2;
+    double *param3;
+    int    *maxPWM;
     double *currPos;
     double *currVel;
-	Pid    *original_pid;
-	Pid    *limited_pid;
+    Pid    *original_pid;
+    Pid    *limited_pid;
     double *zeroVel;
-	double *zeroPos;
+    double *zeroPos;
     double *homeVel;
     double *homePos;
     bool abortCalib;
     bool abortParking;
+    FILE   *logfile;   
+    std::string  logfile_name;
 };
 #endif
