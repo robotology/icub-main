@@ -581,7 +581,7 @@ protected:
                     max=lim(j,3);
 
                 icart->setLimits(j,min,max);
-                fprintf(stdout,"jnt #%d in [%g, %g] deg\n",j,min,max);
+                fprintf(stdout,"jnt #%d in [%g, %g] deg\n",(int)j,min,max);
             }
         }
 
