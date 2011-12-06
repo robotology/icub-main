@@ -435,7 +435,7 @@ public:
             fprintf(stdout,"aho! sto chiudendo!\n");
             return true;
         }
-return true;
+
         fprintf(stdout,"before read!\n");
         cmdPort.read(command,true);
         fprintf(stdout,"just read!\n");
