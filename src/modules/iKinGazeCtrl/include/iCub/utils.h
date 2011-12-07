@@ -134,11 +134,10 @@ public:
 bool getCamPrj(const string &configFile, const string &type, Matrix **Prj);
 
 
-// Allocates the two aligning links read from configFile
+// Allocates the two aligning matrices read from configFile
 // type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}
 // Returns true if correctly configured
-bool getAlignLinks(const string &configFile, const string &type,
-                   iKinLink **link1, iKinLink **link2);
+bool getAlignHN(const string &configFile, const string &type, iKinChain *chain);
 
 
 // Aligns head joints bounds with current onboard bounds.

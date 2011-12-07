@@ -50,24 +50,9 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     chainEyeL=eyeL->asChain();
     chainEyeR=eyeR->asChain();
 
-    // add aligning links read from configuration file
-    if (getAlignLinks(configFile,"ALIGN_KIN_LEFT",&alignLnkLeft1,&alignLnkLeft2))
-    {
-        *chainEyeL<<*alignLnkLeft1<<*alignLnkLeft2;
-        chainEyeL->blockLink(chainEyeL->getN()-1,0.0);
-        chainEyeL->blockLink(chainEyeL->getN()-2,0.0);
-    }
-    else
-        alignLnkLeft1=alignLnkLeft2=NULL;
-
-    if (getAlignLinks(configFile,"ALIGN_KIN_RIGHT",&alignLnkRight1,&alignLnkRight2))
-    {
-        *chainEyeR<<*alignLnkRight1<<*alignLnkRight2;
-        chainEyeR->blockLink(chainEyeR->getN()-1,0.0);
-        chainEyeR->blockLink(chainEyeR->getN()-2,0.0);
-    }
-    else
-        alignLnkRight1=alignLnkRight2=NULL;
+    // add aligning matrices read from configuration file
+    getAlignHN(configFile,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(configFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
     Matrix lim;
 
@@ -387,18 +372,6 @@ void Controller::threadRelease()
     delete mjCtrlNeck;
     delete mjCtrlEyes;
     delete Int;
-
-    if (alignLnkLeft1!=NULL)
-        delete alignLnkLeft1;
-
-    if (alignLnkLeft2!=NULL)
-        delete alignLnkLeft2;
-
-    if (alignLnkRight1!=NULL)
-        delete alignLnkRight1;
-
-    if (alignLnkRight2!=NULL)
-        delete alignLnkRight2;
 }
 
 

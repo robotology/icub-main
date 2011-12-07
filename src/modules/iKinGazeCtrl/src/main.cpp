@@ -340,15 +340,14 @@ None.
 \section conf_file_sec Configuration Files
 A configuration file passed through \e --config contains the
 fields required to specify the intrinsic cameras parameters 
-along with the virtual links (given in terms of 
-lenght,offset,twist parameters) which are appended to the eye 
+along with a roto-translation matrix appended to the eye 
 kinematic in order to achieve the alignment with the optical 
 axes compensating for possible unknown offsets. 
  
-\note The virtual links are meaningful only as result of the 
-calibration of the extrinsic camera parameters. In case the 
-calibration has not been carried out then remove the relative 
-groups from within the configuration file. 
+\note The final roto-translational matrix is meaningful only as 
+result of the calibration of the extrinsic camera parameters. In 
+case the calibration has not been carried out then remove the 
+relative groups from within the configuration file. 
  
 Example: 
  
@@ -365,15 +364,11 @@ fy 219.028
 cx 174.742
 cy 102.874
  
-[ALIGN_KIN_LEFT]
-length 0.0 0.0   // [m]
-offset 0.0 0.0   // [m]
-twist  0.0 0.0   // [rad] 
+[ALIGN_KIN_LEFT] 
+HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows) 
 
 [ALIGN_KIN_RIGHT]
-length 0.0 0.0   // [m]
-offset 0.0 0.0   // [m]
-twist  0.0 0.0   // [rad] 
+HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows)  
 \endcode 
  
 \section tested_os_sec Tested OS

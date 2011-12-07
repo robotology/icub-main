@@ -60,9 +60,7 @@ protected:
     
     iCubEye  *eyeL;
     iCubEye  *eyeR;
-    iKinLink *alignLnkLeft1,  *alignLnkLeft2;
-    iKinLink *alignLnkRight1, *alignLnkRight2;
-
+    
     Matrix eyeCAbsFrame;
     Matrix invEyeCAbsFrame;
 

@@ -381,43 +381,40 @@ bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
 
 
 /************************************************************************/
-bool getAlignLinks(const string &configFile, const string &type,
-                   iKinLink **link1, iKinLink **link2)
+bool getAlignHN(const string &configFile, const string &type, iKinChain *chain)
 {
-    *link1=*link2=NULL;
-
-    if (configFile.size())
+    if (chain!=NULL)
     {
         Property par;
-        par.fromConfigFile(configFile.c_str());
-
-        Bottle parType=par.findGroup(type.c_str());
-        string warning="Aligning parameters for "+type+" group not found";
-
-        if (parType.size())
+        string warning="Aligning matrix for "+type+" group not found";
+        if (par.fromConfigFile(configFile.c_str()))
         {
-            Bottle length=parType.findGroup("length");
-            Bottle offset=parType.findGroup("offset");
-            Bottle twist=parType.findGroup("twist");
-
-            fprintf(stdout,"%s: %s\n",type.c_str(),length.toString().c_str());
-            fprintf(stdout,"%s: %s\n",type.c_str(),offset.toString().c_str());
-            fprintf(stdout,"%s: %s\n",type.c_str(),twist.toString().c_str());
-
-            if ((length.size()>=3) && (offset.size()>=3) && (twist.size()>=3))
+            Bottle parType=par.findGroup(type.c_str());
+            if (parType.size()>0)
             {
-                *link1=new iKinLink(length.get(1).asDouble(),offset.get(1).asDouble(),
-                                    twist.get(1).asDouble(),0.0,0.0,0.0);
-                *link2=new iKinLink(length.get(2).asDouble(),offset.get(2).asDouble(),
-                                    twist.get(2).asDouble(),0.0,0.0,0.0);
+                if (Bottle *bH=parType.find("HN").asList())
+                {
+                    int i=0;
+                    int j=0;
 
-                return true;
+                    Matrix HN(4,4); HN=0.0;
+                    for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
+                    {    
+                        HN(i,j)=bH->get(cnt).asDouble();
+                        if (++j>=HN.cols())
+                        {
+                            i++;
+                            j=0;
+                        }
+                    }
+
+                    chain->setHN(HN);
+                    return true;
+                }
             }
-            else
-                fprintf(stdout,"%s\n",warning.c_str());
         }
-        else
-            fprintf(stdout,"%s\n",warning.c_str());
+
+        fprintf(stdout,"%s\n",warning.c_str());
     }
 
     return false;

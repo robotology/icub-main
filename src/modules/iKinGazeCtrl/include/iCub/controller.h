@@ -50,20 +50,18 @@ using namespace iCub::iKin;
 class Controller : public RateThread
 {
 protected:
-    iCubHeadCenter            *neck;
-    iCubEye                   *eyeL,      *eyeR;
-    iKinChain                 *chainNeck, *chainEyeL, *chainEyeR;
-    PolyDriver                *drvTorso,  *drvHead;
-    IEncoders                 *encTorso,  *encHead;
-    IVelocityControl          *velHead;
-    exchangeData              *commData;
-    xdPort                    *port_xd;
-    iKinLink *alignLnkLeft1,  *alignLnkLeft2;
-    iKinLink *alignLnkRight1, *alignLnkRight2;
+    iCubHeadCenter   *neck;
+    iCubEye          *eyeL,      *eyeR;
+    iKinChain        *chainNeck, *chainEyeL, *chainEyeR;
+    PolyDriver       *drvTorso,  *drvHead;
+    IEncoders        *encTorso,  *encHead;
+    IVelocityControl *velHead;
+    exchangeData     *commData;
+    xdPort           *port_xd;
 
-    minJerkVelCtrl            *mjCtrlNeck;
-    minJerkVelCtrl            *mjCtrlEyes;
-    Integrator                *Int;
+    minJerkVelCtrl   *mjCtrlNeck;
+    minJerkVelCtrl   *mjCtrlEyes;
+    Integrator       *Int;
 
     Port port_x;
     Port port_q;
