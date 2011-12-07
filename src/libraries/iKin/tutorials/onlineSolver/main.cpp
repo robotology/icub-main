@@ -68,19 +68,19 @@ int main()
     cmd.addVocab(IKINSLV_VOCAB_CMD_GET);
     cmd.addVocab(IKINSLV_VOCAB_OPT_DOF);
     rpc.write(cmd,reply);
-    cout<<"got dof: "<<reply.toString()<<endl;
+    cout<<"got dof: "<<reply.toString().c_str()<<endl;
 
     cmd.clear();
     cmd.addVocab(IKINSLV_VOCAB_CMD_GET);
     cmd.addVocab(IKINSLV_VOCAB_OPT_POSE);
     rpc.write(cmd,reply);
-    cout<<"got pose: "<<reply.toString()<<endl;
+    cout<<"got pose: "<<reply.toString().c_str()<<endl;
 
     cmd.clear();
     cmd.addVocab(IKINSLV_VOCAB_CMD_GET);
     cmd.addVocab(IKINSLV_VOCAB_OPT_MODE);
     rpc.write(cmd,reply);
-    cout<<"got mode: "<<reply.toString()<<endl;
+    cout<<"got mode: "<<reply.toString().c_str()<<endl;
 
     // change to tracking mode so that when
     // any movement induced on unactuated joints
@@ -91,7 +91,7 @@ int main()
     cmd.addVocab(IKINSLV_VOCAB_VAL_MODE_TRACK);
     cout<<"switching to track mode...";
     rpc.write(cmd,reply);
-    cout<<reply.toString()<<endl;    
+    cout<<reply.toString().c_str()<<endl;
 
     // ask to resolve for some xyz position
     cmd.clear();
@@ -103,9 +103,9 @@ int main()
     out.write(cmd);
     in.read(reply);
 
-    cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString()<<endl;
-    cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString()<<endl;
-    cout<<"q [deg] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
+    cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString().c_str()<<endl;
+    cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString().c_str()<<endl;
+    cout<<"q [deg] ="<<CartesianHelper::getJointsOption(reply)->toString().c_str()<<endl;
     cout<<endl;
 
     // ask the same but with torso enabled
@@ -115,9 +115,9 @@ int main()
     out.write(cmd);
     in.read(reply);
 
-    cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString()<<endl;
-    cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString()<<endl;
-    cout<<"q [deg] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
+    cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString().c_str()<<endl;
+    cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString().c_str()<<endl;
+    cout<<"q [deg] ="<<CartesianHelper::getJointsOption(reply)->toString().c_str()<<endl;
     cout<<endl;
 
     // close up

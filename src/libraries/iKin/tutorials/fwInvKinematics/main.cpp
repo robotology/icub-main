@@ -129,7 +129,7 @@ int main()
     // it is not allowed to overcome the bounds...
     // ...see the result
     qf=chain->setAng(qf);
-    cout << "Actual joints set to " << (CTRL_RAD2DEG*qf).toString() << endl;
+    cout << "Actual joints set to " << (CTRL_RAD2DEG*qf).toString().c_str() << endl;
     // anyway user can disable the constraints checking by calling
     // the chain method setAllConstraints(false)
 
@@ -152,7 +152,7 @@ int main()
     // Translational part is in meters.
     // Rotational part is in axis-angle representation
     xf=chain->EndEffPose();
-    cout << "Current arm end-effector pose: " << xf.toString() << endl;
+    cout << "Current arm end-effector pose: " << xf.toString().c_str() << endl;
 
     // go back to the starting joints configuration
     chain->setAng(q0);    
@@ -186,14 +186,14 @@ int main()
 
     // in general the solved qf is different from the initial qf
     // due to the redundancy
-    cout << "qhat: " << (CTRL_RAD2DEG*qhat).toString() << endl;
+    cout << "qhat: " << (CTRL_RAD2DEG*qhat).toString().c_str() << endl;
 
     // check how much we achieve our goal
     // note that the chain has been manipulated by the solver,
     // so it's already in the final configuration
     xhat=chain->EndEffPose();
-    cout << "Desired arm end-effector pose       xf= " << xf.toString()   << endl;
-    cout << "Achieved arm end-effector pose K(qhat)= " << xhat.toString() << endl;
+    cout << "Desired arm end-effector pose       xf= " << xf.toString().c_str()   << endl;
+    cout << "Achieved arm end-effector pose K(qhat)= " << xhat.toString().c_str() << endl;
     cout << "||xf-K(qhat)||=" << norm(xf-xhat) << endl;
     cout << "Solved in " << dt << " [s]" << endl;
 
