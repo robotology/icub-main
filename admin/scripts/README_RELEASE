@@ -14,8 +14,9 @@
 * Update main/ChangeLog and ChangeLog with tag notice
 
 * Make tag
-  Commit new version, store REVISION number
-  svn  copy -r REVISION https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub1.1.6
+  Commit new version, write down revision svn revision number (REVISION)
+  
+  svn copy -r REVISION https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub1.1.6
 
 * Make packages
 
@@ -30,6 +31,8 @@ and will automatically upload them on eris
 
 Update the packages to sourceforge:
 
-  scp package-tmp/iCub-src-1.1.7.tar.gz USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/linux/iCub-src-1.1.7.tar-gz
-  scp package-tmp/iCub-src-1.1.7.zip USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/win/iCub-src-1.1.7.zip
+  scp package-tmp/iCub-src-1.1.7.tar.gz USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.7/iCub-src-1.1.7.tar.gz
+  scp package-tmp/iCub-src-1.1.7.zip USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.7/iCub-src-1.1.7.zip
+  
+  
 
