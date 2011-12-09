@@ -115,6 +115,19 @@ public:
         MainWindow->setName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(703, 818);
         
+        // default size
+        int width=850;
+        int height=600;
+
+        if (config.check("width")) width=config.find("width").asInt();
+        if (config.check("height")) height=config.find("height").asInt();
+        
+        //sanity check
+        if(width<50) width=50;
+        if(height<50) height=50;
+
+        MainWindow->resize(width, height);
+
         int xpos=32,ypos=32;
         if (config.check("xpos")) xpos=config.find("xpos").asInt();
         if (config.check("ypos")) ypos=config.find("ypos").asInt();

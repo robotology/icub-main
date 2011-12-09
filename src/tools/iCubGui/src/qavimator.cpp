@@ -75,10 +75,6 @@ void qavimator::readSettings()
     QSettings settings;
     settings.beginGroup("/qavimator");
 
-    // if no settings found, start up with defaults
-    int width=850;
-    int height=600;
-
     jointLimits=true;
     lastPath=QString::null;
 
@@ -108,16 +104,10 @@ void qavimator::readSettings()
         Settings::setFog(settings.readBoolEntry("/fog"));
         Settings::setFloorTranslucency(settings.readNumEntry("/floor_translucency"));
 
-        // sanity
-        if(width<50) width=50;
-        if(height<50) height=50;
-
         figureType=settings.readNumEntry("/figure");
 
         settings.endGroup();
     }
-
-    resize(width,height);
 
     optionsJointLimitsAction->setOn(jointLimits);
     optionsShowTimelineAction->setOn(showTimelinePanel);
