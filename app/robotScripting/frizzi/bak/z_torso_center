@@ -1,3 +1,0 @@
-echo "ctpn time 3 off 0 pos (0 0 0)" | yarp rpc /ctpservice/torso/rpc
-
-
