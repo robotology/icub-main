@@ -60,37 +60,37 @@ Windows, Linux
 
 int main( int argc, char **argv ) 
 {
-		// start SDL subsystem
-		if ( SDL_InitSubSystem ( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 )
-		{
-			fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
-			return -1;
-		}
-		SDL_JoystickEventState ( SDL_ENABLE );
-		// get the list of available joysticks
-		fprintf ( stderr, "\n");
-		int joy_id=0;
-		int joystick_num = SDL_NumJoysticks ();
-		if (joystick_num == 0)
-		{
-			fprintf ( stderr, "JoystickCheck: no joysticks found.\n");
-			return 0;
-		}
-		else if (joystick_num > 0)
-		{
-			fprintf ( stderr, "JoystickCheck: (%d) joystick(s) found.\n",joystick_num);
-			int joy_id = 0;
-			SDL_Joystick* joy1 = SDL_JoystickOpen ( joy_id );
-			if ( joy1 == NULL )
-			{
-				printf ( "Could not open default joystick.\n" );
-				return 0;
-			}
+        // start SDL subsystem
+        if ( SDL_InitSubSystem ( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 )
+        {
+            fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
+            return -1;
+        }
+        SDL_JoystickEventState ( SDL_ENABLE );
+        // get the list of available joysticks
+        fprintf ( stderr, "\n");
+        int joy_id=0;
+        int joystick_num = SDL_NumJoysticks ();
+        if (joystick_num == 0)
+        {
+            fprintf ( stderr, "JoystickCheck: no joysticks found.\n");
+            return 0;
+        }
+        else if (joystick_num > 0)
+        {
+            fprintf ( stderr, "JoystickCheck: (%d) joystick(s) found.\n",joystick_num);
+            int joy_id = 0;
+            SDL_Joystick* joy1 = SDL_JoystickOpen ( joy_id );
+            if ( joy1 == NULL )
+            {
+                printf ( "Could not open default joystick.\n" );
+                return 0;
+            }
 
-			int numAxes    = SDL_JoystickNumAxes    ( joy1 );
-			int numBalls   = SDL_JoystickNumBalls   ( joy1 );
-			int numHats    = SDL_JoystickNumHats    ( joy1 );
-			int numButtons = SDL_JoystickNumButtons ( joy1 );
+            int numAxes    = SDL_JoystickNumAxes    ( joy1 );
+            int numBalls   = SDL_JoystickNumBalls   ( joy1 );
+            int numHats    = SDL_JoystickNumHats    ( joy1 );
+            int numButtons = SDL_JoystickNumButtons ( joy1 );
 
                        SDL_Event event;
                        for (int trial=0; trial < 100; trial++ )
@@ -118,7 +118,7 @@ int main( int argc, char **argv )
                                        // printf ( "event found axis %d %d \n", event.jaxis.axis ,event.jaxis.value);
                                         if ( ( event.jaxis.value < -20000 ) || (event.jaxis.value > 20000 ) )
                                         {  
-                                		printf ( "joysticks activity detected.\n" );                                           
+                                        printf ( "joysticks activity detected.\n" );                                           
                                                 return 1;
                                         }
                                         break;
@@ -128,23 +128,23 @@ int main( int argc, char **argv )
 
                         printf ( "stop here.\n" );
                         /*for (int trial=0; trial < 100; trial++ )
-			{
+            {
                                 yarp::os::Time::delay(0.010);
-				SDL_JoystickUpdate ();                      
-				for ( int i=0; i < numAxes; ++i )
-				{
-					rawMeasure[i] = SDL_JoystickGetAxis ( joy1, i );
+                SDL_JoystickUpdate ();                      
+                for ( int i=0; i < numAxes; ++i )
+                {
+                    rawMeasure[i] = SDL_JoystickGetAxis ( joy1, i );
                                         printf ( "%d %d %d\n",trial,i,rawMeasure[i] );
                                 }
-        			if (rawMeasure[2] && rawMeasure[5] >= 20000)
-				{
-						printf ( "found one joystick currently in use.\n" );
-						return 1;
-				}
-			}*/
-			printf ( "no joysticks are currently used.\n" );
-			return 0;
-		}
+                    if (rawMeasure[2] && rawMeasure[5] >= 20000)
+                {
+                        printf ( "found one joystick currently in use.\n" );
+                        return 1;
+                }
+            }*/
+            printf ( "no joysticks are currently used.\n" );
+            return 0;
+        }
 
         return 0;   // pattacini: to prevent MSVC from warning up
 }
