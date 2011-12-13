@@ -31,6 +31,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string.h>
+#include <queue>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -52,6 +53,7 @@ double lpf_ord1_3hz(double input, int j);
 class iCubStatus
 {
     public:
+    double timestamp;
     Vector all_q_up, all_dq_up, all_d2q_up;
     Vector all_q_low, all_dq_low, all_d2q_low;
 
@@ -66,6 +68,7 @@ class iCubStatus
 
     iCubStatus ()
     {
+        timestamp=0;
         ft_arm_left=0;
         ft_arm_right=0;
         ft_leg_left=0;
@@ -112,6 +115,7 @@ public:
     bool       dummy_ft;
     bool       w0_dw0_enabled;
     bool       dumpvel_enabled;
+    bool       auto_drift_comp;
 
 private:
     string     robot_name;
@@ -184,6 +188,8 @@ private:
     iCubWholeBody *icub;
     iCubWholeBody *icub_sens;
     iCubStatus    current_status;
+    queue<iCubStatus> previous_status;
+    queue<iCubStatus> not_moving_status;
 
     Vector encoders_arm_left;
     Vector encoders_arm_right;

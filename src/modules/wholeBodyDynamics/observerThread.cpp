@@ -174,6 +174,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     dummy_ft    = false;
     w0_dw0_enabled   = false;
     dumpvel_enabled = false;
+    auto_drift_comp = false;
 
     icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
     icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
@@ -315,10 +316,20 @@ bool iCubStatus::checkIcubNotMoving()
 {
     bool ret = true;
     for (size_t i=0; i<this->all_dq_low.size(); i++)
-        if (fabs(all_dq_low[i])>0.1)  ret = false;
+        if (fabs(all_dq_low[i])>0.7)
+            {
+                ret = false;
+                //fprintf(stderr,"%d ",i);
+            }
+    //fprintf(stderr,"\n");
 
     for (size_t i=0; i<this->all_dq_up.size(); i++)
-       if (fabs(all_dq_up[i])>0.1)  ret = false;
+        if (fabs(all_dq_up[i])>0.7)
+            {
+                ret = false;
+                //fprintf(stderr,"%d ",i);
+            }
+    //fprintf(stderr,"\n");
 
     return ret;
 }
@@ -352,9 +363,19 @@ void inverseDynamics::run()
     current_status.iCub_not_moving = current_status.checkIcubNotMoving();
     if (current_status.iCub_not_moving == true)
     {
+        not_moving_status.push(current_status);
+        if (not_moving_status.size()>10) 
+            {
+                not_moving_status.pop();
+                if (auto_drift_comp) fprintf (stderr,"drift_comp: buffer full\n"); //@@@DEBUG
+            }
     }
     else
     {
+        //efficient way to clear the queue
+        std::queue<iCubStatus> empty;
+        std::swap( not_moving_status, empty );
+        if (auto_drift_comp) fprintf (stderr,"drift_comp: clearing buffer\n");  //@@@DEBUG
     }
 
     // THIS BLOCK SHOULD BE NOW DEPRECATED
@@ -789,6 +810,8 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         else             {if (!current_status.ft_arm_right) {current_status.ft_arm_right = new yarp::sig::Vector(6);} current_status.ft_arm_right->zero();}
         if (waitMeasure) fprintf(stderr,"done. \n");
     }
+    b &= getUpperEncodersSpeedAndAcceleration();
+    setUpperMeasure(_init);
 
     // legs
     if (ddLL)
@@ -805,6 +828,8 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         else             {if (!current_status.ft_leg_right) {current_status.ft_leg_right = new yarp::sig::Vector(6);} current_status.ft_leg_right->zero();}
         if (waitMeasure) fprintf(stderr,"done. \n");
     }
+    b &= getLowerEncodersSpeedAndAcceleration();
+    setLowerMeasure(_init);
 
     //inertial sensor
     if (waitMeasure) fprintf(stderr,"Trying to connect to inertial sensor...");
@@ -835,10 +860,11 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 #endif
     }
 
-    b &= getUpperEncodersSpeedAndAcceleration();
-    setUpperMeasure(_init);
-    b &= getLowerEncodersSpeedAndAcceleration();
-    setLowerMeasure(_init);
+    //update the status memory
+    current_status.timestamp=Time::now();
+    previous_status.push(current_status);
+    if (previous_status.size()>10) previous_status.pop();
+
     return b;
 }
 

@@ -188,7 +188,7 @@ private:
     bool     right_arm_enabled;
     bool     dummy_ft;
     bool     dump_vel_enabled;
-
+    bool     auto_drift_comp;
     
     dataFilter *port_inertial_input;
     BufferedPort<Vector> port_filtered_output;    
@@ -221,6 +221,7 @@ public:
         w0_dw0_enabled = false;
         dummy_ft = false;
         dump_vel_enabled = false;
+        auto_drift_comp = false;
     }
 
     virtual bool createDriver(PolyDriver *&_dd, Property options)
@@ -288,7 +289,10 @@ public:
                 inv_dyn->resume();
             }
             fprintf(stderr,"Recalibration complete.\n");
+            reply.addString("Recalibrated");
+            return true;
         }
+        reply.addString("Unknown command");
         return true;
     }
 
@@ -411,6 +415,12 @@ public:
             fprintf(stderr,"Dumping joint velocities and accelerations (debug mode)\n");
         }
 
+        if (rf.check("auto_drift_comp"))
+        {
+            auto_drift_comp = true;
+            fprintf(stderr,"Enabling automatic drift compensation (experimental)\n");
+        }
+
         //---------------------DEVICES--------------------------//
 
         OptionsHead.put("device","remote_controlboard");
@@ -502,6 +512,7 @@ public:
         //--------------------------THREAD--------------------------
         inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect);
         inv_dyn->com_enabled=com_enabled;
+        inv_dyn->auto_drift_comp=auto_drift_comp;
         inv_dyn->com_vel_enabled=com_vel_enabled;
         inv_dyn->dummy_ft=dummy_ft;
         inv_dyn->w0_dw0_enabled=w0_dw0_enabled;
@@ -659,6 +670,7 @@ int main(int argc, char * argv[])
         cout << "\t--dummy_ft        uses fake FT sensors (debug use only)"                                                           << endl;
         cout << "\t--dumpvel         dumps joint velocities and accelerations (debug use only)"                                       << endl;
         cout << "\t--experimental_com_vel  enables com velocity computation (experimental)"                                           << endl;
+        cout << "\t--auto_drift_comp  enables automatic drift compensation  (experimental, under debug)" << endl;
         return 0;
     }
 
