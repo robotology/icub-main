@@ -1,0 +1,148 @@
+[POSITION0] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION1] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+
+[POSITION2] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+
+[POSITION3] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+
+[POSITION4] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION5] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION6] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION7] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION8] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION9] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION10] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION11] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION12] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION13] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION14] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION15] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION16] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION17] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION18] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION19] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION20] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION20] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION21] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+[POSITION22] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00
+[POSITION23] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00 
+
+[POSITION24] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION25] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION26] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION27] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION28] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+
+//greeting+home
+[POSITION29] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION30] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION31] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION32] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+[POSITION33] 
+jointPositions 0 0 0 0 0 0
+jointVelocities 10 10 10 10 10 10
+timing 2.00  
+
+ 
+[DIMENSIONS]
+numberOfPoses 34
+numberOfJoints 6

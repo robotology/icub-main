@@ -1,0 +1,10 @@
+<cluster name="icub" user="icub">
+
+<nameserver namespace="/root" node="rclab-desktop001"> </nameserver>
+
+<node>pc104</node>
+<node display="yes">rclab-desktop001</node>
+<node display="yes">rclab-desktop002</node>
+<node display="yes">rclab-laptop001</node>
+</cluster>
+

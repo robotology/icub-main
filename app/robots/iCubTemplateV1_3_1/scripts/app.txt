@@ -1,0 +1,13 @@
+[NAME]
+Main
+
+[APPLICATIONS]
+# use * or leave empty to mean everything
+wholeBodyDynamics
+cameras
+faceExpressions
+skinGui
+demoy3
+demoForceControl
+hannover
+

@@ -1,0 +1,66 @@
+<application>
+  <name>Skin Gui Right Arm</name>
+  <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompRight.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>skinCompRA</tag>
+  </module>
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiRight.ini --context skinGui/conf  --xpos 1020 --ypos 350</parameters>
+    <node>console</node>
+    <tag>skinCompGuiRA</tag>
+  </module>
+
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_arm.ini --useCalibration --xpos 820 --ypos 450 --width 800 --height 550</parameters>
+    <node>console</node>
+    <tag>skinGuiRA</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_forearm.ini --useCalibration --xpos 820 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiRF</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_hand.ini --useCalibration --xpos 1230 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiRH</tag>
+  </module>
+
+  <connection>
+    <from>/driftCompGuiRight/rpc:o</from>
+    <to>/rightSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/rightSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiRight/monitor:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/rightSkinDriftComp/info:o</from>
+    <to>/driftCompGuiRight/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/right_hand_comp</from>
+    <to>/skinGui/right_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_forearm_comp</from>
+    <to>/skinGui/right_forearm:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_arm_comp</from>
+    <to>/skinGui/right_arm:i</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>

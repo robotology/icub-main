@@ -1,0 +1,29 @@
+<application>
+<name>Display logpolar images</name>
+<dependencies>
+      <port>/icub01</port>
+</dependencies>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/leftlp --x 640 --y 0 --synch</parameters>
+      <node>icub12</node>
+	<tag>viewleftlp</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/rightlp --x 960 --y 0 --synch</parameters>
+      <node>icub12</node>
+	<tag>viewrightlp</tag>
+   </module>
+<connection>
+  <output>/icub/cam/left/logpolar</output>
+  <input>/icub/view/leftlp</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right/logpolar</output>
+  <input>/icub/view/rightlp</input>
+  <protocol>mcast</protocol>
+</connection>
+</application>
+

@@ -1,0 +1,45 @@
+<application>
+  <name>Skin Gui Torso</name>
+  <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompTorso.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>skinCompT</tag>
+  </module>
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiTorso.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>skinCompGuiT</tag>
+  </module>
+  
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from torso.ini --useCalibration</parameters>
+    <node>console</node>
+    <tag>skinGuiT</tag>
+  </module>  
+  
+  
+  <connection>
+    <from>/driftCompGuiTorso/rpc:o</from>
+    <to>/torsoSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/torsoSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiTorso/monitor:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/torsoSkinDriftComp/info:o</from>
+    <to>/driftCompGuiTorso/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/torso_comp</from>
+    <to>/skinGui/torso:i</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>

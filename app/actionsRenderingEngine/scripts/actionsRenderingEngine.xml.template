@@ -1,0 +1,163 @@
+
+<application>
+<name>Actions Rendering Engine</name>
+
+        <dependencies>
+            <port>/icub/camcalib/left/out</port>
+            <port>/icub/camcalib/right/out</port>
+            <port>/icub/cartesianController/left_arm/state:o</port>
+            <port>/icub/cartesianController/right_arm/state:o</port>
+            <port>/iKinGazeCtrl/head/angles:o</port>
+        </dependencies>
+
+
+
+        <!--Core module-->  
+        <module>
+            <name>actionsRenderingEngine</name>
+            <stdio>console</stdio>            
+            <node>node0</node>
+            <tag>actionsRenderingEngine</tag>
+        </module>
+       
+        <!--Viewers-->  
+        <module>
+            <name>yarpview</name>
+            <parameters>--name /actionsRenderingEngine/left/view --x 0 --y 0 --RefreshTime 33 --out /actionsRenderingEngine/left/raw:o</parameters>
+            <node>console</node>
+            <tag>viewLeft</tag>
+        </module>
+        <module>
+            <name>yarpview</name>
+            <parameters>--name /actionsRenderingEngine/right/view --x 308 --y 0 --RefreshTime 33 --out /actionsRenderingEngine/right/raw:o</parameters>
+            <node>console</node>
+            <tag>viewRight</tag>
+        </module>
+        
+        <!--Optional modules-->  
+        <module>
+                <name>templatePFTracker</name>
+                <node>node1</node>
+                <tag>particleFilterTracker</tag>
+        </module>
+        <module>
+                <name>motionCUT</name>
+                <parameters>--name motionCUT/left --coverXratio 0.7 --coverYratio 0.7 --framesPersistence 2 --numThreads 5 --nodesStep 6 --recogThres 0.512</parameters>
+                <node>node2</node>
+                <tag>motionCUTLeft</tag>
+        </module>
+        <module>
+                <name>motionCUT</name>
+                <parameters>--name motionCUT/right --coverXratio 0.7 --coverYratio 0.7 --framesPersistence 2 --numThreads 5 --nodesStep 6 --recogThres 0.512</parameters>
+                <node>node3</node>
+				<tag>motionCUTRight</tag>
+        </module>
+        <module>
+				<name>stereoDisparity</name>
+				<parameters>--from stereoDisparity.ini</parameters>
+				<node>node4</node>
+				<tag>stereoDisparity</tag>
+		</module>
+
+
+        <!--Core connections-->  
+		<connection>
+            <from>/icub/camcalib/left/out</from>
+            <to>/actionsRenderingEngine/left/img:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/icub/camcalib/right/out</from>
+            <to>/actionsRenderingEngine/right/img:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/left/img:o</from>
+            <to>/actionsRenderingEngine/left/view</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/right/img:o</from>
+            <to>/actionsRenderingEngine/right/view</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/left/raw:o</from>
+            <to>/actionsRenderingEngine/left/raw:i</to>
+            <protocol>tcp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/right/raw:o</from>
+            <to>/actionsRenderingEngine/right/raw:i</to>
+            <protocol>tcp</protocol>
+        </connection>
+		
+		
+        <!-- Particle Filtering connections-->  
+        <connection>
+            <from>/icub/camcalib/left/out</from>
+            <to>/templatePFTracker/left/image:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/icub/camcalib/right/out</from>
+            <to>/templatePFTracker/right/image:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/tracker:o</from>
+            <to>/templatePFTracker/template/image:i</to>
+            <protocol>tcp</protocol>
+        </connection>
+        <connection>
+            <from>/templatePFTracker/target:o</from>
+            <to>/actionsRenderingEngine/tracker:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        
+        <!--motionCUT connections--> 
+        <connection>
+            <from>/icub/camcalib/left/out</from>
+            <to>/motionCUT/left/img:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/icub/camcalib/right/out</from>
+            <to>/motionCUT/right/img:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/motionCUT/left/blobs:o</from>
+            <to>/actionsRenderingEngine/left/blobs:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/motionCUT/right/blobs:o</from>
+            <to>/actionsRenderingEngine/right/blobs:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        
+        <!--stereoDisparity connections--> 				
+		<connection>
+		  <output>/icub/cam/right</output>
+		  <input>/stereoDisparity/cam/right:i</input>
+		  <protocol>udp</protocol>
+		</connection>
+		<connection>
+		  <output>/icub/cam/left</output>
+		  <input>/stereoDisparity/cam/left:i</input>
+		  <protocol>udp</protocol>
+		</connection>
+		<connection>
+		  <output>/eyeLeft/out</output>
+		  <input>/actionsRenderingEngine/left/raw:i</input>
+		  <protocol>tcp</protocol>
+		</connection>
+		<connection>
+		  <output>/actionsRenderingEngine/disparity:io</output>
+		  <input>/stereoDisparity/rpc</input>
+		  <protocol>tcp</protocol>
+		</connection>
+
+
+</application>

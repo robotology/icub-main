@@ -1,0 +1,129 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_armCartesianController armCartesianController
+
+An application that enables the user to select objects lying on a table,
+in order to steer the robot gaze to them and ultimately command a grasp.
+
+\section intro_sec Description
+A table whose height relative to the robot reference frame is supposed to
+be known is presented to the robot along with some object lying on top.
+Robot cameras images are made availabe to the user who in turn is asked to
+select points within two different windows displaying the same image.
+Any clicked point (represented in u,v image coordinates) is then transformed
+in the corresponding 3-d point projected on the table surface as result
+of the so called homography operation.
+
+One window is intended to sent the transformed clicked point of the selected
+object (suppose that we click on a object) as input to the gaze control module
+which steers the robot head in order to keep the object in fixation.
+ 
+On the other hand, the 3-d output of the second window is used to initiate a
+grasp action on the selected object.
+
+Important note: make sure the windows always have the original size, do not
+                resize them manually.
+
+The grasp is executed in three steps with the nearest hand:
+- at first, the hand reaches a position on top of the object with the correct
+  posture;
+- then, the hand goes down towards the commanded 3-d point;
+- finally, the fingers close over the object while contact detection prevents
+  damage.
+Once grasped, the object is lifted and then released, while the hand moves to
+the home position. Note that the only feedback part consists of contact detection,
+no adjustments for correcting grasp positions are given by vision system.
+
+\note A video on iCub grasping objects can be seen <a href="http://eris.liralab.it/misc/icubvideos/icub_grasps_sponges.wmv">here</a>.
+
+\section cartesianController_sec Summary of Cartesian Controller Implementation
+Given the cartesian position of an object to be grasped as result of a visual
+recognition process, the complexity of the reaching task is tackled with a modular
+approach as depicted below:
+
+\image html cartesianModularDiagram.png "Diagram of modular controller"
+
+-# in the first stage the arm joints configuration which achieves the complete
+   desired pose (i.e. end-effector position and orientation) is determined through
+   a <b>nonlinear optimizer</b> taking into account all the imposed constraints;
+-# human-like quasi-straight trajectories are then generated independently by a
+   <b>biologically inspired controller</b>.
+
+\subsection solver_sec 1. The Solver
+To sidestep the weaknesses of kinematic inversion methods that do not account
+automatically for joints constraints (they usually resort to the null-space
+projection which in turn has to be accurately tuned), a solution based upon
+a constrained optimization method has been adopted for the solver module.
+In particular, we used <a href="https://projects.coin-or.org/Ipopt">IpOpt</a>
+which is a public domain software package designed for large-scale nonlinear
+optimization problems and is applied here to find solutions for the inverse
+problem as follows:
+
+\f[
+\mathbf{q}=\arg\min_{\mathbf{q}\in R^{10} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left\|\mathbf{q}_{rest}-\mathbf{q}\right\|^2\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
+\f]
+
+Where the solution \f$ \mathbf{q} \f$ is the joints vector with 10 components
+(7 joints for arm, 3 joints for torso or any other number of joints depending
+on the task) that is guaranteed to be found within the physical bounds expressed
+by \f$ \mathbf{q}_L \f$ and \f$ \mathbf{q}_U \f$; \f$ \mathbf{x}_d\equiv\left(x,y,d\right)_d \f$
+is the positional part of the desired pose, \f$ \mathbf{\alpha}_d \f$ is the
+desired orientation and \f$ \mathit{K_x} \f$ and \f$ \mathit{K_{\alpha}} \f$ are
+the forward kinematic maps for the position and orientation part, respectively;
+\f$ \mathbf{q}_{rest} \f$ is used to keep torso as close as possible (weighting
+with a positive factor \f$ \mathit{w} < 1 \f$) to the vertical position while reaching
+and \f$ \epsilon \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right] \f$.
+
+\subsection controller_sec 2. The Controller
+The generation of velocity profile is achieved by applying the concept of
+<a href="http://eris.liralab.it/viki/images/c/cf/CartesianControllersEvaluation.pdf">Multi-Referential Systems</a>
+where two minimum-jerk generators, one in joint space and one in task space, produce
+velocities commands simultaneously; the coherence constraints are enforced with a
+Lagrangian multipliers method that can be exploited also to modulate the relative
+influence of each dynamical system to avoid joint angles bounds while going all
+over the path.
+
+\image html cartesianControllerDiagram.png "Multi-Referential controllers diagram"
+
+The advantage of such a redundant representation of the movement is that a quasi-straight
+line trajectory profile can be generated for the end-effector in the task space reproducing
+a human-like behaviour, while retaining converge property and robustness against singularities
+(the method can be cast back to the DLS algorithm).
+
+For further details about:
+- <b>homography</b> please refer to the documentation of eye2world module in the contrib branch.
+- <b>executing motor primitives</b> such as the grasp please refer to \ref ActionPrimitives documentation.
+- <b>controlling the gaze</b> please refer to \ref iKinGazeCtrl documentation.
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
+Assumes \ref iKinGazeCtrl is running.
+Assumes camera images are available.
+
+\section int_sec Instantiated Modules
+- eye2world (from contrib branch)
+
+- \ref ationPrimitivesExample
+
+\section config_sec Configuration Files
+- ./conf/table.ini provides the 3-d position of the table where
+  objects to grasp are supposed to lie on. Note that the position is
+  relative to the robot's reference frame and is computed in meters.
+
+- .conf/icubEyes.ini contains calibration parameters for the cameras.
+
+\section howto_sec How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
+
+- ./scripts/armCartesianController.xml.template
+  provides grasping with both arms.
+
+\author Ugo Pattacini
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*/
+
+

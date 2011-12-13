@@ -1,0 +1,54 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+add_subdirectory(ctpService)
+add_subdirectory(demoGraspManager_IIT_ISR)
+add_subdirectory(learningMachine)
+add_subdirectory(iCubDemoY3)
+add_subdirectory(demoForceImitation)
+add_subdirectory(logpolarRemapper)
+add_subdirectory(logpolarTransform)
+add_subdirectory(velocityControl)
+add_subdirectory(velocityObserver)
+add_subdirectory(wholeBodyDynamics)
+add_subdirectory(gravityCompensator)
+add_subdirectory(skinDriftCompensation)
+add_subdirectory(objectsPropertiesCollector)
+add_subdirectory(pmpServer)
+
+if(ICUB_USE_OpenCV)
+	add_subdirectory(actionsRenderingEngine)
+    add_subdirectory(motionCUT)    
+    add_subdirectory(camCalib)
+    add_subdirectory(pf3dTracker)    
+
+    if(ICUB_OpenCV_LEGACY)
+        message(STATUS "OpenCV legacy detected")
+        message(STATUS "skipping pf3dBottomup")
+    else(ICUB_OpenCV_LEGACY)
+        # put here modules that rely on old versions of OpenCV declared as legacy
+        add_subdirectory(pf3dBottomup)
+    endif(ICUB_OpenCV_LEGACY)
+else(ICUB_USE_OpenCV)
+    message(STATUS "OpenCV not found/selected, skipping actionsRenderingEngine")
+    message(STATUS "OpenCV not found/selected, skipping motionCUT")
+    message(STATUS "OpenCV not found/selected, skipping camCalib")
+    message(STATUS "OpenCV not found/selected, skipping pf3dTracker")
+    message(STATUS "OpenCV not found/selected, skipping pf3dBottomup")
+endif(ICUB_USE_OpenCV)
+
+if(ICUB_USE_IPOPT)
+    add_subdirectory(iKinGazeCtrl)
+    add_subdirectory(iKinCartesianSolver)
+else(ICUB_USE_IPOPT)
+    message(STATUS "IPOPT not found/selected, skipping iKinGazeCtrl")
+    message(STATUS "IPOPT not found/selected, skipping iKinCartesianSolver")
+endif(ICUB_USE_IPOPT)
+
+if(ICUB_USE_GtkPlus)
+    add_subdirectory(demoForceControl)
+else(ICUB_USE_GtkPlus)
+    message(STATUS "GtkPlus not selected, skipping demoForceControl")
+endif(ICUB_USE_GtkPlus)
+

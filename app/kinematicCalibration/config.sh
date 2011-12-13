@@ -1,0 +1,1 @@
+POS_PATH=$ICUB_ROOT/app/kinematicCalibration/positionSequence/positionSequenceLeg

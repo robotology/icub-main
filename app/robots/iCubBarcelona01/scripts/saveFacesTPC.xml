@@ -1,0 +1,32 @@
+<application>
+<name>Save Faces TPC</name>
+        <module>
+                <name>saveFaces</name>
+		<parameters> /home/icub/Desktop/TPC-Andre/Martin </parameters>
+                <node>icubdebian2</node>
+                <tag>savefaces</tag>
+        </module>
+          
+        <module>
+                <name>iKinGazeCtrl</name>
+                <node>icubdebian2</node>
+                <tag>gazeCtrl</tag>
+        </module>
+        <connection>
+                <from>/icub/camcalib/left/out</from>
+                <to>/savefaces/image/left/in</to>
+                <protocol>udp</protocol>
+        </connection>
+	<connection>
+                <from>/icub/camcalib/right/out</from>
+                <to>/savefaces/image/right/in</to>
+                <protocol>udp</protocol>
+        </connection>
+       
+	<connection>
+                <from>/savefaces/two_d_points/out</from>
+                <to>/iKinGazeCtrl/head/pixel:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        
+</application>

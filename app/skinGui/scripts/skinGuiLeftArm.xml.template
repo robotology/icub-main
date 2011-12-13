@@ -1,0 +1,68 @@
+<application>
+  <name>Skin Gui Left Arm</name>
+  <module>
+    <name>skinDriftCompensation</name>
+    <parameters>--from driftCompLeft.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>skinCompLA</tag>
+  </module>
+  <module>
+    <name>skinDriftCompensationGui</name>
+    <parameters>--from driftCompGuiLeft.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
+    <node>console</node>
+    <tag>skinCompGuiLA</tag>
+  </module>
+
+  
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_arm.ini --useCalibration --xpos 0 --ypos 450 --width 800 --height 550</parameters>
+    <node>console</node>
+    <tag>skinGuiLA</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_forearm.ini --useCalibration --xpos 0 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiLF</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_hand.ini --useCalibration --xpos 410 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiLH</tag>
+  </module>
+  
+  
+  <connection>
+    <from>/driftCompGuiLeft/rpc:o</from>
+    <to>/leftSkinDriftComp/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/leftSkinDriftComp/monitor:o</from>
+    <to>/driftCompGuiLeft/monitor:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/leftSkinDriftComp/info:o</from>
+    <to>/driftCompGuiLeft/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/left_hand_comp</from>
+    <to>/skinGui/left_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_comp</from>
+    <to>/skinGui/left_forearm:i</to>
+    <protocol>udp</protocol>
+  </connection>  
+  <connection>
+    <from>/icub/skin/left_arm_comp</from>
+    <to>/skinGui/left_arm:i</to>
+    <protocol>udp</protocol>
+  </connection>  
+</application>

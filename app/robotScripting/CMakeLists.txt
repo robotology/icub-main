@@ -1,0 +1,69 @@
+set(appname robotScripting)
+
+icub_app(${appname})
+
+file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml.template)
+file(GLOB hannover_left ${CMAKE_CURRENT_SOURCE_DIR}/hannover/left/*)
+file(GLOB hannover_right ${CMAKE_CURRENT_SOURCE_DIR}/hannover/right/*)
+file(GLOB frizzi_collegamento ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/collegamento/*)
+file(GLOB recording ${CMAKE_CURRENT_SOURCE_DIR}/recording/sequence/*)
+file(GLOB budapest ${CMAKE_CURRENT_SOURCE_DIR}/budapest/sequence/*)
+
+icub_app_install(${appname} 
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripting.py)	
+
+icub_app_install(${appname}
+  FILES ${scripts}
+  DESTINATION scripts)
+
+# hannover demo scripting
+icub_app_install(${appname}
+  FILES ${hannover_left}
+  DESTINATION hannover/left)
+
+icub_app_install(${appname}
+  FILES ${hannover_right}
+  DESTINATION hannover/right)
+
+# frizzi (quirinale) demo scripting
+icub_app_install(${appname}
+  FILES ${frizzi_collegamento}
+  DESTINATION frizzi/sequence)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/frizzi/icub-speak
+  DESTINATION frizzi)
+
+# budapest demo scripting
+icub_app_install(${appname}
+  FILES ${budapest}
+  DESTINATION budapest/sequence)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/budapest/icub-speak
+  DESTINATION budapest)
+  
+# recording demo scripting
+icub_app_install(${appname}
+  FILES ${recording}
+  DESTINATION recording/sequence)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/icub-speak
+  DESTINATION recording)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpHead
+  DESTINATION recording)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpLeftArm
+  DESTINATION recording)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpRightArm
+  DESTINATION recording)
+
+icub_app_install(${appname}
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/recording/dumpTorso
+  DESTINATION recording)

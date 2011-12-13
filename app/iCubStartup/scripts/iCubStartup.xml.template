@@ -1,0 +1,80 @@
+<application>
+<name>iCubStartup</name>
+
+        <dependencies>
+        </dependencies>
+      
+        <module>
+                <name>iCubInterface</name>
+                <node>pc104</node>
+                <tag>icubInterface</tag>
+        </module>
+
+        <module>
+                <name>iCubInterfaceGuiClient</name>
+                <node>console</node>
+                <tag>iCubInterfaceGuiClient</tag>
+        </module>
+   
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part right_arm</parameters>
+                <node>pwrNode1</node>
+                <tag>rightArmSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part left_arm</parameters>
+                <node>pwrNode2</node>
+                <tag>leftArmSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part right_leg</parameters>
+                <node>pwrNode3</node>
+                <tag>rightLegSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part left_leg</parameters>
+                <node>pwrNode4</node>
+                <tag>leftLegSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinGazeCtrl</name>
+                <!-- Remember to add the "--headV2" parameter for robots equipped with head v. 2.0 -->
+                <parameters>--context cameraCalibration/conf --config icubEyes.ini --eyeTiltMin -7.5 --eyeTiltMax 15.0 --ping_robot_tmo 40.0</parameters>
+                <node>pwrNode5</node>
+                <tag>gazeController</tag>
+        </module>
+
+        <!-- Enable/disable wholeBodyDynamics if you have/don't have torque sensors -->
+        <module>
+                <name>wholeBodyDynamics</name>
+                <!-- Remember to add the "--headV2" parameter for robots equipped with head v. 2.0 -->
+                <parameters>--autoconnect</parameters>
+                <node>pwrNode6</node>
+                <tag>wholeBodyDynamicsTag</tag>
+        </module>
+
+        <!-- Enable/disable gravityCompensator if you have/don't have torque sensors -->
+        <module>
+                <name>gravityCompensator</name>
+                <!-- Remember to add the "--headV2" parameter for robots equipped with head v. 2.0 -->
+                <parameters></parameters>
+                <node>pwrNode6</node>
+                <tag>gravityCompensatorTag</tag>
+        </module>
+
+
+        <connection>
+                <from>/icubinterfacegui/client</from>
+                <to>/icubinterfacegui/server</to>
+                <protocol>tcp</protocol>
+        </connection>
+
+</application>

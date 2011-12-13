@@ -1,0 +1,11 @@
+[POSITION0] 
+jointPositions 3.23 -80.54 0.29 87.21 0.42 9.35 -0.11 -15.65 0.55 -13.29 0.07 19.68 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 
+timing 10.00 
+[POSITION1] 
+jointPositions 3.23 -31.40 0.37 -13.36 0.42 9.35 -0.11 -85.02 0.55 79.55 0.07 -11.62 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 10.00 
+timing 10.00 
+[DIMENSIONS]
+numberOfPoses 2
+numberOfJoints 12

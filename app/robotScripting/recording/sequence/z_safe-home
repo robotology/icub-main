@@ -1,0 +1,12 @@
+echo "ctpn time 3 off 0 pos (-57.01 21.02 -13.83 73.36 4.00 0.00 16.0 6 0 2 19 11 0 5 7 7)" | yarp rpc /ctpservice/left_arm/rpc
+
+echo "ctpn time 3 off 0 pos (-57.01 21.02 -13.83 73.36 4.00 0.00 16.0 6 0 2 19 11 0 5 7 7)" | yarp rpc /ctpservice/right_arm/rpc
+
+sleep 3
+echo "ctpq time 3 off 0 pos (-0.00 22.00 7.0 15.0 4.00 0.00 16.0 6 0 2 19 11 0 5 7 7)" | yarp rpc /ctpservice/left_arm/rpc
+
+echo "ctpq time 3 off 0 pos (-0.00 22.00 7.0 15.0 4.00 0.00 16.0 6 0 2 19 11 0 5 7 7)" | yarp rpc /ctpservice/right_arm/rpc
+
+echo "ctpn time 2 off 0 pos (0 0 0 0 -1 0)" | yarp rpc /ctpservice/head/rpc
+echo "ctpn time 3 off 0 pos (0 0 0)" | yarp rpc /ctpservice/torso/rpc
+

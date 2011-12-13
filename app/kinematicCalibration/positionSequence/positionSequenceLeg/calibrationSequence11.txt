@@ -1,0 +1,7 @@
+time 4.0
+[include RIGHTARM "calibrationSequence11.posright_arm"]
+[include LEFTARM "calibrationSequence11.posleft_arm"]
+[include TORSO "calibrationSequence11.postorso"]
+[include HEAD "calibrationSequence11.poshead"]
+[include RIGHTLEG "calibrationSequence11.posright_leg"]
+[include LEFTLEG "calibrationSequence11.posleft_leg"]

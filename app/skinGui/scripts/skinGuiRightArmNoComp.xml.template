@@ -1,0 +1,38 @@
+<application>
+  <name>Skin Gui Right Arm No Compensation</name>
+  
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_arm.ini --name /skinGuiNoComp --xpos 820 --ypos 450 --width 800 --height 550</parameters>
+    <node>console</node>
+    <tag>skinGuiRANC</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_forearm.ini --name /skinGuiNoComp --xpos 820 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiRFNC</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_hand.ini --name /skinGuiNoComp --xpos 1230 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiRHNC</tag>
+  </module>
+
+  <connection>
+    <from>/icub/skin/right_hand</from>
+    <to>/skinGuiNoComp/right_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_forearm</from>
+    <to>/skinGuiNoComp/right_forearm:i</to>
+    <protocol>udp</protocol>
+  </connection>  
+  <connection>
+    <from>/icub/skin/right_arm</from>
+    <to>/skinGuiNoComp/right_arm:i</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>

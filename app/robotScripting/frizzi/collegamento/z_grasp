@@ -1,0 +1,8 @@
+
+
+echo "ctpn time 3 off 7 pos (13.20 65.94 33.01 66.38 59.95 74.18 60.05 73.84 200.96)" | yarp rpc /ctpservice/right_arm/rpc
+
+#14.40 79.93 59.85 33.70 59.13 69.20 43.85 91.06 157.58)" | yarp rpc /#ctpservice/right_arm/rpc
+
+
+
