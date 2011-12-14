@@ -116,6 +116,7 @@ protected:
 	int numBalls;
 	int numHats;
 	int numButtons;
+        int joy_id;
 	SDL_Joystick* joy1;
 
 	//variables read from the joystick
@@ -137,6 +138,7 @@ public:
     CtrlThread(unsigned int _period, ResourceFinder &_rf) :
                RateThread(_period),     rf(_rf)
 	{
+                joy_id=0;
 		rawButtons=0;
 		rawAxes=0;
 		outAxes=0;
@@ -292,7 +294,7 @@ public:
 
 		// get the list of available joysticks
 		fprintf ( stderr, "\n");
-		int joy_id=0;
+
 		int joystick_num = SDL_NumJoysticks ();
 		if (joystick_num == 0)
 		{
@@ -300,8 +302,9 @@ public:
 		}
 		else if (joystick_num == 1)
 		{
+                        joy_id=0;
 			fprintf ( stderr, "One joystick found \n");
-			fprintf ( stderr, "Using joystick: %s \n", SDL_JoystickName(0));
+			fprintf ( stderr, "Using joystick: %s \n", SDL_JoystickName(joy_id));
 		}
 		else
 		{
@@ -398,6 +401,15 @@ public:
 
     virtual void run()
     {
+                //check if driver is connected
+                /*
+                if (joy_id>SDL_NumJoysticks())
+                {
+                    fprintf ( stderr, "Lost connection to driver!\n");
+                }
+                fprintf ( stderr, "%d\n",SDL_NumJoysticks());
+                */
+
 		// This is needed in the event queue
 		SDL_JoystickUpdate ();
 
