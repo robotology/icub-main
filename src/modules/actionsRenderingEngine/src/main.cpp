@@ -43,7 +43,8 @@ estimate of the 2D target.
 The commands sent as bottles to the module port /<modName>/cmd:io
 are described in the following. Note that all commands can be supplied 
 with the optional parameter "left" or "right" to select the arm in use
-for the action. 
+for the action. The response to any command consists in the voca [ack]/[nack] in case of
+success/faliure.
 
 Some commands require to specify a visual target for 
 the action required. In these cases the parameter [target] can be expressed as follows:
@@ -261,6 +262,10 @@ Windows, Linux
 #include <iCub/MotorThread.h>
 #include <iCub/VisuoThread.h>
 
+
+#define ACK                         VOCAB3('a','c','k')
+#define NACK                        VOCAB4('n','a','c','k')
+
 #define RPC_HELP                    VOCAB4('h','e','l','p')
 #define RPC_GET                     VOCAB3('g','e','t')
 #define RPC_GET_STATUS              VOCAB4('s','t','a','t')
@@ -450,9 +455,15 @@ public:
         cmdPort.read(command,true);
 
         if(command.size()==0)
+        {
+            reply.addVocab(NACK);
             reply.addString("No command received.");
+        }
         else if(interrupted)
+        {
+            reply.addVocab(NACK);
             reply.addString("Module currently interrupted. Reinstate for action.");
+        }
         else
         {
             motorThr->update();
@@ -462,14 +473,14 @@ public:
                 case CMD_IDLE:
                 {
                     motorThr->setGazeIdle();
-                    reply.addString("idle");
+                    reply.addVocab(ACK);
                     break;
                 }
 
                 case CMD_HOME:
                 {
                     motorThr->goHome(command);
-                    reply.addString("home");
+                    reply.addVocab(ACK);
 
                     break;
                 }
@@ -493,7 +504,7 @@ public:
                                             reply.addDouble(xd[i]);
                                     }
                                     else
-                                        reply.addString("Error");
+                                        reply.addVocab(NACK);
                                 }
 
                                 break;
@@ -514,10 +525,10 @@ public:
                         {
                             case EXPLORE_TORSO:
                             {
-                                if(motorThr->calibTable(command))
-                                    reply.addString("table height found");
+                                if(motorThr->exploreTorso(command))
+                                    reply.addVocab(ACK);
                                 else
-                                    reply.addString("table height not found");
+                                    reply.addVocab(NACK);
 
                                 break;
                             }
@@ -525,13 +536,17 @@ public:
                             default:
                             {
                                 string rep=command.get(1).asString().c_str();
+                                reply.addVocab(NACK);
                                 reply.addString(("parameter '"+rep+"' not supported by 'explore' command.").c_str());
+                                break;
                             }
                         }
                     }
                     else
+                    {
+                        reply.addVocab(NACK);
                         reply.addString("explore command needs further parameter (e.g. 'torso')");
-
+                    }
                     break;
                 }
                 
@@ -542,9 +557,9 @@ public:
                         case CALIB_TABLE:
                         {
                             if(motorThr->calibTable(command))
-                                reply.addString("table height found");
+                                reply.addVocab(ACK);
                             else
-                                reply.addString("table height not found");
+                                reply.addVocab(NACK);
 
                             break;
                         }
@@ -552,9 +567,9 @@ public:
                          case CALIB_FINGERS:
                         {
                             if(motorThr->calibFingers(command))
-                                reply.addString("fingers calibrated");
+                                reply.addVocab(ACK);
                             else
-                                reply.addString("could not calibrate fingers");
+                                reply.addVocab(NACK);
 
                             break;
                         }
@@ -563,13 +578,23 @@ public:
                         {
                             if(command.get(2).asString()=="start")
                             {
-                                motorThr->startLearningModeKinOffset(command);
-                                reply.addString("learn kinematic offset mode: on");
+                                if(motorThr->startLearningModeKinOffset(command))
+                                {
+                                    reply.addVocab(ACK);
+                                    reply.addString("learn kinematic offset mode: on");
+                                }
+                                else
+                                    reply.addVocab(NACK);
                             }
                             else if(command.get(2).asString()=="stop")
                             {
-                                motorThr->suspendLearningModeKinOffset(command);
-                                reply.addString("learn kinematic offset mode: off");
+                                if(motorThr->suspendLearningModeKinOffset(command))
+                                {
+                                    reply.addVocab(ACK);
+                                    reply.addString("learn kinematic offset mode: off");
+                                }
+                                else
+                                    reply.addVocab(NACK);
                             }
 
                             break;
@@ -591,22 +616,29 @@ public:
                         action.addString(action_name.c_str());
 
                         if(!motorThr->startLearningModeAction(command))
+                        {
+                            reply.addVocab(NACK);
                             reply.addString(("action "+action_name+" already known").c_str());
+                        }
                         else
                         {
                             motorThr->setGazeIdle();
                             motorThr->lookAtHand();
+                            reply.addVocab(ACK);
                             reply.addString("start teaching");
                         }
                     }
 
                     if(check(command,"stop"))
                     {
-                        bool ok=motorThr->suspendLearningModeAction(command);
-                        
-                        fprintf(stdout,"stopped %s\n",ok?"ok":"bad");
-                        motorThr->setGazeIdle();
-                        reply.addString("stop teaching");
+                        if(motorThr->suspendLearningModeAction(command))
+                        {
+                            motorThr->setGazeIdle();
+                            reply.addVocab(ACK);
+                            reply.addString("stop teaching");
+                        }
+                        else
+                            reply.addVocab(NACK);
                     }
 
                     break;
@@ -623,10 +655,15 @@ public:
                     motorThr->lookAtHand();
 
                     if(!motorThr->imitateAction(command))
+                    {
+                        reply.addVocab(ACK);
                         reply.addString(("action "+action_name+" unkown").c_str());
+                    }
                     else
+                    {
+                        reply.addVocab(NACK);
                         reply.addString(("action "+action_name+" done").c_str());
-
+                    }
                     motorThr->setGazeIdle();
 
                     break;
@@ -667,6 +704,7 @@ public:
                 {
                     if(!motorThr->isHolding(command))
                     {
+                        reply.addVocab(NACK);
                         reply.addString("Nothing to drop. Not holding anything");
                         motorThr->release(command);
                         motorThr->goHome(command);
@@ -677,7 +715,7 @@ public:
                     motorThr->drawNear(command);
                     motorThr->setGazeIdle();
 
-                    reply.addString("observing");
+                    reply.addVocab(ACK);
 
                     break;
                 }
@@ -686,6 +724,7 @@ public:
                 {
                     if(!motorThr->isHolding(command))
                     {
+                        reply.addVocab(NACK);
                         reply.addString("Nothing to drop. Not holding anything");
                         motorThr->release(command);
                         motorThr->goHome(command);
@@ -704,7 +743,8 @@ public:
                     motorThr->goHome(command);
                     motorThr->setGazeIdle();
 
-                    reply.addString("dropped");
+                    reply.addVocab(ACK);
+
                     break;
                 }
 
@@ -712,7 +752,7 @@ public:
                 {
                     if(command.size()<2)
                     {
-                        reply.addString("Error");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -720,7 +760,7 @@ public:
 
                     if(!motorThr->reach(command))
                     {
-                        reply.addString("failed. Please specify the target");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -744,14 +784,14 @@ public:
                             motorThr->goHome(b);
                         }
 
-                        reply.addString("holding");
+                        reply.addVocab(ACK);
                     }
                     else
                     {
                        motorThr->setGazeIdle();
                        motorThr->release(command);
                        motorThr->goHome(command);
-                       reply.addString("failed");
+                       reply.addVocab(NACK);
                     }
 
                     break;
@@ -761,7 +801,7 @@ public:
                 {
                      if(command.size()<2)
                     {
-                        reply.addString("Error");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -769,7 +809,7 @@ public:
 
                     if(!motorThr->reach(command))
                     {
-                        reply.addString("failed. Please specify the target");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -779,7 +819,7 @@ public:
                         motorThr->goHome(command);
                     }
 
-                    reply.addString("touched");
+                    reply.addVocab(ACK);
                     break;
                 } 
 
@@ -787,7 +827,7 @@ public:
                 {
                     if(command.size()<2)
                     {
-                        reply.addString("Error");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -795,14 +835,14 @@ public:
 
                     if(!motorThr->push(command))
                     {
-                        reply.addString("failed. Please specify the target");
+                        reply.addVocab(NACK);
                         break;
                     }
 
                     motorThr->goHome(command);
                     motorThr->setGazeIdle();
 
-                    reply.addString("pushed");
+                    reply.addVocab(ACK);
                     break;
                 }
 
@@ -810,7 +850,7 @@ public:
                 {
                     if(command.size()<2)
                     {
-                        reply.addString("Error");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -818,7 +858,7 @@ public:
 
                     if(!motorThr->point(command))
                     {
-                        reply.addString("failed. Please specify the target");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -828,7 +868,7 @@ public:
                         motorThr->goHome(command);
                     }
 
-                    reply.addString("pointed");
+                    reply.addVocab(ACK);
                     break;
                 }
 
@@ -836,7 +876,7 @@ public:
                 {
                     if(command.size()<2)
                     {
-                        reply.addString("Error");
+                        reply.addVocab(NACK);
                         break;
                     }
 
@@ -844,11 +884,11 @@ public:
 
                     if(!motorThr->look(command))
                     {
-                        reply.addString("failed. Please specify the target");
+                        reply.addVocab(NACK);
                         break;
                     }
 
-                    reply.addString("looked");
+                    reply.addVocab(ACK);
                     break;
                 }
 
@@ -859,7 +899,7 @@ public:
                     {
                         if(command.size()<2)
                         {
-                            reply.addString("Error");
+                            reply.addVocab(NACK);
                             break;
                         }
 
@@ -868,30 +908,27 @@ public:
                     else
                         visuoThr->trackMotion();
 
-                    reply.addString("tracking");
+                    reply.addVocab(ACK);
 
                     break;
                 }
 
                 default:
                 {
-                    reply.addString("failed");
+                    reply.addVocab(NACK);
                     break;
                 }
             }
         }
 
         if(reply.isNull() || reply.size()==0)
+        {
+            reply.addVocab(NACK);
             reply.addString("Random Error");
-
+        }
 
         if(!closing)
-        {
-            fprintf(stdout,"repling!\n");
             cmdPort.reply(reply);
-        }
-        else           
-           fprintf(stdout,"not replied!\n");
 
         return true;
     }
