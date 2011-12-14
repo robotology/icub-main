@@ -5,17 +5,19 @@
 
 
 export SOURCE_TMP_DIR=./package-tmp
-export MODULE=iCub
 export REL=$1
-export ARCHFILE_LINUX=$MODULE-src-$REL.tar.gz
-export ARCHFILE_WINDOWS=$MODULE-src-$REL.zip
-export DEPFILE=$MODULE-dep-$REL.txt
+export MODULE=main
+export ARCHFILE_LINUX=iCub-$MODULE-src-$REL.tar.gz
+export ARCHFILE_WINDOWS=iCub-$MODULE-src-$REL.zip
+export DEPFILE=iCub-$MODULE-dep-$REL.txt
 
 if [ "k$1" =  "k" ]; then
  export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
 else
  export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub$REL
 fi
+
+export ROOT_PATH=iCub
 
 mkdir $SOURCE_TMP_DIR
 cd $SOURCE_TMP_DIR
@@ -28,50 +30,55 @@ echo "See $DEPFILE for list of library dependencies." >> $versionFile
 ########### Linux
 echo "Checkout code from $SVN_URL"
 
-svn export $SVN_URL $MODULE
+svn export $SVN_URL/$MODULE $ROOT_PATH/$MODULE
 
 #store this file for later upload
-cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
+cp iCub/admin/scripts/current_dependencies.txt $DEPFILE
 
 #preparing repository
-cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
-cp $versionFile $MODULE
+cp iCub/admin/scripts/current_dependencies.txt $ROOT_PATH/$MODULE/$DEPFILE
+cp $versionFile $ROOT_PATH
 
 echo "Preparing tar file"
-tar cvfz $ARCHFILE_LINUX $MODULE
+tar cvfz $ARCHFILE_LINUX $ROOT_PATH
 
 echo "Cleaning checkout"
-rm $MODULE -rf
+rm $ROOT_PATH -rf
 
 echo "Done Linux"
 
 ########### Windows
 echo "Checkout code from $URL"
 
-svn export $SVN_URL $MODULE --native-eol CRLF
+svn export $SVN_URL/$MODULE $ROOT_PATH/$MODULE --native-eol CRLF
 
 #store this file for later upload
-cp $MODULE/admin/scripts/current_dependencies.txt $DEPFILE
+cp iCub/admin/scripts/current_dependencies.txt $DEPFILE
 
 #preparing repository
-cp $MODULE/admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
-cp $versionFile $MODULE
+cp iCub/admin/scripts/current_dependencies.txt $ROOT_PATH/$MODULE/$DEPFILE
+cp $versionFile $ROOT_PATH
 
 echo "Preparing zip file"
-zip -r $ARCHFILE_WINDOWS $MODULE
+zip -r $ARCHFILE_WINDOWS $ROOT_PATH
 
 echo "Cleaning checkout"
-rm $MODULE -rf
+rm $ROOT_PATH -rf
 
 echo "Done Windows"
 
-################ Upload
+REMOTE_DIR=iCub-$MODULE-$REL
+mkdir -p $REMOTE_DIR
+mv $ARCHFILE_LINUX $REMOTE_DIR
+mv $ARCHFILE_WINDOWS $REMOTE_DIR
 
-scp $ARCHFILE_LINUX babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
+echo "rsync --recursive $REMOTE_DIR natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/iCub-main"
 
-scp $ARCHFILE_WINDOWS babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
+################ old upload
 
-scp $DEPFILE babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
+#scp $ARCHFILE_LINUX babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
+#scp $ARCHFILE_WINDOWS babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
+#scp $DEPFILE babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
 
 #scp $ARCHFILE_WINDOWS natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/win/$ARCHFILE_WINDOWS
 #scp $ARCHFILE_LINUX natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/linux/$ARCHFILE_LINUX
