@@ -282,6 +282,8 @@ public:
 		port_command.open(output_port_name.c_str());
 
 		// start SDL subsystem
+		//SDL_Init(SDL_INIT_VIDEO);
+		//SDL_SetVideoMode(640, 480, 16, SDL_DOUBLEBUF);
 		if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK ) < 0 )
 		{
 			fprintf ( stderr, "Unable to initialize Joystick: %s\n", SDL_GetError() );
@@ -590,7 +592,10 @@ int main(int argc, char *argv[])
     Network yarp;
 
     if (!yarp.checkNetwork())
+    {
+        fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
+    }
 
 	//SDL_JoystickEventState (SDL_ENABLE);
 	// this will alter the behaviour of the event queue of the sdl system
