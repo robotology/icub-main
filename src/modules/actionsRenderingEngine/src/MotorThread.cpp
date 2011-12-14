@@ -131,10 +131,10 @@ bool MotorThread::setImpedance(bool turn_on)
             if(action[RIGHT]!=NULL)
                 done=done && armCtrlMode[RIGHT]->setVelocityMode(i);
         }
-				
+
         for(int i=0; i<3; i++)
-        	if(torsoCtrlMode!=NULL)
-            	done=done && torsoCtrlMode->setVelocityMode(i);
+            if(torsoCtrlMode!=NULL)
+                done=done && torsoCtrlMode->setVelocityMode(i);
 
         status_impedance_on=!done;
     }
@@ -492,7 +492,7 @@ bool MotorThread::stereoToCartesianNetwork(const Vector &stereo, Vector &xd)
         return false;
 
     Vector h(6);
-    head->getEncoders(h.data());
+    headEnc->getEncoders(h.data());
 
     Vector in(7);
     in[0]=stereo[0];
@@ -899,7 +899,8 @@ bool MotorThread::threadInit()
     }
 
     // open views
-    drvHead->view(head);
+    drvHead->view(headEnc);
+    drvTorso->view(torsoEnc);
     drvTorso->view(torsoPos);
     drvTorso->view(torsoCtrlMode);
     drvTorso->view(torsoImpedenceCtrl);
@@ -1659,8 +1660,11 @@ bool MotorThread::look(Bottle &options)
         return false;
 
     setGazeIdle();
-    gazeUnderControl=true;
     gazeCtrl->restoreContext(default_gaze_context);
+
+    if(checkOptions(options,"fixate"))
+        gazeCtrl->setTrackingMode(true);
+
     gazeCtrl->lookAtFixationPoint(xd);
 
     return true;
@@ -1729,7 +1733,8 @@ bool MotorThread::goHome(Bottle &options)
     bool head_fixing=false;
     gazeCtrl->getTrackingMode(&head_fixing);
 
-    if(!head_fixing && head_mode!=HEAD_MODE_TRACK_TEMP && head_home)
+    if(head_home)
+    //if(!head_fixing && head_mode!=HEAD_MODE_TRACK_TEMP && head_home)
         head_mode=HEAD_MODE_GO_HOME;
 
     if(arms_home)
@@ -2086,7 +2091,7 @@ bool MotorThread::calibFingers(Bottle &options)
 }
 
 
-void MotorThread::exploreTorso(const double &trial_time)
+bool MotorThread::exploreTorso(Bottle &options)
 {
     // avoid torso controlDisp
     if(action[LEFT]!=NULL)
@@ -2095,10 +2100,13 @@ void MotorThread::exploreTorso(const double &trial_time)
     if(action[RIGHT]!=NULL)
         action[RIGHT]->setTrackingMode(false);
 
+    Vector torso_init_position(3);
+    torsoEnc->getEncoders(torso_init_position.data());
+
     double t0=Time::now();
 
     int i=0;
-    while(isRunning() && (Time::now()-t0<trial_time))
+    while(isRunning() && (Time::now()-t0<10.0))
     {
         torsoPos->positionMove(torsoPoses[i%torsoPoses.size()].data());
         bool done=false;
@@ -2111,13 +2119,15 @@ void MotorThread::exploreTorso(const double &trial_time)
     }
 
     //go back to torso home last pose
-    torsoPos->positionMove(torsoPoses.back().data());
+    torsoPos->positionMove(torso_init_position.data());
     bool done=false;
     while(isRunning() && !done)
     {
         Time::delay(0.1);
         torsoPos->checkMotionDone(&done);
     }
+
+    return true;
 }
 
 

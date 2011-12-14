@@ -123,7 +123,8 @@ private:
     PolyDriver                          *drvArm[2];
     PolyDriver                          *drvCartArm[2];
 
-    IEncoders                           *head;
+    IEncoders                           *headEnc;
+    IEncoders                           *torsoEnc;
     IGazeControl                        *gazeCtrl;
 
     IPositionControl                    *torsoPos;
@@ -244,11 +245,6 @@ public:
         head_mode=HEAD_MODE_TRACK_HAND;
     }
 
-    void lookAtObject()
-    {
-        head_mode=HEAD_MODE_TRACK_TEMP;
-    }
-
     void keepFixation()
     {
         head_mode=HEAD_MODE_TRACK_FIX;
@@ -290,13 +286,11 @@ public:
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
     bool shift(Bottle &options);
+    bool exploreTorso(Bottle &options);
 
     bool isHolding(Bottle &options);
     bool calibTable(Bottle &options);
     bool calibFingers(Bottle &options);
-
-
-    void exploreTorso(const double &trial_time);
 
     bool startLearningModeAction(Bottle &options);
     bool suspendLearningModeAction(Bottle &options);

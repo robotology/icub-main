@@ -132,9 +132,11 @@ format: [point] [target]
 action: the robot tries to point the specified [target] with its index finger.
 
 <b>LOOK</b> 
-format: [look] [target]
-action: the robot looks at the specified [target].
- 
+format: [look] [target] "param1"
+action: the robot looks at the specified [target]. "param1" can be set equal to "fixate" in order to
+keep the gaze fixating the requested target also when other commands are issued to the torso.
+
+
 <b>TRACK</b> 
 format: [track] [target]
 action: the specified [target] visual position is supplied to the tracker module and the gaze controller is 
@@ -173,6 +175,14 @@ whether correct grasp has been achieved.
 admittance control and the robot arm can be moved around by the human user. When the [calib] [kinematics] [stop]
 command is received, the system is set to velocity mode and the offset between the initial and the current
 position is stored.
+
+
+<b>EXPLORATION</b>
+different types of explorations can be requested by issuing commands of the form: [explore] [exploration_type]
+In the following a short description of the possible values of [exploration_type]:
+
+--[torso] the robot will start moving its torso exploring different positions (specified in the file exploration_poses.ini).
+then it will go back to the initial position.
 
 
 \section lib_sec Libraries 
@@ -262,6 +272,8 @@ Windows, Linux
 #define CMD_IDLE                    VOCAB4('i','d','l','e')
 #define CMD_HOME                    VOCAB4('h','o','m','e')
 #define CMD_CALIBRATE               VOCAB4('c','a','l','i')
+#define CMD_EXPLORE                 VOCAB4('e','x','p','l')
+
 #define CMD_OBSERVE                 VOCAB4('o','b','s','e')
 #define CMD_DROP                    VOCAB4('d','r','o','p')
 
@@ -287,6 +299,8 @@ Windows, Linux
 #define CALIB_TABLE                 VOCAB4('t','a','b','l')
 #define CALIB_FINGERS               VOCAB4('f','i','n','g')
 #define CALIB_KIN_OFFSET            VOCAB4('k','i','n','e')
+
+#define EXPLORE_TORSO               VOCAB4('t','o','r','s')
 
 
 
@@ -429,19 +443,15 @@ public:
         reply.clear();
 
 
-        //wait for a command. will provide reply
         if(isStopping() || closing)
-        {
-            fprintf(stdout,"aho! sto chiudendo!\n");
             return true;
-        }
 
-        fprintf(stdout,"before read!\n");
+        //wait for a command. will provide reply
         cmdPort.read(command,true);
-        fprintf(stdout,"just read!\n");
 
-
-        if(command.size()==0 || interrupted)
+        if(command.size()==0)
+            reply.addString("No command received.");
+        else if(interrupted)
             reply.addString("Module currently interrupted. Reinstate for action.");
         else
         {
@@ -496,6 +506,35 @@ public:
                     break;
                 }
 
+                case CMD_EXPLORE:
+                {
+                    if(command.size()>1)
+                    {
+                        switch(command.get(1).asVocab())
+                        {
+                            case EXPLORE_TORSO:
+                            {
+                                if(motorThr->calibTable(command))
+                                    reply.addString("table height found");
+                                else
+                                    reply.addString("table height not found");
+
+                                break;
+                            }
+                        
+                            default:
+                            {
+                                string rep=command.get(1).asString().c_str();
+                                reply.addString(("parameter '"+rep+"' not supported by 'explore' command.").c_str());
+                            }
+                        }
+                    }
+                    else
+                        reply.addString("explore command needs further parameter (e.g. 'torso')");
+
+                    break;
+                }
+                
                 case CMD_CALIBRATE:
                 {
                     switch(command.get(1).asVocab())
@@ -614,7 +653,7 @@ public:
                     visuoThr->startLearningMIL(obj_name.c_str());
 
                     fprintf(stdout,"Looking at %s.\n",obj_name.c_str());
-                    motorThr->exploreTorso(10.0);
+                    motorThr->exploreTorso(command);
 
                     visuoThr->trainMIL();
 
@@ -679,8 +718,6 @@ public:
 
                     visuoThr->getTarget(command.get(1),command);
 
-                    motorThr->lookAtObject();
-
                     if(!motorThr->reach(command))
                     {
                         reply.addString("failed. Please specify the target");
@@ -730,8 +767,6 @@ public:
 
                     visuoThr->getTarget(command.get(1),command);
 
-                    motorThr->lookAtObject();
-
                     if(!motorThr->reach(command))
                     {
                         reply.addString("failed. Please specify the target");
@@ -758,8 +793,6 @@ public:
 
                     visuoThr->getTarget(command.get(1),command);
 
-                    motorThr->lookAtObject();
-
                     if(!motorThr->push(command))
                     {
                         reply.addString("failed. Please specify the target");
@@ -782,8 +815,6 @@ public:
                     }
 
                     visuoThr->getTarget(command.get(1),command);
-
-                    motorThr->lookAtObject();
 
                     if(!motorThr->point(command))
                     {
@@ -811,8 +842,6 @@ public:
 
                     visuoThr->getTarget(command.get(1),command);
 
-                    motorThr->lookAtObject();
-
                     if(!motorThr->look(command))
                     {
                         reply.addString("failed. Please specify the target");
@@ -838,8 +867,6 @@ public:
                     }
                     else
                         visuoThr->trackMotion();
-
-                    motorThr->lookAtObject();
 
                     reply.addString("tracking");
 
