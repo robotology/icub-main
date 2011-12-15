@@ -71,7 +71,6 @@ int main( int argc, char **argv )
 
     // get the list of available joysticks
     fprintf ( stderr, "\n");
-    int joy_id=0;
     int joystick_num = SDL_NumJoysticks ();
 
     // if not joysticks are found, quit immediately
