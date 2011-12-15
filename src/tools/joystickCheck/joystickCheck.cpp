@@ -66,7 +66,7 @@ int main( int argc, char **argv )
     if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK) < 0 )
     {
         fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
-        return -2;
+        return 0;
     }
 
     // get the list of available joysticks
@@ -157,7 +157,7 @@ int main( int argc, char **argv )
         if (active==true)
         {
             printf ( "joysticks activity detected.\n" ); 
-            return 1;
+            return 101;
         }
     }
 
