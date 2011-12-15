@@ -126,7 +126,7 @@ int main( int argc, char **argv )
             for (int i=0; i < numAxes; i++)
             {
                 valAxes[i] = (double)SDL_JoystickGetAxis(joy1, i);
-                if (fabs(valAxes[i]-firstAxes[i])>20000)
+                if (fabs(valAxes[i]-firstAxes[i])>25000)
                 {
                     active=true;
                     break;
