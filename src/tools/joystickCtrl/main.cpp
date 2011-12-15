@@ -291,7 +291,6 @@ public:
         }
         port_command.open(output_port_name.c_str());
 
-<<<<<<< .mine
         // start SDL subsystem
         //SDL_Init(SDL_INIT_VIDEO);
         //SDL_SetVideoMode(640, 480, 16, SDL_DOUBLEBUF);
@@ -300,30 +299,6 @@ public:
             fprintf ( stderr, "Unable to initialize Joystick: %s\n", SDL_GetError() );
             return false;
         }
-=======
-		// get the list of available joysticks
-		fprintf ( stderr, "\n");
-
-		int joystick_num = SDL_NumJoysticks ();
-		if (joystick_num == 0)
-		{
-			fprintf ( stderr, "Error: No joysticks found\n"); return false;
-		}
-		else if (joystick_num == 1)
-		{
-                        joy_id=0;
-			fprintf ( stderr, "One joystick found \n");
-			fprintf ( stderr, "Using joystick: %s \n", SDL_JoystickName(joy_id));
-		}
-		else
-		{
-			fprintf ( stderr, "More than one joystick found:\n");
-			for (int i=0; i<joystick_num; i++)
-			{
-				fprintf ( stderr, "%d: %s\n",i,SDL_JoystickName(i));
-			}
-			fprintf ( stderr, "\n");
->>>>>>> .r14946
 
         // get the list of available joysticks
         fprintf ( stderr, "\n");
@@ -335,8 +310,9 @@ public:
         }
         else if (joystick_num == 1)
         {
+            joy_id=0;
             fprintf ( stderr, "One joystick found \n");
-            fprintf ( stderr, "Using joystick: %s \n", SDL_JoystickName(0));
+            fprintf ( stderr, "Using joystick: %s \n", SDL_JoystickName(joy_id));
         }
         else
         {
