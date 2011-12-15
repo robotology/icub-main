@@ -113,20 +113,12 @@ protected:
 
     double defaultExecTime;
     double t0;
-<<<<<<< .mine
     int numAxes;
     int numBalls;
     int numHats;
     int numButtons;
+    int joy_id;
     SDL_Joystick* joy1;
-=======
-	int numAxes;
-	int numBalls;
-	int numHats;
-	int numButtons;
-        int joy_id;
-	SDL_Joystick* joy1;
->>>>>>> .r14946
 
     //variables read from the joystick
     int*    rawButtons;
