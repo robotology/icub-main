@@ -12,6 +12,7 @@ completely broken!
 
 Topics:
 
+ - <a href="http://eris.liralab.it/wiki/ICub_Software_Installation">Software intallation</a>.
  - \ref icub_modules_all \endref - most of the software (including \ref icub_module \endref)
  - \ref icub_applications \endref - a list of documented applications 
    (collections of modules)
@@ -26,7 +27,6 @@ Topics:
  - Reference material:
   - The <a href="http://eris.liralab.it/wiki/Manual">The iCub manual</a>
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
-  - <a href="http://eris.liralab.it/wiki/Getting_the_iCub_software">Getting the software</a>.
   - Our software architecture, <a href="http://yarp0.sourceforge.net/">YARP</a>.
 
 This documentation is developed by scanning all source code 
