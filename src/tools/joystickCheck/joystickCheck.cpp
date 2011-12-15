@@ -61,111 +61,107 @@ Windows, Linux
 
 int main( int argc, char **argv ) 
 {
-        // start SDL subsystem
-        SDL_JoystickEventState ( SDL_QUERY );
-        if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK) < 0 )
-        {
-            fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
-            return -2;
-        }
+    // start SDL subsystem
+    SDL_JoystickEventState ( SDL_QUERY );
+    if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK) < 0 )
+    {
+        fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
+        return -2;
+    }
 
-        // get the list of available joysticks
-        fprintf ( stderr, "\n");
-        int joy_id=0;
-        int joystick_num = SDL_NumJoysticks ();
-        if (joystick_num == 0)
+    // get the list of available joysticks
+    fprintf ( stderr, "\n");
+    int joy_id=0;
+    int joystick_num = SDL_NumJoysticks ();
+
+    // if not joysticks are found, quit immediately
+    if (joystick_num <= 0)
+    {
+        fprintf ( stderr, "JoystickCheck: no joysticks found.\n");
+        return 0;
+    }
+
+    // open the first joystick
+    fprintf ( stderr, "JoystickCheck: (%d) joystick(s) found.\n",joystick_num);
+    int joy_id = 0;
+    SDL_Joystick* joy1 = SDL_JoystickOpen ( joy_id );
+    if ( joy1 == NULL )
+    {
+        printf ( "Could not open default joystick.\n" );
+        return 0;
+    }
+    int numAxes    = SDL_JoystickNumAxes    ( joy1 );
+    int numBalls   = SDL_JoystickNumBalls   ( joy1 );
+    int numHats    = SDL_JoystickNumHats    ( joy1 );
+    int numButtons = SDL_JoystickNumButtons ( joy1 );
+    bool first =true;
+    bool active=false;
+    double* firstAxes    = new double [numAxes];
+    double* firstBalls   = new double [numBalls];
+    double* firstHats    = new double [numHats];
+    double* firstButtons = new double [numButtons];
+    double* valAxes    = new double [numAxes];
+    double* valBalls   = new double [numBalls];
+    double* valHats    = new double [numHats];
+    double* valButtons = new double [numButtons];
+
+    //check for user activity on the opened joystick
+    for (int trial=0; trial < 1000; trial++ )
+    {  
+        yarp::os::Time::delay(0.010);
+        SDL_JoystickUpdate();
+
+        if (first==true)
         {
-            fprintf ( stderr, "JoystickCheck: no joysticks found.\n");
-            return 0;
+            for (int i=0; i < numAxes; i++)
+                firstAxes[i] = (double)SDL_JoystickGetAxis(joy1, i);
+            //for (int i=0; i < numBalls; i++)
+            //    firstBalls[i] = (double)SDL_JoystickGetBall(joy1, i, dx, dy);
+            for (int i=0; i < numHats; i++)
+                firstHats[i] = (double)SDL_JoystickGetHat(joy1, i);
+            for (int i=0; i < numButtons; i++)
+                firstButtons[i] = (double)SDL_JoystickGetButton(joy1, i);
         }
-        else if (joystick_num > 0)
+        else
         {
-            fprintf ( stderr, "JoystickCheck: (%d) joystick(s) found.\n",joystick_num);
-            int joy_id = 0;
-            SDL_Joystick* joy1 = SDL_JoystickOpen ( joy_id );
-            if ( joy1 == NULL )
+            for (int i=0; i < numAxes; i++)
             {
-                printf ( "Could not open default joystick.\n" );
-                return 0;
+                valAxes[i] = (double)SDL_JoystickGetAxis(joy1, i);
+                if (fabs(valAxes[i]-firstAxes[i])>20000)
+                {
+                    active=true;
+                    break;
+                }
             }
-
-            int numAxes    = SDL_JoystickNumAxes    ( joy1 );
-            int numBalls   = SDL_JoystickNumBalls   ( joy1 );
-            int numHats    = SDL_JoystickNumHats    ( joy1 );
-            int numButtons = SDL_JoystickNumButtons ( joy1 );
-            bool first =true;
-            bool active=false;
-            double* firstAxes    = new double [numAxes];
-            double* firstBalls   = new double [numBalls];
-            double* firstHats    = new double [numHats];
-            double* firstButtons = new double [numButtons];
-
-            double* valAxes    = new double [numAxes];
-            double* valBalls   = new double [numBalls];
-            double* valHats    = new double [numHats];
-            double* valButtons = new double [numButtons];
-
-                       for (int trial=0; trial < 1000; trial++ )
-                       {  
-                            yarp::os::Time::delay(0.010);
-                            SDL_JoystickUpdate();
-
-                            if (first==true)
-                                {
-                                    for (int i=0; i < numAxes; i++)
-                                        firstAxes[i] = (double)SDL_JoystickGetAxis(joy1, i);
-                                    //for (int i=0; i < numBalls; i++)
-                                    //    firstBalls[i] = (double)SDL_JoystickGetBall(joy1, i, dx, dy);
-                                    for (int i=0; i < numHats; i++)
-                                        firstHats[i] = (double)SDL_JoystickGetHat(joy1, i);
-                                    for (int i=0; i < numButtons; i++)
-                                        firstButtons[i] = (double)SDL_JoystickGetButton(joy1, i);
-                                }
-                            else
-                                {
-                                    for (int i=0; i < numAxes; i++)
-                                        {
-                                                valAxes[i] = (double)SDL_JoystickGetAxis(joy1, i);
-                                                if (fabs(valAxes[i]-firstAxes[i])>20000)                                               
-                                                {
-                                                        active=true;
-                                                        break;
-                                                }
-                                        }
-                                    //for (int i=0; i < numBalls; i++)
-                                    //    valAxes[i] = (double)SDL_JoystickGetBall(joy1, i, dx, dy);
-                                    for (int i=0; i < numHats; i++)
-                                        {
-                                                valHats[i] = (double)SDL_JoystickGetHat(joy1, i);
-                                                if (fabs(valHats[i]-firstHats[i])>100)
-                                                {
-                                                        active=true;
-                                                        break;
-                                                }
-                                        }
-                                    for (int i=0; i < numButtons; i++)
-                                        {
-                                                valButtons[i] = (double)SDL_JoystickGetButton(joy1, i);
-                                                if (fabs(valButtons[i]-firstButtons[i])>0.5)
-                                                {
-                                                        active=true;
-                                                        break;
-                                                }
-                                        }
-                                }
-                            first = false;
-                                                   if (active==true)
-                       {
-                           printf ( "joysticks activity detected.\n" ); 
-                           return 1;
-                      } 
-                        }
-                            
-                    
-      
-            printf ( "no joysticks are currently used.\n" );
-            return 0;
+            //for (int i=0; i < numBalls; i++)
+            //    valAxes[i] = (double)SDL_JoystickGetBall(joy1, i, dx, dy);
+            for (int i=0; i < numHats; i++)
+            {
+                valHats[i] = (double)SDL_JoystickGetHat(joy1, i);
+                if (fabs(valHats[i]-firstHats[i])>100)
+                {
+                    active=true;
+                    break;
+                }
+            }
+            for (int i=0; i < numButtons; i++)
+            {
+                valButtons[i] = (double)SDL_JoystickGetButton(joy1, i);
+                if (fabs(valButtons[i]-firstButtons[i])>0.5)
+                {
+                    active=true;
+                    break;
+                }
+            }
         }
+        first = false;
+        if (active==true)
+        {
+            printf ( "joysticks activity detected.\n" ); 
+            return 1;
+        }
+    }
 
-        return 0;   // pattacini: to prevent MSVC from warning up
+    printf ( "no joysticks are currently used.\n" );
+    return 0;
 }
