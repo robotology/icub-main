@@ -1,11 +1,11 @@
 == Instructions for release == 
 
-* Update conf/iCubVersion.cmake
+* Update main/conf/iCubVersion.cmake
 
 * Update yarp version info inside admin/scripts/current_dependencies.txt 
 
 * Update licensing info
-  Run ./admin/scripts/license.sh
+  Run ./admin/scripts/update-license.sh
   Check main/COPYING_new
   Check main/AUTHORS_new
   cp main/COPYING_new main/COPYING
@@ -16,23 +16,23 @@
 * Make tag
   Commit new version, write down revision svn revision number (REVISION)
   
-  svn copy -r REVISION https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub1.1.6
+  svn copy -r REVISION https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub1.1.8
 
 * Make packages
 
-  ./admin/scripts/icub-package.sh 1.1.6
+  ./admin/scripts/icub-package.sh 1.1.8
 
 This will produce inside package-tmp:
 
-  iCub-src-1.1.6.tar.gz
-  iCub-src-1.1.6.zip
+  iCub-src-1.1.8.tar.gz
+  iCub-src-1.1.8.zip
 
 and will automatically upload them on eris
 
 Update the packages to sourceforge:
 
-  scp package-tmp/iCub-src-1.1.7.tar.gz USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.7/iCub-src-1.1.7.tar.gz
-  scp package-tmp/iCub-src-1.1.7.zip USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.7/iCub-src-1.1.7.zip
+  scp package-tmp/iCub-src-1.1.8.tar.gz USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.8/iCub-src-1.1.8.tar.gz
+  scp package-tmp/iCub-src-1.1.8.zip USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.8/iCub-src-1.1.8.zip
   
   
 
