@@ -364,6 +364,8 @@ bool SimulatorModule::open() {
     
     string tactileLeft = moduleName + "/skin/left_hand";
     string tactileRight = moduleName + "/skin/right_hand";
+    string tactileLeftrpc = moduleName + "/skin/left_hand/rpc:i";
+    string tactileRightrpc = moduleName + "/skin/right_hand/rpc:i";
 
     string torqueLeftLeg = moduleName +"/joint_vsens/left_leg:i";
     string torqueRightLeg = moduleName +"/joint_vsens/right_leg:i";
@@ -374,7 +376,9 @@ bool SimulatorModule::open() {
     string inertial = moduleName + "/inertial";
     cmdPort.open( world.c_str() );
     tactileLeftPort.open( tactileLeft.c_str() );
+    tactileLeftPortrpc.open( tactileLeftrpc.c_str() );
     tactileRightPort.open( tactileRight.c_str() );
+    tactileRightPortrpc.open( tactileRightrpc.c_str() );
     inertialPort.open( inertial.c_str() );
 
     trqLeftLegPort.open( torqueLeftLeg.c_str() );

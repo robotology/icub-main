@@ -108,6 +108,7 @@ private:
     yarp::os::Port cmdPort;
     yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort, tactileRightPort, tactilePort, inertialPort;
     yarp::os::BufferedPort<yarp::os::Bottle> trqLeftLegPort, trqRightLegPort, trqLeftArmPort, trqRightArmPort, trqTorsoPort;
+    yarp::os::Port tactileLeftPortrpc, tactileRightPortrpc;
 
     int _argc;
     char **_argv;
