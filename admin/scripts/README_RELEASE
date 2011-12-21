@@ -22,17 +22,17 @@
 
   ./admin/scripts/icub-package.sh 1.1.8
 
-This will produce inside package-tmp:
+This will produce inside package-tmp/iCub-main-1.1.8
 
-  iCub-src-1.1.8.tar.gz
-  iCub-src-1.1.8.zip
+  iCub-main-src-1.1.8.tar.gz
+  iCub-main-src-1.1.8.zip
 
 and will automatically upload them on eris
 
 Update the packages to sourceforge:
 
-  scp package-tmp/iCub-src-1.1.8.tar.gz USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.8/iCub-src-1.1.8.tar.gz
-  scp package-tmp/iCub-src-1.1.8.zip USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/main/iCub-1.1.8/iCub-src-1.1.8.zip
+  cd package-tmp
+  rsync --recursive iCub-main-1.1.8 USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/iCub-main"
   
   
 
