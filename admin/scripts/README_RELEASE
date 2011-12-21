@@ -32,7 +32,7 @@ and will automatically upload them on eris
 Update the packages to sourceforge:
 
   cd package-tmp
-  rsync --recursive iCub-main-1.1.8 USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/iCub-main"
+  rsync --recursive iCub-main-1.1.8 USERNAME,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/iCub-main
   
   
 
