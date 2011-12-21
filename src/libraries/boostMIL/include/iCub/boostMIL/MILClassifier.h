@@ -141,6 +141,19 @@ public:
     virtual void                         fromString  (const std::string &str);
 
 
+    /**
+    * Encodes the classifier in a single string
+    *
+    */
+    virtual void                         toStream    (std::ofstream &fout) const;
+
+    /**
+    * Loads a classifier from a string
+    *
+    * @param the string encoding the classifier to be loaded
+    */
+    virtual void                         fromStream  (std::ifstream &fin);
+
 
     /**
     * Classifies the given input.

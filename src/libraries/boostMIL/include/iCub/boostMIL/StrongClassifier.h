@@ -183,13 +183,46 @@ public:
     virtual void                         fromString  (const std::string &str);
 
     /**
+    * Puts the classifier in a binary file stream
+    *
+    */
+    virtual void                         toStream    (std::ofstream &fout) const;
+
+    /**
+    * Loads a classifier from a binary file stream
+    *
+    * @param the string encoding the classifier to be loaded
+    */
+    virtual void                         fromStream (std::ifstream &str);
+
+    /**
+    * Saves the strong classifier in a single string.
+    *
+    * @param path where the classifier has to be saved.
+    *
+    * @return true/false in case of success/failure
+    */
+    virtual bool                        saveAsString(const std::string &path) const;
+    
+    
+    /**
+    * Loads a previously saved strong classifier.
+    * The classifier must have been saved as a single string.
+    *
+    * @param path where the classifier has been saved.
+    *
+    * @return true/false in case of success/failure
+    */
+    virtual bool                        loadAsString(const std::string &path);
+    
+    /**
     * Saves the strong classifier.
     *
     * @param path where the classifier has to be saved.
     *
     * @return true/false in case of success/failure
     */
-    virtual bool                        save        (const std::string &path) const;
+    virtual bool                        save       (const std::string &path) const;
     
     
     /**
@@ -199,7 +232,7 @@ public:
     *
     * @return true/false in case of success/failure
     */
-    virtual bool                        load        (const std::string &path);
+    virtual bool                        load       (const std::string &path);
 };
 
 

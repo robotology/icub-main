@@ -20,6 +20,7 @@
 #include <iCub/boostMIL/StrongClassifier.h>
 #include <iCub/boostMIL/ClassifierFactory.h>
 
+#include <yarp/os/Vocab.h>
 
 #include <iostream>
 #include <fstream>
@@ -109,6 +110,57 @@ std::string  StrongClassifier::toString() const
 }
 
 
+void   StrongClassifier::fromStream(std::ifstream &fin)
+{
+    size_t wc_size;
+    fin.read((char*)&wc_size,sizeof(size_t));
+
+    alphas.resize(wc_size);
+    weak_classifiers.resize(wc_size);
+
+    for(size_t i=0; i<wc_size; i++)
+    {
+        fin.read((char*)&alphas[i],sizeof(double));
+
+        int size_of_type;
+        fin.read((char*)&size_of_type,sizeof(int));
+        char *wc_type=new char[size_of_type+1];
+        fin.read((char*)wc_type,size_of_type*sizeof(char));
+
+        weak_classifiers[i]=ClassifierFactory::instance().create(wc_type);
+        delete [] wc_type;
+
+        weak_classifiers[i]->fromStream(fin);
+    }
+}
+
+
+void   StrongClassifier::toStream(std::ofstream &fout) const
+{
+    //write the size of the list fo weak classifiers
+    size_t wc_size=this->weak_classifiers.size();
+    fout.write((char*)&wc_size,sizeof(size_t));
+
+    for(size_t i=0; i<wc_size; i++)
+    {
+        fout.write((char*)&alphas[i],sizeof(double));
+
+        int size_of_type=weak_classifiers[i]->getType().size();
+        fout.write((char*)&size_of_type,sizeof(int));
+
+        char *wc_type=new char[size_of_type+1];
+        sprintf(wc_type,"%s",weak_classifiers[i]->getType().c_str());
+        wc_type[size_of_type]='\0';
+
+        fout.write((char*)wc_type,size_of_type*sizeof(char));
+
+        delete [] wc_type;
+
+        weak_classifiers[i]->toStream(fout);
+    }
+}
+
+
 void   StrongClassifier::fromString(const std::string &str)
 {
     yarp::os::Bottle bLoader(str.c_str());
@@ -124,7 +176,7 @@ void   StrongClassifier::fromString(const std::string &str)
 }
 
 
-bool    StrongClassifier::save        (const std::string &path) const
+bool    StrongClassifier::saveAsString        (const std::string &path) const
 {
     std::ofstream fout(path.c_str());
 
@@ -137,7 +189,7 @@ bool    StrongClassifier::save        (const std::string &path) const
 }
 
 
-bool    StrongClassifier::load        (const std::string &path)
+bool    StrongClassifier::loadAsString        (const std::string &path)
 {
     this->clear();
 
@@ -149,7 +201,55 @@ bool    StrongClassifier::load        (const std::string &path)
     std::stringstream strstr;
     strstr<<fin.rdbuf();
 
-    this->fromString(strstr.str().c_str());
+
+    std::string str=strstr.str().c_str();
+
+
+    this->fromString(str);
+
+    fin.close();
+
+    return true;
+}
+
+
+bool    StrongClassifier::save        (const std::string &path) const
+{
+    std::ofstream fout(path.c_str(),std::ios::out | std::ios::binary);
+
+    if(!fout.is_open())
+        return false;
+
+    this->toStream(fout);
+
+    fout.close();
+
+    return true;
+}
+
+bool    StrongClassifier::load        (const std::string &path)
+{
+    this->clear();
+
+    std::ifstream fin(path.c_str(),std::ios::in | std::ios::binary);
+
+    if(!fin.is_open())
+        return false;
+
+    //check if the file was saved in string or binary format
+    char c;
+    fin.read(&c,sizeof(char));
+    if(c=='(')
+    {
+        fin.close();
+        this->loadAsString(path);
+    }
+    else
+    {
+        fin.seekg(0);
+        this->fromStream(fin);
+        fin.close();
+    }
 
     return true;
 }

@@ -205,6 +205,19 @@ public:
     virtual void                         fromString  (const std::string &str) = 0;
 
     /**
+    * Encodes the classifier in a single string
+    *
+    */
+    virtual void                         toStream    (std::ofstream &fout) const = 0;
+
+    /**
+    * Loads a classifier from a string
+    *
+    * @param the string encoding the classifier to be loaded
+    */
+    virtual void                         fromStream  (std::ifstream &fin) = 0;
+
+    /**
     * Updates the classifier with respect to an input with associated weight. Usually an online method.
     *
     * @param input the input.

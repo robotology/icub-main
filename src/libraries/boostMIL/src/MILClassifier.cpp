@@ -19,6 +19,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <sstream>
+#include <fstream>
 
 #include <stdio.h>
 #include <math.h>
@@ -46,7 +47,6 @@ MILClassifier::MILClassifier(const std::string &_type, yarp::os::ResourceFinder 
     if(_center != NULL)
         setCenter(_center);
 }
-
 
 MILClassifier::MILClassifier(const MILClassifier &mil, const double *_center)
     :WeakClassifier(mil)
@@ -286,6 +286,53 @@ int                             MILClassifier::classify             (const Input
 
     return label;
 }
+
+
+
+
+void  MILClassifier::toStream(std::ofstream &fout) const
+{
+    fout.write((char*)&type,sizeof(int));
+    fout.write((char*)&feature_size,sizeof(int));
+    fout.write((char*)&radius,sizeof(double));
+
+    fout.write((char*)&posweight,sizeof(double));
+    fout.write((char*)&negweight,sizeof(double));
+
+    for(int i=0; i<feature_size; i++)
+        fout.write((char*)&center[i],sizeof(double));
+
+    size_t cache_size=cache.size();
+    fout.write((char*)&cache_size,sizeof(size_t));
+
+    for(size_t i=0; i<cache_size; i++)
+        fout.write((char*)&cache[i],sizeof(Bag));
+}
+
+
+void   MILClassifier::fromStream(std::ifstream &fin)
+{
+    clear();
+
+    fin.read((char*)&type,sizeof(int));
+    fin.read((char*)&feature_size,sizeof(int));
+    fin.read((char*)&radius,sizeof(double));
+
+    fin.read((char*)&posweight,sizeof(double));
+    fin.read((char*)&negweight,sizeof(double));
+
+    center.resize(feature_size);
+    for(int i=0; i<feature_size; i++)
+        fin.read((char*)&center[i],sizeof(double));
+
+    size_t cache_size;
+    fin.read((char*)&cache_size,sizeof(size_t));
+
+    cache.resize(cache_size);
+    for(size_t i=0; i<cache_size; i++)
+        fin.read((char*)&cache[i],sizeof(Bag));
+}
+
 
 
 

@@ -96,6 +96,7 @@ private:
 
 
 public:
+    SelectorClassifier      (const int &_type, yarp::os::ResourceFinder &_resource, std::deque<WeakClassifier*> *_function_space);
     SelectorClassifier      (const std::string &_type, yarp::os::ResourceFinder &_resource, std::deque<WeakClassifier*> *_function_space);
 
     ~SelectorClassifier     ()      {clear();}
@@ -111,6 +112,19 @@ public:
     * @return a string encoding the current classifier form
     */
     virtual std::string                  toString    () const;
+
+    /**
+    * Loads a classifier from a string
+    *
+    * @param the string encoding the classifier to be loaded
+    */
+    virtual void                         fromStream  (std::ifstream &fin);
+
+    /**
+    * Encodes the classifier in a single string
+    *
+    */
+    virtual void                         toStream    (std::ofstream &fout) const;
 
     /**
     * Loads a classifier from a string

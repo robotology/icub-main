@@ -23,6 +23,8 @@
 #include <sstream>
 #include <string>
 
+#include <fstream>
+
 #include <algorithm>
 
 #include <yarp/os/Bottle.h>
@@ -120,12 +122,65 @@ void OnlineBoost::initialize(const std::list<Inputs*> &initializer)
 
 
 
+void   OnlineBoost::fromStream(std::ifstream &fin)
+{
+    clear();
+
+    size_t wc_size;
+    fin.read((char*)&wc_size,sizeof(size_t));
+
+    alphas.resize(wc_size);
+    weak_classifiers.resize(wc_size);
+
+    for(size_t i=0; i<wc_size; i++)
+    {
+        fin.read((char*)&alphas[i],sizeof(double));
+
+        int size_of_type;
+        fin.read((char*)&size_of_type,sizeof(int));
+        char *wc_type=new char[size_of_type+1];
+        fin.read((char*)wc_type,size_of_type*sizeof(char));
+
+        wc_type[size_of_type]='\0';
+        weak_classifiers[i]=new SelectorClassifier(wc_type,resource,&function_space);
+        delete [] wc_type;
+
+        weak_classifiers[i]->fromStream(fin);
+    }
+}
+
+
+void   OnlineBoost::toStream(std::ofstream &fout) const
+{
+    //write the size of the list fo weak classifiers
+    size_t wc_size=this->weak_classifiers.size();
+    fout.write((char*)&wc_size,sizeof(unsigned int));
+
+    for(size_t i=0; i<wc_size; i++)
+    {
+        fout.write((char*)&alphas[i],sizeof(double));
+
+        int size_of_type=weak_classifiers[i]->getType().size();
+        fout.write((char*)&size_of_type,sizeof(int));
+
+        char *wc_type=new char[size_of_type+1];
+        sprintf(wc_type,"%s",weak_classifiers[i]->getType().c_str());
+        fout.write((char*)wc_type,size_of_type*sizeof(char));
+
+        delete [] wc_type;
+        weak_classifiers[i]->toStream(fout);
+    }
+}
+
+
+
 
 void   OnlineBoost::fromString(const std::string &str)
 {
     clear();
 
-    yarp::os::Bottle bLoader(str.c_str());
+    yarp::os::Bottle bLoader;
+    bLoader.fromString(str.c_str());
 
     weak_classifiers_size=bLoader.size();
 

@@ -84,6 +84,15 @@ public:
     *              via the ClassifierFactory.
     * @param _resource container for the classifier parameters.
     */
+    OnlineBoost     (const int &_type, yarp::os::ResourceFinder &_resource);
+
+    /**
+    * Constructor.
+    *
+    * @param _type type of the classifier. It is needed to associate particular inputs and to clone
+    *              via the ClassifierFactory.
+    * @param _resource container for the classifier parameters.
+    */
     OnlineBoost     (const std::string &_type, yarp::os::ResourceFinder &_resource);
 
     /**
@@ -121,6 +130,19 @@ public:
     * @param initializer the Input list containing the weak classifiers.
     */
     virtual void                        initialize  (const std::list<Inputs*> &initializer);
+
+    /**
+    * Encodes the classifier in a single string
+    *
+    */
+    virtual void                         toStream    (std::ofstream &fout) const;
+
+    /**
+    * Loads a classifier from a string
+    *
+    * @param the string encoding the classifier to be loaded
+    */
+    virtual void                         fromStream  (std::ifstream &str);
 
 
     /**

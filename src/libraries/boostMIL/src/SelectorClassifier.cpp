@@ -219,6 +219,77 @@ WeakClassifier *SelectorClassifier::randomSample()
 
 
 
+void  SelectorClassifier::toStream(std::ofstream &fout) const
+{
+    if(ready)
+    {
+        fout.write((char*)&type,sizeof(int));
+        fout.write((char*)&selected,sizeof(int));
+        fout.write((char*)&abs_thresh,sizeof(double));
+        fout.write((char*)&rel_thresh,sizeof(double));
+        fout.write((char*)&sleep_time,sizeof(int));
+
+        fout.write((char*)&pool_size,sizeof(unsigned int));
+
+        for(int i=0; i<pool_size; i++)
+        {
+            fout.write((char*)&correct[i],sizeof(double));
+            fout.write((char*)&wrong[i],sizeof(double));
+            fout.write((char*)&asleep[i],sizeof(int));
+
+            int size_of_type=pool[i]->getType().size();
+            fout.write((char*)&size_of_type,sizeof(int));
+
+            char *wc_type=new char[size_of_type+1];
+            sprintf(wc_type,"%s",pool[i]->getType().c_str());
+            fout.write((char*)wc_type,size_of_type*sizeof(char));
+
+            delete [] wc_type;
+
+            pool[i]->toStream(fout);
+        }
+    }
+}
+
+void   SelectorClassifier::fromStream(std::ifstream &fin)
+{
+    clear();
+
+    fin.read((char*)&type,sizeof(int));
+    fin.read((char*)&selected,sizeof(int));
+    fin.read((char*)&abs_thresh,sizeof(double));
+    fin.read((char*)&rel_thresh,sizeof(double));
+    fin.read((char*)&sleep_time,sizeof(int));
+
+    fin.read((char*)&pool_size,sizeof(int));
+
+    correct.resize(pool_size);
+    wrong.resize(pool_size);
+    asleep.resize(pool_size);
+    pool.resize(pool_size);
+
+    for(int i=0; i<pool_size; i++)
+    {
+        fin.read((char*)&correct[i],sizeof(double));
+        fin.read((char*)&wrong[i],sizeof(double));
+        fin.read((char*)&asleep[i],sizeof(int));
+
+        int size_of_type;
+        fin.read((char*)&size_of_type,sizeof(int));
+        char *wc_type=new char[size_of_type+1];
+        fin.read((char*)wc_type,size_of_type*sizeof(char));
+
+        wc_type[size_of_type]='\0';
+
+        pool[i]=ClassifierFactory::instance().create(wc_type);
+        delete [] wc_type;
+
+        pool[i]->fromStream(fin);
+    }
+}
+
+
+
 std::string  SelectorClassifier::toString() const
 {
     if(ready)
