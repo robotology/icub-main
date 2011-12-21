@@ -313,10 +313,9 @@ Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)
     // note the commented zeros above to show how the matrix looks like..
     Matrix S(3,3); S.zero();
         /* 0 */     S(0,1)=-H(2,3); S(0,2)= H(1,3);
-    S(1,0)= H(2,3);      /* 0 */    S(1,3)=-H(0,3);
+    S(1,0)= H(2,3);      /* 0 */    S(1,2)=-H(0,3);
     S(2,0)=-H(1,3); S(2,1)= H(0,3);     /* 0 */
 
-    // this is S(r)*R
     S = S*H.submatrix(0,2,0,2);
 
     Matrix A(6,6); A.zero();
@@ -349,13 +348,13 @@ Matrix iCub::ctrl::adjointInv(const Matrix &H, unsigned int verbose)
     // R^T
     Matrix Rt = H.submatrix(0,2,0,2).transposed();
     // R^T * r
-    Vector Rtp = Rt*H.submatrix(0,2,0,3).getCol(3);
+    Vector Rtp = Rt*H.getCol(3).subVector(0,2);
 
     // the skew matrix coming from the translational part of H: S(r)
     // note the commented zeros above to show how the matrix looks like..
     Matrix S(3,3); S.zero();
         /* 0 */       S(0,1)=-Rtp(2);     S(0,2)= Rtp(1);
-    S(1,0)= Rtp(2);      /* 0 */          S(1,3)=-Rtp(0);
+    S(1,0)= Rtp(2);      /* 0 */          S(1,2)=-Rtp(0);
     S(2,0)=-Rtp(1);   S(2,1)= Rtp(0);     /* 0 */
 
     // this is S(r)*Rt
