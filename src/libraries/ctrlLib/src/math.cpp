@@ -48,7 +48,7 @@ Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
 {
     Vector v(3);
 
-    if (A.rows()>=3 && B.rows()>=3)
+    if ((A.rows()>=3) && (B.rows()>=3))
     {
         v[0]=A(1,colA)*B(2,colB)-A(2,colA)*B(1,colB);
         v[1]=A(2,colA)*B(0,colB)-A(0,colA)*B(2,colB);
@@ -67,7 +67,7 @@ Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
 {
     Vector Dv(3);
 
-    if (a.length()>=3 && b.length()>=3 && Da.length()>=3 && Db.length()>=3)
+    if ((a.length()>=3) && (b.length()>=3) && (Da.length()>=3) && (Db.length()>=3))
     {
         Dv[0]=Da[1]*b[2]+a[1]*Db[2]-Da[2]*b[1]-a[2]*Db[1];
         Dv[1]=Da[2]*b[0]+a[2]*Db[0]-Da[0]*b[2]-a[0]*Db[2];
@@ -87,7 +87,7 @@ Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
 {
     Vector Dv(3);
 
-    if (A.rows()>=3 && B.rows()>=3 && DA.rows()>=3 && DB.rows()>=3)
+    if ((A.rows()>=3) && (B.rows()>=3) && (DA.rows()>=3) && (DB.rows()>=3))
     {
         Dv[0]=DA(1,colA)*B(2,colB)+A(1,colA)*DB(2,colB)-DA(2,colA)*B(1,colB)-A(2,colA)*DB(1,colB);
         Dv[1]=DA(2,colA)*B(0,colB)+A(2,colA)*DB(0,colB)-DA(0,colA)*B(2,colB)-A(0,colA)*DB(2,colB);
@@ -103,7 +103,7 @@ Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
 /************************************************************************/
 Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
 {
-    if (R.rows()<3 || R.cols()<3)
+    if ((R.rows()<3) || (R.cols()<3))
     {
         if (verbose)
             fprintf(stderr,"dcm2axis() failed\n");
@@ -115,7 +115,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
     v[0]=R(2,1)-R(1,2);
     v[1]=R(0,2)-R(2,0);
     v[2]=R(1,0)-R(0,1);
-	double r=yarp::math::norm(v);
+    double r=yarp::math::norm(v);
     double theta=atan2(0.5*r,0.5*(R(0,0)+R(1,1)+R(2,2)-1));
 
     if (r<1e-9)
@@ -139,7 +139,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
         v[0]=V(0,2);
         v[1]=V(1,2);
         v[2]=V(2,2);
-		r=yarp::math::norm(v);
+        r=yarp::math::norm(v);
     }
 
     v=(1.0/r)*v;
@@ -198,7 +198,7 @@ Matrix iCub::ctrl::axis2dcm(const Vector &v, unsigned int verbose)
 /************************************************************************/
 Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
 {
-    if (R.rows()<3 || R.cols()<3)
+    if ((R.rows()<3) || (R.cols()<3))
     {
         if (verbose)
             fprintf(stderr,"dcm2euler() failed\n");
@@ -255,7 +255,7 @@ Matrix iCub::ctrl::euler2dcm(const Vector &v, unsigned int verbose)
 /************************************************************************/
 Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
 {    
-    if (H.rows()<4 || H.cols()<4)
+    if ((H.rows()<4) || (H.cols()<4))
     {
         if (verbose)
             fprintf(stderr,"SE3inv() failed\n");
@@ -297,38 +297,38 @@ Vector iCub::ctrl::sign(const Vector &v)
     return ret;
 }
 
+
 /************************************************************************/
 Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)
 {
-    if((H.rows()!=4) || (H.cols()!=4))
+    if ((H.rows()!=4) || (H.cols()!=4))
     {
         if (verbose)
-            fprintf(stderr,"CtrlLib: error, adjoint() failed due to wrong sized roto-translational matrix, sized %dx%d instead of 4x4\n",
+            fprintf(stderr,"adjoint() failed: roto-translational matrix sized %dx%d instead of 4x4\n",
                     H.rows(),H.cols());
 
         return Matrix(0,0);
     }
 
     // the skew matrix coming from the translational part of H: S(r)
-    // note the commented zeros above to show how the matrix looks like..
-    Matrix S(3,3); S.zero();
-        /* 0 */     S(0,1)=-H(2,3); S(0,2)= H(1,3);
-    S(1,0)= H(2,3);      /* 0 */    S(1,2)=-H(0,3);
-    S(2,0)=-H(1,3); S(2,1)= H(0,3);     /* 0 */
+    Matrix S(3,3);
+    S(0,0)= 0.0;    S(0,1)=-H(2,3); S(0,2)= H(1,3);
+    S(1,0)= H(2,3); S(1,1)= 0.0;    S(1,2)=-H(0,3);
+    S(2,0)=-H(1,3); S(2,1)= H(0,3); S(2,2)= 0.0;
 
     S = S*H.submatrix(0,2,0,2);
 
     Matrix A(6,6); A.zero();
-    unsigned int i,j;
-    for(i=0; i<3; i++)
+    for (int i=0; i<3; i++)
     {
-        for(j=0;j<3;j++)
+        for (int j=0; j<3; j++)
         {
-            A(i,j)      = H(i,j);
-            A(i+3,j+3)  = H(i,j);
-            A(i,j+3)    = S(i,j);
+            A(i,j)     = H(i,j);
+            A(i+3,j+3) = H(i,j);
+            A(i,j+3)   = S(i,j);
         }
     }
+
     return A;
 }
 
@@ -336,10 +336,10 @@ Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)
 /************************************************************************/
 Matrix iCub::ctrl::adjointInv(const Matrix &H, unsigned int verbose)
 {
-    if((H.rows()!=4) || (H.cols()!=4))
+    if ((H.rows()!=4) || (H.cols()!=4))
     {
         if (verbose)
-            fprintf(stderr,"CtrlLib: error, adjointInv() failed due to wrong sized roto-translational matrix, sized %dx%d instead of 4x4\n",
+            fprintf(stderr,"adjointInv() failed: roto-translational matrix sized %dx%d instead of 4x4\n",
                     H.rows(),H.cols());
 
         return Matrix(0,0);
@@ -350,27 +350,25 @@ Matrix iCub::ctrl::adjointInv(const Matrix &H, unsigned int verbose)
     // R^T * r
     Vector Rtp = Rt*H.getCol(3).subVector(0,2);
 
-    // the skew matrix coming from the translational part of H: S(r)
-    // note the commented zeros above to show how the matrix looks like..
-    Matrix S(3,3); S.zero();
-        /* 0 */       S(0,1)=-Rtp(2);     S(0,2)= Rtp(1);
-    S(1,0)= Rtp(2);      /* 0 */          S(1,2)=-Rtp(0);
-    S(2,0)=-Rtp(1);   S(2,1)= Rtp(0);     /* 0 */
+    // the skew matrix coming from the translational part of Rtp: S(r)
+    Matrix S(3,3);
+    S(0,0)= 0.0;    S(0,1)=-Rtp(2); S(0,2)= Rtp(1);
+    S(1,0)= Rtp(2); S(1,1)= 0.0;    S(1,2)=-Rtp(0);
+    S(2,0)=-Rtp(1); S(2,1)= Rtp(0); S(2,2)= 0.0;
 
-    // this is S(r)*Rt
     S = S*Rt;
 
     Matrix A(6,6); A.zero();
-    unsigned int i,j;
-    for(i=0; i<3; i++)
+    for (int i=0; i<3; i++)
     {
-        for(j=0;j<3;j++)
+        for (int j=0; j<3; j++)
         {
-            A(i,j)      = Rt(i,j);
-            A(i+3,j+3)  = Rt(i,j);
-            A(i,j+3)    = -S(i,j);
+            A(i,j)     = Rt(i,j);
+            A(i+3,j+3) = Rt(i,j);
+            A(i,j+3)   = -S(i,j);
         }
     }
+
     return A;
 }
 
