@@ -350,7 +350,6 @@ Matrix iCub::ctrl::adjointInv(const Matrix &H, unsigned int verbose)
     // R^T * r
     Vector Rtp = Rt*H.getCol(3).subVector(0,2);
 
-    // the skew matrix coming from the translational part of Rtp: S(r)
     Matrix S(3,3);
     S(0,0)= 0.0;    S(0,1)=-Rtp(2); S(0,2)= Rtp(1);
     S(1,0)= Rtp(2); S(1,1)= 0.0;    S(1,2)=-Rtp(0);
