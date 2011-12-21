@@ -1,19 +1,23 @@
-
-Installation instructions are in INSTALL.
-
-License and copyright information is in COPYING.
-
+====================================================================
+   
+	  Welcome to the iCub repository!
 
 ====================================================================
 
-Repository organization.
+Organization.
 
 The officially supported iCub build is contained in the main directory.
 User contributed software is stored in contrib.
 
+See main/COPYNG and main/AUTHORS for licensing info, authors and copyright holders.
+
 The iCub manual contains more details about the structure of the 
-repository and how the code is here organized. The manual is available
+repository and how the code is organized. The manual is available
 online at: http://eris.liralab.it/wiki/Manual and is the most
 up to date source of information.
+
+Direct link to installation instructions: 
+
+http://eris.liralab.it/wiki/ICub_Software_Installation
 
 
