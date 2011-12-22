@@ -524,25 +524,16 @@ void inverseDynamics::run()
         com_all.zero(); com_ll.zero(); com_rl.zero(); com_la.zero(); com_ra.zero(); com_hd.zero(); com_to.zero();
     }
 
-    //F_ext_left_arm=icub->upperTorso->left->getForceMomentEndEff();//-icub_sens->upperTorso->left->getForceMomentEndEff();
-    //F_ext_right_arm=icub->upperTorso->right->getForceMomentEndEff();//-icub_sens->upperTorso->right->getForceMomentEndEff();
-
     // DYN CONTACTS
     dynContactList contactList = icub->upperTorso->leftSensor->getContactList();
     dynContactList contactListR = icub->upperTorso->rightSensor->getContactList();
     contactList.insert(contactList.begin(), contactListR.begin(), contactListR.end());
     //printf("%s\n", contactList.toString().c_str());
 
-    F_ext_left_arm = F_ext_right_arm = F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
-    int eeInd = icub->upperTorso->left->getN()-1;
-    for(dynContactList::const_iterator it=contactList.begin(); it!=contactList.end();it++){
-        if(it->getLinkNumber() == eeInd){
-            if(it->getBodyPart()==LEFT_ARM)
-                F_ext_left_arm = it->getForceMoment();
-            else if(it->getBodyPart()==RIGHT_ARM)
-                F_ext_right_arm = it->getForceMoment();
-        }
-    }
+    F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
+    F_ext_left_arm = icub->upperTorso->leftSensor->getForceMomentEndEff();
+    F_ext_right_arm = icub->upperTorso->rightSensor->getForceMomentEndEff();
+
     yarp::sig::Matrix ht  = icub->upperTorso->getHUp()    * icub->upperTorso->up->getH();
     yarp::sig::Matrix hl  = ht * icub->upperTorso->getHLeft()  * icub->upperTorso->left->getH();
     yarp::sig::Matrix hr  = ht * icub->upperTorso->getHRight() * icub->upperTorso->right->getH();
