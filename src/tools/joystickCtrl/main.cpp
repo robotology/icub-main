@@ -449,12 +449,20 @@ public:
             }
             if (reverse[i]==1)
                 v=-v;
-            v = (v<inputMax[i]) ? v : inputMax[i];
-            v = (v>inputMin[i]) ? v : inputMin[i];
-            v = v - ((inputMax[i]-inputMin[i])/2+inputMin[i]);
-            v = v / (inputMax[i]-inputMin[i]);
-            v = v * (outputMax[i]-outputMin[i]);
-            v = v + ((outputMax[i]-outputMin[i])/2+outputMin[i]);
+
+            if (inputMax[i]==inputMin[i])
+            {
+                v = 0;
+            }
+            else
+            {
+                v = (v<inputMax[i]) ? v : inputMax[i];
+                v = (v>inputMin[i]) ? v : inputMin[i];
+                v = v - ((inputMax[i]-inputMin[i])/2+inputMin[i]);
+                v = v / (inputMax[i]-inputMin[i]);
+                v = v * (outputMax[i]-outputMin[i]);
+                v = v + ((outputMax[i]-outputMin[i])/2+outputMin[i]);
+            }
 
             /*
             v = v+jointOffset[i];
