@@ -529,7 +529,7 @@ public:
         if (outputMin)       delete [] outputMin;
         if (jointDeadband)   delete [] jointDeadband;
         if (jointProperties) delete [] jointProperties;
-        if (reverse)         delete [] jointProperties;
+        if (reverse)         delete [] reverse;
         port_command.interrupt();
         port_command.close();
     }
