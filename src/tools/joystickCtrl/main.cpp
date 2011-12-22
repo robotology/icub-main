@@ -122,6 +122,7 @@ protected:
 
     //variables read from the joystick
     int*    rawButtons;
+    int*    rawHats;
     double* rawAxes;
     double* outAxes;
 
@@ -143,6 +144,7 @@ public:
         joy_id=0;
         rawButtons=0;
         rawAxes=0;
+        rawHats=0;
         outAxes=0;
         joy1=0;
         num_inputs=0;
@@ -390,6 +392,8 @@ public:
         }
 
         rawAxes=new double [MAX_AXES];
+        rawHats=new int [MAX_AXES];
+        rawButtons = new int [MAX_AXES];
         outAxes=new double [MAX_AXES];
 
         /*
@@ -431,7 +435,12 @@ public:
         // Reading joystick data (axes/buttons...)
         for ( int i=0; i < numButtons; ++i )
         {
-//          rawButtons[i] = SDL_JoystickGetButton ( joy1, i );
+            rawButtons[i] = SDL_JoystickGetButton ( joy1, i );
+        }
+
+       for ( int i=0; i < numHats; ++i )
+        {
+            rawHats[i] = SDL_JoystickGetHat ( joy1, i );
         }
 
         for ( int i=0; i < numAxes; ++i )
@@ -529,6 +538,7 @@ public:
     virtual void threadRelease()
     {    
         if (rawAxes)         delete [] rawAxes;
+        if (rawHats)         delete [] rawHats;
         if (outAxes)         delete [] outAxes;
         if (rawButtons)      delete [] rawButtons;
         if (inputMax)        delete [] inputMax;
