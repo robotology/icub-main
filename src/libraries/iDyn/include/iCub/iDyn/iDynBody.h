@@ -1055,13 +1055,11 @@ protected:
 	//virtual void build();
 
 public:
-	/// left leg - FT sensor and solver
+	/// left FT sensor and solver
 	iDyn::iDynContactSolver * leftSensor;
-	/// right leg - FT sensor and solver
+	/// right FT sensor and solver
 	iDyn::iDynContactSolver * rightSensor;
-    /*iDyn::iDynSensor * leftSensor;
-	/// right leg - FT sensor and solver
-	iDyn::iDynSensor * rightSensor;*/
+
 
 	/// left limb
 	iDyn::iDynLimb * left;

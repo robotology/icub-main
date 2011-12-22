@@ -118,25 +118,17 @@ dynContactList iDynContactSolver::computeExternalContacts(){
 
     // PROPAGATE WRENCH FORWARD, UP TO THE FIRST LINK A CONTACT IS APPLIED TO
 	sens->ForwardForcesMomentsToLink(chain->refLink(lSens));    // propagate wrench from sensor to hosting link
-    //printMatrix("Forces after forward sensor", chain->getForces());
-        
     if(firstContactLink==lSens){
         // if there're contacts on the sensor link we need to propagate the wrench to the previous link
         // (here we are assuming that the contacts are detected by the F/T sensor, no matter their application point)
         chain->NE->BackwardWrenchFromAtoB(lSens-1, lSens-1);
-        
-        /*Vector zeroF(3), zeroMu(3); zeroF.zero(); zeroMu.zero();
-        chain->refLink(lSens)->setForceMoment(zeroF, zeroMu);*/    
     }else if(firstContactLink>lSens+1){
         chain->NE->ForwardWrenchFromAtoB(lSens+1, firstContactLink-1);
     }
-    //printMatrix("Forces after firstContactLink", chain->getForces());
 
-    // PROPAGATE WRENCH BACKWARD, FROM THE E.E. UP TO THE LAST LINK A CONTACT IS APPLIED TO    
-    Vector Fend(3); Fend.zero(); Vector Mend(Fend);
-    chain->NE->initWrenchEnd(Fend, Mend);
+    // PROPAGATE WRENCH BACKWARD, FROM THE E.E. UP TO THE LAST LINK A CONTACT IS APPLIED TO
+    chain->NE->initWrenchEnd(zeros(3), zeros(3));
     chain->NE->BackwardWrenchFromAtoB(chain->getN()-1, lastContactLink);
-    //printMatrix("Forces after lastContactLink", chain->getForces());
 
     // BUILD AND SOLVE THE LINEAR SYSTEM AX=B RELATIVE TO THE CONTACT SUB-CHAIN
     // the reference frame is the <firstContactLink-1> 
@@ -176,7 +168,7 @@ dynContactList iDynContactSolver::computeExternalContacts(){
         }
     }
 
-    //propagate the wrench backward form the sensor
+    //propagate the wrench backward from the sensor
     if(firstContactLink==lSens) // if there is a contact on the sensor link you have to propagate the wrench of the previous link
 	    chain->NE->BackwardWrenchToBase(lSens-1);
     else
@@ -187,14 +179,8 @@ dynContactList iDynContactSolver::computeExternalContacts(){
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynContactSolver::computeWrenchFromSensorNewtonEuler(){
-	// if there is no contact specified, suppose contact at the end effector
-	/*if(contactList.empty()){
-		iDynSensor::computeWrenchFromSensorNewtonEuler();
-		return;
-	}*/
-
 	// in the external contact computations also the internal wrenches
-	// are computed, form the sensor link to the end effector
+	// are computed, from the base to the end effector
 	// (except for the contact subchain, but now we suppose only 1 contact at a time)
 	computeExternalContacts();
     //printMatrix("Forces after computeExternalContacts", chain->getForces());	
@@ -321,7 +307,14 @@ Vector iDynContactSolver::buildB(unsigned int firstContactLink, unsigned int las
 dynContactList iDynContactSolver::getContactList() const{
     return contactList;
 }
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynContactSolver::getForceMomentEndEff() const{
+    int eeInd = chain->getN()-1;
+    for(dynContactList::const_iterator it=contactList.begin(); it!=contactList.end();it++)
+        if(it->getLinkNumber() == eeInd)
+            return it->getForceMoment();
+    return zeros(6);
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynContactSolver::findContactSubChain(unsigned int &firstLink, unsigned int &lastLink){
     dynContactList::const_iterator it=contactList.begin();
