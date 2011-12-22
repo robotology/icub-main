@@ -350,7 +350,8 @@ bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
             if (parType.check("w") && parType.check("h") &&
                 parType.check("fx") && parType.check("fy"))
             {
-                // we suppose that the center distorsion is already compensated
+                // assumption: we work with calibrated images,
+                // hence the center distorsion is already compensated
                 int    cx=(parType.find("w").asInt()>>1)-1;
                 int    cy=(parType.find("h").asInt()>>1)-1;
                 double fx=parType.find("fx").asDouble();
