@@ -128,11 +128,12 @@ protected:
     //variables read from the configuration file
     int  num_inputs;
     int  num_outputs;
-    double* jointGain;
-    double* jointMax;
-    double* jointMin;
-    double* jointOffset;
+    double* inputMax;
+    double* inputMin;
+    double* outputMax;
+    double* outputMin;
     double* jointDeadband;
+    int*    reverse;
     struct_jointProperties* jointProperties;
 
 public:
@@ -146,11 +147,12 @@ public:
         joy1=0;
         num_inputs=0;
         num_outputs=0;
-        jointGain=0;
-        jointMax=0;
-        jointMin=0;
-        jointOffset=0;
+        inputMax=0;
+        inputMin=0;
+        outputMax=0;
+        outputMin=0;
         jointDeadband=0;
+        reverse=0;
         jointProperties=0;
         silent = false;
     }
@@ -167,11 +169,12 @@ public:
         if (rf.findGroup("INPUTS").check("InputsNumber"))
         {
             num_inputs = rf.findGroup("INPUTS").find("InputsNumber").asInt();
-            jointGain = new double [num_inputs];
-            jointMax = new double [num_inputs];
-            jointMin = new double [num_inputs];
-            jointOffset = new double [num_inputs];
+            inputMax = new double [num_inputs];
+            inputMin = new double [num_inputs];
+            outputMax = new double [num_inputs];
+            outputMin = new double [num_inputs];
             jointDeadband = new double [num_inputs];
+            reverse = new int [num_inputs];
             fprintf ( stderr, "Number of input axes in the configuration options: %d \n",num_inputs);
         }
         else
@@ -182,33 +185,37 @@ public:
 
         Bottle b;
         
-        b = rf.findGroup("INPUTS").findGroup("Gain");
-        if (b.size()-1 == num_inputs)
-            {
-                for (int i = 1; i < b.size(); i++) jointGain[i-1] = b.get(i).asDouble();
-            }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'Gain'\n"); return false;}
-        
-        b = rf.findGroup("INPUTS").findGroup("Max");
-        if (b.size()-1 == num_inputs)
-            {
-                for (int i = 1; i < b.size(); i++) jointMax[i-1] = b.get(i).asDouble();
-            }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'Max'\n"); return false;}
-        
-        b = rf.findGroup("INPUTS").findGroup("Min");
-        if (b.size()-1 == num_inputs)
-            {
-                for (int i = 1; i < b.size(); i++) jointMin[i-1] = b.get(i).asDouble();
-            }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'Min'\n"); return false;}
 
-        b = rf.findGroup("INPUTS").findGroup("Offset");
+        b = rf.findGroup("INPUTS").findGroup("Reverse");
         if (b.size()-1 == num_inputs)
             {
-                for (int i = 1; i < b.size(); i++) jointOffset[i-1] = b.get(i).asDouble();
+                for (int i = 1; i < b.size(); i++) reverse[i-1] = b.get(i).asInt();
             }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'Offset'\n"); return false;}
+        else {fprintf ( stderr, "Configuration error: invalid number of entries 'Reverse'\n"); return false;}
+        b = rf.findGroup("INPUTS").findGroup("InputMax");
+        if (b.size()-1 == num_inputs)
+            {
+                for (int i = 1; i < b.size(); i++) inputMax[i-1] = b.get(i).asDouble();
+            }
+        else {fprintf ( stderr, "Configuration error: invalid number of entries 'InputMax'\n"); return false;}
+        b = rf.findGroup("INPUTS").findGroup("InputMin");
+        if (b.size()-1 == num_inputs)
+            {
+                 for (int i = 1; i < b.size(); i++) inputMin[i-1] = b.get(i).asDouble();
+            }
+        else {fprintf ( stderr, "Configuration error: invalid number of entries 'InputMin'\n"); return false;}
+        b = rf.findGroup("INPUTS").findGroup("OutputMax");
+        if (b.size()-1 == num_inputs)
+            {
+                for (int i = 1; i < b.size(); i++) outputMax[i-1] = b.get(i).asDouble();
+            }
+        else {fprintf ( stderr, "Configuration error: invalid number of entries 'OutputMax'\n"); return false;}
+        b = rf.findGroup("INPUTS").findGroup("OutputMin");
+        if (b.size()-1 == num_inputs)
+            {
+                for (int i = 1; i < b.size(); i++) outputMin[i-1] = b.get(i).asDouble();
+            }
+        else {fprintf ( stderr, "Configuration error: invalid number of entries 'OutputMin'\n"); return false;}
 
         b = rf.findGroup("INPUTS").findGroup("Deadband");
         if (b.size()-1 == num_inputs)
@@ -440,10 +447,22 @@ public:
             {
                 if (fabs(v)<jointDeadband[i]) v=0;
             }
+            if (reverse[i]==1)
+                v=-v;
+            v = (v<inputMax[i]) ? v : inputMax[i];
+            v = (v>inputMin[i]) ? v : inputMin[i];
+            v = v - ((inputMax[i]-inputMin[i])/2+inputMin[i]);
+            v = v / (inputMax[i]-inputMin[i]);
+            v = v * (outputMax[i]-outputMin[i]);
+            v = v + ((outputMax[i]-outputMin[i])/2+outputMin[i]);
+
+            /*
             v = v+jointOffset[i];
             v = v*jointGain[i];
             v = (v<jointMax[i]) ? v : jointMax[i];
             v = (v>jointMin[i]) ? v : jointMin[i];
+            */
+
             rawAxes[i]=v;
         }
 
@@ -504,12 +523,13 @@ public:
         if (rawAxes)         delete [] rawAxes;
         if (outAxes)         delete [] outAxes;
         if (rawButtons)      delete [] rawButtons;
-        if (jointGain)       delete [] jointGain;
-        if (jointMax)        delete [] jointMax;
-        if (jointMin)        delete [] jointMin;
-        if (jointOffset)     delete [] jointOffset;
+        if (inputMax)        delete [] inputMax;
+        if (inputMin)        delete [] inputMin;
+        if (outputMax)       delete [] outputMax;
+        if (outputMin)       delete [] outputMin;
         if (jointDeadband)   delete [] jointDeadband;
         if (jointProperties) delete [] jointProperties;
+        if (reverse)         delete [] jointProperties;
         port_command.interrupt();
         port_command.close();
     }
