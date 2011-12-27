@@ -23,63 +23,61 @@ using namespace yarp::dev;
 
 robot_interfaces::robot_interfaces()
 {
-	for (int i=0; i<5; i++)
-	{
-	    ipos[i]=0;
-		itrq[i]=0;
-		iimp[i]=0;
-		icmd[i]=0;
-		ienc[i]=0;
-		ipid[i]=0;
-		ivel[i]=0;
-		iamp[i]=0;
-	    dd[i]=0;
-	}
+    for (int i=0; i<5; i++)
+    {
+        ipos[i]=0;
+        itrq[i]=0;
+        iimp[i]=0;
+        icmd[i]=0;
+        ienc[i]=0;
+        ipid[i]=0;
+        ivel[i]=0;
+        iamp[i]=0;
+        dd[i]=0;
+    }
 }
 
-void robot_interfaces::init()
+void robot_interfaces::init(std::string robot)
 {
-	std::string part;
-	std::string robot;
+    std::string part;
     std::string localPort;
-	std::string remotePort;
+    std::string remotePort;
 
-	robot = "icub";
-	for (int i=0; i<5; i++)
-	{
-		switch (i) 
-		{
-			case LEFT_ARM:	part = "left_arm";	break;
-			case RIGHT_ARM:	part = "right_arm";	break;
-			case LEFT_LEG:	part = "left_leg";	break;
-			case RIGHT_LEG:	part = "right_leg";	break;
-			case TORSO:		part = "torso";		break;
-		}
+    for (int i=0; i<5; i++)
+    {
+        switch (i) 
+        {
+            case LEFT_ARM:     part = "left_arm";   break;
+            case RIGHT_ARM:    part = "right_arm";  break;
+            case LEFT_LEG:     part = "left_leg";   break;
+            case RIGHT_LEG:    part = "right_leg";  break;
+            case TORSO:        part = "torso";      break;
+        }
 
-		localPort  = "/demoForceControl/" + part;
-		remotePort = "/" + robot + "/" + part;
-		options[i].put("robot",robot.c_str());
-		options[i].put("part",part.c_str());
-		options[i].put("device","remote_controlboard");
-		options[i].put("local",localPort.c_str());
-		options[i].put("remote",remotePort.c_str());
+        localPort  = "/demoForceControl/" + part;
+        remotePort = "/" + robot + "/" + part;
+        options[i].put("robot",robot.c_str());
+        options[i].put("part",part.c_str());
+        options[i].put("device","remote_controlboard");
+        options[i].put("local",localPort.c_str());
+        options[i].put("remote",remotePort.c_str());
 
-		dd[i] = new PolyDriver(options[i]);
-	    if(!dd[i] || !(dd[i]->isValid()))
-		{
-			fprintf(stderr,"Problems instantiating the device driver %d\n", i);
-		}
+        dd[i] = new PolyDriver(options[i]);
+        if(!dd[i] || !(dd[i]->isValid()))
+        {
+            fprintf(stderr,"Problems instantiating the device driver %d\n", i);
+        }
 
-		bool ok = true;
-		ok = ok & dd[i]->view(ipos[i]);
-		ok = ok & dd[i]->view(itrq[i]);
-		ok = ok & dd[i]->view(iimp[i]);
-		ok = ok & dd[i]->view(icmd[i]);
-		ok = ok & dd[i]->view(ivel[i]);
-		ok = ok & dd[i]->view(ienc[i]);
-		ok = ok & dd[i]->view(ipid[i]);
-		ok = ok & dd[i]->view(iamp[i]);
-	}
+        bool ok = true;
+        ok = ok & dd[i]->view(ipos[i]);
+        ok = ok & dd[i]->view(itrq[i]);
+        ok = ok & dd[i]->view(iimp[i]);
+        ok = ok & dd[i]->view(icmd[i]);
+        ok = ok & dd[i]->view(ivel[i]);
+        ok = ok & dd[i]->view(ienc[i]);
+        ok = ok & dd[i]->view(ipid[i]);
+        ok = ok & dd[i]->view(iamp[i]);
+    }
 }
 
 
