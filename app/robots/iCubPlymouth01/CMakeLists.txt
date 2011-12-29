@@ -1,4 +1,4 @@
-set(appname iCubRobotName01)
+set(appname iCubPlimouth01)
 
 icub_app(${appname})
 
