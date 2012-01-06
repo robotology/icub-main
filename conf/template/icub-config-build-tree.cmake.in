@@ -12,6 +12,11 @@ include("@CMAKE_BINARY_DIR@/@EXPORT_CONFIG_FILE@")
 set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
 set(ICUB_MODULE_PATH "@ICUB_MODULE_PATH@" CACHE INTERNAL "iCub cmake scripts directory")
 set(ICUB_LINK_FLAGS "@ICUB_LINK_FLAGS@" CACHE INTERNAL "List of iCub linker options")
+set(ICUB_LINK_DIRECTORIES "@ICUB_LINK_DIRECTORIES@")
+
+# This is not ideal and should be removed. At the moment
+# only needed by OpenCV
+link_directories(${ICUB_LINK_DIRECTORIES})
 
 set (ICUB_FOUND TRUE)
 endif (NOT ICUB_FOUND)

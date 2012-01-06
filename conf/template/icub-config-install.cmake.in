@@ -10,9 +10,14 @@ message(STATUS "Using iCub from install")
 set(ICUB_MODULE_PATH "@ICUB_MODULE_PATH@" CACHE INTERNAL "iCub cmake scripts directory")
 set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
 set(ICUB_LINK_FLAGS "@ICUB_LINK_FLAGS@" CACHE INTERNAL "List of iCub linker options")
+set(ICUB_LINK_DIRECTORIES "@ICUB_LINK_DIRECTORIES@")
 
 include("@CMAKE_INSTALL_PREFIX@/lib/ICUB/icub-export-install.cmake")
 include("@CMAKE_INSTALL_PREFIX@/lib/ICUB/icub-export-install-includes.cmake")
+
+# This is not ideal and should be removed. At the moment
+# only needed by OpenCV
+link_directories(${ICUB_LINK_DIRECTORIES})
 
 set (ICUB_FOUND TRUE)
 endif (NOT ICUB_FOUND)

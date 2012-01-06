@@ -52,6 +52,8 @@ if (OpenCV_FOUND)
     message(STATUS "OpenCV is previous 2.0 (some modules will be skipped)")  
     message(STATUS "Setting ICUB_OpenCV_LEGACY true")
   endif()
+  
+  set(ICUB_LINK_DIRECTORIES ${ICUB_LINK_DIRECTORIES} ${OpenCV_LIB_DIR})
 endif()
 
 if (GtkMM_FOUND)

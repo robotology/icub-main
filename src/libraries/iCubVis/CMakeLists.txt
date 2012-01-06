@@ -119,7 +119,7 @@ target_link_libraries(iCubVis ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 icub_export_library(iCubVis 
                     INTERNAL_INCLUDE_DIRS ${iCubVis_INCLUDE_DIRS}
                     EXTERNAL_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS}
-                    DESTINATION include/iCub/iCubVis
+                    DESTINATION include/iCub/vis
                     FILES ${folder_public_headers}
 )
 
