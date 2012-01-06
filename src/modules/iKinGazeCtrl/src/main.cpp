@@ -174,7 +174,7 @@ point:
 - by localizing the target in just one image plane and then 
   sending its coordinates together with a guessed component z
   in the eye's reference frame to the /<ctrlName>/mono:i port.
-  <b> In this mode the intrinsic cameras parameters are
+  <b> In this mode the cameras intrinsic parameters are
   required </b>.
 - by localizing the target in the two image planes and thus 
   sending its coordinates to the /<ctrlName>/stereo:i port. This
@@ -182,7 +182,7 @@ point:
   varies the component z incrementally according to the actual
   error; to achieve that it's required to feed continuosly the
   port with new feedback while converging to the target. <b> In
-  this mode the intrinsic cameras parameters are required </b>.
+  this mode the cameras intrinsic parameters are required </b>.
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
@@ -237,7 +237,9 @@ following ports:
   together with the current vergence (Vector of 3 double). Units
   in deg.
  
-- \e /<ctrlName>/<part>/rpc remote procedure call. 
+- \e /<ctrlName>/<part>/rpc remote procedure call. \n 
+    @note commands querying for geometric projections will only
+    work iff the cameras intrinsic parameters are provided.
     Recognized remote commands:
     - [quit]: quit the module.
     - [susp]: suspend the module.
@@ -339,7 +341,7 @@ None.
  
 \section conf_file_sec Configuration Files
 A configuration file passed through \e --config contains the
-fields required to specify the intrinsic cameras parameters 
+fields required to specify the cameras intrinsic parameters 
 along with a roto-translation matrix appended to the eye 
 kinematic in order to achieve the alignment with the optical 
 axes compensating for possible unknown offsets. 
@@ -675,7 +677,7 @@ public:
         int ack=Vocab::encode("ack");
         int nack=Vocab::encode("nack");
 
-        if (command.size())
+        if (command.size()>0)
         {
             switch (command.get(0).asVocab())
             {
@@ -730,8 +732,7 @@ public:
                         }
                     }
 
-                    reply.addVocab(nack);
-                    return false;
+                    break;
                 }
 
                 //-----------------
@@ -747,8 +748,7 @@ public:
                         }
                     }
 
-                    reply.addVocab(nack);
-                    return false;
+                    break;
                 }
 
                 //-----------------
@@ -761,23 +761,26 @@ public:
                         double max=command.get(3).asDouble();
 
                         if (joint==VOCAB4('p','i','t','c'))
-                            slv->bindNeckPitch(min,max);
-                        else if (joint==VOCAB4('r','o','l','l'))
-                            slv->bindNeckRoll(min,max);
-                        else if (joint==VOCAB3('y','a','w'))
-                            slv->bindNeckYaw(min,max);
-                        else
                         {
-                            reply.addVocab(nack);
-                            return false;
+                            slv->bindNeckPitch(min,max);
+                            reply.addVocab(ack);
+                            return true;
                         }
-
-                        reply.addVocab(ack);
-                        return true;
+                        else if (joint==VOCAB4('r','o','l','l'))
+                        {
+                            slv->bindNeckRoll(min,max);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB3('y','a','w'))
+                        {
+                            slv->bindNeckYaw(min,max);
+                            reply.addVocab(ack);
+                            return true;
+                        }
                     }
 
-                    reply.addVocab(nack);
-                    return false;
+                    break;
                 }
 
                 //-----------------
@@ -787,23 +790,26 @@ public:
                     {
                         int joint=command.get(1).asVocab();
                         if (joint==VOCAB4('p','i','t','c'))
-                            slv->clearNeckPitch();
-                        else if (joint==VOCAB4('r','o','l','l'))
-                            slv->clearNeckRoll();
-                        else if (joint==VOCAB3('y','a','w'))
-                            slv->clearNeckYaw();
-                        else
                         {
-                            reply.addVocab(nack);
-                            return false;
+                            slv->clearNeckPitch();
+                            reply.addVocab(ack);
+                            return true;
                         }
-
-                        reply.addVocab(ack);
-                        return true;
+                        else if (joint==VOCAB4('r','o','l','l'))
+                        {
+                            slv->clearNeckRoll();
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB3('y','a','w'))
+                        {
+                            slv->clearNeckYaw();
+                            reply.addVocab(ack);
+                            return true;
+                        }
                     }
 
-                    reply.addVocab(nack);
-                    return false;
+                    break;
                 }
 
                 //-----------------
@@ -817,21 +823,25 @@ public:
                         {
                             reply.addVocab(ack);
                             reply.addDouble(ctrl->getTneck());
+                            return true;
                         }
                         else if (type==VOCAB4('T','e','y','e'))
                         {
                             reply.addVocab(ack);
                             reply.addDouble(ctrl->getTeyes());
+                            return true;
                         }
                         else if (type==VOCAB4('d','o','n','e'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->isMotionDone());
+                            return true;
                         }
                         else if (type==VOCAB4('t','r','a','c'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->getTrackingMode());
+                            return true;
                         }
                         else if (type==VOCAB4('p','i','t','c'))
                         {
@@ -841,6 +851,7 @@ public:
                             reply.addVocab(ack);
                             reply.addDouble(min_deg);
                             reply.addDouble(max_deg);
+                            return true;
                         }
                         else if (type==VOCAB4('r','o','l','l'))
                         {
@@ -850,6 +861,7 @@ public:
                             reply.addVocab(ack);
                             reply.addDouble(min_deg);
                             reply.addDouble(max_deg);
+                            return true;
                         }
                         else if (type==VOCAB3('y','a','w'))
                         {
@@ -859,6 +871,7 @@ public:
                             reply.addVocab(ack);
                             reply.addDouble(min_deg);
                             reply.addDouble(max_deg);
+                            return true;
                         }
                         else if (type==VOCAB3('d','e','s'))
                         {
@@ -869,9 +882,9 @@ public:
                                 Bottle &bDes=reply.addList();
                                 for (size_t i=0; i<des.length(); i++)
                                     bDes.addDouble(des[i]);
+
+                                return true;
                             }
-                            else
-                                reply.addVocab(nack);
                         }
                         else if (type==VOCAB3('v','e','l'))
                         {
@@ -882,171 +895,129 @@ public:
                                 Bottle &bVel=reply.addList();
                                 for (size_t i=0; i<vel.length(); i++)
                                     bVel.addDouble(vel[i]);
+
+                                return true;
                             }
-                            else
-                                reply.addVocab(nack);
                         }
-                        else if (type==VOCAB4('p','o','s','e'))
+                        else if ((type==VOCAB4('p','o','s','e')) && (command.size()>2))
                         {
-                            if (command.size()>2)
+                            string poseSel=command.get(2).asString().c_str();
+                            Vector x;
+
+                            if (ctrl->getPose(poseSel,x))
                             {
-                                string poseSel=command.get(2).asString().c_str();
-                                Vector x;
+                                reply.addVocab(ack);
+                                Bottle &bPose=reply.addList();
+                                for (size_t i=0; i<x.length(); i++)
+                                    bPose.addDouble(x[i]);
 
-                                if (ctrl->getPose(poseSel,x))
+                                return true;
+                            }
+                        }
+                        else if ((type==VOCAB2('2','D')) && (command.size()>2))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                if (bOpt->size()>3)
                                 {
-                                    reply.addVocab(ack);
-                                    Bottle &bPose=reply.addList();
-                                    for (size_t i=0; i<x.length(); i++)
-                                        bPose.addDouble(x[i]);
+                                    Vector x(3);
+                                    string eye=bOpt->get(0).asString().c_str();
+                                    x[0]=bOpt->get(1).asDouble();
+                                    x[1]=bOpt->get(2).asDouble();
+                                    x[2]=bOpt->get(3).asDouble();
 
-                                    return true;
+                                    Vector px;
+                                    if (loc->projectPoint(eye,x,px))
+                                    {
+                                        reply.addVocab(ack);
+                                        Bottle &bPixel=reply.addList();
+                                        for (size_t i=0; i<px.length(); i++)
+                                            bPixel.addDouble(px[i]);
+
+                                        return true;
+                                    }
                                 }
                             }
-
-                            reply.addVocab(nack);
-                            return false;
                         }
-                        else if (type==VOCAB2('2','D'))
+                        else if ((type==VOCAB2('3','D')) && (command.size()>3))
                         {
-                            if (command.size()>2)
+                            int subType=command.get(2).asVocab();
+                            if (subType==VOCAB4('m','o','n','o'))
                             {
-                                if (Bottle *bOpt=command.get(2).asList())
+                                if (Bottle *bOpt=command.get(3).asList())
                                 {
                                     if (bOpt->size()>3)
                                     {
-                                        Vector x(3);
                                         string eye=bOpt->get(0).asString().c_str();
-                                        x[0]=bOpt->get(1).asDouble();
-                                        x[1]=bOpt->get(2).asDouble();
-                                        x[2]=bOpt->get(3).asDouble();
+                                        double u=bOpt->get(1).asDouble();
+                                        double v=bOpt->get(2).asDouble();
+                                        double z=bOpt->get(3).asDouble();
 
-                                        Vector px;
-                                        if (loc->projectPoint(eye,x,px))
+                                        Vector x;
+                                        if (loc->projectPoint(eye,u,v,z,x))
                                         {
                                             reply.addVocab(ack);
-                                            Bottle &bPixel=reply.addList();
-                                            for (size_t i=0; i<px.length(); i++)
-                                                bPixel.addDouble(px[i]);
+                                            Bottle &bPoint=reply.addList();
+                                            for (size_t i=0; i<x.length(); i++)
+                                                bPoint.addDouble(x[i]);
+                                            
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                            else if (subType==VOCAB4('s','t','e','r'))
+                            {
+                                if (Bottle *bOpt=command.get(3).asList())
+                                {
+                                    if (bOpt->size()>3)
+                                    {
+                                        Vector pxl(2),pxr(2);
+                                        pxl[0]=bOpt->get(0).asDouble();
+                                        pxl[1]=bOpt->get(1).asDouble();
+                                        pxr[0]=bOpt->get(2).asDouble();
+                                        pxr[1]=bOpt->get(3).asDouble();
+
+                                        Vector x;
+                                        if (loc->triangulatePoint(pxl,pxr,x))
+                                        {
+                                            reply.addVocab(ack);
+                                            Bottle &bPoint=reply.addList();
+                                            for (size_t i=0; i<x.length(); i++)
+                                                bPoint.addDouble(x[i]);
 
                                             return true;
                                         }
                                     }
                                 }
                             }
-
-                            reply.addVocab(nack);
-                            return false;
-                        }
-                        else if (type==VOCAB2('3','D'))
-                        {
-                            if (command.size()<3)
-                            {
-                                reply.addVocab(nack);
-                                return false;
-                            }
-
-                            int subType=command.get(2).asVocab();
-
-                            if (subType==VOCAB4('m','o','n','o'))
-                            {
-                                if (command.size()>3)
-                                {
-                                    if (Bottle *bOpt=command.get(3).asList())
-                                    {
-                                        if (bOpt->size()>3)
-                                        {
-                                            string eye=bOpt->get(0).asString().c_str();
-                                            double u=bOpt->get(1).asDouble();
-                                            double v=bOpt->get(2).asDouble();
-                                            double z=bOpt->get(3).asDouble();
-
-                                            Vector x;
-                                            if (loc->projectPoint(eye,u,v,z,x))
-                                            {
-                                                reply.addVocab(ack);
-                                                Bottle &bPoint=reply.addList();
-                                                for (size_t i=0; i<x.length(); i++)
-                                                    bPoint.addDouble(x[i]);
-
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                reply.addVocab(nack);
-                                return false;
-                            }
-                            else if (subType==VOCAB4('s','t','e','r'))
-                            {
-                                if (command.size()>3)
-                                {
-                                    if (Bottle *bOpt=command.get(3).asList())
-                                    {
-                                        if (bOpt->size()>3)
-                                        {
-                                            Vector pxl(2),pxr(2);
-                                            pxl[0]=bOpt->get(0).asDouble();
-                                            pxl[1]=bOpt->get(1).asDouble();
-                                            pxr[0]=bOpt->get(2).asDouble();
-                                            pxr[1]=bOpt->get(3).asDouble();
-
-                                            Vector x;
-                                            if (loc->triangulatePoint(pxl,pxr,x))
-                                            {
-                                                reply.addVocab(ack);
-                                                Bottle &bPoint=reply.addList();
-                                                for (size_t i=0; i<x.length(); i++)
-                                                    bPoint.addDouble(x[i]);
-
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                reply.addVocab(nack);
-                                return false;
-                            }
                             else if (subType==VOCAB4('p','r','o','j'))
                             {
-                                if (command.size()>3)
+                                if (Bottle *bOpt=command.get(3).asList())
                                 {
-                                    if (Bottle *bOpt=command.get(3).asList())
+                                    if (bOpt->size()>6)
                                     {
-                                        if (bOpt->size()>6)
+                                        Vector plane(4);
+                                        string eye=bOpt->get(0).asString().c_str();
+                                        double u=bOpt->get(1).asDouble();
+                                        double v=bOpt->get(2).asDouble();
+                                        plane[0]=bOpt->get(3).asDouble();
+                                        plane[1]=bOpt->get(4).asDouble();
+                                        plane[2]=bOpt->get(5).asDouble();
+                                        plane[3]=bOpt->get(6).asDouble();
+
+                                        Vector x;
+                                        if (loc->projectPoint(eye,u,v,plane,x))
                                         {
-                                            Vector plane(4);
-                                            string eye=bOpt->get(0).asString().c_str();
-                                            double u=bOpt->get(1).asDouble();
-                                            double v=bOpt->get(2).asDouble();
-                                            plane[0]=bOpt->get(3).asDouble();
-                                            plane[1]=bOpt->get(4).asDouble();
-                                            plane[2]=bOpt->get(5).asDouble();
-                                            plane[3]=bOpt->get(6).asDouble();
+                                            reply.addVocab(ack);
+                                            Bottle &bPoint=reply.addList();
+                                            for (size_t i=0; i<x.length(); i++)
+                                                bPoint.addDouble(x[i]);
 
-                                            Vector x;
-                                            if (loc->projectPoint(eye,u,v,plane,x))
-                                            {
-                                                reply.addVocab(ack);
-                                                Bottle &bPoint=reply.addList();
-                                                for (size_t i=0; i<x.length(); i++)
-                                                    bPoint.addDouble(x[i]);
-
-                                                return true;
-                                            }
+                                            return true;
                                         }
                                     }
                                 }
-
-                                reply.addVocab(nack);
-                                return false;
-                            }
-                            else
-                            {
-                                reply.addVocab(nack);
-                                return false;
                             }
                         }
                         else if (type==VOCAB3('p','i','d'))
@@ -1056,18 +1027,11 @@ public:
 
                             reply.addVocab(ack);
                             reply.addList()=options;
+                            return true;
                         }
-                        else
-                        {
-                            reply.addVocab(nack);
-                            return false;
-                        }
-                        
-                        return true;
                     }
 
-                    reply.addVocab(nack);
-                    return false;
+                    break;
                 }
 
                 //-----------------
@@ -1075,47 +1039,40 @@ public:
                 {
                     if (command.size()>2)
                     {
-                        int type=command.get(1).asVocab();                        
-    
+                        int type=command.get(1).asVocab();
                         if (type==VOCAB4('T','n','e','c'))
                         {
                             double execTime=command.get(2).asDouble();
                             ctrl->setTneck(execTime);
+                            reply.addVocab(ack);
+                            return true;
                         }
                         else if (type==VOCAB4('T','e','y','e'))
                         {
                             double execTime=command.get(2).asDouble();
                             ctrl->setTeyes(execTime);
+                            reply.addVocab(ack);
+                            return true;
                         }
                         else if (type==VOCAB4('t','r','a','c'))
                         {
                             bool mode=(command.get(2).asInt()>0);
                             ctrl->setTrackingMode(mode);
+                            reply.addVocab(ack);
+                            return true;
                         }
                         else if (type==VOCAB3('p','i','d'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
-                                loc->setPidOptions(*bOpt);
-                            else
                             {
-                                reply.addVocab(nack);
-                                return false;
+                                loc->setPidOptions(*bOpt);
+                                reply.addVocab(ack);
+                                return true;
                             }
                         }
-                        else
-                        {
-                            reply.addVocab(nack);
-                            return false;
-                        }
                     }
-                    else
-                    {
-                        reply.addVocab(nack);
-                        return false;
-                    }
-    
-                    reply.addVocab(ack);
-                    return true;
+
+                    break;
                 }
 
                 //-----------------
@@ -1123,11 +1080,9 @@ public:
                     return RFModule::respond(command,reply);
             }
         }
-        else
-        {
-            reply.addVocab(nack);
-            return false;
-        }
+
+        reply.addVocab(nack);
+        return true;
     }
 
     /************************************************************************/
