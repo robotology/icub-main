@@ -129,7 +129,7 @@ whether the properties exist or not. \n
 The special command "[ask] (all)" returns the whole set of ids 
 present within the database. \n 
 In order to simplify the implementation, nested conditions such 
-as (cond1) && ((cond2) || (cond3)) are not handled; by the way, 
+as (cond1) && ((cond2) || (cond3)) are not handled; however, 
 this is not a real limitation since nested conditions can be 
 properly expanded: indeed, the previous example can be cast back 
 to (cond1)&&(cond2) || (cond1)&&(cond3). 
