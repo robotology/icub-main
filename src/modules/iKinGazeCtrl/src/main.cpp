@@ -238,9 +238,9 @@ following ports:
   in deg.
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. \n 
-    Recognized remote commands (be careful, commands dealing
+    Recognized remote commands (be careful, <b> commands dealing
     with geometric projections will only work iff the cameras
-    intrinsic parameters are provided):
+    intrinsic parameters are provided </b>):
     - [quit]: quit the module.
     - [susp]: suspend the module.
     - [run]: resume the module.
