@@ -35,14 +35,15 @@ See \ref pmp "Pmp Library" for detailed documentation.
 - select the robot to connect to.
 
 --part \e part
-- select the part to control. 
+- select the part to control. Available parts are 
+  <i>left_arm</i>, <i>right_arm</i> and \e <i>both_arms</i>.
  
 --name \e name
 - specify the stem-name of the server. 
  
 --device \e device
 - select the cartesian device to rely on. Currently only the 
-  cartesiancontrollerclient is supported.
+  \e cartesiancontrollerclient is supported.
  
 --period \e Ts
 - specify the server period given in [ms].
