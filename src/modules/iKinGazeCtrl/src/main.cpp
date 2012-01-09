@@ -174,15 +174,15 @@ point:
 - by localizing the target in just one image plane and then 
   sending its coordinates together with a guessed component z
   in the eye's reference frame to the /<ctrlName>/mono:i port.
-  <b> In this mode the cameras intrinsic parameters are
-  required </b>.
+  <b>In this mode the cameras intrinsic parameters are
+  required</b>.
 - by localizing the target in the two image planes and thus 
   sending its coordinates to the /<ctrlName>/stereo:i port. This
   strategy employs the monocular approach along with a pid that
   varies the component z incrementally according to the actual
   error; to achieve that it's required to feed continuosly the
-  port with new feedback while converging to the target. <b> In
-  this mode the cameras intrinsic parameters are required </b>.
+  port with new feedback while converging to the target. <b>In
+  this mode the cameras intrinsic parameters are required</b>.
 - by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
@@ -238,9 +238,9 @@ following ports:
   in deg.
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. \n 
-    Recognized remote commands (be careful, <b> commands dealing
-    with geometric projections will only work iff the cameras
-    intrinsic parameters are provided </b>):
+    Recognized remote commands (be careful, <b>commands dealing
+    with geometric projections will only work if the cameras
+    intrinsic parameters are provided</b>):
     - [quit]: quit the module.
     - [susp]: suspend the module.
     - [run]: resume the module.
@@ -343,12 +343,13 @@ None.
 A configuration file passed through \e --config contains the
 fields required to specify the cameras intrinsic parameters 
 along with a roto-translation matrix appended to the eye 
-kinematic in order to achieve the alignment with the optical 
-axes compensating for possible unknown offsets. 
+kinematic (@see iKinChain::setHN) in order to achieve the 
+alignment with the optical axes compensating for possible 
+unknown offsets. 
  
 \note The final roto-translational matrix is meaningful only as 
-result of the calibration of the extrinsic camera parameters. In 
-case the calibration has not been carried out then remove the 
+result of the calibration of the cameras extrinsic parameters. 
+In case the calibration has not been carried out then remove the
 relative groups from within the configuration file. 
  
 Example: 
