@@ -305,7 +305,8 @@ void  MILClassifier::toStream(std::ofstream &fout) const
     fout.write((char*)&cache_size,sizeof(size_t));
 
     for(size_t i=0; i<cache_size; i++)
-        fout.write((char*)&cache[i],sizeof(Bag));
+        cache[i].toStream(fout);
+        //fout.write((char*)&cache[i],sizeof(Bag));
 }
 
 
@@ -328,7 +329,8 @@ void   MILClassifier::fromStream(std::ifstream &fin)
 
     cache.resize(cache_size);
     for(size_t i=0; i<cache_size; i++)
-        fin.read((char*)&cache[i],sizeof(Bag));
+        cache[i].fromStream(fin);
+        //fin.read((char*)&cache[i],sizeof(Bag));
 }
 
 
