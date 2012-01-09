@@ -64,21 +64,6 @@ struct Bag
         :dist(_dist),weight(_weight),label(_label)
     {}
 
-    void  toStream(std::ofstream &fout) const
-    {
-        fout.write((char*)&dist,sizeof(double));
-        fout.write((char*)&weight,sizeof(double));
-        fout.write((char*)&label,sizeof(int));
-    }
-
-    void   fromStream(std::ifstream &fin)
-    {
-        fin.read((char*)&dist,sizeof(double));
-        fin.read((char*)&weight,sizeof(double));
-        fin.read((char*)&label,sizeof(int));
-    }
-
-
 
     std::string  toString() const
     {
