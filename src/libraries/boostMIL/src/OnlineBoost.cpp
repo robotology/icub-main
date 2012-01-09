@@ -126,13 +126,13 @@ void   OnlineBoost::fromStream(std::ifstream &fin)
 {
     clear();
 
-    size_t wc_size;
-    fin.read((char*)&wc_size,sizeof(size_t));
+    int wc_size;
+    fin.read((char*)&wc_size,sizeof(int));
 
     alphas.resize(wc_size);
     weak_classifiers.resize(wc_size);
 
-    for(size_t i=0; i<wc_size; i++)
+    for(int i=0; i<wc_size; i++)
     {
         fin.read((char*)&alphas[i],sizeof(double));
 
@@ -153,10 +153,10 @@ void   OnlineBoost::fromStream(std::ifstream &fin)
 void   OnlineBoost::toStream(std::ofstream &fout) const
 {
     //write the size of the list of weak classifiers
-    size_t wc_size=this->weak_classifiers.size();
-    fout.write((char*)&wc_size,sizeof(unsigned int));
+    int wc_size=this->weak_classifiers.size();
+    fout.write((char*)&wc_size,sizeof(int));
 
-    for(size_t i=0; i<wc_size; i++)
+    for(int i=0; i<wc_size; i++)
     {
         fout.write((char*)&alphas[i],sizeof(double));
 

@@ -228,7 +228,7 @@ void  SelectorClassifier::toStream(std::ofstream &fout) const
         fout.write((char*)&rel_thresh,sizeof(double));
         fout.write((char*)&sleep_time,sizeof(int));
 
-        fout.write((char*)&pool_size,sizeof(unsigned int));
+        fout.write((char*)&pool_size,sizeof(int));
 
         for(int i=0; i<pool_size; i++)
         {

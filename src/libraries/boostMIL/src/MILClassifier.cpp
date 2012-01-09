@@ -301,10 +301,10 @@ void  MILClassifier::toStream(std::ofstream &fout) const
     for(int i=0; i<feature_size; i++)
         fout.write((char*)&center[i],sizeof(double));
 
-    size_t cache_size=cache.size();
-    fout.write((char*)&cache_size,sizeof(size_t));
+    int cache_size=cache.size();
+    fout.write((char*)&cache_size,sizeof(int));
 
-    for(size_t i=0; i<cache_size; i++)
+    for(int i=0; i<cache_size; i++)
     {
         int tmp_label=cache[i].label;
         double tmp_weight=cache[i].weight;
@@ -332,11 +332,11 @@ void   MILClassifier::fromStream(std::ifstream &fin)
     for(int i=0; i<feature_size; i++)
         fin.read((char*)&center[i],sizeof(double));
 
-    size_t cache_size;
-    fin.read((char*)&cache_size,sizeof(size_t));
+    int cache_size;
+    fin.read((char*)&cache_size,sizeof(int));
 
     cache.resize(cache_size);
-    for(size_t i=0; i<cache_size; i++)
+    for(int i=0; i<cache_size; i++)
     {
         int tmp_label;
         double tmp_dist,tmp_weight;
