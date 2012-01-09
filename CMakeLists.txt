@@ -166,7 +166,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 ################ copying python scripts
 message(STATUS "Installing manager.py")
 install(FILES  app/default/scripts/manager.py app/default/scripts/icub-cluster-server.sh app/default/scripts/icub-cluster-run.sh 
-        DESTINATION bin COMPONENT Core) 
+        DESTINATION bin COMPONENT Core PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
 # so we need to use ${CMAKE_CFG_INTDIR}
