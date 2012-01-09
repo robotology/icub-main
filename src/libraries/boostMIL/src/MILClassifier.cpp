@@ -292,7 +292,6 @@ int                             MILClassifier::classify             (const Input
 
 void  MILClassifier::toStream(std::ofstream &fout) const
 {
-    fout.write((char*)&type,sizeof(int));
     fout.write((char*)&feature_size,sizeof(int));
     fout.write((char*)&radius,sizeof(double));
 
@@ -314,7 +313,6 @@ void   MILClassifier::fromStream(std::ifstream &fin)
 {
     clear();
 
-    fin.read((char*)&type,sizeof(int));
     fin.read((char*)&feature_size,sizeof(int));
     fin.read((char*)&radius,sizeof(double));
 

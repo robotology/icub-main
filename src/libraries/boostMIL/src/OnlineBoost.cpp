@@ -152,7 +152,7 @@ void   OnlineBoost::fromStream(std::ifstream &fin)
 
 void   OnlineBoost::toStream(std::ofstream &fout) const
 {
-    //write the size of the list fo weak classifiers
+    //write the size of the list of weak classifiers
     size_t wc_size=this->weak_classifiers.size();
     fout.write((char*)&wc_size,sizeof(unsigned int));
 
