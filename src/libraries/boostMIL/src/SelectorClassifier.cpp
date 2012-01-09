@@ -223,7 +223,6 @@ void  SelectorClassifier::toStream(std::ofstream &fout) const
 {
     if(ready)
     {
-        fout.write((char*)&type,sizeof(int));
         fout.write((char*)&selected,sizeof(int));
         fout.write((char*)&abs_thresh,sizeof(double));
         fout.write((char*)&rel_thresh,sizeof(double));
@@ -255,7 +254,6 @@ void   SelectorClassifier::fromStream(std::ifstream &fin)
 {
     clear();
 
-    fin.read((char*)&type,sizeof(int));
     fin.read((char*)&selected,sizeof(int));
     fin.read((char*)&abs_thresh,sizeof(double));
     fin.read((char*)&rel_thresh,sizeof(double));
