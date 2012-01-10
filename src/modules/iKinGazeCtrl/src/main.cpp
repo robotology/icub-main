@@ -343,9 +343,8 @@ None.
 A configuration file passed through \e --config contains the
 fields required to specify the cameras intrinsic parameters 
 along with a roto-translation matrix appended to the eye 
-kinematic (\ref iKinChain::setHN) in order to achieve the 
-alignment with the optical axes compensating for possible 
-unknown offsets. 
+kinematic (see \ref setHN) in order to achieve the alignment
+with the optical axes compensating for possible unknown offsets. 
  
 \note The final roto-translational matrix is meaningful only as 
 result of the calibration of the cameras extrinsic parameters. 
