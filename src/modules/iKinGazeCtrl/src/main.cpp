@@ -366,7 +366,7 @@ fx 219.057
 fy 219.028
 cx 174.742
 cy 102.874
- 
+
 [ALIGN_KIN_LEFT] 
 HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows) 
 
