@@ -240,6 +240,12 @@ public:
     virtual void onStop();
 
 
+	void trackTemplate()
+	{
+		head_mode=HEAD_MODE_TRACK_TEMP;
+	}
+	
+	
     void lookAtHand()
     {
         head_mode=HEAD_MODE_TRACK_HAND;

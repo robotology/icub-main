@@ -907,6 +907,8 @@ public:
                     }
                     else
                         visuoThr->trackMotion();
+                        
+                    motorThr->trackTemplate();
 
                     reply.addVocab(ACK);
 
