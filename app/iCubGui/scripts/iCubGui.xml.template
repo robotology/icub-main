@@ -1,0 +1,15 @@
+<application>
+ <name>iCubGui</name>
+   <module>
+    <name>iCubGui</name>
+    <parameters>--xpos 1000 --ypos 100 --width 370</parameters> 
+    <node>console-node</node>
+    <tag>iCubGui</tag>
+  </module>
+
+  <connection>
+    <from>/wholeBodyDynamics/dyn_contacts:o</from>
+    <to>/iCubGui/forces</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>
