@@ -1,0 +1,11 @@
+<!-- instantiation of
+     $ICUB_ROOT/main/app/iCubCluster/scripts/cluster-config.xml.template
+     for iCubLisboa02 -->
+
+<cluster name="icub02" user="icub">
+
+<nameserver namespace="/root" node="pc104"> </nameserver>
+
+<node display="true">pc104</node>
+</cluster>
+

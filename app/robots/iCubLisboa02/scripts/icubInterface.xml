@@ -1,0 +1,15 @@
+<!-- instantiation of
+     $ICUB_ROOT/main/app/iCubCluster/scripts/cluster-config.xml.template
+     for iCubLisboa02 -->
+
+<application>
+<name>iCubLisboa02</name>
+<module>
+      <name>iCubInterface</name>
+      <parameters></parameters>
+      <node>pc104</node>
+      <stdio>pc104</stdio>	
+      <tag>iCubInterface</tag>
+</module>
+</application>
+
