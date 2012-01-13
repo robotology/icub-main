@@ -5,6 +5,12 @@
 
 echo "Parameters: $1 $2"
 
+ID=/`uname -n`
+
+if [ "k$YARP_DIR" != "k" ];
+	YARP_DIR=/usr
+fi
+
 case "$1" in
 	start)
 		case "$2" in 

@@ -6,7 +6,11 @@
 # --nat
 
 ID=/`uname -n`
-    
+
+if [ "k$YARP_DIR" != "k" ];
+	YARP_DIR=/usr
+fi
+
 case "$1" in
 	start)
 		if [ "k$3" != "k" ];
