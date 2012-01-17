@@ -26,8 +26,8 @@ if(ICUB_USE_OpenCV)
     if(ICUB_OpenCV_LEGACY)
         message(STATUS "OpenCV legacy detected")
         message(STATUS "skipping pf3dBottomup")
+        # put hereafter modules that rely on old versions of OpenCV declared as legacy
     else(ICUB_OpenCV_LEGACY)
-        # put here modules that rely on old versions of OpenCV declared as legacy
         add_subdirectory(pf3dBottomup)
     endif(ICUB_OpenCV_LEGACY)
 else(ICUB_USE_OpenCV)

@@ -51,10 +51,16 @@ else(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 	message(STATUS "Qt3 or OpenGL or GLUT not selected, skipping iCubGui")
 endif(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 
-if(ICUB_USE_OpenCV)    
-    add_subdirectory(stereoCalib)
+if(ICUB_USE_OpenCV)
+    if(ICUB_OpenCV_LEGACY)
+        message(STATUS "OpenCV legacy detected")
+        message(STATUS "skipping stereoCalib")
+        # put hereafter modules that rely on old versions of OpenCV declared as legacy
+    else(ICUB_OpenCV_LEGACY)
+        add_subdirectory(stereoCalib)
+    endif(ICUB_OpenCV_LEGACY)
 else(ICUB_USE_OpenCV)
-    message(STATUS "OpenCV not found/selected, skipping camCalibConf")
+    message(STATUS "OpenCV not found/selected, skipping stereoCalib")
 endif(ICUB_USE_OpenCV)
 
 
