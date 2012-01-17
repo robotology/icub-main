@@ -1215,12 +1215,13 @@ void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector 
 Vector &CartesianSolver::encodeDOF()
 {
     dof.resize(prt->chn->getN());
-    fullDOF=true;
+    bool fullness=true;
 
     for (unsigned int i=0; i<prt->chn->getN(); i++)
         if (!(dof[i]=!(*prt->chn)[i].isBlocked()))
-            fullDOF=false;
+            fullness=false;
 
+    fullDOF=fullness;
     return dof;
 }
 

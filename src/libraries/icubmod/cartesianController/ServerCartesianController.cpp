@@ -1627,12 +1627,13 @@ bool ServerCartesianController::connectToSolver()
         // update chain's links
         // skip the first ack/nack vocab
         Bottle *rxDofPart=reply.get(1).asList();
-        Vector curDof((size_t)rxDofPart->size());
         for (int i=0; i<rxDofPart->size(); i++)
-            if (curDof[i]=rxDofPart->get(i).asInt())
+        {
+            if (rxDofPart->get(i).asInt()!=0)
                 chain->releaseLink(i);
             else
                 chain->blockLink(i);
+        }
 
         setTrackingMode(trackingMode);
         alignJointsBounds();
@@ -2030,10 +2031,13 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         Bottle *rxDofPart=reply.get(1).asList();
         curDof.resize((size_t)rxDofPart->size());
         for (int i=0; i<rxDofPart->size(); i++)
-            if (curDof[i]=rxDofPart->get(i).asInt())
+        {
+            curDof[i]=rxDofPart->get(i).asInt();
+            if (curDof[i]!=0.0)
                 chain->releaseLink(i);
             else
                 chain->blockLink(i);
+        }
             
         // update controller
         newController();
