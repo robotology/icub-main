@@ -1469,7 +1469,7 @@ bool CartesianSolver::open(Searchable &options)
     slv->setUserScaling(true,100.0,100.0,100.0);
 
     // enforce linear inequalities constraints, if any
-    if (prt->cns)
+    if (prt->cns!=NULL)
     {
         slv->attachLIC(*prt->cns);
         
@@ -1526,7 +1526,7 @@ bool CartesianSolver::changeDOF(const Vector &_dof)
             return false;
 
         // update LinIneqConstr if any
-        if (prt->cns)
+        if (prt->cns!=NULL)
             prt->cns->update(NULL);
 
         // count uncontrolled joints
