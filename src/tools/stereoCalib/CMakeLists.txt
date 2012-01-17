@@ -2,10 +2,7 @@
 # Authors: Sean Ryan Fanello
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 SET(PROJECTNAME stereoCalib)
-
 PROJECT(${PROJECTNAME})
-
-
 
 FILE(GLOB source src/*.cpp)
 FILE(GLOB header include/*.h)

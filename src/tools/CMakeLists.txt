@@ -53,6 +53,7 @@ endif(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(camCalibConf)
+    add_subdirectory(stereoCalib)
 else(ICUB_USE_OpenCV)
     message(STATUS "OpenCV not found/selected, skipping camCalibConf")
 endif(ICUB_USE_OpenCV)
