@@ -124,8 +124,10 @@ void stereoCalibThread::run(){
                         imageListL.push_back(iml);
                         imageListLR.push_back(iml);
                         imageListLR.push_back(imr);
-                        drawChessboardCorners(Left, boardSize, pointbufL, foundL);
-                        drawChessboardCorners(Right, boardSize, pointbufR, foundR);
+                        Mat cL(pointbufL);
+                        Mat cR(pointbufR);
+                        drawChessboardCorners(Left, boardSize, cL, foundL);
+                        drawChessboardCorners(Right, boardSize, cR, foundR);
                         count++;
                 }
 
