@@ -239,8 +239,12 @@ public:
 
         // init variables
         while (true)
+        {
             if (arm->getPose(xd,od))
                 break;
+
+            Time::delay(0.1);
+        }
 
         // open ports
         port_xd.open((localName+"/xd:i").c_str());
