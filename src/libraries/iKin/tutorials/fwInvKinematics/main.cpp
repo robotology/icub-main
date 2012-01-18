@@ -84,7 +84,6 @@ int main()
 {
     // some useful variables
     Vector q0,qf,qhat,xf,xhat;
-    Vector dummy(1);    
 
     // declare the limb
     genericRightArm genArm;
