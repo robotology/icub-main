@@ -165,7 +165,7 @@ public:
                RateThread(_period),     rf(_rf),
                remoteName(_remoteName), localName(_localName) { }
 
-    virtual bool threadInit()
+    bool threadInit()
     {
         // get params from the RF
         if (rf.check("onlyXYZ"))
@@ -247,7 +247,7 @@ public:
         return true;
     }
 
-    virtual void afterStart(bool s)
+    void afterStart(bool s)
     {
         if (s)
             cout<<"Thread started successfully"<<endl;
@@ -257,7 +257,7 @@ public:
         t0=Time::now();
     }
 
-    virtual void run()
+    void run()
     {
         if (Bottle *b=port_xd.read(false))
         {                
@@ -284,7 +284,7 @@ public:
         printStatus();
     }
 
-    virtual void threadRelease()
+    void threadRelease()
     {    
         iarm->stopControl();
         iarm->restoreContext(startup_context_id);
@@ -361,7 +361,7 @@ protected:
     Port        rpcPort;
 
 public:
-    virtual bool configure(ResourceFinder &rf)
+    bool configure(ResourceFinder &rf)
     {
         string slash="/";
         string ctrlName;
@@ -393,7 +393,7 @@ public:
         return true;
     }
 
-    virtual bool close()
+    bool close()
     {
         thr->stop();
         delete thr;
@@ -404,8 +404,8 @@ public:
         return true;
     }
 
-    virtual double getPeriod()    { return 1.0;  }
-    virtual bool   updateModule() { return true; }
+    double getPeriod()    { return 1.0;  }
+    bool   updateModule() { return true; }
 };
 
 
