@@ -143,8 +143,8 @@ class CtrlThread: public RateThread
 {
 protected:
     ResourceFinder      &rf;
-    PolyDriver          *client;
-    ICartesianControl   *arm;
+    PolyDriver           driver;
+    ICartesianControl   *iarm;
     BufferedPort<Bottle> port_xd;
 
     bool ctrlCompletePose;
@@ -177,26 +177,21 @@ public:
         Property option("(device cartesiancontrollerclient)");
         option.put("remote",remoteName.c_str());
         option.put("local",localName.c_str());
-
-        client=new PolyDriver;
-        if (!client->open(option))
-        {
-            delete client;    
+        if (!driver.open(option))
             return false;
-        }
 
         // open the view
-        client->view(arm);
+        driver.view(iarm);
 
         // latch the controller context
-        arm->storeContext(&startup_context_id);
+        iarm->storeContext(&startup_context_id);
 
         // set trajectory time
         defaultExecTime=rf.check("T",Value(2.0)).asDouble();
 
         // set torso dofs
         Vector newDof, curDof;
-        arm->getDOF(curDof);
+        iarm->getDOF(curDof);
         newDof=curDof;
 
         if (rf.check("DOF10"))
@@ -232,15 +227,15 @@ public:
             newDof[2]=0;
         }
 
-        arm->setDOF(newDof,curDof);
+        iarm->setDOF(newDof,curDof);
 
         // set tracking mode
-        arm->setTrackingMode(false);
+        iarm->setTrackingMode(false);
 
         // init variables
         while (true)
         {
-            if (arm->getPose(xd,od))
+            if (iarm->getPose(xd,od))
                 break;
 
             Time::delay(0.1);
@@ -280,9 +275,9 @@ public:
                 const double execTime=calcExecTime(xd);
 
                 if (ctrlCompletePose)
-                    arm->goToPose(xd,od,execTime);
+                    iarm->goToPose(xd,od,execTime);
                 else
-                    arm->goToPosition(xd,execTime);
+                    iarm->goToPosition(xd,execTime);
             }
         }
 
@@ -291,9 +286,9 @@ public:
 
     virtual void threadRelease()
     {    
-        arm->stopControl();
-        arm->restoreContext(startup_context_id);
-        delete client;
+        iarm->stopControl();
+        iarm->restoreContext(startup_context_id);
+        driver.close();
 
         port_xd.interrupt();
         port_xd.close();
@@ -304,14 +299,14 @@ public:
         int axis=0; // pitch joint
         double min, max;
 
-        arm->getLimits(axis,&min,&max);
-        arm->setLimits(axis,min,MAX_TORSO_PITCH);
+        iarm->getLimits(axis,&min,&max);
+        iarm->setLimits(axis,min,MAX_TORSO_PITCH);
     }
 
     double calcExecTime(const Vector &xd)
     {
         Vector x,o;
-        arm->getPose(x,o);
+        iarm->getPose(x,o);
 
         if (norm(xd-x)<EXECTIME_THRESDIST)
             return defaultExecTime;
@@ -328,9 +323,9 @@ public:
             Vector x,o,xdot,odot;
             Vector xdhat,odhat,qdhat;
 
-            arm->getPose(x,o);
-            arm->getTaskVelocities(xdot,odot);
-            arm->getDesired(xdhat,odhat,qdhat);
+            iarm->getPose(x,o);
+            iarm->getTaskVelocities(xdot,odot);
+            iarm->getDesired(xdhat,odhat,qdhat);
             double e_x=norm(xdhat-x);
 
             cout<<"xd          [m]   = "<<xd.toString()   <<endl;
