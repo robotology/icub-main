@@ -8,20 +8,21 @@
 ID=/`uname -n`
 
 if [ "k$YARP_DIR" != "k" ];
+then
 	YARP_DIR=/usr
 fi
 
 case "$1" in
 	start)
 		if [ "k$3" != "k" ];
-			then
+		then
 			disp=$3
 		else
 			disp=":0.0"
 		fi
 
 		if [ "k$2" == "kdisplay" ];
-			then
+		then
 			echo "enabling display on $ID"
 			export DISPLAY=$disp
 			xhost +
