@@ -122,9 +122,8 @@ Windows, Linux
 
 #include <gsl/gsl_math.h>
 
-#include <iostream>
-#include <iomanip>
 #include <string>
+#include <stdio.h>
 
 #define MAX_TORSO_PITCH     30.0    // [deg]
 #define EXECTIME_THRESDIST  0.3     // [m]
@@ -250,9 +249,9 @@ public:
     void afterStart(bool s)
     {
         if (s)
-            cout<<"Thread started successfully"<<endl;
+            printf("Thread started successfully\n");
         else
-            cout<<"Thread did not start"<<endl;
+            printf("Thread did not start\n");
 
         t0=Time::now();
     }
@@ -328,24 +327,24 @@ public:
             iarm->getDesired(xdhat,odhat,qdhat);
             double e_x=norm(xdhat-x);
 
-            cout<<"xd          [m]   = "<<xd.toString()   <<endl;
-            cout<<"xdhat       [m]   = "<<xdhat.toString()<<endl;
-            cout<<"x           [m]   = "<<x.toString()    <<endl;
-            cout<<"xdot        [m/s] = "<<xdot.toString() <<endl;
-            cout<<"norm(e_x)   [m]   = "<<e_x             <<endl;
+            printf("xd          [m]   = %s\n",xd.toString());
+            printf("xdhat       [m]   = %s\n",xdhat.toString());
+            printf("x           [m]   = %s\n",x.toString());
+            printf("xdot        [m/s] = %s\n",xdot.toString());
+            printf("norm(e_x)   [m]   = %g\n",e_x);
 
             if (ctrlCompletePose)
             {
                 double e_o=norm(odhat-o);
 
-                cout<<"od        [rad]   = "<<od.toString()   <<endl;
-                cout<<"odhat     [rad]   = "<<odhat.toString()<<endl;
-                cout<<"o         [rad]   = "<<o.toString()    <<endl;
-                cout<<"odot      [rad/s] = "<<odot.toString() <<endl;
-                cout<<"norm(e_o) [rad]   = "<<e_o             <<endl;
+                printf("od        [rad]   = %s\n",od.toString());
+                printf("odhat     [rad]   = %s\n",odhat.toString());
+                printf("o         [rad]   = %s\n",o.toString());
+                printf("odot      [rad/s] = %s\n",odot.toString());
+                printf("norm(e_o) [rad]   = %g\n",e_o);
             }
 
-            cout<<endl;
+            printf("\n");
 
             t0=t;
         }
@@ -418,15 +417,15 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        cout << "Options:" << endl << endl;
-        cout << "\t--ctrlName name: controller name (default armCtrl)"                          << endl;
-        cout << "\t--robot    name: robot name to connect to (default: icub)"                   << endl;
-        cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)" << endl;
-        cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"  << endl;
-        cout << "\t--DOF10        : control the torso yaw/roll/pitch as well"                   << endl;
-        cout << "\t--DOF9         : control the torso yaw/pitch as well"                        << endl;
-        cout << "\t--DOF8         : control the torso yaw as well"                              << endl;
-        cout << "\t--onlyXYZ      : disable orientation control"                                << endl;
+        printf("Options:\n\n");
+        printf("\t--ctrlName name: controller name (default armCtrl)\n");
+        printf("\t--robot    name: robot name to connect to (default: icub)\n");
+        printf("\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)\n");
+        printf("\t--T        time: specify the task execution time in seconds (default: 2.0)\n");
+        printf("\t--DOF10        : control the torso yaw/roll/pitch as well\n");
+        printf("\t--DOF9         : control the torso yaw/pitch as well\n");
+        printf("\t--DOF8         : control the torso yaw as well\n");
+        printf("\t--onlyXYZ      : disable orientation control\n");
 
         return 0;
     }
