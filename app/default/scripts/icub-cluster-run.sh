@@ -7,7 +7,7 @@
 
 ID=/`uname -n`
 
-if [ "k$YARP_DIR" != "k" ];
+if [ "k$YARP_DIR" = "k" ];
 then
 	YARP_DIR=/usr
 fi
