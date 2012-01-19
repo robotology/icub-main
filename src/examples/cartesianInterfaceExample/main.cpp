@@ -327,20 +327,20 @@ public:
             iarm->getDesired(xdhat,odhat,qdhat);
             double e_x=norm(xdhat-x);
 
-            printf("xd          [m]   = %s\n",xd.toString());
-            printf("xdhat       [m]   = %s\n",xdhat.toString());
-            printf("x           [m]   = %s\n",x.toString());
-            printf("xdot        [m/s] = %s\n",xdot.toString());
+            printf("xd          [m]   = %s\n",xd.toString().c_str());
+            printf("xdhat       [m]   = %s\n",xdhat.toString().c_str());
+            printf("x           [m]   = %s\n",x.toString().c_str());
+            printf("xdot        [m/s] = %s\n",xdot.toString().c_str());
             printf("norm(e_x)   [m]   = %g\n",e_x);
 
             if (ctrlCompletePose)
             {
                 double e_o=norm(odhat-o);
 
-                printf("od        [rad]   = %s\n",od.toString());
-                printf("odhat     [rad]   = %s\n",odhat.toString());
-                printf("o         [rad]   = %s\n",o.toString());
-                printf("odot      [rad/s] = %s\n",odot.toString());
+                printf("od        [rad]   = %s\n",od.toString().c_str());
+                printf("odhat     [rad]   = %s\n",odhat.toString().c_str());
+                printf("o         [rad]   = %s\n",o.toString().c_str());
+                printf("odot      [rad/s] = %s\n",odot.toString().c_str());
                 printf("norm(e_o) [rad]   = %g\n",e_o);
             }
 
