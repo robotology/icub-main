@@ -8,6 +8,7 @@ echo "Parameters: $1 $2"
 ID=/`uname -n`
 
 if [ "k$YARP_DIR" != "k" ];
+then
 	YARP_DIR=/usr
 fi
 
