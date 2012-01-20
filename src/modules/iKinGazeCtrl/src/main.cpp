@@ -91,20 +91,20 @@ Factors</a>.
 --ctrlName \e name 
 - The parameter \e name identifies the controller's name; all 
   the open ports will be tagged with the prefix
-  /<ctrlName>/<part>/. If not specified \e iKinGazeCtrl is
+  /<ctrlName>/<part>/. If not specified, \e iKinGazeCtrl is
   assumed.
  
 --robot \e name 
 - The parameter \e name selects the robot name to connect to; if
-  not specified \e icub is assumed.
+  not specified, \e icub is assumed.
  
 --part \e type 
 - The parameter \e type selects the robot's head port to connect
-  to; if not specified \e head is assumed.
+  to; if not specified, \e head is assumed.
 
 --torso \e name 
 - The parameter \e name selects the robot's torso port to 
-  connect to; if not specified \e torso is assumed.
+  connect to; if not specified, \e torso is assumed.
  
 --Tneck \e time
 - specify the neck trajectory execution time in point-to-point 
@@ -125,10 +125,12 @@ Factors</a>.
   cameras parameters.
  
 --context \e dir
-- Resource finder default searching dir for configuration file.
+- Resource finder default searching dir for configuration file; 
+  if not specified, \e iKinGazeCtrl/conf is assumed.
  
 --from \e file
-- Resource finder default configuration file.
+- Resource finder default configuration file; if not specified, 
+  \e config.ini is assumed.
  
 --noVOR
 - Disable the vestibulo-ocular reflex in favour of the OCR while
