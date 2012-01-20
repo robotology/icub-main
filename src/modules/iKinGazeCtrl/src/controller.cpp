@@ -22,13 +22,13 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                       const string &_robotName, const string &_localName, const string &_configFile,
+                       const string &_robotName, const string &_localName, const string &_cameraFile,
                        const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
                        const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
                        const unsigned int _period) :
                        RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
                        commData(_commData),     robotName(_robotName),   localName(_localName),
-                       configFile(_configFile), neckTime(_neckTime),     eyesTime(_eyesTime),
+                       cameraFile(_cameraFile), neckTime(_neckTime),     eyesTime(_eyesTime),
                        eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel),
                        headV2(_headV2),         period(_period),         Ts(_period/1000.0),
                        printAccTime(0.0)
@@ -51,8 +51,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     chainEyeR=eyeR->asChain();
 
     // add aligning matrices read from configuration file
-    getAlignHN(configFile,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(configFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(cameraFile,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(cameraFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
     Matrix lim;
 

@@ -128,16 +128,16 @@ public:
 };
 
 
-// Allocates Projection Matrix Prj for the camera read from configFile
+// Allocates Projection Matrix Prj for the camera read from cameraFile
 // type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}
 // Returns true if correctly configured
-bool getCamPrj(const string &configFile, const string &type, Matrix **Prj);
+bool getCamPrj(const string &cameraFile, const string &type, Matrix **Prj);
 
 
-// Allocates the two aligning matrices read from configFile
+// Allocates the two aligning matrices read from cameraFile
 // type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}
 // Returns true if correctly configured
-bool getAlignHN(const string &configFile, const string &type, iKinChain *chain);
+bool getAlignHN(const string &cameraFile, const string &type, iKinChain *chain);
 
 
 // Aligns head joints bounds with current onboard bounds.

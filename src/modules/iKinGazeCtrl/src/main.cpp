@@ -116,12 +116,15 @@ Factors</a>.
   movements [expressed in seconds]; by default \e time is 0.25
   seconds.
  
---config \e file 
-- The parameter \e file specifies the file name used to read 
-  kinematics and cameras parameters (see below).
+--cameraFile \e file 
+- The parameter \e file specifies the file name used to read  
+  cameras parameters (see below).
  
 --context \e dir
-- Resource finder searching dir for config file.
+- Resource finder default searching dir for configuration file.
+ 
+--from \e file
+- Resource finder default configuration file.
  
 --noVOR
 - Disable the vestibulo-ocular reflex in favour of the OCR while
@@ -339,8 +342,8 @@ None.
 \section out_data_sec Output Data Files 
 None. 
  
-\section conf_file_sec Configuration Files
-A configuration file passed through \e --config contains the
+\section conf_file_sec Camera Configuration File
+A configuration file passed through \e --cameraFile contains the
 fields required to specify the cameras intrinsic parameters 
 along with a roto-translation matrix appended to the eye 
 kinematic (see the iKinChain::setHN method) in order to achieve
@@ -549,7 +552,7 @@ public:
         string robotName;
         string partName;
         string torsoName;
-        string configFile;
+        string cameraFile;
         double neckTime;
         double eyesTime;
         double eyeTiltMin;
@@ -574,24 +577,34 @@ public:
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
         headV2=rf.check("headV2");
+        VOR=!rf.check("noVOR");
+        Robotable=!rf.check("simulation");
 
         // minAbsVel is given in absolute form
         // hence it must be positive
         if (minAbsVel<0.0)
             minAbsVel=-minAbsVel;
 
-        VOR=!rf.check("noVOR");
-        Robotable=!rf.check("simulation");
+        if (rf.check("cameraFile"))
+        {
+            if (rf.check("cameraContext"))
+                rf.setDefaultContext(rf.find("cameraContext").asString().c_str());
 
-        if (rf.check("config"))
-        {    
-            configFile=rf.findFile(rf.find("config").asString().c_str());
-
-            if (configFile=="")
+            cameraFile=rf.findFile(rf.find("cameraFile").asString().c_str());
+            if (cameraFile=="")
                 return false;
         }
         else
-            configFile.clear();
+            cameraFile.clear();
+
+        if (headV2)
+            fprintf(stdout,"Controller configured for head 2.0\n");
+
+        if (!VOR)
+            fprintf(stdout,"VOR disabled\n");
+
+        if (!Robotable)
+            fprintf(stdout,"Controller running in simulation mode\n");
 
         Property optHead("(device remote_controlboard)");
         Property optTorso("(device remote_controlboard)");
@@ -645,17 +658,17 @@ public:
 
         // create and start threads
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,configFile,neckTime,eyesTime,
+                            localHeadName,cameraFile,neckTime,eyesTime,
                             eyeTiltMin,eyeTiltMax,minAbsVel,headV2,10);
 
-        loc=new Localizer(&commData,localHeadName,configFile,headV2,10);
+        loc=new Localizer(&commData,localHeadName,cameraFile,headV2,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
-                                     localHeadName,configFile,eyeTiltMin,
+                                     localHeadName,cameraFile,eyeTiltMin,
                                      eyeTiltMax,VOR,headV2,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
-                       localHeadName,configFile,eyeTiltMin,eyeTiltMax,headV2,20);
+                       localHeadName,cameraFile,eyeTiltMin,eyeTiltMax,headV2,20);
 
         // this switch-on order does matter !!
         eyesRefGen->start();
@@ -1132,38 +1145,21 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("default/conf");
+    rf.setDefaultContext("iKinGazeCtrl/conf");
+    rf.setDefaultConfigFile("config.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     if (rf.check("help"))
     {
-        fprintf(stdout,"Options:\n\n");
-        fprintf(stdout,"\t--ctrlName      name: controller name (default iKinGazeCtrl)\n");
-        fprintf(stdout,"\t--robot         name: robot name to connect to (default: icub)\n");
-        fprintf(stdout,"\t--part          name: robot head port name, (default: head)\n");
-        fprintf(stdout,"\t--torso         name: robot torso port name (default: torso)\n");
-        fprintf(stdout,"\t--Tneck         time: specify the neck movements time in seconds (default: 0.75)\n");
-        fprintf(stdout,"\t--Teyes         time: specify the eyes movements time in seconds (default: 0.25)\n");        
-        fprintf(stdout,"\t--config        file: file name for kinematics and cameras parameters\n");
-        fprintf(stdout,"\t--context        dir: resource finder searching dir for config file\n");
-        fprintf(stdout,"\t--noVOR             : disable the vestibulo-ocular reflex\n");
-        fprintf(stdout,"\t--simulation        : simulate the presence of the robot\n");
-        fprintf(stdout,"\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot\n");
-        fprintf(stdout,"\t--eyeTiltMin     min: minimum eye tilt angle [deg]\n");
-        fprintf(stdout,"\t--eyeTiltMax     max: maximum eye tilt angle [deg]\n");
-        fprintf(stdout,"\t--minAbsVel      min: minimum absolute velocity that can be achieved [deg/s] (default 0.0)\n");
-        fprintf(stdout,"\t--headV2            : refer to the kinematics of the head v2\n");
-
+        fprintf(stdout,"please look at the online documentation :)\n");
         return 0;
     }
 
     Network yarp;
-
     if (!yarp.checkNetwork())
         return -1;
 
     CtrlModule mod;
-
     return mod.runModule(rf);
 }
 

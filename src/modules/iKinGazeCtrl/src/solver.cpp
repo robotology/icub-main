@@ -23,13 +23,13 @@
 /************************************************************************/
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              exchangeData *_commData, const string &_robotName,
-                             const string &_localName, const string &_configFile,
+                             const string &_localName, const string &_cameraFile,
                              const double _eyeTiltMin, const double _eyeTiltMax,
                              const bool _VOR, const bool _headV2,
                              const unsigned int _period) :
                              RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
                              commData(_commData),     robotName(_robotName),   localName(_localName),
-                             configFile(_configFile), eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax),
+                             cameraFile(_cameraFile), eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax),
                              headV2(_headV2),         period(_period),         Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
@@ -54,8 +54,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     chainEyeR=eyeR->asChain();
 
     // add aligning matrices read from configuration file
-    getAlignHN(configFile,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(configFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(cameraFile,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(cameraFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
     Matrix lim;
 
@@ -367,11 +367,11 @@ void EyePinvRefGen::stopControl()
 /************************************************************************/
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
-               const string &_localName, const string &_configFile, const double _eyeTiltMin,
+               const string &_localName, const string &_cameraFile, const double _eyeTiltMin,
                const double _eyeTiltMax, const bool _headV2, const unsigned int _period) :
                RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
                commData(_commData),     eyesRefGen(_eyesRefGen), loc(_loc),
-               ctrl(_ctrl),             localName(_localName),   configFile(_configFile),
+               ctrl(_ctrl),             localName(_localName),   cameraFile(_cameraFile),
                eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), headV2(_headV2),
                period(_period),         Ts(_period/1000.0)
 {
@@ -396,8 +396,8 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     chainEyeR=eyeR->asChain();    
 
     // add aligning matrices read from configuration file
-    getAlignHN(configFile,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(configFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(cameraFile,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(cameraFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
     if (Robotable)
     {

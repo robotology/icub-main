@@ -74,7 +74,7 @@ protected:
     unsigned int period;
     string robotName;
     string localName;
-    string configFile;
+    string cameraFile;
     bool Robotable;
     bool headV2;
     bool genOn;
@@ -96,7 +96,7 @@ protected:
 public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                   exchangeData *_commData, const string &_robotName,
-                  const string &_localName, const string &_configFile,
+                  const string &_localName, const string &_cameraFile,
                   const double _eyeTiltMin, const double _eyeTiltMax,
                   const bool _VOR, const bool _headV2,
                   const unsigned int _period);
@@ -136,7 +136,7 @@ protected:
     xdPort             *port_xd;
 
     string localName;
-    string configFile;
+    string cameraFile;
     unsigned int period;
     bool Robotable;
     bool headV2;
@@ -168,7 +168,7 @@ protected:
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
-           const string &_localName, const string &_configFile, const double _eyeTiltMin,
+           const string &_localName, const string &_cameraFile, const double _eyeTiltMin,
            const double _eyeTiltMax, const bool _headV2, const unsigned int _period);
 
     // Returns a measure of neck angle required to reach the target

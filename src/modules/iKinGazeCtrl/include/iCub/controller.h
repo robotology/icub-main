@@ -69,7 +69,7 @@ protected:
     Semaphore mutex;
     string robotName;
     string localName;
-    string configFile;
+    string cameraFile;
     unsigned int period;
     bool Robotable;
     bool headV2;
@@ -90,7 +90,7 @@ protected:
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-               const string &_robotName, const string &_localName, const string &_configFile,
+               const string &_robotName, const string &_localName, const string &_cameraFile,
                const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
                const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
                const unsigned int _period);
