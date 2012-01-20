@@ -408,11 +408,7 @@ public:
 
     virtual bool close()
     {
-
-        
-        fprintf(stdout,"going to get stuck\n");
         cmdPort.close();
-        fprintf(stdout,"false\n");
         rpcPort.close();
         
         if(motorThr!=NULL)
