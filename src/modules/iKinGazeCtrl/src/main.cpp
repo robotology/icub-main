@@ -116,9 +116,13 @@ Factors</a>.
   movements [expressed in seconds]; by default \e time is 0.25
   seconds.
  
---cameraFile \e file 
+--camerasContext \e dir 
+- The parameter \e dir specifies the context used to locate the 
+  cameras parameters file (see below).
+ 
+--camerasFile \e file 
 - The parameter \e file specifies the file name used to read  
-  cameras parameters (see below).
+  cameras parameters.
  
 --context \e dir
 - Resource finder default searching dir for configuration file.
@@ -343,8 +347,8 @@ None.
 None. 
  
 \section conf_file_sec Camera Configuration File
-A configuration file passed through \e --cameraFile contains the
-fields required to specify the cameras intrinsic parameters 
+A configuration file passed through \e --camerasFile contains 
+the fields required to specify the cameras intrinsic parameters 
 along with a roto-translation matrix appended to the eye 
 kinematic (see the iKinChain::setHN method) in order to achieve
 the alignment with the optical axes compensating for possible 
@@ -552,7 +556,7 @@ public:
         string robotName;
         string partName;
         string torsoName;
-        string cameraFile;
+        string camerasFile;
         double neckTime;
         double eyesTime;
         double eyeTiltMin;
@@ -585,17 +589,17 @@ public:
         if (minAbsVel<0.0)
             minAbsVel=-minAbsVel;
 
-        if (rf.check("cameraFile"))
+        if (rf.check("camerasFile"))
         {
-            if (rf.check("cameraContext"))
-                rf.setDefaultContext(rf.find("cameraContext").asString().c_str());
+            if (rf.check("camerasContext"))
+                rf.setDefaultContext(rf.find("camerasContext").asString().c_str());
 
-            cameraFile=rf.findFile(rf.find("cameraFile").asString().c_str());
-            if (cameraFile=="")
+            camerasFile=rf.findFile(rf.find("camerasFile").asString().c_str());
+            if (camerasFile=="")
                 return false;
         }
         else
-            cameraFile.clear();
+            camerasFile.clear();
 
         if (headV2)
             fprintf(stdout,"Controller configured for head 2.0\n");
@@ -658,17 +662,17 @@ public:
 
         // create and start threads
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,cameraFile,neckTime,eyesTime,
+                            localHeadName,camerasFile,neckTime,eyesTime,
                             eyeTiltMin,eyeTiltMax,minAbsVel,headV2,10);
 
-        loc=new Localizer(&commData,localHeadName,cameraFile,headV2,10);
+        loc=new Localizer(&commData,localHeadName,camerasFile,headV2,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
-                                     localHeadName,cameraFile,eyeTiltMin,
+                                     localHeadName,camerasFile,eyeTiltMin,
                                      eyeTiltMax,VOR,headV2,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
-                       localHeadName,cameraFile,eyeTiltMin,eyeTiltMax,headV2,20);
+                       localHeadName,camerasFile,eyeTiltMin,eyeTiltMax,headV2,20);
 
         // this switch-on order does matter !!
         eyesRefGen->start();

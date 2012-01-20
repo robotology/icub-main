@@ -333,14 +333,14 @@ Matrix exchangeData::get_fpFrame()
 
 
 /************************************************************************/
-bool getCamPrj(const string &cameraFile, const string &type, Matrix **Prj)
+bool getCamPrj(const string &camerasFile, const string &type, Matrix **Prj)
 {
     *Prj=NULL;
 
-    if (cameraFile.size())
+    if (camerasFile.size())
     {
         Property par;
-        par.fromConfigFile(cameraFile.c_str());
+        par.fromConfigFile(camerasFile.c_str());
 
         Bottle parType=par.findGroup(type.c_str());
         string warning="Intrinsic parameters for "+type+" group not found";
@@ -380,13 +380,13 @@ bool getCamPrj(const string &cameraFile, const string &type, Matrix **Prj)
 
 
 /************************************************************************/
-bool getAlignHN(const string &cameraFile, const string &type, iKinChain *chain)
+bool getAlignHN(const string &camerasFile, const string &type, iKinChain *chain)
 {
     if (chain!=NULL)
     {
         Property par;
         string warning="Aligning matrix for "+type+" group not found";
-        if (par.fromConfigFile(cameraFile.c_str()))
+        if (par.fromConfigFile(camerasFile.c_str()))
         {
             Bottle parType=par.findGroup(type.c_str());
             if (parType.size()>0)

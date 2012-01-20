@@ -25,10 +25,10 @@
 
 /************************************************************************/
 Localizer::Localizer(exchangeData *_commData, const string &_localName,
-                     const string &_cameraFile, const bool _headV2,
+                     const string &_camerasFile, const bool _headV2,
                      const unsigned int _period) :
                      RateThread(_period), localName(_localName),
-                     commData(_commData), cameraFile(_cameraFile),
+                     commData(_commData), camerasFile(_camerasFile),
                      headV2(_headV2),     period(_period)
 {
     iCubHeadCenter eyeC(headV2?"right_v2":"right");
@@ -46,8 +46,8 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeL->releaseLink(2); eyeC.releaseLink(2); eyeR->releaseLink(2);
 
     // add aligning matrices read from configuration file
-    getAlignHN(cameraFile,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(cameraFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(camerasFile,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(camerasFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
     // get the absolute reference frame of the head
     Vector q(eyeC.getDOF()); q=0.0;
@@ -55,8 +55,8 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     // ... and its inverse
     invEyeCAbsFrame=SE3inv(eyeCAbsFrame);
 
-    // get camera projection matrix from the cameraFile
-    if (getCamPrj(cameraFile,"CAMERA_CALIBRATION_LEFT",&PrjL))
+    // get camera projection matrix from the camerasFile
+    if (getCamPrj(camerasFile,"CAMERA_CALIBRATION_LEFT",&PrjL))
     {
         Matrix &Prj=*PrjL;
         cxl=Prj(0,2);
@@ -67,8 +67,8 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     else
         PrjL=invPrjL=NULL;
 
-    // get camera projection matrix from the cameraFile
-    if (getCamPrj(cameraFile,"CAMERA_CALIBRATION_RIGHT",&PrjR))
+    // get camera projection matrix from the camerasFile
+    if (getCamPrj(camerasFile,"CAMERA_CALIBRATION_RIGHT",&PrjR))
     {
         Matrix &Prj=*PrjR;
         cxr=Prj(0,2);

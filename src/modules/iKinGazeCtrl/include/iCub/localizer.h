@@ -54,7 +54,7 @@ protected:
     BufferedPort<Vector>  port_anglesOut;
 
     string localName;
-    string cameraFile;
+    string camerasFile;
     unsigned int period;
     bool headV2;
     
@@ -82,7 +82,7 @@ protected:
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,
-              const string &_cameraFile, const bool _headV2,
+              const string &_camerasFile, const bool _headV2,
               const unsigned int _period);
 
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
