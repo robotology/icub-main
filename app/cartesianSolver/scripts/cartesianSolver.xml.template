@@ -47,8 +47,6 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
-                <!-- Remember to add the "--headV2" parameter for robot equipped with head v. 2.0 -->
-                <parameters>--context cameraCalibration/conf --config icubEyes.ini --eyeTiltMin -7.5 --eyeTiltMax 15.0 --ping_robot_tmo 40.0</parameters>
                 <node>pwrNode5</node>
                 <tag>gazeController</tag>
         </module>
