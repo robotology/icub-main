@@ -593,9 +593,6 @@ void stereoCalibThread::stereoCalibration(vector<string> imagelist, int boardWid
         }
         npoints += npt;
     }
-    Mat R1,R2,P1,P2;
-    Rect roi1, roi2;
-    stereoRectify( this->Kleft, this->DistL, this->Kright, this->DistR, imageSize, this->R, this->T, R1, R2, P1, P2, this->Q, -1, imageSize, &roi1, &roi2 );
     fprintf(stdout,"average reprojection err = %f\n",err/npoints);
 }
 
