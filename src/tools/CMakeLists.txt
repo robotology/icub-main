@@ -52,6 +52,8 @@ else(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 endif(ICUB_USE_Qt3 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)
 
 if(ICUB_USE_OpenCV)
+    add_subdirectory(camCalibConf)
+    
     if(ICUB_OpenCV_LEGACY)
         message(STATUS "OpenCV legacy detected")
         message(STATUS "skipping stereoCalib")
