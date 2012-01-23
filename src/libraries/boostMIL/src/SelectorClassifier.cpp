@@ -89,6 +89,8 @@ void SelectorClassifier::initResource()
 
 void SelectorClassifier::clear()
 {
+    ready=false;
+
     selected = -1;
 
     pool_size = 0;
@@ -284,6 +286,8 @@ void   SelectorClassifier::fromStream(std::ifstream &fin)
 
         pool[i]->fromStream(fin);
     }
+
+    isReady();
 }
 
 
@@ -347,6 +351,8 @@ void   SelectorClassifier::fromString(const std::string &str)
         pool.push_back(ClassifierFactory::instance().create(bWL->find("type").asString().c_str()));
         pool.back()->fromString(bWL->toString().c_str());
     }
+
+    isReady();
 }
 
 

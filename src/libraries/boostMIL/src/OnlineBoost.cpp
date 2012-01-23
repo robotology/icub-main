@@ -147,6 +147,8 @@ void   OnlineBoost::fromStream(std::ifstream &fin)
 
         weak_classifiers[i]->fromStream(fin);
     }
+
+    isReady();
 }
 
 
@@ -193,6 +195,8 @@ void   OnlineBoost::fromString(const std::string &str)
         weak_classifiers.push_back(new SelectorClassifier(bSelector->find("type").asString().c_str(),resource,&function_space));
         weak_classifiers.back()->fromString(bSelector->toString().c_str());
     }
+
+    isReady();
 }
 
 

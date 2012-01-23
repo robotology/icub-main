@@ -225,6 +225,8 @@ double                          MILClassifier::bestRadius           ()
 //Public  Methods
 void                            MILClassifier::clear                ()
 {
+    ready=false;
+
     radius          = 0;
     feature_size    = 0;
     max_cache_size  = 0;
@@ -329,6 +331,8 @@ void   MILClassifier::fromStream(std::ifstream &fin)
     cache.resize(cache_size);
     for(int i=0; i<cache_size; i++)
         fin.read((char*)&cache[i],sizeof(Bag));
+
+    isReady();
 }
 
 
@@ -384,6 +388,8 @@ void   MILClassifier::fromString(const std::string &str)
         b.fromString(bCache->get(i).asList()->toString().c_str());
         cache.push_back(b);
     }
+
+    isReady();
 }
 
 

@@ -132,6 +132,8 @@ void   StrongClassifier::fromStream(std::ifstream &fin)
 
         weak_classifiers[i]->fromStream(fin);
     }
+
+    isReady();
 }
 
 
@@ -173,6 +175,8 @@ void   StrongClassifier::fromString(const std::string &str)
         weak_classifiers.push_back(ClassifierFactory::instance().create(bWL->find("type").asString().c_str()));
         weak_classifiers.back()->fromString(bWL->toString().c_str());
     }
+
+    isReady();
 }
 
 
