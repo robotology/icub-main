@@ -8,9 +8,11 @@ prepare_device(cartesiancontrollerserver TYPE    ServerCartesianController
                                          WRAPPER cartesiancontrollerclient)
 
 if(NOT SKIP_cartesiancontrollerserver)
-   set(server_source ServerCartesianController.cpp)
+   set(server_source ServerCartesianController.cpp
+                     SmithPredictor.cpp)
    set(server_header CommonCartesianController.h
-                     ServerCartesianController.h)
+                     ServerCartesianController.h
+                     SmithPredictor.h)
 
    include_directories(${iKin_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
    add_library(cartesiancontrollerserver ${server_source} ${server_header})
