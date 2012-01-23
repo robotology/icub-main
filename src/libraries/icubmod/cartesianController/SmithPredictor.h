@@ -33,13 +33,13 @@ protected:
     iCub::ctrl::Integrator *I;
     yarp::sig::Vector gains;
     std::deque<std::deque<double> > tappedDelays;
-    bool configured;
+    bool enabled;
 
 public:
     SmithPredictor();
     ~SmithPredictor();
-    bool configure(const yarp::os::Property &options, iCub::iKin::iKinChain &chain);
-    bool init(const yarp::sig::Vector &y0);
+    void configure(yarp::os::Property &options, iCub::iKin::iKinChain &chain);
+    void init(const yarp::sig::Vector &y0);
     yarp::sig::Vector compute(const yarp::sig::Vector &u);
 };
 

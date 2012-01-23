@@ -36,21 +36,22 @@ SmithPredictor::SmithPredictor()
 {
     I=NULL;
     gains.resize(1,0.0);
-    configured=false;
+    enabled=false;
 }
 
 
 /************************************************************************/
-bool SmithPredictor::configure(const Property &options, iKinChain &chain)
-{
-    if (configured)
-        return false;
+void SmithPredictor::configure(Property &options, iKinChain &chain)
+{  
+    double Ts=options.check("Ts",Value(0.01)).asDouble();
+    enabled=options.check("enabled",Value("false")).asString()=="true";
+    if (!enabled)
+        return;
 
-    // "options" is meant to be properly formed
-    // in order to make lots of checks unnecessary and
-    // speed up the configuration stage
-    Property &_options=const_cast<Property&>(options);
-    double Ts=_options.find("Ts").asDouble();
+    tappedDelays.clear();
+    if (I!=NULL)
+        delete I;
+    
     Vector y0(chain.getDOF());
     Matrix lim(chain.getDOF(),2);
     gains.resize(chain.getDOF(),1.0);
@@ -58,7 +59,7 @@ bool SmithPredictor::configure(const Property &options, iKinChain &chain)
     // we're forced to cycle by joints and
     // not by dofs since the configuration
     // params are given with joints ordering
-    int i=0;
+    int i=0;    
     for (unsigned int j=0; j<chain.getN(); j++)
     {
         if (!chain[j].isBlocked())
@@ -69,9 +70,9 @@ bool SmithPredictor::configure(const Property &options, iKinChain &chain)
 
             ostringstream tag;
             tag<<"joint_"<<j;
-            if (_options.check(tag.str().c_str()))
+            if (options.check(tag.str().c_str()))
             {
-                if (Bottle *params=_options.find(tag.str().c_str()).asList())
+                if (Bottle *params=options.find(tag.str().c_str()).asList())
                 {
                     gains[i]=params->get(0).asDouble();
                     if (params->size()>1)
@@ -91,16 +92,22 @@ bool SmithPredictor::configure(const Property &options, iKinChain &chain)
         }        
     }
     
-    I=new Integrator(Ts,y0,lim);
-
-    return configured=true;
+    I=new Integrator(Ts,y0,lim);    
 }
 
 
 /************************************************************************/
-bool SmithPredictor::init(const Vector &y0)
+SmithPredictor::~SmithPredictor()
 {
-    if (configured && (tappedDelays.size()==y0.length()))
+    if (I!=NULL)
+        delete I;
+}
+
+
+/************************************************************************/
+void SmithPredictor::init(const Vector &y0)
+{
+    if (enabled && (tappedDelays.size()==y0.length()))
     {
         // init the content of tapped delay lines
         for (size_t i=0; i<tappedDelays.size(); i++)
@@ -109,17 +116,14 @@ bool SmithPredictor::init(const Vector &y0)
 
         // init the integral part
         I->reset(y0);
-        return true;
     }
-    else
-        return false;
 }
 
 
 /************************************************************************/
 Vector SmithPredictor::compute(const Vector &u)
 {
-    if (configured && (tappedDelays.size()==u.length()))
+    if (enabled && (tappedDelays.size()==u.length()))
     {
         Vector y=gains*I->integrate(u);
         Vector out(y.length());
