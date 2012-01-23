@@ -1125,6 +1125,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
     q_set.resize(dim,0.0);
     qdot.resize(dim,0.0);
     xdot.resize(6,0.0);
+    compensation.resize(dim,0.0);
 
     W=eye(dim,dim);
     Eye6=eye(6,6);
@@ -1151,7 +1152,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
     qGuardMaxInt.resize(dim);
     qGuardMaxExt.resize(dim);
     qGuardMinCOG.resize(dim);
-    qGuardMaxCOG.resize(dim);    
+    qGuardMaxCOG.resize(dim);
 
     computeGuard();
 }
@@ -1242,7 +1243,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
 
         calc_e();
 
-        Vector _qdot=mjCtrlJoint->computeCmd(execTime,q_set-q);
+        Vector _qdot=mjCtrlJoint->computeCmd(execTime,q_set-q+compensation);
         Vector _xdot7=mjCtrlTask->computeCmd(execTime,x_set-x);
 
         Vector *pxdot=(xdot_set!=NULL)?xdot_set:&_xdot7;
@@ -1273,7 +1274,9 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
     else if (state==IKINCTRL_STATE_DEADLOCK)
         deadLockRecoveryFcn();
 
-    printIter(verbose);    
+    printIter(verbose);
+
+    compensation=0.0;
 
     return q;
 }
@@ -1331,6 +1334,9 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
             fprintf(stdout,"xdot    = %s\n",xdot.toString().c_str());
         }
 
+        if (_verbose>2)
+            fprintf(stdout,"comp    = %s\n",compensation.toString().c_str());
+
         fprintf(stdout,"\n\n");
     }
 }
@@ -1355,6 +1361,17 @@ double MultiRefMinJerkCtrl::set_execTime(const double _execTime, const bool warn
         fprintf(stderr,"Warning: task execution time limited to the lower bound %g\n",lowerThres);
 
     return execTime;
+}
+
+
+/************************************************************************/
+void MultiRefMinJerkCtrl::add_compensation(const Vector &comp)
+{
+    size_t l1=comp.length();
+    size_t l2=q.length();
+    size_t l=(l1>l2)?l2:l1;
+    for (size_t i=0; i<l; i++)
+        compensation[i]=comp[i];
 }
 
 

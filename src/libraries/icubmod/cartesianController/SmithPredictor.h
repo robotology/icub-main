@@ -27,20 +27,23 @@
 
 #include <deque>
 
+
 class SmithPredictor
 {
 protected:
     iCub::ctrl::Integrator *I;
     yarp::sig::Vector gains;
-    std::deque<std::deque<double> > tappedDelays;
+    std::deque<std::deque<double>*> tappedDelays;
     bool enabled;
+
+    void dealloc();
 
 public:
     SmithPredictor();
     ~SmithPredictor();
     void configure(yarp::os::Property &options, iCub::iKin::iKinChain &chain);
-    void init(const yarp::sig::Vector &y0);
-    yarp::sig::Vector compute(const yarp::sig::Vector &u);
+    void restart(const yarp::sig::Vector &y0);
+    yarp::sig::Vector computeCmd(const yarp::sig::Vector &u);
 };
 
 #endif

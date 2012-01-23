@@ -931,6 +931,9 @@ void ServerCartesianController::newController()
 
     // set task execution time
     trajTime=ctrl->set_execTime(trajTime,true);
+
+    // configure the Smith Predictor
+    smithPredictor.configure(smithPredictorOptions,*chain);
 }
 
 
@@ -1132,13 +1135,19 @@ void ServerCartesianController::run()
         if (getNewTarget())
         {    
             if (!executingTraj)
+            {
                 ctrl->restart(fb);
+                smithPredictor.restart(fb);
+            }
 
             executingTraj=true; // onset of new trajectory
         }
             
         if (executingTraj)
         {
+            // add the contribution of the Smith Predictor block
+            ctrl->add_compensation(-1.0*smithPredictor.computeCmd(ctrl->get_qdot()));
+
             // limb control loop
             if (taskVelModeOn)
                 ctrl->iterate(xdes,qdes,xdot_set);
@@ -1376,6 +1385,19 @@ bool ServerCartesianController::open(Searchable &config)
         }
 
         lDsc.push_back(desc);
+    }
+
+    // acquire options for the Smith Predictor (if any)
+    Bottle &optSmithPredictor=config.findGroup("SMITH_PREDICTOR");;
+    if (!optSmithPredictor.isNull())
+    {
+        fprintf(stdout,"SMITH_PREDICTOR group detected\n");
+        smithPredictorOptions.fromString(optSmithPredictor.toString().c_str());
+
+        // append information about the predictor's period,
+        // that must match the controller's period
+        smithPredictorOptions.unput("Ts");
+        smithPredictorOptions.put("Ts",getRate()/1000.0);
     }
 
     // instantiate kinematic object

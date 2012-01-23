@@ -921,6 +921,8 @@ protected:
     yarp::sig::Vector qGuardMinInt, qGuardMinExt, qGuardMinCOG;
     yarp::sig::Vector qGuardMaxInt, qGuardMaxExt, qGuardMaxCOG;
 
+    yarp::sig::Vector compensation;
+
     virtual void computeGuard();
     virtual void computeWeight();
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, yarp::sig::Vector &qd,
@@ -1078,6 +1080,14 @@ public:
     *       time) is imposed.
     */
     double set_execTime(const double _execTime, const bool warn=false);
+
+    /**
+    * Adds to the controller input a further compensation term.
+    * @param comp the compensation term. 
+    * @note The compensation term holds for one iteration step, then 
+    *       it is automatically set to zero for safety reasons.
+    */
+    void add_compensation(const yarp::sig::Vector &comp);
 
     /**
     * Destructor.

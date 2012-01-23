@@ -40,6 +40,7 @@
 #ifndef __SERVERCARTESIANCONTROLLER_H__
 #define __SERVERCARTESIANCONTROLLER_H__
 
+#include <yarp/os/Property.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
@@ -60,6 +61,8 @@
 
 #include <deque>
 #include <map>
+
+#include "SmithPredictor.h"
 
 
 class ServerCartesianController;
@@ -127,6 +130,9 @@ protected:
     iCub::iKin::iKinChain           *chain;
     iCub::iKin::MultiRefMinJerkCtrl *ctrl;
     iCub::ctrl::Integrator          *taskRefVelTargetGen;
+
+    yarp::os::Property smithPredictorOptions;
+    SmithPredictor     smithPredictor;
     
     std::deque<DriverDescriptor>             lDsc;
     std::deque<yarp::dev::IControlLimits*>   lLim;
