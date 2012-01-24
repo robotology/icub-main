@@ -28,6 +28,10 @@
 #include <deque>
 
 
+// this class implements the Smith Predictor block
+// which accounts for the communication delays that
+// exist between the velocity commands and their
+// excution on the robot
 class SmithPredictor
 {
 protected:
