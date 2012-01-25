@@ -356,10 +356,19 @@ kinematic (see the iKinChain::setHN method) in order to achieve
 the alignment with the optical axes compensating for possible 
 unknown offsets. 
  
-\note The final roto-translational matrix is meaningful only as 
-result of the calibration of the cameras extrinsic parameters. 
-In case the calibration has not been carried out then remove the
-relative groups from within the configuration file. 
+\note The final roto-translation matrix is meaningful only as 
+      result of the calibration of the cameras extrinsic
+      parameters that can be obtained for instance through the
+      \ref icub_stereoCalib module.
+ 
+\note Importantly, the re-alignment forced by these matrices 
+      have to preserve the vergence property of the eyes
+      stereo-rig, which ensures that with a zero value of the
+      vergence the two stright lines going out from the eyes
+      are either parallel or their intersection point lies in
+      front of the robot and not behind. Here the intersection
+      point might be the middle point of the minimum distance
+      segment if the two lines are not co-planar.
  
 Example: 
  
