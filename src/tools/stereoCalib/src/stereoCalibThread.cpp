@@ -665,10 +665,10 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, string groupname)
                 // replace w line
                 if (line.find("HN",0) != string::npos){
                     stringstream ss;
-                    ss << " (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
-                               << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
-                               << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
-                               << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
+                    ss << " (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << 0.0 << " "
+                               << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << 0.0 << " "
+                               << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << 0.0 << " "
+                               << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0 << ")";
                     line = "HN" + string(ss.str());
                 }
        
@@ -709,10 +709,10 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, string groupname)
         if (out.is_open()){
             out << endl;
             out << string("[") + groupname + string("]") << endl;
-            out << "HN (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
-                          << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
-                          << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
-                          << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
+            out << "HN (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << 0.0 << " "
+                          << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << 0.0 << " "
+                          << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << 0.0 << " "
+                          << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0 << ")";
             out << endl;
             out.close();
         }
