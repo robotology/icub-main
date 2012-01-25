@@ -366,11 +366,11 @@ preserve the vergence property of the eyes stereo-rig, which
 ensures that with a zero value of the vergence the two stright 
 lines going out from the eyes are either parallel or their 
 intersection point lies in front of the robot and not behind. 
-Here the intersection point might be the middle point of the 
-minimum distance segment if the two lines are not co-planar. 
-If the vergence property does not hold, then the user has to 
-mechanical recalibrate the eyes to then iterate again through 
-the cameras calibration procedure.
+In a broader sense, the intersection point might be the middle
+point of the minimum distance segment if the two lines are not 
+co-planar. If the vergence property does not hold, then the user 
+has to mechanical recalibrate the eyes to then iterate again 
+through the cameras calibration procedure. 
  
 Example: 
  
