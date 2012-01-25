@@ -407,6 +407,13 @@ bool getAlignHN(const string &camerasFile, const string &type, iKinChain *chain)
                         }
                     }
 
+                    // enforce translational part equal to zero
+                    HN(0,3)=HN(1,3)=HN(2,3)=0.0;
+
+                    // enforce the homogeneous property
+                    HN(3,0)=HN(3,1)=HN(3,2)=0.0;
+                    HN(3,3)=1.0;
+
                     chain->setHN(HN);
                     return true;
                 }
