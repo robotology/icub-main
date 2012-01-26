@@ -60,12 +60,12 @@ private:
     bool checkTS(double TSLeft, double TSRight, double th=0.020);
     void preparePath(const char * imageDir, char* pathL, char* pathR, int num);
     void saveStereoImage(const char * imageDir, IplImage* left, IplImage * right, int num);
-    void monoCalibration(vector<string> imageList, int boardWidth, int boardHeight, Mat K, Mat Dist);
-    void stereoCalibration(vector<string> imagelist, int boardWidth, int boardHeight,float sqsizee);
-    void saveCalibration(string extrinsicFilePath, string intrinsicFilePath);
+    void monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat K, Mat Dist);
+    void stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsizee);
+    void saveCalibration(const string& extrinsicFilePath, const string& intrinsicFilePath);
     void calcChessboardCorners(Size boardSize, float squareSize, vector<Point3f>& corners);
-    bool updateIntrinsics( int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, string groupname);
-    bool updateExtrinsics(Mat Rot, Mat Tr, string groupname);
+    bool updateIntrinsics( int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname);
+    bool updateExtrinsics(Mat Rot, Mat Tr, const string& groupname);
 
 public:
 

@@ -251,7 +251,7 @@ void stereoCalibThread::saveStereoImage(const char * imageDir, IplImage* left, I
     cvSaveImage(pathL,left);
     cvSaveImage(pathR,right);
 }
-bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, string groupname){
+bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname){
 
     std::vector<string> lines;
 
@@ -397,7 +397,7 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
     return true;
 }
 
-void stereoCalibThread::monoCalibration(vector<string> imageList, int boardWidth, int boardHeight, Mat K, Mat Dist)
+void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat K, Mat Dist)
 {
     vector<vector<Point2f> > imagePoints;
     Size boardSize, imageSize;
@@ -449,7 +449,7 @@ void stereoCalibThread::monoCalibration(vector<string> imageList, int boardWidth
 }
 
 
-void stereoCalibThread::stereoCalibration(vector<string> imagelist, int boardWidth, int boardHeight,float sqsize)
+void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsize)
 {
     Size boardSize;
     boardSize.width=boardWidth;
@@ -599,7 +599,7 @@ void stereoCalibThread::stereoCalibration(vector<string> imagelist, int boardWid
 }
 
 
-void stereoCalibThread::saveCalibration(string extrinsicFilePath, string intrinsicFilePath){
+void stereoCalibThread::saveCalibration(const string& extrinsicFilePath, const string& intrinsicFilePath){
 
     if( Kleft.empty() || Kright.empty() || DistL.empty() || DistR.empty() || R.empty() || T.empty()) {
             cout << "Error: cameras are not calibrated! Run the calibration or set intrinsic and extrinsic parameters \n";
@@ -635,7 +635,7 @@ void stereoCalibThread::calcChessboardCorners(Size boardSize, float squareSize, 
             corners.push_back(Point3f(float(j*squareSize),
                                       float(i*squareSize), 0));
 }
-bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, string groupname)
+bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupname)
 {
 
     std::vector<string> lines;
@@ -667,7 +667,10 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, string groupname)
                 // replace w line
                 if (line.find("HN",0) != string::npos){
                     stringstream ss;
-                    ss << " (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) <<" " << Rot.at<double>(0,2) <<" " << Tr.at<double>(0,0) << " " << Rot.at<double>(1,0) <<" " << Rot.at<double>(1,1) <<" " << Rot.at<double>(1,2) <<" " << Tr.at<double>(1,0)<< " " << Rot.at<double>(2,0) <<" " << Rot.at<double>(2,1) <<" " << Rot.at<double>(2,2) <<" " << Tr.at<double>(2,0)<< " " << 0 << " " << 0 << " " << 0 << " " << 1 << ")";
+                    ss << " (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
+                               << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
+                               << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
+                               << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
                     line = "HN" + string(ss.str());
                 }
        
@@ -708,7 +711,10 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, string groupname)
         if (out.is_open()){
             out << endl;
             out << string("[") + groupname + string("]") << endl;
-            out << "HN (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) <<" " << Rot.at<double>(0,2) <<" " << Tr.at<double>(0,0)<< " " << Rot.at<double>(1,0) <<" " << Rot.at<double>(1,1) <<" " << Rot.at<double>(1,2) <<" " << Tr.at<double>(1,0)<< " " << Rot.at<double>(2,0) <<" " << Rot.at<double>(2,1) <<" " << Rot.at<double>(2,2) <<" " << Tr.at<double>(2,0)<< " " << 0 << " " << 0 << " " << 0 << " " << 1 << ")";
+            out << "HN (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
+                          << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
+                          << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
+                          << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
             out << endl;
             out.close();
         }
