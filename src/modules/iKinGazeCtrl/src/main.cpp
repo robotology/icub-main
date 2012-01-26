@@ -361,17 +361,6 @@ of the calibration of the cameras extrinsic parameters that can
 be obtained for instance through the \ref icub_stereoCalib 
 module. 
  
-Importantly, the re-alignment forced by these matrices must 
-preserve the vergence property of the eyes stereo-rig, which 
-ensures that with a zero value of the vergence the two stright 
-lines going out from the eyes are either parallel or their 
-intersection point lies in front of the robot and not behind. 
-In a broader sense, the intersection point might be the middle
-point of the minimum distance segment if the two lines are not 
-co-planar. If the vergence property does not hold, then the user 
-has to mechanical recalibrate the eyes to then iterate again 
-through the cameras calibration procedure. 
- 
 Example: 
  
 \code 
@@ -471,7 +460,7 @@ protected:
             pDrv=new PolyDriver(options);
             bool ok=pDrv->isValid();
 
-            fprintf(stdout,"Checking if %s part is active ...",partName.c_str());
+            fprintf(stdout,"Checking if %s part is active ... ",partName.c_str());
 
             if (ok)
             {
@@ -674,6 +663,7 @@ public:
             drvTorso=drvHead=NULL;
 
         // create and start threads
+        // creation order does matter (for the minimum allowed vergence computation) !!
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
                             localHeadName,camerasFile,neckTime,eyesTime,
                             eyeTiltMin,eyeTiltMax,minAbsVel,headV2,10);

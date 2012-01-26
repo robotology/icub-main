@@ -88,7 +88,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         copyJointsBounds(chainEyeL,chainEyeR);
 
         // reinforce vergence min bound
-        lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+        lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
 
         // just eye part is required
         lim=lim.submatrix(3,5,0,1);
@@ -96,7 +96,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
-        getFeedback(fbTorso,fbHead,encTorso,encHead);        
+        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
     }
     else
     {
@@ -116,14 +116,14 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         lim(1,1)=(*chainEyeL)[nJointsTorso+4].getMax();
 
         // vergence
-        lim(2,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+        lim(2,0)=commData->get_minAllowedVergence();
         lim(2,1)=lim(1,1);
 
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
 
         // impose starting vergence != 0.0
-        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+        fbHead[5]=commData->get_minAllowedVergence();
     }
 
     // Instantiate integrator
@@ -257,7 +257,7 @@ void EyePinvRefGen::run()
         if (Robotable)
         {
             // read encoders
-            getFeedback(fbTorso,fbHead,encTorso,encHead);
+            getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
             updateTorsoBlockedJoints(chainEyeL,fbTorso);
             updateTorsoBlockedJoints(chainEyeR,fbTorso);
         }
@@ -273,8 +273,8 @@ void EyePinvRefGen::run()
         Vector xd=port_xd->get_xd();
 
         // beware of too small vergence
-        if (qd[2]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
-            qd[2]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+        if (qd[2]<commData->get_minAllowedVergence())
+            qd[2]=commData->get_minAllowedVergence();
 
         // update neck chain
         chainNeck->setAng(nJointsTorso+0,fbHead[0]);
@@ -429,7 +429,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
+        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
     }
     else
     {
@@ -440,7 +440,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         fbHead.resize(nJointsHead,0.0);
 
         // impose starting vergence != 0.0
-        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+        fbHead[5]=commData->get_minAllowedVergence();
     }
 
     // store neck pitch/yaw bounds
@@ -728,7 +728,7 @@ void Solver::run()
     if (Robotable)
     {
         // read encoders
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
+        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
@@ -834,7 +834,7 @@ void Solver::resume()
     if (Robotable)
     {
         // read encoders
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
+        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
 
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);

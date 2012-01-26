@@ -33,8 +33,7 @@
 
 #include <iCub/gazeNlp.h>
 
-#define MINALLOWED_VERGENCE     0.5     // [deg]
-#define ALMOST_ZERO             1e-6
+#define ALMOST_ZERO     1e-6
 
 using namespace std;
 using namespace yarp::os;
@@ -97,6 +96,7 @@ protected:
     Matrix S;
     bool   isCtrlActive;
     bool   canCtrlBeDisabled;
+    double minAllowedVergence;
 
 public:
     exchangeData();
@@ -122,9 +122,10 @@ public:
     Vector  get_v();
     Vector  get_counterv();
     Matrix  get_fpFrame();
-                                                  
-    bool   &get_isCtrlActive()      { return isCtrlActive;      }
-    bool   &get_canCtrlBeDisabled() { return canCtrlBeDisabled; }
+
+    bool   &get_isCtrlActive()       { return isCtrlActive;       }
+    bool   &get_canCtrlBeDisabled()  { return canCtrlBeDisabled;  }
+    double &get_minAllowedVergence() { return minAllowedVergence; }
 };
 
 
@@ -160,7 +161,8 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 
 // Reads encoders values.
 // Returns true if communication with robot is stable, false otherwise.
-bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead);
+bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead,
+                 exchangeData *commData=NULL);
 
 
 #endif

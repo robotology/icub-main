@@ -210,8 +210,8 @@ Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
         q=0.0;
     
     // impose vergence != 0.0
-    if (ver<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
-        ver=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+    if (ver<commData->get_minAllowedVergence())
+        ver=commData->get_minAllowedVergence();
 
     mutex.wait();
 

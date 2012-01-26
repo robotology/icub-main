@@ -19,14 +19,14 @@
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
-#define MUTEX_XD        0
-#define MUTEX_QD        1
-#define MUTEX_X         2
-#define MUTEX_Q         3
-#define MUTEX_TORSO     4
-#define MUTEX_V         5
-#define MUTEX_COUNTERV  6
-#define MUTEX_FPFRAME   7
+#define MUTEX_XD            0
+#define MUTEX_QD            1
+#define MUTEX_X             2
+#define MUTEX_Q             3
+#define MUTEX_TORSO         4
+#define MUTEX_V             5
+#define MUTEX_COUNTERV      6
+#define MUTEX_FPFRAME       7
 
 
 /************************************************************************/
@@ -142,6 +142,7 @@ exchangeData::exchangeData()
 {
     isCtrlActive=false;
     canCtrlBeDisabled=true;
+    minAllowedVergence=0.0;
 }
 
 
@@ -516,7 +517,8 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 
 
 /************************************************************************/
-bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead)
+bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead,
+                 exchangeData *commData)
 {
     int nJointsTorso=fbTorso.length();
     int nJointsHead=fbHead.length();
@@ -546,8 +548,9 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
         ret=false;
 
     // impose vergence != 0.0
-    if (fbHead[nJointsHead-1]<MINALLOWED_VERGENCE*CTRL_DEG2RAD)
-        fbHead[nJointsHead-1]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
+    if (commData!=NULL)
+        if (fbHead[nJointsHead-1]<commData->get_minAllowedVergence())
+            fbHead[nJointsHead-1]=commData->get_minAllowedVergence();
 
     return ret;
 }

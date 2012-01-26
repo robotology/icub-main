@@ -85,13 +85,9 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
-        // reinforce vergence min bound
-        lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
-
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
 
         // exclude acceleration constraints by fixing
         // thresholds at high values
@@ -112,15 +108,23 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         }
 
         // vergence
-        lim(nJointsHead-1,0)=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
         lim(nJointsHead-1,1)=lim(nJointsHead-2,1);
 
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
 
-        // impose starting vergence != 0.0
-        fbHead[5]=MINALLOWED_VERGENCE*CTRL_DEG2RAD;
-    }    
+    }
+
+    // find minimum allowed vergence
+    findMinimumAllowedVergence(lim);
+
+    // reinforce vergence min bound
+    lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
+
+    if (Robotable)
+        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+    else
+        fbHead[5]=commData->get_minAllowedVergence();
 
     fbNeck.resize(3); fbEyes.resize(3);
     qdNeck.resize(3); qdEyes.resize(3);
@@ -145,6 +149,41 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     commData->get_canCtrlBeDisabled()=true;
 
     port_xd=NULL;
+}
+
+
+/************************************************************************/
+void Controller::findMinimumAllowedVergence(const Matrix &lim)
+{
+    iKinChain cl(*chainEyeL), cr(*chainEyeR);
+    Vector zeros(cl.getDOF()); zeros=0.0;
+    cl.setAng(zeros); cr.setAng(zeros);
+
+    double minVer=0.5*CTRL_DEG2RAD;
+    double maxVer=lim(nJointsHead-1,1);
+    for (double ver=0.0; ver<maxVer; ver+=0.5*CTRL_DEG2RAD)
+    {
+        cl(cl.getDOF()-1).setAng(ver/2.0);
+        cr(cr.getDOF()-1).setAng(-ver/2.0);
+
+        Vector fp(4);
+        fp[3]=1.0;  // impose homogeneous coordinates
+        if (computeFixationPointOnly(cl,cr,fp))
+        {
+            // if the component along eye's z-axis is positive
+            // then this means that the fixation point is ok,
+            // being in front of the robot
+            Vector fpe=SE3inv(cl.getH())*fp;
+            if (fpe[2]>0.0)
+            {
+                minVer=ver;
+                break;
+            }
+        }
+    }
+
+    fprintf(stdout,"### computed minimum allowed vergence = %g [deg]\n",minVer*CTRL_RAD2DEG);
+    commData->get_minAllowedVergence()=minVer;
 }
 
 
@@ -239,7 +278,7 @@ void Controller::run()
     // Introduce the feedback within the control computation
     if (Robotable)
     {
-        if (!getFeedback(fbTorso,fbHead,encTorso,encHead))
+        if (!getFeedback(fbTorso,fbHead,encTorso,encHead,commData))
         {
             fprintf(stdout,"\nCommunication timeout detected!\n\n");
             suspend();
@@ -391,7 +430,7 @@ void Controller::resume()
 {
     if (Robotable)
     {
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
+        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
     
         for (unsigned int i=0; i<3; i++)
         {

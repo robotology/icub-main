@@ -88,6 +88,8 @@ protected:
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
 
+    void findMinimumAllowedVergence(const Matrix &lim);
+
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                const string &_robotName, const string &_localName, const string &_camerasFile,
