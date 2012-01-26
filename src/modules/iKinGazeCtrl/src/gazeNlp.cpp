@@ -138,10 +138,6 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
 /************************************************************************/
 bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
 {
-    Vector dfp1(4), dfp2(4);
-    Vector dfpL1(4),dfpL2(4);
-    Vector dfpR1(4),dfpR2(4);
-
     Matrix HL=eyeL.getH();
     Matrix HR=eyeR.getH();
     HL(3,3)=HR(3,3)=0.0;
