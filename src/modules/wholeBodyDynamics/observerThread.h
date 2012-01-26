@@ -31,7 +31,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string.h>
-#include <queue>
+#include <list>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -57,10 +57,10 @@ class iCubStatus
     Vector all_q_up, all_dq_up, all_d2q_up;
     Vector all_q_low, all_dq_low, all_d2q_low;
 
-    Vector *ft_arm_left;
-    Vector *ft_arm_right;
-    Vector *ft_leg_left;
-    Vector *ft_leg_right;
+    Vector ft_arm_left;
+    Vector ft_arm_right;
+    Vector ft_leg_left;
+    Vector ft_leg_right;
 
     Vector inertial_w0,inertial_dw0,inertial_d2p0;
 
@@ -82,6 +82,10 @@ class iCubStatus
         all_q_low.resize(3+6+6);   all_q_low.zero();
         all_dq_low.resize(3+6+6);  all_dq_low.zero();
         all_d2q_low.resize(3+6+6); all_d2q_low.zero();
+        ft_arm_left.resize(6);     ft_arm_left.zero();
+        ft_arm_right.resize(6);    ft_arm_right.zero();
+        ft_leg_left.resize(6);     ft_leg_left.zero();
+        ft_leg_right.resize(6);    ft_leg_right.zero();
     }
 
     Vector get_q_head()    {return all_q_up.subVector(0,2);}
@@ -188,8 +192,10 @@ private:
     iCubWholeBody *icub;
     iCubWholeBody *icub_sens;
     iCubStatus    current_status;
-    queue<iCubStatus> previous_status;
-    queue<iCubStatus> not_moving_status;
+
+    size_t status_queue_size;
+    list<iCubStatus> previous_status;
+    list<iCubStatus> not_moving_status;
 
     Vector encoders_arm_left;
     Vector encoders_arm_right;
@@ -239,7 +245,7 @@ public:
     void closePort(Contactable *_port);
     void writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port);
     template <class T> void broadcastData(T& _values, BufferedPort<T> *_port);
-    void calibrateOffset(const unsigned int Ntrials);
+    void calibrateOffset();
     bool readAndUpdate(bool waitMeasure=false, bool _init=false);
     bool getLowerEncodersSpeedAndAcceleration();
     bool getUpperEncodersSpeedAndAcceleration();

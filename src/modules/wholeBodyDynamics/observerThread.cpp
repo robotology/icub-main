@@ -168,6 +168,7 @@ void inverseDynamics::init_lower()
 
 inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, string icub_type, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), local_name(_local_name) 
 {
+    status_queue_size = 10;
     autoconnect = _autoconnect;
     com_enabled = true;
     com_vel_enabled = false;
@@ -307,7 +308,22 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 
 bool inverseDynamics::threadInit()
 {
-    calibrateOffset(10);
+    fprintf(stderr,"threadInit: waiting for port connections... \n\n");
+    if (!dummy_ft)
+    {
+        Vector *dummy = port_inertial_thread->read(true); //blocking call: waits for ports connection
+    }
+
+    // N trials to get a more accurate estimation
+    for(size_t i=0; i<status_queue_size; i++)
+    {
+        //read joints and ft sensor
+        readAndUpdate(true,true);
+    }
+
+    // the queue previous_status now contains status_queue_size elements, and we can calibrate
+    calibrateOffset();
+
     thread_status = STATUS_OK;
     return true;
 }
@@ -353,28 +369,27 @@ void inverseDynamics::run()
         delay_check = 0;
     }
 
-    //get the FT sensors measurments
-    if(current_status.ft_arm_left!=0)  F_LArm = -1.0 * (*current_status.ft_arm_left-Offset_LArm);
-    if(current_status.ft_arm_right!=0) F_RArm = -1.0 * (*current_status.ft_arm_right-Offset_RArm);
-    if(current_status.ft_leg_left!=0)  F_LLeg = -1.0 * (*current_status.ft_leg_left-Offset_LLeg);
-    if(current_status.ft_leg_right!=0) F_RLeg = -1.0 * (*current_status.ft_leg_right-Offset_RLeg);
+    //remove the offset from the FT sensors measurements
+    F_LArm = -1.0 * (current_status.ft_arm_left-Offset_LArm);
+    F_RArm = -1.0 * (current_status.ft_arm_right-Offset_RArm);
+    F_LLeg = -1.0 * (current_status.ft_leg_left-Offset_LLeg);
+    F_RLeg = -1.0 * (current_status.ft_leg_right-Offset_RLeg);
 
     //check if iCub is currently moving. If not, put the current iCub positions in the status queue
     current_status.iCub_not_moving = current_status.checkIcubNotMoving();
     if (current_status.iCub_not_moving == true)
     {
-        not_moving_status.push(current_status);
-        if (not_moving_status.size()>10) 
+        not_moving_status.push_front(current_status);
+        if (not_moving_status.size()>status_queue_size) 
             {
-                not_moving_status.pop();
+                not_moving_status.pop_back();
                 if (auto_drift_comp) fprintf (stderr,"drift_comp: buffer full\n"); //@@@DEBUG
             }
     }
     else
     {
         //efficient way to clear the queue
-        std::queue<iCubStatus> empty;
-        std::swap( not_moving_status, empty );
+        not_moving_status.clear();
         if (auto_drift_comp) fprintf (stderr,"drift_comp: clearing buffer\n");  //@@@DEBUG
     }
 
@@ -701,25 +716,25 @@ void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bot
     _port->write();
 }
 
-void inverseDynamics::calibrateOffset(const unsigned int Ntrials)
+void inverseDynamics::calibrateOffset()
 {
-    fprintf(stderr,"SensToTorques: starting sensor offset calibration, waiting for port connections... \n\n");
-    if (!dummy_ft)
-    {
-        Vector *dummy = port_inertial_thread->read(true); //blocking call: waits for ports connection
-    }
+    fprintf(stderr,"calibrateOffset: starting calibration... \n");
 
     Offset_LArm.zero();
     Offset_RArm.zero();
     Offset_LLeg.zero();
     Offset_RLeg.zero();
 
-    // N trials to get a more accurate estimation
-    for(unsigned int i=0; i<Ntrials; i++)
-    {
-        //read joints and ft sensor
-        readAndUpdate(true,true);
+    size_t Ntrials = previous_status.size();
+    list<iCubStatus>::iterator it=previous_status.begin();
 
+    icub_sens->upperTorso->setInertialMeasure(it->inertial_w0,it->inertial_dw0,it->inertial_d2p0);
+    Matrix F_sensor_up = icub_sens->upperTorso->estimateSensorsWrench(F_ext_up,false);
+    icub_sens->lowerTorso->setInertialMeasure(icub_sens->upperTorso->getTorsoAngVel(),icub_sens->upperTorso->getTorsoAngAcc(),icub_sens->upperTorso->getTorsoLinAcc());
+    Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
+
+    for (it=previous_status.begin() ; it != previous_status.end(); it++ )
+    {
         /*
         // TO BE VERIEFIED IF USEFUL
         setZeroJntAngVelAcc();
@@ -727,29 +742,15 @@ void inverseDynamics::calibrateOffset(const unsigned int Ntrials)
         setLowerMeasure(true);
         */
 
-        icub_sens->upperTorso->setInertialMeasure(current_status.inertial_w0,current_status.inertial_dw0,current_status.inertial_d2p0);
-        Matrix F_sensor_up = icub_sens->upperTorso->estimateSensorsWrench(F_ext_up,false);
-        icub_sens->lowerTorso->setInertialMeasure(icub_sens->upperTorso->getTorsoAngVel(),icub_sens->upperTorso->getTorsoAngAcc(),icub_sens->upperTorso->getTorsoLinAcc());
-        Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
-
         F_iDyn_LArm  = -1.0 * F_sensor_up.getCol(1);
         F_iDyn_RArm = -1.0 * F_sensor_up.getCol(0);
         F_iDyn_LLeg  = -1.0 * F_sensor_low.getCol(1);
         F_iDyn_RLeg = -1.0 * F_sensor_low.getCol(0);
 
-        if (current_status.ft_arm_right) {F_RArm = *current_status.ft_arm_right;}
-        else {F_RArm.zero();}
-        if (current_status.ft_arm_left) {F_LArm = *current_status.ft_arm_left;}
-        else {F_LArm.zero();}
-        if (current_status.ft_leg_right) {F_RLeg = *current_status.ft_leg_right;}
-        else {F_RLeg.zero();}
-        if (current_status.ft_leg_left) {F_LLeg = *current_status.ft_leg_left;}
-        else {F_LLeg.zero();}
-
-        Offset_LArm = Offset_LArm + (F_LArm-F_iDyn_LArm);
-        Offset_RArm = Offset_RArm + (F_RArm-F_iDyn_RArm);
-        Offset_LLeg = Offset_LLeg + (F_LLeg-F_iDyn_LLeg);
-        Offset_RLeg = Offset_RLeg + (F_RLeg-F_iDyn_RLeg);
+        Offset_LArm = Offset_LArm + (it->ft_arm_left-F_iDyn_LArm);
+        Offset_RArm = Offset_RArm + (it->ft_arm_right-F_iDyn_RArm);
+        Offset_LLeg = Offset_LLeg + (it->ft_leg_left-F_iDyn_LLeg);
+        Offset_RLeg = Offset_RLeg + (it->ft_leg_right-F_iDyn_RLeg);
     }
 
     Offset_LArm = 1.0/(double)Ntrials * Offset_LArm;
@@ -762,15 +763,16 @@ void inverseDynamics::calibrateOffset(const unsigned int Ntrials)
     //printVector(Offset_LLeg, "Offset left leg:");
     //printVector(Offset_RLeg, "Offset right leg:");
     
+    it=previous_status.begin();
     fprintf(stderr,"\n");
     fprintf(stderr, "Ntrials: %d\n", Ntrials);
-    fprintf(stderr, "F_LArm:      %s\n", F_LArm.toString().c_str());
+    fprintf(stderr, "F_LArm:      %s\n", it->ft_arm_left.toString().c_str());
     fprintf(stderr, "F_idyn_LArm: %s\n", F_iDyn_LArm.toString().c_str());
-    fprintf(stderr, "F_RArm:      %s\n", F_RArm.toString().c_str());
+    fprintf(stderr, "F_RArm:      %s\n", it->ft_arm_right.toString().c_str());
     fprintf(stderr, "F_idyn_RArm: %s\n", F_iDyn_RArm.toString().c_str());
-    fprintf(stderr, "F_LLeg:      %s\n", F_LLeg.toString().c_str());
+    fprintf(stderr, "F_LLeg:      %s\n", it->ft_leg_left.toString().c_str());
     fprintf(stderr, "F_idyn_LLeg: %s\n", F_iDyn_LLeg.toString().c_str());
-    fprintf(stderr, "F_RLeg:      %s\n", F_RLeg.toString().c_str());
+    fprintf(stderr, "F_RLeg:      %s\n", it->ft_leg_right.toString().c_str());
     fprintf(stderr, "F_idyn_RLeg: %s\n", F_iDyn_RLeg.toString().c_str());
     fprintf(stderr, "\n");
     fprintf(stderr, "Left Arm:	  %s\n", Offset_LArm.toString().c_str());
@@ -783,21 +785,39 @@ void inverseDynamics::calibrateOffset(const unsigned int Ntrials)
 bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 {
     bool b = true;
-
+    
     // arms
     if (ddAL)
     {
+        Vector* tmp= 0;
         if (waitMeasure) fprintf(stderr,"Trying to connect to left arm sensor...");
-        if (!dummy_ft)   current_status.ft_arm_left  = port_ft_arm_left->read(waitMeasure);
-        else             {if (!current_status.ft_arm_left) {current_status.ft_arm_left = new yarp::sig::Vector(6);} current_status.ft_arm_left->zero();}
+        if (!dummy_ft)
+        {
+            tmp = port_ft_arm_left->read(waitMeasure);
+            if (tmp != 0) current_status.ft_arm_left  = *tmp;
+            //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK1 \n");
+        }
+        else
+        {
+            current_status.ft_arm_left.zero();
+        }
         if (waitMeasure) fprintf(stderr,"done. \n");
     }
 
     if (ddAR)
     {
+        Vector* tmp= 0;
         if (waitMeasure) fprintf(stderr,"Trying to connect to right arm sensor...");
-        if (!dummy_ft)   current_status.ft_arm_right = port_ft_arm_right->read(waitMeasure);
-        else             {if (!current_status.ft_arm_right) {current_status.ft_arm_right = new yarp::sig::Vector(6);} current_status.ft_arm_right->zero();}
+        if (!dummy_ft)   
+        {
+            tmp = port_ft_arm_right->read(waitMeasure);
+            if (tmp != 0) current_status.ft_arm_right = *tmp;
+            //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK2 \n");
+        }
+        else
+        {
+            current_status.ft_arm_right.zero();
+        }
         if (waitMeasure) fprintf(stderr,"done. \n");
     }
     b &= getUpperEncodersSpeedAndAcceleration();
@@ -806,18 +826,37 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // legs
     if (ddLL)
     {
+        Vector* tmp= 0;
         if (waitMeasure) fprintf(stderr,"Trying to connect to left leg sensor...");
-        if (!dummy_ft)   current_status.ft_leg_left  = port_ft_leg_left->read(waitMeasure);
-        else             {if (!current_status.ft_leg_left) {current_status.ft_leg_left = new yarp::sig::Vector(6);} current_status.ft_leg_left->zero();}
+        if (!dummy_ft)
+        {
+            tmp = port_ft_leg_left->read(waitMeasure);
+            if (tmp != 0) current_status.ft_leg_left  = *tmp;
+            //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK3 \n");
+        }
+        else
+        {
+            current_status.ft_leg_left.zero();
+        }
         if (waitMeasure) fprintf(stderr,"done. \n");
     }
     if (ddLR)
     {
+        Vector* tmp= 0;
         if (waitMeasure) fprintf(stderr,"Trying to connect to right leg sensor...");
-        if (!dummy_ft)   current_status.ft_leg_right = port_ft_leg_right->read(waitMeasure);
-        else             {if (!current_status.ft_leg_right) {current_status.ft_leg_right = new yarp::sig::Vector(6);} current_status.ft_leg_right->zero();}
+        if (!dummy_ft)
+        {
+            tmp = port_ft_leg_right->read(waitMeasure);
+            if (tmp != 0) current_status.ft_leg_right = *tmp;
+            //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK4 \n");
+        }
+        else
+        {
+            current_status.ft_leg_right.zero();
+        }
         if (waitMeasure) fprintf(stderr,"done. \n");
     }
+
     b &= getLowerEncodersSpeedAndAcceleration();
     setLowerMeasure(_init);
 
@@ -852,8 +891,8 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 
     //update the status memory
     current_status.timestamp=Time::now();
-    previous_status.push(current_status);
-    if (previous_status.size()>10) previous_status.pop();
+    previous_status.push_front(current_status);
+    if (previous_status.size()>status_queue_size) previous_status.pop_back();
 
     return b;
 }

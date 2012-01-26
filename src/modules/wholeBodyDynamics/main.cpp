@@ -282,10 +282,7 @@ public:
             if (inv_dyn)
             {
                 inv_dyn->suspend();
-                Time::delay(0.3);
-                inv_dyn->threadInit();
-                //inv_dyn->calibrateOffset(10); //maybe this is not required
-                Time::delay(0.3);
+                inv_dyn->calibrateOffset(); 
                 inv_dyn->resume();
             }
             fprintf(stderr,"Recalibration complete.\n");
