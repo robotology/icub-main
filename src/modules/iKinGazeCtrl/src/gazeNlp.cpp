@@ -150,7 +150,6 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
     Matrix H1=HL-HR;
     Matrix H2L=HL-qty1*HR;
     Matrix H2R=qty1*HL-HR;
-    Matrix H3(4,4); H3(3,2)=0.0;
     double qty2L=dot(H2L,2,H1,3);
     double qty2R=dot(H2R,2,H1,3);
     double qty3=qty1*qty1-1.0;
