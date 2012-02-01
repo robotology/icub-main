@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
 #
 # Copyright (C) 2008 Martin Peniak
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
@@ -11,6 +12,7 @@
 SET(KEYWORD "faceExpressions")
 
 # Start a project.
+
 PROJECT(${KEYWORD})
 
 # Find YARP.  Point the YARP_DIR environment variable at your build.
@@ -29,9 +31,12 @@ FOREACH(header_file ${folder_header})
 ENDFOREACH(header_file ${folder_header})
 
 # Set up our main executable.
+
 IF (folder_source)
   ADD_EXECUTABLE(${KEYWORD} ${folder_source} ${folder_header})
-  INSTALL(TARGETS ${KEYWORD} DESTINATION $ENV{ICUB_ROOT}/bin)
+  include_directories(${YARP_INCLUDE_DIRS})
+  target_link_libraries(${KEYWORD} ${YARP_LIBRARIES})
+  # INSTALL(TARGETS ${KEYWORD} DESTINATION $ENV{ICUB_ROOT}/bin)
 ELSE (folder_source)
   MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
