@@ -94,7 +94,11 @@ else (NOT ICUB_HAS_GSL)
 endif (NOT ICUB_HAS_GSL)
 
 ### enable testing
-include (CTest)
+option(ICUB_DASHBOARD_SUBMIT "Submit compile tests to cdash" FALSE)
+
+if (ICUB_DASHBOARD_SUBMIT)
+    include (CTest)
+endif()
 
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)

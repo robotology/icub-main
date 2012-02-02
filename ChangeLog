@@ -1,3 +1,6 @@
+2012-01-28 Lorenzo Natale <lorenzo.natale@iit.it>
+        * Added option to include or not test targets (less targets in Visual Studio projects)
+		
 2012-01-27 Lorenzo Natale <lorenzo.natale@iit.it>
         * tagging 1.1.9
 
