@@ -39,9 +39,10 @@ int main(int argc, char *argv[]) {
     rf.setVerbose();
     rf.setDefaultConfigFile("emotions.ini");
     rf.setDefaultContext("faceExpressions/conf");
+    rf.setDefault("name", "/emotion");
     rf.configure("ICUB_ROOT", argc, argv);
    	EmotionInterfaceModule eiModule;
-	eiModule.setName("/emotion");
+
 	eiModule.configure(rf);
 
 	return eiModule.runModule();

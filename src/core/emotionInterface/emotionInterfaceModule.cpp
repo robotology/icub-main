@@ -24,6 +24,9 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     char name[10];
     int i;
 
+    ConstString modName = config.find("name").asString();
+	setName(modName.c_str());
+
     _lasttime = Time::now();
     if (config.check("help","if present, display usage message")) {
         printf("Call with --name /module_prefix --file configFile.ini \n");
