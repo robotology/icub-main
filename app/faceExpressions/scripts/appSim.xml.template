@@ -1,0 +1,29 @@
+<application>
+<name>FaceSim</name>
+<module>
+      <name>faceExpressions</name>
+	  <node>pc104</node>
+	<tag>face_device</tag>
+   </module>
+   <module>
+      <name>emotionInterface</name>
+      <parameters>--name /icubSim/face/emotions </parameters>
+      <node>pc104</node>
+	<tag>emotions_interface</tag>
+   </module>
+<connection>
+  <from>/icubSim/face/emotions/out</from>
+  <to>/icubSim/face/raw/in</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/face/eyelids</from>
+  <to>/icubSim/face/eyelids</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/face/image/out</from>
+  <to>/icubSim/texture/face</to>
+  <protocol>tcp</protocol>
+</connection>
+</application>
