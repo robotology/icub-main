@@ -4,6 +4,13 @@
 2012-01-27 Lorenzo Natale <lorenzo.natale@iit.it>
         * tagging 1.1.9
 
+2012-01-26 Ugo Pattacini <ugo.pattacini@iit.it>
+        * iKinGazeCtrl: at start-up a process is run to determine the minimum allowed
+          vergence as result of the re-alignment specified through the configuration parameters.
+
+2012-01-20 Ugo Pattacini <ugo.pattacini@iit.it>
+        * iKinGazeCtrl: configuration options are now retrieved from a file as per standard
+
 2011-12-13 Lorenzo Natale <lorenzo.natale@iit.it>
         * tagging 1.1.8
 
