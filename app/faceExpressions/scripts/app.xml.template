@@ -8,7 +8,7 @@
    </module>
    <module>
       <name>emotionInterface</name>
-      <parameters>--name /icub/face/emotions --file /usr/local/src/robot/iCub/app/faceExpressions/conf/emotions.ini</parameters>
+      <parameters>--name /icub/face/emotions </parameters>
       <node>pc104</node>
 	<tag>emotions_interface</tag>
    </module>
