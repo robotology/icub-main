@@ -108,6 +108,8 @@ class iCubStatus
     Vector get_d2q_rleg()  {return all_d2q_low.subVector(9,14);}
 
     bool checkIcubNotMoving();
+    void dump (FILE* f);
+
 };
 
 // class inverseDynamics: class for reading from Vrow and providing FT on an output port

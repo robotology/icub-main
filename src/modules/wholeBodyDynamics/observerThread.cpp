@@ -350,6 +350,24 @@ bool iCubStatus::checkIcubNotMoving()
     return ret;
 }
 
+void iCubStatus::dump (FILE* f)
+{
+    fprintf (f, "%f   ", timestamp);
+    fprintf (f, "%s   ", all_q_up.toString().c_str());
+    fprintf (f, "%s   ", all_dq_up.toString().c_str());
+    fprintf (f, "%s   ", all_d2q_up.toString().c_str());
+    fprintf (f, "%s   ", all_q_low.toString().c_str());
+    fprintf (f, "%s   ", all_dq_low.toString().c_str());
+    fprintf (f, "%s   ", all_d2q_low.toString().c_str());
+    fprintf (f, "%s   ", ft_arm_left.toString().c_str());
+    fprintf (f, "%s   ", ft_arm_right.toString().c_str());
+    fprintf (f, "%s   ", ft_leg_left.toString().c_str());
+    fprintf (f, "%s   ", ft_leg_right.toString().c_str());
+    fprintf (f, "%s   ", inertial_w0.toString().c_str());
+    fprintf (f, "%s   ", inertial_dw0.toString().c_str());
+    fprintf (f, "%s \n", inertial_d2p0.toString().c_str());
+}
+
 void inverseDynamics::run()
 {
     thread_status = STATUS_OK;
@@ -724,6 +742,10 @@ void inverseDynamics::calibrateOffset()
     Offset_RArm.zero();
     Offset_LLeg.zero();
     Offset_RLeg.zero();
+    F_ext_up.zero();
+    F_ext_low.zero();
+    setUpperMeasure(true);
+    setLowerMeasure(true);
 
     size_t Ntrials = previous_status.size();
     list<iCubStatus>::iterator it=previous_status.begin();
@@ -738,8 +760,6 @@ void inverseDynamics::calibrateOffset()
         /*
         // TO BE VERIEFIED IF USEFUL
         setZeroJntAngVelAcc();
-        setUpperMeasure(true);
-        setLowerMeasure(true);
         */
 
         F_iDyn_LArm  = -1.0 * F_sensor_up.getCol(1);
