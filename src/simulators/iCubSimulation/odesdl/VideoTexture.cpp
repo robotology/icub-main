@@ -108,7 +108,7 @@ void TextureInput::apply(unsigned int *textures) {
         lastData = now;
         haveUpdate = true;
     }
-    if (now-lastData>2000) {
+    /*if (now-lastData>2000) {
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
                 unsigned char *pix1 = data + (y*height+x)*3;
@@ -122,6 +122,7 @@ void TextureInput::apply(unsigned int *textures) {
         t++;
         haveUpdate = true;
     }
+    */
     if (haveUpdate && port.getInputCount()>0) {
         glBindTexture(GL_TEXTURE_2D, textures[textureIndex]);
         gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height,
