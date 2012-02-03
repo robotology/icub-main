@@ -53,6 +53,8 @@ protected:
     double pressure;
     // geometric center of the contact area expressed w.r.t. the reference frame of the link where the contact is applied
     yarp::sig::Vector geoCenter;
+    // contact area normal direction (link reference frame)
+    yarp::sig::Vector normalDir;
     // number of taxels activated by the contact
     unsigned int activeTaxels;
     
@@ -61,19 +63,42 @@ public:
 	//   CONSTRUCTORS
 	//~~~~~~~~~~~~~~~~~~~~~~
     /**
-    * Default contructor
+    * Empty contructor
     */
     skinContact();
+
     /**
-    * 
+    * Constructor
+    * @param _bodyPart the part of the body
+    * @param _skinPart the part of the skin
+    * @param _linkNumber the link number relative to the specified body part
+    * @param _CoP the center of pressure (link reference frame)
+    * @param _geoCenter the geometric center of the contact area (link reference frame)
+    * @param _activeTaxels number of taxels activated
+    * @param _pressure average pressure applied on the contact area
     */
     skinContact(BodyPart _bodyPart, SkinPart _skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure);
+
+    /**
+    * Constructor with contact surface normal.
+    * @param _bodyPart the part of the body
+    * @param _skinPart the part of the skin
+    * @param _linkNumber the link number relative to the specified body part
+    * @param _CoP the center of pressure (link reference frame)
+    * @param _geoCenter the geometric center of the contact area (link reference frame)
+    * @param _activeTaxels number of taxels activated
+    * @param _pressure average pressure applied on the contact area
+    * @param _normalDir contact area normal direction (link reference frame)
+    */
+    skinContact(BodyPart _bodyPart, SkinPart _skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure, const yarp::sig::Vector &_normalDir);
 
     //~~~~~~~~~~~~~~~~~~~~~~
 	//   GET methods
 	//~~~~~~~~~~~~~~~~~~~~~~
 	yarp::sig::Vector           getGeoCenter()          const;
+    yarp::sig::Vector           getNormalDir()          const;
     double	                    getPressure()   	    const;
 	unsigned int                getActiveTaxels()       const;    
     SkinPart                    getSkinPart()           const;
@@ -84,6 +109,7 @@ public:
 	//   SET methods
 	//~~~~~~~~~~~~~~~~~~~~~~    
     bool setGeoCenter(const yarp::sig::Vector &_geoCenter);
+    bool setNormalDir(const yarp::sig::Vector &_normalDir);
     bool setPressure(double _pressure);
     bool setActiveTaxels(unsigned int _activeTaxels);
     void setSkinPart(SkinPart _skinPart);
@@ -102,7 +128,7 @@ public:
     */
     virtual bool write(yarp::os::ConnectionWriter& connection);
 
-    virtual std::string toString() const;
+    virtual std::string toString(int precision=-1) const;
    
 };
 

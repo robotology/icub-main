@@ -162,7 +162,7 @@ public:
     /**
      * Useful to print some information.
      */
-	virtual std::string toString() const;
+	virtual std::string toString(int precision=-1) const;
     /**
 	* Set the verbosity level of comments during operations
 	*/
