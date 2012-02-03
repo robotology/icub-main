@@ -9,7 +9,7 @@
 #include "emotionInterfaceModule.h"
 #include <string.h>
 #include <stdlib.h>
-
+#include <yarp/os/ResourceFinder.h>
 
 EmotionInterfaceModule::EmotionInterfaceModule(){
 
@@ -19,7 +19,7 @@ EmotionInterfaceModule::~EmotionInterfaceModule(){
    
 }
 
-bool EmotionInterfaceModule::open(Searchable& config){
+bool EmotionInterfaceModule::configure(ResourceFinder& config){
   
     char name[10];
     int i;
@@ -130,12 +130,12 @@ bool EmotionInterfaceModule::open(Searchable& config){
         }
     }
     
-      
-    // open  ports
-    _inputPort.open(getName("in"));
-    _outputPort.open(getName("out"));
+      // open  ports
+	  
+    _inputPort.open(getName("/in")); 
+    _outputPort.open(getName("/out"));
     
-    attach(_inputPort, true);
+    attach(_inputPort);
 
     Time::turboBoost();
     return true;
@@ -143,15 +143,15 @@ bool EmotionInterfaceModule::open(Searchable& config){
 
 bool EmotionInterfaceModule::close(){
     
-    _inputPort.close();
-    _outputPort.close();
+	_inputPort.close();
+	_outputPort.close();
     
     if (_emotion_table != NULL)
     {
         delete [] _emotion_table;
         _emotion_table = NULL;
     }
-    
+
     return true;
 }
 
@@ -261,7 +261,7 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
     _semaphore.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = respond(command,reply);
     
     if (!ok) {
         reply.clear();

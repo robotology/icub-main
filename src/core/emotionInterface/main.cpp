@@ -21,15 +21,28 @@ using namespace iCub::contrib;
  * \author Alexandre Bernardino
  *
  * Copyright (C) 2007 Alex Bernardino 
+ * Recently codified by : Sunila Saqib saqib@mit.edu
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * This file can be edited at main/src/core/emotioninterface/main.cpp.
  */
 
+
+
 int main(int argc, char *argv[]) {
 
+
     Network yarp;
-    EmotionInterfaceModule module;
-    module.setName("/emotion"); // set default name of module
-    return module.runModule(argc,argv);
+
+	//resource finder initialization. 
+	ResourceFinder rf;
+    rf.setVerbose();
+    rf.setDefaultConfigFile("emotions.ini");
+    rf.setDefaultContext("faceExpressions/conf");
+    rf.configure("ICUB_ROOT", argc, argv);
+   	EmotionInterfaceModule eiModule;
+	eiModule.setName("/emotion");
+	eiModule.configure(rf);
+
+	return eiModule.runModule();
 }

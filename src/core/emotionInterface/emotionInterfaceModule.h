@@ -53,13 +53,13 @@ typedef struct
  * 
  *
  */
-class iCub::contrib::EmotionInterfaceModule : public Module,
+class iCub::contrib::EmotionInterfaceModule : public RFModule,
                                        public IEmotionInterface {
 
 private:
 
     // input command port
-    BufferedPort<Bottle>                _inputPort;
+	Port _inputPort;
 
     // output command port         
     BufferedPort<Bottle>                _outputPort;
@@ -88,7 +88,7 @@ public:
     EmotionInterfaceModule();
     virtual ~EmotionInterfaceModule();
     
-    virtual bool open(Searchable& config);
+    virtual bool configure(ResourceFinder& config);//virtual bool open(Searchable& config);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();
