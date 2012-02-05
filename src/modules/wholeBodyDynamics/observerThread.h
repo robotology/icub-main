@@ -166,8 +166,12 @@ private:
     BufferedPort<Bottle> *port_HDTorques;
     BufferedPort<Vector> *port_external_wrench_RA;
     BufferedPort<Vector> *port_external_wrench_LA;
+    BufferedPort<Vector> *port_external_wrench_RL;
+    BufferedPort<Vector> *port_external_wrench_LL;
     BufferedPort<Vector> *port_external_cartesian_wrench_RA;
     BufferedPort<Vector> *port_external_cartesian_wrench_LA;
+    BufferedPort<Vector> *port_external_cartesian_wrench_RL;
+    BufferedPort<Vector> *port_external_cartesian_wrench_LL;
     BufferedPort<Vector> *port_external_wrench_TO;
     BufferedPort<Vector> *port_com_all;
     BufferedPort<Vector> *port_com_la;
@@ -212,6 +216,8 @@ private:
     Vector F_iDyn_LArm, F_iDyn_RArm, Offset_LArm, Offset_RArm;
     Vector F_ext_left_arm, F_ext_right_arm, F_ext_torso;
     Vector F_ext_cartesian_left_arm, F_ext_cartesian_right_arm;
+    Vector F_ext_left_leg, F_ext_right_leg;
+    Vector F_ext_cartesian_left_leg, F_ext_cartesian_right_leg;
     Vector F_LLeg, F_RLeg; 
     Vector F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
     Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
