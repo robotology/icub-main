@@ -582,10 +582,17 @@ void inverseDynamics::run()
     F_ext_left_leg  = icub->lowerTorso->leftSensor->getForceMomentEndEff();
     F_ext_right_leg = icub->lowerTorso->rightSensor->getForceMomentEndEff();
 
+//#define TEST_RLEG_SENSOR
 #ifdef TEST_RLEG_SENSOR
+    setUpperMeasure(true);
+    setLowerMeasure(true);
     Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
     F_ext_right_leg = F_sensor_low.getCol(0);
     F_ext_left_leg = F_RLeg;
+
+    Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
+    F_ext_right_leg = F_sensor_low.getCol(1);
+    F_ext_left_leg = F_LLeg; 
 #endif
 
     yarp::sig::Matrix ht   = icub->upperTorso->getHUp()    * icub->upperTorso->up->getH();
