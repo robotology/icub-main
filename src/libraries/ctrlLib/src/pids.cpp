@@ -185,9 +185,11 @@ parallelPID::parallelPID(const double _Ts,
     Vector u0(1); u0=0.0;
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector num(2),den(2);
-        double tau=Kd[i]/(Kp[i]*N[i]);
+        double tau=1e12;
+        if ((Kp[i]!=0.0) && (N[i]!=0.0))
+            tau=Kd[i]/(Kp[i]*N[i]);
 
+        Vector num(2),den(2);
         num[0]=2.0;        num[1]=-2.0;
         den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
         Der.push_back(new Filter(num,den,u0));
@@ -328,9 +330,11 @@ void parallelPID::setOptions(const Bottle &options)
         Vector u0(1); u0=0.0;
         for (unsigned int i=0; i<dim; i++)
         {
+            double tau=1e12;
+            if ((Kp[i]!=0.0) && (N[i]!=0.0))
+                tau=Kd[i]/(Kp[i]*N[i]);
+
             Vector num(2),den(2);
-            double tau=Kd[i]/(Kp[i]*N[i]);
-    
             num[0]=2.0;        num[1]=-2.0;
             den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
             Der[i]->adjustCoeffs(num,den);
@@ -386,7 +390,10 @@ seriesPID::seriesPID(const double _Ts,
         den[0]=Ts+2.0*Ti[i]; den[1]=Ts-2.0*Ti[i];
         Int.push_back(new Filter(num,den,u0));
 
-        double tau=Kd[i]/(Kp[i]*N[i]);
+        double tau=1e12;
+        if ((Kp[i]!=0.0) && (N[i]!=0.0))
+            tau=Kd[i]/(Kp[i]*N[i]);
+
         num[0]=2.0;        num[1]=-2.0;
         den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
         Der.push_back(new Filter(num,den,u0));
@@ -534,7 +541,10 @@ void seriesPID::setOptions(const Bottle &options)
             Int[i]->adjustCoeffs(num,den);
             Int[i]->init(u0);
 
-            double tau=Kd[i]/(Kp[i]*N[i]);
+            double tau=1e12;
+            if ((Kp[i]!=0.0) && (N[i]!=0.0))
+                tau=Kd[i]/(Kp[i]*N[i]);
+
             num[0]=2.0;        num[1]=-2.0;
             den[0]=Ts+2.0*tau; den[1]=Ts-2.0*tau;
             Der[i]->adjustCoeffs(num,den);
