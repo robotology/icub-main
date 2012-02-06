@@ -48,6 +48,7 @@ public:
     void configure(yarp::os::Property &options, iCub::iKin::iKinChain &chain);
     void restart(const yarp::sig::Vector &y0);
     yarp::sig::Vector computeCmd(const yarp::sig::Vector &u);
+    yarp::sig::Vector getGains();
 };
 
 #endif

@@ -1155,7 +1155,7 @@ void ServerCartesianController::run()
                 ctrl->iterate(xdes,qdes);
 
             // send joints velocities to the robot [deg/s]
-            sendVelocity(CTRL_RAD2DEG*ctrl->get_qdot());
+            sendVelocity(CTRL_RAD2DEG*(ctrl->get_qdot()/smithPredictor.getGains()));
 
             // handle the end-trajectory event
             if (ctrl->isInTarget())

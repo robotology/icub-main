@@ -154,4 +154,9 @@ Vector SmithPredictor::computeCmd(const Vector &u)
 }
 
 
+/************************************************************************/
+Vector SmithPredictor::getGains()
+{
+    return gains;
+}
 
