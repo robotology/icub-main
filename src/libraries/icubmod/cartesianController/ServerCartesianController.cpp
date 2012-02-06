@@ -1388,7 +1388,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
 
     // acquire options for the Smith Predictor (if any)
-    Bottle &optSmithPredictor=config.findGroup("SMITH_PREDICTOR");;
+    Bottle &optSmithPredictor=config.findGroup("SMITH_PREDICTOR");
     if (!optSmithPredictor.isNull())
     {
         fprintf(stdout,"SMITH_PREDICTOR group detected\n");
@@ -1399,6 +1399,8 @@ bool ServerCartesianController::open(Searchable &config)
         smithPredictorOptions.unput("Ts");
         smithPredictorOptions.put("Ts",getRate()/1000.0);
     }
+    else
+        smithPredictorOptions.clear();
 
     // instantiate kinematic object
     if (kinPart=="arm")

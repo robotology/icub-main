@@ -62,17 +62,17 @@ void SmithPredictor::dealloc()
 
 /************************************************************************/
 void SmithPredictor::configure(Property &options, iKinChain &chain)
-{    
-    enabled=options.check("use_prediction",Value("false")).asString()=="true";
-    if (!enabled)
-        return;
-
+{
     dealloc();
     
     // default values
     gains.resize(chain.getDOF(),1.0);
     for (unsigned int i=0; i<chain.getDOF(); i++)
         tappedDelays.push_back(new deque<double>);
+
+    enabled=options.check("use_prediction",Value("false")).asString()=="true";
+    if (!enabled)
+        return;
 
     double Ts=options.check("Ts",Value(0.01)).asDouble();
     Vector y0(chain.getDOF());
