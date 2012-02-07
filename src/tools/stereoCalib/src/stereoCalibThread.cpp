@@ -397,7 +397,7 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
     return true;
 }
 
-void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat K, Mat Dist)
+void stereoCalibThread::monoCalibration(vector<string> imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist)
 {
     vector<vector<Point2f> > imagePoints;
     Size boardSize, imageSize;
