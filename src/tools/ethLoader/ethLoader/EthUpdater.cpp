@@ -289,7 +289,18 @@ std::string EthUpdater::cmdGetProcs()
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
 
-    Sleep(500);
+    ACE_OS::sleep(ACE_Time_Value(0,500000));
+
+    for (int i=0; i<mBoardList.size(); ++i)
+    {
+        if (mBoardList[i].mSelected)
+        {
+            mBoard2Prog[mN2Prog++]=&mBoardList[i];
+            mBoardList[i].mSuccess=0;
+            mSocket.SendTo(mTxBuffer,2,mPort,mBoardList[i].mAddress);
+            
+        }
+    }
 
     std::string info;
 

@@ -51,11 +51,11 @@ protected:
     DSocket mSocket;
 
 public:
-    EthUpdater::EthUpdater()
+    EthUpdater()
     {
     }
 
-    EthUpdater::~EthUpdater()
+    ~EthUpdater()
     {
         mSocket.Close();
         mBoardList.empty();

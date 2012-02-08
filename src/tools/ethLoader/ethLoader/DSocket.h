@@ -9,7 +9,7 @@
 #define __ETHUPDATER_DSOCKET_H__
 
 #include <string>
-#include <ACE/SOCK_Dgram.h>
+#include <ace/SOCK_Dgram.h>
 
 class DSocket
 {
