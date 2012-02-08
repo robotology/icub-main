@@ -1,3 +1,14 @@
+2012-02-08 Alessandro Scalzo <alessandro.scalzo@iit.it>
+    Added EMS network firmware updater GUI.
+    * iCub\main\src\tools\ethLoader\CMakeLists.txt
+    * iCub\main\src\tools\ethLoader\ethLoader\BoardInfo.h
+    * iCub\main\src\tools\ethLoader\ethLoader\BoardList.h
+    * iCub\main\src\tools\ethLoader\ethLoader\CMakeLists.txt
+    * iCub\main\src\tools\ethLoader\ethLoader\DSocket.h
+    * iCub\main\src\tools\ethLoader\ethLoader\EthUpdater.cpp
+    * iCub\main\src\tools\ethLoader\ethLoader\EthUpdater.h
+    * iCub\main\src\tools\ethLoader\ethLoader\main.cpp
+
 2012-01-28 Lorenzo Natale <lorenzo.natale@iit.it>
         * Added option to include or not test targets (less targets in Visual Studio projects)
 		
