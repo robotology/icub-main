@@ -25,7 +25,7 @@ DSocket::~DSocket()
 bool DSocket::Create(ACE_UINT16 port,std::string& address)
 {
     ACE_INET_Addr ace_addr(port,address.c_str());
-    mSocket=new ACE_SOCK_Dgram(ace_addr);
+    mSocket=new ACE_SOCK_Dgram_Bcast(ace_addr);
 
     return mSocket!=NULL;
 }
@@ -33,7 +33,7 @@ bool DSocket::Create(ACE_UINT16 port,std::string& address)
 bool DSocket::Create(ACE_UINT16 port,ACE_UINT32 address)
 {
     ACE_INET_Addr ace_addr(port,address);
-    mSocket=new ACE_SOCK_Dgram(ace_addr);
+    mSocket=new ACE_SOCK_Dgram_Bcast(ace_addr);
 
     return mSocket!=NULL;
 }
@@ -48,6 +48,11 @@ void DSocket::SendTo(void* data,size_t len,ACE_UINT16 port,ACE_UINT32 address)
 {
     ACE_INET_Addr ace_addr(port,address);
     mSocket->send(data,len,ace_addr);
+}
+
+void DSocket::SendBroad(void* data,size_t len,ACE_UINT16 port)
+{
+    mSocket->send(data,len,port);
 }
 
 ssize_t DSocket::ReceiveFrom(void* data,size_t len,std::string &address,ACE_UINT16 &port,int wait_msec)

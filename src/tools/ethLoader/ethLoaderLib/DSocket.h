@@ -11,7 +11,7 @@
 #include <string>
 
 #include <ace/ACE.h>
-#include <ace/SOCK_Dgram.h>
+#include <ace/SOCK_Dgram_Bcast.h>
 
 class DSocket
 {
@@ -25,13 +25,15 @@ public:
     void SendTo(void* data,size_t len,ACE_UINT16 port,std::string& address);
     void SendTo(void* data,size_t len,ACE_UINT16 port,ACE_UINT32 address);
 
+    void SendBroad(void* data,size_t len,ACE_UINT16 port);
+
     ssize_t ReceiveFrom(void* data,size_t len,std::string &address,ACE_UINT16 &port,int wait_msec);
     ssize_t ReceiveFrom(void* data,size_t len,ACE_UINT32 &address,ACE_UINT16 &port,int wait_msec);
 
     void Close();
 
 protected:
-    ACE_SOCK_Dgram* mSocket;
+    ACE_SOCK_Dgram_Bcast* mSocket;
 };
 
 #endif

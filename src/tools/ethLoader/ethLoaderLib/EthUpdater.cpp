@@ -15,7 +15,8 @@ void EthUpdater::cmdScan()
     mBoardList.empty();
 
     mTxBuffer[0]=CMD_SCAN;
-    mSocket.SendTo(mTxBuffer,1,mPort,mBroadcast);
+    //mSocket.SendTo(mTxBuffer,1,mPort,mBroadcast);
+    mSocket.SendBroad(mTxBuffer,1,mPort);
 
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
@@ -319,7 +320,8 @@ int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int r
 {
     const int UPD_OK=0;
 
-    mSocket.SendTo(data,size,mPort,mBroadcast);
+    //mSocket.SendTo(data,size,mPort,mBroadcast);
+    mSocket.SendBroad(data,size,mPort);
 
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
