@@ -16,8 +16,8 @@
  * Public License for more details
 */
 
+#include <typeinfo>
 #include <stdio.h>
-#include <typeinfo.h>
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
 #include <iCub/iKin/iKinInv.h>
