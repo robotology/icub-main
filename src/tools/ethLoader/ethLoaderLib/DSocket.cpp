@@ -7,8 +7,8 @@
 
 #include "DSocket.h"
 
-#include <ace/Time_Value.h>
-#include <ace/OS_NS_sys_socket.h>
+//#include <ace/Time_Value.h>
+//#include <ace/OS_NS_sys_socket.h>
 
 #include <ace/ACE.h>
 
