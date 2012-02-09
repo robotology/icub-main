@@ -7,6 +7,11 @@
 
 #include "EthUpdater.h"
 
+#include <ace/OS.h>
+#include <ace/Time_Value.h>
+
+#include <ace/ACE.h>
+
 void EthUpdater::cmdScan()
 {
     mBoardList.empty();

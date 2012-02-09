@@ -14,9 +14,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <yarp/os/Property.h>
-
 #include "EthUpdater.h"
+
+#include <yarp/os/Property.h>
 
 EthUpdater gUpdater;
 

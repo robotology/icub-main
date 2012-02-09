@@ -10,5 +10,5 @@ else(ICUB_USE_GtkPlus)
 	message(STATUS "GtkPlus not selected, skipping ethLoader")
 endif(ICUB_USE_GtkPlus)
 
-#ADD_SUBDIRECTORY(ethLoaderLib)
+ADD_SUBDIRECTORY(ethLoaderLib)
 
