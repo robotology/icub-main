@@ -924,7 +924,13 @@ void ServerCartesianController::newController()
     qdes=chain->getAng();
 
     // instantiate new controller
-    ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,getRate()/1000.0);
+    if (plantModelProperties.check("plant_compensator",Value("off")).asString()=="on")
+    {
+        ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,getRate()/1000.0,true);
+        ctrl->setPlantParameters(plantModelProperties,"joint");
+    }
+    else
+        ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,getRate()/1000.0);
 
     // set tolerance
     ctrl->setInTargetTol(targetTol);
@@ -933,7 +939,7 @@ void ServerCartesianController::newController()
     trajTime=ctrl->set_execTime(trajTime,true);
 
     // configure the Smith Predictor
-    smithPredictor.configure(smithPredictorOptions,*chain);
+    smithPredictor.configure(plantModelProperties,*chain);
 }
 
 
@@ -1155,7 +1161,7 @@ void ServerCartesianController::run()
                 ctrl->iterate(xdes,qdes);
 
             // send joints velocities to the robot [deg/s]
-            sendVelocity(CTRL_RAD2DEG*(ctrl->get_qdot()/smithPredictor.getGains()));
+            sendVelocity(CTRL_RAD2DEG*(ctrl->get_qdot()));
 
             // handle the end-trajectory event
             if (ctrl->isInTarget())
@@ -1387,20 +1393,20 @@ bool ServerCartesianController::open(Searchable &config)
         lDsc.push_back(desc);
     }
 
-    // acquire options for the Smith Predictor (if any)
-    Bottle &optSmithPredictor=config.findGroup("SMITH_PREDICTOR");
-    if (!optSmithPredictor.isNull())
+    // acquire options for Plant modeling
+    Bottle &optPlantModel=config.findGroup("PLANT_MODEL");
+    if (!optPlantModel.isNull())
     {
-        fprintf(stdout,"SMITH_PREDICTOR group detected\n");
-        smithPredictorOptions.fromString(optSmithPredictor.toString().c_str());
+        fprintf(stdout,"PLANT_MODEL group detected\n");
+        plantModelProperties.fromString(optPlantModel.toString().c_str());
 
         // append information about the predictor's period,
         // that must match the controller's period
-        smithPredictorOptions.unput("Ts");
-        smithPredictorOptions.put("Ts",getRate()/1000.0);
+        plantModelProperties.unput("Ts");
+        plantModelProperties.put("Ts",getRate()/1000.0);
     }
     else
-        smithPredictorOptions.clear();
+        plantModelProperties.clear();
 
     // instantiate kinematic object
     if (kinPart=="arm")

@@ -16,10 +16,10 @@
  * Public License for more details
 */
 
+#include <stdio.h>
+#include <typeinfo.h>
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
-#include <stdio.h>
-
 #include <iCub/iKin/iKinInv.h>
 
 #define IKINCTRL_INTARGET_TOL       5e-3
@@ -1119,7 +1119,8 @@ GSLMinCtrl::~GSLMinCtrl()
 
 
 /************************************************************************/
-MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts) : 
+MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts,
+                                         bool nonIdealPlant) : 
                                          iKinCtrl(c,_ctrlPose), Ts(_Ts)
 {
     q_set.resize(dim,0.0);
@@ -1139,8 +1140,12 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
         lim(i,1)=chain(i).getMax();
     }
 
-    mjCtrlJoint=new minJerkVelCtrl(Ts,dim);
-    mjCtrlTask =new minJerkVelCtrl(Ts,x.length());
+    if (nonIdealPlant)
+        mjCtrlJoint=new minJerkVelCtrlForNonIdealPlant(Ts,dim);
+    else
+        mjCtrlJoint=new minJerkVelCtrlForIdealPlant(Ts,dim);
+
+    mjCtrlTask =new minJerkVelCtrlForIdealPlant(Ts,x.length());
     I=new Integrator(Ts,q,lim);
 
     gamma=0.05;
@@ -1372,6 +1377,25 @@ void MultiRefMinJerkCtrl::add_compensation(const Vector &comp)
     size_t l=(l1>l2)?l2:l1;
     for (size_t i=0; i<l; i++)
         compensation[i]=comp[i];
+}
+
+
+/************************************************************************/
+void MultiRefMinJerkCtrl::setPlantParameters(const Property &parameters,
+                                             const string &entryTag)
+{
+    if (typeid(*mjCtrlJoint)!=typeid(minJerkVelCtrlForNonIdealPlant))
+    {
+        delete mjCtrlJoint;
+        mjCtrlJoint=new minJerkVelCtrlForNonIdealPlant(Ts,dim);
+    }
+
+    Bottle ordering;
+    for (unsigned int i=0; i<chain.getN(); i++)
+        if (!chain[i].isBlocked())
+            ordering.addInt(i);
+
+    dynamic_cast<minJerkVelCtrlForNonIdealPlant*>(mjCtrlJoint)->setPlantParameters(parameters,entryTag,ordering);    
 }
 
 

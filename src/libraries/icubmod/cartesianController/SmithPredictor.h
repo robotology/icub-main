@@ -23,6 +23,7 @@
 #include <yarp/sig/Vector.h>
 
 #include <iCub/ctrl/pids.h>
+#include <iCub/ctrl/filters.h>
 #include <iCub/iKin/iKinFwd.h>
 
 #include <deque>
@@ -36,7 +37,7 @@ class SmithPredictor
 {
 protected:
     iCub::ctrl::Integrator *I;
-    yarp::sig::Vector gains;
+    std::deque<iCub::ctrl::Filter*> F;
     std::deque<std::deque<double>*> tappedDelays;
     bool enabled;
 
@@ -48,7 +49,6 @@ public:
     void configure(yarp::os::Property &options, iCub::iKin::iKinChain &chain);
     void restart(const yarp::sig::Vector &y0);
     yarp::sig::Vector computeCmd(const yarp::sig::Vector &u);
-    yarp::sig::Vector getGains();
 };
 
 #endif

@@ -134,8 +134,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     setTeyes(eyesTime);
     setTneck(neckTime);
 
-    mjCtrlNeck=new minJerkVelCtrl(Ts,fbNeck.length());
-    mjCtrlEyes=new minJerkVelCtrl(Ts,fbEyes.length());
+    mjCtrlNeck=new minJerkVelCtrlForIdealPlant(Ts,fbNeck.length());
+    mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,fbEyes.length());
     Int=new Integrator(Ts,fbHead,lim);
     
     v.resize(nJointsHead,0.0);

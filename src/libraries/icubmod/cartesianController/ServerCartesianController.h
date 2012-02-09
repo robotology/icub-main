@@ -131,7 +131,7 @@ protected:
     iCub::iKin::MultiRefMinJerkCtrl *ctrl;
     iCub::ctrl::Integrator          *taskRefVelTargetGen;
 
-    yarp::os::Property smithPredictorOptions;
+    yarp::os::Property plantModelProperties;
     SmithPredictor     smithPredictor;
     
     std::deque<DriverDescriptor>             lDsc;

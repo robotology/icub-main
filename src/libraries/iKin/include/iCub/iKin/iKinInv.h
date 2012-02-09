@@ -35,6 +35,7 @@
 
 #include <gsl/gsl_multimin.h>
 
+#include <yarp/os/Property.h>
 #include <iCub/ctrl/minJerkCtrl.h>
 #include <iCub/ctrl/pids.h>
 #include <iCub/iKin/iKinFwd.h>
@@ -943,8 +944,12 @@ public:
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
     * @param _Ts is the nominal controller sample time. 
+    * @param nonIdealPlant if true allocate a dedicated min-jerk 
+    *                      controller for the configuration space
+    *                      capable of compansating plants that
+    *                      differ from pure integrators.
     */
-    MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts);
+    MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts, bool nonIdealPlant=false);
 
     /**
     * Executes one iteration of the control algorithm.
@@ -1088,6 +1093,27 @@ public:
     *       it is automatically set to zero for safety reasons.
     */
     void add_compensation(const yarp::sig::Vector &comp);
+
+    /** 
+    * Allows user to assign values to the parameters of plant under 
+    * control (for the configuration space only). In case the 
+    * controlled plant is not a pure integrator, then it can be 
+    * modelled as the following transfer function: 
+    * (Kp/s)*((1+Tz*s)/(1+2*Zeta*Tw*s+(Tw*s)^2)) 
+    * @param parameters contains the set of plant parameters for 
+    *                   each dimension in form of a Property object.
+    *  
+    * Available parameters are: 
+    *  
+    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw 
+    *    0.1) ...)), specifies the Kp, Tz, Tw and Zeta parameters
+    *    for a given dimension of the plant ("dimension_2" in the
+    *    example). Dimensions are 0-based numbers.
+    * @param entryTag specifies an entry tag different from 
+    *                 "dimension". 
+    */
+    void setPlantParameters(const yarp::os::Property &parameters,
+                            const std::string &entryTag="dimension");
 
     /**
     * Destructor.
