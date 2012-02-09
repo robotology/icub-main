@@ -1,3 +1,16 @@
+2012-02-09 Alessandro Scalzo <alessandro.scalzo@iit.it>
+    EMS ethLoader splitted in library/GUI.
+    * iCub\main\src\tools\ethLoader\CMakeLists.txt
+    * iCub\main\src\tools\ethLoader\ethLoader\CMakeLists.txt    
+    * iCub\main\src\tools\ethLoader\ethLoader\main.cpp
+    * iCub\main\src\tools\ethLoader\ethLoaderLib\CMakeLists.txt
+    * iCub\main\src\tools\ethLoader\ethLoaderLib\BoardInfo.h
+    * iCub\main\src\tools\ethLoader\ethLoaderLib\BoardList.h
+    * iCub\main\src\tools\ethLoader\ethLoaderLib\DSocket.cpp
+    * iCub\main\src\tools\ethLoader\ethLoaderLib\DSocket.h
+    * iCub\main\src\tools\ethLoader\ethLoaderLib\EthUpdater.cpp
+    * iCub\main\src\tools\ethLoader\ethLoaderLib\EthUpdater.h
+
 2012-02-08 Alessandro Scalzo <alessandro.scalzo@iit.it>
     Added EMS network firmware updater GUI.
     * iCub\main\src\tools\ethLoader\CMakeLists.txt
