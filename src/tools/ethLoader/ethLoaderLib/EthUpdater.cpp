@@ -7,9 +7,8 @@
 
 #include "EthUpdater.h"
 
-//#include <ace/Time_Value.h>
-
 #include <ace/ACE.h>
+#include <yarp/os/Time.h>
 
 void EthUpdater::cmdScan()
 {
@@ -65,8 +64,6 @@ std::string EthUpdater::cmdProgram(FILE *programFile,void (*updateProgressBar)(f
 
     mNChunks=1;
 
-    ACE_Time_Value tv_sleep(0,10000);
-
     for (int i=0; i<mBoardList.size(); ++i)
     {
         if (mBoardList[i].mSelected)
@@ -74,7 +71,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile,void (*updateProgressBar)(f
             mBoard2Prog[mN2Prog++]=&mBoardList[i];
             mBoardList[i].mSuccess=0;
             mSocket.SendTo(mTxBuffer,2,mPort,mBoardList[i].mAddress);
-            ACE_OS::sleep(tv_sleep);
+            yarp::os::Time::delay(0.01);
         }
     }
 
@@ -292,19 +289,6 @@ std::string EthUpdater::cmdGetProcs()
 
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
-
-    ACE_OS::sleep(ACE_Time_Value(0,500000));
-
-    for (int i=0; i<mBoardList.size(); ++i)
-    {
-        if (mBoardList[i].mSelected)
-        {
-            mBoard2Prog[mN2Prog++]=&mBoardList[i];
-            mBoardList[i].mSuccess=0;
-            mSocket.SendTo(mTxBuffer,2,mPort,mBoardList[i].mAddress);
-            
-        }
-    }
 
     std::string info;
 

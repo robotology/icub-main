@@ -10,9 +10,8 @@
 
 #include <string>
 
-#include <ace/SOCK_Dgram.h>
-
 #include <ace/ACE.h>
+#include <ace/SOCK_Dgram.h>
 
 class DSocket
 {
