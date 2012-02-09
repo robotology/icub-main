@@ -1,3 +1,6 @@
+2012-02-09 Ugo Pattacini <ugo.pattacini@iit.it>
+    The Cartesian Control now handles the plant model.
+
 2012-02-09 Alessandro Scalzo <alessandro.scalzo@iit.it>
     EMS ethLoader splitted in library/GUI.
     * iCub\main\src\tools\ethLoader\CMakeLists.txt
