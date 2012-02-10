@@ -259,8 +259,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 #endif
     port_external_cartesian_wrench_RA->open(string("/"+local_name+"/right_arm/cartesianEndEffectorWrench:o").c_str()); 
     port_external_cartesian_wrench_LA->open(string("/"+local_name+"/left_arm/cartesianEndEffectorWrench:o").c_str()); 
-    port_external_cartesian_wrench_RA->open(string("/"+local_name+"/right_leg/cartesianEndEffectorWrench:o").c_str()); 
-    port_external_cartesian_wrench_LA->open(string("/"+local_name+"/left_leg/cartesianEndEffectorWrench:o").c_str()); 
+    port_external_cartesian_wrench_RL->open(string("/"+local_name+"/right_leg/cartesianEndEffectorWrench:o").c_str()); 
+    port_external_cartesian_wrench_LL->open(string("/"+local_name+"/left_leg/cartesianEndEffectorWrench:o").c_str()); 
     port_external_wrench_TO->open(string("/"+local_name+"/torso/Wrench:o").c_str());
     port_com_all->open(string("/"+local_name+"/com:o").c_str());
     port_com_la ->open(string("/"+local_name+"/left_arm/com:o").c_str());
