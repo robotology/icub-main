@@ -39,6 +39,7 @@ using namespace iCub::iDyn;
 using namespace iCub::skinDynLib;
 using namespace std;
 
+#define TEST_LEG_SENSOR
 double lpf_ord1_3hz(double input, int j)
 { 
     if (j<0 || j>= MAX_JN)
@@ -210,6 +211,12 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_wrench_LA = new BufferedPort<Vector>;
     port_external_wrench_RL = new BufferedPort<Vector>;
     port_external_wrench_LL = new BufferedPort<Vector>;
+#ifdef TEST_LEG_SENSOR
+    port_sensor_wrench_RL = new BufferedPort<Vector>;
+    port_sensor_wrench_LL = new BufferedPort<Vector>;
+    port_model_wrench_RL = new BufferedPort<Vector>;
+    port_model_wrench_LL = new BufferedPort<Vector>;
+#endif
     port_external_wrench_TO = new BufferedPort<Vector>;
     port_external_cartesian_wrench_RA = new BufferedPort<Vector>;
     port_external_cartesian_wrench_LA = new BufferedPort<Vector>;
@@ -244,6 +251,12 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_wrench_LA->open(string("/"+local_name+"/left_arm/endEffectorWrench:o").c_str()); 
     port_external_wrench_RL->open(string("/"+local_name+"/right_leg/endEffectorWrench:o").c_str()); 
     port_external_wrench_LL->open(string("/"+local_name+"/left_leg/endEffectorWrench:o").c_str()); 
+#ifdef TEST_LEG_SENSOR
+    port_sensor_wrench_RL->open(string("/"+local_name+"/right_leg/sensorWrench:o").c_str()); 
+    port_sensor_wrench_LL->open(string("/"+local_name+"/left_leg/sensorWrench:o").c_str()); 
+    port_model_wrench_RL->open(string("/"+local_name+"/right_leg/modelWrench:o").c_str()); 
+    port_model_wrench_LL->open(string("/"+local_name+"/left_leg/modelWrench:o").c_str()); 
+#endif
     port_external_cartesian_wrench_RA->open(string("/"+local_name+"/right_arm/cartesianEndEffectorWrench:o").c_str()); 
     port_external_cartesian_wrench_LA->open(string("/"+local_name+"/left_arm/cartesianEndEffectorWrench:o").c_str()); 
     port_external_cartesian_wrench_RA->open(string("/"+local_name+"/right_leg/cartesianEndEffectorWrench:o").c_str()); 
@@ -582,17 +595,14 @@ void inverseDynamics::run()
     F_ext_left_leg  = icub->lowerTorso->leftSensor->getForceMomentEndEff();
     F_ext_right_leg = icub->lowerTorso->rightSensor->getForceMomentEndEff();
 
-//#define TEST_RLEG_SENSOR
-#ifdef TEST_RLEG_SENSOR
+#ifdef TEST_LEG_SENSOR
     setUpperMeasure(true);
     setLowerMeasure(true);
     Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
-    F_ext_right_leg = F_sensor_low.getCol(0);
-    F_ext_left_leg = F_RLeg;
-
-    Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
-    F_ext_right_leg = F_sensor_low.getCol(1);
-    F_ext_left_leg = F_LLeg; 
+    F_mdl_right_leg = F_sensor_low.getCol(0);
+    F_mdl_left_leg  = F_sensor_low.getCol(1);
+    F_sns_right_leg = F_RLeg;
+    F_sns_left_leg  = F_LLeg;
 #endif
 
     yarp::sig::Matrix ht   = icub->upperTorso->getHUp()    * icub->upperTorso->up->getH();
@@ -651,6 +661,12 @@ void inverseDynamics::run()
     broadcastData<Vector> (F_ext_cartesian_left_arm,                port_external_cartesian_wrench_LA);
     broadcastData<Vector> (F_ext_right_leg,                         port_external_wrench_RL);
     broadcastData<Vector> (F_ext_left_leg,                          port_external_wrench_LL);
+#ifdef TEST_LEG_SENSOR
+    broadcastData<Vector> (F_sns_right_leg,                         port_sensor_wrench_RL);
+    broadcastData<Vector> (F_sns_left_leg,                          port_sensor_wrench_LL);
+    broadcastData<Vector> (F_mdl_right_leg,                         port_model_wrench_RL);
+    broadcastData<Vector> (F_mdl_left_leg,                          port_model_wrench_LL);
+#endif
     broadcastData<Vector> (F_ext_cartesian_right_leg,               port_external_cartesian_wrench_RL);
     broadcastData<Vector> (F_ext_cartesian_left_leg,                port_external_cartesian_wrench_LL);
     broadcastData<iCub::skinDynLib::dynContactList>( contactList,   port_dyn_contacts);
@@ -708,6 +724,12 @@ void inverseDynamics::threadRelease()
     closePort(port_external_wrench_RA);
     fprintf(stderr, "Closing external_wrench_LA port\n");
     closePort(port_external_wrench_LA);
+#ifdef TEST_LEG_SENSOR
+    closePort(port_sensor_wrench_RL);
+    closePort(port_sensor_wrench_LL);
+    closePort(port_model_wrench_RL);
+    closePort(port_model_wrench_LL);
+#endif
     fprintf(stderr, "Closing cartesian_external_wrench_RA port\n");
     closePort(port_external_cartesian_wrench_RA);
     fprintf(stderr, "Closing cartesian_external_wrench_LA port\n");

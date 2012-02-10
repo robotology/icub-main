@@ -172,6 +172,10 @@ private:
     BufferedPort<Vector> *port_external_cartesian_wrench_LA;
     BufferedPort<Vector> *port_external_cartesian_wrench_RL;
     BufferedPort<Vector> *port_external_cartesian_wrench_LL;
+    BufferedPort<Vector> *port_sensor_wrench_RL;
+    BufferedPort<Vector> *port_sensor_wrench_LL;
+    BufferedPort<Vector> *port_model_wrench_RL;
+    BufferedPort<Vector> *port_model_wrench_LL;
     BufferedPort<Vector> *port_external_wrench_TO;
     BufferedPort<Vector> *port_com_all;
     BufferedPort<Vector> *port_com_la;
@@ -217,6 +221,8 @@ private:
     Vector F_ext_left_arm, F_ext_right_arm, F_ext_torso;
     Vector F_ext_cartesian_left_arm, F_ext_cartesian_right_arm;
     Vector F_ext_left_leg, F_ext_right_leg;
+    Vector F_sns_left_leg, F_sns_right_leg;
+    Vector F_mdl_left_leg, F_mdl_right_leg;
     Vector F_ext_cartesian_left_leg, F_ext_cartesian_right_leg;
     Vector F_LLeg, F_RLeg; 
     Vector F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
