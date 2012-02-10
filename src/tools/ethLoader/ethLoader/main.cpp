@@ -64,6 +64,30 @@ enum
     NUM_COLUMNS
 };
 
+void activate_buttons()
+{
+    int size=gUpdater.getBoardList().size();
+    int nsel=gUpdater.getBoardList().numSelected();
+
+    bool bHaveSelected=nsel!=0;
+    bool bAllSelected=size==nsel;
+    
+    gtk_widget_set_sensitive(sel_all_button,!bAllSelected);
+    gtk_widget_set_sensitive(des_all_button,bHaveSelected);
+        
+    gtk_widget_set_sensitive(discover_button,true);
+    gtk_widget_set_sensitive(upload_button,bHaveSelected);
+
+    gtk_widget_set_sensitive(boot_upd_button,bHaveSelected);
+    gtk_widget_set_sensitive(boot_app_button,bHaveSelected);
+    gtk_widget_set_sensitive(jump_upd_button,bHaveSelected);
+        
+    gtk_widget_set_sensitive(reset_button,bHaveSelected);
+    gtk_widget_set_sensitive(procs_button,bHaveSelected);
+         
+    gtk_widget_set_sensitive(blink_button,bHaveSelected);
+}
+
 static GtkTreeModel* refresh_board_list_model()
 {
     GtkListStore *store;
@@ -243,6 +267,8 @@ static void fixed_toggled(GtkCellRendererToggle *cell,gchar *path_str,gpointer d
     gtk_list_store_set(GTK_LIST_STORE(model),&iter,COLUMN_SELECTED,fixed,-1);
 
     gtk_tree_path_free(path);
+
+    activate_buttons();
 }
 
 bool dialog_question_ip_address(char* old_addr,char* new_addr,bool bMask)
@@ -387,6 +413,8 @@ static void discover_cbk(GtkButton *button,gpointer user_data)
     gUpdater.cmdScan();
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
     gtk_widget_draw(treeview,NULL);
+
+    activate_buttons();
 }
 
 static void upload_cbk(GtkButton *button,gpointer user_data)
@@ -443,6 +471,8 @@ static void sel_all_cbk(GtkButton *button,gpointer user_data)
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
     gtk_widget_draw(treeview,NULL);
+
+    activate_buttons();
 }
 
 static void des_all_cbk(GtkButton *button,gpointer user_data)
@@ -451,6 +481,8 @@ static void des_all_cbk(GtkButton *button,gpointer user_data)
    
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
     gtk_widget_draw(treeview,NULL);
+
+    activate_buttons();
 }
 
 static void boot_upd_cbk(GtkButton *button,gpointer user_data)
@@ -604,10 +636,10 @@ int myMain(int argc,char *argv[])
         gtk_widget_set_size_request(discover_button,100,30);
         
         //add_button("Start Upload",  upload_button,   upload_cbk,   buttons_box);
-        discover_button=gtk_button_new_with_mnemonic("Upload");
-        gtk_container_add(GTK_CONTAINER(buttons_box),discover_button);
-        g_signal_connect(discover_button,"clicked",G_CALLBACK(upload_cbk),NULL);
-        gtk_widget_set_size_request(discover_button,100,30);
+        upload_button=gtk_button_new_with_mnemonic("Upload");
+        gtk_container_add(GTK_CONTAINER(buttons_box),upload_button);
+        g_signal_connect(upload_button,"clicked",G_CALLBACK(upload_cbk),NULL);
+        gtk_widget_set_size_request(upload_button,100,30);
 
         
         progress_bar=gtk_progress_bar_new();
@@ -686,6 +718,8 @@ int myMain(int argc,char *argv[])
         gtk_widget_destroy(window);
         window=NULL;
     }
+
+    activate_buttons();
 
     gtk_main();
     
