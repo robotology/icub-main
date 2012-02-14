@@ -154,6 +154,9 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 - If this option is given then the content of database is not 
   saved at shutdown.
  
+--stats 
+- Enables statistics printouts.
+ 
 \section portsa_sec Ports Accessed
 None.
 
@@ -1129,6 +1132,7 @@ private:
     Port         rpcPort;
 
     int cnt;
+    bool stats;
     unsigned int nCallsOld;
     double cumTimeOld;
 
@@ -1139,6 +1143,7 @@ public:
         Time::turboBoost();
 
         dataBase.init(rf);
+        stats=rf.check("stats");
 
         string name=rf.check("name",Value("objectsPropertiesCollector")).asString().c_str();
         rpcProcessor.setDataBase(dataBase);
@@ -1173,16 +1178,19 @@ public:
             cnt=0;
         }
 
-        unsigned int nCalls; double cumTime;
-        rpcProcessor.getStats(nCalls,cumTime);
+        if (stats)
+        {
+            unsigned int nCalls; double cumTime;
+            rpcProcessor.getStats(nCalls,cumTime);
 
-        unsigned int calls=nCalls-nCallsOld;
-        double timeSpent=cumTime-cumTimeOld;
-        fprintf(stdout,"*** Statistics: received %d/%g [requests/s]; %g [s/request] spent on average\n",
-                calls,getPeriod(),timeSpent==0.0?0.0:calls/timeSpent);
+            unsigned int calls=nCalls-nCallsOld;
+            double timeSpent=cumTime-cumTimeOld;
+            fprintf(stdout,"*** Statistics: received %d/%g [requests/s]; %g [s/request] spent on average\n",
+                    calls,getPeriod(),timeSpent==0.0?0.0:calls/timeSpent);
 
-        nCallsOld=nCalls;
-        cumTimeOld=cumTime;
+            nCallsOld=nCalls;
+            cumTimeOld=cumTime;
+        }
 
         return true;
     }
@@ -1210,8 +1218,9 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
         fprintf(stdout,"\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
         fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector/conf)\n");
-        fprintf(stdout,"\t--nosave            : prevent from saving the content of database at shutdown\n");
         fprintf(stdout,"\t--empty             : start an empty database\n");
+        fprintf(stdout,"\t--nosave            : prevent from saving the content of database at shutdown\n");
+        fprintf(stdout,"\t--stats             : enable statistics printouts\n");
         fprintf(stdout,"\n");
 
         return 0;
