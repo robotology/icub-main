@@ -1075,6 +1075,8 @@ class RpcProcessor : public PortReader
 {
 protected:
     DataBase *pDataBase;
+    unsigned int nCalls;
+    double cumTime;
 
     /************************************************************************/
     bool read(ConnectionReader &connection)
@@ -1084,8 +1086,11 @@ protected:
         if (!command.read(connection))
             return false;
 
+        nCalls++;
+        double t0=Time::now();
         pDataBase->respond(command,reply);
-
+        cumTime+=Time::now()-t0;
+        
         if (ConnectionWriter *writer=connection.getWriter())
             reply.write(*writer);
 
@@ -1094,9 +1099,23 @@ protected:
 
 public:
     /************************************************************************/
+    RpcProcessor()
+    {
+        nCalls=0;
+        cumTime=0.0;
+    }
+
+    /************************************************************************/
     void setDataBase(DataBase &dataBase)
     {
         pDataBase=&dataBase;
+    }
+
+    /************************************************************************/
+    void getStats(unsigned int &nCalls, double &cumTime) const
+    {
+        nCalls=this->nCalls;
+        cumTime=this->cumTime;
     }
 };
 
@@ -1110,6 +1129,8 @@ private:
     Port         rpcPort;
 
     int cnt;
+    unsigned int nCallsOld;
+    double cumTimeOld;
 
 public:
     /************************************************************************/
@@ -1125,6 +1146,8 @@ public:
         rpcPort.open(("/"+name+"/rpc").c_str());
 
         cnt=0;
+        nCallsOld=0;
+        cumTimeOld=0.0;
 
         return true;
     }
@@ -1149,6 +1172,16 @@ public:
             dataBase.save();
             cnt=0;
         }
+
+        unsigned int nCalls; double cumTime;
+        rpcProcessor.getStats(nCalls,cumTime);
+
+        unsigned int calls=nCalls-nCallsOld;
+        fprintf(stdout,"*** Statistics: %d/%g [requests/s]; %g [s] spent per request on average\n",
+                calls,getPeriod(),calls/(cumTime-cumTimeOld));
+
+        nCallsOld=nCalls;
+        cumTimeOld=cumTime;
 
         return true;
     }
