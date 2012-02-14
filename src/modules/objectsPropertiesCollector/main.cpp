@@ -1177,8 +1177,9 @@ public:
         rpcProcessor.getStats(nCalls,cumTime);
 
         unsigned int calls=nCalls-nCallsOld;
+        double timeSpent=cumTime-cumTimeOld;
         fprintf(stdout,"*** Statistics: received %d/%g [requests/s]; %g [s/request] spent on average\n",
-                calls,getPeriod(),calls/(cumTime-cumTimeOld));
+                calls,getPeriod(),timeSpent==0.0?0.0:calls/timeSpent);
 
         nCallsOld=nCalls;
         cumTimeOld=cumTime;
