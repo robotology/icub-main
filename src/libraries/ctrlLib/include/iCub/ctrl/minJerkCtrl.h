@@ -184,6 +184,23 @@ public:
                                     const std::string &entryTag="dimension",
                                     const yarp::os::Bottle &ordering=yarp::os::Bottle());
 
+    /** 
+    * Allows user to retrieve plant parameters.
+    * @param parameters contains the set of plant parameters for 
+    *                   each dimension in form of a Property object.
+    *  
+    * Available parameters are: 
+    *  
+    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw 
+    *    0.1) ...)), specifies the Kp, Tz, Tw and Zeta parameters
+    *    for a given dimension of the plant ("dimension_2" in the
+    *    example). Dimensions are 0-based numbers.
+    * @param entryTag specifies an entry tag different from 
+    *                 "dimension".
+    */
+    virtual void getPlantParameters(yarp::os::Property &parameters,
+                                    const std::string &entryTag="dimension");
+
     /**
     * Destructor. 
     */
