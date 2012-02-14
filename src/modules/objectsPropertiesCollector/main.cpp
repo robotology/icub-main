@@ -1185,8 +1185,8 @@ public:
 
             unsigned int calls=nCalls-nCallsOld;
             double timeSpent=cumTime-cumTimeOld;
-            fprintf(stdout,"*** Statistics: received %d/%g [requests/s]; %g [s/request] spent on average\n",
-                    calls,getPeriod(),timeSpent==0.0?0.0:calls/timeSpent);
+            fprintf(stdout,"*** Statistics: received %d/%g [requests/s]; %g [us/request] spent on average\n",
+                    calls,getPeriod(),timeSpent==0.0?0.0:1e6*(timeSpent/calls));
 
             nCallsOld=nCalls;
             cumTimeOld=cumTime;
