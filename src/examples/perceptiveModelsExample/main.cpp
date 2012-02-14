@@ -245,10 +245,12 @@ public:
 
 int main(int argc, char *argv[])
 {
-    Network yarp;	
-
+    Network yarp;
     if (!yarp.checkNetwork())
+    {
+        fprintf(stdout,"YARP server not available!\n");
         return -1;
+    }
 
     ResourceFinder rf;
     rf.setVerbose(true);
@@ -259,7 +261,6 @@ int main(int argc, char *argv[])
     rf.configure("ICUB_ROOT",argc,argv);
 
     ExampleModule mod;
-
     return mod.runModule(rf);
 }
 

@@ -63,6 +63,7 @@ Windows, Linux
 \author Ilaria Gori, Ugo Pattacini
 */ 
 
+#include <stdio.h>
 #include <string>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -117,9 +118,11 @@ public:
 int main(int argc, char *argv[])
 {
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        printf("YARP server not available!\n");
         return -1;
+    }
 
     YARP_REGISTER_DEVICES(icubmod)
 
@@ -128,7 +131,6 @@ int main(int argc, char *argv[])
     rf.configure("ICUB_ROOT",argc,argv);
 
     ServerModule mod;
-
     return mod.runModule(rf);
 }
 

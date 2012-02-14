@@ -1654,9 +1654,11 @@ public:
 int main(int argc, char *argv[])
 {
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        fprintf(stdout,"YARP server not available!\n");
         return -1;
+    }
 
     YARP_REGISTER_DEVICES(icubmod)
     

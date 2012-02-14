@@ -933,10 +933,12 @@ int main(int argc, char *argv[])
 
     Network yarp;
     if (!yarp.checkNetwork())
+    {
+        fprintf(stdout,"YARP server not available!\n");
         return -1;
+    }
 
     ProcessModule mod;
-
     return mod.runModule(rf);
 }
 

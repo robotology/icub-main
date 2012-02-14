@@ -248,9 +248,11 @@ public:
 int main(int argc, char *argv[])
 {
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        cout<<"YARP server not available!"<<endl;
         return -1;
+    }
 
     ResourceFinder rf;
     rf.setVerbose(true);
@@ -259,7 +261,6 @@ int main(int argc, char *argv[])
     rf.configure("ICUB_ROOT",argc,argv);
 
     SolverModule mod;
-
     return mod.runModule(rf);
 }
 

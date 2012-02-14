@@ -349,12 +349,13 @@ int main(int argc, char *argv[])
     }
 
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        cout<<"YARP server not available!"<<endl;
         return -1;
+    }
 
     velObserver obs;
-
     return obs.runModule(rf);
 }
 

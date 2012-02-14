@@ -1217,12 +1217,13 @@ int main(int argc, char *argv[])
     }
 
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        fprintf(stdout,"YARP server not available!\n");
         return -1;
+    }
 
     objectsPropertiesCollectorModule collector;
-
     return collector.runModule(rf);
 }
 

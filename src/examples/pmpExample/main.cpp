@@ -246,9 +246,11 @@ public:
 int main(int argc, char *argv[])
 {
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        fprintf(stdout,"YARP server not available!\n");
         return -1;
+    }
 
     YARP_REGISTER_DEVICES(icubmod)
 
@@ -257,7 +259,6 @@ int main(int argc, char *argv[])
     rf.configure("ICUB_ROOT",argc,argv);
 
     ClientModule mod;
-
     return mod.runModule(rf);
 }
 

@@ -181,14 +181,15 @@ int main(int argc, char *argv[])
     rf.configure("ICUB_ROOT",argc,argv);
 
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        cout<<"YARP server not available!"<<endl;
         return -1;
+    }
 
     YARP_REGISTER_DEVICES(icubmod)
 
     SimCartCtrlModule mod;
-
     return mod.runModule(rf);
 }
 
