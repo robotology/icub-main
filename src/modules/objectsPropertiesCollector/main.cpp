@@ -1089,11 +1089,11 @@ protected:
         if (!command.read(connection))
             return false;
 
-        nCalls++;
         double t0=Time::now();
         pDataBase->respond(command,reply);
         cumTime+=Time::now()-t0;
-        
+        nCalls++;
+
         if (ConnectionWriter *writer=connection.getWriter())
             reply.write(*writer);
 
