@@ -25,7 +25,8 @@
  * 
  * \section lib_sec Libraries
  *
- * YARP
+ * YARP 
+ * OpenCV 
  *
  * \section parameters_sec Parameters
  * 
