@@ -141,7 +141,7 @@ void SmithPredictor::configure(Property &options, iKinChain &chain)
     double twoTs2=2.0*Ts2;
     for (unsigned int i=0; i<chain.getDOF(); i++)
     {
-        // implementing F(s)=Kp*(1+Tz*s)/(1+2*Zeta*Tw*s+(Tw*s)^2)
+        // implementing P(s)=Kp*(1+Tz*s)/(1+2*Zeta*Tw*s+(Tw*s)^2)
         double _num_0=2.0*Tz[i]*Ts;
         num[0]=Kp[i] * (Ts2 + _num_0);
         num[1]=Kp[i] * twoTs2;
