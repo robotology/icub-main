@@ -191,12 +191,12 @@ void stereoCalibThread::stereoCalibRun()
  }
 
 
+
  void stereoCalibThread::monoCalibRun()
 {
 
     bool left= imagePortInLeft.getInputCount()>0?true:false;
     imageL=new ImageOf<PixelRgb>;
-    bool initL=false;
 
 
     int count=1;
@@ -214,16 +214,8 @@ void stereoCalibThread::stereoCalibRun()
        else
             tmpL = imagePortInRight.read(true);
 
-        if(tmpL!=NULL)
-        {
-            initL=true;
-        }
-
-
-        if(initL){
-
+       if(tmpL!=NULL){
             bool foundL=false;
-
             if(startCalibration>0) {
 
                 string pathImg=imageDir;
@@ -271,7 +263,6 @@ void stereoCalibThread::stereoCalibRun()
 
                 if(foundL && startCalibration==1)
                     Time::delay(2.0);
-                initL=false;
         }
    }
 

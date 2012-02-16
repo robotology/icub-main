@@ -43,6 +43,7 @@ boardWidth W
 boardHeight H
 boardSize S
 numberOfPairs N
+MonoCalib value
 \endcode
 
 See below for the parameter description.
@@ -64,6 +65,9 @@ YARP libraries and OpenCV
 
 --numberOfPairs \e Num 
 - The parameter \e Num identifies the number of pairs with the pattern needed before the stereo calibration (default 30).
+
+--MonoCalib \e Num 
+- The parameter \e Val identifies if the module has to run the stereo calibration (Val=0) or the mono calibration (Val=1). For the mono calibration connect only the camera that you want to calibrate.
 
 \section portsc_sec Ports Created
 - <i> /<stemName>/cam/left:i </i> accepts the incoming images from the left eye. 
