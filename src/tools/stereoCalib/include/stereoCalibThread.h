@@ -26,7 +26,7 @@ private:
     IplImage * imgR;
 
     int numOfPairs;
-
+    bool stereo;
     Mat Kleft;
     Mat Kright;
     
@@ -66,6 +66,9 @@ private:
     void calcChessboardCorners(Size boardSize, float squareSize, vector<Point3f>& corners);
     bool updateIntrinsics( int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname);
     bool updateExtrinsics(Mat Rot, Mat Tr, const string& groupname);
+    void saveImage(const char * imageDir, IplImage* left, int num);
+    void stereoCalibRun();
+    void monoCalibRun();
 
 public:
 

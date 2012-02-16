@@ -27,7 +27,8 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->imageDir=imageDir;
     this->startCalibration=0;
     this->currentPathDir=rf.getContextPath().c_str();
-
+    int tmp=stereoCalibOpts.check("MonoCalib", Value(1)).asInt();
+    this->stereo= tmp?true:false;
     this->camCalibFile=rf.getContextPath().c_str();
 
     this->camCalibFile=this->camCalibFile+"/icubEyes.ini";
@@ -57,8 +58,20 @@ bool stereoCalibThread::threadInit()
 
    return true;
 }
-
 void stereoCalibThread::run(){
+
+    if(stereo)
+    {
+        stereoCalibRun();
+    }
+    else
+    {
+        monoCalibRun();
+    }
+
+}
+void stereoCalibThread::stereoCalibRun()
+{
 
     imageL=new ImageOf<PixelRgb>;
     imageR=new ImageOf<PixelRgb>;
@@ -175,8 +188,96 @@ void stereoCalibThread::run(){
 
    delete imageL;
    delete imageR;
-}
+ }
 
+
+ void stereoCalibThread::monoCalibRun()
+{
+
+    bool left= imagePortInLeft.getInputCount()>0?true:false;
+    imageL=new ImageOf<PixelRgb>;
+    bool initL=false;
+
+
+    int count=1;
+    Size boardSize, imageSize;
+    boardSize.width=this->boardWidth;
+    boardSize.height=this->boardHeight;
+
+    std::vector<string>  imageListL;
+
+    while (!isStopping()) { 
+       ImageOf<PixelRgb> *tmpL;
+
+       if(left)
+            tmpL = imagePortInLeft.read(true);
+       else
+            tmpL = imagePortInRight.read(true);
+
+        if(tmpL!=NULL)
+        {
+            initL=true;
+        }
+
+
+        if(initL){
+
+            bool foundL=false;
+
+            if(startCalibration>0) {
+
+                string pathImg=imageDir;
+                preparePath(pathImg.c_str(), pathL,pathR,count);
+                string iml(pathL);
+                imgL= (IplImage*) imageL->getIplImage();
+                Mat Left(imgL);
+                std::vector<Point2f> pointbufL;
+
+                foundL = findChessboardCorners( Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH & CV_CALIB_CB_FAST_CHECK & CV_CALIB_CB_NORMALIZE_IMAGE);
+                
+                if(foundL) {
+                        cvCvtColor(imgL,imgL,CV_RGB2BGR);
+                        saveImage(pathImg.c_str(),imgL,count);
+                        imageListL.push_back(iml);
+                        Mat cL(pointbufL);
+                        drawChessboardCorners(Left, boardSize, cL, foundL);
+                        count++;
+                }
+
+                if(count>numOfPairs) {
+                    fprintf(stdout," Running Left Camera Calibration... \n");
+                    monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
+
+                    fprintf(stdout," Saving Calibration Results... \n");
+                    if(left)
+                        updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
+                    else
+                        updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
+                        
+                    fprintf(stdout, "Calibration Results Saved. \n");
+
+                    startCalibration=0;
+                }
+
+
+            }
+                ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
+                outimL=*imageL;
+                outPortLeft.write();
+
+                ImageOf<PixelRgb>& outimR=outPortRight.prepare();
+                outimR=*imageL;
+                outPortRight.write();
+
+                if(foundL && startCalibration==1)
+                    Time::delay(2.0);
+                initL=false;
+        }
+   }
+
+   delete imageL;
+   delete imageR;
+ }
 void stereoCalibThread::threadRelease() 
 {
     imagePortInRight.close();
@@ -250,6 +351,16 @@ void stereoCalibThread::saveStereoImage(const char * imageDir, IplImage* left, I
 
     cvSaveImage(pathL,left);
     cvSaveImage(pathR,right);
+}
+
+void stereoCalibThread::saveImage(const char * imageDir, IplImage* left, int num) {
+    char pathL[256];
+    preparePath(imageDir, pathL,pathR,num);
+    
+    fprintf(stdout,"Saving images number %d \n",num);
+
+    cvSaveImage(pathL,left);
+
 }
 bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname){
 
