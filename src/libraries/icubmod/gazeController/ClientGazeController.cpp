@@ -561,6 +561,87 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
 
 
 /************************************************************************/
+bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &ang,
+                                                Vector &x)
+{
+    if (!connected || (ang.length()<3))
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("3D");
+    command.addString("ang");
+    Bottle &bOpt=command.addList();
+    bOpt.addString((mode==0)?"abs":"rel");
+    bOpt.addDouble(ang[0]);
+    bOpt.addDouble(ang[1]);
+    bOpt.addDouble(ang[2]);
+
+    // send command and wait for reply
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        if (Bottle *bPoint=reply.get(1).asList())
+        {
+            x.resize(bPoint->size());
+            for (size_t i=0; i<x.length(); i++)
+                x[i]=bPoint->get(i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
+{
+    if (!connected || (x.length()<3))
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addString("get");
+    command.addString("ang");
+    Bottle &bOpt=command.addList();
+    bOpt.addDouble(x[0]);
+    bOpt.addDouble(x[1]);
+    bOpt.addDouble(x[2]);
+
+    // send command and wait for reply
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        if (Bottle *bAng=reply.get(1).asList())
+        {
+            ang.resize(bAng->size());
+            for (size_t i=0; i<ang.length(); i++)
+                ang[i]=bAng->get(i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &pxr,
                                               Vector &x)
 {

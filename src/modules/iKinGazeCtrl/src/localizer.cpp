@@ -163,17 +163,16 @@ void Localizer::setPidOptions(const Bottle &options)
 
 
 /************************************************************************/
-Vector Localizer::getCurAbsAngles()
+Vector Localizer::getAbsAngles(const Vector &x)
 {
-    Vector fp=commData->get_x();
+    Vector fp=x;
     fp.push_back(1.0);  // impose homogeneous coordinates
 
     // get fp wrt head-centered system
     Vector fph=invEyeCAbsFrame*fp;
-
     Vector q=commData->get_q();
-    Vector ang(3);
 
+    Vector ang(3);
     ang[0]=atan2(fph[0],fph[2]);
     ang[1]=-atan2(fph[1],fph[2]);
     ang[2]=q[5];
@@ -183,7 +182,7 @@ Vector Localizer::getCurAbsAngles()
 
 
 /************************************************************************/
-Vector Localizer::getFixationPoint(const string &type, const Vector &ang)
+Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 {
     double azi=ang[0];
     double ele=ang[1];
@@ -575,8 +574,8 @@ void Localizer::handleAnglesInput()
             ang[0]=CTRL_DEG2RAD*angles->get(1).asDouble();
             ang[1]=CTRL_DEG2RAD*angles->get(2).asDouble();
             ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
-        
-            Vector xd=getFixationPoint(type,ang);
+
+            Vector xd=get3DPoint(type,ang);
         
             if (port_xd!=NULL)
                 port_xd->set_xd(xd);
@@ -594,7 +593,7 @@ void Localizer::handleAnglesOutput()
 {
     if (port_anglesOut.getOutputCount()>0)
     {
-        port_anglesOut.prepare()=CTRL_RAD2DEG*getCurAbsAngles();
+        port_anglesOut.prepare()=CTRL_RAD2DEG*getAbsAngles(commData->get_x());
         port_anglesOut.write();
     }
 }

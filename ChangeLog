@@ -1,3 +1,7 @@
+2012-02-17 Ugo Pattacini <ugo.pattacini@iit.it>
+    Added two new functionalities to the Gaze Interface:
+    get3DPointFromAngles() and getAnglesFrom3DPoint().
+
 2012-02-09 Ugo Pattacini <ugo.pattacini@iit.it>
     The Cartesian Control now handles the plant model.
 

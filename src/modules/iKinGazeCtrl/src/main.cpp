@@ -304,6 +304,11 @@ following ports:
       results from the intersection with the plane expressed
       with its implicit equation ax+by+cz+d=0 in the root
       reference frame.
+    - [get] [3D] [ang] (<type> <azi> <ele> <ver>): transforms
+      angular coordinates into cartesian coordinates. The
+      options <type> can be ["abs"|"rel"].
+    - [get] [ang] (<x> <y> <z>): transforms cartesian
+      coordinates into absolute angular coordinates.
     - [get] [pid]: returns (enclosed in a list) a property-like
       bottle containing the pid values used to converge to the
       target with stereo input.
@@ -1038,6 +1043,49 @@ public:
                                             return true;
                                         }
                                     }
+                                }
+                            }
+                            else if (subType==VOCAB3('a','n','g'))
+                            {
+                                if (Bottle *bOpt=command.get(3).asList())
+                                {
+                                    if (bOpt->size()>3)
+                                    {
+                                        Vector ang(3);
+                                        string type=bOpt->get(0).asString().c_str();
+                                        ang[0]=bOpt->get(1).asDouble();
+                                        ang[1]=bOpt->get(2).asDouble();
+                                        ang[2]=bOpt->get(3).asDouble();
+
+                                        Vector x=loc->get3DPoint(type,ang);
+                                        reply.addVocab(ack);
+                                        Bottle &bPoint=reply.addList();
+                                        for (size_t i=0; i<x.length(); i++)
+                                            bPoint.addDouble(x[i]);
+
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        else if ((type==VOCAB3('a','n','g')) && (command.size()>2))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                if (bOpt->size()>2)
+                                {
+                                    Vector x(3);
+                                    x[0]=bOpt->get(0).asDouble();
+                                    x[1]=bOpt->get(1).asDouble();
+                                    x[2]=bOpt->get(2).asDouble();
+
+                                    Vector ang=loc->getAbsAngles(x);
+                                    reply.addVocab(ack);
+                                    Bottle &bAng=reply.addList();
+                                    for (size_t i=0; i<ang.length(); i++)
+                                        bAng.addDouble(ang[i]);
+
+                                    return true;
                                 }
                             }
                         }

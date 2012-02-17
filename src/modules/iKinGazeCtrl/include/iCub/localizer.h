@@ -72,9 +72,6 @@ protected:
     parallelPID *pid;
     string dominantEye;
 
-    Vector getCurAbsAngles();
-    Vector getFixationPoint(const string &type, const Vector &ang);
-
     void handleMonocularInput();
     void handleStereoInput();
     void handleAnglesInput();
@@ -85,15 +82,17 @@ public:
               const string &_camerasFile, const bool _headV2,
               const unsigned int _period);
 
-    void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
-    void getPidOptions(Bottle &options);
-    void setPidOptions(const Bottle &options);
-    bool projectPoint(const string &type, const Vector &x, Vector &px);
-    bool projectPoint(const string &type, const double u, const double v,
-                      const double z, Vector &x);
-    bool projectPoint(const string &type, const double u, const double v,
-                      const Vector &plane, Vector &x);
-    bool triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x);
+    void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
+    void   getPidOptions(Bottle &options);
+    void   setPidOptions(const Bottle &options);
+    bool   projectPoint(const string &type, const Vector &x, Vector &px);
+    bool   projectPoint(const string &type, const double u, const double v,
+                        const double z, Vector &x);
+    bool   projectPoint(const string &type, const double u, const double v,
+                        const Vector &plane, Vector &x);
+    bool   triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x);
+    Vector getAbsAngles(const Vector &x);
+    Vector get3DPoint(const string &type, const Vector &ang);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);
