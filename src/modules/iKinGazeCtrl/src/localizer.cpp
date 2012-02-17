@@ -55,6 +55,9 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     // ... and its inverse
     invEyeCAbsFrame=SE3inv(eyeCAbsFrame);
 
+    // get the lenght of the eyes baseline
+    eyesBaseline=norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
+
     // get camera projection matrix from the camerasFile
     if (getCamPrj(camerasFile,"CAMERA_CALIBRATION_LEFT",&PrjL))
     {
@@ -170,12 +173,12 @@ Vector Localizer::getAbsAngles(const Vector &x)
 
     // get fp wrt head-centered system
     Vector fph=invEyeCAbsFrame*fp;
-    Vector q=commData->get_q();
+    fph.pop_back();
 
     Vector ang(3);
     ang[0]=atan2(fph[0],fph[2]);
     ang[1]=-atan2(fph[1],fph[2]);
-    ang[2]=q[5];
+    ang[2]=2.0*atan2(eyesBaseline,2.0*norm(fph));
 
     return ang;
 }

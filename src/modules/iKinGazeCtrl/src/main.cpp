@@ -1053,9 +1053,9 @@ public:
                                     {
                                         Vector ang(3);
                                         string type=bOpt->get(0).asString().c_str();
-                                        ang[0]=bOpt->get(1).asDouble();
-                                        ang[1]=bOpt->get(2).asDouble();
-                                        ang[2]=bOpt->get(3).asDouble();
+                                        ang[0]=CTRL_DEG2RAD*bOpt->get(1).asDouble();
+                                        ang[1]=CTRL_DEG2RAD*bOpt->get(2).asDouble();
+                                        ang[2]=CTRL_DEG2RAD*bOpt->get(3).asDouble();
 
                                         Vector x=loc->get3DPoint(type,ang);
                                         reply.addVocab(ack);
@@ -1079,7 +1079,7 @@ public:
                                     x[1]=bOpt->get(1).asDouble();
                                     x[2]=bOpt->get(2).asDouble();
 
-                                    Vector ang=loc->getAbsAngles(x);
+                                    Vector ang=CTRL_RAD2DEG*loc->getAbsAngles(x);
                                     reply.addVocab(ack);
                                     Bottle &bAng=reply.addList();
                                     for (size_t i=0; i<ang.length(); i++)
