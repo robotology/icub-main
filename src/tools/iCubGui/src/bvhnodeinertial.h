@@ -29,24 +29,7 @@ public:
         { 
             memset(dInertial,0,sizeof(dInertial));
             
-            bHasInertial=portIMU.open("/iCubGui/inertial");
-            
-			const int RETRY=4;
-            if (bHasInertial)
-            {
-                for (int i=0; i<=RETRY; ++i)
-			    {
-			        if (i==RETRY) 
-			        {
-			            bHasInertial=false;
-			            break;
-			        }
-			        
-                    if (yarp::os::Network::connect(portIMUName.latin1(),"/iCubGui/inertial")) break;
-                    
-			        yarp::os::Time::delay(0.5);
-			    }
-            } 
+            portIMU.open("/iCubGui/inertial:i");
         }
         
 	virtual ~BVHNodeINERTIAL()
@@ -58,7 +41,7 @@ public:
         
     virtual void drawJoint()
     {
-        if (bHasInertial)
+        if (portIMU.getInputCount()>0)
         {
             pIMUData=portIMU.read(false);
             
@@ -127,7 +110,6 @@ public:
     }
 protected:
     double dInertial[12];
-    bool bHasInertial;
     yarp::os::BufferedPort<yarp::os::Bottle> portIMU;
     yarp::os::Bottle *pIMUData;
 };

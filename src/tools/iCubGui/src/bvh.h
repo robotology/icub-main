@@ -29,11 +29,11 @@
 
 #include <yarp/sig/Vector.h>
 
-#include <yarp/dev/GenericSensorInterfaces.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
+//#include <yarp/dev/GenericSensorInterfaces.h>
+//#include <yarp/dev/ControlBoardInterfaces.h>
+//#include <yarp/dev/PolyDriver.h>
 
-using namespace yarp::dev;
+//using namespace yarp::dev;
 using namespace yarp::os;
 
 /////////////////////////////////////////////
@@ -55,8 +55,6 @@ using namespace yarp::os;
 
 #include "objectsthread.h"
 
-#define __YARP
-
 class BVH
 {
 public:
@@ -68,23 +66,71 @@ public:
     
     void draw()
     {
-        #ifdef __YARP
-        #define PAN  4
-        #define VERG 5
-        if (pEncTorso) pEncTorso->getEncoders(dEncTorso);
-        if (pEncHead) 
+        yarp::sig::Vector *enc =NULL;
+        yarp::sig::Vector *encV=NULL;
+
+        if (portEncTorso.getInputCount()>0)
         {
-            pEncHead->getEncoders(dEncHead);
-            double dLeftEye =dEncHead[PAN]-0.5*dEncHead[VERG];
-            double dRightEye=dEncHead[PAN]+0.5*dEncHead[VERG];
-            dEncHead[4]=dLeftEye;
-            dEncHead[5]=dRightEye;
+            encV=NULL;
+
+            while (enc=portEncTorso.read(false)) encV=enc;
+            
+            if (encV) for (int i=0; i<nJTorso; ++i) dEncTorso[i]=(*encV)[i];
         }
-        if (pEncLeftArm) pEncLeftArm->getEncoders(dEncLeftArm);
-        if (pEncRightArm) pEncRightArm->getEncoders(dEncRightArm);
-        if (pEncLeftLeg) pEncLeftLeg->getEncoders(dEncLeftLeg);
-        if (pEncRightLeg) pEncRightLeg->getEncoders(dEncRightLeg);
-        #endif
+        
+        if (portEncHead.getInputCount()>0) 
+        {
+            encV=NULL;
+
+            while (enc=portEncHead.read(false)) encV=enc;
+            
+            if (encV)
+            {
+                for (int i=0; i<nJHead; ++i) dEncHead[i]=(*encV)[i];
+
+                double dLeftEye =dEncHead[4]-0.5*dEncHead[5];
+                double dRightEye=dEncHead[4]+0.5*dEncHead[5];
+            
+                dEncHead[4]=dLeftEye;
+                dEncHead[5]=dRightEye;
+            }
+        }
+
+        if (portEncLeftArm.getInputCount()>0)
+        {
+            encV=NULL;
+
+            while (enc=portEncLeftArm.read(false)) encV=enc;
+            
+            if (encV) for (int i=0; i<nJLeftArm; ++i) dEncLeftArm[i]=(*encV)[i];
+        }
+
+        if (portEncRightArm.getInputCount()>0)
+        {
+            encV=NULL;
+
+            while (enc=portEncRightArm.read(false)) encV=enc;
+            
+            if (encV) for (int i=0; i<nJRightArm; ++i) dEncRightArm[i]=(*encV)[i];
+        }
+
+        if (portEncLeftLeg.getInputCount()>0)
+        {
+            encV=NULL;
+
+            while (enc=portEncLeftLeg.read(false)) encV=enc;
+            
+            if (encV) for (int i=0; i<nJLeftLeg; ++i) dEncLeftLeg[i]=(*encV)[i];
+        }
+
+        if (portEncRightLeg.getInputCount()>0)
+        {
+            encV=NULL;
+
+            while (enc=portEncRightLeg.read(false)) encV=enc;
+            
+            if (encV) for (int i=0; i<nJRightLeg; ++i) dEncRightLeg[i]=(*encV)[i];
+        }
 
         glShadeModel(GL_SMOOTH);
         GLfloat ambientA[]={0.9,0.667,0.561,1};
@@ -137,13 +183,20 @@ public:
     
     QString robot;
     
-    PolyDriver* OpenDriver(QString part);
-    void CloseDriver(PolyDriver* &pDriver);
+    //PolyDriver* OpenDriver(QString part);
+    //void CloseDriver(PolyDriver* &pDriver);
     
-    PolyDriver *pTorsoDriver,*pHeadDriver,*pLeftArmDriver,*pRightArmDriver,*pLeftLegDriver,*pRightLegDriver;
-    IEncoders *pEncTorso,*pEncHead,*pEncLeftArm,*pEncRightArm,*pEncLeftLeg,*pEncRightLeg;
+    //PolyDriver *pTorsoDriver,*pHeadDriver,*pLeftArmDriver,*pRightArmDriver,*pLeftLegDriver,*pRightLegDriver;
+    //IEncoders *pEncTorso,*pEncHead,*pEncLeftArm,*pEncRightArm,*pEncLeftLeg,*pEncRightLeg;
     int nJTorso,nJHead,nJLeftArm,nJRightArm,nJLeftLeg,nJRightLeg;
     
+    yarp::os::BufferedPort<yarp::sig::Vector> portEncTorso;
+    yarp::os::BufferedPort<yarp::sig::Vector> portEncHead;
+    yarp::os::BufferedPort<yarp::sig::Vector> portEncLeftArm;
+    yarp::os::BufferedPort<yarp::sig::Vector> portEncRightArm;
+    yarp::os::BufferedPort<yarp::sig::Vector> portEncLeftLeg;
+    yarp::os::BufferedPort<yarp::sig::Vector> portEncRightLeg;
+
     double dEncBuffer[59];
     double *dEncTorso,*dEncHead,*dEncLeftArm,*dEncRightArm,*dEncLeftLeg,*dEncRightLeg,*dEncRoot;
 };

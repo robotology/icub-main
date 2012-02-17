@@ -65,15 +65,19 @@ bool BVH::Create(yarp::os::ResourceFinder& config)
 
 BVH::~ BVH()
 {
-    // YARP
-    #ifdef __YARP
-    CloseDriver(pHeadDriver);
-    CloseDriver(pTorsoDriver);
-    CloseDriver(pLeftArmDriver);
-    CloseDriver(pRightArmDriver);
-    CloseDriver(pLeftLegDriver);
-    CloseDriver(pRightLegDriver);
-    #endif
+    portEncHead.interrupt();
+    portEncTorso.interrupt();
+    portEncLeftArm.interrupt();
+    portEncRightArm.interrupt();
+    portEncLeftLeg.interrupt();
+    portEncRightLeg.interrupt();
+
+    portEncHead.close();
+    portEncTorso.close();
+    portEncLeftArm.close();
+    portEncRightArm.close();
+    portEncLeftLeg.close();
+    portEncRightLeg.close();
     
     if (pRoot)
     {
@@ -81,9 +85,7 @@ BVH::~ BVH()
         pRoot=NULL;
     }
 
-    #ifdef __YARP
     Network::fini();
-    #endif
 
     if (mAB)
     {
@@ -139,77 +141,37 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
   
     tokenPos=0;
   
-    // YARP
-    #ifdef __YARP
     Network::init();
 
-    yarp::os::Time::delay(1.0);
-    pTorsoDriver=OpenDriver("/torso");
-    yarp::os::Time::delay(1.0);
-    pHeadDriver=OpenDriver("/head");
-    yarp::os::Time::delay(1.0);
-    pLeftArmDriver=OpenDriver("/left_arm");
-    yarp::os::Time::delay(1.0);
-    pRightArmDriver=OpenDriver("/right_arm");
-    yarp::os::Time::delay(1.0);
-    pLeftLegDriver=OpenDriver("/left_leg");
-    yarp::os::Time::delay(1.0);
-    pRightLegDriver=OpenDriver("/right_leg");
-    yarp::os::Time::delay(1.0);
-   
-    pEncTorso=pEncHead=pEncLeftArm=pEncRightArm=pEncLeftLeg=pEncRightLeg=0;
+    portEncTorso.open("/iCubGui/torso:i");
+    portEncHead.open("/iCubGui/head:i");
+    portEncLeftArm.open("/iCubGui/left_arm:i");
+    portEncRightArm.open("/iCubGui/right_arm:i");
+    portEncLeftLeg.open("/iCubGui/left_leg:i");
+    portEncRightLeg.open("/iCubGui/right_leg:i");
+
     dEncTorso=dEncHead=dEncLeftArm=dEncRightArm=dEncLeftLeg=dEncRightLeg=0;
 
     memset(dEncBuffer,0,sizeof(dEncBuffer));
-
-    if (pTorsoDriver) pTorsoDriver->view(pEncTorso);   
-    if (pHeadDriver) pHeadDriver->view(pEncHead);
-    if (pLeftArmDriver) pLeftArmDriver->view(pEncLeftArm);
-    if (pRightArmDriver) pRightArmDriver->view(pEncRightArm);
-    if (pLeftLegDriver) pLeftLegDriver->view(pEncLeftLeg);
-    if (pRightLegDriver) pRightLegDriver->view(pEncRightLeg);
-   
-    if (!pEncTorso || !pEncHead || !pEncLeftArm || !pEncRightArm || !pEncLeftLeg || !pEncRightLeg)
-    {
-        qDebug("BVH::BVH: error getting IEncoders interfaces");
-        dEncBuffer[10]=90.0;
-        dEncBuffer[26]=90.0;
-    }
-    else
-    {
-        pEncTorso->getAxes(&nJTorso);
-        qDebug("BVH::BVH: %d Torso joints found",nJTorso);
-        pEncHead->getAxes(&nJHead);
-        qDebug("BVH::BVH: %d Head joints found",nJHead);
-        pEncLeftArm->getAxes(&nJLeftArm);
-        qDebug("BVH::BVH: %d Left Arm joints found",nJLeftArm);
-        pEncRightArm->getAxes(&nJRightArm);
-        qDebug("BVH::BVH: %d Right Arm joints found",nJRightArm);
-        pEncLeftLeg->getAxes(&nJLeftLeg);
-        qDebug("BVH::BVH: %d Left Leg joints found",nJLeftLeg);
-        pEncRightLeg->getAxes(&nJRightLeg);
-        qDebug("BVH::BVH: %d Right Leg joints found",nJRightLeg);
-        
-        dEncTorso=dEncBuffer;
-        dEncHead=dEncTorso+nJTorso;
-        dEncLeftArm=dEncHead+nJHead;
-        dEncRightArm=dEncLeftArm+nJLeftArm;
-        dEncLeftLeg=dEncRightArm+nJRightArm;
-        dEncRightLeg=dEncLeftLeg+nJLeftLeg;
-        dEncRoot=dEncRightLeg+nJRightLeg;
-        dEncLeftArm[1]=dEncRightArm[1]=0.0;
-    }
-    #endif
+    dEncBuffer[10]=90.0;
+    dEncBuffer[26]=90.0;
     
-        dEncTorso=dEncBuffer;
-        dEncHead=dEncTorso+3;
-        dEncLeftArm=dEncHead+6;
-        dEncRightArm=dEncLeftArm+16;
-        dEncLeftLeg=dEncRightArm+16;
-        dEncRightLeg=dEncLeftLeg+6;
-        dEncRoot=dEncRightLeg+6;
+    nJTorso=3;
+    nJHead=6;
+    nJLeftArm=16;
+    nJRightArm=16;
+    nJLeftLeg=6;
+    nJRightLeg=6;
 
-        return bvhReadNode(config);
+    dEncTorso=dEncBuffer;
+    dEncHead=dEncTorso+nJTorso;
+    dEncLeftArm=dEncHead+nJHead;
+    dEncRightArm=dEncLeftArm+nJLeftArm;
+    dEncLeftLeg=dEncRightArm+nJRightArm;
+    dEncRightLeg=dEncLeftLeg+nJLeftLeg;
+    dEncRoot=dEncRightLeg+nJRightLeg;
+
+    return bvhReadNode(config);
 }
 
 BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
@@ -238,7 +200,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     expect_token("{");
     iCubMesh *pMesh=0;
     QString tag=token();
-    int ftSensorId=-1;
+    QString ftPortName="";
     
     int skinPart=0;
     int skinLink=0;
@@ -280,7 +242,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     
     if (tag=="FORCE_TORQUE")
     {
-		ftSensorId=token().toInt();
+		ftPortName=token();
         tag=token();
     }
 
@@ -316,13 +278,13 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 			double c=token().toDouble();
 			double d=token().toDouble();
 			double e=token().toDouble();
-            if (ftSensorId==-1)
+            if (ftPortName=="")
             {
                 node=new BVHNodeDH(sName,a,b,c,d,e,pMesh); 
 		    }
             else
             {
-                node=new BVHNodeForceTorque(sName,ftSensorId,a,b,c,d,e,pMesh);
+                node=new BVHNodeForceTorque(sName,ftPortName,a,b,c,d,e,pMesh);
             }
         }
 		break;
@@ -392,6 +354,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     return node;
 }
 
+/*
 PolyDriver* BVH::OpenDriver(QString part)
 {
     Property options;
@@ -426,6 +389,6 @@ void BVH::CloseDriver(PolyDriver* &pDriver)
         pDriver=0;
     }
 }
-
+*/
 
 

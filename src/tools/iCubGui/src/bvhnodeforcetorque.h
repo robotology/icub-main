@@ -20,47 +20,21 @@
 
 #include "bvhnodedh.h"
 
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/CanBusInterface.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/os/BufferedPort.h>
+
+//#include <yarp/dev/ControlBoardInterfaces.h>
+//#include <yarp/dev/PolyDriver.h>
+//#include <yarp/dev/CanBusInterface.h>
 
 class BVHNodeForceTorque : public BVHNodeDH
 {
     public:
     
-    BVHNodeForceTorque(const QString& name,int id,int enc,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
+    BVHNodeForceTorque(const QString& name,const QString& portName,int enc,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
         : BVHNodeDH(name,enc,a,d,alpha,theta0,mesh)
     {
-        const int CAN_DRIVER_BUFFER_SIZE=2047;
-
-        cardId=id;
-
-	    Property prop;
-        prop.put("device", "ecan");
-        prop.put("CanTxTimeout", 500);
-        prop.put("CanRxTimeout", 500);
-        prop.put("CanDeviceNum", 0);
-        prop.put("CanMyAddress", 0);
-        prop.put("CanTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
-        prop.put("CanRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
-
-        pCanBus=NULL;
-        pCanBufferFactory=NULL;
-
-        driver.open(prop);
-        if (!driver.isValid())
-        {
-            fprintf(stderr, "Error opening PolyDriver check parameters\n");
-            return;
-        }
-
-        driver.view(pCanBus);
-    
-        if (!pCanBus)
-        {
-            fprintf(stderr, "Error opening /ecan device not available\n");
-            return;
-        }
+        mPort.open(portName.ascii());
 
         if (pMesh)
         {
@@ -70,69 +44,17 @@ class BVHNodeForceTorque : public BVHNodeDH
 
         //m_Alpha=0.5;
 
-        driver.view(pCanBufferFactory);
-        pCanBus->canSetBaudRate(0); //default 1MB/s
-
-        pCanBus->canIdAdd(cardId | 0x0A); // force
-        pCanBus->canIdAdd(cardId | 0x0B); // torque
-
-        canBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
+        for (int i=0; i<6; ++i) dForceTorque[i]=0.0;
     }
         
 	virtual ~BVHNodeForceTorque()
     {	
-	    if (pCanBufferFactory) 
-        {
-            pCanBufferFactory->destroyBuffer(canBuffer);
-        }
-
-        driver.close();
+        mPort.close();
     }
     
     virtual void drawJoint()
     {
-        static const int FORCE=0x0A,TORQUE=0x0B;
-
         BVHNodeDH::drawJoint();
-
-        if (!pCanBus) return;
-
-        unsigned int canMessages=0;
-        bool res=pCanBus->canRead(canBuffer,1000,&canMessages,false);
-
-        int val=0;
-        unsigned char *pLsb=(unsigned char *)&val,*pMsb=pLsb+1;
-
-        for (unsigned int i=0; i<canMessages; i++)
-        {
-            CanMessage &msg=canBuffer[i];
-
-            if ((msg.getId() & 0xFFFFFFF0) == cardId)
-            {
-                int type=msg.getId() & 0x0F;
-
-                if (type==FORCE)
-                {
-                    for (int i=0; i<3; ++i)
-                    {
-                        *pLsb=msg.getData()[i<<1];
-                        *pMsb=msg.getData()[1+(i<<1)];
-
-                        dForceTorque[i]=double(val-0x8000);
-                    }
-                }
-                else if (type==TORQUE)
-                {
-                    for (int i=0; i<3; ++i)
-                    {
-                        *pLsb=msg.getData()[i<<1];
-                        *pMsb=msg.getData()[1+(i<<1)];
-
-                        dForceTorque[i+3]=double(val-0x8000);
-                    }
-                }
-            }
-        }
 
         glColor4f(0.4,0.4,1.0,1.0);
         glPushMatrix();
@@ -144,6 +66,13 @@ class BVHNodeForceTorque : public BVHNodeDH
         glTranslated(0.0,0.0,-9.0);
 
         glDisable(GL_DEPTH_TEST);
+
+        if (mPort.getInputCount()>0)
+        {
+            yarp::sig::Vector *ft=mPort.read(false);
+
+            if (ft) for (int i=0; i<6; ++i) dForceTorque[i]=(*ft)[i];
+        }
 
         // Force
         glLineWidth(3.0);
@@ -207,12 +136,7 @@ class BVHNodeForceTorque : public BVHNodeDH
 protected:
     double dForceTorque[6];
     
-    PolyDriver driver;
-    ICanBus *pCanBus;
-    ICanBufferFactory *pCanBufferFactory;
-    CanBuffer canBuffer;
-
-    int cardId;
+    yarp::os::BufferedPort<yarp::sig::Vector> mPort;
 };
 
 #endif
