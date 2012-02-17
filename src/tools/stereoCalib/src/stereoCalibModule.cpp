@@ -64,7 +64,7 @@ bool stereoCalibModule::close()
 bool stereoCalibModule::respond(const Bottle& command, Bottle& reply) 
 {
     if (command.get(0).asString()=="start") {
-        reply.addString("Starting Calibration... \n");
+        reply.addString("Starting Calibration...");
         calibThread->startCalib();
    }
     return true;

@@ -42,6 +42,9 @@ private:
     string outNameLeft;
     string camCalibFile;
     string currentPathDir;
+    std::vector<string> imageListR;
+    std::vector<string> imageListL;
+    std::vector<string> imageListLR;
 
     BufferedPort<ImageOf<PixelRgb> > imagePortInLeft;
     BufferedPort<ImageOf<PixelRgb> > imagePortInRight;

@@ -19,7 +19,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->outNameLeft       +=rf.check("outLeft",Value("/cam/left:o"),"Output image port (string)").asString();
 
     Bottle stereoCalibOpts=rf.findGroup("STEREO_CALIBRATION_CONFIGURATION");
-    this->boardWidth=  stereoCalibOpts.check("boardWidth", Value(11)).asInt();
+    this->boardWidth=  stereoCalibOpts.check("boardWidth", Value(8)).asInt();
     this->boardHeight= stereoCalibOpts.check("boardHeight", Value(6)).asInt();
     this->numOfPairs=stereoCalibOpts.check("numberOfPairs", Value(30)).asInt();
     this->squareSize= (float)stereoCalibOpts.check("boardSize", Value(0.09241)).asDouble();
@@ -27,8 +27,9 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->imageDir=imageDir;
     this->startCalibration=0;
     this->currentPathDir=rf.getContextPath().c_str();
-    int tmp=stereoCalibOpts.check("MonoCalib", Value(1)).asInt();
-    this->stereo= tmp?true:false;
+    int tmp=stereoCalibOpts.check("MonoCalib", Value(0)).asInt();
+cout << tmp << endl;
+    this->stereo= tmp?false:true;
     this->camCalibFile=rf.getContextPath().c_str();
 
     this->camCalibFile=this->camCalibFile+"/icubEyes.ini";
@@ -62,10 +63,12 @@ void stereoCalibThread::run(){
 
     if(stereo)
     {
+        fprintf(stdout, "Running Stereo Calibration Mode... \n");
         stereoCalibRun();
     }
     else
     {
+        fprintf(stdout, "Running Mono Calibration Mode... Connect only one eye \n");
         monoCalibRun();
     }
 
@@ -87,7 +90,6 @@ void stereoCalibThread::stereoCalibRun()
     boardSize.width=this->boardWidth;
     boardSize.height=this->boardHeight;
 
-    std::vector<string> imageListR, imageListL, imageListLR;
 
    while (!isStopping()) { 
         ImageOf<PixelRgb> *tmpL = imagePortInLeft.read(false);
@@ -168,6 +170,10 @@ void stereoCalibThread::stereoCalibRun()
                     fprintf(stdout, "Calibration Results Saved. \n");
 
                     startCalibration=0;
+                    count=1;
+                    imageListR.clear();
+                    imageListL.clear();
+                    imageListLR.clear();
                 }
 
 
@@ -195,8 +201,27 @@ void stereoCalibThread::stereoCalibRun()
  void stereoCalibThread::monoCalibRun()
 {
 
+
+    while(imagePortInLeft.getInputCount()==0 && imagePortInRight.getInputCount()==0)
+    {
+        fprintf(stdout, "Connect one camera.. \n");
+        Time::delay(1.0);
+
+        if(isStopping())
+            return;
+
+    }
+
     bool left= imagePortInLeft.getInputCount()>0?true:false;
-    imageL=new ImageOf<PixelRgb>;
+
+    string cameraName;
+
+    if(left)
+        cameraName="LEFT";
+    else
+        cameraName="RIGHT";
+
+    fprintf(stdout, "CALIBRATING %s CAMERA \n",cameraName.c_str());
 
 
     int count=1;
@@ -204,17 +229,15 @@ void stereoCalibThread::stereoCalibRun()
     boardSize.width=this->boardWidth;
     boardSize.height=this->boardHeight;
 
-    std::vector<string>  imageListL;
+
 
     while (!isStopping()) { 
-       ImageOf<PixelRgb> *tmpL;
-
        if(left)
-            tmpL = imagePortInLeft.read(true);
+            imageL = imagePortInLeft.read(false);
        else
-            tmpL = imagePortInRight.read(true);
+            imageL = imagePortInRight.read(false);
 
-       if(tmpL!=NULL){
+       if(imageL!=NULL){
             bool foundL=false;
             if(startCalibration>0) {
 
@@ -226,7 +249,6 @@ void stereoCalibThread::stereoCalibRun()
                 std::vector<Point2f> pointbufL;
 
                 foundL = findChessboardCorners( Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH & CV_CALIB_CB_FAST_CHECK & CV_CALIB_CB_NORMALIZE_IMAGE);
-                
                 if(foundL) {
                         cvCvtColor(imgL,imgL,CV_RGB2BGR);
                         saveImage(pathImg.c_str(),imgL,count);
@@ -237,7 +259,7 @@ void stereoCalibThread::stereoCalibRun()
                 }
 
                 if(count>numOfPairs) {
-                    fprintf(stdout," Running Left Camera Calibration... \n");
+                    fprintf(stdout," Running %s Camera Calibration... \n", cameraName.c_str());
                     monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
 
                     fprintf(stdout," Saving Calibration Results... \n");
@@ -249,6 +271,8 @@ void stereoCalibThread::stereoCalibRun()
                     fprintf(stdout, "Calibration Results Saved. \n");
 
                     startCalibration=0;
+                    count=1;
+                    imageListL.clear();
                 }
 
 
@@ -263,11 +287,11 @@ void stereoCalibThread::stereoCalibRun()
 
                 if(foundL && startCalibration==1)
                     Time::delay(2.0);
+
         }
    }
 
-   delete imageL;
-   delete imageR;
+
  }
 void stereoCalibThread::threadRelease() 
 {
@@ -279,12 +303,13 @@ void stereoCalibThread::threadRelease()
 }
 
 void stereoCalibThread::onStop() {
+    startCalibration=0;
     imagePortInRight.interrupt();
     imagePortInLeft.interrupt();
     outPortLeft.interrupt();
     outPortRight.interrupt();
     commandPort->interrupt();
-    startCalibration=0;
+
 }
 void stereoCalibThread::startCalib() {
     startCalibration=1;
@@ -663,7 +688,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                 this->Kleft, this->DistL,
                 this->Kright, this->DistR,
                 imageSize, this->R, this->T, E, F,
-                TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5),CV_CALIB_FIX_INTRINSIC);
+                TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5),CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_FIX_INTRINSIC + CV_CALIB_FIX_K3);
         fprintf(stdout,"done with RMS error= %f\n",rms);
     }
 // CALIBRATION QUALITY CHECK
