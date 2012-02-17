@@ -110,6 +110,7 @@ protected:
     ResourceFinder       &rf;
     BufferedPort<Bottle> port_command;
     bool                 silent;
+    bool                 force_cfg;
 
     double defaultExecTime;
     double t0;
@@ -157,6 +158,7 @@ public:
         reverse=0;
         jointProperties=0;
         silent = false;
+        force_cfg = false;
     }
 
     virtual bool threadInit()
@@ -166,6 +168,12 @@ public:
         {
             fprintf ( stderr, "Running in silent mode\n");
             silent=true;
+        }
+
+        if (rf.check("force_configuration"))
+        {
+            fprintf ( stderr, "Force configuration option found\n");
+            force_cfg=true;
         }
 
         if (rf.findGroup("INPUTS").check("InputsNumber"))
@@ -375,19 +383,29 @@ public:
 
         if (numAxes!=num_inputs)
         {
-            fprintf ( stderr, "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
-            fprintf ( stderr, "This probably means that your .ini file does not containt a correct configuration.\n");
-            fprintf ( stderr, "Do you want to continue anyway (y/n)?\n");
-            char input[255];
-            cin >> input;
-            if (input[0]!='y' && input[0]!='Y') 
+            if (force_cfg == false)
             {
-                fprintf ( stderr, "Quitting...\n");
-                return false;
+                fprintf ( stderr, "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
+                fprintf ( stderr, "This probably means that your .ini file does not containt a correct configuration.\n");
+                fprintf ( stderr, "Do you want to continue anyway (y/n)?\n");
+                char input[255];
+                cin >> input;
+                if (input[0]!='y' && input[0]!='Y') 
+                {
+                    fprintf ( stderr, "Quitting...\n");
+                    return false;
+                }
+                else
+                {
+                    fprintf ( stderr, "Overriding the number of axes specified in the configuration file. Using %d axes.\n",numAxes);
+                }
             }
             else
             {
-                fprintf ( stderr, "Overriding the number of axes specified in the configuration file. Using %d axes.\n",numAxes);
+                fprintf ( stderr, "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
+                fprintf ( stderr, "This probably means that your .ini file does not containt a correct configuration.\n");
+                fprintf ( stderr, "However, --force_configuration option is enabled. This will override the number of axes specified in the configuration file.\n");
+                fprintf ( stderr, "Using %d axes.\n",numAxes);
             }
         }
 
@@ -644,6 +662,7 @@ int main(int argc, char *argv[])
     {
         fprintf (stderr, "Options:\n");
         fprintf (stderr, "--silent: supress text output\n");
+        fprintf (stderr, "--force_configuration: force a joystick configuration for a joystick with differnt # of axes, buttons etc.\n");
         return 0;
     }
 
