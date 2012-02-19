@@ -154,6 +154,9 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 - If this option is given then the content of database is not 
   saved at shutdown.
  
+--verbose 
+- Enables some verbosity.
+ 
 --stats 
 - Enables statistics printouts.
  
@@ -210,6 +213,7 @@ reply: [ack] (id (1))
 #include <yarp/os/RFModule.h>
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <sstream>
 #include <string>
 #include <map>
@@ -358,7 +362,24 @@ protected:
     int idCnt;
     bool initialized;
     bool nosave;
+    bool verbose;
     string dbFileName;
+
+    /************************************************************************/
+    int printMessage(const char *format, ...)
+    {
+        if (verbose)
+        {
+            va_list ap;
+            va_start(ap,format);
+            int ret=vfprintf(stdout,format,ap);
+            va_end(ap);
+
+            return ret;
+        }
+        else
+            return -1;
+    }
 
     /************************************************************************/
     void clearMap()
@@ -379,6 +400,9 @@ protected:
     /************************************************************************/
     void write(FILE *stream)
     {
+        if ((stream==stdout) && !verbose)
+            return;
+
         int i=0;
         for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
             fprintf(stream,"item_%d (%s %d) (%s)\n",
@@ -439,6 +463,7 @@ public:
     {
         initialized=false;
         nosave=false;
+        verbose=false;
         idCnt=0;
     }
 
@@ -450,11 +475,12 @@ public:
     }
 
     /************************************************************************/
-    void init(ResourceFinder &rf)
+    void configure(ResourceFinder &rf)
     {
+        verbose=rf.check("verbose");
         if (initialized)
         {
-            fprintf(stdout,"database already initialized ...\n");
+            printMessage("database already initialized ...\n");
             return;
         }
 
@@ -468,14 +494,14 @@ public:
 
         dump();
         initialized=true;
-        fprintf(stdout,"database ready ...\n");
+        printMessage("database ready ...\n");
     }
 
     /************************************************************************/
     void load()
     {
         mutex.wait();
-        fprintf(stdout,"loading database from %s ...\n",dbFileName.c_str());
+        printMessage("loading database from %s ...\n",dbFileName.c_str());
 
         clearMap();
         idCnt=0;
@@ -495,20 +521,20 @@ public:
 
             if (b1.size()<3)
             {
-                fprintf(stdout,"error while loading %s!\n",tag.str().c_str());
+                printMessage("error while loading %s!\n",tag.str().c_str());
                 continue;
             }
 
             Bottle *b2=b1.get(1).asList();
             if (b2==NULL)
             {
-                fprintf(stdout,"error while loading %s!\n",tag.str().c_str());
+                printMessage("error while loading %s!\n",tag.str().c_str());
                 continue;
             }
 
             if (b2->size()<2)
             {
-                fprintf(stdout,"error while loading %s!\n",tag.str().c_str());
+                printMessage("error while loading %s!\n",tag.str().c_str());
                 continue;
             }
 
@@ -520,7 +546,7 @@ public:
                 idCnt=id+1;
         }
 
-        fprintf(stdout,"database loaded\n");
+        printMessage("database loaded\n");
         mutex.post();
     }
 
@@ -531,13 +557,13 @@ public:
             return;
 
         mutex.wait();
-        fprintf(stdout,"saving database in %s ...\n",dbFileName.c_str());
+        printMessage("saving database in %s ...\n",dbFileName.c_str());
 
         FILE *fout=fopen(dbFileName.c_str(),"w");
         write(fout);
         fclose(fout);
 
-        fprintf(stdout,"database stored\n");
+        printMessage("database stored\n");
         mutex.post();
     }
 
@@ -545,10 +571,10 @@ public:
     void dump()
     {
         mutex.wait();
-        fprintf(stdout,"dumping database content ... \n");        
+        printMessage("dumping database content ... \n");
 
         if (itemsMap.size()==0)
-            fprintf(stdout,"empty\n");
+            printMessage("empty\n");
         else
             write(stdout);
         mutex.post();
@@ -565,7 +591,7 @@ public:
         itemsMap[idCnt].prop=item;
         itemsMap[idCnt].lastUpdate=Time::now();
 
-        fprintf(stdout,"added item %s\n",item->toString().c_str());
+        printMessage("added item %s\n",item->toString().c_str());
         mutex.post();
         return true;
     }
@@ -584,7 +610,7 @@ public:
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
                     clearMap();
-                    fprintf(stdout,"database cleared\n");
+                    printMessage("database cleared\n");
                     mutex.post();
                     return true;
                 }
@@ -594,13 +620,13 @@ public:
         Property request(content->toString().c_str());
         if (!request.check(PROP_ID))
         {
-            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
+            printMessage("%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
         
         int id=request.find(PROP_ID).asInt();
-        fprintf(stdout,"removing item %d ... ",id);
+        printMessage("removing item %d ... ",id);
 
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
@@ -616,12 +642,12 @@ public:
             else
                 eraseItem(it);
 
-            fprintf(stdout,"successfully\n");
+            printMessage("successfully\n");
             mutex.post();
             return true;
         }
 
-        fprintf(stdout,"not present!\n");
+        printMessage("not present!\n");
         mutex.post();
         return false;
     }
@@ -636,13 +662,13 @@ public:
         Property request(content->toString().c_str());
         if (!request.check(PROP_ID))
         {
-            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
+            printMessage("%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
 
         int id=request.find(PROP_ID).asInt();
-        fprintf(stdout,"getting item %d ... ",id);
+        printMessage("getting item %d ... ",id);
 
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
@@ -666,12 +692,12 @@ public:
             else
                 item.fromString(pProp->toString().c_str());
 
-            fprintf(stdout,"%s\n",item.toString().c_str());
+            printMessage("%s\n",item.toString().c_str());
             mutex.post();
             return true;
         }
 
-        fprintf(stdout,"not present!\n");
+        printMessage("not present!\n");
         mutex.post();
         return false;
     }
@@ -686,13 +712,13 @@ public:
         Property request(content->toString().c_str());
         if (!request.check(PROP_ID))
         {
-            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
+            printMessage("%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
 
         int id=request.find(PROP_ID).asInt();
-        fprintf(stdout,"setting item %d ... ",id);
+        printMessage("setting item %d ... ",id);
 
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
@@ -701,7 +727,7 @@ public:
             request.unput(PROP_ID);
             Bottle b(request.toString().c_str());
 
-            fprintf(stdout,"%s\n",b.toString().c_str());
+            printMessage("%s\n",b.toString().c_str());
 
             for (int i=0; i<b.size(); i++)
             {
@@ -709,7 +735,7 @@ public:
 
                 if (option->size()<2)
                 {
-                    fprintf(stdout,"invalid property!\n");
+                    printMessage("invalid property!\n");
                     continue;
                 }
 
@@ -725,7 +751,7 @@ public:
             return true;
         }
 
-        fprintf(stdout,"not present!\n");
+        printMessage("not present!\n");
         mutex.post();
         return false;
     }
@@ -740,13 +766,13 @@ public:
         Property request(content->toString().c_str());
         if (!request.check(PROP_ID))
         {
-            fprintf(stdout,"%s field not present within the request!\n",PROP_ID);
+            printMessage("%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
 
         int id=request.find(PROP_ID).asInt();
-        fprintf(stdout,"getting time elapsed from last update for item %d ... ",id);
+        printMessage("getting time elapsed from last update for item %d ... ",id);
 
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
@@ -755,19 +781,19 @@ public:
             if (it->second.lastUpdate<0.0)
             {
                 item.addDouble(it->second.lastUpdate);
-                fprintf(stdout,"just loaded\n");
+                printMessage("just loaded\n");
             }
             else
             {
                 double dt=Time::now()-it->second.lastUpdate;
                 item.addDouble(dt);
-                fprintf(stdout,"%g [s]\n",dt);
+                printMessage("%g [s]\n",dt);
             }
             mutex.post();
             return true;
         }
 
-        fprintf(stdout,"item not present!\n");
+        printMessage("item not present!\n");
         mutex.post();
         return false;
     }
@@ -803,7 +829,7 @@ public:
         // a boolean operator
         if (!(content->size()&0x01))
         {
-            fprintf(stdout,"uncorrect conditions received!\n");
+            printMessage("uncorrect conditions received!\n");
             mutex.post();
             return false;
         }
@@ -840,14 +866,14 @@ public:
                     condition.compare=&relationalOperators::notEqual;
                 else
                 {
-                    fprintf(stdout,"unknown relational operator '%s'!\n",operation.c_str());
+                    printMessage("unknown relational operator '%s'!\n",operation.c_str());
                     mutex.post();
                     return false;
                 }
             }
             else
             {
-                fprintf(stdout,"wrong condition given!\n");
+                printMessage("wrong condition given!\n");
                 mutex.post();
                 return false;
             }
@@ -859,7 +885,7 @@ public:
                 operation=content->get(i+1).asString().c_str();
                 if ((operation!="||") && (operation!="&&"))
                 {
-                    fprintf(stdout,"unknown boolean operator '%s'!\n",operation.c_str());
+                    printMessage("unknown boolean operator '%s'!\n",operation.c_str());
                     mutex.post();
                     return false;
                 }
@@ -879,7 +905,7 @@ public:
                 items.addInt(it->first);
         }
 
-        fprintf(stdout,"found items matching received conditions: (%s)\n",items.toString().c_str());
+        printMessage("found items matching received conditions: (%s)\n",items.toString().c_str());
         mutex.post();
         return true;
     }
@@ -897,7 +923,7 @@ public:
 
                 if (lifeTimer<0.0)
                 {
-                    fprintf(stdout,"item with id==%d expired\n",it->first);
+                    printMessage("item with id==%d expired\n",it->first);
                     eraseItem(it);
                     break;  // to avoid seg-fault
                 }
@@ -1065,7 +1091,7 @@ public:
             //-----------------
             default:
             {
-                fprintf(stdout,"received unknown command!\n");
+                printMessage("received unknown command!\n");
                 reply.addVocab(REP_UNKNOWN);
             }
         }
@@ -1142,7 +1168,7 @@ public:
     {
         Time::turboBoost();
 
-        dataBase.init(rf);
+        dataBase.configure(rf);
         stats=rf.check("stats");
 
         string name=rf.check("name",Value("objectsPropertiesCollector")).asString().c_str();
@@ -1220,6 +1246,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector/conf)\n");
         fprintf(stdout,"\t--empty             : start an empty database\n");
         fprintf(stdout,"\t--nosave            : prevent from saving the content of database at shutdown\n");
+        fprintf(stdout,"\t--verbose           : enable some verbosity\n");
         fprintf(stdout,"\t--stats             : enable statistics printouts\n");
         fprintf(stdout,"\n");
 
