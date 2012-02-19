@@ -1,7 +1,6 @@
 # Copyright: (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
 # Authors: Vadim Tikhanoff
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 set(PROJECTNAME lumaChroma)
 project(${PROJECTNAME})
 
