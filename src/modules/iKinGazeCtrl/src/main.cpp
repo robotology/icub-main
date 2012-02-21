@@ -40,12 +40,13 @@ The controller can be seen as cartesian gaze controller since it
 receives as input a 3D position in the task space. Nonetheless, 
 further command modalities are available: 1) the coordinates
 (u,v) of just one pixel in the image plane along with a guessed 
-component z in the eye's reference frame can be provided; 2) the
-position of the target within the two image planes can be 
-converted in the 3D task space using the monocular approach 
-coupled with a pid on the component z; 3) the head-centered 
-azimuth and elevation angles along with the vergence angle can 
-be given to the module both in absolute and relative mode.
+component z in the eye's reference frame can be provided, or 
+alternatively the vergence angle; 2) the position of the target 
+within the two image planes can be converted in the 3D task 
+space using the monocular approach coupled with a pid on the 
+component z; 3) the head-centered azimuth and elevation angles 
+along with the vergence angle can be given to the module both in 
+absolute and relative mode. 
 
 Moreover, this module also implements the server part of the <a 
 href="http://eris.liralab.it/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze 
@@ -183,6 +184,8 @@ point:
 - by localizing the target in just one image plane and then 
   sending its coordinates together with a guessed component z
   in the eye's reference frame to the /<ctrlName>/mono:i port.
+  Alternatively, the z component can be replaced by the vergence
+  angle.
   <b>In this mode the cameras intrinsic parameters are
   required</b>.
 - by localizing the target in the two image planes and thus 
@@ -218,7 +221,10 @@ following ports:
   position expressed in one image plane. The input data format
   is the Bottle [type u v z], where \e type can be "left" or
   "right", <i> (u,v) </i> is the pixel coordinates and \e z is
-  the guessed z-component in the eye's reference frame.
+  the guessed z-component in the eye's reference frame. An
+  alternative command modality employs the vergence given in
+  degree in place of the z-component and its format is: [type u
+  v "ver" ver].
  
 - \e /<ctrlName>/<part>/stereo:i receives the current target 
   position expressed in image planes. It accepts 4 double (also

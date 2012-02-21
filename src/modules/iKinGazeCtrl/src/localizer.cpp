@@ -55,8 +55,8 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     // ... and its inverse
     invEyeCAbsFrame=SE3inv(eyeCAbsFrame);
 
-    // get the lenght of the eyes baseline
-    eyesBaseline=norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
+    // get the lenght of the half of the eyes baseline
+    eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
 
     // get camera projection matrix from the camerasFile
     if (getCamPrj(camerasFile,"CAMERA_CALIBRATION_LEFT",&PrjL))
@@ -178,7 +178,7 @@ Vector Localizer::getAbsAngles(const Vector &x)
     Vector ang(3);
     ang[0]=atan2(fph[0],fph[2]);
     ang[1]=-atan2(fph[1],fph[2]);
-    ang[2]=2.0*atan2(eyesBaseline,2.0*norm(fph));
+    ang[2]=2.0*atan2(eyesHalfBaseline,norm(fph));
 
     return ang;
 }
@@ -493,7 +493,21 @@ void Localizer::handleMonocularInput()
             string type=mono->get(0).asString().c_str();
             double u=mono->get(1).asDouble();
             double v=mono->get(2).asDouble();
-            double z=mono->get(3).asDouble();
+            double z;
+
+            if (mono->get(3).isDouble())
+                z=mono->get(3).asDouble();
+            else if (mono->get(3).asString()=="ver")
+            {
+                double ver=mono->get(4).asDouble();
+                double tg=tan(ver);
+                z=eyesHalfBaseline*sqrt(1.0+1.0/(tg*tg));
+            }
+            else
+            {
+                fprintf(stdout,"Got wrong mono information!\n");
+                return;
+            }
 
             Vector fp;
             if (projectPoint(type,u,v,z,fp))

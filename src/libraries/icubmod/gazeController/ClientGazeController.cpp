@@ -281,7 +281,8 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
 
 
 /************************************************************************/
-bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px, const double z)
+bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px,
+                                           const double z)
 {
     if (!connected || (px.length()<2))
         return false;
@@ -291,6 +292,26 @@ bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px, c
     cmd.addDouble(px[0]);
     cmd.addDouble(px[1]);
     cmd.addDouble(z);
+    portCmdMono.write(cmd);
+
+    return true;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::lookAtMonoPixelWithVergence(const int camSel,
+                                                       const Vector &px,
+                                                       const double ver)
+{
+    if (!connected || (px.length()<2))
+        return false;
+
+    Bottle cmd;
+    cmd.addString((camSel==0)?"left":"right");
+    cmd.addDouble(px[0]);
+    cmd.addDouble(px[1]);
+    cmd.addString("ver");
+    cmd.addDouble(ver);
     portCmdMono.write(cmd);
 
     return true;

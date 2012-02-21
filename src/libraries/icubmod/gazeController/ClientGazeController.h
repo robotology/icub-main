@@ -99,6 +99,7 @@ public:
     bool lookAtAbsAngles(const yarp::sig::Vector &ang);
     bool lookAtRelAngles(const yarp::sig::Vector &ang);
     bool lookAtMonoPixel(const int camSel, const yarp::sig::Vector &px, const double z=1.0);
+    bool lookAtMonoPixelWithVergence(const int camSel, const yarp::sig::Vector &px, const double ver);
     bool lookAtStereoPixels(const yarp::sig::Vector &pxl, const yarp::sig::Vector &pxr);
     bool getNeckTrajTime(double *t);
     bool getEyesTrajTime(double *t);

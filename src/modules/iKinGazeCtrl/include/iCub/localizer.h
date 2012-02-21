@@ -63,7 +63,7 @@ protected:
     
     Matrix eyeCAbsFrame;
     Matrix invEyeCAbsFrame;
-    double eyesBaseline;
+    double eyesHalfBaseline;
 
     Matrix *PrjL, *invPrjL;
     Matrix *PrjR, *invPrjR;
