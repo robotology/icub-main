@@ -499,7 +499,7 @@ void Localizer::handleMonocularInput()
                 z=mono->get(3).asDouble();
             else if (mono->get(3).asString()=="ver")
             {
-                double ver=mono->get(4).asDouble();
+                double ver=CTRL_DEG2RAD*mono->get(4).asDouble();
                 double tg=tan(ver);
                 z=eyesHalfBaseline*sqrt(1.0+1.0/(tg*tg));
             }
