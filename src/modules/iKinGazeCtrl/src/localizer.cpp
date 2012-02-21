@@ -500,7 +500,7 @@ void Localizer::handleMonocularInput()
             else if (mono->get(3).asString()=="ver")
             {
                 double ver=CTRL_DEG2RAD*mono->get(4).asDouble();
-                double tg=tan(ver);
+                double tg=tan(ver/2.0);
                 z=eyesHalfBaseline*sqrt(1.0+1.0/(tg*tg));
             }
             else
