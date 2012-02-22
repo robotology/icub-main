@@ -2144,7 +2144,7 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
                this->trajPos=trajPos;
                this->trajOrien=trajOrien;
                this->trajTime=trajTime;
-               size_t N=trajPos->size()-1;
+               N=trajPos->size()-1;
            }
            void wait()
            {
