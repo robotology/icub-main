@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <algorithm>
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>
 
@@ -25,7 +26,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              exchangeData *_commData, const string &_robotName,
                              const string &_localName, const string &_camerasFile,
                              const double _eyeTiltMin, const double _eyeTiltMax,
-                             const bool _VOR, const bool _headV2,
+                             const Vector &_counterRotGain, const bool _headV2,
                              const unsigned int _period) :
                              RateThread(_period),       drvTorso(_drvTorso),     drvHead(_drvHead),
                              commData(_commData),       robotName(_robotName),   localName(_localName),
@@ -33,7 +34,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              headV2(_headV2),           period(_period),         Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
-    VOR=Robotable&&_VOR;
+    counterRotGain=_counterRotGain;
 
     // Instantiate objects
     neck=new iCubHeadCenter(headV2?"right_v2":"right");
@@ -146,7 +147,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 /************************************************************************/
 bool EyePinvRefGen::getGyro(Vector &data)
 {
-    if (port_inertial!=NULL)
+    if (port_inertial.getInputCount()>0)
     {
         data=gyro;
         return true;
@@ -157,84 +158,73 @@ bool EyePinvRefGen::getGyro(Vector &data)
 
 
 /************************************************************************/
+void EyePinvRefGen::setCounterRotGain(const Vector &gain)
+{
+    size_t len=std::min(counterRotGain.length(),gain.length());
+    for (size_t i=0; i<len; i++)
+        counterRotGain[i]=gain[i];
+}
+
+
+/************************************************************************/
 Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp)
 {
-    Vector fprelv;
+    // ********** implement VOR
+    Vector q(inertialSensor.getDOF());
+    q[0]=fbTorso[0];
+    q[1]=fbTorso[1];
+    q[2]=fbTorso[2];
+    q[3]=fbHead[0];
+    q[4]=fbHead[1];
+    q[5]=fbHead[2];
+    Matrix H=inertialSensor.getH(q);
 
-    if (VOR)
-    {
-        // implement VOR
-        Vector q(inertialSensor.getDOF());
-        q[0]=fbTorso[0];
-        q[1]=fbTorso[1];
-        q[2]=fbTorso[2];
-        q[3]=fbHead[0];
-        q[4]=fbHead[1];
-        q[5]=fbHead[2];
-        Matrix H=inertialSensor.getH(q);
+    H(0,3)=fp[0]-H(0,3);
+    H(1,3)=fp[1]-H(1,3);
+    H(2,3)=fp[2]-H(2,3);
 
-        H(0,3)=fp[0]-H(0,3);
-        H(1,3)=fp[1]-H(1,3);
-        H(2,3)=fp[2]-H(2,3);
+    // gyro rate [deg/s]
+    double &gyrX=gyro[6];
+    double &gyrY=gyro[7];
+    double &gyrZ=gyro[8];
 
-        // gyro rate [deg/s]
-        double &gyrX=gyro[6];
-        double &gyrY=gyro[7];
-        double &gyrZ=gyro[8];
-
-        // to filter out the noise on the gyro readouts
-        if ((fabs(gyrX)<GYRO_BIAS_STABILITY) && (fabs(gyrY)<GYRO_BIAS_STABILITY) &&
-            (fabs(gyrZ)<GYRO_BIAS_STABILITY))
-        {
-            fprelv.resize(eyesJ.rows(),0.0);    // pinv(eyesJ) => use rows
-            return fprelv;
-        }
-        else
-            fprelv=CTRL_DEG2RAD*(gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3));
-    }
+    // to filter out the noise on the gyro readouts
+    Vector vor_fprelv;
+    if ((fabs(gyrX)<GYRO_BIAS_STABILITY) && (fabs(gyrY)<GYRO_BIAS_STABILITY) &&
+        (fabs(gyrZ)<GYRO_BIAS_STABILITY))
+        vor_fprelv.resize(eyesJ.rows(),0.0);    // pinv(eyesJ) => use rows
     else
-    {
-        // implement OCR
-        Matrix H0=chainNeck->getH(2,true);
-        Matrix H1=chainNeck->getH(3,true);
-        Matrix H2=chainNeck->getH(4,true);
-    
-        for (int i=0; i<3; i++)
-        {
-            H0(i,3)=fp[i]-H0(i,3);
-            H1(i,3)=fp[i]-H1(i,3);
-            H2(i,3)=fp[i]-H2(i,3);
-        }
+        vor_fprelv=CTRL_DEG2RAD*(gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3));
 
-        Vector v=commData->get_v();
-        fprelv=v[0]*cross(H0,2,H0,3)+v[1]*cross(H1,2,H1,3)+v[2]*cross(H2,2,H2,3);
+    // ********** implement OCR
+    Matrix H0=chainNeck->getH(2,true);
+    Matrix H1=chainNeck->getH(3,true);
+    Matrix H2=chainNeck->getH(4,true);
+
+    for (int i=0; i<3; i++)
+    {
+        H0(i,3)=fp[i]-H0(i,3);
+        H1(i,3)=fp[i]-H1(i,3);
+        H2(i,3)=fp[i]-H2(i,3);
     }
 
-    return -1.0*(pinv(eyesJ)*fprelv);
+    Vector v=commData->get_v();
+    Vector ocr_fprelv=v[0]*cross(H0,2,H0,3)+v[1]*cross(H1,2,H1,3)+v[2]*cross(H2,2,H2,3);
+
+    // ********** blend the contributions
+    return -1.0*(pinv(eyesJ)*(counterRotGain[0]*vor_fprelv+counterRotGain[1]*ocr_fprelv));
 }
 
 
 /************************************************************************/
 bool EyePinvRefGen::threadInit()
 {
-    if (Robotable && VOR)
-    {
-        port_inertial=new BufferedPort<Vector>;
-        string portName=localName+"/inertial:i";
-        port_inertial->open(portName.c_str());
-
-        if (!Network::connect(("/"+robotName+"/inertial").c_str(),portName.c_str()))
-        {
-            delete port_inertial;
-            port_inertial=NULL;
-            VOR=false;
-        }
-    }
-    else
-        port_inertial=NULL;
+    string robotPortInertial=("/"+robotName+"/inertial");
+    port_inertial.open((localName+"/inertial:i").c_str());
+    if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
+        fprintf(stdout,"Unable to connect to %s\n",robotPortInertial.c_str());
 
     fprintf(stdout,"Starting Pseudoinverse Reference Generator at %d ms\n",period);
-
     return true;
 }
 
@@ -265,9 +255,8 @@ void EyePinvRefGen::run()
             fbHead=commData->get_q();
 
         // read gyro data
-        if (port_inertial!=NULL)
-            if (Vector *_gyro=port_inertial->read(false))
-                gyro=*_gyro;
+        if (Vector *_gyro=port_inertial.read(false))
+            gyro=*_gyro;
 
         // get current target
         Vector xd=port_xd->get_xd();
@@ -327,12 +316,8 @@ void EyePinvRefGen::run()
 /************************************************************************/
 void EyePinvRefGen::threadRelease()
 {
-    if (port_inertial!=NULL)
-    {
-        port_inertial->interrupt();
-        port_inertial->close();
-        delete port_inertial;
-    }
+    port_inertial.interrupt();
+    port_inertial.close();
 
     delete neck;
     delete eyeL;

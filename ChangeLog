@@ -1,6 +1,9 @@
+2012-02-22 Ugo Pattacini <ugo.pattacini@iit.it>
+    iKinGazeCtrl now handles VOR and OCR gains.
+
 2012-02-21 Ugo Pattacini <ugo.pattacini@iit.it>
     Added one new functionality to the Gaze Interface:
-    lookAtMonoPixelWithVergence()
+    lookAtMonoPixelWithVergence().
 
 2012-02-17 Ugo Pattacini <ugo.pattacini@iit.it>
     Added two new functionalities to the Gaze Interface:

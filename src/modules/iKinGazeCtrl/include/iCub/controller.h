@@ -19,18 +19,18 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
+#include <string>
+
 #include <yarp/os/Port.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
-
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <iCub/ctrl/minJerkCtrl.h>
 #include <iCub/ctrl/pids.h>
-
 #include <iCub/utils.h>
 
 #define GAZECTRL_MOTIONDONE_QTHRES      2e-1    // [deg]
@@ -97,27 +97,25 @@ public:
                const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
                const unsigned int _period);
 
-    void stopLimbsVel();
-    void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
-    void printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
-                   Vector &v, double printTime);
-
-    virtual bool   threadInit();
-    virtual void   afterStart(bool s);
-    virtual void   run();
-    virtual void   threadRelease();
-    virtual void   suspend();
-    virtual void   resume();
-    virtual double getTneck() const;
-    virtual double getTeyes() const;
-    virtual void   setTneck(const double execTime);
-    virtual void   setTeyes(const double execTime);
-    virtual bool   isMotionDone() const;
-    virtual void   setTrackingMode(const bool f);
-    virtual bool   getTrackingMode() const;
-    virtual bool   getDesired(Vector &des) const;
-    virtual bool   getVelocity(Vector &vel) const;
-    virtual bool   getPose(const string &poseSel, Vector &x);
+    void   stopLimbsVel();
+    void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
+    void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
+    bool   threadInit();
+    void   afterStart(bool s);
+    void   run();
+    void   threadRelease();
+    void   suspend();
+    void   resume();
+    double getTneck() const;
+    double getTeyes() const;
+    void   setTneck(const double execTime);
+    void   setTeyes(const double execTime);
+    bool   isMotionDone() const;
+    void   setTrackingMode(const bool f);
+    bool   getTrackingMode() const;
+    bool   getDesired(Vector &des) const;
+    bool   getVelocity(Vector &vel) const;
+    bool   getPose(const string &poseSel, Vector &x);
 };
 
 

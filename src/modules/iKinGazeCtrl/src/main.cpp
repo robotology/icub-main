@@ -108,7 +108,7 @@ Factors</a>.
   connect to; if not specified, \e torso is assumed.
  
 --Tneck \e time
-- specify the neck trajectory execution time in point-to-point 
+- Specify the neck trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.75
   seconds. (Tneck cannot be set equal or lower than Teyes).
  
@@ -133,11 +133,17 @@ Factors</a>.
 - Resource finder default configuration file; if not specified, 
   \e config.ini is assumed.
  
---noVOR
-- Disable the vestibulo-ocular reflex in favour of the OCR while
-  computing the counter-rotation of the eyes due to neck
-  rotation. Turn off the VOR when the inertial measurements are
-  particularly noisy.
+--vor \e Kvor
+- Specify the gain of the vestibulo-ocular reflex (VOR) used to 
+  compute the final counter-rotation of the eyes due to neck
+  rotation. To turn off the VOR just let \e Kvor be equal to
+  0.0. By default \e Kvor is 1.0.
+ 
+--ocr \e Kocr
+- Specify the gain of the oculo-collic reflex (OCR) used to 
+  compute the counter-rotation of the eyes due to neck rotation.
+  To turn off the OCR just let \e Kocr be equal to 0.0 (as per
+  default).
  
 --simulation
 - Simulate the presence of the robot. 
@@ -271,6 +277,8 @@ following ports:
     - [clear] [yaw]: restore the neck yaw range.
     - [get] [Tneck]: returns the neck movements execution time.
     - [get] [Teyes]: returns the eyes movements execution time.
+    - [get] [vor]: returns the Kvor gain.
+    - [get] [ocr]: returns the Kocr gain.
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
@@ -322,6 +330,8 @@ following ports:
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
       for eyes movements.
+    - [set] [vor] <val>: sets a new Kvor gain for VOR.
+    - [set] [ocr] <val>: sets a new Kocr gain for OCR.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
@@ -447,6 +457,7 @@ protected:
         double neckRollMax;
         double neckYawMin;
         double neckYawMax;
+        Vector counterRotGain;
 
         // localizer part
         Bottle pidOptions;
@@ -507,6 +518,7 @@ protected:
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
         slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
         slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
+        context.counterRotGain=eyesRefGen->getCounterRotGain();
 
         // localizer part
         loc->getPidOptions(context.pidOptions);
@@ -518,7 +530,6 @@ protected:
     bool restoreContext(const int id)
     {
         map<int,Context>::iterator itr=contextMap.find(id);
-
         if (itr!=contextMap.end())
         {
             Context &context=itr->second;
@@ -532,6 +543,7 @@ protected:
             slv->bindNeckPitch(context.neckPitchMin,context.neckPitchMax);
             slv->bindNeckRoll(context.neckRollMin,context.neckRollMax);
             slv->bindNeckYaw(context.neckYawMin,context.neckYawMax);
+            eyesRefGen->setCounterRotGain(context.counterRotGain);
 
             // localizer part
             loc->setPidOptions(context.pidOptions);
@@ -574,11 +586,11 @@ public:
         double eyesTime;
         double eyeTiltMin;
         double eyeTiltMax;
-        double minAbsVel;
-        bool   VOR;
+        double minAbsVel;        
         bool   Robotable;
         bool   headV2;
         double ping_robot_tmo;
+        Vector counterRotGain(2);
 
         Time::turboBoost();
 
@@ -593,8 +605,9 @@ public:
         eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
-        headV2=rf.check("headV2");
-        VOR=!rf.check("noVOR");
+        counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
+        counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
+        headV2=rf.check("headV2");        
         Robotable=!rf.check("simulation");
 
         // minAbsVel is given in absolute form
@@ -616,9 +629,6 @@ public:
 
         if (headV2)
             fprintf(stdout,"Controller configured for head 2.0\n");
-
-        if (!VOR)
-            fprintf(stdout,"VOR disabled\n");
 
         if (!Robotable)
             fprintf(stdout,"Controller running in simulation mode\n");
@@ -683,7 +693,7 @@ public:
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
                                      localHeadName,camerasFile,eyeTiltMin,
-                                     eyeTiltMax,VOR,headV2,20);
+                                     eyeTiltMax,counterRotGain,headV2,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
                        localHeadName,camerasFile,eyeTiltMin,eyeTiltMax,headV2,20);
@@ -861,6 +871,20 @@ public:
                         {
                             reply.addVocab(ack);
                             reply.addDouble(ctrl->getTeyes());
+                            return true;
+                        }
+                        else if (type==VOCAB3('v','o','r'))
+                        {
+                            Vector gain=eyesRefGen->getCounterRotGain();
+                            reply.addVocab(ack);
+                            reply.addDouble(gain[0]);
+                            return true;
+                        }
+                        else if (type==VOCAB3('o','c','r'))
+                        {
+                            Vector gain=eyesRefGen->getCounterRotGain();
+                            reply.addVocab(ack);
+                            reply.addDouble(gain[1]);
                             return true;
                         }
                         else if (type==VOCAB4('d','o','n','e'))
@@ -1126,6 +1150,22 @@ public:
                         {
                             double execTime=command.get(2).asDouble();
                             ctrl->setTeyes(execTime);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (type==VOCAB3('v','o','r'))
+                        {
+                            Vector gain=eyesRefGen->getCounterRotGain();
+                            gain[0]=command.get(2).asDouble();
+                            eyesRefGen->setCounterRotGain(gain);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (type==VOCAB3('o','c','r'))
+                        {
+                            Vector gain=eyesRefGen->getCounterRotGain();
+                            gain[1]=command.get(2).asDouble();
+                            eyesRefGen->setCounterRotGain(gain);
                             reply.addVocab(ack);
                             return true;
                         }

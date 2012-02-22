@@ -19,6 +19,8 @@
 #ifndef __GAZENLP_H__
 #define __GAZENLP_H__
 
+#include <string>
+
 #include <yarp/sig/Vector.h>
 
 #include <iCub/iKin/iKinInv.h>
@@ -46,7 +48,7 @@ bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp);
 class iCubHeadCenter : public iCubEye
 {
 protected:
-    virtual void allocate(const string &_type);
+    void allocate(const string &_type);
 
 public:
     iCubHeadCenter()                           { allocate("right"); }
@@ -78,7 +80,7 @@ protected:
     double fPitch;
     double dfPitch;
 
-    virtual void computeQuantities(const Ipopt::Number *x);
+    void computeQuantities(const Ipopt::Number *x);
 
 public:
     HeadCenter_NLP(iKinChain &c, const Vector &_q0, Vector &_xd,
@@ -88,16 +90,15 @@ public:
                             0.0,dummyVector,dummyVector,
                             _LIC,_exhalt) { qRest.resize(dim,0.0); }
 
-    virtual bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
-                              Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style);
-    virtual bool get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
-                                 Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u);
-    virtual bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number& obj_value);
-    virtual bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number* grad_f);
-    virtual bool eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Index m, Ipopt::Number* g);
-    virtual bool eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,Ipopt::Index m, Ipopt::Index nele_jac,
+    bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
+                      Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style);
+    bool get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
+                         Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u);
+    bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number& obj_value);
+    bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number* grad_f);
+    bool eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Index m, Ipopt::Number* g);
+    bool eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,Ipopt::Index m, Ipopt::Index nele_jac,
                             Ipopt::Index* iRow, Ipopt::Index *jCol, Ipopt::Number* values);
-
     void setGravityDirection(const Vector &gDir);
 };
 
@@ -115,11 +116,11 @@ public:
                  const unsigned int verbose=0) :
                  iKinIpOptMin(_chain,IKINCTRL_POSE_XYZ,tol,max_iter,verbose,false) { }
 
-    void set_ctrlPose(const unsigned int _ctrlPose) { }
-    void setHessianOpt(const bool useHessian) { }   // Hessian not implemented
-    virtual Vector solve(const Vector &q0, Vector &xd, const Vector &gDir,
-                         Ipopt::ApplicationReturnStatus *exit_code=NULL, bool *exhalt=NULL,
-                         iKinIterateCallback *iterate=NULL);
+    void   set_ctrlPose(const unsigned int _ctrlPose) { }
+    void   setHessianOpt(const bool useHessian)       { }   // Hessian not implemented
+    Vector solve(const Vector &q0, Vector &xd, const Vector &gDir,
+                 Ipopt::ApplicationReturnStatus *exit_code=NULL, bool *exhalt=NULL,
+                 iKinIterateCallback *iterate=NULL);
 };
 
 

@@ -19,17 +19,16 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <string>
+
 #include <yarp/os/Thread.h>
 #include <yarp/os/Event.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
-
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
-
-#include <string>
 
 #include <iCub/gazeNlp.h>
 
@@ -68,8 +67,8 @@ protected:
     bool      isNewDelayed;
     bool      closing;
 
-    virtual void onRead(Bottle &b);
-    virtual void run();
+    void onRead(Bottle &b);
+    void run();
 
 public:
     xdPort(const Vector &xd0, void *_slv);

@@ -19,17 +19,17 @@
 #ifndef __SOLVER_H__
 #define __SOLVER_H__
 
+#include <string>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
-
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <iCub/ctrl/pids.h>
-
 #include <iCub/gazeNlp.h>
 #include <iCub/utils.h>
 #include <iCub/localizer.h>
@@ -69,7 +69,7 @@ protected:
     xdPort               *port_xd;
     Integrator           *I;
 
-    BufferedPort<Vector> *port_inertial;
+    BufferedPort<Vector> port_inertial;
 
     unsigned int period;
     string robotName;
@@ -78,7 +78,6 @@ protected:
     bool Robotable;
     bool headV2;
     bool genOn;
-    bool VOR;
     int nJointsTorso;
     int nJointsHead;
     double eyeTiltMin;
@@ -90,6 +89,7 @@ protected:
     Vector qd,fp;
     Matrix eyesJ;
     Vector gyro;
+    Vector counterRotGain;
 
     Vector getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp);
 
@@ -98,21 +98,22 @@ public:
                   exchangeData *_commData, const string &_robotName,
                   const string &_localName, const string &_camerasFile,
                   const double _eyeTiltMin, const double _eyeTiltMax,
-                  const bool _VOR, const bool _headV2,
+                  const Vector &_counterRotGain, const bool _headV2,
                   const unsigned int _period);
 
-    void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
-    void enable()                     { genOn=true;       }
-    void disable()                    { genOn=false;      }
-    bool getGyro(Vector &data);
-
-    virtual bool threadInit();
-    virtual void afterStart(bool s);
-    virtual void run();
-    virtual void threadRelease();
-    virtual void suspend();
-    virtual void resume();
-    virtual void stopControl();
+    void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd;      }
+    void   enable()                     { genOn=true;            }
+    void   disable()                    { genOn=false;           }    
+    Vector getCounterRotGain() const    { return counterRotGain; }
+    void   setCounterRotGain(const Vector &gain);
+    bool   getGyro(Vector &data);
+    bool   threadInit();
+    void   afterStart(bool s);
+    void   run();
+    void   threadRelease();
+    void   suspend();
+    void   resume();
+    void   stopControl();
 };
 
 
@@ -173,23 +174,21 @@ public:
 
     // Returns a measure of neck angle required to reach the target
     Vector neckTargetRotAngles(const Vector &xd);    
-
-    void bindNeckPitch(const double min_deg, const double max_deg);
-    void bindNeckRoll(const double min_deg, const double max_deg);
-    void bindNeckYaw(const double min_deg, const double max_deg);
-    void getCurNeckPitchRange(double &min_deg, double &max_deg) const;
-    void getCurNeckRollRange(double &min_deg, double &max_deg) const;
-    void getCurNeckYawRange(double &min_deg, double &max_deg) const;
-    void clearNeckPitch();
-    void clearNeckRoll();
-    void clearNeckYaw();
-
-    virtual bool threadInit();
-    virtual void afterStart(bool s);
-    virtual void run();
-    virtual void threadRelease();
-    virtual void suspend();
-    virtual void resume();
+    void   bindNeckPitch(const double min_deg, const double max_deg);
+    void   bindNeckRoll(const double min_deg, const double max_deg);
+    void   bindNeckYaw(const double min_deg, const double max_deg);
+    void   getCurNeckPitchRange(double &min_deg, double &max_deg) const;
+    void   getCurNeckRollRange(double &min_deg, double &max_deg) const;
+    void   getCurNeckYawRange(double &min_deg, double &max_deg) const;
+    void   clearNeckPitch();
+    void   clearNeckRoll();
+    void   clearNeckYaw();    
+    bool   threadInit();
+    void   afterStart(bool s);
+    void   run();
+    void   threadRelease();
+    void   suspend();
+    void   resume();
 };
 
 

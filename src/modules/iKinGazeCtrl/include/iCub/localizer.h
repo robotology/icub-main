@@ -19,17 +19,16 @@
 #ifndef __LOCALIZER_H__
 #define __LOCALIZER_H__
 
+#include <string>
+
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
 
 #include <iCub/ctrl/pids.h>
-
 #include <iCub/gazeNlp.h>
 #include <iCub/utils.h>
-
-#include <string>
 
 using namespace std;
 using namespace yarp::os;
@@ -94,11 +93,10 @@ public:
     bool   triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x);
     Vector getAbsAngles(const Vector &x);
     Vector get3DPoint(const string &type, const Vector &ang);
-
-    virtual bool threadInit();
-    virtual void afterStart(bool s);
-    virtual void run();
-    virtual void threadRelease();
+    bool   threadInit();
+    void   afterStart(bool s);
+    void   run();
+    void   threadRelease();
 };
 
 
