@@ -148,7 +148,6 @@ bool ClientGazeController::setTrackingMode(const bool f)
         return false;
 
     Bottle command, reply;
-
     command.addString("set");
     command.addString("track");
     command.addInt((int)f);
@@ -170,7 +169,6 @@ bool ClientGazeController::getTrackingMode(bool *f)
         return false;
 
     Bottle command, reply;
-
     command.addString("get");
     command.addString("track");
 
@@ -197,7 +195,6 @@ bool ClientGazeController::getFixationPoint(Vector &fp)
         return false;
 
     double now=Time::now();
-
     if (Vector *v=portStateFp.read(false))
     {
         fixationPoint=*v;
@@ -217,7 +214,6 @@ bool ClientGazeController::getAngles(Vector &ang)
         return false;
 
     double now=Time::now();
-
     if (Vector *v=portStateAng.read(false))
     {
         angles=*v;
@@ -342,7 +338,6 @@ bool ClientGazeController::getNeckTrajTime(double *t)
         return false;
 
     Bottle command, reply;
-
     command.addString("get");
     command.addString("Tneck");
 
@@ -369,7 +364,6 @@ bool ClientGazeController::getEyesTrajTime(double *t)
         return false;
 
     Bottle command, reply;
-
     command.addString("get");
     command.addString("Teyes");
 
@@ -390,14 +384,64 @@ bool ClientGazeController::getEyesTrajTime(double *t)
 
 
 /************************************************************************/
+bool ClientGazeController::getVORGain(double *gain)
+{
+    if (!connected || (gain==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("vor");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        *gain=reply.get(1).asDouble();
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getOCRGain(double *gain)
+{
+    if (!connected || (gain==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("ocr");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        *gain=reply.get(1).asDouble();
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
 {
     if (!connected)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("pose");
     command.addString(poseSel.c_str());
@@ -461,8 +505,6 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x, Vector 
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("2D");
     Bottle &bOpt=command.addList();
@@ -502,8 +544,6 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("3D");
     command.addString("mono");
@@ -544,8 +584,6 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("3D");
     command.addString("proj");
@@ -589,8 +627,6 @@ bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &an
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("3D");
     command.addString("ang");
@@ -630,8 +666,6 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("ang");
     Bottle &bOpt=command.addList();
@@ -670,8 +704,6 @@ bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &p
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("3D");
     command.addString("stereo");
@@ -711,8 +743,6 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("des");
 
@@ -746,8 +776,6 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("vel");
 
@@ -781,8 +809,6 @@ bool ClientGazeController::getStereoOptions(Bottle &options)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("get");
     command.addString("pid");
 
@@ -813,7 +839,6 @@ bool ClientGazeController::setNeckTrajTime(const double t)
         return false;
 
     Bottle command, reply;
-
     command.addString("set");
     command.addString("Tneck");
     command.addDouble(t);
@@ -835,10 +860,51 @@ bool ClientGazeController::setEyesTrajTime(const double t)
         return false;
 
     Bottle command, reply;
-
     command.addString("set");
     command.addString("Teyes");
     command.addDouble(t);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+    
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::setVORGain(const double gain)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("set");
+    command.addString("vor");
+    command.addDouble(gain);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+    
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::setOCRGain(const double gain)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("set");
+    command.addString("ocr");
+    command.addDouble(gain);
 
     if (!portRpc.write(command,reply))
     {
@@ -857,7 +923,6 @@ bool ClientGazeController::setStereoOptions(const Bottle &options)
         return false;
 
     Bottle command, reply;
-
     command.addString("set");
     command.addString("pid");
     command.addList()=options;
@@ -879,7 +944,6 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const double min,
         return false;
 
     Bottle command, reply;
-
     command.addString("bind");
     command.addString(joint.c_str());
     command.addDouble(min);
@@ -901,10 +965,9 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const int j)
     if (!connected)
         return false;
 
-    Bottle command, reply;
-
     Vector *val=portStateHead.read(true);
 
+    Bottle command, reply;
     command.addString("bind");
     command.addString(joint.c_str());
     command.addDouble((*val)[j]);
@@ -927,7 +990,6 @@ bool ClientGazeController::getNeckJointRange(const string &joint, double *min, d
         return false;
 
     Bottle command, reply;
-
     command.addString("get");
     command.addString(joint.c_str());
 
@@ -955,7 +1017,6 @@ bool ClientGazeController::clearNeckJoint(const string &joint)
         return false;
 
     Bottle command, reply;
-
     command.addString("clear");
     command.addString(joint.c_str());
 
@@ -1081,7 +1142,6 @@ bool ClientGazeController::checkMotionDone(bool *f)
         return false;
 
     Bottle command, reply;
-
     command.addString("get");
     command.addString("done");
 
@@ -1126,7 +1186,6 @@ bool ClientGazeController::stopControl()
         return false;
 
     Bottle command, reply;
-
     command.addString("stop");
 
     if (!portRpc.write(command,reply))
@@ -1146,7 +1205,6 @@ bool ClientGazeController::storeContext(int *id)
         return false;
 
     Bottle command, reply;
-
     command.addString("stor");
 
     if (!portRpc.write(command,reply))
@@ -1172,7 +1230,6 @@ bool ClientGazeController::restoreContext(const int id)
         return false;
 
     Bottle command, reply;
-
     command.addString("rest");
     command.addInt(id);
 
@@ -1193,8 +1250,6 @@ bool ClientGazeController::deleteContexts()
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addString("del");
     Bottle &ids=command.addList();
     for (set<int>::iterator itr=contextIdList.begin(); itr!=contextIdList.end(); itr++)

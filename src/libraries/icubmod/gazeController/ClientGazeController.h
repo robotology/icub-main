@@ -103,6 +103,8 @@ public:
     bool lookAtStereoPixels(const yarp::sig::Vector &pxl, const yarp::sig::Vector &pxr);
     bool getNeckTrajTime(double *t);
     bool getEyesTrajTime(double *t);
+    bool getVORGain(double *gain);
+    bool getOCRGain(double *gain);
     bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
@@ -117,6 +119,8 @@ public:
     bool getStereoOptions(yarp::os::Bottle &options);
     bool setNeckTrajTime(const double t);
     bool setEyesTrajTime(const double t);
+    bool setVORGain(const double gain);
+    bool setOCRGain(const double gain);
     bool setStereoOptions(const yarp::os::Bottle &options);
     bool bindNeckPitch(const double min, const double max);
     bool blockNeckPitch(const double val);
