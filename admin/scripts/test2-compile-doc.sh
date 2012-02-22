@@ -10,6 +10,8 @@ then
 else
     base=$PWD
     cd $ICUB_ROOT/$1
+    # cleanup old content
+    rm doc -rf
     doxygen ./conf/Doxyfile.txt
     cd $base
 fi

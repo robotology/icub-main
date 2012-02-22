@@ -13,7 +13,7 @@ else
     mod=$1
     doc=$ICUB_ROOT/$mod/doc
 
-    cd $doc && rsync --rsh="ssh -x -l $WEB_USER" --modify-window=2 -lavzP . $WEB_SERVER:$WEB_DOC_DIR/$mod/dox
+    cd $doc && rsync --rsh="ssh -x -l $WEB_USER" --modify-window=2 -lavzP --delete . $WEB_SERVER:$WEB_DOC_DIR/$mod/dox
 fi
 
 
