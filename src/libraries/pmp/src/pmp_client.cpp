@@ -1322,3 +1322,73 @@ bool PmpClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 }
 
 
+/************************************************************************/
+bool PmpClient::executeTrajectory(const deque<Vector> &trajPos, const deque<Vector> &trajOrien,
+                                  const double trajTime)
+{
+    if (isOpen)
+    {
+        printMessage(2,"request to execute user trajectory\n");
+
+        if (trajPos.size()!=trajOrien.size())
+        {
+            printMessage(1,"position and orientation data have different size!\n");
+            return false;
+        }
+        else if (trajTime<0.0)
+        {
+            printMessage(1,"negative trajectory duration provided!\n");
+            return false;
+        }
+
+        Bottle cmd,reply;
+        cmd.addVocab(PMP_VOCAB_CMD_EXECTRAJ);
+        Bottle &cmdOptions=cmd.addList();
+
+        Bottle &bTrajTime=cmdOptions.addList();
+        bTrajTime.addString("trajTime");
+        bTrajTime.addDouble(trajTime);
+
+        Bottle &bPos=cmdOptions.addList();
+        bPos.addString("trajPos");
+        for (unsigned int i=0; i<trajPos.size(); i++)
+        {
+            Bottle &point=bPos.addList();
+            for (size_t j=0; j<trajPos[i].length(); j++)
+               point.addDouble(trajPos[i][j]);
+        }
+
+        Bottle &bOrien=cmdOptions.addList();
+        bOrien.addString("trajOrien");
+        for (unsigned int i=0; i<trajOrien.size(); i++)
+        {
+            Bottle &point=bOrien.addList();
+            for (size_t j=0; j<trajOrien[i].length(); j++)
+               point.addDouble(trajOrien[i][j]);
+        }
+
+        if (rpc.write(cmd,reply))
+        {            
+            if (reply.get(0).asVocab()==PMP_VOCAB_CMD_ACK)
+            {
+                printMessage(1,"trajectory executed\n");
+                return true;
+            }
+
+            printMessage(1,"something went wrong: request rejected\n");
+            return false;
+        }
+        else
+        {
+            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        printMessage(1,"client is not open\n");
+        return false;
+    }
+}
+
+

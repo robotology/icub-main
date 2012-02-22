@@ -1512,7 +1512,7 @@ bool PmpServer::read(ConnectionReader &connection)
                      for (unsigned int i=0; i<trajPos.size(); i++)
                      {
                          Bottle &point=bPos.addList();
-                         for (size_t j=0; j<trajPos[i].size(); j++)
+                         for (size_t j=0; j<trajPos[i].length(); j++)
                             point.addDouble(trajPos[i][j]);
                      }
 
@@ -1521,12 +1521,81 @@ bool PmpServer::read(ConnectionReader &connection)
                      for (unsigned int i=0; i<trajOrien.size(); i++)
                      {
                          Bottle &point=bOrien.addList();
-                         for (size_t j=0; j<trajOrien[i].size(); j++)
+                         for (size_t j=0; j<trajOrien[i].length(); j++)
                             point.addDouble(trajOrien[i][j]);
                      }
-                }
-                else
-                    reply.addVocab(PMP_VOCAB_CMD_NACK);
+                 }
+                 else
+                     reply.addVocab(PMP_VOCAB_CMD_NACK);
+             }
+
+             break;
+         }
+
+         //-----------------
+         case PMP_VOCAB_CMD_EXECTRAJ:
+         {
+             Bottle *options=cmd.get(1).asList();
+             if (options->isNull())
+                 reply.addVocab(PMP_VOCAB_CMD_NACK);
+             else
+             {
+                 double trajTime=-1.0;
+                 deque<Vector> trajPos;
+                 deque<Vector> trajOrien;
+
+                 if (Bottle *BtrajTime=options->get(0).asList())
+                     if (BtrajTime->get(0).asString()=="trajTime")
+                         trajTime=BtrajTime->get(1).asDouble();
+
+                 bool okPos=false;
+                 if (Bottle *BtrajPos=options->get(1).asList())
+                 {
+                     if (BtrajPos->get(0).asString()=="trajPos")
+                     {
+                         for (int i=1; i<BtrajPos->size(); i++)
+                         {                            
+                             if (Bottle *point=BtrajPos->get(i).asList())
+                             {
+                                 Vector pos(point->size());
+                                 for (int j=0; j<point->size(); j++)
+                                     pos[j]=point->get(j).asDouble();
+
+                                 trajPos.push_back(pos);
+                             }
+                         }
+
+                         okPos=true;
+                     }
+                 }
+
+                 bool okOrien=false;
+                 if (Bottle *BtrajOrien=reply.get(2).asList())
+                 {
+                     if (BtrajOrien->get(0).asString()=="trajOrien")
+                     {
+                         for (int i=1; i<BtrajOrien->size(); i++)
+                         {                            
+                             if (Bottle *point=BtrajOrien->get(i).asList())
+                             {                                
+                                 Vector orien(point->size());
+                                 for (int j=0; j<point->size(); j++)
+                                     orien[j]=point->get(j).asDouble();
+
+                                 trajOrien.push_back(orien);
+                             }
+                         }
+
+                         okOrien=true;
+                     }
+                 }
+
+                 if (!okPos || !okOrien)
+                     reply.addVocab(PMP_VOCAB_CMD_NACK);
+                 else if (executeTrajectory(trajPos,trajOrien,trajTime))
+                     reply.addVocab(PMP_VOCAB_CMD_ACK);
+                 else
+                     reply.addVocab(PMP_VOCAB_CMD_NACK);
              }
 
              break;
@@ -1998,6 +2067,7 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 {
     if (isOpen)
     {
+        printMessage(1,"request for trajectory simulation\n");
         Vector xdotOffline=xdot;
         Vector xOffline=x;
 
@@ -2020,6 +2090,83 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
             trajPos.push_back(getVectorPos(xOffline));
             trajOrien.push_back(getVectorOrien(xOffline));
         }       
+
+        return true;
+    }
+    else
+    {
+        printMessage(1,"server is not open\n");
+        return false;
+    }
+}
+
+
+/************************************************************************/
+bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vector> &trajOrien,
+                                  const double trajTime)
+{
+    if (isOpen)
+    {
+        printMessage(1,"request for trajectory execution\n");
+
+        if (trajPos.size()!=trajOrien.size())
+        {
+            printMessage(1,"position and orientation data have different size!\n");
+            return false;
+        }
+        else if (trajTime<0.0)
+        {
+            printMessage(1,"negative trajectory duration provided!\n");
+            return false;
+        }
+
+        // define the tracker thread
+        class TrackerThread : public RateThread
+        {
+            ICartesianControl *ctrl;
+            const deque<Vector> *trajPos;
+            const deque<Vector> *trajOrien;
+            double trajTime;
+            double t0,t;
+            void run()
+            {
+                t=Time::now()-t0;
+                size_t i=(size_t)((t/trajTime)*(trajPos->size()-1));
+                ctrl->goToPose(trajPos->at(i),trajOrien->at(i));
+            }
+        public:
+           TrackerThread() : RateThread(20), t0(Time::now()), t(0.0) { }
+           void setInfo(ICartesianControl *ctrl, const deque<Vector> *trajPos,
+                        const deque<Vector> *trajOrien, const double trajTime)
+           {
+               this->trajPos=trajPos;
+               this->trajOrien=trajOrien;
+               this->trajTime=trajTime;
+           }
+           void wait()
+           {
+               while(t<trajTime)
+                   Time::delay(0.1);
+           }
+        } trackerThread;
+
+        trackerThread.setRate((int)getRate());
+        trackerThread.setInfo(iCtrlActive,&trajPos,&trajOrien,trajTime);
+
+        // lock the main run
+        mutex.wait();
+
+        // run the tracker
+        trackerThread.start();
+        trackerThread.wait();
+        trackerThread.stop();
+
+        // make sure we attempt to reach the last point
+        iCtrlActive->goToPoseSync(trajPos.back(),trajOrien.back());
+        iCtrlActive->waitMotionDone();
+
+        // unlock the main run
+        mutex.post();
 
         return true;
     }

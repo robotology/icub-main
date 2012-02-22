@@ -419,6 +419,19 @@ public:
                                const double Ts=PMP_DEFAULT_TS_DISABLED) = 0;
 
     /**
+    * Execute the simulated trajectory provided by the user.
+    * @param trajPos a list containing the whole trajectory of 
+    *            points (position).
+    * @param trajOrien a list containing the whole trajectory of 
+    *            points (orientation).
+    * @param trajTime the trajectory duration [s]. 
+    * @return true/false if successful/failed.
+    */
+    virtual bool executeTrajectory(const std::deque<yarp::sig::Vector> &trajPos,
+                                   const std::deque<yarp::sig::Vector> &trajOrien,
+                                   const double trajTime) = 0;
+
+    /**
      * Destructor.
      */
     virtual ~Pmp() { }

@@ -244,6 +244,9 @@ public:
                        std::deque<yarp::sig::Vector> &trajOrien,
                        const unsigned int maxIterations=PMP_DEFAULT_MAXITERATIONS,
                        const double Ts=PMP_DEFAULT_TS_DISABLED);
+    bool executeTrajectory(const std::deque<yarp::sig::Vector> &trajPos,
+                           const std::deque<yarp::sig::Vector> &trajOrien,
+                           const double trajTime);
     virtual ~PmpServer();
 };
 
