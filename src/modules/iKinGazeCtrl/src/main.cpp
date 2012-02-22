@@ -137,7 +137,9 @@ Factors</a>.
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
   in compute the final counter-rotation of the eyes due to
   neck rotation. To turn off the VOR just set the \e gain equal
-  to 0.0. By default \e gain is 1.0.
+  to 0.0. By default \e gain is 1.0, that means "full
+  contribution". Values of the gain greater than 1.0 mean
+  "contribution amplified".
  
 --ocr \e gain
 - Specify the contribution of the oculo-collic reflex (OCR) in 
