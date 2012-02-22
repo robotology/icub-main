@@ -2137,7 +2137,7 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
                 ctrl->goToPose(trajPos->at(i),trajOrien->at(i));
             }
         public:
-           TrackerThread() : RateThread(20), t0(Time::now()), t(0.0) { }
+           TrackerThread() : RateThread(20) { }
            void setInfo(ICartesianControl *ctrl, const deque<Vector> *trajPos,
                         const deque<Vector> *trajOrien, const double trajTime)
            {
@@ -2145,6 +2145,12 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
                this->trajOrien=trajOrien;
                this->trajTime=trajTime;
                N=trajPos->size()-1;
+           }
+           bool threadInit()
+           {
+               t=0.0;
+               t0=Time::now();
+               return true;
            }
            void wait()
            {
