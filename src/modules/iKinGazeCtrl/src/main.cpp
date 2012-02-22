@@ -133,17 +133,17 @@ Factors</a>.
 - Resource finder default configuration file; if not specified, 
   \e config.ini is assumed.
  
---vor \e Kvor
-- Specify the gain of the vestibulo-ocular reflex (VOR) used to 
-  compute the final counter-rotation of the eyes due to neck
-  rotation. To turn off the VOR just let \e Kvor be equal to
-  0.0. By default \e Kvor is 1.0.
+--vor \e gain
+- Specify the contribution of the vestibulo-ocular reflex (VOR)
+  in compute the final counter-rotation of the eyes due to
+  neck rotation. To turn off the VOR just set the \e gain equal
+  to 0.0. By default \e gain is 1.0.
  
---ocr \e Kocr
-- Specify the gain of the oculo-collic reflex (OCR) used to 
-  compute the counter-rotation of the eyes due to neck rotation.
-  To turn off the OCR just let \e Kocr be equal to 0.0 (as per
-  default).
+--ocr \e gain
+- Specify the contribution of the oculo-collic reflex (OCR) in 
+  computing the counter-rotation of the eyes due to neck
+  rotation. To turn off the OCR just set the \e gain equal to
+  0.0 (as per default).
  
 --simulation
 - Simulate the presence of the robot. 
@@ -277,8 +277,8 @@ following ports:
     - [clear] [yaw]: restore the neck yaw range.
     - [get] [Tneck]: returns the neck movements execution time.
     - [get] [Teyes]: returns the eyes movements execution time.
-    - [get] [vor]: returns the Kvor gain.
-    - [get] [ocr]: returns the Kocr gain.
+    - [get] [vor]: returns the vor gain.
+    - [get] [ocr]: returns the ocr gain.
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
@@ -330,8 +330,8 @@ following ports:
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
       for eyes movements.
-    - [set] [vor] <val>: sets a new Kvor gain for VOR.
-    - [set] [ocr] <val>: sets a new Kocr gain for OCR.
+    - [set] [vor] <val>: sets a new vor gain for VOR.
+    - [set] [ocr] <val>: sets a new ocr gain for OCR.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
