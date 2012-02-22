@@ -32,7 +32,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->camCalibFile=rf.getContextPath().c_str();
 
 
-    string fileName= rf.find("from").asString();
+    string fileName= rf.find("from").asString().c_str();
 
     
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
