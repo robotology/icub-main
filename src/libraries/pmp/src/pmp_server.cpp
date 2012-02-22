@@ -2129,22 +2129,26 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
             const deque<Vector> *trajOrien;
             double trajTime;
             double t0,t;
-            size_t N;
+            int pos,N;
             void run()
             {
                 t=Time::now()-t0;
-                size_t i=std::min(N,(size_t)((t*N)/trajTime));
-                ctrl->goToPose(trajPos->at(i),trajOrien->at(i));
+                int i=std::min(N,(int)((t*N)/trajTime));
+                if (i>pos)
+                {
+                    ctrl->goToPose(trajPos->at(i),trajOrien->at(i));
+                    pos=i;
+                }
             }
         public:
-           TrackerThread() : RateThread(20) { }
+           TrackerThread() : RateThread(20), pos(-1) { }
            void setInfo(ICartesianControl *ctrl, const deque<Vector> *trajPos,
                         const deque<Vector> *trajOrien, const double trajTime)
            {
                this->trajPos=trajPos;
                this->trajOrien=trajOrien;
                this->trajTime=trajTime;
-               N=trajPos->size()-1;
+               N=(int)(trajPos->size()-1);
            }
            bool threadInit()
            {
