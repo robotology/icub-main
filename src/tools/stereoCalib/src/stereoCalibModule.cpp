@@ -47,6 +47,7 @@ bool stereoCalibModule::configure(yarp::os::ResourceFinder &rf)
 
 bool stereoCalibModule::interruptModule()
 {
+    calibThread->stopCalib();
     calibThread->stop();
     return true;
 }

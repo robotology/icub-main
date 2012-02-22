@@ -28,11 +28,16 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->startCalibration=0;
     this->currentPathDir=rf.getContextPath().c_str();
     int tmp=stereoCalibOpts.check("MonoCalib", Value(0)).asInt();
-cout << tmp << endl;
     this->stereo= tmp?false:true;
     this->camCalibFile=rf.getContextPath().c_str();
 
-    this->camCalibFile=this->camCalibFile+"/icubEyes.ini";
+
+    string fileName= rf.find("from").asString();
+
+    
+    this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
+
+    this->mutex=new Semaphore(1);
 }
 
 bool stereoCalibThread::threadInit() 
@@ -113,6 +118,7 @@ void stereoCalibThread::stereoCalibRun()
             bool foundL=false;
             bool foundR=false;
 
+            mutex->wait();
             if(startCalibration>0) {
 
                 string pathImg=imageDir;
@@ -162,8 +168,8 @@ void stereoCalibThread::stereoCalibRun()
                     Mat Rot=Mat::eye(3,3,CV_64FC1);
                     Mat Tr=Mat::zeros(3,1,CV_64FC1);
 
-                    updateExtrinsics(Rot,Tr,"ALIGN_KIN_LEFT");
-                    updateExtrinsics(this->R,Tr,"ALIGN_KIN_RIGHT");
+                    //updateExtrinsics(Rot,Tr,"ALIGN_KIN_LEFT");
+                    //updateExtrinsics(this->R,Tr,"ALIGN_KIN_RIGHT");
 
                     updateExtrinsics(this->R,this->T,"STEREO_DISPARITY");
 
@@ -178,17 +184,18 @@ void stereoCalibThread::stereoCalibRun()
 
 
             }
-                ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
-                outimL=*imageL;
-                outPortLeft.write();
+            mutex->post();
+            ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
+            outimL=*imageL;
+            outPortLeft.write();
 
-                ImageOf<PixelRgb>& outimR=outPortRight.prepare();
-                outimR=*imageR;
-                outPortRight.write();
+            ImageOf<PixelRgb>& outimR=outPortRight.prepare();
+            outimR=*imageR;
+            outPortRight.write();
 
-                if(foundL && foundR && startCalibration==1)
-                    Time::delay(2.0);
-                initL=initR=false;
+            if(foundL && foundR && startCalibration==1)
+                Time::delay(2.0);
+            initL=initR=false;
         }
    }
 
@@ -239,6 +246,7 @@ void stereoCalibThread::stereoCalibRun()
 
        if(imageL!=NULL){
             bool foundL=false;
+            mutex->wait();
             if(startCalibration>0) {
 
                 string pathImg=imageDir;
@@ -277,16 +285,17 @@ void stereoCalibThread::stereoCalibRun()
 
 
             }
-                ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
-                outimL=*imageL;
-                outPortLeft.write();
+            mutex->post();
+            ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
+            outimL=*imageL;
+            outPortLeft.write();
 
-                ImageOf<PixelRgb>& outimR=outPortRight.prepare();
-                outimR=*imageL;
-                outPortRight.write();
+            ImageOf<PixelRgb>& outimR=outPortRight.prepare();
+            outimR=*imageL;
+            outPortRight.write();
 
-                if(foundL && startCalibration==1)
-                    Time::delay(2.0);
+            if(foundL && startCalibration==1)
+                Time::delay(2.0);
 
         }
    }
@@ -300,6 +309,7 @@ void stereoCalibThread::threadRelease()
     outPortLeft.close();
     outPortRight.close();
     commandPort->close();
+    delete mutex;
 }
 
 void stereoCalibThread::onStop() {
@@ -312,7 +322,15 @@ void stereoCalibThread::onStop() {
 
 }
 void stereoCalibThread::startCalib() {
+    mutex->wait();
     startCalibration=1;
+    mutex->post();
+  }
+
+void stereoCalibThread::stopCalib() {
+    mutex->wait();
+    startCalibration=0;
+    mutex->post();
   }
 
 void stereoCalibThread::printMatrix(Mat &matrix) {

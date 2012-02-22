@@ -25,6 +25,8 @@ private:
     IplImage * imgL;
     IplImage * imgR;
 
+    Semaphore* mutex;
+
     int numOfPairs;
     bool stereo;
     Mat Kleft;
@@ -78,6 +80,7 @@ public:
 
     stereoCalibThread(ResourceFinder &rf, Port* commPort, const char *imageDir);
     void startCalib();
+    void stopCalib();
     bool threadInit();
     void threadRelease();
     void run(); 
