@@ -2,7 +2,7 @@
 
 # run as ./admin/scripts/test2-upload-doc.sh
 
-. ./admin/scripts/compile-config/common.sh
+. ./admin/scripts/doc-config/common.sh
 
 EXPECTED_ARGS=1
  
