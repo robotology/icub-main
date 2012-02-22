@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <algorithm>
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
@@ -2128,10 +2129,11 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
             const deque<Vector> *trajOrien;
             double trajTime;
             double t0,t;
+            size_t N;
             void run()
             {
                 t=Time::now()-t0;
-                size_t i=(size_t)((t/trajTime)*(trajPos->size()-1));
+                size_t i=std::min(N,(size_t)((t*N)/trajTime));
                 ctrl->goToPose(trajPos->at(i),trajOrien->at(i));
             }
         public:
@@ -2142,6 +2144,7 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
                this->trajPos=trajPos;
                this->trajOrien=trajOrien;
                this->trajTime=trajTime;
+               size_t N=trajPos->size()-1;
            }
            void wait()
            {
