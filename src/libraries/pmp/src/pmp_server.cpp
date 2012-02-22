@@ -2157,6 +2157,12 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
                while(t<trajTime)
                    Time::delay(0.1);
            }
+           void threadRelease()
+           {
+               // make sure we attempt to reach the last point
+               ctrl->goToPoseSync(trajPos->back(),trajOrien->back());
+               ctrl->waitMotionDone();
+           }
         } trackerThread;
 
         trackerThread.setRate((int)getRate());
@@ -2169,10 +2175,6 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
         trackerThread.start();
         trackerThread.wait();
         trackerThread.stop();
-
-        // make sure we attempt to reach the last point
-        iCtrlActive->goToPoseSync(trajPos.back(),trajOrien.back());
-        iCtrlActive->waitMotionDone();
 
         // unlock the main run
         mutex.post();
