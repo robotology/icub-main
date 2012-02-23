@@ -17,9 +17,9 @@
  * Public License for more details
  */
 
-#include "iCub/skinDriftCompensation/SkinDriftCompensation.h" 
+#include "iCub/skinManager/skinManager.h" 
  
-using namespace iCub::skinDriftCompensation;
+using namespace iCub::skinManager;
 
 int main(int argc, char * argv[])
 {
@@ -27,7 +27,7 @@ int main(int argc, char * argv[])
    Network yarp;
 
    /* create your module */
-   SkinDriftCompensation module; 
+   skinManager module; 
 
    /* prepare and configure the resource finder */
    ResourceFinder rf;

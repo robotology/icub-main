@@ -36,10 +36,12 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Semaphore.h>
 
+#include <iCub/skinDynLib/rpcSkinManager.h>
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace iCub::skinManager;
 
 // main window
 GtkWindow               *window;
@@ -140,7 +142,8 @@ static void setStatusBarFreq(bool freqUpdated, double freq){
 	gtk_statusbar_push(statusBarFreq, contextId, text.str().c_str());
 }
 
-static Bottle sendRpcCommand(bool responseExpected, int commandWordCount, const char* command, ...){
+//static Bottle sendRpcCommand(bool responseExpected, int commandWordCount, const char* command, ...){
+static Bottle sendRpcCommand(bool responseExpected, SkinManagerCommand cmd){
 	Bottle resp;
 	// check whether the port is connected
 	if(guiRpcPort.getOutputCount()==0){
@@ -151,15 +154,16 @@ static Bottle sendRpcCommand(bool responseExpected, int commandWordCount, const 
 
 	// create the bottle
 	Bottle b;
-	b.addString(command);
-
-	va_list ap;
-	va_start(ap, command);		// Requires the last fixed parameter (to get the address)		
-	for(int i=1;i<commandWordCount;i++){
-		const char* c = va_arg(ap, const char*); // Requires the type to cast to. Increments ap to the next argument.
-		b.addString(c);
-	}
-    va_end(ap);
+    b.addInt(cmd);
+ //   string cmdStr = SkinManagerCommandList[cmd];
+	//b.addString(command);
+	//va_list ap;
+	//va_start(ap, command);		// Requires the last fixed parameter (to get the address)		
+	//for(int i=1;i<commandWordCount;i++){
+	//	const char* c = va_arg(ap, const char*); // Requires the type to cast to. Increments ap to the next argument.
+	//	b.addString(c);
+	//}
+ //   va_end(ap);
 	
 	
 	//g_print("Going to send rpc msg: %s\n", b.toString().c_str());

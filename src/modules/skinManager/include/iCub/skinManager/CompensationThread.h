@@ -33,8 +33,7 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include <yarp/os/Network.h>	//temporary
-#include "iCub/skinDriftCompensation/Compensator.h"
+#include "iCub/skinManager/Compensator.h"
 #include "iCub/skinDynLib/skinContactList.h"
 
 using namespace std;
@@ -45,7 +44,7 @@ using namespace iCub::skinDynLib;
 
 namespace iCub{
 
-namespace skinDriftCompensation{
+namespace skinManager{
 
 class CompensationThread : public RateThread
 {
@@ -60,13 +59,20 @@ public:
 	void threadRelease();
 	void run(); 
 	
-	void forceCalibration();
+	void calibrate();
 	void setBinarization(bool value);
 	void setSmoothFilter(bool value);
 	bool setSmoothFactor(float value);
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
+    bool setTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector position);
+    bool setTaxelPositions(BodyPart bp, SkinPart sp, vector<Vector> positions);
+    bool setTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector orientation);
+    bool setTaxelOrientations(BodyPart bp, SkinPart sp, vector<Vector> orientations);
+    bool setTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector pose);
+    bool setTaxelPoses(BodyPart bp, SkinPart sp, vector<Vector> poses);
+    bool setTaxelPoses(BodyPart bp, SkinPart sp, Vector poses);
 
 	Vector getTouchThreshold();
 	bool getBinarization();
@@ -76,6 +82,18 @@ public:
     double getCompensationGain();
     double getContactCompensationGain();
 	bool isCalibrating();
+    Vector getTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId);
+    vector<Vector> getTaxelPositions(BodyPart bp, SkinPart sp);
+    vector<Vector> getTaxelPositions(BodyPart bp);
+    vector<Vector> getTaxelPositions();
+    Vector getTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId);
+    vector<Vector> getTaxelOrientations(BodyPart bp, SkinPart sp);
+    vector<Vector> getTaxelOrientations(BodyPart bp);
+    vector<Vector> getTaxelOrientations();
+    Vector getTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId);
+    vector<Vector> getTaxelPoses(BodyPart bp, SkinPart sp);
+    vector<Vector> getTaxelPoses(BodyPart bp);
+    vector<Vector> getTaxelPoses();
     Bottle getInfo();
 
 
@@ -135,7 +153,7 @@ private:
 
 } //namespace iCub
 
-} //namespace skinDriftCompensation
+} //namespace skinManager
 
 #endif
 

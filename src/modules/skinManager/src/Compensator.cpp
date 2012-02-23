@@ -19,14 +19,14 @@
 #include <yarp/math/Math.h>
 #include "math.h"
 #include <algorithm>
-#include "iCub/skinDriftCompensation/Compensator.h"
+#include "iCub/skinManager/Compensator.h"
 
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iCub::skinDriftCompensation;
+using namespace iCub::skinManager;
 using namespace iCub::skinDynLib;
 
 Compensator::Compensator(string _name, string _robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort, 
@@ -213,7 +213,7 @@ void Compensator::calibrationFinish(){
     }
 
     // print to console
-    if(_isWorking){
+    /*if(_isWorking){
 	    printf("\n[%s (%s)] Baselines:\n", name.c_str(), getSkinPartName().c_str());
 	    for (unsigned int i=0; i<skinDim; i++) {
 		    if(!(i%12)) fprintf(stderr, "\n");
@@ -226,7 +226,8 @@ void Compensator::calibrationFinish(){
 		    fprintf(stderr,"%3.1f ", touchThresholds[i]);		
 	    }
 	    printf("\n");
-    }
+    }*/
+    sendInfoMsg("Calibration finished");
 
     // release the semaphore so that as of now the touchThreshold can be read
 	touchThresholdSem.post();
@@ -375,8 +376,10 @@ void Compensator::updateBaseline(){
             mean_change     += change;
 
             if(baselines[j]<0){
-                printf("port %s; tax %d; baseline %.2f; gain: %.4f; d: %.2f; raw: %.2f; change: %f; touchThr: %.2f\n", SkinPart_s[skinPart].c_str(), j, baselines[j], 
-                    gain, d, rawData[j], change, touchThresholds[j]);
+                char* temp = new char[300];
+                sprintf(temp, "ERROR-Negative baseline. Port %s; tax %d; baseline %.2f; gain: %.4f; d: %.2f; raw: %.2f; change: %f; touchThr: %.2f", 
+                    SkinPart_s[skinPart].c_str(), j, baselines[j], gain, d, rawData[j], change, touchThresholds[j]);
+                sendInfoMsg(temp);
             }
 		}        
     }
@@ -388,7 +391,9 @@ void Compensator::updateBaseline(){
             if (touchDetected[j]) {
                 baselines[j]		+= mean_change;
                 if(baselines[j]<0){
-                    printf("2)tax %d; baseline %.2f; meanchange: %f; \n", j, baselines[j], mean_change);
+                    char* temp = new char[300];
+                    sprintf(temp, "ERROR-Negative baseline. Taxel %d; baseline %.2f; meanchange: %f", j, baselines[j], mean_change);
+                    sendInfoMsg(temp);
                 }
             }
         }
@@ -571,7 +576,7 @@ Vector Compensator::getTouchThreshold(){
 }
 
 string Compensator::getBodyPartName(){ return BodyPart_s[bodyPart];}
-
+BodyPart Compensator::getBodyPart(){ return bodyPart; }
 string Compensator::getSkinPartName(){ return SkinPart_s[skinPart];}
 SkinPart Compensator::getSkinPart(){ return skinPart;}
 
@@ -607,6 +612,51 @@ double Compensator::getCompensationGain(){
 double Compensator::getContactCompensationGain(){
     return contactCompensationGain;
 }
+Vector Compensator::getTaxelPosition(unsigned int taxelId){
+    if(taxelId>=skinDim)
+        return zeros(3);
+    poseSem.wait();
+    Vector res = taxelPos[taxelId];
+    poseSem.post();
+    return res;
+}
+vector<Vector> Compensator::getTaxelPositions(){
+    poseSem.wait();
+    vector<Vector> res = taxelPos;
+    poseSem.post();
+    return res;
+}
+Vector Compensator::getTaxelOrientation(unsigned int taxelId){
+    if(taxelId>=skinDim)
+        return zeros(3);
+    poseSem.wait();
+    Vector res = taxelOri[taxelId];
+    poseSem.post();
+    return res;
+}
+vector<Vector> Compensator::getTaxelOrientations(){
+    poseSem.wait();
+    vector<Vector> res = taxelOri;
+    poseSem.post();
+    return res;
+}
+Vector Compensator::getTaxelPose(unsigned int taxelId){
+    if(taxelId>=skinDim)
+        return zeros(6);
+    poseSem.wait();
+    Vector res = cat(taxelPos[taxelId], taxelOri[taxelId]);
+    poseSem.post();
+    return res;
+}
+vector<Vector> Compensator::getTaxelPoses(){
+    vector<Vector> res(skinDim);
+    poseSem.wait();
+    for(unsigned int i=0; i<skinDim; i++){
+        res[i] = cat(taxelPos[i], taxelOri[i]);
+    }
+    poseSem.post();
+    return res;
+}
 string Compensator::getName(){
     return name;
 }
@@ -619,9 +669,9 @@ bool Compensator::isWorking(){
     return _isWorking;
 }
 
-bool Compensator::setTaxelPositions(const char *filePath, double maxNeighborDist){
+bool Compensator::setTaxelPosesFromFile(const char *filePath, double maxNeighborDist){
 	ifstream posFile;
-	posFile.open(filePath);		
+	posFile.open(filePath);	
 	if (!posFile.is_open())
         return false;
 
@@ -634,26 +684,91 @@ bool Compensator::setTaxelPositions(const char *filePath, double maxNeighborDist
 	posFile.clear(); 
 	posFile.seekg(0, std::ios::beg);//rewind iterator
     if(totalLines!=skinDim){
-        fprintf(stderr, "Error while reading taxel position file %s: num of lines %d is not equal to num of taxels %d.\n", 
+        char* temp = new char[200];
+        sprintf(temp, "Error while reading taxel position file %s: num of lines %d is not equal to num of taxels %d.\n", 
             filePath, totalLines, skinDim);
+        sendInfoMsg(temp);
     }
-
-	for(int i= 0; getline(posFile,posLine); i++) {
-		posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
-		if(posLine.empty())
-			continue;
-		string number;
-		istringstream iss(posLine, istringstream::in);
-		for(int j = 0; iss >> number; j++ ){
-            if(j<3)
-			    taxelPos[i][j] = strtod(number.c_str(),NULL);
-            else
-                taxelOri[i][j-3] = strtod(number.c_str(),NULL);
-		}
-	}
-    computeNeighbors(maxNeighborDist);
+    poseSem.wait();
+    {
+	    for(int i= 0; getline(posFile,posLine); i++) {
+		    posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
+		    if(posLine.empty())
+			    continue;
+		    string number;
+		    istringstream iss(posLine, istringstream::in);
+		    for(int j = 0; iss >> number; j++ ){
+                if(j<3)
+			        taxelPos[i][j] = strtod(number.c_str(),NULL);
+                else
+                    taxelOri[i][j-3] = strtod(number.c_str(),NULL);
+		    }
+	    }
+        computeNeighbors(maxNeighborDist);
+    }
+    poseSem.post();
 
 	return true;
+}
+bool Compensator::setTaxelPoses(vector<Vector> poses){
+    if(poses.size()!=skinDim)
+        return false;
+    poseSem.wait();
+    {
+        for(unsigned int i=0; i<skinDim; i++){
+            taxelPos[i] = poses[i].subVector(0,2);
+            taxelOri[i] = poses[i].subVector(3,5);
+        }
+    }
+    computeNeighbors();
+    poseSem.post();
+    return true;
+}
+bool Compensator::setTaxelPose(unsigned int taxelId, Vector pose){
+    if(taxelId>=skinDim || pose.size()!=6)
+        return false;
+    poseSem.wait();
+    {
+        taxelPos[taxelId] = pose.subVector(0,2);
+        taxelOri[taxelId] = pose.subVector(3,5);
+    }
+    computeNeighbors();
+    poseSem.post();
+    return true;
+}
+bool Compensator::setTaxelPositions(vector<Vector> positions){
+    if(positions.size()!=skinDim)
+        return false;
+    poseSem.wait();
+    taxelPos = positions;
+    computeNeighbors();
+    poseSem.post();
+    return true;
+}
+bool Compensator::setTaxelPosition(unsigned int taxelId, Vector position){
+     if(taxelId>=skinDim || position.size()!=3)
+        return false;
+    poseSem.wait();
+    taxelPos[taxelId] = position;
+    computeNeighbors();
+    poseSem.post();
+    return true;
+}
+bool Compensator::setTaxelOrientations(vector<Vector> orientations){
+    if(orientations.size()!=skinDim)
+        return false;
+    poseSem.wait();
+    taxelOri = orientations;
+    poseSem.post();
+    return true;
+}
+bool Compensator::setTaxelOrientation(unsigned int taxelId, Vector orientation){
+     if(taxelId>=skinDim || orientation.size()!=3)
+        return false;
+    poseSem.wait();
+    taxelOri[taxelId] = orientation;
+    poseSem.post();
+    return true;
 }
 void Compensator::computeNeighbors(double maxDist){
     neighborsXtaxel.clear();
@@ -685,8 +800,7 @@ void Compensator::computeNeighbors(double maxDist){
     printf("[%s] min neighbors: %d; max neighbors: %d\n", getSkinPartName().c_str(), minNeighbors, maxNeighbors);
 }
 void Compensator::sendInfoMsg(string msg){
-    printf("\n");
-    printf("[%s]: %s", getInputPortName().c_str(), msg.c_str());
+    printf("[%s]: %s\n", getInputPortName().c_str(), msg.c_str());
     Bottle& b = infoPort->prepare();
     b.clear();
     b.addString(getInputPortName().c_str());

@@ -15,7 +15,8 @@ set(folder_header       include/iCub/skinDynLib/skinContact.h
                         include/iCub/skinDynLib/skinContactList.h
                         include/iCub/skinDynLib/dynContact.h
                         include/iCub/skinDynLib/dynContactList.h
-                        include/iCub/skinDynLib/common.h )
+                        include/iCub/skinDynLib/common.h
+			include/iCub/skinDynLib/rpcSkinManager.h )
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})

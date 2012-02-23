@@ -2,13 +2,13 @@
 # Authors: Andrea del Prete, Alexander Schmitz
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-set(PROJECTNAME skinDriftCompensation)
+set(PROJECTNAME skinManager)
 PROJECT(${PROJECTNAME})
 
 
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp)
-FILE(GLOB folder_header include/iCub/skinDriftCompensation/*.h)
+FILE(GLOB folder_header include/iCub/skinManager/*.h)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 

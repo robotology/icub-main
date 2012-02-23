@@ -15,7 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
-#include "iCub/skinDriftCompensationGui/main.h"
+#include "iCub/skinManagerGui/main.h"
+#include "iCub/skinDynLib/rpcSkinManager.h"
 #include <stdlib.h> //atoi
 
 
@@ -41,11 +42,11 @@ static void spin_threshold_value_changed(GtkSpinButton *spinbutton, gpointer use
     
     // set the threshold
     Bottle b, setReply;
-    b.addString("set"); b.addString("threshold"); b.addInt(safetyThr);
+    b.addInt(set_threshold); b.addInt(safetyThr);
     guiRpcPort.write(b, setReply);
 
     // read the threshold
-	Bottle getReply = sendRpcCommand(true, 2, "get", "threshold");
+	Bottle getReply = sendRpcCommand(true, get_threshold);
 	currentThreshold = getReply.get(0).asInt();
 
 	if(safetyThr==currentThreshold){
@@ -68,11 +69,11 @@ static void spin_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_dat
 
     // set the gain
     Bottle b, setReply;
-    b.addString("set"); b.addString("gain"); b.addDouble(compGain);
+    b.addInt(set_gain); b.addDouble(compGain);
     guiRpcPort.write(b, setReply);
 
     // read the gain
-	Bottle getReply = sendRpcCommand(true, 2, "get", "gain");
+	Bottle getReply = sendRpcCommand(true, get_gain);
 	currentCompGain = getReply.get(0).asDouble();
 
 	if(compGain==currentCompGain){
@@ -95,11 +96,11 @@ static void spin_cont_gain_value_changed(GtkSpinButton *spinbutton, gpointer use
 
     // set the gain
     Bottle b, setReply;
-    b.addString("set"); b.addString("contact"); b.addString("gain"); b.addDouble(contCompGain);
+    b.addInt(set_cont_gain); b.addDouble(contCompGain);
     guiRpcPort.write(b, setReply);
 
     // read the gain
-	Bottle getReply = sendRpcCommand(true, 3, "get", "contact", "gain");
+	Bottle getReply = sendRpcCommand(true, get_cont_gain);
 	currentContCompGain = getReply.get(0).asDouble();
 
 	if(contCompGain==currentContCompGain){
@@ -123,11 +124,11 @@ static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll
 
 	// set the smooth factor
 	Bottle b, setReply;
-	b.addString("set"); b.addString("smooth"); b.addString("factor"); b.addDouble(smoothFactor);
+	b.addInt(set_smooth_factor); b.addDouble(smoothFactor);
 	guiRpcPort.write(b, setReply);
 	
 	// read the smooth factor
-	Bottle getReply = sendRpcCommand(true, 3, "get", "smooth", "factor");
+	Bottle getReply = sendRpcCommand(true, get_smooth_factor);
 	currentSmoothFactor = getReply.get(0).asDouble();
 	currentSmoothFactor = round(currentSmoothFactor, 1); //double(int((currentSmoothFactor*10)+0.5))/10.0;
 
@@ -150,8 +151,10 @@ static gboolean toggle_button_smooth(GtkToggleButton *widget, GdkEvent *ev, gpoi
 
 	// if the button is off it means it is going to be turned on
     if (!btnState){
-		sendRpcCommand(false, 4, "set", "smooth", "filter", "on");
-		Bottle reply = sendRpcCommand(true, 3, "get", "smooth", "filter");
+        Bottle b, setReply;
+	    b.addInt(set_smooth_filter); b.addString("on");
+	    guiRpcPort.write(b, setReply);
+		Bottle reply = sendRpcCommand(true, get_smooth_filter);
 		if(string(reply.toString().c_str()).compare("on") == 0){
 			gtk_button_set_label(GTK_BUTTON(widget), "ON");
 			gtk_widget_set_sensitive(GTK_WIDGET(data), true);
@@ -162,8 +165,10 @@ static gboolean toggle_button_smooth(GtkToggleButton *widget, GdkEvent *ev, gpoi
 			return true;	//stop other handlers from being invoked for the event
 		}
     } else {
-		sendRpcCommand(false, 4, "set", "smooth", "filter", "off");
-		Bottle reply = sendRpcCommand(true, 3, "get", "smooth", "filter");
+		Bottle b, setReply;
+	    b.addInt(set_smooth_filter); b.addString("off");
+	    guiRpcPort.write(b, setReply);
+		Bottle reply = sendRpcCommand(true, get_smooth_filter);
 		if(string(reply.toString().c_str()).compare("off") == 0){
 			gtk_button_set_label(GTK_BUTTON(widget), "OFF");
 			gtk_widget_set_sensitive(GTK_WIDGET(data), false);
@@ -180,8 +185,10 @@ static gboolean toggle_button_binarization (GtkToggleButton *widget, GdkEvent *e
 	gboolean btnState = gtk_toggle_button_get_active(widget);
 
     if (!btnState){
-		sendRpcCommand(false, 3, "set", "binarization", "on");
-		Bottle reply = sendRpcCommand(true, 2, "get", "binarization");
+        Bottle b, setReply;
+	    b.addInt(set_binarization); b.addString("on");
+	    guiRpcPort.write(b, setReply);
+		Bottle reply = sendRpcCommand(true, get_binarization);
 		if(string(reply.toString().c_str()).compare("on")==0){
 			gtk_button_set_label(GTK_BUTTON(widget), "ON");
 			setStatusBarText("Binarization filter turned on");
@@ -191,8 +198,10 @@ static gboolean toggle_button_binarization (GtkToggleButton *widget, GdkEvent *e
 			return true;	//stop other handlers from being invoked for the event
 		}
     } else {
-		sendRpcCommand(false, 3, "set", "binarization", "off");
-		Bottle reply = sendRpcCommand(true, 2, "get", "binarization");
+		Bottle b, setReply;
+	    b.addInt(set_binarization); b.addString("off");
+	    guiRpcPort.write(b, setReply);
+		Bottle reply = sendRpcCommand(true, get_binarization);
 		if(string(reply.toString().c_str()).compare("off")==0){
 			gtk_button_set_label(GTK_BUTTON(widget), "OFF");
 			setStatusBarText("Binarization filter turned off");
@@ -210,7 +219,7 @@ static gint progressbar_calibration(gpointer data){
 	gtk_progress_bar_pulse(progBarCalib);
 
 	// check whether the calibration is still in progress
-	Bottle reply = sendRpcCommand(true, 2, "is", "calibrating");
+	Bottle reply = sendRpcCommand(true, is_calibrating);
 	if(string(reply.toString().c_str()).compare("yes")==0)
 		return true;
 
@@ -221,7 +230,7 @@ static gint progressbar_calibration(gpointer data){
 	return false;
 }
 static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpointer data){	
-	sendRpcCommand(false, 2, "force", "calibration");
+	sendRpcCommand(false, calibrate);
 	gtk_widget_show(GTK_WIDGET(progBarCalib));
 	g_timeout_add(100, progressbar_calibration, NULL);
 	gtk_widget_set_sensitive(GTK_WIDGET(widget), false);
@@ -231,7 +240,7 @@ static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpoin
 
 static gboolean button_threshold(GtkToggleButton *widget, GdkEvent *ev, gpointer data){
 	//printf("Button callback thread: %p\n", g_thread_self());
-	Bottle touchThr = sendRpcCommand(true, 2, "get", "percentile");
+	Bottle touchThr = sendRpcCommand(true, get_touch_thr);
 	int index = 0;
     for(unsigned int j=0; j<portDim.size(); j++){
 	    stringstream msg;

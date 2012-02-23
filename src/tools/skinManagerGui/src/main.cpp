@@ -52,7 +52,7 @@
  * \endcode
  * Example:
  * \code
- * skinManagerGui --name skinCompGuiLeft --from compGuiLeft.ini --context skinGui/conf
+ * skinManagerGui --name skinManGuiLeft --from skinManGuiLeft.ini --context skinGui/conf
  * \endcode
  *
  * \section portsa_sec Ports Accessed
@@ -79,19 +79,19 @@
  *
  *CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- *This file can be edited at main/src/tools/skinDriftCompensationGui/src/main.cpp.
+ *This file can be edited at main/src/tools/skinManagerGui/src/main.cpp.
  **/
 
-#include "iCub/skinDriftCompensationGui/guiCallback.h"
+#include "iCub/skinManagerGui/guiCallback.h"
 
 bool initGuiStatus(){
-    Bottle reply = sendRpcCommand(true, 2, "get", "binarization");
+    Bottle reply = sendRpcCommand(true, get_binarization);
 	if(string(reply.toString().c_str()).compare("on") == 0){
 		gtk_toggle_button_set_active(btnBinarization, true);
 		gtk_button_set_label(GTK_BUTTON(btnBinarization), "ON");
 	}
 
-	reply = sendRpcCommand(true, 3, "get", "smooth", "filter");
+	reply = sendRpcCommand(true, get_smooth_filter);
 	if(string(reply.toString().c_str()).compare("on") == 0){
 		gtk_toggle_button_set_active(btnSmooth, true);
 		gtk_button_set_label(GTK_BUTTON(btnSmooth), "ON");
@@ -100,11 +100,11 @@ bool initGuiStatus(){
 		gtk_widget_set_sensitive(GTK_WIDGET(scaleSmooth), false);
 	}
 
-	reply = sendRpcCommand(true, 3, "get", "smooth", "factor");
+	reply = sendRpcCommand(true, get_smooth_factor);
 	currentSmoothFactor = reply.get(0).asDouble();
 	gtk_adjustment_set_value(scaleSmooth->range.adjustment, currentSmoothFactor);	
 
-    reply = sendRpcCommand(true, 2, "get", "threshold");
+    reply = sendRpcCommand(true, get_threshold);
     if(reply.isNull() || reply.size()==0 || !reply.get(0).isInt()){
         printLog("Error while getting the safety threshold");
         return false;
@@ -113,7 +113,7 @@ bool initGuiStatus(){
         gtk_adjustment_set_value(spinThreshold->adjustment, currentThreshold);
     }
 
-    reply = sendRpcCommand(true, 2, "get", "gain");
+    reply = sendRpcCommand(true, get_gain);
     if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
         printLog("Error while getting the compensation gain");
         return false;
@@ -122,7 +122,7 @@ bool initGuiStatus(){
         gtk_adjustment_set_value(spinGain->adjustment, currentCompGain);
     }
 
-    reply = sendRpcCommand(true, 3, "get", "contact", "gain");
+    reply = sendRpcCommand(true,get_cont_gain);
     if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
         printLog("Error while getting the contact compensation gain");
         return false;
@@ -132,7 +132,7 @@ bool initGuiStatus(){
     }    
 
     // get module information
-    reply = sendRpcCommand(true, 2, "get", "info");
+    reply = sendRpcCommand(true, get_info);
     if(reply.isNull() || reply.size()!=3){
         printLog("Error while reading the module information");
         gtk_label_set_text(lblInfo, reply.toString().c_str());
@@ -177,7 +177,7 @@ bool initGuiStatus(){
     gtk_curve_set_range(curveComp, 0, (gfloat)currentSampleNum, 0, 255);
 
     // check whether the skin calibration is in process
-	reply = sendRpcCommand(true, 2, "is", "calibrating");
+	reply = sendRpcCommand(true, is_calibrating);
 	if(string(reply.toString().c_str()).compare("yes")==0){
 		gtk_widget_show(GTK_WIDGET(progBarCalib));
 		g_timeout_add(100, progressbar_calibration, NULL);
@@ -189,7 +189,7 @@ bool initGuiStatus(){
 
 bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], string &guiName, unsigned int& gXpos, unsigned int& gYpos){    
     rf.setVerbose(true);
-	rf.setDefaultConfigFile("skinDriftCompensationGui.ini");		//overridden by --from parameter
+	rf.setDefaultConfigFile("skinManagerGui.ini");		//overridden by --from parameter
 	rf.setDefaultContext("skinGui/conf");							//overridden by --context parameter
     rf.configure("ICUB_ROOT", argc, argv);
 
@@ -198,10 +198,10 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 	if (rf.check("xpos")) gXpos=rf.find("xpos").asInt();
     if (rf.check("ypos")) gYpos=rf.find("ypos").asInt();
 
-	string driftCompRpcPortName		= rf.check("driftCompRpcPort", Value("/skinDriftComp/rpc")).asString().c_str();
-    string driftCompMonitorPortName	= rf.check("driftCompMonitorPort", Value("/skinDriftComp/monitor:o")).asString().c_str();
-    string driftCompInfoPortName	= rf.check("driftCompInfoPort", Value("/skinDriftComp/info:o")).asString().c_str();    
-	guiName					        = rf.check("name", Value("skinDriftCompGui")).asString().c_str();
+	string driftCompRpcPortName		= rf.check("skinManRpcPort", Value("/skinMan/rpc")).asString().c_str();
+    string driftCompMonitorPortName	= rf.check("skinManMonitorPort", Value("/skinMan/monitor:o")).asString().c_str();
+    string driftCompInfoPortName	= rf.check("skinManInfoPort", Value("/skinMan/info:o")).asString().c_str();    
+	guiName					        = rf.check("name", Value("skinManGui")).asString().c_str();
 	string guiRpcPortName			= "/" + guiName + "/rpc:o";
 	string guiMonitorPortName		= "/" + guiName + "/monitor:i";
     string guiInfoPortName		    = "/" + guiName + "/info:i";
@@ -266,7 +266,7 @@ int main (int argc, char *argv[])
 	if(!initNetwork(yarp, rf, argc, argv, guiName, gXpos, gYpos))
         return 0;
 
-	rf.setDefault("gladeFile", "skinDriftCompGui.glade");
+	rf.setDefault("gladeFile", "skinManGui.glade");
 	ConstString gladeFile = rf.findFile("gladeFile");
 	
 	if( !gtk_builder_add_from_file (builder, gladeFile.c_str(), &error)){

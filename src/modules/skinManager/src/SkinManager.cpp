@@ -18,57 +18,23 @@
  */
 
 #include <sstream>			// string stream
-#include "iCub/skinDriftCompensation/SkinDriftCompensation.h"
+#include "iCub/skinManager/skinManager.h"
  
-using namespace iCub::skinDriftCompensation;
+using namespace iCub::skinManager;
 
 // module default values
-const int SkinDriftCompensation::MIN_BASELINE_DEFAULT = 3;
-const int SkinDriftCompensation::ADD_THRESHOLD_DEFAULT = 2;
-const int SkinDriftCompensation::PERIOD_DEFAULT = 50;
-const float SkinDriftCompensation::SMOOTH_FACTOR_DEFAULT = 0.5;
-const float SkinDriftCompensation::COMPENSATION_GAIN_DEFAULT = 0.2f;
-const float SkinDriftCompensation::CONTACT_COMPENSATION_GAIN_DEFAULT = 0.0f;
-const string SkinDriftCompensation::MODULE_NAME_DEFAULT = "skinDriftCompensation";
-const string SkinDriftCompensation::ROBOT_NAME_DEFAULT = "icub";
-//const string SkinDriftCompensation::HAND_DEFAULT = "right";
-const string SkinDriftCompensation::ZERO_UP_RAW_DATA_DEFAULT = "notFound";
-const string SkinDriftCompensation::RPC_PORT_DEFAULT = "/rpc";
+const int skinManager::MIN_BASELINE_DEFAULT = 3;
+const int skinManager::ADD_THRESHOLD_DEFAULT = 2;
+const int skinManager::PERIOD_DEFAULT = 50;
+const float skinManager::SMOOTH_FACTOR_DEFAULT = 0.5;
+const float skinManager::COMPENSATION_GAIN_DEFAULT = 0.2f;
+const float skinManager::CONTACT_COMPENSATION_GAIN_DEFAULT = 0.0f;
+const string skinManager::MODULE_NAME_DEFAULT = "skinManager";
+const string skinManager::ROBOT_NAME_DEFAULT = "icub";
+const string skinManager::ZERO_UP_RAW_DATA_DEFAULT = "notFound";
+const string skinManager::RPC_PORT_DEFAULT = "/rpc";
 
-// the order of the command in this list MUST correspond to the order of the enum SkinDriftCompensation::SkinDriftCompCommand
-const string SkinDriftCompensation::COMMAND_LIST[]  = {
-	"forbid calibration",	"allow calibration",	"force calibration", 
-	"get percentile",		"set binarization",		"get binarization", 
-	"set smooth filter",	"get smooth filter",	"set smooth factor",	
-	"get smooth factor",	"set threshold",        "get threshold", 
-    "set gain",             "get gain",             "set contact gain",
-    "get contact gain",     "is calibrating",       "get info",		        
-    "help",					"quit"};
-
-// the order in COMMAND_DESC must correspond to the order in COMMAND_LIST
-const string SkinDriftCompensation::COMMAND_DESC[]  = {
-	"forbid the automatic calibration (by default it is already forbidden)", 
-	"allow the automatic calibration", 
-	"force the calibration (for 5 sec no touch should happens)", 
-	"get the 95 percentile of the tactile data", 
-	"enable or disable the binarization filter (255 touch, 0 no touch)",
-	"get the binarization filter state (on, off)",
-	"enable or disable the smooth filter",
-	"get the smooth filter state (on, off)",
-	"set the value of the smooth factor (in [0,1])",
-	"get the smooth factor value",
-    "set the safety threshold that is added to the touch thresholds (int in [0, 254])",
-    "get the safety threshold that is added to the touch threshold",
-    "set the compensation gain", 
-    "get the compensation gain",
-    "set the contact compensation gain", 
-    "get the contact compensation gain",
-	"tell whether the skin calibration is in progress",
-    "get information about the module",
-	"get this list", 
-	"quit the module"};
-
-bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
+bool skinManager::configure(yarp::os::ResourceFinder &rf)
 {    
 	/* Process all parameters from both command-line and .ini file */
 
@@ -108,7 +74,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 	* attach a port of the same name as the module (prefixed with a /) to the module
 	* so that messages received from the port are redirected to the respond method
 	*/
-	handlerPortName = "/";
+	string handlerPortName = "/";
 	handlerPortName += getName(rf.check("handlerPort", Value(RPC_PORT_DEFAULT.c_str())).asString());
 	if (!handlerPort.open(handlerPortName.c_str())) {
 		cout << getName() << ": Unable to open port " << handlerPortName << endl;  
@@ -129,7 +95,7 @@ bool SkinDriftCompensation::configure(yarp::os::ResourceFinder &rf)
 }
 
 
-bool SkinDriftCompensation::interruptModule()
+bool skinManager::interruptModule()
 {
 	handlerPort.interrupt();
 
@@ -137,7 +103,7 @@ bool SkinDriftCompensation::interruptModule()
 }
 
 
-bool SkinDriftCompensation::close()
+bool skinManager::close()
 {
 	/* stop the thread */
 	if(myThread){
@@ -150,14 +116,19 @@ bool SkinDriftCompensation::close()
 }
 
 
-bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply) 
+bool skinManager::respond(const Bottle& command, Bottle& reply) 
 {
 	stringstream temp;
-	string helpMessage =  string(getName().c_str()) + " commands are: ";
 	reply.clear();
 
-	SkinDriftCompCommand com;
-	if(!identifyCommand(command, com)){
+	SkinManagerCommand com;
+    Bottle params;
+    if(command.get(0).isInt()){
+        // if first value is int then it is the id of the command
+        com = (SkinManagerCommand)command.get(0).asInt();
+        params = command.tail();
+    }
+	else if(!identifyCommand(command, com, params)){
 		reply.addString("Unknown command. Input 'help' to get a list of the available commands.");
 		return true;
 	}
@@ -169,22 +140,17 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
 		case help:
             reply.addVocab(Vocab::encode("many"));				// print every string added to the bottle on a new line
-			reply.addString(helpMessage.c_str());
-			for(unsigned int i=0; i< COMMANDS_COUNT; i++){
-				reply.addString( ("- "+COMMAND_LIST[i]+": "+COMMAND_DESC[i]).c_str() );
+			reply.addString((string(getName().c_str()) + " commands are: ").c_str());
+			for(unsigned int i=0; i< SkinManagerCommandSize; i++){
+				reply.addString( ("- "+SkinManagerCommandList[i]+": "+SkinManagerCommandDesc[i]).c_str() );
 			}
 			return true;
 
-		case forbid_calibration:
-		case allow_calibration:
-			reply.addString("Command deprecated!");
-			return true;
-
-		case force_calibration:
-			myThread->forceCalibration();
+		case calibrate:
+			myThread->calibrate();
 			break;
 
-		case get_percentile:
+		case get_touch_thr:
 			{
 			Vector touchThreshold = myThread->getTouchThreshold();
 			for(size_t i=0; i< touchThreshold.size(); i++) 
@@ -194,11 +160,11 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
 		case set_binarization:
 			{
-			if(command.size()<3){
+			if(params.size()<1){
 				reply.addString("Binarization state missing! Specify either on or off.");
 				return true;
 			}
-			string value = command.get(2).asString().c_str();
+			string value = params.get(0).asString().c_str();
 			if(value.compare("on")==0)
 				myThread->setBinarization(true);
 			else if(value.compare("off")==0)
@@ -219,11 +185,11 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
 		case set_smooth_filter:
 			{
-			if(command.size()<4){
+			if(params.size()<1){
 				reply.addString("Smooth filter state missing! Specify either on or off.");
 				return true;
 			}
-			string value = command.get(3).asString().c_str();
+			string value = params.get(0).asString().c_str();
 			if(value.compare("on")==0)
 				myThread->setSmoothFilter(true);
 			else if(value.compare("off")==0)
@@ -244,17 +210,17 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
 		case set_smooth_factor:
 			{
-			if(command.size()<4 || (!command.get(3).isDouble() && !command.get(3).isInt())){
+			if(params.size()<1 || (!params.get(0).isDouble() && !params.get(0).isInt())){
 				reply.addString("New smooth factor value missing or not a number! Smooth factor not updated.");
 				return true;
 			}
 
 			stringstream temp;
-			if(myThread->setSmoothFactor((float)command.get(3).asDouble())){				
-				temp<< "New smooth factor set: "<< command.get(3).asDouble();				
+			if(myThread->setSmoothFactor((float)params.get(0).asDouble())){
+				temp<< "New smooth factor set: "<< params.get(0).asDouble();				
 			}
 			else{
-				temp<< "ERROR in setting new smooth factor: "<< command.get(3).asDouble();
+				temp<< "ERROR in setting new smooth factor: "<< params.get(0).asDouble();
 			}
 			reply.addString( temp.str().c_str());
 			return true;
@@ -266,17 +232,17 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
         case set_threshold:
             {
-			if(command.size()<3 || (!command.get(2).isInt())){
+			if(params.size()<1 || (!params.get(0).isInt())){
 				reply.addString("New threshold value missing or not an integer! Threshold not updated.");
 				return true;
 			}
 
 			stringstream temp;
-			if(myThread->setAddThreshold(command.get(2).asInt())){				
-				temp<< "New threshold set: "<< command.get(2).asInt();				
+			if(myThread->setAddThreshold(params.get(0).asInt())){				
+				temp<< "New threshold set: "<< params.get(0).asInt();				
 			}
 			else{
-				temp<< "ERROR in setting new threshold: "<< command.get(2).asInt();
+				temp<< "ERROR in setting new threshold: "<< params.get(0).asInt();
 			}
 			reply.addString( temp.str().c_str());
 			return true;
@@ -288,17 +254,17 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
         case set_gain:
             {
-			if(command.size()<3 || (!command.get(2).isDouble())){
+			if(params.size()<1 || (!params.get(0).isDouble())){
 				reply.addString("New gain value missing or not a double! Gain not updated.");
 				return true;
 			}
 
 			stringstream temp;
-			if(myThread->setCompensationGain(command.get(2).asDouble())){	
-				temp<< "New gain set: "<< command.get(2).asDouble();				
+			if(myThread->setCompensationGain(params.get(0).asDouble())){	
+				temp<< "New gain set: "<< params.get(0).asDouble();				
 			}
 			else{
-				temp<< "ERROR in setting new gain: "<< command.get(2).asDouble();
+				temp<< "ERROR in setting new gain: "<< params.get(0).asDouble();
 			}
 			reply.addString( temp.str().c_str());
 			return true;
@@ -310,17 +276,17 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 
         case set_cont_gain:
             {
-			if(command.size()<4 || (!command.get(3).isDouble())){
+			if(params.size()<1 || (!params.get(0).isDouble())){
 				reply.addString("New gain value missing or not a double! Contact gain not updated.");
 				return true;
 			}
 
 			stringstream temp;
-			if(myThread->setContactCompensationGain(command.get(3).asDouble())){	
-				temp<< "New contact gain set: "<< command.get(3).asDouble();				
+			if(myThread->setContactCompensationGain(params.get(0).asDouble())){	
+				temp<< "New contact gain set: "<< params.get(0).asDouble();				
 			}
 			else{
-				temp<< "ERROR in setting new contact gain: "<< command.get(3).asDouble();
+				temp<< "ERROR in setting new contact gain: "<< params.get(0).asDouble();
 			}
 			reply.addString( temp.str().c_str());
 			return true;
@@ -337,6 +303,63 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 				reply.addString("no");
 			return true;
 
+        case get_pose:
+            {
+                if(!(params.size()>1 && params.get(0).isInt() && params.get(1).isInt())){
+                    reply.addString(("ERROR: BodyPart and SkinPart are not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                    return true;
+                }
+                BodyPart bp = (BodyPart) params.get(0).asInt();
+                SkinPart sp = (SkinPart) params.get(1).asInt();
+                if(params.get(2).isInt()){
+                    unsigned int taxelId = params.get(2).asInt();
+                    Vector res = myThread->getTaxelPose(bp, sp, taxelId);
+                    if(res.size()>0)
+                        addToBottle(reply, res);
+                    else
+                        reply.addString("No poses for the specified body part and skin part");
+                }
+                else{
+                    vector<Vector> res = myThread->getTaxelPoses(bp, sp);
+                    addToBottle(reply, res);
+                }
+                return true;
+            }
+
+        case set_pose:
+            {
+                if(!(params.size()>7 && params.get(0).isInt() && params.get(1).isInt())){
+                    reply.addString(("ERROR: BodyPart and SkinPart are not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                    return true;
+                }
+                BodyPart bp = (BodyPart) params.get(0).asInt();
+                SkinPart sp = (SkinPart) params.get(1).asInt();
+                if(params.get(2).isInt()){
+                    unsigned int taxelId = params.get(2).asInt();
+                    Vector pose;
+                    if(!bottleToVector(params.tail().tail().tail(), pose)){
+                        reply.addString("ERROR while reading the taxel pose");
+                        return true;
+                    }
+                    if(myThread->setTaxelPose(bp, sp, taxelId, pose))
+                        reply.addString("pose set");
+                    else
+                        reply.addString("ERROR: pose was not set");
+                }
+                else{
+                    Vector poses;
+                    if(!bottleToVector(params.tail().tail(), poses)){
+                        reply.addString("ERROR while reading the taxel poses");
+                        return true;
+                    }
+                    if(myThread->setTaxelPoses(bp, sp, poses))
+                        reply.addString("pose set");
+                    else
+                        reply.addString("ERROR: pose was not set");
+                }
+                return true;
+            }
+
         case get_info:
             reply.append(myThread->getInfo());
             return true;
@@ -346,18 +369,37 @@ bool SkinDriftCompensation::respond(const Bottle& command, Bottle& reply)
 			return true;
 	}
 
-	reply.addString( (COMMAND_LIST[com]+" command received.").c_str());
+	reply.addString( (SkinManagerCommandList[com]+" command received.").c_str());
 
 	return true;	
 }
 
+void skinManager::addToBottle(Bottle& b, const Vector& v){
+    for(unsigned int i=0; i<v.size(); i++)
+        b.addDouble(v[i]);
+}
+
+void skinManager::addToBottle(Bottle& b, const vector<Vector>& v){
+    for(unsigned int i=0; i<v.size(); i++)
+        for(unsigned int j=0; j<v[i].size(); j++)
+            b.addDouble(v[i][j]);
+}
+
+bool skinManager::bottleToVector(const yarp::os::Bottle& b, yarp::sig::Vector& v){
+    for(int i=0; i<b.size(); i++)
+        if(b.get(i).isDouble() || b.get(i).isInt())
+            v.push_back(b.get(i).asDouble());
+        else
+            return false;
+    return true;
+}
 
 /**
   * Identify the command in the bottle and return the correspondent enum value.
   */
-bool SkinDriftCompensation::identifyCommand(Bottle commandBot, SkinDriftCompensation::SkinDriftCompCommand &com){
-	for(unsigned int i=0; i<COMMANDS_COUNT; i++){
-		stringstream stream(COMMAND_LIST[i]);
+bool skinManager::identifyCommand(Bottle commandBot, SkinManagerCommand &com, Bottle& params){
+	for(unsigned int i=0; i<SkinManagerCommandSize; i++){
+		stringstream stream(SkinManagerCommandList[i]);
 		string word;
 		int j=0;
 		bool found = true;
@@ -369,8 +411,11 @@ bool SkinDriftCompensation::identifyCommand(Bottle commandBot, SkinDriftCompensa
 			}
 			j++;
 		}
-		if(found){
-			com = (SkinDriftCompCommand)i;
+        if(found){
+			com = (SkinManagerCommand)i;
+            params = commandBot.tail();
+            for(int k=1; k<j; k++)
+                params = params.tail();
 			return true;
 		}
 	}
@@ -378,6 +423,17 @@ bool SkinDriftCompensation::identifyCommand(Bottle commandBot, SkinDriftCompensa
 	return false;
 }
 
-bool SkinDriftCompensation::updateModule(){ return true;}
-double SkinDriftCompensation::getPeriod(){ return 0.1;}
+bool skinManager::updateModule(){ 
+    double avgTime, stdDev, period;
+    period = myThread->getRate();
+    myThread->getEstPeriod(avgTime, stdDev);
+    double avgTimeUsed, stdDevUsed;
+    myThread->getEstUsed(avgTimeUsed, stdDevUsed);     // real duration of run()
+    if(avgTime > 1.3 * period){
+        printf("[WARNING] Thread too slow. Real period: %3.3f+/-%3.3f. Expected period: %3.3f.\n", avgTime, stdDev, period);
+        printf("Duration of 'run' method: %3.3f+/-%3.3f.\n", avgTimeUsed, stdDevUsed);
+    }
+    return true;
+}
+double skinManager::getPeriod(){ return 1.0;}
 

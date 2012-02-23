@@ -1,14 +1,14 @@
 <application>
   <name>Skin Gui Torso</name>
   <module>
-    <name>skinDriftCompensation</name>
-    <parameters>--from driftCompTorso.ini --context skinGui/conf</parameters>
+    <name>skinManager</name>
+    <parameters>--from skinManTorso.ini --context skinGui/conf</parameters>
     <node>console</node>
     <tag>skinCompT</tag>
   </module>
   <module>
-    <name>skinDriftCompensationGui</name>
-    <parameters>--from driftCompGuiTorso.ini --context skinGui/conf</parameters>
+    <name>skinManagerGui</name>
+    <parameters>--from skinManGuiTorso.ini --context skinGui/conf</parameters>
     <node>console</node>
     <tag>skinCompGuiT</tag>
   </module>
@@ -22,18 +22,18 @@
   
   
   <connection>
-    <from>/driftCompGuiTorso/rpc:o</from>
-    <to>/torsoSkinDriftComp/rpc</to>
+    <from>/skinManGuiTorso/rpc:o</from>
+    <to>/torsoSkinMan/rpc</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/torsoSkinDriftComp/monitor:o</from>
-    <to>/driftCompGuiTorso/monitor:i</to>
+    <from>/torsoSkinMan/monitor:o</from>
+    <to>/skinManGuiTorso/monitor:i</to>
     <protocol>udp</protocol>
   </connection>
   <connection>
-    <from>/torsoSkinDriftComp/info:o</from>
-    <to>/driftCompGuiTorso/info:i</to>
+    <from>/torsoSkinMan/info:o</from>
+    <to>/skinManGuiTorso/info:i</to>
     <protocol>tcp</protocol>
   </connection>
   

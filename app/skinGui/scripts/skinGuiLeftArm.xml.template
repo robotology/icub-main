@@ -1,14 +1,14 @@
 <application>
   <name>Skin Gui Left Arm</name>
   <module>
-    <name>skinDriftCompensation</name>
-    <parameters>--from driftCompLeft.ini --context skinGui/conf</parameters>
+    <name>skinManager</name>
+    <parameters>--from skinManLeft.ini --context skinGui/conf</parameters>
     <node>console</node>
     <tag>skinCompLA</tag>
   </module>
   <module>
-    <name>skinDriftCompensationGui</name>
-    <parameters>--from driftCompGuiLeft.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
+    <name>skinManagerGui</name>
+    <parameters>--from skinManGuiLeft.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
     <node>console</node>
     <tag>skinCompGuiLA</tag>
   </module>
@@ -35,18 +35,18 @@
   
   
   <connection>
-    <from>/driftCompGuiLeft/rpc:o</from>
-    <to>/leftSkinDriftComp/rpc</to>
+    <from>/skinManGuiLeft/rpc:o</from>
+    <to>/leftSkinMan/rpc</to>
     <protocol>tcp</protocol>
   </connection>
   <connection>
-    <from>/leftSkinDriftComp/monitor:o</from>
-    <to>/driftCompGuiLeft/monitor:i</to>
+    <from>/leftSkinMan/monitor:o</from>
+    <to>/skinManGuiLeft/monitor:i</to>
     <protocol>udp</protocol>
   </connection>
   <connection>
-    <from>/leftSkinDriftComp/info:o</from>
-    <to>/driftCompGuiLeft/info:i</to>
+    <from>/leftSkinMan/info:o</from>
+    <to>/skinManGuiLeft/info:i</to>
     <protocol>tcp</protocol>
   </connection>
   

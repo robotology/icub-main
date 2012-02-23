@@ -36,6 +36,7 @@
 
 #include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/skinContactList.h"
+#include "iCub/skinDynLib/rpcSkinManager.h"
 
 using namespace std;
 using namespace yarp::os; 
@@ -45,7 +46,7 @@ using namespace iCub::skinDynLib;
 
 namespace iCub{
 
-namespace skinDriftCompensation{    
+namespace skinManager{    
 
 class Compensator
 {
@@ -72,7 +73,13 @@ public:
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
-    bool setTaxelPositions(const char *filePath, double maxNeighborDist);
+    bool setTaxelPosesFromFile(const char *filePath, double maxNeighborDist);
+    bool setTaxelPoses(vector<Vector> poses);
+    bool setTaxelPose(unsigned int taxelId, Vector pose);
+    bool setTaxelPositions(vector<Vector> positions);
+    bool setTaxelPosition(unsigned int taxelId, Vector position);
+    bool setTaxelOrientations(vector<Vector> orientations);
+    bool setTaxelOrientation(unsigned int taxelId, Vector orientation);
     void setLinkNum(unsigned int linkNum);
     void setBodyPart(BodyPart _bodyPart);
     void setSkinPart(SkinPart _skinPart);
@@ -84,6 +91,12 @@ public:
     unsigned int getAddThreshold();
     double getCompensationGain();
     double getContactCompensationGain();
+    Vector getTaxelPosition(unsigned int taxelId);
+    vector<Vector> getTaxelPositions();
+    Vector getTaxelOrientation(unsigned int taxelId);
+    vector<Vector> getTaxelOrientations();
+    Vector getTaxelPose(unsigned int taxelId);
+    vector<Vector> getTaxelPoses();
     unsigned int getNumTaxels();
     Vector getBaselines();
     Vector getCompensation();
@@ -119,6 +132,7 @@ private:
     vector< vector<int> >   neighborsXtaxel;    // list of neighbors for each taxel    
 	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
     vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
+    Semaphore               poseSem;            // mutex to access taxel poses
 
 	// COMPENSATION
 	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
@@ -166,13 +180,13 @@ private:
     bool init(string name, string robotName, string outputPortName, string inputPortName);
     bool readInputData(Vector& skin_values);
     void sendInfoMsg(string msg);
-    void computeNeighbors(double maxDist);
+    void computeNeighbors(double maxDist=MAX_NEIGHBOR_DISTANCE);
 	
 };
 
 } //namespace iCub
 
-} //namespace skinDriftCompensation
+} //namespace skinManager
 
 #endif
 

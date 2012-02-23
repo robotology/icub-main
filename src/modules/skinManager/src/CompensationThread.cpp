@@ -17,16 +17,18 @@
  * Public License for more details
  */
 #include <yarp/os/Time.h>
+#include <yarp/math/Math.h>
 #include "math.h"
 #include "memory.h"
-#include "iCub/skinDriftCompensation/CompensationThread.h"
+#include "iCub/skinManager/CompensationThread.h"
 
 #define FOR_ALL_PORTS(i) for(unsigned int i=0;i<portNum;i++)
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
-using namespace iCub::skinDriftCompensation;
+using namespace yarp::math;
+using namespace iCub::skinManager;
 
 
 CompensationThread::CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, double _contactCompensationGain, 
@@ -203,7 +205,7 @@ bool CompensationThread::threadInit()
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
 	                string filePath(rf->findFile(taxelPosFile.c_str()));
-	                compensators[i]->setTaxelPositions(filePath.c_str(), maxNeighborDist);
+	                compensators[i]->setTaxelPosesFromFile(filePath.c_str(), maxNeighborDist);
 	            }
             }
         }
@@ -218,7 +220,7 @@ bool CompensationThread::threadInit()
 }
 
 
-void CompensationThread::forceCalibration(){
+void CompensationThread::calibrate(){
 	stateSem.wait();
 	if(state != calibration){
 		state = calibration;
@@ -283,7 +285,7 @@ void CompensationThread::sendSkinEvents(){
             skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());            
         }
     }
-    printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
+    //printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 
@@ -472,7 +474,75 @@ bool CompensationThread::setContactCompensationGain(double gain){
         contactCompensationGain = gain;
     return res;
 }
+bool CompensationThread::setTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector position){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->setTaxelPosition(taxelId, position);
+        }
+    }
+    return false;
+}
+bool CompensationThread::setTaxelPositions(BodyPart bp, SkinPart sp, vector<Vector> positions){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->setTaxelPositions(positions);
+        }
+    }
+    return false;
+}
+bool CompensationThread::setTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector orientation){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->setTaxelOrientation(taxelId, orientation);
+        }
+    }
+    return false;
+}
+bool CompensationThread::setTaxelOrientations(BodyPart bp, SkinPart sp, vector<Vector> orientations){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->setTaxelOrientations(orientations);
+        }
+    }
+    return false;
+}
+bool CompensationThread::setTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector pose){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->setTaxelPose(taxelId, pose);
+        }
+    }
+    return false;
+}
+bool CompensationThread::setTaxelPoses(BodyPart bp, SkinPart sp, vector<Vector> poses){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->setTaxelPoses(poses);
+        }
+    }
+    return false;
+}
+bool CompensationThread::setTaxelPoses(BodyPart bp, SkinPart sp, Vector poses){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            unsigned int numTax = compensators[i]->getNumTaxels();
+            if(poses.size()!=6*numTax)
+                return false;
+            vector<Vector> p(numTax);
+            for(unsigned int j=0; j<numTax; j++){
+                p[j] = poses.subVector(6*j, 6*j+5);
+            }
+            return compensators[i]->setTaxelPoses(p);
+        }
+    }
+    return false;
+}
 
+//************************************************************************************************************
+//************************************************************************************************************
+//                       GET METHODS    
+//************************************************************************************************************
+//************************************************************************************************************
 Vector CompensationThread::getTouchThreshold(){
     Vector res(SKIN_DIM);
     int currentDim=0;
@@ -489,15 +559,12 @@ Vector CompensationThread::getTouchThreshold(){
 unsigned int CompensationThread::getAddThreshold(){
     return ADD_THRESHOLD;
 }
-
 double CompensationThread::getCompensationGain(){
     return compensationGain;
 }
-
 double CompensationThread::getContactCompensationGain(){
     return contactCompensationGain;
 }
-
 bool CompensationThread::getBinarization(){
 	return binarization;
 }
@@ -513,4 +580,105 @@ bool CompensationThread::isCalibrating(){
 float CompensationThread::getSmoothFactor(){
 	return smoothFactor;
 }
-
+Vector CompensationThread::getTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getTaxelPosition(taxelId);
+        }
+    }
+    return zeros(3);
+}
+vector<Vector> CompensationThread::getTaxelPositions(BodyPart bp, SkinPart sp){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getTaxelPositions();
+        }
+    }
+    return vector<Vector>();
+}
+vector<Vector> CompensationThread::getTaxelPositions(BodyPart bp){
+    vector<Vector> res;
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp){
+            vector<Vector> temp = compensators[i]->getTaxelPositions();
+            res.insert(res.end(), temp.begin(), temp.end());
+        }
+    }
+    return res;
+}
+vector<Vector> CompensationThread::getTaxelPositions(){
+    vector<Vector> res;
+    FOR_ALL_PORTS(i){
+        vector<Vector> temp = compensators[i]->getTaxelPositions();
+        res.insert(res.end(), temp.begin(), temp.end());
+    }
+    return res;
+}
+Vector CompensationThread::getTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getTaxelOrientation(taxelId);
+        }
+    }
+    return zeros(3);
+}
+vector<Vector> CompensationThread::getTaxelOrientations(BodyPart bp, SkinPart sp){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getTaxelOrientations();
+        }
+    }
+    return vector<Vector>();
+}
+vector<Vector> CompensationThread::getTaxelOrientations(BodyPart bp){
+    vector<Vector> res;
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp){
+            vector<Vector> temp = compensators[i]->getTaxelOrientations();
+            res.insert(res.end(), temp.begin(), temp.end());
+        }
+    }
+    return res;
+}
+vector<Vector> CompensationThread::getTaxelOrientations(){
+    vector<Vector> res;
+    FOR_ALL_PORTS(i){
+        vector<Vector> temp = compensators[i]->getTaxelOrientations();
+        res.insert(res.end(), temp.begin(), temp.end());
+    }
+    return res;
+}
+Vector CompensationThread::getTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getTaxelPose(taxelId);
+        }
+    }
+    return zeros(3);
+}
+vector<Vector> CompensationThread::getTaxelPoses(BodyPart bp, SkinPart sp){
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getTaxelPoses();
+        }
+    }
+    return vector<Vector>();
+}
+vector<Vector> CompensationThread::getTaxelPoses(BodyPart bp){
+    vector<Vector> res;
+    FOR_ALL_PORTS(i){
+        if(compensators[i]->getBodyPart()==bp){
+            vector<Vector> temp = compensators[i]->getTaxelPoses();
+            res.insert(res.end(), temp.begin(), temp.end());
+        }
+    }
+    return res;
+}
+vector<Vector> CompensationThread::getTaxelPoses(){
+    vector<Vector> res;
+    FOR_ALL_PORTS(i){
+        vector<Vector> temp = compensators[i]->getTaxelPoses();
+        res.insert(res.end(), temp.begin(), temp.end());
+    }
+    return res;
+}

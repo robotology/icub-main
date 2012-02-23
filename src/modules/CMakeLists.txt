@@ -13,7 +13,7 @@ add_subdirectory(velocityControl)
 add_subdirectory(velocityObserver)
 add_subdirectory(wholeBodyDynamics)
 add_subdirectory(gravityCompensator)
-add_subdirectory(skinDriftCompensation)
+add_subdirectory(skinManager)
 add_subdirectory(objectsPropertiesCollector)
 add_subdirectory(pmpServer)
 

@@ -172,12 +172,12 @@ Copyright (C) 2010 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at ICUB_HOME/main/src/modules/skinDriftCompensation/include/iCub/skinDriftCompensation/SkinDriftCompensation.h.
+This file can be edited at ICUB_HOME/main/src/modules/skinManager/include/iCub/skinManager/skinManager.h.
 **/
 
 
-#ifndef __ICUB_SKINDRIFTCOMPENSATION_H__
-#define __ICUB_SKINDRIFTCOMPENSATION_H__
+#ifndef __ICUB_skinManager_H__
+#define __ICUB_skinManager_H__
 
 #include <iostream>
 #include <string>
@@ -185,7 +185,8 @@ This file can be edited at ICUB_HOME/main/src/modules/skinDriftCompensation/incl
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
 
-#include "iCub/skinDriftCompensation/CompensationThread.h"
+#include "iCub/skinManager/CompensationThread.h"
+#include "iCub/skinDynLib/rpcSkinManager.h"
  
 using namespace std;
 using namespace yarp::os; 
@@ -193,23 +194,11 @@ using namespace yarp::sig;
 
 namespace iCub{
 
-namespace skinDriftCompensation{
+namespace skinManager{
 
-class SkinDriftCompensation:public RFModule
+class skinManager:public RFModule
 {
 public:
-
-	// the last element of the enum (COMMANDS_COUNT) represents the total number of commands accepted by this module
-	typedef enum { 
-		forbid_calibration, allow_calibration,	force_calibration, 
-		get_percentile,		set_binarization,	get_binarization, 
-		set_smooth_filter,	get_smooth_filter,	set_smooth_factor, 
-		get_smooth_factor,	set_threshold,      get_threshold, 
-        set_gain,           get_gain,           set_cont_gain,           
-        get_cont_gain,      is_calibrating,		get_info,           
-        help,				quit,               
-        COMMANDS_COUNT} SkinDriftCompCommand;
-   
 	bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
 	bool interruptModule();                       // interrupt, e.g., the ports 
 	bool close();                                 // close and shut down the module
@@ -228,40 +217,30 @@ private:
     static const float CONTACT_COMPENSATION_GAIN_DEFAULT;
 	static const string MODULE_NAME_DEFAULT;
 	static const string ROBOT_NAME_DEFAULT;
-	//static const string HAND_DEFAULT;
 	static const string ZERO_UP_RAW_DATA_DEFAULT;
 	static const string RPC_PORT_DEFAULT;
-	
-
-	// module constants
-	static const string COMMAND_LIST[];						// list of commands received through the rpc port
-	static const string COMMAND_DESC[];						// descriptions of the commands
 
 	/* module parameters */
 	string moduleName;
 	string robotName;
 
-	// names of the ports
-	//string compensatedTactileDataPortName;
-	string handlerPortName;
-
-	/* class variables */
-	//BufferedPort<Vector> compensatedTactileDataPort;	
+	/* ports */
 	Port handlerPort;									// a port to handle messages
-
-	bool calibrationAllowed;							// if false the thread is not allowed to run the calibration
 
 	/* pointer to a new thread to be created and started in configure() and stopped in close() */
 	CompensationThread *myThread;
 
-	bool identifyCommand(Bottle commandBot, SkinDriftCompCommand &com);
+    void addToBottle(Bottle& b, const Vector& v);
+    void addToBottle(Bottle& b, const vector<Vector>& v);
+    bool bottleToVector(const yarp::os::Bottle& b, yarp::sig::Vector& v);
+	bool identifyCommand(Bottle commandBot, SkinManagerCommand &com, Bottle& params);
 
 };
 
 } //namespace iCub
 
-} //namespace skinDriftCompensation
+} //namespace skinManager
 
-#endif // __ICUB_SKINDRIFTCOMPENSATION_H__
+#endif // __ICUB_skinManager_H__
 //empty line to make gcc happy
 
