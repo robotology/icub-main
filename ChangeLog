@@ -1,4 +1,8 @@
 2012-02-23 Ugo Pattacini <ugo.pattacini@iit.it>
+    dataDumper: now the name of the source connection
+    is stored within the data.log file.
+
+2012-02-23 Ugo Pattacini <ugo.pattacini@iit.it>
     pmp library: added setPointOrientation() and
     executeTrajectory() methods.
 
