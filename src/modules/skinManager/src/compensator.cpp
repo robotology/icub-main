@@ -186,7 +186,7 @@ void Compensator::calibrationFinish(){
 		for (int j=0; j<=MAX_SKIN; j++) {
 			if (skin_empty[i][j] > (calibrationRead*0.95)) {
                 // the threshold can not be less than MIN_TOUCH_THR
-				touchThresholds[i] = (double)j - baselines[i];
+				touchThresholds[i] = max<double>(MIN_TOUCH_THR, (double)j - baselines[i]);
 				j = MAX_SKIN;   // break
 			}
 		}
