@@ -93,7 +93,7 @@ protected:
     int target;
     int obstacle;
     Vector xTg;
-	
+
 public:
 
     bool configure(ResourceFinder &rf)
