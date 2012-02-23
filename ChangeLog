@@ -1,3 +1,7 @@
+2012-02-23 Ugo Pattacini <ugo.pattacini@iit.it>
+    pmp library: added setPointOrientation() and
+    executeTrajectory() methods.
+
 2012-02-22 Ugo Pattacini <ugo.pattacini@iit.it>
     iKinGazeCtrl now handles VOR and OCR gains.
 
