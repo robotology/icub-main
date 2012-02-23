@@ -163,8 +163,7 @@ Matrix iCub::ctrl::axis2dcm(const Vector &v, unsigned int verbose)
     Matrix R=eye(4,4);
 
     double theta=v[3];
-
-    if (!theta)
+    if (theta==0.0)
         return R;
 
     double c=cos(theta);
