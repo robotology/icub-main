@@ -854,6 +854,7 @@ bool MotorThread::threadInit()
     stereo_track=bMotor.check("stereo_track",Value("on")).asString()=="on";
     dominant_eye=(bMotor.check("dominant_eye",Value("left")).asString()=="left")?LEFT:RIGHT;
 
+
     Bottle *neckPitchRange=bMotor.find("neck_pitch_range").asList();
     Bottle *neckRollRange=bMotor.find("neck_roll_range").asList();
 
@@ -902,6 +903,7 @@ bool MotorThread::threadInit()
     drvHead->view(headEnc);
     drvTorso->view(torsoEnc);
     drvTorso->view(torsoPos);
+    drvTorso->view(torsoVel);
     drvTorso->view(torsoCtrlMode);
     drvTorso->view(torsoImpedenceCtrl);
 
@@ -1197,7 +1199,15 @@ bool MotorThread::threadInit()
     // initializer dragger
     dragger.init(rf.findGroup("dragger"),this->getRate());
 
+    this->avoidTable(false);
+
     grasp_state=GRASP_STATE_IDLE;
+
+    iKinTorso=(dominant_eye==LEFT)?new iCubEye("left"):new iCubEye("right");
+
+    iKinTorso->releaseLink(0);
+    iKinTorso->releaseLink(1);
+    iKinTorso->releaseLink(2);
 
     Rand::init();
 
@@ -1205,6 +1215,8 @@ bool MotorThread::threadInit()
     arm_mode=ARM_MODE_IDLE;
 
     closed=false;
+    interrupted=false;
+
     return true;
 }
 
@@ -1435,8 +1447,27 @@ void MotorThread::run()
             break;
         }
 
+
         default:
+        {
+            //if the robot is asked to avoid the table with its arms
+            if(avoid_table)
+            {
+                for(int arm=0; arm<2; arm++)
+                {
+                    if(action[arm]!=NULL)
+                    {
+                        Vector x,o;
+                        action[arm]->getPose(x,o);
+
+                        if(x[2]<table_height+table_height_tolerance)
+                            action[arm]->pushAction(x,o);
+                    }
+                }
+            }
+
             break;
+        }
     }
 }
 
@@ -1969,7 +2000,7 @@ bool MotorThread::calibTable(Bottle &options)
     deployPrepare=deployEnd=deployZone;
 
     deployPrepare[2]=0.1;
-    deployEnd[2]=-0.2;
+    deployEnd[2]=-0.3;
 
     bool f=false;
     setGazeIdle();
@@ -2093,6 +2124,7 @@ bool MotorThread::calibFingers(Bottle &options)
 
 bool MotorThread::exploreTorso(Bottle &options)
 {
+    this->avoidTable(true);
     // avoid torso controlDisp
     if(action[LEFT]!=NULL)
         action[LEFT]->setTrackingMode(false);
@@ -2100,26 +2132,104 @@ bool MotorThread::exploreTorso(Bottle &options)
     if(action[RIGHT]!=NULL)
         action[RIGHT]->setTrackingMode(false);
 
-    Vector torso_init_position(3);
-    torsoEnc->getEncoders(torso_init_position.data());
 
-    double t0=Time::now();
+    //get the torso initial position
+    Vector torso_init_joints(3);
+    torsoEnc->getEncoders(torso_init_joints.data());
 
-    int i=0;
-    while(isRunning() && (Time::now()-t0<10.0))
+    //initialization for the random walker
+    Vector tmp_joints(8);
+    tmp_joints=0.0;
+    tmp_joints[0]=torso_init_joints[2];
+    tmp_joints[1]=torso_init_joints[1];
+    tmp_joints[2]=torso_init_joints[0];
+    tmp_joints=CTRL_DEG2RAD*tmp_joints;
+    iKinTorso->setAng(tmp_joints);
+
+    Matrix H=iKinTorso->getH(3);
+    Vector cart_init_pos(3);
+    cart_init_pos[0]=H[0][3];
+    cart_init_pos[1]=H[1][3];
+    cart_init_pos[2]=H[2][3];
+    //----------------
+
+    
+    //fixed "target" position
+    Vector fixed_target(3);
+    fixed_target[0]=-0.5;
+    fixed_target[1]=0.0;
+    fixed_target[2]=cart_init_pos[2];
+
+
+    double walking_time=10.0;
+    double kp_pos_torso=0.001;
+    double kp_ang_torso=0.001;
+
+    double init_walking_time=Time::now();
+
+    //random walk!
+    while(this->isRunning() && !interrupted && Time::now()-init_walking_time<walking_time)
     {
-        torsoPos->positionMove(torsoPoses[i%torsoPoses.size()].data());
+        //generate random next random step
+        Vector random_pos(3);
+        double tmp_rnd=Rand::scalar(-0.1,0.1);
+        random_pos[0]=-tmp_rnd*tmp_rnd+Rand::scalar(-0.1,0.05);
+        random_pos[1]=cart_init_pos[1]+tmp_rnd;
+        random_pos[2]=cart_init_pos[2];
+
+        //get the desired angle
+        double random_alpha=90.0-asin(sqrt((cart_init_pos[0]-fixed_target[0])*(cart_init_pos[0]-fixed_target[0])+
+                        (cart_init_pos[1]-fixed_target[1])*(cart_init_pos[1]-fixed_target[1]))/
+                        fabs(cart_init_pos[0]-fixed_target[0]));
+        //--------------------
+
+
+        //wait to reach that point
         bool done=false;
-        while(isRunning() && !done)
+        while(this->isRunning() && !interrupted)
         {
-            Time::delay(0.1);
-            torsoPos->checkMotionDone(&done);
+            //set the current torso joints to the iKinTorso
+            Vector torso_joints(3);
+            //initialization for the random walker
+            Vector tmp_joints(8);
+            tmp_joints=0.0;
+            tmp_joints[0]=torso_joints[2];
+            tmp_joints[1]=torso_joints[1];
+            tmp_joints[2]=torso_joints[0];
+            tmp_joints=CTRL_DEG2RAD*tmp_joints;
+            iKinTorso->setAng(tmp_joints);
+
+            Matrix H=iKinTorso->getH(3);
+            Vector curr_pos(3);
+            curr_pos[0]=H[0][3];
+            curr_pos[1]=H[1][3];
+            curr_pos[2]=H[2][3];
+
+            Vector x_dot=kp_pos_torso*(random_pos-curr_pos);
+
+            Matrix fullJ=iKinTorso->GeoJacobian(3);
+
+            Matrix J=fullJ.submatrix(0,2,0,fullJ.cols());
+
+            Vector q_dot_over=yarp::math::pinv(J)*x_dot;
+            Vector q_dot(3);
+            q_dot[0]=kp_ang_torso*(random_alpha-torso_joints[2]);
+            q_dot[1]=q_dot_over[1];
+            q_dot[2]=q_dot_over[0];
+            q_dot=CTRL_RAD2DEG*q_dot;
+
+            if(norm(q_dot)<0.1)
+            {
+                torsoVel->stop();
+                break;
+            }
+
+            torsoVel->velocityMove(q_dot.data());
         }
-        i++;
     }
 
-    //go back to torso home last pose
-    torsoPos->positionMove(torso_init_position.data());
+    //go back to torso initial position
+    torsoPos->positionMove(torso_init_joints.data());
     bool done=false;
     while(isRunning() && !done)
     {
@@ -2127,6 +2237,7 @@ bool MotorThread::exploreTorso(Bottle &options)
         torsoPos->checkMotionDone(&done);
     }
 
+    this->avoidTable(false);
     return true;
 }
 
@@ -2496,6 +2607,8 @@ void MotorThread::update()
 
 void MotorThread::interrupt()
 {
+    interrupted=true;
+
     disparityPort.interrupt();
 
     //if learning is going on
@@ -2537,6 +2650,8 @@ void MotorThread::reinstate()
     }
 
     disparityPort.resume();
+
+    interrupted=false;
 }
 
 

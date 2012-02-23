@@ -28,10 +28,14 @@
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/GazeControl.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/math/SVD.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/neuralNetworks.h>
 #include <iCub/action/actionPrimitives.h>
+#include <iCub/iKin/iKinFwd.h>
+
+
 //#include <iCub/perception/models.h>
 
 #include <vector>
@@ -70,6 +74,7 @@ using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::action;
 using namespace iCub::perception;
+using namespace iCub::iKin;
 
 
 struct Dragger
@@ -128,6 +133,7 @@ private:
     IGazeControl                        *gazeCtrl;
 
     IPositionControl                    *torsoPos;
+    IVelocityControl                    *torsoVel;
     IControlMode                        *torsoCtrlMode;
     IImpedanceControl                   *torsoImpedenceCtrl;
 
@@ -196,13 +202,18 @@ private:
     int                                 grasp_state;
 
     bool                                waving;
+    bool                                avoid_table;
     bool                                closed;
+    bool                                interrupted;
 
     //drag stuff
     Port                                wrenchPort[2];
 
     string                              actions_path;
     Dragger                             dragger;
+
+    //in order to control the torso
+    iCubEye                             *iKinTorso;
 
 
     bool loadExplorationPoses(const string &file_name);
@@ -219,6 +230,12 @@ private:
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
     void close();
+
+    bool avoidTable(bool avoid=true)
+    {
+        avoid_table=avoid;
+        return true;
+    }
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
@@ -240,12 +257,12 @@ public:
     virtual void onStop();
 
 
-	void trackTemplate()
-	{
-		head_mode=HEAD_MODE_TRACK_TEMP;
-	}
-	
-	
+    void trackTemplate()
+    {
+        head_mode=HEAD_MODE_TRACK_TEMP;
+    }
+
+
     void lookAtHand()
     {
         head_mode=HEAD_MODE_TRACK_HAND;

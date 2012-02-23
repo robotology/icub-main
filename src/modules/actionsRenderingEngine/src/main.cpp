@@ -528,7 +528,7 @@ public:
 
                                 break;
                             }
-                        
+
                             default:
                             {
                                 string rep=command.get(1).asString().c_str();
