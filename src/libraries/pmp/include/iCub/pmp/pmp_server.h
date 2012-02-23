@@ -233,6 +233,7 @@ public:
     bool getTool(yarp::sig::Vector &x, yarp::sig::Vector &o) const;
     bool setPointState(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &xdot, const yarp::sig::Vector &odot);
+    bool setPointOrientation(const yarp::sig::Vector &o, const yarp::sig::Vector &odot);
     bool getPointState(yarp::sig::Vector &x, yarp::sig::Vector &o,
                        yarp::sig::Vector &xdot, yarp::sig::Vector &odot) const;
     bool getField(yarp::sig::Vector &field) const;

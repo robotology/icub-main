@@ -46,6 +46,7 @@
 #define PMP_VOCAB_CMD_EXECTRAJ             VOCAB4('e','t','r','j')
 #define PMP_VOCAB_CMD_SETSTATETOTOOL       VOCAB4('s','s','t','t')
 #define PMP_VOCAB_CMD_SETSTATE             VOCAB4('s','s','t','a')
+#define PMP_VOCAB_CMD_SETORIEN             VOCAB4('s','o','r','i')
 #define PMP_VOCAB_CMD_GETSTATE             VOCAB4('g','s','t','a')
 #define PMP_VOCAB_CMD_ATTACHTOOLFRAME      VOCAB4('t','a','t','f')
 #define PMP_VOCAB_CMD_GETTOOLFRAME         VOCAB4('t','g','e','f')

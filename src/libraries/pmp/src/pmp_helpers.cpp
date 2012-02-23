@@ -47,7 +47,7 @@ bool extractVector(Property &prop, const string &option, Vector &res)
 /************************************************************************/
 bool copyVectorData(const Vector &src, Vector &dest)
 {
-    int offs=0;
+    size_t offs=0;
     if (src.length()>3)
         offs=3;
 

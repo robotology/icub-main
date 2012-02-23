@@ -1078,6 +1078,55 @@ bool PmpClient::setPointState(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
+bool PmpClient::setPointOrientation(const Vector &o, const Vector &odot)
+{
+    if (isOpen)
+    {
+        Value val_o;    val_o.fromString(("("+string(o.toString().c_str())+")").c_str());
+        Value val_odot; val_odot.fromString(("("+string(odot.toString().c_str())+")").c_str());
+
+        Property options;
+        options.put("o",val_o);
+        options.put("odot",val_odot);
+
+        string options_str=options.toString().c_str();
+        printMessage(2,"request for setting orientation: %s\n",options_str.c_str());
+
+        Value val;
+        val.fromString(("("+options_str+")").c_str());
+
+        Bottle cmd,reply;
+        cmd.addVocab(PMP_VOCAB_CMD_SETORIEN);
+        cmd.add(val);
+
+        if (rpc.write(cmd,reply))
+        {
+            if (reply.get(0).asVocab()==PMP_VOCAB_CMD_ACK)
+            {
+                printMessage(1,"orientation successfully updated\n");
+                return true;
+            }
+            else
+            {
+                printMessage(1,"something went wrong: request rejected\n");
+                return false;
+            }
+        }
+        else
+        {
+            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        printMessage(1,"client is not open\n");
+        return false;
+    }
+}
+
+
+/************************************************************************/
 bool PmpClient::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot) const
 {
     if (isOpen)

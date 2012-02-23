@@ -961,6 +961,29 @@ bool PmpServer::setPointState(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
+bool PmpServer::setPointOrientation(const Vector &o, const Vector &odot)
+{
+    if (isOpen)
+    {
+        copyVectorData(o,this->x);
+        copyVectorData(odot,this->xdot);
+
+        If.reset(this->xdot);
+        Iv.reset(this->x);
+
+        printMessage(1,"point state changed to x = %s; xdot = %s\n",
+                     this->x.toString().c_str(),this->xdot.toString().c_str());
+        return true;
+    }
+    else
+    {
+        printMessage(1,"server is not open\n");
+        return false;
+    }
+}
+
+
+/************************************************************************/
 bool PmpServer::setPointStateToTool()
 {
     if (isOpen)
@@ -1635,6 +1658,34 @@ bool PmpServer::read(ConnectionReader &connection)
                      {
                          if (setPointState(getVectorPos(pos),getVectorOrien(pos),
                                            getVectorPos(vel),getVectorOrien(vel)))
+                             reply.addVocab(PMP_VOCAB_CMD_ACK);
+                         else
+                             reply.addVocab(PMP_VOCAB_CMD_NACK);
+                     }
+                     else
+                         reply.addVocab(PMP_VOCAB_CMD_NACK);
+                 }
+             }
+
+             break;
+         }
+
+         //-----------------
+         case PMP_VOCAB_CMD_SETORIEN:
+         {
+             if (cmd.size()<2)
+                 reply.addVocab(PMP_VOCAB_CMD_NACK);
+             else
+             {
+                 Property options=extractProperty(cmd.get(1));
+                 if (options.isNull())
+                     reply.addVocab(PMP_VOCAB_CMD_NACK);
+                 else
+                 {
+                     Vector o,odot;
+                     if (extractVector(options,"o",o) && extractVector(options,"odot",odot))
+                     {
+                         if (setPointOrientation(o,odot))
                              reply.addVocab(PMP_VOCAB_CMD_ACK);
                          else
                              reply.addVocab(PMP_VOCAB_CMD_NACK);
