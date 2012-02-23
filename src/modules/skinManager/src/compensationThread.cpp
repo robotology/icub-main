@@ -20,7 +20,7 @@
 #include <yarp/math/Math.h>
 #include "math.h"
 #include "memory.h"
-#include "iCub/skinManager/CompensationThread.h"
+#include "iCub/skinManager/compensationThread.h"
 
 #define FOR_ALL_PORTS(i) for(unsigned int i=0;i<portNum;i++)
 

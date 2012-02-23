@@ -19,7 +19,7 @@
 #include <yarp/math/Math.h>
 #include "math.h"
 #include <algorithm>
-#include "iCub/skinManager/Compensator.h"
+#include "iCub/skinManager/compensator.h"
 
 
 using namespace std;

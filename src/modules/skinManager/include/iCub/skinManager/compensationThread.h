@@ -33,7 +33,7 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include "iCub/skinManager/Compensator.h"
+#include "iCub/skinManager/compensator.h"
 #include "iCub/skinDynLib/skinContactList.h"
 
 using namespace std;
