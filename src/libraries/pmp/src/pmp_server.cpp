@@ -2181,6 +2181,12 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
             double trajTime;
             double t0,t;
             int pos,N;
+            bool threadInit()
+            {
+                t=0.0;
+                t0=Time::now();
+                return true;
+            }
             void run()
             {
                 t=Time::now()-t0;
@@ -2190,6 +2196,12 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
                     ctrl->goToPose(trajPos->at(i),trajOrien->at(i));
                     pos=i;
                 }
+            }
+            void threadRelease()
+            {
+                // make sure we attempt to reach the last point
+                ctrl->goToPoseSync(trajPos->back(),trajOrien->back());
+                ctrl->waitMotionDone();
             }
         public:
            TrackerThread() : RateThread(20), pos(-1) { }
@@ -2201,22 +2213,10 @@ bool PmpServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
                this->trajTime=trajTime;
                N=(int)(trajPos->size()-1);
            }
-           bool threadInit()
-           {
-               t=0.0;
-               t0=Time::now();
-               return true;
-           }
            void wait()
            {
                while(t<trajTime)
                    Time::delay(0.1);
-           }
-           void threadRelease()
-           {
-               // make sure we attempt to reach the last point
-               ctrl->goToPoseSync(trajPos->back(),trajOrien->back());
-               ctrl->waitMotionDone();
            }
         } trackerThread;
 
