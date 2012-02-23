@@ -2000,7 +2000,7 @@ bool MotorThread::calibTable(Bottle &options)
     deployPrepare=deployEnd=deployZone;
 
     deployPrepare[2]=0.1;
-    deployEnd[2]=-0.3;
+    deployEnd[2]=-0.25;
 
     bool f=false;
     setGazeIdle();
