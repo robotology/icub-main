@@ -86,7 +86,7 @@ public:
     *    robot part to be controlled.
     *  
     * \b period <int>: example (period 20), specifies the period 
-    *    given in [ms] to generate the pmp field.
+    *    given in [ms] to generate the Pmp field.
     *  
     * \b offline: example (offline), lets the client/server start in 
     *    offline mode.
