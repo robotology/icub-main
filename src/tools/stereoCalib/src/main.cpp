@@ -34,7 +34,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 \section intro_sec Description
 The module performs the stereo calibration (both intrinsic and extrinsic parameters). It also computes the rototranslation matrix used by \ref iKinGazeCtrl "Gaze Controller".
 A chessboard pattern is required, for convenience, a chessboard calibration image is provided in the 
-$ICUB_ROOT/main/app/cameraCalibration/data directory. In the config file $ICUB_ROOT/main/app/cameraCalibration/conf/icubEyes.ini
+$ICUB_ROOT/main/app/cameraCalibration/data directory. In the config file  (DEFAULT $ICUB_ROOT/main/app/cameraCalibration/conf/icubEyes.ini)
 you should add the following group:
 
 \code
@@ -46,7 +46,7 @@ numberOfPairs N
 MonoCalib value
 \endcode
 
-See below for the parameter description.
+See below for the parameter description. Calibration results will be saved in $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini.
 
 \note If you are using low resolution images (320x240) you should use a big chessboard pattern (i.e. with square side length of ~4cm). 
 \note Make sure to show the pattern horizontally.
@@ -66,7 +66,7 @@ YARP libraries and OpenCV
 --numberOfPairs \e Num 
 - The parameter \e Num identifies the number of pairs with the pattern needed before the stereo calibration (default 30).
 
---MonoCalib \e Num 
+--MonoCalib \e Val 
 - The parameter \e Val identifies if the module has to run the stereo calibration (Val=0) or the mono calibration (Val=1). For the mono calibration connect only the camera that you want to calibrate.
 
 \section portsc_sec Ports Created

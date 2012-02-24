@@ -32,7 +32,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->camCalibFile=rf.getContextPath().c_str();
 
 
-    string fileName= rf.find("from").asString().c_str();
+    string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();
 
     
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
@@ -173,7 +173,7 @@ void stereoCalibThread::stereoCalibRun()
 
                     updateExtrinsics(this->R,this->T,"STEREO_DISPARITY");
 
-                    fprintf(stdout, "Calibration Results Saved. \n");
+                    fprintf(stdout, "Calibration Results Saved in %s \n", camCalibFile.c_str());
 
                     startCalibration=0;
                     count=1;
@@ -276,7 +276,7 @@ void stereoCalibThread::stereoCalibRun()
                     else
                         updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
                         
-                    fprintf(stdout, "Calibration Results Saved. \n");
+                    fprintf(stdout, "Calibration Results Saved in %s \n", camCalibFile.c_str());
 
                     startCalibration=0;
                     count=1;
