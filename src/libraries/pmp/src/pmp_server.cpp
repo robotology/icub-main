@@ -341,12 +341,6 @@ bool PmpServer::open(const Property &options)
     rpc.open(("/"+name+"/rpc").c_str());
     rpc.setReader(*this);
 
-    // request high resolution scheduling straightaway
-    Time::turboBoost();
-    
-    setRate(period);
-    start();
-
     if (!offlineMode)
     {
         if ((part=="right_arm") || (part=="both_arms"))
@@ -393,6 +387,12 @@ bool PmpServer::open(const Property &options)
 
         t0=Time::now();
     }
+
+    // request high resolution scheduling straightaway
+    Time::turboBoost();
+    
+    setRate(period);
+    start();
 
     printMessage(1,"server successfully open%s\n", offlineMode?" (offline mode)":"");
 
