@@ -490,7 +490,7 @@ bool PmpServer::addItem(const Property &options, int &item)
         printMessage(2,"received request for adding item: %s\n",
                      options.toString().c_str());
 
-        bool ret;
+        bool ret=false;
         if (Item *pItem=itemFactory(options))
         {
             // configure item
@@ -503,10 +503,7 @@ bool PmpServer::addItem(const Property &options, int &item)
             ret=true;
         }
         else
-        {
             printMessage(1,"wrong request detected!\n");
-            ret=false;
-        }
 
         mutex.post();
         return ret;
@@ -527,7 +524,7 @@ bool PmpServer::eraseItem(const int item)
         mutex.wait();
         printMessage(2,"received request for erasing item %d\n",item);
 
-        bool ret;
+        bool ret=false;
         map<int,Item*>::iterator it=table.find(item);
         if (it!=table.end())
         {
@@ -540,10 +537,7 @@ bool PmpServer::eraseItem(const int item)
             ret=true;
         }
         else
-        {
             printMessage(1,"item %d not found!\n",item);
-            ret=false;
-        }
 
         mutex.post();
         return ret;
@@ -615,7 +609,7 @@ bool PmpServer::setProperty(const int item, const Property &options)
         printMessage(2,"received request for setting item %d property: %s\n",
                      item,options.toString().c_str());
 
-        bool ret;
+        bool ret=false;
         map<int,Item*>::iterator it=table.find(item);
         if (it!=table.end())
         {
@@ -627,10 +621,7 @@ bool PmpServer::setProperty(const int item, const Property &options)
             ret=true;
         }
         else
-        {
             printMessage(1,"item %d not found!\n",item);
-            ret=false;
-        }
 
         mutex.post();
         return ret;
@@ -651,7 +642,7 @@ bool PmpServer::getProperty(const int item, Property &options)
         mutex.wait();
         printMessage(2,"received request for getting item %d property\n",item);
 
-        bool ret;
+        bool ret=false;
         map<int,Item*>::const_iterator it=table.find(item);
         if (it!=table.end())
         {
@@ -662,10 +653,7 @@ bool PmpServer::getProperty(const int item, Property &options)
             ret=true;
         }
         else
-        {
             printMessage(1,"item %d not found!\n",item);
-            ret=false;
-        }
 
         mutex.post();
         return ret;
