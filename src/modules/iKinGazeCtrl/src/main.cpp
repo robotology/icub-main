@@ -577,7 +577,7 @@ protected:
 
 public:
     /************************************************************************/
-    virtual bool configure(ResourceFinder &rf)
+    bool configure(ResourceFinder &rf)
     {
         string ctrlName;
         string robotName;
@@ -716,7 +716,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool respond(const Bottle &command, Bottle &reply)
+    bool respond(const Bottle &command, Bottle &reply)
     {
         int ack=Vocab::encode("ack");
         int nack=Vocab::encode("nack");
@@ -1203,7 +1203,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool close()
+    bool close()
     {
         loc->stop();
         eyesRefGen->stop();
@@ -1230,13 +1230,13 @@ public:
     }
 
     /************************************************************************/
-    virtual double getPeriod()
+    double getPeriod()
     {
         return 1.0;
     }
 
     /************************************************************************/
-    virtual bool updateModule()
+    bool updateModule()
     {
         return true;
     }
