@@ -3,29 +3,51 @@
      for iCubLisboa01 -->
 
 <application>
-  <name>Skin Gui Right Arm with Compensation</name>
+  <name>Skin Gui Right Arm</name>
 
   <module>
-    <name>skinDriftCompensation</name>
-    <parameters>--from driftCompRight.ini --context iCubLisboa01/conf</parameters>
+    <name>skinManager</name>
+    <parameters>--from skinManRight.ini --context iCubLisboa01/conf</parameters>
     <node>chico3</node>
-    <tag>driftCompRight</tag>
+    <tag>driftCompRA</tag>
   </module>
 
   <module>
-    <name>skinDriftCompensationGui</name>
-    <parameters>--from driftCompGuiRight.ini --context skinGui/conf</parameters>
+    <name>skinManagerGui</name>
+    <parameters>--from skinManGuiRight.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
     <node>chico3</node>
-    <tag>driftCompGuiRight</tag>
+    <tag>driftCompGuiRA</tag>
   </module>
 
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from righthand.ini --useCalibration</parameters>
+    <parameters>--from right_hand.ini --useCalibration --xpos 1230 --ypos 0 --width 400 --height 400</parameters>
     <node>chico3</node>
-    <tag>RightHand</tag>
+    <tag>skinGuiRH</tag>
   </module>
 
+<!--
+  <connection>
+    <from>/skinManGuiRight/rpc:o</from>
+    <to>/rightSkinMan/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/rightSkinMan/monitor:o</from>
+    <to>/skinManGuiRight/monitor:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/rightSkinMan/info:o</from>
+    <to>/skinManGuiRight/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_hand_comp</from>
+    <to>/skinGui/right_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+-->
   <connection>
     <from>/driftCompGuiRight/rpc:o</from>
     <to>/rightSkinDriftComp/rpc</to>
