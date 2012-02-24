@@ -1207,8 +1207,8 @@ bool PmpServer::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat) const
     {
         if (!offlineMode)
         {
-            xhat=getVectorPos(xhat);
-            ohat=getVectorOrien(xhat);
+            xhat=getVectorPos(this->xhat);
+            ohat=getVectorOrien(this->xhat);
             qhat=this->qhat;
 
             Vector &_xhat=const_cast<Vector&>(this->xhat);
