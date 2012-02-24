@@ -62,7 +62,7 @@ private:
     char pathL[256];
     char pathR[256];
     void printMatrix(Mat &matrix);
-    bool checkTS(double TSLeft, double TSRight, double th=0.020);
+    bool checkTS(double TSLeft, double TSRight, double th=0.08);
     void preparePath(const char * imageDir, char* pathL, char* pathR, int num);
     void saveStereoImage(const char * imageDir, IplImage* left, IplImage * right, int num);
     void monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist);
