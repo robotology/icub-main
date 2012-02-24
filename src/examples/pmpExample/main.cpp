@@ -93,6 +93,7 @@ protected:
     int target;
     int obstacle;
     Vector xTg;
+    string arm;
 
 public:
 
@@ -103,6 +104,7 @@ public:
         string local=rf.check("local",Value("/pmp_client")).asString().c_str();
         string robot=rf.check("robot",Value("icub")).asString().c_str();
         string part=rf.check("part",Value("left_arm")).asString().c_str();
+        arm=(part=="left_arm"?"left":"right");
 
         Property options;
         options.put("verbosity",verbosity);
@@ -200,6 +202,7 @@ public:
             obstacleOpt.put("cut_tails","on");
             client.addItem(obstacleOpt,obstacle);
 
+            client.setActiveIF(arm);
             client.setPointStateToTool();
             client.enableControl();
             client.enableField();
