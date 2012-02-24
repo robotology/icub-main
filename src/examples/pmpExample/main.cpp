@@ -93,6 +93,8 @@ protected:
     int target;
     int obstacle;
     Vector xTg;
+    Vector o0;
+    double dist;
     string arm;
 
 public:
@@ -161,26 +163,28 @@ public:
         {
             Vector x(3),o;
             x[0]=-0.2;
-            x[1]=-0.05;
+            x[1]=(arm=="left"?-0.05:0.05);
             x[2]=0.1;
             Matrix R(3,3); R=0.0;
             R(0,0)=-1.0; R(2,1)=-1.0; R(1,2)=-1.0;
-            iCtrl->goToPoseSync(x,dcm2axis(R),3.0);
+            o0=dcm2axis(R);
+            iCtrl->goToPoseSync(x,o0,2.0);
             iCtrl->waitMotionDone();
             iCtrl->getPose(x,o);
-            iCtrl->setTrajTime(1.5);
+            iCtrl->setTrajTime(1.0);
             iCtrl->setInTargetTol(1e-3);
 
             xTg=x;
             xTg[0]-=0.2;
+            dist=norm(xTg-x);
             Value centerTg; centerTg.fromString(("("+string(xTg.toString().c_str())+")").c_str());
             Value radiusTg; radiusTg.fromString("(0.01 0.01 0.01)");
 
             Property targetOpt;
             targetOpt.put("type","target_msd");
             targetOpt.put("active","on");
-            targetOpt.put("K",1.5);
-            targetOpt.put("D",3.0);
+            targetOpt.put("K",2.0);
+            targetOpt.put("D",2.5);
             targetOpt.put("name","target");
             targetOpt.put("center",centerTg);
             targetOpt.put("radius",radiusTg);
@@ -188,9 +192,9 @@ public:
 
             Vector xOb=x;
             xOb[0]=(x[0]+xTg[0])/2.0;
-            xOb[1]+=0.05;
+            xOb[1]+=(arm=="left"?0.05:-0.05);
             Value centerOb; centerOb.fromString(("("+string(xOb.toString().c_str())+")").c_str());
-            Value radiusOb; radiusOb.fromString("(0.05 0.05 0.05)");
+            Value radiusOb; radiusOb.fromString("(0.1 0.1 0.1)");
 
             Property obstacleOpt;
             obstacleOpt.put("type","obstacle_gaussian");
@@ -219,15 +223,21 @@ public:
             Vector xee,oee;
             iCtrl->getPose(xee,oee);
             double d2=norm(x-xee);
+            
+            Vector zero(4); zero=0.0;
+            Vector o1=zero;
+            o1[0]=(arm=="left"?-1.0:1.0); o1[3]=M_PI/2.0*(1.0-d1/dist);
+            o=dcm2axis(axis2dcm(o1)*axis2dcm(o0));
+            client.setPointOrientation(o,zero);
 
             fprintf(stdout,"|xTg-x|=%g [m], |x-xee|=%g[m]\n",d1,d2);
-
-            if (d1<3e-3)
-            {              
-                client.disableControl();                
+            if ((d1<2e-3) && (d2<2e-3))
+            {
+                client.disableControl();
                 client.disableField();
-                
-                iCtrl->restoreContext(store_context_id);
+
+                fprintf(stdout,"job accomplished\n");   
+                iCtrl->restoreContext(store_context_id);                
 
                 dCtrl.close();
                 client.clearItems();
