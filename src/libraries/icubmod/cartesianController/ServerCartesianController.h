@@ -211,6 +211,8 @@ protected:
     friend class CartesianCtrlRpcProcessor;
     friend class CartesianCtrlCommandPort;
 
+    bool stopControlNoMutex();
+
 public:
     ServerCartesianController();
     ServerCartesianController(yarp::os::Searchable &config);
