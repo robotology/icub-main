@@ -486,9 +486,11 @@ bool PmpServer::addItem(const Property &options, int &item)
 {
     if (isOpen)
     {
+        mutex.wait();
         printMessage(2,"received request for adding item: %s\n",
                      options.toString().c_str());
 
+        bool ret;
         if (Item *pItem=itemFactory(options))
         {
             // configure item
@@ -498,13 +500,16 @@ bool PmpServer::addItem(const Property &options, int &item)
             pushUpdateGuiItem(it);
 
             printMessage(1,"added item %s\n",pItem->toProperty().toString().c_str());
-            return true;
+            ret=true;
         }
         else
         {
             printMessage(1,"wrong request detected!\n");
-            return false;
+            ret=false;
         }
+
+        mutex.post();
+        return ret;
     }
     else
     {
@@ -519,8 +524,10 @@ bool PmpServer::eraseItem(const int item)
 {
     if (isOpen)
     {
+        mutex.wait();
         printMessage(2,"received request for erasing item %d\n",item);
 
+        bool ret;
         map<int,Item*>::iterator it=table.find(item);
         if (it!=table.end())
         {
@@ -530,13 +537,16 @@ bool PmpServer::eraseItem(const int item)
             table.erase(it);
 
             printMessage(1,"item %d scheduled for erasing\n",item);
-            return true;
+            ret=true;
         }
         else
         {
             printMessage(1,"item %d not found!\n",item);
-            return false;
+            ret=false;
         }
+
+        mutex.post();
+        return ret;
     }
     else
     {
@@ -551,6 +561,7 @@ bool PmpServer::clearItems()
 {
     if (isOpen)
     {
+        mutex.wait();
         for (map<int,Item*>::iterator it=table.begin(); it!=table.end(); it++)
         {
             pushEraseGuiItem(it);
@@ -559,6 +570,8 @@ bool PmpServer::clearItems()
 
         table.clear();
         printMessage(1,"all items have been scheduled for erasing\n");
+
+        mutex.post();
         return true;
     }
     else
@@ -570,16 +583,19 @@ bool PmpServer::clearItems()
 
 
 /************************************************************************/
-bool PmpServer::getItems(Bottle &items) const
+bool PmpServer::getItems(Bottle &items)
 {
     if (isOpen)
     {
+        mutex.wait();
         items.clear();
         for (map<int,Item*>::const_iterator it=table.begin(); it!=table.end(); it++)
             items.addInt(it->first);
 
         printMessage(1,"list of items ids prepared for sending: (%s)\n",
                      items.toString().c_str());
+
+        mutex.post();
         return true;
     }
     else
@@ -595,9 +611,11 @@ bool PmpServer::setProperty(const int item, const Property &options)
 {
     if (isOpen)
     {
+        mutex.wait();
         printMessage(2,"received request for setting item %d property: %s\n",
                      item,options.toString().c_str());
 
+        bool ret;
         map<int,Item*>::iterator it=table.find(item);
         if (it!=table.end())
         {
@@ -606,13 +624,16 @@ bool PmpServer::setProperty(const int item, const Property &options)
 
             printMessage(1,"item %d property successfully updated: %s\n",
                          item,it->second->toProperty().toString().c_str());
-            return true;
+            ret=true;
         }
         else
         {
             printMessage(1,"item %d not found!\n",item);
-            return false;
+            ret=false;
         }
+
+        mutex.post();
+        return ret;
     }
     else
     {
@@ -623,12 +644,14 @@ bool PmpServer::setProperty(const int item, const Property &options)
 
 
 /************************************************************************/
-bool PmpServer::getProperty(const int item, Property &options) const
+bool PmpServer::getProperty(const int item, Property &options)
 {
     if (isOpen)
     {
+        mutex.wait();
         printMessage(2,"received request for getting item %d property\n",item);
 
+        bool ret;
         map<int,Item*>::const_iterator it=table.find(item);
         if (it!=table.end())
         {
@@ -636,13 +659,16 @@ bool PmpServer::getProperty(const int item, Property &options) const
 
             printMessage(1,"item %d property successfully retrieved: %s\n",
                          item,options.toString().c_str());
-            return true;
+            ret=true;
         }
         else
         {
             printMessage(1,"item %d not found!\n",item);
-            return false;
+            ret=false;
         }
+
+        mutex.post();
+        return ret;
     }
     else
     {
@@ -658,7 +684,6 @@ bool PmpServer::enableField()
     if (isOpen)
     {
         fieldEnabled=true;
-
         printMessage(1,"field enabled\n");
         return true;
     }
@@ -675,14 +700,14 @@ bool PmpServer::disableField()
 {
     if (isOpen)
     {
+        mutex.wait();
         if (!offlineMode)
-        {
             iCtrlActive->stopControl();
-        }
 
         fieldEnabled=false;
-
         printMessage(1,"field disabled\n");
+
+        mutex.post();
         return true;
     }
     else
@@ -699,7 +724,6 @@ bool PmpServer::getFieldStatus(bool &status) const
     if (isOpen)
     {
         status=fieldEnabled;
-
         printMessage(1,"field status = %s\n",status?"on":"off");
         return true;
     }
@@ -718,6 +742,7 @@ bool PmpServer::enableControl()
     {
         if (!offlineMode)
         {
+            mutex.wait();
             controlEnabled=true;
             printMessage(1,"control enabled\n");
 
@@ -727,6 +752,7 @@ bool PmpServer::enableControl()
                 printMessage(2,"simulation gets automatically disabled\n");
             }
 
+            mutex.post();
             return true;
         }
         else
@@ -750,11 +776,11 @@ bool PmpServer::disableControl()
     {
         if (!offlineMode)
         {
+            mutex.wait();
             iCtrlActive->stopControl();
-
             controlEnabled=false;
-
             printMessage(1,"control disabled\n");
+            mutex.post();
             return true;
         }
         else
@@ -779,7 +805,6 @@ bool PmpServer::getControlStatus(bool &status) const
         if (!offlineMode)
         {
             status=controlEnabled;
-
             printMessage(1,"control status = %s\n",status?"on":"off");
             return true;
         }
@@ -804,6 +829,7 @@ bool PmpServer::enableSimulation()
     {
         if (!offlineMode)
         {
+            mutex.wait();
             simulationEnabled=true;
             simulationFirstStep=true;
             printMessage(1,"simulation enabled\n");
@@ -814,6 +840,7 @@ bool PmpServer::enableSimulation()
                 printMessage(2,"control gets automatically disabled\n");
             }
 
+            mutex.post();
             return true;
         }
         else
@@ -838,7 +865,6 @@ bool PmpServer::disableSimulation()
         if (!offlineMode)
         {
             simulationEnabled=false;
-
             printMessage(1,"simulation disabled\n");
             return true;
         }
@@ -864,7 +890,6 @@ bool PmpServer::getSimulationStatus(bool &status) const
         if (!offlineMode)
         {
             status=simulationEnabled;
-
             printMessage(1,"simulation status = %s\n",status?"on":"off");
             return true;
         }
@@ -887,6 +912,7 @@ bool PmpServer::setPeriod(const int period)
 {
     if (isOpen)
     {
+        mutex.wait();
         this->period=period;
         double Ts=(double)this->period/1000.0;
 
@@ -898,6 +924,8 @@ bool PmpServer::setPeriod(const int period)
             setRate(this->period);
             printMessage(1,"thread period changed to %d [ms]\n",period);
         }
+
+        mutex.post();
         return true;
     }
     else
@@ -940,6 +968,7 @@ bool PmpServer::setPointState(const Vector &x, const Vector &o,
 {
     if (isOpen)
     {
+        mutex.wait();
         copyVectorData(x,this->x);
         copyVectorData(o,this->x);
         copyVectorData(xdot,this->xdot);
@@ -950,6 +979,8 @@ bool PmpServer::setPointState(const Vector &x, const Vector &o,
 
         printMessage(1,"point state changed to x = %s; xdot = %s\n",
                      this->x.toString().c_str(),this->xdot.toString().c_str());
+
+        mutex.post();
         return true;
     }
     else
@@ -965,6 +996,7 @@ bool PmpServer::setPointOrientation(const Vector &o, const Vector &odot)
 {
     if (isOpen)
     {
+        mutex.wait();
         copyVectorData(o,this->x);
         copyVectorData(odot,this->xdot);
 
@@ -973,6 +1005,8 @@ bool PmpServer::setPointOrientation(const Vector &o, const Vector &odot)
 
         printMessage(1,"point state changed to x = %s; xdot = %s\n",
                      this->x.toString().c_str(),this->xdot.toString().c_str());
+
+        mutex.post();
         return true;
     }
     else
@@ -995,16 +1029,19 @@ bool PmpServer::setPointStateToTool()
             iCtrlActive->getTaskVelocities(xdot,odot);
             odot=0.0;
 
+            mutex.wait();
             copyVectorData(x,this->x);
             copyVectorData(o,this->x);
             copyVectorData(xdot,this->xdot);
             copyVectorData(odot,this->xdot);
 
             If.reset(this->xdot);
-            Iv.reset(this->x);
+            Iv.reset(this->x);            
 
             printMessage(1,"point state changed to x = %s; xdot = %s\n",
                          this->x.toString().c_str(),this->xdot.toString().c_str());
+
+            mutex.post();
             return true;
         }
         else
@@ -1035,14 +1072,16 @@ bool PmpServer::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
             }
             else
             {
+                mutex.wait();
                 toolFrame=axis2dcm(o);
                 toolFrame(0,3)=x[0];
                 toolFrame(1,3)=x[1];
                 toolFrame(2,3)=x[2];
 
                 invToolFrame=SE3inv(toolFrame);
-
                 printMessage(1,"attach tool frame = %s\n",toolFrame.toString().c_str());
+
+                mutex.post();
                 return true;
             }
         }
@@ -1061,19 +1100,22 @@ bool PmpServer::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
 
 
 /************************************************************************/
-bool PmpServer::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o) const
+bool PmpServer::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o)
 {
     if (isOpen)
     {
         if (!offlineMode)
         {
-            x.resize(3);
+            mutex.wait();
+            x.resize(3);            
             x[0]=toolFrame(0,3);
             x[1]=toolFrame(1,3);
             x[2]=toolFrame(2,3);
             o=dcm2axis(toolFrame);
 
             printMessage(1,"tool frame currently attached is = %s\n",toolFrame.toString().c_str());
+
+            mutex.post();
             return true;
         }
         else
@@ -1097,9 +1139,10 @@ bool PmpServer::removeToolFrame()
     {
         if (!offlineMode)
         {
+            mutex.wait();
             toolFrame=invToolFrame=eye(4,4);
-
             printMessage(1,"tool frame removed\n");
+            mutex.post();
             return true;
         }
         else
@@ -1236,8 +1279,6 @@ bool PmpServer::read(ConnectionReader &connection)
 {
     Bottle cmd, reply;
     cmd.read(connection);
-
-    mutex.wait();
 
     if (cmd.size()==0)
         reply.addVocab(PMP_VOCAB_CMD_NACK);
@@ -1703,7 +1744,10 @@ bool PmpServer::read(ConnectionReader &connection)
          {
              if (isOpen)
              {
+                 mutex.wait();
                  Property state=prepareData();
+                 mutex.post();
+
                  Value val_state;
                  val_state.fromString(("("+string(state.toString().c_str())+")").c_str());
 
@@ -1803,8 +1847,6 @@ bool PmpServer::read(ConnectionReader &connection)
              reply.addVocab(PMP_VOCAB_CMD_NACK);
     }
 
-    mutex.post();
-
     ConnectionWriter *returnToSender=connection.getWriter();
     if (returnToSender!=NULL)
         reply.write(*returnToSender);    
@@ -1891,7 +1933,8 @@ bool PmpServer::setActiveIF(const string &activeIF)
             if (part=="both_arms")
             {
                 if ((activeIF=="right") || (activeIF=="left"))
-                {    
+                {
+                    mutex.wait();
                     iCtrlActive->stopControl();
                     if (activeIF=="right")
                         iCtrlActive=iCtrlRight;
@@ -1900,6 +1943,8 @@ bool PmpServer::setActiveIF(const string &activeIF)
                     
                     this->activeIF=activeIF;
                     printMessage(1,"active interface successfully set to %s\n",activeIF.c_str());
+
+                    mutex.post();
                     return true;
                 }
                 else
@@ -2119,6 +2164,7 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 {
     if (isOpen)
     {
+        mutex.wait();
         printMessage(1,"request for trajectory simulation\n");
         Vector xdotOffline=xdot;
         Vector xOffline=x;
@@ -2130,9 +2176,7 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
         unsigned int iteration=0;
         while (iteration++<maxIterations)
         {
-            Vector field;
-            field.resize(x.length(),0.0);
-
+            Vector field; field.resize(x.length(),0.0);
             for (map<int,Item*>::const_iterator it=table.begin(); it!=table.end(); it++) 
                 field=field+it->second->getField(xOffline,xdotOffline);
 
@@ -2143,6 +2187,7 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
             trajOrien.push_back(getVectorOrien(xOffline));
         }       
 
+        mutex.post();
         return true;
     }
     else

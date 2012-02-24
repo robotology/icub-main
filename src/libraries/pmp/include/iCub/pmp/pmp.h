@@ -187,7 +187,7 @@ public:
     * @param items the Bottle containing the retrieved list.
     * @return true/false if successful/failed.
     */
-    virtual bool getItems(yarp::os::Bottle &items) const = 0;
+    virtual bool getItems(yarp::os::Bottle &items) = 0;
 
     /**
     * Allow changing the properties of an existing item.
@@ -205,7 +205,7 @@ public:
     *                properties.
     * @return true/false if successful/failed.
     */
-    virtual bool getProperty(const int item, yarp::os::Property &options) const = 0;
+    virtual bool getProperty(const int item, yarp::os::Property &options) = 0;
 
     /**
     * Enable the generation of the Pmp field.
@@ -310,7 +310,7 @@ public:
     *          wrt the end-effector (axis-angle notation).
     * @return true/false if successful/failed.
     */
-    virtual bool getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o) const = 0;
+    virtual bool getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o) = 0;
 
     /**
     * Remove the tool currently attached to the end-effector.  

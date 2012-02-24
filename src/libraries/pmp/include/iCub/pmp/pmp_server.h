@@ -212,9 +212,9 @@ public:
     bool addItem(const yarp::os::Property &options, int &item);
     bool eraseItem(const int item);
     bool clearItems();
-    bool getItems(yarp::os::Bottle &items) const;
+    bool getItems(yarp::os::Bottle &items);
     bool setProperty(const int item, const yarp::os::Property &options);
-    bool getProperty(const int item, yarp::os::Property &options) const;
+    bool getProperty(const int item, yarp::os::Property &options);
     bool enableField();
     bool disableField();
     bool getFieldStatus(bool &status) const;
@@ -228,7 +228,7 @@ public:
     bool getPeriod(int &period) const;
     bool setPointStateToTool();
     bool attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
-    bool getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o) const;
+    bool getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool removeToolFrame();
     bool getTool(yarp::sig::Vector &x, yarp::sig::Vector &o) const;
     bool setPointState(const yarp::sig::Vector &x, const yarp::sig::Vector &o,

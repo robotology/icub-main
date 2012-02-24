@@ -269,7 +269,7 @@ bool PmpClient::clearItems()
 
 
 /************************************************************************/
-bool PmpClient::getItems(Bottle &items) const
+bool PmpClient::getItems(Bottle &items)
 {
     if (isOpen)
     {
@@ -353,7 +353,7 @@ bool PmpClient::setProperty(const int item, const Property &options)
 
 
 /************************************************************************/
-bool PmpClient::getProperty(const int item, Property &options) const
+bool PmpClient::getProperty(const int item, Property &options)
 {
     if (isOpen)
     {
@@ -903,7 +903,7 @@ bool PmpClient::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
 
 
 /************************************************************************/
-bool PmpClient::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o) const
+bool PmpClient::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o)
 {
     if (isOpen)
     {
