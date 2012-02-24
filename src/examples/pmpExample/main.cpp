@@ -197,6 +197,7 @@ public:
             obstacleOpt.put("name","obstacle");
             obstacleOpt.put("center",centerOb);
             obstacleOpt.put("radius",radiusOb);
+            obstacleOpt.put("cut_tails","on");
             client.addItem(obstacleOpt,obstacle);
 
             client.setPointStateToTool();
