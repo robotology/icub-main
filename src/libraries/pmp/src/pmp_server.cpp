@@ -719,7 +719,7 @@ bool PmpServer::disableField()
 
 
 /************************************************************************/
-bool PmpServer::getFieldStatus(bool &status) const
+bool PmpServer::getFieldStatus(bool &status)
 {
     if (isOpen)
     {
@@ -798,7 +798,7 @@ bool PmpServer::disableControl()
 
 
 /************************************************************************/
-bool PmpServer::getControlStatus(bool &status) const
+bool PmpServer::getControlStatus(bool &status)
 {
     if (isOpen)
     {
@@ -883,7 +883,7 @@ bool PmpServer::disableSimulation()
 
 
 /************************************************************************/
-bool PmpServer::getSimulationStatus(bool &status) const
+bool PmpServer::getSimulationStatus(bool &status)
 {
     if (isOpen)
     {
@@ -937,7 +937,7 @@ bool PmpServer::setPeriod(const int period)
 
 
 /************************************************************************/
-bool PmpServer::getPeriod(int &period) const
+bool PmpServer::getPeriod(int &period)
 {
     if (isOpen)
     {
@@ -1160,7 +1160,7 @@ bool PmpServer::removeToolFrame()
 
 
 /************************************************************************/
-bool PmpServer::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o) const
+bool PmpServer::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o)
 {
     if (isOpen)
     {
@@ -1199,7 +1199,7 @@ bool PmpServer::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o) const
 
 
 /************************************************************************/
-bool PmpServer::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot) const
+bool PmpServer::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot)
 {
     if (isOpen)
     {
@@ -1224,7 +1224,7 @@ bool PmpServer::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot) 
 
 
 /************************************************************************/
-bool PmpServer::getField(Vector &field) const
+bool PmpServer::getField(Vector &field)
 {
     if (isOpen)
     {
@@ -1244,7 +1244,7 @@ bool PmpServer::getField(Vector &field) const
 
 
 /************************************************************************/
-bool PmpServer::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat) const
+bool PmpServer::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat)
 {
     if (isOpen)
     {
@@ -1898,7 +1898,7 @@ void PmpServer::getTargetForCartesianIF(Vector &pos, Vector &orien)
 
 
 /************************************************************************/
-bool PmpServer::getActiveIF(string &activeIF) const
+bool PmpServer::getActiveIF(string &activeIF)
 {
     if (isOpen)
     {

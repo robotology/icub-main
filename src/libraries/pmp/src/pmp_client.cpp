@@ -467,7 +467,7 @@ bool PmpClient::disableField()
 
 
 /************************************************************************/
-bool PmpClient::getFieldStatus(bool &status) const
+bool PmpClient::getFieldStatus(bool &status)
 {
     if (isOpen)
     {
@@ -580,7 +580,7 @@ bool PmpClient::disableControl()
 
 
 /************************************************************************/
-bool PmpClient::getControlStatus(bool &status) const
+bool PmpClient::getControlStatus(bool &status)
 {
     if (isOpen)
     {
@@ -693,7 +693,7 @@ bool PmpClient::disableSimulation()
 
 
 /************************************************************************/
-bool PmpClient::getSimulationStatus(bool &status) const
+bool PmpClient::getSimulationStatus(bool &status)
 {
     if (isOpen)
     {
@@ -770,7 +770,7 @@ bool PmpClient::setPeriod(const int period)
 
 
 /************************************************************************/
-bool PmpClient::getPeriod(int &period) const
+bool PmpClient::getPeriod(int &period)
 {
     if (isOpen)
     {
@@ -981,7 +981,7 @@ bool PmpClient::removeToolFrame()
 
 
 /************************************************************************/
-bool PmpClient::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o) const
+bool PmpClient::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o)
 {
     if (isOpen)
     {
@@ -1127,7 +1127,7 @@ bool PmpClient::setPointOrientation(const Vector &o, const Vector &odot)
 
 
 /************************************************************************/
-bool PmpClient::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot) const
+bool PmpClient::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot)
 {
     if (isOpen)
     {
@@ -1155,7 +1155,7 @@ bool PmpClient::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot) 
 
 
 /************************************************************************/
-bool PmpClient::getField(Vector &field) const
+bool PmpClient::getField(Vector &field)
 {
     if (isOpen)
     {
@@ -1177,7 +1177,7 @@ bool PmpClient::getField(Vector &field) const
 
 
 /************************************************************************/
-bool PmpClient::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat) const
+bool PmpClient::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat)
 {
     if (isOpen)
     {
@@ -1204,7 +1204,7 @@ bool PmpClient::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat) const
 
 
 /************************************************************************/
-bool PmpClient::getActiveIF(string &activeIF) const
+bool PmpClient::getActiveIF(string &activeIF)
 {
     if (isOpen)
     {

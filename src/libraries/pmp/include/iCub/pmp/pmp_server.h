@@ -217,29 +217,29 @@ public:
     bool getProperty(const int item, yarp::os::Property &options);
     bool enableField();
     bool disableField();
-    bool getFieldStatus(bool &status) const;
+    bool getFieldStatus(bool &status);
     bool enableControl();
     bool disableControl();
-    bool getControlStatus(bool &status) const;
+    bool getControlStatus(bool &status);
     bool enableSimulation();
     bool disableSimulation();
-    bool getSimulationStatus(bool &status) const;
+    bool getSimulationStatus(bool &status);
     bool setPeriod(const int period);
-    bool getPeriod(int &period) const;
+    bool getPeriod(int &period);
     bool setPointStateToTool();
     bool attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
     bool getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool removeToolFrame();
-    bool getTool(yarp::sig::Vector &x, yarp::sig::Vector &o) const;
+    bool getTool(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool setPointState(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &xdot, const yarp::sig::Vector &odot);
     bool setPointOrientation(const yarp::sig::Vector &o, const yarp::sig::Vector &odot);
     bool getPointState(yarp::sig::Vector &x, yarp::sig::Vector &o,
-                       yarp::sig::Vector &xdot, yarp::sig::Vector &odot) const;
-    bool getField(yarp::sig::Vector &field) const;
+                       yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
+    bool getField(yarp::sig::Vector &field);
     bool getSimulation(yarp::sig::Vector &xhat, yarp::sig::Vector &ohat,
-                       yarp::sig::Vector &qhat) const;
-    bool getActiveIF(std::string &activeIF) const;
+                       yarp::sig::Vector &qhat);
+    bool getActiveIF(std::string &activeIF);
     bool setActiveIF(const std::string &activeIF);
     bool getTrajectory(std::deque<yarp::sig::Vector> &trajPos,
                        std::deque<yarp::sig::Vector> &trajOrien,
