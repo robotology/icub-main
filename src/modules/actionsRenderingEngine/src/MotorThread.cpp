@@ -1461,8 +1461,12 @@ void MotorThread::run()
                         Vector x,o;
                         action[arm]->getPose(x,o);
 
-                        if(x[2]<table_height+table_height_tolerance)
-                            action[arm]->pushAction(x,o);
+                        //action[arm]->pushAction(x,o);
+						ICartesianControl           *tmp_ctrl;
+						action[arm]->getCartesianIF(tmp_ctrl);
+						x[2]=avoid_table_height[arm];
+						
+						tmp_ctrl->goToPose(x,o);
                     }
                 }
             }
@@ -2132,7 +2136,7 @@ bool MotorThread::calibFingers(Bottle &options)
 bool MotorThread::exploreTorso(Bottle &options)
 {
 	int dbg_cnt=0;
-    //this->avoidTable(true);
+    this->avoidTable(true);
     // avoid torso controlDisp
     if(action[LEFT]!=NULL)
         action[LEFT]->setTrackingMode(false);
@@ -2172,10 +2176,10 @@ bool MotorThread::exploreTorso(Bottle &options)
     fixed_target[2]=cart_init_pos[2];
 
 
-    double walking_time=1.0;
+    double walking_time=20.0;
     double step_time=2.0;
-    double kp_pos_torso=0.05;
-    double kp_ang_torso=0.05;
+    double kp_pos_torso=0.6;
+    double kp_ang_torso=0.6;
 
     double init_walking_time=Time::now();
 
@@ -2185,14 +2189,14 @@ bool MotorThread::exploreTorso(Bottle &options)
     
         //generate random next random step
         Vector random_pos(3);
-        double tmp_rnd=0.2;//Rand::scalar(-0.2,0.2);
+        double tmp_rnd=Rand::scalar(-0.4,0.4);
 		if(fabs(tmp_rnd)<0.5 && tmp_rnd<0.0)
-			tmp_rnd-=0.05;
+			tmp_rnd-=0.1;
 
 		if(fabs(tmp_rnd)<0.5 && tmp_rnd>0.0)
-			tmp_rnd+=0.05;
+			tmp_rnd+=0.1;
 
-        random_pos[0]=-3.0*tmp_rnd*tmp_rnd-0.2;//-Rand::scalar(0.05,0.0);
+        random_pos[0]=-2.0*tmp_rnd*tmp_rnd;//-Rand::scalar(0.05,0.0);
         random_pos[1]=cart_init_pos[1]+tmp_rnd;
         random_pos[2]=cart_init_pos[2];
 
@@ -2246,15 +2250,15 @@ bool MotorThread::exploreTorso(Bottle &options)
 
 		    Matrix fullJ=iKinTorso->GeoJacobian(3);
 
-			fprintf(stdout,"fullJ=\n%s\n",fullJ.toString().c_str());
+			//fprintf(stdout,"fullJ=\n%s\n",fullJ.toString().c_str());
 
             Matrix J=fullJ.submatrix(0,2,0,1);//fullJ.cols()-1);
             
-			fprintf(stdout,"J=\n%s\n",J.toString().c_str());
+			//fprintf(stdout,"J=\n%s\n",J.toString().c_str());
 
 
             Matrix J_pinv_t=pinv(J);
-           	fprintf(stdout,"J_pinv_t=\n%s\n",J_pinv_t.toString().c_str());
+           	//fprintf(stdout,"J_pinv_t=\n%s\n",J_pinv_t.toString().c_str());
 
 
             //Matrix J_pinv_t=pinv(J.transposed());
@@ -2262,7 +2266,7 @@ bool MotorThread::exploreTorso(Bottle &options)
             
             //Vector q_dot_over=J_pinv_t.transposed()*x_dot;
             Vector q_dot_over=J_pinv_t*x_dot;
-           	fprintf(stdout,"q_dot_over=%s\n",q_dot_over.toString().c_str());
+           	//fprintf(stdout,"q_dot_over=%s\n",q_dot_over.toString().c_str());
             
             Vector q_dot(3);
             q_dot=0.0;
@@ -2271,7 +2275,7 @@ bool MotorThread::exploreTorso(Bottle &options)
             q_dot[2]=CTRL_RAD2DEG*q_dot_over[0];
             
 
-			fprintf(stdout,"q_dot=%s\n",q_dot.toString().c_str());
+			//fprintf(stdout,"q_dot=%s\n",q_dot.toString().c_str());
 			
 			if(norm(q_dot)<1.0)
 			{
@@ -2279,17 +2283,17 @@ bool MotorThread::exploreTorso(Bottle &options)
 				break;
 			}
 			
-			double q_dot_saturation=7.0;
+			double q_dot_saturation=15.0;
 			if(norm(q_dot)>q_dot_saturation)
 				q_dot=(q_dot_saturation/norm(q_dot))*q_dot;
 
 			//q_dot=((step_time-Time::now()+init_step_time)/step_time)*q_dot;
 
 			x_dot=(1.0/kp_pos_torso)*x_dot;
-			fprintf(stdout,"x_dot=%s\n",q_dot.toString().c_str());
-			fprintf(stdout,"q_dot=%s\n",q_dot.toString().c_str());
+			//fprintf(stdout,"x_dot=%s\n",q_dot.toString().c_str());
+			//fprintf(stdout,"q_dot=%s\n",q_dot.toString().c_str());
 
-	        //torsoVel->velocityMove(q_dot.data());
+	        torsoVel->velocityMove(q_dot.data());
 	        Time::delay(0.01);
         }
     }
@@ -2303,7 +2307,7 @@ bool MotorThread::exploreTorso(Bottle &options)
         torsoPos->checkMotionDone(&done);
     }
 
-    //this->avoidTable(false);
+    this->avoidTable(false);
     return true;
 }
 

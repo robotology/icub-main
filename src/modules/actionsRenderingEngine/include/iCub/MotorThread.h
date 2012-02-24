@@ -217,6 +217,8 @@ private:
     iCubEye                             *iKinTorso;
     
     Vector								gaze_fix_point;
+    
+    double								avoid_table_height[2];
 
 
     bool loadExplorationPoses(const string &file_name);
@@ -236,6 +238,16 @@ private:
 
     bool avoidTable(bool avoid=true)
     {
+    	for(int arm=0; arm<2; arm++)
+    	{
+    		if(action[arm]!=NULL)
+        	{
+        		Vector x,o;
+        		action[arm]->getPose(x,o);
+        		avoid_table_height[arm]=x[2];
+      		}
+        }
+        
         avoid_table=avoid;
         return true;
     }
