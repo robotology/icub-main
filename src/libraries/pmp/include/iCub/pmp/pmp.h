@@ -383,8 +383,8 @@ public:
     virtual bool getField(yarp::sig::Vector &field) const = 0;
 
     /**
-    * Retrieve the trajectory the end-effector will follow as 
-    * constrained by the Pmp field.
+    * Sample step by step the trajectory the end-effector will 
+    * follow as constrained by the Pmp field. 
     * @param xhat a 3-d Vector containing the simulated position 
     *             [m].
     * @param ohat a 4-d Vector containing the simulated orientation 
