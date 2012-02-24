@@ -1306,11 +1306,12 @@ void MotorThread::run()
 
         case(HEAD_MODE_TRACK_FIX):
         {
-            if(!gazeUnderControl)
+            //if(!gazeUnderControl)
             {
                 gazeUnderControl=true;
                 gazeCtrl->restoreContext(default_gaze_context);
-                gazeCtrl->setTrackingMode(true);
+                //gazeCtrl->setTrackingMode(true);
+                gazeCtrl->lookAtFixationPoint(gaze_fix_point);
             }
             break;
         }
@@ -1694,8 +1695,14 @@ bool MotorThread::look(Bottle &options)
     gazeCtrl->restoreContext(default_gaze_context);
 
     if(checkOptions(options,"fixate"))
-        gazeCtrl->setTrackingMode(true);
+    {
+    	gaze_fix_point=xd;
+    	head_mode=HEAD_MODE_TRACK_FIX;
+        //gazeCtrl->setTrackingMode(true);
 
+	}
+	
+	
     gazeCtrl->lookAtFixationPoint(xd);
 
     return true;
@@ -2124,7 +2131,8 @@ bool MotorThread::calibFingers(Bottle &options)
 
 bool MotorThread::exploreTorso(Bottle &options)
 {
-    this->avoidTable(true);
+	int dbg_cnt=0;
+    //this->avoidTable(true);
     // avoid torso controlDisp
     if(action[LEFT]!=NULL)
         action[LEFT]->setTrackingMode(false);
@@ -2138,6 +2146,7 @@ bool MotorThread::exploreTorso(Bottle &options)
     torsoEnc->getEncoders(torso_init_joints.data());
 
     //initialization for the random walker
+    //the iKinTorso needs the 0 2 joints switched
     Vector tmp_joints(8);
     tmp_joints=0.0;
     tmp_joints[0]=torso_init_joints[2];
@@ -2146,6 +2155,7 @@ bool MotorThread::exploreTorso(Bottle &options)
     tmp_joints=CTRL_DEG2RAD*tmp_joints;
     iKinTorso->setAng(tmp_joints);
 
+	
     Matrix H=iKinTorso->getH(3);
     Vector cart_init_pos(3);
     cart_init_pos[0]=H[0][3];
@@ -2153,6 +2163,7 @@ bool MotorThread::exploreTorso(Bottle &options)
     cart_init_pos[2]=H[2][3];
     //----------------
 
+	fprintf(stdout,"cart init pos= %s\n",cart_init_pos.toString().c_str());
     
     //fixed "target" position
     Vector fixed_target(3);
@@ -2161,36 +2172,62 @@ bool MotorThread::exploreTorso(Bottle &options)
     fixed_target[2]=cart_init_pos[2];
 
 
-    double walking_time=10.0;
-    double kp_pos_torso=0.001;
-    double kp_ang_torso=0.001;
+    double walking_time=20.0;
+    double step_time=2.0;
+    double kp_pos_torso=0.05;
+    double kp_ang_torso=0.05;
 
     double init_walking_time=Time::now();
 
     //random walk!
     while(this->isRunning() && !interrupted && Time::now()-init_walking_time<walking_time)
     {
+    
         //generate random next random step
         Vector random_pos(3);
-        double tmp_rnd=Rand::scalar(-0.1,0.1);
-        random_pos[0]=-tmp_rnd*tmp_rnd+Rand::scalar(-0.1,0.05);
+        double tmp_rnd=Rand::scalar(-0.2,0.2);
+		if(fabs(tmp_rnd)<0.5 && tmp_rnd<0.0)
+			tmp_rnd-=0.05;
+
+		if(fabs(tmp_rnd)<0.5 && tmp_rnd>0.0)
+			tmp_rnd+=0.05;
+
+        random_pos[0]=-7.0*tmp_rnd*tmp_rnd-0.2;//-Rand::scalar(0.05,0.0);
         random_pos[1]=cart_init_pos[1]+tmp_rnd;
-        random_pos[2]=cart_init_pos[2];
+        random_pos[2]=cart_init_pos[2]-0.05;
+
+		random_pos=(norm(cart_init_pos)/norm(random_pos))*random_pos();
+
+		fprintf(stdout,"random pos = %s\n\n",random_pos.toString().c_str());
 
         //get the desired angle
-        double random_alpha=90.0-asin(sqrt((cart_init_pos[0]-fixed_target[0])*(cart_init_pos[0]-fixed_target[0])+
-                        (cart_init_pos[1]-fixed_target[1])*(cart_init_pos[1]-fixed_target[1]))/
-                        fabs(cart_init_pos[0]-fixed_target[0]));
+        double random_alpha=0.0;
+        double tmp_y=fabs(random_pos[0]-fixed_target[0]);
+       	if(tmp_y>0.01)
+        {   
+		    double tmp_x=sqrt((random_pos[0]-fixed_target[0])*(random_pos[0]-fixed_target[0])+(random_pos[1]-fixed_target[1])*(random_pos[1]-fixed_target[1]));
+		    random_alpha=90.0-CTRL_RAD2DEG*asin(tmp_y/tmp_x);
+	    
+	    	double ang_sat=15.0;
+	    	if(random_alpha>ang_sat)
+	    		random_alpha=ang_sat;
+	    	else if(random_alpha<-ang_sat)
+	    		random_alpha=-ang_sat;
+	    }
         //--------------------
 
+		//fprintf(stdout,"random_alpha=%f\n",random_alpha);
 
+   	 	double init_step_time=Time::now();
+   	 	
         //wait to reach that point
         bool done=false;
-        while(this->isRunning() && !interrupted)
+        while(this->isRunning() && !interrupted && Time::now()-init_step_time<step_time && Time::now()-init_walking_time<walking_time)
         {
-            //set the current torso joints to the iKinTorso
+			//set the current torso joints to the iKinTorso
             Vector torso_joints(3);
-            //initialization for the random walker
+    		torsoEnc->getEncoders(torso_joints.data());
+            
             Vector tmp_joints(8);
             tmp_joints=0.0;
             tmp_joints[0]=torso_joints[2];
@@ -2207,24 +2244,35 @@ bool MotorThread::exploreTorso(Bottle &options)
 
             Vector x_dot=kp_pos_torso*(random_pos-curr_pos);
 
-            Matrix fullJ=iKinTorso->GeoJacobian(3);
+		    Matrix fullJ=iKinTorso->GeoJacobian(3);
 
-            Matrix J=fullJ.submatrix(0,2,0,fullJ.cols());
+			//fprintf(stdout,"fullJ=\n%s\n",fullJ.toString().c_str());
 
-            Vector q_dot_over=yarp::math::pinv(J)*x_dot;
+            Matrix J=fullJ.submatrix(0,2,0,fullJ.cols()-1);
+            
+			//fprintf(stdout,"J=\n%s\n",J.toString().c_str());
+
+            Matrix J_pinv_t=pinv(J.transposed());
+            Vector q_dot_over=J_pinv_t.transposed()*x_dot;
             Vector q_dot(3);
-            q_dot[0]=kp_ang_torso*(random_alpha-torso_joints[2]);
-            q_dot[1]=q_dot_over[1];
-            q_dot[2]=q_dot_over[0];
-            q_dot=CTRL_RAD2DEG*q_dot;
+            q_dot[0]=CTRL_RAD2DEG*q_dot_over[2];//kp_ang_torso*(random_alpha-torso_joints[2]);
+            q_dot[1]=CTRL_RAD2DEG*q_dot_over[1];
+            q_dot[2]=CTRL_RAD2DEG*q_dot_over[0];
 
-            if(norm(q_dot)<0.1)
-            {
-                torsoVel->stop();
-                break;
-            }
+			if(norm(q_dot)<1.0)
+			{
+				torsoVel->stop();
+				break;
+			}
+			
+			double q_dot_saturation=7.0;
+			if(norm(q_dot)>q_dot_saturation)
+				q_dot=(q_dot_saturation/norm(q_dot))*q_dot;
 
-            torsoVel->velocityMove(q_dot.data());
+			//q_dot=((step_time-Time::now()+init_step_time)/step_time)*q_dot;
+
+	        torsoVel->velocityMove(q_dot.data());
+	        Time::delay(0.01);
         }
     }
 
@@ -2237,7 +2285,7 @@ bool MotorThread::exploreTorso(Bottle &options)
         torsoPos->checkMotionDone(&done);
     }
 
-    this->avoidTable(false);
+    //this->avoidTable(false);
     return true;
 }
 

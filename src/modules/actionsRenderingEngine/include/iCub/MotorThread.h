@@ -29,6 +29,7 @@
 #include <yarp/dev/GazeControl.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/math/SVD.h>
+#include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/neuralNetworks.h>
@@ -214,6 +215,8 @@ private:
 
     //in order to control the torso
     iCubEye                             *iKinTorso;
+    
+    Vector								gaze_fix_point;
 
 
     bool loadExplorationPoses(const string &file_name);
