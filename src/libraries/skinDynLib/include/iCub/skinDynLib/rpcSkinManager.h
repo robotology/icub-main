@@ -60,3 +60,4 @@ static const double MAX_NEIGHBOR_DISTANCE = 0.012;
 }
 
 #endif
+
