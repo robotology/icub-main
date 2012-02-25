@@ -16,7 +16,7 @@
 */
 
 /**
-@ingroup icub_tools
+@ingroup icub_module
 
 \defgroup iSpeak iSpeak
  
