@@ -265,13 +265,17 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
 
                     if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
                     {
+                        mutex.wait();
                         taskVelModeOn=false;
                         ret=goTo(IKINCTRL_POSE_FULL,xd,t,true);
+                        mutex.post();
                     }
                     else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
                     {
+                        mutex.wait();
                         taskVelModeOn=false;
                         ret=goTo(IKINCTRL_POSE_XYZ,xd,t,true);
+                        mutex.post();
                     }
 
                     if (ret)
@@ -656,7 +660,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
+                            mutex.wait();
                             setTrajTime(command.get(2).asDouble());
+                            mutex.post();
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             break;
                         }
@@ -664,7 +670,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TOL:
                         {
+                            mutex.wait();
                             setInTargetTol(command.get(2).asDouble());
+                            mutex.post();
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             break;
                         }
@@ -2308,9 +2316,7 @@ bool ServerCartesianController::setTrajTime(const double t)
 {
     if (attached)
     {
-        mutex.wait();
         trajTime=ctrl->set_execTime(t,true);
-        mutex.post();
         return true;
     }
     else
@@ -2336,10 +2342,8 @@ bool ServerCartesianController::setInTargetTol(const double tol)
 {
     if (attached)
     {
-        mutex.wait();
         ctrl->setInTargetTol(tol);
         targetTol=ctrl->getInTargetTol();
-        mutex.post();
         return true;
     }
     else
@@ -2581,9 +2585,11 @@ bool ServerCartesianController::restoreContext(const int id)
             for (unsigned int axis=0; axis<chain->getN(); axis++)
                 setLimits(axis,context.limits(axis,0),context.limits(axis,1));
 
+            setTrackingMode(context.mode);
+            mutex.wait();
             setTrajTime(context.trajTime);
             setInTargetTol(context.tol);
-            setTrackingMode(context.mode);
+            mutex.post();
 
             return true;
         }
