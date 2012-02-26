@@ -158,8 +158,6 @@ bool ClientCartesianController::setTrackingMode(const bool f)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_MODE);
 
@@ -183,8 +181,6 @@ bool ClientCartesianController::getTrackingMode(bool *f)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_MODE);
 
@@ -249,8 +245,6 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_POSE);
     command.addInt(axis);
@@ -290,8 +284,6 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
         return false;
 
     Bottle command;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
     command.addDouble(t);
@@ -317,8 +309,6 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
         return false;
 
     Bottle command;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
     command.addDouble(t);
@@ -341,8 +331,6 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
     command.addDouble(t);
@@ -372,8 +360,6 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
     command.addDouble(t);
@@ -400,8 +386,6 @@ bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_DES);
 
@@ -424,8 +408,6 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     Vector tg(xd.length()+od.length());
     for (size_t i=0; i<xd.length(); i++)
         tg[i]=xd[i];
@@ -457,8 +439,6 @@ bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     Vector tg(xd.length()+od.length());
     for (size_t i=0; i<xd.length(); i++)
         tg[i]=xd[i];
@@ -490,8 +470,6 @@ bool ClientCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
@@ -515,8 +493,6 @@ bool ClientCartesianController::askForPosition(const Vector &q0, const Vector &x
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
@@ -540,8 +516,6 @@ bool ClientCartesianController::getDOF(Vector &curDof)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_DOF);
 
@@ -576,8 +550,6 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_DOF);
     Bottle &dofPart=command.addList();
@@ -616,8 +588,6 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
 
@@ -652,8 +622,6 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
     Bottle &restPart=command.addList();
@@ -692,8 +660,6 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
 
@@ -729,8 +695,6 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
     Bottle &restPart=command.addList();
@@ -769,8 +733,6 @@ bool ClientCartesianController::getLimits(const int axis, double *min, double *m
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_LIM);
     command.addInt(axis);
@@ -803,8 +765,6 @@ bool ClientCartesianController::setLimits(const int axis, const double min, cons
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_LIM);
     command.addInt(axis);
@@ -832,8 +792,6 @@ bool ClientCartesianController::getTrajTime(double *t)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIME);
 
@@ -864,8 +822,6 @@ bool ClientCartesianController::setTrajTime(const double t)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIME);
     command.addDouble(t);
@@ -888,8 +844,6 @@ bool ClientCartesianController::getInTargetTol(double *tol)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_TOL);
 
@@ -920,8 +874,6 @@ bool ClientCartesianController::setInTargetTol(const double tol)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_TOL);
     command.addDouble(tol);
@@ -944,8 +896,6 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_QDOT);
 
@@ -980,8 +930,6 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_XDOT);
 
@@ -1020,8 +968,6 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         return false;
 
     Bottle command;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_TASKVEL);
     Bottle &xdotPart=command.addList();
 
@@ -1045,8 +991,6 @@ bool ClientCartesianController::checkMotionDone(bool *f)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_MOTIONDONE);
 
@@ -1101,8 +1045,6 @@ bool ClientCartesianController::stopControl()
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_STOP);
 
     // send command and wait for reply
@@ -1123,8 +1065,6 @@ bool ClientCartesianController::storeContext(int *id)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_STORE);
 
     // send command and wait for reply
@@ -1154,8 +1094,6 @@ bool ClientCartesianController::restoreContext(const int id)
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_RESTORE);
     command.addInt(id);
 
@@ -1177,8 +1115,6 @@ bool ClientCartesianController::deleteContexts()
         return false;
 
     Bottle command, reply;
-
-    // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_DELETE);
     Bottle &ids=command.addList();
     for (set<int>::iterator itr=contextIdList.begin(); itr!=contextIdList.end(); itr++)
