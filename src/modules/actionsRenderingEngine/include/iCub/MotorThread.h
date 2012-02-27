@@ -235,22 +235,8 @@ private:
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
     void close();
-
-    bool avoidTable(bool avoid=true)
-    {
-    	for(int arm=0; arm<2; arm++)
-    	{
-    		if(action[arm]!=NULL)
-        	{
-        		Vector x,o;
-        		action[arm]->getPose(x,o);
-        		avoid_table_height[arm]=x[2];
-      		}
-        }
-        
-        avoid_table=avoid;
-        return true;
-    }
+    
+   	bool avoidTable(bool avoid);
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)

@@ -1460,13 +1460,19 @@ void MotorThread::run()
                     {
                         Vector x,o;
                         action[arm]->getPose(x,o);
+                        
+                        Vector head_x,head_o;
+                        gazeCtrl->getHeadPose(head_x,head_o);
+                        
+                    	if(fabs(x[1]-head_x[1])<0.2)
+                    		x[1]=head_x[1]+sign(x[1]-head_x[1])*0.2;
 
                         //action[arm]->pushAction(x,o);
 						ICartesianControl           *tmp_ctrl;
 						action[arm]->getCartesianIF(tmp_ctrl);
 						x[2]=avoid_table_height[arm];
 						
-						tmp_ctrl->goToPose(x,o);
+						tmp_ctrl->goToPosition(x);
                     }
                 }
             }
@@ -2133,16 +2139,32 @@ bool MotorThread::calibFingers(Bottle &options)
 }
 
 
+bool MotorThread::avoidTable(bool avoid)
+{
+	for(int arm=0; arm<2; arm++)
+	{
+		if(action[arm]!=NULL)
+    	{
+    		action[arm]->setTrackingMode(false);
+    		action[arm]->disableTorsoDof();
+    	
+    		Vector x,o;
+    		action[arm]->getPose(x,o);
+    		avoid_table_height[arm]=x[2];
+  		}
+    }
+    
+    avoid_table=avoid;
+    return true;
+}
+
+
+
 bool MotorThread::exploreTorso(Bottle &options)
 {
 	int dbg_cnt=0;
     this->avoidTable(true);
     // avoid torso controlDisp
-    if(action[LEFT]!=NULL)
-        action[LEFT]->setTrackingMode(false);
-
-    if(action[RIGHT]!=NULL)
-        action[RIGHT]->setTrackingMode(false);
 
 
     //get the torso initial position
@@ -2257,7 +2279,7 @@ bool MotorThread::exploreTorso(Bottle &options)
 			//fprintf(stdout,"J=\n%s\n",J.toString().c_str());
 
 
-            Matrix J_pinv_t=pinv(J);
+            Matrix J_pinv_t=pinv(J,1e-06);
            	//fprintf(stdout,"J_pinv_t=\n%s\n",J_pinv_t.toString().c_str());
 
 
