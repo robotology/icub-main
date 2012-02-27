@@ -682,3 +682,4 @@ vector<Vector> CompensationThread::getTaxelPoses(){
     }
     return res;
 }
+
