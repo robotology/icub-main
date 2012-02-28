@@ -1004,8 +1004,8 @@ bool ServerCartesianController::getNewTarget()
 
             if (_qdes.length()!=ctrl->get_dim())
             {    
-                fprintf(stdout,"%s warning: skipped message from solver since does not match the controller dimension (qdes=%u)!=(ctrl=%u)\n",
-                        ctrlName.c_str(),_qdes.length(),ctrl->get_dim());
+                fprintf(stdout,"%s warning: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)\n",
+                        ctrlName.c_str(),(int)_qdes.length(),ctrl->get_dim());
 
                 return false;
             }
