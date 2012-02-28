@@ -114,7 +114,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
-
     }
 
     // find minimum allowed vergence
