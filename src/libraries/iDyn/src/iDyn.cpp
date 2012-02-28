@@ -88,7 +88,7 @@ bool iCub::iDyn::asWrench(Vector &w, const Vector &f, const Vector &m)
     }
     else
     {
-        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
+        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%u,%u) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());
         return false;
     }
 }
@@ -103,7 +103,7 @@ Vector iCub::iDyn::asWrench(const Vector &f, const Vector &m)
     }
     else
     {
-        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());	
+        fprintf(stderr,"iDyn: error in calling asWrench(), wrong sized vectors: (%u,%u) instead of (3,3). return wrench set automatically as zero.\n",f.length(),m.length());
     }
     return w;
 }
@@ -121,7 +121,7 @@ bool iCub::iDyn::asForceMoment(const Vector &w, Vector &f, Vector &m)
     }
     else
     {
-        fprintf(stderr,"iDyn: error in calling asForceMoment(), wrong sized vector: (%d) instead of (6). return force/moment set automatically as zero.\n",w.length());	
+        fprintf(stderr,"iDyn: error in calling asForceMoment(), wrong sized vector: (%u) instead of (6). return force/moment set automatically as zero.\n",w.length());
         return false;
     }
 }
@@ -314,7 +314,7 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
 	else	
 	{
 		if(verbose)
-			fprintf(stderr,"iDynLink error, cannot set distance from COM due to wrong sized vector: %d instead of 3 \n",_rC.length());
+			fprintf(stderr,"iDynLink error, cannot set distance from COM due to wrong sized vector: %u instead of 3 \n",_rC.length());
 		return false;
 	}
 }
@@ -337,7 +337,7 @@ bool iDynLink::setForce(const yarp::sig::Vector &_F)
 	else
 	{
 		if(verbose)
-            fprintf(stderr,"iDynLink error: cannot set forces due to wrong size: %d instead of 3.\n",_F.length());
+            fprintf(stderr,"iDynLink error: cannot set forces due to wrong size: %u instead of 3.\n",_F.length());
 		return false;
 	}
 }
@@ -352,7 +352,7 @@ bool iDynLink::setMoment(const yarp::sig::Vector &_Mu)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"iDynLink error, cannot set moments due to wrong size: %d instead of 3. \n",_Mu.length());
+			fprintf(stderr,"iDynLink error, cannot set moments due to wrong size: %u instead of 3. \n",_Mu.length());
 		return false;
 	}
 }
@@ -755,7 +755,7 @@ bool iDynChain::setMasses(Vector _m)
 	}
 	else
 	{
-		if(verbose) fprintf(stderr,"iDynChain error: setMasses() failed due to wrong vector size: %d instead of %d",_m.length(),N);
+		if(verbose) fprintf(stderr,"iDynChain error: setMasses() failed due to wrong vector size: %u instead of %u",_m.length(),N);
 		return false;
 	}
 }
@@ -901,7 +901,7 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 		if(verbose)
 		{
             fprintf(stderr,"iDynChain error: could not compute with Newton Euler due to wrong sized initializing vectors: \n");
-            fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),F0.length(),Mu0.length());
+            fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %u,%u,%u,%u,%u instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),F0.length(),Mu0.length());
 		}
 		return false;
 	}
@@ -1085,7 +1085,7 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
 		if(verbose)
 		{
 			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-			fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),Fend.length(),Muend.length());
+			fprintf(stderr," w0,dw0,ddp0,Fend,Muend have size %u,%u,%u,%u,%u instead of 3,3,3,3,3 \n",w0.length(),dw0.length(),ddp0.length(),Fend.length(),Muend.length());
 		}
 		return false;
 	}
@@ -1115,7 +1115,7 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
 		if(verbose)
 		{
 			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3 \n",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," w0,dw0,ddp0 have size %u,%u,%u instead of 3,3,3 \n",w0.length(),dw0.length(),ddp0.length());
 		}
 		return false;
 	}
@@ -1145,7 +1145,7 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
 		if(verbose)
 		{
 			fprintf(stderr,"iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-			fprintf(stderr," Fend,Muend have size %d,%d instead of 3,3 \n",Fend.length(),Muend.length());
+			fprintf(stderr," Fend,Muend have size %u,%u instead of 3,3 \n",Fend.length(),Muend.length());
 		}
 		return false;
 	}
